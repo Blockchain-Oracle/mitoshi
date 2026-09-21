@@ -1,0 +1,80 @@
+# Withdraw pathUSD from a Tempo Zone on testnet
+
+:::info
+Tempo Zones is still in early development and is available for testing purposes on Tempo Testnet only. While Tempo Zones are in this stage, expect breaking changes to the design and implementation. Do not use this in production. If you're interested in working with Tempo Labs as a design partner on the development of Tempo Zones, contact us at [tempo.xyz/contact](https://tempo.xyz/contact).
+:::
+
+Use this guide when you want to move `pathUSD` out of `Zone A` and back to your public Tempo balance.
+
+![Zone contract architecture](/developers/learn/zones/diagram-withdraw.svg)
+
+Direct withdrawals exit through `ZoneOutbox` on the zone chain. You submit the withdrawal request in the zone first, then wait for the public balance to increase after the batch settles.
+
+## Withdrawing pathUSD from Zone A
+
+By the end of this guide you will have withdrawn `pathUSD` from `Zone A` and confirmed the balance update on the public chain.
+
+**Interactive demo: Withdraw from Zone A**
+
+1. Withdraw from zone
+
+## Code examples
+
+These snippets assume you already have a signed-in `rootClient` on the public chain, a derived `zoneAClient`, and the usual token constants in scope.
+Use the plaintext flow when normal withdrawal visibility is fine. Use the authenticated flow when the sender details should only be revealed to the holder of a `revealTo` public key.
+
+### Plaintext
+
+```ts
+import { parseUnits } from 'viem'
+import { Actions } from 'viem/tempo'
+
+const withdrawalAmount = parseUnits('100', 6)
+
+await zoneAClient.zone.signAuthorizationToken()
+
+const { receipt } = await Actions.zone.requestWithdrawalSync(zoneAClient, {
+  account: rootClient.account,
+  feeToken: pathUsd,
+  amount: withdrawalAmount,
+  token: pathUsd,
+  to: rootClient.account.address,
+})
+
+console.log(receipt.blockNumber)
+```
+
+### Authenticated
+
+```ts
+import { parseUnits } from 'viem'
+import { Actions } from 'viem/tempo'
+
+const withdrawalAmount = parseUnits('100', 6)
+const revealTo = '0x031dc147467e8f106eb22850fef549dc74b8f6634aeac554ebdd4ab896b67cdf68' // [!code focus]
+
+await zoneAClient.zone.signAuthorizationToken()
+
+const { receipt } = await Actions.zone.requestVerifiableWithdrawalSync(zoneAClient, { // [!code focus]
+  account: rootClient.account,
+  feeToken: pathUsd,
+  amount: withdrawalAmount,
+  revealTo, // [!code focus]
+  token: pathUsd,
+  to: rootClient.account.address,
+})
+
+console.log(receipt.blockNumber)
+```
+
+## What a Direct Withdrawal Does
+
+A direct withdrawal is the simplest way to exit a zone. You ask `ZoneOutbox` on the zone to burn the zone balance, include the request in the next withdrawal batch, and settle the amount back to a public Tempo address.
+
+Like deposits, withdrawals settle in phases. The request is accepted on the zone first, and the public balance changes later when the sequencer submits and processes the corresponding batch on Tempo.
+
+If Tempo-side processing fails, the withdrawal does not stay stuck in limbo. The protocol re-deposits the withdrawal amount back into the zone to the request's `fallbackRecipient`. The fee is still consumed.
+
+:::warning
+Even with `gasLimit: 0n`, a direct withdrawal can still fail on Tempo—for example because of token transfer or policy checks. In that case, the amount bounces back to `fallbackRecipient` on the zone instead of increasing the public balance.
+:::

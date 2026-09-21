@@ -1,0 +1,120 @@
+# How to create and manage API keys
+
+API keys authenticate an integration and attribute its usage to a project. Every key is fixed to the production or sandbox environment in which it was created.
+
+## Create an API key
+
+You need at least one project before creating a key.
+
+:::steps
+### Choose the environment
+
+Open the organization menu in [Tempo API Console](https://console.tempo.xyz/?to=/\:org/api-keys) and switch to [**Sandbox**](https://console.tempo.xyz/?to=/\:org/api-keys%3Fenv%3Dsandbox) or [**Production**](https://console.tempo.xyz/?to=/\:org/api-keys). Check for the amber sandbox banner before continuing.
+
+### Open the new-key form
+
+Select [**API Keys**](https://console.tempo.xyz/?to=/\:org/api-keys), then [**New key**](https://console.tempo.xyz/?to=/\:org/api-keys/new).
+
+### Choose a project and name
+
+Select the project that will use the credential. Give the key a name that identifies its deployment or owner, such as `production-worker` or `local-development`.
+
+### Review scopes
+
+Expand **View scopes** and keep only the permissions the integration needs. Available self-service scopes are selected by default. A key with no scopes has no access to scoped APIs.
+
+### Create and store the key
+
+Select **Create key**, then immediately copy the revealed token into your secret manager. The plaintext value is shown only once.
+:::
+
+Production keys begin with `tempo:sk:` and sandbox keys begin with `tempo_sandbox:sk:`. The API Keys page shows only the prefix and final four characters after you dismiss the reveal.
+
+## Authenticate a request
+
+Send the token as a Bearer credential:
+
+```bash
+curl 'https://api.tempo.xyz/v1/blocks' \
+  --header 'Authorization: Bearer tempo:sk:...'
+```
+
+You can also use the `tempo-api-key` header or configure the [Tempo API Typed Client](https://tempo.xyz/developers/docs/api/typed-client):
+
+```ts
+import { Client } from 'tapimo'
+
+const client = Client.create({
+  apiKey: process.env.TEMPO_API_KEY,
+})
+```
+
+Keep the key in a server-side environment variable or secret manager. Do not expose it in frontend code, logs, support messages, or source control.
+
+## Restrict an API key by IP address
+
+Use an IP allowlist for server-side integrations with stable egress addresses. Tempo accepts exact IPv4 and IPv6 addresses or CIDR ranges.
+
+Set `allowedIps` when creating a key through the management API:
+
+```http
+POST /v1/orgs/{orgId}/projects/{projectId}/api-keys
+Content-Type: application/json
+
+{
+  "name": "production-worker",
+  "scopes": ["data:read"],
+  "allowedIps": ["203.0.113.7", "2001:db8::/32"]
+}
+```
+
+Replace an existing key's complete allowlist with `PATCH`:
+
+```http
+PATCH /v1/orgs/{orgId}/projects/{projectId}/api-keys/{keyId}
+Content-Type: application/json
+
+{
+  "allowedIps": ["198.51.100.0/24"]
+}
+```
+
+An omitted or empty `allowedIps` list means unrestricted access. Send `{ "allowedIps": [] }` to remove an existing restriction. Each list supports up to 100 entries.
+
+Requests from an address outside the allowlist, or without a trusted client IP, fail with `403 api_key_ip_forbidden`. Allowlist changes are eventually consistent and may take a minute or more to propagate globally. During an egress migration, add both the old and new ranges, wait for propagation, then remove the old range.
+
+See the [Tempo API reference](https://tempo.xyz/developers/docs/api/reference) for complete request and response schemas.
+
+## Rotate an API key
+
+Tempo API Console does not reveal an existing token again. Rotate a credential by overlapping the old and new keys:
+
+:::steps
+### Create a replacement
+
+Create a new key in the same project and environment with the scopes required by the integration.
+
+### Update the integration
+
+Replace the old token in the integration's secret configuration and deploy or restart it as required.
+
+### Verify the replacement
+
+Make a request with the new key and check the project's [**Usage**](https://console.tempo.xyz/?to=/\:org/usage) page. Confirm that requests are attributed to the replacement key.
+
+### Revoke the old key
+
+Return to [**API Keys**](https://console.tempo.xyz/?to=/\:org/api-keys), open the old key's actions menu, select **Revoke key**, and confirm. Requests using that token stop authenticating.
+:::
+
+## Resolve common key problems
+
+| Problem | Check |
+| --- | --- |
+| The key cannot be found in the console | Confirm that the selected environment and project filter match the key. |
+| The API rejects the credential | Check that the full token was copied, has not been revoked, and is sent in a supported header. |
+| A scoped endpoint denies access | Open the key's project and confirm that the key was created with the required scope. Create a replacement to change scopes. |
+| A sandbox key appears to use public access on mainnet | Sandbox keys cannot authenticate mainnet requests. Remove the mainnet selector or use a production key. |
+| The plaintext token was lost | Create a replacement key. Existing tokens cannot be revealed again. |
+
+For complete credential and chain-selection behavior, see [API authentication](https://tempo.xyz/developers/docs/api/authentication).

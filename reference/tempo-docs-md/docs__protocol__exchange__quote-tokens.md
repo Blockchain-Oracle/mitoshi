@@ -1,0 +1,80 @@
+# pathUSD on Tempo Mainnet and quote tokens
+
+Each USD TIP-20 on Tempo can choose any other USD TIP-20 as its quote token—the token it is paired against on the native decentralized exchange. This guarantees that there is one path between any two tokens, which reduces fragmentation of liquidity and simplifies routing.
+
+`pathUSD` is live on Tempo Mainnet. The production asset and the faucet-issued test token on Tempo Testnet use the same predeploy address, but they exist on separate networks and are not interchangeable.
+
+## pathUSD
+
+On Tempo Mainnet, pathUSD is a USD-denominated stablecoin that can be used as a quote token on Tempo's decentralized exchange. It is the first stablecoin deployed to the chain, and is used as a fallback gas token when the user or validator does not specify a gas token. Use of pathUSD is optional.
+
+### Issuance & Backing
+
+pathUSD is issued by Bridge and is backed 1:1 by high-quality USD-denominated reserves. Please see [bridge.xyz](https://www.bridge.xyz) for more about their reserve allocation practices. pathUSD can be minted by depositing USDC.e and redeemed back to USDC through Bridge.
+
+### Testnet pathUSD
+
+Tempo Testnet (Moderato, chain ID `42431`) provides faucet-issued pathUSD for development. Testnet balances have no relationship to production pathUSD on Tempo Mainnet and cannot be treated as mainnet funds. Use the [Tempo faucet](https://tempo.xyz/developers/docs/quickstart/faucet) only for testnet development.
+
+### Why pathUSD?
+
+Tempo is designed to be neutral across stablecoin issuers. Rather than defaulting to any single issuer's stablecoin as the quote token, pathUSD provides a neutral option that any token can pair against on Tempo's DEX. This ensures that no single stablecoin issuer has a privileged position in Tempo's liquidity graph and guarantees stablecoin interoperability.
+
+pathUSD is not meant to compete as a consumer-facing stablecoin. Use of pathUSD is optional, and tokens are able to list any other token as their quote token if they choose. pathUSD can also be accepted as a fee token by validators.
+
+### Contract
+
+pathUSD is a predeployed [TIP-20](https://tempo.xyz/developers/docs/protocol/tip20/spec) at genesis. Since it is the first TIP-20 deployed, its quote token is the zero address.
+
+| Property       | Value                                        |
+| -------------- | -------------------------------------------- |
+| network        | Tempo Mainnet (chain ID `4217`)              |
+| address        | `0x20c0000000000000000000000000000000000000` |
+| `name()`       | `"pathUSD"`                                  |
+| `symbol()`     | `"pathUSD"`                                  |
+| `currency()`   | `"USD"`                                      |
+| `decimals()`   | `6`                                          |
+| `quoteToken()` | `address(0)`                                 |
+
+### Use pathUSD as a quote token
+
+When creating a USD stablecoin on Tempo, you can set pathUSD as its quote token:
+
+```solidity
+TIP20 token = factory.createToken(
+  "My Company USD",
+  "MCUSD",
+  "USD",
+  TIP20(0x20c0000000000000000000000000000000000000), // pathUSD
+  msg.sender,
+  bytes32("my-unique-salt") // salt for deterministic address
+);
+```
+
+This means:
+
+* Your token trades against pathUSD on the exchange.
+* Users can swap between your token and other USD stablecoins that also use pathUSD, or ones connected by a multi-hop path.
+
+### Tree Structure
+
+Quote token relationships form a tree structure where all USD stablecoins are connected via multi-hop paths:
+
+```
+               USDX
+                |
+             pathUSD -- USDY -- USDZ
+                |
+               USDA
+```
+
+The tree structure guarantees a single path between any two USD stablecoins. This ensures simple routing, concentrated liquidity, and efficient pricing even for thinly-traded pairs.
+
+### Example: Cross-Stablecoin Payment
+
+1. Market makers provide liquidity for USDX/pathUSD and USDY/pathUSD pairs.
+2. A user wants to send USDX to a merchant who prefers USDY.
+3. The exchange atomically routes the payment: USDX to pathUSD to USDY.
+4. This happens in a single transaction with no manual swaps required.
+
+The user and merchant never hold pathUSD directly. It exists only as routing infrastructure.

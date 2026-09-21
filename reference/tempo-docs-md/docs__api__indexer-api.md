@@ -1,0 +1,124 @@
+<span id="indexer-api" />
+
+# Tempo Indexer API
+
+<span id="indexer-tidx" />
+
+Use the Indexer API to run read-only SQL against Tempo chain data without operating your own indexing pipeline.
+
+The Tempo API exposes [`GET /v1/indexer/query`](https://tempo.xyz/developers/docs/api/indexer), backed by [`tidx`](https://github.com/tempoxyz/tidx). The indexer continuously follows Tempo, stores blocks, transactions, logs, and receipts, and maintains analytics tables for common reads.
+
+## Querying the Indexer API
+
+Send a `GET` request to the Tempo API with a network and SQL query:
+
+```bash
+curl --get "https://api.tempo.xyz/v1/indexer/query" \
+  --data-urlencode "sql=SELECT num, hash, timestamp FROM blocks ORDER BY num DESC LIMIT 5"
+```
+
+Requests use the same [authentication](https://tempo.xyz/developers/docs/api/authentication), [rate limits](https://tempo.xyz/developers/docs/api/rate-limits), and `RateLimit-*` headers as the rest of the Tempo API. Use public access for low-volume queries, MPP for pay-per-request access, or an API key for a higher dedicated quota.
+
+See the [indexer query reference](https://tempo.xyz/developers/docs/api/indexer) for the complete request and response contract, live streaming, and error behavior.
+
+<span id="how-tidx-indexes-tempo-data" />
+
+## Indexer API architecture
+
+`tidx` writes chain data to two stores and routes each query to the appropriate one:
+
+* **PostgreSQL** handles low-latency point lookups and recent data. It is also the source for live streaming.
+* **ClickHouse** handles full-history analytics, large scans, and pre-computed tables for tokens, holders, transfers, and DEX data.
+
+When tiered retention is enabled, PostgreSQL keeps a recent hot window and ClickHouse holds the full archive. Direct `tidx` queries use the tiered route by default, while `engine=clickhouse` selects native ClickHouse for analytical queries. Omit `engine` to let the Tempo API choose, or set `engine=clickhouse` for analytical queries.
+
+The sync engine runs a realtime loop that follows the chain head and a backfill loop that fills historical gaps, prioritizing recent gaps so new data becomes queryable quickly.
+
+```text
+                    ╭───────────────╮
+   Tempo JSON-RPC ─▶│   tidx sync   │ realtime + backfill
+                    │    engine     │
+                    ╰───────┬───────╯
+                            │ writes in parallel
+                ╭───────────┴───────────╮
+                ▼                       ▼
+        ╭───────────────╮       ╭───────────────╮
+        │  PostgreSQL   │       │  ClickHouse   │
+        │ hot + point   │       │   archive +   │
+        │ reads + SSE   │       │   analytics   │
+        ╰───────┬───────╯       ╰───────┬───────╯
+                ╰───────────┬───────────╯
+                            ▼
+                       query router
+```
+
+## Tempo data the indexer API covers
+
+Every Tempo block is decoded into base tables available through both stores:
+
+| Table | Contents |
+| --- | --- |
+| `blocks` | Block headers, including number, hash, parent hash, timestamp, gas, and proposer. |
+| `txs` | Transactions, including block, index, hash, type, sender, recipient, value, calldata, gas, nonce, and fee token. |
+| `logs` | EVM logs, including block, log index, transaction hash, contract, topics, and data. |
+| `receipts` | Receipts, including status, gas used, effective gas price, contract address, and fee payer. |
+
+## Indexer API analytics tables
+
+With `engine=clickhouse`, the indexer also exposes pre-computed tables for common analytical reads:
+
+* **Tokens**: `token_balances`, `token_balances_snapshot`, `token_holder_counts`, `token_holder_deltas`, `token_metadata`, `token_supply`, `token_transfers`, `token_approvals`, `token_approvals_current`, and `token_transfer_stats`.
+* **Addresses**: `address_balances`, `address_balances_snapshot`, `address_transfers`, `address_txs`, and `address_holder_deltas`.
+* **DEX**: `dex_pairs`, `dex_orders`, `dex_fills`, `dex_ohlc_1m`, and `dex_pair_liquidity`.
+* **Contracts**: `contract_creations`.
+
+:::info
+The typed REST endpoints for tokens, balances, activity, and exchanges are the stable interface for common reads. Query the analytics tables directly when you need custom SQL that the REST endpoints do not cover.
+:::
+
+## Indexer API decoded events
+
+Read decoded event data in two ways:
+
+* **Pre-decoded tables**: common events are decoded into ClickHouse tables such as `token_transfers`, `token_approvals`, and the DEX tables. Prefer these when available.
+* **Query-time decoding**: pass a `signature` parameter to expose matching logs as a virtual table named after the event. This works with either engine.
+
+<span id="decoded-tempo-events" />
+
+For example, query decoded `Transfer` events through the Tempo API:
+
+```bash
+curl --get "https://api.tempo.xyz/v1/indexer/query" \
+  --data-urlencode "signature=Transfer(address indexed from, address indexed to, uint256 value)" \
+  --data-urlencode 'sql=SELECT "from", "to", value, block_num, tx_hash FROM Transfer ORDER BY block_num DESC LIMIT 5'
+```
+
+<span id="interactive-tidx-sql-example" />
+
+## Interactive Example
+
+Run live SQL against the public hosted indexer.
+
+Use the interactive web page to run SQL against the public Tempo indexer.
+
+## Run your own Tempo indexer
+
+The [`tidx` repository](https://github.com/tempoxyz/tidx) includes Docker, source build, configuration, CLI, schema, and materialized view documentation.
+
+```bash
+git clone https://github.com/tempoxyz/tidx
+cd tidx
+docker pull ghcr.io/tempoxyz/tidx:latest
+docker run -v $(pwd)/config.toml:/config.toml ghcr.io/tempoxyz/tidx up
+```
+
+See the [`tidx` README](https://github.com/tempoxyz/tidx) for the full setup guide and CLI reference.
+
+<span id="next-steps-for-tempo-indexing" />
+
+## Learn more
+
+* [Indexer Query Reference](https://tempo.xyz/developers/docs/api/indexer) — Review the Tempo API request parameters, response shapes, streaming, and errors.
+* [Tempo Explorer](https://explore.tempo.xyz) — Inspect blocks, transactions, accounts, and token activity.
+* [Connection Details](https://tempo.xyz/developers/docs/quickstart/connection-details) — Find RPC URLs, chain IDs, explorers, and network metadata.
+* [tidx Repository](https://github.com/tempoxyz/tidx) — Run and configure your own Tempo indexer.

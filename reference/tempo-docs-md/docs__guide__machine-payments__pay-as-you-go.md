@@ -1,0 +1,224 @@
+# Accept pay-as-you-go payments
+
+Use pay-as-you-go sessions when a customer should pay a small amount each time they use an API or service, without sending an on-chain transaction for every request.
+
+This guide uses a simple photo API as the example: the client opens one `mppx` session, then pays $0.01 each time it asks for a photo. `mppx` is the library that manages the MPP session; [Picsum](https://github.com/DMarby/picsum-photos) only supplies sample images for the demo.
+
+:::info
+Unlike [one-time payments](https://tempo.xyz/developers/docs/guide/machine-payments/one-time-payments), a session opens a payment channel once. Each later request is paid with a signed voucher that the server verifies off-chain.
+:::
+
+## How pay-as-you-go sessions work
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant Server
+  participant Tempo
+  Client->>Tempo: (1) Deposit tokens
+  Tempo-->>Client: Channel created
+  Client->>Server: (2) Open credential
+  Note over Server: Verify on-chain deposit
+  Server-->>Client: 200 OK (session established)
+  loop Per request
+      Client->>Server: (3) Request + voucher
+      Note over Server: ecrecover only
+      Server-->>Client: 200 OK + Receipt
+  end
+  Note over Server: (4) Periodic settlement
+  Server->>Tempo: settle(channelId, voucher)
+  Client->>Server: (5) Close
+  Server->>Tempo: close(channelId, voucher)
+  Tempo-->>Client: Refund remaining deposit
+```
+
+1. **Open** — Client deposits funds into an on-chain reserve contract, creating a payment channel
+2. **Session** — Client signs EIP-712 vouchers with increasing cumulative amounts as service is consumed
+3. **Top up** — If the channel runs low, the client deposits additional tokens without closing the channel
+4. **Close** — Either party closes the channel, settling the final balance on-chain and refunding unused deposit
+
+:::info[T7 payment-channel savings]
+The [T7 network upgrade](https://tempo.xyz/developers/docs/protocol/upgrades/t7) can make repeated sessions cheaper for the same payer. When a payer closes or withdraws a finished channel, Tempo records a channel storage credit for that payer. If the same payer opens another channel later, Tempo can use that payer's credit. Other payers cannot use it.
+:::
+
+The channel-reserve gas snapshot for the credited reopen path is:
+
+| Channel reserve snapshot | T7 gas |
+|--------------------------|-------:|
+| `open_new_channel_with_storage_credit` | 60,225 |
+
+This is a call-level gas number and excludes separate approval gas. It matters most for session services where the same payer opens, closes or withdraws, and later opens channels again.
+
+## Pay-as-you-go server setup
+
+::::steps
+### Install pay-as-you-go dependencies
+
+:::code-group
+```bash [npm]
+npm install mppx viem
+```
+
+```bash [pnpm]
+pnpm add mppx viem
+```
+
+```bash [bun]
+bun add mppx viem
+```
+:::
+
+### Set up an `Mppx` session instance
+
+Set up an `Mppx` instance with the `tempo` method.
+
+* `recipient` is the address where you receive payments.
+* `currency` is the token address for payments (in this case, `pathUSD`).
+
+```ts
+import { Mppx, tempo } from 'mppx/server'
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    currency: '0x20c0000000000000000000000000000000000000',
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+  })],
+})
+```
+
+### Add a pay-as-you-go route
+
+Add payment verification using `mppx.session` as route middleware. The handler only runs after payment is verified.
+
+:::code-group
+```ts [Next.js]
+import { Mppx, tempo } from 'mppx/nextjs'
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    currency: '0x20c0000000000000000000000000000000000000',
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+  })],
+})
+
+export const GET =
+  mppx.session({ amount: '0.01', unitType: 'photo' })
+  (async () => {
+    const res = await fetch('https://picsum.photos/200/200')
+    return Response.json({ url: res.url })
+  })
+```
+
+```ts [Hono]
+import { Hono } from 'hono'
+import { Mppx, tempo } from 'mppx/hono'
+
+const app = new Hono()
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    currency: '0x20c0000000000000000000000000000000000000',
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+  })],
+})
+
+app.get(
+  '/api/sessions/photo',
+  mppx.session({ amount: '0.01', unitType: 'photo' }),
+  async (c) => {
+    const res = await fetch('https://picsum.photos/200/200')
+    return c.json({ url: res.url })
+  },
+)
+```
+
+```ts [Express]
+import express from 'express'
+import { Mppx, tempo } from 'mppx/express'
+
+const app = express()
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    currency: '0x20c0000000000000000000000000000000000000',
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+  })],
+})
+
+app.get(
+  '/api/sessions/photo',
+  mppx.session({ amount: '0.01', unitType: 'photo' }),
+  async (req, res) => {
+    const response = await fetch('https://picsum.photos/200/200')
+    res.json({ url: response.url })
+  },
+)
+```
+
+```ts [Fetch API]
+import { Mppx, tempo } from 'mppx/server'
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    currency: '0x20c0000000000000000000000000000000000000',
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+  })],
+})
+
+Bun.serve({
+  async fetch(request) {
+    const result = await mppx.session({
+      amount: '0.01',
+      unitType: 'photo',
+    })(request)
+
+    if (result.status === 402) return result.challenge
+
+    const res = await fetch('https://picsum.photos/200/200')
+    return result.withReceipt(Response.json({ url: res.url }))
+  },
+})
+```
+:::
+
+### Test the pay-as-you-go endpoint
+
+```bash
+# Create account funded with testnet tokens
+$ npx mppx account create
+
+# Make a paid request
+$ npx mppx http://localhost:3000/api/sessions/photo
+```
+::::
+
+## Pay-as-you-go client setup
+
+When using sessions from a client, set `maxDeposit` to enable automatic channel management. This is the maximum amount of tokens the client locks into the payment channel's reserve contract. Any unspent deposit is refunded when the channel closes.
+
+```ts
+import { Mppx, tempo } from 'mppx/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    account: privateKeyToAccount('0x...'),
+    maxDeposit: '1', // Lock up to 1 pathUSD per channel
+  })],
+})
+
+// Each fetch automatically manages the session lifecycle:
+// 1st request: opens channel on-chain, sends initial voucher
+// 2nd+ requests: sends off-chain vouchers (no on-chain tx)
+const res = await fetch('http://localhost:3000/api/sessions/photo')
+```
+
+* **`maxDeposit: '1'`** — Locks up to 1 pathUSD into the payment channel. At $0.01/photo, this covers up to 100 requests before the channel runs out.
+* The client handles the full session lifecycle automatically: channel open, voucher signing, and retry after `402` responses.
+* If the server sets `suggestedDeposit`, the client uses `min(suggestedDeposit, maxDeposit)`.
+
+## Next steps for pay-as-you-go payments
+
+* [Accept streamed payments](https://tempo.xyz/developers/docs/guide/machine-payments/streamed-payments) — Per-token billing over Server-Sent Events
+* [Server quickstart](https://tempo.xyz/developers/docs/guide/machine-payments/server) — Framework middleware reference
+* [Full session reference](https://mpp.dev/payment-methods/tempo/session) — Complete tempo.session API documentation

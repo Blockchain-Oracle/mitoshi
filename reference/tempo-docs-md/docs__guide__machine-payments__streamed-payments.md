@@ -1,0 +1,288 @@
+# Accept streamed payments
+
+Build a payment-gated API that streams content word-by-word and charges $0.001 per word using `mppx` sessions with Server-Sent Events (SSE).
+
+:::info
+Streamed payments extend [pay-as-you-go sessions](https://tempo.xyz/developers/docs/guide/machine-payments/pay-as-you-go) with SSE. The server charges per token as content streams — if the channel balance runs out mid-stream, the client automatically sends a new voucher and the stream resumes.
+:::
+
+## How streamed payment sessions work
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant Server
+  participant Tempo
+  Client->>Tempo: (1) Deposit tokens
+  Tempo-->>Client: Channel created
+  Client->>Server: (2) Open credential
+  Note over Server: Verify on-chain deposit
+  Server-->>Client: 200 OK (SSE stream begins)
+  loop Per token streamed
+      Server-->>Client: (3) SSE data event + charge
+      Note over Server: ecrecover only
+  end
+  alt Channel balance low
+      Server-->>Client: (4) payment-need-voucher event
+      Client->>Server: New voucher
+      Note over Server: Resume streaming
+  end
+  Note over Server: (5) Periodic settlement
+  Server->>Tempo: settle(channelId, voucher)
+  Client->>Server: (6) Close
+  Server->>Tempo: close(channelId, voucher)
+  Tempo-->>Client: Refund remaining deposit
+```
+
+1. **Open** — Client deposits funds into an on-chain reserve contract, creating a payment channel
+2. **Stream** — Server streams SSE events, calling `stream.charge()` per token to increment the voucher amount
+3. **Top up** — If the channel runs low mid-stream, the server emits a `payment-need-voucher` event and the client automatically signs a new voucher
+4. **Close** — Either party closes the channel, settling the final balance on-chain and refunding unused deposit
+
+## Streamed payment server setup
+
+::::steps
+### Install streamed payment dependencies
+
+:::code-group
+```bash [npm]
+npm install mppx viem
+```
+
+```bash [pnpm]
+pnpm add mppx viem
+```
+
+```bash [bun]
+bun add mppx viem
+```
+:::
+
+### Set up an `Mppx` streaming instance
+
+Set up an `Mppx` instance with `sse: true` to enable SSE support on the session method.
+
+```ts
+import { Mppx, tempo } from 'mppx/server'
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    currency: '0x20c0000000000000000000000000000000000000',
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+    sse: true,
+  })],
+})
+```
+
+### Add a streamed payment route
+
+The handler returns an async generator — each yielded value becomes one SSE event and is charged one tick ($0.001). If the channel balance runs out mid-stream, the server emits `event: payment-need-voucher` and pauses until the client sends a new voucher.
+
+:::code-group
+```ts [Next.js]
+import { Mppx, tempo } from 'mppx/nextjs'
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    currency: '0x20c0000000000000000000000000000000000000',
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+    sse: true,
+  })],
+})
+
+const poem = {
+  title: 'The Road Not Taken',
+  author: 'Robert Frost',
+  lines: [
+    'Two roads diverged in a yellow wood,',
+    'And sorry I could not travel both',
+    'And be one traveler, long I stood',
+    'And looked down one as far as I could',
+    'To where it bent in the undergrowth;',
+  ],
+}
+
+export const GET =
+  mppx.session({ amount: '0.001', unitType: 'word' })
+  (async () => {
+    const words = poem.lines.flatMap((line) => [...line.split(' '), '\\n'])
+    return async function* (stream) {
+      yield JSON.stringify({ title: poem.title, author: poem.author })
+      for (const word of words) {
+        await stream.charge()
+        yield word
+      }
+    }
+  })
+```
+
+```ts [Hono]
+import { Hono } from 'hono'
+import { Mppx, tempo } from 'mppx/hono'
+
+const app = new Hono()
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    currency: '0x20c0000000000000000000000000000000000000',
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+    sse: true,
+  })],
+})
+
+const poem = {
+  title: 'The Road Not Taken',
+  author: 'Robert Frost',
+  lines: [
+    'Two roads diverged in a yellow wood,',
+    'And sorry I could not travel both',
+    'And be one traveler, long I stood',
+    'And looked down one as far as I could',
+    'To where it bent in the undergrowth;',
+  ],
+}
+
+app.get(
+  '/api/sessions/poem',
+  mppx.session({ amount: '0.001', unitType: 'word' }),
+  async (c) => {
+    const words = poem.lines.flatMap((line) => [...line.split(' '), '\\n'])
+    return async function* (stream) {
+      yield JSON.stringify({ title: poem.title, author: poem.author })
+      for (const word of words) {
+        await stream.charge()
+        yield word
+      }
+    }
+  },
+)
+```
+
+```ts [Express]
+import express from 'express'
+import { Mppx, tempo } from 'mppx/express'
+
+const app = express()
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    currency: '0x20c0000000000000000000000000000000000000',
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+    sse: true,
+  })],
+})
+
+const poem = {
+  title: 'The Road Not Taken',
+  author: 'Robert Frost',
+  lines: [
+    'Two roads diverged in a yellow wood,',
+    'And sorry I could not travel both',
+    'And be one traveler, long I stood',
+    'And looked down one as far as I could',
+    'To where it bent in the undergrowth;',
+  ],
+}
+
+app.get(
+  '/api/sessions/poem',
+  mppx.session({ amount: '0.001', unitType: 'word' }),
+  async (req, res) => {
+    const words = poem.lines.flatMap((line) => [...line.split(' '), '\\n'])
+    return async function* (stream) {
+      yield JSON.stringify({ title: poem.title, author: poem.author })
+      for (const word of words) {
+        await stream.charge()
+        yield word
+      }
+    }
+  },
+)
+```
+
+```ts [Fetch API]
+import { Mppx, tempo } from 'mppx/server'
+
+const mppx = Mppx.create({
+  methods: [tempo({
+    currency: '0x20c0000000000000000000000000000000000000',
+    recipient: '0xa726a1CD723409074DF9108A2187cfA19899aCF8',
+    sse: true,
+  })],
+})
+
+const poem = {
+  title: 'The Road Not Taken',
+  author: 'Robert Frost',
+  lines: [
+    'Two roads diverged in a yellow wood,',
+    'And sorry I could not travel both',
+    'And be one traveler, long I stood',
+    'And looked down one as far as I could',
+    'To where it bent in the undergrowth;',
+  ],
+}
+
+Bun.serve({
+  async fetch(request) {
+    const result = await mppx.session({
+      amount: '0.001',
+      unitType: 'word',
+    })(request)
+
+    if (result.status === 402) return result.challenge
+
+    const words = poem.lines.flatMap((line) => [...line.split(' '), '\\n'])
+    return result.withReceipt(async function* (stream) {
+      yield JSON.stringify({ title: poem.title, author: poem.author })
+      for (const word of words) {
+        await stream.charge()
+        yield word
+      }
+    })
+  },
+})
+```
+:::
+
+### Test the streamed payment endpoint
+
+```bash
+# Create account funded with testnet tokens
+$ npx mppx account create
+
+# Stream a paid poem
+$ npx mppx http://localhost:3000/api/sessions/poem
+```
+::::
+
+## Streamed payment client setup
+
+Use `tempo.session()` from `mppx/client` to create a session manager. The `.sse()` method connects to the SSE endpoint and handles voucher renewal automatically — if the server requests a new voucher mid-stream, the client signs and sends one without interrupting the stream.
+
+```ts
+import { tempo } from 'mppx/client'
+import { privateKeyToAccount } from 'viem/accounts'
+
+const session = tempo.session({
+  account: privateKeyToAccount('0x...'),
+  maxDeposit: '1', // Lock up to 1 pathUSD per channel
+})
+
+// .sse() returns an async iterable of SSE data payloads
+const stream = await session.sse('http://localhost:3000/api/sessions/poem')
+
+for await (const word of stream) {
+  process.stdout.write(word + ' ')
+}
+```
+
+* **`tempo.session()`** — Creates a session manager that handles the full channel lifecycle: open, voucher signing, and close.
+* **`.sse()`** — Connects to an SSE endpoint. Automatically sends new vouchers when the server emits `payment-need-voucher` events.
+* **`maxDeposit: '1'`** — Locks up to 1 pathUSD. At $0.001/word, this covers ~1,000 words before the channel needs a top-up.
+
+## Next steps for streamed payments
+
+* [Accept one-time payments](https://tempo.xyz/developers/docs/guide/machine-payments/one-time-payments) — Charge per request with on-chain settlement
+* [Accept pay-as-you-go payments](https://tempo.xyz/developers/docs/guide/machine-payments/pay-as-you-go) — Session-based billing without streaming
+* [Full session reference](https://mpp.dev/payment-methods/tempo/session) — Complete tempo.session API documentation

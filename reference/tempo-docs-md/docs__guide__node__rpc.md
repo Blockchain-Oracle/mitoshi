@@ -1,0 +1,94 @@
+# Running RPC and Standby Nodes
+
+RPC nodes provide API access to the Tempo network without participating in consensus.
+
+## Quick Start
+
+> **Note**
+>
+> All RPC nodes are trustless by default.
+
+```bash /dev/null/quickstart.sh#L1-15
+# Download snapshot (this will help you sync much faster)
+tempo download --chain mainnet --archive
+
+# Run node
+tempo node \
+  --follow \
+  --http --http.port 8545 \
+  --http.api eth,net,web3,txpool,trace
+```
+
+An RPC node running in follow mode is a **full node**. It first verifies consensus finalization certificates from the upstream before accepting followed blocks. Those certificates prove the data is backed by a validator quorum, not just the upstream node's local view of the chain. After verification, it fetches blocks from the upstream RPC endpoint, executes every transaction locally through the EVM, validates each block after execution, and stores complete block data with full state. All execution and validation happens locally on your machine.
+
+By default, RPC nodes run in archive mode, meaning they do not prune historical state.
+
+The upstream must serve consensus finalization certificates. For RPC-to-RPC following, follow a validator-backed RPC node or another RPC node that is already serving certified consensus data.
+
+## Example Systemd Service
+
+```bash /dev/null/systemd.sh#L1-55
+sudo tee /etc/systemd/system/tempo.service > /dev/null <<EOF
+[Unit]
+Description=Tempo RPC Node
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=$USER
+Group=$USER
+Environment=RUST_LOG=info
+WorkingDirectory=$HOME/tempo
+ExecStart=/usr/local/bin/tempo node \\
+  --datadir <datadir> \\
+  --follow \\
+  --http \\
+  --http.addr 0.0.0.0 \\
+  --http.port 8545 \\
+  --http.api eth,net,web3,txpool,trace \\
+  --metrics 9000 \\
+
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tempo
+LimitNOFILE=infinity
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start
+sudo systemctl daemon-reload
+sudo systemctl enable tempo
+sudo systemctl start tempo
+
+# Check status
+sudo systemctl status tempo
+
+# View logs
+sudo journalctl -u tempo -f
+```
+
+## Monitoring
+
+Once you've set up your node (whether it's with Systemd or Docker), you can verify that it's running correctly using these commands (`cast` requires installation of [Foundry](https://tempo.xyz/developers/docs/sdk/foundry)):
+
+```bash /dev/null/monitor.sh#L1-11
+# Check service status
+sudo systemctl status tempo
+
+# Check peer connections (should be non-zero)
+cast rpc net_peerCount --rpc-url http://localhost:8545
+
+# Check block height (should be steadily increasing)
+cast block-number --rpc-url http://localhost:8545
+cast block --rpc-url http://localhost:8545
+
+# Search logs
+sudo journalctl -u tempo -n 1000 | grep -i "error"
+```
+
+In a production setting, you should monitor the [Reth metrics port](https://reth.rs/run/monitoring) using a tool like Prometheus or Grafana.

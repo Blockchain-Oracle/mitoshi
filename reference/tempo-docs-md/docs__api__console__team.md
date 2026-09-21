@@ -1,0 +1,51 @@
+# Managing teams and access in the API Console
+
+The Team page controls who can access an organization in Tempo API Console. Membership applies across the organization's projects and both environments.
+
+## Understand organization roles
+
+| Role | Console access |
+| --- | --- |
+| **Owner** | Manages billing, invites any role, changes member roles, removes members, and controls the organization. |
+| **Admin** | Invites new members with the Member role and reviews pending invitations. |
+| **Member** | Uses the organization without team-management controls. |
+
+An organization must retain at least one owner. The console prevents the last owner from being demoted or removed.
+
+## Invite a member
+
+Owners and admins can send invitations. Admins can grant only the Member role.
+
+:::steps
+### Open Team
+
+Select [**Team** in Tempo API Console](https://console.tempo.xyz/?to=/\:org/team).
+
+### Enter the invitation details
+
+Under **Invite member**, enter the person's email address and choose one of the roles available to you.
+
+### Send the invitation
+
+Select **Invite member**. The invitation appears under **Pending invitations** until it is accepted or revoked.
+
+### Ask the recipient to accept
+
+The recipient must sign in with the invited email address and accept the invitation before it expires.
+:::
+
+If the recipient cannot accept, confirm that they signed in with the exact invited email address and that the invitation is still pending. Revoke and resend an expired or incorrect invitation.
+
+## Change a member's role
+
+Organization owners can change roles from the role selector in the members table. Promote someone to Owner before removing or demoting the organization's last current owner.
+
+Role changes take effect for organization access after the update succeeds. They do not change the scopes of existing API keys.
+
+## Remove access
+
+* **Revoke an invitation:** open its actions menu under **Pending invitations**, select **Revoke**, and confirm.
+* **Remove a member:** open the member's actions menu, select **Remove**, and confirm.
+* **Leave an organization:** open your own actions menu and select **Leave organization**. The last owner cannot leave until another owner exists.
+
+Removing a member does not automatically revoke project API keys. Review [**API Keys**](https://console.tempo.xyz/?to=/\:org/api-keys) separately when offboarding someone who managed integration credentials.

@@ -1,0 +1,111 @@
+# T8 Network Upgrade
+
+T8 focuses on clearer validator committee reads, FeeAMM policy behavior, DEX order storage, and the final TIP-20 rewards shutdown.
+
+:::info[T8 status]
+T8 is active on testnet and mainnet. Release [v1.11.0](https://github.com/tempoxyz/tempo/releases/tag/v1.11.0) is required for T8; see the [Network Upgrades and Releases table](https://tempo.xyz/developers/docs/guide/node/network-upgrades#node-operator-updates) for the current node-operator release status.
+:::
+
+## Timeline
+
+| Network | Date |
+|---------|------|
+| Testnet | Live: July 27, 2026 |
+| Mainnet | Live: July 30, 2026 |
+
+Node operators were required to run [v1.11.0](https://github.com/tempoxyz/tempo/releases/tag/v1.11.0) before activation to stay synced.
+
+## Overview
+
+T8 focuses on four infrastructure-facing changes:
+
+* **Canonical current committee reads.** Contracts and offchain tools can query the committee that consensus is actually using for the current epoch.
+* **Cleaner fee collection behavior.** Fee collection avoids a redundant FeeManager policy check while public AMM actions remain policy-controlled.
+* **DEX order storage updates.** New DEX orders use versioned storage, existing orders remain readable, and the Stablecoin DEX supports the compact V2Order layout.
+* **Rewards cleanup.** T8 completes the TIP-20 rewards shutdown that began in T7. Settled rewards remain claimable, but ordinary balance changes no longer checkpoint rewards after T8.
+
+## Features
+
+### Current committee state
+
+T8 adds execution-layer state for the current effective validator committee. In plain terms, this is the committee that consensus is actually using for the current epoch, based on the DKG outcome.
+
+This matters because `ValidatorConfigV2.getActiveValidators()` returns the configured validator registry, not necessarily the committee currently active in consensus. Registry changes can happen before they become part of the effective committee, and a failed DKG round can leave the prior committee in place.
+
+The new `getCommitteeMembers()` query gives contracts and offchain tools a canonical source for current committee membership, without requiring them to reconstruct it from consensus data or epoch-boundary block data.
+
+Read the specification [here](https://tips.sh/1070).
+
+### FeeAMM policy exemptions
+
+The FeeAMM and FeeManager help users pay transaction fees in one token while validators receive another. T8 adjusts where token policy checks happen in that flow.
+
+During protocol fee collection, the FeeManager address is no longer checked as the recipient. The fee payer is still checked as an authorized sender. This keeps fee collection simpler for block builders and avoids repeating a recipient check on every transaction.
+
+Public AMM operations remain policy-controlled. `mint`, `burn`, `rebalanceSwap`, and `distributeFees` continue to enforce the relevant token policies, and `mint` / `burn` gain extra checks that tie authorization to the liquidity provider across the lifecycle of a pool position.
+
+Token issuers still control whether their token participates in FeeAMM liquidity by authorizing the FeeManager address where required.
+
+Read the specification [here](https://tips.sh/1042).
+
+### DEX order storage
+
+T8 introduces a versioned Stablecoin DEX order storage layout. Existing orders stay in the legacy layout and remain readable. New orders use the versioned layout, which stores the same active order state with fewer storage slots.
+
+The public `getOrder(uint128)` shape stays compatible. Indexers that reconstruct DEX state from events should not need to change for this storage layout. Tools that read raw DEX storage directly must decode orders by version.
+
+The Stablecoin DEX also supports a compact V2Order layout. V2Order stores an orderbook index instead of repeating the full book key on each order.
+
+For raw-storage tooling, the main savings are structural: version-1 order records reduce active order storage from six slots to four, and version-2 indexed order records reduce indexed orders from four slots to three.
+
+Read the versioned order storage specification [here](https://tips.sh/1062).
+
+### TIP-20 rewards final shutdown
+
+T8 completes the reward shutdown that started in T7. After T8 activation, ordinary balance-changing paths such as transfers, mints, burns, and fee refunds stop checkpointing reward accumulators.
+
+Rewards that were settled before T8 remain claimable. Lazy rewards that were not checkpointed before activation are forfeited, so rewards integrations should not rely on a post-T8 transfer or balance change to settle older lazy accruals.
+
+Read the rewards deprecation specification [here](https://tips.sh/1075).
+
+## Compatible releases
+
+The T8-compatible release is published.
+
+| Ecosystem | T8-compatible releases |
+|-----------|------------------------|
+| Node operators | [v1.11.0](https://github.com/tempoxyz/tempo/releases/tag/v1.11.0) |
+| Rust SDK crates | `tempo-alloy@1.10.1`, `tempo-primitives@1.10.1`, `tempo-contracts@1.10.1`, `tempo-chainspec@1.10.1`, `tempo-hardfork@1.10.1` |
+
+Release notes and binaries are available in the [v1.11.0 release](https://github.com/tempoxyz/tempo/releases/tag/v1.11.0).
+
+## Integration impact
+
+### For validators, monitoring, and contracts
+
+* Use `getCommitteeMembers()` when you need the committee consensus is using now.
+* Keep using `ValidatorConfigV2` when you need the configured validator registry.
+* Do not treat `getActiveValidators()` as the current effective committee.
+* After activation on each network, wait for the first epoch-boundary committee update before relying on the new query.
+
+### For FeeAMM, token issuer, and validator tooling
+
+* Fee collection no longer checks the FeeManager address as the recipient.
+* The fee payer is still checked as an authorized sender.
+* AMM actions remain policy-controlled.
+* `mint` and `burn` have extra checks that prevent blocked accounts from using liquidity positions to bypass token policies.
+* If a token does not authorize the FeeManager where required, some fees or liquidity flows may be unavailable or stranded; validator and issuer tooling should surface that clearly.
+
+### For DEX frontends and indexers
+
+* Event-driven order indexing should continue to work.
+* `getOrder(uint128)` remains ABI-compatible.
+* Raw storage readers must support legacy version `0` orders, compact version `1` orders, and indexed version `2` orders.
+* Mixed-version order lists are expected, so storage tooling should update each order according to that order's own version.
+* Existing orderbooks are not automatically scanned or migrated to indexed storage. They continue writing version-1 orders until offchain migration tooling supplies the verified index through `setBookIndex(uint32)`.
+
+### For TIP-20 rewards integrations
+
+* Rewards settled before T8 remain claimable.
+* Ordinary balance changes stop checkpointing reward accumulators after T8.
+* Do not rely on a post-T8 transfer, mint, burn, or fee refund to settle older lazy rewards.

@@ -1,0 +1,148 @@
+# T7 Network Upgrade
+
+T7 makes repeated onchain workflows cheaper. It adds storage savings for DEX order state and TIP-20 payment-channel state, lets the base fee move down when network usage is low, and deprecates new TIP-20 rewards activity.
+
+Apps with repeat contract workflows can pass meaningful gas savings to returning users, MPP sessions can reuse channel-state savings for the same payer, and all users can benefit from lower base fees during quieter network periods.
+
+:::info[T7 status]
+T7 is active on testnet and mainnet. Release [v1.10.1](https://github.com/tempoxyz/tempo/releases/tag/v1.10.1) is required for T7; see the [Network Upgrades and Releases table](https://tempo.xyz/developers/docs/guide/node/network-upgrades#node-operator-updates) for the current node-operator release status.
+:::
+
+## Timeline
+
+| Milestone | Date |
+|-----------|------|
+| Testnet rollout | Live: July 2, 2026 |
+| Mainnet rollout | Live: July 9, 2026 |
+
+## Overview
+
+T7 focuses on five partner-facing changes:
+
+* **Reusable storage savings.** Contracts that create storage, clear it, and later create storage again in the same contract can lower the cost of the next eligible storage write.
+* **Savings tied to the right user.** Shared systems such as the StablecoinDEX can keep those savings attached to the maker who earned them, instead of letting the next user spend them by accident.
+* **Payment-channel savings.** MPP payment channels can keep storage credits attached to the payer who earned them, so repeated session lifecycles can reuse channel-state savings.
+* **Lower fees during quiet periods.** The base fee can fall when block gas usage is below the target threshold.
+* **Rewards cleanup.** New Tempo Token Rewards opt-ins and distributions stop after activation, while already-accrued rewards remain claimable.
+
+These changes make costs easier to reason about for partners building high-throughput payment, liquidity, and exchange experiences. The main opportunity is to identify workflows with temporary state and decide whether the contract should allocate storage-credit savings per user, payer, maker, or account.
+
+## Why it matters
+
+| Partner impact | What changes |
+|----------------|--------------|
+| Active DEX makers can benefit on repeat order placement | Maker-attributed storage credits let reusable order-storage savings stay attached to the maker who earned them. |
+| Apps can avoid random gas discounts | Shared contracts can track which user earned credits and spend them only for that same user. |
+| MPP sessions can get cheaper over repeated channel lifecycles | The credited reopen path, `open_new_channel_with_storage_credit`, is 60,225 gas in the channel-reserve gas snapshot. |
+| All integrators get a simpler low-fee story | The T7 base fee cap is 40% lower than the pre-T7 fixed base fee, and quiet periods can be up to 20x cheaper than the cap. |
+
+## Features
+
+### Reusable storage savings
+
+Storage credits lower fees for workflows that repeatedly create and clear temporary storage. A contract earns a credit when it clears eligible storage, then can use that credit to reduce the cost of creating eligible storage later.
+
+This is not a blanket gas discount. It matters most when a workflow has a natural lifecycle: create state, clear it, then create more state in the same contract.
+
+### User-attributed DEX savings
+
+The StablecoinDEX uses the same storage-credit idea but adds maker-level accounting. If a maker cancels or fully fills an eligible order, the DEX can keep the reusable order-storage savings attached to that maker. When the same maker places a later eligible order, the DEX can apply those savings.
+
+### Payer-scoped payment-channel savings
+
+T7 applies the storage-credit pattern to MPP payment channels through the `TIP20ChannelReserve` precompile. When a payer closes or withdraws a finished channel, the reserve records a channel storage credit for that payer. When the same payer opens a later channel, the reserve uses that payer's credit.
+
+This keeps channel savings attached to the payer who earned them. A different payer cannot spend another payer's channel credit.
+
+For MPP partners, the benefit is focused on repeated session lifecycles. Per-request vouchers already stay off-chain; T7 can lower the net onchain lifecycle cost when a close or withdraw is followed by a later open from the same payer.
+
+The channel-reserve gas snapshot for the credited reopen path is below.
+
+| Channel reserve snapshot | T7 gas |
+|--------------------------|-------:|
+| `open_new_channel_with_storage_credit` | 60,225 |
+
+Read [Accept pay-as-you-go payments](https://tempo.xyz/developers/docs/guide/machine-payments/pay-as-you-go) for the MPP session flow.
+
+### Dynamic base fee
+
+T7 replaces the fixed base fee with a bounded dynamic base fee. The cap is 40% lower than the pre-T7 fixed fee. When block gas usage is below target, the base fee can fall toward a floor that is one twentieth of the cap.
+
+For a simple fee example, a 50,000 gas transfer costs about $0.0006 at the new cap and about $0.00003 at the floor.
+
+| Example transaction | Pre-T7 fixed fee | T7 cap | T7 quiet-period floor |
+|---------------------|------------------:|-------:|----------------------:|
+| 50,000 gas transfer | $0.0010 | $0.0006 | $0.00003 |
+| 1,000,000 gas transaction | $0.0200 | $0.0120 | $0.0006 |
+
+At the quiet-period floor, the same transaction is 20x cheaper than the T7 cap and about 33x cheaper than the pre-T7 fixed fee. After activation, the base fee moves with block usage within the T7 cap and floor.
+
+### Deprecate TIP-20 rewards
+
+T7 deprecates new Tempo Token Rewards opt-ins and reward distributions so partners do not need to model new reward accrual after the upgrade. Already-accrued rewards remain claimable through the existing `claimRewards()` flow.
+
+Apps that show reward information should keep already-accrued rewards separate from post-T7 balances, and should stop presenting new rewards as accruing from post-T7 reward distributions.
+
+## Technical references
+
+| Feature | What changes | Reference |
+|---------|--------------|-----------|
+| Reusable storage savings | Contracts can earn credits when they clear eligible storage and use those credits to lower later storage-creation gas | [TIP-1060: Storage Credits](https://tips.sh/1060) |
+| User-attributed DEX savings | The DEX can keep reusable order-storage credits attached to the maker who earned them | [TIP-1064: StablecoinDEX Order Storage Credits](https://tips.sh/1064) |
+| Payer-scoped payment-channel savings | MPP channel credits stay attached to the payer who earned them and can be reused by that payer on a later channel open | [TIP-1066: TIP-20 Channel Storage Credits](https://tips.sh/1066) |
+| Dynamic base fee | The base fee can move within a bounded range instead of staying fixed | [TIP-1067: Dynamic Base Fee](https://tips.sh/1067) |
+
+## Partner benefits
+
+| Partner type | What T7 can help with |
+|--------------|-----------------------|
+| DEX makers and liquidity providers | Lower gas when a maker cancels or fully fills orders, then places eligible orders later |
+| MPP and pay-as-you-go providers | Lower onchain channel lifecycle costs when the same payer closes or withdraws a channel, then opens another channel later |
+| Shared contract developers | A clear pattern for passing storage savings to the user who earned them |
+| Wallets, checkout teams, and consumer apps | Lower base fees during periods of low network usage |
+| Rewards integrators | Clear migration timing for stopping new Tempo Token Rewards activity |
+
+## Benchmark highlights
+
+The [v1.10.1 release notes](https://github.com/tempoxyz/tempo/releases/tag/v1.10.1) include the headline gas benchmarks below. Treat these as protocol-level benchmarks: they show where T7 lowers base fees and storage-related costs, while partner-specific flows should still be tested end to end.
+
+The benchmark values are listed in the table below.
+
+| Area | T6 / before | T7 / after | What changes |
+|------|-------------|------------|--------------|
+| Base-fee ceiling for a 50,000 gas transfer | $0.001 | Cap $0.0006; quiet-period floor $0.00003 | The cap is 40% lower, and the floor is 20x below the cap. |
+| Credited storage creation (`SSTORE 0 -> x`) | 250,000 gas | 5,000 residual + up to 245,000 creditable gas | When credits are available, most of the storage-creation cost can be offset. |
+| Credited channel reopen (`open_new_channel_with_storage_credit`) | n/a | 60,225 gas | Payer-scoped credit path for repeated MPP sessions. |
+| Observed transfer-like costs before T7 | Average $0.0037857 and median $0.0011855 across 1,000 transactions; average $0.0008975 and median $0.0007657 across 598 steady-state transfers | T7 lowers the per-gas component through the new cap and floor | Useful baseline context, not a post-T7 production average. |
+
+## Compatible releases
+
+The following releases support the T7 feature set:
+
+| Ecosystem | T7-compatible releases |
+|-----------|------------------------|
+| Node operators | [`v1.10.1`](https://github.com/tempoxyz/tempo/releases/tag/v1.10.1) |
+| Rust | `tempo-alloy@1.8.1`, `tempo-primitives@1.8.1`, `tempo-contracts@1.8.1`, `tempo-chainspec@1.8.2` |
+
+Release notes and binaries are available in the [v1.10.1 release](https://github.com/tempoxyz/tempo/releases/tag/v1.10.1).
+
+## Integration impact
+
+### For storage savings
+
+* Storage credits are included for the core primitive, DEX order storage, and TIP-20 channel storage.
+* Shared contracts should avoid global credit pools when savings should stay attached to a specific user, maker, payer, or account.
+
+### For dynamic fees
+
+Wallets, checkout flows, and infrastructure that display fees should expect the base fee to move instead of staying fixed.
+
+* Fees can fall when block gas usage is below target and rise back toward the cap when usage increases.
+* Fee estimators should handle movement between the floor and cap.
+* Fee analytics should compare pre-T7 fixed-fee periods separately from post-T7 dynamic-fee periods.
+
+### For TIP-20 rewards deprecation
+
+Apps that show TIP-20 reward information should stop presenting new rewards as accruing from post-T7 reward distributions.
+
+* Wallets and dashboards should separate already-accrued rewards from post-T7 balances.

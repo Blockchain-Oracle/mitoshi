@@ -1,0 +1,159 @@
+# Tempo Wallet CLI: core flow recipes
+
+## Tempo Wallet core flow
+
+```bash
+tempo wallet -t whoami
+tempo wallet -t whoami --credits
+tempo wallet services --search ai
+tempo wallet services <SERVICE_ID>
+tempo request --dry-run <SERVICE_ENDPOINT_URL> --json '{"input":"hello"}'
+tempo request --max-spend 1.00 <SERVICE_ENDPOINT_URL> --json '{"input":"hello"}'
+```
+
+## Tempo Wallet operations
+
+```bash
+# Wallet readiness and balances
+tempo wallet whoami
+tempo wallet whoami --credits
+
+# Key and spending-limit state
+tempo wallet keys
+tempo wallet revoke <ACCESS_KEY_ADDRESS> --dry-run
+
+# Fund wallet
+tempo wallet fund
+tempo wallet fund --credits
+
+# Transfer tokens
+tempo wallet transfer <AMOUNT> <TOKEN> <TO_ADDRESS> --dry-run
+tempo wallet transfer <AMOUNT> <TOKEN> <TO_ADDRESS>
+```
+
+For machine-readable output:
+
+```bash
+tempo wallet -t whoami
+tempo wallet -t whoami --credits
+tempo wallet -t keys
+```
+
+Use access-key spending limits and `tempo request --max-spend` for agent workflows. Credits are separate from token balances and only work with eligible one-time MPP charges.
+
+## Tempo Wallet service discovery
+
+```bash
+# Search services by keyword
+tempo wallet services --search ai
+
+# Inspect one service to see exact endpoints
+tempo wallet services <SERVICE_ID>
+```
+
+Tip: copy endpoint URL, method, and payload shape directly from service details.
+
+Service details also show pricing, payment mode, and whether `supportsCredits: true` is available.
+
+## Tempo Wallet request execution
+
+Preview before paying:
+
+```bash
+tempo request --dry-run <SERVICE_ENDPOINT_URL> --json '{"input":"hello"}'
+```
+
+Execute paid request:
+
+```bash
+tempo request --max-spend 1.00 <SERVICE_ENDPOINT_URL> --json '{"input":"hello"}'
+```
+
+Capture headers for a credits flow:
+
+```bash
+headers="$(mktemp)"
+tempo request -t --dry-run -D "$headers" -X POST --json '{"input":"hello"}' <SERVICE_ENDPOINT_URL>
+tempo wallet -t transfer --credits --dry-run --mpp-challenge-file "$headers"
+tempo wallet -t transfer --credits --mpp-challenge-file "$headers"
+```
+
+## Tempo Wallet session management
+
+```bash
+# List sessions
+tempo wallet sessions list
+
+# Reconcile local state against on-chain state
+tempo wallet sessions sync
+
+# Preview close operations first
+tempo wallet sessions close --dry-run --all
+
+# Close orphaned sessions
+tempo wallet sessions close --orphaned
+
+# Finalize channels pending close
+tempo wallet sessions close --finalize
+```
+
+Sessions are MPP payment channels used by pay-as-you-go services. One-time charges may use direct token payment or MPP Credits when the service supports credits.
+
+## Tempo Wallet agent and script mode
+
+Use TOON output (`-t`) when command output is consumed by agents or scripts.
+
+```bash
+tempo wallet -t whoami
+tempo wallet -t services --search ai
+tempo wallet -t services <SERVICE_ID>
+tempo request -t --dry-run --max-spend 1.00 <SERVICE_ENDPOINT_URL> --json '{"input":"hello"}'
+```
+
+## Tempo Wallet failure recovery shortcuts
+
+```bash
+# Wallet not ready / auth missing
+tempo wallet login
+tempo wallet -t whoami
+
+# Suspected key issue
+tempo wallet logout --yes
+tempo wallet login
+tempo wallet keys
+tempo wallet refresh
+
+# Request failing due to payload/path mismatch
+tempo wallet services <SERVICE_ID>
+
+# Insufficient funds
+tempo wallet fund
+
+# Credit-eligible one-time MPP charge
+tempo wallet -t whoami --credits
+tempo wallet fund --credits
+```
+
+If issues persist, continue with [Troubleshooting](https://tempo.xyz/developers/docs/cli/wallet).
+
+## Tempo Wallet end-to-end script pattern
+
+```bash
+# 1) Ensure wallet is ready
+tempo wallet -t whoami
+
+# 2) Discover service details
+tempo wallet -t services --search ai
+
+# 3) Preview cost
+tempo request --dry-run <SERVICE_ENDPOINT_URL> --json '{"input":"hello"}'
+
+# 4) Execute with a spend cap
+tempo request --max-spend 1.00 <SERVICE_ENDPOINT_URL> --json '{"input":"hello"}'
+```
+
+## Related Tempo Wallet docs
+
+1. [Reference](https://tempo.xyz/developers/docs/wallet/reference)
+2. [Wallet CLI Reference](https://tempo.xyz/developers/docs/cli/wallet)
+3. [Use with Agents](https://tempo.xyz/developers/docs/wallet/use-with-agents)
