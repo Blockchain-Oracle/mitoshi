@@ -232,4 +232,27 @@
 
 ## Handoff
 
-_Not started._
+_Interim, 2026-09-29 (branch `stage/S1-web-shell`, pushed). Updated again at stop._
+
+**Done (commits):** 1a core `4dfd9ba`, 1a markets `fad7a3f`, 1b tokens + X23 `36abee2`, 1b shell `7022cd7`, merge of
+integration/t1 `26a8fdd`, 1b transactions `6ede081`, 1b wallet `1c71a7f`, 1c routes + X8 + X9 `016d03e`, 1b onboarding
+`082c13f`, 1b settings `df16af3`, perf work `e0a7000` `05990e6`, shell techniques `379585a` `20760d0`, phone shot
+`2ef8029`. Evidence in `acceptance/S1.md`; decisions D-070 (relay debit, sponsored fills, first-tx gas) and D-071
+(budgets on Next 16, field vitals).
+
+**Open:**
+- **1b perf gates** — the route-budget gate, CI job, Lighthouse CI workflow and field-vitals pipeline are in and
+  passing except lab LCP on app routes (2.64 s vs 2.5 s; site routes pass). Next: take the data layer (query client +
+  markets runtime, ~25 KB) out of the pre-paint set, after the integration merge because S3/S3.5 touch those providers.
+- **1b real-time client** — `packages/markets/src/runtime/stream.ts` against S3's ops SSE; starts after the merge.
+- **From S3 (integrator note):** mount `/api/stream/ticket` with `@cwf/markets/stream-ticket`'s mint function and the
+  ops app's `STREAM_TICKET_SECRET`; register the launch/themes/stocks/vault policies in `relay/policies/index.ts` if the
+  merge hasn't.
+- **Gate** — build, the browser pass on every route, sponsored no-op + refusal (done), `/settings/account` e2e (done),
+  passkey on the real domain (waits on DNS; virtual-authenticator runs done locally).
+
+**For the integrator (deploy):** set `DATABASE_URL`, `REDIS_URL`, `RELAY_FEE_PAYER_PRIVATE_KEY`, `APP_ORIGIN`,
+`PASSKEY_RP_ID`, `SOCIAL_SESSION_SECRET` on the Coolify app; run `pnpm db:migrate` (areas relay, faucet, keys, vitals);
+build with `pnpm build` from the repo root (the Yosuku purge resolves `web/` from the build's working directory); the
+geofence needs a country header in front of Coolify (owner action). After a deploy, trigger `lighthouse.yml`
+(`repository_dispatch` `coolify-deployment-success` with `client_payload.url`).
