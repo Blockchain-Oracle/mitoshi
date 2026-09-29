@@ -68,4 +68,38 @@
 
 ## Handoff
 
-_Not started._
+**Backend lane (`stage/S4-backend`, 2026-09-29) — done, proven live on Moderato (acceptance/S4.md); the UI part is next.**
+Box 1 is ticked. Box 2's X20 and box 3's backend (claim-all, cash-out, held state, live data) are proven; the boxes stay
+open for the UI port (Masayume features onto these ports, the D37 arm step, `/settings/account`) and the gate.
+
+What the UI part gets (all in `@cwf/markets`, chain I/O never in `web/`):
+- **Reads** — `createMarketsProvider()` answers every C.2.2 method for real: lanes/markets/settled (index, with the lens
+  Series listing as fallback), `getOnchain` (the only write gate), `getBookDepth` (Up/Down in own terms),
+  `getBookParams`, `freshQuoteStake` / `freshExitQuote` (Agari walks, 300 bps / 10 ticks), prices from ops,
+  positions/holdings/claimables/history (index or the engine's own `Fill` logs, balances head-fresh from the lens),
+  `getBalanceSheet` (pathUSD, engine credit per Window, order escrow, vault account), and **`getPinnedVerdict`** —
+  the verdict card state `call → settling → stamped → paid (auto | self) | held` (D-048), which survives the settler's
+  auto-pay. `getVaultSnapshot`/`getVaultHoldings` stay S7's off-chain half.
+- **Hooks** (`@cwf/markets/react`): `useLiveMarketData({ marketIds, wallet })` (S1's hub: `market:<id>`, `markets`,
+  `verdicts`, `user:<addr>` → exact invalidations), `usePinnedVerdict`, `useClaimables`; S1's `usePriceStream` /
+  `usePrice` for ticks. Keys `depth`, `verdict` added.
+- **Writes** (the session's submitter): `submitOrder` (wallet route; outcomes `confirmed` with `booked` from
+  `OrderExecuted`, `nothingFilled`, `requote` — a dearer book, or a `refused` with kind `requote` when the book moved
+  inside the cap: tap again —, `refused`, `reverted`, `unknown`); a Listed Window takes a pre-open PostOnly at the
+  confirmed limit; `submitCashOut` (floor = `displayedExit.minProceedsBase`, `requote` carries the fresh exit);
+  `submitTx({ kind: "claim-all", ...claimAllInputOf(engine, rows) })` (≤ 8 calls per tx, several txs when more; held
+  rows are left out by construction), `cancel-orders`, `withdraw-credit`, `redeem`, `redeem-partial`, `key-revoke`.
+  Engine address: `venueOf(chainId)` / `engineVenue()`.
+- **Wallet key (D-047/D-136/D-138)** — `keys/wallet-key.ts` `walletKeyAuthorization()` is the one shape the relay
+  sponsors publishing; S1's `web/src/providers/wallet/access-key.ts` builds the same shape by hand — switch it to the
+  builder so they cannot drift. Arm = `requestArm(true)` in the D37 slot; the accounts SDK publishes the authorization
+  with the first tap (6.5M gas, sponsored). The trust surface reads remaining limit/expiry through the existing
+  keychain pipeline; copy: the limit counts new spending authority ("up to $25 of new approvals a day"), not fills.
+- **Copy the lanes need** — diagnosis kinds `spending-limit`, `call-not-allowed`, `key-revoked`, `receive-policy`,
+  `requote`, `send-unknown` (an ambiguous send resolves by its window: never offer "retry" on `unknown`),
+  `sponsor-refused`; `ClaimableRow.heldByReceivePolicy` / verdict `held` → "Held by your receive policy".
+- **Env** — `opsUrl` / `streamUrl` must be set for prices and the stream; `/api/index` is not on the deployed testnet
+  web yet (the provider falls back to the lens and ~2 days of engine logs).
+
+Open for others: `mpp.test.ts` "refuses mainnet…" times out at 5 s on a loaded machine (a cold dynamic import; S3.5);
+the gate's virtual-authenticator run, the NYSE stock call and the owner-device run belong to the UI part's gate.
