@@ -458,6 +458,29 @@ export const deployments = {
         "proxyAdmin": "0xf89e752995eabd3d6bf5fcce71c8cbb52fe7cab1"
       },
       "commit": "ad79a36"
+    },
+    "vault": {
+      "contracts": {
+        "EventVault": {
+          "address": "0x5E38dc8b7402FFB608134872a64663e5D75235b8",
+          "artifact": "EventVault.sol:EventVault",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x24d1ab7a713db2b419ae4c34cd9718ed662f04c6976975d8d055123618f22ffa",
+          "deployBlock": 37385655,
+          "history": []
+        }
+      },
+      "roles": {},
+      "params": {
+        "collateral": "0x20C0000000000000000000000000000000000000",
+        "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+        "iocMaxEvictions": 4,
+        "iocMaxFills": 16,
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F"
+      },
+      "external": {},
+      "commit": "3980e0f"
     }
   },
   "84532": {
