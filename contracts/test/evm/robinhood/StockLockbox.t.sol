@@ -4,7 +4,7 @@ pragma solidity 0.8.30;
 import {OptionsBuilder} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 import {SendParam, MessagingFee} from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
 import {IOFT} from "@layerzerolabs/oft-evm/contracts/interfaces/IOFT.sol";
-import {LzTestBase} from "../helpers/LzTestBase.sol";
+import {LzTestBase} from "../../shared/LzTestBase.sol";
 import {RemoteOFT} from "../helpers/RemoteOFT.sol";
 import {MockStockToken} from "../mocks/MockStockToken.sol";
 import {StockLockbox} from "../../../src/robinhood/StockLockbox.sol";

@@ -6,7 +6,7 @@ import {SendParam, MessagingFee, MessagingReceipt, OFTReceipt} from "@layerzerol
 import {OFTComposeMsgCodec} from "@layerzerolabs/oft-evm/contracts/libs/OFTComposeMsgCodec.sol";
 import {EnforcedOptionParam} from "@layerzerolabs/oapp-evm/contracts/oapp/interfaces/IOAppOptionsType3.sol";
 import {ILayerZeroEndpointV2} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
-import {LzTestBase} from "../helpers/LzTestBase.sol";
+import {LzTestBase} from "../../shared/LzTestBase.sol";
 import {RemoteOFT} from "../helpers/RemoteOFT.sol";
 import {MockStockToken} from "../mocks/MockStockToken.sol";
 import {StockLockbox} from "../../../src/robinhood/StockLockbox.sol";

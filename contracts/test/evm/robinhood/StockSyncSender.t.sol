@@ -5,7 +5,7 @@ import {OptionsBuilder} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/Option
 import {OApp, Origin, MessagingFee} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import {EnforcedOptionParam} from "@layerzerolabs/oapp-evm/contracts/oapp/interfaces/IOAppOptionsType3.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {LzTestBase} from "../helpers/LzTestBase.sol";
+import {LzTestBase} from "../../shared/LzTestBase.sol";
 import {MockStockToken} from "../mocks/MockStockToken.sol";
 import {StockSyncSender} from "../../../src/robinhood/StockSyncSender.sol";
 import {StockSyncCodec as C} from "../../../src/common/StockSyncCodec.sol";

@@ -367,6 +367,18 @@ the testnet domain. Details: `infra/coolify.md`.
 
 **Why:** the owner self-hosts everything on Coolify; one server, one bill, push-to-deploy.
 
+### D-062 — Tempo-side bridge gas: adapter lzReceive 1,000,000, `MIN_CREDIT_GAS` 600k, pre-warmed counters (finding, 2026-09-29)
+
+Measured on a Moderato fork (block 37363418, real TIP-20 precompiles): a TIP-20 `mint` to a fresh holder costs
+**510k** gas (TIP-1000 state creation), the whole adapter `lzReceive` 552k, and a first message on a path ~852k
+including the endpoint's own first writes; a warm credit is ~56k. Plan B.1.4/B.1.5's "gas ≥ 400k" and "lzReceive
+550k" would defer or fail fresh holders. So: `MIN_CREDIT_GAS` = 600k (below it `_credit` reverts, retryable); a mint
+that runs out of gas reverts instead of deferring; enforced lzReceive gas on every sender **to** Tempo (lockbox →
+30410, transit → 40444) = **1,000,000**; the adapter keeps `mintedNet`/`totalDeferred` stored +1 so they are never
+zero→non-zero writes (each would cost 250k inside the credit).
+
+**Why:** B.1.4's numbers predate TIP-1000; fresh-holder credits must not be deferred for lack of gas.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

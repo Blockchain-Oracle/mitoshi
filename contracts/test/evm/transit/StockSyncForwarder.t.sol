@@ -4,7 +4,7 @@ pragma solidity 0.8.30;
 import {OptionsBuilder} from "@layerzerolabs/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 import {MessagingFee} from "@layerzerolabs/oapp-evm/contracts/oapp/OApp.sol";
 import {EnforcedOptionParam} from "@layerzerolabs/oapp-evm/contracts/oapp/interfaces/IOAppOptionsType3.sol";
-import {LzTestBase} from "../helpers/LzTestBase.sol";
+import {LzTestBase} from "../../shared/LzTestBase.sol";
 import {MockStockToken} from "../mocks/MockStockToken.sol";
 import {SyncSink} from "../robinhood/StockSyncSender.t.sol";
 import {StockSyncSender} from "../../../src/robinhood/StockSyncSender.sol";

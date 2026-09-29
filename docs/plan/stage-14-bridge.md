@@ -49,6 +49,13 @@
   contract per tx and keep each under the 30M general-lane limit.
 - **F14-5 via-IR reads `block.timestamp` once per function:** after `vm.warp` a test must read time with
   `vm.getBlockTimestamp()` (a fuzz test computed elapsed = 0 otherwise). Contracts are unaffected (each call is fresh).
+- **F14-6 Fresh-holder mint gas on Tempo (Moderato fork):** TIP-20 `mint` to a new holder 510k; adapter `lzReceive` 552k
+  fresh / 56k warm; first message on a path ~852k with the endpoint's first writes → D-062 (enforced 1M, check 600k,
+  pre-warmed counters). TIP-1028 receive policies are live on Moderato (`setReceivePolicy` + `validateReceivePolicy`).
+- **F14-7 Tests on Tempo can't use `msg.value`:** both ends of an in-VM mesh must be EndpointV2Alt paying LZD
+  (`test/shared/RemoteOFTAlt.sol`), and the remote leg pays Tempo gas too, so test sends use 1M lzReceive gas.
+- **F14-8 Devtools mock workers are gas-heavy:** a HopComposer onward send needs ~1.5M in the mock mesh vs the plan's
+  400k compose gas; the live figure is measured on the Base Sepolia fork (14c.12).
 
 ## Handoff
 
