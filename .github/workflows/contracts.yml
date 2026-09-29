@@ -26,12 +26,12 @@ jobs:
         working-directory: contracts
         run: |
           script/check-sizes.sh
-          forge test --no-match-path "test/fork/**" --no-match-contract EngineInvariantsTest --gas-snapshot-check true
+          forge test --no-match-path "**/fork/**" --no-match-contract EngineInvariantsTest --gas-snapshot-check true
       - name: evm profile
         working-directory: contracts
         env:
           FOUNDRY_PROFILE: evm
-        run: forge build --sizes && forge test --no-match-path "test/fork/**"
+        run: forge build --sizes && forge test --no-match-path "**/fork/**"
 
   engine-invariants:
     # S2 gate: 256 runs × depth 500 with afterInvariant settle-and-redeem-everyone conservation (≈ 30 min).
