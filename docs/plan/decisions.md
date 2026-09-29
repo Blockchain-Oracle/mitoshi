@@ -847,6 +847,76 @@ settler's `vault.settle` crank for every closed Window, and the `/earn` supplier
 
 **Why:** the contract half of S8 is complete and proven live; what remains is sequenced, not cut.
 
+### D-130 — Tempo RPC over HTTP: no JSON-RPC batching, larger Multicall3 chunks (finding + decision, S3 fix, 2026-09-29)
+
+**Finding** (measured on `rpc.moderato.tempo.xyz`, 2026-09-29, curl and `scripts/drive/rpc-load.ts`): the public RPC
+budgets a JSON-RPC batch by method weight — 8 `eth_call`s pass, 9 answer HTTP 413 `{"id":null,"error":{"code":-32600,
+"message":"request too large"}}`; 24 `eth_blockNumber`s pass, 25 do not; 12 `eth_getBlockByNumber`s pass, 24 do not —
+and a rate-limited batch answers HTTP 429 with one `-32005` object. A batch refused whole comes back as an object where
+viem's batch scheduler expects an array, so viem throws `Cannot read properties of undefined (reading 'error')` for
+every request in it. viem's scheduler is process-wide per URL: every ops actor's reads and sends inside the 10 ms wait
+shared one batch (default `batchSize` 1,000), and Multicall3's default 1,024-byte chunks turned one `fetchMarkets` of
+~450 Windows into ~16 `eth_call`s. Once the venue listed its 66 Series the batches crossed the budget at every
+boundary: from 08:45Z the roller's opens, the relay's prints and the maker's quotes failed together (roller 15 opened /
+1,981 failed since 10:43Z; relay 492 failed, 80 missed) and 93 % of Windows voided.
+**Decision:** every Tempo HTTP transport goes through `tempoHttp` (`packages/markets/src/rpc-http.ts`): one request per
+HTTP request (keep-alive), `retryCount` 5 with viem's exponential backoff (429 / -32005 / 5xx are retried per request),
+and Multicall3 chunks of 8,192 bytes. Applied to the ops client, the web read client and `tempoTransport` (batching
+there only on explicit request, capped at 8). Live probe, 10 ops clients × 3 concurrent boundary passes (list every
+Series + read every tracked Window): before 0/30 passes, after 30/30 (6,450 Window reads).
+
+**Why:** the binding constraint is the RPC's request shape, not gas (F-S3-02): a boundary's prints need ≈ 41 sends
+and ≈ 15M gas, far inside the 30M block budget.
+
+### D-131 — a failed read or send is never mistaken for a finished Window (decision, S3 fix, 2026-09-29)
+
+(1) `fetchMarkets` returns null only when the lens reverts `UnknownMarket`; a chunk that failed on the RPC throws.
+Before, `allowFailure: true` turned a rate-limited chunk into nulls and the relay's tracker treated a null as "done",
+advancing its low-water mark past Windows it had never read. (2) The price relay counts only the chain's answers toward
+its five-attempt give-up (an engine custom error, or a mined revert); a transport failure (413/429/5xx, timeout) retries
+every pass until the slot's admission deadline. Agari's relay gave up after 5 failed Solana transactions, which were
+the chain's answers; on Tempo a transport failure is not.
+
+**Why:** a print slot has up to 900 s of admission; five transport failures took ≈ 15 s and voided the Window.
+
+### D-132 — which Series roll when is unchanged: no expected voids in the soak (finding, S3 fix, 2026-09-29)
+
+Compared with Agari's planners (`agari-wt/w1` @ `03b30abbbfe7ddc3cac4927c7c573e52f74d2d49`, `services/ops/src/actors/
+window-roller/{plan,plan-gap,plan-token,versions}.ts`) and C.5.2: Regular Windows list only inside the agreed session
+(prelisting the next session's first Window at the close), the Gap from Wednesday 16:00 ET, the 24/7 lanes back to back;
+a candidate whose opening print can no longer be admitted (`openPrintsAdmissible`, 45 s relay margin) is skipped, and a
+24/7 stock lane without a RedStone `<T>---24_7` feed (PLTR, AMD) is never listed (D-091). The soak's index agrees: no
+Regular, Gap, PLTR-24 or AMD-24 Window was opened out of session or without a source, and every voided Window had a
+signed source available (RedStone gateway history holds all five signers at the missed boundaries, e.g. `TSLA---24_7`
+at 08:00:00Z). The seed maker covers every rolled Series (`MM_SYMBOLS` unset) and quotes a Window once its open print
+is in: across the soak 320 of 337 printed Windows were quoted and none without an open print (the rest failed on the
+same RPC).
+So the roller needs no skip rule beyond Agari's; the voids were throughput on the RPC (D-130, D-131).
+
+### D-134 — one paced RPC budget per URL for all ops actors, the print path first (finding + decision, S3 fix, 2026-09-29)
+
+**Finding** (measured 2026-09-29 from one IP, singles at a fixed rate for 8 s): the public RPC sustains ≈ 13
+`eth_call`/s or ≈ 36 `eth_blockNumber`/s — the same weights as its batch budget (D-130) — and answers HTTP 429 `-32005
+"rate limited, try again in N ms"` beyond. Every ops actor shares the container's IP. After D-130 alone the batches
+stopped failing, but boundary bursts still hit the limit (`Request exceeds defined limit` after viem's 5 retries), and
+the seed maker's re-quotes (≈ 0.5 sends/s across 55 Windows) alone use most of it.
+**Decision:** ops clients of one URL share a token bucket (`packages/markets/src/rpc-budget.ts`) of
+`TEMPO_RPC_UNITS_PER_SEC` (default 30; 0 = unpaced, for a private node) with the measured method weights. Queue order:
+tier 0 the print path (price-relay, roller, settler), tier 1 the house (seed maker, house taker) and the indexer,
+tier 2 watchers (halt-watch, funds-watch); inside a tier the send path, then reads, then log scans. A 429 pauses the
+bucket for the time the RPC names and cuts the rate × 0.75 (once a second, floor 3 units/s); after 5 quiet seconds it
+climbs back 0.5 units/s per second to the ceiling — the IP's limit is shared with whatever else runs on the box, so
+the ceiling alone is not enough (first deploy: 21 units/s of demand still drew 291 429s in 4 min). `/health` shows `rpc` (units and requests per method over the last minute, queue,
+max wait, 429s). Live probe, 10 clients × 3 boundary passes through one budget: 30/30, no 429 retries exhausted.
+
+**Why:** the prints decide whether a Window settles; quotes can wait a few seconds at a boundary, prints cannot miss.
+
+### D-133 — the S3 soak clock restarts after the fix (decision, S3 fix, 2026-09-29)
+
+The gate is "24 h unattended"; the first soak ran with a defect that voided 93 % of Windows from 08:45Z, so it cannot
+count. The clock restarts at the fix's deploy (time in `acceptance/S3.md` and the stage Handoff) and must again span a
+US session and a crypto overnight.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

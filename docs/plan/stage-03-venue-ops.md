@@ -10,6 +10,9 @@
   `STREAM_TICKET_SECRET`) passed as a query param, since EventSource can't send headers; exact-origin CORS without
   credentials; `: ping` every 15 s; `Last-Event-ID` resume), funds-watch.
 - [x] `scripts/drive/{recount,halt-replay}.ts`. Src: Agari `scripts/drive/recount.ts`.
+- [x] S3.11 voided Windows fixed: Tempo HTTP transport without JSON-RPC batching + 8 KB Multicall3 chunks (D-130); a
+  failed read or send is never a finished Window (D-131); roll rules unchanged (D-132); one paced RPC budget per URL,
+  print path first (D-134); `scripts/drive/rpc-load.ts`.
 - **Gate:** 24 h unattended across a US session and a crypto overnight (open, print, settle, auto-pay); recount ==
   index; recorded halts replayed; Gap proven over the first Friday close → Monday open after the gate (dates recorded in acceptance).
   **Rows:** M-06, M-07, M-08, G-03 (ops), G-07, G-12, G-13, G-14, G-15, L-73, UX-03 (ops stream).
@@ -40,24 +43,40 @@
 - **F-S3-08 (ops routes).** The Coolify Postgres is internal, so the gate scripts read ops' public routes
   (`/index/recount`, `/halts/log`; D-092). The web `/api/index/*` is on this branch and serves once the web app
   deploys a trunk containing S3 (touching only `web/src/app/api/index/**` and `web/src/lib/index-*.ts`).
+- **F-S3-09 (S3.11, voids).** 391 of 632 Windows of the first soak voided (61.9 %; 93 % from 08:45Z). Cause: the
+  public RPC refuses a JSON-RPC batch over a small weight budget (9 `eth_call`s → 413) and answers a rate-limited batch
+  with one object; viem's process-wide batch scheduler put every actor's requests into one batch and threw `reading
+  'error'` for all of them. Opens, prints and quotes failed together at every busy boundary. No void was "expected":
+  nothing opened out of session or without a signed source (D-132). Fix D-130; acceptance/S3.md S3.11.
+- **F-S3-10 (S3.11, give-up).** The relay wrote a slot off after 5 failed sends even when none reached the engine
+  (≈ 15 s of a 900 s admission), and a rate-limited `fetchMarkets` chunk read as "no Window", which advanced the relay
+  past Windows it never read. Both fixed (D-131).
+- **F-S3-11 (S3.11, CORS).** The stream and price routes already answer exact-origin CORS for `https://testnet.mitoshi.xyz`
+  and `http://localhost:3000` on testnet (no credentials, D-049; live probe 11:46Z: both echoed, `https://evil.example`
+  gets none). An origin outside the list gets no header by design; `OPS_CORS_ORIGINS` overrides. Test added.
 
 ## Handoff
 
-**State (2026-09-29 07:45Z): every S3 box is built and the venue runs live on Coolify; the 24 h soak is running and
-the gate is not yet passed.** Branch `stage/S3-ops` (built on `stage/S1-web-shell` @ `082c13f`, D-090 — merge S1 first).
+**State (2026-09-29 13:30Z): every S3 box is built and the venue runs live on Coolify; the soak clock RESTARTED at
+12:14:20Z after the S3.11 void fix (D-133) and the gate is not yet passed.** Branch `stage/S3-ops` (built on
+`stage/S1-web-shell` @ `082c13f`, D-090 — merge S1 first); the fix is `stage/S3-fix` (a07b119, e072ffb, f14cb30 + docs)
+on `integration/t1` @ `9e2a333`.
 
-- **Live:** `mitoshi-ops-testnet` (uuid `8iaimzcz5gcmont5hqbm6yhk`) deployed from `stage/S3-ops` (the app's git branch
-  was set back to `integration/t1` afterwards without a redeploy: **do not redeploy ops from the trunk until S3 is
-  merged**, or the venue stops). `DRY_RUN=0`, `OPS_DRY_ACTORS` empty, `OPS_ACTORS` = chain-head, archive, spot,
+- **Live:** `mitoshi-ops-testnet` (uuid `8iaimzcz5gcmont5hqbm6yhk`) deployed from `stage/S3-fix` @ `f14cb30`
+  (2026-09-29 12:14:20Z; the app's git branch was set back to `integration/t1` afterwards without a redeploy: **do not
+  redeploy ops from the trunk until `stage/S3-fix` is merged**, or the voids return). `TEMPO_RPC_UNITS_PER_SEC` unset
+  (30, adaptive; `/health.rpc` shows the rate in force and 429s, D-134). `DRY_RUN=0`, `OPS_DRY_ACTORS` empty, `OPS_ACTORS` = chain-head, archive, spot,
   indexer, roller, price-relay, settler, seed-maker, halt-watch, earnings, calendar, funds-watch, house-taker. Health:
   `https://ops.testnet.mitoshi.xyz/health`; stream `https://stream.testnet.mitoshi.xyz/v1/stream?topics=…`.
 - **Venue:** 66 Series (D-091): BTC/ETH/SOL 5m; 9 stocks × Regular 5m/15m/60m, Gap, 24/7 5m/15m/60m (PLTR/AMD 24/7
   paused: no RedStone feed). Pool reserved to 256 nodes.
-- **Soak window (gate):** started 2026-09-29 07:04Z (roller live). It must run unattended through the Tuesday US
+- **Soak window (gate):** first run 07:04Z voided 62 % of Windows (F-S3-09) and does not count; **restarted
+  2026-09-29 12:14:20Z**, ends **2026-09-30 12:15Z** (D-133), still spanning the Tuesday US session and the crypto
+  overnight. (Superseded first-run text follows:) started 2026-09-29 07:04Z (roller live). It must run unattended through the Tuesday US
   session (2026-09-29 13:30–20:00Z; Regular Windows were prelisted at 07:04Z) and the crypto overnight, ending
-  **2026-09-30 07:05Z**. At the end check, and record in `acceptance/S3.md`:
+  ~~2026-09-30 07:05Z~~ → **2026-09-30 12:15Z** (restart). At the end check, and record in `acceptance/S3.md`:
   1. `/health` ok, no actor with `failures ≥ 3` or silent; `window-roller`, `price-relay`, `settler` counters (opened,
-     recorded, copied, settled, redeemFor, **missed = 0**, failed) — note ops restarts (`commit`/`startedMs`).
+     recorded, copied, settled, redeemFor, **missed = 0**, failed), `rpc` (rate, 429s), and the void rate by lane — note ops restarts (`commit`/`startedMs`).
   2. `pnpm --dir scripts exec tsx drive/recount.ts` → **OK** (index == chain replay, total and per Window).
   3. `pnpm --dir scripts exec tsx drive/halt-replay.ts --from 1790665440` → OK; list any real halt transitions (a
      RedStone stall in session would show here).

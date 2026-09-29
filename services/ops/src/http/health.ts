@@ -1,5 +1,6 @@
 // Ported from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:services/ops/src/http/health.ts
 /** `GET /health`: every actor heartbeat; `ok` is false when one is failing (≥ 3 in a row) or silent for max(5 min, 3 × its loop). */
+import { rpcBudgetStats } from "@cwf/markets/ops";
 import { heartbeats } from "../runtime/heartbeat";
 import type { OpsEnv } from "../runtime/env";
 
@@ -12,7 +13,7 @@ export function healthBody(env: OpsEnv | undefined, nowMs = Date.now()) {
     return { ...a, silent, failing: a.failures >= FAILING };
   });
   const ok = actors.every((a) => !a.silent && !a.failing);
-  return { ok, network: env?.network ?? null, dryRun: env?.dryRun ?? null, nowMs, commit: process.env.SOURCE_COMMIT ?? process.env.GIT_SHA ?? null, actors };
+  return { ok, network: env?.network ?? null, dryRun: env?.dryRun ?? null, nowMs, commit: process.env.SOURCE_COMMIT ?? process.env.GIT_SHA ?? null, rpc: rpcBudgetStats(), actors };
 }
 
 /** JSON with bigints as decimal strings. */

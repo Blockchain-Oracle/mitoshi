@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mintStreamTicket } from "@cwf/markets/stream-ticket";
 import { createBus } from "../runtime/bus";
+import { readOpsEnv } from "../runtime/env";
 import { corsHeaders, grantTopics } from "./stream";
 
 const A = "0x160a25fFFA76652Ba236CE97395B4d6C51bC3FC0";
@@ -39,5 +40,13 @@ describe("bus resume (Last-Event-ID)", () => {
     bus.publish("prices", "price", 3);
     bus.publish("prices", "price", 4);
     expect(bus.since(a.id, () => true)).toBeNull();
+  });
+
+  it("allow the web origins by default: the testnet app and localhost dev on testnet, the apex on mainnet", () => {
+    const testnet = readOpsEnv({ NETWORK: "testnet" }).corsOrigins;
+    expect(testnet).toEqual(["https://testnet.mitoshi.xyz", "http://localhost:3000"]);
+    for (const origin of testnet) expect(corsHeaders(origin, testnet)["access-control-allow-origin"]).toBe(origin);
+    expect(readOpsEnv({ NETWORK: "mainnet" }).corsOrigins).toEqual(["https://mitoshi.xyz", "https://www.mitoshi.xyz"]);
+    expect(readOpsEnv({ NETWORK: "testnet", OPS_CORS_ORIGINS: "https://a.example, https://b.example" }).corsOrigins).toEqual(["https://a.example", "https://b.example"]);
   });
 });

@@ -13,7 +13,7 @@ import { relayPass, type RelayState } from "./pass";
 
 export function startPriceRelay(deps: VenueDeps): { stop: () => void } {
   const key = roleKey("price-relay", deps.env.network, process.env, deps.env.keysDir);
-  const client = createOpsClient({ network: deps.env.network, rpcUrl: deps.env.tempoRpcUrl, privateKey: key });
+  const client = createOpsClient({ network: deps.env.network, rpcUrl: deps.env.tempoRpcUrl, privateKey: key, tier: 0 });
   const venue = venueOf(client.chainId);
   if (!venue) throw new Error(`no engine fragment for chain ${client.chainId}`);
   const dryRun = deps.env.dryRun || !key;
