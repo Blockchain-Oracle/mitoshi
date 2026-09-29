@@ -12,6 +12,7 @@ import { FUNDING, FundedReceipt, suppressWelcome, useFaucetClaim } from "@/featu
 import { openFunds } from "@/lib/funds-event";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
+import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { armStepsFor } from "./arm-steps";
 import { ONBOARD } from "./copy";
 
@@ -22,6 +23,7 @@ const CHAIN_ID = webEnv.markets.network === "mainnet" ? 4217 : 42431;
 export function Onboarding({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const session = useWalletSession();
+  const shell = useWalletShell();
   const testnet = webEnv.markets.network === "testnet";
   const faucet = useFaucetClaim({ address: session.address, viaSession: true });
   const started = useRef(false);
@@ -73,7 +75,8 @@ export function Onboarding({ onClose }: { onClose: () => void }) {
       <p className="type-body text-ink-secondary" role="status">{ONBOARD.fundedBody}</p>
       {session.address ? <FundedReceipt address={session.address} txHashes={state.claim.txHashes} atMs={state.atMs} /> : null}
       {arm.map((step) => <div key={step.id}>{step.render({ onDone: land })}</div>)}
-      <button type="button" className={primary} onClick={land}>{ONBOARD.go}</button>
+      {/* While an arm is on offer it holds the primary action; going on without it is the quiet choice. */}
+      <button type="button" className={arm.length > 0 && !shell.walletKey && shell.canArmWalletKey ? secondary : primary} onClick={land}>{ONBOARD.go}</button>
     </div>
   );
 }

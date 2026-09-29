@@ -12,6 +12,10 @@ import { MotionScope } from "@/components/motion-scope";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { SkeletonSwap } from "@/components/ui/skeleton-swap";
+import { forgetWalletKey } from "@/providers/wallet/wallet-key-store";
+import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
+import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
+import { dollars } from "@/providers/wallet/format";
 import { ACCOUNT_PAGE } from "./copy";
 import { KeyRow, whenText } from "./KeyRow";
 import { keysQueryKey, useKeys } from "./useKeys";
@@ -31,6 +35,11 @@ export function KeysSection({ account, network }: { account: Address; network: N
   const active = all.filter((k) => keyStatus(k, nowSec) === "active");
   const stopped = all.filter((k) => keyStatus(k, nowSec) !== "active");
   const shown = filter === "active" ? active : stopped;
+  // The wallet-mode key this device signs with (D-047): marked on its row once the chain has it, or listed as armed here
+  // until the first call publishes it — never claimed live before the chain says so.
+  const deviceKey = useWalletShell().walletKey;
+  const isDeviceKey = (k: KeyState) => deviceKey !== null && k.keyId.toLowerCase() === deviceKey.keyId.toLowerCase();
+  const deviceKeyPending = deviceKey !== null && data !== undefined && !all.some(isDeviceKey);
 
   async function revoke(targets: readonly KeyState[]) {
     for (let i = 0; i < targets.length; i += MAX_PER_TX) {
@@ -40,6 +49,7 @@ export function KeysSection({ account, network }: { account: Address; network: N
       if (outcome?.status !== "confirmed") break;
     }
     setPending([]);
+    if (deviceKey && targets.some(isDeviceKey)) forgetWalletKey(TEMPO_CHAIN_ID, account);
     await queryClient.invalidateQueries({ queryKey: keysQueryKey(account) });
   }
 
@@ -63,12 +73,19 @@ export function KeysSection({ account, network }: { account: Address; network: N
           </div>
         ) : (
           <SkeletonSwap ready={data !== undefined} lines={4} label={K.loading}>
+            {filter === "active" && deviceKeyPending && deviceKey ? (
+              <div className="mb-3 flex flex-col gap-1 rounded-lg border border-dashed border-border-strong bg-surface-1 p-4" role="status">
+                <span className="type-body-strong text-ink">{K.thisDevice}</span>
+                <span className="type-caption text-ink-secondary">{K.armedHere}</span>
+                <span className="type-caption text-ink-secondary">{K.approvalsNote(dollars(deviceKey.limitBase))} · {K.expires(whenText(BigInt(deviceKey.expirySec)))}</span>
+              </div>
+            ) : null}
             {shown.length === 0 ? (
               <p className="type-body text-ink-secondary">{filter === "active" ? K.none : K.noneStopped}</p>
             ) : (
               <ul className="flex flex-col gap-3">
                 {shown.map((k) => (
-                  <KeyRow key={k.keyId} keyState={k} nowSec={nowSec} network={network} revoking={pending.includes(k.keyId.toLowerCase())} onRevoke={pending.length ? undefined : () => void revoke([k])} />
+                  <KeyRow key={k.keyId} thisDevice={isDeviceKey(k)} keyState={k} nowSec={nowSec} network={network} revoking={pending.includes(k.keyId.toLowerCase())} onRevoke={pending.length ? undefined : () => void revoke([k])} />
                 ))}
               </ul>
             )}

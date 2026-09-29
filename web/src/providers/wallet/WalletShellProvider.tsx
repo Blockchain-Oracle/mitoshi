@@ -38,6 +38,7 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
       signMessage: async () => {
         throw new Error("no wallet connected");
       },
+      armWalletKey: async () => ({ ok: false as const, aborted: false, error: new Error("no wallet connected") }),
     }),
     [],
   );

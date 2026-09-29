@@ -991,6 +991,24 @@ The gate is "24 h unattended"; the first soak ran with a defect that voided 93 %
 count. The clock restarts at the fix's deploy (time in `acceptance/S3.md` and the stage Handoff) and must again span a
 US session and a crypto overnight.
 
+### D-140 — the wallet key is armed by one explicit `wallet_authorizeAccessKey`, offered in the ceremony and on the ticket (decision, S4 UI, 2026-09-29)
+
+The accounts SDK calls the connector's `accessKey.authorize` hook on every connect and, when a default is set, before
+any transaction with no matching key — either would put a key prompt where the user did not ask for one (a second
+biometric inside sign-up, or one on a tap). So the hook answers only while an arm runs (`requestArm`), and the arm is
+one explicit `wallet_authorizeAccessKey` on the passkey provider with the terms built by `walletKeyAuthorization()`
+(the relay's exact D-136 shape — a web test checks the RPC params against `walletKeyRule`). It is offered in the
+ceremony's arm slot (D-046) after funding, and from the ticket's "tap-trading" chip for accounts that skipped it; an
+injected wallet is never offered it (X8). The SDK keeps the key (non-extractable WebCrypto P-256) and signs the calls
+it covers with no prompt (`AccessKeyTransaction` in its `eth_fillTransaction`/`eth_sendTransactionSync` path),
+publishing the authorization with the first call (sponsored, D-136). The device keeps only the terms it armed
+(`cwf.walletKey.v1.<chain>.<account>`), so the ticket can say "no prompt" and `/settings/account` can list the key as
+"armed on this device" until the chain has it; after that the chain is the only source and the row carries the
+limit's meaning ("counts new spending approvals, not fills", D-138).
+
+**Why:** D-046's one biometric to a funded account and D-047's zero prompts per tap, without ever surprising the user
+with a key prompt, and one builder so the UI and the relay cannot drift.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

@@ -40,6 +40,10 @@ export const ACCOUNT_PAGE = {
     revokeAll: (n: number) => `Hold to revoke all ${n}`,
     revokingAll: "Revoking…",
     revokeHint: "Revoking is free: we pay the network fee, so stopping a key never needs funds.",
+    /** The wallet-mode key (D-047, D-138): its limit counts new approvals, not fills. */
+    thisDevice: "Tap-trading key on this device",
+    approvalsNote: (limit: string) => `Counts new spending approvals, not fills: up to ${limit} of new approvals a day.`,
+    armedHere: "Armed on this device — it goes live on chain with your first call, and shows its limit here from then on.",
   },
   grants: {
     title: "Trading Balance grants",

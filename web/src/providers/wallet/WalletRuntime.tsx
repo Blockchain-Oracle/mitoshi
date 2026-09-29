@@ -14,6 +14,7 @@ import { useConnections, useConnectorClient, useDisconnect, useReconnect, useSig
 import { webEnv } from "@/lib/env";
 import { capsOf, kindOf } from "./connector-kind";
 import { getWagmiConfig, SIDE_CHAINS, TEMPO_CHAIN } from "./wagmi-config";
+import { useWalletKey } from "./useWalletKey";
 import type { SideAccount, TempoAccount, WalletShell } from "./wallet-shell-context";
 
 const SignInModal = dynamic(() => import("./SignInModal"), { ssr: false });
@@ -95,6 +96,7 @@ function Runtime({ publish, publishSession, takePending }: WalletRuntimeProps) {
   }, [connections, signMessageAsync, tempo]);
 
   const wrongChain = tempo !== null && tempo.chainId !== TEMPO_CHAIN.id;
+  const walletKey = useWalletKey(tempo, connections);
   const shell = useMemo<WalletShell>(
     () => ({
       status: hydrated && restoring ? "restoring" : "ready",
@@ -109,8 +111,11 @@ function Runtime({ publish, publishSession, takePending }: WalletRuntimeProps) {
       disconnect,
       switchToTempo,
       signMessage,
+      walletKey: walletKey.key,
+      canArmWalletKey: walletKey.canArm,
+      armWalletKey: walletKey.arm,
     }),
-    [hydrated, restoring, tempo, robinhood, wrongChain, pickerMode, openPicker, openAccount, disconnect, switchToTempo, signMessage],
+    [hydrated, restoring, tempo, robinhood, wrongChain, pickerMode, openPicker, openAccount, disconnect, switchToTempo, signMessage, walletKey.key, walletKey.canArm, walletKey.arm],
   );
   useEffect(() => publish(shell), [publish, shell]);
 
