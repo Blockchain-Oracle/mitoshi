@@ -20,7 +20,7 @@
 - [ ] S0.9 Hosting (owner accounts): Vercel ×2, Fly ×2, Neon ×2, Upstash; DNS on the final domain (Q-019).
 - [ ] S0.10 Keys: `scripts/keys/{generate.mjs,fund-moderato.ts}` (addresses only in acceptance); Robinhood testnet
   ETH + daily faucet claims start (X11); Base Sepolia ETH; capped mainnet MPP wallet once Q-020 is approved.
-- [ ] S0.11 Archive takeover: `packages/db/migrations/prints/0001_print_archive.sql`; price-relay archive-pass on Fly
+- [x] S0.11 Archive takeover: `packages/db/migrations/prints/0001_print_archive.sql`; price-relay archive-pass on Fly
   (`OPS_ACTORS=archive`, no key); `scripts/archive/import-agari.ts` (Agari `stocklana/data/archive/redstone/*.jsonl`
   + a `print_archive` dump); overlap check; then the owner retires the laptop archiver.
 - [x] S0.12 `infra/{secrets.md, env/*.example, vercel.md, fly.md}`; README pre-existing-code disclosure.
@@ -48,6 +48,11 @@
 
 ## Handoff
 
-- S0.10: Moderato role keys generated and funded. Still open: Robinhood testnet ETH + daily faucet claims (owner, X11),
-  Base Sepolia ETH for the transit side, the mainnet MPP wallet after Q-020.
-- S0.9/S0.11 wait on the hosting decision (domain Q-019; Vercel/Fly/Neon/Upstash accounts Q-026).
+- Done: S0.1–S0.8, S0.10 (Moderato), S0.11, S0.12, S0.13; S0.9 hosting on Coolify (D-061) with testnet web + ops +
+  Postgres + Redis live on sslip addresses.
+- Open for the gate: `mitoshi.xyz` bought + DNS (owner) → set Coolify domains `testnet.mitoshi.xyz`,
+  `ops.testnet.mitoshi.xyz`, `stream.testnet.mitoshi.xyz`; Robinhood testnet ETH + faucet claims and Base Sepolia ETH
+  (owner, X11); push-to-deploy route (owner choice, owner-actions.md).
+- The laptop RedStone archiver was already dead (last write 2026-09-22 22:29Z); the Coolify archive replaces it.
+- Tunnels: Coolify API via `ssh -f -N -L 8001:localhost:8000 agari-box`; DB access for imports via a short-lived
+  `-L 25433:<db container ip>:5432` tunnel, closed after use.
