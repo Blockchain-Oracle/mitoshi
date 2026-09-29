@@ -192,7 +192,8 @@ function ToastIcon({ type }: { type: string | undefined }) {
 
 // From 21st.dev 24297 (Toast) — its position-derived swipe: toasts sit bottom-centre on phones (swipe down) and
 // bottom-right from `sm` up (swipe right or down), so the dismiss gesture follows where the toast is.
-const SM_QUERY = "(min-width: 640px)"
+// Tailwind v4's `sm` breakpoint (40rem), the one the viewport classes above switch on.
+const SM_QUERY = "(min-width: 40rem)"
 const subscribeSm = (onChange: () => void) => {
   const mq = window.matchMedia(SM_QUERY)
   mq.addEventListener("change", onChange)
