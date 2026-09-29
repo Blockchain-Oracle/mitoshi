@@ -120,3 +120,9 @@ html[data-shell="app"] .grain { display: none; }
 
 /* Inputs never zoom on iOS (§2.5 ≥ 16 px): the floor applies app-wide, larger type stays larger. */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select { font-size: max(16px, 1em); }
+
+/* Masayume's phone rule hides the pill's last span (its address); our pill ends in a chevron, so name both. */
+@media (max-width: 420px) {
+  .header-right .wallet-pill > .wallet-pill-addr,
+  .header-right .wallet-pill > svg { display: none; }
+}

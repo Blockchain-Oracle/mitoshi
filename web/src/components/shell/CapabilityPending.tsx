@@ -1,6 +1,7 @@
 // Ported from Masayume 68f7a09:web/src/components/shell/CapabilityPending.tsx
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { FirstUseHint } from "@/features/onboarding/FirstUseHint";
 import { pendingFor } from "@/lib/capabilities";
 
 /**
@@ -25,6 +26,7 @@ export function PendingRoute({ route }: { route: string }) {
   return (
     <CapabilityPending eyebrow={p.eyebrow} title={p.title} dependency={p.dependency}>
       <p>{p.body}</p>
+      {p.explainer ? <FirstUseHint id={p.explainer} className="mt-4" /> : null}
       {p.links ? (
         <ul className="mt-4 flex flex-wrap gap-2">
           {p.links.map((l) => (

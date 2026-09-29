@@ -49,7 +49,8 @@ export interface FaucetStatus {
   /** False on mainnet: there is no faucet, and the UI shows funding options instead (L-26). */
   available: boolean;
   claim: FaucetClaimView | null;
-  message: string;
+  /** Why (not): the UI words it; a held region and the daily cooldown are known before any request. */
+  reason: "available" | "cooldown" | "region_restricted";
 }
 
 export function faucetClaimView(claim: FaucetClaim): FaucetClaimView {

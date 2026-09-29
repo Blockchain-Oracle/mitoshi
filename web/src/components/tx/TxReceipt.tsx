@@ -18,9 +18,11 @@ export interface TxReceiptProps {
   stamp?: ReactNode;
   rows?: readonly { label: string; value: ReactNode; href?: string | null }[];
   footer?: string;
+  /** The transaction row's label (default "Transaction"); a multi-transfer receipt names its last transfer. */
+  txLabel?: string;
 }
 
-export function TxReceipt({ title, figure, figureLabel, atMs, txHash, network, chain = "tempo", stamp, rows = [], footer }: TxReceiptProps) {
+export function TxReceipt({ title, figure, figureLabel, atMs, txHash, network, chain = "tempo", stamp, rows = [], footer, txLabel = "Transaction" }: TxReceiptProps) {
   return (
     <Receipt title={title} figure={figure} figureLabel={figureLabel} settledAtMs={atMs} stamp={stamp} footer={footer}>
       {rows.map((r) => (
@@ -28,7 +30,7 @@ export function TxReceipt({ title, figure, figureLabel, atMs, txHash, network, c
           {r.value}
         </ReceiptRow>
       ))}
-      <ReceiptRow label="Transaction" href={txUrl(txHash, network, chain)}>
+      <ReceiptRow label={txLabel} href={txUrl(txHash, network, chain)}>
         {shortHex(txHash)}
       </ReceiptRow>
     </Receipt>

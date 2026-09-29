@@ -14,8 +14,9 @@ import { SIGN_IN } from "./copy";
 import { useWalletChoices, type ConnectOutcome } from "./useWalletChoices";
 import { SIDE_CHAINS, WALLETCONNECT_ENABLED } from "./wagmi-config";
 import { useWalletShell } from "./wallet-shell-context";
+import { Onboarding, ONBOARD } from "@/features/onboarding";
 
-type Step = { kind: "choose" } | { kind: "waiting"; label: string } | { kind: "failed"; headline: string; body: string; retry: () => void };
+type Step = { kind: "choose" } | { kind: "waiting"; label: string } | { kind: "failed"; headline: string; body: string; retry: () => void } | { kind: "onboard" };
 
 export interface SignInModalProps {
   open: boolean;
@@ -30,10 +31,12 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const nameId = useId();
   const robinhood = shell.pickerMode === "robinhood";
 
-  async function run(label: string, attempt: () => Promise<ConnectOutcome>) {
+  // `created`: a new passkey account continues into the rest of the ceremony (fund → arm → /markets) in this modal.
+  async function run(label: string, attempt: () => Promise<ConnectOutcome>, created = false) {
     setStep({ kind: "waiting", label });
     const result = await attempt();
     if (result.ok) {
+      if (created) return setStep({ kind: "onboard" });
       setStep({ kind: "choose" });
       onOpenChange(false);
       return;
@@ -43,7 +46,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       return;
     }
     const copy = diagnosisCopy(diagnose(result.error).kind);
-    setStep({ kind: "failed", headline: copy.headline, body: copy.body, retry: () => void run(label, attempt) });
+    setStep({ kind: "failed", headline: copy.headline, body: copy.body, retry: () => void run(label, attempt, created) });
   }
 
   const walletRow = (connector: Connector, note: string, chainId?: number) => (
@@ -60,6 +63,13 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   );
 
   const busy = step.kind === "waiting";
+  if (step.kind === "onboard") {
+    return (
+      <Modal open={open} onOpenChange={onOpenChange} eyebrow={ONBOARD.eyebrow} title={ONBOARD.created}>
+        <Onboarding onClose={() => onOpenChange(false)} />
+      </Modal>
+    );
+  }
   return (
     <Modal open={open} onOpenChange={onOpenChange} dismissible={!busy} eyebrow={SIGN_IN.eyebrow} title={robinhood ? SIGN_IN.robinhood.title : SIGN_IN.title} description={robinhood ? SIGN_IN.robinhood.body : SIGN_IN.body}>
       {step.kind === "waiting" ? (
@@ -92,7 +102,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
             <label htmlFor={nameId} className="type-caption text-ink-secondary">{SIGN_IN.nameLabel}</label>
             <input id={nameId} value={name} onChange={(e) => setName(e.target.value)} placeholder={SIGN_IN.namePlaceholder} autoComplete="username webauthn" maxLength={48} className="h-12 rounded-md border border-hairline bg-ground px-3 text-ink placeholder:text-ink-muted" />
           </div>
-          <button type="button" disabled={!choices.passkey} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.createPasskey(name))} className="inline-flex h-(--ticket-cta-height) items-center justify-center gap-2 rounded-md bg-accent-fill px-5 type-body-strong text-on-accent">
+          <button type="button" disabled={!choices.passkey} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.createPasskey(name), true)} className="inline-flex h-(--ticket-cta-height) items-center justify-center gap-2 rounded-md bg-accent-fill px-5 type-body-strong text-on-accent">
             <Fingerprint aria-hidden className="size-4" />
             {SIGN_IN.create}
           </button>

@@ -27,7 +27,7 @@
   through `open-external` in the shell. 21st starts (E.1): header 27109, account pill 24857 + 1600, nav
   active-pill technique 21349 + 19177, panel 31360, command palette 31354, toasts 24297, skeletons 23557, empty/error
   19745 + 29419, segmented control 23552.
-- [ ] 1b onboarding (D37): the one-ceremony centred modal — passkey create/sign in (21st 19045 layout; 20041's flow
+- [x] 1b onboarding (D37): the one-ceremony centred modal — passkey create/sign in (21st 19045 layout; 20041's flow
   without its bottom drawer) → server faucet funds without a user signature → land on `/markets` (the ticket and its remembered
   stake attach in S4); the modal has a slot for the arm step, filled when its target exists (wallet access key in S4 once the engine
   is deployed; Trading Balance arm in S7 once EventVault is); contextual first-use explainers replace the 5-step
@@ -150,6 +150,15 @@
   (`verifyKeychain`) conformance needs an authorised key on chain and lands with S4's first key.
 - **1c — passkey RP name.** accounts 0.18.4 sets `rp.name` to the RP ID (`webAuthn.ts:118`), so the OS prompt names
   `mitoshi.xyz` rather than "Mitoshi". Browsers lead with the RP ID anyway; not patched (would fork the pinned SDK).
+- **1b onboarding — fund, then answer.** `tempo_fundAddress` returns hashes before inclusion; answering "funded" then
+  made the receipt read $0.00. `/api/faucet` now waits for the four receipts (~0.5 s) before it answers, so the figure
+  is the balance actually read afterwards. Known refusals (the daily cooldown, a held region) come from
+  `GET /api/faucet?wallet=` when Add money opens, so the dialog never offers a button that would fail.
+- **1b onboarding — arm slot.** `features/onboarding/arm-steps.ts` is an empty registry: S4 registers the wallet access
+  key step once the engine is deployed, S7 the Trading Balance arm once EventVault is. The ceremony renders nothing for
+  it until then (no step that can't complete).
+- **1b onboarding — header pill on phones.** Masayume's ≤ 420 px rule hides the wallet pill's *last* span; our port
+  ends in a chevron, so the address wrapped onto two lines. `shell-fixes.css` names the address and chevron.
 - **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
   transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
 - **1b wallet — no cookie read on the server.** wagmi's `cookieToInitialState` would read `headers()` in the root and,

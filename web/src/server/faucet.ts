@@ -53,6 +53,10 @@ export async function claimFunds(input: { wallet: Address; auth: FaucetAuth; ipH
   const base = { id: randomUUID(), wallet: input.wallet, ipHash: input.ipHash, auth: input.auth, createdAtMs: input.nowMs };
   try {
     const txHashes = await fundAddress(chainClient(), input.wallet);
+    // Answer "funded" only once the transfers are included (~0.5 s on Tempo), so the balance the client refetches
+    // right after is the funded one — never a receipt over a $0.00 read.
+    const receipts = await Promise.all(txHashes.map((hash) => chainClient().waitForTransactionReceipt({ hash, timeout: 20_000 })));
+    if (receipts.some((r) => r.status !== "success")) throw new Error("a faucet transfer reverted");
     const claim = { ...base, txHashes, status: "funded" as const };
     await s.saveClaim(claim);
     return { ok: true, claim: faucetClaimView(claim) };

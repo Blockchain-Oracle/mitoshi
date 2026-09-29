@@ -37,7 +37,7 @@ export function HeaderAccount() {
       <Menu.Root modal={false}>
         <Menu.Trigger className="wallet-pill min-h-touch" aria-label={ACCOUNT_MENU.open}>
           <span className="addr-dot" aria-hidden />
-          <span className="numbers">{shortAddress(session.address)}</span>
+          <span className="numbers wallet-pill-addr">{shortAddress(session.address)}</span>
           <ChevronDown aria-hidden className="size-3.5" />
         </Menu.Trigger>
         <Menu.Portal>

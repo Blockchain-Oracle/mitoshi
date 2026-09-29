@@ -25,7 +25,7 @@ export function ProofLink({ href, degradedLabel = PROOF_DEGRADED, className, chi
       <a href={href} target="_blank" rel="noreferrer" className="numbers underline decoration-dotted underline-offset-4">
         {children}
       </a>
-      <span className="type-label-micro normal-case opacity-70">{PROOF_CAPTION}</span>
+      <span className="type-label-micro whitespace-nowrap normal-case opacity-70">{PROOF_CAPTION}</span>
     </span>
   );
 }

@@ -7,6 +7,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { MarketsProvider } from "@cwf/markets/react";
 import type { ReactNode } from "react";
 import { Toaster } from "@/components/ui/toast";
+import { FundsHost } from "@/features/funding";
 import { WriteRecovery } from "@/features/recovery";
 import { webEnv } from "@/lib/env";
 import { MarketsBoot } from "./MarketsBoot";
@@ -31,6 +32,8 @@ export function AppProviders({ children }: { children: ReactNode }) {
                 <Toaster limit={1}>
                   {/* Writes the journal still holds open are asked about once per session; nothing is re-sent. */}
                   <WriteRecovery />
+                  {/* Add money (`openFunds()` from anywhere) and the first-credit welcome, both lazy. */}
+                  <FundsHost />
                   {children}
                 </Toaster>
               </MotionProvider>

@@ -30,10 +30,11 @@ export function GET(req: Request): Promise<Response> {
     const last = await faucetStore().lastFunded(wallet);
     const claim = last ? faucetClaimView(last) : null;
     const waiting = claim !== null && claim.nextClaimAtMs > Date.now();
+    const restricted = regionRestricted(req, "markets");
     const status: FaucetStatus = {
-      available: !regionRestricted(req, "markets") && !waiting,
+      available: !restricted && !waiting,
       claim,
-      message: waiting ? "This wallet already got test funds today." : "Test stablecoins are available for this wallet.",
+      reason: restricted ? "region_restricted" : waiting ? "cooldown" : "available",
     };
     return Response.json(status, { headers: noStore });
   });
