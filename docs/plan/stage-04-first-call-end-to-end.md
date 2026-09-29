@@ -41,6 +41,13 @@
 - **F-S4-06** (S4.1) With a `validate`, accounts 0.18.4 `Handler.relay` falls back to an unsponsored fill when the policy
   refuses the sponsored one; the client's raw send still asks for a fee payer, the relay refuses the raw sign too, and
   nothing is sent — the relay never pays for a refused call, and the user is not charged silently.
+- **F-S4-07** (S4.2, X20) Publishing the wallet key makes the first tap 6.49M gas (fill estimate 7.07M); the engine
+  cap refused it until the relay learned the wallet-key rule (D-136).
+- **F-S4-08** (S4.2, X20) The key's periodic limit counts approval *increases*: the first tap spends its approve
+  (2.399856), later taps only the difference over the leftover allowance (2.330496, the fill) (D-138).
+- **F-S4-09** (S4.2) The gateway's 502 on `eth_sendRawTransactionSync` often comes back for a transaction that did
+  land (three in one run). `tx/send.ts` now hashes the signed bytes and asks the chain until the expiring window
+  closes: landed → the receipt; window passed → `NotIncludedError` (definite); never a resend (D-137).
 
 ## Handoff
 

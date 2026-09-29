@@ -829,6 +829,22 @@ logs read through an unbatched client (`getLogClient`).
 **Why:** a tap must fail fast and honestly; a blind resend of a money write is exactly what the journal exists to
 prevent.
 
+### D-138 — spike X20: wallet mode works as D-047 describes; the daily limit counts approval *increases* (finding, S4.2, 2026-09-29)
+
+Measured on Moderato (acceptance/S4.md): a passkey-shaped root signs one TIP-1011 authorization for a non-extractable
+WebCrypto P-256 key (scopes: engine `placeOrder`/`cancelOrders`/`redeem`/`withdrawCredit` + `pathUSD.approve` bound to
+the engine; $25 pathUSD per 86,400 s; 24 h). Ten `[approve exact, placeOrder IOC]` taps sign with the key and no root
+prompt, all relay-sponsored; the first publishes the authorization (6.49M gas, D-136), later taps cost 188,927 gas and
+2.3–4.0 s tap-to-receipt. The eleventh is refused `SpendingLimitExceeded` before signing; a transfer, an approve to
+another spender and `mintSet` are refused `CallNotAllowed`; after the root's sponsored `revokeKey`, the key is refused
+`KeyAlreadyRevoked`. **The limit counts the increase of the allowance, not the approve amount:** an IOC pulls less
+than its protective escrow, the leftover allowance stays, and the next exact approve counts only the difference — so
+the limit bounds what the key can ever move, and the tap after a cheap fill costs the limit less. The order lane keeps
+approving the exact escrow (never max); the `/settings/account` pipeline reads the remaining limit live.
+
+**Why:** X20 is D-047's proof; the limit semantics decide what "$25/day" means on the trust surface ("up to $25 of
+new spending authority per day").
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

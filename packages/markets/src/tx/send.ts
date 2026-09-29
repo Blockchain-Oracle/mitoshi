@@ -11,7 +11,8 @@
  * signKeyAuthorization, sendTransactionSync `calls`/`keyAuthorization`/`feeToken` (viem site
  * tempo/accounts/account.fromSecp256k1, tempo/guides/batch-calls).
  */
-import { type Account, type Address, type Chain, type Hex, type TransactionReceipt, type Transport, type WalletClient, http } from "viem";
+import { type Account, type Address, type Chain, type Hex, type TransactionReceipt, type Transport, type WalletClient, http, keccak256 } from "viem";
+import { getBlock, getTransactionReceipt } from "viem/actions";
 import type { themeKeyAuthorization } from "../themes/keyAuth";
 import type { Call } from "./batch";
 import { FEE_TOKEN, PRIORITY_FEE_PER_GAS } from "./fee";
@@ -78,8 +79,53 @@ export async function sendBatch<chain extends Chain>(
   const { parameters, fields } = buildSendParameters(request);
   // The Tempo chain config types the extra fields (`calls`, `feeToken`, `nonceKey`, `validBefore`, `feePayer`).
   const signed = { ...parameters, account: client.account, chain: client.chain };
-  const receipt = (await client.sendTransactionSync(signed as never)) as TransactionReceipt;
-  return { receipt, hash: receipt.transactionHash, fields };
+  try {
+    const receipt = (await client.sendTransactionSync(signed as never)) as TransactionReceipt;
+    return { receipt, hash: receipt.transactionHash, fields };
+  } catch (error) {
+    const raw = rawOfFailedSend(error);
+    if (!raw || fields.validBefore === undefined) throw error;
+    // The gateway answered the sync send with a 502 (it often does after accepting the tx, S4 X20): the signed bytes
+    // name the transaction, and its expiring window bounds how long it can still land. Ask the chain, never resend.
+    const receipt = await awaitByHash(client as unknown as WalletClient, keccak256(raw), fields.validBefore);
+    if (!receipt) throw new NotIncludedError(keccak256(raw), fields.validBefore, error);
+    return { receipt, hash: receipt.transactionHash, fields };
+  }
+}
+
+/** The expiring window closed with no receipt: the transaction can never land (L-08), so this is a definite failure. */
+export class NotIncludedError extends Error {
+  constructor(readonly hash: Hex, readonly validBeforeSec: number, cause: unknown) {
+    super(`transaction ${hash} was not included before validBefore ${validBeforeSec}`, { cause });
+    this.name = "NotIncludedError";
+  }
+}
+
+/** The signed raw bytes of a raw send that failed at the transport (viem's `HttpRequestError.body`), else null. */
+export function rawOfFailedSend(error: unknown): Hex | null {
+  let e: unknown = error;
+  for (let depth = 0; depth < 10 && e && typeof e === "object"; depth++) {
+    const x = e as { name?: string; body?: { method?: string; params?: unknown[] } };
+    if ((x.name === "HttpRequestError" || x.name === "TimeoutError") && /^eth_sendRawTransaction(Sync)?$/.test(x.body?.method ?? "")) {
+      const raw = x.body?.params?.[0];
+      return typeof raw === "string" && raw.startsWith("0x") ? (raw as Hex) : null;
+    }
+    e = (e as { cause?: unknown }).cause;
+  }
+  return null;
+}
+
+async function awaitByHash(client: WalletClient, hash: Hex, validBeforeSec: number): Promise<TransactionReceipt | null> {
+  for (;;) {
+    const receipt = await getTransactionReceipt(client, { hash }).catch(() => null);
+    if (receipt) return receipt as TransactionReceipt;
+    const block = await getBlock(client, { blockTag: "latest" }).catch(() => null);
+    // Past the window (plus a block): a Tempo expiring-nonce transaction can no longer be included.
+    if (block && Number(block.timestamp) > validBeforeSec + 1) {
+      return ((await getTransactionReceipt(client, { hash }).catch(() => null)) as TransactionReceipt | null) ?? null;
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
 }
 
 export interface AuthorizeAndCallInput {

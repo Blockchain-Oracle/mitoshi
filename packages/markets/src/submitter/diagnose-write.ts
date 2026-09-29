@@ -23,6 +23,8 @@ export function isAmbiguousSend(error: unknown): boolean {
   let e: unknown = error;
   for (let depth = 0; depth < 10 && e && typeof e === "object"; depth++) {
     const x = e as { name?: string; body?: { method?: string }; message?: string };
+    // tx/send already asked the chain by hash until the expiring window closed: definitely not included.
+    if (x.name === "NotIncludedError") return false;
     if (x.name === "TimeoutError" || x.name === "WaitForTransactionReceiptTimeoutError") return true;
     if ((x.name === "HttpRequestError" || x.name === "SocketClosedError") && /sendRawTransaction/.test(x.body?.method ?? "")) return true;
     e = (e as { cause?: unknown }).cause;
