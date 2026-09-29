@@ -201,6 +201,39 @@ export const deployments = {
       "external": {},
       "commit": "ad79a36"
     },
+    "maker": {
+      "contracts": {
+        "MarketMakerVault": {
+          "address": "0xa31F6B5a585fF331cC13Fd1c6FAa282024Ca32a6",
+          "artifact": "MarketMakerVault.sol:MarketMakerVault",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x9ed3421b7841abd58846e5ecbcbed667cd17bd9776f848c471cfc964c5702510",
+          "deployBlock": 37403453,
+          "history": []
+        }
+      },
+      "roles": {
+        "ADMIN": "0xE41f5FEb2bc3040B82bA22dc6F62b824037e1A8d",
+        "MAKER": "0xE41f5FEb2bc3040B82bA22dc6F62b824037e1A8d"
+      },
+      "params": {
+        "collateral": "0x20C0000000000000000000000000000000000000",
+        "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+        "maxExposureBps": 6000,
+        "maxOpenWindows": 8,
+        "maxPriceRaw": 950000,
+        "maxQuantityRaw": 20000000,
+        "maxWindowDeployed": 200000000,
+        "minPriceRaw": 50000,
+        "minSpreadRaw": 20000,
+        "minTimeLeftSec": 45,
+        "postOnlyMaxEvictions": 4
+      },
+      "external": {},
+      "commit": "1ae4a69"
+    },
     "stocks": {
       "contracts": {
         "AdapterAMD": {
