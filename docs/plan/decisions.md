@@ -427,6 +427,29 @@ zero→non-zero writes (each would cost 250k inside the credit).
 
 **Why:** B.1.4's numbers predate TIP-1000; fresh-holder credits must not be deferred for lack of gas.
 
+### D-100 — spike X4: the theme follow is one root tx `[authorizeKey, follow]` — one passkey prompt; split only past 5 tokens (finding + decision, S16c, 2026-09-29)
+
+Measured on Moderato (`acceptance/S16.md`) with the exact B.4.3 restrictions over the five mirrors (6 daily limits,
+7 target scopes, 6 recipient bindings): **17.48M gas** as a call `AccountKeychain.authorizeKey(...)` inside the root's
+own batch, **17.43M** as a tx-level `key_authorization`; a 1-token key costs 7.37M, so each theme token adds ≈ **2.53M**
+(its limit + its recipient-bound `approve@router` scope). A key authorized earlier in the same tx **is visible** to
+`getKey`/`getAllowedCalls` in a later call of that tx (both shapes; `getTransactionKey()` = 0, root). T1A replaced the
+16.7M per-tx cap with Tempo's 30M; TIP-1010's "> 16M not recommended" is advice, and the 18–19M follow landed in the
+next block. Prompts: the `key_authorization` field needs the root to sign the authorization digest **and** the tx (two
+passkey prompts); `authorizeKey` as a batch call needs one. So:
+1. **Follow = one root-signed, relay-sponsored tx `[AccountKeychain.authorizeKey(keyId, secp256k1, restrictions),
+   ThemeRouter.follow(...)]` — one prompt** — for themes with ≤ 5 tokens (all testnet themes, Q-004; ≈ 18.7M with
+   `follow`). The tx-level `key_authorization` shape is not used (same gas, one more prompt).
+2. **Past 5 tokens** (tokenCount ≤ 16; 16 tokens ≈ 45M), split: tx 1 = `[authorizeKey(all limits; router + pathUSD +
+   the first 5 token scopes), follow]`, tx 2+ = `setAllowedCalls` chunks of ≤ 5 targets (≈ 10.2M each; one prompt
+   each). `follow` therefore checks that every scope present is allowed (subset), not that all theme tokens are
+   scoped; the rebalancer only trades tokens whose `approve@router` scope exists (`getAllowedCalls`).
+3. A key's self-paid fee counts against its pathUSD limit (625 units on the approve+rebalance tx), so the agent's
+   rebalances stay relay-sponsored (research 16 §4.6).
+
+**Why:** measured; one prompt is the UX the follow modal promises (stage 16: "1–2 prompts"), and the gas fits the
+30M per-tx cap with margin at the testnet theme size.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

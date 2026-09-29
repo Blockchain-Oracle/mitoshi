@@ -1,6 +1,6 @@
 # S16 — Themes (16c after S15a + money gate; 16a after 16c, S15, S3.5, S9; 16c.4 deploy after S15b–c) (M3; App. B.4)
 
-- [ ] 16c.1 Spike X4 → D-entry: one tx or split (`setAllowedCalls` chunks ≤ 5 targets).
+- [x] 16c.1 Spike X4 → D-entry: one tx or split (`setAllowedCalls` chunks ≤ 5 targets).
 - [ ] 16c.2 `src/themes/ThemeRegistry.sol` + tests. 16c.3 `src/themes/ThemeRouter.sol` + tests +
   `invariant_routerHoldsOnlyOwedFees` + a test that settlement calls `sync` before each transfer. 16c.4 deploy;
   `relay/policies/themes.ts`.
