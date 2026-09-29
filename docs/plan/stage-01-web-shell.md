@@ -269,27 +269,35 @@
 
 ## Handoff
 
-_Interim, 2026-09-29 (branch `stage/S1-web-shell`, pushed). Updated again at stop._
+_2026-09-29, at stop (branch `stage/S1-web-shell`, pushed; merged with integration/t1 182397c)._
 
-**Done (commits):** 1a core `4dfd9ba`, 1a markets `fad7a3f`, 1b tokens + X23 `36abee2`, 1b shell `7022cd7`, merge of
-integration/t1 `26a8fdd`, 1b transactions `6ede081`, 1b wallet `1c71a7f`, 1c routes + X8 + X9 `016d03e`, 1b onboarding
-`082c13f`, 1b settings `df16af3`, perf work `e0a7000` `05990e6`, shell techniques `379585a` `20760d0`, phone shot
-`2ef8029`. Evidence in `acceptance/S1.md`; decisions D-070 (relay debit, sponsored fills, first-tx gas) and D-071
-(budgets on Next 16, field vitals).
+**Boxes:** all ticked except **1b perf gates** (see Open).
+
+**Commits:** 1a core `4dfd9ba`, 1a markets `fad7a3f`, 1b tokens + X23 `36abee2`, 1b shell `7022cd7`, merge `26a8fdd`,
+1b transactions `6ede081`, 1b wallet `1c71a7f`, 1c routes + X8 + X9 `016d03e`, 1b onboarding `082c13f`, 1b settings
+`df16af3`, perf `e0a7000` `05990e6` `97e6d7e` `7a32158`, shell techniques `379585a` `20760d0`, phone shot `2ef8029`,
+real-time `c64b948`, merge of integration/t1 `0f9b4da`, post-merge fixes + stream ticket `e976cca`. Evidence in
+`acceptance/S1.md`; decisions D-070 (relay: debit at the fill, sponsored fills carry no fee fields, first-tx gas) and
+D-071 (§3.1 on Next 16: site-owned JS over the framework floor; field vitals self-hosted).
+
+**Gate status:** build ✓; UX gate on every registered route × 320/390/768/1440 × both themes (see acceptance) ✓;
+JS/CSS budgets green on every route (`pnpm perf:budgets`, in CI) ✓; one ceremony from a fresh passkey to a funded
+account with the virtual authenticator ✓ (the owner's device, and passkeys on `mitoshi.xyz`, wait on the deploy/DNS);
+sponsored no-op with fee payer = relay and `aggregate3` refused ✓; `x-vercel-ip-country: US` (and `cf-ipcountry`) →
+451 on the faucet, reads and exits open ✓ (live enforcement needs a country header in front of Coolify — owner action).
 
 **Open:**
-- **1b perf gates** — the route-budget gate, CI job, Lighthouse CI workflow and field-vitals pipeline are in and
-  passing except lab LCP on app routes (2.64 s vs 2.5 s; site routes pass). Next: take the data layer (query client +
-  markets runtime, ~25 KB) out of the pre-paint set, after the integration merge because S3/S3.5 touch those providers.
-- **1b real-time client** — `packages/markets/src/runtime/stream.ts` against S3's ops SSE; starts after the merge.
-- **From S3 (integrator note):** mount `/api/stream/ticket` with `@cwf/markets/stream-ticket`'s mint function and the
-  ops app's `STREAM_TICKET_SECRET`; register the launch/themes/stocks/vault policies in `relay/policies/index.ts` if the
-  merge hasn't.
-- **Gate** — build, the browser pass on every route, sponsored no-op + refusal (done), `/settings/account` e2e (done),
-  passkey on the real domain (waits on DNS; virtual-authenticator runs done locally).
+- **Lab LCP gate** — every route measures 2.35–2.68 s against 2.5 s, CLS ≤ 0.026, app TBT 160–203 ms; results jump
+  ~150 ms between near-identical builds (lantern prices a round trip per pre-paint request), so the CI lab run will
+  flip. Next levers are in the findings (fewer pre-paint chunks on app routes, then app hydration cost). Field p75 via
+  `/api/vitals` once deployed.
+- **Relay batch support for themes** (integrator note): the one-transaction key-authorization + follow from S16 is
+  refused by the engine's one-area rule; design with S16's shapes when the relay learns batches.
+- **Arm step** — the wallet access key (full engine signatures from the ABI) is authorised only when an arm step
+  asks (`requestArm`); S4 fills the ceremony's arm slot.
 
 **For the integrator (deploy):** set `DATABASE_URL`, `REDIS_URL`, `RELAY_FEE_PAYER_PRIVATE_KEY`, `APP_ORIGIN`,
-`PASSKEY_RP_ID`, `SOCIAL_SESSION_SECRET` on the Coolify app; run `pnpm db:migrate` (areas relay, faucet, keys, vitals);
-build with `pnpm build` from the repo root (the Yosuku purge resolves `web/` from the build's working directory); the
-geofence needs a country header in front of Coolify (owner action). After a deploy, trigger `lighthouse.yml`
-(`repository_dispatch` `coolify-deployment-success` with `client_payload.url`).
+`PASSKEY_RP_ID`, `SOCIAL_SESSION_SECRET`, `STREAM_TICKET_SECRET` (the ops app's), `NEXT_PUBLIC_STREAM_URL=https://stream.testnet.mitoshi.xyz`;
+add the web origin(s) to the ops stream's CORS allow-list; run `pnpm db:migrate` (relay, faucet, keys, vitals); build
+from the repo root (`pnpm build`; the Yosuku purge resolves `web/` from the working directory); trigger
+`lighthouse.yml` after a deploy (`repository_dispatch` `coolify-deployment-success` with `client_payload.url`).
