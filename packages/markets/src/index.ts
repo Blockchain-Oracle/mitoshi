@@ -8,6 +8,7 @@ export * from "./deployments";
 export * from "./env";
 export * from "./errors";
 export * from "./engine";
+export * from "./stream";
 export * from "./random";
 export * from "./relay";
 export * from "./runtime";

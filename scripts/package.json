@@ -11,7 +11,8 @@
     "@cwf/core": "workspace:*",
     "@cwf/markets": "workspace:*",
     "viem": "catalog:",
-    "@cwf/db": "workspace:*"
+    "@cwf/db": "workspace:*",
+    "@tanstack/react-query": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

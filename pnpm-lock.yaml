@@ -373,6 +373,9 @@ importers:
       '@cwf/markets':
         specifier: workspace:*
         version: link:../packages/markets
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.104.0(react@19.2.8)
       viem:
         specifier: 'catalog:'
         version: 2.56.9(typescript@5.9.3)(zod@4.6.5)
