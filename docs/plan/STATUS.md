@@ -9,14 +9,15 @@ Updated 2026-09-29. **Never trust memory over this file.**
 - **S0 and S2 gates passed.** On the trunk (e1ab0d3): S2 engine, S3 venue ops (live on Coolify, 24 h soak until
   2026-09-30 07:05Z), S3.5 clients, S14c bridge (RH legs wait for testnet ETH), S15a v4 + encoder, S15b/c guard +
   pools, S16c themes contracts (configured), S17a/b launchpads, S7 EventVault contracts, S1 up to 05990e6.
-  Running: S1 web shell, S8 maker vault, S10 specialist tickets.
+  Running: S1 web shell, S8 maker vault, S10 specialist tickets. S4 backend done on `stage/S4-backend` (ports, lanes,
+  relay engine policy, X20/X21, claim-all, cash-out, held state, live data — acceptance/S4.md); S4 UI part next.
 - Live on testnet (Coolify): `https://testnet.mitoshi.xyz` (web), `https://ops.testnet.mitoshi.xyz/health` with `chain-head` + `archive` (RedStone prints every
   5 min, < 60 s after T). 12 testnet role keys funded (`acceptance/S0.md`).
 
 ## Open integration items (from the wave-2/3 merges; owners pick these up)
 
 - S1/S16: the relay engine doesn't honour `themesPolicy.batches` (the one-tx key-authorization + follow is refused).
-- S4: register `relay/policies/engine.ts` (sponsoring engine trades is S4's call).
+- ~~S4: register `relay/policies/engine.ts`~~ — done in S4.1 (D-135).
 - S1/S7: `vaultPolicy` sponsors `placeFor` without the `asyncSender` grant check `relay/types.ts` expects.
 - S3/S7: settler reports the vault as "tracked" but has no `crankSettle` work yet.
 - S15: `reference-writer` reads `KEEPER_PRIVATE_KEY` from env only (not S3's `roleKey()` fallback); key missing from

@@ -1,16 +1,20 @@
 /**
  * Binds the write lanes to ONE account (Masayume 68f7a09:packages/markets/src/submitter/create.ts). A submitter only
  * exists because a session exists, and a session only exists for a signer already bound, so `hasSigner` is true by
- * construction. The order lane (engine IOC, `order-lane.ts`) joins in S4 with the engine; until then an order is
- * refused as "not deployed" rather than faked.
+ * construction. Three lanes (AD-3): orders (`order-lane.ts`, engine IOC), cash-outs (`cash-out.ts`, SELL IOC) and every
+ * other intent (`tx-lane.ts`). Expiring nonces never collide, so taps run concurrently (X21); protocol nonces queue.
  */
 import type { Account, Chain, Transport, WalletClient } from "viem";
-import { diagnosis, type Address, type IntentJournal, type Submitter } from "@cwf/core";
+import type { Address, AttributionHook, IntentJournal, StopGate, Submitter } from "@cwf/core";
 import type { Enqueue } from "../sessions/nonce-queue";
 import { createMemoryJournal } from "./journal-memory";
 import type { IntentEncoder } from "./encoders";
 import { submitTx } from "./tx-lane";
+import { allowAllStopGate, noAttribution, submitOrder } from "./order-lane";
+import { submitCashOut } from "./cash-out";
+import { nowMs } from "../runtime/clock";
 import type { NoncePlan } from "../tx/nonce";
+import type { PendingKeyAuthorization } from "../tx/send";
 
 export interface SubmitterDeps {
   client: WalletClient<Transport, Chain, Account>;
@@ -21,6 +25,10 @@ export interface SubmitterDeps {
   journal?: IntentJournal;
   encoders?: readonly IntentEncoder[];
   nonce?: NoncePlan;
+  stopGate?: StopGate;
+  pendingKeyAuthorization?: PendingKeyAuthorization;
+  attribution?: AttributionHook;
+  nowMs?: () => number;
 }
 
 export interface MarketsSubmitter extends Submitter {
@@ -32,12 +40,18 @@ export function createSubmitter(deps: SubmitterDeps): MarketsSubmitter {
   const journal = deps.journal ?? createMemoryJournal();
   // Expiring nonces never collide, so they need no queue (X21); ordered protocol nonces are serialised.
   const run = <T>(task: () => Promise<T>) => (deps.nonce?.kind === "protocol" ? deps.enqueue(task) : task());
+  const lane = {
+    journal, client: deps.client, wallet: deps.wallet, canSponsor: deps.canSponsor, nowSec: deps.nowSec, nowMs: deps.nowMs ?? nowMs,
+    ...(deps.nonce ? { nonce: deps.nonce } : {}),
+    ...(deps.pendingKeyAuthorization ? { pendingKeyAuthorization: deps.pendingKeyAuthorization } : {}),
+  };
   return {
     journal,
     wallet: deps.wallet,
     hasSigner: () => true,
     submitTx: (intent, onPhase) =>
-      run(() => submitTx({ journal, client: deps.client, wallet: deps.wallet, canSponsor: deps.canSponsor, nowSec: deps.nowSec, encoders: deps.encoders, nonce: deps.nonce }, intent, onPhase)),
-    submitOrder: async () => ({ status: "refused", diagnosis: diagnosis("not-deployed", "the market engine is not deployed on this network yet") }),
+      run(() => submitTx({ ...lane, encoders: deps.encoders }, intent, onPhase)),
+    submitOrder: (request, onPhase) => run(() => submitOrder({ ...lane, stopGate: deps.stopGate ?? allowAllStopGate, attribution: deps.attribution ?? noAttribution }, request, onPhase)),
+    submitCashOut: (request, onPhase) => run(() => submitCashOut(lane, request, onPhase)),
   };
 }

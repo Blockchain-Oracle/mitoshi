@@ -25,3 +25,8 @@ export function randomId(): string {
   const h = Array.from(b, (x) => HEX[x]).join("");
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
+
+/** A uniformly random unsigned 64-bit integer (order client ids). */
+export function randomU64(): bigint {
+  return BigInt(randomHex(8));
+}

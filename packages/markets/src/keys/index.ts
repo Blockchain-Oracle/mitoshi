@@ -3,3 +3,4 @@ export { foldKeychain, type KeyHistory, type KeyTokenLimit } from "./fold";
 export { readKeyStates, type KeyState, type KeyTokenState } from "./live";
 export { keyStatus, type KeyStatus } from "./status";
 export { limitsInTransaction, withAuthorizedLimits, type AuthorizedLimit } from "./authorization";
+export * from "./wallet-key";

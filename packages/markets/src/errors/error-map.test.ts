@@ -32,3 +32,12 @@ describe("diagnose", () => {
     expect(diagnose(new TimeoutError({ body: {}, url: "https://rpc.moderato.tempo.xyz" })).kind).toBe("rpc-down");
   });
 });
+
+describe("diagnose — node refusals carried in viem's details (X20)", () => {
+  it("names a revoked key and an exceeded limit from the RPC error's details, not its generic short message", () => {
+    const rpc = (details: string) => new BaseError("An internal error was received.", { details });
+    expect(diagnose(rpc("Revm error: keychain validation failed: AccountKeychainError(KeyAlreadyRevoked(KeyAlreadyRevoked))")).kind).toBe("key-revoked");
+    expect(diagnose(rpc("Execution reverted with reason: Account keychain error: SpendingLimitExceeded(SpendingLimitExceeded).")).kind).toBe("spending-limit");
+    expect(diagnose(rpc("Execution reverted with reason: Account keychain error: CallNotAllowed(CallNotAllowed).")).kind).toBe("call-not-allowed");
+  });
+});

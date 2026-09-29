@@ -22,7 +22,7 @@ const ctx = { method: "eth_fillTransaction", device: "dev-1", region: OPEN_POSTU
 const noop = { to: UTILITIES.multicall3, data: encodeFunctionData({ abi: multicall3Abi, functionName: "getCurrentBlockTimestamp" }), value: 0n };
 const place = { to: ENGINE, data: encodeFunctionData({ abi: engineAbi, functionName: "placeOrder", args: [1n] }), value: 0n };
 const approve = (spender: Address, amount: bigint) => ({ to: TEMPO.pathUSD as Address, data: encodeFunctionData({ abi: Abis.tip20, functionName: "approve", args: [spender, amount] }), value: 0n });
-const req = (calls: RelayRequest["calls"], over: Partial<RelayRequest> = {}): RelayRequest => ({ chainId: 42431, from: USER, calls, gas: 50_000n, maxFeePerGas: 20_000_000_000n, feeToken: TEMPO.pathUSD, nonceKey: maxUint256, validBefore: 1_025, ...over });
+const req = (calls: RelayRequest["calls"], over: Partial<RelayRequest> = {}): RelayRequest => ({ chainId: 42431, from: USER, calls, gas: 50_000n, maxFeePerGas: 20_000_000_000n, feeToken: TEMPO.pathUSD, nonceKey: maxUint256, validBefore: 1_025, keyAuthorization: null, ...over });
 
 describe("relay policy engine (C.3.3)", () => {
   it("reads viem's empty-hex zero (`value: \"0x\"`) as 0", () => {

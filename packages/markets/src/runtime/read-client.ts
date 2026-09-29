@@ -20,3 +20,14 @@ function transportFor(e: MarketsEnv): Transport {
 export function createReadClient(env: MarketsEnv): ReadClient {
   return createPublicClient({ chain: tempoReadChain(env.network), transport: transportFor(env), batch: { multicall: { wait: 8, batchSize: MULTICALL_CHUNK_BYTES } } }) as ReadClient;
 }
+
+/**
+ * Logs never ride a JSON-RPC batch: Moderato's gateway answers a batch of `eth_getLogs` with 502 (or an HTML body
+ * viem can't read), measured 2026-09-29 (S4). One request per log window, on the socket when there is one.
+ */
+export function createLogClient(env: MarketsEnv): ReadClient {
+  const https = env.rpcHttpUrls.map((url) => http(url, { batch: false, retryCount: 2, timeout: 20_000 }));
+  const sockets = typeof WebSocket === "undefined" ? [] : env.rpcWsUrls.map((url) => webSocket(url, { keepAlive: { interval: 25_000 }, reconnect: { attempts: 5, delay: 2_000 } }));
+  const all = [...sockets, ...https];
+  return createPublicClient({ chain: tempoReadChain(env.network), transport: all.length === 1 ? all[0]! : fallback(all, { rank: false, retryCount: 1 }) }) as ReadClient;
+}

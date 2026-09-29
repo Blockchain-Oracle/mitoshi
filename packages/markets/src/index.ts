@@ -7,6 +7,8 @@ export * from "./chains";
 export * from "./deployments";
 export * from "./env";
 export * from "./errors";
+export * from "./engine";
+export * from "./stream";
 export * from "./random";
 export * from "./relay";
 export * from "./runtime";
@@ -14,7 +16,7 @@ export * from "./sessions";
 export * from "./submitter";
 export * from "./tx";
 export * from "./transports";
-export { createMarketsProvider } from "./provider";
+export * from "./provider";
 
 import { createPublicClient, http, type PublicClient } from "viem";
 import type { Network } from "@cwf/core";

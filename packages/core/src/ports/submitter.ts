@@ -3,6 +3,7 @@ import type { Diagnosis } from "../types/diagnosis";
 import type { EventMarket, MarketId, OutcomeIdx, Side } from "../types/market";
 import type { Address, Hex } from "../types/primitives";
 import type { Quote } from "../types/trading";
+import type { ExitQuote } from "./markets-provider";
 import type { ArenaIntent } from "../games/arena";
 import type { ParlayIntent } from "../parlay/types";
 import type { RangeIntent } from "../range/types";
@@ -55,6 +56,37 @@ export type OrderOutcome =
   | { status: "reverted"; diagnosis: Diagnosis; txHash: Hex }
   | { status: "unknown"; diagnosis: Diagnosis; txHash?: Hex };
 
+/** Sell a held side back into the book before lock (L-35, D-067): SELL IOC at the exit's protective limit. */
+export interface CashOutRequest {
+  market: EventMarket;
+  side: Side;
+  /** How many contracts to sell, at most the holding. */
+  contractsRaw: bigint;
+  /** The exit the user confirmed; its `minProceedsBase` is the floor. */
+  displayedExit: ExitQuote;
+  wallet: Address;
+}
+
+/** What a sold side booked: contracts sold and the cash the fills paid (sent to the wallet with the same tx). */
+export interface BookedSell {
+  marketId: MarketId;
+  side: Side;
+  contractsRaw: bigint;
+  proceedsBase: bigint;
+  avgPriceBps: number;
+  txHash: Hex;
+  fillCount: number;
+}
+
+export type CashOutOutcome =
+  | { status: "confirmed"; booked: BookedSell }
+  | { status: "nothingFilled"; txHash: Hex }
+  /** The fresh exit pays less than the confirmed floor: show it and ask again. */
+  | { status: "requote"; exit: ExitQuote }
+  | { status: "refused"; diagnosis: Diagnosis }
+  | { status: "reverted"; diagnosis: Diagnosis; txHash: Hex }
+  | { status: "unknown"; diagnosis: Diagnosis; txHash?: Hex };
+
 export interface GrantTerms {
   kind: GrantKind;
   actor: Address;
@@ -86,6 +118,13 @@ export type TxIntent =
   | { kind: "redeem-partial"; marketId: MarketId; outcomeIdx: OutcomeIdx; amountRaw: bigint }
   /** Pay out engine credit for the listed markets (`withdrawCredit`). */
   | { kind: "withdraw-credit"; marketIds: MarketId[] }
+  /**
+   * Collect every leftover in one sponsored batch (D-048): `redeem` each settled Window still held and `withdrawCredit`
+   * each Window with credit (a payout the receive policy held, cancel or eviction refunds). ≤ 8 calls per transaction.
+   */
+  | { kind: "claim-all"; redeem: MarketId[]; credits: { marketId: MarketId; amountBase: bigint }[] }
+  /** Cancel resting orders on one Window (engine `cancelOrders`, ≤ 16 ids), escrow returned to the wallet. */
+  | { kind: "cancel-orders"; marketId: MarketId; orderIds: bigint[] }
   /** Revoke TIP-1011 access keys on the AccountKeychain in one transaction (1–8; the `/settings/account` trust surface, D-053). */
   | { kind: "key-revoke"; keyIds: Address[] }
   /** The relay's S1 proof area: a harmless sponsored call that moves nothing (Multicall3 `getBlockNumber`). */
@@ -132,7 +171,8 @@ export function isArenaIntent(intent: TxIntent): intent is ArenaIntent {
 }
 
 export type TxOutcome =
-  | { status: "confirmed"; txHash: Hex }
+  /** `txHashes`: every transaction of a multi-transaction intent (claim-all), in order; `txHash` is the last. */
+  | { status: "confirmed"; txHash: Hex; txHashes?: Hex[] }
   | { status: "reverted"; diagnosis: Diagnosis; txHash?: Hex }
   | { status: "refused"; diagnosis: Diagnosis }
   | { status: "unknown"; diagnosis: Diagnosis; txHash?: Hex };
@@ -141,6 +181,7 @@ export type TxOutcome =
 export interface Submitter {
   submitOrder(request: OrderRequest, onPhase?: PhaseListener): Promise<OrderOutcome>;
   submitTx(intent: TxIntent, onPhase?: PhaseListener): Promise<TxOutcome>;
+  submitCashOut(request: CashOutRequest, onPhase?: PhaseListener): Promise<CashOutOutcome>;
   hasSigner(): boolean;
 }
 

@@ -14,6 +14,9 @@ export const keys = {
   price: (symbol: string) => [SCOPE, "price", symbol] as const,
   priceHistory: (symbol: string, fromSec: number, toSec: number) => [SCOPE, "priceHistory", symbol, fromSec, toSec] as const,
   bookParams: (seriesId: string | null) => [SCOPE, "bookParams", seriesId] as const,
+  depth: (marketId: string | null) => [SCOPE, "depth", marketId] as const,
+  /** The verdict pinned to a wallet's position on one Window (D-048). */
+  verdict: (wallet: string | null, marketId: string | null) => [SCOPE, "verdict", wallet, marketId] as const,
   positions: (wallet: string | null) => [SCOPE, "positions", wallet] as const,
   claimables: (wallet: string | null) => [SCOPE, "claimables", wallet] as const,
   history: (wallet: string | null) => [SCOPE, "history", wallet] as const,

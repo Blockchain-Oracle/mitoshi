@@ -9,6 +9,7 @@ import type { Address, IntentJournal } from "@cwf/core";
 import { createSubmitter, type MarketsSubmitter } from "../submitter/create";
 import type { IntentEncoder } from "../submitter/encoders";
 import type { NoncePlan } from "../tx/nonce";
+import type { PendingKeyAuthorization } from "../tx/send";
 import type { AuthorityKind } from "./authority";
 import { createNonceQueue } from "./nonce-queue";
 import type { SignerCaps } from "./caps";
@@ -25,6 +26,8 @@ export interface SubmitterSessionConfig {
   journal?: IntentJournal;
   encoders?: readonly IntentEncoder[];
   nonce?: NoncePlan;
+  /** Wallet mode (D-047): the access key's root-signed authorization, published with its first send. */
+  pendingKeyAuthorization?: PendingKeyAuthorization;
 }
 
 export interface SubmitterSession {
@@ -54,10 +57,11 @@ export function createSubmitterSession(config: SubmitterSessionConfig): Submitte
     ...(config.journal ? { journal: config.journal } : {}),
     ...(config.encoders ? { encoders: config.encoders } : {}),
     ...(config.nonce ? { nonce: config.nonce } : {}),
+    ...(config.pendingKeyAuthorization ? { pendingKeyAuthorization: config.pendingKeyAuthorization } : {}),
   });
   const guard = <A extends unknown[], R>(fn: (...args: A) => Promise<R>) => (...args: A): Promise<R> =>
     disposed ? Promise.reject(new SessionDisposedError(config.authority)) : fn(...args);
-  const submitter: MarketsSubmitter = { ...inner, submitTx: guard(inner.submitTx), submitOrder: guard(inner.submitOrder) };
+  const submitter: MarketsSubmitter = { ...inner, submitTx: guard(inner.submitTx), submitOrder: guard(inner.submitOrder), submitCashOut: guard(inner.submitCashOut) };
   return {
     authority: config.authority,
     address,

@@ -17,6 +17,7 @@ import { parseMarketsEnv, type MarketsEnv } from "../env";
 let env: MarketsEnv = parseMarketsEnv();
 export type ReadClient = PublicClient<Transport, TempoReadChain>;
 let client: Promise<ReadClient> | null = null;
+let logClient: Promise<ReadClient> | null = null;
 let version = 0;
 const listeners = new Set<() => void>();
 
@@ -42,9 +43,19 @@ export function getPublicClient(): Promise<ReadClient> {
   return client;
 }
 
-/** Drops the client (tests, a config change); the next read builds a new one. */
+/** The client for `eth_getLogs` (never batched: the gateway refuses log batches). */
+export function getLogClient(): Promise<ReadClient> {
+  if (!logClient) {
+    const forEnv = env;
+    logClient = import("./read-client").then((m) => m.createLogClient(forEnv));
+  }
+  return logClient;
+}
+
+/** Drops the clients (tests, a config change); the next read builds new ones. */
 export function closeRuntime(): void {
   client = null;
+  logClient = null;
 }
 
 /** Bumps whenever the client is rebuilt, so subscriptions can re-attach. */

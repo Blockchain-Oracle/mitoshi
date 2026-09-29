@@ -13,7 +13,7 @@ export { evaluate, feeMicros, functionNameOf, isTip20, MAX_CALLS, normalizeReque
 export { checkGates, DEFAULT_LIMITS, SIGNING_METHODS, type GateInput, type GateLimits } from "../relay/gates";
 export { createMemoryLedger, type LedgerStore, type LedgerTotals, type LedgerWindow, type SponsorshipRow } from "../relay/ledger";
 export { createRelayValidator, type ValidatorDeps } from "../relay/validator";
-export { keysPolicy, noopPolicy, POLICIES } from "../relay/policies";
+export { enginePolicy, keysPolicy, noopPolicy, POLICIES } from "../relay/policies";
 export type { PolicyVerdict, RefusalCode, RelayCall, RelayContext, RelayPolicy, RelayRequest } from "../relay/types";
 export * from "../mpp";
 export * from "../indexer-api";

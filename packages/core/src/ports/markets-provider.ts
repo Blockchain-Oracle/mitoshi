@@ -21,13 +21,24 @@ export interface QuoteTarget extends BookTarget {
 export interface ExitQuote {
   side: Side;
   contractsRaw: bigint;
-  /** What the book pays right now for the whole size, after the protective limit. */
+  /** What the walk pays right now for the fillable size. */
   proceedsBase: bigint;
+  /** The floor at the protective limit: the least a fill can pay (a fresh exit below the confirmed floor is a requote). */
+  minProceedsBase: bigint;
   /** Protective limit in the side's own ticks for the SELL IOC. */
   limitPriceTicks: number;
   fillableContractsRaw: bigint;
   partial: boolean;
   quotedAtMs: number;
+}
+
+/** The verdict card's state (D-048), shaped by `@cwf/markets` `pinVerdict`. */
+export interface PinnedVerdictView {
+  phase: "call" | "settling" | "stamped" | "paid" | "held";
+  verdict: import("../types/trading").Verdict | null;
+  paidBy: "auto" | "self" | null;
+  paidBase: bigint | null;
+  txHash: `0x${string}` | null;
 }
 
 /** The ONE chain port for reads (AD-1). Every method returns a `Reading<T>`; nothing here throws for a chain failure. */
@@ -53,6 +64,11 @@ export interface MarketsProvider {
   /** Every settled Window for a wallet, replayed from its fills — the one derivation history, PnL and Trader Edge share. */
   listWalletHistory(wallet: Address): Promise<Reading<WalletHistory>>;
   getBalanceSheet(wallet: Address): Promise<Reading<BalanceSheet>>;
+  /**
+   * The verdict pinned to the wallet's own position on one Window (D-048): call → settling → stamped → paid (auto or
+   * collected) / held by the receive policy. Null when the wallet never held anything there.
+   */
+  getPinnedVerdict(wallet: Address, marketId: MarketId): Promise<Reading<PinnedVerdictView | null>>;
   syncClock(): Promise<Reading<ClockSync>>;
   /** Chain-offset-corrected wall clock; raw device time never drives a phase. */
   nowMs(): number;
