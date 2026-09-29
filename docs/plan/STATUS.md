@@ -6,8 +6,9 @@ Updated 2026-09-29. **Never trust memory over this file.**
 
 - Product: **Mitoshi 見通し** (`mitoshi.xyz`, D-060). Hosting: owner's Coolify (D-061, `infra/coolify.md`).
 - Repo: private `Blockchain-Oracle/mitoshi`; trunk `integration/t1` (default); current `stage/S0-bootstrap`.
-- Current stage: **S0** — all steps done except the gate items waiting on the owner (see stage file Handoff).
-- Live on testnet (Coolify): web `/api/health`, ops `/health` with `chain-head` + `archive` (RedStone prints every
+- **S0 gate passed.** Wave 1 in progress: S2 engine, S1 web shell, S14c bridge, S3.5 platform clients running;
+  S15a (v4 replay + encoder) and S17a (stablecoin launchpad contracts; wizard waits for S1) merged.
+- Live on testnet (Coolify): `https://testnet.mitoshi.xyz` (web), `https://ops.testnet.mitoshi.xyz/health` with `chain-head` + `archive` (RedStone prints every
   5 min, < 60 s after T). 12 testnet role keys funded (`acceptance/S0.md`).
 
 ## Waiting on the owner
