@@ -13,7 +13,7 @@ const require = createRequire(join(import.meta.dirname, "..", "package.json"));
 const { generatePrivateKey, privateKeyToAddress } = await import(require.resolve("viem/accounts"));
 
 /** Roles from plan C.5.2 / C.6 that sign on their own. Mainnet adds MPP payer after Q-020. */
-export const ROLES = ["deployer", "relay-fee-payer", "roller", "price-relay", "settler", "seed-maker", "earn-quoter", "keeper", "x-relay", "desk", "stock-sync", "ops-fee-payer"];
+export const ROLES = ["deployer", "deployer-launch", "deployer-themes", "deployer-products", "relay-fee-payer", "roller", "price-relay", "settler", "seed-maker", "earn-quoter", "keeper", "x-relay", "desk", "stock-sync", "ops-fee-payer"];
 
 const network = process.argv[2];
 if (network !== "testnet" && network !== "mainnet") throw new Error("usage: generate.mjs <testnet|mainnet>");
