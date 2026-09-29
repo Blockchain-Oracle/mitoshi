@@ -41,7 +41,7 @@ console.log(`pool ${id} = (pathUSD, AlphaUSD, 3000, 60, no hook), owner ${me}`);
 if ((await slot0())[0] === 0n) {
   const liquidity = 1_000_000_000n; // ≈ 1,000 of each token at 1:1 over the full range
   const max = 1_001_000_000n;
-  const r = castBatch("deployer", [
+  const r = castBatch([
     approve(PATH_USD, v4.permit2, max),
     approve(ALPHA_USD, v4.permit2, max),
     permit2Approve(PATH_USD, v4.positionManager, max),
@@ -62,7 +62,7 @@ console.log(`before swap: sqrtPriceX96 ${sqrtBefore} tick ${tickBefore} liquidit
 const amountIn = 10_000_000n;
 const minOut = 9_800_000n; // 0.3 % fee + impact on ≈ 1,000 units of liquidity
 const [inBefore, outBefore] = await Promise.all([balance(PATH_USD), balance(ALPHA_USD)]);
-const s = castBatch("deployer", [
+const s = castBatch([
   approve(PATH_USD, v4.permit2, amountIn),
   permit2Approve(PATH_USD, v4.universalRouter, amountIn),
   { to: v4.universalRouter, data: swapExactInSingle({ poolKey: key, zeroForOne: true, amountIn, amountOutMinimum: minOut, deadlineSec: now + 600n }) as Hex },

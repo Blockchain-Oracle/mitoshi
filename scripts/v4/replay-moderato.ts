@@ -42,7 +42,7 @@ for (const row of ROWS) {
   console.log(`#${row.n} ${row.name} → ${row.address} (initcode ${(initCode.length - 2) / 2} B, estimate ${gas})`);
   if (dryRun) continue;
 
-  const receipt = castSend("deployer", [ARACHNID, tx.input], { extra: ["--gas-limit", "29500000", "--priority-gas-price", "1"] });
+  const receipt = castSend([ARACHNID, tx.input], { extra: ["--gas-limit", "29500000", "--priority-gas-price", "1"] });
   const block = BigInt(receipt.blockNumber);
   const code = await moderato.getCode({ address: row.address });
   console.log(`  tx ${receipt.transactionHash} block ${block} status ${receipt.status} gasUsed ${BigInt(receipt.gasUsed)} code ${code ? (code.length - 2) / 2 : 0} B`);

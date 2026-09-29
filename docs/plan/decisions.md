@@ -367,6 +367,18 @@ the testnet domain. Details: `infra/coolify.md`.
 
 **Why:** the owner self-hosts everything on Coolify; one server, one bill, push-to-deploy.
 
+### D-063 — spike X22: `createToken` is not CREATE; launches are never sponsored (finding + decision, S17a, 2026-09-29)
+
+On Moderato an access key (keychain v2 signature) called `TIP20_FACTORY.createToken` and then signed the whole 9-call
+stablecoin batch; both landed (`acceptance/S17.md`). The factory is a precompile call, not an EVM CREATE, so TIP-1011's
+access-key CREATE ban does not apply: **stablecoin and memecoin launches may be signed by the user's access key or
+passkey root** — no root-only path is needed. The stablecoin batch stays **unsponsored** (the creator pays its fee in
+pathUSD): it is capital intake (bid escrow `amount × price` pathUSD + FeeAMM deposit), spans five targets and nine
+calls (the relay allows one area and ≤ 8 calls), and `recordStablecoin` is only meaningful inside it
+(`relay/policies/launch.ts` lists it under `never`).
+
+**Why:** measured; keeps D-020 (capital intake never sponsored).
+
 ### D-064 — v4 replay and router ABI findings (finding, S15a, 2026-09-29)
 
 Amends `docs/specs/v4-replay.md`: (1) row 7 (UniversalRouter) differs from mainnet only in its EIP-712 immutables

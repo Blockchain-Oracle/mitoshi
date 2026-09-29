@@ -1,6 +1,7 @@
 {
   "generatedBy": "scripts/codegen/clients.mjs",
   "fragments": [
+    "42431/launch",
     "42431/v4"
   ],
   "abis": [
@@ -9,6 +10,7 @@
     "IPositionManager",
     "IStateView",
     "IUniversalRouter",
-    "IV4Quoter"
+    "IV4Quoter",
+    "LaunchRegistry"
   ]
 }
