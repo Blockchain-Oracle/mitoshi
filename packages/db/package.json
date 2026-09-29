@@ -5,11 +5,13 @@
   "type": "module",
   "description": "Postgres client and ordered per-area migrations.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./idx": "./src/idx/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "migrate": "tsx src/migrate.ts"
+    "migrate": "tsx src/migrate.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@cwf/core": "workspace:*",

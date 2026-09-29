@@ -4,3 +4,4 @@ export * from "./feeds";
 export * from "./market";
 export * from "./primitives";
 export * from "./trading";
+export * from "./session-lanes";

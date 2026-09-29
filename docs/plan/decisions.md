@@ -584,6 +584,47 @@ Measured on the production build (`pnpm perf:budgets`): Next 16.3 + React 19.2's
 
 **Why:** the gate must measure what the page controls; a budget below the framework floor is unmeetable, not strict.
 
+### D-090 — S3 builds on S1's ports; the ops chain module is `@cwf/markets/ops` (S3.1, 2026-09-29)
+
+S3 merges `stage/S1-web-shell` @ `082c13f` (as S3.5 did) instead of re-porting Agari's core planners: S1 already ported
+`packages/core/src/market/*` (windows, calendar, RedStone schedule, halts, tickers, corporate, earnings) from Agari
+03b30ab and `packages/markets/src/tx/send.ts`. The venue actors' chain I/O lives in `packages/markets/src/ops/*`
+(`@cwf/markets/ops`: role clients, EngineLens reads through Multicall3, engine call builders, `sendOps` = simulate one
+call, then `tx/send.ts` with an expiring nonce, self-paid in pathUSD) and `packages/markets/src/prices/*` (RedStone
+payloads, EIP-712 attestations, Data Streams REST). "Fly config" in the stage box is the Coolify app (D-061): the
+existing `services/ops/Dockerfile`, health `/health`, `DRY_RUN` default on.
+
+**Why:** one copy of each planner; chain I/O stays in `packages/markets` (C.1.2 boundaries).
+
+### D-091 — the testnet venue lists the nine RedStone stock names on every lane (S3.4, 2026-09-29)
+
+`venue-spec.json` gains 63 Series (registered on Moderato, `acceptance/S3.md`): TSLA, NVDA, AAPL, MSFT, META, GOOGL,
+AMZN, PLTR, AMD × Regular 5m/15m/60m (Agari's cadences), the weekend Gap (basis 1, cadence 604,800, primary open
+admission `ADMIT_UNTIL_LOCK` as Agari's `policyVersions(…, "gap")`) and the 24/7 lane on RedStone `<T>---24_7` (basis 2,
+5m/15m/60m; the registry's `stock24`). RedStone publishes no `PLTR---24_7` or `AMD---24_7` feed (gateway `latest`,
+2026-09-29, found by halt-watch): their 24/7 Series stay registered and read "paused: no signed source" (the registry sets
+their `redstone24x7FeedId` to null; the roller never lists them). SPCX waits for Data Streams (Q-011). Version 0 of every Series is RedStone
+primary with no check source (the only keyless signed source on Moderato); a Data Streams check arrives as a new
+policy version, never an edit. The node pool is reserved to 256 so the seed maker's quotes don't pay cold slots.
+Measured cost: `openWindow` ≈ 1.07M gas at ≈ 2.7 gwei-equivalent in pathUSD, so all 66 lanes cost ≈ 3 pathUSD a day of
+roller fees.
+
+**Why:** the S3 gate needs a US session and a Gap; the registry already names these lanes (S1 `tickers.ts`).
+
+### D-092 — the S3 soak's house taker and ops' public evidence routes (S3.8, 2026-09-29)
+
+(1) The unattended soak needs fills to exercise settlement and auto-pay before any user trades, so ops has an opt-in
+`house-taker` actor: the `keeper` testnet key takes one small IOC against the seed maker's best quote on a trading
+24/7 Window every 15 minutes. It is never in the default actor set (nor `all`), is an operator wallet (excluded from
+leaderboards and traction like the maker and settler), and its fills are labelled house activity in `/health`.
+(2) Ops serves two read-only routes over public chain-derived data so the gate scripts run against production
+without database access: `GET /index/recount?through=<block>` (block-pinned index counts and per-Window digests
+for `scripts/drive/recount.ts`) and `GET /halts/log?from&to` (halt-watch's recorded observations for
+`halt-replay.ts`). (3) Role keys are Coolify runtime-only variables; `OPS_DRY_ACTORS` rolls actors out of dry run one
+at a time.
+
+**Why:** the gate asks for auto-pay and recount/halt replay on the live venue; the Coolify Postgres is internal only (D-061).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

@@ -60,10 +60,10 @@ const STOCK_LANES: readonly LaneBasis[] = ["regular", "gap", "stock24"];
 const CRYPTO_LANES: readonly LaneBasis[] = ["crypto24"];
 const brand = (slug: BrandSlug, hex: string): Brand => ({ slug, hex });
 
-function stock(symbol: StockSymbol, tickerId: number, name: string, monogram: string, b: Brand, redstone = true): Ticker {
+function stock(symbol: StockSymbol, tickerId: number, name: string, monogram: string, b: Brand, redstone = true, redstone24x7 = redstone): Ticker {
   return {
     symbol, tickerId, name, kind: "stock", alpacaSymbol: symbol,
-    redstoneFeedId: redstone ? symbol : null, redstone24x7FeedId: redstone ? `${symbol}---24_7` : null, dataStreamsFeedId: null,
+    redstoneFeedId: redstone ? symbol : null, redstone24x7FeedId: redstone24x7 ? `${symbol}---24_7` : null, dataStreamsFeedId: null,
     lanes: STOCK_LANES, monogram, brand: b,
   };
 }
@@ -83,8 +83,9 @@ export const TICKERS: Readonly<Record<TickerSymbol, Ticker>> = {
   META: stock("META", 5, "Meta", "M", brand("meta", "#0467DF")),
   GOOGL: stock("GOOGL", 6, "Alphabet", "G", brand("google", "#4285F4")),
   AMZN: stock("AMZN", 7, "Amazon", "A", brand("amazon", "#FF9900")),
-  PLTR: stock("PLTR", 8, "Palantir", "P", brand("palantir", "#101113")),
-  AMD: stock("AMD", 9, "AMD", "A", brand("amd", "#ED1C24")),
+  /** RedStone publishes no `PLTR---24_7` / `AMD---24_7` feed (gateway `latest`, 2026-09-29): their 24/7 lanes read "paused: no signed source". */
+  PLTR: stock("PLTR", 8, "Palantir", "P", brand("palantir", "#101113"), true, false),
+  AMD: stock("AMD", 9, "AMD", "A", brand("amd", "#ED1C24"), true, false),
   /** SpaceX listed on Nasdaq 2026-06-12. No RedStone feed: its only signed source is Data Streams on mainnet (Q-011). */
   SPCX: stock("SPCX", 10, "SpaceX", "S", brand("spacex", "#005288"), false),
   BTC: crypto("BTC", 101, "Bitcoin", "₿", brand("bitcoin", "#F7931A")),
