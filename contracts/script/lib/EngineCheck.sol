@@ -126,14 +126,16 @@ abstract contract EngineCheck is Script {
 
     /// The launch policy for a Series: RedStone primary at the spec's strict and admission windows, no check source
     /// (Data Streams needs credentials on Moderato, Q-011), valid from 0, open-ended.
-    function launchPolicy(address rs, bytes32 feed, Spec memory s) internal pure returns (PolicyVersion memory v) {
+    /// @notice Version 0 of a Series: RedStone primary, no check (testnet, Q-011). A Gap admits its Friday open print
+    ///         until the lock (`ADMIT_UNTIL_LOCK`, A.1.2; Agari `policyVersions(…, "gap")`).
+    function launchPolicy(address rs, bytes32 feed, Spec memory s, uint8 basis) internal pure returns (PolicyVersion memory v) {
         v.validFrom = 0;
         v.validUntil = OPEN_ENDED;
         v.primary.verifier = rs;
         v.primary.source = SOURCE_REDSTONE;
         v.primary.feedId = feed;
         v.primary.strictSec = s.strictSec;
-        v.primary.openAdmissionSec = s.admissionSec;
+        v.primary.openAdmissionSec = basis == BASIS_GAP ? ADMIT_UNTIL_LOCK : s.admissionSec;
         v.primary.closeAdmissionSec = s.admissionSec;
     }
 

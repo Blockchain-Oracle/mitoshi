@@ -16,7 +16,7 @@ contract RegisterSeries is DeploymentWriter, EngineCheck {
         for (uint256 i; i < all.length; ++i) {
             SeriesSpec memory x = all[i];
             bytes32 sid = EngineStorage.seriesIdOf(x.ticker, x.cadenceSec, x.basis);
-            PolicyVersion memory want = launchPolicy(address(d.rs), x.feed, s);
+            PolicyVersion memory want = launchPolicy(address(d.rs), x.feed, s, x.basis);
             if (_exists(d, sid)) {
                 Series memory have = d.lens.seriesOf(sid);
                 _drift(

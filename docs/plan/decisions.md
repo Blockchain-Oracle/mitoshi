@@ -450,6 +450,19 @@ existing `services/ops/Dockerfile`, health `/health`, `DRY_RUN` default on.
 
 **Why:** one copy of each planner; chain I/O stays in `packages/markets` (C.1.2 boundaries).
 
+### D-091 — the testnet venue lists the nine RedStone stock names on every lane (S3.4, 2026-09-29)
+
+`venue-spec.json` gains 63 Series (registered on Moderato, `acceptance/S3.md`): TSLA, NVDA, AAPL, MSFT, META, GOOGL,
+AMZN, PLTR, AMD × Regular 5m/15m/60m (Agari's cadences), the weekend Gap (basis 1, cadence 604,800, primary open
+admission `ADMIT_UNTIL_LOCK` as Agari's `policyVersions(…, "gap")`) and the 24/7 lane on RedStone `<T>---24_7` (basis 2,
+5m/15m/60m; the registry's `stock24`). SPCX waits for Data Streams (Q-011). Version 0 of every Series is RedStone
+primary with no check source (the only keyless signed source on Moderato); a Data Streams check arrives as a new
+policy version, never an edit. The node pool is reserved to 256 so the seed maker's quotes don't pay cold slots.
+Measured cost: `openWindow` ≈ 1.07M gas at ≈ 2.7 gwei-equivalent in pathUSD, so all 66 lanes cost ≈ 3 pathUSD a day of
+roller fees.
+
+**Why:** the S3 gate needs a US session and a Gap; the registry already names these lanes (S1 `tickers.ts`).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
