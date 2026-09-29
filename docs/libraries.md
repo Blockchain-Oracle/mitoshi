@@ -19,7 +19,7 @@ forced are D-054…D-056 (plan D45–D47). Before coding against a library, re-r
 | Lighthouse CI | `open-libs.md` §4 | `screenEmulation` 390×844, median of 3, Vercel preview via `repository_dispatch` + bypass headers |
 | Foundry 1.8.3 | `chain-libs.md` §1 | `network = "tempo"`, gas snapshots + `--gas-snapshot-check`, `afterInvariant`, Sourcify verify at `contracts.tempo.xyz`; scripts target a Tempo node |
 | OpenZeppelin 5.7 | `chain-libs.md` §2 | proxy initialized at construction (own ProxyAdmin), `_disableInitializers()`, transient guard |
-| OZ uniswap-hooks, v4-core/periphery | `chain-libs.md` §3–4 | `BaseHook`; `sync` → transfer → `settle`; pinned router ABI; off-chain quoter only |
+| OZ uniswap-hooks, v4-core/periphery | `chain-libs.md` §3–4 | `BaseHook`; `sync` → transfer → `settle`; pinned router ABI; off-chain quoter only. UR `0xa2dc` ABI = periphery #497 (5-field single, per-hop max-price array on multi; D-064), encoder `@cwf/markets/v4` only |
 | LayerZero V2 (npm) | `chain-libs.md` §5 | `_debit`/`_credit` overrides; enforced options; `_credit` never reverts; needs `solidity-bytes-utils` |
 | Solady 0.1.26 | `chain-libs.md` §6 | `ffs/fls(0) = 256` guards; `lnWad` refuses ≤ 0 |
 | Expo SDK 57 + RN webview, notifications, widgets, EAS | `mobile-stack.md` | Appendix D as corrected by D-056 |

@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Generated ABIs, deployments and pinned addresses (pnpm codegen).",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./abis/*": "./src/abis/*.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

@@ -15,6 +15,7 @@ fs_permissions = [
   { access = "read-write", path = "./deployments" },
   { access = "read", path = "../packages/core/src" },
   { access = "read", path = "./test/fixtures" },
+  { access = "read", path = "../packages/markets/src/v4" },
 ]
 
 [profile.default.fuzz]
@@ -29,7 +30,7 @@ fail_on_revert = false
 out = "out/evm"
 network = "ethereum"
 evm_version = "cancun"
-skip = ["src/engine/**", "src/products/**", "src/fair/**", "src/stocks/**", "src/themes/**", "src/launch/**", "test/tempo/**"]
+skip = ["src/engine/**", "src/products/**", "src/fair/**", "src/stocks/**", "src/themes/**", "src/launch/**", "src/v4/**", "test/tempo/**", "test/fork/v4/**"]
 
 [profile.ci]
 fuzz = { runs = 10000 }
