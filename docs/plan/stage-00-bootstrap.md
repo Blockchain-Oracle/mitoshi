@@ -5,7 +5,7 @@
   env-matrix}.md`; `docs/specs/{engine.md ← App. A, pillar2.md ← App. B, offchain.md ← App. C, v4-replay.md ← B.3.1
   table, mobile.md ← App. D, ux.md ← App. E}`. Src: Agari `docs/plan/working-rules.md`.
 - [ ] S0.2 Doc sync (§1.3) in `context/tempo/17`, `12`, `13`, `04`, `05`, `STATUS.md`.
-- [ ] S0.3 Root: `package.json`, `pnpm-workspace.yaml` (catalog C.1.3; workspace includes `mobile`, whose Expo-pinned
+- [x] S0.3 Root: `package.json`, `pnpm-workspace.yaml` (catalog C.1.3; workspace includes `mobile`, whose Expo-pinned
   React/RN versions live in a named `mobile` catalog, D.1), `tsconfig.base.json`, `vitest.config.ts`, `.nvmrc` 24,
   `.gitignore`, `THIRD_PARTY_NOTICES.md`. Src: Masayume root.
 - [ ] S0.4 Scaffolds: `packages/{core,markets,brain,db,clients}`, `services/ops` (hello `runActor` + `/health`),
