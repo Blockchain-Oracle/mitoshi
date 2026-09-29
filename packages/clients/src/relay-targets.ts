@@ -57,6 +57,9 @@ export const relayTargets = {
       "0x20e6487c371a2086f841ef453f85378223df4f4e",
       "0x21b954fba3f5ddebe77ef2d47a3100c066908b2a",
       "0xa2dc7d0266f0cc50b3eeaf36c9bfcecff1beea91"
+    ],
+    "vault": [
+      "0x5E38dc8b7402FFB608134872a64663e5D75235b8"
     ]
   },
   "84532": {

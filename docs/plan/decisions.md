@@ -544,6 +544,68 @@ launch (`scripts/drive/launch-meme.ts`). `graduate` is never sponsored: the keep
 
 **Why:** keeps the write boundary and the S3 lane's deployment untouched while the keeper logic ships and is proven.
 
+### D-110 — the shared product seam's shape: `EngineSeam` library + `PayoutCheck`/`Payouts` (decision, S7, 2026-09-29)
+
+Refines A.4 "Shared" where it left the shape open. (1) `EngineSeam` is an internal library taking `(engine, lens,
+collateral)` explicitly, so it inlines into each product and the engine sees the product as `msg.sender`.
+(2) `placeMeasured` is for non-resting taker orders only and asserts, besides A.4's buy/sell rows, `restedLots == 0`
+and that the product's engine credit and locked cash are unchanged; `redeemPartialMeasured` asserts `Δwallet ==
+payout`, `Δfree == lots`, credit unchanged. Makers (S8) need their own `PostOnly` variant. (3) `Payouts.sol` holds two
+pieces: `library PayoutCheck` (`receivable`, `payChecked` → `ReceivePolicyBlocked(address)`) for payouts the receiver
+triggers on themself, and `abstract contract Payouts` (`_payOrOwe`, `owedOf`, `totalOwedPayouts`, `claimOwed()` paying
+`msg.sender`) for payouts someone else triggers; a product that never owes (the vault) inherits only the library, so
+its ABI gains no dead `claimOwed`. A TIP-403 token policy that reverts the transfer is caught by OZ `trySafeTransfer`.
+
+**Why:** the vault needs the refusal form (P12 on its own withdrawals) and S10/S12b need the owe form; one file, no
+unused surface.
+
+### D-111 — EventVault seam details (decision, S7, 2026-09-29)
+
+Amends A.4.1 where the port needed a choice: `VenueGateway.MarketRef` also carries `status` (read in the same
+`lens.marketRef` call, so `_placeIoc` and `_isSettled` need no second read); `_resolve` turns any lens revert, or a
+zero `lotBase`, into Masayume's `UnknownMarket(bytes32)`; the constructor also pins `lens.engine() == engine`
+(`WrongLens`); `expireNs / 1e9` is clamped to `lockAt` (an expiry already past refuses in the engine,
+`OrderAlreadyExpired`); `ReentrancyGuard` stays OZ's storage guard, as in Masayume (as-is, D-003). `Caps.market` is
+appended as the struct's last field (no packing change for the four Masayume fields) and is checked on buys **and**
+sells before the market is resolved (Agari `require_market` runs on every `actor_place_for`). D-062: `_bookSale` releases
+the opening grant's count when a side reaches zero (the owner's own `place` sale included); `crankSettle` releases a
+tag left on an emptied side at a zero payout instead of reverting, and still refuses `NothingToSettle` when there is
+neither a position nor a tag.
+
+**Why:** each keeps Masayume's behaviour and error names while closing the gaps the engine's shape opens.
+
+### D-112 — vault withdrawals refuse on a blocking receive policy; they never owe (decision, S7, 2026-09-29)
+
+`withdraw` and `withdrawPrivate` are the owner's own calls paying `msg.sender`, so P12 is the engine's own-call rule:
+pre-check `validateReceivePolicy(pathUSD, vault, owner)` and revert `ReceivePolicyBlocked(owner)`, leaving the balance
+in the Trading Balance (a TIP-20 transfer would otherwise "succeed" into the ReceivePolicyGuard, F-S2-09). Nothing the
+vault does pays anyone else — `crankSettle` credits `available` — so the vault needs no owe path.
+
+**Why:** the owner can clear their own policy and retry; holding the money as owed would add a second bucket for no gain.
+
+### D-113 — how Masayume's vault suites run on the real engine (finding + decision, S7, 2026-09-29)
+
+`BookSeeder` rests real PostOnly maker quotes where `MockVenue` had knobs: before each placement it rests Masayume's
+book (YES at 0.60 / NO at 0.40) on the side the next order takes, cancelling the maker's other side first (a real book
+cannot be crossed, so the mock's "YES 0.60 and NO 0.40 at once" becomes just-in-time quotes; every expected number is
+unchanged). The golden caps vectors are copied byte-identical. The two knobs with no engine counterpart keep their
+tests with the engine's behaviour asserted: refund-as-credit (row #2: the engine pulls the exact cost, the vault's
+credit stays 0, `sweep` returns 0) and taker fees (row #10: no fee field, Q-005/T10). `ImmediateOrCancelNoFill` is the
+engine's own error of the same name. The Somnia fork test is a Moderato fork replaying the S2.12 Window through a fresh
+vault. The only mock is `LyingEngine`, a fault injector that trades honestly until told to lie (7 lies).
+
+**Why:** A.6/D-018 — the suites prove the seam against the real engine; the mock proves only the assert.
+
+### D-114 — the vault is live on Moderato; tap-trading waits for S4 only for sponsorship and the browser key (finding, S7, 2026-09-29)
+
+`EventVault` `0x5E38dc8b7402FFB608134872a64663e5D75235b8` (deployer-vault, Sourcify exact match) against the S2 engine;
+area `vault` with `relay/policies/vault.ts` (Masayume's list unchanged; Q-021 open). The live drive
+(`scripts/drive/vault-live.ts`, acceptance/S7.md) runs the tap flow on a Window the S3 roller listed with throwaway
+accounts; the session key pays its own fee until S4's relay sponsors `placeFor`. The WebCrypto P-256 session key,
+the web features and the settler's `crankSettle` actor are S7's off-chain half (after S4).
+
+**Why:** the contract half of S7 is complete and proven live; what remains is sequenced, not cut.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
