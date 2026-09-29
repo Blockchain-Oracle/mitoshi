@@ -48,4 +48,6 @@
 
 ## Handoff
 
-_Not started._
+- S0.10: Moderato role keys generated and funded. Still open: Robinhood testnet ETH + daily faucet claims (owner, X11),
+  Base Sepolia ETH for the transit side, the mainnet MPP wallet after Q-020.
+- S0.9/S0.11 wait on the hosting decision (domain Q-019; Vercel/Fly/Neon/Upstash accounts Q-026).
