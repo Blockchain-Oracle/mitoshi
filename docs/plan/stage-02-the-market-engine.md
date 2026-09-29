@@ -16,7 +16,7 @@
 - [x] S2.5 `libs/AdminLib.sol`. Src: `admin_series.rs`, `policy_rules.rs`, `window_rules.rs`, `roller_open_window.rs`.
 - [x] S2.6 `libs/ResolveLib.sol`. Src: `print_rules.rs`, `normalize.rs`, `copy_open_from_prev.rs`, `resolve_rules.rs`,
   `resolve_window.rs`, `redeem.rs`. Tests `Prints`, `Resolve`, `Redeem`, Example 8.
-- [ ] S2.7 `verifiers/{RedStonePrintVerifier,DataStreamsPrintVerifier,AttestedPrintVerifier}.sol` + `verifiers/lib/*`.
+- [x] S2.7 `verifiers/{RedStonePrintVerifier,DataStreamsPrintVerifier,AttestedPrintVerifier}.sol` + `verifiers/lib/*`.
   Src: `print/{redstone,median,attested}.rs`; fixtures = Agari's two archived TSLA payloads + the SPY v11 report; spike X12
   (`verifySpot` latest mode).
 - [ ] S2.8 `EngineLens.sol`. Src: `book_walk/mod.rs`. Tests `Lens`, `Layout`; regenerated `book.vectors.json` (seconds).
@@ -102,7 +102,23 @@
   0) and clears, as in Agari. Conservation after settlement is Agari's `owed_after_settlement` (credit + escrow + payout
   per holder); the fixture switches form by market state. The engine now implements the whole `IEventsEngine`; the
   test-only listing hook is gone (markets list through `registerSeries` → `addPolicyVersion` → `openWindow`).
+- **F-S2-13 (S2.7, verifiers).** `RedStonePrintVerifier` is our own calldata parser (no BUSL connector): the real
+  archived TSLA payloads verify against the production signers (medians match Agari's fixtures). Every posted package
+  must be a valid, distinct, configured signature (OZ `tryRecover`: low-s, non-zero) — an unknown or malleated
+  signature refuses `UnknownRedStoneSigner`, a repeat `DuplicateRedStoneSigner` (T02); a zero or oversized value
+  refuses `InvalidPrintValue` (Agari's SDK dropped such packages below N → `InsufficientRedStoneSigners`; same
+  outcome, named). Data Streams: v3/v11 by the feed id's version; the v11 order is confirmed against the real SPY
+  report through the real mainnet proxy; a `marketStatus` outside the policy mask refuses `InsufficientVerification`
+  (the closest Agari name: the update is not a valid print for the slot); the proxy interface drops `payable` (Tempo
+  has no value; same selector). Attested: EIP-712 with `verifyingContract` = the calling engine, so replay across
+  engines, chains, markets and slots recovers a different key (`UnknownAttestor`); `verifySpot` uses a typed
+  `Spot(feedId, price, expo, observedAt)` under the same domain. The S2.5 test-only prover is retired: every engine
+  suite now records real signed prints (5 RedStone test keys; an EIP-712 attestor key). Sizes: RedStone 3,582 B,
+  Attested 3,369 B, Data Streams 2,352 B. X12: `verifySpot` proves live gateway "latest" packages (ETH, TSLA---24_7).
+  Test gotcha recorded: under via-IR a test's `block.timestamp` can read stale after `vm.warp`; the fixture uses
+  `vm.getBlockTimestamp()`. The payload builder for live drives is `scripts/drive/lib/redstone-payload.ts` (ported from
+  Agari's `redstonePayload`); the production relay's copy belongs to S3.
 
 ## Handoff
 
-S2.0–S2.6 done (the engine implements the frozen ABI end to end). Next: S2.7 verifiers.
+S2.0–S2.7 done (engine + real verifiers). Next: S2.8 EngineLens.

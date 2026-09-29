@@ -8,7 +8,8 @@ import {EventsEngine} from "../../src/engine/EventsEngine.sol";
 import {EngineStorage} from "../../src/engine/EngineStorage.sol";
 import {IEngineErrors as E} from "../../src/engine/EngineErrors.sol";
 import {IEventsEngineEvents as Ev} from "../../src/engine/interfaces/IEventsEngineEvents.sol";
-import {TestPrintVerifier} from "./harness/TestPrintVerifier.sol";
+import {RedStonePrintVerifier} from "../../src/engine/verifiers/RedStonePrintVerifier.sol";
+import {PrintSigner} from "./harness/PrintSigner.sol";
 import {Policies} from "./harness/Policies.sol";
 import "../../src/engine/EngineTypes.sol";
 
@@ -22,14 +23,14 @@ contract RollerTest is Test {
     uint40 internal constant CLOSE_0925 = 1_790_366_400;
 
     EventsEngine internal engine;
-    TestPrintVerifier internal rs;
+    RedStonePrintVerifier internal rs;
     address internal admin = makeAddr("admin");
     address internal roller = makeAddr("roller");
 
     function setUp() public {
         vm.warp(NOW);
         engine = new EventsEngine(address(StdTokens.PATH_USD), admin, makeAddr("treasury"));
-        rs = new TestPrintVerifier(SOURCE_REDSTONE);
+        rs = new RedStonePrintVerifier(PrintSigner.signers(5), 3);
         vm.prank(admin);
         engine.setRoller(roller, true);
     }

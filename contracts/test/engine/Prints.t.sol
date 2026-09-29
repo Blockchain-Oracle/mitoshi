@@ -2,7 +2,8 @@
 pragma solidity 0.8.30;
 
 import {EngineFixture} from "./harness/EngineFixture.sol";
-import {TestPrintVerifier} from "./harness/TestPrintVerifier.sol";
+import {PrintSigner} from "./harness/PrintSigner.sol";
+import {AttestedPrintVerifier} from "../../src/engine/verifiers/AttestedPrintVerifier.sol";
 import {Policies} from "./harness/Policies.sol";
 import {ResolveLib} from "../../src/engine/libs/ResolveLib.sol";
 import {PrintLib} from "../../src/engine/libs/PrintLib.sol";
@@ -25,46 +26,45 @@ contract PrintsTest is EngineFixture {
         return PrintLib.unpack(uint128(which % 2 == 0 ? slot : slot >> 128));
     }
 
-    function _proof(int256 price, int8 expo) internal pure returns (bytes memory) {
-        return abi.encode(price, expo, uint8(5));
-    }
+    /// Refusals below happen in admission, before any verifier runs; the proof bytes are never read.
+    bytes internal constant UNREAD = hex"00";
 
     function test_admissionOrder() public {
         bytes32 fresh = list(LOCK, LOCK + 300, false);
         vm.expectRevert(E.UnknownMarket.selector);
-        engine.recordPrint(keccak256("nope"), WHICH_OPEN, _proof(1, 0));
+        engine.recordPrint(keccak256("nope"), WHICH_OPEN, UNREAD);
         vm.expectRevert(E.BadPrintSlot.selector);
-        engine.recordPrint(fresh, 4, _proof(1, 0));
+        engine.recordPrint(fresh, 4, UNREAD);
         vm.expectRevert(E.WrongPrintSource.selector); // no check source on the launch version
-        engine.recordPrint(fresh, WHICH_CHECK_OPEN, _proof(1, 0));
+        engine.recordPrint(fresh, WHICH_CHECK_OPEN, UNREAD);
         vm.expectRevert(E.PrintTooEarly.selector); // T = LOCK is still ahead
-        engine.recordPrint(fresh, WHICH_OPEN, _proof(1, 0));
+        engine.recordPrint(fresh, WHICH_OPEN, UNREAD);
         vm.warp(LOCK);
-        engine.recordPrint(fresh, WHICH_OPEN, _proof(36_547_600, -5));
+        engine.recordPrint(fresh, WHICH_OPEN, PrintSigner.five(Policies.TSLA, 36_547_600_000, LOCK));
         assertEq(_print(fresh, WHICH_OPEN).priceE8, 36_547_600_000);
         assertEq(_print(fresh, WHICH_OPEN).source, SOURCE_REDSTONE);
         assertEq(_print(fresh, WHICH_OPEN).sourceTs, LOCK);
         vm.expectRevert(E.PrintAlreadyRecorded.selector); // the first valid print wins
-        engine.recordPrint(fresh, WHICH_OPEN, _proof(2, 0));
+        engine.recordPrint(fresh, WHICH_OPEN, UNREAD);
         vm.expectRevert(E.PrintTooEarly.selector);
-        engine.recordPrint(fresh, WHICH_CLOSE, _proof(1, 0));
+        engine.recordPrint(fresh, WHICH_CLOSE, UNREAD);
         vm.warp(LOCK + 300 + 900); // the close deadline itself is still admissible
-        engine.recordPrint(fresh, WHICH_CLOSE, _proof(1, 0));
+        engine.recordPrint(fresh, WHICH_CLOSE, PrintSigner.five(Policies.TSLA, 1e8, LOCK + 300));
         bytes32 late = list(LOCK + 1200, LOCK + 1500, false);
         vm.warp(LOCK + 1500 + 901);
         vm.expectRevert(E.PrintTooLate.selector);
-        engine.recordPrint(late, WHICH_CLOSE, _proof(1, 0));
+        engine.recordPrint(late, WHICH_CLOSE, UNREAD);
         vm.expectRevert(E.PrintTooLate.selector);
-        engine.recordPrint(late, WHICH_OPEN, _proof(1, 0));
+        engine.recordPrint(late, WHICH_OPEN, UNREAD);
         engine.voidExpired(late);
         vm.expectRevert(E.MarketAlreadyTerminal.selector);
-        engine.recordPrint(late, WHICH_CLOSE, _proof(1, 0));
+        engine.recordPrint(late, WHICH_CLOSE, UNREAD);
     }
 
     /// An attested source waits `minDelaySec` after T (the bar must be complete); a check slot's deadline is
     /// `T + checkAdmissionSec`.
     function test_minDelayAndCheckDeadline() public {
-        TestPrintVerifier att = new TestPrintVerifier(SOURCE_ATTESTED);
+        AttestedPrintVerifier att = attVerifier;
         vm.startPrank(admin);
         bytes32 sid = engine.registerSeries(RegisterSeriesArgs(901, BASIS_REGULAR, 300, 1000, 1000, 1, 20, 400_000, 32, 16));
         engine.addPolicyVersion(sid, 0, Policies.checked(Policies.launch(address(rsVerifier), 0, OPEN_ENDED), Policies.attested(address(att), 120)));
@@ -73,14 +73,14 @@ contract PrintsTest is EngineFixture {
         bytes32 c = engine.openWindow(OpenWindowArgs(sid, 0, LOCK, LOCK + 300, LOCK + 300, 0, 2));
         vm.warp(LOCK + 9);
         vm.expectRevert(E.PrintTooEarly.selector);
-        engine.recordPrint(c, WHICH_CHECK_OPEN, _proof(1, 0));
+        engine.recordPrint(c, WHICH_CHECK_OPEN, UNREAD);
         vm.warp(LOCK + 10);
         vm.expectEmit(true, false, false, true, address(engine));
-        emit Ev.PrintRecorded(c, 2, WHICH_CHECK_OPEN, SOURCE_ATTESTED, 100_000_000, LOCK, 5, false);
-        engine.recordPrint(c, WHICH_CHECK_OPEN, _proof(1, 0));
+        emit Ev.PrintRecorded(c, 2, WHICH_CHECK_OPEN, SOURCE_ATTESTED, 100_000_000, LOCK, 1, false);
+        attest(c, WHICH_CHECK_OPEN, 100_000_000);
         vm.warp(LOCK + 300 + 121);
         vm.expectRevert(E.PrintTooLate.selector);
-        engine.recordPrint(c, WHICH_CHECK_CLOSE, _proof(1, 0));
+        engine.recordPrint(c, WHICH_CHECK_CLOSE, UNREAD);
     }
 
     function test_normalize() public view {
@@ -139,7 +139,7 @@ contract PrintsTest is EngineFixture {
 
     /// E-48: the predecessor's check close is copied too, but only inside the check window.
     function test_copyAlsoCopiesTheCheckInsideItsWindow() public {
-        TestPrintVerifier att = new TestPrintVerifier(SOURCE_ATTESTED);
+        AttestedPrintVerifier att = attVerifier;
         vm.startPrank(admin);
         bytes32 sid = engine.registerSeries(RegisterSeriesArgs(903, BASIS_REGULAR, 300, 1000, 1000, 1, 20, 400_000, 32, 16));
         engine.addPolicyVersion(sid, 0, Policies.checked(Policies.launch(address(rsVerifier), 0, OPEN_ENDED), Policies.attested(address(att), 120)));
@@ -151,13 +151,13 @@ contract PrintsTest is EngineFixture {
         vm.stopPrank();
         vm.warp(LOCK + 10);
         recordClose(a, 36_600_000_000);
-        engine.recordPrint(a, WHICH_CHECK_CLOSE, _proof(366, 0));
+        attest(a, WHICH_CHECK_CLOSE, 36_600_000_000);
         engine.copyOpenFromPrev(b, a);
         assertEq(_print(b, WHICH_CHECK_OPEN).priceE8, 36_600_000_000);
         assertEq(_print(b, WHICH_CHECK_OPEN).flags, PRINT_FLAG_COPIED_FROM_PREV);
         vm.warp(LOCK + 310);
         recordClose(b, 36_700_000_000);
-        engine.recordPrint(b, WHICH_CHECK_CLOSE, _proof(367, 0));
+        attest(b, WHICH_CHECK_CLOSE, 36_700_000_000);
         vm.warp(LOCK + 300 + 121); // past c's check window, inside its open deadline
         engine.copyOpenFromPrev(c, b);
         assertEq(_print(c, WHICH_OPEN).priceE8, 36_700_000_000);

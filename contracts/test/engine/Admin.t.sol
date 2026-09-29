@@ -6,7 +6,11 @@ import {IEngineErrors as E} from "../../src/engine/EngineErrors.sol";
 import {IEventsEngineEvents as Ev} from "../../src/engine/interfaces/IEventsEngineEvents.sol";
 import {EngineStorage} from "../../src/engine/EngineStorage.sol";
 import {EventsEngine} from "../../src/engine/EventsEngine.sol";
-import {TestPrintVerifier} from "./harness/TestPrintVerifier.sol";
+import {RedStonePrintVerifier} from "../../src/engine/verifiers/RedStonePrintVerifier.sol";
+import {AttestedPrintVerifier} from "../../src/engine/verifiers/AttestedPrintVerifier.sol";
+import {DataStreamsPrintVerifier} from "../../src/engine/verifiers/DataStreamsPrintVerifier.sol";
+import {DataStreamsProxyStub} from "./harness/DataStreamsProxyStub.sol";
+import {PrintSigner} from "./harness/PrintSigner.sol";
 import {Policies} from "./harness/Policies.sol";
 import "../../src/engine/EngineTypes.sol";
 
@@ -62,16 +66,16 @@ contract AdminRolesTest is EngineFixture {
 
 /// E-07/E-23 series registration and E-08/E-09/E-25 policy versions (Agari admin_series.rs + policy_rules.rs tests).
 contract AdminSeriesTest is EngineFixture {
-    TestPrintVerifier internal rs;
-    TestPrintVerifier internal att;
-    TestPrintVerifier internal ds;
+    RedStonePrintVerifier internal rs;
+    AttestedPrintVerifier internal att;
+    DataStreamsPrintVerifier internal ds;
     bytes32 internal sid;
 
     function setUp() public override {
         super.setUp();
-        rs = new TestPrintVerifier(SOURCE_REDSTONE);
-        att = new TestPrintVerifier(SOURCE_ATTESTED);
-        ds = new TestPrintVerifier(SOURCE_DATA_STREAMS);
+        rs = rsVerifier;
+        att = attVerifier;
+        ds = new DataStreamsPrintVerifier(address(new DataStreamsProxyStub()));
         sid = _register(BASIS_REGULAR, 300);
     }
 

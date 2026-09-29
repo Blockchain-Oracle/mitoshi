@@ -2,7 +2,6 @@
 pragma solidity 0.8.30;
 
 import {EngineFixture} from "./harness/EngineFixture.sol";
-import {TestPrintVerifier} from "./harness/TestPrintVerifier.sol";
 import {Policies} from "./harness/Policies.sol";
 import {ResolveLib} from "../../src/engine/libs/ResolveLib.sol";
 import {EngineStorage} from "../../src/engine/EngineStorage.sol";
@@ -14,13 +13,6 @@ import "../../src/engine/EngineTypes.sol";
 // resolve_rules.rs (tests) and resolve_window.rs.
 /// E-50/E-51: settlement with the cross-check, the clock-only void, resolve-once, and PD-3 (ties go Up).
 contract ResolveTest is EngineFixture {
-    TestPrintVerifier internal attVerifier;
-
-    function setUp() public override {
-        super.setUp();
-        attVerifier = new TestPrintVerifier(SOURCE_ATTESTED);
-    }
-
     function _state(bytes32 id) internal view returns (uint8 state, uint32 py, uint32 pn, uint8 voidReason, uint8 flags) {
         uint256 s4 = uint256(engine.extsload(bytes32(uint256(keccak256(abi.encode(id, uint256(EngineStorage.SLOT) + EngineStorage.OFF_MARKETS))) + 4)));
         py = uint32(s4 >> 144);
@@ -44,7 +36,7 @@ contract ResolveTest is EngineFixture {
     }
 
     function _print(bytes32 id, uint8 which, int256 e8) internal {
-        engine.recordPrint(id, which, abi.encode(e8, int8(-8), uint8(1)));
+        attest(id, which, int64(e8));
     }
 
     function test_closeAtOrAboveOpenPaysUp() public {
@@ -161,7 +153,7 @@ contract ResolveTest is EngineFixture {
         vm.expectRevert(E.MarketAlreadyTerminal.selector);
         engine.voidExpired(m);
         vm.expectRevert(E.MarketAlreadyTerminal.selector);
-        engine.recordPrint(m, WHICH_CLOSE, abi.encode(int256(1), int8(0), uint8(1)));
+        engine.recordPrint(m, WHICH_CLOSE, hex"00");
     }
 
     /// E-18: prints, settle and void are never blocked by an admin mode.

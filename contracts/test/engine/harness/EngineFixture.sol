@@ -8,7 +8,10 @@ import {ITIP20} from "tempo-std/interfaces/ITIP20.sol";
 import {ITIP20RolesAuth} from "tempo-std/interfaces/ITIP20RolesAuth.sol";
 import {EngineStorage} from "../../../src/engine/EngineStorage.sol";
 import {EventsEngine} from "../../../src/engine/EventsEngine.sol";
-import {TestPrintVerifier} from "./TestPrintVerifier.sol";
+import {RedStonePrintVerifier} from "../../../src/engine/verifiers/RedStonePrintVerifier.sol";
+import {AttestedPrintVerifier} from "../../../src/engine/verifiers/AttestedPrintVerifier.sol";
+import {PrintQuery} from "../../../src/engine/interfaces/IPrintVerifier.sol";
+import {PrintSigner} from "./PrintSigner.sol";
 import {Policies} from "./Policies.sol";
 import "../../../src/engine/EngineTypes.sol";
 
@@ -21,7 +24,9 @@ abstract contract EngineFixture is Test {
 
     ITIP20 internal usd;
     EventsEngine internal engine;
-    TestPrintVerifier internal rsVerifier;
+    RedStonePrintVerifier internal rsVerifier;
+    AttestedPrintVerifier internal attVerifier;
+    uint256 internal constant ATTESTOR_KEY = 0xA77E57;
     address internal roller = makeAddr("roller");
     uint16 internal nextTicker;
     address internal admin = makeAddr("admin");
@@ -37,7 +42,10 @@ abstract contract EngineFixture is Test {
         );
         ITIP20RolesAuth(address(usd)).grantRole(usd.ISSUER_ROLE(), address(this));
         engine = new EventsEngine(address(usd), admin, treasury);
-        rsVerifier = new TestPrintVerifier(SOURCE_REDSTONE);
+        rsVerifier = new RedStonePrintVerifier(PrintSigner.signers(5), 3);
+        address[] memory attestors = new address[](1);
+        attestors[0] = vm.addr(ATTESTOR_KEY);
+        attVerifier = new AttestedPrintVerifier(attestors);
         vm.prank(admin);
         engine.setRoller(roller, true);
         m = list(START, LOCK, true);
@@ -58,12 +66,30 @@ abstract contract EngineFixture is Test {
         if (openPrint) recordOpen(id, 36_500_000_000);
     }
 
+    /// A real RedStone print: five packages signed by the fixture's signer keys at the slot's boundary, median `priceE8`.
     function recordOpen(bytes32 id, int256 priceE8) internal {
-        engine.recordPrint(id, WHICH_OPEN, abi.encode(priceE8, int8(-8), uint8(5)));
+        (uint40 tradingStart,) = times(id);
+        engine.recordPrint(id, WHICH_OPEN, PrintSigner.five(Policies.TSLA, uint256(priceE8), tradingStart));
     }
 
     function recordClose(bytes32 id, int256 priceE8) internal {
-        engine.recordPrint(id, WHICH_CLOSE, abi.encode(priceE8, int8(-8), uint8(5)));
+        (, uint40 expiry) = times(id);
+        engine.recordPrint(id, WHICH_CLOSE, PrintSigner.five(Policies.TSLA, uint256(priceE8), expiry));
+    }
+
+    /// A real EIP-712 attested print for slot `which` (fetched now), for versions whose source there is Attested.
+    function attest(bytes32 id, uint8 which, int64 priceE8) internal {
+        (uint40 tradingStart, uint40 expiry) = times(id);
+        uint40 t = (which == WHICH_OPEN || which == WHICH_CHECK_OPEN) ? tradingStart : expiry;
+        PrintQuery memory q = PrintQuery(id, which, t, Policies.attested(address(0), 0).feedId, 0, 0, 10, 60, 0, 0);
+        // vm.getBlockTimestamp(): under via-IR a test's block.timestamp can be a stale value after vm.warp.
+        bytes memory proof = PrintSigner.attested(attVerifier, ATTESTOR_KEY, address(engine), q, priceE8, -8, uint40(vm.getBlockTimestamp()));
+        engine.recordPrint(id, which, proof);
+    }
+
+    function times(bytes32 id) internal view returns (uint40 tradingStart, uint40 expiry) {
+        uint256 s0 = uint256(engine.extsload(keccak256(abi.encode(id, uint256(EngineStorage.SLOT) + EngineStorage.OFF_MARKETS))));
+        (tradingStart, expiry) = (uint40(s0), uint40(s0 >> 80));
     }
 
     function who(uint256 n) internal returns (address a) {
