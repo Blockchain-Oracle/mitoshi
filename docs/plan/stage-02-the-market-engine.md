@@ -9,7 +9,7 @@
   `EngineErrors.sol`; tag `engine-abi-v1` (seams can start).
 - [x] S2.2 `EngineStorage.sol`, `libs/{BookLib,Grid,PositionLib}.sol`. Src: Agari `book/{ladder,slab}.rs`, `grid.rs`,
   `matching/{paths,seats}.rs`. Tests `Book`, `HolderList`, `Grid`.
-- [ ] S2.3 `libs/MatchLib.sol`. Src: `matching/{engine,place,evict,orders}.rs`. Tests `Paths`, Examples 1–7, `Edges`,
+- [x] S2.3 `libs/MatchLib.sol`. Src: `matching/{engine,place,evict,orders}.rs`. Tests `Paths`, Examples 1–7, `Edges`,
   `Sweep`, `OpenPrintGate`.
 - [ ] S2.4 `EventsEngine.sol` (dispatch, funding, `_pull`/`_pay` with P12 + TIP-403 fallback, sets, `withdrawCredit`,
   `reserveNodes`, `sweepSurplus`, `extsload`, roles, mode, transient guard). Src: `user_place_order.rs`, `user_sets.rs`.
@@ -72,7 +72,13 @@
   `uint128` (a `Market` stays 6 slots — Solidity starts every nested struct on a new slot); `verifyPrint` non-view (the
   Data Streams proxy writes); all errors in one `IEngineErrors` interface inherited by `IEventsEngine`; the event field
   `partial` is `isPartial` (reserved word). Listed in `docs/specs/interface-checklist.md` §5.
+- **F-S2-08 (S2.3, test layering).** Agari tests its matching core as pure functions over a `TestVenue` with an mvault
+  model (`matching/tests/support.rs`). S2.3 ports that faithfully: `test/engine/harness/MatchHarness.sol` runs the real
+  `MatchLib` over the real ERC-7201 layout and checks §8.3 after every call (pairs, conservation as equality, order
+  count, level links/tail/liveLots/bits, per-holder lists and escrow). From S2.4 on, the same behaviours are proven end
+  to end through `EventsEngine` with a real factory-created TIP-20. MatchLib is split in two files for the 400-line
+  rule (`MatchCore` = the inlined walk, fill and rest); runtime 18,669 B.
 
 ## Handoff
 
-S2.0–S2.2 done (ABI frozen at `engine-abi-v1`; storage + book libraries). Next: S2.3 MatchLib.
+S2.0–S2.3 done (ABI frozen at `engine-abi-v1`; storage, book, MatchLib). Next: S2.4 EventsEngine.

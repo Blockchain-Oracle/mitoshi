@@ -3,8 +3,20 @@ pragma solidity 0.8.30;
 
 import {LibBit} from "solady/utils/LibBit.sol";
 import {EngineStorage} from "../EngineStorage.sol";
-import {Config, Level, Node, Position, KIND_BUY_YES, KIND_SELL_NO, MAX_PRICE_TICKS, NODE_FREED} from "../EngineTypes.sol";
+import {Config, Level, Node, Position, KIND_BUY_YES, KIND_SELL_NO, MAX_PRICE_TICKS, NODE_FREED, NODE_LIVE} from
+    "../EngineTypes.sol";
 import {IEngineErrors} from "../EngineErrors.sol";
+import {IEventsEngineEvents} from "../interfaces/IEventsEngineEvents.sol";
+import {PositionLib} from "./PositionLib.sol";
+
+/// @notice The market a call works on, and the `seq` its events carry (0 until taken).
+struct MarketCtx {
+    bytes32 marketId;
+    uint32 mIdx;
+    uint48 seq;
+    uint64 cu;
+    uint40 now;
+}
 
 // Ported from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:anchor/programs/agari-events/src/book/{ladder.rs,slab.rs}
 // (reshaped: per-market levels + a global recycled node pool, A.1.3–A.1.5).
@@ -187,4 +199,31 @@ library BookLib {
         else l.nodes[hPrev].holderNext = hNext;
         if (hNext != 0) l.nodes[hNext].holderPrev = hPrev;
     }
+
+    // ------------------------------------------------------------------------------------------------ orders
+
+    /// @notice True when `idx` names a LIVE node whose sequence is `seq` (a stale handle is simply not live).
+    function isLive(EngineStorage.Layout storage l, uint32 idx, uint48 seq) internal view returns (bool) {
+        if (idx == 0 || idx > l.cfg.highWater) return false;
+        Node storage n = l.nodes[idx];
+        return n.flags & NODE_LIVE != 0 && n.seq == seq;
+    }
+
+    /// @notice Removes live node `idx`: unlinks it from its level and its owner's list, refunds its escrow to the owner
+    ///         (buy escrow → credit, sell lots → free), frees it and emits `OrderRemoved` (E-35). Eviction, self-match
+    ///         cancel, user cancel, cancel-all, sweep and the redeem drain all come here, so the refund rule exists once.
+    function removeOrder(EngineStorage.Layout storage l, MarketCtx memory c, uint32 idx, uint8 reason) internal {
+        Node memory n = l.nodes[idx];
+        unlink(l, c.mIdx, sideOf(n.kind), n.price, n.prev, n.next, n.lots);
+        Position storage pos = l.positions[c.mIdx][n.owner];
+        holderUnlink(l, pos, n.holderPrev, n.holderNext);
+        pos.openOrders -= 1;
+        PositionLib.refundEscrow(pos, n.kind, n.price, n.lots, c.cu);
+        release(l, idx);
+        l.markets[c.marketId].orderCount -= 1;
+        emit IEventsEngineEvents.OrderRemoved(
+            c.marketId, c.seq, n.owner, EngineStorage.orderIdOf(c.mIdx, n.seq, idx), n.kind, n.price, n.lots, reason
+        );
+    }
 }
+

@@ -12,7 +12,9 @@ LIMIT="${SIZE_LIMIT:-23500}"
 OUT="out/tempo"
 [ "$PROFILE" = "evm" ] && OUT="out/evm"
 
-forge build --skip test --skip script >/dev/null
+BUILD_LOG="$(mktemp)"
+if ! forge build --skip test --skip script >"$BUILD_LOG" 2>&1; then cat "$BUILD_LOG"; rm -f "$BUILD_LOG"; exit 1; fi
+rm -f "$BUILD_LOG"
 
 node - "$OUT" "$LIMIT" <<'JS'
 const fs = require("node:fs");
