@@ -1,6 +1,6 @@
 # S4 — First call end to end (M1)
 
-- [ ] Provider methods (C.2.2) and the order lane (C.2.3); `relay/policies/engine.ts` + `scripts/drive/relay-engine.ts`.
+- [x] Provider methods (C.2.2) and the order lane (C.2.3); `relay/policies/engine.ts` + `scripts/drive/relay-engine.ts`.
 - [ ] Spike X20; fill the D37 arm slot with the D38 wallet access key (scopes from `deployments/42431/engine.json`;
   Q-031 defaults); the key listed and revocable in `/settings/account`.
 - [ ] Port Masayume `web/src/features/markets/{hero,lanes,word-board,ticket,verdict,claims,balance,portfolio}` onto the
@@ -24,7 +24,23 @@
 
 ## Findings
 
-_None yet._
+- **F-S4-01** (S4.1) The area's generated relay targets for `engine` list the lens, three verifiers and three linked
+  libraries; as policy targets they passed the approve-spender check. The policy now targets `EventsEngine` only (D-135).
+- **F-S4-02** (S4.1) Moderato's gateway answers a JSON-RPC **batch** of `eth_getLogs` with 502 (or an HTML body viem
+  can't read: "Cannot read properties of undefined (reading 'error')"); single requests work. Logs read through an
+  unbatched client (`getLogClient`, D-137).
+- **F-S4-03** (S4.1) `eth_sendRawTransactionSync` intermittently answers a Cloudflare 502 page; viem's automatic resend
+  ~60 s later is refused `valid_before … too close to current time (min allowed …)` — the node enforces a minimum
+  distance to `validBefore` as well as the 300 s maximum. Sends are never retried; the lane reports `unknown` (D-137).
+- **F-S4-04** (S4.1) viem 2.56 `withRelay` bakes three retries into its proxy on top of the RPC transport's own, so one
+  deterministic relay refusal became ~50 requests and outlived the 25 s tap window. Replaced by `relayProxy` (same
+  routing, retries off) in `transports.ts` (D-137).
+- **F-S4-05** (S4.1) The S3 venue: only some Windows carry an open print (the price relay fails some opens, S3-fix is
+  on it); the seed maker quotes 5 lots a side. Drives pick a Trading Window with its open print (`lib/live-windows.ts`)
+  and rest their own PostOnly liquidity from a throwaway maker (`lib/actors.ts`) — real orders on the live book.
+- **F-S4-06** (S4.1) With a `validate`, accounts 0.18.4 `Handler.relay` falls back to an unsponsored fill when the policy
+  refuses the sponsored one; the client's raw send still asks for a fee payer, the relay refuses the raw sign too, and
+  nothing is sent — the relay never pays for a refused call, and the user is not charged silently.
 
 ## Handoff
 

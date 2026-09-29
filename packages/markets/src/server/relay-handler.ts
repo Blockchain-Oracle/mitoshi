@@ -45,7 +45,8 @@ export function createRelayHandler(config: RelayHandlerConfig) {
   });
   const handler = Handler.relay({
     chains: [config.chain] as never,
-    transports: { [config.chain.id]: http(config.rpcUrl) },
+    // One retry for a transient RPC failure; an engine or keychain revert inside the fill must come back at once (X20).
+    transports: { [config.chain.id]: http(config.rpcUrl, { retryCount: 1 }) },
     feePayer: { account, feeToken: TEMPO.pathUSD as Address, validate: validate as never, name: "Mitoshi" },
     path: config.path,
   });

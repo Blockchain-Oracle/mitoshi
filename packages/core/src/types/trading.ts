@@ -63,7 +63,8 @@ export interface Holdings {
   downRaw: bigint;
 }
 
-export type ClaimKind = "win" | "void" | "vault-credit";
+/** `credit`: engine credit waiting on a Window (a payout held for a receive policy, cancel or eviction refunds). */
+export type ClaimKind = "win" | "void" | "vault-credit" | "credit";
 
 export interface ClaimLeg {
   outcomeIdx: OutcomeIdx;
@@ -82,6 +83,13 @@ export interface ClaimableRow {
   feeBps: number;
   decimals: number;
   settledAtMs: number | null;
+  /** Engine credit on this Window, included in `netPayoutBase` (a redeem pays it with the payout). */
+  creditBase?: bigint;
+  /**
+   * The wallet's TIP-403 receive policy refuses payments from the engine right now: the settler held this payout as
+   * credit, and a claim would revert `ReceivePolicyBlocked`. Shown as "Held by your receive policy", never claimed.
+   */
+  heldByReceivePolicy?: boolean;
 }
 
 /** Credit the engine holds for the wallet on one market (paid out by `withdrawCredit`). */

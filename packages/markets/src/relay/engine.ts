@@ -10,6 +10,7 @@ import { Abis } from "viem/tempo";
 import { EXPIRING_NONCE_MAX_SEC, isRestricted } from "@cwf/core";
 import { TEMPO, UTILITIES } from "@cwf/clients";
 import type { PolicyVerdict, RefusalCode, RelayCall, RelayContext, RelayPolicy, RelayRequest } from "./types";
+import { normalizeKeyAuthorization } from "./key-auth";
 
 export const MAX_CALLS = 8;
 
@@ -114,7 +115,15 @@ export async function evaluate(config: EngineConfig, request: RelayRequest, ctx:
     if (!spenderOk) return refuse("approve-spender", `approve spender ${a.spender} is not a ${area.area} target`);
     if (a.amount === maxUint256) return refuse("approve-max", "unlimited approvals are never sponsored");
   }
-  const gasCap = area.maxGas + (sender.isNew ? NEW_ACCOUNT_GAS : 0n);
+  let keyGas = 0n;
+  if (request.keyAuthorization) {
+    // D-136: publishing a key is sponsored only in the shape the area's rule accepts (never an arbitrary key).
+    if (!area.keyAuthorization) return refuse("key-auth", `${area.area} does not sponsor publishing an access key`);
+    const why = area.keyAuthorization.check(request.keyAuthorization, ctx.nowSec);
+    if (why) return refuse("key-auth", why);
+    keyGas = area.keyAuthorization.extraGas;
+  }
+  const gasCap = area.maxGas + keyGas + (sender.isNew ? NEW_ACCOUNT_GAS : 0n);
   if (request.gas !== null && request.gas > gasCap) return refuse("gas", `gas ${request.gas} over the ${area.area} cap ${gasCap}`);
   if (request.feeToken !== null && lower(request.feeToken) !== lower(TEMPO.pathUSD)) return refuse("fee-token", "the fee token must be pathUSD");
   if (request.nonceKey === maxUint256) {
@@ -147,5 +156,6 @@ export function normalizeRequest(raw: Record<string, unknown>, fallbackChainId: 
     feeToken: typeof raw.feeToken === "string" ? (raw.feeToken as Address) : null,
     nonceKey: raw.nonceKey === "expiring" ? maxUint256 : big(raw.nonceKey),
     validBefore: num(raw.validBefore),
+    keyAuthorization: normalizeKeyAuthorization(raw.keyAuthorization),
   };
 }

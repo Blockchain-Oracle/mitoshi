@@ -16,7 +16,7 @@ Updated 2026-09-29. **Never trust memory over this file.**
 ## Open integration items (from the wave-2/3 merges; owners pick these up)
 
 - S1/S16: the relay engine doesn't honour `themesPolicy.batches` (the one-tx key-authorization + follow is refused).
-- S4: register `relay/policies/engine.ts` (sponsoring engine trades is S4's call).
+- ~~S4: register `relay/policies/engine.ts`~~ — done in S4.1 (D-135).
 - S1/S7: `vaultPolicy` sponsors `placeFor` without the `asyncSender` grant check `relay/types.ts` expects.
 - S3/S7: settler reports the vault as "tracked" but has no `crankSettle` work yet.
 - S15: `reference-writer` reads `KEEPER_PRIVATE_KEY` from env only (not S3's `roleKey()` fallback); key missing from

@@ -31,12 +31,24 @@ const REVERT_KINDS: Record<string, DiagnosisKind> = {
   // Engine (docs/specs/engine.md A.2): names follow Agari's/Masayume's where the semantics carried.
   PostOnlyWouldCross: "post-only-would-cross",
   OrderAlreadyExpired: "order-expired",
-  OrderExpiryBeyondLock: "order-expired",
+  ExpiryAfterLock: "order-expired",
   InvalidPrice: "invalid-price",
   BelowMinLots: "below-min-quantity",
+  InvalidQuantity: "below-min-quantity",
   MarketNotTrading: "market-not-trading",
-  MarketNotResolved: "not-settled",
+  PreOpenTakerRefused: "market-not-trading",
+  OpenPrintMissing: "market-not-trading",
+  MarketAlreadyTerminal: "market-not-trading",
+  MarketStatusRefused: "market-not-trading",
+  MarketNotTerminal: "not-settled",
   NothingToRedeem: "already-claimed",
+  // The book moved between quote and fill: nothing crossed at the protective limit (the lane re-quotes).
+  ImmediateOrCancelNoFill: "requote",
+  FillOrKillNotFillable: "no-liquidity",
+  InsufficientOutcome: "insufficient-collateral",
+  InsufficientCredit: "insufficient-collateral",
+  // The engine pre-checks the payee's TIP-403 receive policy (engine A.2 `_pay`).
+  ReceivePolicyBlocked: "receive-policy",
 };
 
 const MESSAGE_KINDS: ReadonlyArray<readonly [RegExp, DiagnosisKind]> = [
@@ -50,9 +62,12 @@ const MESSAGE_KINDS: ReadonlyArray<readonly [RegExp, DiagnosisKind]> = [
 type Named = { name?: unknown; shortMessage?: unknown; message?: unknown; data?: { errorName?: unknown } };
 const nameOf = (e: unknown): string | undefined => (typeof e === "object" && e !== null && typeof (e as Named).name === "string" ? ((e as Named).name as string) : undefined);
 
+/** The short message plus the node's own words (viem's `details`): an RPC error's short message is generic
+ *  ("An internal error was received.") while `details` names the refusal (`KeyAlreadyRevoked`, X20). */
 function messageOf(error: unknown): string {
   const short = typeof error === "object" && error !== null ? (error as Named).shortMessage : undefined;
-  if (typeof short === "string" && short) return short;
+  const details = typeof error === "object" && error !== null ? (error as { details?: unknown }).details : undefined;
+  if (typeof short === "string" && short) return typeof details === "string" && details && !short.includes(details) ? `${short} ${details}` : short;
   if (error instanceof Error) return error.message;
   return typeof error === "string" ? error : String(error);
 }
@@ -92,6 +107,11 @@ function kindFromMessage(message: string): DiagnosisKind | null {
 function isTransport(error: unknown): boolean {
   const transport = new Set(["HttpRequestError", "WebSocketRequestError", "TimeoutError", "SocketClosedError"]);
   return causeChain(error).some((e) => transport.has(nameOf(e) ?? ""));
+}
+
+/** The diagnosis kind for a revert name, or null when the name is not in the vocabulary. */
+export function revertKind(errorName: string): DiagnosisKind | null {
+  return REVERT_KINDS[errorName] ?? null;
 }
 
 /** Translates any provider/viem failure into a typed diagnosis; the raw message survives as `technical`. */

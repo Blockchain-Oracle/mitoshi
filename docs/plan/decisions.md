@@ -783,6 +783,52 @@ the web features and the settler's `crankSettle` actor are S7's off-chain half (
 
 **Why:** the contract half of S7 is complete and proven live; what remains is sequenced, not cut.
 
+### D-135 — the engine relay policy is registered: trading and exits sponsored, capital intake never, EventsEngine the only target (decision, S4.1, 2026-09-29)
+
+`relay/policies/engine.ts` joins `POLICIES`. **Sponsored:** `placeOrder` (the markets entry: geofenced, Q-008),
+`cancelOrders`, `reduceOrder`, `cancelAll`, `mergeSet`, `withdrawCredit`, `redeem`, `redeemPartial`, `setCrankOptOut`,
+with `pathUSD.approve(engine, exact)` riding along (never max). **Never** (refuses the whole transaction): `mintSet` —
+pure capital intake into a complete set, D-020/D-029 — and the admin/roller surface. **Not sponsored** (the sender
+pays): the permissionless keeper calls (`recordPrint`, `settle`, `voidExpired`, `sweepExpired`, `redeemFor`, …), which
+ops signs itself. **Targets:** only `EventsEngine`, read from the deployment fragments — the area's generated relay
+targets also list the lens, verifiers and linked libraries, and as targets they would have passed the approve-spender
+check (an approval to a library sponsored). Gas cap 3M (+250k for a new account, +D-136 for the wallet key). Live:
+`scripts/drive/relay-engine.ts` (acceptance/S4.md).
+
+**Why:** every engine payout goes to `msg.sender` (AD-5), so sponsoring trades and exits moves nobody else's money;
+capital intake stays the root's own cost; the narrowed target list closes an approval hole.
+
+### D-136 — the relay sponsors publishing exactly one kind of key: the wallet-mode key, on its first tap (decision, S4.1–S4.2, 2026-09-29)
+
+The accounts SDK publishes the sign-in ceremony's `accessKey.authorize` as a tx-level `key_authorization` on the key's
+next transaction (the first tap). X20 measured that tap at **6,255,108 gas** (fill estimate 7.07M) against 192,324 for
+a later tap — over the engine cap, so the relay refused it and the arm would have cost the user a prompt and a fee.
+`RelayPolicy.keyAuthorization` (`relay/key-auth.ts`) now names which authorizations an area pays to publish: the
+engine accepts only the D-047 shape — no admin, expiry ≤ 24 h (+5 min skew), limits only on pathUSD, periodic, ≤ $25
+(Q-031), scopes ⊆ {engine `placeOrder`/`cancelOrders`/`redeem`/`withdrawCredit`, `pathUSD.approve` bound to the
+engine} — and adds 5M gas for it. Any other tx-level key authorization (unrestricted, admin, longer, wider, another
+area) refuses the transaction (`key-auth`); both request shapes are read (viem's and the node's RPC shape). Cost of an
+arm at Moderato's 1.69 gwei-equivalent: ≈ $0.011.
+
+**Why:** D-046's "one biometric, then zero per tap" needs the arm itself sponsored; bounding the rule to the exact
+wallet-key shape keeps the relay from paying to create arbitrary keys.
+
+### D-137 — writes are never retried by the transport; an ambiguous send is "unknown" (finding + decision, S4.1–S4.2, 2026-09-29)
+
+Measured on Moderato: (1) viem 2.56's `withRelay` bakes three retries into its proxy and the RPC `http` adds its own,
+so one relay refusal (a revoked key, an engine revert inside the fill) became ~50 requests and outlived the tap's 25 s
+expiring window, surfacing as "transaction expired"; (2) the gateway sometimes answers `eth_sendRawTransactionSync`
+with a Cloudflare 502 page, and viem's resend of the same bytes ~60 s later is refused (`valid_before … too close to
+current time`) — the node also enforces a *minimum* distance to `validBefore`; (3) a JSON-RPC batch of `eth_getLogs`
+answers 502 or an unreadable body. So: `tempoTransport` routes like `withRelay` through our own `relayProxy` with
+retries off (relay 0, raw sends 0, reads 1); the lanes treat a timeout or a transport failure on the raw send as
+**unknown** (journaled, decided by the expiring window, never re-sent — AD-3), and a fill failure as a refusal with the
+node's own words (`details`: `KeyAlreadyRevoked`, `SpendingLimitExceeded`, `CallNotAllowed` now diagnose by name);
+logs read through an unbatched client (`getLogClient`).
+
+**Why:** a tap must fail fast and honestly; a blind resend of a money write is exactly what the journal exists to
+prevent.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

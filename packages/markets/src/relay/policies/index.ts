@@ -4,6 +4,7 @@
  * deposit/depositAndGrant/grant/fundGrant).
  */
 import type { RelayPolicy } from "../types";
+import { enginePolicy } from "./engine";
 import { keysPolicy } from "./keys";
 import { launchPolicy } from "./launch";
 import { noopPolicy } from "./noop";
@@ -11,6 +12,6 @@ import { stocksRelayPolicy } from "./stocks";
 import { themesPolicy } from "./themes";
 import { vaultPolicy } from "./vault";
 
-export { keysPolicy, launchPolicy, noopPolicy, stocksRelayPolicy, themesPolicy, vaultPolicy };
+export { enginePolicy, keysPolicy, launchPolicy, noopPolicy, stocksRelayPolicy, themesPolicy, vaultPolicy };
 
-export const POLICIES: readonly RelayPolicy[] = [noopPolicy, keysPolicy, launchPolicy, themesPolicy, stocksRelayPolicy, vaultPolicy];
+export const POLICIES: readonly RelayPolicy[] = [noopPolicy, keysPolicy, launchPolicy, themesPolicy, stocksRelayPolicy, vaultPolicy, enginePolicy];

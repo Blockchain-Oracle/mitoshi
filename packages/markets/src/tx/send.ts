@@ -24,6 +24,20 @@ export interface SendRequest {
   nonce: NoncePlan;
   /** Chain-corrected now, for `validBefore`. */
   nowSec: number;
+  /**
+   * A root-signed TIP-1011 key authorization to publish with this transaction (the access key signs the tx itself):
+   * the wallet-mode key's first tap (D-047). The browser's accounts SDK attaches its pending authorization on its own;
+   * scripts and the app shell pass it here.
+   */
+  keyAuthorization?: unknown;
+}
+
+/**
+ * A pending key authorization (D-047): published with the next send and cleared once a receipt lands, so a send that
+ * never went out keeps it for the next tap.
+ */
+export interface PendingKeyAuthorization {
+  current: unknown | null;
 }
 
 export interface SendResult {
@@ -43,6 +57,7 @@ export function buildSendParameters(request: SendRequest) {
       calls: request.calls.map((c) => ({ to: c.to, data: c.data })),
       feeToken: FEE_TOKEN,
       ...fields,
+      ...(request.keyAuthorization ? { keyAuthorization: request.keyAuthorization } : {}),
       // A sponsored send leaves every fee field to the sponsor's fill: Moderato's `eth_fillTransaction` with
       // `feePayer: true` and an explicit fee field estimates against the SENDER's balance and answers "gas required
       // exceeds allowance (0)" (measured 2026-09-29). The relay policy bounds what the sponsor pays via the gas cap.

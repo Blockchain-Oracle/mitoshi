@@ -6,6 +6,7 @@
 import type { Abi, Address, Hex } from "viem";
 import type { GeofencePillar, RegionPosture } from "@cwf/core";
 import type { RelayArea } from "../submitter/encoders";
+import type { KeyAuthorizationRule, RelayKeyAuthorization } from "./key-auth";
 
 export interface RelayCall {
   to: Address | null;
@@ -23,6 +24,8 @@ export interface RelayRequest {
   feeToken: Address | null;
   nonceKey: bigint | null;
   validBefore: number | null;
+  /** A tx-level TIP-1011 key authorization the transaction publishes (D-136), or null. */
+  keyAuthorization: RelayKeyAuthorization | null;
 }
 
 /** The request context the route puts in AsyncLocalStorage before the module-scope handler runs. */
@@ -55,10 +58,12 @@ export interface RelayPolicy {
   /** Upper bound on sponsored gas for one transaction in this area. */
   maxGas: bigint;
   asyncSender?: AsyncSenderCheck;
+  /** Which tx-level key authorizations this area sponsors publishing (D-136); absent = none. */
+  keyAuthorization?: KeyAuthorizationRule;
 }
 
 export type RefusalCode =
   | "chain" | "self-sponsor" | "too-many-calls" | "value" | "create" | "target" | "selector" | "never" | "region"
-  | "approve-spender" | "approve-max" | "sender" | "gas" | "fee-token" | "expiry" | "budget" | "breaker" | "decode" | "malformed";
+  | "approve-spender" | "approve-max" | "sender" | "gas" | "fee-token" | "expiry" | "budget" | "breaker" | "decode" | "malformed" | "key-auth";
 
 export type PolicyVerdict = { ok: true; area: RelayArea; feeMicros: bigint } | { ok: false; code: RefusalCode; reason: string };
