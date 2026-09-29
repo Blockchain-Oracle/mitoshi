@@ -19,7 +19,7 @@
 - [x] S2.7 `verifiers/{RedStonePrintVerifier,DataStreamsPrintVerifier,AttestedPrintVerifier}.sol` + `verifiers/lib/*`.
   Src: `print/{redstone,median,attested}.rs`; fixtures = Agari's two archived TSLA payloads + the SPY v11 report; spike X12
   (`verifySpot` latest mode).
-- [ ] S2.8 `EngineLens.sol`. Src: `book_walk/mod.rs`. Tests `Lens`, `Layout`; regenerated `book.vectors.json` (seconds).
+- [x] S2.8 `EngineLens.sol`. Src: `book_walk/mod.rs`. Tests `Lens`, `Layout`; regenerated `book.vectors.json` (seconds).
 - [ ] S2.9 Invariants: `test/engine/invariant/{EngineHandler.sol,EngineInvariants.t.sol}` (Agari's 8 families + cross-
   market isolation) with `afterInvariant()` settling and redeeming every seat and checking exact conservation each run,
   and `EngineRandom.t.sol` (12 × 2,500 deterministic). Src:
@@ -118,7 +118,14 @@
   Test gotcha recorded: under via-IR a test's `block.timestamp` can read stale after `vm.warp`; the fixture uses
   `vm.getBlockTimestamp()`. The payload builder for live drives is `scripts/drive/lib/redstone-payload.ts` (ported from
   Agari's `redstonePayload`); the production relay's copy belongs to S3.
+- **F-S2-14 (S2.8, lens).** `EngineLens` (16,799 B) reads everything through `extsload` with `LensSlots` (Solidity's
+  documented layout rules); `Layout.t.sol` proves every struct round-trips field for field (a full `PolicyVersion`
+  byte-identical). Stale or unknown order ids read as a zeroed `OrderView` (views never revert on stale ids, like the
+  cancel path); unknown markets/series revert by name. `topOfBook` walks with no rest filter and a 256-node budget.
+  `book.vectors.json` is regenerated in seconds by `scripts/fixtures/book-vectors-seconds.mjs` (1 slot → 1 s, so
+  every expectation carries over unchanged); all 49 vectors are rested for real on the engine and walked through the
+  lens (bids and asks on separate markets because 29 random books are crossed, which a real book never is).
 
 ## Handoff
 
-S2.0–S2.7 done (engine + real verifiers). Next: S2.8 EngineLens.
+S2.0–S2.8 done (engine, verifiers, lens). Next: S2.9 invariants.

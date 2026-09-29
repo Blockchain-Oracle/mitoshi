@@ -8,6 +8,7 @@ import {ITIP20} from "tempo-std/interfaces/ITIP20.sol";
 import {ITIP20RolesAuth} from "tempo-std/interfaces/ITIP20RolesAuth.sol";
 import {EngineStorage} from "../../../src/engine/EngineStorage.sol";
 import {EventsEngine} from "../../../src/engine/EventsEngine.sol";
+import {EngineLens} from "../../../src/engine/EngineLens.sol";
 import {RedStonePrintVerifier} from "../../../src/engine/verifiers/RedStonePrintVerifier.sol";
 import {AttestedPrintVerifier} from "../../../src/engine/verifiers/AttestedPrintVerifier.sol";
 import {PrintQuery} from "../../../src/engine/interfaces/IPrintVerifier.sol";
@@ -24,6 +25,7 @@ abstract contract EngineFixture is Test {
 
     ITIP20 internal usd;
     EventsEngine internal engine;
+    EngineLens internal lens;
     RedStonePrintVerifier internal rsVerifier;
     AttestedPrintVerifier internal attVerifier;
     uint256 internal constant ATTESTOR_KEY = 0xA77E57;
@@ -42,6 +44,7 @@ abstract contract EngineFixture is Test {
         );
         ITIP20RolesAuth(address(usd)).grantRole(usd.ISSUER_ROLE(), address(this));
         engine = new EventsEngine(address(usd), admin, treasury);
+        lens = new EngineLens(address(engine));
         rsVerifier = new RedStonePrintVerifier(PrintSigner.signers(5), 3);
         address[] memory attestors = new address[](1);
         attestors[0] = vm.addr(ATTESTOR_KEY);
