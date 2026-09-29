@@ -50,7 +50,9 @@ async function boot(): Promise<void> {
     spot.start();
     followTicks(spot, bus, sql, log("spot-feed"));
   }
-  const deps = (actor: string): VenueDeps => ({ env, log: log(actor), sessions, spot, halts, events, bus, sql, redstone });
+  // `OPS_DRY_ACTORS` keeps named actors dry while DRY_RUN=0 (the one-at-a-time roll-out out of dry run).
+  const dryActors = new Set((process.env.OPS_DRY_ACTORS ?? "").split(",").map((s) => s.trim()).filter(Boolean));
+  const deps = (actor: string): VenueDeps => ({ env: { ...env, dryRun: env.dryRun || dryActors.has(actor) }, log: log(actor), sessions, spot, halts, events, bus, sql, redstone });
   for (const name of wanted) {
     try {
       await ACTORS[name]!.start(deps(name));
