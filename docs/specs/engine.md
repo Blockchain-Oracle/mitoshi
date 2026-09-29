@@ -1,5 +1,9 @@
 <!-- Copied from the approved build plan (v5, 2026-09-29). Change it only through D-entries in docs/plan/decisions.md. -->
 
+> **Frozen at S2.1 (2026-09-29, tag `engine-abi-v1`).** The ABI is `contracts/src/engine/interfaces/*`,
+> `EngineTypes.sol` and `EngineErrors.sol`; the member-by-member map and the freeze decisions are in
+> `docs/specs/interface-checklist.md`. Any change from here is a D-entry and an ABI v2.
+
 ## Appendix A — Engine and pillar-1 contracts (spec; S0 copies to `docs/specs/engine.md`)
 
 Sources verified: Agari `anchor/programs/agari-events` + `anchor/crates/agari-common` (unchanged 254f538 → HEAD),
@@ -307,6 +311,19 @@ maxConfBps, statusMask}) → (price, expo, sourceTs, signers)` and `verifySpot(p
 T01 E-19 open-print gate · T02 `UnknownRedStoneSigner`/`DuplicateRedStoneSigner` · T03 `NothingToRedeem` · T04 partial
 redeem for any holder · T05 redeem auto-drains the holder's own orders · T06 immutable signer sets per verifier · T07
 Data Streams spread confidence · T08 `lockAt`/`expiry` split · T09 crank opt-out · T10 settlement fee off.
+
+| # | Deviation from Agari | Where | Proof |
+|---|---|---|---|
+| T01 | A non-PostOnly order refuses `OpenPrintMissing` until the open print is recorded (Agari refused only in the web; Q-006 default "enforced") | `MatchLib` place check, after status | `OpenPrintGate.t.sol` |
+| T02 | RedStone: an unknown signer raises `UnknownRedStoneSigner` (Agari reserved 6212 and dropped the package below N) and a repeated signer raises `DuplicateRedStoneSigner` (Agari: `BadRedStonePackage`); the archived-payload tamper vector therefore changes from `InsufficientRedStoneSigners` to `UnknownRedStoneSigner` | `RedStonePrintVerifier` | `verifiers/RedStoneVerifier.t.sol` |
+| T03 | A second redeem of a drained position reverts `NothingToRedeem` (Agari: `SeatMismatch`) | `ResolveLib` redeem | `Redeem.t.sol::test_secondRedeemRefused` |
+| T04 | `redeemPartial` is open to any holder (Agari: PROGRAM seats only) | `ResolveLib` | `Redeem.t.sol::test_partialRedeemAnyHolder` |
+| T05 | Every redeem first removes the holder's own resting orders (Agari refused `OpenOrdersRemain`) | `ResolveLib` via the holder list | `Redeem.t.sol::test_redeemDrainsOwnOrdersThenPays` |
+| T06 | Signer/attestor sets are immutable per verifier contract (Agari: admin-settable in GlobalConfig) | `verifiers/*` constructors | `verifiers/*.t.sol` |
+| T07 | Data Streams: optional spread confidence `(ask − bid)·1e4 ≤ maxConfBps·mid` | `DataStreamsPrintVerifier` | `verifiers/DataStreamsVerifier.t.sol` |
+| T08 | `lockAt` (trading, order expiry clamp) and `expiry` (settlement) are separate in every read | `MarketRef`, seams | `Edges.t.sol::test_expiryAfterLockRefused` |
+| T09 | `setCrankOptOut`: products refuse third-party `redeemFor` (`CrankRefused`) | `EventsEngine` / `ResolveLib` | `Redeem.t.sol::test_crankOptOut` |
+| T10 | No settlement fee (Q-005) | nowhere — no fee field exists | `Redeem.t.sol::test_example8UpDownVoid` |
 
 ### A.8 Per-stage contract task detail
 

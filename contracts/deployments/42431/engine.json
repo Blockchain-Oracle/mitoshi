@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "chainId": 42431,
+  "area": "engine",
+  "commit": "7500cde",
+  "deployedAtUtc": "2026-09-29T05:01:52.044Z",
+  "deployer": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e",
+  "contracts": {
+    "AttestedPrintVerifier": {
+      "address": "0x295Bba557cB1BF159Fdb9A62AB399b0012b12526",
+      "artifact": "AttestedPrintVerifier.sol:AttestedPrintVerifier",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0x6e2983a67138446dd5a72d2a37f9f94e154c6dc056b21d9b4fcd0e05b5c68939",
+      "deployBlock": 37370047,
+      "history": []
+    },
+    "DataStreamsPrintVerifier": {
+      "address": "0xCa30Dd5b56C80757a7cd121cab75B06c39861585",
+      "artifact": "DataStreamsPrintVerifier.sol:DataStreamsPrintVerifier",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0xe7b79aaac9e99a3bd2f8f4f4a60f5b807509394cb12323311aeb3c8c5dd14e5d",
+      "deployBlock": 37370042,
+      "history": []
+    },
+    "EngineLens": {
+      "address": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+      "artifact": "EngineLens.sol:EngineLens",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0x6e505f9d835577da63332903830b1bf62562540308df36686e40570f8b4bc85f",
+      "deployBlock": 37370030,
+      "history": []
+    },
+    "EventsEngine": {
+      "address": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+      "artifact": "EventsEngine.sol:EventsEngine",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0x405b915dc4054b8743f20a46517f5e2c738f19e3ec6382edbd3d1cd141355b17",
+      "deployBlock": 37370025,
+      "history": []
+    },
+    "RedStonePrintVerifier": {
+      "address": "0x38Ad9Fe54b3b271f737CdC231d7B85b1616A1377",
+      "artifact": "RedStonePrintVerifier.sol:RedStonePrintVerifier",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0x84bc7117406b4776f098c1ae3ad101becbcb9fc8004bbdf8da0b4adbc9176309",
+      "deployBlock": 37370035,
+      "history": []
+    },
+    "AdminLib": {
+      "address": "0x1af066e5133285acf151cc1282e1a5fd23888e28",
+      "artifact": "AdminLib.sol:AdminLib",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0x76b23ace2529add62df84e574b384bc4821ebe834481cf23e62693733144be14",
+      "deployBlock": 37370010,
+      "history": []
+    },
+    "ResolveLib": {
+      "address": "0xc33df633b43e47e2aa0f8302611141737c89daf3",
+      "artifact": "ResolveLib.sol:ResolveLib",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0xf43c93ece93188b1094e5c9737e5b8801a42485c9bffa15004ba9223bce1c71a",
+      "deployBlock": 37370015,
+      "history": []
+    },
+    "MatchLib": {
+      "address": "0xb8dceeaf9bdb5fffde6cbb05abb946102f3132b1",
+      "artifact": "MatchLib.sol:MatchLib",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0x41876f5130c1b3f9cd60db208b865b877a08e15473df6d1ca453016c0e96ed75",
+      "deployBlock": 37370020,
+      "history": []
+    }
+  },
+  "roles": {
+    "ADMIN": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e",
+    "ATTESTOR": "0x7B36b240fB262dE707CE773AB532F1457d1f0e2c",
+    "ROLLER": "0xD6B237CcA5a3b0eAE9A66e4a5B4DFc8de8A3be46",
+    "TREASURY": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e"
+  },
+  "params": {
+    "collateral": "0x20C0000000000000000000000000000000000000",
+    "redstoneThreshold": 3,
+    "series.BTC-5m": "0x7c366cf9ea9bdb3de6894bbfe4ec96e0758ddd88f2c87277cec590c5cfd6a45d",
+    "series.ETH-5m": "0xcd91c96ec51ab189c340b40adf936c8102c63f98ccf5b340c6b4a75fa1fa9441",
+    "series.SOL-5m": "0xab99e7506322c9efe70f6cbc62b0c63e5b6d0dc86646870ba709facd6f61b0a9",
+    "nodesReserved": 32
+  },
+  "external": {}
+}

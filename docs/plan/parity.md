@@ -262,11 +262,11 @@ row by row in AS §2 (E-01…E-72, summarised in §8).
 
 | ID | Capability | Ref | Class | Tempo implementation | Deps | Status |
 |---|---|---|---|---|---|---|
-| M-01 | Window series engine + scheduler | A | Adapted | Engine `Series`/`Market` + roller actor (E-07, E-10, E-23, E-26) | E | Pending |
-| M-02 | Binary order book | A | Adapted | Engine book, match loop, order types (E-12, E-27…E-37) | E | Pending |
-| M-03 | Outcome positions + complete sets | A | Adapted | Internal free/locked balances; mint/merge (E-13, E-39, E-40); optional ERC-6909 view over free balances only if composability needs it | E | Pending |
-| M-04 | Opening + closing price prints | A | Adapted | PD-1 policy versions, exact-T prints, admission deadlines (E-08, E-43…E-49) with Tempo sources (15) | E P | Pending |
-| M-05 | Settlement, redemption, void | A | Adapted | Permissionless settle / void-expired / redeem / redeemFor (E-50…E-55); **no admin void**; settlement fee = Owner (E-52) | E | Pending |
+| M-01 | Window series engine + scheduler | A | Adapted | Engine `Series`/`Market` + roller actor (E-07, E-10, E-23, E-26) | E | Partial — engine Series/Market/openWindow built and live (S2 gate, acceptance/S2.md); roller actor S3 |
+| M-02 | Binary order book | A | Adapted | Engine book, match loop, order types (E-12, E-27…E-37) | E | Done — engine book, match loop, order types (S2 gate, acceptance/S2.md) |
+| M-03 | Outcome positions + complete sets | A | Adapted | Internal free/locked balances; mint/merge (E-13, E-39, E-40); optional ERC-6909 view over free balances only if composability needs it | E | Done — free/locked balances, mint/merge (S2 gate) |
+| M-04 | Opening + closing price prints | A | Adapted | PD-1 policy versions, exact-T prints, admission deadlines (E-08, E-43…E-49) with Tempo sources (15) | E P | Partial — policy versions, exact-T RedStone/Data Streams/Attested verifiers, live RedStone prints (S2 gate); price-relay actor S3 |
+| M-05 | Settlement, redemption, void | A | Adapted | Permissionless settle / void-expired / redeem / redeemFor (E-50…E-55); **no admin void**; settlement fee = Owner (E-52) | E | Partial — settle/void/redeem/redeemFor built and proven live (S2 gate); settler actor S3 |
 | M-06 | Venue indexer + PnL | M+A | Native | Tempo Indexer API decodes any contract's events by `signature=`; or self-hosted tidx (16 §8). Events designed so shorts and redemptions are visible | I | Pending |
 | M-07 | Live price feed + market stream | M+A | Adapted | Ops spot service (RedStone latest + Data Streams) + WebSocket/SSE market stream over engine events | P I | Pending |
 | M-08 | Baseline book liquidity | A | Adapted | House seed maker (G-14) + Earn vault quoter (L-50) from day one; Parlay, Range, Boost, Private and Duel refuse thin books | E | Pending |
@@ -296,6 +296,8 @@ Full spec with Agari sources: AS §2. Solana-forced rows are **not built**; thei
 | E-65…E-71 | Maker program, house maker, product pattern | Maker vault = Masayume's (E-68 revert) + Agari's quote rules + custody assert; house seed maker logic ports unchanged; products call the engine directly, get a struct back, and assert a before/after balance |
 | E-72 | Masayume compatibility | Native ABI shaped like `IDreamDex` where semantics agree (decision 1, §3) |
 
+**Status at the S2 gate (2026-09-29):** E-01…E-64 and E-72 built and proven in the engine (map: `docs/specs/interface-checklist.md` §3; evidence: `acceptance/S2.md`); Solana-forced rows not built by design; E-65…E-71 (maker program, house maker, product pattern) advance with S7/S8 and the ops actors.
+
 **Stock-market mechanics** (sessions, cadences, prelist, entry buffer, Gap, halts, corporate actions, voids, identifiers):
 Agari's rules R-01…R-52 (AS §4) carry, with three changes: the calendar's second source is no longer Pyth (use
 RedStone's signed `NY_MARKET_NEXT_CHANGE_TIME` or Data Streams `marketStatus`, 15 §2.4); crypto adds a 24/7 lane with
@@ -307,11 +309,11 @@ G-01 (the engine) is §7–§8.
 
 | ID | Capability | Ref | Class | Tempo implementation | Deps | Status |
 |---|---|---|---|---|---|---|
-| G-02 | Dated immutable price-policy versions; one source per Window; exact-T prints | A | Adapted | E-08; sources re-chosen for Tempo (15) | E P | Pending |
+| G-02 | Dated immutable price-policy versions; one source per Window; exact-T prints | A | Adapted | E-08; sources re-chosen for Tempo (15) | E P | Done — dated immutable versions, one source per Window, exact-T prints on chain (S2 gate) |
 | G-03 | Weekend Gap lane (Fri close → Mon open, lock Sun 20:00 ET) | A | Adapted | Same schedule rules (R-17…R-24); **Data Streams preferred for the Gap** — Friday's report can be fetched and verified on Monday; RedStone needs archiving within ~24 h (15 §8) | E P | Pending |
 | G-04 | 24/7 lane on a tokenized stock's own price | A | Adapted | Agari used xStocks on Solana; on Tempo the natural source is **our own mirror token's v4 pool price** (TWAP, thin, capped) or RedStone `---24_7` / Data Streams 24/7 labelled as that provider's price | E P U | Owner |
 | G-05 | Pre-IPO lane (attested, single-source, labelled) | A | Adapted · **Owner** | PreStocks is a Solana asset; no pre-IPO source exists on Tempo (15 §7). Mechanism carries (D-100…D-103); the source is an owner question. SpaceX leaves this lane (SPCX is listed) | E P | Owner |
-| G-06 | Pre-open scheduled calls | A | Adapted | E-30 (D-088) | E | Pending |
+| G-06 | Pre-open scheduled calls | A | Adapted | E-30 (D-088) | E | Partial — pre-open PostOnly on chain, proven live (S2 gate); UI S4 |
 | G-07 | Halt detection + void reasons + honest copy | A | Adapted | Halt-watch over RedStone / Data Streams freshness; nothing changes on chain (D-057) | P | Pending |
 | G-08 | Corporate-action skips and multiplier windows | A | Adapted | Skip file + **the mirrored ERC-8056 multiplier** from the StockSync channel (ST-05) | B | Pending |
 | G-09 | "Cover what you hold" hedge + calm rule | A | Adapted | Reads **Tempo stock-token holdings** instead of Solana mints (D-058, D-105) | ST | Pending |
@@ -418,7 +420,7 @@ Design: `06-bonding-curve-design-reference.md` (Meteora DBC as a specification),
 | N-10 | Toolchain | Native | Foundry **≥ 1.8.3** with `tempo = true` (1.7.1 knows ≤ T4 and prices T0 gas); keychain-signature test helper (tempo-std has none); `anvil --tempo` | Pending |
 | N-11 | T11 strict ABI | Native | No calldata suffixes on precompile calls until T12 (16 finding 18) | Pending |
 | N-12 | Fee token on every tx | Native | The app sets `fee_token = pathUSD`: a plain transfer of a non-USD TIP-20 (stock mirror, memecoin) is otherwise invalid (13 §4) | Pending |
-| N-13 | Receive-policy awareness | Native | Pre-check on every payout (§3 decision 7); the UI names a blocking policy; indexer watches `TransferBlocked` | Pending |
+| N-13 | Receive-policy awareness | Native | Pre-check on every payout (§3 decision 7); the UI names a blocking policy; indexer watches `TransferBlocked` | Partial — engine pre-checks every payout, `redeemFor` holds as credit, proven live (S2 gate); UI and indexer later |
 
 ## 12. Owner decisions this ledger surfaces
 

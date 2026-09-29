@@ -1,0 +1,98 @@
+{
+  "T": 1789392600,
+  "iso": "2026-09-14T13:30:00.000Z",
+  "source": "data/archive/redstone/2026-09-14.jsonl (gateway historical endpoint, redstone-primary-prod)",
+  "payloadBytes": 724,
+  "signers": [
+    "0x8bb8f32df04c8b654987daaed53d6b6091e3b774",
+    "0x51ce04be4b3e32572c4ec9135221d0691ba7d202",
+    "0x9c5ae89c4af6aa32ce58588dbaf90d18a855b6de",
+    "0xdd682daec5a90dd295d14da4b0bec9281017b5be",
+    "0xdeb22f54738d54976c4c0fe5ce6d408e40d88499"
+  ],
+  "valuesE8": [
+    "35962395785",
+    "35969477803",
+    "35960445763",
+    "35965633446",
+    "35960867249"
+  ],
+  "medianE8": "35962395785",
+  "packages": [
+    {
+      "timestampMilliseconds": 1789392600000,
+      "signature": "fQ+JQ+BjHwArylkxxFlASAmr+Ls2be6AyOAvX2qXnQV65fK/IJKxm8i3D/Uy/VuQHWXu3FKmoJH8mgxKHnutjBw=",
+      "dataPoints": [
+        {
+          "dataFeedId": "TSLA",
+          "value": "359.62395785"
+        }
+      ],
+      "dataServiceId": "redstone-primary-prod",
+      "dataPackageId": "TSLA",
+      "isSignatureValid": true,
+      "signerAddress": "0x8BB8F32Df04c8b654987DAaeD53D6B6091e3B774",
+      "dataFeedId": "TSLA"
+    },
+    {
+      "timestampMilliseconds": 1789392600000,
+      "signature": "W4ZxfvD3DU9d6Kw/yJ652lK4KGcpGPKPu0KMW7dLtIAr1FMbpaPbPhxorEveRwGGHff3AZtwlnfbB7c5W5f2JRs=",
+      "dataPoints": [
+        {
+          "dataFeedId": "TSLA",
+          "value": "359.69477803"
+        }
+      ],
+      "dataServiceId": "redstone-primary-prod",
+      "dataPackageId": "TSLA",
+      "isSignatureValid": true,
+      "signerAddress": "0x51Ce04Be4b3E32572C4Ec9135221d0691Ba7d202",
+      "dataFeedId": "TSLA"
+    },
+    {
+      "timestampMilliseconds": 1789392600000,
+      "signature": "rKvSLuEt2Paru/1hqXuMs8MnzuTU+dwTpC6mM1mKTQAjcQwR5GH1sSJkwYIONc+0qwhrJtiFg89W9clgxSqTDRs=",
+      "dataPoints": [
+        {
+          "dataFeedId": "TSLA",
+          "value": "359.60445763"
+        }
+      ],
+      "dataServiceId": "redstone-primary-prod",
+      "dataPackageId": "TSLA",
+      "isSignatureValid": true,
+      "signerAddress": "0x9c5AE89C4Af6aA32cE58588DBaF90d18a855B6de",
+      "dataFeedId": "TSLA"
+    },
+    {
+      "timestampMilliseconds": 1789392600000,
+      "signature": "5vDx+tZfGYZsaSw7xs5z1zg35j5vvWXmdINcepuAAAdkkWHbPhEI030LGwealYmGwzJ93ub/LhXg43AULOXCehs=",
+      "dataPoints": [
+        {
+          "dataFeedId": "TSLA",
+          "value": "359.65633446"
+        }
+      ],
+      "dataServiceId": "redstone-primary-prod",
+      "dataPackageId": "TSLA",
+      "isSignatureValid": true,
+      "signerAddress": "0xDD682daEC5A90dD295d14DA4b0bec9281017b5bE",
+      "dataFeedId": "TSLA"
+    },
+    {
+      "timestampMilliseconds": 1789392600000,
+      "signature": "9fpUQS8vaYyxtbB1KiTVO1i3UsiRgUiK6M+RszgLOfc9Wg9XyyBwR2PYd3pkP/uIGtkRdWVemaKVSpAHgLRAZBs=",
+      "dataPoints": [
+        {
+          "dataFeedId": "TSLA",
+          "value": "359.60867249"
+        }
+      ],
+      "dataServiceId": "redstone-primary-prod",
+      "dataPackageId": "TSLA",
+      "isSignatureValid": true,
+      "signerAddress": "0xdEB22f54738d54976C4c0fe5ce6d408E40d88499",
+      "dataFeedId": "TSLA"
+    }
+  ]
+}
