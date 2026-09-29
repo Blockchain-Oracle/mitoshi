@@ -4,6 +4,7 @@
  */
 import { archivePass, ARCHIVE_EVERY_MS } from "./actors/archive";
 import { chainHeadPass, CHAIN_HEAD_EVERY_MS } from "./actors/chain-head";
+import { startIndexer } from "./actors/indexer";
 import { runActor, type VenueDeps } from "./runtime";
 
 export interface ActorEntry {
@@ -21,6 +22,7 @@ export const ACTORS: Record<string, ActorEntry> = {
     },
   },
   spot: { start: () => undefined, spot: true },
+  indexer: { start: (d) => startIndexer(d) },
 };
 
-export const DEFAULT_ACTORS = ["chain-head", "archive", "spot"] as const;
+export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer"] as const;
