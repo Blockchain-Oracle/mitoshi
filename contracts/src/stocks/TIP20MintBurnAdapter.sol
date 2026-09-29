@@ -17,8 +17,8 @@ import {LzdFee} from "../lz/LzdFee.sol";
 /// @notice Holds `ISSUER_ROLE` on its mirror (and nothing else does). Inbound credits never revert on a refusal: the
 ///         adapter pre-checks every reason a TIP-20 mint can fail, in a fixed order, and defers instead; the recipient
 ///         later `claimDeferred()`s, or `sendDeferred()`s the amount back without admin help. Only a gas shortfall
-///         reverts (so the executor retries). Fees are paid in pathUSD wrapped into LZEndpointDollar; `msg.value` is
-///         refused. Deployed behind `TransparentUpgradeableProxy(impl, SAFE, initData)` (D-054).
+///         reverts (so the executor retries). Fees are paid in pathUSD wrapped into LZEndpointDollar; Tempo itself
+///         refuses native value, so `send` stays `payable` only to match IOFT. Deployed behind `TransparentUpgradeableProxy(impl, SAFE, initData)` (D-054).
 contract TIP20MintBurnAdapter is OFTAdapterUpgradeable {
     using BridgeRateLimiter for BridgeRateLimiter.Bucket;
 
@@ -52,7 +52,6 @@ contract TIP20MintBurnAdapter is OFTAdapterUpgradeable {
     event SendsPaused(bool paused, address by);
     event RateLimitSet(uint32 indexed eid, bool inbound, uint128 capacity, uint64 window);
 
-    error ValueNotAccepted();
     error SendsArePaused();
     error InvalidRecipient();
     error InsufficientGas(uint256 left, uint256 needed);
@@ -97,7 +96,6 @@ contract TIP20MintBurnAdapter is OFTAdapterUpgradeable {
         override
         returns (MessagingReceipt memory, OFTReceipt memory)
     {
-        if (msg.value != 0) revert ValueNotAccepted();
         if (_s().sendsPaused) revert SendsArePaused();
         if (sendParam.to == bytes32(0)) revert InvalidRecipient();
         return _send(sendParam, fee, refundAddress);
@@ -187,10 +185,8 @@ contract TIP20MintBurnAdapter is OFTAdapterUpgradeable {
     ///         `sendsPaused`; the outbound rate limit still applies. Fee in pathUSD, as for `send`.
     function sendDeferred(SendParam calldata sendParam, MessagingFee calldata fee, address refundAddress)
         external
-        payable
         returns (MessagingReceipt memory msgReceipt, OFTReceipt memory oftReceipt)
     {
-        if (msg.value != 0) revert ValueNotAccepted();
         if (sendParam.to == bytes32(0)) revert InvalidRecipient();
         (uint256 sent, uint256 received) = _debitView(sendParam.amountLD, sendParam.minAmountLD, sendParam.dstEid);
         AdapterStorage storage $ = _s();
