@@ -2,7 +2,7 @@
 /**
  * The ticket's composing blocks (Ported from Masayume 68f7a09:web/src/features/markets/ticket/{BetModes,SideSegments,
  * AmountBlock,LeverageChips}.tsx): call a side or a band, the side as one tap-is-the-choice control, the amount as the
- * big figure with the reference's additive `+1 +5 +20` chips (never a "Max" on a thin book), and the 1×/2×/3× chips.
+ * big figure (21st 16240's rolling amount field, outcome pills and quick adds) with the reference's additive `+1 +5 +20` chips (never a "Max" on a thin book), and the 1×/2×/3× chips.
  * Range and leverage stay where the reference puts them and say exactly what is missing until S10 deploys them.
  */
 import type { Side } from "@cwf/core";
@@ -10,10 +10,9 @@ import { LEVERAGE_MULTIPLES } from "@cwf/core";
 import { minStakeBase } from "@cwf/core/sizing";
 import { formatBaseUnits, oneUnit } from "@cwf/core/units";
 import { useId } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { AmountField, OutcomePills, QuickAdds } from "@/components/ui/prediction-ticket";
 import { TICKET, TICKET_PENDING } from "../copy";
-import { SIDE_CLASSES, SIDE_WORD, SIDES } from "../side-styles";
+import { SIDE_WORD, SIDES } from "../side-styles";
 
 export const STAKE_ADDS = [1, 5, 20] as const;
 
@@ -28,22 +27,9 @@ export function BetModes() {
   );
 }
 
-export function SideSegments({ side, onSelect }: { side: Side | null; onSelect: (side: Side) => void }) {
-  return (
-    <div role="radiogroup" aria-label={TICKET.sideLabel} className="grid grid-cols-2 gap-2">
-      {SIDES.map((option) => (
-        <Button key={option} role="radio" aria-checked={side === option} aria-pressed={side === option} variant="outline" size="lg" onClick={() => onSelect(option)} className={cn("min-h-touch type-body-strong", SIDE_CLASSES[option])}>
-          {SIDE_WORD[option]}
-        </Button>
-      ))}
-    </div>
-  );
-}
-
-function sanitize(text: string): string {
-  const cleaned = text.replace(/[^\d.]/g, "");
-  const [whole = "", ...rest] = cleaned.split(".");
-  return rest.length > 0 ? `${whole}.${rest.join("").slice(0, 2)}` : whole;
+/** The side, as 16240's outcome pills: each side with its own live price (the two never add to $1, and say so nowhere). */
+export function SideSegments({ side, onSelect, prices }: { side: Side | null; onSelect: (side: Side) => void; prices: Record<Side, string> }) {
+  return <OutcomePills label={TICKET.sideLabel} value={side} onChange={onSelect} outcomes={SIDES.map((s) => ({ id: s, label: SIDE_WORD[s], price: prices[s] }))} />;
 }
 
 export function LeverageChips() {
@@ -85,17 +71,10 @@ export function AmountBlock({ value, onChange, stakeBase, onStakeBase, balanceBa
         <span className="tk-amount-label">{TICKET.amount}</span>
         {balanceBase !== null && <span className="tk-amount-balance">{TICKET.balance(usd(balanceBase))}</span>}
       </div>
-      <div className="tk-amount-field">
-        <span className="tk-amount-unit">$</span>
-        <input inputMode="decimal" autoComplete="off" placeholder={TICKET.stakePlaceholder} value={value} onChange={(e) => onChange(sanitize(e.target.value))} className="tk-amount-input" aria-label={TICKET.amountAria("dollars")} aria-describedby={belowMin ? minId : undefined} />
-      </div>
+      <AmountField value={value} onChange={onChange} label={TICKET.amountAria("dollars")} describedBy={belowMin ? minId : undefined} placeholder={TICKET.stakePlaceholder} />
       {remembered && stakeBase > 0n ? <p className="tk-amount-min" role="status">{TICKET.remembered(usd(stakeBase))}</p> : null}
       <div className="tk-amount-row">
-        <div className="tk-adds" role="group" aria-label={TICKET.chips}>
-          {STAKE_ADDS.map((units) => (
-            <button key={units} type="button" className="tk-add min-h-touch" onClick={() => add(units)}>+{units}</button>
-          ))}
-        </div>
+        <QuickAdds adds={STAKE_ADDS} onAdd={add} label={TICKET.chips} />
         <LeverageChips />
       </div>
       {belowMin && <p id={minId} className="tk-amount-min">{TICKET.minimum(usd(minStakeBase(decimals)))}</p>}

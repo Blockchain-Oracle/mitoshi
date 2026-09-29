@@ -1,7 +1,8 @@
 "use client";
 /**
  * One live Window in the reference's chart-card language (Ported from Masayume 68f7a09:web/src/features/markets/lanes/
- * MarketCard.tsx, `Market624Card`): the question over the opening print, the live price against that line, the spark,
+ * MarketCard.tsx, `Market624Card`), with 21st.dev 22249 ssychui/market-snapshot's price roll and spark readout (E.1; 2537 as
+ * layout reference only — its gradients and shimmer not taken): the question over the opening print, the live price against that line, the spark,
  * the ramp and UP/DOWN at the top of the real book. An unread side shows nothing, never an even 50¢.
  */
 import type { EventMarket, MarketId, Side } from "@cwf/core";
@@ -9,6 +10,7 @@ import { formatCadence } from "@cwf/core/copy";
 import { phase } from "@cwf/core/lifecycle";
 import { formatWallClock } from "@cwf/core/units";
 import { Countdown } from "@/components/data";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useNowMs } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { HERO_HEAD, LANE_CARD, MARKETS } from "../copy";
@@ -30,6 +32,7 @@ const price = (value: number | null, hydrating: boolean) => (value === null ? (h
 
 export function MarketCard({ market, selected, onSelect }: MarketCardProps) {
   const nowMs = useNowMs();
+  const reduce = useReducedMotion() === true;
   const series = useChartSeries(market);
   const { upCents, downCents, hydrating } = useTopOfBook(market, CARD_BOOK_POLL_MS);
   const openingRaw = market.openingPriceRaw;
@@ -74,7 +77,14 @@ export function MarketCard({ market, selected, onSelect }: MarketCardProps) {
         </div>
         <div className="mc-pricebar">
           <div className="px">
-            <span className="big">{latestRaw === null ? HERO_HEAD.noPrice : usd0(latestRaw)}</span>
+            {/* 22249's price roll: the figure slides as it changes (a plain swap under reduced motion). */}
+            <span className="big mc-roll" aria-live="off">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <m.span key={latestRaw === null ? "none" : usd0(latestRaw)} initial={reduce ? false : { opacity: 0, y: "0.25em" }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+                  {latestRaw === null ? HERO_HEAD.noPrice : usd0(latestRaw)}
+                </m.span>
+              </AnimatePresence>
+            </span>
             {openingRaw !== null && latestRaw !== null && (
               <span className={cn("chg", latestRaw >= openingRaw ? "up" : "down")}>
                 {latestRaw >= openingRaw ? "+" : "−"}

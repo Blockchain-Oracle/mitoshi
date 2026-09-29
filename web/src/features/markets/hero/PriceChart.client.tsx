@@ -35,11 +35,21 @@ export function cssVar(el: HTMLElement, name: string): string {
   return getComputedStyle(el).getPropertyValue(name).trim() || "currentColor";
 }
 
+/** A canvas can't read `var(--font-data)`: resolve the token to the concrete family the page uses. */
+function resolveFont(container: HTMLElement): string {
+  const probe = document.createElement("span");
+  probe.style.fontFamily = "var(--font-data)";
+  container.appendChild(probe);
+  const family = getComputedStyle(probe).fontFamily;
+  probe.remove();
+  return family || "monospace";
+}
+
 function build(container: HTMLDivElement, interactive: boolean): Built {
   const muted = cssVar(container, "--color-ink-muted");
   const chart = createChart(container, {
     autoSize: true,
-    layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: muted, fontFamily: cssVar(container, "--font-data"), attributionLogo: false },
+    layout: { background: { type: ColorType.Solid, color: "transparent" }, textColor: muted, fontFamily: resolveFont(container), attributionLogo: false },
     grid: { vertLines: { visible: false }, horzLines: { color: cssVar(container, "--color-hairline") } },
     rightPriceScale: { borderVisible: false },
     timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false },

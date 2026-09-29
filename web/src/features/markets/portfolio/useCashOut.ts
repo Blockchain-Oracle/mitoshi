@@ -32,21 +32,30 @@ export function useCashOut(target: CashOutTarget, wallet: Address | null) {
   const [requoted, setRequoted] = useState<ExitQuote | null>(null);
   const money = (b: bigint) => `$${formatBaseUnits(b, target.decimals, { minDp: 2, maxDp: 2 })}`;
 
+  /** Reads the exit before the hold, so the hold names its floor ("Hold to cash out for at least $X"). */
+  const prepare = async () => {
+    if (!port || busy) return;
+    setBusy(true);
+    setNote(null);
+    try {
+      const quote = await port.freshExitQuote({ marketId: target.marketId, decimals: target.decimals }, target.side, target.heldRaw);
+      if (!isOk(quote)) return setNote(quote.error.kind === "market-not-trading" ? CASH_OUT.locked : diagnosisCopy(quote.error.kind).headline);
+      if (!quote.value) return setNote(CASH_OUT.noLiquidity);
+      setRequoted(quote.value);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const cashOut = async () => {
-    if (!submitter || !wallet || !port || busy) return;
+    if (!submitter || !wallet || !port || busy || !requoted) return;
     setBusy(true);
     setNote(null);
     try {
       const market = await port.getMarket(target.marketId);
       if (!isOk(market)) return setNote(diagnosisCopy(market.error.kind).headline);
       if (!market.value) return setNote(CASH_OUT.noLiquidity);
-      let exit = requoted;
-      if (!exit) {
-        const quote = await port.freshExitQuote({ marketId: target.marketId, decimals: target.decimals }, target.side, target.heldRaw);
-        if (!isOk(quote)) return setNote(quote.error.kind === "market-not-trading" ? CASH_OUT.locked : diagnosisCopy(quote.error.kind).headline);
-        if (!quote.value) return setNote(CASH_OUT.noLiquidity);
-        exit = quote.value;
-      }
+      const exit = requoted;
       setRequoted(null);
       const outcome = await submitter.submitCashOut({ market: market.value, side: target.side, contractsRaw: exit.contractsRaw, displayedExit: exit, wallet });
       switch (outcome.status) {
@@ -70,5 +79,6 @@ export function useCashOut(target: CashOutTarget, wallet: Address | null) {
     }
   };
 
-  return { canSign: submitter !== null && wallet !== null, busy, note, requoted, cashOut };
+  const cancel = () => setRequoted(null);
+  return { canSign: submitter !== null && wallet !== null, busy, note, exit: requoted, prepare, cashOut, cancel, money };
 }

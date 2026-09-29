@@ -1,0 +1,30 @@
+/* The ticket's controls from 21st.dev 16240 (components/ui/prediction-ticket.tsx), in Masayume's ticket tokens. */
+.pt-pills { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; padding: 0.375rem; border-radius: var(--radius-lg); background: var(--color-surface-2); }
+.pt-pill-thumb { position: absolute; inset-block: 0.375rem; left: 0.375rem; width: calc((100% - 1.25rem) / 2); border-radius: var(--radius-md); border: 1px solid var(--button-up-border); background: var(--button-up-fill); transform: translateX(calc(var(--pill-index) * (100% + 0.5rem))); transition: transform 320ms var(--ease-out), background-color 200ms var(--ease), border-color 200ms var(--ease); }
+.pt-pills[data-side="down"] .pt-pill-thumb { border-color: var(--button-down-border); background: var(--button-down-fill); }
+.pt-pill { position: relative; z-index: 1; display: flex; min-height: 3.5rem; align-items: center; justify-content: center; gap: 0.5rem; border-radius: var(--radius-md); font: var(--text-body-strong, inherit); font-weight: 600; color: var(--color-ink-secondary); transition: color 200ms var(--ease), transform 150ms var(--ease); }
+.pt-pill:active { transform: scale(0.99); }
+.pt-pill[data-outcome="up"][aria-checked="true"] { color: var(--button-up-ink); }
+.pt-pill[data-outcome="down"][aria-checked="true"] { color: var(--button-down-ink); }
+.pt-pill:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+.pt-amount { display: flex; min-width: 0; align-items: center; justify-content: center; overflow: hidden; font-family: var(--font-data); font-size: 3rem; font-weight: 600; line-height: 1; }
+.pt-amount--md { font-size: 2.5rem; }
+.pt-amount--sm { font-size: 2rem; }
+.pt-amount-unit { color: var(--color-ink-muted); }
+.pt-amount-box { position: relative; min-width: 0; }
+.pt-amount-input { width: calc((var(--amount-chars) + 1) * 0.62em); min-width: 0.8em; max-width: 16rem; background: transparent; color: transparent; caret-color: var(--color-ink); font: inherit; outline: none; font-variant-numeric: tabular-nums; }
+.pt-amount-input::placeholder { color: transparent; }
+.pt-amount-box:focus-within { box-shadow: 0 2px 0 0 var(--input-focus-ring); }
+.pt-amount-digits { pointer-events: none; position: absolute; inset: 0; display: flex; align-items: center; overflow: hidden; color: var(--color-ink); font-variant-numeric: tabular-nums; }
+.pt-amount-digits.is-empty { color: var(--color-ink-muted); }
+.pt-amount-char { display: inline-block; min-width: 0.55em; text-align: center; }
+.pt-adds { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+.pt-add { min-height: 2.75rem; min-width: 3.5rem; padding: 0 0.875rem; border-radius: var(--radius-md); background: var(--color-surface-1); border: 1px solid var(--color-hairline); font-family: var(--font-data); font-weight: 600; color: var(--color-ink); transition: background-color 150ms var(--ease), transform 150ms var(--ease); }
+.pt-add:hover { background: var(--color-surface-3); }
+.pt-add:active { transform: scale(0.95); }
+.pt-add:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+.pt-towin { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.75rem; }
+.pt-towin-label { font-weight: 600; color: var(--color-ink); }
+.pt-towin-note { font-size: var(--text-caption); color: var(--color-ink-secondary); }
+.pt-towin-figure { font-size: 2rem; font-weight: 600; line-height: 1; color: var(--color-profit); white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .pt-pill-thumb, .pt-pill, .pt-add { transition: none; } }

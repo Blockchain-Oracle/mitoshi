@@ -22,7 +22,10 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { CALL, TICKET } from "../copy";
 import { CallCard } from "../calls/CallCard";
+import { ToWin } from "@/components/ui/prediction-ticket";
+import { useTopOfBook } from "../data/useTopOfBook";
 import { AmountBlock, BetModes, SideSegments } from "./ComposeBlocks";
+import "@/styles/prediction-ticket.css";
 import { DEFAULT_PRICE_CENTS, PriceControl } from "./PriceControl";
 import { AccountGate, OutcomeNote, ReadoutStrip, TicketCta, type ReadoutCells } from "./StatusBlocks";
 import { commonBlocker, deriveBlocker } from "./ticket-guards";
@@ -54,6 +57,8 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
   const sheet = useBalanceSheet(address);
   const availableBase = sheet?.ok ? sheet.value.spendableBase : null;
   const listed = phase === "upcoming";
+  const top = useTopOfBook(market);
+  const priceText = (c: number | null) => (c === null ? "—" : `${c}¢`);
 
   // The taker's quote off the live book; a Listed Window instead sizes the user's own price on the Series grid.
   const quoteState = useQuote({ market, side, stakeBase, nowMs, enabled: hasSigner && phase === "trading" });
@@ -134,7 +139,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
       ) : (
         <>
           <BetModes />
-          <SideSegments side={side} onSelect={t.selectSide} />
+          <SideSegments side={side} onSelect={t.selectSide} prices={{ up: priceText(top.upCents), down: priceText(top.downCents) }} />
           {listed ? <PriceControl priceCents={priceCents} onChange={setPriceCents} side={side} /> : null}
           <AmountBlock value={t.stakeText} onChange={t.setStakeText} stakeBase={stakeBase} onStakeBase={t.setStakeBase} balanceBase={availableBase} decimals={decimals} belowMin={stakeBase > 0n && belowMinStake(stakeBase, decimals)} remembered={t.remembered} costBase={displayed?.expectedCostBase ?? null} />
           <ReadoutStrip cells={cellsOf(displayed, decimals)} live={displayed !== null} caption={caption} chance={displayed ? TICKET.chance(Math.round(displayed.avgPriceBps / 100)) : null} />
@@ -142,6 +147,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
           {t.advancedFrom ? <p role="status" className="type-caption text-ink-secondary">{TICKET.advanced(formatCadence(t.advancedFrom.intervalSec), formatCadence(market.intervalSec))}</p> : null}
           <OutcomeNote tx={bet.state.tx} outcome={bet.state.outcome} decimals={decimals} onDismiss={bet.reset} />
           <div className="tk-cta-dock">
+            <ToWin label={TICKET.toWin} amount={displayed ? formatBaseUnits(displayed.payoutIfRightBase, decimals, { group: false, minDp: 2, maxDp: 2 }) : null} note={displayed ? TICKET.avgPrice(Math.round(displayed.avgPriceBps / 100)) : null} />
             <TicketCta blocker={blocker} ctx={ctx} tx={bet.state.tx} side={side} costBase={displayed?.maxCostBase ?? null} decimals={decimals} signer={signer} onConfirm={place} action={listed ? TICKET.scheduled.cta : TICKET.buy} />
             <p className="tk-foot">{shell.walletKey ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
           </div>

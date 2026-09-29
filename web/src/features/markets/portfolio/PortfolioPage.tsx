@@ -1,7 +1,6 @@
 "use client";
 // The /portfolio island: the screen once the late data layer exists (§3.1); feature sheets load with the route.
 import dynamic from "next/dynamic";
-import { MotionScope } from "@/components/motion-scope";
 import { LoadingState } from "@/components/states";
 import { useDataReady } from "@/providers/data/context";
 const Loading = () => <LoadingState shape="plate" className="mx-auto w-full max-w-(--content-reading) px-gutter py-8" />;
@@ -14,9 +13,5 @@ import "../markets.css";
 export function PortfolioPage() {
   const ready = useDataReady();
   if (!ready) return <Loading />;
-  return (
-    <MotionScope>
-      <PortfolioScreen />
-    </MotionScope>
-  );
+  return <PortfolioScreen />;
 }

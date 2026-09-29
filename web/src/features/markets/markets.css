@@ -14,3 +14,14 @@
 .tk-cta-dock { display: flex; flex-direction: column; gap: calc(var(--spacing) * 2); }
 .tk-add, .tk-lev, .tk-mode { min-height: 44px; }
 .pager { display: flex; align-items: center; justify-content: space-between; gap: calc(var(--spacing) * 3); }
+/* 22249's spark readout on the lane card. */
+.mc-spark { position: relative; }
+.mc-spark-cursor { stroke: var(--color-ink-muted); stroke-width: 1; }
+.mc-spark-readout { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; pointer-events: none; padding: 0.125rem 0.375rem; border-radius: var(--radius-sm, 0.25rem); border: 1px solid var(--color-hairline); background: var(--color-surface-2); font-family: var(--font-data); font-size: var(--text-caption); color: var(--color-ink-secondary); z-index: 2; }
+.mc-roll { display: inline-grid; overflow: hidden; }
+/* The markets hero sits a few wrappers deep (the data-layer island), so the shell's direct-child rule misses it: the
+ * hero's own top padding clears the fixed chrome, the shell must not reserve it again (shell.css `.page-hero`). */
+.page-shell:has(.markets-hero) { padding-top: 0; }
+/* Eight lanes list some assets: the hero's cadence row scrolls on a phone instead of wrapping "24/7 5m" in two. */
+.mh-cadence-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.mh-cadence { white-space: nowrap; min-height: 44px; }

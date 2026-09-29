@@ -13,6 +13,7 @@ import { Countdown } from "@/components/data";
 import { useNowMs } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { MARKETS, WORD_BOARD } from "../copy";
+import { laneTabKey, laneTabLabel } from "../data/lane-view";
 import { useTopOfBook } from "../data/useTopOfBook";
 import { AssetDisc } from "../hero/AssetDisc";
 import { PRICE_SCALE } from "../units";
@@ -36,7 +37,7 @@ function WordCard({ market, nowMs, onSelect }: { market: EventMarket; nowMs: num
     <div className="wq-card">
       <div className="wq-top">
         <AssetDisc asset={market.asset} className="wq-btc" />
-        <span className="wq-meta">{market.asset}</span>
+        <span className="wq-meta">{market.asset} · {laneTabLabel(laneTabKey(market.lane, market.intervalSec))}</span>
         <Countdown expirySec={market.expirySec} intervalSec={market.intervalSec} nowMs={nowMs} className="wq-clock" />
       </div>
       <p className={cn("wq-q", question.pending && "wq-q-pending")}>{question.text}</p>

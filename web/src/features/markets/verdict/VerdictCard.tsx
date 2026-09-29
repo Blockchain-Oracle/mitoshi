@@ -12,11 +12,29 @@ import { txUrl } from "@cwf/core/urls";
 import { useEffect, useRef, useState } from "react";
 import { Money } from "@/components/data";
 import { Receipt, ReceiptRow } from "@/components/receipt";
+import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { webEnv } from "@/lib/env";
 import { HERO, MARKETS, VERDICT_UI } from "../copy";
 import { usdText } from "../units";
 import { ClaimWinnings } from "./ClaimWinnings";
 import { PnlFigure, VerdictLegs, VerdictStamp } from "./VerdictStamp";
+
+/** A win celebrates once per Window per session — the moment it is first seen stamped, never on a revisit. */
+function useFirstWin(marketId: string, won: boolean): boolean {
+  const [fire, setFire] = useState(false);
+  useEffect(() => {
+    if (!won) return;
+    const key = `cwf.celebrated.${marketId}`;
+    try {
+      if (window.sessionStorage.getItem(key)) return;
+      window.sessionStorage.setItem(key, "1");
+    } catch {
+      return;
+    }
+    setFire(true);
+  }, [marketId, won]);
+  return fire;
+}
 
 function useAnnounceOnce(text: string): string {
   const first = useRef(text);
@@ -35,6 +53,7 @@ export interface VerdictCardProps {
 
 export function VerdictCard({ verdict, pinned, market, resolution, rows }: VerdictCardProps) {
   const strings = verdictStrings(verdict.outcome);
+  const celebrate = useFirstWin(market.marketId, verdict.outcome === "win");
   const announced = useAnnounceOnce(verdictAnnouncement(verdict.outcome, `$${formatBaseUnits(verdict.pnlBase < 0n ? -verdict.pnlBase : verdict.pnlBase, verdict.decimals, { minDp: 2, maxDp: 2 })}`));
   const settledAtMs = verdict.settledAtMs ?? resolution?.settledAtMs ?? market.expirySec * 1000;
   const sides = verdict.legs.map((leg) => (OUTCOME_TO_SIDE[leg.outcomeIdx] === "up" ? MARKETS.up : MARKETS.down)).join(" + ");
@@ -44,7 +63,8 @@ export function VerdictCard({ verdict, pinned, market, resolution, rows }: Verdi
   return (
     <article aria-label={`${VERDICT_UI.title}: ${strings.line}`} className="flex flex-col gap-5 rounded-(--market-card-radius) border border-(--market-card-border) bg-(--market-card-surface) p-4">
       <span role="status" aria-live="polite" className="sr-only">{announced}</span>
-      <header className="flex items-start justify-between gap-4">
+      <header className="verdict-stage flex items-start justify-between gap-4">
+        <ConfettiBurst fire={celebrate} />
         <VerdictStamp outcome={verdict.outcome} />
         <PnlFigure verdict={verdict} />
       </header>

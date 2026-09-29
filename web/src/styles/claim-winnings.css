@@ -58,3 +58,8 @@
 /* gray and black flip with the theme (yosuku/part-13), so one rule reads light-on-dark and dark-on-cream. */
 .cw-void-collect { background: var(--gray-200); color: var(--black); box-shadow: none; }
 [data-theme="light"] .cw-void-paid { background: rgba(20, 18, 16, 0.03); border-color: rgba(20, 18, 16, 0.1); }
+
+/* The verdict's burst (components/ui/confetti-burst.tsx; From 21st.dev 24692): a point at the stamp, particles in flight. */
+.verdict-stage { position: relative; }
+.confetti-burst { pointer-events: none; position: absolute; left: 2.5rem; top: 2rem; z-index: 5; perspective: 600px; }
+.confetti-dot { position: absolute; display: block; will-change: transform, opacity; }

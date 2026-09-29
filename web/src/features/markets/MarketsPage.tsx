@@ -6,7 +6,6 @@
 import type { MarketId } from "@cwf/core";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import { MotionScope } from "@/components/motion-scope";
 import { LoadingState } from "@/components/states";
 import { useDataReady } from "@/providers/data/context";
 import { MARKETS } from "./copy";
@@ -42,9 +41,7 @@ export function MarketsPage({ routeMarketId = null }: { routeMarketId?: MarketId
   if (!ready) return <Placeholder />;
   return (
     <Suspense fallback={<Placeholder />}>
-      <MotionScope>
-        <MarketsScreen routeMarketId={routeMarketId} />
-      </MotionScope>
+      <MarketsScreen routeMarketId={routeMarketId} />
     </Suspense>
   );
 }

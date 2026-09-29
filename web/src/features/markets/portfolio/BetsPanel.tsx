@@ -7,16 +7,18 @@
 import type { Address, OpenPosition, Reading } from "@cwf/core";
 import type { WalletHistory } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
-import { shortHex } from "@cwf/core/units";
+import { formatBaseUnits } from "@cwf/core/units";
+import { OUTCOME_TO_SIDE } from "@cwf/core";
 import { txUrl } from "@cwf/core/urls";
 import { useState } from "react";
-import { Money, UtcTime } from "@/components/data";
+import { TradeJournal, type JournalEntry } from "@/components/ui/trade-journal";
 import { ReadingBoundary } from "@/components/states";
 import SectionHead from "@/components/shell/SectionHead";
 import { webEnv } from "@/lib/env";
 import { usePager } from "@/lib/use-pager";
 import { cn } from "@/lib/utils";
-import { PORTFOLIO } from "../copy";
+import { JOURNAL, PORTFOLIO } from "../copy";
+import { SIDE_WORD } from "../side-styles";
 import { Pager } from "../Pager";
 import { BetRow } from "./BetRow";
 
@@ -33,29 +35,23 @@ function OpenList({ positions, wallet }: { positions: OpenPosition[]; wallet: Ad
   );
 }
 
+/** History as the journal (21st 27124): every settled Window from the fills projection, newest first. */
 function HistoryList({ history }: { history: WalletHistory }) {
-  const pager = usePager(history.rounds, PAGE);
-  if (history.rounds.length === 0) return <p className="p-4 type-body text-ink-secondary">{PORTFOLIO.noHistory}</p>;
-  return (
-    <>
-      <ul className="bets-list">
-        {pager.slice.map((r) => (
-          <li key={r.marketId} className="bets-row">
-            <span className="type-label-micro shrink-0 text-ink">{PORTFOLIO.outcome[r.outcome] ?? r.outcome.toUpperCase()}</span>
-            <span className="type-body-strong text-ink">{r.asset}</span>
-            <span className="type-label-micro text-ink-muted">{formatCadence(r.intervalSec)}</span>
-            {r.settledAtMs ? <UtcTime ms={r.settledAtMs} withSeconds={false} className="type-caption text-ink-secondary" /> : null}
-            <span className="bets-break" aria-hidden />
-            <span className="flex-1" />
-            <span className="type-caption text-ink-secondary">{PORTFOLIO.stake} <Money value={r.stakeBase} decimals={r.decimals} /></span>
-            <Money value={r.pnlBase} decimals={r.decimals} tone="pnl" className="type-data shrink-0" />
-            <a className="min-h-touch type-caption text-ink-secondary underline decoration-dotted" href={txUrl(r.entryTxHash, webEnv.markets.network)} target="_blank" rel="noreferrer">{shortHex(r.entryTxHash)}</a>
-          </li>
-        ))}
-      </ul>
-      <Pager pager={pager} />
-    </>
-  );
+  const usd = (b: bigint, d: number) => `$${formatBaseUnits(b < 0n ? -b : b, d, { minDp: 2, maxDp: 2 })}`;
+  const entries: JournalEntry[] = history.rounds.map((r) => ({
+    id: r.marketId,
+    atMs: r.settledAtMs ?? r.expirySec * 1000,
+    asset: `${r.asset} · ${formatCadence(r.intervalSec)}`,
+    side: r.sidesTraded.map((o) => SIDE_WORD[OUTCOME_TO_SIDE[o]]).join(" + "),
+    stake: usd(r.stakeBase, r.decimals),
+    net: `${r.pnlBase > 0n ? "+" : r.pnlBase < 0n ? "−" : ""}${usd(r.pnlBase, r.decimals)}`,
+    netSign: r.pnlBase > 0n ? 1 : r.pnlBase < 0n ? -1 : 0,
+    outcome: r.outcome as JournalEntry["outcome"],
+    outcomeLabel: PORTFOLIO.outcome[r.outcome] ?? r.outcome.toUpperCase(),
+    formula: PORTFOLIO.pnlFormula,
+    href: txUrl(r.entryTxHash, webEnv.markets.network),
+  }));
+  return <TradeJournal entries={entries} labels={JOURNAL} />;
 }
 
 export function BetsPanel({ wallet, positions, history, index, retry }: { wallet: Address; positions: Reading<OpenPosition[]> | null; history: Reading<WalletHistory> | null; index: string; retry: () => void }) {

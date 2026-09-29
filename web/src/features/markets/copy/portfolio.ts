@@ -18,7 +18,7 @@ export const PORTFOLIO = {
   bothSides: "UP + DOWN",
   toMarkets: "Go to Markets",
   noHistory: "No settled Windows yet — they show here the moment one settles.",
-  outcome: { win: "WIN", loss: "LOSS", void: "VOID" } as Record<string, string>,
+  outcome: { win: "WIN", loss: "LOSS", void: "VOID", closed: "CLOSED" } as Record<string, string>,
   range: { label: "Range", d7: "7D", d30: "30D", all: "All" },
   pnlFormula: "Net P&L = payout − what you paid, per settled Window.",
   settledOn: "Settled",
@@ -26,6 +26,29 @@ export const PORTFOLIO = {
   side: "Side",
   entry: "Entry",
   traderEdge: "Trader Edge →",
+} as const;
+
+/** The settled-calls journal (21st 27124). */
+export const JOURNAL = {
+  title: "Settled calls",
+  count: (n: number) => `${n} ${n === 1 ? "call" : "calls"}`,
+  range: "Range",
+  ranges: [{ label: "7D", days: 7 }, { label: "30D", days: 30 }, { label: "All", days: Number.POSITIVE_INFINITY }],
+  cols: { date: "Settled", window: "Window", side: "Side", stake: "Staked", net: "Net P&L", outcome: "Outcome" },
+  empty: "No settled calls in this range.",
+} as const;
+
+/** The record curve (21st 29532). */
+export const RECORD_CHART = {
+  title: "Realised P&L",
+  range: "Range",
+  ranges: [{ label: "7D", days: 7 }, { label: "30D", days: 30 }, { label: "All", days: Number.POSITIVE_INFINITY }],
+  drawdown: "Below peak",
+  peak: "Deepest",
+  empty: "Your P&L curve starts with your first settled Window.",
+  error: "Couldn't read your settled Windows. Nothing changed; try again.",
+  retry: "Try again",
+  caption: "Realised P&L by settled Window, with the distance below its running peak",
 } as const;
 
 export const PLATE = {
@@ -52,6 +75,7 @@ export const CASH_OUT = {
   holdToCashOut: (amount: string) => `Hold to cash out for at least ${amount}`,
   cashingOut: "Cashing out…",
   quoting: "Reading the exit…",
+  keep: "Keep it",
   noLiquidity: "No exit liquidity right now",
   locked: "No exit liquidity: this Window has locked, it pays at settlement",
   nothingSold: "Nothing sold: the book moved before the sell landed. Your position is unchanged.",

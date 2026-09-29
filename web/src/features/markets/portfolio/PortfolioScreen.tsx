@@ -12,12 +12,14 @@ import { keys, useBalanceSheet, useClaimables, useLiveMarketData, usePositions, 
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useCallback } from "react";
+import { MotionScope } from "@/components/motion-scope";
 import { ErrorState } from "@/components/states";
 import { useWalletSession } from "@/lib/wallet-session";
 import { PLATE, PORTFOLIO } from "../copy";
 import { CollectPlate } from "../claims/CollectPlate";
 import { BetsPanel } from "./BetsPanel";
 import { LedgerPlate } from "./LedgerPlate";
+import { RecordChart } from "./RecordChart";
 
 const CONNECTION = new Set(["rpc-down", "indexer-down", "send-unknown", "unknown"]);
 
@@ -42,7 +44,16 @@ function ConnectCard({ onSignIn }: { onSignIn: () => void }) {
   );
 }
 
+/** The motion scope rides inside the island (§3.1). */
 export function PortfolioScreen() {
+  return (
+    <MotionScope>
+      <Screen />
+    </MotionScope>
+  );
+}
+
+function Screen() {
   const session = useWalletSession();
   const wallet = session.address;
   const queryClient = useQueryClient();
@@ -77,6 +88,7 @@ export function PortfolioScreen() {
       <LedgerPlate sheet={sheet?.ok ? sheet.value : null} openBets={positions?.ok ? positions.value.length : 0} settled={history?.ok ? history.value.rounds.length : 0} />
       <Link href="/portfolio/edge" className="min-h-touch self-start py-2 type-caption text-accent">{PORTFOLIO.traderEdge}</Link>
       <BetsPanel wallet={wallet} positions={positions} history={history} index="01" retry={retry} />
+      <RecordChart history={history} onRetry={() => void queryClient.invalidateQueries({ queryKey: keys.history(wallet) })} />
     </div>
   );
 }

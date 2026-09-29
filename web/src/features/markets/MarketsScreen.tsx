@@ -8,6 +8,7 @@
  */
 import type { MarketId, Side } from "@cwf/core";
 import { useLiveMarketData, useOpeningPrice } from "@cwf/markets/react";
+import { MotionScope } from "@/components/motion-scope";
 import SectionHead from "@/components/shell/SectionHead";
 import { useWalletSession } from "@/lib/wallet-session";
 import { SECTIONS } from "./copy";
@@ -20,7 +21,16 @@ import { CadenceLanes } from "./lanes/CadenceLanes";
 import { TicketDock } from "./ticket/TicketDock";
 import { WordMarketBoard } from "./word-board/WordMarketBoard";
 
-export function MarketsScreen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
+/** The motion scope rides inside the island, so motion's runtime never enters the route's first load (§3.1). */
+export function MarketsScreen(props: { routeMarketId?: MarketId | null }) {
+  return (
+    <MotionScope>
+      <Screen {...props} />
+    </MotionScope>
+  );
+}
+
+function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
   const { address } = useWalletSession();
   const lanes = useLanesState();
   const fallback = lanes.activeLane ? (tickerMarkets(lanes.activeLane, lanes.ticker)[0] ?? lanes.activeLane.markets[0] ?? null) : null;
