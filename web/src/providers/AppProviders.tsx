@@ -14,6 +14,8 @@ import { WalletShellProvider } from "./wallet/WalletShellProvider";
 
 // Live prices into the query cache (the stream shares the ticker's one connection); after the data layer.
 const PriceCache = dynamic(() => import("@/features/prices/PriceCache"), { ssr: false });
+// "Your Window settled", app-wide (D-048): watches only the calls this device placed; nothing when signed out.
+const SettledToasts = dynamic(() => import("@/features/markets/calls/SettledToasts"), { ssr: false });
 
 function WhenDataReady({ children }: { children: ReactNode }) {
   return useDataReady() ? children : null;
@@ -31,6 +33,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <ToastHost limit={1} />
         <WhenDataReady>
           <PriceCache />
+          <SettledToasts />
         </WhenDataReady>
       </WalletShellProvider>
     </DataLayer>

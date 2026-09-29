@@ -59,3 +59,8 @@ export function setClockOffset(ms: number): void {
 export function useNowMs(): number {
   return useSyncExternalStore(subscribe, () => now, () => 0);
 }
+
+/** Chain-corrected now for an event handler or a one-off decision (not for rendering — render with `useNowMs`). */
+export function nowMs(): number {
+  return Date.now() + offsetMs;
+}

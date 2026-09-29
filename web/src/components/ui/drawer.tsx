@@ -33,13 +33,15 @@ export interface SlideOverContentProps {
   description?: ReactNode;
   /** Visually hide the heading when the body carries its own (the title stays for assistive tech). */
   hideHeading?: boolean;
+  /** Keep the panel mounted while closed (hidden), so reopening is instant and keeps its state (the ticket, §3.2). */
+  keepMounted?: boolean;
   className?: string;
   children: ReactNode;
 }
 
-export function SlideOverContent({ title, description, hideHeading = false, className, children }: SlideOverContentProps) {
+export function SlideOverContent({ title, description, hideHeading = false, keepMounted = false, className, children }: SlideOverContentProps) {
   return (
-    <BaseDrawer.Portal>
+    <BaseDrawer.Portal keepMounted={keepMounted}>
       <BaseDrawer.Backdrop className="slide-over-backdrop" />
       <BaseDrawer.Viewport className="slide-over-viewport">
         <BaseDrawer.Popup className={cn("slide-over-popup", className)}>

@@ -1,0 +1,16 @@
+/* S4 additions on Masayume's markets sheets (tokens only). The ticket's CTA dock stays in view inside the right-edge
+ * slide-over, above the home indicator (ux-audit fix 6; §2.5 "CTA visible without scrolling on tickets and drawers"). */
+.tk-slide-over .slide-over-body { display: flex; flex-direction: column; padding-bottom: 0; }
+.tk-slide-over .tk-ticket { flex: 1; }
+.tk-slide-over .tk-cta-dock {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin: 0 calc(var(--spacing) * -4);
+  padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4) calc(env(safe-area-inset-bottom, 0px) + var(--spacing) * 4);
+  background: var(--color-surface-1);
+  border-top: 1px solid var(--color-hairline);
+}
+.tk-cta-dock { display: flex; flex-direction: column; gap: calc(var(--spacing) * 2); }
+.tk-add, .tk-lev, .tk-mode { min-height: 44px; }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: calc(var(--spacing) * 3); }
