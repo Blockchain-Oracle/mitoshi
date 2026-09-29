@@ -6,8 +6,12 @@ import type { ClockSync, Reading } from "@cwf/core";
 import { keys, useChainClock } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, type ReactNode } from "react";
-import { ErrorState, StaleTick } from "@/components/states";
+import dynamic from "next/dynamic";
+import { StaleTick } from "@/components/states/StaleTick";
 import { setClockOffset } from "@/lib/clock";
+
+// Shown only when the boot read fails, so its button and class merging stay out of the first load (§3.1).
+const ErrorState = dynamic(() => import("@/components/states/ErrorState").then((m) => m.ErrorState));
 
 const BootContext = createContext<Reading<ClockSync> | null>(null);
 

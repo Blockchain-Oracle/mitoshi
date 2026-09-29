@@ -11,7 +11,7 @@ import { AppProviders, BootNotice } from "@/providers";
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <AppProviders>
-      <ShellChrome account={<HeaderAccount />} notices={<><SessionBanners /><BootNotice /><LiveRegion /></>}>{children}</ShellChrome>
+      <ShellChrome account={<HeaderAccount />} notices={<><span hidden data-font-stage="app" /><SessionBanners /><BootNotice /><LiveRegion /></>}>{children}</ShellChrome>
     </AppProviders>
   );
 }

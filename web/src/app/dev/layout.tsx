@@ -2,11 +2,11 @@
 // and robots disallow them). Nothing here is linked from the product nav.
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { MotionProvider } from "@/providers/MotionProvider";
+import { MotionScope } from "@/components/motion-scope";
 
 export const metadata = { robots: { index: false, follow: false } };
 
 export default function DevLayout({ children }: { children: ReactNode }) {
   if (process.env.NODE_ENV === "production" && process.env.DEV_FIXTURES !== "1") notFound();
-  return <MotionProvider>{children}</MotionProvider>;
+  return <MotionScope>{children}</MotionScope>;
 }

@@ -8,6 +8,7 @@ import type { Address, Network } from "@cwf/core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
+import { MotionScope } from "@/components/motion-scope";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { SkeletonSwap } from "@/components/ui/skeleton-swap";
@@ -43,46 +44,48 @@ export function KeysSection({ account, network }: { account: Address; network: N
   }
 
   return (
-    <section aria-labelledby="keys-title" className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="keys-title" className="type-title text-ink">{K.title}</h2>
-        <SegmentedControl
-          label={K.filterLabel}
-          value={filter}
-          onValueChange={setFilter}
-          options={[{ value: "active", label: `${K.active}${data ? ` · ${active.length}` : ""}` }, { value: "stopped", label: `${K.stopped}${data ? ` · ${stopped.length}` : ""}` }]}
-        />
-      </div>
-      <p className="type-caption text-ink-secondary">{K.revokeHint}</p>
-      {keys.isError ? (
-        <div role="alert" className="flex flex-col items-start gap-2">
-          <p className="type-body text-ink">{K.unavailable}</p>
-          <button type="button" onClick={() => void keys.refetch()} className="min-h-touch rounded-md border border-border-strong px-4 type-body-strong text-ink">{K.retry}</button>
+    <MotionScope>
+      <section aria-labelledby="keys-title" className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="keys-title" className="type-title text-ink">{K.title}</h2>
+          <SegmentedControl
+            label={K.filterLabel}
+            value={filter}
+            onValueChange={setFilter}
+            options={[{ value: "active", label: `${K.active}${data ? ` · ${active.length}` : ""}` }, { value: "stopped", label: `${K.stopped}${data ? ` · ${stopped.length}` : ""}` }]}
+          />
         </div>
-      ) : (
-        <SkeletonSwap ready={data !== undefined} lines={4} label={K.loading}>
-          {shown.length === 0 ? (
-            <p className="type-body text-ink-secondary">{filter === "active" ? K.none : K.noneStopped}</p>
-          ) : (
-            <ul className="flex flex-col gap-3">
-              {shown.map((k) => (
-                <KeyRow key={k.keyId} keyState={k} nowSec={nowSec} network={network} revoking={pending.includes(k.keyId.toLowerCase())} onRevoke={pending.length ? undefined : () => void revoke([k])} />
-              ))}
-            </ul>
-          )}
-        </SkeletonSwap>
-      )}
-      {tx.state.kind === "failed" ? <TxFailureCard state={tx.state} onRetry={() => tx.dispatch({ type: "reset" })} /> : null}
-      {filter === "active" && active.length > 1 ? (
-        <HoldToConfirm onConfirm={() => void revoke(active)} confirmLabel={K.revokingAll} disabled={pending.length > 0} className="self-start">
-          {K.revokeAll(active.length)}
-        </HoldToConfirm>
-      ) : null}
-      {data ? (
-        <p className="type-caption text-ink-secondary" aria-live="polite">
-          {data.coverage.complete ? K.complete : data.coverage.fromTimeSec ? K.scanning(whenText(data.coverage.fromTimeSec)) : K.loading}
-        </p>
-      ) : null}
-    </section>
+        <p className="type-caption text-ink-secondary">{K.revokeHint}</p>
+        {keys.isError ? (
+          <div role="alert" className="flex flex-col items-start gap-2">
+            <p className="type-body text-ink">{K.unavailable}</p>
+            <button type="button" onClick={() => void keys.refetch()} className="min-h-touch rounded-md border border-border-strong px-4 type-body-strong text-ink">{K.retry}</button>
+          </div>
+        ) : (
+          <SkeletonSwap ready={data !== undefined} lines={4} label={K.loading}>
+            {shown.length === 0 ? (
+              <p className="type-body text-ink-secondary">{filter === "active" ? K.none : K.noneStopped}</p>
+            ) : (
+              <ul className="flex flex-col gap-3">
+                {shown.map((k) => (
+                  <KeyRow key={k.keyId} keyState={k} nowSec={nowSec} network={network} revoking={pending.includes(k.keyId.toLowerCase())} onRevoke={pending.length ? undefined : () => void revoke([k])} />
+                ))}
+              </ul>
+            )}
+          </SkeletonSwap>
+        )}
+        {tx.state.kind === "failed" ? <TxFailureCard state={tx.state} onRetry={() => tx.dispatch({ type: "reset" })} /> : null}
+        {filter === "active" && active.length > 1 ? (
+          <HoldToConfirm onConfirm={() => void revoke(active)} confirmLabel={K.revokingAll} disabled={pending.length > 0} className="self-start">
+            {K.revokeAll(active.length)}
+          </HoldToConfirm>
+        ) : null}
+        {data ? (
+          <p className="type-caption text-ink-secondary" aria-live="polite">
+            {data.coverage.complete ? K.complete : data.coverage.fromTimeSec ? K.scanning(whenText(data.coverage.fromTimeSec)) : K.loading}
+          </p>
+        ) : null}
+      </section>
+    </MotionScope>
   );
 }

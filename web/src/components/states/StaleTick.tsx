@@ -4,7 +4,6 @@
 import type { StaleReason } from "@cwf/core";
 import { TriangleAlertIcon } from "lucide-react";
 import { STALE_REASON_LABEL, staleLine } from "@/lib/copy";
-import { cn } from "@/lib/utils";
 
 interface StaleTickProps {
   asOfMs: number;
@@ -23,7 +22,7 @@ export function localClock(ms: number): string {
 export function StaleTick({ asOfMs, reason = "refresh-failed", compact = false, className }: StaleTickProps) {
   const reasonLabel = STALE_REASON_LABEL[reason];
   return (
-    <span className={cn("inline-flex items-center gap-1 whitespace-nowrap text-warning type-caption", className)}>
+    <span className={`inline-flex items-center gap-1 whitespace-nowrap text-warning type-caption${className ? ` ${className}` : ""}`}>
       <TriangleAlertIcon className="size-3.5" aria-hidden="true" />
       {compact ? reasonLabel : staleLine(localClock(asOfMs), reasonLabel)}
     </span>

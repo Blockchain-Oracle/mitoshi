@@ -5,7 +5,6 @@
 // tutorial with these). Rendered from the server so a first visit never shifts; a dismissed hint leaves after hydration.
 import { Info, X } from "lucide-react";
 import { SHELL } from "@/lib/copy";
-import { cn } from "@/lib/utils";
 import { EXPLAINERS, type ExplainerId } from "./copy";
 import { useFirstUse } from "./useFirstUse";
 
@@ -14,7 +13,7 @@ export function FirstUseHint({ id, className }: { id: ExplainerId; className?: s
   if (!show) return null;
   const { title, body } = EXPLAINERS[id];
   return (
-    <aside aria-label={title} className={cn("flex items-start gap-3 rounded-lg border border-hairline bg-surface-1 p-4", className)}>
+    <aside aria-label={title} className={`flex items-start gap-3 rounded-lg border border-hairline bg-surface-1 p-4${className ? ` ${className}` : ""}`}>
       <Info aria-hidden className="mt-0.5 size-5 shrink-0 text-ink-secondary" />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p className="type-body-strong text-ink">{title}</p>

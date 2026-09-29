@@ -4,6 +4,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { tokens } from "@cwf/tokens";
+import { FontStage } from "@/components/shell/FontStage";
 import { VitalsBeacon } from "@/features/vitals/VitalsBeacon";
 import { fontVariables } from "@/lib/fonts";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -27,7 +28,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className={`antialiased ${fontVariables}`} suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <div id="app-root">{children}</div>
-        {/* Field Core Web Vitals (D-071), loaded on idle. */}
+        {/* Body and figure fonts apply after first paint; field Core Web Vitals report on idle (D-071). */}
+        <FontStage />
         <VitalsBeacon />
       </body>
     </html>

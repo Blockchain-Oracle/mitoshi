@@ -193,13 +193,32 @@
 - **1b perf — CLS.** The signed-out banner vanished while the lazy wallet runtime restored a session and came back when
   none was found (0.24 on /markets, 0.31 on /settings/account); it now keeps its space (invisible) while restoring. The
   first-use hint renders from the server, so a first visit never shifts. Lab CLS is 0.000 on every gated route.
-- **1b perf — lab LCP still over (open, next in this stage).** Lighthouse mobile (slow 4G, 4× CPU, 3 runs, median):
-  LCP 2.96–3.39 s against 2.5 s; FCP 1.5–1.7 s, TBT ≤ 141 ms, CLS 0. Observed LCP equals FCP (~0.1 s); lantern's LCP
-  prices every byte requested before it — ~324 KB: JS 160 (128 framework), fonts 104 (Sora 25, Inter 48, JetBrains Mono
-  31), CSS 53, HTML 7 — with font and CSS bytes counted in both of its graphs. Closing it means ~90 KB less font+CSS
-  before first paint: Yosuku (265 KB raw, one byte-identical global sheet) split so each route group loads only its
-  parts, and tighter latin subsets for the three faces. Font preload OFF was measured and is worse (LCP 3.10 s, FCP
-  2.11 s), so preloads stay.
+- **1b perf — lab LCP (open).** Lighthouse mobile (slow 4G, 4× CPU, 3 runs, median). Observed LCP equals FCP
+  (~0.1 s) on every route; lantern's simulated LCP prices every byte requested before that paint (fonts and CSS in both
+  of its graphs, async scripts in one), so it tracks pre-paint bytes at roughly 0.1 s per 12 KB. Measured steps:
+  | change | / | /markets | /settings/account |
+  |---|---|---|---|
+  | start of this step | 2950 | 3239 | 4849 |
+  | CLS fixes + lazy islands (commit e0a7000) | 3118 | 3393 | 3392 |
+  | Yosuku purge (CSS 49.9 → 22.7 KB) | 2954 | 3385 | 3392 |
+  | Inter + JetBrains Mono second stage (after idle) | 2508 | 2786 | 2951 |
+  | eager motion scoped to its islands; boot error + tailwind-merge lazy | 2497 | 2784 | 2801 |
+  | Sora unpreloaded; second stage on app routes | 2499 | 2645 | 2646 |
+  Site routes now 2.34–2.50 s (the landing heading is Sora, requested as soon as CSS parses; CLS 0.026 from its swap,
+  inside 0.05); app routes 2.64–2.65 s. Tried and reverted (worse): no font preloads at all (LCP 3.10 s), Next's
+  `inlineCss` (+0.3–0.5 s: the CSS moves into the serialised HTML), a second preloaded Sora declaration for the site
+  group only (Next sends its preload header on every route, so app routes would download Sora twice), an ASCII-only
+  Sora subset (−7.5 KB but accented headings would mix fonts). A page carrying only the framework's `rootMainFiles`,
+  no CSS or fonts, measures 2.03 s — so ≤ 2.5 s leaves ~60 KB of pre-paint bytes for everything ours, while §3.1 allows
+  app routes 250 KB of JS: the two §3.1 rows cannot both hold for a route that uses its JS budget. The gate stays at
+  2.5 s; closing the last 0.15 s on app routes means getting the data layer (query client, markets runtime, ~25 KB)
+  out of the pre-paint set — sequenced after the integration merge, since S3/S3.5 touch the same providers.
+- **1b perf — Yosuku purge.** `web/postcss/purge-yosuku.mjs` (production only): Next inlines the imports before
+  PostCSS, so rules are told apart by class ownership — a selector naming a class a Yosuku part defines and `src/`
+  never mentions is dropped (1,599 rules); our sheets, Tailwind output and attribute selectors are never touched.
+  Pixel A/B of 48 screenshots (10 routes + menu + sign-in, 390/1440, both themes) against the unpurged build: identical
+  except the grain overlay's own noise. A stage porting a Masayume surface brings its classes into `src/` and its rules
+  return by themselves.
 - **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
   transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
 - **1b wallet — no cookie read on the server.** wagmi's `cookieToInitialState` would read `headers()` in the root and,

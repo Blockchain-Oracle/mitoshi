@@ -5,6 +5,7 @@
 import { Sparkles } from "lucide-react";
 import { m } from "motion/react";
 import { useEffect } from "react";
+import { MotionScope } from "@/components/motion-scope";
 import { Modal } from "@/components/ui/modal";
 import { FUNDING } from "./copy";
 
@@ -28,15 +29,17 @@ export default function CreditWelcome({ open, onOpenChange }: { open: boolean; o
         </button>
       }
     >
-      <m.span
-        aria-hidden
-        className="mx-auto grid size-14 place-items-center rounded-full border border-hairline bg-surface-2 text-accent"
-        initial={{ scale: 0, rotate: -20 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: "spring", damping: 12, stiffness: 240, delay: 0.05 }}
-      >
-        <Sparkles className="size-6" />
-      </m.span>
+      <MotionScope>
+        <m.span
+          aria-hidden
+          className="mx-auto grid size-14 place-items-center rounded-full border border-hairline bg-surface-2 text-accent"
+          initial={{ scale: 0, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", damping: 12, stiffness: 240, delay: 0.05 }}
+        >
+          <Sparkles className="size-6" />
+        </m.span>
+      </MotionScope>
     </Modal>
   );
 }
