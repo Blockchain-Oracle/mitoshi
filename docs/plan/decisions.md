@@ -367,6 +367,32 @@ the testnet domain. Details: `infra/coolify.md`.
 
 **Why:** the owner self-hosts everything on Coolify; one server, one bill, push-to-deploy.
 
+### D-065 — engine ABI v1 freeze choices (S2.1–S2.6, 2026-09-29)
+
+Refines App. A (`docs/specs/engine.md`) where it left the shape open, each choice the one most faithful to Agari:
+`OpenWindowArgs` carries no policy version (the engine picks the highest covering one, E-26 step 10); one `seq` per
+market-scoped call stamped on every event of that call; enums travel as `uint8` so bad bytes refuse by Agari's names;
+`Market` stores prints as packed `uint128` (6 slots); `IPrintVerifier.verifyPrint` is non-view; all errors live in
+`IEngineErrors` (inherited by `IEventsEngine`) with Agari codes as `@custom:agari`; `sweepExpired` walks the market's
+own levels and visits ≤ 256 nodes per call (Agari scanned a ≤ 512-node slab); T05 (drain own orders) applies to
+`redeem`, `redeemPartial` and `redeemFor`; `openWindow` writes only the non-zero market slots and refuses a `lockAt`
+beyond uint32 (`BadHorizon`); `Redeemed` is emitted by the engine after pay-or-hold. Detail: stage-02 F-S2-04…F-S2-12,
+`docs/specs/interface-checklist.md` §5.
+
+**Why:** the frozen ABI (`engine-abi-v1`) is what every seam builds on; the spec changes only through D-entries.
+
+### D-066 — print verifier refinements (S2.5–S2.7, 2026-09-29)
+
+A policy version names its verifier contract, which must have code and answer `source()` equal to the policy's
+source. RedStone: every posted package must be a valid (OZ `tryRecover`, low-s), distinct, configured signer —
+unknown or malleated → `UnknownRedStoneSigner`, repeated → `DuplicateRedStoneSigner`, zero/oversized value →
+`InvalidPrintValue` (Agari's SDK dropped such packages below N; same outcome, named — T02). Data Streams: a v11
+`marketStatus` outside the policy mask refuses `InsufficientVerification`; the proxy is called non-payable (same
+selector; Tempo has no value). Attested: EIP-712 `verifyingContract` = the calling engine; `verifySpot` signs a typed
+`Spot(feedId, price, expo, observedAt)` under the same domain. Detail: stage-02 F-S2-10, F-S2-13.
+
+**Why:** Agari's rules carried to Tempo's sources with every refusal named; replay bound to engine, chain, market and slot.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

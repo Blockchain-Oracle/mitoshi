@@ -20,7 +20,7 @@
   Src: `print/{redstone,median,attested}.rs`; fixtures = Agari's two archived TSLA payloads + the SPY v11 report; spike X12
   (`verifySpot` latest mode).
 - [x] S2.8 `EngineLens.sol`. Src: `book_walk/mod.rs`. Tests `Lens`, `Layout`; regenerated `book.vectors.json` (seconds).
-- [ ] S2.9 Invariants: `test/engine/invariant/{EngineHandler.sol,EngineInvariants.t.sol}` (Agari's 8 families + cross-
+- [x] S2.9 Invariants: `test/engine/invariant/{EngineHandler.sol,EngineInvariants.t.sol}` (Agari's 8 families + cross-
   market isolation) with `afterInvariant()` settling and redeeming every seat and checking exact conservation each run,
   and `EngineRandom.t.sol` (12 × 2,500 deterministic). Src:
   `matching/tests/{random,support}.rs`.
@@ -125,7 +125,16 @@
   `book.vectors.json` is regenerated in seconds by `scripts/fixtures/book-vectors-seconds.mjs` (1 slot → 1 s, so
   every expectation carries over unchanged); all 49 vectors are rested for real on the engine and walked through the
   lens (bids and asks on separate markets because 29 random books are crossed, which a real book never is).
+- **F-S2-16 (S2.9, invariants).** The handler drives the real engine, token and RedStone verifier over 3 markets × 6
+  actors with Agari's op mix through one `step(seed)` entry (Foundry picks selectors uniformly, so the mix lives in
+  the seed, as in Agari's harness). After every call: Agari's 8 families (pairs, conservation as equality — balance ==
+  totalOwed == owed, order count, level links, tail/liveLots/bit, no orphans, free list of FREED sentinels + live ==
+  highWater, per-holder list and escrow) plus cross-market isolation (a digest of every other market and its
+  holders before and after each op). `afterInvariant` settles every market (Up, Down or void by the clock), redeems
+  every holder (own or cranked) and requires the engine to end holding exactly zero. Result: **256 runs × depth 500
+  (128,000 calls) pass** in 7.7 min; `EngineRandom`: **12 seeds × 2,500 ops** pass with the full check after every op
+  and exact settle-and-redeem conservation (1,961 fills). CI runs the invariant suite as its own job.
 
 ## Handoff
 
-S2.0–S2.8 done (engine, verifiers, lens). Next: S2.9 invariants.
+S2.0–S2.9 done (engine, verifiers, lens, invariants). Next: S2.10 gas.
