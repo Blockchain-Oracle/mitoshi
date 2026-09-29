@@ -336,6 +336,20 @@ Build **in this repo**, pnpm monorepo in Masayume's shape.
 
 **Why:** Owner instruction 2026-09-29
 
+### D-058 — figures use JetBrains Mono (correction, 2026-09-29)
+
+Plan §2.2 and the 21st research said "Plex Mono" for numbers. Masayume 68f7a09 `web/src/lib/fonts.ts` and
+`styles/bridge.css` (`--font-data`) use **JetBrains Mono**; it is authoritative (`docs/design/DESIGN.md`).
+
+**Why:** fidelity to the reference; the plan text was wrong.
+
+### D-059 — Tempo-profile forge scripts target a Tempo node (finding, 2026-09-29)
+
+With `network = "tempo"`, forge can't parse a plain anvil receipt (deployBlock lost). Local runs use `anvil --network
+tempo`; real runs use Moderato/Tempo.
+
+**Why:** proven in S0.6's pipeline run (acceptance/S0.md).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
