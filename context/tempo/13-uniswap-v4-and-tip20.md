@@ -506,22 +506,27 @@ provider example, in the Uniswap-token-list format, and in a pre-deployment TIP-
 ### Stock-token pools (pathUSD / mirror)
 
 1. **Mainnet: use the official deployment.** Create hookless or guarded pools via
-   `PositionManager.multicall([initializePool, modifyLiquidities])`. Quote with V4Quoter and execute with UR v2.1.x
-   (pin the version). No licence question arises.
-2. **Testnet (Moderato).**
-   - Preferred: deploy v4-core by **replaying the mainnet initcode through Arachnid (salt 0)**, which gives the mainnet
-     PoolManager address. Then deploy our own PositionManager, V4Quoter and StateView, plus either UR or a thin MIT
-     router built on `V4Router`.
-   - Alternative: point at the unofficial `0x72B3…` PoolManager.
-   - Either way it is about 5 root-key transactions of up to 25.5M gas each, about $0.07 total at today's base fee.
-     [I]
+   `PositionManager.multicall([initializePool, modifyLiquidities])`. Quote with V4Quoter and execute with UR v2.1.x,
+   **pinned at `0xa2dc7d0266f0cc50b3eeaf36c9bfcecff1beea91`** on both networks (corrected 2026-09-29, plan v5 §1.3); v4-periphery HEAD adds
+   `minHopPriceX36`, so an ABI probe on a mainnet fork decides the encoder. No licence question arises.
+2. **Testnet (Moderato).** (corrected 2026-09-29, plan v5 §1.3) **Replay the 7 mainnet CREATE2 transactions through Arachnid**, in order:
+   PoolManager, PositionDescriptor impl, its TransparentUpgradeableProxy, PositionManager, V4Quoter, StateView and the
+   pinned UniversalRouter `0xa2dc…ea91`. Every contract lands **at its mainnet address** with mainnet runtime code (the
+   PositionManager differs only in its EIP-712 immutables: chain id and domain separator). **WETH9 is excluded:**
+   mainnet's placeholder is a chain-bound CREATE, not replayable, and Moderato already has a UniswapV2Factory at
+   `0xBbBc…`; native paths are never used. Root key only (access keys cannot CREATE). Decided as D-021; procedure in
+   `docs/specs/v4-replay.md`. (Superseded: "deploy our own periphery" and the unofficial `0x72B3…` PoolManager.)
 3. **Mirror token as a TIP-20 we administer**, with `transferPolicyId` 1, or a blacklist whose admin is ours. **Never
    blacklist the PoolManager or the UR.** Keep `PAUSE_ROLE` and `BURN_BLOCKED_ROLE` in a multisig with a runbook: a
    pause or blacklist of the PM freezes every pool of that token, and `burnBlocked` on the PM breaks its solvency. Keep
    decimals at 6 and convert the 18-dec Robinhood token at the bridge (see 14). Prices are raw units; the reference
-   price for any band = oracle price ÷ `uiMultiplier`.
-4. **Guard hook (optional, `17` §5.3 "StockGuard")**, on a static-fee pool with only `beforeSwap`, so it is
-   auto-routable and needs no allowlisting.
+   price for any band = oracle price **× `uiMultiplier`** (one raw token carries `uiMultiplier` shares; the earlier
+   "÷" was wrong) (corrected 2026-09-29, plan v5 §1.3).
+4. **Guard hook (`17` §5.3 "StockGuard")**, on a static-fee pool with **flags `0x20C0` = beforeInitialize +
+   beforeSwap + afterSwap** and no return deltas, so it is auto-routable and needs no allowlisting (corrected 2026-09-29, plan v5 §1.3). A
+   `beforeSwap`-only hook cannot bound the post-swap price, because the router passes extreme price limits
+   (`MIN/MAX_SQRT_PRICE ± 1`); the band check therefore runs in `afterSwap`, and `beforeInitialize` refuses an
+   unregistered pool or an out-of-band initial price.
    - **Market-hours:** a session flag or NYSE calendar. Widen or deny off-hours instead of pricing.
    - **Oracle band:** revert if the pool price after the swap leaves ±X % of a keeper-written, staleness-checked
      reference.
@@ -549,7 +554,7 @@ provider example, in the Uniswap-token-list format, and in a pre-deployment TIP-
 
 ### Agent execution (themed portfolios)
 
-1. **ThemeRouter** implements `IUnlockCallback` or inherits `V4Router` (MIT). It swaps with the recipient forced to the
+1. **ThemeRouter** implements `IUnlockCallback` (decided: D-023, plan v5; not `V4Router`). It swaps with the recipient forced to the
    follower, as `17` §6 already requires. This matters because access-key call scopes do not bind the UR's `recipient`,
    and `transferFrom` by Permit2/UR is not counted against spending limits (F29).
 2. **Spending limits bind at `approve`.** The agent key's periodic limit counts approval increases, so the router pulls

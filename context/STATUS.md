@@ -2,6 +2,11 @@
 
 Updated 2026-09-29 by Claude, after the UX-first re-plan (plan v5). **Never trust memory over this file.** Update it at the end of every session.
 
+> **Build time (from 2026-09-29): the resume pointer is `docs/plan/STATUS.md`** (read after
+> `docs/plan/working-rules.md`). Plan v5 was approved on 2026-09-29 and copied to `docs/plan/00-plan.md` (specs in
+> `docs/specs/`, decisions D-001…D-057 and questions Q-001…Q-031 in `docs/plan/decisions.md`); **S0 — Bootstrap is in
+> progress** on `stage/S0-bootstrap`. This file stays as the pre-build context map below.
+
 ## What this is
 
 Colosseum **Crypto World's Fair** entry, **Tempo track**. One product, two equal pillars:
@@ -20,7 +25,7 @@ Decisions 1–9 in `04-decisions-and-rules.md`.
 | 2. Fidelity — one combined ledger, reusing existing work | **Done:** `tempo/12-parity-ledger.md`, built from `tempo/fidelity/masayume-side.md` and `tempo/fidelity/agari-side.md` |
 | 3. Research the open items | **Done:** `13` Uniswap v4 + TIP-20, `14` bridge + Robinhood tokens, `15` equity prices, `16` tempo-std/apps/primitives |
 | 4. Architecture | **Done:** `tempo/17-architecture.md` |
-| 5. Build plan | **v5 written** (2026-09-29): `~/.claude/plans/sunny-forging-simon.md` — UX-first, 21st.dev components revamped, performance budgets, library docs via Context7, mobile SM1–SM5. Next: owner approval, then S0 copies it to `docs/plan/` and the appendices to `docs/specs/` |
+| 5. Build plan | **v5 approved** (2026-09-29): `docs/plan/00-plan.md` — UX-first, 21st.dev components revamped, performance budgets, library docs via Context7, mobile SM1–SM5; specs in `docs/specs/`. S0 in progress (`docs/plan/STATUS.md`) |
 
 ## Read order for a fresh session
 
@@ -42,8 +47,9 @@ Tempo docs: 227 pages on disk in `../reference/tempo-docs-md/` — grep there fi
 ## What the research changed (2026-09-21)
 
 - **Access keys are live and tested**, but their limits don't count contract `transferFrom` and recipient binding covers
-  only TIP-20 transfer/approve → contracts pay `msg.sender` only and caps live on chain (**KeyPolicy**). Only EOA-style
-  accounts can grant keys → themes use per-user accounts.
+  only TIP-20 transfer/approve → contracts pay `msg.sender` only and caps live on chain. Only EOA-style
+  accounts can grant keys → themes use per-user accounts. **Corrected 2026-09-29:** EventVault is ported as-is (caps in
+  the vault) and theme caps live in the ThemeRouter follow record — no KeyPolicy contract (D-002, D-003).
 - **Deploys cost ~$0.015 per max-size contract**; the constraint is block space (30M gas/block general lane; 250k gas per
   new slot) → recycled order nodes, packed positions.
 - **Fee sponsorship needs no approval** when we run our own relay.
@@ -55,7 +61,8 @@ Tempo docs: 227 pages on disk in `../reference/tempo-docs-md/` — grep there fi
 - **SpaceX is listed** (SPCX), not pre-IPO.
 - **Uniswap v4:** official mainnet deployment in real TIP-20 use; Moderato needs our own deploy (BUSL allows testnet);
   payouts must pre-check receive policies (else funds strand in the ReceivePolicyGuard); passkeys can't sign permits;
-  memecoins graduate into hookless pools; the stock guard is a static-fee `beforeSwap` hook.
+  memecoins graduate into hookless pools; the stock guard is a static-fee hook (**corrected 2026-09-29:** flags `0x20C0`,
+  beforeInitialize + beforeSwap + afterSwap; Moderato = replay of 7 mainnet CREATE2 txs; UR `0xa2dc…ea91` pinned).
 
 ## What the 2026-09-29 re-plan changed
 
@@ -72,6 +79,9 @@ Tempo docs: 227 pages on disk in `../reference/tempo-docs-md/` — grep there fi
 - Tests prove functionality; they are not a deliverable.
 
 ## Open decisions (owner)
+
+Superseded at build time by the Q-entries in `docs/plan/decisions.md` and `docs/plan/owner-actions.md` (several below
+are now answered: source chain D-001, theme model D-002, repository D-004). Kept as the 2026-09-29 snapshot.
 
 Full list: `tempo/12-parity-ledger.md` §12 and `tempo/17-architecture.md` §13. Headlines:
 

@@ -4,6 +4,11 @@ Written 2026-09-21, after the fidelity pass (`12-parity-ledger.md`) and the rese
 This is the design the build plan implements. **No code exists yet.** Where a choice is the owner's, it is marked
 **Owner** and listed in §13; the design shows the recommended option and what changes under the other.
 
+**Corrected 2026-09-29** by the approved build plan v5 (`docs/plan/00-plan.md` §1.3; decisions in
+`docs/plan/decisions.md`): EventVault ported as-is with no KeyPolicy contract (§3.2), the v4 replay and StockGuard flags
+(§5.3), the relay policy path (§8.1), the repository layout (§12), and two new sections — mobile (§15) and UX +
+performance (§16).
+
 ## 0. The product in one paragraph
 
 One app, **two equal pillars**, one pathUSD balance. **Pillar 1:** Up/Down prediction markets on crypto and US
@@ -13,7 +18,8 @@ Parlay, Range, Boost, Private desk, Earn, copyable AI agents, trade-from-X, Sens
 TIP-20s on Tempo, bought and sold through Uniswap v4 — and themed portfolios ("AI stocks", "gold", "energy"…) that a
 user's own AI agent rebalances. Plus a stablecoin launchpad (enshrined DEX) and a memecoin launchpad (bonding curve →
 Uniswap v4). Users sign in with a passkey, never hold a gas token, and every transaction is fee-sponsored by our relay.
-Delegation to agents uses Tempo access keys, with market caps enforced on chain.
+Delegation uses Masayume's EventVault grants (Trading Balance taps, copy trading, trade-from-X) and Tempo access keys
+(wallet-mode taps, theme agents), with caps enforced on chain (corrected 2026-09-29, plan v5 §1.3).
 
 ## 1. Binding principles
 
@@ -26,7 +32,7 @@ From the owner's vision (`../05-product-vision.md`), the decisions (`../04-decis
 | P3 | **Fidelity:** Masayume for product and look; Agari for the engine, stock mechanics and fixes | Rows in `12` say which reference governs |
 | P4 | **Tempo-native where Tempo is better** (decision 2) | Passkeys, fee sponsorship, access keys, TIP-20 Factory, ERC-8004, MPP, indexer |
 | P5 | **No native value** | Tempo refuses value transfers; no `payable` path, `msg.value` fee or native-currency pool anywhere |
-| P6 | **Contracts pay `msg.sender` only**; no destination parameter (Agari AD-5) | Required anyway: access-key recipient binding does not cover our contracts (16 §4.3) |
+| P6 | **Contracts pay `msg.sender` only**; no destination parameter (Agari AD-5) | Required anyway: access-key recipient binding does not cover our contracts (16 §4.3). **Two documented exceptions** (corrected 2026-09-29, plan v5 §1.3): delegated EventVault actions (`placeFor` by a SESSION/EXECUTOR/STRATEGY delegate) credit the **grant owner**, never the delegate; bridge deliveries (`lzReceive` → `_credit`) credit the **message recipient** |
 | P7 | **Exits never depend on an owner or admin**; no admin void; modes never block exits (Agari D-008, D-114) | Permissionless settle / void / redeem / sweep |
 | P8 | **Donation-safe accounting** — never read `balanceOf` for accounting | Internal counters; balance only as an assert |
 | P9 | **Storage-conscious** — 250k gas per new slot, 30M gas per block for general txs (16 §6) | Recycled order nodes, packed positions, storage credits |
@@ -53,7 +59,7 @@ From the owner's vision (`../05-product-vision.md`), the decisions (`../04-decis
 │  MarketMakerVault · PrivateDesk           │                                                        │
 │  GameArena · SeasonPrizePool              │  LAUNCHPADS: stablecoin (Factory → enshrined DEX)      │
 │  StrategyRegistry (calls, follow/fade)    │              memecoin (CurveLaunchpad → v4 pool)       │
-│ SHARED: KeyPolicy · pathUSD · AccountKeychain (access keys) · TIP-20 Factory · StablecoinDEX ·     │
+│ SHARED: EventVault · pathUSD · AccountKeychain (access keys) · TIP-20 Factory · StablecoinDEX ·    │
 │         ERC-8004 registries · SignatureVerifier · Permit2 · Multicall3 · CreateX                   │
 └──────────────▲──────────────────────────────▲───────────────────────────────▲──────────────────────┘
                │ sponsored txs                │ logs / SQL                     │ signed prints
@@ -75,36 +81,48 @@ From the owner's vision (`../05-product-vision.md`), the decisions (`../04-decis
 | Signer | Kind | Used for |
 |---|---|---|
 | User root | Passkey (WebAuthn P-256) Tempo account via the Accounts SDK; or Tempo Wallet; or an injected secp256k1 wallet | Everything interactive; authorizing and revoking access keys |
-| User access keys | Non-extractable P-256 (browser) or secp256k1 held by a service, authorized by the root | Tap-trading, copy trading (runner), trade-from-X (executor), duel seats, theme agent |
+| EventVault delegates | Non-extractable P-256 session-key account (browser; a hardware key in the app, §15) or a service's secp256k1 key, granted by the root in the vault | SESSION: tap-trading from the Trading Balance · STRATEGY: copy trading (runner) · EXECUTOR: trade-from-X |
+| User access keys | Non-extractable P-256 (browser) or secp256k1 held by a service, authorized by the root (TIP-1011) | Wallet-mode taps (D-047), theme agent (one key per follower and theme) |
+| Duel seat keys | Separate agent addresses per seat | Relay-sponsored `placePickFor` (the `payable` gas forwarding is removed) |
 | Service role keys | secp256k1 per actor (roller, relay, settler, maker, keepers, desk, deck, stock-sync) | Permissionless cranks and role-gated operations |
 | Fee payer | secp256k1 funded with pathUSD, one per network | Co-signs sponsored txs through our relay |
 | Safes | Multisig per chain (**Owner**: signers, threshold) | Admin of engine roles, TIP-20 mirrors, LayerZero OApps, launchpad params |
 
-### 3.2 Delegation: access keys + KeyPolicy
+### 3.2 Delegation: EventVault grants + access keys
+
+**Corrected 2026-09-29, plan v5 §1.3** (owner answers D-002, D-003): Masayume's EventVault is **ported as-is** and there
+is **no KeyPolicy contract**. The 2026-09-21 design (the vault replaced by access keys, caps in a new KeyPolicy
+contract) is withdrawn.
 
 Access keys (TIP-1011) are live on both networks and were exercised on Moderato (16 §4.6). They give expiry, periodic
-spend limits, call scoping and revocation natively. Two gaps decide the design (16 §4.3):
+spend limits, call scoping and revocation natively. Two gaps shape every delegated path (16 §4.3):
 
 1. Limits count only **direct** TIP-20 `transfer/approve` by the account (and fees). A contract's `transferFrom` is not
    counted — so a standing unlimited approval from the root would bypass the limit.
 2. Recipient binding covers only TIP-20 `transfer/approve/transferWithMemo`, not our contracts, UniversalRouter or Permit2.
 
 **Design.**
-- Every key-signed action is a batch `[token.approve(target, exactAmount), target.action(...)]`. The approve increase is
-  counted against the key's periodic limit; the target pulls exactly that.
-- The UI never creates a standing unlimited root approval to a trading contract.
-- Every contract credits positions and pays out to `msg.sender` only (P6), so a key can trade for the user but cannot
-  move money anywhere else. Unscoped selectors fail with `CallNotAllowed`.
-- **KeyPolicy** (new, small): the root sets per-key caps — stake per trade, daily spend, open positions, price ceiling,
-  allowed products, expiry. Allowlisted contracts call `KeyPolicy.enforce(account, cost, openDelta, priceTicks)`, which
-  reads `AccountKeychain.getTransactionKey()`: root → no-op; key → check caps and update the key's counters. This is where
-  Masayume's EventVault caps (`maxStakePerTradeBase`, `maxDailySpendBase`, `maxOpenPositions`, `maxPriceRaw`) live on Tempo.
-- `StrategyRegistry` checks a subscriber's KeyPolicy caps against the strategy's envelope (`CapsOutsideEnvelope`).
-
-**What this replaces.** Masayume's `EventVault` is **not ported as a custody contract**. The Trading Balance becomes the
-user's own pathUSD under an access-key allowance; the vault's grant kinds (SESSION, EXECUTOR, STRATEGY) become access-key
-templates; its caps move to KeyPolicy; its settle crank becomes the engine's `redeemFor` auto-pay. The vault's invariants
-(a delegate cannot withdraw or redirect; one live grant per kind; capital intake never sponsored) all still hold.
+- **Trading Balance = Masayume's `EventVault`** (D-003): custody of the user's deposited pathUSD, SESSION / EXECUTOR /
+  STRATEGY grants, caps held in the vault per grant (`maxStakePerTradeBase`, `maxDailySpendBase`, `maxOpenPositions`,
+  `maxPriceRaw`, plus Agari's `Caps.market`, D-091), `crankSettle`, VaultTally. The only change is the ERC-2771 forwarder:
+  it goes, `msg.sender` is used everywhere, and our fee relay sponsors the delegated calls (`placeFor`, `withdraw`,
+  `withdrawPrivate`, `revoke`, `crankSettle`, `sweep`; never `deposit`, `depositAndGrant`, `grant`, `fundGrant` —
+  unchanged from Masayume). The vault's invariants hold: a delegate cannot withdraw or redirect; one live grant per kind;
+  capital intake never sponsored. Delegated actions credit the grant owner (P6 exception).
+- **Grants:** SESSION = the browser's WebCrypto P-256 session-key account (a hardware key in the app, §15) for
+  tap-trading; STRATEGY = the strategy runner for copy trading (`StrategyRegistry` keeps reading EventVault and checks the
+  grant's caps against the strategy's envelope, `CapsOutsideEnvelope`); EXECUTOR = the X relay.
+- **Wallet-mode access key** (D-047): a second no-prompt tap path from the user's own pathUSD, authorized in the sign-in
+  ceremony, scoped to engine place/cancel/redeem/withdrawCredit + `pathUSD.approve(engine)` with a daily pathUSD limit.
+  Every tap is a batch `[pathUSD.approve(engine, exactAmount), engine.placeOrder(...)]`, so the approve increase is
+  counted against the key's limit and the engine pulls exactly that.
+- **Theme agent access key** (D-002, D-023): one secp256k1 key per (follower, theme), scoped to `ThemeRouter.rebalance`
+  and approvals to the router; **per-follower caps live in the ThemeRouter follow record** (`FollowCaps`, §6).
+- **Duel seats** use separate agent addresses with relay-sponsored `placePickFor` (the `payable` forwarding is removed).
+- The UI never creates a standing unlimited root approval to a trading contract. Every contract pays `msg.sender` only
+  (P6, two documented exceptions), so a key can trade for the user but cannot move money anywhere else. Unscoped
+  selectors fail with `CallNotAllowed`. Every live grant and key is listed, spent and revocable in `/settings/account`
+  (D-053).
 
 **Limit:** only EOA-style Tempo accounts can grant keys; contracts cannot until TIP-1111 (T12, unscheduled). This is why
 themes use per-user accounts (§6).
@@ -154,8 +172,9 @@ with `forge build --sizes` in the first engine stage; the split adjusts to fit.
 
 **Entry points.** `placeOrder`, `cancelOrders`, `reduceOrder`, `cancelAll`, `sweepExpired`, `mintSet`, `mergeSet`,
 `withdrawCredit`, `recordPrint`, `copyOpenFromPrev`, `settle`, `voidExpired`, `redeem`, `redeemPartial`, `redeemFor`;
-admin `registerSeries`, `addPolicyVersion`, `setMode`, roles; roller `openWindow`. Every user entry point calls
-`KeyPolicy.enforce` for key-signed transactions. `withdrawCredit`, `redeem` and `redeemFor` pre-check the recipient's
+admin `registerSeries`, `addPolicyVersion`, `setMode`, roles; roller `openWindow`. The engine holds no key policy
+(corrected 2026-09-29, plan v5 §1.3): delegated caps live in EventVault's grants and the ThemeRouter follow record, and a
+wallet-mode access key is bounded by its own TIP-1011 limit and scopes (§3.2). `withdrawCredit`, `redeem` and `redeemFor` pre-check the recipient's
 receive policy (P12): `redeemFor` leaves a blocked payout as credit, and a user's own `withdrawCredit` reverts with the
 reason.
 
@@ -197,8 +216,8 @@ blocks it in the web); settlement fee off (E-52, Agari) unless the owner chooses
 | `PrivateDesk` | `PrivateGateway` | D-117 counters, EIP-712 claim, P-256-safe key derivation (L-39) |
 | `GameArena` family | `ArenaGateway`; **`payable` gas forwarding removed** (seat key = access key) | conservation invariant; split for size (L-63) |
 | `SeasonPrizePool` | none | non-squattable season creation (L-65) |
-| `StrategyRegistry` | reads KeyPolicy instead of EventVault; ERC-8004 agent id; `follow \| fade` consent | `max_fee_base` (D-112), fade (A-1c) |
-| `KeyPolicy` | new | §3.2 |
+| `EventVault` (+`VenueGateway`, `VaultTally`) | `VenueGateway` → engine `placeOrder`/`redeem`; ERC-2771 forwarder removed, `msg.sender` everywhere (ported as-is, D-003; corrected 2026-09-29, plan v5 §1.3) | D-062 (sale to zero frees `openPositions`), D-091 `Caps.market`; P12 on `withdraw`/`withdrawPrivate`; crank opt-out |
+| `StrategyRegistry` | keeps reading EventVault (STRATEGY grants); ERC-8004 agent id; `follow \| fade` consent | `max_fee_base` (D-112), fade (A-1c) |
 
 Every product that trades through the engine asserts the engine's `PlaceResult` against its own balance change
 (Agari's `EngineAccountingMismatch`), including the maker vault, which Agari's lacked.
@@ -214,9 +233,10 @@ Private and Duel price against rested depth and refuse thin books, so maker dept
 
 - A **call agent** = a `StrategyRegistry` entry (spec hash; data, never code) + an **ERC-8004 identity**
   (registration JSON on chain or at a URI) + a runner key.
-- Following = subscribe + authorize the runner's access key, in one transaction; caps in KeyPolicy within the envelope.
+- Following = one batched passkey tx: an EventVault STRATEGY grant to the runner + `subscribe` (+ approve); the grant's
+  caps must sit within the strategy's envelope (corrected 2026-09-29, plan v5 §1.3).
 - The **strategy runner** decides per Window (Momentum / Reversion / Mirror / LLM agent), records the decision before
-  sending, signs each subscriber's order with that subscriber's key, and reconciles unknown sends without re-signing.
+  sending, places each subscriber's order through `placeFor` on that subscriber's STRATEGY grant, and reconciles unknown sends without re-signing.
 - **MPP receipts:** LLM calls (Anthropic and others listed on MPP) and data calls use the MPP *charge* intent, so each
   paid request settles as a pathUSD/USDC.e transfer on Tempo; the runner stores `(decision id, payment tx)` so the
   agents board can show "what it bought before it acted" (AG-24). Session-intent payments are periodic vouchers, not
@@ -228,8 +248,8 @@ Private and Duel price against rested depth and refuse thin books, so maker dept
 
 ### 5.1 Bringing Stock Tokens to Tempo
 
-Design from `14-bridging-stock-tokens.md`. **Source: Robinhood Chain** (every finding supports it; decision 5 pending
-the owner's confirmation).
+Design from `14-bridging-stock-tokens.md`. **Source: Robinhood Chain** (every finding supports it; confirmed by the owner
+as D-001, 2026-09-21).
 
 | Chain | Contract | Per | Notes |
 |---|---|---|---|
@@ -263,24 +283,33 @@ From `13-uniswap-v4-and-tip20.md`.
 **Mainnet: use Uniswap's official deployment.** PoolManager `0x33620f62c5b9b2086dd6b62f4a297a9f30347029` (byte-identical
 to v4-core@46c6834, owned by the Uniswap DAO via a Wormhole receiver), PositionManager `0x3fc7…ce11`, V4Quoter
 `0x20e6…4f4e`, StateView `0x21b9…8b2a`, Permit2 `0x0000…8BA3`, and **one pinned UniversalRouter version** (four are live;
-the docs page and the SDK disagree). It is in real use with TIP-20s on both sides: 149 pools, 105,084 swaps, 43,586 of
+the docs page and the SDK disagree): **`0xa2dc7d0266f0cc50b3eeaf36c9bfcecff1beea91`** on both networks (D-021; v4-periphery
+HEAD adds `minHopPriceX36`, so spike X3 probes its ABI on a mainnet fork; corrected 2026-09-29, plan v5 §1.3). It is in real use with TIP-20s on both sides: 149 pools, 105,084 swaps, 43,586 of
 them through hookless TIP-20/TIP-20 pools, including non-USD TIP-20s (EURAU, cbBTC, PRIME). A mainnet copy of our own is
 not allowed before 2027-06-15 (BUSL-1.1; the only extra-use grant is to the Uniswap Foundation) — and not needed.
 
-**Moderato: deploy it ourselves** (BUSL permits non-production use). Recommended: replay the mainnet PoolManager initcode
-through the Arachnid CREATE2 proxy with salt 0, which lands it **at the mainnet address**, then deploy our own
-PositionManager, V4Quoter, StateView and UniversalRouter (≈ 5 transactions of ≤ 25.5M gas; ≈ $0.07). Alternative: the
-unofficial Moderato PoolManager `0x72B3…09a2` (same bytecode, no periphery). **Owner** picks; address parity is the reason
-for the first.
+**Moderato: deploy it ourselves** (BUSL permits non-production use). **Decided (D-021; corrected 2026-09-29, plan v5
+§1.3): replay the 7 mainnet CREATE2 transactions** through the Arachnid proxy, in order — PoolManager, PositionDescriptor
+impl + its TransparentUpgradeableProxy, PositionManager, V4Quoter, StateView and the pinned UniversalRouter `0xa2dc…ea91`
+— so every contract lands **at its mainnet address** with mainnet runtime code (the PositionManager differs only in its
+EIP-712 immutables: chain id and domain separator). **WETH9 is excluded:** mainnet's placeholder is a chain-bound CREATE,
+not replayable, and Moderato already has a UniswapV2Factory at that address; native paths are never used anyway. Root key
+only (access keys cannot CREATE); spec `docs/specs/v4-replay.md`. The unofficial Moderato PoolManager `0x72B3…09a2` is
+not used.
 
 **Pools.** Token/token only, quoted in **pathUSD** — v4's native currency (`address(0)`) is dead on Tempo (`CALLVALUE` and
 `BALANCE` are 0; WETH is a reverting placeholder). pathUSD is `currency0` against every factory TIP-20. Stock pools are
 created with `PositionManager.multicall([initializePool, modifyLiquidities])` and seeded by the house.
 
-**StockGuard hook (ST-10).** A static-fee pool with a `beforeSwap`-only hook, built on OpenZeppelin's MIT, audited
-`BaseHook`, address-mined with HookMiner and deployed through Arachnid. It (a) widens or refuses off-hours according to
-the session flag, and (b) reverts if the post-swap pool price leaves ±X % of a keeper-written, staleness-checked reference
-(oracle price ÷ `uiMultiplier`, since pools price raw units). A static-fee `beforeSwap` hook needs no Uniswap routing
+**StockGuard hook (ST-10).** A static-fee pool with `StockGuardHook`, **flags `0x20C0` = beforeInitialize + beforeSwap +
+afterSwap** (corrected 2026-09-29, plan v5 §1.3, D-022: a `beforeSwap`-only hook cannot bound the post-swap price,
+because the router passes extreme price limits), no return deltas, built on OpenZeppelin's MIT, audited `BaseHook`,
+address-mined with HookMiner (rejecting the `0x91` prefix) and deployed through Arachnid. `beforeInitialize` refuses an
+unregistered pool or an initial price outside the band; `beforeSwap` refuses on halt, unsynced multiplier, issuer or
+oracle pause and the corporate-action window, and widens or refuses off-hours by the session flag; `afterSwap` reverts if
+the post-swap pool price leaves ±X % of a staleness-checked reference from the `StockReference` store (or is not
+strictly closer to the band from outside). **Pool raw price = underlying × `uiMultiplier`** (one raw token carries
+`uiMultiplier` shares; the earlier "÷" was wrong). A static-fee hook without return deltas needs no Uniswap routing
 allowlist; a dynamic off-hours fee would, and our app routes directly anyway. The market-hours hooks seen on Robinhood
 Chain are demo-grade references only.
 
@@ -311,7 +340,7 @@ A **theme** is data: target weights over mirror tokens (plus a cash sleeve), dri
 trigger, a slippage bound and a token allowlist, hashed like a call spec. Themes are published through a registry (the
 call registry's shape, or the same contract with a kind field) with a creator, an envelope and a fee.
 
-**Account model — per-user accounts (recommended, Owner confirms).** The follower keeps the stock tokens in their own
+**Account model — per-user accounts (owner answer D-002).** The follower keeps the stock tokens in their own
 wallet; the theme agent holds an access key for them, scoped to the `ThemeRouter` and to approvals of pathUSD and the
 theme's tokens, with periodic limits and an expiry. It is Glider's model (non-custodial account + session key +
 automation) on Tempo's native primitives, and it is the only model TIP-1011 supports today. The alternative — a pooled
@@ -320,7 +349,9 @@ the vault cannot grant access keys; its agent would be a contract-level operator
 
 **`ThemeRouter`.** `rebalance(themeId, trades[], priceProof)` is called with the follower's key (`msg.sender` = follower):
 checks every token is in the theme's allowlist, that each trade's execution price is within the slippage bound of the
-verified reference price, calls `KeyPolicy.enforce`, and swaps through v4 with the **recipient forced to `msg.sender`**
+verified reference price, checks the follower's caps in its own follow record (`FollowCaps`: allocation, per-trade and
+daily notional, slippage, fee, min interval — no KeyPolicy contract; corrected 2026-09-29, plan v5 §1.3), and swaps
+through v4 as an `IUnlockCallback` (D-023) with the **recipient forced to `msg.sender`**
 (router and Permit2 recipients are not bound by access keys).
 
 **Theme agent / rebalancer (ops).** Computes drift on UI amounts (multiplier-aware), decides (**Owner**: the AI chooses
@@ -351,7 +382,7 @@ Masayume's Next.js 16 / React 19 app, ported source-led. Changes: wagmi 3 + viem
 
 | Route | Purpose |
 |---|---|
-| `/api/relay/*` | fee payer (`Handler.relay`, allowlist, budgets) |
+| `/api/relay/*` | fee payer (`Handler.relay`, built once at module scope; also `/api/relay/:chainId`); the allowlist is a policy engine in `packages/markets/src/relay/` with **one policy file per area, `packages/markets/src/relay/policies/<area>.ts`**, each added by its contract stage (corrected 2026-09-29, plan v5 §1.3, D-029); budgets debited in a Postgres ledger |
 | `/api/auth/*` | passkey registration/login (`Handler.webAuthn`) |
 | `/api/faucet` | Moderato `tempo_fundAddress` behind challenge + quota |
 | `/api/private/*` | private desk service |
@@ -396,10 +427,13 @@ No `CLAUDE.md` / `AGENTS.md` files are carried from Masayume's `web/` (owner rul
 1. **A call with a passkey.** Ticket → one Tempo tx `[pathUSD.approve(engine, cost), engine.placeOrder(IOC)]`, the passkey
    signs, the relay co-signs → the engine matches, emits the fill and `PlaceResult` → stream → verdict. After expiry the
    relay actor records the close print, the settler settles, and after 300 s `redeemFor` pays the wallet.
-2. **Tap-trading.** The first tap carries `key_authorization` (one passkey prompt) and the trade; later taps are signed
-   by the browser key with no prompt; KeyPolicy caps apply; revoke from the Trading Balance plate.
-3. **Copy an agent.** One tx: `key_authorization` for the runner + `subscribe`. Each Window: the runner decides (MPP-paid
-   model call → receipt), then signs one sponsored order per subscriber from that subscriber's account.
+2. **Tap-trading.** From the Trading Balance: the root deposits into EventVault and grants SESSION to the browser's
+   session-key account (one passkey prompt); taps are `placeFor` calls signed by that key with no prompt, sponsored by
+   the relay, within the grant's vault caps; revoke from the Trading Balance plate. From the wallet: the wallet-mode
+   access key (D-047) signs `[approve exact, placeOrder]` with no prompt within its daily limit (corrected 2026-09-29).
+3. **Copy an agent.** One batched passkey tx: STRATEGY grant to the runner + `subscribe`. Each Window: the runner decides
+   (MPP-paid model call → receipt), then sends one sponsored `placeFor` per subscriber on that subscriber's grant
+   (corrected 2026-09-29).
 4. **Buy a stock.** V4Quoter quote → one sponsored Tempo tx `[pathUSD.approve(Permit2), Permit2.approve(pathUSD, UR),
    UR.execute(V4_SWAP)]` (no permit signatures for passkeys); USDC.e holders route USDC.e → pathUSD → stock in the same
    `V4_SWAP` through Uniswap's aggregator hook; holdings shown in UI amounts.
@@ -429,19 +463,20 @@ No `CLAUDE.md` / `AGENTS.md` files are carried from Masayume's `web/` (owner rul
 | Robinhood issuer | RHJ | Blocklist, pause, burn from any address, beacon upgrade — disclosed |
 | ERC-8004 registries | the 8004 team | Upgradeable proxies (third-party dependency) |
 | Fee payer | relay key | Allowlist + budgets; holds only fee float |
-| Access keys | users | Expiry, periodic limits, scopes, KeyPolicy caps, revocable |
+| EventVault grants | users | Caps in the vault per grant, one live grant per kind, no withdraw/redirect by a delegate, revocable |
+| Access keys | users | Expiry, periodic limits, scopes (theme caps in the ThemeRouter follow record), revocable |
 
 ## 11. Testnet vs mainnet
 
 | Component | Moderato (42431) | Mainnet (4217) |
 |---|---|---|
 | Settlement unit | faucet pathUSD (`tempo_fundAddress`, 1M) | pathUSD; any USD TIP-20 swapped in |
-| Engine + products + KeyPolicy | deployed | deployed |
+| Engine + products + EventVault | deployed | deployed |
 | Prints | RedStone (9 names + crypto); Data Streams lanes paused unless testnet credentials | RedStone + Data Streams |
 | Stock Tokens | 5 faucet tokens (TSLA, AMZN, PLTR, NFLX, AMD), real testnet Stock Tokens | any of 195, bought on Robinhood Chain |
 | Bridge | LayerZero via Base Sepolia hop | LayerZero direct, explicit DVNs |
 | Multiplier sync | exercisable only as no-ops (all testnet multipliers = 1) | real (32 tokens ≠ 1) |
-| Uniswap v4 | self-deployed: PoolManager replayed at the mainnet address + our periphery (or the unofficial `0x72B3…`) — **Owner** | official deployment (PoolManager `0x3362…9029`, pinned UR) |
+| Uniswap v4 | self-deployed: the 7 mainnet CREATE2 txs replayed at the mainnet addresses (WETH9 excluded; D-021) | official deployment (PoolManager `0x3362…9029`, pinned UR `0xa2dc…ea91`) |
 | ERC-8004 | `0x8004A818…` / `0x8004B663…` / `0x8004Cb1B…` | `0x8004A169…` / `0x8004BAa1…` / `0x8004Cc84…` |
 | Fee sponsorship | our relay (public sponsor as fallback) | our relay |
 | Themes | 5-ticker themes | full catalogue |
@@ -450,13 +485,13 @@ No `CLAUDE.md` / `AGENTS.md` files are carried from Masayume's `web/` (owner rul
 
 The build lives in this repository (the research and its history are already here), as a pnpm monorepo in Masayume's
 shape. Code ported from Masayume or Agari carries a provenance header, and the README discloses pre-existing code as the
-hackathon rules require (`../00-hackathon-brief.md`).
+hackathon rules require (`../00-hackathon-brief.md`). Corrected 2026-09-29 (plan v5 §1.3): no `src/keys/` (no KeyPolicy
+contract); Foundry uses `network = "tempo"` (not `tempo = true`, D-054).
 
 ```
-contracts/                 Foundry ≥ 1.8.3, tempo = true, solc 0.8.30, via_ir
+contracts/                 Foundry ≥ 1.8.3, default profile network = "tempo", solc 0.8.30, via_ir; profile `evm` for robinhood/transit/common
   src/engine/              EventsEngine, MatchLib, EngineLens, verifiers/{RedStone,DataStreams,Attested}
-  src/keys/                KeyPolicy
-  src/products/            parlay/ range/ maker/ leverage/ private/ games/ strategy/
+  src/products/            shared/ vault/ (EventVault, VenueGateway, VaultTally) parlay/ range/ maker/ leverage/ private/ games/ strategy/
   src/stocks/              TIP20MintBurnAdapter, StockSyncReceiver, ScaledUIView, hooks/
   src/themes/              ThemeRegistry, ThemeRouter
   src/launch/              CurveLaunchpad, LiquidityLocker, LaunchRegistry
@@ -468,9 +503,11 @@ packages/markets           all chain I/O (viem/tempo): engine, products, prints,
 packages/brain             model layer (AI SDK) + MPP payment adapter
 packages/db                Postgres schema + idx read model
 packages/clients           ABIs and generated types
+packages/tokens            design tokens (one tokens.json → web CSS variables, Tailwind, the app's native theme)
 services/ops               actors (§8.2)
 web/                       the app (§8.1)
-docs/                      build plan, decisions, working parity ledger, acceptance
+mobile/                    Expo app: one web view + native shell (§15)
+docs/                      build plan, decisions, specs, design (tokens, component register), acceptance
 ```
 
 ## 13. Owner decisions
@@ -481,8 +518,8 @@ The list in `12-parity-ledger.md` §12, plus these that the architecture raises:
 2. **Relay budgets** and the mainnet fee float.
 3. **Budget for real mainnet Stock Tokens** to lock and to seed v4 pools, and the mainnet ticker set.
 4. **Chainlink Data Streams** subscriptions (which streams) and **testnet credentials**.
-5. **Repository:** build in this repo (recommended) or a new one; product name.
-6. **Moderato Uniswap v4:** address-parity replay + our periphery (recommended) or the unofficial PoolManager (§5.3).
+5. **Repository:** decided — build in this repo (D-004, 2026-09-21); product name still open (Q-019).
+6. **Moderato Uniswap v4:** decided — replay the 7 mainnet CREATE2 txs (D-021, §5.3).
 
 ## 14. Risks and how the design meets them
 
@@ -503,3 +540,66 @@ The list in `12-parity-ledger.md` §12, plus these that the architecture raises:
 | Issuer freeze/burn of the PoolManager's balance | Our mirrors never blacklist the PoolManager/router; roles in the Safe; pathUSD's admin disclosed |
 | Thin v4 liquidity on Tempo | House-seeded pools; StockGuard band; depth shown honestly |
 | Router version drift | Pin one UniversalRouter address per network in config |
+
+## 15. Mobile app
+
+Added 2026-09-29 (plan v5 §1.3). Owner answers D-005…D-008: **iOS + Android from one Expo codebase**; iOS through
+TestFlight (a public link after one Beta App Review, with internal TestFlight as the guaranteed path), Android as a
+directly installable APK; **native shell + web screens**; an individual Apple account. It reconstructs Yosuku's native
+app (an Expo app shipped with a TestFlight link; the source is gone, MS MIG00:92) as ledger rows MOB-01…MOB-14, which
+resolve L-19 and Y-17. Full spec: `docs/specs/mobile.md` (Appendix D); stages SM1–SM5.
+
+| Decision | Design |
+|---|---|
+| D-036 (plan D27) | Expo SDK 57 app in `mobile/`. **One persistent `react-native-webview`** hosts the live web app (one React instance, one wallet session, one query cache, one set of streams). A native tab bar reproduces Masayume's floating pill nav (haptics on press) and a **right-edge More panel with a search row** (no bottom sheets); both drive the web router over bridge protocol v1 (`packages/core/src/shell/protocol.ts`, zod, exact-origin checks) |
+| D-037 (D28) | **Account phase A:** the web `webAuthn` connector runs inside the web view; `webcredentials:<domain>` (iOS) and Digital Asset Links `get_login_creds` (Android) make **the same passkey the same Tempo account** on web and app; `Handler.webAuthn` origins gain `android:apk-key-hash:<hash>` |
+| D-038 (D29) | **Phase B:** native owns the account — native passkeys (`react-native-passkey` + a small accounts adapter), **hardware session keys** (Secure Enclave / StrongBox P-256, `prehash`, low-s) used as the EventVault SESSION key, an injected EIP-1193/EIP-6963 provider, a biometric app lock |
+| D-039 (D30) | Accounts SDK `mobileWebAuth` only for the "Tempo Wallet" option, never for our own accounts |
+| D-040 (D31) | **Push** = direct APNs + FCM from an ops `notifier` actor (outbox with dedupe); devices at `/api/push/register`; verdicts, alerts, agent fills, theme rebalances, bridge completions, duel matches, X receipts |
+| D-041 (D32) | Universal links / app links for `/go/*`, `/markets/*`, `/stocks/*`, `/themes/*`, `/games/duel/*`, `/launch/*`, `/u/*`, `/native-auth`; `/native-auth` becomes the real app handoff (X OAuth in the system auth session) |
+| D-042 (D33) | Build variants: `testnet` (Moderato only, no mainnet code path — guideline 2.3.1(a)) for TestFlight and the APK; `mainnet` later with an organization account (Q-029); separate bundle IDs |
+| D-043 (D34) | App Review obligations built as product features, on the web too: report / block / filter, published contact, in-app deletion of off-chain data, AI data-sharing consent, privacy policy, 18+ rating, export-compliance answers |
+
+**Appendix D in brief.** The shell holds the splash until the web `ready` message, remounts after Android render-process
+death, and routes `wc:`/wallet schemes to the OS; the web app detects shell mode (a `cwf.shell` cookie set from the user
+agent) and hides its own nav while swapping adapters (vibrate → haptic, share → native sheet, `Notification` → push,
+OAuth → system auth session). Push uses `push_devices`, `push_prefs` and a `push_outbox`; permission is asked after the
+first call. Builds go through EAS (`testflight` and `preview` APK profiles); the APK is served at `/download/android/` with
+its SHA-256, and web content ships through web deploys. SM4 moves the hot paths native (call flow, portfolio,
+notifications, alerts; the price chart as an Expo DOM island) and adds a Live Activity and a home-screen widget. The
+library corrections are D-056. Rules: the app holds no server secrets; the bridge accepts only our exact origins; every
+web route stays reachable in the app (tabs + More panel).
+
+## 16. UX and performance
+
+Added 2026-09-29 (plan v5 §2–§3). Owner answer D-009: **keep Masayume's look and every flow; revamp the UX** — new
+surfaces and weak-UX ported screens are built from 21st.dev components restyled to Masayume's tokens. Full detail:
+`docs/specs/ux.md` (Appendix E, a 21st starting component per surface, UX-01…UX-12) and `docs/plan/00-plan.md` §2–§3.
+
+- **Principles.** Fidelity of identity and flows, not of weaknesses (the references' friction and bugs are fixed while
+  porting); tap feedback ≤ 100 ms and every wait named; the honesty grammar (the CTA names its blocker, failures say
+  whether money moved, every value move has a receipt — D-045); dollars first, crypto behind "How this works"; explain at
+  first use, no tutorial wall; phone first (390 px primary, no overflow at 320, ≥ 44 px targets, ≥ 16 px inputs, sticky
+  CTA); accessible by default.
+- **Overlay rule (owner, Masayume ledger 2026-09-04):** centred modals and the right-edge slide-over; **no bottom
+  sheets** (OS share sheets excepted) — on the web and in the app.
+- **21st revamp workflow (D-044).** Every UI step names its 21st starting component, pulls it with `21st get`, maps it to
+  Masayume's tokens (`packages/tokens`), strips gradients and glass, uses Base UI primitives, `motion/react` `m.*` under
+  `LazyMotion`, lucide icons and the `numbers` utility, adds every state (loading, empty, error, stale, blocked, pending,
+  success), then passes `21st review` + axe and is recorded in `docs/design/components.md`. Components are never
+  invented from imagination.
+- **Flows (D-046…D-048, D-052, D-053).** One passkey ceremony to a funded, tap-ready account; two no-prompt trading paths
+  (EventVault session key, wallet-mode access key); verdicts pinned to the user's position and auto-paid; one
+  `TxLifecycle` component family with receipts and confirmation tiers; `/settings/account` as the trust surface for every
+  key and grant.
+- **Performance budgets (D-051, CI-enforced):** first-load JS ≤ 120 KB gz on landing/docs/proof and ≤ 250 KB on app
+  routes (heavy parts as lazy islands); only the route's CSS; LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.05 (p75 mobile);
+  trade confirmation shown ≤ 1 s p50; app cold start to interactive ≤ 2.5 s.
+- **Real-time layer (D-049).** One SSE stream per client from ops (`stream.<domain>`, on Fly) carrying prices, fills,
+  verdicts, room messages, takes and activity, plus chain WebSocket logs for the user's own events; both write into
+  TanStack Query with `setQueryData`, batched per animation frame; no polling in hidden tabs; charts update outside React.
+  This replaces §8.3's "market stream".
+- **Rendering (D-050).** Next 16 cache components + React Compiler; each page = static shell + cached metadata/history
+  (`'use cache'`, `cacheTag`, refreshed on resolve) + Suspense for live and per-user parts; route-group provider split
+  (landing, docs, proof and status load no wallet stack); one shared clock read only by leaf components; multicall reads
+  and `sendTransactionSync` for one-round-trip receipts.

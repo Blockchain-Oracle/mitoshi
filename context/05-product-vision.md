@@ -45,6 +45,18 @@ owner's direction. Where later sessions interpret, they check back against this.
 - **Fidelity where code exists; reuse the fidelity work already done** in `sommina-events` and Agari
   rather than redoing it.
 
+## 2026-09-29 — UI direction and standing instructions
+
+- **Owner answer 9 (D-009): keep Masayume's look, revamp the UX.** Masayume's identity (colours, type, nav, layout) and
+  every flow stay; new surfaces (stocks, bridge, reserves, themes, launch, settings, mobile) are built from 21st.dev
+  components restyled to Masayume's tokens, and ported screens with weak UX are rebuilt from 21st components too.
+- **Standing instructions** (applied to every stage of the build plan): UX matters "1,000%"; search 21st.dev for the right
+  component and revamp it — don't design components from imagination; "understand the libraries" means reading their docs
+  through Context7 and following the recommended patterns; architect for performance; tests are not a deliverable but are
+  written to prove important functionality works. Overlay rule (owner-directed, Masayume ledger 2026-09-04): centred
+  modals and the right-edge slide-over, no bottom sheets.
+- Recorded in `docs/plan/decisions.md`; the UX system is `docs/plan/00-plan.md` §2–§3 and `docs/specs/ux.md`.
+
 ## Open naming question
 
 "Strategies" currently means two different things: **copyable prediction agents** (Masayume) and

@@ -17,6 +17,32 @@ The owner's rule, stated 2026-09-18 and restated 2026-09-20 (Agari decision **D-
 Sequencing work is allowed — ordering is not cutting. Anything in these docs that read as
 a deadline-driven cut was withdrawn on 2026-09-21.
 
+## Where decisions live now (2026-09-29)
+
+The build plan v5 was approved on 2026-09-29. From then on **decisions live in
+`docs/plan/decisions.md`** (append-only): owner answers **D-001…D-009**, the plan's design
+decisions **D-010…D-057** (plan §1.2 D1…D48, numbered D-(n+9)) and open questions
+**Q-001…Q-031**, each with a default that applies until answered. A plan change is a new
+D-entry. The decisions below are the 2026-09-17/21 record and stay as history; where they
+disagree with `docs/plan/decisions.md`, that file wins. Build-time working rules:
+`docs/plan/working-rules.md`.
+
+## Standing rules added 2026-09-29 (owner)
+
+- **UX first.** UX matters "1,000%". Masayume's look (colours, type, nav, layout) and every
+  flow stay (owner answer 9, D-009); new surfaces and ported screens with weak UX are built by
+  **finding the right 21st.dev component and revamping it** to Masayume's tokens — never by
+  designing components from imagination (D-044; plan §2).
+- **Library docs via Context7.** "Understand the libraries" means reading their docs through
+  Context7 and following the recommended patterns; each step cites the docs it relied on.
+- **Architect for performance.** Budgets are enforced in CI (D-051; plan §3).
+- **Tests prove functionality; they are not a deliverable.** Each stage writes the tests that
+  prove its money paths, encoders, conversions and must-not-break flows; plans and gates never
+  count tests (D-057).
+- **Overlay rule** (owner-directed, Masayume ledger 2026-09-04): centred modals and the
+  right-edge slide-over; **no bottom sheets** (OS share sheets excepted) — on the web and in
+  the mobile app.
+
 ## Decisions (2026-09-17, scope corrected 2026-09-21)
 
 1. **Track: Tempo.** $100k pool / 10 winners, EVM + TypeScript, thin field. Mainnet has
@@ -153,6 +179,11 @@ grading language, framework, design patterns or code quality. Two videos (2–3 
 
 ## Agent-layer findings that constrain architecture
 
+- **Corrected 2026-09-29 (owner answer D-003, plan v5 §1.3):** Masayume's **EventVault is
+  ported as-is** (custody, SESSION/EXECUTOR/STRATEGY grants, caps in the vault, `crankSettle`,
+  VaultTally; only the ERC-2771 forwarder goes) and there is **no KeyPolicy contract**; theme
+  caps live in the ThemeRouter follow record (D-002). Access keys serve wallet-mode taps and the
+  theme agent. The 2026-09-21 bullet below is kept as history.
 - **TIP-1011 Access Keys replace EventVault's grant mechanics, not its caps.** Periodic
   spending limits, call scoping (target + selector), recipient-bound transfers and expiry are
   native, live since T3 and tested on Moderato (`tempo/16` §4). **Corrected 2026-09-21:** the
