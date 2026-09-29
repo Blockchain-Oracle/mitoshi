@@ -8,6 +8,7 @@ export default defineConfig({
       "packages/brain",
       "packages/db",
       "packages/clients",
+      "packages/tokens",
       "services/ops",
       "web",
     ],

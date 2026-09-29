@@ -40,6 +40,11 @@ catalog:
   motion: ^13.4.0
   "@base-ui/react": ^1.8.0
   lucide-react: ^1.48.0
+  # Masayume's class utilities (web/src/lib/utils.ts `cn`, cva variants) and its tw-animate import.
+  clsx: ^2.1.1
+  tailwind-merge: ^3.6.0
+  class-variance-authority: ^0.7.1
+  tw-animate-css: ^1.4.0
   "@number-flow/react": ^0.6.2
   tailwindcss: ^4.1.0
   "@tailwindcss/postcss": ^4.1.0

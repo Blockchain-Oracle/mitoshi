@@ -6,7 +6,7 @@ const config: NextConfig = {
   reactCompiler: true,
   agentRules: false,
   partialPrefetching: true,
-  transpilePackages: ["@cwf/core", "@cwf/markets"],
+  transpilePackages: ["@cwf/core", "@cwf/markets", "@cwf/tokens"],
 };
 
 export default config;

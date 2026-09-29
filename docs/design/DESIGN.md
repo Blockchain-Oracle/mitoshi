@@ -11,7 +11,7 @@ surfaces and weak-UX screens are built from 21st.dev components **revamped** int
 | Surfaces 1 / 2 / 3 | `#171717` / `#262626` / `#404040` | `#F6F0E4` / `#ECE3D2` / `#FBF7EE` |
 | Hairline / strong border | `rgb(255 255 255 / 0.10)` / `0.22` | `rgb(20 18 16 / 0.12)` / `0.22` |
 | Ink / secondary / muted / disabled | white / gray-400 / gray-500 / gray-600 | inverted ramp |
-| **Accent (the only brand colour)** | vermilion `#E04D26` (pressed `#B83A1B`) | same |
+| **Accent (the only brand colour)** | vermilion `#E04D26` (pressed `#B83A1B`) | vermilion `#D93E1F` (pressed `#B83214`) |
 | Direction only (candles, P&L, Up/Down) | profit `#34D399` · loss `#FB7185` | profit `#2E6B4F` · loss `#C2381F` |
 | Receipt paper island (both themes) | cream `#F4EEE3`, ink `#141210`, hairline `#D9CBB0` — the app's one drop shadow | same |
 | Warning / info | `#F2994A` / `#60A5FA` | same |

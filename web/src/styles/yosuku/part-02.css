@@ -1,0 +1,330 @@
+@media (max-width: 767px) {
+  .creator-studio {
+    background:
+      radial-gradient(circle at 90% 2%, rgba(224,77,38,0.08), transparent 17rem),
+      var(--cs-bg);
+  }
+  .cs-gate { min-height: 360px; }
+  .cs-market-button { min-height: 64px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .creator-studio *,
+  .creator-studio *::before,
+  .creator-studio *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* inline code chip — docs prose */
+.dcode {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  color: var(--vermilion);
+  background: rgba(224,77,38,0.08);
+  border: 1px solid rgba(224,77,38,0.16);
+  border-radius: 5px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+
+/* the floor turns slightly red when round is closing */
+body.urgent { transition: background 600ms var(--ease); }
+body.urgent::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 8500;
+  background: radial-gradient(ellipse at top right, rgba(224,77,38,0.06), transparent 60%);
+  animation: floorPulse 2.4s ease-in-out infinite;
+}
+@keyframes floorPulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+
+/* Grain */
+.grain {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+.scroll-progress { position: fixed; top: 0; left: 0; height: 1px; width: 0%; background: var(--white); z-index: 9100; transition: width 80ms linear; }
+
+
+/* Marquee — top tape */
+/* ══════════════════════════════════════════════════════════════════════════
+   APP STRIP  ·  the thin line above the page
+   ══════════════════════════════════════════════════════════════════════════
+   Borrowed material, not a louder one. It sits on the same near-black tape as
+   the ticker below it with a single vermilion hairline to separate them, so it
+   reads as part of the furniture rather than as something pasted over the top.
+   The whole strip carries ONE point of colour, on the words you might act on.
+
+   No loop. The previous version scrolled two phrases endlessly, and repetition
+   is precisely what tells a reader they are being advertised at rather than
+   told something. One line, centred, changing every seven seconds.
+
+   Every offset under it derives from --appstrip; change the height once and the
+   ticker, header and sticky filter bar all follow. */
+:root { --appstrip: 0px; }            /* absent by default: nothing reserves space it does not use */
+[data-strip="on"] { --appstrip: 34px; }
+
+.appstrip {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--appstrip); z-index: 900;   /* above ticker (850) and header (800) */
+  display: flex; align-items: center; justify-content: center;
+  background: var(--black);
+  border-bottom: 1px solid rgba(224,77,38,0.30);
+  /* Arrives rather than snapping in, and never animates layout: only opacity. */
+  opacity: 0; transition: opacity 420ms var(--ease, cubic-bezier(0.2,0.7,0.3,1));
+}
+.appstrip.is-in { opacity: 1; }
+
+/* With no strip and no ticker above it, the header should sit at the top rather than float
+   below the space where they would have been. */
+[data-strip="off"] .header { top: 0; }
+
+.appstrip-msg {
+  display: inline-flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--gray-400, #A3A3A3);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em;
+  padding: 0 12px; max-width: 100%;
+}
+/* Three chevrons, lit in sequence.
+   A dot said "a line starts here". Chevrons say "this way", which is the only thing this strip
+   is for. The cascade runs slowly and never reaches full contrast on all three at once: a fast
+   or fully-lit triple arrow is the blinking-banner reflex the rest of this strip was rebuilt to
+   avoid. Each stroke rests at a readable opacity and only briefly brightens as the wave passes. */
+.appstrip-lead {
+  /* Portrait now that it is a phone, and sized to the cap height of the text beside it so it
+     sits on the same optical line rather than floating. */
+  width: 11px; height: 15px; flex: none;
+  fill: none; stroke: var(--vermilion); stroke-width: 1.7;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.appstrip-lead rect { opacity: 0.85; }
+.appstrip-lead path { opacity: 0.34; animation: appstripLead 2.9s ease-in-out infinite; }
+.appstrip-lead path:nth-child(3) { animation-delay: 0.25s; }
+@keyframes appstripLead {
+  0%, 62%, 100% { opacity: 0.34; }
+  22%           { opacity: 1; }
+}
+/* Sentence case, not caps. Caps at 11px across a full-width bar is shouting, and
+   shouting is most of what made the first attempt read as spam. */
+.appstrip-line {
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  animation: appstripIn 420ms var(--ease, cubic-bezier(0.2,0.7,0.3,1)) both;
+}
+.appstrip-go {
+  display: inline-flex; align-items: center; gap: 3px; flex: none;
+  color: var(--vermilion); font-family: var(--font-display); font-weight: 700;
+  font-size: 11px; letter-spacing: 0.01em;
+}
+.appstrip-go svg { width: 12px; height: 12px; transition: transform 200ms var(--ease, ease); }
+.appstrip-msg:hover .appstrip-go svg { transform: translateX(3px); }
+.appstrip-msg:hover .appstrip-line { color: var(--white); }
+
+/* Dismissible, which is the difference between a message and a nag. Sits at the
+   edge so it never competes with the sentence for the centre. */
+.appstrip-x {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+  background: none; border: 0; cursor: pointer; color: var(--gray-600, #6E6E6E);
+  border-radius: 50%; transition: color 160ms ease, background 160ms ease;
+}
+.appstrip-x svg { width: 13px; height: 13px; }
+.appstrip-x:hover { color: var(--white); background: rgba(255,255,255,0.07); }
+
+@keyframes appstripIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .appstrip-line { animation: none; }
+  .appstrip-lead path { animation: none; opacity: 0.62; }
+}
+
+.marquee {
+  position: fixed; top: var(--appstrip); left: 0; right: 0;
+  height: 28px; z-index: 850;
+  display: flex; align-items: center; overflow: hidden;
+  background: var(--black);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--gray-500); letter-spacing: 0.04em;
+}
+.marquee-track { display: flex; gap: 56px; white-space: nowrap; padding-left: 56px; animation: marqueeScroll 80s linear infinite; }
+.marquee-cell { display: inline-flex; align-items: center; gap: 10px; }
+.marquee-cell .lbl { color: var(--gray-600); }
+.marquee-cell .val { color: var(--white); }
+.marquee-cell .up { color: var(--vermilion); }
+.marquee-cell .down { color: var(--gray-500); }
+.marquee-cell .sep { color: var(--gray-700); margin: 0 4px; }
+@keyframes marqueeScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+/* Header */
+.header {
+  position: fixed; top: calc(var(--appstrip) + 28px); left: 0; right: 0;
+  height: 64px; z-index: 800;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  background: rgba(5,5,5,0.7);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 800; font-size: 15px; letter-spacing: 0.18em; color: var(--white); }
+.logo-mark {
+  width: 17px; height: 21px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.logo-mark svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.logo-mark .dot { fill: var(--vermilion); }
+
+.nav { display: flex; align-items: center; gap: 28px; }
+.nav-links { display: flex; align-items: center; gap: 24px; }
+.nav-link {
+  position: relative; color: var(--gray-400); font-size: 13px; font-weight: 500; letter-spacing: 0.01em;
+  transition: color 200ms var(--ease), letter-spacing 300ms var(--ease);
+}
+.nav-link::after {
+  content: ''; position: absolute; left: 0; bottom: -6px;
+  width: 100%; height: 1px; background: var(--white);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 320ms var(--ease);
+}
+.nav-link:hover { color: var(--white); letter-spacing: 0.04em; }
+.nav-link:hover::after { transform: scaleX(1); }
+.nav-link.active { color: var(--white); }
+.nav-beta {
+  font-family: var(--font-mono); font-size: 7.5px; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--vermilion);
+  margin-left: 3px; vertical-align: super; top: -0.1em; opacity: 0.95;
+}
+/* Sensei typing indicator */
+.sensei-dots { display: inline-flex; gap: 4px; align-items: center; }
+.sensei-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--vermilion); opacity: 0.5; animation: senseiDot 1s infinite ease-in-out; }
+.sensei-dots i:nth-child(2) { animation-delay: 0.15s; }
+.sensei-dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes senseiDot { 0%, 100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-4px); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sensei-dots i { animation: none; } }
+
+/* ── SenseiDock: a compact Yosuku mark that expands on hover, with a cute question teaser ── */
+.sensei-dock-wrap { position: fixed; right: 22px; bottom: 22px; z-index: 900; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.sensei-dock {
+  position: relative; display: inline-flex; align-items: center; gap: 0;
+  padding: 7px; border: 0; cursor: pointer; border-radius: 999px;
+  background: rgba(23,19,16,0.93); backdrop-filter: blur(10px);
+  box-shadow: 0 16px 40px -16px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(224,77,38,0.22);
+  transition: gap 300ms var(--ease), padding 300ms var(--ease), transform 260ms cubic-bezier(.34,1.56,.64,1), box-shadow 220ms var(--ease), opacity 220ms var(--ease);
+}
+[data-theme="light"] .sensei-dock { background: rgba(255,255,255,0.95); box-shadow: 0 16px 40px -16px rgba(40,18,6,0.26), inset 0 0 0 1px rgba(224,77,38,0.22); }
+.sensei-dock:hover { transform: translateY(-3px); gap: 11px; padding: 7px 7px 7px 18px; }
+.sensei-dock:focus-visible { gap: 11px; padding: 7px 7px 7px 18px; outline: none; }
+.sensei-dock:active { transform: translateY(0) scale(0.97); }
+.sensei-dock.is-open { transform: scale(0.9); opacity: 0.45; }
+
+.sensei-dock-avatar { position: relative; width: 46px; height: 46px; flex: none; display: grid; place-items: center; }
+.sensei-dock-ring { position: absolute; inset: 0; width: 46px; height: 46px; transform: rotate(-90deg); }
+.sensei-dock-ring .sd-track { fill: none; stroke: rgba(255,255,255,0.12); stroke-width: 4; }
+[data-theme="light"] .sensei-dock-ring .sd-track { stroke: rgba(20,18,16,0.12); }
+.sensei-dock-ring .sd-fill { fill: none; stroke: var(--vermilion); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 900ms linear; filter: drop-shadow(0 0 4px rgba(224,77,38,0.55)); }
+/* the Yosuku mark, sized to sit inside the draining ring. `color` drives the
+   figure (currentColor); the heart dot keeps its own vermilion. */
+.sd-avatar-glyph { position: relative; z-index: 1; width: 24px; height: auto; display: block; color: var(--white); }
+[data-theme="light"] .sd-avatar-glyph { color: #1A1613; }
+
+/* soft, almost-imperceptible idle pulse ring on the mark (replaces the wide glow) */
+.sensei-dock-pulse { position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--vermilion); opacity: 0; pointer-events: none; animation: senseiIdlePulse 3.4s ease-out infinite; }
+@keyframes senseiIdlePulse { 0% { opacity: 0.3; transform: scale(0.95); } 70%, 100% { opacity: 0; transform: scale(1.2); } }
+.sensei-dock.urgent .sensei-dock-pulse { animation-duration: 1.4s; }
+
+/* label collapsed by default, revealed to the LEFT of the mark on hover/focus */
+.sensei-dock-copy { max-width: 0; overflow: hidden; white-space: nowrap; opacity: 0; display: flex; align-items: center; transition: max-width 320ms var(--ease), opacity 240ms var(--ease); }
+.sensei-dock:hover .sensei-dock-copy, .sensei-dock:focus-visible .sensei-dock-copy { max-width: 108px; opacity: 1; }
+.sensei-dock-copy .sd-name { font-family: var(--font-display); font-weight: 800; font-size: 14px; letter-spacing: -0.01em; color: var(--white); }
+.sensei-dock-copy .sd-name b { color: var(--vermilion); font-weight: 800; }
+[data-theme="light"] .sensei-dock-copy .sd-name { color: #1A1613; }
+
+/* cute proactive teaser bubble — springs in above the mark, tail pointing down to it */
+.sensei-teaser {
+  position: relative; margin-right: 5px; border: 0; cursor: pointer;
+  border-radius: 15px 15px 4px 15px; padding: 9px 14px;
+  font-family: var(--font-display); font-weight: 600; font-size: 13px; white-space: nowrap;
+  color: #fff; background: var(--vermilion);
+  box-shadow: 0 12px 28px -10px rgba(224,77,38,0.7);
+  transform-origin: bottom right;
+  animation: senseiTeaserPop 440ms cubic-bezier(.34,1.56,.64,1) both;
+}
+.sensei-teaser::after { content: ''; position: absolute; right: 15px; bottom: -4px; width: 9px; height: 9px; background: var(--vermilion); border-radius: 0 0 3px 0; transform: rotate(45deg); }
+@keyframes senseiTeaserPop {
+  0% { opacity: 0; transform: scale(0.55) translateY(8px); }
+  60% { opacity: 1; transform: scale(1.05) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .sensei-dock-wrap { bottom: 90px; right: 16px; }
+  .sensei-dock:hover, .sensei-dock:focus-visible { padding: 7px; gap: 0; }
+  .sensei-dock:hover .sensei-dock-copy, .sensei-dock:focus-visible .sensei-dock-copy { max-width: 0; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sensei-dock-pulse, .sensei-teaser { animation: none; }
+}
+
+/* ── the Sensei drawer ── */
+.sensei-drawer-scrim { position: fixed; inset: 0; z-index: 950; background: rgba(6,5,4,0.5); opacity: 0; pointer-events: none; transition: opacity 300ms var(--ease); }
+.sensei-drawer-scrim.show { opacity: 1; pointer-events: auto; }
+.sensei-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 960; width: min(400px, 92vw);
+  display: flex; flex-direction: column;
+  background: #000000; backdrop-filter: blur(16px);
+  border-left: 1px solid rgba(255,255,255,0.08); box-shadow: -30px 0 70px -30px rgba(0,0,0,0.7);
+  transform: translateX(104%); transition: transform 420ms cubic-bezier(.22,1,.36,1);
+}
+[data-theme="light"] .sensei-drawer { background: #f7f1e6; border-left-color: rgba(20,18,16,0.1); }
+.sensei-drawer.open { transform: translateX(0); }
+.sensei-drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+[data-theme="light"] .sensei-drawer-head { border-bottom-color: rgba(20,18,16,0.08); }
+.sensei-drawer-head .sd-eyebrow { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--vermilion); margin-bottom: 4px; }
+.sensei-drawer-head .sd-title { font-family: var(--font-display); font-weight: 800; font-size: 22px; color: var(--white); display: flex; align-items: center; gap: 8px; }
+[data-theme="light"] .sensei-drawer-head .sd-title { color: #1A1613; }
+.sd-beta { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--vermilion); border: 1px solid rgba(224,77,38,0.4); border-radius: 999px; padding: 1px 6px; }
+.sd-head-right { display: flex; align-items: center; gap: 10px; }
+.sd-nextclose { font-family: var(--font-mono); font-size: 11px; color: var(--gray-500); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sd-nextclose.urgent { color: var(--vermilion); }
+.sd-close { background: none; border: 0; color: var(--gray-500); font-size: 15px; cursor: pointer; padding: 4px; line-height: 1; }
+.sd-close:hover { color: var(--white); }
+/* ── live market read (the meter): a pinned hairline strip under the header ── */
+.sensei-meter { --dir: var(--gray-500); padding: 9px 20px 8px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 7px; }
+[data-theme="light"] .sensei-meter { border-bottom-color: rgba(20,18,16,0.08); }
+.sensei-meter.sd-dir-up { --dir: var(--profit); }
+.sensei-meter.sd-dir-down { --dir: var(--loss); }
+.sm-read { display: flex; align-items: baseline; gap: 7px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; line-height: 1; }
+.sm-spot { font-size: 15px; font-weight: 600; color: var(--white); letter-spacing: -0.01em; }
+[data-theme="light"] .sm-spot { color: #130e0b; }
+.sm-tri { align-self: center; width: 0; height: 0; }
+.sensei-meter.sd-dir-up .sm-tri { border-left: 3px solid transparent; border-right: 3px solid transparent; border-bottom: 5px solid var(--dir); }
+.sensei-meter.sd-dir-down .sm-tri { border-left: 3px solid transparent; border-right: 3px solid transparent; border-top: 5px solid var(--dir); }
+.sensei-meter.sd-dir-flat .sm-tri { width: 6px; height: 1.5px; background: var(--gray-600); }
+.sm-drift { font-size: 12.5px; font-weight: 600; color: var(--dir); transition: color 200ms ease; }
+.sensei-meter.sd-dir-flat .sm-drift { color: var(--gray-500); }
+.sm-window { font-size: 10px; color: var(--gray-600); }
+.sm-spacer { flex: 1 1 auto; }
+.sm-time { position: relative; display: inline-flex; align-items: baseline; gap: 4px; padding-bottom: 4px; }
+.sm-time-num { font-size: 13px; font-weight: 600; color: var(--gray-300); }
+[data-theme="light"] .sm-time-num { color: #2a2520; }
+.sm-time-lab { font-size: 10px; color: var(--gray-600); }
+.sm-drain { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; border-radius: 1px; background: var(--gray-600); opacity: 0.5; transform: scaleX(var(--frac, 0)); transform-origin: right; transition: transform 900ms linear; }
+.sensei-meter.urgent .sm-time-num { color: var(--vermilion); }
+.sensei-meter.urgent .sm-drain { background: var(--vermilion); opacity: 1; animation: senseiDrainPulse 1s step-start infinite; }
+@keyframes senseiDrainPulse { 50% { opacity: 0.4; } }
+/* /sensei — the standalone page was written dark-only, so on cream its bubbles, borders and
+   body text all landed as white-on-white. Scoped to the page (the .feed-card idiom) so the
+   shared utility classes keep their meaning everywhere else. */
+[data-theme="light"] .sensei-page .bg-white\/\[0\.04\] { background-color: rgba(20,18,16,0.04); }
+[data-theme="light"] .sensei-page .bg-white\/\[0\.03\] { background-color: rgba(20,18,16,0.035); }
+[data-theme="light"] .sensei-page .bg-white\/\[0\.02\] { background-color: rgba(20,18,16,0.03); }
+[data-theme="light"] .sensei-page .border-white\/\[0\.08\],
+[data-theme="light"] .sensei-page .border-white\/\[0\.1\],

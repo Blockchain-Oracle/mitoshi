@@ -9,7 +9,7 @@
   split from day one: `@cwf/markets` (browser/native-safe), `@cwf/markets/server` (relay, auth verify, faucet, mpp,
   indexer API, signing with server keys), `@cwf/markets/react`; `IntentStore` adapters (memory, localStorage; MMKV added
   in SM3); randomness via `crypto.getRandomValues` only (polyfilled on native).
-- [ ] 1b tokens + design base: `packages/tokens` from Masayume's CSS variables (§2.2) with a check against the ported
+- [x] 1b tokens + design base: `packages/tokens` from Masayume's CSS variables (§2.2) with a check against the ported
   styles; Tailwind 4 `@theme inline` + trading tokens; `next/font`; `LazyMotion` + `MotionConfig`; Base UI; spike X23.
 - [ ] 1b shell: port Masayume `web/src/{app/layout.tsx, components/**, styles/**, providers/{AppProviders,MarketsBoot,
   query-client,persist}, features/{recovery,install}}` **with the ux-audit fixes** (E.5 S1 row): `viewport {viewportFit:
@@ -93,6 +93,13 @@
   `core/region` trusts `cf-ipcountry` then `x-vercel-ip-country`; with neither, the posture is open (Agari's rule).
   Enforcing Q-008 on the live domains needs a country header in front of Coolify (e.g. Cloudflare proxying
   `mitoshi.xyz`) — added to the owner actions with the DNS step.
+- **1b tokens — light accent.** Masayume's light theme flips vermilion to `#D93E1F` (pressed `#B83214`) with the
+  cream ramp (yosuku part-13); `docs/design/{DESIGN.md,design.json}` said "same" and are corrected from `tokens.json`,
+  which a test checks against the ported Yosuku parts and a verbatim copy of Masayume's `bridge.css`.
+- **1b tokens — accent as text.** Vermilion small text fails AA (4.48:1 on dark surface-1, 3.97:1 on light): accent
+  is for fills, borders, underlines and large text; small labels use ink (applied in the X23 ticket's "Max").
+- **1b tokens — fonts.** Only Sora and Inter preload (≤ 2 preloads, §3.2); JetBrains Mono and Noto Serif JP load on
+  use (`next/font/google` has no glyph-subset option; the JP face stays latin-subset with CJK by unicode-range).
 
 ## Handoff
 
