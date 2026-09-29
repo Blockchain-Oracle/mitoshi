@@ -68,6 +68,20 @@
 
 ## Handoff
 
+**UI lane (`stage/S4-ui`, 2026-09-29 17:10Z) — paused: the machine's data volume fell below 4 GB (1.7–2.7 GB free,
+load average ~30), per the lane's stop rule.** Nothing was built or run against the new code yet; `tsc` on `web` passes.
+- Done: box 2's UI (9897a1b) — the arm step in the ceremony slot (`features/tap-trading`, D-140), S1's access-key policy
+  switched to `walletKeyAuthorization()` (web test against the relay's `walletKeyRule`), the device's key marked on
+  `/settings/account`.
+- In progress (a8cf7b0, box 3 open): `@cwf/markets/react` Window reads (`window-reads.ts`); `features/markets/*`
+  (hero + lazy lightweight-charts, lanes with ticker pin, word board, ticket rail/slide-over with sticky CTA dock and
+  pre-open scheduled calls, pinned calls + settled toast, verdict with the false-"Paid" fix and the void card, Collect
+  batch, portfolio with Collect on top and cash-out); `/markets`, `/markets/[id]`, `/portfolio` now render it.
+- Next: free disk, `pnpm build` + budgets, run it locally against Moderato and fix what the run shows; commit box 3;
+  box 4 (21st revamps: 16240 ticket, 22249 card, 19328 countdown, 20107 readout/scrub, 29968 depth, 23527 cash-out
+  hold, 24692 reveal, 27124 positions, 29532 portfolio chart; register in `components.md`); then the gate
+  (virtual-authenticator run incl. the NYSE stock call — next session Wed 2026-09-30 13:30–20:00Z).
+
 **Backend lane (`stage/S4-backend`, 2026-09-29) — done, proven live on Moderato (acceptance/S4.md); the UI part is next.**
 Box 1 is ticked. Box 2's X20 and box 3's backend (claim-all, cash-out, held state, live data) are proven; the boxes stay
 open for the UI port (Masayume features onto these ports, the D37 arm step, `/settings/account`) and the gate.
