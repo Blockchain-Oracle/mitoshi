@@ -1,9 +1,40 @@
-# Crypto World's Fair — context
+# Crypto World's Fair — Tempo track
 
-Engineered context for Colosseum's Crypto World's Fair hackathon
-(Sep 14 – **Oct 12, 2026**). $840k in prizes, $250k accelerator pre-seed.
+Prediction markets and stocks on Tempo, plus a mobile app, for Colosseum's Crypto World's Fair hackathon
+(Sep 14 – **Oct 12, 2026**).
 
-**Start with `context/STATUS.md`** — the resume pointer and read order.
+**Building:** start with `docs/plan/working-rules.md`, then `docs/plan/STATUS.md` (the build's resume pointer).
+**Research and context:** `context/STATUS.md`.
+
+## Pre-existing code (disclosure)
+
+This entry ports code the owner wrote before the hackathon, and says so file by file:
+
+- **Masayume** (`sommina-events` @ `68f7a09`) — contracts, packages and web app, moved from Somnia/DreamDEX to Tempo.
+  Ported files carry `Ported from Masayume 68f7a09:<path>`.
+- **Agari** (`agari-wt/w1`) — the events-engine semantics (rewritten in Solidity), the ops runtime, the wallet modal
+  replica and venue features. Ported files carry `Agari <sha>:<path>`.
+- Yosuku-derived design (through Masayume) and third-party material: `THIRD_PARTY_NOTICES.md`.
+
+New for this hackathon: the Tempo engine and product contracts, stocks on Tempo (Robinhood Chain bridge, v4 pools with
+a guard hook, themes), the launchpads, the Tempo wallet/relay/passkey layer, the mobile app and the UX rebuild. The
+plan (`docs/plan/00-plan.md`) and the git history show what was built when.
+
+## Layout
+
+```
+docs/plan/     approved plan, stage files, decisions, parity, acceptance evidence
+docs/specs/    engine, pillar 2, off-chain, mobile, UX specs
+docs/design/   design system, 21st component register, flow targets
+contracts/     Foundry (Tempo + evm profiles), deployments/<chainId>/<area>.json
+packages/      @cwf/core · markets · brain · db · clients
+services/ops   actors on runActor, one HTTP server, Fly
+web/           Next.js 16 app
+scripts/       codegen, invariants, keys, deploy, drive, archive, e2e
+infra/         secrets (names only), env examples, Vercel and Fly notes
+```
+
+## Research context
 
 ```
 context/

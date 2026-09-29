@@ -23,7 +23,7 @@
 - [ ] S0.11 Archive takeover: `packages/db/migrations/prints/0001_print_archive.sql`; price-relay archive-pass on Fly
   (`OPS_ACTORS=archive`, no key); `scripts/archive/import-agari.ts` (Agari `stocklana/data/archive/redstone/*.jsonl`
   + a `print_archive` dump); overlap check; then the owner retires the laptop archiver.
-- [ ] S0.12 `infra/{secrets.md, env/*.example, vercel.md, fly.md}`; README pre-existing-code disclosure.
+- [x] S0.12 `infra/{secrets.md, env/*.example, vercel.md, fly.md}`; README pre-existing-code disclosure.
 - [ ] S0.13 `docs/design/{DESIGN.md, design.json, components.md, flow-targets.md}` (tokens, overlay rule, §2 principles,
   §2.4 targets); copy the two plan-mode reports (`~/.claude/plans/sunny-forging-simon-agent-a06e6eaf7974656e0.md` →
   `context/tempo/research-2026-09-29/open-libs.md`, `…-agent-a983473fcdee56215.md` → `21st-weak.md`);
