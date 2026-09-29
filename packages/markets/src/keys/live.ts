@@ -7,6 +7,8 @@ import { Abis } from "viem/tempo";
 import { TEMPO } from "@cwf/clients";
 import type { KeyHistory } from "./fold";
 
+export { keyStatus, type KeyStatus } from "./status";
+
 export interface KeyTokenState {
   token: Address;
   limit: bigint | null;
@@ -21,14 +23,6 @@ export interface KeyState extends Omit<KeyHistory, "tokens"> {
   tokens: KeyTokenState[];
 }
 
-export type KeyStatus = "active" | "revoked" | "expired" | "unknown";
-
-export function keyStatus(key: KeyState, nowSec: bigint): KeyStatus {
-  if (!key.live) return key.revoked ? "revoked" : "unknown";
-  if (key.live.revoked || key.revoked) return "revoked";
-  if (key.live.expirySec !== 0n && key.live.expirySec <= nowSec) return "expired";
-  return "active";
-}
 
 export async function readKeyStates(client: PublicClient, account: Address, keys: readonly KeyHistory[]): Promise<KeyState[]> {
   const address = TEMPO.accountKeychain as Address;

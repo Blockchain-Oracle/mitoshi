@@ -2,7 +2,8 @@
 // The keys list (D-053): Active / Stopped (21st 23552), a skeleton only if the read is slow (21st 23557), one-tap revoke
 // per key and hold-to-revoke-all (21st 23527) — each a sponsored `key-revoke` through the TxLifecycle, so stopping a key
 // never needs funds. Coverage says how far back the chain was read; nothing is claimed beyond it.
-import { keyStatus, type KeyState } from "@cwf/markets";
+import type { KeyState } from "@cwf/markets";
+import { keyStatus } from "@cwf/markets/key-status";
 import type { Address, Network } from "@cwf/core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";

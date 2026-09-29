@@ -1,7 +1,7 @@
 "use client";
 // Ported from Masayume 68f7a09:web/src/app/error.tsx
 
-import { BoundaryScreen } from "@/components/states";
+import { BoundaryScreen } from "@/components/states/BoundaryScreen";
 
 interface ErrorPageProps {
   error: Error & { digest?: string };

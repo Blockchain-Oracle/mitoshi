@@ -13,6 +13,8 @@ const config: NextConfig = {
   agentRules: false,
   partialPrefetching: true,
   devIndicators: false,
+  // Diagnosis only (plan §3.1): `ANALYZE_MAPS=1 pnpm build` emits browser source maps for `scripts/perf/attribute.ts`.
+  productionBrowserSourceMaps: process.env.ANALYZE_MAPS === "1",
   transpilePackages: ["@cwf/core", "@cwf/markets", "@cwf/tokens", "@cwf/db"],
   redirects: async () => [
     moved("/markets-live", "/markets"),

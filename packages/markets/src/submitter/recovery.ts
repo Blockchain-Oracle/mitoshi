@@ -65,5 +65,5 @@ export async function recoverUnresolved(journal: IntentJournal, wallet: Address,
 export const AREA_EVIDENCE: { current: AreaEvidence | undefined } = { current: undefined };
 
 /** The real reconciler: the receipt when there is a digest; the expiring window plus area evidence when there is not. */
-export const chainReconciler: Reconciler = (wallet, record) =>
-  reconcileRecord({ client: getPublicClient(), wallet, record, chainNowSec: nowSec(), evidence: AREA_EVIDENCE.current });
+export const chainReconciler: Reconciler = async (wallet, record) =>
+  reconcileRecord({ client: await getPublicClient(), wallet, record, chainNowSec: nowSec(), evidence: AREA_EVIDENCE.current });

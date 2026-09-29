@@ -1,6 +1,7 @@
 // Ported from Masayume 68f7a09:packages/core/src/schemas/reading.ts
 import { z } from "zod";
-import { diagnosisSchema, type Diagnosis } from "../types/diagnosis";
+import type { Diagnosis } from "../types/diagnosis";
+import { diagnosisSchema } from "./diagnosis";
 
 export const STALE_REASONS = ["refresh-failed", "aged", "offline"] as const;
 export type StaleReason = (typeof STALE_REASONS)[number];

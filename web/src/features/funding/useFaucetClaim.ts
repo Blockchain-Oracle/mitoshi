@@ -8,7 +8,7 @@ import { invalidateAfterWrite } from "@cwf/markets/react";
 import type { Address, Hex } from "@cwf/core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import { useSignMessage } from "wagmi";
+import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import type { FaucetErrorCode } from "./copy";
 import { announceCredit } from "./credited";
 import { claimWithSession, claimWithSignature, type FundedClaim } from "./faucet-client";
@@ -23,7 +23,7 @@ export type ClaimState =
 export function useFaucetClaim(input: { address: Address | null; viaSession: boolean }) {
   const [state, setState] = useState<ClaimState>({ phase: "idle" });
   const queryClient = useQueryClient();
-  const { signMessageAsync } = useSignMessage();
+  const { signMessage } = useWalletShell();
   const { address, viaSession } = input;
 
   const claim = useCallback(async (): Promise<ClaimState> => {
@@ -37,7 +37,7 @@ export function useFaucetClaim(input: { address: Address | null; viaSession: boo
       } else {
         setState({ phase: "signing" });
         const result = await claimWithSignature(address, async (message) => {
-          const signature = (await signMessageAsync({ message })) as Hex;
+          const signature: Hex = await signMessage(message);
           setState({ phase: "funding" });
           return signature;
         });
@@ -53,7 +53,7 @@ export function useFaucetClaim(input: { address: Address | null; viaSession: boo
       void invalidateAfterWrite(queryClient, { wallet: address });
     }
     return next;
-  }, [address, viaSession, queryClient, signMessageAsync, state]);
+  }, [address, viaSession, queryClient, signMessage, state]);
 
   const reset = useCallback(() => setState({ phase: "idle" }), []);
   return { state, claim, reset, busy: state.phase === "signing" || state.phase === "funding" };

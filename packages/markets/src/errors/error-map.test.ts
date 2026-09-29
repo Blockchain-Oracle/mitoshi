@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError, parseAbi, encodeErrorResult } from "viem";
+import { BaseError, ContractFunctionRevertedError, HttpRequestError, TimeoutError, UserRejectedRequestError, parseAbi, encodeErrorResult } from "viem";
 import { diagnose } from "./error-map";
 
 const abi = parseAbi(["error SpendingLimitExceeded()", "error CallNotAllowed()", "error PolicyForbids()", "error Mystery(uint256 x)"]);
@@ -24,5 +24,11 @@ describe("diagnose", () => {
     expect(diagnose(new BaseError("wrapped", { cause: new UserRejectedRequestError(new Error("no")) })).kind).toBe("user-rejected");
     expect(diagnose(new Error("Sponsorship rejected.")).kind).toBe("sponsor-refused");
     expect(diagnose(new Error("something odd"))).toMatchObject({ kind: "unknown", retryable: true });
+  });
+
+  it("recognises viem transport failures by their declared names (no instanceof, so no viem in first load)", () => {
+    const http = new HttpRequestError({ url: "https://rpc.moderato.tempo.xyz", status: 503, details: "Service Unavailable" });
+    expect(diagnose(new BaseError("wrapped", { cause: http })).kind).toBe("rpc-down");
+    expect(diagnose(new TimeoutError({ body: {}, url: "https://rpc.moderato.tempo.xyz" })).kind).toBe("rpc-down");
   });
 });

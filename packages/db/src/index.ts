@@ -12,3 +12,4 @@ export { runMigrations } from "./migrations";
 export { createPgLedger } from "./relay-ledger";
 export { createPgFaucetStore, type FaucetStore } from "./faucet-store";
 export { createPgKeychainStore, type KeychainStore, type ScanRange } from "./keychain-store";
+export { createPgVitalsStore, VITAL_METRICS, type VitalMetric, type VitalSample, type VitalSummary, type VitalsStore } from "./vitals-store";

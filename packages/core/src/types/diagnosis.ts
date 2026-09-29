@@ -1,6 +1,5 @@
 // Ported from Masayume 68f7a09:packages/core/src/types/diagnosis.ts
-import { z } from "zod";
-import { hexSchema } from "./primitives";
+import type { Hex } from "./primitives";
 
 export const DIAGNOSIS_KINDS = [
   "signer-required",
@@ -47,15 +46,14 @@ export const DIAGNOSIS_KINDS = [
 
 export type DiagnosisKind = (typeof DIAGNOSIS_KINDS)[number];
 
-export const diagnosisSchema = z.object({
-  kind: z.enum(DIAGNOSIS_KINDS),
-  retryable: z.boolean(),
-  technical: z.string(),
-  errorName: z.string().optional(),
-  txHash: hexSchema.optional(),
-});
-
-export type Diagnosis = z.infer<typeof diagnosisSchema>;
+/** The validator is `schemas/diagnosis.ts` (kept out of this module so importing a diagnosis never loads zod, §3.1). */
+export interface Diagnosis {
+  kind: DiagnosisKind;
+  retryable: boolean;
+  technical: string;
+  errorName?: string | undefined;
+  txHash?: Hex | undefined;
+}
 
 const RETRYABLE_KINDS: ReadonlySet<DiagnosisKind> = new Set<DiagnosisKind>([
   "indexer-down",

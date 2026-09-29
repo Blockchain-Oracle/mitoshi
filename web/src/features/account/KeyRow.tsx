@@ -1,7 +1,8 @@
 "use client";
 // One key on the trust surface (D-053): what it is, whether it can still sign, what it may still spend and when that
 // resets, when it was added and last used (each linked to its transaction), and a one-step revoke that our relay pays for.
-import { keyStatus, type KeyState } from "@cwf/markets";
+import type { KeyState } from "@cwf/markets";
+import { keyStatus } from "@cwf/markets/key-status";
 import { shortHex } from "@cwf/core/units";
 import { txUrl, type Network } from "@cwf/core";
 import { dollars } from "@/providers/wallet/format";

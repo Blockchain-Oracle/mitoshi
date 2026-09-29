@@ -1,7 +1,6 @@
 // Ported from Masayume 68f7a09:web/src/components/shell/CapabilityPending.tsx
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { FirstUseHint } from "@/features/onboarding/FirstUseHint";
 import { pendingFor } from "@/lib/capabilities";
 
 /**
@@ -21,12 +20,13 @@ export function CapabilityPending({ eyebrow, title, children, dependency }: { ey
 }
 
 /** A registered route's pending page, from `lib/capabilities.ts` (every nav route exists from S1). */
-export function PendingRoute({ route }: { route: string }) {
+/** `hint`: the route's first-use explainer, passed by the (app) page so site pages never ship it (§3.1). */
+export function PendingRoute({ route, hint }: { route: string; hint?: ReactNode }) {
   const p = pendingFor(route);
   return (
     <CapabilityPending eyebrow={p.eyebrow} title={p.title} dependency={p.dependency}>
       <p>{p.body}</p>
-      {p.explainer ? <FirstUseHint id={p.explainer} className="mt-4" /> : null}
+      {hint}
       {p.links ? (
         <ul className="mt-4 flex flex-wrap gap-2">
           {p.links.map((l) => (

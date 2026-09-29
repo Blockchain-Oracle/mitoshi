@@ -12,9 +12,21 @@ import { ACCOUNT } from "@/providers/wallet/copy";
 import { shortAddress } from "@/providers/wallet/format";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { ACCOUNT_PAGE } from "./copy";
-import { KeysSection } from "./KeysSection";
+import dynamic from "next/dynamic";
 
 const P = ACCOUNT_PAGE;
+
+// The keys list (its revoke flow, segmented control, hold-to-confirm and motion) is a lazy island: its content waits on
+// `/api/keys` anyway, so it loads in parallel with that read instead of in the page's first load (§3.1).
+const KeysSection = dynamic(() => import("./KeysSection").then((m) => m.KeysSection), {
+  ssr: false,
+  loading: () => (
+    <div aria-busy="true" aria-label={P.keys.loading} className="flex flex-col gap-3">
+      <h2 className="type-title text-ink">{P.keys.title}</h2>
+      {[0, 1, 2].map((i) => <div key={i} className="h-3 w-10/12 animate-pulse rounded-sm bg-surface-2 motion-reduce:animate-none" />)}
+    </div>
+  ),
+});
 const card = "flex flex-col gap-2 rounded-lg border border-hairline bg-surface-1 p-4";
 
 export function AccountSettings() {

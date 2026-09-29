@@ -1,0 +1,143 @@
+"use client";
+// Ported from Agari 03b30ab:web/src/providers/wallet/WalletShellProvider.tsx — rebuilt over wagmi 3 (D-055 names:
+// `useConnections`, not `useAccount`) and, for §3.1, split: this module is the LAZY wallet runtime (wagmi, viem/tempo,
+// the passkey connector's `accounts` + zod, WalletConnect) loaded right after hydration by the eager
+// `WalletShellProvider`. It computes the two-wallet shell (C.3.1) and the signing session and publishes both upward;
+// it also hosts the sign-in and account modals (loaded on first open). Agari's UserSessionProvider is folded in here.
+import type { Address, Hex } from "@cwf/core";
+import { INJECTED_CAPS, type SubmitterSession } from "@cwf/markets";
+import { useSubmitterSessionState } from "@cwf/markets/react-session";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { walletActions } from "viem";
+import { useConnections, useConnectorClient, useDisconnect, useReconnect, useSignMessage, useSwitchChain, WagmiProvider } from "wagmi";
+import { webEnv } from "@/lib/env";
+import { capsOf, kindOf } from "./connector-kind";
+import { getWagmiConfig, SIDE_CHAINS, TEMPO_CHAIN } from "./wagmi-config";
+import type { SideAccount, TempoAccount, WalletShell } from "./wallet-shell-context";
+
+const SignInModal = dynamic(() => import("./SignInModal"), { ssr: false });
+const AccountModal = dynamic(() => import("./AccountModal"), { ssr: false });
+
+const RESTORE_CAP_MS = 3_000;
+const subscribeNothing = () => () => undefined;
+const SIDE_IDS: ReadonlySet<number> = new Set(SIDE_CHAINS.map((c) => c.id));
+
+export type PendingOpen = { kind: "picker"; mode: "tempo" | "robinhood" } | { kind: "account" } | null;
+
+export interface WalletRuntimeProps {
+  publish: (shell: WalletShell) => void;
+  publishSession: (session: SubmitterSession | null) => void;
+  /** An open the user asked for before the runtime loaded; consumed once on mount. */
+  takePending: () => PendingOpen;
+}
+
+export default function WalletRuntime(props: WalletRuntimeProps) {
+  return (
+    <WagmiProvider config={getWagmiConfig()} reconnectOnMount={false} initialState={undefined}>
+      <Runtime {...props} />
+    </WagmiProvider>
+  );
+}
+
+function Runtime({ publish, publishSession, takePending }: WalletRuntimeProps) {
+  const hydrated = useSyncExternalStore(subscribeNothing, () => true, () => false);
+  const connections = useConnections();
+  const { reconnectAsync } = useReconnect();
+  const { disconnectAsync } = useDisconnect();
+  const { switchChainAsync } = useSwitchChain();
+  const { signMessageAsync } = useSignMessage();
+  const [restoring, setRestoring] = useState(true);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerMode, setPickerMode] = useState<"tempo" | "robinhood">("tempo");
+  const [accountOpen, setAccountOpen] = useState(false);
+
+  // Restore a remembered connection after hydration, never longer than the cap (Agari's 3 s window).
+  useEffect(() => {
+    let done = false;
+    const timer = setTimeout(() => !done && setRestoring(false), RESTORE_CAP_MS);
+    void reconnectAsync().finally(() => {
+      done = true;
+      clearTimeout(timer);
+      setRestoring(false);
+    });
+    return () => clearTimeout(timer);
+  }, [reconnectAsync]);
+
+  const live = hydrated ? connections : [];
+  const tempo = useMemo<TempoAccount | null>(() => {
+    const c = live.find((conn) => kindOf(conn.connector) === "passkey" || kindOf(conn.connector) === "tempo-wallet") ?? live.find((conn) => !SIDE_IDS.has(conn.chainId));
+    if (!c?.accounts[0]) return null;
+    const kind = kindOf(c.connector);
+    return { address: c.accounts[0] as Address, chainId: c.chainId, kind, caps: capsOf(kind), connectorId: c.connector.id };
+  }, [live]);
+  const robinhood = useMemo<SideAccount | null>(() => {
+    const c = live.find((conn) => SIDE_IDS.has(conn.chainId));
+    return c?.accounts[0] ? { address: c.accounts[0] as Address, chainId: c.chainId, connectorId: c.connector.id } : null;
+  }, [live]);
+
+  const openPicker = useCallback((mode: "tempo" | "robinhood" = "tempo") => {
+    setPickerMode(mode);
+    setPickerOpen(true);
+  }, []);
+  const openAccount = useCallback(() => setAccountOpen(true), []);
+  const disconnect = useCallback(async () => {
+    for (const c of connections) await disconnectAsync({ connector: c.connector }).catch(() => undefined);
+  }, [connections, disconnectAsync]);
+  const switchToTempo = useCallback(async () => {
+    const c = connections.find((conn) => conn.connector.id === tempo?.connectorId);
+    if (c) await switchChainAsync({ chainId: TEMPO_CHAIN.id, connector: c.connector });
+  }, [connections, switchChainAsync, tempo?.connectorId]);
+  const signMessage = useCallback(async (message: string) => {
+    const c = connections.find((conn) => conn.connector.id === tempo?.connectorId);
+    if (!c || !tempo) throw new Error("no wallet connected");
+    return (await signMessageAsync({ message, account: tempo.address, connector: c.connector })) as Hex;
+  }, [connections, signMessageAsync, tempo]);
+
+  const wrongChain = tempo !== null && tempo.chainId !== TEMPO_CHAIN.id;
+  const shell = useMemo<WalletShell>(
+    () => ({
+      status: hydrated && restoring ? "restoring" : "ready",
+      connecting: false,
+      tempo,
+      robinhood,
+      network: webEnv.markets.network,
+      wrongChain,
+      pickerMode,
+      openPicker,
+      openAccount,
+      disconnect,
+      switchToTempo,
+      signMessage,
+    }),
+    [hydrated, restoring, tempo, robinhood, wrongChain, pickerMode, openPicker, openAccount, disconnect, switchToTempo, signMessage],
+  );
+  useEffect(() => publish(shell), [publish, shell]);
+
+  // An open requested before this runtime loaded (a tap on "Sign in" during the first second) happens now.
+  useEffect(() => {
+    const pending = takePending();
+    if (pending?.kind === "picker") openPicker(pending.mode);
+    else if (pending?.kind === "account") openAccount();
+  }, [takePending, openPicker, openAccount]);
+
+  // The signing session (Agari's UserSessionProvider): the connector client, only while on Tempo, with wallet actions
+  // (wagmi's connector client is a bare viem Client; the send module needs `sendTransactionSync`).
+  const onTempo = tempo !== null && !wrongChain;
+  const { data: bare } = useConnectorClient({ chainId: TEMPO_CHAIN.id, query: { enabled: onTempo } });
+  const client = useMemo(() => bare?.extend(walletActions), [bare]);
+  const session = useSubmitterSessionState({
+    walletClient: onTempo ? (client as never) : undefined,
+    caps: tempo?.caps ?? INJECTED_CAPS,
+    authority: tempo?.kind === "passkey" ? "passkey" : "user-wallet",
+    enabled: onTempo,
+  });
+  useEffect(() => publishSession(session), [publishSession, session]);
+
+  return (
+    <>
+      {pickerOpen ? <SignInModal open={pickerOpen} onOpenChange={setPickerOpen} /> : null}
+      {accountOpen ? <AccountModal open={accountOpen} onOpenChange={setAccountOpen} /> : null}
+    </>
+  );
+}

@@ -3,7 +3,7 @@
 // assumed amount — and each faucet transfer links to the explorer.
 import type { Hex } from "@cwf/core";
 import { useBalanceSheet } from "@cwf/markets/react";
-import { TxReceipt } from "@/components/tx";
+import { TxReceipt } from "@/components/tx/TxReceipt";
 import { webEnv } from "@/lib/env";
 import { dollars } from "@/providers/wallet/format";
 import { txUrl, type Address } from "@cwf/core";

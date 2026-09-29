@@ -1,10 +1,9 @@
 "use client";
 // Ported from Masayume 68f7a09:web/src/app/global-error.tsx
 
-import { BoundaryScreen } from "@/components/states";
+import { BoundaryScreen } from "@/components/states/BoundaryScreen";
 import { fontVariables } from "@/lib/fonts";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
-import { cn } from "@/lib/utils";
 import "@/styles/index.css";
 
 interface GlobalErrorProps {
@@ -20,7 +19,7 @@ interface GlobalErrorProps {
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("antialiased", fontVariables)} suppressHydrationWarning>
+      <body className={`antialiased ${fontVariables}`} suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <BoundaryScreen error={error} reset={reset} backHref="/markets" root />
       </body>

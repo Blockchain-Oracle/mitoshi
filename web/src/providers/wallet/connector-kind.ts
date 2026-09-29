@@ -1,5 +1,5 @@
 /** Which kind of Tempo account a wagmi connector gives, and what it can do (capability flags come from the connector). */
-import { FULL_TEMPO_CAPS, INJECTED_CAPS, type SignerCaps } from "@cwf/markets";
+import { FULL_TEMPO_CAPS, INJECTED_CAPS, type SignerCaps } from "@cwf/markets/caps";
 import type { TempoAccountKind } from "./wallet-shell-context";
 
 export const PASSKEY_CONNECTOR_ID = "webAuthn";

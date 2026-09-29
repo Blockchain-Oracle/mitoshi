@@ -20,7 +20,8 @@
     "db:migrate": "pnpm --filter @cwf/db migrate",
     "ops:start": "pnpm --filter @cwf/ops start",
     "ci": "pnpm typecheck && pnpm invariants && pnpm codegen:check && pnpm tokens:check && pnpm test",
-    "tokens:check": "pnpm --filter @cwf/tokens gen --check"
+    "tokens:check": "pnpm --filter @cwf/tokens gen --check",
+    "perf:budgets": "pnpm --filter @cwf/scripts exec tsx perf/route-budgets.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",

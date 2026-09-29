@@ -1,4 +1,5 @@
 export { decodeKeychainLog, KEYCHAIN_TOPICS, LOG_WINDOW, logWindows, scanKeychain, type KeychainEvent, type KeychainEventName } from "./events";
 export { foldKeychain, type KeyHistory, type KeyTokenLimit } from "./fold";
-export { keyStatus, readKeyStates, type KeyState, type KeyStatus, type KeyTokenState } from "./live";
+export { readKeyStates, type KeyState, type KeyTokenState } from "./live";
+export { keyStatus, type KeyStatus } from "./status";
 export { limitsInTransaction, withAuthorizedLimits, type AuthorizedLimit } from "./authorization";

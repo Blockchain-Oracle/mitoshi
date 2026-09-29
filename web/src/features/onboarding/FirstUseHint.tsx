@@ -2,7 +2,7 @@
 // From 21st.dev 26527 olewandowski1/notifications-5 (Dismissible Alert Stack) — one row of it, revamped per D-044: an
 // inline, dismissible explainer on Masayume tokens (no success/error colours — the hint is neutral, §2.1 colour law),
 // a 44 px dismiss target, shown once per explainer where its question first comes up (D-046 replaces the 5-step
-// tutorial with these). Nothing renders on the server or for a visitor who already dismissed it.
+// tutorial with these). Rendered from the server so a first visit never shifts; a dismissed hint leaves after hydration.
 import { Info, X } from "lucide-react";
 import { SHELL } from "@/lib/copy";
 import { cn } from "@/lib/utils";

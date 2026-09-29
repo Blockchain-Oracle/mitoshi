@@ -413,6 +413,23 @@ Amends D20 / D-055's "budgets debited only on raw-send methods". Measured on Mod
 
 **Why:** measured; without (1) the budgets are decorative, and without (2) and (3) no new user could be sponsored.
 
+### D-071 — §3.1 budgets on Next 16: site pages gated on what they own; field vitals self-hosted (finding + decision, S1, 2026-09-29)
+
+Measured on the production build (`pnpm perf:budgets`): Next 16.3 + React 19.2's own runtime (`rootMainFiles`) is
+**127.6 KB gzip** — above §3.1's 120 KB first-load figure for landing/docs/proof before a single line of ours. So:
+
+1. **Site routes are gated on owned JS** — first-load JS minus that framework floor — at **≤ 35 KB gzip** (now 32.0), and
+   the floor has its own ceiling of **130 KB** so a framework upgrade that grows it fails CI. **App routes keep the
+   §3.1 total, ≤ 250 KB** (now 217–222 KB). **CSS per route ≤ 55 KB gzip** (now 50.6; was 116 with next/font's CJK
+   slicing). All three in `scripts/perf/route-budgets.ts`, run by `ci.yml` after the build.
+2. **Field vitals without Vercel.** Speed Insights is Vercel-only and hosting is Coolify (D-061): a `web-vitals` beacon
+   (loaded on idle; its buffered observers still see the page load) posts LCP/INP/CLS/FCP/TTFB with the route template
+   only to `/api/vitals` (Postgres `web_vitals`); `GET /api/vitals?days=7` gives p75 per route — what S19 checks.
+3. **Lab gate trigger.** `.github/workflows/lighthouse.yml` runs on `repository_dispatch` `coolify-deployment-success`
+   (the Coolify deploy step sends `client_payload.url`) and by hand; no Vercel bypass headers.
+
+**Why:** the gate must measure what the page controls; a budget below the framework floor is unmeetable, not strict.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

@@ -40,3 +40,4 @@ mobile/.expo/
 .DS_Store
 next-env.d.ts
 contracts/deployments/**/*.pending.json
+.lighthouseci/

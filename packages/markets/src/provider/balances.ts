@@ -6,13 +6,13 @@
  */
 import { erc20Abi, type Address } from "viem";
 import { USD_DECIMALS, type BalanceSheet } from "@cwf/core";
-import { PATH_USD } from "../chains";
+import { TEMPO } from "@cwf/clients";
 import { isDeployed } from "../deployments";
 import { getPublicClient } from "../runtime/read-runtime";
 
 export async function readBalanceSheet(wallet: Address): Promise<BalanceSheet> {
-  const client = getPublicClient();
-  const spendableBase = await client.readContract({ address: PATH_USD, abi: erc20Abi, functionName: "balanceOf", args: [wallet] });
+  const client = await getPublicClient();
+  const spendableBase = await client.readContract({ address: TEMPO.pathUSD as Address, abi: erc20Abi, functionName: "balanceOf", args: [wallet] });
   const chainId = client.chain.id;
   if (isDeployed("engine", chainId) || isDeployed("vault", chainId)) {
     // The engine/vault readers land with their stages; a deployed area must never be read as empty.

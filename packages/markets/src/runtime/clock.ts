@@ -26,7 +26,7 @@ export function lastClockSync(): ClockSync | null {
 /** Samples the chain head once; block timestamps are whole seconds, so half the round trip is the best midpoint. */
 export async function sampleChainClock(): Promise<ClockSync> {
   const startedMs = Date.now();
-  const block = await getPublicClient().getBlock();
+  const block = await (await getPublicClient()).getBlock();
   const rttMs = Date.now() - startedMs;
   const chainMs = secToMs(Number(block.timestamp)) + rttMs / 2;
   const sync: ClockSync = { offsetMs: Math.round(chainMs - Date.now()), rttMs, blockNumber: Number(block.number) };

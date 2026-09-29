@@ -1,7 +1,8 @@
 // Ported from Masayume 68f7a09:packages/core/src/games/wire.ts
 import { z } from "zod";
 import { toMarketId } from "../types/market";
-import { addressSchema, bytes32Schema, type Address } from "../types/primitives";
+import { addressSchema, bytes32Schema } from "../schemas/primitives";
+import type { Address } from "../types/primitives";
 import type { MatchOutcome, MatchState } from "./lifecycle";
 import type { CardReceipt, DeckCard } from "./types";
 

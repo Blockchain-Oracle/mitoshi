@@ -4,7 +4,7 @@
 // one sentence, one primary action, the phishing-resistant footnote) with 20041's step flow (choose → a named wait →
 // done or a retry) but NO bottom drawer — a centred modal on every screen (owner rule), and the wallet list laid out
 // from 21st.dev 8588 ravikatiyar162/connect-wallet-modal. Loaded on first open (lazy island).
-import { diagnose } from "@cwf/markets";
+import { diagnose } from "@cwf/markets/errors";
 import { ChevronRight, Fingerprint, Loader2, ShieldCheck, Wallet } from "lucide-react";
 import { useId, useState } from "react";
 import type { Connector } from "wagmi";

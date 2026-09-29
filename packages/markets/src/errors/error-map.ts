@@ -1,7 +1,7 @@
 // Ported from Masayume 68f7a09:packages/markets/src/errors/error-map.ts — the Somnia SDK error classes become viem's
 // error walk, and the Tempo refusals join the one vocabulary (M-13): access-key limits and scopes, revoked keys, fee
-// token, sponsorship, receive policy (plan C.2.4 `errors/*`).
-import { BaseError, ContractFunctionRevertedError, HttpRequestError, TimeoutError, UserRejectedRequestError, WebSocketRequestError } from "viem";
+// token, sponsorship, receive policy (plan C.2.4 `errors/*`). viem's errors are recognised by their declared `name`
+// and shape, not `instanceof`, so this module (in every page via `useReadingQuery`) never loads viem (§3.1).
 import { diagnosis, type Diagnosis, type DiagnosisKind } from "@cwf/core";
 import { ReadingError } from "./reading-error";
 
@@ -47,8 +47,12 @@ const MESSAGE_KINDS: ReadonlyArray<readonly [RegExp, DiagnosisKind]> = [
   [/insufficient fee token|fee token/i, "fee-token"],
 ];
 
+type Named = { name?: unknown; shortMessage?: unknown; message?: unknown; data?: { errorName?: unknown } };
+const nameOf = (e: unknown): string | undefined => (typeof e === "object" && e !== null && typeof (e as Named).name === "string" ? ((e as Named).name as string) : undefined);
+
 function messageOf(error: unknown): string {
-  if (error instanceof BaseError) return error.shortMessage || error.message;
+  const short = typeof error === "object" && error !== null ? (error as Named).shortMessage : undefined;
+  if (typeof short === "string" && short) return short;
   if (error instanceof Error) return error.message;
   return typeof error === "string" ? error : String(error);
 }
@@ -65,14 +69,15 @@ function causeChain(error: unknown): unknown[] {
 
 function isUserRejection(error: unknown): boolean {
   return causeChain(error).some(
-    (e) => e instanceof UserRejectedRequestError || (typeof e === "object" && e !== null && "code" in e && (e as { code?: unknown }).code === USER_REJECTED_CODE),
+    (e) => nameOf(e) === "UserRejectedRequestError" || (typeof e === "object" && e !== null && "code" in e && (e as { code?: unknown }).code === USER_REJECTED_CODE),
   );
 }
 
 /** The custom error name a revert carries, wherever in the cause chain viem put it. */
 export function revertNameOf(error: unknown): string | undefined {
   for (const e of causeChain(error)) {
-    if (e instanceof ContractFunctionRevertedError && e.data?.errorName) return e.data.errorName;
+    const errorName = nameOf(e) === "ContractFunctionRevertedError" ? (e as Named).data?.errorName : undefined;
+    if (typeof errorName === "string" && errorName) return errorName;
   }
   const match = /reverted with the following reason:\s*\n?\s*([A-Za-z0-9_]+)\(/.exec(messageOf(error));
   return match?.[1];
@@ -85,7 +90,8 @@ function kindFromMessage(message: string): DiagnosisKind | null {
 }
 
 function isTransport(error: unknown): boolean {
-  return causeChain(error).some((e) => e instanceof HttpRequestError || e instanceof WebSocketRequestError || e instanceof TimeoutError);
+  const transport = new Set(["HttpRequestError", "WebSocketRequestError", "TimeoutError", "SocketClosedError"]);
+  return causeChain(error).some((e) => transport.has(nameOf(e) ?? ""));
 }
 
 /** Translates any provider/viem failure into a typed diagnosis; the raw message survives as `technical`. */

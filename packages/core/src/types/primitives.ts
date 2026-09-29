@@ -1,5 +1,4 @@
 // Ported from Masayume 68f7a09:packages/core/src/types/primitives.ts
-import { z } from "zod";
 
 export type Hex = `0x${string}`;
 export type Address = Hex;
@@ -13,9 +12,7 @@ export const isHex = (v: unknown): v is Hex => typeof v === "string" && HEX_RE.t
 export const isAddress = (v: unknown): v is Address => typeof v === "string" && ADDRESS_RE.test(v);
 export const isBytes32 = (v: unknown): v is Bytes32 => typeof v === "string" && BYTES32_RE.test(v);
 
-export const hexSchema = z.custom<Hex>(isHex, "expected 0x-prefixed hex");
-export const addressSchema = z.custom<Address>(isAddress, "expected a 20-byte address");
-export const bytes32Schema = z.custom<Bytes32>(isBytes32, "expected a 32-byte hex value");
+// The zod validators for these live in `schemas/primitives.ts`, so importing a type or guard never loads zod (§3.1).
 
 /** A 32-byte hash (tx hash, feed id, series id): the Agari modules' name for `Bytes32`. */
 export type Hash32 = Bytes32;

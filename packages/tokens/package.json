@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Design tokens: one tokens.json (Masayume's identity) → web CSS variables, Tailwind @theme, the native Uniwind theme.",
+  "sideEffects": false,
+  "description": "Design tokens: one tokens.json (Masayume's identity) \u2192 web CSS variables, Tailwind @theme, the native Uniwind theme.",
   "exports": {
     ".": "./src/index.ts",
     "./tokens.json": "./src/tokens.json"

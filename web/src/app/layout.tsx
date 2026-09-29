@@ -4,9 +4,9 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { tokens } from "@cwf/tokens";
+import { VitalsBeacon } from "@/features/vitals/VitalsBeacon";
 import { fontVariables } from "@/lib/fonts";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
-import { cn } from "@/lib/utils";
 import "@/styles/index.css";
 
 export const metadata: Metadata = { title: "Mitoshi", description: "Prediction markets and stocks on Tempo." };
@@ -24,9 +24,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("antialiased", fontVariables)} suppressHydrationWarning>
+      <body className={`antialiased ${fontVariables}`} suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <div id="app-root">{children}</div>
+        {/* Field Core Web Vitals (D-071), loaded on idle. */}
+        <VitalsBeacon />
       </body>
     </html>
   );

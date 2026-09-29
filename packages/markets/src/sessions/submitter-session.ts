@@ -11,19 +11,11 @@ import type { IntentEncoder } from "../submitter/encoders";
 import type { NoncePlan } from "../tx/nonce";
 import type { AuthorityKind } from "./authority";
 import { createNonceQueue } from "./nonce-queue";
+import type { SignerCaps } from "./caps";
 
-/**
- * What a signer can do on Tempo, declared by its connector (so SM3's `shellDevice` connector can declare full caps).
- * Injected secp256k1 wallets can't sign 0x76 transactions: no `calls[]`, no fee payer, no inline key authorization.
- */
-export interface SignerCaps {
-  batch: boolean;
-  sponsor: boolean;
-  keyAuthorization: boolean;
-}
+export { FULL_TEMPO_CAPS, INJECTED_CAPS, type SignerCaps } from "./caps";
 
-export const FULL_TEMPO_CAPS: SignerCaps = { batch: true, sponsor: true, keyAuthorization: true };
-export const INJECTED_CAPS: SignerCaps = { batch: false, sponsor: false, keyAuthorization: false };
+
 
 export interface SubmitterSessionConfig {
   authority: AuthorityKind;

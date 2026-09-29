@@ -1,8 +1,8 @@
 "use client";
 // Ported from Agari 03b30ab:web/src/providers/wallet/wallet-shell-context.ts — the two-wallet model (C.3.1): a Tempo
 // account (passkey, Tempo Wallet or an injected wallet) and, separately, a Robinhood Chain wallet for bridge-in.
-// Every consumer reads this; only `web/src/providers/wallet` touches wagmi.
-import type { Address } from "@cwf/core";
+// Every consumer reads this; only `web/src/providers/wallet/WalletRuntime` (a lazy island, §3.1) touches wagmi.
+import type { Address, Hex } from "@cwf/core";
 import type { SignerCaps } from "@cwf/markets";
 import { createContext, useContext } from "react";
 
@@ -45,6 +45,8 @@ export interface WalletShellActions {
   openAccount(): void;
   disconnect(): Promise<void>;
   switchToTempo(): Promise<void>;
+  /** EIP-191 personal_sign with the connected Tempo account (the faucet challenge); rejects with no account. */
+  signMessage(message: string): Promise<Hex>;
 }
 
 export type WalletShell = WalletShellState & WalletShellActions;
@@ -57,6 +59,9 @@ export const WalletShellContext = createContext<WalletShell>({
   openAccount: () => undefined,
   disconnect: async () => undefined,
   switchToTempo: async () => undefined,
+  signMessage: async () => {
+    throw new Error("no wallet connected");
+  },
 });
 
 export function useWalletShell(): WalletShell {

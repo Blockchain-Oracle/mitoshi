@@ -7,13 +7,14 @@
 import type { Address } from "viem";
 import type { MarketsProvider } from "@cwf/core";
 import { notDeployed } from "../deployments";
-import { getPublicClient } from "../runtime/read-runtime";
+import { NETWORKS } from "@cwf/core";
+import { marketsEnv } from "../runtime/read-runtime";
 import { nowMs, sampleChainClock } from "../runtime/clock";
 import { withReading } from "../runtime/reading";
 import { readBalanceSheet } from "./balances";
 
 export function createMarketsProvider(): MarketsProvider {
-  const chainId = () => getPublicClient().chain.id;
+  const chainId = () => NETWORKS[marketsEnv().network];
   const engine = <T>() => Promise.resolve(notDeployed<T>("engine", chainId()));
   const vault = <T>() => Promise.resolve(notDeployed<T>("vault", chainId()));
   return {

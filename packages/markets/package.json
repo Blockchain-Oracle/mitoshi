@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "sideEffects": false,
   "description": "The only package that does chain I/O (viem/tempo, accounts, relay, submitter).",
   "exports": {
     ".": "./src/index.ts",
@@ -10,7 +11,12 @@
     "./react": "./src/react/index.ts",
     "./v4": "./src/v4/encode.ts",
     "./launch": "./src/launch/stablecoin.ts",
-    "./testing": "./src/testing/authorize-key.ts"
+    "./testing": "./src/testing/authorize-key.ts",
+    "./env": "./src/env.ts",
+    "./caps": "./src/sessions/caps.ts",
+    "./errors": "./src/errors/index.ts",
+    "./key-status": "./src/keys/status.ts",
+    "./react-session": "./src/react/session-builder.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

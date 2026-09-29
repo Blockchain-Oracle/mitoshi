@@ -1,6 +1,7 @@
 // Ported from Masayume 68f7a09:packages/core/src/games/protocol.ts
 import { z } from "zod";
-import { addressSchema, bytes32Schema, type Address } from "../types/primitives";
+import { addressSchema, bytes32Schema } from "../schemas/primitives";
+import type { Address } from "../types/primitives";
 import type { MatchEvent } from "./lifecycle";
 import { decodeDeckCards, decodeMatchState, decodeOutcome, decodeReceipt, wireCommitmentSchema, wireDeckCardSchema, wireMatchStateSchema, wireOutcomeSchema, wireReceiptSchema } from "./wire";
 

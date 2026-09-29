@@ -3,8 +3,6 @@
  * `CapabilityPending` with what it will do and what it waits on — never invented numbers, never a dead link. Each
  * stage replaces its entry's page with the real surface.
  */
-import type { ExplainerId } from "@/features/onboarding/copy";
-
 export interface PendingCapability {
   eyebrow: string;
   title: string;
@@ -13,19 +11,17 @@ export interface PendingCapability {
   dependency: string;
   /** Contextual children this page is the entry to (they are reached from here, not from the nav). */
   links?: readonly { href: string; label: string }[];
-  /** The first-use explainer this surface answers (shown once, D-046). */
-  explainer?: ExplainerId;
 }
 
 const engine = "the market engine on Tempo (S2) and the first-call flow (S4)";
 
 export const PENDING: Readonly<Record<string, PendingCapability>> = {
-  "/markets": { eyebrow: "Markets", title: "Call where a price closes", body: "Live Windows for BTC, ETH, SOL and nine US stocks. Pick UP or DOWN, see your cost and the most you can lose, and get a receipt you can click.", dependency: engine, explainer: "window" },
+  "/markets": { eyebrow: "Markets", title: "Call where a price closes", body: "Live Windows for BTC, ETH, SOL and nine US stocks. Pick UP or DOWN, see your cost and the most you can lose, and get a receipt you can click.", dependency: engine },
   "/markets/[id]": { eyebrow: "Markets", title: "This Window", body: "A shared link to one Window opens it here with its live book, your position and its verdict.", dependency: engine },
   "/reels": { eyebrow: "Reels", title: "Markets as stories", body: "Swipe through live Windows and the calls people make on them.", dependency: `${engine}, and the social layer (S13)` },
-  "/portfolio": { eyebrow: "Portfolio", title: "Your positions, money and verdicts", body: "Open calls, settled Windows paid automatically, leftovers to collect in one tap, and every stock and theme you hold.", dependency: engine, explainer: "money" },
+  "/portfolio": { eyebrow: "Portfolio", title: "Your positions, money and verdicts", body: "Open calls, settled Windows paid automatically, leftovers to collect in one tap, and every stock and theme you hold.", dependency: engine },
   "/portfolio/edge": { eyebrow: "Trader Edge", title: "Your edge, measured", body: "How your calls perform against the price they settled on.", dependency: "settled history from the indexer (S5)" },
-  "/stocks": { eyebrow: "Stocks", title: "Tokenized stocks on Tempo", body: "Buy and sell stock tokens bridged from Robinhood Chain, priced against signed quotes, with the reserve backing every token shown.", dependency: "the stock pools and price guard (S15)", explainer: "stocks" },
+  "/stocks": { eyebrow: "Stocks", title: "Tokenized stocks on Tempo", body: "Buy and sell stock tokens bridged from Robinhood Chain, priced against signed quotes, with the reserve backing every token shown.", dependency: "the stock pools and price guard (S15)" },
   "/stocks/[symbol]": { eyebrow: "Stocks", title: "One stock", body: "Price, your holdings, the reserve behind the token, and the calls on this ticker.", dependency: "the stock pools and price guard (S15)" },
   "/themes": { eyebrow: "Themes", title: "Baskets that rebalance themselves", body: "Follow a theme and its agent keeps your stock tokens at the target weights, inside caps you set and can revoke.", dependency: "the theme router and agent (S16)", links: [{ href: "/themes/create", label: "Create a theme" }] },
   "/themes/[slug]": { eyebrow: "Themes", title: "One theme", body: "Weights, rebalance history with receipts, and follow or unfollow in one step.", dependency: "the theme router and agent (S16)" },
@@ -64,7 +60,7 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/how-it-works": { eyebrow: "How it works", title: "From a call to a receipt", body: "Passkeys, dollars, Windows, verdicts and stock tokens, explained once.", dependency: "the public story (S20)" },
   "/demo": { eyebrow: "Demo", title: "The whole product, walked through", body: "A guided run from sign-up to a paid verdict.", dependency: "the public story (S20)" },
   "/pitch": { eyebrow: "Pitch", title: "Why Mitoshi", body: "The thesis in a few slides.", dependency: "the public story (S20)" },
-  "/settings/account": { eyebrow: "Account & keys", title: "See and stop every key", body: "Your passkey devices and every live trading key and grant — its scope, what it may still spend, when it expires — each revocable in one place.", dependency: "the account trust surface (S1 settings step)", explainer: "keys" },
+  "/settings/account": { eyebrow: "Account & keys", title: "See and stop every key", body: "Your passkey devices and every live trading key and grant — its scope, what it may still spend, when it expires — each revocable in one place.", dependency: "the account trust surface (S1 settings step)" },
   "/settings/notifications": { eyebrow: "Notifications", title: "What reaches you", body: "Verdicts, fills and bridge deliveries — money topics on by default.", dependency: "push and the notification centre (S13, SM2)" },
   "/privacy": { eyebrow: "Privacy", title: "Privacy policy", body: "What we store off chain, who sees it, and how to delete it.", dependency: "the App Review obligations (S13, D-043)" },
   "/terms": { eyebrow: "Terms", title: "Terms of use", body: "The rules of the venue and the regions it serves.", dependency: "the App Review obligations (S13, D-043)" },

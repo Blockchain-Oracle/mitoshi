@@ -4,21 +4,28 @@
 // (fix 5), a search button that opens the command palette (⌘K; lazy island), and the account area passed in by the
 // route group so pages that carry no wallet stack never load it (D-050). Add money and the welcome card now live
 // with the wallet (they were imported eagerly here and pulled motion into every route, R1).
-import { ChevronLeft, Search } from "lucide-react";
+import { ChevronDown, ChevronLeft, Search } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { Suspense, useCallback, useEffect, useState, type ReactNode } from "react";
 import { BRAND, SHELL } from "@/lib/copy";
 import MitoshiMark from "../MitoshiMark";
 import ThemeToggle from "../ThemeToggle";
-import { DesktopNavMenu } from "./DesktopNavMenu";
+import { onIdle } from "@/lib/idle";
+import type { DesktopNavMenu as DesktopNavMenuImpl } from "./DesktopNavMenu";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { DESKTOP_NAV, isActiveNavItem, isTopLevel, type NavGroup } from "./nav-items";
+import { DESKTOP_NAV, isActiveNavGroup, isActiveNavItem, isTopLevel, type NavGroup } from "./nav-items";
 
 const CommandPalette = dynamic(() => import("@/components/ui/command-palette"), { ssr: false });
 
 const MOBILE_MAX_WIDTH = 720;
+
+// The desktop menus (Base UI Menu + floating-ui) are a lazy island preloaded on idle (§3.1); until then each group
+// renders the same trigger markup, and a press loads it and opens that group.
+type MenuImpl = typeof DesktopNavMenuImpl;
+let menuModule: Promise<MenuImpl> | null = null;
+const loadMenus = () => (menuModule ??= import("./DesktopNavMenu").then((m) => m.DesktopNavMenu));
 
 /** The parent of a nested route: `/games/duel/abc` → `/games/duel`; `/markets/[id]` → `/markets`. */
 export function parentPath(pathname: string): string {
@@ -44,6 +51,9 @@ function HeaderView({ pathname, account }: { pathname: string | null; account?: 
   const [openGroup, setOpenGroup] = useState<NavGroup["id"] | null>(null);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [paletteLoaded, setPaletteLoaded] = useState(false);
+  const [Menus, setMenus] = useState<MenuImpl | null>(null);
+  const loadMenusNow = useCallback(() => void loadMenus().then((C) => setMenus(() => C)), []);
+  useEffect(() => onIdle(loadMenusNow), [loadMenusNow]);
 
   useEffect(() => setOpenGroup(null), [pathname]);
 
@@ -87,8 +97,33 @@ function HeaderView({ pathname, account }: { pathname: string | null; account?: 
           <div className="nav-links">
             {DESKTOP_NAV.map((entry) => {
               if (entry.kind === "group") {
+                if (!Menus) {
+                  const active = isActiveNavGroup(pathname, entry.group);
+                  return (
+                    <button
+                      key={entry.group.id}
+                      type="button"
+                      className={`nav-link nav-menu-trigger ${active ? "active" : ""}`}
+                      aria-haspopup="menu"
+                      aria-expanded={false}
+                      // Open intent is taken on pointerdown (and click, for keyboards): if the menu module lands
+                      // mid-click and swaps this placeholder out, the group still opens.
+                      onPointerDown={() => {
+                        loadMenusNow();
+                        setOpenGroup(entry.group.id);
+                      }}
+                      onClick={() => {
+                        loadMenusNow();
+                        setOpenGroup(entry.group.id);
+                      }}
+                    >
+                      {entry.group.name}
+                      <ChevronDown aria-hidden="true" />
+                    </button>
+                  );
+                }
                 return (
-                  <DesktopNavMenu
+                  <Menus
                     key={entry.group.id}
                     group={entry.group}
                     pathname={pathname}

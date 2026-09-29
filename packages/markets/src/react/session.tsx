@@ -5,44 +5,18 @@
  * per connected account. A new wallet client — connect, account switch, chain switch, disconnect — disposes the old
  * session and builds a new one; nothing is rebound in place, so an in-flight write can never find a different signer.
  * The context values are split (session vs signer state) and memoised so a clock tick never re-renders consumers
- * (ux-audit R3).
+ * (ux-audit R3). This module is the light half (context + hooks, in every page's first load); building a session
+ * (submitter, encoders, send → viem/tempo) lives in `session-builder.tsx`, imported only by the lazy wallet runtime (§3.1).
  */
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { Account, Chain, Transport, WalletClient } from "viem";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import type { Address } from "@cwf/core";
-import { nowSec } from "../runtime/clock";
-import { createLocalStorageJournal } from "../submitter/journal-local-storage";
 import type { MarketsSubmitter } from "../submitter/create";
-import type { IntentEncoder } from "../submitter/encoders";
-import { createSubmitterSession, type SignerCaps, type SubmitterSession } from "../sessions/submitter-session";
-import type { AuthorityKind } from "../sessions/authority";
+import type { SubmitterSession } from "../sessions/submitter-session";
 
 const SessionContext = createContext<SubmitterSession | null>(null);
 
-export interface SubmitterSessionProviderProps {
-  walletClient: WalletClient<Transport, Chain, Account> | undefined;
-  caps: SignerCaps;
-  authority: AuthorityKind;
-  /** Gate on anything required before signing is safe — the right chain, for example. */
-  enabled?: boolean;
-  encoders?: readonly IntentEncoder[];
-  children: ReactNode;
-}
-
-export function SubmitterSessionProvider({ walletClient, caps, authority, enabled = true, encoders, children }: SubmitterSessionProviderProps) {
-  const [session, setSession] = useState<SubmitterSession | null>(null);
-  useEffect(() => {
-    if (!walletClient || !enabled) {
-      setSession(null);
-      return;
-    }
-    const next = createSubmitterSession({ authority, client: walletClient, caps, nowSec, journal: createLocalStorageJournal(), ...(encoders ? { encoders } : {}) });
-    setSession(next);
-    return () => {
-      next.dispose();
-      setSession(null);
-    };
-  }, [walletClient, enabled, caps, authority, encoders]);
+/** Provides a session built elsewhere (`@cwf/markets/react-session`'s `useSubmitterSessionState`, in the lazy wallet runtime). */
+export function SubmitterSessionValue({ session, children }: { session: SubmitterSession | null; children: ReactNode }) {
   return <SessionContext.Provider value={session}>{children}</SessionContext.Provider>;
 }
 

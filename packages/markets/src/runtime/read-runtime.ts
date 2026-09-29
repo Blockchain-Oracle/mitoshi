@@ -6,23 +6,19 @@
  *
  * Transports (web-stack §4.4): WebSocket first for logs and heads, batched HTTP as the fallback; `readContract`
  * auto-batches through Multicall3 (one round trip per screen, plan §3.2 "Chain").
+ *
+ * viem itself loads on the first read (`read-client.ts` via `import()`), so the config API here costs nothing in a
+ * page's first-load JS (§3.1); every read is async anyway.
  */
-import { createPublicClient, fallback, http, webSocket, type PublicClient, type Transport } from "viem";
-import { tempoChain, type TempoChain } from "../chains";
+import type { PublicClient, Transport } from "viem";
+import type { TempoReadChain } from "../read-chain";
 import { parseMarketsEnv, type MarketsEnv } from "../env";
 
 let env: MarketsEnv = parseMarketsEnv();
-let client: PublicClient<Transport, TempoChain> | null = null;
+export type ReadClient = PublicClient<Transport, TempoReadChain>;
+let client: Promise<ReadClient> | null = null;
 let version = 0;
 const listeners = new Set<() => void>();
-
-function transportFor(e: MarketsEnv): Transport {
-  const https = e.rpcHttpUrls.map((url) => http(url, { batch: { batchSize: 50, wait: 8 }, retryCount: 2, timeout: 10_000 }));
-  // A socket is only opened where one exists (browsers, Node ≥ 22); SSR renders stay on HTTP.
-  const sockets = typeof WebSocket === "undefined" ? [] : e.rpcWsUrls.map((url) => webSocket(url, { keepAlive: { interval: 25_000 }, reconnect: { attempts: 5, delay: 2_000 } }));
-  const all = [...sockets, ...https];
-  return all.length === 1 ? all[0]! : fallback(all, { rank: false, retryCount: 1 });
-}
 
 /** Sets the runtime's config; the next `getPublicClient()` builds against it. Idempotent for equal configs. */
 export function configureMarkets(next: MarketsEnv): void {
@@ -35,10 +31,11 @@ export function marketsEnv(): MarketsEnv {
   return env;
 }
 
-/** The one read client for this process. */
-export function getPublicClient(): PublicClient<Transport, TempoChain> {
+/** The one read client for this process (viem loads with the first call). */
+export function getPublicClient(): Promise<ReadClient> {
   if (!client) {
-    client = createPublicClient({ chain: tempoChain(env.network), transport: transportFor(env), batch: { multicall: { wait: 8 } } }) as PublicClient<Transport, TempoChain>;
+    const forEnv = env;
+    client = import("./read-client").then((m) => m.createReadClient(forEnv));
     version += 1;
     for (const listener of listeners) listener();
   }

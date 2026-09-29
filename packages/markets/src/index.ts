@@ -24,3 +24,4 @@ export function tempoReadClient(network: Network, rpcUrl?: string): PublicClient
   return createPublicClient({ chain: tempoChain(network), transport: http(rpcUrl) }) as PublicClient;
 }
 export * from "./keys";
+export * from "./read-chain";

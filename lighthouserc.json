@@ -1,0 +1,25 @@
+{
+  "ci": {
+    "collect": {
+      "numberOfRuns": 3,
+      "settings": {
+        "formFactor": "mobile",
+        "screenEmulation": { "mobile": true, "width": 390, "height": 844, "deviceScaleFactor": 3, "disabled": false },
+        "throttlingMethod": "simulate",
+        "throttling": { "cpuSlowdownMultiplier": 4, "rttMs": 150, "throughputKbps": 1638.4, "requestLatencyMs": 562.5, "downloadThroughputKbps": 1474.56, "uploadThroughputKbps": 675 },
+        "onlyCategories": ["performance"]
+      }
+    },
+    "assert": {
+      "assertions": {
+        "largest-contentful-paint": ["error", { "maxNumericValue": 2500, "aggregationMethod": "median-run" }],
+        "cumulative-layout-shift": ["error", { "maxNumericValue": 0.05, "aggregationMethod": "median-run" }],
+        "total-blocking-time": ["error", { "maxNumericValue": 200, "aggregationMethod": "median-run" }],
+        "resource-summary:script:size": ["warn", { "maxNumericValue": 262144, "aggregationMethod": "median-run" }],
+        "resource-summary:stylesheet:size": ["warn", { "maxNumericValue": 56320, "aggregationMethod": "median-run" }],
+        "resource-summary:font:size": ["warn", { "maxNumericValue": 153600, "aggregationMethod": "median-run" }]
+      }
+    },
+    "upload": { "target": "filesystem", "outputDir": ".lighthouseci" }
+  }
+}

@@ -1,7 +1,7 @@
 // Ported from Masayume 68f7a09:packages/core/src/private/protocol.ts
 import { z } from "zod";
 import type { Side } from "../types/market";
-import { addressSchema, bytes32Schema } from "../types/primitives";
+import { addressSchema, bytes32Schema } from "../schemas/primitives";
 
 /** A signed authorisation is only good for a few minutes, so a captured one cannot be replayed later. */
 export const PRIVATE_AUTH_TTL_MS = 5 * 60_000;

@@ -2,7 +2,7 @@
 // its own chrome — and the pill nav so every destination stays one tap away.
 import type { ReactNode } from "react";
 import { IslandChrome } from "@/components/shell/IslandChrome";
-import { LiveRegion } from "@/components/states";
+import { LiveRegion } from "@/components/states/LiveRegion";
 import { SessionBanners } from "@/components/shell/SessionBanners";
 import { AppProviders, BootNotice } from "@/providers";
 

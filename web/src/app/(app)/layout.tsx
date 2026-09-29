@@ -3,7 +3,7 @@
 // (BootNotice, the one live region). Budget: ≤ 250 KB first-load JS (plan §3.1).
 import type { ReactNode } from "react";
 import { ShellChrome } from "@/components/shell/ShellChrome";
-import { LiveRegion } from "@/components/states";
+import { LiveRegion } from "@/components/states/LiveRegion";
 import { HeaderAccount } from "@/components/shell/header/HeaderAccount";
 import { SessionBanners } from "@/components/shell/SessionBanners";
 import { AppProviders, BootNotice } from "@/providers";

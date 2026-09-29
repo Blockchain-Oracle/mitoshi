@@ -178,6 +178,28 @@
 - **1b settings — e2e key authorisation.** Until S4 authorises keys from the UI, `@cwf/markets/testing` rebuilds the
   virtual authenticator's credential headlessly (same passkey account) and authorises a real key; it lives in markets
   because only markets may import `viem/tempo` and send.
+- **1b perf — what was in the first load (measured, D-071).** Before this step every app route shipped ~650 KB gzip and
+  site pages ~370 KB: zod (core's type modules imported it), the whole wallet stack (wagmi, viem/tempo, ox, `accounts`
+  + zod, WalletConnect) eagerly, viem's Tempo chain definition for mere reads, motion and Base UI through barrels, and
+  185 KB of `@font-face` CSS from next/font's Noto Serif JP CJK slicing (for eight glyphs). Now: core types are
+  zod-free (validators in `schemas/`); the wallet runtime is a lazy island publishing into an eager context; the read
+  client loads viem on first read with a plain `defineChain`; `@cwf/markets` has light subpaths (`/env`, `/caps`,
+  `/errors`, `/key-status`, `/react-session`) and its barrels no longer reach `viem/tempo` from page code; the header
+  menus, the More panel, toasts, recovery and the keys list are lazy islands (menus/panel preloaded on idle, opened on
+  pointerdown so a mid-click swap can't swallow the tap); error boundaries import their component, not the barrel;
+  Noto Serif JP is a self-hosted 18 KB subset. Result: app 217–222 KB, site 159.7 KB (32 owned), CSS 50.6 KB.
+  `scripts/perf/attribute.ts` (source-map attribution, `ANALYZE_MAPS=1 pnpm build`) and `scripts/perf/trace-imports.ts`
+  (static import chains) are the diagnosis tools.
+- **1b perf — CLS.** The signed-out banner vanished while the lazy wallet runtime restored a session and came back when
+  none was found (0.24 on /markets, 0.31 on /settings/account); it now keeps its space (invisible) while restoring. The
+  first-use hint renders from the server, so a first visit never shifts. Lab CLS is 0.000 on every gated route.
+- **1b perf — lab LCP still over (open, next in this stage).** Lighthouse mobile (slow 4G, 4× CPU, 3 runs, median):
+  LCP 2.96–3.39 s against 2.5 s; FCP 1.5–1.7 s, TBT ≤ 141 ms, CLS 0. Observed LCP equals FCP (~0.1 s); lantern's LCP
+  prices every byte requested before it — ~324 KB: JS 160 (128 framework), fonts 104 (Sora 25, Inter 48, JetBrains Mono
+  31), CSS 53, HTML 7 — with font and CSS bytes counted in both of its graphs. Closing it means ~90 KB less font+CSS
+  before first paint: Yosuku (265 KB raw, one byte-identical global sheet) split so each route group loads only its
+  parts, and tighter latin subsets for the three faces. Font preload OFF was measured and is worse (LCP 3.10 s, FCP
+  2.11 s), so preloads stay.
 - **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
   transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
 - **1b wallet — no cookie read on the server.** wagmi's `cookieToInitialState` would read `headers()` in the root and,

@@ -34,6 +34,7 @@
     "tailwind-merge": "catalog:",
     "viem": "catalog:",
     "wagmi": "catalog:",
+    "web-vitals": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

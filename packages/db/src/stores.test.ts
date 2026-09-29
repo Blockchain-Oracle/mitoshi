@@ -7,13 +7,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createPgFaucetStore, createPgKeychainStore, createPgLedger, createSql, runMigrations, type Sql } from "./index";
+import { createPgFaucetStore, createPgKeychainStore, createPgLedger, createPgVitalsStore, createSql, runMigrations, type Sql } from "./index";
 
 const BIN = "/opt/homebrew/opt/postgresql@16/bin";
 const hasPg = spawnSync(`${BIN}/initdb`, ["--version"]).status === 0;
 const PORT = 55_437;
 
-describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain)", () => {
+describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain, vitals)", () => {
   let dir: string;
   let server: ChildProcess;
   let sql: Sql;
@@ -76,5 +76,14 @@ describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain)", () =
     expect(await store.range(42431, acct.toLowerCase())).toEqual({ lo: 0n, hi: 300n });
     expect(await store.events(42431, acct)).toEqual([{ ...e, keyId: e.keyId.toLowerCase() }]);
     expect(await store.events(4217, acct)).toEqual([]);
+  });
+
+  it("summarises field vitals as p75 per route and metric, per network and window", async () => {
+    const store = createPgVitalsStore(sql);
+    const lcp = (value: number, at: number, network = "testnet") => ({ route: "/markets", metric: "LCP" as const, value, rating: value <= 2_500 ? ("good" as const) : ("poor" as const), navigationType: "navigate", network, createdAtMs: at });
+    await store.save([lcp(1_000, 100), lcp(2_000, 100), lcp(3_000, 100), lcp(4_000, 100), lcp(9_000, 1), lcp(500, 100, "mainnet")]);
+    const [row] = await store.summary(50, "testnet");
+    expect(row).toMatchObject({ route: "/markets", metric: "LCP", samples: 4, goodShare: 0.5 });
+    expect(row!.p75).toBeCloseTo(3_250);
   });
 });
