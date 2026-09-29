@@ -47,3 +47,23 @@ Measured with Foundry 1.8.3 in Tempo mode under call isolation (every top-level 
 - The first trade of a market pays for its counters slot (volume, backing): 250k gross, 5k net with a credit.
 - Slot A is written credit-before-debit so it never passes through zero within a call (F-S2-15): a 0 → non-zero
   write is a new slot on Tempo (250k gross, even when refunded).
+
+## Moderato receipts (S2.12 live drive, tx-level: intrinsic + calldata included)
+
+The drive ran on a fresh venue whose credit pool was still nearly empty, so these are close to the cold column.
+Every hash is in `docs/plan/acceptance/S2.md`.
+
+| Transaction | gasUsed |
+|---|---|
+| `openWindow` (first on the venue / next two) | 1,322,071 / 1,072,071 |
+| First PostOnly rest by a new maker in a new market (reserved node; level, bitmap word, position A+B new) | 1,371,848 |
+| Second PostOnly rest, other side (its level and bitmap word new) | 631,240 |
+| `recordPrint` open, 5 RedStone signatures (the market's print slot new) / close | 614,461 / 113,105 |
+| First IOC by a new holder, 1 fill (taker slot A + the market's first-trade counters new, no credits yet) | 628,842 |
+| IOC by a second new holder, 1 fill | 381,709 |
+| `mintSet` (existing position) | 67,840 |
+| `settle` | 294,734 |
+| `redeemFor` paid / held as credit (receive policy) | 82,030 / 64,408 |
+| Own `redeem` draining 2 resting quotes (T05) | 140,760 |
+| `withdrawCredit` | 63,349 |
+| `approve` (first allowance slot) / TIP-403 `setReceivePolicy` | 528,290 / 280,213 |

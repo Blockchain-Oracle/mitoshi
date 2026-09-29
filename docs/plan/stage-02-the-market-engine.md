@@ -30,7 +30,7 @@
   `packages/core/src/market/venue-spec.json`: lot = tick = 1000, minLots 1000, minRest 20 s, maxLead 400,000, caps
   16/16, RedStone strict 300 / admission 900 / threshold 3, check admission 120, divergence 25 bp);
   `deployments/42431/engine.json`.
-- [ ] S2.12 Fork + live: `test/fork/{Moderato.Engine,Mainnet.DataStreams}.fork.t.sol`; on Moderato: BTC/ETH/SOL 5m
+- [x] S2.12 Fork + live: `test/fork/{Moderato.Engine,Mainnet.DataStreams}.fork.t.sol`; on Moderato: BTC/ETH/SOL 5m
   series, a Window opened, real RedStone open and close, maker + taker, settle, `redeemFor`, a receive-policy hold.
 - **Gate:** every suite green; invariants ≥ 256 runs × depth 500 with `afterInvariant` conservation + the deterministic suites; every contract ≥ 1 KB
   under the limit; gas table; Moderato tx hashes; signed checklist; tag `engine-spec-frozen`. **Rows:** M-01…M-05,
@@ -157,7 +157,15 @@
   Streams needs credentials on Moderato, Q-011). The pool is reserved to 32 nodes. `relay/policies/engine.ts`
   sponsors a holder's own trading and exits, never the admin/roller surface, and leaves capital intake (`mintSet`)
   and keeper calls unsponsored; S4 owns the final list.
+- **F-S2-18 (S2.12, live).** `scripts/drive/engine-live.ts` ran one real BTC 5-minute Window on Moderato (T
+  06:10:00Z): roller listing of BTC/ETH/SOL, pre-open PostOnly quotes (D-088), a taker refused before the open print
+  is impossible live (the drive posts the print first; the fork test proves both refusals), the real RedStone packages
+  at T and T + 300 (5 signers each; 83,168.48 → 83,220.17, Up), two MINT_PAIR takers, a receive-policy hold on the
+  crank (`redeemFor` → held 1,000,000 as credit, then withdrawn after the policy cleared), the maker's own redeem
+  draining its quotes (T05), and `totalOwed` back to 0. 20 receipts in acceptance/S2.md. The same packages are now
+  fixtures; `Moderato.Engine.fork.t.sol` replays the whole Window on the deployed venue at the post-deploy block,
+  including `PreOpenTakerRefused` and `OpenPrintMissing`, and ends with the engine holding exactly zero.
 
 ## Handoff
 
-S2.0–S2.11 done; the venue is live on Moderato (`contracts/deployments/42431/engine.json`). Next: S2.12 fork + live drive.
+S2.0–S2.12 done; gate pending the final invariant rerun.
