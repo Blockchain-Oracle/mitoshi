@@ -12,6 +12,7 @@ import {IPoolManager} from "v4-core/interfaces/IPoolManager.sol";
 import {PoolKey} from "v4-core/types/PoolKey.sol";
 import {Currency} from "v4-core/types/Currency.sol";
 import {Hooks} from "v4-core/libraries/Hooks.sol";
+import {StateLibrary} from "v4-core/libraries/StateLibrary.sol";
 import {PrintSigner as S} from "../../engine/harness/PrintSigner.sol";
 import {RedStonePrintVerifier} from "../../../src/engine/verifiers/RedStonePrintVerifier.sol";
 import {IPrintVerifier} from "../../../src/engine/interfaces/IPrintVerifier.sol";
@@ -39,6 +40,8 @@ interface IScaledUI {
 /// RH is read at its head (the public RPC keeps no archive state; the value has been 4e18 since 2026-07-02, so a change
 /// here is news, not flakiness). Run: `forge test --match-contract CrwdMultiplierFork` (two networks).
 contract CrwdMultiplierForkTest is Test {
+    using StateLibrary for IPoolManager;
+
     address internal constant CRWD = 0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931;
     uint256 internal constant MODERATO_BLOCK = 37_380_600;
     IPoolManager internal constant PM = IPoolManager(0x33620f62C5b9B2086dD6b62F4A297A9f30347029);
@@ -108,7 +111,7 @@ contract CrwdMultiplierForkTest is Test {
         PATH_USD.transfer(address(router), 400_000e6);
         ITIP20RolesAuth(address(mirror)).grantRole(mirror.ISSUER_ROLE(), address(this));
         mirror.mint(address(router), 1_000e6);
-        (, int24 tick,,) = _slot0(hook, key);
+        (, int24 tick,,) = PM.getSlot0(key.toId());
         int24 base = tick - tick % 60;
         router.addLiquidity(key, base - 1200, base + 1200, 1e11);
         uint256 before = mirror.balanceOf(address(router));
@@ -119,14 +122,7 @@ contract CrwdMultiplierForkTest is Test {
         router.swapExactIn(key, true, 200_000e6); // pushes the token far above share × 4 × 1.015
     }
 
-    function _slot0(StockGuardHook, PoolKey memory key) internal view returns (uint160 s, int24 t, uint24, uint24) {
-        bytes32 slot = keccak256(abi.encode(key.toId(), bytes32(uint256(6))));
-        bytes32 word = PM.extsload(slot);
-        s = uint160(uint256(word));
-        t = int24(int256(uint256(word) >> 160));
-    }
-
-    function _sqrtNow(StockGuardHook h, PoolKey memory key) internal view returns (uint160 s) {
-        (s,,,) = _slot0(h, key);
+    function _sqrtNow(StockGuardHook, PoolKey memory key) internal view returns (uint160 s) {
+        (s,,,) = PM.getSlot0(key.toId());
     }
 }

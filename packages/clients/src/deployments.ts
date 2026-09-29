@@ -135,23 +135,91 @@ export const deployments = {
     "launch": {
       "contracts": {
         "LaunchRegistry": {
-          "address": "0x9b664B9B73497Aa140EdA23a81fCC3db279c50b7",
+          "address": "0x82480CCE69a9a85D0c8515C5b2ddDED6e0Ea94A3",
           "artifact": "LaunchRegistry.sol:LaunchRegistry",
           "profile": "default",
           "proxy": false,
-          "txHash": "0xab8f921c33896492c68d5ff383083e842cb8e1ac20d9f28428b06233c940a9f7",
-          "deployBlock": 37367355,
+          "txHash": "0x7dbd1cf74884a0903d65dbddc01ccf799924d8bc0097937d02b0545cf265d36f",
+          "deployBlock": 37379922,
+          "history": [
+            {
+              "address": "0x9b664B9B73497Aa140EdA23a81fCC3db279c50b7",
+              "deployBlock": 37367355,
+              "retiredAtUtc": "2026-09-29T06:29:00.187Z"
+            },
+            {
+              "address": "0xE734509C8EcB1f8f5784FfeaC28e89b30162D674",
+              "deployBlock": 37378874,
+              "retiredAtUtc": "2026-09-29T06:39:20.398Z"
+            }
+          ]
+        },
+        "CurveLaunchpad": {
+          "address": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+          "artifact": "CurveLaunchpad.sol:CurveLaunchpad",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x6898fc0ac8c64e7419b4c3676b82ec9fb6ba4bf98c62bedc897d0b9efc1331a7",
+          "deployBlock": 37379932,
+          "history": [
+            {
+              "address": "0xd28e10e90dA54E0375F4c8A566B5F889Ab4E2a0F",
+              "deployBlock": 37378884,
+              "retiredAtUtc": "2026-09-29T06:39:20.398Z"
+            }
+          ]
+        },
+        "LiquidityLocker": {
+          "address": "0xf60F444952aE9573827Ef6aCE9601F18784206AA",
+          "artifact": "LiquidityLocker.sol:LiquidityLocker",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xfeda78a9750f1b98c0e0bb3c718675ee494e799029854a4b77df0b35aa90c8b4",
+          "deployBlock": 37379927,
+          "history": [
+            {
+              "address": "0xED226912B67C787AeE1F6971584091875BDC8205",
+              "deployBlock": 37378879,
+              "retiredAtUtc": "2026-09-29T06:39:20.398Z"
+            }
+          ]
+        },
+        "CurveConfigLib": {
+          "address": "0xf35d3cd3bbc309655c2a36ce22aaab1db3b8eb55",
+          "artifact": "CurveConfigLib.sol:CurveConfigLib",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x7d6343f8712f3809a01c9777d444a128560abf5e315bcd5c2e5057371415dd98",
+          "deployBlock": 37378864,
           "history": []
+        },
+        "CurveGraduationLib": {
+          "address": "0x280e62dbd17f76303d382dc138ab0d58cbbe346e",
+          "artifact": "CurveGraduationLib.sol:CurveGraduationLib",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xd9a8470ff299753a0daf921ccbb1d611cdabf897d1eaff8c418405ae16a254c4",
+          "deployBlock": 37379917,
+          "history": [
+            {
+              "address": "0xea60bbc6b4547f2b89fed47acfa501cd0572f2c6",
+              "deployBlock": 37378869,
+              "retiredAtUtc": "2026-09-29T06:39:20.398Z"
+            }
+          ]
         }
       },
       "roles": {
-        "owner": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e"
+        "owner": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+        "protocolTreasury": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96"
       },
       "params": {
-        "reservedCodes": 370
+        "reservedCodes": 370,
+        "curvePolicyId": 1252360,
+        "poolManagerBlacklistId": 1252359
       },
       "external": {},
-      "commit": "5831130"
+      "commit": "321c441"
     },
     "lz": {
       "contracts": {

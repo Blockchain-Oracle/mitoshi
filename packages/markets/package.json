@@ -9,7 +9,7 @@
     "./server": "./src/server/index.ts",
     "./react": "./src/react/index.ts",
     "./v4": "./src/v4/encode.ts",
-    "./launch": "./src/launch/stablecoin.ts",
+    "./launch": "./src/launch/index.ts",
     "./themes": "./src/themes/keyAuth.ts",
     "./tx/send": "./src/tx/send.ts"
   },
