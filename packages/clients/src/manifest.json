@@ -1,7 +1,7 @@
 {
   "generatedBy": "scripts/codegen/clients.mjs",
   "fragments": [
-    "42431/lz-spike"
+    "42431/lz"
   ],
   "abis": [
     "LzPingTempo"

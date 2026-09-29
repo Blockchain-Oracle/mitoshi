@@ -19,7 +19,7 @@ contract DeployLzPing is DeploymentWriter {
         vm.stopBroadcast();
         recordContract("LzPing", ping, tempo ? "LzPingTempo.sol:LzPingTempo" : "LzPing.sol:LzPing", false);
         recordParam("eid", uint256(net.eid));
-        writePending("lz-spike");
+        writePending("lz");
     }
 }
 
