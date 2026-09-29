@@ -15,7 +15,7 @@
   v4-periphery interfaces/libraries, LayerZero oapp-evm/oft-evm/oft-evm-upgradeable/protocol/messagelib/test-devtools),
   `script/lib/DeploymentWriter.sol`, `deployments/README.md` (fragment schema C.1.6).
 - [x] S0.6 `scripts/codegen/clients.mjs` + `packages/clients/src/pinned.ts` (C.1.6). Src: Masayume `contracts/export.mjs`.
-- [ ] S0.7 `scripts/invariants/*` with the rule set C.1.2. Src: Masayume `scripts/invariants/*`.
+- [x] S0.7 `scripts/invariants/*` with the rule set C.1.2. Src: Masayume `scripts/invariants/*`.
 - [ ] S0.8 `.github/workflows/{ci,contracts,nightly-fork,deploy-ops}.yml`.
 - [ ] S0.9 Hosting (owner accounts): Vercel ×2, Fly ×2, Neon ×2, Upstash; DNS on the final domain (Q-019).
 - [ ] S0.10 Keys: `scripts/keys/{generate.mjs,fund-moderato.ts}` (addresses only in acceptance); Robinhood testnet
