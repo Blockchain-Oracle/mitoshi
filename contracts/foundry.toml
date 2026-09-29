@@ -30,7 +30,7 @@ fail_on_revert = false
 out = "out/evm"
 network = "ethereum"
 evm_version = "cancun"
-skip = ["src/engine/**", "src/products/**", "src/fair/**", "src/stocks/**", "src/themes/**", "src/launch/**", "src/v4/**", "test/tempo/**", "test/fork/v4/**"]
+skip = ["src/engine/**", "src/products/**", "src/fair/**", "src/stocks/**", "src/themes/**", "src/launch/**", "src/v4/**", "test/tempo/**", "test/fork/v4/**", "test/engine/**", "test/spikes/**", "test/fork/*.fork.t.sol", "script/DeployEngine.s.sol", "script/EnsureEngine.s.sol", "script/RegisterSeries.s.sol", "script/ReserveNodes.s.sol", "script/lib/EngineCheck.sol"]
 
 [profile.ci]
 fuzz = { runs = 10000 }

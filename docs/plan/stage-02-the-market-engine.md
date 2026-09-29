@@ -158,8 +158,7 @@
   sponsors a holder's own trading and exits, never the admin/roller surface, and leaves capital intake (`mintSet`)
   and keeper calls unsponsored; S4 owns the final list.
 - **F-S2-18 (S2.12, live).** `scripts/drive/engine-live.ts` ran one real BTC 5-minute Window on Moderato (T
-  06:10:00Z): roller listing of BTC/ETH/SOL, pre-open PostOnly quotes (D-088), a taker refused before the open print
-  is impossible live (the drive posts the print first; the fork test proves both refusals), the real RedStone packages
+  06:10:00Z): roller listing of BTC/ETH/SOL, pre-open PostOnly quotes (D-088), the real RedStone packages
   at T and T + 300 (5 signers each; 83,168.48 → 83,220.17, Up), two MINT_PAIR takers, a receive-policy hold on the
   crank (`redeemFor` → held 1,000,000 as credit, then withdrawn after the policy cleared), the maker's own redeem
   draining its quotes (T05), and `totalOwed` back to 0. 20 receipts in acceptance/S2.md. The same packages are now
@@ -168,4 +167,25 @@
 
 ## Handoff
 
-S2.0–S2.12 done; gate pending the final invariant rerun.
+**S2 is complete and its gate passed (2026-09-29).** Tags: `engine-abi-v1` (S2.1, seams can build) and
+`engine-spec-frozen` (gate). Branch `stage/S2-engine` (trunk merged in at S2.11) is ready for the integrator.
+
+- **Live on Moderato** (`contracts/deployments/42431/engine.json`): EventsEngine `0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a`,
+  EngineLens `0x664BdF6A8075848946A4a694f9d275E1Aa74956F`, RedStone verifier `0x38Ad…1377`, Data Streams verifier
+  `0xCa30…1585`, Attested verifier `0x295B…2526`, libraries Match/Admin/Resolve (CREATE2). Roller = the `roller` role key,
+  attestor = `price-relay`. Series BTC/ETH/SOL 5m (tickers 101/102/103, basis Token 24/7); 32 reserved nodes; one BTC
+  Window (06:10Z) run end to end live (acceptance/S2.md).
+- **Proof:** 209 unit/integration tests, 12 × 2,500 deterministic random sequences, 256 × 500 invariants with exact
+  settle-and-redeem conservation, real archived and live RedStone payloads, the real SPY v11 report through the
+  mainnet proxy, a Moderato fork replay of the live Window. Gas table: `docs/specs/engine-gas.md`.
+- **For the seams (S4/S7/S8/S10/S12b):** build against `engine-abi-v1`; the IDreamDex map and semantics are in
+  `docs/specs/interface-checklist.md`; decisions D-065/D-066; deviations T01–T10 in `docs/specs/engine.md` A.7.
+- **For S3 (ops):** the roller, price-relay (RedStone payload builder ported in `scripts/drive/lib/redstone-payload.ts`,
+  production copy belongs in `packages/markets/src/prices/redstone.ts`), settler (`redeemFor` after 300 s; skip
+  `crankOptedOut` holders) and keeper (`sweepExpired`) actors drive this venue; `scripts/deploy/engine.sh testnet <rpc>`
+  is the idempotent ensure.
+- **For S4:** `relay/policies/engine.ts` is a first cut (own trading and exits sponsored, capital intake and keeper calls
+  not); S4 owns the final list. Crypto ticker ids 101–103 need adding to the core ticker registry when it lands.
+- **Open, not blocking:** Q-022 (T01–T10) still awaits the owner's confirmation (defaults applied); Data Streams on
+  Moderato needs credentials (Q-011) before a check source is added to the testnet policies (a new policy version, not
+  an edit); mainnet deployment waits for the owner's go.
