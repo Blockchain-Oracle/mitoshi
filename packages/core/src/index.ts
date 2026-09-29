@@ -7,3 +7,5 @@ export function networkFrom(value: string | undefined): Network {
   return value === "mainnet" ? "mainnet" : "testnet";
 }
 export * from "./launch/currencyGuard";
+export * from "./launch/curve";
+export { buildCurveVectors, type CurveVectors } from "./launch/curveVectors";

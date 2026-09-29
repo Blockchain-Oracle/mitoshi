@@ -52,6 +52,33 @@ export const events = {
     "OwnershipTransferred(address,address)",
     "StablecoinRecorded(address,address,uint256,string)"
   ],
+  "CurveLaunchpad": [
+    "Completed(address,uint256)",
+    "ConfigCreated(uint32,address,uint160,uint256,uint256)",
+    "FeesClaimed(address,uint256)",
+    "LaunchCreated(address,address,uint32,string)",
+    "LeftoverClaimed(address,address,uint256)",
+    "MinProtocolShareSet(uint16)",
+    "OwnershipTransferStarted(address,address)",
+    "OwnershipTransferred(address,address)",
+    "ProtocolTreasurySet(address)",
+    "Trade(address,address,bool,uint256,uint256,uint256,uint160,uint256)"
+  ],
+  "LiquidityLocker": [
+    "FeesClaimed(address,address,uint256,uint256)",
+    "FeesCollected(address,uint256,uint256)",
+    "LaunchpadSet(address)",
+    "OwnershipTransferStarted(address,address)",
+    "OwnershipTransferred(address,address)",
+    "Registered(address,uint256,uint128,address,address)",
+    "Withdrawn(address,address,uint8,uint128,uint256,uint256)"
+  ],
+  "CurveConfigLib": [],
+  "CurveGraduationLib": [
+    "Graduated(address,uint8,uint256,uint128,uint160,uint256,uint256,uint256)",
+    "PoolCorrected(address,uint8,uint256,uint256,uint256)",
+    "TierSkipped(address,uint8,bytes)"
+  ],
   "LzPingTempo": [
     "EnforcedOptionSet(tuple[])",
     "OwnershipTransferred(address,address)",

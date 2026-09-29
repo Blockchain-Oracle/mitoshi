@@ -13,6 +13,9 @@
   "abis": [
     "AdminLib",
     "AttestedPrintVerifier",
+    "CurveConfigLib",
+    "CurveGraduationLib",
+    "CurveLaunchpad",
     "DataStreamsPrintVerifier",
     "EngineLens",
     "EventsEngine",
@@ -25,6 +28,7 @@
     "IUniversalRouter",
     "IV4Quoter",
     "LaunchRegistry",
+    "LiquidityLocker",
     "LzPing",
     "LzPingTempo",
     "MatchLib",

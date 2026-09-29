@@ -1,31 +1,39 @@
 /**
- * Relay policy for the `launch` area (plan C.3.3, S17a). The relay sponsors nothing here in 17a, on purpose:
+ * Relay policy for the `launch` area (plan C.3.3; S17a stablecoin registry, S17b memecoin launchpad + locker).
  *
- * - The stablecoin launch batch is capital intake — the creator escrows pathUSD in the bid flip order and deposits
- *   pathUSD into the FeeAMM (D-020 "capital intake is never sponsored"). It also spans five targets (factory, the new
- *   token, DEX, FeeManager, registry) and nine calls, beyond one area and the relay's 8-call cap. The creator pays its
- *   fee in pathUSD from their own account (root or access key — spike X22).
- * - `recordStablecoin` is only meaningful as call 9 of that batch, so naming it `never` refuses any request that
- *   carries it; `recordMemecoin` is the CurveLaunchpad's alone; the rest is owner administration.
- *
- * S17b adds the CurveLaunchpad's user entry points (`buy`, `sell`, `claimFees`, `graduate`) to `sponsor` with their gas
- * caps. Shape = `RelayPolicy` in `relay/types.ts` (S1); this file is listed in `policies/index.ts` when S1's relay lands
- * on the trunk. Geofence posture for launch is open everywhere (`launch: {}`, Q-008).
+ * - `sponsor` (S17b): a holder's own curve trades and claims — `createLaunch` (the creator's single call; its optional
+ *   creator buy is a buy), `buy`, `sell`, `claimFees`, `claimLeftover`, and the locker's `withdraw`/`claimFees`. Every
+ *   payout goes to `msg.sender` after a receive-policy pre-check, so sponsoring them moves nobody else's money (plan
+ *   C.2.3 "curve buy-sell-create … yes"). The batch's exact `approve` to pathUSD/the coin rides in front of the call.
+ * - Not sponsored (absent from both lists, the sender pays): the stablecoin batch (capital intake, nine calls over
+ *   five targets, D-063), `createConfig` (a partner publishing a template), and the permissionless `graduate` (the
+ *   launch keeper signs and pays it, like the engine's keeper calls).
+ * - `never`: registry records/admin, launchpad and locker admin, and the PoolManager-only callback.
+ * - `maxGas`: `createLaunch` with a creator buy measured 6,736,091 on Moderato (acceptance/S17.md), locker withdraw
+ *   458,715; 8M leaves room for a first-time holder's new slots.
+ * Shape = `RelayPolicy` in `relay/types.ts` (S1); this file joins `policies/index.ts` when S1's relay lands on the
+ * trunk. Geofence posture for launch is open everywhere (`launch: {}`, Q-008).
  */
 import type { Abi, Address } from "viem";
 import { relayTargets } from "@cwf/clients";
+import { curveLaunchpadAbi } from "@cwf/clients/abis/CurveLaunchpad";
 import { launchRegistryAbi } from "@cwf/clients/abis/LaunchRegistry";
+import { liquidityLockerAbi } from "@cwf/clients/abis/LiquidityLocker";
 
-/** The launch registry on every chain it is deployed on (generated from deployment fragments). */
+/** The launch contracts on every chain they are deployed on (generated from deployment fragments). */
 const targets: readonly Address[] = Object.values(relayTargets as Record<string, Record<string, readonly string[]>>).flatMap((byArea) => (byArea.launch ?? []) as Address[]);
 
 export const launchPolicy = {
   area: "launch" as const,
   targets,
-  abi: launchRegistryAbi as Abi,
-  sponsor: [] as readonly string[],
-  never: ["recordStablecoin", "recordMemecoin", "setCurveLaunchpad", "reserveCodes", "transferOwnership", "acceptOwnership", "renounceOwnership"] as readonly string[],
+  abi: [...launchRegistryAbi, ...curveLaunchpadAbi, ...liquidityLockerAbi] as Abi,
+  sponsor: ["createLaunch", "buy", "sell", "claimFees", "claimLeftover", "withdraw"] as readonly string[],
+  never: [
+    "recordStablecoin", "recordMemecoin", "setCurveLaunchpad", "reserveCodes",
+    "setProtocolTreasury", "setMinProtocolShare", "setLaunchpad", "register", "unlockCallback",
+    "transferOwnership", "acceptOwnership", "renounceOwnership",
+  ] as readonly string[],
   pillar: "launch" as const,
   entry: [] as readonly string[],
-  maxGas: 0n,
+  maxGas: 8_000_000n,
 };
