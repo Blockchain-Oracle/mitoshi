@@ -1,7 +1,7 @@
 # S3 — Venue ops (after S2 deploy)
 
 - [x] Host: `services/ops/src/{main.ts,runtime/*,http/*}` (Agari; single 8080 server; Fly config; dry-run default).
-- [ ] Migrations `index/*` (C.4.2), `prints/*`, `social/*`, `games/*`, `x/*`, `strategies/*`.
+- [x] Migrations `index/*` (C.4.2), `prints/*`, `social/*`, `games/*`, `x/*`, `strategies/*`.
 - [ ] Indexer (C.4.1) + `/api/index/[...path]` (C.4.5). Src: Agari `web/src/app/api/index/[...path]/*`, `db/idx/*`.
 - [ ] Actors (C.5.2): roller, price-relay (full, incl. Data Streams path wired for mainnet), settler (settle/void/sweep/
   `redeemFor` after 300 s; skips opted-out products; EventVault `crankSettle` worklist), seed maker (+ crypto σ),
