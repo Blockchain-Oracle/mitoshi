@@ -3,7 +3,9 @@ pragma solidity 0.8.30;
 
 import {Test} from "forge-std/Test.sol";
 import {BookHarness} from "./harness/BookHarness.sol";
-import {KIND_BUY_YES, KIND_BUY_NO, KIND_SELL_YES} from "../../src/engine/EngineTypes.sol";
+import {KIND_BUY_YES, KIND_BUY_NO, KIND_SELL_YES, ORDER_NORMAL} from "../../src/engine/EngineTypes.sol";
+import {EngineFixture} from "./harness/EngineFixture.sol";
+import {IEngineErrors as E} from "../../src/engine/EngineErrors.sol";
 
 /// The per-holder order list threaded through `Node.holderPrev/holderNext` with its head in `Position.orderHead`
 /// (A.1.5): what makes `cancelAll` and the redeem drain O(open orders) instead of a book scan.
@@ -95,5 +97,29 @@ contract HolderListTest is Test {
             total += list.length;
         }
         assertEq(total, n);
+    }
+}
+
+/// The engine's cancel path over the holder list: a live id of another holder or another market refuses by name.
+contract HolderListEngineTest is EngineFixture {
+    function test_cancelForeignOrderRefused() public {
+        bytes32 other = list(START, LOCK, true);
+        uint128 mine = place(1, order(KIND_BUY_YES, 400, 10, ORDER_NORMAL)).restedOrderId;
+        uint128[] memory ids = new uint128[](1);
+        ids[0] = mine;
+        vm.prank(who(2));
+        vm.expectRevert(E.NotOrderOwner.selector);
+        engine.cancelOrders(m, ids, false);
+        vm.prank(who(1));
+        vm.expectRevert(E.OrderMarketMismatch.selector);
+        engine.cancelOrders(other, ids, false);
+        vm.prank(who(1));
+        vm.expectRevert(E.InvalidOrderArgs.selector);
+        engine.cancelOrders(m, new uint128[](17), false);
+        vm.prank(who(1));
+        (uint256 removed, uint64 withdrawn) = engine.cancelOrders(m, ids, true);
+        assertEq(removed, 1);
+        assertEq(withdrawn, 4_000);
+        assertConserved();
     }
 }

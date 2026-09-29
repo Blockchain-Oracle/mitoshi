@@ -11,7 +11,7 @@
   `matching/{paths,seats}.rs`. Tests `Book`, `HolderList`, `Grid`.
 - [x] S2.3 `libs/MatchLib.sol`. Src: `matching/{engine,place,evict,orders}.rs`. Tests `Paths`, Examples 1–7, `Edges`,
   `Sweep`, `OpenPrintGate`.
-- [ ] S2.4 `EventsEngine.sol` (dispatch, funding, `_pull`/`_pay` with P12 + TIP-403 fallback, sets, `withdrawCredit`,
+- [x] S2.4 `EventsEngine.sol` (dispatch, funding, `_pull`/`_pay` with P12 + TIP-403 fallback, sets, `withdrawCredit`,
   `reserveNodes`, `sweepSurplus`, `extsload`, roles, mode, transient guard). Src: `user_place_order.rs`, `user_sets.rs`.
 - [ ] S2.5 `libs/AdminLib.sol`. Src: `admin_series.rs`, `policy_rules.rs`, `window_rules.rs`, `roller_open_window.rs`.
 - [ ] S2.6 `libs/ResolveLib.sol`. Src: `print_rules.rs`, `normalize.rs`, `copy_open_from_prev.rs`, `resolve_rules.rs`,
@@ -78,7 +78,14 @@
   count, level links/tail/liveLots/bits, per-holder lists and escrow). From S2.4 on, the same behaviours are proven end
   to end through `EventsEngine` with a real factory-created TIP-20. MatchLib is split in two files for the 400-line
   rule (`MatchCore` = the inlined walk, fill and rest); runtime 18,669 B.
+- **F-S2-09 (S2.4, P12 mechanics).** TIP-1028 receive policies do **not** make a TIP-20 transfer revert: a blocked
+  inbound "succeeds" into the `ReceivePolicyGuard` (tip403/receive-policies). So the engine pre-checks
+  `validateReceivePolicy(collateral, engine, to)` before every payout and refuses its own calls with
+  `ReceivePolicyBlocked`; `redeemFor` holds instead (S2.6). A TIP-403 *token* policy (blacklist) still reverts the
+  transfer; `_payOrHold` catches that too. Built-in policy 0 = always-reject, 1 = always-allow. Until `openWindow`
+  (S2.5) and `recordPrint` (S2.6) exist, engine tests list markets through `EngineTestHook` (the real engine plus a
+  test-only listing function); everything else they run is production code over a real factory-created TIP-20.
 
 ## Handoff
 
-S2.0–S2.3 done (ABI frozen at `engine-abi-v1`; storage, book, MatchLib). Next: S2.4 EventsEngine.
+S2.0–S2.4 done (ABI frozen at `engine-abi-v1`; storage, book, MatchLib, EventsEngine). Next: S2.5 AdminLib.
