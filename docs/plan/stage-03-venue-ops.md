@@ -43,4 +43,38 @@
 
 ## Handoff
 
-_Not started._
+**State (2026-09-29 07:45Z): every S3 box is built and the venue runs live on Coolify; the 24 h soak is running and
+the gate is not yet passed.** Branch `stage/S3-ops` (built on `stage/S1-web-shell` @ `082c13f`, D-090 — merge S1 first).
+
+- **Live:** `mitoshi-ops-testnet` (uuid `8iaimzcz5gcmont5hqbm6yhk`) deployed from `stage/S3-ops` (the app's git branch
+  was set back to `integration/t1` afterwards without a redeploy: **do not redeploy ops from the trunk until S3 is
+  merged**, or the venue stops). `DRY_RUN=0`, `OPS_DRY_ACTORS` empty, `OPS_ACTORS` = chain-head, archive, spot,
+  indexer, roller, price-relay, settler, seed-maker, halt-watch, earnings, calendar, funds-watch, house-taker. Health:
+  `https://ops.testnet.mitoshi.xyz/health`; stream `https://stream.testnet.mitoshi.xyz/v1/stream?topics=…`.
+- **Venue:** 66 Series (D-091): BTC/ETH/SOL 5m; 9 stocks × Regular 5m/15m/60m, Gap, 24/7 5m/15m/60m (PLTR/AMD 24/7
+  paused: no RedStone feed). Pool reserved to 256 nodes.
+- **Soak window (gate):** started 2026-09-29 07:04Z (roller live). It must run unattended through the Tuesday US
+  session (2026-09-29 13:30–20:00Z; Regular Windows were prelisted at 07:04Z) and the crypto overnight, ending
+  **2026-09-30 07:05Z**. At the end check, and record in `acceptance/S3.md`:
+  1. `/health` ok, no actor with `failures ≥ 3` or silent; `window-roller`, `price-relay`, `settler` counters (opened,
+     recorded, copied, settled, redeemFor, **missed = 0**, failed) — note ops restarts (`commit`/`startedMs`).
+  2. `pnpm --dir scripts exec tsx drive/recount.ts` → **OK** (index == chain replay, total and per Window).
+  3. `pnpm --dir scripts exec tsx drive/halt-replay.ts --from 1790663040` → OK; list any real halt transitions (a
+     RedStone stall in session would show here).
+  4. The US session: the first Regular Windows at 13:30Z (TSLA-5m #0 …) opened as SessionOpen, printed (open at
+     13:30:00 needs all 5 signers inside 300 s), the 60m lanes from 14:00Z, the last Windows closing 20:00Z as
+     SessionClose; `/session` shows `regular` then `post`; halt-watch watched session assets.
+  5. Auto-pay: `settler` `redeemFor` counts grow with the house taker's fills (every ~15 min on crypto 5m).
+  6. Funds: `funds-watch` balances (roles hold ≈ 1M pathUSD; top-up via `tempo_fundAddress` below 10,000).
+- **Gap proof (after the gate):** the Gap for Fri 2026-10-02 16:00 ET → Mon 2026-10-05 09:30 ET lists Wed 2026-09-30
+  20:00Z (`TSLA-gap` … `AMD-gap`, lock Sun 2026-10-04 20:00 ET = Mon 00:00Z). Check: open print at Fri 20:00:00Z
+  recorded (live, or from `print_archive` if later than 23 h), maker quotes against `<T>---24_7` over the weekend,
+  close print Mon 13:30:00Z, settle, `redeemFor`. Record dates and receipts in `acceptance/S3.md`.
+- **For S1/web:** `/api/index/[...path]` and `web/src/lib/index-queries.ts` are here; the web needs `DATABASE_URL`
+  (the same Coolify Postgres the ops indexer writes). The per-user stream ticket: `@cwf/markets/stream-ticket`
+  `mintStreamTicket(STREAM_TICKET_SECRET, address, nowSec)` — mount it at `web/src/app/api/stream/ticket` from the
+  signed-in session (S1 owns web sessions; this lane only touched the index files) and give the web app the same
+  `STREAM_TICKET_SECRET` as ops (set on ops 2026-09-29).
+- **Open, not blocking:** Data Streams relay path is wired and unit-tested (HMAC, the real SPY v11 report) but needs
+  credentials (Q-011); the EventVault `crankSettle` worklist activates with S7's vault fragment; product index
+  projections (`index-products/*`) arrive with their stages' contracts; Tempo Indexer API recount belongs to S3.5.
