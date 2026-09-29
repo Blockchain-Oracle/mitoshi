@@ -57,6 +57,7 @@ contract CurveLaunchpad is Ownable2Step, ReentrancyGuardTransient {
 
     error UnknownConfig(uint32 configId);
     error ReservedCode(string code);
+    error BadSymbol(string symbol);
     error NotTrading(address token);
     error NotComplete(address token);
     error NotGraduated(address token);
@@ -108,6 +109,7 @@ contract CurveLaunchpad is Ownable2Step, ReentrancyGuardTransient {
     ) external nonReentrant returns (address token) {
         Config storage c = _configs[configId];
         if (c.partner == address(0)) revert UnknownConfig(configId);
+        _checkSymbol(symbol);
         if (registry.isReservedCode(symbol)) revert ReservedCode(symbol);
         token = StdPrecompiles.TIP20_FACTORY.createToken(
             name, symbol, symbol, PATH_USD, address(this), keccak256(abi.encode(msg.sender, salt)), logoURI
@@ -318,6 +320,16 @@ contract CurveLaunchpad is Ownable2Step, ReentrancyGuardTransient {
         _ledger.owed[c.partner] += partner;
         _ledger.owed[creator] += fee - protocol - partner;
         _ledger.totalOwed += fee;
+    }
+
+    /// @dev The symbol is the coin's currency code: 1–8 ASCII letters or digits (same rule as `currencyGuard.ts`).
+    function _checkSymbol(string calldata symbol) internal pure {
+        bytes calldata b = bytes(symbol);
+        if (b.length == 0 || b.length > 8) revert BadSymbol(symbol);
+        for (uint256 i; i < b.length; i++) {
+            bytes1 c = b[i];
+            if (!((c >= "0" && c <= "9") || (c >= "A" && c <= "Z") || (c >= "a" && c <= "z"))) revert BadSymbol(symbol);
+        }
     }
 
     function _min(uint256 a, uint256 b) internal pure returns (uint256) {

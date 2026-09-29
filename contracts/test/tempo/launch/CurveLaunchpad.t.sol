@@ -132,6 +132,12 @@ contract CurveLaunchpadTest is LaunchBase {
             vm.prank(creator);
             pad.createLaunch(id, "X", reserved[i], "", "", bytes32(i), 0, 0);
         }
+        string[4] memory bad = ["", "TOOLONGSYM", "ME OW", unicode"MEOWé"];
+        for (uint256 i; i < bad.length; i++) {
+            vm.expectRevert(abi.encodeWithSelector(CurveLaunchpad.BadSymbol.selector, bad[i]));
+            vm.prank(creator);
+            pad.createLaunch(id, "X", bad[i], "", "", bytes32(i), 0, 0);
+        }
         vm.expectRevert(abi.encodeWithSelector(CurveLaunchpad.UnknownConfig.selector, uint32(9)));
         pad.createLaunch(9, "X", "OKAY", "", "", 0, 0, 0);
     }
