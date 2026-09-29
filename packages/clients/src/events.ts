@@ -44,6 +44,23 @@ export const events = {
     "OrderRemoved(bytes32,uint48,address,uint128,uint8,uint16,uint64,uint8)",
     "OrdersCancelled(bytes32,uint48,address,uint8,uint32,uint32,uint64)"
   ],
+  "StockGuardHook": [
+    "GuardSet(bytes32,tuple)",
+    "OwnershipTransferStarted(address,address)",
+    "OwnershipTransferred(address,address)",
+    "PoolRegistered(bytes32,address)"
+  ],
+  "StockReference": [
+    "FeedsSet(address,bytes32,bytes32)",
+    "HaltedSet(address,bool)",
+    "MarketStatusSeen(uint8,uint64)",
+    "ReferenceIgnored(address,uint64,uint64,uint8)",
+    "ReferenceWritten(address,uint256,uint64,uint8)",
+    "RoleAdminChanged(bytes32,bytes32,bytes32)",
+    "RoleGranted(bytes32,address,address)",
+    "RoleRevoked(bytes32,address,address)",
+    "SessionSet(uint8,uint64)"
+  ],
   "LaunchRegistry": [
     "CodeReserved(string)",
     "CurveLaunchpadSet(address)",

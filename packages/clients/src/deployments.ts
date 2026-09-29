@@ -156,6 +156,45 @@ export const deployments = {
       "external": {},
       "commit": "6b78abe"
     },
+    "guard": {
+      "contracts": {
+        "StockGuardHook": {
+          "address": "0xFB0579c1dbFfbBabb05834998b5542B9Bd4FA0C0",
+          "artifact": "StockGuardHook.sol:StockGuardHook",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x5cef682527039bf33b54c08cf32f6a1e2c0ae765dca9522b4cea3e15e15ba5a8",
+          "deployBlock": 37384596,
+          "history": []
+        },
+        "StockReference": {
+          "address": "0xccBc2E760C22DBBdb3E1C2458C98593942A7Bd90",
+          "artifact": "StockReference.sol:StockReference",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xdbf2a5d92f612af9c6a44c73175090b7b7cca75b8ee70d983acf219e2cee2283",
+          "deployBlock": 37384588,
+          "history": []
+        }
+      },
+      "roles": {
+        "KEEPER": "0x6Ed3a4b6E42B2C45211074F8D7BA58dbB2FAad0C",
+        "owner": "0xF368eE3b38bC3682A4f55Fd03778123269B69Fe5"
+      },
+      "params": {
+        "create2Deployer": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
+        "dataStreamsProxy": "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
+        "hookFlags": "0x20C0 (beforeInitialize | beforeSwap | afterSwap)",
+        "hookSalt": "0x0000000000000000000000000000000000000000000000000000000000003209",
+        "poolFee": 3000,
+        "poolManager": "0x33620f62C5b9B2086dD6b62F4A297A9f30347029",
+        "poolTickSpacing": 60,
+        "redstoneVerifier": "0x38Ad9Fe54b3b271f737CdC231d7B85b1616A1377",
+        "syncReceiver": "0xE1576984eA22F1E620CFCCa6bf6154C4b9a3693e"
+      },
+      "external": {},
+      "commit": "86252d4"
+    },
     "launch": {
       "contracts": {
         "LaunchRegistry": {
@@ -263,6 +302,13 @@ export const deployments = {
       },
       "external": {},
       "commit": "ad79a36"
+    },
+    "pools": {
+      "contracts": {},
+      "roles": {},
+      "params": {},
+      "external": {},
+      "commit": "f98d630"
     },
     "stocks": {
       "contracts": {

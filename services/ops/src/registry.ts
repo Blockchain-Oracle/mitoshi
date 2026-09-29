@@ -1,7 +1,7 @@
 /**
  * Every actor ops can run (plan C.5.2), by `OPS_ACTORS` name. `spot: true` asks main for the process's spot feed.
- * The default set is the venue (`all` = the default set plus any named extra); `house-taker` and `launch-keeper` are
- * opt-in only.
+ * The default set is the venue (`all` = the default set plus any named extra); `house-taker`, `launch-keeper` and
+ * `reference-writer` are opt-in only.
  */
 import { archivePass, ARCHIVE_EVERY_MS } from "./actors/archive";
 import { chainHeadPass, CHAIN_HEAD_EVERY_MS } from "./actors/chain-head";
@@ -16,6 +16,7 @@ import { startCalendar } from "./calendar";
 import { startFundsWatch } from "./actors/funds-watch";
 import { startHouseTaker } from "./actors/house-taker";
 import { indexerRecountPass, INDEXER_RECOUNT_EVERY_MS } from "./actors/indexer-recount";
+import { referenceWriterPass, REFERENCE_WRITER_EVERY_MS } from "./actors/reference-writer";
 import { keeperDeps, launchKeeperPass, LAUNCH_KEEPER_EVERY_MS } from "./actors/launch-keeper";
 import { memeAddresses } from "@cwf/markets/launch";
 import { tempoReadClient } from "@cwf/markets";
@@ -65,6 +66,9 @@ export const ACTORS: Record<string, ActorEntry> = {
       return runActor({ name: "launch-keeper", log: d.log, dryRun: true, everyMs: LAUNCH_KEEPER_EVERY_MS, pass: launchKeeperPass({ deps, launchpad: a.launchpad, dryRun: true }) });
     },
   },
+  // Opt-in (S15b): keeps StockReference fresh — RedStone pushes + the keeper session flag, signed with
+  // KEEPER_PRIVATE_KEY (pushRedStone + setSession). DRY_RUN / OPS_DRY_ACTORS log the batch and never sign.
+  "reference-writer": { start: (d) => runActor({ name: "reference-writer", log: d.log, dryRun: d.env.dryRun, everyMs: REFERENCE_WRITER_EVERY_MS, pass: referenceWriterPass(d.env) }) },
 };
 
 export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount"] as const;

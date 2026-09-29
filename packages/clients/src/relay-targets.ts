@@ -12,6 +12,10 @@ export const relayTargets = {
       "0xc33df633b43e47e2aa0f8302611141737c89daf3",
       "0xb8dceeaf9bdb5fffde6cbb05abb946102f3132b1"
     ],
+    "guard": [
+      "0xFB0579c1dbFfbBabb05834998b5542B9Bd4FA0C0",
+      "0xccBc2E760C22DBBdb3E1C2458C98593942A7Bd90"
+    ],
     "launch": [
       "0x82480CCE69a9a85D0c8515C5b2ddDED6e0Ea94A3",
       "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
@@ -22,6 +26,7 @@ export const relayTargets = {
     "lz": [
       "0x6B053153397c2019D23561a16f2ad6134bCc3Dfb"
     ],
+    "pools": [],
     "stocks": [
       "0x535aFE496eAEE0736570Cc4Abe2db7D18CF41023",
       "0xB96540a1156B81047cE3220285bA9674D5d92a98",
