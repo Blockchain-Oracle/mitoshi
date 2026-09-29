@@ -721,6 +721,7 @@ provider RPC or a key on the public one.
 
 **Why:** C.4.3 asks for the recount against our index; the chain is the stricter reference until the index exists.
 
+
 ### D-110 — the shared product seam's shape: `EngineSeam` library + `PayoutCheck`/`Payouts` (decision, S7, 2026-09-29)
 
 Refines A.4 "Shared" where it left the shape open. (1) `EngineSeam` is an internal library taking `(engine, lens,
@@ -783,6 +784,68 @@ the web features and the settler's `crankSettle` actor are S7's off-chain half (
 
 **Why:** the contract half of S7 is complete and proven live; what remains is sequenced, not cut.
 
+
+### D-115 — maker vault seam details (decision, S8, 2026-09-29)
+
+Amends A.4.2 where the port needed a choice. `EngineSeam` gains the maker's measured calls (D-110 left them to S8):
+`restMeasured` (PostOnly buy only, `useCredit = false`, `withdrawProceeds = false`; `restedLots == lots`, nothing
+filled, `Δwallet == transferredIn == lots·ownTicks·cu`; the product's credit may only grow — the cross walk may evict
+its own expired quotes into it, E-35), `collectCreditMeasured` (`Δwallet == amount`, credit 0 after),
+`mergeMeasured` (`mergeSet(m, lots, true)` from zero credit; `Δwallet == withdrawn == lots·1000·cu`, one lot off each
+free side) and `redeemAllMeasured` (one full `redeem`; `Δwallet == total`, the position empty after). The vault books
+**every** credit withdrawal as the Window's `escrowBack` through `_collectBooked`, whatever put it there (its own
+cancel, its own eviction during a later `quote`, a third party's `sweepExpired`, a taker's eviction), because the
+maker's engine credit can only come from its own escrow. `MakerGateway.MarketRef` carries `status` (as D-111);
+`MAX_FILLS = 1` (PostOnly never fills; the engine wants ≥ 1), `MAX_EVICTIONS = 4`, `cancelAll(m, 16, false)` (the
+engine's per-holder cap is 16). `quote`'s `TooLate`/`BadExpiry` and `pull`'s "anyone after" use `lockAt`; the
+withdrawal gate `unsettledExpired` uses `expiry` (T08). `withdraw` pre-checks the receive policy and refuses
+(`ReceivePolicyBlocked`, as D-112); the vault never owes. No inflation guard: value is `liquid` + booked deployment.
+
+**Why:** each assert catches a venue report that disagrees with the balances it moved; keeping every credit on one
+booking path is what makes `wallet == liquid (+ donations)` an equality.
+
+### D-116 — how Masayume's maker suites run on the real engine (finding + decision, S8, 2026-09-29)
+
+`MakerTestBase` (on `EngineFixture` + `BookSeeder`) replaces `MockMakerVenue`; takers are real IOC orders against the
+vault's resting quotes. Masayume's two venue-refund tests keep their names and assert the engine's behaviour:
+`test_pull_collectsARefundThatLandsAsPoolCredit` — the cancel's escrow lands as engine credit and is collected in the
+same call; `test_quote_booksTheVenuesLazyRefundOfAnExpiredQuote` — the engine never refunds inside a placement (E-33,
+D-017), so the next quote's escrow is its own measured delta and a pull returns both pairs to the cent. The Shannon
+fork test is a Moderato fork replaying the S2.12 BTC Window. `LyingEngine` (still the only mock) gains the maker
+surface (PostOnly rest, `cancelAll`, `mergeSet`, `redeem`, `marketsOf`) and three lies (`CreditShort`, `MergeShort`,
+`RedeemAllShort`).
+
+**Why:** A.6/D-018 — suites prove the seam on the real engine; the mock proves only the asserts.
+
+### D-117 — launch params unchanged; the maker key is `deployer-maker` until S4's earn-quoter (decision, S8, 2026-09-29)
+
+`MarketMakerVault` `0xa31F6B5a585fF331cC13Fd1c6FAa282024Ca32a6` is deployed with Masayume's launch params (exposure
+60 %, min spread 0.02, prices 0.05–0.95, 20 a side, 200 per Window, 8 Windows, 45 s before lock). Admin and maker are
+`deployer-maker`; when S4's earn-quoter actor runs on `runActor`, the admin calls `setMaker(earn-quoter)` (key already
+provisioned at `~/.config/cwf/testnet/earn-quoter.json`) — no redeploy.
+
+**Why:** the vault must quote live before its off-chain actor exists; `setMaker` is the designed hand-over.
+
+### D-118 — maker relay policy: sponsor exits and keeper calls, never intake, quoting or admin (decision, S8, 2026-09-29)
+
+`relay/policies/maker.ts`: sponsor `withdraw`, `pull`, `merge`, `settle` (each moves only the vault's own money, or
+pays `msg.sender` P12-checked); never `supply` (capital intake pays its own gas, D-020/D-029), `quote` (the quoter key
+pays from the ops budget), `setParams`/`setMaker`/`setPaused`/`setAdmin`. Geofenced entry: `supply` (Q-008). Masayume
+had no sponsor list for its maker vault; this follows the Trading Balance's rule (D-114's area `vault`).
+
+**Why:** the keeper calls a supplier's "Settling 2 of 4" needs must be free; nothing sponsored can move value in.
+
+### D-119 — the maker vault is live on Moderato and passed the contract gate; the earn-quoter and `/earn` wait for S4 (finding, S8, 2026-09-29)
+
+`MarketMakerVault` `0xa31F6B5a585fF331cC13Fd1c6FAa282024Ca32a6` (deployer-maker, Sourcify exact match), area `maker`
+with `relay/policies/maker.ts` (D-118). The live drive (`scripts/drive/maker-live.ts`, acceptance/S8.md) quoted a
+Window the S3 roller listed inside the house book, showed the vault's depth at the top of both sides through
+`lens.levelsRaw`, was filled by a wallet-mode taker and an EventVault taker, merged by a stranger, pulled after lock by
+a stranger, and settled by a stranger after S3 voided the Window (realized +0.118 booked, the engine position zero,
+`wallet == liquid`). Quoting was signed by `deployer-maker` (D-117). The ops earn-quoter actor on `runActor`, the
+settler's `vault.settle` crank for every closed Window, and the `/earn` supplier UI are S8's off-chain half (after S4).
+
+**Why:** the contract half of S8 is complete and proven live; what remains is sequenced, not cut.
 ### D-135 — the engine relay policy is registered: trading and exits sponsored, capital intake never, EventsEngine the only target (decision, S4.1, 2026-09-29)
 
 `relay/policies/engine.ts` joins `POLICIES`. **Sponsored:** `placeOrder` (the markets entry: geofenced, Q-008),

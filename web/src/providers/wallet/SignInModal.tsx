@@ -16,7 +16,7 @@ import { SIDE_CHAINS, WALLETCONNECT_ENABLED } from "./wagmi-config";
 import { useWalletShell } from "./wallet-shell-context";
 import { Onboarding, ONBOARD } from "@/features/onboarding";
 
-type Step = { kind: "choose" } | { kind: "waiting"; label: string } | { kind: "failed"; headline: string; body: string; retry: () => void } | { kind: "onboard" };
+type Step = { kind: "choose" } | { kind: "waiting"; label: string } | { kind: "failed"; headline: string; body: string; technical: string; retry: () => void } | { kind: "onboard" };
 
 export interface SignInModalProps {
   open: boolean;
@@ -45,8 +45,9 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       setStep({ kind: "choose" });
       return;
     }
-    const copy = diagnosisCopy(diagnose(result.error).kind);
-    setStep({ kind: "failed", headline: copy.headline, body: copy.body, retry: () => void run(label, attempt, created) });
+    const diagnosis = diagnose(result.error);
+    const copy = diagnosisCopy(diagnosis.kind);
+    setStep({ kind: "failed", headline: copy.headline, body: copy.body, technical: diagnosis.technical, retry: () => void run(label, attempt, created) });
   }
 
   const walletRow = (connector: Connector, note: string, chainId?: number) => (
@@ -82,6 +83,11 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
           <p className="type-body-strong text-ink">{step.headline}</p>
           <p className="type-body text-ink-secondary">{step.body}</p>
           <p className="type-body-strong text-ink">Nothing was taken.</p>
+          {/* The raw reason, behind a disclosure like every failure card (§2.5): what support needs, never the headline. */}
+          <details className="type-caption text-ink-secondary">
+            <summary className="min-h-touch cursor-pointer py-2">{SIGN_IN.technical}</summary>
+            <p className="numbers break-words">{step.technical}</p>
+          </details>
           <div className="flex gap-2">
             <button type="button" onClick={step.retry} className="min-h-touch rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{SIGN_IN.retry}</button>
             <button type="button" onClick={() => setStep({ kind: "choose" })} className="min-h-touch rounded-md border border-border-strong px-4 type-body-strong text-ink">{SIGN_IN.back}</button>

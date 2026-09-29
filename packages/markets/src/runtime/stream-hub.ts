@@ -1,0 +1,76 @@
+/**
+ * The page's ONE stream connection (D-040/D-049), shared by every component: a lazily created `StreamClient` whose
+ * batches are fanned out by topic to subscribers. Framework-free and light (no viem), exposed as
+ * `@cwf/markets/stream` so the shell's ticker can use it on site pages too. `configureStream` is called once with the
+ * ops stream URL (null keeps everything idle: nothing connects and subscribers simply never hear anything).
+ */
+import { createStreamClient, type StreamClient, type StreamEvent, type StreamState } from "./stream";
+
+export type { StreamEvent, StreamState } from "./stream";
+
+type Listener = (events: StreamEvent[]) => void;
+
+let config: { url: string | null; ticket?: () => Promise<string | null> } = { url: null };
+let client: StreamClient | null = null;
+const listeners = new Map<string, Set<Listener>>();
+const stateListeners = new Set<(s: StreamState) => void>();
+
+export function configureStream(next: { url: string | null; ticket?: () => Promise<string | null> }): void {
+  if (next.url === config.url) return void (config = next);
+  client?.close();
+  client = null;
+  config = next;
+}
+
+function hub(): StreamClient | null {
+  if (!config.url) return null;
+  client ??= createStreamClient({
+    url: config.url,
+    ...(config.ticket ? { ticket: config.ticket } : {}),
+    onBatch: (events) => {
+      const byTopic = new Map<string, StreamEvent[]>();
+      for (const e of events) byTopic.set(e.topic, [...(byTopic.get(e.topic) ?? []), e]);
+      for (const [topic, list] of byTopic) for (const l of listeners.get(topic) ?? []) l(list);
+    },
+    onState: (s) => stateListeners.forEach((l) => l(s)),
+  });
+  return client;
+}
+
+/** Listen to one topic; the shared connection opens with the first listener and drops the topic with the last. */
+export function subscribeTopic(topic: string, listener: Listener): () => void {
+  const c = hub();
+  if (!c) return () => undefined;
+  let set = listeners.get(topic);
+  if (!set) listeners.set(topic, (set = new Set()));
+  set.add(listener);
+  const release = c.subscribe(topic);
+  return () => {
+    set!.delete(listener);
+    if (set!.size === 0) listeners.delete(topic);
+    release();
+  };
+}
+
+export function streamState(): StreamState {
+  return client?.state() ?? (config.url ? "idle" : "closed");
+}
+
+export function subscribeStreamState(listener: (s: StreamState) => void): () => void {
+  stateListeners.add(listener);
+  return () => stateListeners.delete(listener);
+}
+
+/** A price tick on the `prices` / `symbol:<T>` topics (services/ops `wireTick`). */
+export interface PriceTick {
+  symbol: string;
+  priceE8: string;
+  publishTimeSec: number;
+  source: string;
+  signers: number;
+}
+
+export function isPriceTick(v: unknown): v is PriceTick {
+  const t = v as PriceTick;
+  return typeof t?.symbol === "string" && typeof t.priceE8 === "string" && /^\d+$/.test(t.priceE8) && typeof t.publishTimeSec === "number";
+}

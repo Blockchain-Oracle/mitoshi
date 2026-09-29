@@ -190,11 +190,23 @@ function ToastIcon({ type }: { type: string | undefined }) {
   )
 }
 
+// From 21st.dev 24297 (Toast) — its position-derived swipe: toasts sit bottom-centre on phones (swipe down) and
+// bottom-right from `sm` up (swipe right or down), so the dismiss gesture follows where the toast is.
+// Tailwind v4's `sm` breakpoint (40rem), the one the viewport classes above switch on.
+const SM_QUERY = "(min-width: 40rem)"
+const subscribeSm = (onChange: () => void) => {
+  const mq = window.matchMedia(SM_QUERY)
+  mq.addEventListener("change", onChange)
+  return () => mq.removeEventListener("change", onChange)
+}
+
 function ToastList() {
   const { toasts } = ToastPrimitive.useToastManager()
+  const wide = React.useSyncExternalStore(subscribeSm, () => window.matchMedia(SM_QUERY).matches, () => false)
+  const swipeDirection: ("down" | "right")[] = wide ? ["right", "down"] : ["down"]
 
   return toasts.map((toastItem) => (
-    <Toast key={toastItem.id} toast={toastItem}>
+    <Toast key={toastItem.id} toast={toastItem} swipeDirection={swipeDirection}>
       <ToastContent>
         <ToastIcon type={toastItem.type} />
         <div className="flex min-w-0 flex-1 flex-col gap-1">

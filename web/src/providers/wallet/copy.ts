@@ -22,6 +22,7 @@ export const SIGN_IN = {
   cancel: "Cancel",
   retry: "Try again",
   back: "Back",
+  technical: "Technical details",
   robinhood: {
     title: "Link a Robinhood Chain wallet",
     body: "Stock tokens start on Robinhood Chain. Link the wallet that holds them to bring them to Tempo; your Tempo account stays as it is.",

@@ -3,3 +3,5 @@ export { closeRuntime, configureMarkets, getLogClient, getPublicClient, marketsE
 export { checkEndpoints, endpointHealth, type EndpointHealth } from "./health";
 export { applyClockSync, lastClockSync, nowMs, nowSec, sampleChainClock } from "./clock";
 export { forgetReading, unwrap, withReading, type Unwrap } from "./reading";
+export { createStreamClient, type StreamClient, type StreamClientOptions, type StreamEvent, type StreamState, type StreamVisibility } from "./stream";
+export { watchChainLogs, type ChainLogWatch } from "./chain-logs";

@@ -2,6 +2,7 @@
 
 import { diagnosis, type TxState } from "@cwf/core";
 import { KeyUsedReceipt, TxChips, TxCta, TxFailureCard, TxReceipt, TypedConfirm } from "@/components/tx";
+import { notify } from "@/lib/toast";
 
 const HASH = `0x${"3f".repeat(32)}` as const;
 const STATES: { label: string; state: TxState }[] = [
@@ -30,6 +31,9 @@ export function TxFixtures() {
       <TxReceipt title="Settlement receipt" figure="$9.40" figureLabel="Paid" atMs={1_790_000_000_000} txHash={HASH} network="testnet" rows={[{ label: "Window", value: "TSLA 5m" }]} />
       <KeyUsedReceipt keyLabel="Trading key on this browser" leftText="$18.00" limitText="$25.00" expiresText="in 23 h" />
       <TypedConfirm code="USD" onMatch={() => undefined} />
+      <button type="button" className="min-h-touch self-start rounded-md border border-border-strong px-4 type-body-strong text-ink" onClick={() => notify.neutral("Write landed", "The receipt is in your history.")}>
+        Raise a toast
+      </button>
     </div>
   );
 }

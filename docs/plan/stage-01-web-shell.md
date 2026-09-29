@@ -52,7 +52,7 @@
   `x-vercel-protection-bypass` + `x-vercel-set-bypass-cookie`) against the testnet preview for `/`, `/markets`, `/markets/[id]`,
   `/portfolio`, `/proof/[market]`, `/status`, asserting lab LCP ≤ 2.5 s, CLS ≤ 0.05, TBT ≤ 200 ms; field INP/LCP p75
   from Speed Insights on both Vercel projects, checked at each S19 deploy; each later stage appends its routes.
-- [ ] 1b real-time client (D40): `packages/markets/src/runtime/stream.ts` — one SSE connection to `stream.<domain>`
+- [x] 1b real-time client (D40): `packages/markets/src/runtime/stream.ts` — one SSE connection to `stream.<domain>`
   (ops) + chain WS logs → `setQueryData` batched per frame; paused when hidden.
 - [x] 1c routes: `/api/auth/[...path]` + `server/{kv,session}.ts` (C.3.2); `/api/relay` + `/api/relay/status` with a
   `noop` area (C.3.3); `/api/faucet{,/challenge}` (C.3.4); `packages/db/migrations/{relay,faucet}/0001_*.sql` run on both Neon
@@ -219,6 +219,43 @@
   Pixel A/B of 48 screenshots (10 routes + menu + sign-in, 390/1440, both themes) against the unpurged build: identical
   except the grain overlay's own noise. A stage porting a Masayume surface brings its classes into `src/` and its rules
   return by themselves.
+- **1b real-time — SSE over fetch.** The client reads the ops stream with `fetch` + its own SSE parser, not
+  `EventSource`: it can send `lastEventId` on every reconnect (topic-set changes, un-hiding), close while hidden, and
+  run in Node, so it is tested against real servers (a local one for behaviour, the live ops stream for the wire). One
+  `@cwf/markets/stream` hub per page: the ticker (every page, idle-loaded) and the app's price cache (`keys.price`,
+  `setQueryData` once per frame) share one connection. Per-user topics ask `/api/stream/ticket`; until that route is
+  mounted (with S3's mint function after the merge) they are dropped, never faked. `watchChainLogs` rides the read
+  runtime's WebSocket; viem applies `args` filters only to a single `event` (with `events` it silently ignored them —
+  the live test caught unrelated transfers), so the watcher enforces one event when filtering.
+- **1b real-time — no `networkidle`.** With the stream configured a page holds one SSE connection for its life, so
+  Playwright's `networkidle` never comes; the e2e scripts wait on `load` + the idle-island window (`e2e/lib/settle.ts`).
+- **1b real-time — deploy.** Set `NEXT_PUBLIC_STREAM_URL=https://stream.testnet.mitoshi.xyz` on the web app, and the ops
+  app's stream CORS allow-list must include the web origin(s) (the sslip host and `mitoshi.xyz`); today it answers
+  without `access-control-allow-origin` for other origins, so a browser on another origin reads nothing.
+- **1b real-time — zod out of the ticker path.** `market/tickers.ts` imported zod for one enum schema; it moved to
+  `schemas/tickers.ts` like the other validators, so the registry is readable without zod.
+- **After merging S2/S3/S3.5 (integration/t1 182397c).** With the engine now deployed on Moderato, two S1
+  placeholders activated and broke sign-up: (1) the wallet access-key hook passed bare function names as keychain
+  scopes, and ox rejects them ("Unable to normalize signature") — scopes now carry full signatures from the generated
+  engine ABI; and once valid, the connector authorised the key at registration, adding a second passkey prompt, so the
+  hook answers only while an explicit arm step asks (`requestArm`, D-046's arm slot — S4 fills it); (2)
+  `readBalanceSheet` threw whenever the engine was deployed, leaving the header balance at "—": order escrow and engine
+  credit (shown beside the headline, never summed) are now `null` ("not read") until S4's readers, the wallet balance is
+  real, and an unread vault still fails (it is part of the headline). The sign-in failure state gains the same
+  "Technical details" disclosure as the TxFailureCard.
+- **Stream ticket mounted.** `POST /api/stream/ticket` mints S3's 60 s HMAC ticket (`@cwf/markets/stream-ticket`) for the
+  signed-in session's own `user:<address>` topic with `STREAM_TICKET_SECRET` (the ops app's); 401 signed out, 503 when
+  the secret is unset, per-IP limit.
+- **1b perf — lab LCP at the threshold (open).** After the late data layer (app first load 169–174 KB) and
+  server-rendered first-use hints (a hydrated hint cost ~140 ms of lab LCP; now plain markup, dismissed ones hidden by
+  the head script before first paint): repeated median-of-3 runs put every gated route at 2.35–2.68 s, with the
+  landing at 2.50–2.66 s and app TBT 160–203 ms. Results move in ~150 ms steps between near-identical builds (`/markets`
+  2.52 → 1.55 s across two builds): lantern charges a round trip per pre-paint request at 150 ms RTT, so one chunk
+  more or less flips a route across 2.5 s. Folding the root layout's three small client modules into `PageRuntime`
+  (one chunk) is the kind of change that moves it. The lab gate therefore sits on the threshold, and a single CI run
+  will pass or fail by chance; the field p75 (`/api/vitals`, D-071) is the stable signal once deployed. Next levers,
+  in order: fewer pre-paint chunks on app routes (merge the app layout's small client modules the same way), then
+  hydration cost on app routes for TBT.
 - **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
   transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
 - **1b wallet — no cookie read on the server.** wagmi's `cookieToInitialState` would read `headers()` in the root and,
@@ -232,4 +269,35 @@
 
 ## Handoff
 
-_Not started._
+_2026-09-29, at stop (branch `stage/S1-web-shell`, pushed; merged with integration/t1 182397c)._
+
+**Boxes:** all ticked except **1b perf gates** (see Open).
+
+**Commits:** 1a core `4dfd9ba`, 1a markets `fad7a3f`, 1b tokens + X23 `36abee2`, 1b shell `7022cd7`, merge `26a8fdd`,
+1b transactions `6ede081`, 1b wallet `1c71a7f`, 1c routes + X8 + X9 `016d03e`, 1b onboarding `082c13f`, 1b settings
+`df16af3`, perf `e0a7000` `05990e6` `97e6d7e` `7a32158`, shell techniques `379585a` `20760d0`, phone shot `2ef8029`,
+real-time `c64b948`, merge of integration/t1 `0f9b4da`, post-merge fixes + stream ticket `e976cca`. Evidence in
+`acceptance/S1.md`; decisions D-070 (relay: debit at the fill, sponsored fills carry no fee fields, first-tx gas) and
+D-071 (§3.1 on Next 16: site-owned JS over the framework floor; field vitals self-hosted).
+
+**Gate status:** build ✓; UX gate on every registered route × 320/390/768/1440 × both themes (see acceptance) ✓;
+JS/CSS budgets green on every route (`pnpm perf:budgets`, in CI) ✓; one ceremony from a fresh passkey to a funded
+account with the virtual authenticator ✓ (the owner's device, and passkeys on `mitoshi.xyz`, wait on the deploy/DNS);
+sponsored no-op with fee payer = relay and `aggregate3` refused ✓; `x-vercel-ip-country: US` (and `cf-ipcountry`) →
+451 on the faucet, reads and exits open ✓ (live enforcement needs a country header in front of Coolify — owner action).
+
+**Open:**
+- **Lab LCP gate** — every route measures 2.35–2.68 s against 2.5 s, CLS ≤ 0.026, app TBT 160–203 ms; results jump
+  ~150 ms between near-identical builds (lantern prices a round trip per pre-paint request), so the CI lab run will
+  flip. Next levers are in the findings (fewer pre-paint chunks on app routes, then app hydration cost). Field p75 via
+  `/api/vitals` once deployed.
+- **Relay batch support for themes** (integrator note): the one-transaction key-authorization + follow from S16 is
+  refused by the engine's one-area rule; design with S16's shapes when the relay learns batches.
+- **Arm step** — the wallet access key (full engine signatures from the ABI) is authorised only when an arm step
+  asks (`requestArm`); S4 fills the ceremony's arm slot.
+
+**For the integrator (deploy):** set `DATABASE_URL`, `REDIS_URL`, `RELAY_FEE_PAYER_PRIVATE_KEY`, `APP_ORIGIN`,
+`PASSKEY_RP_ID`, `SOCIAL_SESSION_SECRET`, `STREAM_TICKET_SECRET` (the ops app's), `NEXT_PUBLIC_STREAM_URL=https://stream.testnet.mitoshi.xyz`;
+add the web origin(s) to the ops stream's CORS allow-list; run `pnpm db:migrate` (relay, faucet, keys, vitals); build
+from the repo root (`pnpm build`; the Yosuku purge resolves `web/` from the working directory); trigger
+`lighthouse.yml` after a deploy (`repository_dispatch` `coolify-deployment-success` with `client_payload.url`).

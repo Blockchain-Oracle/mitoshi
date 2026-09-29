@@ -60,10 +60,11 @@
 - **F-S4-13** (S4.4) Every fill goes through the relay (viem `withRelay` semantics kept in `relayProxy`), sponsored or
   not; an unsponsored call (e.g. TIP-403) is refused `target` and the SDK fills it unsponsored — the sender pays. The
   verdict log therefore shows `target` for self-paid calls; that is expected, not an error.
-- **F-S4-14** (S4.5) Node and React Native have no `EventSource`, and the browser's can't send headers: the stream
-  reader is `fetch`-streaming SSE (`stream/sse.ts`) with `Last-Event-ID` reconnects. The stream's `user:` topic needs
-  the 60 s ticket from `/api/stream/ticket`, which S1 has not mounted yet (STATUS open item); `useMarketStream` takes
-  a `getTicket` so the page wires it when the route exists.
+- **F-S4-14** (S4.5) S1 shipped the D-049 client while S4 was building one: after merging the trunk S4 dropped its own
+  SSE reader and uses S1's shared hub (`runtime/stream-hub.ts`, ref-counted topics, visibility pause, `user:` tickets
+  from `/api/stream/ticket`); S4 adds what the hub lacked — the engine-event → cache dispatch (`stream/dispatch.ts`) and
+  `useLiveMarketData`. S1's sign-in `accessKeyPolicy` scopes also `cancelAll`; S4's wallet-key rule and builder
+  (`keys/wallet-key.ts`) now include it, and a test proves the hook's exact shape is sponsored.
 
 ## Handoff
 

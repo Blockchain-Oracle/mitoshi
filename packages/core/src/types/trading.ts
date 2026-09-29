@@ -102,9 +102,10 @@ export interface BalanceSheet {
   decimals: number;
   /** pathUSD in the wallet (Tempo has no gas token: this is also what pays an unsponsored fee). */
   spendableBase: bigint;
-  /** Cash locked behind resting orders (`Position.lockedCash`). */
-  orderEscrowBase: bigint;
-  engineCreditBase: bigint;
+  /** Cash locked behind resting orders (`Position.lockedCash`); null until the engine readers are wired (S4). */
+  orderEscrowBase: bigint | null;
+  /** Engine credit across Windows; null until the engine readers are wired (S4). Never summed into the headline. */
+  engineCreditBase: bigint | null;
   engineCreditByMarket: EngineCredit[];
   /** `EventVault.accountOf`; null on a network with no EventVault deployment (S7). */
   vaultBase: bigint | null;

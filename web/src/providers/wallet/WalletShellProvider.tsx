@@ -12,6 +12,7 @@ import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import { webEnv } from "@/lib/env";
 import type { PendingOpen, WalletRuntimeProps } from "./WalletRuntime";
 import { SIGNED_OUT, WalletShellContext, type WalletShell } from "./wallet-shell-context";
+import { useDataReady } from "../data/context";
 
 const WalletRuntime = dynamic<WalletRuntimeProps>(() => import("./WalletRuntime"), { ssr: false });
 
@@ -19,6 +20,8 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
   const pending = useRef<PendingOpen>(null);
   const [runtimeShell, setRuntimeShell] = useState<WalletShell | null>(null);
   const [session, setSession] = useState<SubmitterSession | null>(null);
+  // wagmi needs the query client, which the late data layer provides; the runtime loads right after it.
+  const dataReady = useDataReady();
 
   const placeholder = useMemo<WalletShell>(
     () => ({
@@ -47,7 +50,7 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
   return (
     <WalletShellContext.Provider value={runtimeShell ?? placeholder}>
       <SubmitterSessionValue session={session}>{children}</SubmitterSessionValue>
-      <WalletRuntime publish={setRuntimeShell} publishSession={setSession} takePending={takePending} />
+      {dataReady ? <WalletRuntime publish={setRuntimeShell} publishSession={setSession} takePending={takePending} /> : null}
     </WalletShellContext.Provider>
   );
 }

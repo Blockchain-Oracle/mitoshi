@@ -103,6 +103,19 @@ export const events = {
     "PingLanded(bytes32,uint32,uint64,uint64,uint64)",
     "PingSent(bytes32,uint32,uint64,uint64,uint256)"
   ],
+  "MarketMakerVault": [
+    "AdminChanged(address)",
+    "MakerChanged(address)",
+    "Merged(bytes32,uint256,uint256,address)",
+    "ParamsUpdated(tuple)",
+    "PausedSet(bool)",
+    "Pulled(bytes32,uint256,uint256,address)",
+    "Quoted(bytes32,uint256,uint256,uint256,uint256,uint128,uint128)",
+    "Supplied(address,uint256,uint256,uint256)",
+    "SupplyRedeemed(address,uint256,uint256,uint256)",
+    "Swept(uint256)",
+    "WindowSettled(bytes32,uint256,uint256,uint256,int256,address)"
+  ],
   "TIP20MintBurnAdapter": [
     "CreditDeferred(address,uint32,uint256,uint8)",
     "DeferredClaimed(address,uint256)",

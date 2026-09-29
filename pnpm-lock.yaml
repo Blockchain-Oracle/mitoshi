@@ -426,6 +426,9 @@ importers:
       '@base-ui/react':
         specifier: 'catalog:'
         version: 1.8.0(@types/react@19.3.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@cwf/clients':
+        specifier: workspace:*
+        version: link:../packages/clients
       '@cwf/core':
         specifier: workspace:*
         version: link:../packages/core

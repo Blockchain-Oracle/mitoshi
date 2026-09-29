@@ -15,6 +15,8 @@ export interface ServerEnv {
   databaseUrl: string | null;
   feePayerKey: `0x${string}` | null;
   socialSecret: string | null;
+  /** Shared with the ops app: HMAC for 60 s per-user stream tickets (D-049). */
+  streamTicketSecret: string | null;
   regionOverride: string | null;
 }
 
@@ -34,6 +36,7 @@ export function serverEnv(): ServerEnv {
     databaseUrl: process.env.DATABASE_URL || null,
     feePayerKey: key && /^0x[0-9a-fA-F]{64}$/.test(key) ? (key as `0x${string}`) : null,
     socialSecret: process.env.SOCIAL_SESSION_SECRET || null,
+    streamTicketSecret: process.env.STREAM_TICKET_SECRET || null,
     regionOverride: process.env.CWF_REGION_OVERRIDE || null,
   };
   return cached;

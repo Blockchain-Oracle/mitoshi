@@ -1,7 +1,7 @@
 /**
  * The wallet-mode access key (D-047; spike X20): a TIP-1011 key authorized in the sign-in ceremony so taps sign with no
  * prompt. Restrictions (Q-031 defaults): a daily pathUSD limit ($25 / 24 h) — which counts every `approve` the key
- * signs, so each tap is capped — expiry 24 h, and call scopes limited to the engine's placeOrder / cancelOrders /
+ * signs, so each tap is capped — expiry 24 h, and call scopes limited to the engine's placeOrder / cancelOrders / cancelAll /
  * redeem / withdrawCredit plus `pathUSD.approve` bound to the engine as spender. Nothing else: no transfer, no other
  * contract, no `mintSet`. The shape is viem's `signKeyAuthorization` / the accounts SDK's `accessKey.authorize`
  * (`{ expiry, limits: [{ token, limit, period }], scopes: [{ address, selector, recipients }] }`); docs: viem
@@ -15,7 +15,7 @@ export const WALLET_KEY_PERIOD_SEC = 86_400;
 export const WALLET_KEY_VALID_FOR_SEC = 86_400; // 24 h, renewable in one tap (Q-031)
 
 /** The engine functions the key may call. */
-export const WALLET_KEY_ENGINE_FUNCTIONS = ["placeOrder", "cancelOrders", "redeem", "withdrawCredit"] as const;
+export const WALLET_KEY_ENGINE_FUNCTIONS = ["placeOrder", "cancelOrders", "cancelAll", "redeem", "withdrawCredit"] as const;
 export const APPROVE_SELECTOR: Hex = "0x095ea7b3";
 
 export const engineSelector = (name: (typeof WALLET_KEY_ENGINE_FUNCTIONS)[number] | string): Hex => toFunctionSelector(getAbiItem({ abi: eventsEngineAbi, name: name as never }) as never);

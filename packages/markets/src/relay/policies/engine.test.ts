@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { encodeFunctionData, maxUint256, type AbiFunction, type Address, type Hex } from "viem";
+import { encodeFunctionData, maxUint256, toFunctionSignature, type AbiFunction, type Address, type Hex } from "viem";
 import { Abis } from "viem/tempo";
 import { OPEN_POSTURE } from "@cwf/core";
 import { deployments, TEMPO } from "@cwf/clients";
@@ -76,6 +76,15 @@ describe("engine relay policy (D-135), registered", () => {
     const first = req([approve(ENGINE, 2_400_000n), place], { gas: 7_100_000n, keyAuthorization: walletKey() });
     expect(await evaluate(config, first, ctx)).toMatchObject({ ok: true });
     expect(await evaluate(config, { ...first, gas: 3_000_000n + WALLET_KEY_AUTH_GAS + 1n }, ctx)).toMatchObject({ ok: false, code: "gas" });
+  });
+
+  it("accepts the web's sign-in hook shape (full ABI signatures as selectors, S1 `access-key.ts`)", async () => {
+    const sig = (name: string) => toFunctionSignature((eventsEngineAbi as readonly { type: string; name?: string }[]).find((i) => i.type === "function" && i.name === name) as AbiFunction);
+    const hook = normalizeKeyAuthorization({
+      address: "0x00000000000000000000000000000000000000c3", "expiry": ctx.nowSec + 86_400, limits: [{ token: PATH, limit: 25_000_000n, period: 86_400 }],
+      scopes: [...["placeOrder", "cancelOrders", "cancelAll", "redeem", "withdrawCredit"].map((n) => ({ address: ENGINE, selector: sig(n) })), { address: PATH, selector: "approve(address,uint256)", recipients: [ENGINE] }],
+    })!;
+    expect(await evaluate(config, req([approve(ENGINE, 1n), place], { gas: 7_000_000n, keyAuthorization: hook }), ctx)).toMatchObject({ ok: true });
   });
 
   it("refuses to publish any key wider than wallet mode", async () => {

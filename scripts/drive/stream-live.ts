@@ -1,14 +1,14 @@
 /**
- * S4.5 live proof of the D-049 wiring: the production stream client (`openMarketStream`) against the live ops stream
- * (`https://ops.testnet.mitoshi.xyz/v1/stream`) writing into a real TanStack `QueryClient`, while a throwaway user taps a
- * live Window through the relay — the tap's `Fill`/`OrderExecuted` arrive on `market:<id>` and mark the Window's
- * snapshot, depth and row stale; price ticks land in their stream-owned keys. Prints each applied frame batch.
+ * S4.5 live proof of the D-049 wiring: S1's stream client (`createStreamClient`, the shared hub's engine) against the
+ * live ops stream (`https://ops.testnet.mitoshi.xyz/v1/stream`), with S4's engine-event dispatch (`opsFor`) and S1's
+ * price writes applied to a real TanStack `QueryClient`, while a throwaway user taps a live Window through the relay —
+ * the tap's `Fill`/`OrderExecuted` arrive on `market:<id>` and mark the Window's snapshot, depth and row stale.
  *
  *   pnpm --filter @cwf/scripts exec tsx drive/stream-live.ts [seconds]
  */
 import { QueryClient } from "@tanstack/react-query";
 import type { MarketId } from "@cwf/core";
-import { createMarketsProvider, createSubmitterSession, FULL_TEMPO_CAPS, nowSec, openMarketStream, type CacheOp } from "@cwf/markets";
+import { coalesce, createMarketsProvider, createStreamClient, createSubmitterSession, FULL_TEMPO_CAPS, nowSec, opsFor, type CacheOp, type StreamEvent } from "@cwf/markets";
 import { driveClient, newPasskeyRoot } from "@cwf/markets/drive";
 import { fund, restInside, wallet } from "./lib/actors";
 import { label, liveWindows, rawTop, testnetVenue } from "./lib/live-windows";
@@ -28,12 +28,7 @@ const marketId = target.market.marketId as MarketId;
 const queryClient = new QueryClient();
 const counts = { batches: 0, sets: 0, invalidations: 0, marketInvalidations: 0 };
 let fillSeenAtMs: number | null = null;
-const connection = openMarketStream({
-  streamUrl: STREAM,
-  topics: ["prices", "markets", "verdicts", "fills", `market:${marketId}`],
-  queryClient,
-  onStatus: (s, d) => out("status", { status: s, detail: d }),
-  onBatch: (ops: CacheOp[]) => {
+const applyOps = (ops: CacheOp[]) => {
     counts.batches++;
     for (const op of ops) {
       if (op.kind === "set") counts.sets++;
@@ -46,8 +41,28 @@ const connection = openMarketStream({
       }
     }
     if (ops.some((o) => o.kind === "invalidate")) out("batch", { ops: ops.map((o) => `${o.kind} ${JSON.stringify(o.key)}`) });
+};
+const connection = createStreamClient({
+  url: STREAM,
+  visibility: null,
+  onState: (s) => out("status", { status: s }),
+  onBatch: (events: StreamEvent[]) => {
+    const ops: CacheOp[] = [];
+    for (const e of events) {
+      const d = e.data as Record<string, unknown>;
+      // S1's usePriceStream: a price tick into its stream-owned key.
+      if (e.event === "price" && typeof d.symbol === "string") ops.push({ kind: "set", key: ["cwf", "price", d.symbol], value: d });
+      else ops.push(...opsFor(e.event, { topic: e.topic, data: d }));
+    }
+    const batch = coalesce(ops);
+    for (const op of batch) {
+      if (op.kind === "set") queryClient.setQueryData(op.key, op.value);
+      else void queryClient.invalidateQueries({ queryKey: op.key });
+    }
+    applyOps(batch);
   },
 });
+for (const topic of ["prices", "markets", "verdicts", "fills", `market:${marketId}`]) connection.subscribe(topic);
 out("subscribed", { window: label(target), marketId, stream: STREAM });
 
 await new Promise((r) => setTimeout(r, 8_000));
