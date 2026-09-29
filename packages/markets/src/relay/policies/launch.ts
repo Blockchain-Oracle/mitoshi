@@ -11,29 +11,30 @@
  * - `never`: registry records/admin, launchpad and locker admin, and the PoolManager-only callback.
  * - `maxGas`: `createLaunch` with a creator buy measured 6,736,091 on Moderato (acceptance/S17.md), locker withdraw
  *   458,715; 8M leaves room for a first-time holder's new slots.
- * Shape = `RelayPolicy` in `relay/types.ts` (S1); this file joins `policies/index.ts` when S1's relay lands on the
- * trunk. Geofence posture for launch is open everywhere (`launch: {}`, Q-008).
+ * Typed as `RelayPolicy` (S1 `relay/types.ts`) and listed in `policies/index.ts`. Geofence posture for launch is open
+ * everywhere (`launch: {}`, Q-008).
  */
 import type { Abi, Address } from "viem";
 import { relayTargets } from "@cwf/clients";
 import { curveLaunchpadAbi } from "@cwf/clients/abis/CurveLaunchpad";
 import { launchRegistryAbi } from "@cwf/clients/abis/LaunchRegistry";
 import { liquidityLockerAbi } from "@cwf/clients/abis/LiquidityLocker";
+import type { RelayPolicy } from "../types";
 
 /** The launch contracts on every chain they are deployed on (generated from deployment fragments). */
 const targets: readonly Address[] = Object.values(relayTargets as Record<string, Record<string, readonly string[]>>).flatMap((byArea) => (byArea.launch ?? []) as Address[]);
 
-export const launchPolicy = {
-  area: "launch" as const,
+export const launchPolicy: RelayPolicy = {
+  area: "launch",
   targets,
   abi: [...launchRegistryAbi, ...curveLaunchpadAbi, ...liquidityLockerAbi] as Abi,
-  sponsor: ["createLaunch", "buy", "sell", "claimFees", "claimLeftover", "withdraw"] as readonly string[],
+  sponsor: ["createLaunch", "buy", "sell", "claimFees", "claimLeftover", "withdraw"],
   never: [
     "recordStablecoin", "recordMemecoin", "setCurveLaunchpad", "reserveCodes",
     "setProtocolTreasury", "setMinProtocolShare", "setLaunchpad", "register", "unlockCallback",
     "transferOwnership", "acceptOwnership", "renounceOwnership",
-  ] as readonly string[],
-  pillar: "launch" as const,
-  entry: [] as readonly string[],
+  ],
+  pillar: "launch",
+  entry: [],
   maxGas: 8_000_000n,
 };

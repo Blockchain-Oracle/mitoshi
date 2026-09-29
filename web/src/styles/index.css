@@ -1,0 +1,18 @@
+/* The global stylesheet every route loads: the ported Yosuku system (palette, faces, easings), the generated token
+ * theme (@cwf/tokens), Masayume's component-tier tokens and base rules, and the shell's own sheets (chrome, nav,
+ * slide-over, toasts, modals, icons, error screen) with the ux-audit fixes last. Feature stylesheets are NOT imported here:
+ * each route group and feature imports its own (plan §3.1 "CSS per route"). */
+@import "./yosuku/index.css";
+@import "tw-animate-css";
+@import "./tokens.generated.css";
+@import "./tokens.css";
+@import "./base.css";
+@import "./shell.css";
+@import "./navigation.css";
+@import "./drawer.css";
+@import "./toast.css";
+@import "./modal.css";
+@import "./icons.css";
+@import "./error.css";
+@import "./shell-fixes.css";
+@import "./fonts-stage.css";

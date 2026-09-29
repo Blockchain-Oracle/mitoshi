@@ -1,0 +1,39 @@
+name: lighthouse
+# Lab performance gate (plan §3.1, D-042/D-071) against a deployed testnet build: Lighthouse CI, mobile 390 px, 4x CPU,
+# simulated 4G, 3 runs, median run; LCP <= 2.5 s, CLS <= 0.05, TBT <= 200 ms. Hosting is Coolify (D-061): the deploy
+# step (Coolify CLI) fires `repository_dispatch` type `coolify-deployment-success` with `client_payload.url`; it
+# also runs by hand with a URL. Each later stage appends its routes to ROUTES.
+on:
+  repository_dispatch:
+    types: [coolify-deployment-success]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Base URL of the deployed build (no trailing slash)
+        required: true
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BASE: ${{ github.event.client_payload.url || inputs.url }}
+      ROUTES: "/ /markets /markets/0x0000000000000000000000000000000000000000000000000000000000000001 /portfolio /proof/0x0000000000000000000000000000000000000000000000000000000000000001 /status"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Lighthouse CI
+        run: |
+          set -eu
+          urls=""
+          for r in $ROUTES; do urls="$urls --url=${BASE%/}$r"; done
+          npx -y @lhci/cli@0.15.1 collect --config=lighthouserc.json $urls
+          npx -y @lhci/cli@0.15.1 assert --config=lighthouserc.json
+          npx -y @lhci/cli@0.15.1 upload --config=lighthouserc.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci

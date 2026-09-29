@@ -1,0 +1,164 @@
+/* Ported from Masayume 68f7a09:web/src/styles/pitch-slides.css */
+/* The folio's slide layouts and side visuals — ported from reference/yosuku/app/pitch/page.tsx
+ * (SLIDES L281–634 for the layouts; MiniChart, PhoneMock, XBetCard, FrozenPhone L91–195).
+ * Split from pitch.css to stay under the file cap; same convention: the source value
+ * named above each rule. The mocks are dark drawings on cream paper in both themes,
+ * as the reference's are — illustrations, each tagged as such in the TSX. */
+
+/* ── slide layouts ── */
+/* relative w-full h-full flex items-center (justify-between) gap-12 */
+/* height: 100% in the reference; min-height here so an overflowing slide starts at the top and scrolls (see pitch.css) */
+.pitch-row { position: relative; width: 100%; min-height: 100%; display: flex; align-items: center; gap: 48px; }
+.pitch-row-between { justify-content: space-between; }
+.pitch-row-gap10 { gap: 40px; }
+/* w-full h-full flex flex-col justify-center */
+.pitch-stack { width: 100%; min-height: 100%; display: flex; flex-direction: column; justify-content: center; }
+.pitch-col { position: relative; z-index: 10; }
+.pitch-col-44 { max-width: 44%; }
+.pitch-col-48 { max-width: 48%; }
+.pitch-col-50 { max-width: 50%; }
+.pitch-col-52 { max-width: 52%; }
+.pitch-col-54 { max-width: 54%; }
+.pitch-col-56 { max-width: 56%; }
+/* absolute right-[2%] top-1/2 -translate-y-1/2 (the close slide: right 5%) */
+.pitch-art { position: absolute; top: 50%; transform: translateY(-50%); }
+.pitch-art-right { right: 2%; }
+.pitch-art-close { right: 5%; }
+
+/* the four-cell strip (edge L363–370; onboarding L438–445): border HAIR, radius 12, bg CARD */
+.pitch-cells-wrap { margin-top: 36px; }
+.pitch-cells { display: flex; border: 1px solid var(--pp-hair); border-radius: 12px; overflow: hidden; background: var(--pp-card); max-width: 1000px; }
+.pitch-cells-3 { max-width: 940px; }
+.pitch-cell { flex: 1 1 0%; padding: 18px 20px; border-right: 1px solid var(--pp-hair); }
+.pitch-cells-3 .pitch-cell { padding: 18px 22px; }
+.pitch-cell:last-child { border-right: none; }
+.pitch-cell[data-live="false"] { background: var(--pp-soft); }
+.pitch-cell-head { display: flex; align-items: center; gap: 10px; }
+.pitch-cell-name { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.02em; color: var(--pp-ink); }
+.pitch-cell-label { margin-top: 6px; font-family: var(--font-mono); font-size: 12px; color: var(--pp-body); line-height: 1.5; }
+.pitch-cell-sub { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 10px; font-size: 10px; }
+.pitch-cells-note { display: block; margin-top: 12px; font-size: 11px; }
+
+/* proof (L406–422): grid-cols-2, maxWidth 860; left pr-10 with a 2px dashed vermilion rule */
+.pitch-proof-grid { margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; align-items: stretch; max-width: 860px; }
+.pitch-proof-left { padding-right: 40px; border-right: 2px dashed var(--pp-verm); }
+.pitch-proof-right { padding-left: 40px; }
+.pitch-proof-label { font-size: 11px; }
+.pitch-proof-figure { margin-top: 8px; font-family: var(--font-display); font-weight: 800; font-size: clamp(1.8rem, 4vw, 3rem); color: var(--pp-ink); letter-spacing: -0.02em; }
+.pitch-proof-figure .green { color: var(--pp-green); }
+.pitch-proof-unit { font-size: 0.5em; color: var(--pp-mute); }
+.pitch-proof-sub { margin-top: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--pp-mute); }
+.pitch-provenance { margin-top: 32px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-size: 11px; }
+.pitch-provenance .pitch-mono { font-size: 11px; }
+
+/* revenue: two panels side by side (L520) */
+.pitch-panels { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 48px; max-width: 1000px; }
+/* mt-7 font-mono 14.5px BODY lh 1.6 maxWidth 84ch (86ch on revenue) */
+.pitch-body-note { margin-top: 28px; font-family: var(--font-mono); font-size: 14.5px; color: var(--pp-body); line-height: 1.6; max-width: 84ch; }
+.pitch-body-note-86 { max-width: 86ch; }
+
+/* team card (L572–578) */
+.pitch-team { margin-top: 32px; display: flex; align-items: center; gap: 20px; max-width: 1020px; background: var(--pp-card); border: 1px solid var(--pp-hair); border-left: 3px solid var(--pp-verm); border-radius: 12px; padding: 20px 24px; }
+.pitch-team-avatar { width: 58px; height: 58px; flex-shrink: 0; border-radius: 9999px; background: var(--pp-paper2); border: 1px solid var(--pp-hair); display: flex; align-items: center; justify-content: center; color: var(--pp-ink); }
+.pitch-team-mark { height: 30px; width: auto; }
+.pitch-team-name { font-family: var(--font-display); font-weight: 700; font-size: 22px; color: var(--pp-ink); }
+.pitch-team-role { color: var(--pp-mute); font-size: 15px; font-weight: 400; }
+.pitch-team-body { margin-top: 6px; font-family: var(--font-mono); font-size: 13.5px; color: var(--pp-body); line-height: 1.5; max-width: 72ch; }
+
+/* the ask (L624): mt-6 mono 15px INK lh 1.5 maxWidth 42ch */
+.pitch-ask { margin-top: 24px; font-family: var(--font-mono); font-size: 15px; color: var(--pp-ink); line-height: 1.5; max-width: 42ch; }
+
+/* ── MiniChart (L91–106): #2E6B4F area, #E04D26 dashed strike, #4FB985 line ── */
+.pitch-minichart { display: block; }
+.pitch-minichart-stop-a { stop-color: #2e6b4f; stop-opacity: 0.32; }
+.pitch-minichart-stop-b { stop-color: #2e6b4f; stop-opacity: 0; }
+.pitch-minichart-line { stroke: #e04d26; stroke-width: 1; opacity: 0.55; }
+.pitch-minichart-path { stroke: #4fb985; stroke-width: 2.5; }
+.pitch-minichart-tip { fill: #4fb985; }
+/* LockIcon c='#E88' */
+.pitch-lock { stroke: #e88; }
+
+/* ── PhoneMock (L111–149): width 284; frame #0D0B09 r42 p11; screen #16120E r32 ── */
+.pitch-phone { position: relative; width: 284px; flex-shrink: 0; }
+.pitch-phone-frame { background: #0d0b09; border-radius: 42px; padding: 11px; box-shadow: 0 55px 120px -40px rgba(40, 28, 18, 0.62); border: 1px solid rgba(255, 255, 255, 0.06); }
+.pitch-phone-screen { background: #16120e; border-radius: 32px; overflow: hidden; padding-bottom: 4px; }
+.pitch-phone-status { display: flex; justify-content: space-between; padding: 13px 22px 2px; color: rgba(255, 255, 255, 0.55); font-size: 11px; font-family: var(--font-mono); }
+.pitch-phone-app { display: flex; align-items: center; justify-content: space-between; padding: 6px 18px; }
+.pitch-phone-brand { display: flex; align-items: center; gap: 7px; color: #f1eadc; font-weight: 800; font-size: 15px; font-family: var(--font-display); }
+.pitch-phone-mark { height: 17px; width: auto; }
+.pitch-phone-balance { color: rgba(255, 255, 255, 0.5); font-size: 11px; font-family: var(--font-mono); }
+.pitch-phone-card { margin: 6px 14px; background: rgba(255, 255, 255, 0.04); border-radius: 18px; padding: 15px; }
+.pitch-phone-q { color: #f1eadc; font-size: 13.5px; font-weight: 600; font-family: var(--font-display); line-height: 1.3; }
+.pitch-phone-chart { margin-top: 10px; }
+.pitch-phone-meta { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; font-family: var(--font-mono); color: rgba(255, 255, 255, 0.5); }
+.pitch-phone-meta .up { color: #4fb985; }
+.pitch-phone-sides { display: flex; gap: 9px; padding: 4px 14px; }
+.pitch-phone-side { flex: 1 1 0%; border-radius: 12px; padding: 11px 0; text-align: center; font-family: var(--font-mono); font-size: 12.5px; }
+.pitch-phone-side.up { background: rgba(46, 107, 79, 0.16); border: 1px solid rgba(79, 185, 133, 0.45); color: #4fb985; }
+.pitch-phone-side.down { background: rgba(224, 77, 38, 0.12); border: 1px solid rgba(224, 77, 38, 0.4); color: #e88; }
+.pitch-phone-ctawrap { padding: 8px 14px 16px; }
+.pitch-phone-cta { background: #e04d26; border-radius: 12px; padding: 13px 0; text-align: center; color: #fff; font-weight: 700; font-family: var(--font-display); font-size: 14px; }
+.pitch-phone-won { padding: 18px 16px 20px; text-align: center; }
+/* the reference draws a green check disc; Masayume's verdict is the 正夢 stamp */
+.pitch-phone-stamp { margin: 10px auto 0; font-family: var(--font-jp); font-weight: 700; font-size: 40px; color: #e04d26; transform: rotate(-4deg); }
+.pitch-phone-won-label { color: #4fb985; font-size: 12px; font-family: var(--font-mono); letter-spacing: 0.12em; margin-top: 14px; }
+.pitch-phone-won-figure { color: #f1eadc; font-size: 40px; font-weight: 800; font-family: var(--font-display); letter-spacing: -0.03em; margin-top: 4px; }
+.pitch-phone-won-sub { color: rgba(255, 255, 255, 0.45); font-size: 11px; font-family: var(--font-mono); margin-top: 6px; }
+.pitch-phone-won .pitch-phone-cta { margin: 18px 14px 0; }
+
+/* ── XBetCard (L152–176): width 356; bg #000; r18; text #E7E9EA ── */
+.pitch-xcard { position: relative; width: 356px; flex-shrink: 0; background: #000; border-radius: 18px; box-shadow: 0 46px 105px -40px rgba(40, 28, 18, 0.55); overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.08); color: #e7e9ea; }
+.pitch-xcard-body { padding: 16px 18px 14px; }
+.pitch-xcard-author { display: flex; gap: 10px; align-items: center; }
+.pitch-xcard-avatar { width: 38px; height: 38px; border-radius: 9999px; background: #f1eadc; display: flex; align-items: center; justify-content: center; color: #141210; }
+.pitch-xcard-mark { height: 20px; width: auto; }
+.pitch-xcard-name { display: block; font-weight: 700; font-size: 14px; font-family: var(--font-display); }
+.pitch-xcard-handle { display: block; color: #71767b; font-size: 12px; font-family: var(--font-mono); }
+.pitch-xcard-x { margin-left: auto; }
+.pitch-xcard-x .pitch-mark { fill: #71767b; }
+.pitch-xcard-text { margin-top: 11px; font-size: 14.5px; font-family: var(--font-display); line-height: 1.35; }
+.pitch-xcard-embed { margin-top: 11px; background: #16120e; border-radius: 14px; padding: 14px; border: 1px solid rgba(255, 255, 255, 0.06); }
+.pitch-xcard-embed-head { display: flex; justify-content: space-between; color: #f1eadc; font-size: 11.5px; font-family: var(--font-mono); margin-bottom: 8px; }
+.pitch-xcard-embed-head .up { color: #4fb985; }
+.pitch-xcard-reply { border-top: 1px solid rgba(255, 255, 255, 0.08); padding: 14px 18px; display: flex; gap: 11px; }
+.pitch-xcard-reply-avatar { width: 32px; height: 32px; flex-shrink: 0; border-radius: 9999px; background: linear-gradient(135deg, #3a3a44, #22232a); }
+.pitch-xcard-reply-text { font-size: 13.5px; font-family: var(--font-display); }
+.pitch-xcard-reply-text .handle { color: #1d9bf0; }
+.pitch-xcard-receipt { margin-top: 9px; display: inline-flex; align-items: center; gap: 8px; background: rgba(46, 107, 79, 0.15); border: 1px solid rgba(79, 185, 133, 0.4); border-radius: 10px; padding: 8px 12px; font-size: 11.5px; font-family: var(--font-mono); color: #4fb985; }
+.pitch-xcard-receipt .dot { width: 6px; height: 6px; border-radius: 9999px; background: #4fb985; }
+
+/* ── FrozenPhone (L179–195): width 258; #191a1d r38 p10 saturate(.65); screen #232428 ── */
+.pitch-frozen { position: relative; width: 258px; flex-shrink: 0; }
+.pitch-frozen-frame { background: #191a1d; border-radius: 38px; padding: 10px; box-shadow: 0 46px 105px -44px rgba(20, 18, 16, 0.5); filter: saturate(0.65); }
+.pitch-frozen-screen { background: #232428; border-radius: 30px; padding: 24px 20px; min-height: 372px; display: flex; flex-direction: column; }
+.pitch-frozen-label { color: rgba(255, 255, 255, 0.4); font-size: 11px; font-family: var(--font-mono); letter-spacing: 0.1em; }
+.pitch-frozen-balance { color: rgba(255, 255, 255, 0.82); font-size: 34px; font-weight: 800; font-family: var(--font-display); letter-spacing: -0.02em; margin-top: 5px; }
+.pitch-frozen-banner { margin-top: 26px; background: rgba(224, 77, 38, 0.12); border: 1px solid rgba(224, 77, 38, 0.4); border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 11px; color: #e88; font-size: 12.5px; font-family: var(--font-mono); }
+.pitch-frozen-bar { margin-top: 14px; height: 40px; border-radius: 10px; background: rgba(255, 255, 255, 0.05); }
+.pitch-frozen-foot { margin-top: auto; color: rgba(255, 255, 255, 0.28); font-size: 10px; font-family: var(--font-mono); text-align: center; letter-spacing: 0.1em; }
+
+/* ── narrow screens: the reference has no phone layout; the folio stacks and scrolls ── */
+@media (max-width: 900px) {
+  .pitch-frame { left: 3vw; right: 3vw; padding: 0 5vw; }
+  .pitch-stage { overflow-y: auto; justify-content: flex-start; }
+  .pitch-slide { height: auto; justify-content: flex-start; padding: 12px 0 24px; }
+  .pitch-row { flex-direction: column; align-items: flex-start; gap: 28px; height: auto; }
+  .pitch-col { max-width: 100%; }
+  .pitch-art { position: static; transform: none; align-self: center; }
+  .pitch-phone, .pitch-xcard, .pitch-frozen { max-width: 100%; }
+  .pitch-cells, .pitch-stats, .pitch-phases, .pitch-panels { flex-direction: column; }
+  .pitch-cell { border-right: none; border-bottom: 1px solid var(--pp-hair); }
+  .pitch-cell:last-child { border-bottom: none; }
+  .pitch-proof-grid { grid-template-columns: 1fr; gap: 20px; }
+  .pitch-proof-left { padding-right: 0; border-right: none; border-bottom: 2px dashed var(--pp-verm); padding-bottom: 20px; }
+  .pitch-proof-right { padding-left: 0; }
+  .pitch-glance, .pitch-spec, .pitch-spec.wide { width: 100%; }
+  .pitch-spec-val { white-space: normal; text-align: right; }
+  .pitch-nav { width: 32px; height: 32px; }
+  .pitch-nav-prev { left: 4px; }
+  .pitch-nav-next { right: 4px; }
+  .pitch-tag { position: static; display: inline-block; margin-bottom: 8px; }
+}
+@media (max-width: 640px) {
+  .pitch-foot-chain { display: none; }
+}

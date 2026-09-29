@@ -1,0 +1,338 @@
+.bell-label { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.2em; color: var(--gray-500); text-transform: uppercase; }
+.bell-time { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--white); letter-spacing: -0.02em; }
+.bell.urgent .bell-time { color: var(--vermilion); }
+
+/* SettleClock — the branded settlement ring. Under a minute it breathes a soft vermilion
+   glow so the closing moment is felt, not just read. */
+.settle-clock .sc-track { stroke: rgba(255,255,255,0.13); }
+[data-theme="light"] .settle-clock .sc-track { stroke: rgba(20,18,16,0.16); }
+.settle-clock--urgent { animation: settleClockPulse 1.7s var(--ease) infinite; }
+@keyframes settleClockPulse {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(224,77,38,0)); }
+  50%      { filter: drop-shadow(0 0 11px rgba(224,77,38,0.38)); }
+}
+
+/* Collapsed pill — while the card list is in view the orb shrinks to a slim,
+   edge-docked countdown so it never covers a card's UP/DOWN / Room controls.
+   The settlement ring is preserved (just smaller) and the time stays legible;
+   a tap re-opens the full orb (peek). */
+.bell.collapsed {
+  width: auto; height: 40px;
+  padding: 0 14px 0 8px;
+  border-radius: 999px;
+  gap: 9px;
+  cursor: pointer;
+  transition: border-color 320ms var(--ease), background 320ms var(--ease);
+}
+.bell.collapsed .bell-ring {
+  position: relative;
+  width: 26px; height: 26px; flex: none;
+}
+.bell.collapsed .bell-ring svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  transform: rotate(-90deg); overflow: visible;
+}
+.bell.collapsed .bell-mini-txt {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px;
+  line-height: 1;
+}
+.bell.collapsed .bell-label { font-size: 7px; letter-spacing: 0.16em; }
+.bell.collapsed .bell-time { font-size: 13px; }
+
+/* ───────── PAGE HERO — editorial trading floor ───────── */
+.page-hero {
+  padding: 168px 0 56px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: relative;
+  overflow: hidden;
+}
+/* Crop marks at the corners */
+.crop {
+  position: absolute; width: 18px; height: 18px;
+  border: 0 solid rgba(255,255,255,0.18);
+}
+.crop.tl { top: 96px; left: 24px; border-top-width: 1px; border-left-width: 1px; }
+.crop.tr { top: 96px; right: 24px; border-top-width: 1px; border-right-width: 1px; }
+.crop.bl { bottom: 24px; left: 24px; border-bottom-width: 1px; border-left-width: 1px; }
+.crop.br { bottom: 24px; right: 24px; border-bottom-width: 1px; border-right-width: 1px; }
+
+.hero-meta {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gray-600);
+  pointer-events: none;
+}
+.hero-meta.tl { top: 100px; left: 56px; }
+.hero-meta.tr { top: 100px; right: 56px; text-align: right; }
+.hero-meta.bl { bottom: 28px; left: 56px; }
+.hero-meta.br { bottom: 28px; right: 56px; text-align: right; }
+.hero-meta .ln { display: block; color: var(--gray-700); margin-top: 2px; letter-spacing: 0.18em; font-size: 9px; }
+
+.breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gray-500);
+  margin-bottom: 28px;
+  display: flex; align-items: center; gap: 12px;
+}
+.breadcrumb a:hover { color: var(--white); }
+.breadcrumb .sep { color: var(--gray-700); }
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 6fr 6fr;
+  gap: 56px;
+  align-items: end;
+}
+/* Lift the headline off the very bottom so it sits a touch higher than the chart's base. */
+.hero-grid .hero-left { margin-bottom: 36px; }
+.hero-left .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--gray-500);
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 18px;
+}
+.hero-left .eyebrow .dash { width: 28px; height: 1px; background: var(--gray-700); }
+.hero-left .eyebrow .live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--vermilion);
+  animation: pulseDot 1.6s var(--ease) infinite;
+}
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(3rem, 7.4vw, 6.4rem);
+  line-height: 0.94;
+  letter-spacing: -0.05em;
+  color: var(--white);
+}
+.page-title .accent { color: var(--vermilion); }
+.page-subtitle {
+  color: var(--gray-400);
+  font-size: 16px; line-height: 1.55;
+  max-width: 42ch;
+  margin-top: 28px;
+}
+.hero-status {
+  display: flex; gap: 28px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+}
+.hero-status .item {
+  border-left: 1px solid rgba(255,255,255,0.12);
+  padding-left: 14px;
+}
+.hero-status .lbl { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--gray-600); }
+.hero-status .val { font-family: var(--font-mono); font-size: 16px; color: var(--white); margin-top: 2px; letter-spacing: -0.025em; }
+.hero-status .meta { font-family: var(--font-mono); font-size: 10px; color: var(--gray-500); margin-top: 2px; }
+.hero-status .val.up   { color: var(--vermilion); }
+.hero-status .val.down { color: var(--gray-400); }
+
+/* Hero chart panel */
+.hero-chart {
+  position: relative;
+  display: flex; flex-direction: column;
+  aspect-ratio: 5 / 4;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.012) 0%, rgba(255,255,255,0) 100%),
+    var(--bg);
+  overflow: hidden;
+}
+.hero-chart-head {
+  position: static; flex-shrink: 0;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
+  padding: 22px 24px 18px;
+}
+.hero-chart-canvas { position: relative; flex: 1; min-height: 160px; }
+.hero-chart-canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero-chart-head .left { display: flex; align-items: center; gap: 12px; }
+.hero-chart-head .glyph {
+  width: 22px; height: 22px;
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 11px; color: var(--white);
+}
+.hero-chart-head .pair { font-family: var(--font-display); font-size: 17px; font-weight: 700; letter-spacing: 0.005em; color: var(--white); line-height: 1.15; }
+.hero-chart-head .pair-meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--gray-400); letter-spacing: 0.03em; white-space: nowrap; margin-top: 3px; }
+.hero-chart-head .pair-meta .meta-soft { color: var(--gray-600); }
+.hero-chart-head .price { font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--white); letter-spacing: -0.02em; }
+.hero-chart-head .delta { font-family: var(--font-mono); font-size: 11px; color: var(--vermilion); margin-left: 6px; }
+
+/* Hero chart-head: legible countdown pill + trust chip (replaces the faint gray subtitle) */
+.hero-chart-tags { display: flex; align-items: center; gap: 8px; margin-top: 7px; flex-wrap: wrap; }
+.hc-countdown {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.03em;
+  color: var(--gray-300);
+  background: rgba(224,77,38,0.1);
+  border: 1px solid rgba(224,77,38,0.3);
+  padding: 3px 10px 3px 8px; border-radius: 999px;
+}
+.hc-countdown svg { width: 12px; height: 12px; color: var(--vermilion); }
+.hc-countdown b { color: var(--white); font-weight: 700; font-variant-numeric: tabular-nums; }
+.hc-chip {
+  display: inline-flex; align-items: center;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gray-400);
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 999px;
+  padding: 3px 9px;
+}
+.hero-live-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.05em;
+  color: var(--gray-400); margin-top: 3px;
+}
+.hc-live-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--profit);
+  animation: pulseDot 1.6s var(--ease) infinite;
+}
+
+/* (hero chart canvas now positioned via .hero-chart-canvas above) */
+.hero-chart-axis {
+  position: absolute; right: 16px;
+  font-family: var(--font-mono); font-size: 9px; color: var(--gray-700);
+  letter-spacing: 0.06em;
+}
+
+/* Strike line + label inside chart */
+.strike-label {
+  position: absolute;
+  right: 12px;
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--vermilion);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: rgba(5,5,5,0.7);
+  padding: 2px 6px;
+  border-radius: 2px;
+  z-index: 3;
+  border: 1px solid rgba(224,77,38,0.4);
+}
+
+.hero-chart-foot {
+  position: static; flex-shrink: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--gray-500); letter-spacing: 0.06em;
+  z-index: 2;
+  background: rgba(5,5,5,0.5);
+}
+.hero-chart-foot .ramp {
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-chart-foot .ramp .bar {
+  width: 100px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 999px;
+  position: relative; overflow: hidden;
+}
+.hero-chart-foot .ramp .fill {
+  position: absolute; inset: 0 auto 0 0;
+  width: 64%;
+  background: linear-gradient(90deg, var(--vermilion), var(--white));
+}
+
+/* ── Markets hero: mini market card (chart + the real TradePanel) — compact, capped height ── */
+.markets-hero .hero-grid.hero-grid-mini {
+  /* big chart + the contained bet ticket beside it */
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 20px;
+  align-items: stretch;
+}
+.markets-hero .hero-grid-mini .hero-chart {
+  aspect-ratio: auto;
+  height: auto;
+  min-height: 460px;
+}
+/* the old hero make-the-call panel is superseded by the docked bet rail */
+.hero-mini-panel { display: none; }
+.hero-yesno { display: none; }
+.hero-mini-loading {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; min-height: 460px;
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 4px;
+  background: rgba(255,255,255,0.012);
+  color: var(--gray-500); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em;
+}
+@media (max-width: 1023px) {
+  .markets-hero .hero-grid.hero-grid-mini { grid-template-columns: 1fr; gap: 16px; }
+  .markets-hero .hero-grid-mini .hero-chart { min-height: 400px; }
+  .markets-hero .hero-grid-mini .hero-chart-canvas { min-height: 230px !important; }
+  /* mobile: hide the side panel; trade via the prominent Trade button → modal */
+  .hero-mini-panel { display: none; }
+  .hero-yesno {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 12px;
+  }
+  /* Match the small-card .mc-side buttons exactly so the hero reads balanced:
+     mono label, flat fill, 10px radius, same price treatment. */
+  .hyn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 8px 14px; border-radius: 10px; cursor: pointer; text-decoration: none;
+    border: 1px solid transparent;
+    font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    transition: transform 150ms var(--ease), background 200ms var(--ease), border-color 200ms var(--ease);
+  }
+  .hyn:active { transform: scale(.985); }
+  .hyn-label { font-weight: 700; }
+  .hyn-price { font-family: var(--font-mono); font-weight: 800; font-size: 12px; opacity: 0.82; letter-spacing: -0.02em; text-transform: none; }
+  .hyn-yes { color: var(--profit); background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.32); }
+  .hyn-yes:hover { background: rgba(52,211,153,0.15); border-color: var(--profit); transform: translateY(-1px); }
+  .hyn-no { color: var(--loss); background: rgba(251,113,133,0.08); border-color: rgba(251,113,133,0.32); }
+  .hyn-no:hover { background: rgba(251,113,133,0.15); border-color: var(--loss); transform: translateY(-1px); }
+}
+
+/* ───────── Sticky filter bar ───────── */
+.filter-bar {
+  position: sticky;
+  top: calc(var(--appstrip) + 92px);
+  z-index: 600;
+  background: rgba(5,5,5,0.85);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 16px 0;
+}
+.filter-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.filter-tabs {
+  display: flex; gap: 4px;
+  padding: 4px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 999px;
+  position: relative;
+}
+.filter-tab {
+  position: relative;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 600;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: color 220ms var(--ease);
+  border: 0; background: transparent;
+  z-index: 1;
+  font-family: var(--font-body);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.filter-tab.active { color: var(--black); }
+.filter-tab:not(.active):hover { color: var(--white); }
+.filter-tab .ct { color: rgba(255,255,255,0.4); font-family: var(--font-mono); font-size: 10px; margin-left: 6px; transition: color 220ms; }
+.filter-tab.active .ct { color: rgba(0,0,0,0.4); }
+.filter-tab-pill {
+  position: absolute;
+  top: 4px; left: 4px;
+  height: calc(100% - 8px);
+  background: var(--white);
+  border-radius: 999px;
+  transition: transform 360ms var(--easeBounce), width 360ms var(--easeBounce);
+  z-index: 0;
+  pointer-events: none;
+}

@@ -1,0 +1,77 @@
+/* Ported from Masayume 68f7a09:web/src/styles/ticket-composer-light.css */
+/* ticket-composer.css on the cream ground — part-14's `text-white/NN` → ink mapping, one rule per dark rule. */
+
+/* ── light theme: part-14's `text-white/NN` → ink mapping ── */
+[data-theme="light"] .tk-amount {
+  border-color: rgba(20, 18, 16, 0.1);
+}
+[data-theme="light"] .tk-amount-label,
+[data-theme="light"] .tk-readout-label {
+  color: rgba(20, 18, 16, 0.62);
+}
+[data-theme="light"] .tk-amount-balance,
+[data-theme="light"] .tk-amount-unit,
+[data-theme="light"] .tk-caption,
+[data-theme="light"] .tk-note {
+  color: rgba(20, 18, 16, 0.55);
+}
+[data-theme="light"] .tk-amount-input {
+  color: #141210;
+}
+[data-theme="light"] .tk-amount-input::placeholder {
+  color: rgba(20, 18, 16, 0.25);
+}
+[data-theme="light"] .tk-add {
+  border-color: rgba(20, 18, 16, 0.12);
+  color: rgba(20, 18, 16, 0.62);
+}
+[data-theme="light"] .tk-add:hover {
+  border-color: rgba(20, 18, 16, 0.3);
+  color: #141210;
+}
+[data-theme="light"] .tk-readout {
+  border-bottom-color: rgba(20, 18, 16, 0.1);
+}
+[data-theme="light"] .tk-readout-cell {
+  border-left-color: rgba(20, 18, 16, 0.08);
+}
+[data-theme="light"] .tk-readout-value {
+  color: rgba(20, 18, 16, 0.8);
+}
+[data-theme="light"] .tk-caption-chance {
+  color: rgba(20, 18, 16, 0.7);
+}
+[data-theme="light"] .tk-gate {
+  border-color: rgba(20, 18, 16, 0.1);
+  background: rgba(20, 18, 16, 0.02);
+}
+[data-theme="light"] .tk-gate-quiet {
+  color: rgba(20, 18, 16, 0.45);
+}
+[data-theme="light"] .tk-gate-quiet:hover:not(:disabled) {
+  color: rgba(20, 18, 16, 0.75);
+}
+[data-theme="light"] .tk-pp {
+  border-color: rgba(20, 18, 16, 0.12);
+}
+[data-theme="light"] .tk-pp-btn {
+  color: rgba(20, 18, 16, 0.55);
+}
+[data-theme="light"] .tk-pp-btn[aria-pressed="true"] {
+  background: rgba(20, 18, 16, 0.06);
+  color: #141210;
+}
+[data-theme="light"] .tk-pp-btn--private[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--vermilion) 12%, transparent);
+  color: var(--vermilion);
+}
+[data-theme="light"] .tk-pp-btn:disabled {
+  color: rgba(20, 18, 16, 0.3);
+}
+[data-theme="light"] .tk-foot {
+  color: rgba(20, 18, 16, 0.4);
+}
+[data-theme="light"] .tk-drawer-close:hover {
+  background: rgba(20, 18, 16, 0.05);
+  color: #141210;
+}

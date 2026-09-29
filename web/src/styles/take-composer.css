@@ -1,0 +1,398 @@
+/* Ported from Masayume 68f7a09:web/src/styles/take-composer.css */
+/* "Post a take" — ported from reference/yosuku/components/TakeComposer624.tsx.
+ *
+ * The sheet shares the Room's surface tokens (`--room-sheet`, `--room-ink-rgb`,
+ * room.css): the reference draws both from the same radial dark ground, and the
+ * user's 2026-09-01 ruling makes both follow the theme. One set of tokens keeps the
+ * two sheets identical in both themes. `design-literals` bans hex and px in TSX, so
+ * the values live here with the source utility named above each rule. */
+
+/* fixed inset-0 z-[1000] bg-black/70 backdrop-blur-sm */
+.take-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgb(0 0 0 / 0.7);
+  backdrop-filter: blur(4px);
+}
+
+/* relative z-10 max-h-[92dvh] w-full max-w-[440px] overflow-y-auto rounded-t-3xl
+   border border-white/[0.1] sm:rounded-3xl — anchored items-end, sm:items-center */
+.take-sheet {
+  position: fixed;
+  z-index: 1000;
+  bottom: 0;
+  left: 50%;
+  width: 100%;
+  max-width: 440px;
+  max-height: 92dvh;
+  overflow-y: auto;
+  transform: translateX(-50%);
+  border: 1px solid var(--room-hairline);
+  border-radius: 24px 24px 0 0;
+  background: var(--room-sheet);
+  color: rgb(var(--room-ink-rgb));
+}
+
+.take-sheet:focus,
+.take-sheet:focus-visible {
+  outline: none;
+}
+
+@media (min-width: 640px) {
+  .take-sheet {
+    top: 50%;
+    bottom: auto;
+    border-radius: 24px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* pointer-events-none absolute inset-x-0 top-0 z-20 h-px
+   bg-gradient-to-r from-transparent via-vermilion/60 to-transparent */
+.take-sheet-hairline {
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 20;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--vermilion) 60%, transparent), transparent);
+}
+
+/* relative z-10 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] */
+.take-sheet-body {
+  position: relative;
+  z-index: 10;
+  padding: 24px 24px calc(24px + env(safe-area-inset-bottom));
+}
+
+/* flex items-center justify-between */
+.take-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* font-display text-lg font-extrabold text-white */
+.take-sheet-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* rounded-full p-1.5 text-white/40 hover:bg-white/[0.06] hover:text-white */
+.take-sheet-close {
+  border-radius: 9999px;
+  padding: 6px;
+  color: rgb(var(--room-ink-rgb) / 0.4);
+  outline: none;
+  transition: color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+.take-sheet-close:hover {
+  background: rgb(var(--room-ink-rgb) / 0.06);
+  color: rgb(var(--room-ink-rgb));
+}
+
+/* mt-1 font-mono text-[10px] text-white/40 */
+.take-sheet-where {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgb(var(--room-ink-rgb) / 0.4);
+}
+
+/* mt-4 grid grid-cols-3 gap-2 */
+.take-sides {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* rounded-xl border py-2.5 font-mono text-[11px] uppercase tracking-[0.14em]
+   off: border-white/12 text-white/50 hover:text-white */
+.take-sides button,
+.take-horizon-grid button {
+  border-radius: 12px;
+  border: 1px solid rgb(var(--room-ink-rgb) / 0.12);
+  padding: 10px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgb(var(--room-ink-rgb) / 0.5);
+  outline: none;
+  transition: color 150ms var(--ease), border-color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+.take-sides button:hover:not(:disabled),
+.take-horizon-grid button:hover:not(:disabled) {
+  color: rgb(var(--room-ink-rgb));
+}
+
+/* on: border-vermilion/70 bg-vermilion/[0.08] text-vermilion */
+.take-sides button[data-on="true"] {
+  border-color: color-mix(in srgb, var(--vermilion) 70%, transparent);
+  background: color-mix(in srgb, var(--vermilion) 8%, transparent);
+  color: var(--vermilion);
+}
+
+/* disabled:opacity-30 — Range names what it waits on */
+.take-sides button:disabled,
+.take-horizon-grid button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* mt-3 rounded-xl border border-white/[0.1] bg-white/[0.02] px-3.5 py-2.5 */
+.take-line {
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--room-hairline);
+  background: var(--room-inset);
+  padding: 10px 14px;
+}
+
+/* flex items-center justify-between */
+.take-line-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* font-mono text-[9px] uppercase tracking-[0.16em] text-white/40 */
+.take-line-label,
+.take-horizon-label,
+.take-preview-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgb(var(--room-ink-rgb) / 0.4);
+}
+
+/* font-mono text-[9px] text-white/35 */
+.take-line-spot {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgb(var(--room-ink-rgb) / 0.35);
+}
+
+/* mt-1 flex items-baseline gap-1.5 */
+.take-line-value {
+  margin-top: 4px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+/* font-display text-xl font-bold text-white/40 */
+.take-line-sign {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: rgb(var(--room-ink-rgb) / 0.4);
+}
+
+/* font-display text-xl font-bold text-white tabular-nums — the reference's strike
+   input; here the line is the opening print and is read, not typed */
+.take-line-figure {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* placeholder:text-white/25 — while the print is pending */
+.take-line-figure[data-pending="true"] {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(var(--room-ink-rgb) / 0.35);
+}
+
+.take-line-note,
+.take-horizon-empty {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgb(var(--room-ink-rgb) / 0.3);
+}
+
+/* mt-3 · mb-1.5 label · grid grid-cols-3 gap-2 */
+.take-horizon {
+  margin-top: 12px;
+}
+
+.take-horizon-label {
+  margin-bottom: 6px;
+}
+
+.take-horizon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+/* rounded-xl border py-2 font-mono text-[10px] */
+.take-horizon-grid button {
+  padding: 8px 0;
+  font-size: 10px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* on: border-white/40 bg-white/[0.05] text-white */
+.take-horizon-grid button[data-on="true"] {
+  border-color: rgb(var(--room-ink-rgb) / 0.4);
+  background: rgb(var(--room-ink-rgb) / 0.05);
+  color: rgb(var(--room-ink-rgb));
+}
+
+/* mt-3 */
+.take-words {
+  margin-top: 12px;
+}
+
+/* w-full resize-none rounded-xl border border-white/[0.1] bg-white/[0.02] px-3.5 py-2.5
+   font-display text-[15px] leading-snug text-white placeholder:text-white/25 focus:border-white/25 */
+.take-words textarea {
+  width: 100%;
+  resize: none;
+  border-radius: 12px;
+  border: 1px solid var(--room-hairline);
+  background: var(--room-inset);
+  padding: 10px 14px;
+  font-family: var(--font-display);
+  font-size: 15px;
+  line-height: 1.375;
+  color: rgb(var(--room-ink-rgb));
+  outline: none;
+}
+
+.take-words textarea::placeholder {
+  color: rgb(var(--room-ink-rgb) / 0.25);
+}
+
+.take-words textarea:focus {
+  border-color: rgb(var(--room-ink-rgb) / 0.25);
+}
+
+/* mt-1 text-right font-mono text-[9px] text-white/30 */
+.take-count {
+  margin-top: 4px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgb(var(--room-ink-rgb) / 0.3);
+}
+
+/* mt-2 rounded-xl border border-white/[0.06] bg-white/[0.015] px-3.5 py-2.5 */
+.take-preview {
+  margin-top: 8px;
+  border-radius: 12px;
+  border: 1px solid rgb(var(--room-ink-rgb) / 0.06);
+  background: rgb(var(--room-ink-rgb) / 0.015);
+  padding: 10px 14px;
+}
+
+.take-preview-label {
+  color: rgb(var(--room-ink-rgb) / 0.35);
+}
+
+/* mt-0.5 font-mono text-[12px] text-vermilion */
+.take-preview-call {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--vermilion);
+}
+
+/* text-white/40 */
+.take-preview-window {
+  color: rgb(var(--room-ink-rgb) / 0.4);
+}
+
+.take-error {
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--loss);
+}
+
+/* mt-3 w-full rounded-full bg-vermilion px-6 py-3 text-sm font-semibold text-white
+   hover:bg-vermilion-d disabled:cursor-not-allowed disabled:opacity-50 */
+.take-post {
+  margin-top: 12px;
+  width: 100%;
+  border-radius: 9999px;
+  background: var(--vermilion);
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  outline: none;
+  transition: background-color 200ms var(--ease);
+}
+
+.take-post:hover:not(:disabled) {
+  background: var(--vermilion-d, var(--vermilion));
+}
+
+.take-post:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.take-connect {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+/* the permanence line — core copy, under the button */
+.take-permanence {
+  margin-top: 10px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgb(var(--room-ink-rgb) / 0.35);
+}
+
+/* the unconfigured state, in the Room's own state grammar */
+.take-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 28px 8px 8px;
+  text-align: center;
+}
+
+.take-state-icon {
+  display: flex;
+  height: 56px;
+  width: 56px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--room-hairline);
+  border-radius: 16px;
+  color: rgb(var(--room-ink-rgb) / 0.5);
+}
+
+.take-state-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.take-state-body {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: rgb(var(--room-ink-rgb) / 0.5);
+  text-wrap: balance;
+}

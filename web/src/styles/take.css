@@ -1,0 +1,223 @@
+/* Ported from Masayume 68f7a09:web/src/styles/take.css */
+/* A take as a reel card — ported from reference/yosuku/components/TakeReelCard.tsx.
+ *
+ * The frame is `.reel-card` (reel.css) with the reel's own grain and heat line, so
+ * the card follows the theme through the same `--reel-ink-rgb` triplet the market
+ * card uses (reel-theme.css). The reference pins `data-theme="dark"` on it; the
+ * user's 2026-09-01 ruling is that a surface which does not flip is a defect.
+ * `design-literals` bans hex and px in TSX, so the values live here with the source
+ * utility named above each rule. */
+
+/* relative z-10 flex items-center justify-between px-5 pt-5 */
+.take-author {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 0;
+}
+
+/* flex min-w-0 items-center gap-2.5 */
+.take-ident {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+}
+
+/* h-9 w-9 shrink-0 rounded-full ring-1 ring-white/10
+   + radial-gradient(120% 120% at 30% 20%, hsl(h 55% 55%), hsl(h+40 45% 28%)) */
+.take-avatar {
+  height: 36px;
+  width: 36px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  box-shadow: 0 0 0 1px rgb(var(--reel-ink-rgb) / 0.1);
+  background: radial-gradient(120% 120% at 30% 20%, hsl(var(--take-hue) 55% 55%), hsl(calc(var(--take-hue) + 40) 45% 28%));
+}
+
+/* block truncate font-mono text-[12px] text-white/85 hover:text-white */
+.take-name {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgb(var(--reel-ink-rgb) / 0.85);
+  transition: color 150ms var(--ease);
+}
+
+.take-name:hover {
+  color: var(--reel-ink);
+}
+
+/* font-mono text-[9px] uppercase tracking-[0.14em] text-white/35 */
+.take-meta {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgb(var(--reel-ink-rgb) / 0.35);
+}
+
+/* open call: shrink-0 rounded-full border border-white/12 px-3 py-1 font-mono
+   text-[9px] uppercase tracking-[0.14em] text-white/45 */
+.take-badge {
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid rgb(var(--reel-ink-rgb) / 0.12);
+  padding: 4px 12px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgb(var(--reel-ink-rgb) / 0.45);
+}
+
+/* backed: border-vermilion/40 bg-vermilion/[0.08] text-vermilion */
+.take-badge[data-backed="true"] {
+  border-color: color-mix(in srgb, var(--vermilion) 40%, transparent);
+  background: color-mix(in srgb, var(--vermilion) 8%, transparent);
+  color: var(--vermilion);
+}
+
+/* relative z-10 mt-5 px-5 */
+.take-chip-row {
+  position: relative;
+  z-index: 10;
+  margin-top: 20px;
+  padding: 0 20px;
+}
+
+/* inline-flex items-center gap-2 rounded-full border border-vermilion/25
+   bg-vermilion/[0.05] px-3.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] */
+.take-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--vermilion) 25%, transparent);
+  background: color-mix(in srgb, var(--vermilion) 5%, transparent);
+  padding: 6px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+/* text-vermilion */
+.take-chip-dir {
+  color: var(--vermilion);
+}
+
+/* text-white/25 */
+.take-chip-dot {
+  color: rgb(var(--reel-ink-rgb) / 0.25);
+}
+
+/* text-white/65 */
+.take-chip-band {
+  color: rgb(var(--reel-ink-rgb) / 0.65);
+}
+
+/* relative z-10 flex min-h-0 flex-1 items-center px-6 — the voice fills the middle */
+.take-voice {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  min-height: 0;
+  flex: 1 1 0%;
+  align-items: center;
+  padding: 0 24px;
+}
+
+/* font-display text-[30px] font-bold leading-[1.12] tracking-tight text-white text-balance */
+.take-caption {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: var(--reel-ink);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+/* font-display text-[24px] font-medium italic leading-snug text-white/45 */
+.take-caption.quiet {
+  font-size: 24px;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.375;
+  letter-spacing: 0;
+  color: rgb(var(--reel-ink-rgb) / 0.45);
+}
+
+/* relative z-10 px-5 pb-6 pt-2 */
+.take-foot {
+  position: relative;
+  z-index: 10;
+  padding: 8px 20px 24px;
+}
+
+/* mb-3 flex items-center gap-3 font-mono text-[9px] text-white/40 */
+.take-prov {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgb(var(--reel-ink-rgb) / 0.4);
+}
+
+.take-prov a {
+  transition: color 150ms var(--ease);
+}
+
+.take-prov a:hover {
+  color: var(--reel-ink);
+}
+
+/* ml-auto text-white/30 — the reference's "comments soon", now a live link to the Room */
+.take-prov-room {
+  margin-left: auto;
+  color: rgb(var(--reel-ink-rgb) / 0.3);
+}
+
+/* block rounded-2xl border border-white/15 bg-white/[0.02] py-3.5 text-center
+   font-display text-[15px] font-bold text-white/85 hover:border-vermilion/50 hover:text-white */
+.take-cta {
+  display: block;
+  border-radius: 16px;
+  border: 1px solid rgb(var(--reel-ink-rgb) / 0.15);
+  background: rgb(var(--reel-ink-rgb) / 0.02);
+  padding: 14px 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: rgb(var(--reel-ink-rgb) / 0.85);
+  transition: border-color 200ms var(--ease), color 200ms var(--ease);
+}
+
+.take-cta:hover {
+  border-color: color-mix(in srgb, var(--vermilion) 50%, transparent);
+  color: var(--reel-ink);
+}
+
+/* /dev/takes — the reel's slot geometry, in a scrolling column instead of a snap feed */
+.dev-take-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dev-take-slot {
+  height: 640px;
+  display: flex;
+  justify-content: center;
+}

@@ -1,0 +1,128 @@
+/* The ux-audit fixes to the ported shell (plan S1 1b; ux-audit §8, §12; E.5 S1 row), in one place after the verbatim
+ * Masayume/Yosuku rules so each fix is reviewable against its source line. */
+
+/* ── Safe areas (fix 5): the app runs edge to edge (`viewportFit: cover`), so every fixed edge clears the notch. ── */
+:root { --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); --marquee-h: 28px; --header-h: 56px; }
+.appstrip { top: 0; height: calc(var(--appstrip) + var(--safe-top)); padding-top: var(--safe-top); }
+.marquee { top: calc(var(--appstrip) + var(--safe-top)); height: var(--marquee-h); }
+.header { top: calc(var(--appstrip) + var(--safe-top) + var(--marquee-h)); height: var(--header-h); padding-left: max(32px, env(safe-area-inset-left, 0px)); padding-right: max(32px, env(safe-area-inset-right, 0px)); }
+[data-strip="off"] .header { top: calc(var(--safe-top) + var(--marquee-h)); }
+.page-shell { padding-top: calc(var(--appstrip) + var(--safe-top) + var(--marquee-h) + var(--header-h)); }
+
+/* ── Compact top chrome (fix 5: 94 px at 390 px before). Phones: 24 px ticker + 44 px header. ── */
+@media (max-width: 720px) {
+  :root { --marquee-h: 24px; --header-h: 44px; }
+  .header { height: var(--header-h); padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
+  [data-strip="off"] .header { top: calc(var(--safe-top) + var(--marquee-h)); }
+  .page-shell { padding-top: calc(var(--appstrip) + var(--safe-top) + var(--marquee-h) + var(--header-h)); padding-bottom: calc(112px + var(--safe-bottom)); }
+}
+
+/* ── The ticker: text ≥ 11 px and ≥ 4.5:1 (the 7 px / #525252 cells failed), duplicates hidden from AT. ── */
+.marquee, .marquee-cell { font-size: 11px; }
+@media (max-width: 720px) { .marquee { font-size: 11px; letter-spacing: 0.02em; } }
+.marquee-cell .lbl { color: var(--gray-400); }
+.marquee-cell .down { color: var(--gray-400); }
+.marquee-waiting { padding-left: 16px; color: var(--gray-400); white-space: nowrap; }
+
+/* ── Lite chrome on coarse pointers and in the app (R4): no grain blend, no blur, no endless marquee. ── */
+@media (pointer: coarse) {
+  .grain { display: none; }
+  .header { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--bg); }
+  .mobile-bottom-nav { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--color-surface-1); }
+  .marquee { overflow-x: auto; scrollbar-width: none; }
+  .marquee::-webkit-scrollbar { display: none; }
+  .marquee-track { animation: none; }
+  .marquee-track [data-marquee-copy] { display: none; }
+}
+html[data-shell="app"] .grain { display: none; }
+@media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } .marquee-track [data-marquee-copy] { display: none; } }
+
+/* ── The pill nav: one label stylesheet, 11 px labels, ≥ 44 px items, focus distinct from active. ── */
+.mobile-bottom-nav a, .mobile-bottom-nav button { font-size: 11px; min-height: 48px; min-width: 44px; }
+@media (max-width: 380px) {
+  .mobile-bottom-nav a span, .mobile-bottom-nav button span { display: block; }
+  .mobile-bottom-nav a, .mobile-bottom-nav button { padding: 6px 4px; }
+}
+.mobile-bottom-nav { bottom: calc(12px + var(--safe-bottom)); }
+.mobile-bottom-nav a:focus-visible, .mobile-bottom-nav button:focus-visible,
+.mobile-nav-link:focus-visible, .nav-link:focus-visible {
+  outline: 2px solid var(--vermilion);
+  outline-offset: 2px;
+  background: transparent;
+}
+.mobile-nav-link:focus-visible { border-color: transparent; }
+.mobile-nav-copy small { color: var(--gray-400); }
+.mobile-nav-group-title span { color: var(--gray-400); }
+
+/* ── The More panel's search row (fix 14). ── */
+.more-search { position: sticky; top: 0; z-index: 1; padding: 4px 0 8px; background: var(--color-surface-1); }
+.more-search input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px 0 36px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--white);
+  font-size: 16px; /* ≥ 16 px: iOS never zooms (§2.5) */
+}
+.more-search svg { position: absolute; left: 12px; top: 18px; width: 16px; height: 16px; color: var(--gray-400); }
+.more-empty { padding: 16px 4px; color: var(--gray-400); font-size: 13px; }
+
+/* ── Back chevron below the top level (fix 5) and the skip link. ── */
+.header-back { display: grid; place-items: center; width: 44px; height: 44px; margin-left: -12px; border-radius: var(--radius-md); color: var(--gray-400); }
+.header-back:hover { color: var(--white); }
+.header-back svg { width: 20px; height: 20px; }
+.header-lead { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.skip-link { position: fixed; left: 12px; top: calc(var(--safe-top) + 8px); z-index: 10000; padding: 10px 14px; border-radius: var(--radius-md); background: var(--vermilion); color: var(--white); transform: translateY(-200%); }
+.skip-link:focus-visible { transform: none; }
+
+/* ── Header controls meet 44 px (the theme toggle was 34 px). ── */
+.theme-toggle { min-width: 44px; min-height: 44px; }
+.header-icon-button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-md); color: var(--gray-400); }
+.header-icon-button:hover { color: var(--white); background: rgba(255, 255, 255, 0.06); }
+.header-icon-button svg { width: 18px; height: 18px; }
+
+/* ── Global banners mounted under the chrome (fix 13). ── */
+.shell-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin: 0 auto; max-width: var(--content-wide); padding: 10px 16px; border-bottom: 1px solid var(--color-hairline); color: var(--gray-300); font-size: 13px; }
+.shell-banner button, .shell-banner a { min-height: 44px; padding: 0 14px; border-radius: var(--radius-full); border: 1px solid var(--color-border-strong); color: var(--white); font-size: 13px; font-weight: 600; }
+
+/* ── The footer carries the disclosure and the legal links. ── */
+.footer-links { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.footer-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--gray-400); }
+.footer-disclosure { margin-top: 8px; max-width: 62ch; color: var(--gray-400); font-size: 12px; line-height: 1.5; }
+
+/* ── Contrast (§2.5, axe): the accent under small text uses the AA-safe fill pair (@cwf/tokens `accentFill`); nav
+ * labels and the header's small links use gray-400 (gray-500 measured 4.17:1 dark, 3.99:1 light). ── */
+.btn-primary, [data-theme="light"] .btn-primary { background: var(--color-accent-fill); color: var(--color-on-accent) !important; }
+.btn-primary:hover { background: var(--color-accent-fill-pressed); }
+.mobile-bottom-nav a, .mobile-bottom-nav button { color: var(--gray-400); }
+.mobile-bottom-nav a.active, .mobile-bottom-nav button.active { color: var(--white); }
+
+/* ── Desktop header targets: nav links and the mark stand 44 px tall (they were 21 px). ── */
+.nav-link, .nav-menu-trigger { min-height: 44px; display: inline-flex; align-items: center; }
+.logo { min-height: 44px; min-width: 44px; }
+.nav-link::after { bottom: 8px; }
+
+/* Small vermilion labels: light-theme vermilion is 3.9:1 on cream at 11 px, so they take the pressed vermilion there
+ * (5.3:1); gray-500 small text takes gray-400. The download CTA is an accent fill with the AA-safe pair. */
+[data-theme="light"] .capability-pending .cp-eyebrow,
+[data-theme="light"] .dl-meta b,
+[data-theme="light"] .mobile-nav-kicker { color: var(--vermilion-d); }
+.capability-pending .cp-meta, .section-eyebrow, .dl-meta span, .dl-points p, .dl-foot { color: var(--gray-400); }
+.dl-cta { background: var(--color-accent-fill); color: var(--color-on-accent) !important; }
+
+/* The pending panel keeps the page gutter (shell.css's `padding: 48px 0` beat the layered utility). */
+.capability-pending { padding: 48px var(--spacing-gutter); }
+@media (min-width: 1024px) { .capability-pending { padding: 64px var(--spacing-gutter-desktop); } }
+.footer .footer-links { display: flex; flex-direction: row; flex-wrap: wrap; }
+.marquee-waiting { overflow: hidden; text-overflow: ellipsis; padding-right: 16px; }
+
+/* Inputs never zoom on iOS (§2.5 ≥ 16 px): the floor applies app-wide, larger type stays larger. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select { font-size: max(16px, 1em); }
+
+/* Masayume's phone rule hides the pill's last span (its address); our pill ends in a chevron, so name both. */
+@media (max-width: 420px) {
+  .header-right .wallet-pill > .wallet-pill-addr,
+  .header-right .wallet-pill > svg { display: none; }
+}

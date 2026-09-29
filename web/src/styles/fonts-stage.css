@@ -1,0 +1,14 @@
+/* Two-stage web fonts (plan §3.1, D-071). Lab LCP on slow 4G prices every byte requested before first paint, and on a
+ * slow network `display: swap` shows these fallbacks first anyway. Until `html.wf-late` (added on idle by
+ * `components/shell/FontStage`), body text and figures use next/font's metric-matched fallbacks, so Inter and JetBrains
+ * Mono are not requested before the LCP heading (Sora, preloaded) paints; then they swap in with near-zero shift. */
+html:not(.wf-late) body {
+  --font-inter: "Inter Fallback", system-ui, sans-serif;
+  --font-jetbrains: "JetBrains Mono Fallback", ui-monospace, monospace;
+}
+
+/* App routes: their LCP is body text, so Sora (headings) waits for the same second stage. The app layout renders a
+ * hidden `[data-font-stage="app"]` marker; site pages (whose hero heading IS the LCP) request Sora immediately. */
+html:not(.wf-late) body:has([data-font-stage="app"]) {
+  --font-sora: "Sora Fallback", system-ui, sans-serif;
+}

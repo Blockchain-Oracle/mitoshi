@@ -1,0 +1,360 @@
+/* Ported from Masayume 68f7a09:web/src/styles/news.css */
+/* /news — ported from reference/yosuku/components/NewsFeed.tsx and the reference's own
+ * deleted page (app/news/page.tsx at 93d09c1^).
+ *
+ * The reference writes the feed as inline Tailwind with px sizes and text-gray-* ramps.
+ * `design-literals` bans px and hex in TSX, so the values live here with the source utility
+ * named above each rule; the gray ramp is addressed through its variables, which follow the
+ * light theme where the text-gray-* utilities do not (see the ledger's Tailwind-4 finding).
+ * Hairlines carry part-14's own light replacements. */
+
+.news-page {
+  --news-hairline: rgba(255, 255, 255, 0.12);
+  --news-rule: rgba(255, 255, 255, 0.06);
+  --news-hover: rgba(255, 255, 255, 0.02);
+  --news-bone: rgba(255, 255, 255, 0.05);
+  /* pt-[140px] pb-24 — the shell already clears the 92px chrome; the sides stay .container's */
+  padding-top: 48px;
+  padding-bottom: 96px;
+}
+
+[data-theme="light"] .news-page {
+  --news-hairline: rgba(20, 18, 16, 0.12);
+  --news-rule: rgba(20, 18, 16, 0.08);
+  --news-hover: rgba(20, 18, 16, 0.03);
+  --news-bone: rgba(20, 18, 16, 0.06);
+}
+
+/* max-w-5xl mx-auto */
+.news-inner {
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+/* flex items-center gap-2 mb-3 */
+.news-live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+/* w-1.5 h-1.5 rounded-full bg-vermilion animate-pulse + boxShadow: 0 0 12px var(--vermilion) */
+.news-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--vermilion);
+  box-shadow: 0 0 12px var(--vermilion);
+  animation: newsPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes newsPulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* font-mono text-[10px] uppercase tracking-[0.22em] text-gray-500 */
+.news-live-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+/* font-display text-4xl md:text-5xl font-extrabold tracking-tight mb-2 */
+.news-title {
+  margin-bottom: 8px;
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--white);
+}
+
+.news-title .vermilion {
+  color: var(--vermilion);
+}
+
+@media (min-width: 768px) {
+  .news-title {
+    font-size: 48px;
+  }
+}
+
+/* The reference's own .page-title-jp (globals.css at 93d09c1^), not in the pinned system. */
+.news-page .page-title-jp {
+  margin-top: 14px;
+  margin-bottom: 8px;
+  font-family: var(--font-jp);
+  font-weight: 700;
+  font-size: clamp(1rem, 1.6vw, 1.4rem);
+  letter-spacing: 0.04em;
+  color: var(--gray-500);
+}
+
+/* text-sm text-gray-400 max-w-xl */
+.news-intro {
+  max-width: 36rem;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--gray-400);
+}
+
+/* mt-12 */
+.news-feed {
+  margin-top: 48px;
+}
+
+/* mt-16 font-mono text-xs text-gray-600 */
+.news-quiet {
+  margin-top: 64px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--gray-600);
+}
+
+/* inline-flex px-2 py-0.5 rounded-full border font-mono text-[9px] uppercase tracking-[0.14em]
+   positive: text-profit border-profit/25 · negative: text-loss border-loss/25
+   neutral: text-gray-500 border-white/10 */
+.news-tag {
+  display: inline-flex;
+  padding: 2px 8px;
+  border: 1px solid var(--news-hairline);
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+.news-tag[data-tone="positive"] {
+  border-color: color-mix(in srgb, var(--profit) 25%, transparent);
+  color: var(--profit);
+}
+
+.news-tag[data-tone="negative"] {
+  border-color: color-mix(in srgb, var(--loss) 25%, transparent);
+  color: var(--loss);
+}
+
+/* font-mono text-[10px] text-gray-600 */
+.news-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray-600);
+}
+
+/* font-mono text-[10px] text-gray-600 w-6 flex-shrink-0 · lead: text-vermilion */
+.news-index {
+  width: 24px;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--gray-600);
+}
+
+.news-index.accent {
+  width: auto;
+  color: var(--vermilion);
+}
+
+/* group block */
+.news-lead {
+  display: block;
+}
+
+/* flex items-center gap-3 mb-4 */
+.news-lead-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* font-display font-[800] text-3xl sm:text-5xl leading-[1.08] tracking-[-0.02em] text-white
+   max-w-4xl group-hover:text-gray-200 transition-colors */
+.news-lead-title {
+  max-width: 56rem;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--white);
+  transition: color 200ms var(--ease);
+}
+
+@media (min-width: 640px) {
+  .news-lead-title {
+    font-size: 48px;
+  }
+}
+
+.news-lead:hover .news-lead-title {
+  color: var(--gray-200);
+}
+
+/* inline-block ml-3 text-gray-600 text-2xl sm:text-3xl align-middle
+   group-hover:text-vermilion group-hover:translate-x-1 transition-all */
+.news-lead-arrow {
+  display: inline-block;
+  margin-left: 12px;
+  vertical-align: middle;
+  font-size: 24px;
+  color: var(--gray-600);
+  transition: color 200ms var(--ease), transform 200ms var(--ease);
+}
+
+@media (min-width: 640px) {
+  .news-lead-arrow {
+    font-size: 30px;
+  }
+}
+
+.news-lead:hover .news-lead-arrow {
+  color: var(--vermilion);
+  transform: translateX(4px);
+}
+
+/* flex items-center mt-14 mb-2 */
+.news-rule {
+  display: flex;
+  align-items: center;
+  margin: 56px 0 8px;
+}
+
+/* w-2.5 h-2.5 bg-vermilion */
+.news-rule-end {
+  width: 10px;
+  height: 10px;
+  background: var(--vermilion);
+}
+
+/* flex-1 h-px bg-white/[0.12] */
+.news-rule-line {
+  flex: 1 1 0%;
+  height: 1px;
+  background: var(--news-hairline);
+}
+
+/* group flex items-baseline gap-5 py-5 border-b border-white/[0.06]
+   hover:bg-white/[0.02] hover:translate-x-0.5 transition-all */
+.news-row {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--news-rule);
+  transition: background-color 200ms var(--ease), transform 200ms var(--ease);
+}
+
+.news-row:hover {
+  background: var(--news-hover);
+  transform: translateX(2px);
+}
+
+/* flex-1 min-w-0 */
+.news-row-body {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+/* block text-base sm:text-lg font-semibold text-gray-200 leading-snug group-hover:text-white */
+.news-row-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.375;
+  color: var(--gray-200);
+  transition: color 200ms var(--ease);
+}
+
+@media (min-width: 640px) {
+  .news-row-title {
+    font-size: 18px;
+  }
+}
+
+.news-row:hover .news-row-title {
+  color: var(--white);
+}
+
+/* flex items-center gap-3 mt-1.5 */
+.news-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+/* font-mono text-xs text-gray-700 group-hover:text-vermilion flex-shrink-0 */
+.news-row-arrow {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--gray-700);
+  transition: color 200ms var(--ease);
+}
+
+.news-row:hover .news-row-arrow {
+  color: var(--vermilion);
+}
+
+/* --- skeleton (reference L69–84): space-y-12, then space-y-4 / space-y-7 --- */
+.news-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.news-skeleton-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.news-skeleton-wire {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* bg-white/[0.05] rounded animate-pulse */
+.news-bone {
+  border-radius: 4px;
+  background: var(--news-bone);
+  animation: newsPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* h-3 w-28 */
+.news-bone.eyebrow {
+  height: 12px;
+  width: 112px;
+}
+
+/* h-12 w-4/5 · w-3/5 */
+.news-bone.headline {
+  height: 48px;
+  width: 80%;
+}
+
+.news-bone.headline.short {
+  width: 60%;
+}
+
+/* h-5 */
+.news-bone.line {
+  height: 20px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .news-live-dot,
+  .news-bone {
+    animation: none;
+  }
+}

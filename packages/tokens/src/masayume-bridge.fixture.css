@@ -1,0 +1,158 @@
+/* Verbatim Masayume 68f7a09:web/src/styles/bridge.css — the fidelity fixture @cwf/tokens checks tokens.json against. Not imported by the app. */
+/* Semantic token bridge.
+ *
+ * The Yosuku design system in ./yosuku/ is the source of truth: it owns the palette
+ * (bg, vermilion, profit, loss, the gray ramp), the faces, and the easings.
+ *
+ * This file adds ONLY the semantic names that Masayume's existing components already
+ * address (ground/ink/surface/hairline/accent/...). It never redefines a Yosuku token,
+ * and it holds no colour of its own invention — every value here is a Yosuku value.
+ *
+ * The superseded gold/Archivo theme is deleted, not layered over. This bridge shrinks
+ * as components are ported to Yosuku's own class vocabulary in later stages.
+ */
+
+/* Surfaces cannot be a single alias: Yosuku's light ramp is INVERTED (50 = darkest ink,
+ * 950 = lightest paper), so "one step more raised" is gray-800 in dark but gray-950 in
+ * light. These resolve per theme using the reference ramp's own values. */
+:root {
+  --ms-surface-1: #171717; /* gray-900 — card */
+  --ms-surface-2: #262626; /* gray-800 — raised */
+  --ms-surface-3: #404040; /* gray-700 — overlay/popover */
+  --ms-hairline: rgb(255 255 255 / 0.1);
+  --ms-border-strong: rgb(255 255 255 / 0.22);
+}
+
+[data-theme="light"] {
+  --ms-surface-1: #F6F0E4; /* gray-900 (light) — card surface */
+  --ms-surface-2: #ECE3D2; /* gray-800 (light) — recessed/border surface */
+  --ms-surface-3: #FBF7EE; /* gray-950 (light) — raised, just above paper */
+  --ms-hairline: rgb(20 18 16 / 0.12);
+  --ms-border-strong: rgb(20 18 16 / 0.22);
+}
+
+/* `inline` so utilities emit var() references and follow [data-theme] at runtime
+ * instead of baking a static value at build time. */
+@theme inline {
+  --color-ground: var(--bg);
+  --color-surface-1: var(--ms-surface-1);
+  --color-surface-2: var(--ms-surface-2);
+  --color-surface-3: var(--ms-surface-3);
+  --color-hairline: var(--ms-hairline);
+  --color-border-strong: var(--ms-border-strong);
+
+  --color-ink: var(--white);
+  --color-ink-secondary: var(--gray-400);
+  --color-ink-muted: var(--gray-500);
+  --color-ink-disabled: var(--gray-600);
+
+  /* Vermilion is the sole brand accent. Named `accent` so no component pretends
+   * a colour role the reference does not have. */
+  --color-accent: var(--vermilion);
+  --color-accent-hover: color-mix(in srgb, var(--vermilion) 84%, #FFFFFF);
+  --color-accent-pressed: var(--vermilion-d);
+  --color-accent-dim: color-mix(in srgb, var(--vermilion) 45%, transparent);
+  --color-accent-wash: color-mix(in srgb, var(--vermilion) 12%, transparent);
+
+  --color-profit-wash: color-mix(in srgb, var(--profit) 14%, transparent);
+  --color-loss-wash: color-mix(in srgb, var(--loss) 14%, transparent);
+
+  --font-body: var(--font-inter), "Inter", system-ui, sans-serif;
+  --font-data: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+  --font-stamp: var(--font-noto-serif-jp), "Noto Serif JP", serif;
+  --font-heading: var(--font-sora), "Sora", system-ui, sans-serif;
+}
+
+@theme {
+  /* The receipt is a deliberate paper island in BOTH themes — Yosuku's brand-film
+   * paper/ink pair, so it stays literal rather than following the ground. */
+  --color-cream: #F4EEE3;
+  --color-cream-ink: #141210;
+  --color-cream-hairline: #D9CBB0;
+  --color-scrim: #040302b8;
+
+  --color-warning: #F2994A;
+  --color-info: #60A5FA; /* Yosuku off-blue */
+
+  --text-display: 40px;
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 750;
+  --text-headline: 26px;
+  --text-headline--line-height: 1.15;
+  --text-headline--letter-spacing: -0.02em;
+  --text-headline--font-weight: 700;
+  --text-title: 18px;
+  --text-title--line-height: 1.3;
+  --text-title--font-weight: 650;
+  --text-body: 15px;
+  --text-body--line-height: 1.55;
+  --text-body--font-weight: 400;
+  --text-body-strong: 15px;
+  --text-body-strong--line-height: 1.55;
+  --text-body-strong--font-weight: 600;
+  --text-caption: 13px;
+  --text-caption--line-height: 1.45;
+  --text-caption--font-weight: 400;
+  --text-label-micro: 11px;
+  --text-label-micro--line-height: 1.2;
+  --text-label-micro--letter-spacing: 0.16em;
+  --text-label-micro--font-weight: 500;
+  --text-data: 14px;
+  --text-data--line-height: 1.3;
+  --text-data--font-weight: 500;
+  --text-data-lg: 20px;
+  --text-data-lg--line-height: 1.2;
+  --text-data-lg--font-weight: 600;
+  --text-data-hero: 40px;
+  --text-data-hero--line-height: 1.05;
+  --text-data-hero--letter-spacing: -0.01em;
+  --text-data-hero--font-weight: 600;
+  --text-stamp: 28px;
+  --text-stamp--line-height: 1.1;
+  --text-stamp--font-weight: 800;
+  --text-stamp-hero: 64px;
+  --text-stamp-hero--line-height: 1;
+  --text-stamp-hero--font-weight: 900;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --spacing: 4px;
+  --spacing-gutter: 16px;
+  --spacing-gutter-desktop: 24px;
+  --spacing-section: 64px;
+  --spacing-section-desktop: 96px;
+  --spacing-touch: 44px;
+}
+
+/* shadcn's semantic vocabulary → the same bridge tokens, so every primitive is
+ * skinned by construction rather than by per-component overrides. */
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--white);
+  --color-card: var(--ms-surface-1);
+  --color-card-foreground: var(--white);
+  --color-popover: var(--ms-surface-3);
+  --color-popover-foreground: var(--white);
+  --color-primary: var(--vermilion);
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: var(--ms-surface-2);
+  --color-secondary-foreground: var(--white);
+  --color-muted: var(--ms-surface-2);
+  --color-muted-foreground: var(--gray-400);
+  --color-accent-foreground: #FFFFFF;
+  --color-destructive: var(--loss);
+  --color-border: var(--ms-hairline);
+  --color-input: var(--ms-hairline);
+  --color-ring: var(--vermilion);
+}
+
+/* Raw aliases shadcn's generated primitives reference inside color-mix(). */
+:root {
+  --foreground: var(--white);
+  --secondary: var(--ms-surface-2);
+}

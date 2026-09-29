@@ -1,0 +1,14 @@
+{
+  "note": "Shared golden vectors for the parlay's arithmetic. ONE = 1e6; prices are collateral per whole contract. `legs[].expirySec` is what the same-instant correlation floor keys on. Both forge (contracts/test/ParlayVectors.t.sol, over ParlayMath) and vitest (pricing.test.ts beside this file, over quoteParlay) assert every row.",
+  "count": 8,
+  "vectors": [
+    { "name": "two independent legs multiply", "marginBps": 1200, "correlationBps": 4000, "legs": [{ "priceRaw": "600000", "expirySec": 300 }, { "priceRaw": "420000", "expirySec": 600 }], "maxPayout": "100000000", "expect": { "combinedProbRaw": "252000", "floorStake": "28224000" } },
+    { "name": "three legs multiply down", "marginBps": 1200, "correlationBps": 4000, "legs": [{ "priceRaw": "500000", "expirySec": 300 }, { "priceRaw": "500000", "expirySec": 600 }, { "priceRaw": "500000", "expirySec": 900 }], "maxPayout": "80000000", "expect": { "combinedProbRaw": "125000", "floorStake": "11200000" } },
+    { "name": "same instant, product above the floor, keeps the product", "marginBps": 1200, "correlationBps": 4000, "legs": [{ "priceRaw": "600000", "expirySec": 600 }, { "priceRaw": "600000", "expirySec": 600 }], "maxPayout": "100000000", "expect": { "combinedProbRaw": "360000", "floorStake": "40320000" } },
+    { "name": "same instant, product under the floor, takes λ·min", "marginBps": 1200, "correlationBps": 4000, "legs": [{ "priceRaw": "100000", "expirySec": 600 }, { "priceRaw": "100000", "expirySec": 600 }], "maxPayout": "100000000", "expect": { "combinedProbRaw": "40000", "floorStake": "4480000" } },
+    { "name": "distinct instants never take the floor", "marginBps": 1200, "correlationBps": 4000, "legs": [{ "priceRaw": "100000", "expirySec": 300 }, { "priceRaw": "100000", "expirySec": 600 }], "maxPayout": "100000000", "expect": { "combinedProbRaw": "10000", "floorStake": "1120000" } },
+    { "name": "fair value rounds up before the margin", "marginBps": 1200, "correlationBps": 4000, "legs": [{ "priceRaw": "333333", "expirySec": 300 }, { "priceRaw": "333333", "expirySec": 600 }], "maxPayout": "1000000", "expect": { "combinedProbRaw": "111110", "floorStake": "124444" } },
+    { "name": "zero margin charges fair value exactly", "marginBps": 0, "correlationBps": 4000, "legs": [{ "priceRaw": "600000", "expirySec": 300 }, { "priceRaw": "420000", "expirySec": 600 }], "maxPayout": "100000000", "expect": { "combinedProbRaw": "252000", "floorStake": "25200000" } },
+    { "name": "a full correlation factor floors at the min leg itself", "marginBps": 1200, "correlationBps": 10000, "legs": [{ "priceRaw": "600000", "expirySec": 600 }, { "priceRaw": "420000", "expirySec": 600 }], "maxPayout": "100000000", "expect": { "combinedProbRaw": "420000", "floorStake": "47040000" } }
+  ]
+}

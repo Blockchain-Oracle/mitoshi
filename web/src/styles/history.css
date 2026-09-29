@@ -1,0 +1,286 @@
+/* Ported from Masayume 68f7a09:web/src/styles/history.css */
+/* Settled history on /portfolio — rows, the equity sparkline, reputation and badges.
+ * Values are the reference's own (Portfolio624Section rows, EquitySparkline, BadgeDisplay);
+ * anything that sat on white-at-alpha is given its light-mode twin from part-14's ladder. */
+
+/* ── Your bets: the plate, the tabs, the rows, the pager ──
+   The reference's `.plate-rows` box (`Portfolio624Section` L383: border-white/[0.08] rounded, divide-y
+   rows at px-5 py-3 with a hover) with the two tabs its own portfolio spec asked for (§Section 4) and
+   the pager the owner asked for (2026-09-04) in place of an endless scroll. */
+.bets-plate {
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-1);
+  overflow: hidden;
+}
+/* Whatever the reading boundary shows in place of the list keeps the rows' inset. */
+.bets-plate > * { padding: 16px 20px; }
+.bets-plate > ul, .bets-plate > nav, .bets-plate > .bets-fill, .bets-plate > .bets-sublist { padding: 0; }
+.bets-fill { display: flex; flex-direction: column; }
+.bets-fill > p { padding: 10px 20px 0; }
+.bets-sublist { display: flex; flex-direction: column; border-top: 1px solid var(--color-hairline); }
+.bets-sublist > span { padding: 10px 20px 0; }
+.bets-list { display: flex; flex-direction: column; }
+.bets-list > li:first-child { border-top: 0; }
+.bets-sublist .bets-list > li:first-child { border-top: 1px solid var(--color-hairline); }
+
+.bets-tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 999px;
+}
+.bets-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  transition: color 180ms var(--ease), background-color 180ms var(--ease);
+}
+.bets-tab:hover { color: var(--color-ink); }
+.bets-tab--on { background: var(--color-surface-2); color: var(--color-ink); }
+.bets-tab-count { font-variant-numeric: tabular-nums; color: var(--gray-500); }
+
+/* One row: the reference's flex-wrap px-5 py-3 hover:bg-white/[0.02]. On a phone the money and the
+   action wrap to a second line under the call (`.bets-break`), so a row is two readable lines rather
+   than a ragged wrap. */
+.bets-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--color-hairline);
+  transition: background-color 180ms var(--ease);
+}
+.bets-row:hover { background: rgba(255, 255, 255, 0.02); }
+[data-theme="light"] .bets-row:hover { background: rgba(20, 18, 16, 0.03); }
+.bets-break { flex-basis: 100%; height: 0; }
+@media (min-width: 640px) {
+  .bets-break { display: none; }
+}
+
+/* Prev · 1–8 of 23 · Next */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--color-hairline);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+}
+.pager-button { color: var(--vermilion); transition: color 180ms var(--ease); }
+.pager-button:hover:not(:disabled) { color: var(--color-ink); }
+.pager-button:disabled { opacity: 0.35; cursor: not-allowed; }
+.pager-range { font-variant-numeric: tabular-nums; }
+
+.history-receipt-button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.14em;
+  transition: color 180ms var(--ease);
+}
+.history-receipt-button:hover { color: var(--vermilion); }
+[data-theme="light"] .history-receipt-button { color: rgba(20, 18, 16, 0.62); }
+
+.history-proof-link {
+  font-size: 11px;
+  color: var(--vermilion);
+  transition: color 180ms var(--ease);
+}
+.history-proof-link:hover { color: var(--white); }
+
+/* ── the receipt sheet ── */
+.history-receipt-sheet {
+  max-height: 88dvh;
+  background: var(--bg);
+  color: var(--color-ink);
+  padding: 20px 16px calc(env(safe-area-inset-bottom, 0px) + 20px);
+  border-top: 1px solid var(--color-hairline);
+}
+.history-receipt-scroll {
+  overflow-y: auto;
+  max-width: var(--content-reading);
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── summary strip ── */
+.history-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-1);
+}
+.history-summary-figure { display: flex; flex-direction: column; gap: 4px; }
+.history-summary-curve { width: 100%; height: 72px; }
+.history-summary-stats { display: flex; gap: 28px; }
+.history-summary-stats dd { margin: 0; }
+.history-summary-csv { justify-self: start; }
+@media (min-width: 640px) {
+  .history-summary {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "figure curve" "stats csv";
+    align-items: center;
+  }
+  .history-summary-figure { grid-area: figure; }
+  .history-summary-curve { grid-area: curve; }
+  .history-summary-stats { grid-area: stats; }
+  .history-summary-csv { grid-area: csv; justify-self: end; }
+}
+
+/* ── equity sparkline (reference EquitySparkline: vermilion above zero, muted below) ── */
+.equity-spark { overflow: visible; }
+.equity-zero { stroke: rgba(255, 255, 255, 0.16); stroke-width: 1; }
+[data-theme="light"] .equity-zero { stroke: rgba(20, 18, 16, 0.22); }
+.equity-fill-start { stop-color: var(--vermilion); stop-opacity: 0.22; }
+.equity-fill-end { stop-color: var(--vermilion); stop-opacity: 0; }
+.equity-line { stroke-width: 1.75; }
+.equity-spark.is-up .equity-line { stroke: var(--vermilion); }
+.equity-spark.is-down .equity-line { stroke: rgba(255, 255, 255, 0.55); }
+[data-theme="light"] .equity-spark.is-down .equity-line { stroke: rgba(20, 18, 16, 0.62); }
+.equity-spark.is-up .equity-dot { fill: var(--vermilion); }
+.equity-spark.is-down .equity-dot { fill: var(--white); }
+.equity-halo { stroke-width: 1; stroke-opacity: 0.3; }
+.equity-spark.is-up .equity-halo { stroke: var(--vermilion); }
+.equity-spark.is-down .equity-halo { stroke: var(--white); }
+.equity-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 72px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.015);
+  color: rgba(255, 255, 255, 0.25);
+  letter-spacing: 0.16em;
+}
+[data-theme="light"] .equity-empty {
+  border-color: rgba(20, 18, 16, 0.07);
+  background: rgba(20, 18, 16, 0.02);
+  color: rgba(20, 18, 16, 0.5);
+}
+
+/* ── reputation plate ── */
+.reputation-plate {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-1);
+}
+@media (min-width: 640px) { .reputation-plate { grid-template-columns: auto minmax(0, 1fr); align-items: start; } }
+.reputation-tier {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--color-ink);
+}
+.reputation-bar,
+.badge-rank-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+[data-theme="light"] .reputation-bar,
+[data-theme="light"] .badge-rank-bar { background: rgba(20, 18, 16, 0.08); }
+.reputation-bar > span,
+.badge-rank-bar > span {
+  display: block;
+  height: 100%;
+  min-width: 6px;
+  border-radius: 999px;
+  background: var(--vermilion);
+}
+
+/* ── badges (reference BadgeDisplay) ── */
+.badge-display {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+}
+@media (min-width: 1280px) { .badge-display { flex-direction: row; } }
+.badge-rank {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 128px;
+  padding: 20px;
+  border-bottom: 1px solid var(--color-hairline);
+  background: rgba(255, 255, 255, 0.02);
+}
+[data-theme="light"] .badge-rank { background: rgba(20, 18, 16, 0.03); }
+@media (min-width: 1280px) { .badge-rank { width: 224px; flex-shrink: 0; border-bottom: 0; border-right: 1px solid var(--color-hairline); } }
+.badge-rank-figure {
+  margin-top: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 48px;
+  line-height: 1;
+  color: var(--color-ink);
+}
+.badge-rank-slash { font-size: 20px; color: var(--color-ink-muted); }
+.badge-grid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 12px;
+  list-style: none;
+  margin: 0;
+}
+@media (min-width: 640px) { .badge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .badge-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1536px) { .badge-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+.badge-card {
+  min-height: 144px;
+  padding: 16px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  transition: border-color 180ms var(--ease);
+}
+.badge-card.is-earned { border-color: rgba(224, 77, 38, 0.3); background: rgba(224, 77, 38, 0.06); }
+.badge-card.is-locked { background: rgba(255, 255, 255, 0.018); opacity: 0.45; }
+[data-theme="light"] .badge-card.is-locked { background: rgba(20, 18, 16, 0.02); opacity: 0.55; }
+.badge-card-head { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 20px; color: var(--color-ink-muted); }
+.badge-card.is-earned .badge-card-head { color: var(--vermilion); }
+.badge-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 12px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 50%;
+  color: var(--color-ink-muted);
+}
+.badge-card-icon svg { width: 16px; height: 16px; }
+.badge-card.is-earned .badge-card-icon { border-color: rgba(224, 77, 38, 0.35); background: rgba(224, 77, 38, 0.08); color: var(--vermilion); }

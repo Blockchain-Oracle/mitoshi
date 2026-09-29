@@ -1,0 +1,336 @@
+.section-head-right {
+  display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+
+/* cadence chips — the venue's rolling windows, as discrete tokens */
+.cadence-chips { display: flex; align-items: center; gap: 7px; }
+.cadence-chip {
+  font-family: var(--font-mono); font-size: 10.5px;
+  letter-spacing: 0.03em; color: var(--gray-300);
+  padding: 4px 9px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.02);
+  white-space: nowrap;
+}
+.cadence-note {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--gray-600); margin-left: 2px;
+}
+
+/* live pill — vermilion brand accent, with the pulsing dot the markup renders */
+.live-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 4px 11px 4px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(224,77,38,0.5);
+  background: rgba(224,77,38,0.08);
+  font-family: var(--font-mono);
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em;
+  color: var(--vermilion);
+  transform: translateY(-3px);
+}
+.live-pill .dot {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--vermilion);
+  animation: pulseDot 1.6s var(--ease) infinite;
+}
+@keyframes pulseDot {
+  0%   { opacity: 1;   box-shadow: 0 0 0 0 rgba(224,77,38,0.45); }
+  70%  { opacity: 0.55; box-shadow: 0 0 0 6px rgba(224,77,38,0); }
+  100% { opacity: 1;   box-shadow: 0 0 0 0 rgba(224,77,38,0); }
+}
+
+/* ───────── Market grid ───────── */
+.markets-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.markets-grid-live {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* "between rounds" placeholder — keeps a cadence lane present when it has no
+   currently-mintable market, so the three categories never blink out. */
+.market-card-pending {
+  border: 1px dashed rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.008);
+  cursor: default;
+  display: flex; flex-direction: column;
+}
+.market-card-pending .mc-countdown { color: var(--gray-500); }
+.market-card-pending .mc-countdown .clock-dot { background: var(--gray-500); }
+.mc-pending {
+  flex: 1; min-height: 200px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  gap: 14px; padding: 32px 22px;
+}
+.mc-pending-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--vermilion);
+  box-shadow: 0 0 0 0 rgba(224,77,38,0.5);
+  animation: pendingPulse 1.8s var(--ease) infinite;
+}
+@keyframes pendingPulse {
+  0%   { opacity: 1;   box-shadow: 0 0 0 0 rgba(224,77,38,0.45); }
+  70%  { opacity: 0.5; box-shadow: 0 0 0 9px rgba(224,77,38,0); }
+  100% { opacity: 1;   box-shadow: 0 0 0 0 rgba(224,77,38,0); }
+}
+.mc-pending-copy {
+  font-family: var(--font-body); font-size: 13px; line-height: 1.6;
+  color: var(--gray-500); max-width: 30ch; margin: 0;
+}
+.mc-pending-copy strong { color: var(--gray-200); font-weight: 600; }
+
+/* ───────── Market card ───────── */
+.market-card {
+  position: relative;
+  background: rgba(255,255,255,0.012);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 4px;
+  display: flex; flex-direction: column;
+  cursor: pointer;
+  transition: transform 320ms var(--ease), border-color 320ms var(--ease), background 320ms var(--ease), box-shadow 320ms var(--ease);
+  overflow: hidden;
+}
+.market-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.022);
+  box-shadow: 0 14px 60px rgba(0,0,0,0.5);
+}
+.market-card.flash {
+  animation: cardFlash 1.6s var(--ease);
+}
+@keyframes cardFlash {
+  0%   { box-shadow: 0 0 0 0 rgba(224,77,38, 0); }
+  25%  { box-shadow: 0 0 0 4px rgba(224,77,38, 0.18); border-color: rgba(224,77,38,0.6); }
+  100% { box-shadow: 0 0 0 0 rgba(224,77,38, 0); }
+}
+
+.mc-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.mc-asset {
+  display: inline-flex; align-items: center; gap: 9px;
+}
+/* Official Bitcoin mark: brand-orange disc + white ₿ */
+.mc-asset .glyph {
+  width: 26px; height: 26px;
+  background: #F7931A;
+  border: none;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-sans); font-size: 16px; line-height: 1; color: #fff;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.mc-ticker {
+  font-size: 14px; font-weight: 800; letter-spacing: 0.02em; color: var(--white);
+}
+/* Timeframe as an editorial accent, not a chip: the app's serif (a real
+   departure from the mono/sans elsewhere), vermilion, larger, lowercase italic.
+   No box — the color + serif carry it. */
+.mc-cadence {
+  font-family: var(--font-jp);
+  font-size: 15px; font-weight: 500; font-style: italic;
+  text-transform: none; letter-spacing: 0.005em;
+  line-height: 1; color: var(--vermilion);
+  border: none; background: none; padding: 0; border-radius: 0;
+}
+.mc-countdown {
+  font-family: var(--font-mono);
+  font-size: 12px; color: var(--vermilion); letter-spacing: -0.02em;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.mc-countdown .clock-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--vermilion);
+}
+.mc-countdown.urgent { color: var(--vermilion); }
+.mc-countdown.urgent .clock-dot { background: var(--vermilion); animation: pulseDot 0.9s var(--ease) infinite; }
+
+.mc-body {
+  padding: 18px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.mc-question {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.28;
+  letter-spacing: -0.02em;
+  color: var(--white);
+  text-wrap: balance;
+  min-height: 58px;
+}
+.mc-question .strike-dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--vermilion);
+  margin-left: 4px;
+  transform: translateY(-3px);
+}
+.mc-question .strike-loading {
+  color: var(--gray-600);
+  letter-spacing: 0.15em;
+  animation: strike-pulse 1.2s ease-in-out infinite;
+}
+@keyframes strike-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* card sparkline / candlestick */
+.mc-spark {
+  position: relative;
+  height: 110px;
+  border-radius: 3px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+}
+.mc-spark canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mc-spark .strike-line {
+  position: absolute; left: 0; right: 0; height: 1px;
+  background: rgba(224,77,38,0.4);
+  border-top: 1px dashed var(--vermilion);
+}
+.mc-spark .strike-tick {
+  position: absolute; right: 6px;
+  font-family: var(--font-mono); font-size: 8px;
+  color: var(--vermilion);
+  background: rgba(5,5,5,0.7);
+  padding: 1px 4px; border-radius: 2px;
+  letter-spacing: 0.06em;
+  transform: translateY(-50%);
+}
+
+/* weighted bar */
+.mc-weight {
+  position: relative;
+  height: 28px;
+  display: flex;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.mc-weight .up-w, .mc-weight .down-w {
+  display: flex; align-items: center;
+  padding: 0 10px;
+  font-family: var(--font-mono); font-size: 11px;
+  transition: flex-grow 700ms var(--easeBounce), background 220ms var(--ease), color 220ms var(--ease);
+  cursor: pointer;
+}
+.mc-weight .up-w {
+  flex: var(--up-w, 50);
+  background: rgba(224,77,38,0.1);
+  color: var(--vermilion);
+  justify-content: flex-start;
+}
+.mc-weight .down-w {
+  flex: var(--down-w, 50);
+  background: rgba(255,255,255,0.04);
+  color: var(--gray-300);
+  justify-content: flex-end;
+  border-left: 1px solid rgba(255,255,255,0.06);
+}
+.mc-weight .up-w:hover { background: var(--vermilion); color: var(--white); }
+.mc-weight .down-w:hover { background: var(--white); color: var(--black); }
+
+.mc-stats {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--gray-600); letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 2px;
+}
+.mc-stats .v { color: var(--gray-400); }
+
+.mc-foot {
+  display: flex; gap: 8px;
+  margin: 14px 12px 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+/* Outlined green/red pills — matches the markets hero `.hero-bet-btn`. */
+.mc-side {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px 14px; border-radius: 10px;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: transform 150ms var(--ease), background 200ms var(--ease), border-color 200ms var(--ease);
+  cursor: pointer; background: transparent;
+}
+.mc-side .price { font-family: var(--font-mono); font-weight: 800; opacity: 0.82; letter-spacing: -0.02em; text-transform: none; font-size: 12px; }
+.mc-side.up { color: var(--profit); background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.32); }
+.mc-side.up:hover { background: rgba(52,211,153,0.15); border-color: var(--profit); transform: translateY(-1px); }
+.mc-side.down { color: var(--loss); background: rgba(251,113,133,0.08); border-color: rgba(251,113,133,0.32); }
+.mc-side.down:hover { background: rgba(251,113,133,0.15); border-color: var(--loss); transform: translateY(-1px); }
+
+/* The Room — bettors-only chat trigger, a quiet full-width strip under the foot. */
+.mc-room {
+  display: flex; align-items: center; gap: 8px; width: calc(100% - 24px);
+  margin: 0 12px 12px; padding: 9px 12px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.015);
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.55); cursor: pointer;
+  transition: background 200ms var(--ease), border-color 200ms var(--ease), color 200ms var(--ease);
+}
+.mc-room:hover { background: rgba(230,57,40,0.06); border-color: rgba(230,57,40,0.32); color: #fff; }
+.mc-room-ico { font-size: 12px; filter: grayscale(0.2); }
+.mc-room-label { font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+.mc-room-hint { margin-left: auto; opacity: 0.5; font-size: 9px; text-transform: uppercase; letter-spacing: 0.12em; }
+
+/* Bet with Bitcoin — a small premium moment for holders: a gold coin, their live
+   BTC, a chevron, and a quiet gold sheen. Rendered ONLY when the connected wallet
+   holds hBTC, so it is never a dead button for everyone else. */
+.mc-btbtc {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; gap: 11px; width: calc(100% - 24px);
+  margin: 0 12px 12px; padding: 10px 13px; border-radius: 12px; cursor: pointer;
+  border: 1px solid rgba(247,166,40,0.34);
+  background:
+    radial-gradient(120% 160% at 0% 0%, rgba(255,214,140,0.16), transparent 55%),
+    linear-gradient(180deg, rgba(247,147,26,0.10), rgba(247,147,26,0.045));
+  box-shadow: inset 0 1px 0 rgba(255,226,170,0.28), 0 1px 0 rgba(0,0,0,0.15);
+  transition: border-color 200ms var(--ease), transform 160ms var(--ease), box-shadow 220ms var(--ease);
+}
+.mc-btbtc:hover {
+  border-color: rgba(247,166,40,0.7); transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255,226,170,0.4), 0 10px 26px -12px rgba(247,147,26,0.6);
+}
+.mc-btbtc-coin { flex: none; filter: drop-shadow(0 2px 5px rgba(240,150,20,0.5)); }
+.mc-btbtc-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mc-btbtc-title { font-family: var(--font-sans); font-weight: 650; font-size: 13px; letter-spacing: -0.01em; color: #F6B24A; line-height: 1; }
+.mc-btbtc-sub { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(246,178,74,0.62); }
+.mc-btbtc-amt { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.mc-btbtc-bal { text-align: right; display: flex; flex-direction: column; gap: 2px; }
+.mc-btbtc-bal b { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: #FBC77A; letter-spacing: -0.01em; line-height: 1; }
+.mc-btbtc-bal span { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(251,199,122,0.5); }
+.mc-btbtc-chev { color: rgba(246,178,74,0.7); flex: none; transition: transform 180ms var(--ease); }
+.mc-btbtc:hover .mc-btbtc-chev { transform: translateX(2px); }
+/* a slow, subtle gold glint — the "special unlock" signal, disabled for reduced motion */
+.mc-btbtc::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 34%, rgba(255,244,214,0.20) 50%, transparent 64%);
+  transform: translateX(-130%); animation: btbGlint 7s var(--ease) infinite;
+}
+@keyframes btbGlint { 0%, 72% { transform: translateX(-130%); } 88%, 100% { transform: translateX(130%); } }
+@media (prefers-reduced-motion: reduce) { .mc-btbtc::after { animation: none; } }
+/* light theme */
+[data-theme="light"] .mc-btbtc {
+  border-color: rgba(198,120,20,0.42);
+  background:
+    radial-gradient(120% 160% at 0% 0%, rgba(255,205,120,0.35), transparent 55%),
+    linear-gradient(180deg, rgba(247,147,26,0.16), rgba(247,147,26,0.06));
+  box-shadow: inset 0 1px 0 rgba(255,240,210,0.7), 0 1px 2px rgba(150,90,20,0.06);
+}

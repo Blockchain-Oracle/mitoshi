@@ -21,6 +21,7 @@ COPY packages/clients/package.json ./packages/clients/
 COPY packages/core/package.json ./packages/core/
 COPY packages/db/package.json ./packages/db/
 COPY packages/markets/package.json ./packages/markets/
+COPY packages/tokens/package.json ./packages/tokens/
 COPY services/ops/package.json ./services/ops/
 RUN --mount=type=cache,id=mitoshi-pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter "@cwf/web..."

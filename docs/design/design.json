@@ -1,22 +1,58 @@
 {
   "name": "Tempo markets (Masayume identity)",
-  "source": "Masayume 68f7a09 web/src/styles/{yosuku/part-01.css,bridge.css,tokens.css}, web/src/lib/fonts.ts",
+  "source": "packages/tokens/src/tokens.json (checked against Masayume 68f7a09 web/src/styles/yosuku/{part-01,part-13}.css and bridge.css)",
   "themes": {
     "dark": {
-      "ground": "#050505", "surface1": "#171717", "surface2": "#262626", "surface3": "#404040",
-      "hairline": "rgb(255 255 255 / 0.1)", "borderStrong": "rgb(255 255 255 / 0.22)",
-      "ink": "#FFFFFF", "inkSecondary": "#A3A3A3", "inkMuted": "#737373", "inkDisabled": "#525252",
-      "accent": "#E04D26", "accentPressed": "#B83A1B", "profit": "#34D399", "loss": "#FB7185"
+      "ground": "#050505",
+      "surface1": "#171717",
+      "surface2": "#262626",
+      "surface3": "#404040",
+      "hairline": "rgb(255 255 255 / 0.1)",
+      "borderStrong": "rgb(255 255 255 / 0.22)",
+      "ink": "#FFFFFF",
+      "inkSecondary": "#A3A3A3",
+      "inkMuted": "#737373",
+      "inkDisabled": "#525252",
+      "accent": "#E04D26",
+      "accentPressed": "#B83A1B",
+      "profit": "#34D399",
+      "loss": "#FB7185"
     },
     "light": {
-      "surface1": "#F6F0E4", "surface2": "#ECE3D2", "surface3": "#FBF7EE",
-      "hairline": "rgb(20 18 16 / 0.12)", "borderStrong": "rgb(20 18 16 / 0.22)",
-      "accent": "#E04D26", "profit": "#2E6B4F", "loss": "#C2381F"
+      "surface1": "#F6F0E4",
+      "surface2": "#ECE3D2",
+      "surface3": "#FBF7EE",
+      "hairline": "rgb(20 18 16 / 0.12)",
+      "borderStrong": "rgb(20 18 16 / 0.22)",
+      "accent": "#D93E1F",
+      "profit": "#2E6B4F",
+      "loss": "#C2381F",
+      "ground": "#F4EEE3",
+      "ink": "#141210",
+      "inkSecondary": "#5E574B",
+      "inkMuted": "#7C7466",
+      "inkDisabled": "#9A9080",
+      "accentPressed": "#B83214"
     },
-    "shared": { "cream": "#F4EEE3", "creamInk": "#141210", "creamHairline": "#D9CBB0", "warning": "#F2994A", "info": "#60A5FA" }
+    "shared": {
+      "cream": "#F4EEE3",
+      "creamInk": "#141210",
+      "creamHairline": "#D9CBB0",
+      "warning": "#F2994A",
+      "info": "#60A5FA"
+    }
   },
-  "fonts": { "heading": "Sora", "body": "Inter", "data": "JetBrains Mono", "stamp": "Noto Serif JP" },
-  "easing": { "base": "cubic-bezier(0.4,0,0.2,1)", "out": "cubic-bezier(0.22,1,0.36,1)", "bounce": "cubic-bezier(0.34,1.56,0.64,1)" },
+  "fonts": {
+    "heading": "Sora",
+    "body": "Inter",
+    "data": "JetBrains Mono",
+    "stamp": "Noto Serif JP"
+  },
+  "easing": {
+    "base": "cubic-bezier(0.4,0,0.2,1)",
+    "out": "cubic-bezier(0.22,1,0.36,1)",
+    "bounce": "cubic-bezier(0.34,1.56,0.64,1)"
+  },
   "rules": [
     "Tokens only; no raw hex/px in components",
     "Centred modals and right-edge slide-over; no bottom sheets",

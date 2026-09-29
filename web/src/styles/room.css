@@ -1,0 +1,257 @@
+/* Ported from Masayume 68f7a09:web/src/styles/room.css */
+/* The Room — ported from reference/yosuku/components/CommentRoom.tsx.
+ *
+ * The reference writes the sheet as inline Tailwind arbitrary values with a hard
+ * `data-theme="dark"` on the panel. Two things change here.
+ *
+ * 1. It follows the theme. The reference pins the sheet dark on cream, the same
+ *    dark-island treatment `/reels` had — and the user's 2026-09-01 ruling was that
+ *    a surface which does not flip is a defect, not a style. Light values are
+ *    Yosuku's own light-card treatment, as `reel-theme.css` uses.
+ * 2. `design-literals` bans hex and px in TSX, so the values live here with the
+ *    source utility named above each rule.
+ *
+ * One ink/surface set per theme drives every step, so a future change is one block
+ * rather than a dozen literals. */
+
+:root {
+  /* radial-gradient(130% 90% at 50% -10%, #1a130d, #0d0a08 46%, #080605) — the
+     reference's own sheet ground, kept for dark. */
+  --room-sheet: radial-gradient(130% 90% at 50% -10%, #1a130d 0%, #0d0a08 46%, #080605 100%);
+  --room-ink-rgb: 255 255 255;
+  --room-hairline: rgba(255, 255, 255, 0.1);
+  --room-rule: rgba(255, 255, 255, 0.08);
+  --room-inset: rgba(255, 255, 255, 0.02);
+}
+
+:root:not([data-theme="light"]) {
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  /* Yosuku's own light-card values (.creator-studio, part-01.css:131) — the same
+     source the reel's light treatment came from, so the two agree. */
+  --room-sheet: #fffaf2;
+  --room-ink-rgb: 33 28 24;
+  --room-hairline: rgba(20, 18, 16, 0.11);
+  --room-rule: rgba(20, 18, 16, 0.08);
+  --room-inset: rgba(20, 18, 16, 0.025);
+}
+
+/* fixed inset-0 z-[1000] bg-black/70 backdrop-blur-sm */
+.room-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgb(0 0 0 / 0.7);
+  backdrop-filter: blur(4px);
+}
+
+/* max-h-[88dvh] w-full max-w-[440px] rounded-t-3xl sm:rounded-3xl
+   + shadow-[0_-20px_80px_-20px_rgba(224,77,38,0.25)] */
+.room-sheet {
+  position: fixed;
+  z-index: 1000;
+  bottom: 0;
+  left: 50%;
+  display: flex;
+  width: 100%;
+  max-width: 440px;
+  max-height: 88dvh;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateX(-50%);
+  border: 1px solid var(--room-hairline);
+  border-radius: 24px 24px 0 0;
+  background: var(--room-sheet);
+  color: rgb(var(--room-ink-rgb));
+  box-shadow: 0 -20px 80px -20px rgba(224, 77, 38, 0.25);
+}
+
+.room-sheet:focus,
+.room-sheet:focus-visible {
+  outline: none;
+}
+
+/* sm:items-center */
+@media (min-width: 640px) {
+  .room-sheet {
+    top: 50%;
+    bottom: auto;
+    max-height: 80dvh;
+    border-radius: 24px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* bg-gradient-to-r from-transparent via-vermilion/70 to-transparent */
+.room-hairline {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 20;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--vermilion) 70%, transparent), transparent);
+  pointer-events: none;
+}
+
+/* flex items-start gap-3.5 border-b border-white/[0.08] p-5 */
+.room-head {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border-bottom: 1px solid var(--room-rule);
+  padding: 20px;
+}
+
+/* h-10 w-10 rounded-xl border border-vermilion/30 + tint + glow */
+.room-mark {
+  display: flex;
+  height: 40px;
+  width: 40px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  border: 1px solid color-mix(in srgb, var(--vermilion) 30%, transparent);
+  border-radius: 12px;
+  background: rgba(224, 77, 38, 0.08);
+  box-shadow: 0 0 24px -6px rgba(224, 77, 38, 0.5);
+  color: var(--vermilion);
+}
+
+/* truncate font-display text-[15px] font-bold */
+.room-title {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* rounded-full border border-white/[0.08] bg-white/[0.02] px-2 py-0.5
+   font-mono text-[9px] uppercase tracking-[0.12em] text-white/45 */
+.room-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  border: 1px solid var(--room-rule);
+  border-radius: 9999px;
+  background: var(--room-inset);
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--room-ink-rgb) / 0.62);
+}
+
+.room-close {
+  flex-shrink: 0;
+  border-radius: 9999px;
+  padding: 6px;
+  color: rgb(var(--room-ink-rgb) / 0.45);
+  outline: none;
+  transition: color 150ms var(--ease-out), background-color 150ms var(--ease-out);
+}
+
+.room-close:hover {
+  background: rgb(var(--room-ink-rgb) / 0.06);
+  color: rgb(var(--room-ink-rgb));
+}
+
+/* flex flex-col items-center gap-4 p-9 text-center */
+.room-state {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 36px;
+  text-align: center;
+}
+
+/* font-display text-[17px] font-semibold text-balance */
+.room-state-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+.room-state-body {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: rgb(var(--room-ink-rgb) / 0.5);
+  text-wrap: balance;
+}
+
+/* The haloed state icon: h-16 w-16 halo over an h-14 w-14 rounded-2xl tile. */
+.room-state-icon {
+  position: relative;
+  display: flex;
+  height: 64px;
+  width: 64px;
+  align-items: center;
+  justify-content: center;
+}
+
+.room-state-icon::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: radial-gradient(circle, rgb(var(--room-ink-rgb) / 0.1), transparent 70%);
+}
+
+.room-state-icon[data-tone="vermilion"]::before {
+  background: radial-gradient(circle, rgba(224, 77, 38, 0.28), transparent 70%);
+}
+
+.room-state-icon > span {
+  position: relative;
+  display: flex;
+  height: 56px;
+  width: 56px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--room-hairline);
+  border-radius: 16px;
+  color: rgb(var(--room-ink-rgb) / 0.5);
+}
+
+.room-state-icon[data-tone="vermilion"] > span {
+  border-color: color-mix(in srgb, var(--vermilion) 35%, transparent);
+  color: var(--vermilion);
+}
+
+/* rounded-full bg-vermilion px-6 py-3 text-sm font-semibold */
+.room-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  border-radius: 9999px;
+  background: var(--vermilion);
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  outline: none;
+  transition: background-color 200ms var(--ease-out), gap 200ms var(--ease-out);
+}
+
+.room-cta:hover:not(:disabled) {
+  background: var(--vermilion-d, var(--vermilion));
+  gap: 10px;
+}
+
+.room-cta:disabled {
+  opacity: 0.6;
+}

@@ -1,0 +1,154 @@
+/* Ported from Masayume 68f7a09:web/src/styles/base.css */
+@layer base {
+  /* Ground and ink come from the ported Yosuku system (html, body { background: var(--bg) }).
+   * Only the parts it does not set are declared here, so there is one owner per property. */
+  html {
+    color-scheme: dark;
+  }
+
+  html[data-theme="light"] {
+    color-scheme: light;
+  }
+
+  :focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  [lang="ja"] {
+    font-family: var(--font-stamp);
+  }
+
+  /* Base UI setup (plan §2.2): popups stack inside the app root, and iOS 26 needs a positioned body. */
+  #app-root {
+    isolation: isolate;
+  }
+
+  body {
+    position: relative;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Liveness survives as data, not motion. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* The numbers law: every figure in JetBrains Mono, tabular (D-058). */
+@utility numbers {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-display {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  line-height: var(--text-display--line-height);
+  letter-spacing: var(--text-display--letter-spacing);
+  font-weight: var(--text-display--font-weight);
+}
+
+@utility type-headline {
+  font-family: var(--font-display);
+  font-size: var(--text-headline);
+  line-height: var(--text-headline--line-height);
+  letter-spacing: var(--text-headline--letter-spacing);
+  font-weight: var(--text-headline--font-weight);
+}
+
+@utility type-title {
+  font-family: var(--font-display);
+  font-size: var(--text-title);
+  line-height: var(--text-title--line-height);
+  font-weight: var(--text-title--font-weight);
+}
+
+@utility type-body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  font-weight: var(--text-body--font-weight);
+}
+
+@utility type-body-strong {
+  font-family: var(--font-body);
+  font-size: var(--text-body-strong);
+  line-height: var(--text-body-strong--line-height);
+  font-weight: var(--text-body-strong--font-weight);
+}
+
+@utility type-caption {
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+  font-weight: var(--text-caption--font-weight);
+}
+
+@utility type-label-micro {
+  font-family: var(--font-data);
+  font-size: var(--text-label-micro);
+  line-height: var(--text-label-micro--line-height);
+  letter-spacing: var(--text-label-micro--letter-spacing);
+  font-weight: var(--text-label-micro--font-weight);
+  text-transform: uppercase;
+}
+
+@utility type-data {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-data);
+  line-height: var(--text-data--line-height);
+  font-weight: var(--text-data--font-weight);
+}
+
+@utility type-data-lg {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-data-lg);
+  line-height: var(--text-data-lg--line-height);
+  font-weight: var(--text-data-lg--font-weight);
+}
+
+@utility type-data-hero {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(calc(var(--text-data-hero) * 0.7), 9vw, var(--text-data-hero));
+  line-height: var(--text-data-hero--line-height);
+  letter-spacing: var(--text-data-hero--letter-spacing);
+  font-weight: var(--text-data-hero--font-weight);
+}
+
+@utility type-stamp {
+  font-family: var(--font-stamp);
+  font-size: var(--text-stamp);
+  line-height: var(--text-stamp--line-height);
+  font-weight: var(--text-stamp--font-weight);
+}
+
+@utility type-stamp-hero {
+  font-family: var(--font-stamp);
+  font-size: var(--text-stamp-hero);
+  line-height: var(--text-stamp-hero--line-height);
+  font-weight: var(--text-stamp-hero--font-weight);
+}
+
+/* Glow law: live urgency only, one per composition. */
+@utility glow-live {
+  box-shadow: var(--glow-live);
+}
+
+@utility stamp-press {
+  transform: rotate(var(--verdict-stamp-rotation));
+}

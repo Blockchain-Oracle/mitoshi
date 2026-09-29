@@ -544,6 +544,46 @@ launch (`scripts/drive/launch-meme.ts`). `graduate` is never sponsored: the keep
 
 **Why:** keeps the write boundary and the S3 lane's deployment untouched while the keeper logic ships and is proven.
 
+### D-070 — relay: debit at the fill, sponsored sends carry no fee fields, first-tx gas allowance (finding + decision, S1, 2026-09-29)
+
+Amends D20 / D-055's "budgets debited only on raw-send methods". Measured on Moderato through our relay
+(`acceptance/S1.md`, relay rows):
+
+1. **accounts 0.18.4 co-signs at the fill.** `eth_fillTransaction` returns the transaction with `feePayerSignature`
+   already attached; the client then sends the raw transaction straight to the RPC and never calls the relay again. A
+   ledger that debits only raw methods records nothing. **Every approved co-signing method is debited**
+   (`SIGNING_METHODS` = fill + raw sign/send); a raw sign/send reaches `validate` only when the fill did not sign.
+   An abandoned fill therefore counts against budgets, which errs toward the relay.
+2. **A sponsored send names no fee fields.** Moderato's `eth_fillTransaction` with `feePayer: true` and any explicit
+   `maxPriorityFeePerGas`/`maxFeePerGas` estimates against the sender's balance and answers "gas required exceeds
+   allowance (0)". `buildSendParameters` sets the explicit priority fee only on self-paid sends; the policy's gas cap
+   bounds what the sponsor pays.
+3. **TIP-1000 first-transaction gas.** A brand-new account's sponsored no-op fills with a gas limit of 274,577–294,577
+   (the estimate includes TIP-1000's 250,000 account creation), yet the included transactions used 34,257: an
+   expiring-nonce transaction leaves the protocol nonce at 0, so creation is estimated but not charged. The engine adds
+   exactly `NEW_ACCOUNT_GAS` (250,000) to the area cap while the chain reports the sender's pending nonce as 0 (for a
+   user who only ever sends expiring-nonce transactions that stays true). Without it, every new passkey user's
+   sponsored call would be refused on the estimate.
+
+**Why:** measured; without (1) the budgets are decorative, and without (2) and (3) no new user could be sponsored.
+
+### D-071 — §3.1 budgets on Next 16: site pages gated on what they own; field vitals self-hosted (finding + decision, S1, 2026-09-29)
+
+Measured on the production build (`pnpm perf:budgets`): Next 16.3 + React 19.2's own runtime (`rootMainFiles`) is
+**127.6 KB gzip** — above §3.1's 120 KB first-load figure for landing/docs/proof before a single line of ours. So:
+
+1. **Site routes are gated on owned JS** — first-load JS minus that framework floor — at **≤ 35 KB gzip** (now 32.0), and
+   the floor has its own ceiling of **130 KB** so a framework upgrade that grows it fails CI. **App routes keep the
+   §3.1 total, ≤ 250 KB** (now 217–222 KB). **CSS per route ≤ 55 KB gzip** (now 50.6; was 116 with next/font's CJK
+   slicing). All three in `scripts/perf/route-budgets.ts`, run by `ci.yml` after the build.
+2. **Field vitals without Vercel.** Speed Insights is Vercel-only and hosting is Coolify (D-061): a `web-vitals` beacon
+   (loaded on idle; its buffered observers still see the page load) posts LCP/INP/CLS/FCP/TTFB with the route template
+   only to `/api/vitals` (Postgres `web_vitals`); `GET /api/vitals?days=7` gives p75 per route — what S19 checks.
+3. **Lab gate trigger.** `.github/workflows/lighthouse.yml` runs on `repository_dispatch` `coolify-deployment-success`
+   (the Coolify deploy step sends `client_payload.url`) and by hand; no Vercel bypass headers.
+
+**Why:** the gate must measure what the page controls; a budget below the framework floor is unmeetable, not strict.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

@@ -1,7 +1,7 @@
 /**
- * Relay policy for the `themes` area (plan C.3.3, B.4.3–B.4.4, S16c.4). Shape = `launch.ts`/`engine.ts` until S1's
- * `RelayPolicy` type lands, plus `batches`: the whole-tx shapes the relay sponsors, because two of them also call the
- * AccountKeychain precompile, which is no area's contract and must never be sponsored on its own.
+ * Relay policy for the `themes` area (plan C.3.3, B.4.3–B.4.4, S16c.4). Shape = `RelayPolicy` (S1 `relay/types.ts`,
+ * listed in `policies/index.ts`), plus `batches`: the whole-tx shapes the relay sponsors, because two of them also call
+ * the AccountKeychain precompile, which is no area's contract and must never be sponsored on its own.
  *
  * - **follow** (D-100): one root-signed tx `[AccountKeychain.authorizeKey, ThemeRouter.follow]` — ≈ 17.5M for a
  *   5-token key + 0.93M for `follow` (X4; fork of the deployed router); `maxGas` 22M. `authorizeKey` is sponsored only inside this shape.
@@ -24,6 +24,7 @@ import { Abis, Addresses } from "viem/tempo";
 import { relayTargets } from "@cwf/clients";
 import { themeRegistryAbi } from "@cwf/clients/abis/ThemeRegistry";
 import { themeRouterAbi } from "@cwf/clients/abis/ThemeRouter";
+import type { RelayPolicy } from "../types";
 
 const byChain = relayTargets as Record<string, Record<string, readonly string[]>>;
 /** ThemeRegistry + ThemeRouter on every chain they are deployed on (generated from deployment fragments). */
@@ -63,10 +64,11 @@ export const themesPolicy = {
     { name: "revokeAndUnfollow", signer: "root", calls: [keychain("revokeKey"), router("unfollow")], maxCalls: 2, maxGas: 500_000n },
     { name: "claimFees", signer: "root", calls: [router("claimFees")], maxCalls: 1, maxGas: 500_000n },
   ] as readonly Shape[],
-  pillar: "themes" as const,
+  // Themes follow the stocks geofence posture (Q-008): `follow` is the entry, exits stay open.
+  pillar: "stocks" as const,
   entry: ["follow"] as readonly string[],
   maxGas: 22_000_000n,
-};
+} satisfies RelayPolicy & { keychain: Address; batches: readonly Shape[] };
 
 const isTip20 = (a: string) => a.toLowerCase().startsWith("0x20c0");
 
