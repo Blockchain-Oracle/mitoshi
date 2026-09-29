@@ -59,7 +59,7 @@ the gate is not yet passed.** Branch `stage/S3-ops` (built on `stage/S1-web-shel
   1. `/health` ok, no actor with `failures ≥ 3` or silent; `window-roller`, `price-relay`, `settler` counters (opened,
      recorded, copied, settled, redeemFor, **missed = 0**, failed) — note ops restarts (`commit`/`startedMs`).
   2. `pnpm --dir scripts exec tsx drive/recount.ts` → **OK** (index == chain replay, total and per Window).
-  3. `pnpm --dir scripts exec tsx drive/halt-replay.ts --from 1790663040` → OK; list any real halt transitions (a
+  3. `pnpm --dir scripts exec tsx drive/halt-replay.ts --from 1790665440` → OK; list any real halt transitions (a
      RedStone stall in session would show here).
   4. The US session: the first Regular Windows at 13:30Z (TSLA-5m #0 …) opened as SessionOpen, printed (open at
      13:30:00 needs all 5 signers inside 300 s), the 60m lanes from 14:00Z, the last Windows closing 20:00Z as
