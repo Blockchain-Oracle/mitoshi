@@ -13,7 +13,7 @@ const config: NextConfig = {
   agentRules: false,
   partialPrefetching: true,
   devIndicators: false,
-  transpilePackages: ["@cwf/core", "@cwf/markets", "@cwf/tokens"],
+  transpilePackages: ["@cwf/core", "@cwf/db", "@cwf/markets", "@cwf/tokens"],
   redirects: async () => [
     moved("/markets-live", "/markets"),
     moved("/bell", "/markets"),

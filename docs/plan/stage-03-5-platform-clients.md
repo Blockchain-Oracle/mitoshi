@@ -2,7 +2,7 @@
 
 - [x] Spike X10; `packages/markets/src/mpp/*` (access-key payer on an owner root with TIP-1011 limits, charge intent,
   receipt hook → `mpp_receipts`); `packages/brain` `via:'mpp'` (C.5.3).
-- [ ] `packages/markets/src/agents/erc8004.ts` (register, setAgentURI, giveFeedback, readAllFeedback; per-network
+- [x] `packages/markets/src/agents/erc8004.ts` (register, setAgentURI, giveFeedback, readAllFeedback; per-network
   addresses) + `/api/agents/[strategyId]/registration.json`.
 - [ ] `packages/markets/src/indexer-api/client.ts` + hourly recount; codegen in CI.
 - **Gate:** one real MPP-paid model call with its payment reference stored (after the owner's go on Q-020; until then
@@ -19,6 +19,13 @@
   self-hosted tidx (S3.5.3); an API key is an owner action.
 - **Depends on S1 1a.** This branch fast-forwarded to `stage/S1-web-shell` at `26a8fdd` (the stage runs "after S1 1a":
   `@cwf/core/strategies` for the brain port, the markets surface split). Merge S1 before S3.5.
+- **ERC-8004 (S3.5.2).** Agent **6** on Moderato (owner = deployer), `agentURI` →
+  `https://testnet.mitoshi.xyz/api/agents/s3-5-smoke-agent/registration.json`, one feedback from the keeper. Self-feedback
+  reverts as 16 §5 says, so AG-15's rater stays a separate account. The id is only known after the mint, so the drive
+  registers with a self-contained `data:` file and then `setAgentURI`s the live URL. The ABIs are external (not in our
+  fragments): `erc8004-abi.ts` is checked signature-by-signature against the pinned upstream ABIs.
+- **`@cwf/db` in the web bundle.** `migrations.ts` resolved its folder at import time (`import.meta.dirname` is
+  undefined under Turbopack) — now resolved on use; `createSql` also silences Postgres NOTICEs.
 - **AI SDK 7.** Masayume's `generateObject` is deprecated in AI SDK 7; the port uses `generateText` + `Output.object`
   with the same failure classes (`NoOutputGeneratedError` joins `parse`).
 
