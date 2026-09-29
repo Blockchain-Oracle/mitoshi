@@ -16,12 +16,14 @@ describe("theme key authorization (B.4.3)", () => {
   it("authorizeKey call decodes to the exact restrictions: enforced daily limits, scoped, no transfer selector", () => {
     const call = themeKeyAuthorizeCall(p);
     expect(call.to).toBe(getAddress(Addresses.accountKeychain));
-    const { functionName, args } = decodeFunctionData({ abi: Abis.accountKeychain, data: call.data }) as unknown as { functionName: string; args: [string, number, { expiry: bigint; enforceLimits: boolean; limits: { token: string; amount: bigint; period: bigint }[]; allowAnyCalls: boolean; allowedCalls: { target: string; selectorRules: { selector: string; recipients: string[] }[] }[] }] };
+    // The decoded KeyRestrictions tuple (named fields: expiry, enforceLimits, limits, allowAnyCalls, allowedCalls).
+    type Restrictions = Record<string, unknown> & { enforceLimits: boolean; limits: { token: string; amount: bigint; period: bigint }[]; allowAnyCalls: boolean; allowedCalls: { target: string; selectorRules: { selector: string; recipients: string[] }[] }[] };
+    const { functionName, args } = decodeFunctionData({ abi: Abis.accountKeychain, data: call.data }) as unknown as { functionName: string; args: [string, number, Restrictions] };
     expect(functionName).toBe("authorizeKey");
     const [id, sigType, r] = args;
     expect(id).toBe(keyId);
     expect(sigType).toBe(0);
-    expect(r.expiry).toBe(1_800_000_000n);
+    expect(r["expiry"]).toBe(1_800_000_000n);
     expect(r.enforceLimits).toBe(true);
     expect(r.allowAnyCalls).toBe(false);
     expect(r.limits).toEqual([
