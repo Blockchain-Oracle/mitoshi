@@ -15,7 +15,7 @@ import localFont from "next/font/local";
 export const sora = Sora({ variable: "--font-sora", subsets: ["latin"], display: "swap", weight: ["400", "600", "700", "800"], preload: false });
 
 // Body and figures apply after first paint (two-stage, D-071): `styles/fonts-stage.css` points these variables at their
-// metric-matched fallbacks until `html.wf-late` (set on idle by `FontStage`), so neither competes with the LCP heading.
+// metric-matched fallbacks until `html.wf-late` (set on idle by `PageRuntime`), so neither competes with the LCP heading.
 export const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap", preload: false });
 
 export const jetbrainsMono = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"], display: "swap", weight: ["400", "500", "600"], preload: false });

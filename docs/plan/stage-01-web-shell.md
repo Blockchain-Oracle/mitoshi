@@ -246,6 +246,16 @@
 - **Stream ticket mounted.** `POST /api/stream/ticket` mints S3's 60 s HMAC ticket (`@cwf/markets/stream-ticket`) for the
   signed-in session's own `user:<address>` topic with `STREAM_TICKET_SECRET` (the ops app's); 401 signed out, 503 when
   the secret is unset, per-IP limit.
+- **1b perf — lab LCP at the threshold (open).** After the late data layer (app first load 169–174 KB) and
+  server-rendered first-use hints (a hydrated hint cost ~140 ms of lab LCP; now plain markup, dismissed ones hidden by
+  the head script before first paint): repeated median-of-3 runs put every gated route at 2.35–2.68 s, with the
+  landing at 2.50–2.66 s and app TBT 160–203 ms. Results move in ~150 ms steps between near-identical builds (`/markets`
+  2.52 → 1.55 s across two builds): lantern charges a round trip per pre-paint request at 150 ms RTT, so one chunk
+  more or less flips a route across 2.5 s. Folding the root layout's three small client modules into `PageRuntime`
+  (one chunk) is the kind of change that moves it. The lab gate therefore sits on the threshold, and a single CI run
+  will pass or fail by chance; the field p75 (`/api/vitals`, D-071) is the stable signal once deployed. Next levers,
+  in order: fewer pre-paint chunks on app routes (merge the app layout's small client modules the same way), then
+  hydration cost on app routes for TBT.
 - **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
   transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
 - **1b wallet — no cookie read on the server.** wagmi's `cookieToInitialState` would read `headers()` in the root and,

@@ -131,3 +131,9 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, 
  * menu trigger is hovered, its siblings step back to the AA-safe gray, so the eye lands on the target. */
 .nav-links .nav-link { transition: color 300ms var(--ease); }
 .nav-links:has(.nav-link:hover) .nav-link:not(:hover):not(.active) { color: var(--gray-400); }
+
+/* Dismissed first-use explainers stay hidden from the first paint (the head script sets these classes, D-071). */
+html.cwf-explained-window [data-explainer="window"],
+html.cwf-explained-money [data-explainer="money"],
+html.cwf-explained-keys [data-explainer="keys"],
+html.cwf-explained-stocks [data-explainer="stocks"] { display: none; }
