@@ -28,6 +28,8 @@ catalog:
   "@types/node": ^24
   typescript: ^5.9.3
   zod: ^4.1.0
+  # Marks server modules so a client import fails the build (secrets never reach the browser).
+  server-only: ^0.0.1
   viem: ^2.56.9
   wagmi: ^3.7.7
   # WalletConnect for phones with no injected wallet (C.3.1: required for bridge-in); loaded only on demand.

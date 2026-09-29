@@ -108,6 +108,9 @@ catalogs:
     redis:
       specifier: ^6.2.0
       version: 6.2.1
+    server-only:
+      specifier: ^0.0.1
+      version: 0.0.1
     solidity-bytes-utils:
       specifier: ^0.8.4
       version: 0.8.4
@@ -242,6 +245,12 @@ importers:
 
   packages/db:
     dependencies:
+      '@cwf/core':
+        specifier: workspace:*
+        version: link:../core
+      '@cwf/markets':
+        specifier: workspace:*
+        version: link:../markets
       postgres:
         specifier: 'catalog:'
         version: 3.4.9
@@ -378,6 +387,9 @@ importers:
       '@cwf/core':
         specifier: workspace:*
         version: link:../packages/core
+      '@cwf/db':
+        specifier: workspace:*
+        version: link:../packages/db
       '@cwf/markets':
         specifier: workspace:*
         version: link:../packages/markets
@@ -423,6 +435,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.8(react@19.2.8)
+      server-only:
+        specifier: 'catalog:'
+        version: 0.0.1
       tailwind-merge:
         specifier: 'catalog:'
         version: 3.7.0
@@ -3899,6 +3914,9 @@ packages:
   serve-static@1.16.3:
     resolution: {integrity: sha512-x0RTqQel6g5SY7Lg6ZreMmsOzncHFU7nhnRWkKgWuMTu5NN0DR5oruckMqRvacAN9d5w6ARnRBXl9xhDCgfMeA==}
     engines: {node: '>= 0.8.0'}
+
+  server-only@0.0.1:
+    resolution: {integrity: sha512-qepMx2JxAa5jjfzxG79yPPq+8BuFToHd1hm7kI+Z4zAq1ftQiP7HcxMhDDItrbtwVeLg/cY2JnKnrcFkmiswNA==}
 
   set-blocking@2.0.0:
     resolution: {integrity: sha512-KiKBS8AnWGEyLzofFfmvKwpdPzqiy16LvQfK3yv/fVH7Bj13/wl3JSR1J+rfgRE9q7xUJK4qvgS8raSOeLUehw==}
@@ -8668,7 +8686,7 @@ snapshots:
   ox@0.6.9(typescript@5.9.3)(zod@4.6.5):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
-      '@noble/curves': 1.9.1
+      '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
@@ -8984,6 +9002,8 @@ snapshots:
       send: 0.19.2(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
+
+  server-only@0.0.1: {}
 
   set-blocking@2.0.0: {}
 

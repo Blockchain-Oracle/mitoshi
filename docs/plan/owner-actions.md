@@ -10,6 +10,7 @@
 | S0 (X11) | Start daily Robinhood Chain testnet faucet claims (5 × 5 tokens / 24 h) | Open |
 | Before S3.5 | Approve and fund the capped mainnet MPP wallet (Q-020) | Open |
 | S1, S4 (NYSE date), S15, S16 | Passkey checks on your own device | Open |
+| S1 gate (geofence) | Put a country header in front of Coolify for the live domains: proxy `mitoshi.xyz` (and the testnet host) through Cloudflare so requests carry `cf-ipcountry`. Coolify stamps none; without it the geofence answers "open" everywhere (Q-008 not enforced live) | Open |
 | Before S11 | X account for trade-from-X | Open |
 | S14c day 1 | Send the LayerZero direct-pathway request (agent drafts) | Open |
 | Before S19 | Chainlink Data Streams subscription + testnet credentials (Q-011); eligibility/budget for mainnet Stock Tokens (Q-008); Safes (Q-016) | Open |

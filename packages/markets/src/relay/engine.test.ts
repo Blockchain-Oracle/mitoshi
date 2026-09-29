@@ -3,7 +3,7 @@ import { encodeFunctionData, maxUint256, multicall3Abi, type Address } from "vie
 import { Abis } from "viem/tempo";
 import { OPEN_POSTURE, postureOf } from "@cwf/core";
 import { TEMPO, UTILITIES } from "@cwf/clients";
-import { evaluate, feeMicros, normalizeRequest } from "./engine";
+import { evaluate, feeMicros, NEW_ACCOUNT_GAS, normalizeRequest } from "./engine";
 import { keysPolicy, noopPolicy } from "./policies";
 import type { RelayPolicy, RelayRequest } from "./types";
 
@@ -25,6 +25,11 @@ const approve = (spender: Address, amount: bigint) => ({ to: TEMPO.pathUSD as Ad
 const req = (calls: RelayRequest["calls"], over: Partial<RelayRequest> = {}): RelayRequest => ({ chainId: 42431, from: USER, calls, gas: 50_000n, maxFeePerGas: 20_000_000_000n, feeToken: TEMPO.pathUSD, nonceKey: maxUint256, validBefore: 1_025, ...over });
 
 describe("relay policy engine (C.3.3)", () => {
+  it("reads viem's empty-hex zero (`value: \"0x\"`) as 0", () => {
+    const r = normalizeRequest({ from: USER, calls: [{ to: UTILITIES.multicall3, data: "0x0f28c97d", value: "0x" }] }, 42431);
+    expect(r.calls[0]!.value).toBe(0n);
+  });
+
   it("sponsors the no-op and refuses another Multicall3 selector (S1 gate)", async () => {
     expect(await evaluate(config, req([noop]), ctx)).toMatchObject({ ok: true, area: "noop" });
     const aggregate = { ...noop, data: encodeFunctionData({ abi: multicall3Abi, functionName: "aggregate3", args: [[]] }) };
@@ -52,6 +57,14 @@ describe("relay policy engine (C.3.3)", () => {
     expect(await evaluate(config, req([approve(ENGINE, 1n), place]), us)).toMatchObject({ code: "region" });
     const exit = { to: ENGINE, data: encodeFunctionData({ abi: engineAbi, functionName: "withdrawCredit" }), value: 0n };
     expect(await evaluate(config, req([exit]), us)).toMatchObject({ ok: true });
+  });
+
+  it("allows TIP-1000 account-creation gas only for a sender the chain says is new", async () => {
+    // Moderato measured: a fresh account's sponsored no-op fills at 274,577 gas (0x43091).
+    const firstTx = req([noop], { gas: 274_577n });
+    expect(await evaluate(config, firstTx, ctx)).toMatchObject({ code: "gas" });
+    expect(await evaluate(config, firstTx, ctx, { isNew: true })).toMatchObject({ ok: true, area: "noop" });
+    expect(await evaluate(config, req([noop], { gas: noopPolicy.maxGas + NEW_ACCOUNT_GAS + 1n }), ctx, { isNew: true })).toMatchObject({ code: "gas" });
   });
 
   it("enforces the area gas cap, pathUSD fees and the 300 s expiring window", async () => {

@@ -12,7 +12,8 @@
     "./launch": "./src/launch/stablecoin.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:live": "vitest run --config vitest.live.config.ts"
   },
   "dependencies": {
     "@cwf/clients": "workspace:*",

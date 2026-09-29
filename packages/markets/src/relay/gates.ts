@@ -1,14 +1,16 @@
 /**
  * Relay budgets (plan C.3.3): per sender per hour, per device per hour (`x-cwf-device`), per device fee per day,
  * global fee per day, and a low-balance breaker on the fee payer. Counted over the ledger, so every instance sees
- * the same budget. `validate` runs twice (fill, then raw send): budgets are checked both times but debited only on
- * raw sign/send methods.
+ * the same budget. Debited on every co-signature: accounts 0.18.4 attaches the fee-payer signature to the FILL result
+ * (measured on Moderato 2026-09-29: the client then sends the raw tx straight to the RPC, never back through us), so
+ * an approved fill is a spend; a raw sign/send reaches `validate` only for a sponsored tx the fill did not sign.
  */
 import type { Address } from "viem";
 import type { LedgerStore } from "./ledger";
 import type { PolicyVerdict } from "./types";
 
-export const RAW_METHODS: ReadonlySet<string> = new Set(["eth_signRawTransaction", "eth_sendRawTransaction", "eth_sendRawTransactionSync"]);
+/** The relay methods whose approval produces a fee-payer signature, so each approval is debited. */
+export const SIGNING_METHODS: ReadonlySet<string> = new Set(["eth_fillTransaction", "eth_signRawTransaction", "eth_sendRawTransaction", "eth_sendRawTransactionSync"]);
 
 export interface GateLimits {
   perSenderPerHour: number;

@@ -59,6 +59,6 @@ export interface RelayPolicy {
 
 export type RefusalCode =
   | "chain" | "self-sponsor" | "too-many-calls" | "value" | "create" | "target" | "selector" | "never" | "region"
-  | "approve-spender" | "approve-max" | "sender" | "gas" | "fee-token" | "expiry" | "budget" | "breaker" | "decode";
+  | "approve-spender" | "approve-max" | "sender" | "gas" | "fee-token" | "expiry" | "budget" | "breaker" | "decode" | "malformed";
 
 export type PolicyVerdict = { ok: true; area: RelayArea; feeMicros: bigint } | { ok: false; code: RefusalCode; reason: string };

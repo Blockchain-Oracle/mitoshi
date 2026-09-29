@@ -11,9 +11,10 @@ describe("buildSendParameters", () => {
   it("names pathUSD as fee token, asks for sponsorship, and sets an expiring nonce explicitly (N-12, X21)", () => {
     const { parameters, fields } = buildSendParameters({ calls: [approveCall(TOKEN, SPENDER, 5n)], sponsored: true, nonce: { kind: "expiring" }, nowSec: 1_000 });
     expect(parameters.feeToken).toBe(FEE_TOKEN);
-    expect(parameters.feePayer).toBe(true);
+    expect((parameters as { feePayer?: boolean }).feePayer).toBe(true);
     expect(fields).toEqual({ nonceKey: maxUint256, nonce: 0, validBefore: 1_025 });
-    expect(parameters.maxPriorityFeePerGas).toBe(1n);
+    // Sponsored: no fee fields, the sponsor's fill sets them (Moderato refuses a sponsored fill that carries one).
+    expect("maxPriorityFeePerGas" in parameters).toBe(false);
   });
 
   it("caps an expiring window at the protocol's 300 s and leaves protocol nonces to the chain", () => {
@@ -21,6 +22,7 @@ describe("buildSendParameters", () => {
     const own = buildSendParameters({ calls: [approveCall(TOKEN, SPENDER, 1n)], sponsored: false, nonce: { kind: "protocol" }, nowSec: 0 });
     expect(own.fields).toEqual({});
     expect("feePayer" in own.parameters).toBe(false);
+    expect((own.parameters as { maxPriorityFeePerGas?: bigint }).maxPriorityFeePerGas).toBe(1n);
   });
 
   it("refuses an empty batch and native value", () => {

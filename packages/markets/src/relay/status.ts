@@ -9,5 +9,7 @@ export interface RelayStatus {
   breakerOpen: boolean;
   areas: { area: RelayArea; targets: Address[]; sponsor: string[]; never: string[] }[];
   today: { count: number; feeMicros: string; limitMicros: string };
+  /** This process's latest policy verdicts, newest last: outcome and refusal code only (no senders). */
+  recent: { atSec: number; method: string; ok: boolean; code: string | null }[];
   asOfSec: number;
 }

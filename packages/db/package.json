@@ -12,6 +12,8 @@
     "migrate": "tsx src/migrate.ts"
   },
   "dependencies": {
+    "@cwf/core": "workspace:*",
+    "@cwf/markets": "workspace:*",
     "postgres": "catalog:"
   },
   "devDependencies": {

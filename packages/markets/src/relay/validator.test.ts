@@ -26,12 +26,14 @@ function setup(balance: bigint | null = 100_000_000n, limits = DEFAULT_LIMITS) {
 }
 
 describe("relay validator", () => {
-  it("debits budgets only on raw sign/send, never on fill (validate runs twice)", async () => {
+  it("debits every co-signature: the fill (accounts 0.18.4 signs there) and an unsigned raw sign/send", async () => {
     const { ledger, run } = setup();
     expect(await run("eth_fillTransaction")).toBe(true);
-    expect(ledger.rows).toHaveLength(0);
+    expect(ledger.rows).toMatchObject([{ area: "noop", sender: USER, device: "dev-1", method: "eth_fillTransaction", feeMicros: 1_000n }]);
     expect(await run("eth_sendRawTransactionSync")).toBe(true);
-    expect(ledger.rows).toMatchObject([{ area: "noop", sender: USER, device: "dev-1", feeMicros: 1_000n }]);
+    expect(ledger.rows).toHaveLength(2);
+    expect(await run("eth_chainId")).toBe(true);
+    expect(ledger.rows).toHaveLength(2);
   });
 
   it("refuses without a request context, below the breaker, and past the sender's hourly budget", async () => {

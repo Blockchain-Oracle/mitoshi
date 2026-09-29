@@ -14,6 +14,7 @@
   "dependencies": {
     "@base-ui/react": "catalog:",
     "@cwf/core": "workspace:*",
+    "@cwf/db": "workspace:*",
     "@cwf/markets": "workspace:*",
     "@cwf/tokens": "workspace:*",
     "@number-flow/react": "catalog:",
@@ -29,6 +30,7 @@
     "next": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "server-only": "catalog:",
     "tailwind-merge": "catalog:",
     "viem": "catalog:",
     "wagmi": "catalog:",

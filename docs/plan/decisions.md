@@ -390,6 +390,29 @@ proven by real mainnet calldata and fork execution. (3) Scripted testnet sends u
 
 **Why:** measured on both networks and on a Tempo mainnet fork (`acceptance/S15.md`).
 
+### D-070 — relay: debit at the fill, sponsored sends carry no fee fields, first-tx gas allowance (finding + decision, S1, 2026-09-29)
+
+Amends D20 / D-055's "budgets debited only on raw-send methods". Measured on Moderato through our relay
+(`acceptance/S1.md`, relay rows):
+
+1. **accounts 0.18.4 co-signs at the fill.** `eth_fillTransaction` returns the transaction with `feePayerSignature`
+   already attached; the client then sends the raw transaction straight to the RPC and never calls the relay again. A
+   ledger that debits only raw methods records nothing. **Every approved co-signing method is debited**
+   (`SIGNING_METHODS` = fill + raw sign/send); a raw sign/send reaches `validate` only when the fill did not sign.
+   An abandoned fill therefore counts against budgets, which errs toward the relay.
+2. **A sponsored send names no fee fields.** Moderato's `eth_fillTransaction` with `feePayer: true` and any explicit
+   `maxPriorityFeePerGas`/`maxFeePerGas` estimates against the sender's balance and answers "gas required exceeds
+   allowance (0)". `buildSendParameters` sets the explicit priority fee only on self-paid sends; the policy's gas cap
+   bounds what the sponsor pays.
+3. **TIP-1000 first-transaction gas.** A brand-new account's sponsored no-op fills with a gas limit of 274,577–294,577
+   (the estimate includes TIP-1000's 250,000 account creation), yet the included transactions used 34,257: an
+   expiring-nonce transaction leaves the protocol nonce at 0, so creation is estimated but not charged. The engine adds
+   exactly `NEW_ACCOUNT_GAS` (250,000) to the area cap while the chain reports the sender's pending nonce as 0 (for a
+   user who only ever sends expiring-nonce transactions that stays true). Without it, every new passkey user's
+   sponsored call would be refused on the estimate.
+
+**Why:** measured; without (1) the budgets are decorative, and without (2) and (3) no new user could be sponsored.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

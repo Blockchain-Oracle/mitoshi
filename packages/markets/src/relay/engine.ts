@@ -13,6 +13,18 @@ import type { PolicyVerdict, RefusalCode, RelayCall, RelayContext, RelayPolicy, 
 
 export const MAX_CALLS = 8;
 
+/**
+ * TIP-1000: the node's fill estimates 250,000 gas of account creation for a sender whose protocol nonce is 0 (D-070:
+ * expiring-nonce sends leave it at 0, so the estimate keeps it even though execution does not charge it). The estimate
+ * is the gas limit the policy sees, so the area cap is raised by exactly this — only when the chain reports nonce 0.
+ */
+export const NEW_ACCOUNT_GAS = 250_000n;
+
+/** What the validator read from the chain about the sender before evaluating. */
+export interface SenderFacts {
+  isNew: boolean;
+}
+
 export interface EngineConfig {
   chainId: number;
   feePayer: Address;
@@ -64,7 +76,7 @@ function approvalOf(call: RelayCall): Approval | "not-approve" | "bad" {
 }
 
 /** Evaluates a sponsorship request against every rule except budgets. */
-export async function evaluate(config: EngineConfig, request: RelayRequest, ctx: RelayContext): Promise<PolicyVerdict> {
+export async function evaluate(config: EngineConfig, request: RelayRequest, ctx: RelayContext, sender: SenderFacts = { isNew: false }): Promise<PolicyVerdict> {
   if (request.chainId !== config.chainId) return refuse("chain", `chain ${request.chainId} is not ${config.chainId}`);
   if (!request.from) return refuse("self-sponsor", "no sender");
   if (lower(request.from) === lower(config.feePayer)) return refuse("self-sponsor", "the fee payer never sponsors itself");
@@ -102,7 +114,8 @@ export async function evaluate(config: EngineConfig, request: RelayRequest, ctx:
     if (!spenderOk) return refuse("approve-spender", `approve spender ${a.spender} is not a ${area.area} target`);
     if (a.amount === maxUint256) return refuse("approve-max", "unlimited approvals are never sponsored");
   }
-  if (request.gas !== null && request.gas > area.maxGas) return refuse("gas", `gas ${request.gas} over the ${area.area} cap ${area.maxGas}`);
+  const gasCap = area.maxGas + (sender.isNew ? NEW_ACCOUNT_GAS : 0n);
+  if (request.gas !== null && request.gas > gasCap) return refuse("gas", `gas ${request.gas} over the ${area.area} cap ${gasCap}`);
   if (request.feeToken !== null && lower(request.feeToken) !== lower(TEMPO.pathUSD)) return refuse("fee-token", "the fee token must be pathUSD");
   if (request.nonceKey === maxUint256) {
     if (request.validBefore === null || request.validBefore > ctx.nowSec + EXPIRING_NONCE_MAX_SEC) {
@@ -121,7 +134,8 @@ export function feeMicros(request: Pick<RelayRequest, "gas" | "maxFeePerGas">): 
 
 /** Normalises what `Handler.relay` hands `validate` (a viem Tempo TransactionRequest) into a RelayRequest. */
 export function normalizeRequest(raw: Record<string, unknown>, fallbackChainId: number): RelayRequest {
-  const big = (v: unknown): bigint | null => (typeof v === "bigint" ? v : typeof v === "number" ? BigInt(v) : typeof v === "string" && v !== "" ? BigInt(v) : null);
+  // viem encodes a zero quantity as "0x" (e.g. `value` on a sponsored fill); `BigInt("0x")` throws, so empty hex is 0.
+  const big = (v: unknown): bigint | null => (typeof v === "bigint" ? v : typeof v === "number" ? BigInt(v) : v === "0x" ? 0n : typeof v === "string" && v !== "" ? BigInt(v) : null);
   const num = (v: unknown): number | null => (typeof v === "number" ? v : typeof v === "bigint" ? Number(v) : typeof v === "string" && v !== "" ? Number(v) : null);
   const rawCalls = Array.isArray(raw.calls) && raw.calls.length > 0 ? (raw.calls as Record<string, unknown>[]) : [{ to: raw.to, data: raw.data ?? raw.input, value: raw.value }];
   return {

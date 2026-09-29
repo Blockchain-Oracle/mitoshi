@@ -36,9 +36,11 @@ export function buildSendParameters(request: SendRequest) {
     parameters: {
       calls: request.calls.map((c) => ({ to: c.to, data: c.data })),
       feeToken: FEE_TOKEN,
-      ...(request.sponsored ? { feePayer: true as const } : {}),
       ...fields,
-      maxPriorityFeePerGas: PRIORITY_FEE_PER_GAS,
+      // A sponsored send leaves every fee field to the sponsor's fill: Moderato's `eth_fillTransaction` with
+      // `feePayer: true` and an explicit fee field estimates against the SENDER's balance and answers "gas required
+      // exceeds allowance (0)" (measured 2026-09-29). The relay policy bounds what the sponsor pays via the gas cap.
+      ...(request.sponsored ? { feePayer: true as const } : { maxPriorityFeePerGas: PRIORITY_FEE_PER_GAS }),
     },
   };
 }

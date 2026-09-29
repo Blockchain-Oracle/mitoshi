@@ -9,3 +9,5 @@ export function createSql(url = process.env.DATABASE_URL): Sql {
 }
 
 export { runMigrations } from "./migrations";
+export { createPgLedger } from "./relay-ledger";
+export { createPgFaucetStore, type FaucetStore } from "./faucet-store";

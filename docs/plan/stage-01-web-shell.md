@@ -54,7 +54,7 @@
   from Speed Insights on both Vercel projects, checked at each S19 deploy; each later stage appends its routes.
 - [ ] 1b real-time client (D40): `packages/markets/src/runtime/stream.ts` — one SSE connection to `stream.<domain>`
   (ops) + chain WS logs → `setQueryData` batched per frame; paused when hidden.
-- [ ] 1c routes: `/api/auth/[...path]` + `server/{kv,session}.ts` (C.3.2); `/api/relay` + `/api/relay/status` with a
+- [x] 1c routes: `/api/auth/[...path]` + `server/{kv,session}.ts` (C.3.2); `/api/relay` + `/api/relay/status` with a
   `noop` area (C.3.3); `/api/faucet{,/challenge}` (C.3.4); `packages/db/migrations/{relay,faucet}/0001_*.sql` run on both Neon
   databases; `web/src/proxy.ts` + `lib/region-mark.ts` per-pillar
   geofence (C.3.5; Q-008 default); spikes X8, X9.
@@ -118,6 +118,38 @@
 - **1b shell — 21st starts still to land.** 24857 + 1600 (account pill) land with the wallet; 23552 (segmented
   control) and 23557 (skeleton swap) with the settings surface; 24297 (toast) and the 27109/21349/19177 header and
   active-pill techniques are applied where those surfaces are next touched in this stage.
+- **1c — relay against Moderato (D-070).** Three things the plan did not know, all measured through our own relay: (1)
+  accounts 0.18.4 attaches the fee-payer signature to the *fill* result and the client sends the raw tx straight to
+  the RPC, so budgets are debited on every co-signing method (`SIGNING_METHODS`), not only raw sends; (2) Moderato's
+  sponsored `eth_fillTransaction` fails ("gas required exceeds allowance (0)") if the request already names any fee
+  field, so a sponsored `sendBatch` leaves fees to the sponsor; (3) a new account's fill estimates TIP-1000's 250,000
+  gas of account creation, so the engine adds exactly that to the area cap while the sender's pending nonce is 0
+  (execution used 34,257). Also: viem encodes a zero `value` as `"0x"`, which `BigInt()` rejects — the parser reads it
+  as 0 and the validator now refuses (code `malformed`) instead of throwing.
+- **1c — relay status carries verdicts.** `/api/relay/status` adds `recent` (this process's last 20 verdicts: method,
+  ok, refusal code — no senders). viem reports a refused sponsorship as a generic "Invalid parameters"; the gate script
+  reads the rule that refused from here, and S5's status page gets refusals for free.
+- **1c — faucet.** `tempo_fundAddress` sends 1,000,000 of each of pathUSD/AlphaUSD/BetaUSD/ThetaUSD (`0x20c0…0`–`…3`)
+  in four transactions. Quotas live in Postgres (`faucet_claims`), the challenge is one-time (`update … returning`).
+  The passkey path needs no signature (the `Handler.webAuthn` session proves the address, D-046); wallets sign an
+  EIP-191 challenge verified by `messageVerifier`, so X9's conformance covers it.
+- **1c — `@cwf/db` under Turbopack.** `import.meta.dirname` is undefined in the Next server bundle, so the migration
+  runner's module-level path crashed every route importing the stores; the path resolves on use (the web process
+  never migrates — the deploy step runs `pnpm --filter @cwf/db migrate`).
+- **1c — X8 injected wallets on Tempo (measured).** `eth_getBalance` returns the same placeholder
+  (4242…42, ~4.2 × 10⁷⁵) for every address, funded or not: an injected wallet's native-balance precheck always passes
+  and its native balance display is meaningless — the UI never reads native balance (only TIP-20 sheets). Plain
+  EIP-1559 (type 2) and legacy (type 0) transactions land; the fee is taken in pathUSD from the sender (no preference
+  set): 30,926 gas → 50 µ$ at 1.6 gwei effective (type 2), 155 µ$ at a 5 gwei legacy `gasPrice` (legacy pays its full
+  price). Such transactions can't batch, can't be sponsored (sponsorship needs 0x76) and can't use expiring nonces —
+  exactly `INJECTED_CAPS`. Note: `cast` 1.8.3 is Tempo-aware and silently rewrites a "type 2" `cast send` into 0x76
+  ("Paying gas in PathUSD"), so injected behaviour must be measured with a standard serializer, not `cast send`.
+- **1c — X9 verify conformance (measured).** `messageVerifier` (viem `verifyHash`, local) and Moderato's
+  `SignatureVerifier.verify` (`0x5165…`) agree on all nine cases: secp256k1 (65 B), P-256 (130 B) and WebAuthn (300 B
+  envelope) × valid / tampered hash / wrong signer (`pnpm --filter @cwf/markets test:live`). Access-key
+  (`verifyKeychain`) conformance needs an authorised key on chain and lands with S4's first key.
+- **1c — passkey RP name.** accounts 0.18.4 sets `rp.name` to the RP ID (`webAuthn.ts:118`), so the OS prompt names
+  `mitoshi.xyz` rather than "Mitoshi". Browsers lead with the RP ID anyway; not patched (would fork the pinned SDK).
 - **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
   transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
 - **1b wallet — no cookie read on the server.** wagmi's `cookieToInitialState` would read `headers()` in the root and,
