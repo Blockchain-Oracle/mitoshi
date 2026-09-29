@@ -45,7 +45,7 @@ describe("sendBatch after an ambiguous sync send (D-137)", () => {
     },
     request: async ({ method }: { method: string }) => {
       if (method === "eth_getTransactionReceipt") return landed ? receiptRpc : null;
-      if (method === "eth_getBlockByNumber") return { number: "0x11", timestamp: `0x${headTime.toString(16)}`, hash: `0x${"33".repeat(32)}`, transactions: [] };
+      if (method === "eth_getBlockByNumber") return { number: "0x11", "timestamp": `0x${headTime.toString(16)}`, hash: `0x${"33".repeat(32)}`, transactions: [] };
       throw new Error(method);
     },
   });
