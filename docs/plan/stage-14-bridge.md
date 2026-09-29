@@ -8,7 +8,7 @@
   pathUSD). 14c.8 `src/stocks/{StockSyncReceiver,ScaledUIView}.sol` (pre-warmed slots).
 - [x] 14c.9 `script/stocks/IssueMirrors.s.sol` (B.2) for TSLA, AMZN, PLTR, NFLX, AMD on Moderato.
 - [ ] 14c.10 Deploy + `EnsureLzConfig` / `CheckLzConfig` per network (B.1.5 table); fragments `46630/84532/42431`.
-- [ ] 14c.11 Invariants (direct + hop: locked == supply + deferred + in flight + owed); sizes both profiles.
+- [x] 14c.11 Invariants (direct + hop: locked == supply + deferred + in flight + owed); sizes both profiles.
 - [ ] 14c.12 Forks: RH testnet lock/unlock; Base hop; Moderato adapter (real LZD wrap, fresh-address mint gas); RH
   mainnet CRWD multiplier (effectiveAt 1782999000).
 - [ ] 14c.13 Owner-approved outreach: LayerZero direct 40451↔40444 request; Wormhole plan-B probe.
@@ -61,6 +61,13 @@
   broadcast with distinct keys or serialise.
 - **F14-10 Live leg latency:** Moderato → Base Sepolia ping delivered in **20 s** (source timestamp → receive block).
   Base Sepolia → Moderato waits on the LayerZero Labs DVN for > 20 min (Base Sepolia source confirmations).
+- **F14-11 Sizes (runtime / initcode, 24,576 B limit; our cap 23.5 KB):** Tempo — TIP20MintBurnAdapter 15,946 / 16,755,
+  StockSyncReceiver 6,243 / 6,638, ScaledUIView 1,988 / 2,248, LzPingTempo 6,981 / 7,547; evm — StockLockbox 12,831 /
+  13,637, TransitOFT 10,754 / 12,063, StockSyncSender 8,555 / 8,947, StockSyncForwarder 8,207 / 8,694, HopComposer
+  2,865 / 3,264. Deploy gas on Moderato: adapter implementation 22.4M (< 30M lane).
+- **F14-12 Invariants:** direct path on a Moderato fork (real TIP-20 + LZD; `LockboxAlt` differs only in paying LZD) —
+  24 runs × 24 calls, conservation / outstanding bound / no unbacked mint + `afterInvariant` settle-and-redeem-everyone
+  empties the lockbox; hop path (evm) — 48 × 30 incl. bounces and owed. Both green.
 
 ## Handoff
 
