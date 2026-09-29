@@ -829,6 +829,22 @@ is in: across the soak 320 of 337 printed Windows were quoted and none without a
 same RPC).
 So the roller needs no skip rule beyond Agari's; the voids were throughput on the RPC (D-130, D-131).
 
+### D-134 — one paced RPC budget per URL for all ops actors, the print path first (finding + decision, S3 fix, 2026-09-29)
+
+**Finding** (measured 2026-09-29 from one IP, singles at a fixed rate for 8 s): the public RPC sustains ≈ 13
+`eth_call`/s or ≈ 36 `eth_blockNumber`/s — the same weights as its batch budget (D-130) — and answers HTTP 429 `-32005
+"rate limited, try again in N ms"` beyond. Every ops actor shares the container's IP. After D-130 alone the batches
+stopped failing, but boundary bursts still hit the limit (`Request exceeds defined limit` after viem's 5 retries), and
+the seed maker's re-quotes (≈ 0.5 sends/s across 55 Windows) alone use most of it.
+**Decision:** ops clients of one URL share a token bucket (`packages/markets/src/rpc-budget.ts`) of
+`TEMPO_RPC_UNITS_PER_SEC` (default 30; 0 = unpaced, for a private node) with the measured method weights. Queue order:
+tier 0 the print path (price-relay, roller, settler), tier 1 the house (seed maker, house taker) and the indexer,
+tier 2 watchers (halt-watch, funds-watch); inside a tier the send path, then reads, then log scans. A 429 pauses the
+bucket for the time the RPC names. `/health` shows `rpc` (units and requests per method over the last minute, queue,
+max wait, 429s). Live probe, 10 clients × 3 boundary passes through one budget: 30/30, no 429 retries exhausted.
+
+**Why:** the prints decide whether a Window settles; quotes can wait a few seconds at a boundary, prints cannot miss.
+
 ### D-133 — the S3 soak clock restarts after the fix (decision, S3 fix, 2026-09-29)
 
 The gate is "24 h unattended"; the first soak ran with a defect that voided 93 % of Windows from 08:45Z, so it cannot

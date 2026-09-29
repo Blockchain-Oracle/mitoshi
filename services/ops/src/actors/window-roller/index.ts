@@ -27,7 +27,7 @@ export function readRollerSettings(env: NodeJS.ProcessEnv = process.env): Roller
 
 export async function startWindowRoller(deps: VenueDeps): Promise<{ stop: () => void }> {
   const key = roleKey("roller", deps.env.network, process.env, deps.env.keysDir);
-  const client = createOpsClient({ network: deps.env.network, rpcUrl: deps.env.tempoRpcUrl, privateKey: key });
+  const client = createOpsClient({ network: deps.env.network, rpcUrl: deps.env.tempoRpcUrl, privateKey: key, tier: 0 });
   const venue = venueOf(client.chainId);
   if (!venue) throw new Error(`no engine fragment for chain ${client.chainId}`);
   let dryRun = deps.env.dryRun;

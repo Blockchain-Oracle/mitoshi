@@ -3,6 +3,7 @@
  * EngineLens, sends through `tx/send.ts`, prices parsed here and fetched by ops.
  */
 export * from "./client";
+export { rpcBudgetStats, RpcBudget, type RpcBudgetStats } from "../rpc-budget";
 export * from "./venue";
 export * from "./calls";
 export * from "./send";

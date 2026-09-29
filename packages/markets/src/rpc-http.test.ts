@@ -53,7 +53,7 @@ describe("the ops transport against the public RPC's limits", () => {
 
   it("sends each request on its own and all of a boundary's concurrent reads succeed", async () => {
     const rpc = moderatoLike();
-    const client = createOpsClient({ network: "testnet", rpcUrl: "https://rpc.test", fetchFn: rpc.fetchFn });
+    const client = createOpsClient({ network: "testnet", rpcUrl: "https://rpc.test", fetchFn: rpc.fetchFn, unitsPerSec: 0 });
     const call = () => client.public.request({ method: "eth_call", params: [{ to: "0x0000000000000000000000000000000000000001", data: "0x00" }, "latest"] });
     const results = await Promise.all(Array.from({ length: 40 }, call));
     expect(results).toHaveLength(40);
@@ -63,7 +63,7 @@ describe("the ops transport against the public RPC's limits", () => {
 
   it("retries a rate-limited request with backoff instead of failing it", async () => {
     const rpc = moderatoLike({ rateLimitFirst: 3 });
-    const client = createOpsClient({ network: "testnet", rpcUrl: "https://rpc.test", fetchFn: rpc.fetchFn });
+    const client = createOpsClient({ network: "testnet", rpcUrl: "https://rpc.test", fetchFn: rpc.fetchFn, unitsPerSec: 0 });
     await expect(client.public.getBlockNumber({ cacheTime: 0 })).resolves.toBe(16n);
     expect(rpc.seen.limited).toBe(3);
   });
@@ -82,13 +82,13 @@ describe("fetchMarkets (D-131)", () => {
 
   it("reads an unknown Window as null", async () => {
     const rpc = moderatoLike({ answerCall: unknownEverywhere });
-    const client = createOpsClient({ network: "testnet", rpcUrl: "https://rpc.test", fetchFn: rpc.fetchFn });
+    const client = createOpsClient({ network: "testnet", rpcUrl: "https://rpc.test", fetchFn: rpc.fetchFn, unitsPerSec: 0 });
     await expect(fetchMarkets(client, venue, ids)).resolves.toEqual([null, null]);
   });
 
   it("throws when the read itself failed, so the relay never skips a Window it could not read", async () => {
     const rpc = moderatoLike({ rateLimitFirst: 1_000, answerCall: unknownEverywhere });
-    const client = createOpsClient({ network: "testnet", rpcUrl: "https://rpc.test", fetchFn: rpc.fetchFn });
+    const client = createOpsClient({ network: "testnet", rpcUrl: "https://rpc.test", fetchFn: rpc.fetchFn, unitsPerSec: 0 });
     await expect(fetchMarkets(client, venue, ids)).rejects.toThrow(/not read/);
   }, 20_000);
 });

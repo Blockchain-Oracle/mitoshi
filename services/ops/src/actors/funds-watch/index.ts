@@ -16,7 +16,7 @@ const ROLES: OpsRole[] = ["roller", "price-relay", "settler", "seed-maker", "kee
 const FLOOR_BASE = BigInt(Number(process.env.FUNDS_FLOOR_PATHUSD) > 0 ? Number(process.env.FUNDS_FLOOR_PATHUSD) : 10_000) * 1_000_000n;
 
 export function startFundsWatch(deps: VenueDeps): { stop: () => void } {
-  const client = createOpsClient({ network: deps.env.network, rpcUrl: deps.env.tempoRpcUrl });
+  const client = createOpsClient({ network: deps.env.network, rpcUrl: deps.env.tempoRpcUrl, tier: 2 });
   const watched: Array<{ name: string; address: Address }> = [];
   for (const role of ROLES) {
     const key = roleKey(role, deps.env.network, process.env, deps.env.keysDir);

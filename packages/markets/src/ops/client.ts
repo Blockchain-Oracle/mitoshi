@@ -10,6 +10,7 @@ import { UTILITIES } from "@cwf/clients";
 import { NETWORKS, TEMPO_RPC_HTTP, type Network } from "@cwf/core";
 import { tempoChain, type TempoChain } from "../chains";
 import { MULTICALL_CHUNK_BYTES, tempoHttp } from "../rpc-http";
+import { sharedRpcBudget, type RpcBudget, type RpcTier } from "../rpc-budget";
 
 export interface OpsClient {
   network: Network;
@@ -29,12 +30,28 @@ export interface OpsClientInput {
   privateKey?: Hex | null;
   /** Tests: the fetch the transport sends through. */
   fetchFn?: typeof fetch;
+  /** Request units per second for this URL's shared budget; default `TEMPO_RPC_UNITS_PER_SEC` or 30; 0 = unpaced. */
+  unitsPerSec?: number;
+  /** Tests: a budget of their own instead of the process-wide one. */
+  budget?: RpcBudget;
+  /** Queue place in the shared budget: 0 the print path (relay, roller, settler), 1 the house, 2 bookkeeping. */
+  tier?: RpcTier;
 }
+
+/** Below the public RPC's measured ≈ 36 units/s per IP (D-134). */
+export const DEFAULT_RPC_UNITS_PER_SEC = 30;
+const opsUnitsPerSec = () => {
+  const n = Number(process.env.TEMPO_RPC_UNITS_PER_SEC);
+  return process.env.TEMPO_RPC_UNITS_PER_SEC !== undefined && Number.isFinite(n) && n >= 0 ? n : DEFAULT_RPC_UNITS_PER_SEC;
+};
 
 export function createOpsClient(input: OpsClientInput): OpsClient {
   const chain = tempoChain(input.network);
   // No JSON-RPC batching: the public RPC refuses batches over a small weight budget, whole (D-130, `../rpc-http`).
-  const transport = tempoHttp(input.rpcUrl || TEMPO_RPC_HTTP[input.network], input.fetchFn ? { fetchFn: input.fetchFn } : {});
+  // All actors share one request budget per URL, the container's IP limit (D-134); 0 turns pacing off.
+  const url = input.rpcUrl || TEMPO_RPC_HTTP[input.network];
+  const units = input.unitsPerSec ?? opsUnitsPerSec();
+  const transport = tempoHttp(url, { ...(input.fetchFn ? { fetchFn: input.fetchFn } : {}), ...(units > 0 ? { budget: input.budget ?? sharedRpcBudget(url, units), tier: input.tier ?? 1 } : {}) });
   const pub = createPublicClient({ chain: { ...chain, contracts: { ...chain.contracts, multicall3: { address: UTILITIES.multicall3 as Address } } }, transport, batch: { multicall: { wait: 10, batchSize: MULTICALL_CHUNK_BYTES } } }) as unknown as PublicClient;
   const account = input.privateKey ? privateKeyToAccount(input.privateKey) : null;
   const wallet = account ? createWalletClient({ account, chain, transport }) : null;

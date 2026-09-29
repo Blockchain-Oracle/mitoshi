@@ -26,7 +26,7 @@ export function startSettler(deps: VenueDeps): { stop: () => void } {
   if (!deps.sql) throw new Error("the settler reads its worklist from the index: DATABASE_URL is required");
   const sql = deps.sql;
   const key = roleKey("settler", deps.env.network, process.env, deps.env.keysDir);
-  const client = createOpsClient({ network: deps.env.network, rpcUrl: deps.env.tempoRpcUrl, privateKey: key });
+  const client = createOpsClient({ network: deps.env.network, rpcUrl: deps.env.tempoRpcUrl, privateKey: key, tier: 0 });
   const venue = venueOf(client.chainId);
   if (!venue) throw new Error(`no engine fragment for chain ${client.chainId}`);
   const dryRun = deps.env.dryRun || !key;

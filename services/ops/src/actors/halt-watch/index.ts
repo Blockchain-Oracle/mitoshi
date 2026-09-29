@@ -40,7 +40,7 @@ export function applyFixture(o: Observations, f: HaltFixture): void {
 }
 
 export function startHaltWatch(deps: VenueDeps): { stop: () => void } {
-  const client = createOpsClient({ network: deps.env.network, rpcUrl: deps.env.tempoRpcUrl });
+  const client = createOpsClient({ network: deps.env.network, rpcUrl: deps.env.tempoRpcUrl, tier: 2 });
   const venue = venueOf(client.chainId);
   if (!venue) throw new Error(`no engine fragment for chain ${client.chainId}`);
   const fixture = loadHaltFixture(process.env.HALT_WATCH_FIXTURE);

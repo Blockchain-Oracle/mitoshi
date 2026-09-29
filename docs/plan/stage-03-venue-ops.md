@@ -11,7 +11,8 @@
   credentials; `: ping` every 15 s; `Last-Event-ID` resume), funds-watch.
 - [x] `scripts/drive/{recount,halt-replay}.ts`. Src: Agari `scripts/drive/recount.ts`.
 - [x] S3.11 voided Windows fixed: Tempo HTTP transport without JSON-RPC batching + 8 KB Multicall3 chunks (D-130); a
-  failed read or send is never a finished Window (D-131); roll rules unchanged (D-132); `scripts/drive/rpc-load.ts`.
+  failed read or send is never a finished Window (D-131); roll rules unchanged (D-132); one paced RPC budget per URL,
+  print path first (D-134); `scripts/drive/rpc-load.ts`.
 - **Gate:** 24 h unattended across a US session and a crypto overnight (open, print, settle, auto-pay); recount ==
   index; recorded halts replayed; Gap proven over the first Friday close → Monday open after the gate (dates recorded in acceptance).
   **Rows:** M-06, M-07, M-08, G-03 (ops), G-07, G-12, G-13, G-14, G-15, L-73, UX-03 (ops stream).
