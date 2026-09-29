@@ -1,6 +1,6 @@
 /**
  * Every actor ops can run (plan C.5.2), by `OPS_ACTORS` name. `spot: true` asks main for the process's spot feed.
- * The default set is the venue; `all` adds nothing hidden (every actor here is a venue actor in S3).
+ * The default set is the venue (`all` = the default set plus any named extra); `house-taker` is opt-in only.
  */
 import { archivePass, ARCHIVE_EVERY_MS } from "./actors/archive";
 import { chainHeadPass, CHAIN_HEAD_EVERY_MS } from "./actors/chain-head";
@@ -13,6 +13,7 @@ import { startHaltWatch } from "./actors/halt-watch";
 import { startEarnings } from "./calendar/earnings";
 import { startCalendar } from "./calendar";
 import { startFundsWatch } from "./actors/funds-watch";
+import { startHouseTaker } from "./actors/house-taker";
 import { runActor, type VenueDeps } from "./runtime";
 
 export interface ActorEntry {
@@ -39,6 +40,8 @@ export const ACTORS: Record<string, ActorEntry> = {
   earnings: { start: (d) => startEarnings(d) },
   calendar: { start: (d) => startCalendar(d) },
   "funds-watch": { start: (d) => startFundsWatch(d) },
+  // Opt-in (S3 soak): house-key trades so an unattended soak exercises fills and auto-pay; never in the default set.
+  "house-taker": { start: (d) => startHouseTaker(d) },
 };
 
 export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch"] as const;

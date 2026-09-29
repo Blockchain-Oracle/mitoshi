@@ -23,7 +23,7 @@ const log = (actor: string) => (why: string) => console.log(line(actor, why));
 
 function selected(): string[] {
   if (env.actors.length === 0) return [...DEFAULT_ACTORS];
-  if (env.actors.includes("all")) return [...new Set([...Object.keys(ACTORS), ...env.actors.filter((a) => a !== "all")])];
+  if (env.actors.includes("all")) return [...new Set([...DEFAULT_ACTORS, ...env.actors.filter((a) => a !== "all")])];
   return env.actors;
 }
 

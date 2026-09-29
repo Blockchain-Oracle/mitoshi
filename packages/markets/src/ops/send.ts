@@ -54,7 +54,8 @@ export function engineErrorName(error: unknown): string | null {
   return null;
 }
 
-const short = (error: unknown) => (error instanceof BaseError ? error.shortMessage : error instanceof Error ? error.message : String(error)).slice(0, 300);
+/** The short message plus viem's details (the node's own words for an RPC error). */
+const short = (error: unknown) => (error instanceof BaseError ? `${error.shortMessage}${error.details && !error.shortMessage.includes(error.details) ? ` (${error.details})` : ""}` : error instanceof Error ? error.message : String(error)).slice(0, 400);
 
 /** Simulates a single call from the role; throws `OpsSendError` with the engine error name when it would revert. */
 export async function preflight(client: OpsClient, call: Call): Promise<void> {
