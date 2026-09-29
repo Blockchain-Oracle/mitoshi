@@ -1,17 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { toFunctionSelector, type AbiFunction } from "viem";
+import { type AbiFunction, getAddress } from "viem";
+import { deployments } from "@cwf/clients";
 import { launchPolicy } from "./launch";
 
+const launch = deployments[42431].launch.contracts;
+
 describe("launch relay policy", () => {
-  it("targets the deployed registry and sponsors nothing in 17a", () => {
-    expect(launchPolicy.targets.map((t) => t.toLowerCase())).toContain("0x9b664b9b73497aa140eda23a81fcc3db279c50b7");
-    expect(launchPolicy.sponsor).toEqual([]);
+  it("targets the deployed registry, launchpad and locker (not the linked libraries' callers)", () => {
+    const t = launchPolicy.targets.map((x) => getAddress(x));
+    for (const c of [launch.LaunchRegistry, launch.CurveLaunchpad, launch.LiquidityLocker]) expect(t).toContain(getAddress(c.address));
   });
 
-  it("names only functions the registry really has (no drift from the generated ABI)", () => {
+  it("sponsors the holder's own trades and claims; never admin; graduate and createConfig pay their own way", () => {
+    expect(launchPolicy.sponsor).toEqual(["createLaunch", "buy", "sell", "claimFees", "claimLeftover", "withdraw"]);
+    for (const n of ["graduate", "createConfig", "recordStablecoin"]) expect(launchPolicy.sponsor).not.toContain(n);
+    expect(launchPolicy.never).toEqual(expect.arrayContaining(["recordStablecoin", "recordMemecoin", "setCurveLaunchpad", "unlockCallback", "register"]));
+  });
+
+  it("names only functions the contracts really have (no drift from the generated ABIs)", () => {
     const names = new Set(launchPolicy.abi.filter((e): e is AbiFunction => e.type === "function").map((f) => f.name));
-    for (const n of [...launchPolicy.never, ...launchPolicy.sponsor]) expect(names.has(n), n).toBe(true);
-    expect(launchPolicy.never).toContain("recordStablecoin");
-    expect(toFunctionSelector(launchPolicy.abi.find((e): e is AbiFunction => e.type === "function" && e.name === "recordStablecoin")!)).toMatch(/^0x/);
+    for (const n of [...launchPolicy.never, ...launchPolicy.sponsor, "graduate", "createConfig"]) expect(names.has(n), n).toBe(true);
   });
 });
