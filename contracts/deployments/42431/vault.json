@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "chainId": 42431,
+  "area": "vault",
+  "commit": "3980e0f",
+  "deployedAtUtc": "2026-09-29T07:36:42.250Z",
+  "deployer": "0xC49B15bF5140790aaE1C82F0F29CEed5A5701f59",
+  "contracts": {
+    "EventVault": {
+      "address": "0x5E38dc8b7402FFB608134872a64663e5D75235b8",
+      "artifact": "EventVault.sol:EventVault",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0x24d1ab7a713db2b419ae4c34cd9718ed662f04c6976975d8d055123618f22ffa",
+      "deployBlock": 37385655,
+      "history": []
+    }
+  },
+  "roles": {},
+  "params": {
+    "collateral": "0x20C0000000000000000000000000000000000000",
+    "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+    "iocMaxEvictions": 4,
+    "iocMaxFills": 16,
+    "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F"
+  },
+  "external": {}
+}
