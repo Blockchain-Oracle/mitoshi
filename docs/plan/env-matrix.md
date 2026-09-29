@@ -14,7 +14,8 @@
 | `SOCIAL_SESSION_SECRET`, `ROOM_TOKEN_SECRET` | ✓ | ✓ | ✓ | ✓ |
 | `<ROLE>_PRIVATE_KEY` (roller, relay, settler, maker, keeper, …) | — | ✓ | ✓ | ✓ |
 | `DRY_RUN`, `OPS_ACTORS`, `OPS_HTTP_PORT=8080`, `OPS_STUCK_PASS_MS` | — | ✓ | ✓ | ✓ |
-| `MPP_PAYER_PRIVATE_KEY`, `MPP_ROOT_ADDRESS` | — | ✓ | — | after Q-020 |
+| `MPP_PAYER_PRIVATE_KEY`, `MPP_ROOT_ADDRESS` | — | ✓ | ✓ (roles `mpp-payer` / `mpp-root`, Moderato pathUSD, D-085) | after Q-020 |
+| `MPP_MAINNET_APPROVED`, `MPP_MAX_PER_REQUEST_BASE`, `MPP_MAX_PER_DAY_BASE` | — | ✓ | caps optional | `MPP_MAINNET_APPROVED=1` only with the owner's go (Q-020) |
 | `THEME_KEY_KEK` | — | ✓ | ✓ | KMS-wrapped |
 | AI provider keys | ✓ | ✓ | ✓ | ✓ |
 | `DATASTREAMS_API_KEY`, `DATASTREAMS_API_SECRET` | ✓ | ✓ | after Q-011 | ✓ |

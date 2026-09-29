@@ -5,7 +5,7 @@
 | `RELAY_FEE_PAYER_PRIVATE_KEY` | Coolify web app (per network) | `/api/relay` fee payer |
 | `<ROLE>_PRIVATE_KEY` (roller, price-relay, settler, seed-maker, earn-quoter, keeper, x-relay, desk, stock-sync, ops-fee-payer) | Coolify ops app env (per network); locally `~/.config/cwf/<network>/<role>.json` | ops actors |
 | `DEPLOYER` key | local `~/.config/cwf/<network>/deployer.json`; mainnet via the owner's hardware wallet / Safe | forge scripts |
-| `MPP_PAYER_PRIVATE_KEY`, `MPP_ROOT_ADDRESS` | Coolify ops (mainnet, after Q-020) | brain via MPP |
+| `MPP_PAYER_PRIVATE_KEY`, `MPP_ROOT_ADDRESS` | Coolify ops (testnet: roles `mpp-payer`/`mpp-root` in `~/.config/cwf/testnet/`; mainnet after Q-020) | MPP payer (TIP-1011 access key on the root), brain `via: 'mpp'`, paid data |
 | `THEME_KEY_KEK` | Coolify ops (testnet); KMS on mainnet | theme agent keys |
 | `OPS_INTERNAL_TOKEN`, `STREAM_TICKET_SECRET`, `ROOM_TOKEN_SECRET`, `SOCIAL_SESSION_SECRET` | Coolify web + ops | internal auth, stream tickets, rooms, social session |
 | `DATABASE_URL` | Coolify web + ops | Coolify Postgres per network |

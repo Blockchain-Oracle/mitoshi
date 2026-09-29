@@ -23,3 +23,5 @@ forced are D-054…D-056 (plan D45–D47). Before coding against a library, re-r
 | LayerZero V2 (npm) | `chain-libs.md` §5 | `_debit`/`_credit` overrides; enforced options; `_credit` never reverts; needs `solidity-bytes-utils` |
 | Solady 0.1.26 | `chain-libs.md` §6 | `ffs/fls(0) = 256` guards; `lnWad` refuses ≤ 0 |
 | Expo SDK 57 + RN webview, notifications, widgets, EAS | `mobile-stack.md` | Appendix D as corrected by D-056 |
+| mppx 0.10.1 | Not on Context7: package source/`.d.ts` + tempo docs `guide/machine-payments/*` | `Mppx.create({ polyfill: false, methods: [tempo.charge(...)] })` with per-request `orderChallenges` for caps; `Receipt.fromResponse`; `tempo.session.manager` for session-only services; access-key account via `viem/tempo` `Account.fromSecp256k1(key, { access: root })` (D-085) |
+| AI SDK 7 (`ai`, `@ai-sdk/*` 4) | Context7 `/vercel/ai` | `generateText` + `Output.object` (the ported `generateObject` is deprecated); `NoObjectGeneratedError`/`NoOutputGeneratedError`; provider `baseURL` + `fetch` for MPP hosts (D-085) |
