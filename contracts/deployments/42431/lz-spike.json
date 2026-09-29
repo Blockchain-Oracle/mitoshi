@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "chainId": 42431,
+  "area": "lz-spike",
+  "commit": "ad79a36",
+  "deployedAtUtc": "2026-09-29T04:08:30.188Z",
+  "deployer": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e",
+  "contracts": {
+    "LzPing": {
+      "address": "0x6B053153397c2019D23561a16f2ad6134bCc3Dfb",
+      "artifact": "LzPingTempo.sol:LzPingTempo",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0xb03a0b1d1b068d99037010ba961833f69720d05caf293f5a9d436728374f23ef",
+      "deployBlock": 37364864,
+      "history": []
+    }
+  },
+  "roles": {},
+  "params": {
+    "eid": 40444
+  },
+  "external": {}
+}

@@ -1,5 +1,9 @@
 {
   "generatedBy": "scripts/codegen/clients.mjs",
-  "fragments": [],
-  "abis": []
+  "fragments": [
+    "42431/lz-spike"
+  ],
+  "abis": [
+    "LzPingTempo"
+  ]
 }

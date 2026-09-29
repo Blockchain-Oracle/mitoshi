@@ -32,7 +32,21 @@
 
 ## Findings
 
-_None yet._
+- **F14-1 Faucets (2026-09-29):** no programmatic faucet reaches RH testnet (46630) or Base Sepolia (84532). The official
+  RH faucet is behind Vercel's bot check; QuickNode/Alchemy/Chainstack need mainnet ETH or login; ZalalenA needs hCaptcha
+  + Turnstile; Base Sepolia faucets (CDP, Superchain, thirdweb, Alchemy) need a sign-in or CAPTCHA. The RH testnet
+  `Faucet` contract `0x8762…17Be` is `onlyOwner` (`sendTokensAndEther`), so it can't be self-served. Needed (owner):
+  deployer `0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e` ≥ 0.05 ETH on 46630 (+ the 5 × 5 Stock Tokens) and ≥ 0.2 ETH on
+  84532; stock-sync `0x51476Dd5CaEb8BEE9585050A9152dea729fC8610` ≥ 0.02 ETH on 46630.
+- **F14-2 Dead DVNs, full addresses** (LZ metadata `deployments`, `deadDVN`): RH `0x6788f52439ACA6BFF597d3eeC2DC9a44B8FEE842`,
+  Tempo `0x3436d350103a9dfA252a04f102f9f10f58Ff450C`, RH testnet `0x88B27057A9e00c5F05DDa29241027afF63f9e6e0`, Base Sepolia
+  `0x78551ADC2553EF1858a558F5300F7018Aad2FA7e`, Moderato `0x236B9303d513dDF3f4c4E93A640fB80A178872f1` (`script/lib/LzNetworks.sol`).
+- **F14-3 Moderato → Base Sepolia fee (fork of block 37363418, real endpoint):** 100k lzReceive gas quotes **0.213516 LZD**
+  (executor 0.202337 + LZ Labs DVN 0.011179; treasury 0). `LzdFee.pay` pulled exactly that in pathUSD, `LZD.wrap` minted it
+  to the endpoint, the endpoint forwarded it to SendUln302. Tempo rejects `msg.value` at the protocol level (call reverts
+  without data), so the adapter's `ValueNotAccepted` is belt-and-braces.
+- **F14-4 Tempo deploy gas:** an 7 KB OApp costs 8.39M gas on Moderato (TIP-1000 state creation); scripts must broadcast one
+  contract per tx and keep each under the 30M general-lane limit.
 
 ## Handoff
 
