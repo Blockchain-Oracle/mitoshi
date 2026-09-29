@@ -1,6 +1,6 @@
 # S2 — The market engine (wave 1) — money gate (App. A)
 
-- [ ] S2.0 Toolchain check + `script/check-sizes.sh` (fail > 23.5 KB); spikes X6, X7.
+- [x] S2.0 Toolchain check + `script/check-sizes.sh` (fail > 23.5 KB); spikes X6, X7.
 - [ ] S2.1 **Interface checklist, signed before freeze:** `docs/specs/interface-checklist.md` — every IDreamDex member
   (A.2.7), the 12 engine semantics, E-01…E-72, and the reads C.2.5 needs (batch `marketsOf`, `positionsOf`,
   `topOfBook`), each mapped to a function and a test; signed by the S4/S7/S8/S10/S12b owners. Freeze
@@ -38,8 +38,26 @@
 
 ## Findings
 
-_None yet._
+- **F-S2-01 (S2.0, toolchain).** Foundry 1.8.3 (`cae51ad`), solc 0.8.30, `network = "tempo"` resolves Osaka and
+  `isolate = true` by default (`forge config`), so every top-level test call is its own transaction: gas snapshots are
+  per-tx numbers and no test may rely on transient storage between calls (D-054). Local (non-fork) `forge test`
+  executes the Tempo precompiles: the TIP-20 factory creates real tokens, TIP-403 `validateReceivePolicy` answers, and
+  the test contract holds `type(uint64).max` pathUSD.
+- **F-S2-02 (X6).** Mainnet fork under `network = "tempo"` works (pinned block 41,742,739): precompiles answer, a real
+  pathUSD holder can be pranked, the factory creates and mints. forge `deal` **cannot** write a TIP-20 precompile
+  balance on a fork (stdStorage finds no slot). Fork tests fund actors by pranking a holder; local tests mint a
+  factory-created TIP-20 or use the test contract's pathUSD.
+- **F-S2-03 (X7, live on Moderato; acceptance/S2.md).** T7 storage credits (TIP-1060) are live and are the storage
+  credits the engine design relies on (D-011): a new slot costs ≈ 250k gross (4 slots = 1,033,438); clearing earns
+  one credit per slot **to the contract that cleared it** (`StorageCredits.balanceOf(contract)`), with no refund at
+  clear time (T7 removed the clearing refund); a later new slot in the same contract is refunded at tx end in the
+  default `Refund` mode (4 credited slots = 53,450 net, 245k creditable + 5k residual each). The **tx gas limit must
+  still cover the gross** (limit 1,038,255 for 53,450 used) — so the fills cap and every gas estimate use gross
+  numbers. **Block `gasUsed` counts net of the credit refund** (= Σ receipts). **TIP-1016 is not live**: code is
+  still 1,000 gas/B (404 B deploy = 931,695 gas). The engine is one shared credit pool, first come first served (the
+  T7 docs note shared contracts may attribute credits per user via `Preserve`/`Direct`); the plan's design (credits
+  minted by redeems and cancels fund the next market's slots) is exactly the shared-pool behaviour, so it stands.
 
 ## Handoff
 
-_Not started._
+S2.0 done (toolchain, size gate, X6, X7). Next: S2.1 interface checklist and frozen ABI.
