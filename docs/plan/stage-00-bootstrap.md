@@ -10,7 +10,7 @@
   `.gitignore`, `THIRD_PARTY_NOTICES.md`. Src: Masayume root.
 - [x] S0.4 Scaffolds: `packages/{core,markets,brain,db,clients}`, `services/ops` (hello `runActor` + `/health`),
   `web` (hello + `/api/health`), `scripts/{codegen,invariants,keys,deploy,drive,archive,e2e}`.
-- [ ] S0.5 `contracts/`: `foundry.toml` (default Tempo, `evm`, `ci`, `invariant` profiles, rpc endpoints), all libs
+- [x] S0.5 `contracts/`: `foundry.toml` (default Tempo, `evm`, `ci`, `invariant` profiles, rpc endpoints), all libs
   (forge-std, tempo-std@b9860ac, OZ 5.x + upgradeable, solady, OZ uniswap-hooks@2ae32be, v4-core@46c6834 +
   v4-periphery interfaces/libraries, LayerZero oapp-evm/oft-evm/oft-evm-upgradeable/protocol/messagelib/test-devtools),
   `script/lib/DeploymentWriter.sol`, `deployments/README.md` (fragment schema C.1.6).
@@ -35,7 +35,12 @@
 
 ## Findings
 
-_None yet._
+- LayerZero V2 comes from npm (`@layerzerolabs/*`, its documented Foundry setup) with remappings; everything else is a
+  pinned submodule: forge-std v1.16.2, tempo-std b9860ac, OZ + upgradeable v5.7.0, solady v0.1.26, uniswap-hooks
+  2ae32be, v4-core 46c6834, v4-periphery 9969eec, v4-hooks-public e4eabe5, permit2 cc56ad0 (v4-periphery's pin, added
+  directly instead of recursive submodules). LayerZero also needs `solidity-bytes-utils`.
+- Foundry 1.8.3 `network = "tempo"` sets `evm_version = "osaka"` itself.
+- Deployment fragments: scripts write `<area>.pending.json`; `scripts/deploy/finalize.ts` (S0.6) adds tx hashes/blocks.
 
 ## Handoff
 
