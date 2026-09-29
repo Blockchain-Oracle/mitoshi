@@ -1,7 +1,7 @@
 # S14 — Stocks on Tempo: the bridge (14c wave 1; 14o after S3; 14w UI after S1, wired and gated after 14c.10, 14o, S4, S5; App. B.1–B.2)
 
 - [ ] 14c.1–2 Spike X1 (`src/lz/LzPing.sol`, dummy OFT round trip).
-- [ ] 14c.3 `src/common/{BridgeTypes,BridgeRateLimiter,StockSyncCodec}.sol` + codec fuzz tests.
+- [x] 14c.3 `src/common/{BridgeTypes,BridgeRateLimiter,StockSyncCodec}.sol` + codec fuzz tests.
 - [ ] 14c.4 `src/robinhood/StockLockbox.sol` + the B.6 lockbox tests. 14c.5 `src/robinhood/StockSyncSender.sol` (staticcall probes).
 - [ ] 14c.6 `src/transit/{TransitOFT,HopComposer,StockSyncForwarder}.sol`.
 - [ ] 14c.7 `src/stocks/TIP20MintBurnAdapter.sol` (proxy; `_credit` deferral in order B.1.4; `_payNative` → LZD via
@@ -47,6 +47,8 @@
   without data), so the adapter's `ValueNotAccepted` is belt-and-braces.
 - **F14-4 Tempo deploy gas:** an 7 KB OApp costs 8.39M gas on Moderato (TIP-1000 state creation); scripts must broadcast one
   contract per tx and keep each under the 30M general-lane limit.
+- **F14-5 via-IR reads `block.timestamp` once per function:** after `vm.warp` a test must read time with
+  `vm.getBlockTimestamp()` (a fuzz test computed elapsed = 0 otherwise). Contracts are unaffected (each call is fresh).
 
 ## Handoff
 
