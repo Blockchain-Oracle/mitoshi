@@ -19,18 +19,20 @@ library PositionLib {
     ///         a resting sell releases locked outcome and is credited cash (never pushed a transfer, E-34).
     function applyMaker(Position storage p, uint8 kind, uint16 price, uint64 q, uint64 cu) internal returns (uint64 cash) {
         cash = Grid.cashOf(kind, price, q, cu);
+        // Credit before debit within slot A, so the slot never passes through zero mid-call (a 0 → non-zero write is
+        // a new slot on Tempo: 250k gross even when a credit refunds it; F-S2-15).
         if (kind == KIND_BUY_YES) {
-            p.lockedCash -= cash;
             p.yesFree += q;
-        } else if (kind == KIND_BUY_NO) {
             p.lockedCash -= cash;
+        } else if (kind == KIND_BUY_NO) {
             p.noFree += q;
+            p.lockedCash -= cash;
         } else if (kind == KIND_SELL_YES) {
+            p.credit += cash;
             p.yesLocked -= q;
-            p.credit += cash;
         } else {
-            p.noLocked -= q;
             p.credit += cash;
+            p.noLocked -= q;
         }
     }
 
@@ -61,8 +63,8 @@ library PositionLib {
     function refundEscrow(Position storage p, uint8 kind, uint16 price, uint64 lots, uint64 cu) internal {
         if (kind == KIND_BUY_YES || kind == KIND_BUY_NO) {
             uint64 cash = Grid.cashOf(kind, price, lots, cu);
-            p.lockedCash -= cash;
             p.credit += cash;
+            p.lockedCash -= cash;
         } else if (kind == KIND_SELL_YES) {
             p.yesLocked -= lots;
             p.yesFree += lots;

@@ -24,7 +24,7 @@
   market isolation) with `afterInvariant()` settling and redeeming every seat and checking exact conservation each run,
   and `EngineRandom.t.sol` (12 × 2,500 deterministic). Src:
   `matching/tests/{random,support}.rs`.
-- [ ] S2.10 Gas + sizes: `Gas.t.sol` for every A.1.7 row, cold vs credit, via gas snapshot cheatcodes (per-tx under Foundry isolation) and `--gas-snapshot-check` in CI; Moderato measurements; set `fillsCap` and walk
+- [x] S2.10 Gas + sizes: `Gas.t.sol` for every A.1.7 row, cold vs credit, via gas snapshot cheatcodes (per-tx under Foundry isolation) and `--gas-snapshot-check` in CI; Moderato measurements; set `fillsCap` and walk
   `maxNodes`; `docs/specs/engine-gas.md`.
 - [ ] S2.11 Deploy: `script/{DeployEngine,RegisterSeries,ReserveNodes}.s.sol` (ensure-style, fails on drift;
   `packages/core/src/market/venue-spec.json`: lot = tick = 1000, minLots 1000, minRest 20 s, maxLead 400,000, caps
@@ -134,7 +134,18 @@
   every holder (own or cranked) and requires the engine to end holding exactly zero. Result: **256 runs × depth 500
   (128,000 calls) pass** in 7.7 min; `EngineRandom`: **12 seeds × 2,500 ops** pass with the full check after every op
   and exact settle-and-redeem conservation (1,961 fills). CI runs the invariant suite as its own job.
+- **F-S2-15 (S2.10, gas).** Forge's Tempo mode reports the TIP-1060 refund in `lastCallGas().gasRefunded`, and
+  `gasTotalUsed − gasRefunded` equals the Moderato receipt exactly (X7), so `Gas.t.sol` snapshots both columns
+  (`snapshots/engine.json`, CI `--gas-snapshot-check true`). A state-diff probe found the maker's slot A passing
+  through zero mid-fill (`lockedCash −= cash` before `yesFree += q`), which Tempo charges as a new slot (250k gross,
+  refunded only if a credit exists): `PositionLib` now writes credit before debit (2 full + 1 partial fill: 726k → 236k
+  gross). Headlines: first IOC by a new holder 640k gross / 150k net with credits (it also pays the market's first-trade
+  counters slot); repeat IOC 144k; ≈ 47k per additional full fill; 16 fills 848k; eviction ≈ 48k; full redeem 88k;
+  first PostOnly rest 1.88M cold / 154k net on a warm pool; `openWindow` 1.07M; lens ≈ 15k per node. Decisions: fill
+  caps stay 16/16 (worst placement ≈ 1.95M gross ≪ 30M), on-chain walks use `maxNodes = 64`, the house reserves the
+  pool at deploy. Table and reasoning: `docs/specs/engine-gas.md`; the Moderato receipts of the S2.12 drive add the
+  tx-level column.
 
 ## Handoff
 
-S2.0–S2.9 done (engine, verifiers, lens, invariants). Next: S2.10 gas.
+S2.0–S2.10 done. Next: S2.11 deploy scripts.
