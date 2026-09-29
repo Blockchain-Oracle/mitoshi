@@ -7,7 +7,7 @@
 - [x] 15b `src/stocks/{StockReference,hooks/StockGuardHook,libs/GuardMath}.sol` (X12 result) + tests (incl. CRWD ×4 fork);
   `script/v4/DeployStockGuardHook.s.sol` (HookMiner, reject `0x91` prefix); ops `reference-writer`; `packages/core/src/
   stocks/guard.ts` twin with shared vectors.
-- [ ] 15c `scripts/v4/{create-stock-pools,topup}.ts` (B.3.4 house plan); `deployments/42431/pools.json`.
+- [x] 15c `scripts/v4/{create-stock-pools,topup}.ts` (B.3.4 house plan); `deployments/42431/pools.json`.
 - [ ] 15d `packages/markets/src/v4/{quote,swap,pools}.ts` (batch approvals; receive-policy pre-check before signing;
   mainnet USDC.e route via the aggregator hook); `relay/policies/v4.ts`; `/status` v4 probe. `/stocks` catalogue (21st
   22252 watchlist + 19171 ticker rows, sparklines from 30538) and `/stocks/[symbol]` (cached shell + streamed price;

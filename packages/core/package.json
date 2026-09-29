@@ -8,7 +8,9 @@
     ".": "./src/index.ts",
     "./stocks/guard": "./src/stocks/guard.ts",
     "./stocks/session": "./src/stocks/session.ts",
-    "./prices/redstone": "./src/prices/redstonePayload.ts"
+    "./prices/redstone": "./src/prices/redstonePayload.ts",
+    "./stocks/housePlan": "./src/stocks/housePlan.ts",
+    "./stocks/liquidity": "./src/stocks/liquidity.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

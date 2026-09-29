@@ -172,6 +172,13 @@ export const deployments = {
       "external": {},
       "commit": "ad79a36"
     },
+    "pools": {
+      "contracts": {},
+      "roles": {},
+      "params": {},
+      "external": {},
+      "commit": "f98d630"
+    },
     "stocks": {
       "contracts": {
         "AdapterAMD": {

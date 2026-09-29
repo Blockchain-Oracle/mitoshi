@@ -22,6 +22,7 @@ export const relayTargets = {
     "lz": [
       "0x6B053153397c2019D23561a16f2ad6134bCc3Dfb"
     ],
+    "pools": [],
     "stocks": [
       "0x535aFE496eAEE0736570Cc4Abe2db7D18CF41023",
       "0xB96540a1156B81047cE3220285bA9674D5d92a98",
