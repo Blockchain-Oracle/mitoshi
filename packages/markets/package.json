@@ -13,14 +13,23 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@cwf/core": "workspace:*",
     "@cwf/clients": "workspace:*",
+    "@cwf/core": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "accounts": "catalog:",
+    "ox": "catalog:",
+    "redis": "catalog:",
     "viem": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "react": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "react": ">=19"
   }
 }

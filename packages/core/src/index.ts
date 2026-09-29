@@ -12,6 +12,7 @@ export * from "./parlay";
 export * from "./ports";
 export * from "./private";
 export * from "./projection";
+export * from "./region";
 export * from "./reserves";
 export * from "./schemas";
 export * from "./sizing";

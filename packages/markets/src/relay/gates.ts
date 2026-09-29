@@ -1,0 +1,62 @@
+/**
+ * Relay budgets (plan C.3.3): per sender per hour, per device per hour (`x-cwf-device`), per device fee per day,
+ * global fee per day, and a low-balance breaker on the fee payer. Counted over the ledger, so every instance sees
+ * the same budget. `validate` runs twice (fill, then raw send): budgets are checked both times but debited only on
+ * raw sign/send methods.
+ */
+import type { Address } from "viem";
+import type { LedgerStore } from "./ledger";
+import type { PolicyVerdict } from "./types";
+
+export const RAW_METHODS: ReadonlySet<string> = new Set(["eth_signRawTransaction", "eth_sendRawTransaction", "eth_sendRawTransactionSync"]);
+
+export interface GateLimits {
+  perSenderPerHour: number;
+  perDevicePerHour: number;
+  perDeviceFeePerDayMicros: bigint;
+  globalFeePerDayMicros: bigint;
+  /** Below this fee-payer pathUSD balance the relay stops sponsoring (the breaker). */
+  breakerMinBalanceMicros: bigint;
+}
+
+/** Testnet defaults: generous for real use, tight enough that a script can't drain the fee payer. */
+export const DEFAULT_LIMITS: GateLimits = {
+  perSenderPerHour: 120,
+  perDevicePerHour: 240,
+  perDeviceFeePerDayMicros: 5_000_000n,
+  globalFeePerDayMicros: 500_000_000n,
+  breakerMinBalanceMicros: 20_000_000n,
+};
+
+const HOUR = 3_600;
+const DAY = 86_400;
+
+export interface GateInput {
+  sender: Address;
+  device: string | null;
+  feeMicros: bigint;
+  nowSec: number;
+  /** The fee payer's pathUSD balance (micros), or null when it couldn't be read (the breaker then holds). */
+  feePayerBalanceMicros: bigint | null;
+}
+
+export async function checkGates(ledger: LedgerStore, limits: GateLimits, input: GateInput): Promise<PolicyVerdict | null> {
+  if (input.feePayerBalanceMicros === null || input.feePayerBalanceMicros < limits.breakerMinBalanceMicros) {
+    return { ok: false, code: "breaker", reason: "the fee payer is below its safety balance" };
+  }
+  const [sender, global] = await Promise.all([
+    ledger.totals({ sinceSec: input.nowSec - HOUR, sender: input.sender }),
+    ledger.totals({ sinceSec: input.nowSec - DAY }),
+  ]);
+  if (sender.count >= limits.perSenderPerHour) return { ok: false, code: "budget", reason: "sender hourly budget used" };
+  if (global.feeMicros + input.feeMicros > limits.globalFeePerDayMicros) return { ok: false, code: "budget", reason: "daily sponsorship budget used" };
+  if (input.device) {
+    const [deviceHour, deviceDay] = await Promise.all([
+      ledger.totals({ sinceSec: input.nowSec - HOUR, device: input.device }),
+      ledger.totals({ sinceSec: input.nowSec - DAY, device: input.device }),
+    ]);
+    if (deviceHour.count >= limits.perDevicePerHour) return { ok: false, code: "budget", reason: "device hourly budget used" };
+    if (deviceDay.feeMicros + input.feeMicros > limits.perDeviceFeePerDayMicros) return { ok: false, code: "budget", reason: "device daily fee budget used" };
+  }
+  return null;
+}

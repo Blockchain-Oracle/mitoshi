@@ -4,7 +4,7 @@
   `packages/core/src/{market,orders,reserves,auth,types/session-lanes}`; types per C.2.1 (drop poolAddress/nonce/token
   ids/venueId; `MarketStatus` clock-derived); calendar = RedStone `NY_MARKET_NEXT_CHANGE_TIME` ∩ Alpaca; tickers 9 names +
   SPCX + BTC/ETH/SOL; stubs `stocks/ bridge/ themes/ launch/` with vectors.
-- [ ] 1a markets surface: `packages/markets/src/{chains,env,deployments,errors,runtime,tx,sessions,submitter,relay,auth,
+- [x] 1a markets surface: `packages/markets/src/{chains,env,deployments,errors,runtime,tx,sessions,submitter,relay,auth,
   faucet}` (C.2.4); provider answers `Reading` "not deployed" per area; journal with `validBeforeSec`. Package exports
   split from day one: `@cwf/markets` (browser/native-safe), `@cwf/markets/server` (relay, auth verify, faucet, mpp,
   indexer API, signing with server keys), `@cwf/markets/react`; `IntentStore` adapters (memory, localStorage; MMKV added
@@ -77,6 +77,22 @@
 - **1a core — halts.** Pyth/Switchboard/issuer signals become RedStone freshness + signer count, Data Streams freshness
   + `marketStatus`, and the exchange's tradable flag; "Trading halted" only for the exchange halt or a closed-market
   report (Q-S6-9 grammar kept).
+- **1a markets — accounts pin.** `accounts@0.18.5` (the newest 0.18.x) was published with an unresolved
+  `hono@catalog:` dependency and cannot install; the catalog pins `accounts: 0.18.4` exactly (C.1.3 said "exact pin").
+- **1a markets — Redis client.** D-061 replaces Upstash with Coolify Redis over TCP, so the catalog gains `redis`
+  (node-redis 6): `SET NX` for `Kv.create`, `GETDEL` for `Kv.take`, native `EX` TTLs. `server/kv.test.ts` proves the
+  atomic take against a real throwaway `redis-server` (skipped where none is installed). Passkey credentials live only
+  in this KV (`credential:*` → public key), so the Coolify Redis must persist (AOF) — an owner/integrator check.
+- **1a markets — relay no-op.** The `noop` area is Multicall3 `getCurrentBlockTimestamp()` (a view: moves nothing);
+  `aggregate*` are `never` (they could run arbitrary calls). Access-key revocation is its own `keys` area: sponsored
+  and never geofenced (an exit).
+- **1a markets — journal without a hash.** A sync send that times out has no hash. Past its `validBeforeSec` an
+  expiring-nonce record is "absent" only when the area's own evidence says so; otherwise it stays "unknown" until the
+  24 h expiry (never re-sent). Area evidence readers join with their areas (engine in S4).
+- **1a — geofence header on Coolify.** Coolify's proxy stamps no country header (`x-vercel-ip-country` is Vercel's).
+  `core/region` trusts `cf-ipcountry` then `x-vercel-ip-country`; with neither, the posture is open (Agari's rule).
+  Enforcing Q-008 on the live domains needs a country header in front of Coolify (e.g. Cloudflare proxying
+  `mitoshi.xyz`) — added to the owner actions with the DNS step.
 
 ## Handoff
 
