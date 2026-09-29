@@ -3,6 +3,7 @@ import { startHttp } from "./http/server";
 import { readOpsEnv, runActor, heartbeats, errorText } from "./runtime";
 import { chainHeadPass, CHAIN_HEAD_EVERY_MS } from "./actors/chain-head";
 import { archivePass, ARCHIVE_EVERY_MS } from "./actors/archive";
+import { indexerRecountPass, INDEXER_RECOUNT_EVERY_MS } from "./actors/indexer-recount";
 import { createSql, runMigrations } from "@cwf/db";
 
 const env = readOpsEnv();
@@ -12,6 +13,8 @@ const registry: Record<string, () => void> = {
   "chain-head": () => runActor({ name: "chain-head", log: log("chain-head"), dryRun: env.dryRun, everyMs: CHAIN_HEAD_EVERY_MS, pass: chainHeadPass(env) }),
   // Signs nothing, so it runs regardless of DRY_RUN; it only needs DATABASE_URL.
   archive: () => runActor({ name: "archive", log: log("archive"), dryRun: false, everyMs: ARCHIVE_EVERY_MS, pass: archivePass(createSql()) }),
+  // Reads only on an API key / self-hosted tidx; a paid MPP route honours DRY_RUN inside the pass.
+  "indexer-recount": () => runActor({ name: "indexer-recount", log: log("indexer-recount"), dryRun: env.dryRun, everyMs: INDEXER_RECOUNT_EVERY_MS, pass: indexerRecountPass(env, createSql()) }),
 };
 
 try {

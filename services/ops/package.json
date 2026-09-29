@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@cwf/clients": "workspace:*",
     "@cwf/core": "workspace:*",
     "@cwf/db": "workspace:*",
     "@cwf/markets": "workspace:*",

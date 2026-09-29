@@ -13,6 +13,7 @@
 | AI provider keys | Coolify web + ops | Sensei, agents |
 | X OAuth + rettiwt cookies | Coolify ops | x-relay |
 | `FINNHUB_API_KEY`, `ALPACA_*`, `DATASTREAMS_API_KEY/SECRET`, `TEMPO_INDEXER_API_KEY` | Coolify web + ops | data providers |
+| `TIDX_URL`, `TIDX_BASIC_AUTH` | Coolify ops (when a self-hosted tidx is chosen, D-086) | indexer recount |
 | RPC provider URLs (`TEMPO_RPC_*`, `RH_RPC_HTTP_URL`, `BASE_SEPOLIA_RPC_HTTP_URL`) | Coolify web + ops + GitHub Actions | chain reads |
 | APNs `.p8` + key ID + team ID, FCM service account | Coolify ops | notifier (SM2) |
 | Reown project ID | Coolify web | WalletConnect |

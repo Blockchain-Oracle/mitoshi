@@ -20,6 +20,7 @@
 | AI provider keys | ✓ | ✓ | ✓ | ✓ |
 | `DATASTREAMS_API_KEY`, `DATASTREAMS_API_SECRET` | ✓ | ✓ | after Q-011 | ✓ |
 | `FINNHUB_API_KEY`, `ALPACA_*`, `TEMPO_INDEXER_API_KEY` | ✓ | ✓ | ✓ | ✓ |
+| `TIDX_URL`, `TIDX_BASIC_AUTH` (self-hosted tidx), `INDEXER_VIA_MPP` | — | ✓ | optional (D-086) | optional; MPP after Q-020 |
 | `APNS_KEY_P8`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `FCM_SERVICE_ACCOUNT` | — | ✓ | SM2 | — |
 | `WALLETCONNECT_PROJECT_ID` | ✓ | — | ✓ | ✓ |
 | `CWF_REGION_OVERRIDE`, `DEV_FIXTURES` | ✓ | — | optional | never |

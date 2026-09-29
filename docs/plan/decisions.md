@@ -422,6 +422,20 @@ Moderato (S3.5.3). Q-012's default (own follower + the Indexer API for analytics
 
 **Why:** measured; the client must be real now without spending mainnet funds or creating accounts for the owner.
 
+### D-087 — indexer sources are generated; the recount compares against the chain until `idx_events` exists (decision, S3.5, 2026-09-29)
+
+`scripts/codegen/clients.mjs` also writes `packages/clients/src/indexer.ts` (`indexerSources`): per chain, every
+deployed contract with its deploy block and each event's **full** signature (`indexed` + names — what `signature=`
+needs to expose decoded columns) and topic0; `codegen:check` in CI keeps it reproducible. The hourly recount (ops actor
+`indexer-recount`, `indexer_recounts` table) counts each event in the indexer (raw `logs` by address + selector) and
+in our own record over one closed range; "our own record" is pluggable — the chain's `eth_getLogs` now, an `idx_events`
+counter when S3's follower creates that table (its schema is S3's). A backfilling self-hosted tidx reports contracts it
+does not yet cover instead of comparing them. **Finding:** a tidx following Moderato over the public RPC is throttled
+(HTTP 429; batch requests > ~50 receipts are "request too large") to ≈4 blocks/s of backfill — a hosted tidx needs a
+provider RPC or a key on the public one.
+
+**Why:** C.4.3 asks for the recount against our index; the chain is the stricter reference until the index exists.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

@@ -374,6 +374,9 @@ importers:
 
   services/ops:
     dependencies:
+      '@cwf/clients':
+        specifier: workspace:*
+        version: link:../../packages/clients
       '@cwf/core':
         specifier: workspace:*
         version: link:../../packages/core

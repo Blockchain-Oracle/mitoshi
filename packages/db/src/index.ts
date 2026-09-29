@@ -11,3 +11,4 @@ export function createSql(url = process.env.DATABASE_URL): Sql {
 export { runMigrations } from "./migrations";
 export { insertMppReceipt, receiptsForDecision, type MppReceiptInsert, type MppReceiptRecord } from "./mpp";
 export { agentRegistrationByStrategy, setAgentRegistrationUri, upsertAgentRegistration, type AgentRegistrationRow } from "./agents";
+export { insertRecounts, type RecountInsert } from "./recounts";
