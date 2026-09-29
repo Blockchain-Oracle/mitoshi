@@ -59,6 +59,13 @@ Subject: Enable default config for Robinhood Chain testnet (EID 40451) ↔ Tempo
 > and fees. Our Moderato OApps are live (e.g. the TSLA adapter `0x5c1069C9F9912D5B8f6250359b5f2FB6F6a426b3`, the sync
 > receiver `0xE1576984eA22F1E620CFCCa6bf6154C4b9a3693e`) if you want to check traffic once it's enabled.
 >
+>
+> Related: a Base Sepolia (40245) → Moderato (40444) message on default config (LayerZero Labs DVN, 2 confirmations) has
+> been "INFLIGHT — Ready for DVNs to verify" since 2026-09-29 04:47 UTC (src tx
+> `0xec1ffa9fc18f0b094565411ef8c250c78dbab98fae86e0441c9ae925313575ed`, guid
+> `0xc135f54ecd02e666e234748e4d0709f186d6267cd92deec161be0dd9ce9ece84`), while Moderato → Base Sepolia delivered in 20 s.
+> Is the testnet DVN servicing 40245 → 40444?
+>
 > Thanks!
 
 When it's enabled: `EnsureLzConfig` switches the lockbox/adapter peers to each other (drop the hop) — the mainnet shape.
@@ -104,7 +111,9 @@ the VAA doesn't appear; then ask in the Wormhole Discord `#developers` whether t
   another lane used the same deployer; a re-run of the ensure-style script finished cleanly. Parallel lanes should
   broadcast with distinct keys or serialise.
 - **F14-10 Live leg latency:** Moderato → Base Sepolia ping delivered in **20 s** (source timestamp → receive block).
-  Base Sepolia → Moderato waits on the LayerZero Labs DVN for > 20 min (Base Sepolia source confirmations).
+  Base Sepolia → Moderato (default config: LZ Labs DVN, **2** confirmations — not the table's 1) sat "Ready for DVNs to
+  verify" for > 1 h; if it never verifies, the hop's Base → Moderato leg is blocked by DVN service, not by our contracts
+  (question added to the LayerZero draft).
 - **F14-11 Sizes (runtime / initcode, 24,576 B limit; our cap 23.5 KB):** Tempo — TIP20MintBurnAdapter 15,946 / 16,755,
   StockSyncReceiver 6,243 / 6,638, ScaledUIView 1,988 / 2,248, LzPingTempo 6,981 / 7,547; evm — StockLockbox 12,831 /
   13,637, TransitOFT 10,754 / 12,063, StockSyncSender 8,555 / 8,947, StockSyncForwarder 8,207 / 8,694, HopComposer
@@ -123,4 +132,34 @@ the VAA doesn't appear; then ask in the Wormhole Discord `#developers` whether t
 
 ## Handoff
 
-_Not started._
+**Lane S14c (wave 1), 2026-09-29, branch `stage/S14c-bridge`.** Steps 14c.3–14c.9, 14c.11–14c.13 done; 14c.1–2 and 14c.10
+open only for the Robinhood testnet side, which waits on ETH.
+
+- **Done and live:** Moderato — 5 mirrors, 5 adapter proxies (+impls), 5 ScaledUIViews, StockSyncReceiver
+  (`deployments/42431/stocks.json`), LzPingTempo (`42431/lz.json`); Base Sepolia — TransitTSLA, HopComposerTSLA,
+  StockSyncForwarder (`84532/stocks.json`), LzPing (`84532/lz.json`). EnsureLzConfig applied on both for TSLA;
+  CheckLzConfig Moderato 0 failures, Base 2 configured links clean + 2 RH links pending. Spike leg Moderato → Base
+  delivered (20 s). Evidence: `acceptance/S14.md`.
+- **Funding (checked 2026-09-29):** deployer `0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e` — RH testnet **0** (owner's
+  ~0.1 ETH not arrived), Base Sepolia ~0.00082 ETH (of the 0.001 the integrator sent), Moderato pathUSD ample;
+  stock-sync `0x51476Dd5CaEb8BEE9585050A9152dea729fC8610` — RH testnet 0 (integrator will send ~0.02 when RH lands).
+  Needs: RH ≥ 0.001 ETH for `DeployRobinhoodBridge` (simulated 25.6M gas ≈ 0.0005 ETH) + ~0.0002 per lock; Base float
+  ~0.00012 ETH per onward hop (fork: 0.000111 at 1M gas) — top up composers/forwarder with `FLOAT`.
+- **Next, in order, once RH ETH lands:** (1) faucet claims for the deployer (5 × 5 tokens / 24 h, owner or browser);
+  (2) `FOUNDRY_PROFILE=evm forge script script/stocks/DeployRobinhoodBridge.s.sol --rpc-url robinhood_testnet
+  --broadcast` → `finalize.ts 46630 stocks DeployRobinhoodBridge.s.sol`; (3) `DeployTransit` without `TICKERS` (adds
+  the other 4 tickers, reuses TSLA) with `FLOAT`; (4) EnsureLzConfig on 46630, 84532, 42431 (no `ALLOW_PARTIAL`);
+  (5) CheckLzConfig on all three must print 0 failures → tick 14c.10; (6) spike legs RH ↔ Base (LzPing on RH via
+  `DeployLzPing` + `WireLzPing`) and the dummy/faucet OFT round trip RH → Base → Moderato → back → tick 14c.1–2;
+  (7) the S14 gate items (real faucet TSLA lock → mint → burn → unlock, sync via the forwarder + duplicate, a deferral
+  then `claimDeferred`).
+- **Watch:** the Base → Moderato ping (src `0xec1ffa9f…75ed`) was still waiting on the DVN after 1 h (F14-10); if it
+  never verifies, raise it with LayerZero (question is in the §14c.13 A draft) — it gates the hop's second leg.
+- **Scripts:** `ALLOW_PARTIAL=true` wires a partial mesh; `TICKERS=TSLA` narrows a deploy (a later full run re-records
+  everything); `REDEPLOY=<Name,...>` replaces contracts (old address → `history[]`). Moderato broadcasts need
+  `--tempo.fee-token 0x20C0…0000 --priority-gas-price 1`; the deployer key is shared with other lanes (F14-9), so a
+  "nonce changed" failure just needs a re-run.
+- **For 14w/14o:** relay policy `packages/markets/src/relay/policies/stocks.ts` declares nothing sponsored yet; ABIs for
+  adapter/receiver/views/mirrors (ITIP20) are generated; the codec vector for the TS encoder is in
+  `test/evm/common/StockSyncCodec.t.sol::test_vectorBytes`; Tempo users pay LZ fees by approving pathUSD to the adapter.
+- **Decisions:** D-080 (Tempo credit gas 600k / enforced 1M / pre-warmed counters). Outreach drafts in §14c.13 (not sent).
