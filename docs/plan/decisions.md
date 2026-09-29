@@ -450,6 +450,21 @@ passkey prompts); `authorizeKey` as a batch call needs one. So:
 **Why:** measured; one prompt is the UX the follow modal promises (stage 16: "1–2 prompts"), and the gas fits the
 30M per-tx cap with margin at the testnet theme size.
 
+### D-101 — ThemeRegistry lists a token only through a Safe-recorded guarded pool; the guard is an interface (decision, S16c, 2026-09-29)
+
+B.4.1's "tokens allowed only with a registered guarded `(pathUSD, token)` pool" is enforced as: the owner (Safe) sets
+the StockGuardHook once (`setGuard`) and records each mirror's `PoolKey` (`setTokenPool`), which must have currency0 =
+pathUSD, currency1 = the mirror and hooks = the guard, and which the guard must report through
+`IThemePoolGuard.isGuardedPool(key)`; `publish`/`publishVersion` re-check that live, so a guard swap delists nothing
+retroactively but blocks new versions on pools the new guard doesn't know. The router takes each leg's `PoolKey` from the
+registry. **S15b's StockGuardHook must expose `isGuardedPool(PoolKey) → bool`** (true after `registerPool`). Band rules:
+per band min ≤ target ≤ max ≤ 100 %, tokens need max > 0, targets (tokens + cash) sum to exactly 100 % — which already
+implies Σ min ≤ 100 % ≤ Σ max, so no separate feasibility check. Deploy order: the registry deploys now with no guard;
+`setGuard` + `setTokenPool` × 5 run after S15b–c register the pools (plan "16c.4 deploy after S15b–c").
+
+**Why:** the hook doesn't exist yet; an interface plus a Safe-recorded key keeps the pool choice explicit (fee/tick
+spacing come from S15c's pools, not guessed) and lets the registry deploy today.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
