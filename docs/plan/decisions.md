@@ -428,6 +428,49 @@ Refines B.5.2 `curvePolicyId`.
 
 **Why:** measured; the stricter mint member costs nothing and closes a path the spec left open.
 
+### D-096 — the memecoin launchpad ships with LaunchRegistry v2, owned by the launch lane key (decision, S17b, 2026-09-29)
+
+`LaunchRegistry.setCurveLaunchpad` is owner-only and the S17a registry (`0x9b66…50b7`) is owned by the shared
+`deployer` key, which lanes no longer broadcast from (per-lane keys, S0.10). So `DeployCurveLaunchpad.s.sol` deployed
+a fresh registry (same code) owned by `deployer-launch` `0x64B7…1c96` and bound it to the launchpad:
+`0x8248…94A3` is now `LaunchRegistry` in `deployments/42431/launch.json`; the S17a registry stays in `history[]`. The
+two S17a test stablecoins remain on chain; only their admins can list them in v2 (`recordStablecoin`). The script
+also accepts `LAUNCH_REGISTRY=<existing>` for a deployment whose registry owner binds the launchpad itself. A first
+launchpad deployment (`0xd28e…2a0F`, 06:28 UTC) was superseded at 06:39 so the deployed source matches the
+repo after two invariant fixes (non-payable PositionManager interface; `claimLeftover(address coin)`); it stays in
+history. Testnet owner and protocol treasury = the lane key (Q-016).
+
+**Why:** keeps the per-lane nonce rule without blocking the live gate; nothing of value lived in registry v1.
+
+### D-097 — graduation and locker details the spec left open (decision, S17b, 2026-09-29)
+
+Refines B.5.2. (1) The corrective swap is exact-input with the target as its price limit, run inside
+`PoolManager.unlock` under `try`: raising the v4 price sells freshly minted coin (≤ 10 % of `migrationCoinAmount`,
+reserved in the supply check: `totalSupply ≥ curveSupply + migrationCoin × 1.1`), lowering it pays pathUSD (≤ 10 % of
+the migration quote; free in practice — no coin-side liquidity can exist before graduation). Short of the target →
+the attempt rolls back, `TierSkipped(reason)` and the next tier; three tiers failing → `PoolPoisoned`, and the launch
+stays Complete. (2) pathUSD the position cannot take (ratio rounding, the squatter's pathUSD the correction bought)
+and the migration fee go to partner/creator by their trading-fee shares; the 0.2 % goes to the protocol treasury.
+(3) The leftover (`cap − supply` after the position) is minted to the launchpad at graduation and paid to the
+leftover receiver by `claimLeftover`, so supply is fixed at the cap before the roles are renounced. (4) The locker
+splits LP fees by the liquidity partner and creator still have in the position (collected before every withdrawal);
+rounding dust of the six floors stays in the position like locked liquidity. (5) A creator buy at launch pays the
+base fee (not the anti-snipe start) and is capped at `maxCreatorBuyBps` of the curve supply. (6) `createLaunch`
+refuses a symbol that isn't 1–8 ASCII letters/digits (the registry only matches reserved codes up to 8 bytes).
+(7) Fees are pathUSD-side only, split protocol ≥ `minProtocolShareBps` (default 20 %) / partner / creator.
+
+**Why:** each is the most conservative reading of DBC's mechanism on v4 + TIP-20; all measured in tests and live.
+
+### D-098 — the launch keeper is opt-in and sends through the S1 submitter (decision, S17b, 2026-09-29)
+
+`services/ops/src/actors/launch-keeper` is registered in `main.ts` but outside the default actor set (`OPT_IN`), so an
+empty `OPS_ACTORS` does not start it; the S3 lane owns the deployed set. In the ops process it plans and simulates
+(dry) until S1's `packages/markets/src/tx/send.ts` lands on the trunk and is wired as its `GraduateSender` — ops may
+not send through viem anywhere else (write-boundary). The same pass, with a `cast` sender, graduated the live gate
+launch (`scripts/drive/launch-meme.ts`). `graduate` is never sponsored: the keeper pays its own fee.
+
+**Why:** keeps the write boundary and the S3 lane's deployment untouched while the keeper logic ships and is proven.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
