@@ -488,6 +488,57 @@ spacing come from S15c's pools, not guessed) and lets the registry deploy today.
 **Why:** each is either needed for exactness (1, 2), stated by B.4.2 (3), or keeps the router independent of S15b's
 unbuilt ABI (4); (5) is measured to work (X4 local half).
 
+### D-105 — StockReference and StockGuardHook details the plan left open (decision, S15b, 2026-09-29)
+
+1. **`pushRedStone(address[] mirrors, bytes[] payloads)`** — one payload per mirror. The RedStone wire payload the S2
+   verifier parses is single-feed (`verifySpot` pins every package to one feed id), so B.3.2's `pushRedStone(mirrors[])`
+   carries one proof per mirror. ThemeRouter forwards it as raw calldata (D-102 §4), so the shape is free.
+2. **Older is ignored, bad is refused:** an observation not newer than the stored one emits `ReferenceIgnored` and
+   returns (racing writers and theme proofs never revert each other); zero, > uint128, or > 60 s ahead reverts.
+3. **Session:** `currentSession()` = the keeper flag while valid (`setSession(state, validUntil)`, TTL ≤ 1 day), else
+   the last Data Streams v11 `marketStatus` if < 120 s old (2 → REGULAR; 1/3/4 → EXTENDED; 5 → CLOSED), else
+   **UNKNOWN, which the guard treats exactly like CLOSED** (REFUSE or WIDEN). The keeper derives its flag from
+   RedStone's **signed** `NY_MARKET_NEXT_CHANGE_TIME` (research 15 F16), not a hard-coded holiday table (Agari R-01).
+4. **"Issuer-paused"** = the Robinhood token or registry pause mirrored by StockSync (`SyncFlags.isPaused`);
+   "oracle-paused" = `ORACLE_PAUSED`; the mirror TIP-20's own `paused()` is a separate refusal (`MirrorPaused`).
+   The CA window is |now − effectiveAt| < `caWindow` around a scheduled multiplier switch (`effectiveAt` 1 = none).
+5. **Initialization** needs a registered pool, a fresh (closed-age) verified reference and a price inside the CLOSED
+   band of share × the multiplier in effect — **not** a synced multiplier or inventory (Moderato inits before the
+   bridge delivers; swaps then refuse `MultiplierUnsynced` until StockSync lands).
+6. **The hook is also the themes seam:** it implements `IThemePoolGuard.isGuardedPool` (D-101) and `IThemeOracle`
+   (D-102): `tokenPrice(mirror)` = share × multiplier with `halted` = any state-based block (keeper halt, no
+   reference, unsynced, issuer/oracle/mirror pause, CA window, no pool); session and age stay the router's checks.
+   So `registry.setGuard(hook)` and `router.setOracle(hook)` point at one address; `router.setProofTarget` = the
+   StockReference.
+7. **One pool per mirror** in the guard (`poolOf[mirror]`), static fee only, no unregister.
+
+**Why:** each is forced by the verifier's wire format (1), keeps permissionless writers non-blocking (2), keeps the
+off-hours rule conservative without a calendar table (3), or lets S16's deployed contracts use the guard unchanged (6).
+
+### D-106 — the guard deploys as area `guard`, through Arachnid, avoiding `0x91…` and `0x20c0…` (decision, S15b, 2026-09-29)
+
+`script/v4/DeployStockGuardHook.s.sol` mines the salt itself (HookMiner's CREATE2 formula, re-checked with
+`HookMiner.computeAddress`) because `HookMiner.find` can't skip addresses: flags exactly 0x20C0, no code, first byte ≠
+0x91 (Uniswap's routing allowlist, research 13 F30) and top two bytes ≠ 0x20c0 (TIP-20 address space — transfers there
+revert). It calls Arachnid directly (Uniswap's own Tempo hook script does, so the 0x76 path can't change the deployer).
+StockReference and the hook are recorded as a new deployment area **`guard`** (not merged into S14c's `stocks`
+fragment, whose deployer differs) with relay policy `policies/guard.ts` (sponsors nothing in 15b). Moderato:
+StockReference `0xccBc…Bd90`, hook `0xFB05…A0C0`, salt `0x3209`, owner = `deployer-products` (to the Safe with S19).
+
+**Why:** the 0x20c0 exclusion is a Tempo-specific hazard the plan's "reject `0x91`" didn't name; a separate area keeps
+S14c's fragment attribution intact.
+
+### D-107 — NFLX: registered, no feed, not initialized until a signed source exists (decision, S15b, 2026-09-29)
+
+B.3.4 wanted "NFLX pool small, guard-refused, UI says why". The guard initializes a pool only against a verified
+reference (D-105 §5) and Tempo has no signed NFLX source (Q-011: RedStone lacks it; Data Streams needs credentials). So
+the NFLX pool is **registered** (`isGuardedPool` true — ThemeRegistry can record it) with **no feed pinned**, and it is
+**not initialized**; `bandNow(NFLX)` / `tokenPrice(NFLX)` report `NO_REFERENCE` / halted, which is what the UI shows.
+It initializes (same script, `create-stock-pools.ts`) the day a Data Streams stream is pinned with `setFeeds`.
+No keeper price is invented for it.
+
+**Why:** a keeper-typed NFLX price would be fake backing for the band; honest pause is the rule (Q-011).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

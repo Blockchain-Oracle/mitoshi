@@ -8,7 +8,7 @@
  * `feeToken` (viem site tempo/accounts/account.fromSecp256k1, tempo/guides/batch-calls).
  */
 import { type Address, type Hex, type TransactionReceipt, http } from "viem";
-import { tempoModerato } from "viem/chains";
+import { tempo, tempoModerato } from "viem/chains";
 import { Account, Addresses, createClient } from "viem/tempo";
 import type { themeKeyAuthorization } from "../themes/keyAuth";
 
@@ -27,4 +27,23 @@ export async function sendRootWithKeyAuthorization(p: AuthorizeAndCallInput): Pr
   const client = createClient({ account: root, chain: tempoModerato, feeToken: Addresses.pathUsd, transport: http(p.rpcUrl ?? "https://rpc.moderato.tempo.xyz") });
   const keyAuthorization = await root.signKeyAuthorization({ accessKeyAddress: p.keyId, keyType: "secp256k1" } as never, { chainId: tempoModerato.id, ...p.authorization } as never);
   return (await client.sendTransactionSync({ calls: p.calls, keyAuthorization, ...(p.gas ? { gas: p.gas } : {}) } as never)) as TransactionReceipt;
+}
+
+export interface RootCallsInput {
+  privateKey: Hex;
+  calls: readonly { to: Address; data: Hex }[];
+  network: "testnet" | "mainnet";
+  rpcUrl?: string;
+  gas?: bigint;
+}
+
+/**
+ * An ops role key (secp256k1 root) sends one Tempo batch (0x76) paying fees in pathUSD and waits for the receipt — used
+ * by server actors (S15b `reference-writer`). The key stays in the caller's process; nothing is logged here.
+ */
+export async function sendRootCalls(p: RootCallsInput): Promise<TransactionReceipt> {
+  const account = Account.fromSecp256k1(p.privateKey);
+  const chain = p.network === "mainnet" ? tempo : tempoModerato;
+  const client = createClient({ account, chain, feeToken: Addresses.pathUsd, transport: http(p.rpcUrl) });
+  return (await client.sendTransactionSync({ calls: p.calls, ...(p.gas ? { gas: p.gas } : {}) } as never)) as TransactionReceipt;
 }

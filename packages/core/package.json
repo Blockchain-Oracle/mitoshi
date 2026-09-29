@@ -6,7 +6,9 @@
   "description": "Pure domain logic: markets, orders, units, tx lifecycle, shell protocol. No I/O.",
   "exports": {
     ".": "./src/index.ts",
-    "./stocks/guard": "./src/stocks/guard.ts"
+    "./stocks/guard": "./src/stocks/guard.ts",
+    "./stocks/session": "./src/stocks/session.ts",
+    "./prices/redstone": "./src/prices/redstonePayload.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

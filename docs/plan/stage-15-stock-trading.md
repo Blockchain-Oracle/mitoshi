@@ -4,7 +4,7 @@
   `test/fork/v4/{ReplayParity,UrAbiProbe}.fork.t.sol` (X3) → freeze `packages/markets/src/v4/encode.ts`;
   `packages/clients/src/addresses/v4.ts` (pinned UR); PoolManager runtime fixture. Sub-gate: a throwaway hookless pool
   initialized and swapped on Moderato via UR `0xa2dc`.
-- [ ] 15b `src/stocks/{StockReference,hooks/StockGuardHook,libs/GuardMath}.sol` (X12 result) + tests (incl. CRWD ×4 fork);
+- [x] 15b `src/stocks/{StockReference,hooks/StockGuardHook,libs/GuardMath}.sol` (X12 result) + tests (incl. CRWD ×4 fork);
   `script/v4/DeployStockGuardHook.s.sol` (HookMiner, reject `0x91` prefix); ops `reference-writer`; `packages/core/src/
   stocks/guard.ts` twin with shared vectors.
 - [ ] 15c `scripts/v4/{create-stock-pools,topup}.ts` (B.3.4 house plan); `deployments/42431/pools.json`.

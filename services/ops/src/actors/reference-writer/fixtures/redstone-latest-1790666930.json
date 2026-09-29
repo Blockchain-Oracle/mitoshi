@@ -1,0 +1,391 @@
+{
+  "fetchedFrom": "https://oracle-gateway-2.a.redstone.finance/data-packages/latest/redstone-primary-prod",
+  "fetchedAtUtc": "2026-09-29T07:28:58Z",
+  "packages": {
+    "NY_MARKET_NEXT_CHANGE_TIME": [
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "4ZU2asTB2Zmli40pcQa7qmUvAp0XzRNzEUoI3EBFECJQ8vku4AWB9237tE2H2ykiRJesBkCIoB2L4VDbDFjmphw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "NY_MARKET_NEXT_CHANGE_TIME",
+            "value": 1790688600000
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "NY_MARKET_NEXT_CHANGE_TIME",
+        "signerAddress": "0x51Ce04Be4b3E32572C4Ec9135221d0691Ba7d202",
+        "dataFeedId": "NY_MARKET_NEXT_CHANGE_TIME"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "ierYzsbwncpCG0JimerOyH3nv4B9uL3d5iylEYqbbdAS0wNbjH+AsJ0zUDeuIF01z+5yXTXTX9OBuxbCAJxXWxs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "NY_MARKET_NEXT_CHANGE_TIME",
+            "value": 1790688600000
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "NY_MARKET_NEXT_CHANGE_TIME",
+        "signerAddress": "0x8BB8F32Df04c8b654987DAaeD53D6B6091e3B774",
+        "dataFeedId": "NY_MARKET_NEXT_CHANGE_TIME"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "bNp3XD8oW7GyWKRLfwyrV6qegbU6uCjHg512qbfsE6RAKwq1tMb6Dtk66zi4MSJz+dDzZEOjO9V4bb8XwEVRBxs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "NY_MARKET_NEXT_CHANGE_TIME",
+            "value": 1790688600000
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "NY_MARKET_NEXT_CHANGE_TIME",
+        "signerAddress": "0xdEB22f54738d54976C4c0fe5ce6d408E40d88499",
+        "dataFeedId": "NY_MARKET_NEXT_CHANGE_TIME"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "vlI7STzFElRVt7qYmb3cwrTJ7RskBbYoqliLl6EJI6Mx3nMKbKWrZdhdXzNDdsi1tamhSQ3ZEfNg+dekb6RMeBw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "NY_MARKET_NEXT_CHANGE_TIME",
+            "value": 1790688600000
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "NY_MARKET_NEXT_CHANGE_TIME",
+        "signerAddress": "0xDD682daEC5A90dD295d14DA4b0bec9281017b5bE",
+        "dataFeedId": "NY_MARKET_NEXT_CHANGE_TIME"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "e1Yuz/5Ona8/wpF8Q3pomkPE4Xn/oOkg3zaeh+8ypvQ7DkwqDF9NNJJGwaeDJoCQFRau1EQVAkfzAFMd4rvKmBs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "NY_MARKET_NEXT_CHANGE_TIME",
+            "value": 1790688600000
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "NY_MARKET_NEXT_CHANGE_TIME",
+        "signerAddress": "0x9c5AE89C4Af6aA32cE58588DBaF90d18a855B6de",
+        "dataFeedId": "NY_MARKET_NEXT_CHANGE_TIME"
+      }
+    ],
+    "TSLA": [
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "DeXvROth7CbKVXDAvHnuuEQ5hK5XgkZL8uRSNrEHhD5ilVIip1Laei0LXaa7QXdE2ah29dxr64nVzrtGZhTWaxw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "TSLA",
+            "value": 357.39518485
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "TSLA",
+        "signerAddress": "0x51Ce04Be4b3E32572C4Ec9135221d0691Ba7d202",
+        "dataFeedId": "TSLA"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "HabY+VgzAqXBMtcfgPVTu2YaOkjGBKk2AcodjNAo115E7srFySsiBkegrzJ8ovzLqzJop5fPC4Eoo4vpNGQt/Rs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "TSLA",
+            "value": 357.35172043
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "TSLA",
+        "signerAddress": "0x8BB8F32Df04c8b654987DAaeD53D6B6091e3B774",
+        "dataFeedId": "TSLA"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "s67RPfhfv0XBAKPCq/rAq24ErXhvz8vrmZlAWRucrrVmSuqHRz7kREgex68IWnnpq3RavI5u5CpNQsK547og0Rw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "TSLA",
+            "value": 357.40789667
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "TSLA",
+        "signerAddress": "0xdEB22f54738d54976C4c0fe5ce6d408E40d88499",
+        "dataFeedId": "TSLA"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "na3Q/EupeX9OOjUFEJcBD9fBgvT9fAahxgQQE1bGmU946OTed5M1jK7HvkkzxSNOmIrj1PQTr3CxIDCbN80Nthw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "TSLA",
+            "value": 357.40677603
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "TSLA",
+        "signerAddress": "0xDD682daEC5A90dD295d14DA4b0bec9281017b5bE",
+        "dataFeedId": "TSLA"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "earQ5T8HSY3F+DkwXu5efbFrr1Nkbc5ZW1SY5VrOWSlASaakRfwSoSkkFnRheMQ9Rlo42uhOjiCqPTrctlPwjBs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "TSLA",
+            "value": 357.41026156
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "TSLA",
+        "signerAddress": "0x9c5AE89C4Af6aA32cE58588DBaF90d18a855B6de",
+        "dataFeedId": "TSLA"
+      }
+    ],
+    "AMZN": [
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "JGKmqS9tOKgs4AiYlgpW0DErerg0qIXaz2gWKpqkBnBgc2IQSz2EA5sRW4MdakPXHJOl9cQjME5uUDLpUzXzThs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "AMZN",
+            "value": 246.30534014
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "AMZN",
+        "signerAddress": "0x51Ce04Be4b3E32572C4Ec9135221d0691Ba7d202",
+        "dataFeedId": "AMZN"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "e37ruRKLFblVv7/KmHI33Ul35jX/IwW/d7VBGhbRI8JN37I9JagSIut22+IZKXamCi9GmhykDaCj3UBvAZ7AaRw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "AMZN",
+            "value": 246.30448323
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "AMZN",
+        "signerAddress": "0x8BB8F32Df04c8b654987DAaeD53D6B6091e3B774",
+        "dataFeedId": "AMZN"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "mOV2MPdMuw7V9mDO2acFYqbQsYqYCY9Ruc6rf1oX3HRz5qOo39zblTwM9mPjfACutlpLJaW2D+vsPXpfOjIYqhw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "AMZN",
+            "value": 246.30382793
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "AMZN",
+        "signerAddress": "0xdEB22f54738d54976C4c0fe5ce6d408E40d88499",
+        "dataFeedId": "AMZN"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "gKc3Drl+Wf4Q9Fgi7EN6u91+g73dCt8eIeYT3we2iKk2S4ipWPSC053RE6lKR4LI5jd4Q+e5Ke948jyOS9LwFBw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "AMZN",
+            "value": 246.30410203
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "AMZN",
+        "signerAddress": "0xDD682daEC5A90dD295d14DA4b0bec9281017b5bE",
+        "dataFeedId": "AMZN"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "//Xx1vzc4eRUpOlR4VxAR9d5CNS4q/MQob6/b3hgoQIsY4/Pi3c05ATjiGVVWLDBhM8Vtzxp3PM23cwd5fNR2hw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "AMZN",
+            "value": 246.30560534
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "AMZN",
+        "signerAddress": "0x9c5AE89C4Af6aA32cE58588DBaF90d18a855B6de",
+        "dataFeedId": "AMZN"
+      }
+    ],
+    "PLTR": [
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "XhFw7IANxKnBJ7qqR0kEqOpKlgDPvo9n2kDXiJWB8dlm8jSeJgQEZkbcpdKFfmeMD+jeFSBr36XU9Kk4AfBmHBw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "PLTR",
+            "value": 187.48719008
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "PLTR",
+        "signerAddress": "0x51Ce04Be4b3E32572C4Ec9135221d0691Ba7d202",
+        "dataFeedId": "PLTR"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "KuyZgcDLKCTySO4zhmsuNpQ+GuPU6vIojqb3m4SJjJQqztpPH5BT3FN/EpqDiTdiGy6KzLdsLeCcbyafwNZ1Mhw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "PLTR",
+            "value": 187.46074425
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "PLTR",
+        "signerAddress": "0x8BB8F32Df04c8b654987DAaeD53D6B6091e3B774",
+        "dataFeedId": "PLTR"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "j4Rxk590kDLiNCDkwF92Y9XPOZKZ6BQReUkI7MMlRw9RbDX+2M2E0kFDocikqW3OXyZBEBCdrgvArx/K9Lzw4xw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "PLTR",
+            "value": 187.4850876
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "PLTR",
+        "signerAddress": "0xdEB22f54738d54976C4c0fe5ce6d408E40d88499",
+        "dataFeedId": "PLTR"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "YdIcrhs2JVOcySaeuGK4Mm+PUbLuXCcOKhxKfm6dqOUJ2T0x971a2X7YaLZUy847z4zTOShIfrxr51OpqCUO1hs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "PLTR",
+            "value": 187.4819267
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "PLTR",
+        "signerAddress": "0xDD682daEC5A90dD295d14DA4b0bec9281017b5bE",
+        "dataFeedId": "PLTR"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "nJm61dLjEjcEVF/s1Llo8zd7Kmixcd3rp4f1qMrEy+Aj+Qq5GZU/rCE/oNnrTPvUaeMLhFFJMh1aeVIkHO7RExs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "PLTR",
+            "value": 187.47529792
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "PLTR",
+        "signerAddress": "0x9c5AE89C4Af6aA32cE58588DBaF90d18a855B6de",
+        "dataFeedId": "PLTR"
+      }
+    ],
+    "AMD": [
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "iCBy/mcCJPhJi3vGcK6JQK+5iaL5Mi2yvoDnMkKPtYACtG+4VAXMWBezeU1DIKBKfowDE88My4am0N2N+SNTSBs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "AMD",
+            "value": 607.85730905
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "AMD",
+        "signerAddress": "0x51Ce04Be4b3E32572C4Ec9135221d0691Ba7d202",
+        "dataFeedId": "AMD"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "9no91qvCcOioMkg0OryQIFR+Sa+JUMH2tNpEbs0DJ65mFEaxmxGEjlSXg1RswMM2GjhSIoRhcrg1L8howZEOEBs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "AMD",
+            "value": 607.99311042
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "AMD",
+        "signerAddress": "0x8BB8F32Df04c8b654987DAaeD53D6B6091e3B774",
+        "dataFeedId": "AMD"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "rd7gcstIDF0G2xzGorz5v1gD/qWxnmfFV9460rkE4tVZFKFPwEaEpgzsVpapt3Zi0yGTJCZHPErllQ6vnrg6xBs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "AMD",
+            "value": 607.93941674
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "AMD",
+        "signerAddress": "0xdEB22f54738d54976C4c0fe5ce6d408E40d88499",
+        "dataFeedId": "AMD"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "gTcZed2ph0rVCDI0h4ENqnEq3wXtU9shI5MrOqTmKvcZFZk2ogZKzMlQzuE1mZ6tV2WXVhPXQSRdWPLOwGdxghw=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "AMD",
+            "value": 608.03837889
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "AMD",
+        "signerAddress": "0xDD682daEC5A90dD295d14DA4b0bec9281017b5bE",
+        "dataFeedId": "AMD"
+      },
+      {
+        "timestampMilliseconds": 1790666930000,
+        "signature": "qx0WloH4n6DlQ/rAQcYqtK9z0dkd5uN4fJyxXZVeRYA3g3fKNmDnldd4y1luphue40YQ/onfjFT2oCIwqy/1BRs=",
+        "isSignatureValid": true,
+        "dataPoints": [
+          {
+            "dataFeedId": "AMD",
+            "value": 608.04888693
+          }
+        ],
+        "dataServiceId": "redstone-primary-prod",
+        "dataPackageId": "AMD",
+        "signerAddress": "0x9c5AE89C4Af6aA32cE58588DBaF90d18a855B6de",
+        "dataFeedId": "AMD"
+      }
+    ]
+  }
+}

@@ -3,6 +3,7 @@ import { startHttp } from "./http/server";
 import { readOpsEnv, runActor, heartbeats, errorText } from "./runtime";
 import { chainHeadPass, CHAIN_HEAD_EVERY_MS } from "./actors/chain-head";
 import { archivePass, ARCHIVE_EVERY_MS } from "./actors/archive";
+import { referenceWriterPass, REFERENCE_WRITER_EVERY_MS } from "./actors/reference-writer";
 import { createSql, runMigrations } from "@cwf/db";
 
 const env = readOpsEnv();
@@ -12,7 +13,11 @@ const registry: Record<string, () => void> = {
   "chain-head": () => runActor({ name: "chain-head", log: log("chain-head"), dryRun: env.dryRun, everyMs: CHAIN_HEAD_EVERY_MS, pass: chainHeadPass(env) }),
   // Signs nothing, so it runs regardless of DRY_RUN; it only needs DATABASE_URL.
   archive: () => runActor({ name: "archive", log: log("archive"), dryRun: false, everyMs: ARCHIVE_EVERY_MS, pass: archivePass(createSql()) }),
+  // Signs with KEEPER_PRIVATE_KEY (pushRedStone + setSession on StockReference, S15b).
+  "reference-writer": () => runActor({ name: "reference-writer", log: log("reference-writer"), dryRun: env.dryRun, everyMs: REFERENCE_WRITER_EVERY_MS, pass: referenceWriterPass(env) }),
 };
+/** Actors that start only when `OPS_ACTORS` names them (an empty `OPS_ACTORS` starts the rest). */
+const OPT_IN = new Set(["reference-writer"]);
 
 try {
   if (process.env.DATABASE_URL) {
@@ -21,7 +26,7 @@ try {
     await sql.end();
     console.log(`[ops] migrations: ${applied.length ? applied.join(", ") : "up to date"}`);
   }
-  const wanted = env.actors.length ? env.actors : Object.keys(registry);
+  const wanted = env.actors.length ? env.actors : Object.keys(registry).filter((name) => !OPT_IN.has(name));
   for (const name of wanted) {
     const start = registry[name];
     if (!start) throw new Error(`unknown actor "${name}" (known: ${Object.keys(registry).join(", ")})`);
