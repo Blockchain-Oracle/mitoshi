@@ -2,6 +2,7 @@
   "generatedBy": "scripts/codegen/clients.mjs",
   "fragments": [
     "42431/engine",
+    "42431/guard",
     "42431/launch",
     "42431/lz",
     "42431/stocks",
@@ -31,6 +32,8 @@
     "RedStonePrintVerifier",
     "ResolveLib",
     "ScaledUIView",
+    "StockGuardHook",
+    "StockReference",
     "StockSyncForwarder",
     "StockSyncReceiver",
     "TIP20MintBurnAdapter",
