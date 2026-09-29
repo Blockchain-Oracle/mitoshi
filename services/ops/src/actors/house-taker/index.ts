@@ -36,11 +36,12 @@ export function startHouseTaker(deps: VenueDeps): { stop: () => void } {
     const ids = [1n, 2n].filter((k) => series.nextIndex >= k).map((k) => marketIdOf(series.seriesId, series.nextIndex - k));
     const views = await fetchMarkets(client, venue, ids);
     const m = views.find((v) => v && v.state === 0 && v.tradingStartSec <= nowSec && nowSec < v.lockAtSec - 60 && v.prints.open.source !== 0);
-    if (!m) return { why: `${lane}: no trading Window with an open print` };
+    // Between Windows (the last minute of one, the first seconds of the next): try again shortly, not in 15 minutes.
+    if (!m) return { why: `${lane}: no trading Window with an open print yet`, nextDelayMs: 45_000 };
     const top = await topOfBook(client, venue, m.marketId);
     const buyYes = n % 2 === 1 ? top.askTicks > 0 : top.bidTicks === 0;
     const price = buyYes ? top.askTicks : top.bidTicks;
-    if (!price) return { why: `${lane} #${m.index}: empty book` };
+    if (!price) return { why: `${lane} #${m.index}: empty book`, nextDelayMs: 45_000 };
     const what = `${lane} #${m.index} IOC ${buyYes ? "BUY_YES" : "BUY_NO"} ${lots} @ ${price}`;
     if (dryRun) return { why: `DRY ${what}` };
     try {

@@ -465,6 +465,20 @@ roller fees.
 
 **Why:** the S3 gate needs a US session and a Gap; the registry already names these lanes (S1 `tickers.ts`).
 
+### D-092 — the S3 soak's house taker and ops' public evidence routes (S3.8, 2026-09-29)
+
+(1) The unattended soak needs fills to exercise settlement and auto-pay before any user trades, so ops has an opt-in
+`house-taker` actor: the `keeper` testnet key takes one small IOC against the seed maker's best quote on a trading
+24/7 Window every 15 minutes. It is never in the default actor set (nor `all`), is an operator wallet (excluded from
+leaderboards and traction like the maker and settler), and its fills are labelled house activity in `/health`.
+(2) Ops serves two read-only routes over public chain-derived data so the gate scripts run against production
+without database access: `GET /index/recount?through=<block>` (block-pinned index counts and per-Window digests
+for `scripts/drive/recount.ts`) and `GET /halts/log?from&to` (halt-watch's recorded observations for
+`halt-replay.ts`). (3) Role keys are Coolify runtime-only variables; `OPS_DRY_ACTORS` rolls actors out of dry run one
+at a time.
+
+**Why:** the gate asks for auto-pay and recount/halt replay on the live venue; the Coolify Postgres is internal only (D-061).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
