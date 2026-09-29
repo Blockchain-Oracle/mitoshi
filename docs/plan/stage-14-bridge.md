@@ -11,7 +11,7 @@
 - [x] 14c.11 Invariants (direct + hop: locked == supply + deferred + in flight + owed); sizes both profiles.
 - [x] 14c.12 Forks: RH testnet lock/unlock; Base hop; Moderato adapter (real LZD wrap, fresh-address mint gas); RH
   mainnet CRWD multiplier (effectiveAt 1782999000).
-- [ ] 14c.13 Owner-approved outreach: LayerZero direct 40451↔40444 request; Wormhole plan-B probe.
+- [x] 14c.13 Owner-approved outreach: LayerZero direct 40451↔40444 request; Wormhole plan-B probe. (Drafted below; the owner sends — owner-actions.)
 - [ ] 14o ops `stock-sync`, `reserve-watch`, `bridge-watch`; migrations `bridge_messages`, `reserve_snapshots`,
   `stock_sync_messages`.
 - [ ] 14w `packages/core/src/{stocks,bridge}`; `packages/markets/src/stocks/{bridge,holdings,reserves,sync}.ts`;
@@ -29,6 +29,50 @@
   links); a `sync` applied through the forwarder and a duplicate ignored; a deferral (recipient receive policy) then
   `claimDeferred`; `/reserves` == both explorers; `CheckLzConfig` green; the tracker survives a killed tab; UX gate. **Rows:**
   ST-01…ST-07, ST-12…ST-15, G-08, UX-08.
+
+## 14c.13 Outreach drafts (owner sends; nothing was sent)
+
+### A. LayerZero — request a direct testnet pathway 40451 ↔ 40444
+
+To: LayerZero Labs developer support (Discord `#dev-support` or the "Request a pathway" form on docs.layerzero.network).
+Subject: Enable default config for Robinhood Chain testnet (EID 40451) ↔ Tempo Moderato (EID 40444)
+
+> Hi LayerZero team,
+>
+> We're building Mitoshi, a Tempo app that bridges Robinhood Chain Stock Tokens to Tempo as TIP-20 mirrors with an
+> `OFTAdapter` lockbox on Robinhood Chain and a mint/burn adapter on Tempo (the USDT0/frxUSD shape). On mainnet the
+> Robinhood Chain (30416) ↔ Tempo (30410) pathway is supported and we configure our own DVNs.
+>
+> On testnet the direct pathway isn't available: `isSupportedEid(40444)` is false on the Robinhood testnet EndpointV2
+> `0x3aCAAf60502791D199a5a5F0B173D78229eBFe32`, and `isSupportedEid(40451)` is false on the Moderato EndpointV2
+> `0xFB34352bA2e2D9cB93837bb19D36db5d93BcFC41`; the executors revert and the Moderato LayerZero Labs DVN
+> `0x0ac2924460A5b285fd205DeDB46738Ad46971061` returns `DVN_EidNotSupported(40451)`. Since `setSendLibrary` requires the
+> library to support the EID, an OApp can't open it itself.
+>
+> Could you set default Uln302 send/receive configs (LayerZero Labs DVN is fine) and executor configs for 40451 ↔ 40444
+> on both endpoints (SendUln302 `0x45841dd1ca50265Da7614fC43A361e526c0e6160` / ReceiveUln302
+> `0xd682ECF100f6F4284138AA925348633B0611Ae21` on 40451; SendUln302 `0x91ec94dd5E949BdB2ecE3b91B9602EC5F7F59FFD` /
+> ReceiveUln302 `0xfeBE4c839EFA9f506C092a32fD0BB546B76A1d38` on 40444), and price the pathway in the executors
+> (`0x701f3927871EfcEa1235dB722f9E608aE120d243`, `0xE665f5dFD91DFe883D36Cc8552D4Cc385aC23687`)?
+>
+> Until then we route through Base Sepolia (40245) with a transit OFT and a composer, which works but doubles latency
+> and fees. Our Moderato OApps are live (e.g. the TSLA adapter `0x5c1069C9F9912D5B8f6250359b5f2FB6F6a426b3`, the sync
+> receiver `0xE1576984eA22F1E620CFCCa6bf6154C4b9a3693e`) if you want to check traffic once it's enabled.
+>
+> Thanks!
+
+When it's enabled: `EnsureLzConfig` switches the lockbox/adapter peers to each other (drop the hop) — the mainnet shape.
+
+### B. Wormhole plan-B probe (testnet)
+
+Read-only finding (2026-09-29): the RH testnet Wormhole core `0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd` (chain 72,
+`messageFee` 0, guardian set 0) **now has signed VAAs on testnet Wormholescan** — sequences 0–2 from two emitters on
+2026-09-24/25 (e.g. tx `0xed4c0c4b19d63e8adaa75f5be71645cf863a71c6670ece6debae5789ae430986`). The research's "0 VAAs"
+(F25) is out of date. Probe once the deployer has RH ETH (testnet only, one tx):
+`cast send 0xBB73cB66C26740F31d1FabDC6b7A46a038A300dd "publishMessage(uint32,bytes,uint8)" 0 0x6d69746f736869 1` → watch
+`api.testnet.wormholescan.io/api/v1/vaas/72/<emitter>/<seq>`; if signed within minutes, Wormhole NTT (RH hub lock mode,
+Tempo spoke burn mode) is a live plan B for testnet as well as mainnet. No message to the Wormhole team is needed unless
+the VAA doesn't appear; then ask in the Wormhole Discord `#developers` whether testnet guardians observe chain 72.
 
 ## Findings
 
