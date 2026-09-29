@@ -80,3 +80,20 @@ export function insideQuotes(top: { bidTicks: number; bidLots: bigint; askTicks:
   if (ask !== null && bidYes >= ask) throw new Error(`bid ${bidYes} would cross ask ${ask}`);
   return { askYes, bidYes };
 }
+
+/**
+ * Rests an ask and a bid inside the spread, re-reading the top and retrying when the house maker moved between the
+ * read and the send (`PostOnlyWouldCross`); null after three tries (the Window is skipped).
+ */
+export async function restInside(maker: Wallet, engine: Address, marketId: Hex, expireTsSec: number, lots: { ask: bigint; bid: bigint }, readTop: () => Promise<{ bidTicks: number; bidLots: bigint; askTicks: number; askLots: bigint }>): Promise<{ receipt: CastReceipt; askYes: number; bidYes: number } | null> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const { askYes, bidYes } = insideQuotes(await readTop());
+      return { receipt: restQuotes(maker, engine, marketId, expireTsSec, [{ kind: 2, yesTicks: askYes, lots: lots.ask }, { kind: 0, yesTicks: bidYes, lots: lots.bid }]), askYes, bidYes };
+    } catch (error) {
+      if (!/PostOnlyWouldCross|would cross|maker quotes reverted/.test(String(error))) throw error;
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+  return null;
+}

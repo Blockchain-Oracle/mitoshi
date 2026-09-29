@@ -50,6 +50,16 @@
   closes: landed → the receipt; window passed → `NotIncludedError` (definite); never a resend (D-137).
 - **F-S4-10** (S4.3, X21) Five concurrent taps from one IP met Moderato's public RPC rate limit on their fills; the
   transport now retries rate-limited non-send requests after the hinted delay. Five taps in 1.2 s all confirmed (D-139).
+- **F-S4-11** (S4.4) The S3 settler auto-pays ~320 s after settlement (`redeemFor`, grace 300 s) and deletes the
+  position; a verdict derived from live holdings (the references') vanishes then. `getPinnedVerdict` keeps the card from
+  the engine's `Redeemed` event (`by` ≠ holder → "paid automatically"; `heldAsCredit` → "held"). Proven live.
+- **F-S4-12** (S4.4) A receive policy that blocks the engine turns the settler's payout into credit
+  (`Redeemed.heldAsCredit`), and the wallet's own `redeem`/`withdrawCredit` would revert `ReceivePolicyBlocked` — so a
+  held row is never put in a claim-all batch (it would sink the batch); after the policy allows the engine, the same
+  batch collects it. `engineMayPay` reads `validateReceivePolicy(pathUSD, engine, wallet)` live.
+- **F-S4-13** (S4.4) Every fill goes through the relay (viem `withRelay` semantics kept in `relayProxy`), sponsored or
+  not; an unsponsored call (e.g. TIP-403) is refused `target` and the SDK fills it unsponsored — the sender pays. The
+  verdict log therefore shows `target` for self-paid calls; that is expected, not an error.
 
 ## Handoff
 
