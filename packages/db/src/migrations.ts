@@ -4,14 +4,16 @@ import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Sql } from "./index";
 
-const ROOT = join(import.meta.dirname, "..", "migrations");
+// Resolved on use: bundlers (Next/Turbopack) that import `@cwf/db` for its stores leave `import.meta.dirname` undefined,
+// and the web process never runs migrations (the deploy step does, via `pnpm db:migrate`).
+const root = (): string => join(import.meta.dirname, "..", "migrations");
 const LOCK_ID = 4217_42431;
 
 async function listMigrations(): Promise<string[]> {
-  const areas = await readdir(ROOT, { withFileTypes: true }).catch(() => []);
+  const areas = await readdir(root(), { withFileTypes: true }).catch(() => []);
   const files: string[] = [];
   for (const area of areas.filter((d) => d.isDirectory()).map((d) => d.name).sort()) {
-    for (const file of (await readdir(join(ROOT, area))).filter((f) => f.endsWith(".sql")).sort()) files.push(`${area}/${file}`);
+    for (const file of (await readdir(join(root(), area))).filter((f) => f.endsWith(".sql")).sort()) files.push(`${area}/${file}`);
   }
   return files;
 }
@@ -25,7 +27,7 @@ export async function runMigrations(sql: Sql): Promise<string[]> {
     const done = new Set((await sql<{ id: string }[]>`select id from schema_migrations`).map((r) => r.id));
     for (const id of await listMigrations()) {
       if (done.has(id)) continue;
-      const body = await readFile(join(ROOT, id), "utf8");
+      const body = await readFile(join(root(), id), "utf8");
       await sql.begin(async (tx) => {
         await tx.unsafe(body);
         await tx`insert into schema_migrations (id) values (${id})`;

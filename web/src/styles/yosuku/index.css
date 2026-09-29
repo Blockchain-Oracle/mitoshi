@@ -1,0 +1,33 @@
+/* Ported from Masayume 68f7a09:web/src/styles/yosuku/index.css (parts byte-identical). */
+/* Yosuku design system, ported verbatim from the pinned reference commit
+   3c56ef52b78dae28cc198495f753480292f6a5ad (reference/yosuku/app/globals.css).
+
+   Split into <400-line modules to satisfy the file-length invariant; the parts
+   concatenate byte-identically to the source. Regenerate the split rather than
+   hand-editing a part file, so fidelity stays checkable. */
+@import "tailwindcss" source(none);
+
+@import "./part-01.css";
+@import "./part-02.css";
+@import "./part-03.css";
+@import "./part-04.css";
+@import "./part-05.css";
+@import "./part-06.css";
+@import "./part-07.css";
+@import "./part-08.css";
+@import "./part-09.css";
+@import "./part-10.css";
+@import "./part-11.css";
+@import "./part-12.css";
+@import "./part-13.css";
+@import "./part-14.css";
+@import "./part-15.css";
+@import "./part-16.css";
+@import "./part-17.css";
+@import "./part-18.css";
+
+@source "../../app";
+@source "../../components";
+@source "../../features";
+@source "../../lib";
+@source "../../providers";

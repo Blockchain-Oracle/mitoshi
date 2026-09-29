@@ -1,0 +1,334 @@
+[data-theme="light"] .mc-btbtc:hover { border-color: rgba(198,120,20,0.85); box-shadow: inset 0 1px 0 rgba(255,240,210,0.8), 0 10px 26px -14px rgba(198,110,10,0.4); }
+[data-theme="light"] .mc-btbtc-title { color: #9A5A08; }
+[data-theme="light"] .mc-btbtc-sub { color: rgba(154,90,8,0.7); }
+[data-theme="light"] .mc-btbtc-bal b { color: #8A4E06; }
+[data-theme="light"] .mc-btbtc-bal span { color: rgba(138,78,6,0.55); }
+[data-theme="light"] .mc-btbtc-chev { color: rgba(154,90,8,0.6); }
+
+/* badges (top-right) */
+.mc-badge {
+  position: absolute; top: 14px; right: 14px;
+  z-index: 2;
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--gray-500);
+  padding: 3px 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.mc-badge.position {
+  color: var(--white);
+  border-color: var(--vermilion);
+  background: rgba(224,77,38,0.12);
+}
+.mc-badge.position::before {
+  content: ''; display: inline-block; width: 4px; height: 4px; border-radius: 50%;
+  background: var(--vermilion); margin-right: 6px; transform: translateY(-1px);
+}
+
+/* ───────── Compact density ───────── */
+body.density-compact .mc-spark { display: none; }
+body.density-compact .mc-question { font-size: 15px; min-height: auto; }
+body.density-compact .mc-body { padding-top: 14px; gap: 12px; }
+
+/* ───────── List view ───────── */
+body.view-list .markets-grid {
+  grid-template-columns: 1fr;
+  gap: 0;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+body.view-list .market-card {
+  border: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-radius: 0;
+  background: transparent;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+}
+body.view-list .market-card:last-child { border-bottom: 0; }
+body.view-list .market-card:hover { transform: translateX(2px); background: rgba(255,255,255,0.02); box-shadow: none; }
+body.view-list .mc-head {
+  flex-direction: column; align-items: flex-start; min-width: 110px;
+  gap: 6px; border-bottom: 0; border-right: 1px solid rgba(255,255,255,0.04);
+  padding: 18px 20px;
+  justify-content: center;
+}
+body.view-list .mc-body {
+  flex: 1; flex-direction: row; align-items: center;
+  padding: 0 24px;
+  gap: 28px;
+}
+body.view-list .mc-question { flex: 1; font-size: 15px; min-height: auto; }
+body.view-list .mc-spark { width: 140px; height: 36px; flex-shrink: 0; }
+body.view-list .mc-weight { width: 220px; flex-shrink: 0; }
+body.view-list .mc-stats { display: none; }
+body.view-list .mc-foot {
+  width: 220px; margin: 0; padding: 12px;
+  border-top: 0; border-left: 1px solid rgba(255,255,255,0.04);
+}
+body.view-list .mc-badge { position: static; align-self: center; margin-left: 16px; }
+
+/* ───────── Settled section variant ───────── */
+.markets-section.settled .market-card { opacity: 0.78; }
+.markets-section.settled .mc-question { color: var(--gray-300); }
+.settled-result {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--gray-400);
+}
+.settled-result.up {
+  color: var(--vermilion);
+  border-color: rgba(224,77,38,0.4);
+  background: rgba(224,77,38,0.06);
+}
+.settled-result.down {
+  color: var(--white);
+  border-color: rgba(255,255,255,0.2);
+}
+.settled-result .arrow { font-size: 10px; }
+.settled-payout { font-family: var(--font-mono); font-size: 12px; color: var(--gray-500); }
+.settled-payout .pos { color: var(--vermilion); }
+.settled-payout .neg { color: var(--gray-500); }
+
+/* ───────── Floor heatmap ───────── */
+.floor {
+  margin-top: 96px;
+  padding: 48px 0 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.floor-head {
+  display: flex; justify-content: space-between; align-items: end;
+  margin-bottom: 32px;
+  flex-wrap: wrap; gap: 16px;
+}
+.floor-head h3 {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 30px; letter-spacing: -0.025em;
+}
+.floor-head p { color: var(--gray-500); font-size: 13px; max-width: 50ch; }
+.floor-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 4px;
+  aspect-ratio: 12 / 3;
+}
+.floor-cell {
+  position: relative;
+  background: rgba(255,255,255,0.04);
+  border-radius: 2px;
+  transition: transform 220ms var(--ease), background 320ms var(--ease);
+  cursor: pointer;
+  overflow: hidden;
+}
+.floor-cell:hover { transform: scale(1.04); z-index: 5; }
+.floor-cell .label {
+  position: absolute; top: 6px; left: 6px;
+  font-family: var(--font-mono); font-size: 9px;
+  color: rgba(255,255,255,0.6); letter-spacing: 0.08em;
+}
+.floor-cell .pct {
+  position: absolute; bottom: 6px; left: 6px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--white); font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.floor-cell.up    { background: var(--vermilion); }
+.floor-cell.lean  { background: rgba(224,77,38,0.32); }
+.floor-cell.even  { background: rgba(255,255,255,0.06); }
+.floor-cell.under { background: rgba(255,255,255,0.12); }
+.floor-legend {
+  display: flex; gap: 18px;
+  margin-top: 18px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--gray-600); letter-spacing: 0.1em; text-transform: uppercase;
+}
+.floor-legend .swatch {
+  display: inline-block; width: 10px; height: 10px;
+  border-radius: 2px; margin-right: 6px; vertical-align: -1px;
+}
+
+/* ───────── Empty state ───────── */
+.empty-state {
+  text-align: center;
+  padding: 120px 24px;
+}
+.empty-state h3 {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  letter-spacing: -0.03em;
+  margin-top: 24px;
+}
+.empty-state p {
+  color: var(--gray-500); margin-top: 12px;
+}
+
+/* ───────── Footer ───────── */
+.footer {
+  margin-top: 120px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 64px 0 36px;
+}
+/* 120px of margin plus 64px of padding is a desktop rhythm. On a phone it wrapped a single
+   "Docs" line in ~220px of nothing, which was most of the empty screen at the end of Portfolio. */
+@media (max-width: 720px) {
+  .footer { margin-top: 44px; padding: 28px 0 24px; }
+}
+.footer-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 24px;
+  flex-wrap: wrap;
+  font-size: 12px; color: var(--gray-500);
+  font-family: var(--font-mono);
+}
+.footer-row a:hover { color: var(--white); }
+
+/* ───────── Torii header (simpler version used by some components) ───────── */
+.torii-header {
+  display: flex; align-items: center; gap: 24px;
+  margin: 56px 0 32px;
+  position: relative;
+}
+.torii-gate {
+  position: relative;
+  width: 32px; height: 48px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.torii-gate .pillar {
+  position: absolute; bottom: 0;
+  width: 2px; height: 36px;
+  background: var(--vermilion);
+}
+.torii-gate .pillar.left { left: 4px; }
+.torii-gate .pillar.right { right: 4px; }
+.torii-gate .kasagi {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--vermilion);
+  border-radius: 1px;
+}
+.torii-gate .nuki {
+  position: absolute; top: 10px; left: 2px; right: 2px;
+  height: 1px; background: rgba(224,77,38,0.5);
+}
+.torii-text {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.torii-num {
+  font-family: var(--font-mono);
+  font-size: 9px; letter-spacing: 0.2em;
+  color: var(--gray-600); text-transform: uppercase;
+}
+.torii-title {
+  font-family: var(--font-display);
+  font-weight: 700; font-size: 18px;
+  color: var(--white); letter-spacing: -0.02em;
+}
+.torii-count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--gray-600);
+}
+
+/* ───────── Ledger plate (portfolio) ───────── */
+.ledger-plate {
+  background: #FAF8F5;
+  color: #1A1612;
+  border-radius: 6px;
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+}
+/* The plate is desktop-proportioned: 36px/32px on a 390px screen burns a fifth of the width on
+   padding and stacks two tall slabs, one for the account and one for the X wallet. Trimmed for
+   phones, where the page was running 1.6 screens with almost nothing in it. */
+@media (max-width: 720px) {
+  .ledger-plate { padding: 16px 14px; border-radius: 5px; }
+}
+
+/* Rows that sit under a .ledger-plate inside the same card. The plate is cream and the list under
+   it was still on the dark surface, so one card had two backgrounds. Rather than rewrite every
+   row's utilities, remap the handful they use, the same trick .sensei-page already applies. */
+.plate-rows { background: var(--lp-paper, #FAF8F5); color: var(--lp-ink, #1A1612); } /* the tokens: ledger-plate.css — cream in light, the theme's surface in dark (owner, 2026-09-05); the remaps below are light-only */
+[data-theme="light"] .plate-rows .text-white { color: #1A1612; }
+[data-theme="light"] .plate-rows .text-white\/70 { color: rgba(26,22,18,0.78); }
+[data-theme="light"] .plate-rows .text-white\/60 { color: rgba(26,22,18,0.70); }
+[data-theme="light"] .plate-rows .text-white\/50 { color: rgba(26,22,18,0.62); }
+[data-theme="light"] .plate-rows .text-white\/40 { color: rgba(26,22,18,0.56); }
+[data-theme="light"] .plate-rows .text-white\/30 { color: rgba(26,22,18,0.48); }
+[data-theme="light"] .plate-rows .divide-white\/\[0\.05\] > * + * { border-color: rgba(201,191,166,0.35); }
+[data-theme="light"] .plate-rows .bg-white\/\[0\.02\]:hover, [data-theme="light"] .plate-rows .hover\:bg-white\/\[0\.02\]:hover { background-color: rgba(26,22,18,0.035); }
+[data-theme="light"] .plate-rows .border-white\/\[0\.06\] { border-color: rgba(201,191,166,0.35); }
+
+/* Secondary rows in the Add money modal. Tailwind's text-gray-200 is NOT theme-remapped, so on the
+   cream modal these rendered as near-invisible pale text while the button beside them read fine. */
+:root { --fund-row-ink: #E8E6E3; }
+[data-theme="light"] { --fund-row-ink: #1A1612; }
+.fund-row { color: var(--fund-row-ink); }
+
+.ledger-plate::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0, transparent 8px,
+    rgba(201,191,166,0.4) 8px, rgba(201,191,166,0.4) 10px
+  );
+}
+
+/* ───────── Calendar heatmap ───────── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: 20px repeat(13, 1fr);
+  gap: 3px;
+}
+.cal-col-lbl, .cal-row-lbl {
+  font-family: var(--font-mono); font-size: 8px;
+  color: var(--gray-600); display: flex; align-items: center; justify-content: center;
+}
+.cal-day {
+  aspect-ratio: 1; border-radius: 2px;
+  background: rgba(255,255,255,0.03);
+}
+.cal-day.l1 { background: rgba(224,77,38,0.15); }
+.cal-day.l2 { background: rgba(224,77,38,0.3); }
+.cal-day.l3 { background: rgba(224,77,38,0.5); }
+.cal-day.l4 { background: rgba(224,77,38,0.75); }
+.cal-day.loss { background: rgba(82,82,82,0.4); }
+.cal-day.empty { background: transparent; }
+
+/* ───────── Leaderboard Hero ───────── */
+.lb-hero {
+  margin-top: 124px;
+  padding: 56px 0 24px;
+  position: relative;
+}
+.lb-hero-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 48px;
+  align-items: end;
+  padding-bottom: 36px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.lb-hero-eyebrow {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em;
+  color: var(--gray-500); text-transform: uppercase;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px;
+}
+.lb-hero-eyebrow .dash { width: 28px; height: 1px; background: var(--gray-700); }
+.lb-hero-eyebrow .vermilion { color: var(--vermilion); }
+.lb-hero-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(3.4rem, 8vw, 7.6rem);
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+}

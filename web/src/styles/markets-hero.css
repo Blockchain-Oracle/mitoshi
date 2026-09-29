@@ -1,0 +1,318 @@
+/* Ported from Masayume 68f7a09:web/src/styles/markets-hero.css */
+/* The /markets hero head — ported from reference/yosuku/app/markets/page.tsx.
+ *
+ * Yosuku writes this block as inline Tailwind arbitrary values on the JSX
+ * (`text-[10px]`, `tracking-[0.14em]`, `style={{ background: '#F7931A' }}`).
+ * The `design-literals` invariant bans hex and px literals in TS/TSX, so the
+ * values live here instead — copied exactly, one class per reference element,
+ * with the source utility named above each rule so fidelity stays checkable.
+ *
+ * The panel itself (.hero-chart, .hero-chart-head/-canvas/-foot, .ramp,
+ * .hero-yesno, .hyn) is already ported verbatim in yosuku/part-04.css and is
+ * not restated here.
+ *
+ * Light theme: Yosuku's `text-white/NN` utilities are remapped wholesale in
+ * yosuku/part-14.css. These classes bake the opacity in, so each one repeats
+ * part-14's replacement value for the same step. */
+
+/* flex flex-wrap items-center gap-2.5 mb-2.5 */
+.mh-asset-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-sans
+   text-[17px] font-extrabold leading-none + style={{background:'#F7931A',color:'#fff'}}
+   Yosuku's venue is BTC-only, so it hardcodes the badge. Here the mark is keyed
+   to the asset: an asset's own colour identifies it and so does not flip with the
+   theme, and an asset without one falls back to a neutral disc rather than
+   wearing Bitcoin's. */
+.mh-asset-badge {
+  display: flex;
+  height: 28px;
+  width: 28px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-family: var(--font-sans, var(--font-body));
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+[data-theme="light"] .mh-asset-badge {
+  background: rgba(20, 18, 16, 0.1);
+}
+
+/* font-mono text-[10px] tracking-[0.1em] uppercase text-white */
+.mh-asset-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+/* ── cadence tabs ──
+   flex items-baseline gap-3 — no box: at this size a bordered chip group
+   competes with the question above it, so the type alone carries the state. */
+.mh-cadence-tabs {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+/* relative pb-1 font-mono text-[9px] tracking-[0.14em] transition-colors
+   + text-white/35 (idle) */
+.mh-cadence {
+  position: relative;
+  padding-bottom: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.35);
+  transition: color 200ms var(--ease);
+}
+
+/* hover:text-white/70 */
+.mh-cadence:hover:not(:disabled) {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* text-white/15 disabled:cursor-not-allowed — a lane between rounds stays in
+   place, dimmed, so the row never shifts under a tap. */
+.mh-cadence:disabled {
+  color: rgba(255, 255, 255, 0.15);
+  cursor: not-allowed;
+}
+
+/* text-vermilion when this lane is the one on screen.
+   Ordered after :disabled deliberately — the reference resolves `on` before
+   `live`, so a lane you pinned that is currently between rounds keeps its
+   highlight while the hero falls through to a live one. Losing the highlight
+   there would look like the app had silently changed your choice. */
+.mh-cadence[aria-pressed="true"] {
+  color: var(--vermilion);
+}
+
+/* absolute inset-x-0 bottom-0 h-px bg-vermilion */
+.mh-cadence-underline {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--vermilion);
+}
+
+[data-theme="light"] .mh-cadence {
+  color: rgba(20, 18, 16, 0.5);
+}
+[data-theme="light"] .mh-cadence:hover:not(:disabled) {
+  color: rgba(20, 18, 16, 0.8);
+}
+[data-theme="light"] .mh-cadence:disabled {
+  color: rgba(20, 18, 16, 0.4);
+}
+/* Same precedence as the dark rules above: the pinned lane keeps its highlight
+   even while it is between rounds. */
+[data-theme="light"] .mh-cadence[aria-pressed="true"] {
+  color: var(--vermilion);
+}
+
+/* ── the question ──
+   font-display font-[800] text-[1.6rem] sm:text-4xl text-white tracking-tight
+   leading-[1.05] */
+.mh-question {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.6rem;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--white);
+}
+@media (min-width: 640px) {
+  .mh-question {
+    font-size: 2.25rem;
+  }
+}
+
+/* text-vermilion — the line itself is the one coloured word in the headline. */
+.mh-question-line {
+  color: var(--vermilion);
+}
+
+/* flex items-center gap-2 mt-2.5 font-mono text-sm sm:text-base */
+.mh-distance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+@media (min-width: 640px) {
+  .mh-distance {
+    font-size: 16px;
+  }
+}
+
+/* text-profit font-semibold / text-loss font-semibold */
+.mh-distance-value {
+  font-weight: 600;
+}
+.mh-distance-value.above {
+  color: var(--profit);
+}
+.mh-distance-value.below {
+  color: var(--loss);
+}
+
+/* pending states keep the row's height without asserting a distance */
+.mh-distance-pending {
+  color: var(--gray-500);
+}
+
+/* ── settles in ──
+   text-right shrink-0 */
+.mh-settles {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* font-mono text-[9px] tracking-[0.16em] uppercase block mb-1 text-gray-600 */
+.mh-settles-label {
+  display: block;
+  margin-bottom: 4px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gray-600);
+}
+
+/* font-mono text-2xl sm:text-3xl font-semibold tabular-nums text-white */
+.mh-settles-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--white);
+}
+@media (min-width: 640px) {
+  .mh-settles-value {
+    font-size: 30px;
+  }
+}
+
+/* under a minute to settle → the whole block flips vermilion (text-vermilion/70
+   on the label, text-vermilion on the clock) */
+.mh-settles.urgent .mh-settles-label {
+  color: color-mix(in srgb, var(--vermilion) 70%, transparent);
+}
+.mh-settles.urgent .mh-settles-value {
+  color: var(--vermilion);
+}
+
+/* ── the foot ──
+   inline-flex items-center gap-1.5 font-mono text-[9px] uppercase
+   tracking-[0.16em] text-white/45 hover:text-white */
+.mh-room {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.45);
+  transition: color 200ms var(--ease);
+}
+.mh-room:hover:not(:disabled) {
+  color: var(--white);
+}
+.mh-room:disabled {
+  cursor: not-allowed;
+}
+
+/* text-white/20 — the qualifier, a step quieter than the label it trails */
+.mh-room-meta {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* h-3 w-3 */
+.mh-room-icon {
+  height: 12px;
+  width: 12px;
+}
+
+[data-theme="light"] .mh-room {
+  color: rgba(20, 18, 16, 0.62);
+}
+[data-theme="light"] .mh-room:hover:not(:disabled) {
+  color: #141210;
+}
+[data-theme="light"] .mh-room-meta {
+  color: rgba(20, 18, 16, 0.4);
+}
+
+/* ── the canvas ──
+ * Yosuku draws into a single raw <canvas>, which part-04.css pins with
+ * `.hero-chart-canvas canvas { position: absolute; inset: 0 }`. lightweight-charts
+ * builds its own nested canvases and sizes them itself, so the chart gets a
+ * filling box of its own and that rule is scoped away from its internals. */
+.mh-chart-fill {
+  position: absolute;
+  inset: 0;
+}
+.mh-chart-fill canvas {
+  position: relative;
+  inset: auto;
+}
+
+/* The ramp's cent figure — vermilion, matching the fill it labels. */
+.mh-ramp-cents {
+  color: var(--vermilion);
+}
+
+/* ── the rail ──
+   The ticket sits in the hero grid's second column. Below 900px part-04.css
+   collapses the grid and hands the call to .hero-yesno, and TicketDock stops
+   rendering the rail at all — so no empty cell is left holding the grid's gap. */
+.mh-rail {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* lg:!items-start — the reference overrides the panel's `align-items: stretch`
+   at the desktop breakpoint so a short ticket sits at the top of the rail
+   instead of stretching down beside the chart. */
+@media (min-width: 1024px) {
+  .markets-hero .hero-grid.hero-grid-mini {
+    align-items: start;
+  }
+}
+
+/* The reference's sections only carry top padding (.markets-section); the step
+   down to the footer comes from .page-shell's own padding-bottom. */
+.markets-main {
+  min-width: 0;
+}
+
+/* The panel that stands in while the venue is still being read, or when no
+   Window is live — the reference's own placeholder box, kept at the chart's
+   height so the hero does not resize under the reader. */
+.mh-hero-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}

@@ -1,0 +1,52 @@
+/* Ported from Masayume 68f7a09:web/src/styles/word-board.css */
+/* The word board — the card itself is already ported verbatim in yosuku/part-16.css
+ * (`.words-*`, `.wq-*`) and part-17.css, including its light-theme block. Only the
+ * three places where the source assumes something this venue does not are here.
+ *
+ * Reference: reference/yosuku/components/WordMarketBoard.tsx. */
+
+/* `.wq-btc` is Bitcoin's mark, hardcoded: an orange radial disc, a white ₿ tilted
+   13°, and an orange glow. Yosuku's venue is BTC-only; lanes here are whatever the
+   venue lists. An asset with no mark of its own gets its initial on a neutral disc
+   rather than wearing Bitcoin's colour — the same rule as `.mh-asset-badge` in the
+   hero (markets-hero.css), and the same neutral values. */
+.wq-btc.generic {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+.wq-btc.generic span {
+  color: var(--white);
+  transform: none;
+}
+
+[data-theme="light"] .wq-btc.generic {
+  background: rgba(20, 18, 16, 0.1);
+}
+
+/* The countdown here is the shared `Countdown`, which flags urgency with
+   `text-accent` off `urgentAtSec(intervalSec)` — the venue-aware rule the hero and
+   the reel already use — instead of the reference's flat 60 s `.wq-clock.urgent`.
+   Two classes, so this beats `.wq-clock`'s own colour. */
+.wq-clock.text-accent {
+  color: var(--vermilion);
+}
+
+/* The reference always has a number for the bar, because it makes one up. A real
+   book can be one-sided or not yet read, and an empty green fill on the rose track
+   would read as "0% — everyone says no", which is a claim about the market rather
+   than about our knowledge of it. So the track goes flat and unfilled instead. */
+.wq-oddsbar-unknown {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .wq-oddsbar-unknown {
+  background: rgba(20, 18, 16, 0.08);
+}
+
+/* A Window whose opening print has not landed has no level in its question yet.
+   It says so in words (`PLAIN_WORDS.pendingPrint`); this keeps the headline from
+   shouting a question it cannot fully ask. */
+.wq-q-pending {
+  color: var(--gray-500);
+}

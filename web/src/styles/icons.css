@@ -1,0 +1,31 @@
+/* Ported from Masayume 68f7a09:web/src/styles/icons.css */
+/* The asset marks — reference/yosuku/components/icons/BitcoinIcon.tsx and ChainIcon.tsx L68–84.
+   A brand colour identifies the asset, so it does not flip with the theme. */
+.mark-btc-disc { fill: #F7931A; }
+.mark-btc-glyph { fill: #fff; }
+.mark-eth-disc { fill: #627EEA; }
+.mark-eth-face { fill: #fff; }
+/* The USDC blue, the ring and the glyph in white — a brand mark, so it does not flip with the theme either. */
+.mark-usdc-disc { fill: #2775CA; }
+.mark-usdc-ring, .mark-usdc-glyph { fill: none; stroke: #fff; }
+
+/* The mark fills whichever disc holds it, and carries its own circle — so the disc's paint, ring and
+   glow step aside. The four discs: the hero's badge, the rail card's glyph, the reel's badge, the word
+   board's tile. An asset with no drawing keeps the disc as it was, with its initial. */
+.asset-mark { display: block; width: 100%; height: 100%; }
+.mh-asset-badge.has-mark,
+.mc-asset .glyph.has-mark,
+.reel-badge.has-mark,
+.wq-btc.has-mark {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+[data-theme="light"] .mh-asset-badge.has-mark,
+[data-theme="light"] .mc-asset .glyph.has-mark,
+[data-theme="light"] .reel-badge.has-mark,
+[data-theme="light"] .wq-btc.has-mark {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}

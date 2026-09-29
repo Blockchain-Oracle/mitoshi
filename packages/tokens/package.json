@@ -1,0 +1,21 @@
+{
+  "name": "@cwf/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Design tokens: one tokens.json (Masayume's identity) → web CSS variables, Tailwind @theme, the native Uniwind theme.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens.json": "./src/tokens.json"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "gen": "tsx src/generate.ts"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

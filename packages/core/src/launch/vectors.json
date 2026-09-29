@@ -1,0 +1,10 @@
+{
+  "_doc": "Launch guard vectors (S1 stub; S17 adds curve and reserved-code cases).",
+  "symbols": { "MEME": true, "A": false, "meme": false, "1COIN": false, "TOOLONGSYMBOL": false, "B2": true },
+  "progress": [
+    { "reserve": "0", "threshold": "1000000", "bps": 0 },
+    { "reserve": "333333", "threshold": "1000000", "bps": 3333 },
+    { "reserve": "2000000", "threshold": "1000000", "bps": 10000 },
+    { "reserve": "5", "threshold": "0", "bps": 0 }
+  ]
+}

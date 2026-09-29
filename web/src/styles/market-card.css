@@ -1,0 +1,84 @@
+/* Ported from Masayume 68f7a09:web/src/styles/market-card.css */
+/* The §01 rail card. `.market-card` and every `.mc-*` rule are already ported
+ * verbatim in yosuku/part-06.css and part-16.css, with their light-theme blocks in
+ * part-14/15. Only the places where the source assumes something this venue does
+ * not are here.
+ *
+ * Reference: `Market624Card`, reference/yosuku/app/markets/page.tsx L251–400. */
+
+/* `.mc-asset .glyph` is Bitcoin's mark, hardcoded: `background:#F7931A`, white ₿.
+   Lanes here are whatever the venue lists, so an asset with no mark of its own
+   gets its initial on a neutral disc rather than wearing Bitcoin's colour. Same
+   rule and the same neutral values as `.mh-asset-badge` in the hero and
+   `.wq-btc.generic` on the word board — the third surface to need it. */
+.mc-asset .glyph.generic {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+[data-theme="light"] .mc-asset .glyph.generic {
+  background: rgba(20, 18, 16, 0.1);
+}
+
+/* The sparkline is SVG rather than the reference's `<canvas>` (see CardSpark.tsx
+   for why). part-06 already absolutely-positions `.mc-spark canvas` into the box;
+   this is the same rule for the element that replaced it. */
+.mc-spark-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mc-spark-line {
+  fill: none;
+  stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Against the line, not against nothing: the colour says whether UP is currently
+   winning, which is the only question this card asks. */
+.mc-spark-line.up {
+  stroke: var(--profit);
+}
+
+.mc-spark-line.down {
+  stroke: var(--loss);
+}
+
+/* `.mc-spark .strike-tick` is a chip of the page ground (`rgba(5,5,5,0.7)`) so the
+   dashed rule reads through behind it. part-14/15 do not remap it, so on a cream
+   card it lands as a near-black blob — the same fall-through class as the Tutorial's
+   `bg-white/20`. Mirrored onto the light ground at the same job: sit over the rule,
+   keep the vermilion label. */
+[data-theme="light"] .mc-spark .strike-tick {
+  background: rgba(251, 247, 238, 0.85);
+}
+
+/* The Room strip is present and disabled until the comment service is connected —
+   the hero's control does the same. Disabled must still read as a control, so it
+   keeps its frame and loses only the hover affordance. */
+.mc-room:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.mc-room:disabled:hover {
+  background: rgba(255, 255, 255, 0.015);
+  border-color: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+[data-theme="light"] .mc-room:disabled:hover {
+  background: rgba(20, 18, 16, 0.015);
+  border-color: rgba(20, 18, 16, 0.08);
+  color: rgba(20, 18, 16, 0.6);
+}
+
+/* One card per Window rather than the reference's fixed three cadences, so the
+   grid fills instead of forcing a three-up row that goes empty or overflows. */
+.markets-grid-live {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}

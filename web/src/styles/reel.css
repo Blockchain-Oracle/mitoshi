@@ -1,0 +1,324 @@
+/* Ported from Masayume 68f7a09:web/src/styles/reel.css */
+/* The /reels card — ported from reference/yosuku/app/reels/page.tsx.
+ *
+ * Yosuku writes this card as inline Tailwind arbitrary values on the JSX
+ * (`text-[26px]`, `rounded-[26px]`, `bg-[#0a0807]`, an inline radial-gradient).
+ * The `design-literals` invariant bans hex and px literals in TS/TSX, so the
+ * values live here instead — copied exactly, one class per reference element,
+ * with the source utility named above each rule so fidelity stays checkable.
+ *
+ * `.feed-snap` / `.feed-card` themselves are already ported verbatim in
+ * yosuku/part-16.css and are not restated here.
+ *
+ * Colour lives in `reel-theme.css`: one ink triplet per theme, and every step below
+ * is `rgb(var(--reel-ink-rgb) / <alpha>)` carrying the reference's own alpha. Never
+ * write `var(--white)` here — Yosuku remaps it to ink on cream. */
+
+/* The reel takes itself out of flow (`.feed-snap` is fixed between the chrome and
+ * the viewport bottom), so the shell must not also reserve the chrome's height —
+ * the same correction `.page-shell:has(> .page-hero)` makes for a hero route. */
+.page-shell:has(> .reel-page) {
+  padding: 0;
+  min-height: 0;
+}
+
+/* The reference renders no Footer on /feed; the fixed reel would cover it anyway,
+ * and leaving it in the tree hands a keyboard a link nobody can see. */
+body:has(.reel-page) .footer {
+  display: none;
+}
+
+/* flex items-center justify-center px-3 pt-2 pb-[92px] */
+.reel-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px 92px;
+}
+
+/* relative z-10 flex h-full w-full max-w-[460px] flex-col overflow-hidden
+   rounded-[26px] border border-white/[0.1] shadow-[0_30px_120px_-30px_rgba(0,0,0,0.9)]
+   + style={{ background: 'radial-gradient(130% 80% at 50% -8%, …) }} */
+.reel-card {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  max-width: 460px;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 26px;
+  border: 1px solid rgb(var(--reel-ink-rgb) / 0.1);
+  box-shadow: var(--reel-shadow);
+  background: var(--reel-surface);
+}
+
+/* pointer-events-none absolute inset-0 z-30 opacity-[0.05] mix-blend-overlay
+   + the fractalNoise SVG data URI */
+.reel-grain {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* pointer-events-none absolute inset-x-0 top-0 z-20 h-px
+   bg-gradient-to-r from-transparent via-vermilion/50 to-transparent */
+.reel-heat {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 20;
+  height: 1px;
+  background: linear-gradient(to right, transparent, color-mix(in srgb, var(--vermilion) 50%, transparent), transparent);
+}
+
+/* relative z-10 flex items-start justify-between px-5 pt-5 */
+.reel-head {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 0;
+}
+
+/* flex items-center gap-2.5 */
+.reel-ident {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* grid h-8 w-8 place-items-center rounded-full border border-vermilion/40
+   font-mono text-[15px] text-vermilion
+   Yosuku's venue is BTC-only and hardcodes ₿; the mark is keyed to the asset here
+   (see hero/asset-mark.ts) so an asset without one gets its initial, never Bitcoin's. */
+.reel-badge {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  width: 32px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--vermilion) 40%, transparent);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--vermilion);
+}
+
+/* font-mono text-[10px] uppercase tracking-[0.16em] text-white/70 */
+.reel-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgb(var(--reel-ink-rgb) / 0.7);
+}
+
+/* mt-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-white/35 */
+.reel-submeta {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgb(var(--reel-ink-rgb) / 0.35);
+}
+
+/* text-right */
+.reel-clock {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* font-mono text-[8px] uppercase tracking-[0.2em] text-white/40 */
+.reel-clock-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgb(var(--reel-ink-rgb) / 0.4);
+}
+
+/* font-display text-2xl font-extrabold tabular-nums leading-none text-white,
+   flipping to text-vermilion inside the no-entry buffer */
+.reel-clock-value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--reel-ink);
+}
+
+.reel-clock.urgent .reel-clock-value {
+  color: var(--vermilion);
+}
+
+/* relative z-10 px-5 pt-4 */
+.reel-ask {
+  position: relative;
+  z-index: 10;
+  padding: 16px 20px 0;
+}
+
+/* font-display text-[26px] font-extrabold leading-[1.06] tracking-tight text-white */
+.reel-question {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+  color: var(--reel-ink);
+}
+
+/* the line itself — text-vermilion */
+.reel-question-line {
+  color: var(--vermilion);
+}
+
+/* the trailing "?" — text-white/85 */
+.reel-question-mark {
+  color: rgb(var(--reel-ink-rgb) / 0.85);
+}
+
+/* text-white/40 — no line to ask about yet */
+.reel-question-pending {
+  color: rgb(var(--reel-ink-rgb) / 0.4);
+}
+
+/* mt-2 flex items-baseline gap-2.5 font-mono text-[12px] tabular-nums */
+.reel-spot {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--reel-ink);
+}
+
+/* the distance — text-vermilion above the line, text-white/45 below it */
+.reel-distance.above {
+  color: var(--vermilion);
+}
+
+.reel-distance.below {
+  color: rgb(var(--reel-ink-rgb) / 0.45);
+}
+
+/* text-[10px] uppercase tracking-[0.14em] text-white/35 */
+.reel-spot-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgb(var(--reel-ink-rgb) / 0.35);
+}
+
+/* relative z-10 mt-2 min-h-0 flex-1 px-1.5 — the chart is the hero of the card */
+.reel-chart {
+  position: relative;
+  z-index: 10;
+  margin-top: 8px;
+  min-height: 0;
+  flex: 1 1 0%;
+  padding: 0 6px;
+}
+
+/* flex h-full items-center justify-center font-mono text-[10px] uppercase
+   tracking-[0.16em] text-white/30 */
+.reel-chart-holding {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  line-height: 1.6;
+  color: rgb(var(--reel-ink-rgb) / 0.3);
+}
+
+/* relative z-10 px-5 pb-6 pt-2 */
+.reel-call {
+  position: relative;
+  z-index: 10;
+  padding: 8px 20px 24px;
+}
+
+/* grid grid-cols-2 gap-3 */
+.reel-call-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* rounded-xl py-3 text-center font-display text-base font-bold */
+.reel-side {
+  display: block;
+  border-radius: 12px;
+  padding: 12px 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  transition: background-color 200ms var(--ease), border-color 200ms var(--ease), color 200ms var(--ease);
+}
+
+/* border-vermilion/60 bg-vermilion/10 text-vermilion hover:bg-vermilion/20 */
+.reel-side.up {
+  border-color: color-mix(in srgb, var(--vermilion) 60%, transparent);
+  background: color-mix(in srgb, var(--vermilion) 10%, transparent);
+  color: var(--vermilion);
+}
+
+.reel-side.up:hover {
+  background: color-mix(in srgb, var(--vermilion) 20%, transparent);
+}
+
+/* border-white/15 bg-white/[0.02] text-white/80 hover:border-white/30 hover:text-white */
+.reel-side.down {
+  border-color: rgb(var(--reel-ink-rgb) / 0.15);
+  background: rgb(var(--reel-ink-rgb) / 0.02);
+  color: rgb(var(--reel-ink-rgb) / 0.8);
+}
+
+.reel-side.down:hover {
+  border-color: rgb(var(--reel-ink-rgb) / 0.3);
+  color: var(--reel-ink);
+}
+
+/* rounded-2xl border border-white/[0.08] bg-white/[0.02] py-4 text-center
+   font-mono text-[10px] uppercase tracking-[0.18em] text-white/45 */
+.reel-note {
+  border-radius: 16px;
+  border: 1px solid rgb(var(--reel-ink-rgb) / 0.08);
+  background: rgb(var(--reel-ink-rgb) / 0.02);
+  padding: 16px 20px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.7;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgb(var(--reel-ink-rgb) / 0.45);
+}
+

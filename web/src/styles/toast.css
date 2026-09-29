@@ -1,0 +1,44 @@
+/* Ported from Masayume 68f7a09:web/src/styles/toast.css */
+/* Toast presentation — ported from reference/yosuku/components/Toast.tsx.
+ *
+ * The reference is a hand-rolled framer-motion stack: fixed bottom-right, a dark
+ * translucent card with a type-tinted border, an icon coloured by type, and a
+ * spring entry from the right. Its *behaviour* is thinner than what is already
+ * here — no portal, no live region, no swipe, and a close button with no handler
+ * (only the card's own onClick dismisses) — so the Base UI primitive stays and
+ * takes the reference's presentation, rather than the reverse.
+ *
+ * Its colours are already ours: `text-emerald-400` is `--profit` (#34D399) and
+ * `text-rose-400` is `--loss` (#FB7185), to the byte. The card surface uses the
+ * reference's own `bg-neutral-900/90` utility so yosuku/part-14.css remaps it on
+ * cream exactly as it does everywhere else. Only the px-bearing values are here,
+ * because `design-literals` bans them in TSX. */
+
+/* min-w-[280px] max-w-[400px] */
+.toast-plate {
+  min-width: 280px;
+  max-width: 400px;
+}
+
+/* The viewport is full-width below `sm`, where a 280px floor would overflow the gutter. */
+@media (max-width: 640px) {
+  .toast-plate {
+    min-width: 0;
+  }
+}
+
+/* border ${borders[type]} — the tint names the type a second time, after the icon.
+   `info` keeps the neutral hairline the card already has. */
+.toast-plate[data-type="success"] {
+  border-color: color-mix(in srgb, var(--profit) 20%, transparent);
+}
+
+.toast-plate[data-type="error"] {
+  border-color: color-mix(in srgb, var(--loss) 20%, transparent);
+}
+
+/* The reference has no warning type; this follows its success/error formula so the
+   fourth kind is not the only one whose border says nothing. */
+.toast-plate[data-type="warning"] {
+  border-color: color-mix(in srgb, var(--color-warning) 20%, transparent);
+}

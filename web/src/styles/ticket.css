@@ -1,0 +1,178 @@
+/* Ported from Masayume 68f7a09:web/src/styles/ticket.css */
+/* Ticket controls ported from reference/yosuku/components/Ticket624Drawer.tsx.
+ *
+ * Same arrangement as markets-hero.css: the reference writes these as inline
+ * Tailwind arbitrary values, the `design-literals` invariant keeps hex and px out
+ * of TS/TSX, so the values live here with the source utility named above each
+ * rule. Light-theme steps follow yosuku/part-14.css's `text-white/NN` mapping. */
+
+/* ── bet type: Up/Down or Range ──
+   flex gap-1 mb-3 rounded-md border border-white/[0.08] bg-white/[0.015] p-1 — the ticket's gap-4 column stands in for mb-3 */
+.tk-modes {
+  display: flex;
+  gap: 4px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.015);
+  padding: 4px;
+}
+
+/* flex-1 py-2 rounded font-mono text-[10px] uppercase tracking-[0.14em]
+   transition-colors + text-white/40 (idle) */
+.tk-mode {
+  flex: 1;
+  padding-block: 8px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.4);
+  transition: color 200ms var(--ease);
+}
+
+/* hover:text-white/75 */
+.tk-mode:hover:not(:disabled) {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* bg-white/[0.08] text-white */
+.tk-mode[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+}
+
+/* The reference's pressed Private tile: bg-vermilion/[0.12] text-vermilion (Ticket624Drawer L1196) */
+.tk-mode--private[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--vermilion) 12%, transparent);
+  color: var(--vermilion);
+}
+
+/* Not a state the reference has — the mode exists, the contract behind it does
+   not. It reads as unavailable rather than merely unselected. */
+.tk-mode:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+[data-theme="light"] .tk-modes {
+  border-color: rgba(20, 18, 16, 0.1);
+  background: rgba(20, 18, 16, 0.02);
+}
+[data-theme="light"] .tk-mode {
+  color: rgba(20, 18, 16, 0.62);
+}
+[data-theme="light"] .tk-mode:hover:not(:disabled) {
+  color: rgba(20, 18, 16, 0.8);
+}
+[data-theme="light"] .tk-mode[aria-pressed="true"] {
+  background: rgba(20, 18, 16, 0.06);
+}
+/* the reference keeps text-vermilion and bg-vermilion/[0.12] on cream (part-14 does not remap them) */
+[data-theme="light"] .tk-mode--private[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--vermilion) 12%, transparent);
+  color: var(--vermilion);
+}
+
+/* ── leverage ──
+   flex gap-1 */
+.tk-levs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+/* The word beside the chips — the group's label, printed (owner, 2026-09-04). */
+.tk-levs-label {
+  margin-right: 4px;
+}
+
+/* min-w-10 rounded border px-2 py-1 font-mono text-[9px] transition-colors
+   + border-white/[0.1] text-white/45 (idle) */
+.tk-lev {
+  min-width: 40px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.45);
+  transition: color 200ms var(--ease), border-color 200ms var(--ease);
+}
+.tk-lev:hover:not(:disabled) {
+  color: var(--white);
+}
+
+/* border-vermilion/70 bg-vermilion/[0.08] text-vermilion */
+.tk-lev[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--vermilion) 70%, transparent);
+  background: color-mix(in srgb, var(--vermilion) 8%, transparent);
+  color: var(--vermilion);
+}
+
+/* cursor-not-allowed opacity-35 — the reference's own treatment for a multiple
+   the current rail cannot place. */
+.tk-lev:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+[data-theme="light"] .tk-lev {
+  border-color: rgba(20, 18, 16, 0.12);
+  color: rgba(20, 18, 16, 0.62);
+}
+[data-theme="light"] .tk-lev:hover:not(:disabled) {
+  color: #141210;
+}
+
+/* font-mono text-[9px] uppercase tracking-[0.16em] text-white/45 */
+.tk-control-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.45);
+}
+[data-theme="light"] .tk-control-label {
+  color: rgba(20, 18, 16, 0.62);
+}
+
+/* The row that carries the leverage chips beside their label. */
+.tk-lev-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* ── the boost's caveat under the quote strip ──
+   font-mono text-[8.5px] text-white/35 leading-relaxed -mt-1 mb-3 (Ticket624Drawer L1117–1121) */
+.tk-lev-note {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  line-height: 1.625;
+  color: rgba(255, 255, 255, 0.35);
+}
+[data-theme="light"] .tk-lev-note {
+  color: rgba(20, 18, 16, 0.55);
+}
+
+
+/* ── the drawer's chart — Ticket624Drawer.tsx L851–855 ──
+   lg:hidden mb-4 rounded-xl border border-white/[0.08] bg-white/[0.015] overflow-hidden */
+.tk-mini-chart {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.015);
+  overflow: hidden;
+}
+/* block w-full h-[128px] */
+.tk-mini-chart-canvas {
+  display: block;
+  width: 100%;
+  height: 128px;
+}
+[data-theme="light"] .tk-mini-chart {
+  border-color: rgba(20, 18, 16, 0.11);
+  background: rgba(20, 18, 16, 0.02);
+}

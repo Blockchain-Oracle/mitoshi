@@ -1,0 +1,59 @@
+/* Ported from Masayume 68f7a09:web/src/styles/reel-theme.css */
+/* The reel card's palette, in both themes.
+ *
+ * **Deviation from the reference, on the user's call (2026-09-01).** Yosuku keeps
+ * `/feed` a dark island: the card stays black on cream, and `yosuku/part-14.css:124`
+ * re-asserts `#fff !important` under `.feed-card` to keep its labels readable there.
+ * Here the card follows the theme like every other surface instead, so /reels is not
+ * an island. Recorded in the parity ledger.
+ *
+ * One token drives it. Every step on the card is `rgb(var(--reel-ink-rgb) / <alpha>)`
+ * with the reference's own alpha, so flipping the theme is one triplet rather than
+ * eleven literals — which is exactly the bug this file exists to prevent: the first
+ * cut used `var(--white)`, and Yosuku remaps that to ink on cream, so a card that did
+ * not flip rendered ink on ink.
+ *
+ * The light values are Yosuku's own light-card treatment, lifted from `.creator-studio`
+ * (`part-01.css:131`) so the cream card belongs to the design system: surface `#fffaf2`,
+ * text `#211c18` → `33 28 24`, hairline `rgba(33,28,24,0.11)`, and its raised shadow. */
+
+.reel-card,
+.reel-take,
+.reel-hint {
+  --reel-ink-rgb: 255 255 255;
+}
+
+.reel-card {
+  --reel-ink: rgb(var(--reel-ink-rgb));
+
+  /* The card sits slightly ABOVE the page in both themes — lighter than #050505 on
+     dark, lighter than the cream #F4EEE3 on light — so it reads as raised either way. */
+  --reel-surface: radial-gradient(130% 80% at 50% -8%, #16110d 0%, #0c0a08 44%, #080605 100%);
+  --reel-surface-flat: #0a0807;
+  --reel-shadow: 0 30px 120px -30px rgba(0, 0, 0, 0.9);
+
+  /* PriceChart reads its colours off its own container, so the chart follows the card. */
+  --color-ink: rgb(var(--reel-ink-rgb));
+  --color-ink-secondary: rgb(var(--reel-ink-rgb) / 0.7);
+  --color-ink-muted: rgb(var(--reel-ink-rgb) / 0.45);
+  --color-hairline: rgb(var(--reel-ink-rgb) / 0.1);
+}
+
+[data-theme="light"] .reel-card,
+[data-theme="light"] .reel-take,
+[data-theme="light"] .reel-hint {
+  --reel-ink-rgb: 33 28 24;
+}
+
+[data-theme="light"] .reel-card {
+  --reel-surface: radial-gradient(130% 80% at 50% -8%, #fffaf2 0%, #fdf8ef 44%, #f9f3e9 100%);
+  --reel-surface-flat: #fffaf2;
+  /* `.creator-studio`'s raised-panel shadow: an inset top highlight plus a long warm cast. */
+  --reel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 30px 90px -50px rgba(80, 45, 24, 0.45);
+}
+
+/* The noise is white with 50% alpha, so `overlay` lightens on cream instead of reading
+   as texture. `soft-light` keeps it a grain in both themes at the same 5%. */
+[data-theme="light"] .reel-grain {
+  mix-blend-mode: soft-light;
+}

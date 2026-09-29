@@ -1,0 +1,381 @@
+/* Ported from Masayume 68f7a09:web/src/styles/alerts.css */
+/* Price alerts — ported from reference/yosuku/components/PriceAlerts.tsx.
+ *
+ * The reference writes the control as inline Tailwind utilities; `design-literals`
+ * bans hex and px in TSX, so the values live here with the source utility named
+ * above each rule. Mounted in the hero foot beside the Room, so the popover opens
+ * UPWARD (the reference's `top-[calc(100%+8px)] right-0` assumed a button at the
+ * right edge of a page; here `.hero-chart` clips its overflow, so a downward
+ * popover would be cut off at the panel's edge).
+ *
+ * Light theme: the popover's `bg-neutral-900/96` step is not in part-14's ladder
+ * (it stops at /95), so its cream value is repeated here; every `*-white/…` and
+ * `text-gray-*` utility the reference used is likewise resolved per theme below,
+ * with part-14's own values. */
+
+/* Room + Alert share the foot's left side so the ramp keeps its right edge. The
+   popover is positioned against this group rather than the bell: anchored to the
+   bell, its 280px would run past a 390px viewport's right edge. */
+.mh-foot-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+/* relative — static here; see .mh-foot-actions above. */
+.alerts-wrap {
+  position: static;
+}
+
+/* inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all text-xs font-medium
+   border-white/10 bg-white/[0.03] text-gray-400 hover:text-white hover:border-white/20 */
+.alerts-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--gray-400);
+  transition: color 200ms var(--ease), border-color 200ms var(--ease), background-color 200ms var(--ease);
+}
+
+.alerts-button:hover {
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* border-vermilion/30 bg-vermilion/[0.06] text-vermilion — once this asset has rules */
+.alerts-button.armed {
+  border-color: color-mix(in srgb, var(--vermilion) 30%, transparent);
+  background: color-mix(in srgb, var(--vermilion) 6%, transparent);
+  color: var(--vermilion);
+}
+
+[data-theme="light"] .alerts-button {
+  border-color: rgba(20, 18, 16, 0.1);
+  background: rgba(20, 18, 16, 0.03);
+  color: rgba(20, 18, 16, 0.62);
+}
+
+[data-theme="light"] .alerts-button:hover {
+  color: #141210;
+  border-color: rgba(20, 18, 16, 0.2);
+}
+
+[data-theme="light"] .alerts-button.armed {
+  border-color: color-mix(in srgb, var(--vermilion) 30%, transparent);
+  background: color-mix(in srgb, var(--vermilion) 6%, transparent);
+  color: var(--vermilion);
+}
+
+/* style={{ width: 12, height: 12 }} */
+.alerts-bell {
+  width: 12px;
+  height: 12px;
+}
+
+/* absolute top-[calc(100%+8px)] right-0 w-[280px] z-[900]
+   border border-white/10 rounded-xl backdrop-blur-xl p-4 space-y-3
+   — opens upward from the foot; see the note at the top of this file. */
+.alerts-pop {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: 280px;
+  max-width: calc(100vw - 48px);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  backdrop-filter: blur(24px);
+  color: var(--white);
+}
+
+/* bg-neutral-900/96 — one step past part-14's ladder, so its cream value is repeated. */
+[data-theme="light"] .alerts-pop {
+  border-color: rgba(20, 18, 16, 0.12);
+  background-color: rgba(251, 247, 238, 0.94);
+}
+
+/* flex items-center justify-between */
+.alerts-pop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* text-xs font-bold text-white uppercase tracking-wider */
+.alerts-pop-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+/* text-gray-500 hover:text-white */
+.alerts-pop-close {
+  color: var(--gray-500);
+  transition: color 150ms var(--ease);
+}
+
+.alerts-pop-close:hover {
+  color: var(--white);
+}
+
+/* space-y-2 */
+.alerts-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* flex gap-1 */
+.alerts-dir {
+  display: flex;
+  gap: 4px;
+}
+
+/* flex-1 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border transition-all
+   off: bg-transparent text-gray-500 border-white/10 */
+.alerts-dir-btn {
+  flex: 1 1 0%;
+  padding: 6px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  transition: color 150ms var(--ease), border-color 150ms var(--ease), background-color 150ms var(--ease);
+}
+
+/* on: bg-emerald-500/10 text-emerald-400 border-emerald-500/20 — the profit token */
+.alerts-dir-btn.above.on {
+  background: color-mix(in srgb, var(--profit) 10%, transparent);
+  border-color: color-mix(in srgb, var(--profit) 20%, transparent);
+  color: var(--profit);
+}
+
+/* on: bg-rose-500/10 text-rose-400 border-rose-500/20 — the loss token */
+.alerts-dir-btn.below.on {
+  background: color-mix(in srgb, var(--loss) 10%, transparent);
+  border-color: color-mix(in srgb, var(--loss) 20%, transparent);
+  color: var(--loss);
+}
+
+[data-theme="light"] .alerts-dir-btn {
+  border-color: rgba(20, 18, 16, 0.1);
+}
+
+/* flex gap-2 */
+.alerts-add {
+  display: flex;
+  gap: 8px;
+}
+
+/* flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-white
+   outline-none focus:border-white/30 */
+.alerts-input {
+  flex: 1 1 0%;
+  min-width: 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--white);
+  outline: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.alerts-input::-webkit-outer-spin-button,
+.alerts-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.alerts-input:focus {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="light"] .alerts-input {
+  border-color: rgba(20, 18, 16, 0.12);
+  background: rgba(20, 18, 16, 0.05);
+}
+
+[data-theme="light"] .alerts-input:focus {
+  border-color: rgba(20, 18, 16, 0.3);
+}
+
+/* px-3 py-2 bg-vermilion/20 text-vermilion rounded-lg hover:bg-vermilion/30 */
+.alerts-plus {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--vermilion) 20%, transparent);
+  color: var(--vermilion);
+  transition: background-color 150ms var(--ease);
+}
+
+.alerts-plus:hover {
+  background: color-mix(in srgb, var(--vermilion) 30%, transparent);
+}
+
+/* style={{ width: 14, height: 14 }} · 12 · 10 */
+.alerts-icon-sm {
+  width: 14px;
+  height: 14px;
+}
+
+.alerts-icon-xs {
+  width: 12px;
+  height: 12px;
+}
+
+.alerts-icon-xxs {
+  width: 10px;
+  height: 10px;
+}
+
+/* space-y-1 border-t border-white/5 pt-3 */
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 12px;
+}
+
+[data-theme="light"] .alerts-list {
+  border-top-color: rgba(20, 18, 16, 0.08);
+}
+
+/* flex items-center justify-between py-1.5 */
+.alerts-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+
+/* text-xs text-gray-400 */
+.alerts-row-label {
+  font-size: 12px;
+  color: var(--gray-400);
+}
+
+/* text-emerald-400 / text-rose-400 → the profit / loss tokens */
+.alerts-up {
+  color: var(--profit);
+}
+
+.alerts-down {
+  color: var(--loss);
+}
+
+/* text-gray-600 hover:text-rose-400 */
+.alerts-remove {
+  color: var(--gray-600);
+  transition: color 150ms var(--ease);
+}
+
+.alerts-remove:hover {
+  color: var(--loss);
+}
+
+/* Ours: where a rule fires. Quiet mono, a hairline above. */
+.alerts-foot {
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  color: var(--gray-500);
+}
+
+[data-theme="light"] .alerts-foot {
+  border-top-color: rgba(20, 18, 16, 0.08);
+}
+
+/* `text-gray-*` does not follow the light theme (the recorded Tailwind-4 finding),
+   so the popover's gray steps are re-inked on cream with part-14's own ladder. */
+[data-theme="light"] .alerts-pop-close,
+[data-theme="light"] .alerts-dir-btn,
+[data-theme="light"] .alerts-foot {
+  color: rgba(20, 18, 16, 0.62);
+}
+
+[data-theme="light"] .alerts-row-label {
+  color: rgba(20, 18, 16, 0.8);
+}
+
+[data-theme="light"] .alerts-remove {
+  color: rgba(20, 18, 16, 0.4);
+}
+
+[data-theme="light"] .alerts-remove:hover {
+  color: var(--loss);
+}
+
+[data-theme="light"] .alerts-pop-close:hover {
+  color: #141210;
+}
+
+/* Below 480px the reference hides the foot's helper label; the Room's qualifier is
+   the equivalent here, and dropping it is what keeps Room + Alert + ramp on one line. */
+@media (max-width: 480px) {
+  .mh-foot-actions .mh-room-meta {
+    display: none;
+  }
+}
+
+
+/* In the hero foot the trigger takes the foot's own grammar — the Room's (`inline-flex items-center gap-1.5
+   font-mono text-[9px] uppercase tracking-[0.16em] text-white/45 hover:text-white`). The bordered pill above
+   is the reference's Share/Copy/Alert row, which the foot never had; a pill inside a 10px mono strip reads
+   as a second control bar and wraps the ramp at phone widths. Armed stays vermilion, as text. */
+.mh-foot-actions .alerts-button {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+.mh-foot-actions .alerts-button:hover {
+  color: var(--white);
+}
+.mh-foot-actions .alerts-button.armed {
+  background: transparent;
+  color: var(--vermilion);
+}
+[data-theme="light"] .mh-foot-actions .alerts-button {
+  background: transparent;
+  color: rgba(20, 18, 16, 0.62);
+}
+[data-theme="light"] .mh-foot-actions .alerts-button:hover {
+  color: #141210;
+}

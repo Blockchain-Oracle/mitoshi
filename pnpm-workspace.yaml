@@ -14,6 +14,7 @@ allowBuilds:
   bufferutil: false
   esbuild: true
   keccak: false
+  "@reown/appkit": false
   sharp: true
   utf-8-validate: false
 
@@ -27,10 +28,15 @@ catalog:
   "@types/node": ^24
   typescript: ^5.9.3
   zod: ^4.1.0
+  # Marks server modules so a client import fails the build (secrets never reach the browser).
+  server-only: ^0.0.1
   viem: ^2.56.9
   wagmi: ^3.7.7
+  # WalletConnect for phones with no injected wallet (C.3.1: required for bridge-in); loaded only on demand.
+  "@walletconnect/ethereum-provider": ^2.21.1
   "@wagmi/core": ^3.6.5
-  accounts: ~0.18.4
+  # Exact pin (C.1.3): 0.18.5 was published with an unresolved `hono@catalog:` dependency and cannot install.
+  accounts: 0.18.4
   ox: ~0.14.45
   mppx: ^0.10.1
   tidx.ts: ^0.1.2
@@ -39,6 +45,11 @@ catalog:
   motion: ^13.4.0
   "@base-ui/react": ^1.8.0
   lucide-react: ^1.48.0
+  # Masayume's class utilities (web/src/lib/utils.ts `cn`, cva variants) and its tw-animate import.
+  clsx: ^2.1.1
+  tailwind-merge: ^3.6.0
+  class-variance-authority: ^0.7.1
+  tw-animate-css: ^1.4.0
   "@number-flow/react": ^0.6.2
   tailwindcss: ^4.1.0
   "@tailwindcss/postcss": ^4.1.0
@@ -49,6 +60,8 @@ catalog:
   "@ai-sdk/openai": ^4.0.0
   "@ai-sdk/google": ^4.0.0
   "@upstash/redis": ^1.39.0
+  # Coolify Redis over TCP (D-061 replaces Upstash); atomic GETDEL/SET NX for the accounts SDK Kv.
+  redis: ^6.2.0
   idb-keyval: ^6.3.0
   rettiwt-api: 7.1.3
   sharp: 0.34.5

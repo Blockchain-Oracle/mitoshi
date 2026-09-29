@@ -1,0 +1,333 @@
+[data-theme="light"] .sensei-page .border-white\/\[0\.12\] { border-color: rgba(20,18,16,0.12); }
+[data-theme="light"] .sensei-page .text-gray-100 { color: #141210; }
+[data-theme="light"] .sensei-page .text-gray-300 { color: rgba(20,18,16,0.74); }
+[data-theme="light"] .sensei-page .text-gray-500 { color: rgba(20,18,16,0.56); }
+[data-theme="light"] .sensei-page .text-gray-600 { color: rgba(20,18,16,0.46); }
+[data-theme="light"] .sensei-page .placeholder\:text-gray-600::placeholder { color: rgba(20,18,16,0.46); }
+
+/* the read sits on the real chart — full-bleed to the drawer edges, flush to the border below.
+   The canvas carries an EXPLICIT height, never 100%: setupCanvas sizes the bitmap from the
+   measured box, so a percentage height would let the canvas feed its own height back and
+   double every frame. */
+.sm-chart-wrap { margin: 2px -20px -8px; height: 124px; }
+.sm-chart-wrap.sm-chart-inset { margin: 0; }
+.sm-chart { display: block; width: 100%; height: 124px; }
+.sm-chart-empty { height: 124px; display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 10px; color: var(--gray-600); letter-spacing: 0.04em; }
+@media (max-width: 560px) {
+  .sm-chart-wrap, .sm-chart, .sm-chart-empty { height: 108px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sensei-meter.urgent .sm-drain { animation: none; }
+  .sm-drain { transition: none; }
+}
+.sensei-drawer-msgs { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+/* a message is an avatar + a bubble on one row; it pops in on arrival */
+.sd-row { display: flex; align-items: flex-end; gap: 8px; animation: sdPop 340ms cubic-bezier(.22,1,.36,1) both; }
+.sd-row.user { justify-content: flex-end; }
+@keyframes sdPop { from { opacity: 0; transform: translateY(9px) scale(0.985); } to { opacity: 1; transform: none; } }
+/* Sensei's chat avatar — the Yosuku mark in a soft vermilion seal, not an emoji */
+.sd-ava {
+  flex: none; width: 27px; height: 27px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 1px;
+  line-height: 1; color: var(--vermilion);
+  background: rgba(224,77,38,0.13); border: 1px solid rgba(224,77,38,0.32);
+}
+.sd-ava-mark { width: 11px; height: auto; display: block; }
+[data-theme="light"] .sd-ava { background: rgba(224,77,38,0.1); border-color: rgba(224,77,38,0.28); }
+/* modern bubble */
+.sd-msg { max-width: 82%; border-radius: 17px; padding: 11px 14px; font-size: 14px; line-height: 1.55; word-break: break-word; }
+.sd-msg.assistant { background: rgba(255,255,255,0.055); border: 1px solid rgba(255,255,255,0.09); color: #ece6dc; border-bottom-left-radius: 6px; }
+[data-theme="light"] .sd-msg.assistant { background: #fffdf8; border-color: rgba(20,18,16,0.09); color: #2a2520; box-shadow: 0 2px 9px -5px rgba(40,24,8,0.16); }
+.sd-msg.user { background: var(--vermilion); color: #fff; border-bottom-right-radius: 6px; box-shadow: 0 3px 12px -6px rgba(224,77,38,0.7); }
+/* typewriter caret — blinking brush tip */
+.sd-caret { display: inline-block; width: 2px; height: 1.05em; margin-left: 1.5px; border-radius: 1px; background: var(--vermilion); vertical-align: -2px; animation: sdCaret 0.72s step-end infinite; }
+@keyframes sdCaret { 50% { opacity: 0; } }
+/* interactive quick-reply chips under Sensei's latest answer */
+.sd-chips { display: flex; flex-wrap: wrap; gap: 7px; padding: 1px 0 1px 35px; animation: sdPop 360ms cubic-bezier(.22,1,.36,1) both; }
+.sd-chip {
+  border: 1px solid rgba(224,77,38,0.34); background: rgba(224,77,38,0.06); color: var(--vermilion);
+  border-radius: 999px; padding: 7px 13px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  transition: background 150ms var(--ease, ease), transform 150ms var(--ease, ease), border-color 150ms var(--ease, ease);
+}
+.sd-chip:hover { background: rgba(224,77,38,0.14); border-color: rgba(224,77,38,0.62); transform: translateY(-1px); }
+.sd-chip:active { transform: translateY(0) scale(0.96); }
+[data-theme="light"] .sd-chip { background: rgba(224,77,38,0.07); }
+[data-theme="light"] .sd-chip:hover { background: rgba(224,77,38,0.13); }
+@media (prefers-reduced-motion: reduce) { .sd-row, .sd-chips { animation: none; } .sd-caret { animation: none; } }
+.sensei-drawer-starters { display: flex; flex-wrap: wrap; gap: 7px; padding: 0 18px 10px; }
+.sd-starter { border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.02); color: var(--gray-300); border-radius: 999px; padding: 7px 12px; font-size: 12px; cursor: pointer; transition: border-color 160ms var(--ease), color 160ms var(--ease); }
+[data-theme="light"] .sd-starter { border-color: rgba(20,18,16,0.14); color: #4a443c; }
+.sd-starter:hover { border-color: rgba(224,77,38,0.5); color: var(--white); }
+[data-theme="light"] .sd-starter:hover { color: #1A1613; }
+.sensei-drawer-input { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.07); }
+[data-theme="light"] .sensei-drawer-input { border-top-color: rgba(20,18,16,0.08); }
+.sensei-drawer-input input { flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 11px 15px; font-size: 14px; color: var(--white); outline: none; transition: border-color 160ms var(--ease); }
+[data-theme="light"] .sensei-drawer-input input { background: rgba(20,18,16,0.03); border-color: rgba(20,18,16,0.12); color: #1A1613; }
+.sensei-drawer-input input:focus { border-color: rgba(224,77,38,0.5); }
+.sensei-drawer-input button { background: var(--vermilion); color: #fff; border: 0; border-radius: 999px; font-weight: 600; font-size: 13px; padding: 0 18px; cursor: pointer; }
+.sensei-drawer-input button:disabled { opacity: 0.4; cursor: not-allowed; }
+.sensei-drawer-foot { font-family: var(--font-mono); font-size: 9.5px; color: var(--gray-600); padding: 0 16px 14px; line-height: 1.5; }
+
+/* ── Sensei control center: inline trade cards ── */
+.sensei-trade { padding: 8px 18px 12px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(255,255,255,0.07); animation: senseiTradeIn 320ms var(--ease) both; }
+@keyframes senseiTradeIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sensei-trade { animation: none; } }
+[data-theme="light"] .sensei-trade { border-top-color: rgba(20,18,16,0.08); }
+/* The panel is a sibling of the (scrolling) message list, so it must cap its own
+   height: with 3+ live markets it used to grow past the drawer with no way to
+   scroll. The head stays pinned and only the cards scroll. */
+.sensei-trade { flex: none; min-height: 0; max-height: 46vh; }
+.st-list { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 8px; padding-bottom: 2px; }
+.st-head { display: flex; align-items: baseline; justify-content: space-between; padding: 2px 2px 0; flex: none; }
+.st-head span:first-child { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--white); }
+[data-theme="light"] .st-head span:first-child { color: #171310; }
+.st-head .st-sub { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-500); }
+.st-headright { display: flex; align-items: center; gap: 12px; }
+.st-hide { border: 0; background: transparent; padding: 2px 4px; font-size: 13px; line-height: 1; color: var(--gray-500); cursor: pointer; transition: color 150ms var(--ease); }
+.st-hide:hover { color: var(--white); }
+[data-theme="light"] .st-hide:hover { color: #171310; }
+.st-card { border: 1px solid rgba(255,255,255,0.08); border-radius: 13px; background: rgba(255,255,255,0.025); padding: 11px 12px; transition: border-color 200ms var(--ease), background 200ms var(--ease); }
+[data-theme="light"] .st-card { border-color: rgba(20,18,16,0.09); background: #fffdf8; }
+.st-card.armed { border-color: rgba(224,77,38,0.4); }
+.st-cardhead { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px; }
+.st-asset { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white); }
+.st-asset b { font-weight: 800; font-variant-numeric: tabular-nums; }
+[data-theme="light"] .st-asset { color: #171310; }
+.st-meta { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gray-500); font-variant-numeric: tabular-nums; }
+.st-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.st-side { display: flex; flex-direction: column; align-items: stretch; gap: 3px; border: 1px solid; border-radius: 11px; padding: 9px 11px 8px; background: transparent; cursor: pointer; text-align: left; transition: background 150ms var(--ease), border-color 150ms var(--ease), transform 120ms var(--ease); }
+.st-side:active { transform: scale(0.98); }
+.st-sidetop { display: flex; align-items: baseline; justify-content: space-between; }
+.st-sidelabel { font-family: var(--font-mono); font-weight: 800; font-size: 12.5px; letter-spacing: 0.1em; }
+.st-sideprob { font-family: var(--font-mono); font-weight: 800; font-size: 16px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.st-sideline { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.01em; color: var(--gray-500); font-variant-numeric: tabular-nums; }
+.st-sidepay { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-600); }
+.st-side.up { color: var(--profit); border-color: color-mix(in srgb, var(--profit) 30%, transparent); }
+.st-side.up:hover, .st-side.up.on { background: color-mix(in srgb, var(--profit) 12%, transparent); border-color: var(--profit); }
+.st-side.up.on { box-shadow: inset 0 0 0 1px var(--profit); }
+.st-side.down { color: var(--loss); border-color: color-mix(in srgb, var(--loss) 30%, transparent); }
+.st-side.down:hover, .st-side.down.on { background: color-mix(in srgb, var(--loss) 12%, transparent); border-color: var(--loss); }
+.st-side.down.on { box-shadow: inset 0 0 0 1px var(--loss); }
+.st-side.pick { box-shadow: inset 0 0 0 1px var(--vermilion); }
+.st-done { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--profit); letter-spacing: 0.04em; white-space: nowrap; text-align: center; padding: 6px 0; }
+.st-arm { margin-top: 11px; padding-top: 11px; border-top: 1px dashed rgba(255,255,255,0.1); }
+[data-theme="light"] .st-arm { border-top-color: rgba(20,18,16,0.12); }
+.st-connect { font-size: 12.5px; color: var(--gray-400); text-align: center; padding: 4px 0; }
+.st-chips { display: flex; align-items: center; gap: 6px; }
+.st-amt { flex: 1; min-width: 0; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 11px; font-family: var(--font-mono); font-size: 13px; color: var(--white); font-variant-numeric: tabular-nums; outline: none; transition: border-color 150ms var(--ease); }
+.st-amt:focus { border-color: rgba(224,77,38,0.5); }
+[data-theme="light"] .st-amt { background: rgba(20,18,16,0.03); border-color: rgba(20,18,16,0.14); color: #171310; }
+.st-chip { border: 1px solid rgba(255,255,255,0.14); background: transparent; border-radius: 8px; padding: 8px 10px; font-family: var(--font-mono); font-size: 12px; color: var(--white); cursor: pointer; transition: background 150ms var(--ease); }
+.st-chip:hover { background: rgba(255,255,255,0.06); }
+[data-theme="light"] .st-chip { border-color: rgba(20,18,16,0.16); color: #171310; }
+.st-place { margin-top: 9px; width: 100%; border: 0; border-radius: 10px; padding: 11px; background: var(--vermilion); color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 13.5px; cursor: pointer; transition: background 160ms var(--ease), transform 120ms var(--ease); }
+.st-place:hover:not(:disabled) { background: var(--vermilion-d); }
+.st-place:active:not(:disabled) { transform: scale(0.99); }
+.st-place:disabled { opacity: 0.5; cursor: not-allowed; }
+.st-note { margin-top: 7px; text-align: center; font-family: var(--font-mono); font-size: 9.5px; color: var(--gray-500); letter-spacing: 0.02em; }
+@media (prefers-reduced-motion: reduce) { .sensei-drawer, .sensei-dock, .sensei-dock-ring .sd-fill { transition: none; } .sensei-dock.urgent .sensei-dock-pulse { animation: none; } }
+.nav-link.active::after { transform: scaleX(1); }
+
+.nav-more { position: relative; display: flex; align-items: center; }
+.nav-more-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.nav-more-button svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2;
+  transition: transform 200ms var(--ease);
+}
+.nav-more-button.open svg { transform: rotate(180deg); }
+.nav-more-menu {
+  position: absolute;
+  top: calc(100% + 18px);
+  right: 0;
+  z-index: 60;
+  width: 202px;
+  padding: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  background: rgba(8,8,9,0.94);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+}
+.nav-more-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 11px;
+  border-radius: 6px;
+  color: var(--gray-400);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 180ms var(--ease), color 180ms var(--ease);
+}
+.nav-more-link svg {
+  width: 16px;
+  height: 16px;
+  color: var(--gray-600);
+  stroke-width: 1.9;
+  transition: color 180ms var(--ease);
+}
+.nav-more-link:hover,
+.nav-more-link.active {
+  color: var(--white);
+  background: rgba(255,255,255,0.06);
+}
+.nav-more-link.active svg { color: var(--vermilion); }
+
+/* Light theme: the More dropdowns are hardcoded dark, but the link text uses tokens
+   that flip DARK on cream (so it went dark-on-dark). Make the panels cream in light
+   mode so the flipped-dark text and icons read; hover gets an ink tint. */
+[data-theme="light"] .nav-more-menu,
+[data-theme="light"] .mobile-more-menu {
+  background: rgba(251,247,238,0.97);
+  border-color: rgba(20,18,16,0.10);
+  box-shadow: 0 24px 80px rgba(40,28,18,0.18);
+}
+[data-theme="light"] .nav-more-link:hover,
+[data-theme="light"] .nav-more-link.active,
+[data-theme="light"] .mobile-more-menu a:hover,
+[data-theme="light"] .mobile-more-menu a.active {
+  background: rgba(20,18,16,0.05);
+}
+
+.header-right { display: flex; align-items: center; gap: 14px; }
+
+/* Mobile menu toggle */
+.mobile-menu-toggle {
+  display: none; width: 36px; height: 36px;
+  flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  background: none; border: 0; cursor: pointer; padding: 0;
+}
+.burger-line {
+  display: block; width: 20px; height: 1.5px; background: var(--white);
+  border-radius: 1px; transition: transform 220ms var(--ease);
+}
+.wallet-pill {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 7px 14px 7px 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  font-family: var(--font-mono); font-size: 12px; color: var(--gray-300);
+  transition: border-color 220ms var(--ease), color 220ms var(--ease);
+}
+.wallet-pill:hover { border-color: rgba(255,255,255,0.28); color: var(--white); }
+.wallet-pill .addr-dot {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--white) 0%, var(--gray-300) 100%);
+  position: relative; flex-shrink: 0;
+}
+.wallet-pill .addr-dot::after { content: ''; position: absolute; inset: 7px; border-radius: 50%; background: var(--vermilion); }
+
+/* ── Sui dapp-kit ConnectButton override ── */
+[data-dapp-kit] {
+  --dapp-kit-backgroundColors-primaryButton: var(--vermilion) !important;
+  --dapp-kit-backgroundColors-primaryButtonHover: var(--vermilion-d) !important;
+  --dapp-kit-colors-primaryButton: var(--white) !important;
+  --dapp-kit-colors-body: var(--white) !important;
+  --dapp-kit-colors-bodyMuted: var(--gray-400) !important;
+  --dapp-kit-backgroundColors-modalPrimary: #111 !important;
+  --dapp-kit-backgroundColors-modalSecondary: #0a0a0a !important;
+  --dapp-kit-backgroundColors-modalOverlay: rgba(0,0,0,0.8) !important;
+  --dapp-kit-backgroundColors-dropdownMenu: #111 !important;
+  --dapp-kit-backgroundColors-dropdownMenuSeparator: rgba(255,255,255,0.08) !important;
+  --dapp-kit-backgroundColors-walletItemHover: rgba(255,255,255,0.06) !important;
+  --dapp-kit-backgroundColors-walletItemSelected: rgba(224,77,38,0.12) !important;
+  --dapp-kit-backgroundColors-iconButton: rgba(255,255,255,0.06) !important;
+  --dapp-kit-backgroundColors-iconButtonHover: rgba(255,255,255,0.12) !important;
+  --dapp-kit-colors-iconButton: var(--white) !important;
+  --dapp-kit-borderColors-outlineButton: rgba(255,255,255,0.15) !important;
+  --dapp-kit-colors-outlineButton: var(--white) !important;
+  --dapp-kit-backgroundColors-outlineButtonHover: rgba(255,255,255,0.06) !important;
+  --dapp-kit-typography-fontFamily: var(--font-body), 'Inter', sans-serif !important;
+  --dapp-kit-fontWeights-normal: 400 !important;
+  --dapp-kit-fontWeights-medium: 500 !important;
+  --dapp-kit-fontWeights-bold: 700 !important;
+  --dapp-kit-fontSizes-small: 12px !important;
+  --dapp-kit-fontSizes-medium: 14px !important;
+  --dapp-kit-fontSizes-large: 18px !important;
+  --dapp-kit-fontSizes-xlarge: 24px !important;
+  --dapp-kit-radii-small: 6px !important;
+  --dapp-kit-radii-medium: 8px !important;
+  --dapp-kit-radii-large: 12px !important;
+  --dapp-kit-radii-xlarge: 16px !important;
+  --dapp-kit-shadows-primaryButton: none !important;
+  --dapp-kit-blurs-modalOverlay: blur(12px) !important;
+}
+[data-dapp-kit] .Button_buttonVariants_variant_primary__x1s81q1,
+[data-dapp-kit].Button_buttonVariants_variant_primary__x1s81q1 {
+  border-radius: 999px !important;
+  padding: 9px 20px !important;
+  font-family: var(--font-body), 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  transition: background-color 180ms var(--ease), transform 180ms var(--ease) !important;
+}
+[data-dapp-kit] .Button_buttonVariants_variant_primary__x1s81q1:hover,
+[data-dapp-kit].Button_buttonVariants_variant_primary__x1s81q1:hover {
+  transform: scale(1.02) !important;
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 0; cursor: pointer;
+  font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 0.02em;
+  line-height: 1; /* body inherits 1.6 → asymmetric line box floats the label high in the pill */
+  border-radius: 999px; padding: 11px 22px;
+  transition: transform 180ms var(--ease), box-shadow 220ms var(--ease), background 220ms var(--ease), color 220ms var(--ease), border-color 220ms var(--ease);
+}
+.btn:hover { transform: scale(1.02); }
+.btn:active { transform: scale(0.98); }
+.btn-primary { background: var(--vermilion); color: var(--white); }
+.btn-primary:hover { background: var(--vermilion-d); }
+.btn-ghost { background: transparent; color: var(--gray-400); padding: 8px 14px; }
+.btn-ghost:hover { color: var(--white); }
+.btn-outline {
+  background: transparent; color: var(--white);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.btn-outline:hover { border-color: rgba(255,255,255,0.4); }
+
+.container { max-width: 1320px; margin: 0 auto; padding-inline: 32px; }
+
+/* hide scrollbar for the immersive vertical feed (snap scroll still works) */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ───────── Bell — sticky round timer ───────── */
+.bell {
+  position: fixed;
+  bottom: 48px; right: 28px;
+  z-index: 700;
+  width: 92px; height: 92px;
+  border-radius: 50%;
+  background: rgba(5,5,5,0.7);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  cursor: grab;
+  touch-action: none; /* pointer-drag owns the gesture, not page scroll */
+  user-select: none; -webkit-user-select: none;
+  transition: border-color 320ms var(--ease);
+}
+.bell:hover { border-color: rgba(255,255,255,0.2); }
+.bell:active { cursor: grabbing; }
+.bell svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.bell .track { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 1.4; }
+.bell .arc   { fill: none; stroke: var(--white); stroke-width: 1.4; stroke-linecap: round; transition: stroke 400ms var(--ease); }
+.bell.urgent .arc { stroke: var(--vermilion); }
+.bell-inner {
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}

@@ -1,0 +1,190 @@
+/* Ported from Masayume 68f7a09:web/src/styles/how-it-works.css */
+/* /how-it-works — ported from reference/yosuku/app/how-it-works/page.tsx.
+ *
+ * The reference writes the page as inline Tailwind utilities. `design-literals` bans hex
+ * and px in TSX, so the values live here, one class per reference element, with the
+ * source utility string named above each rule (compact, the way the yosuku parts are).
+ *
+ * Theme: this page flips. `var(--white)` / `var(--gray-NNN)` follow yosuku/part-13's light
+ * ramp; the dark neutral surfaces take the cream the part-14 ladder gives `bg-neutral-900/50`.
+ * The reference's `new-mint` is the system's `--profit` (identical on dark; matcha on cream,
+ * where neon mint is unreadable). Its `new-blue` was never defined in the reference and
+ * `sky-400` is not a token here: both take `--color-off-blue`, the one blue the system has,
+ * mixed toward ink on cream so it stays legible as text.
+ *
+ * Motion: framer-motion's rises become one keyframe with a per-index delay; the FAQ's height
+ * animation is a grid-rows transition. Both stop under reduced motion. */
+
+.hiw {
+  --hiw-mint: var(--profit);
+  --hiw-blue: var(--color-off-blue);
+  --hiw-card: rgba(23, 23, 23, 0.5);
+  --hiw-line: rgba(255, 255, 255, 0.05);
+  --hiw-line-hover: rgba(255, 255, 255, 0.1);
+  --hiw-tile: rgba(255, 255, 255, 0.05);
+  --hiw-formula: rgba(0, 0, 0, 0.4);
+  --hiw-glow-mint: rgba(52, 211, 153, 0.05);
+  --hiw-glow-blue: rgba(96, 165, 250, 0.05);
+  position: relative; color: var(--white); overflow-x: hidden;
+}
+[data-theme="light"] .hiw {
+  --hiw-blue: color-mix(in srgb, var(--color-off-blue) 55%, var(--white));
+  --hiw-card: rgba(251, 247, 238, 0.94);
+  --hiw-line: rgba(20, 18, 16, 0.08);
+  --hiw-line-hover: rgba(20, 18, 16, 0.16);
+  --hiw-tile: rgba(20, 18, 16, 0.05);
+  --hiw-formula: rgba(20, 18, 16, 0.04);
+}
+
+/* fixed inset-0 pointer-events-none */
+.hiw-glows { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+/* absolute w-[400px] h-[400px] blur-[120px] rounded-full — top-right mint, bottom-left blue */
+.hiw-glow-mint, .hiw-glow-blue { position: absolute; width: 400px; height: 400px; border-radius: 9999px; filter: blur(120px); }
+.hiw-glow-mint { top: 0; right: 0; background: var(--hiw-glow-mint); }
+.hiw-glow-blue { bottom: 0; left: 0; background: var(--hiw-glow-blue); }
+
+/* pt-28 pb-20 relative z-10 — the shell already clears 92px of the reference's 112px */
+.hiw-main { position: relative; z-index: 10; padding: 20px 0 80px; }
+/* max-w-[1000px] mx-auto px-6 */
+.hiw-wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+/* flex items-center gap-2 text-gray-500 hover:text-white mb-10 text-xs font-bold uppercase tracking-widest group */
+.hiw-back { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 40px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray-500); transition: color 200ms var(--ease); }
+.hiw-back:hover { color: var(--white); }
+/* w-3.5 h-3.5 group-hover:-translate-x-1 */
+.hiw-back-arrow { width: 14px; height: 14px; transition: transform 200ms var(--ease); }
+.hiw-back:hover .hiw-back-arrow { transform: translateX(-4px); }
+
+/* mb-16 */
+.hiw-hero { margin-bottom: 64px; }
+/* text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-4 */
+.hiw-title { margin-bottom: 16px; font-size: clamp(30px, 6vw, 60px); font-weight: 900; line-height: 1; letter-spacing: -0.025em; color: var(--white); }
+/* text-lg text-gray-400 max-w-2xl leading-relaxed */
+.hiw-lead { max-width: 672px; font-size: 18px; line-height: 1.625; color: var(--gray-400); }
+
+/* mb-20 */
+.hiw-section { margin-bottom: 80px; }
+/* text-xs font-bold uppercase tracking-widest text-gray-500 mb-8 (+ flex items-center gap-2 w-4 h-4 icon) */
+.hiw-label { display: flex; align-items: center; gap: 8px; margin-bottom: 32px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray-500); }
+.hiw-label svg { width: 16px; height: 16px; }
+.hiw-label-blue svg { color: var(--hiw-blue); }
+
+/* grid grid-cols-1 md:grid-cols-2 gap-4 */
+.hiw-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 768px) { .hiw-grid { grid-template-columns: 1fr 1fr; } }
+
+/* bg-neutral-900/50 border border-white/5 hover:border-white/10 rounded-2xl p-6 transition-all */
+.hiw-card { border: 1px solid var(--hiw-line); border-radius: 16px; background: var(--hiw-card); padding: 24px; transition: border-color 200ms var(--ease); }
+.hiw-card:hover { border-color: var(--hiw-line-hover); }
+/* md:p-8 */
+@media (min-width: 768px) { .hiw-card-wide { padding: 32px; } }
+/* border-new-mint/10 — the example card and the CTA */
+.hiw-card-mint { border-color: color-mix(in srgb, var(--hiw-mint) 10%, transparent); }
+/* border-sky-400/10 hover:border-sky-400/20 */
+.hiw-card-blue { border-color: color-mix(in srgb, var(--hiw-blue) 10%, transparent); }
+.hiw-card-blue:hover { border-color: color-mix(in srgb, var(--hiw-blue) 20%, transparent); }
+
+/* flex items-start gap-4 */
+.hiw-step { display: flex; align-items: flex-start; gap: 16px; }
+/* w-10 h-10 rounded-xl bg-new-mint/10 text-new-mint font-black text-sm (blue on the even tiles) */
+.hiw-num { display: flex; height: 40px; width: 40px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 12px; font-size: 14px; font-weight: 900; }
+.hiw-num[data-tone="mint"], .hiw-icon[data-tone="mint"] { background: color-mix(in srgb, var(--hiw-mint) 10%, transparent); color: var(--hiw-mint); }
+.hiw-num[data-tone="blue"], .hiw-icon[data-tone="blue"] { background: color-mix(in srgb, var(--hiw-blue) 10%, transparent); color: var(--hiw-blue); }
+
+/* text-base font-bold text-white mb-1.5 flex items-center gap-2 (+ w-4 h-4 icon in its tone) */
+.hiw-card-title { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 16px; font-weight: 700; color: var(--white); }
+.hiw-card-title svg { width: 16px; height: 16px; }
+.hiw-card-title[data-tone="mint"] svg { color: var(--hiw-mint); }
+.hiw-card-title[data-tone="blue"] svg { color: var(--hiw-blue); }
+/* text-sm text-gray-400 leading-relaxed */
+.hiw-body { font-size: 14px; line-height: 1.625; color: var(--gray-400); }
+/* text-sm text-gray-500 leading-relaxed — FAQ answers */
+.hiw-body-dim { font-size: 14px; line-height: 1.625; color: var(--gray-500); }
+
+/* flex items-center gap-3 mb-3 + w-8 h-8 rounded-lg bg-white/5 tile, w-4 h-4 text-gray-400 icon */
+.hiw-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.hiw-icon { display: flex; height: 32px; width: 32px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 8px; background: var(--hiw-tile); color: var(--gray-400); }
+.hiw-icon svg { width: 16px; height: 16px; }
+
+/* grid grid-cols-3 gap-3 sm:gap-6 mb-6 text-center */
+.hiw-example-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; text-align: center; }
+@media (min-width: 640px) { .hiw-example-grid { gap: 24px; } }
+/* text-xl sm:text-2xl md:text-3xl font-black font-mono — mint, off-red, white */
+.hiw-figure { font-family: var(--font-mono); font-size: clamp(20px, 3vw, 30px); font-weight: 900; color: var(--white); }
+.hiw-figure[data-tone="mint"] { color: var(--hiw-mint); }
+.hiw-figure[data-tone="red"] { color: var(--loss); }
+/* text-xs text-gray-500 mt-1 */
+.hiw-figure-label { margin-top: 4px; font-size: 12px; color: var(--gray-500); }
+/* border-t border-white/5 pt-6 + flex items-center gap-3 flex-wrap, text-sm text-gray-400 */
+.hiw-example-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; border-top: 1px solid var(--hiw-line); padding-top: 24px; font-size: 14px; color: var(--gray-400); }
+/* px-3 py-1 bg-new-mint/10 text-new-mint font-mono font-bold text-sm rounded-lg */
+.hiw-chip { border-radius: 8px; background: color-mix(in srgb, var(--hiw-mint) 10%, transparent); padding: 4px 12px; font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--hiw-mint); }
+/* w-4 h-4 text-gray-600 (the arrows) · text-xs text-gray-600 (the profit note) */
+.hiw-example-row svg { width: 16px; height: 16px; color: var(--gray-600); }
+.hiw-example-note { font-size: 12px; color: var(--gray-600); }
+/* Ours: doc 05 asks that an editorial example be labelled as one. */
+.hiw-example-tag { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 20px; border: 1px solid color-mix(in srgb, var(--hiw-mint) 25%, transparent); border-radius: 9999px; padding: 3px 10px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hiw-mint); }
+
+/* bg-black/40 border border-white/5 rounded-xl p-4 mb-6 font-mono text-sm text-vermilion overflow-x-auto */
+.hiw-formula { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; overflow-x: auto; border: 1px solid var(--hiw-line); border-radius: 12px; background: var(--hiw-formula); padding: 16px; font-family: var(--font-mono); font-size: 14px; color: var(--vermilion); white-space: nowrap; }
+/* grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-gray-400, keys text-white font-mono */
+.hiw-params { display: grid; grid-template-columns: 1fr; gap: 16px; font-size: 12px; color: var(--gray-400); }
+@media (min-width: 640px) { .hiw-params { grid-template-columns: 1fr 1fr; } }
+.hiw-params dt { display: inline; font-family: var(--font-mono); color: var(--white); }
+.hiw-params dd { display: inline; margin: 0; }
+/* text-sm text-gray-500 mt-6 leading-relaxed */
+.hiw-foot { margin-top: 24px; font-size: 14px; line-height: 1.625; color: var(--gray-500); }
+
+/* space-y-6, each item after the first: border-t border-white/5 pt-6 */
+.hiw-fees > div + div { margin-top: 24px; border-top: 1px solid var(--hiw-line); padding-top: 24px; }
+/* text-sm font-bold text-white mb-2 */
+.hiw-fee-title { margin-bottom: 8px; font-size: 14px; font-weight: 700; color: var(--white); }
+
+/* flex flex-col gap-4 · rows flex items-start gap-4 */
+.hiw-steps { display: flex; flex-direction: column; gap: 16px; }
+.hiw-steps > div { display: flex; align-items: flex-start; gap: 16px; }
+/* w-8 h-8 rounded-lg bg-vermilion/10 text-vermilion font-bold text-xs */
+.hiw-step-num { display: flex; height: 32px; width: 32px; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 8px; background: color-mix(in srgb, var(--vermilion) 10%, transparent); font-size: 12px; font-weight: 700; color: var(--vermilion); }
+/* text-sm font-bold text-white */
+.hiw-step-label { font-size: 14px; font-weight: 700; color: var(--white); }
+/* mb-4 — the two-up architecture grid above the full-width third card */
+.hiw-arch { margin-bottom: 16px; }
+
+/* space-y-2 */
+.hiw-faq { display: flex; flex-direction: column; gap: 8px; }
+/* bg-neutral-900/50 border border-white/5 rounded-xl overflow-hidden */
+.hiw-faq-item { overflow: hidden; border: 1px solid var(--hiw-line); border-radius: 12px; background: var(--hiw-card); }
+/* w-full flex items-center justify-between p-5 text-left · h3 text-sm font-bold text-white */
+.hiw-faq-q { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 16px; padding: 20px; text-align: left; font-size: 14px; font-weight: 700; color: var(--white); }
+/* w-4 h-4 text-gray-500 flex-shrink-0 transition-transform, rotate-180 when open */
+.hiw-faq-chevron { width: 16px; height: 16px; flex-shrink: 0; color: var(--gray-500); transition: transform 200ms var(--ease); }
+.hiw-faq-item[data-open="true"] .hiw-faq-chevron { transform: rotate(180deg); }
+/* framer's height 0 → auto, opacity 0 → 1 over 0.2s, as a grid-rows transition */
+.hiw-faq-a { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 200ms var(--ease), opacity 200ms var(--ease); }
+.hiw-faq-item[data-open="true"] .hiw-faq-a { grid-template-rows: 1fr; opacity: 1; }
+.hiw-faq-a > div { overflow: hidden; }
+/* px-5 pb-5 */
+.hiw-faq-a p { padding: 0 20px 20px; }
+
+/* text-center bg-neutral-900/50 border border-new-mint/10 rounded-2xl p-12 */
+.hiw-cta { padding: 48px; text-align: center; }
+/* text-2xl font-black mb-3 */
+.hiw-cta-title { margin-bottom: 12px; font-size: 24px; font-weight: 900; color: var(--white); }
+/* text-gray-400 text-sm mb-6 max-w-md mx-auto */
+.hiw-cta-body { max-width: 448px; margin: 0 auto 24px; font-size: 14px; color: var(--gray-400); }
+/* px-8 py-3 bg-new-mint text-black font-bold uppercase tracking-widest text-xs rounded-xl
+   hover:bg-new-mint/90 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_30px_rgba(52,211,153,0.2)] */
+.hiw-cta-button { display: inline-block; border-radius: 12px; background: var(--hiw-mint); padding: 12px 32px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--black); box-shadow: 0 0 30px rgba(52, 211, 153, 0.2); transition: background-color 200ms var(--ease), transform 200ms var(--ease); }
+/* `--black` is cream in light and the fill is matcha there, so the label takes the paper colour. */
+[data-theme="light"] .hiw-cta-button { color: var(--bg); }
+.hiw-cta-button:hover { background: color-mix(in srgb, var(--hiw-mint) 90%, transparent); transform: scale(1.02); }
+.hiw-cta-button:active { transform: scale(0.98); }
+
+/* framer-motion initial { opacity: 0, y: 20 } → { opacity: 1, y: 0 }, delay index × 0.08 (set inline) */
+.hiw-rise { animation: hiw-rise 0.5s var(--ease-out) both; }
+@keyframes hiw-rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .hiw-rise { animation: none; }
+  .hiw-faq-a, .hiw-faq-chevron, .hiw-back-arrow, .hiw-cta-button { transition: none; }
+}

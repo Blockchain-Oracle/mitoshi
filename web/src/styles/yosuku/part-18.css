@@ -1,0 +1,169 @@
+[data-theme="light"] .appband { background: #141210; color: var(--cream, #F4EEE3); }
+[data-theme="light"] .appband-mark { color: var(--cream, #F4EEE3); }
+[data-theme="light"] .appband-rule { background: var(--cream, #F4EEE3); opacity: 0.3; }
+[data-theme="light"] .appband-cell em { color: #F0805F; } /* vermilion lifts on ink, the -d shade muddies */
+[data-theme="light"] .appband:hover .appband-cell em { color: #FF9271; }
+[data-theme="light"] .appband::before { background: linear-gradient(90deg, #141210, transparent); }
+[data-theme="light"] .appband::after  { background: linear-gradient(270deg, #141210, transparent); }
+
+
+@media (prefers-reduced-motion: reduce) {
+  /* Motion is the decoration here, never the message: the words are already
+     legible standing still, so honour the preference and simply stop. */
+  .appband-track { animation: none; padding-left: clamp(28px, 6vw, 56px); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   /download
+   ══════════════════════════════════════════════════════════════════════════ */
+.dl { padding: clamp(28px, 6vw, 70px) clamp(20px, 5vw, 76px) 90px; max-width: 1240px; margin: 0 auto; }
+.dl-hero {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: clamp(32px, 6vw, 90px); align-items: center;
+  padding-top: clamp(20px, 5vw, 56px);
+}
+.dl-title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(2.6rem, 7vw, 5.1rem); line-height: 0.94; letter-spacing: -0.035em;
+  margin: 14px 0 0; color: var(--white);
+}
+.dl-title em { font-family: var(--font-serif, var(--font-display)); font-style: italic; font-weight: 500; color: var(--vermilion); }
+.dl-line { margin: 22px 0 0; max-width: 46ch; color: var(--gray-400, #A3A3A3); font-size: clamp(0.98rem, 1.5vw, 1.12rem); line-height: 1.65; }
+
+.dl-cta {
+  display: inline-flex; align-items: center; gap: 12px; margin-top: 34px;
+  padding: 15px 30px; border-radius: 999px;
+  background: var(--vermilion); color: var(--white);
+  font-family: var(--font-display); font-weight: 700; font-size: 1rem; letter-spacing: -0.01em;
+  text-decoration: none; border: 1px solid transparent;
+  transition: transform 220ms cubic-bezier(0.2,0.7,0.3,1), background 220ms ease, box-shadow 220ms ease;
+}
+.dl-cta:hover { background: var(--vermilion-d); transform: translateY(-2px); box-shadow: 0 14px 34px rgba(224,77,38,0.28); }
+/* The glyph is an arrow descending into a tray: 'get', not 'share'. No rotation. */
+.dl-cta-arrow { width: 18px; height: 18px; }
+
+.dl-meta { list-style: none; display: flex; flex-wrap: wrap; gap: clamp(20px, 3vw, 42px); margin: 40px 0 0; padding: 0; }
+.dl-meta li { display: flex; flex-direction: column; gap: 5px; }
+/* iOS is a proper noun with fixed casing. The surrounding labels are uppercased for rhythm,
+   but running that over "iOS" produces "IOS", which reads as a typo rather than a style. */
+/* iOS is a proper noun with fixed casing. Several labels here are uppercased for rhythm, and
+   running that over "iOS" produces "IOS", which reads as a typo rather than a style. One class
+   for all of them, since this keeps coming up. */
+.dl-eyebrow, .dl-nocaps, .nocaps { text-transform: none !important; }
+.dl-meta b { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--vermilion); font-weight: 500; }
+.dl-meta span { font-size: 0.86rem; color: var(--gray-500, #8A8A8A); }
+
+.dl-stage { position: relative; display: flex; justify-content: center; }
+/* A frame, not a bezel illustration. The capture is the subject; the frame's only job is to
+   say "this is a phone" and then stop competing with what is inside it. No glow: the screen is
+   already the brightest thing on the page, and a coloured bloom behind it was doing the job the
+   screen does better, while tinting a product shot that should be shown as it actually looks. */
+.dl-phone {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 312px;
+  /* A real bezel is thin and even. 10px of padding under a 44px radius left a fat grey margin
+     that read as a picture frame; 7px under a deeper radius reads as a rim. */
+  padding: 7px;
+  border-radius: 52px;
+  /* Titanium: a bright edge catching light at the top left, falling to near-black at the bottom
+     right, over a dark body. A flat grey gradient was the other reason this looked like a card. */
+  background:
+    linear-gradient(145deg, #6E6E73 0%, #2A2A2E 18%, #141416 46%, #37373B 78%, #0C0C0E 100%);
+  box-shadow:
+    0 30px 70px -20px rgba(0,0,0,0.8),
+    0 0 0 1px rgba(255,255,255,0.10) inset,
+    0 1px 2px rgba(255,255,255,0.22) inset;
+}
+.dl-phone-screen {
+  position: relative;
+  border-radius: 45px; overflow: hidden; background: #050505; display: block;
+  /* The black gap between rim and glass. Without it the image runs straight into the metal and
+     the whole thing flattens into one shape. */
+  box-shadow: 0 0 0 1px #000, 0 0 0 2px rgba(0,0,0,0.9);
+}
+.dl-phone-screen img { display: block; width: 100%; height: auto; }
+
+/* Dynamic Island. Sized off the phone's own width so it holds at any scale: 125x36pt on a
+   393pt-wide device is a 31.8% wide pill at a 125:36 ratio. */
+.dl-phone-island {
+  position: absolute; top: 1.55%; left: 50%; transform: translateX(-50%);
+  width: 31.8%; aspect-ratio: 125 / 36;
+  background: #000; border-radius: 999px;
+  pointer-events: none;
+}
+
+/* Side controls. Colour-matched to the rim so they read as machined out of the same block. */
+.dl-phone-btn {
+  position: absolute; width: 3px; border-radius: 3px;
+  background: linear-gradient(180deg, #4A4A4F, #232326 40%, #17171A);
+  box-shadow: 0 0 0 0.5px rgba(0,0,0,0.55);
+  pointer-events: none;
+}
+.dl-btn-mute  { left: -3px; top: 15.5%; height: 4.2%; }
+.dl-btn-volup { left: -3px; top: 23.0%; height: 7.4%; }
+.dl-btn-voldn { left: -3px; top: 32.4%; height: 7.4%; }
+.dl-btn-power { right: -3px; top: 26.5%; height: 11.2%; }
+.dl-t-mono { font-family: var(--font-mono); font-size: 12px; }
+.dl-t-lbl  { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; }
+.dl-t-num  { font-family: var(--font-mono); font-size: 21px; font-weight: 700; }
+.dl-t-h    { font-family: var(--font-display); font-size: 25px; font-weight: 800; fill: #FAFAFA; letter-spacing: -0.02em; }
+.dl-t-btn  { font-family: var(--font-display); font-size: 15px; font-weight: 700; }
+
+.dl-points {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: clamp(22px, 3vw, 46px);
+  margin-top: clamp(60px, 9vw, 118px);
+  padding-top: clamp(30px, 4vw, 50px);
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.dl-points h3 { font-family: var(--font-display); font-weight: 700; font-size: 1.08rem; color: var(--white); margin: 16px 0 8px; letter-spacing: -0.01em; }
+.dl-points p { color: var(--gray-500, #8A8A8A); font-size: 0.92rem; line-height: 1.6; margin: 0; max-width: 34ch; }
+.dl-pt-mark { display: inline-flex; width: 22px; color: var(--vermilion); }
+.dl-pt-mark svg { width: 100%; height: auto; display: block; }
+
+.dl-foot { margin: clamp(46px, 6vw, 76px) 0 0; color: var(--gray-600, #6E6E6E); font-size: 0.84rem; line-height: 1.7; max-width: 62ch; }
+
+@media (max-width: 860px) {
+  .dl-hero { grid-template-columns: 1fr; gap: 44px; }
+  .dl-stage { order: -1; }
+  .dl-phone { max-width: 250px; padding: 6px; border-radius: 42px; }
+  .dl-phone-screen { border-radius: 36px; }
+  /* The island and the buttons are all percentage-based, so they follow the smaller phone on
+     their own. Only the button WIDTH is absolute, and 3px on a 250px phone is still a nub. */
+}
+
+
+/* ───────── Live Desk in light mode ─────────
+   The desk is authored dark: white text on bg-white/[0.0x] washes. On cream that produces a
+   grey slab with grey type (the stake box read as disabled). Re-point the tokens to ink so the
+   panel is paper with dark text, rather than a dark-theme panel dropped on a light page. */
+[data-theme="light"] .live-desk .text-white { color: #1A1613 !important; }
+[data-theme="light"] .live-desk .text-white\/85,
+[data-theme="light"] .live-desk .text-white\/80,
+[data-theme="light"] .live-desk .text-white\/70 { color: rgba(26,22,19,0.72) !important; }
+[data-theme="light"] .live-desk .text-white\/45,
+[data-theme="light"] .live-desk .text-white\/40,
+[data-theme="light"] .live-desk .text-white\/35 { color: rgba(26,22,19,0.5) !important; }
+[data-theme="light"] .live-desk [class*="bg-white/["] { background: rgba(20,18,16,0.035) !important; }
+[data-theme="light"] .live-desk [class*="border-white/["] { border-color: rgba(20,18,16,0.12) !important; }
+
+/* ── copy desk: money controls ──────────────────────────────────────────────
+   These carried hardcoded dark values (bg-black/30, text-white, text-gray-300)
+   that the light theme has no rule for, so on cream the deposit box rendered as
+   a grey slab with an invisible amount in it and the +1/+5 chips all but
+   disappeared. Defaults stay dark; light gets real values rather than a remap. */
+.desk-amount { border-color: rgba(255, 255, 255, 0.08); background: rgba(0, 0, 0, 0.30); }
+.desk-amount-input { color: #fff; }
+.desk-amount-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+.desk-amount-unit { color: #d1d5db; }
+.desk-amount-hint { color: rgba(255, 255, 255, 0.45); }
+.desk-chip { border-color: rgba(255, 255, 255, 0.15); color: #d1d5db; }
+.desk-chip:hover { color: #fff; }
+
+[data-theme="light"] .desk-amount { border-color: rgba(20, 18, 16, 0.14); background: #FFFDF8; }
+[data-theme="light"] .desk-amount-input { color: #1A1612; }
+[data-theme="light"] .desk-amount-input::placeholder { color: rgba(26, 22, 18, 0.30); }
+[data-theme="light"] .desk-amount-unit { color: #6B6353; }
+[data-theme="light"] .desk-amount-hint { color: #6B6353; }
+[data-theme="light"] .desk-chip { border-color: rgba(20, 18, 16, 0.20); color: #4A423A; }
+[data-theme="light"] .desk-chip:hover { color: #1A1612; }

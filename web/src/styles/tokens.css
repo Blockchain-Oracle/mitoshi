@@ -1,0 +1,131 @@
+/* Ported from Masayume 68f7a09:web/src/styles/tokens.css */
+/* Component-tier tokens — one section per DESIGN.md `components:` key. Values reference theme.css; nothing is re-typed here. */
+:root {
+  /* ticket */
+  --ticket-surface: var(--color-surface-1);
+  --ticket-border: var(--color-hairline);
+  --ticket-radius: var(--radius-lg);
+  --ticket-stake-font: var(--text-data-lg);
+  --ticket-cta-height: 52px;
+
+  /* market-card */
+  --market-card-surface: var(--color-surface-1);
+  --market-card-border: var(--color-hairline);
+  --market-card-radius: var(--radius-lg);
+  --market-card-odds-font: var(--text-data);
+
+  /* reel-card */
+  --reel-card-radius: var(--radius-xl);
+  --reel-card-max-width: 460px;
+  --reel-card-surface: var(--color-surface-1);
+  --reel-card-live-hairline: var(--color-accent-dim);
+
+  /* balance-plate */
+  --balance-plate-surface: var(--color-surface-2);
+  --balance-plate-hero-font: var(--text-data-hero);
+  --balance-plate-radius: var(--radius-lg);
+
+  /* claim-plate */
+  --claim-plate-surface: var(--color-accent-wash);
+  --claim-plate-border: var(--color-accent-dim);
+  --claim-plate-amount-font: var(--text-data-lg);
+  --claim-plate-radius: var(--radius-lg);
+
+  /* receipt — the app's ONE drop shadow lives here */
+  --receipt-surface: var(--color-cream);
+  --receipt-ink: var(--color-cream-ink);
+  --receipt-hairline: var(--color-cream-hairline);
+  --receipt-strip: var(--color-accent);
+  --receipt-radius: var(--radius-md);
+  --receipt-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.6), 0 6px 14px -8px rgb(0 0 0 / 0.45);
+
+  /* capability-receipt */
+  --capability-receipt-surface: var(--color-surface-2);
+  --capability-receipt-border: var(--color-border-strong);
+  --capability-receipt-verb-font: var(--text-data);
+  --capability-receipt-radius: var(--radius-lg);
+
+  /* verdict-stamp */
+  --verdict-stamp-win-ink: var(--color-accent);
+  --verdict-stamp-loss-ink: var(--color-ink-secondary);
+  --verdict-stamp-void-ink: var(--color-ink-muted);
+  --verdict-stamp-font: var(--text-stamp-hero);
+  --verdict-stamp-rotation: -4deg;
+
+  /* button-primary */
+  --button-primary-fill: var(--color-accent);
+  --button-primary-ink: var(--color-cream-ink);
+  --button-primary-hover: var(--color-accent-hover);
+  --button-primary-pressed: var(--color-accent-pressed);
+  --button-primary-radius: var(--radius-md);
+  --button-primary-height: 48px;
+
+  /* button-up / button-down */
+  --button-up-fill: var(--color-profit-wash);
+  --button-up-ink: var(--color-profit);
+  --button-up-border: var(--color-profit);
+  --button-down-fill: var(--color-loss-wash);
+  --button-down-ink: var(--color-loss);
+  --button-down-border: var(--color-loss);
+
+  /* input */
+  --input-surface: var(--color-ground);
+  --input-border: var(--color-hairline);
+  --input-focus-ring: var(--color-accent);
+  --input-radius: var(--radius-md);
+  --input-height: 48px;
+
+  /* badge-backed-resting / badge-backed-filled / badge-house */
+  --badge-backed-resting-border: var(--color-accent-dim);
+  --badge-backed-resting-ink: var(--color-accent);
+  --badge-backed-resting-fill: transparent;
+  --badge-backed-filled-fill: var(--color-accent-wash);
+  --badge-backed-filled-ink: var(--color-accent);
+  --badge-backed-filled-border: var(--color-accent-dim);
+  --badge-house-border: var(--color-border-strong);
+  --badge-house-ink: var(--color-ink-secondary);
+  --badge-house-fill: transparent;
+
+  /* countdown */
+  --countdown-font: var(--text-data);
+  --countdown-ink: var(--color-ink);
+  --countdown-urgent-ink: var(--color-accent);
+
+  /* banzuke-row */
+  --banzuke-row-surface: var(--color-surface-1);
+  --banzuke-row-divider: var(--color-hairline);
+  --banzuke-row-rank-font: var(--text-data);
+  --banzuke-row-top-rank-ink: var(--color-accent);
+
+  /* chrome — DESIGN Layout & Elevation */
+  --ticker-height: 32px;
+  --pill-nav-offset: calc(env(safe-area-inset-bottom, 0px) + var(--spacing) * 4);
+  --pill-nav-clearance: calc(env(safe-area-inset-bottom, 0px) + var(--spacing) * 16);
+  --claim-pill-offset: calc(var(--pill-nav-clearance) + var(--spacing) * 2);
+  --toast-offset: calc(var(--pill-nav-clearance) + var(--spacing) * 2);
+  --glow-live: 0 0 24px color-mix(in srgb, var(--color-accent) 16%, transparent);
+  --focus-ring: 2px solid var(--color-accent);
+  --content-reading: 640px;
+  --content-wide: 1200px;
+
+  /* navigation menus and mobile drawer */
+  --nav-panel-background: rgb(8 8 9 / 0.98);
+  --nav-panel-border: rgb(255 255 255 / 0.1);
+  --nav-divider: rgb(255 255 255 / 0.08);
+  --nav-section-divider: rgb(255 255 255 / 0.07);
+  --nav-item-border: rgb(255 255 255 / 0.08);
+  --nav-item-fill: rgb(255 255 255 / 0.045);
+  --nav-icon-border: rgb(255 255 255 / 0.09);
+  --nav-active-border: rgb(224 77 38 / 0.35);
+  --nav-overlay-background: rgb(0 0 0 / 0.72);
+}
+
+[data-theme="light"] {
+  --nav-panel-background: rgb(251 247 238 / 0.99);
+  --nav-panel-border: rgb(20 18 16 / 0.12);
+  --nav-divider: rgb(20 18 16 / 0.09);
+  --nav-section-divider: rgb(20 18 16 / 0.09);
+  --nav-item-border: rgb(20 18 16 / 0.1);
+  --nav-item-fill: rgb(20 18 16 / 0.04);
+  --nav-icon-border: rgb(20 18 16 / 0.12);
+}

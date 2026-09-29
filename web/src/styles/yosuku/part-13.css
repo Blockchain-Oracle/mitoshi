@@ -1,0 +1,350 @@
+.faq-a-meta .tag { padding: 4px 8px; border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; }
+
+/* ───────── Landing: Full footer ───────── */
+.landing-footer {
+  position: relative;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 120px 0 0; overflow: hidden;
+  background: radial-gradient(900px 320px at 50% 100%, rgba(255,255,255,0.03), transparent 70%), var(--black);
+}
+.footer-headline {
+  display: grid; grid-template-columns: 7fr 5fr;
+  gap: 60px; align-items: end;
+  padding-bottom: 64px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.footer-headline h2 {
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(40px, 5.6vw, 84px);
+  line-height: 0.95; letter-spacing: -0.045em;
+  color: var(--white); margin: 0; max-width: 14ch;
+}
+.footer-headline h2 em { font-style: italic; color: var(--gray-400); font-weight: 400; }
+.footer-headline .actions { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.footer-headline .actions .lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--gray-600); letter-spacing: 0.22em; text-transform: uppercase;
+}
+.footer-headline .cta {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: var(--white); color: var(--black);
+  padding: 18px 28px; border-radius: 999px; text-decoration: none;
+  font-family: var(--font-display); font-size: 18px; font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: transform 240ms var(--ease), background 240ms var(--ease);
+}
+.footer-headline .cta .arr { transition: transform 240ms var(--ease); }
+.footer-headline .cta:hover { transform: translateY(-2px); }
+.footer-headline .cta:hover .arr { transform: translateX(4px); }
+
+.footer-grid {
+  display: grid; grid-template-columns: 3fr 1.2fr 1.2fr 1.2fr 1.2fr;
+  gap: 48px; padding: 64px 0;
+}
+.footer-brand { display: flex; flex-direction: column; gap: 18px; max-width: 38ch; }
+.footer-brand .tagline { color: var(--gray-400); font-size: 14px; line-height: 1.65; }
+.footer-brand .seal {
+  display: flex; gap: 14px; align-items: center; margin-top: 8px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--gray-500); letter-spacing: 0.16em; text-transform: uppercase;
+}
+.footer-brand .seal-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.12);
+  display: grid; place-items: center;
+  color: var(--white); flex-shrink: 0;
+}
+.footer-brand .seal-dot-mark { width: 13px; height: auto; display: block; }
+.footer-col { display: flex; flex-direction: column; gap: 14px; }
+.footer-col-head {
+  display: flex; align-items: baseline; gap: 8px;
+  margin-bottom: 8px; padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.footer-col-head .idx { font-family: var(--font-mono); font-size: 10px; color: var(--gray-600); letter-spacing: 0.16em; }
+.footer-col-head .ttl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.16em; color: var(--white); }
+.footer-links { display: flex; flex-direction: column; gap: 11px; }
+.footer-links a {
+  display: flex; justify-content: space-between; align-items: center;
+  color: var(--gray-300); text-decoration: none; font-size: 14px;
+  transition: color 200ms var(--ease), padding-left 240ms var(--ease); position: relative;
+}
+.footer-links a:hover { color: var(--white); }
+.footer-links a .arr {
+  font-family: var(--font-mono); font-size: 11px; color: var(--gray-700);
+  opacity: 0; transform: translateX(-4px);
+  transition: opacity 220ms var(--ease), transform 220ms var(--ease), color 220ms var(--ease);
+}
+.footer-links a:hover .arr { opacity: 1; transform: translateX(0); color: var(--white); }
+.footer-links a .new {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em;
+  color: var(--black); background: var(--white);
+  padding: 2px 6px; border-radius: 3px; text-transform: uppercase;
+}
+
+.footer-status {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.footer-status .cell {
+  padding: 18px 24px 18px 0;
+  display: flex; flex-direction: column; gap: 6px;
+  border-left: 1px solid rgba(255,255,255,0.06); padding-left: 24px;
+}
+.footer-status .cell:first-child { border-left: 0; padding-left: 0; }
+.footer-status .lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--gray-600); letter-spacing: 0.18em; text-transform: uppercase;
+}
+.footer-status .val { font-family: var(--font-mono); font-size: 14px; color: var(--white); letter-spacing: -0.01em; }
+.footer-status .val .dot {
+  display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--white); margin-right: 8px; vertical-align: middle;
+  box-shadow: 0 0 0 0 rgba(255,255,255,0.4);
+  animation: liveDot 1.6s var(--ease) infinite;
+}
+
+.footer-bottom {
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 24px; padding: 24px 0 28px;
+}
+.footer-meta {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--gray-500); letter-spacing: 0.16em; text-transform: uppercase;
+}
+.footer-bottom .legal-links { display: flex; gap: 20px; justify-content: center; }
+.footer-bottom .legal-links a {
+  color: var(--gray-500); text-decoration: none;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  transition: color 200ms var(--ease);
+}
+.footer-bottom .legal-links a:hover { color: var(--white); }
+.footer-watermark {
+  pointer-events: none; user-select: none;
+  text-align: center;
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 26vw; line-height: 0.78; letter-spacing: -0.07em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255,255,255,0.05);
+  margin-top: 2vw; margin-bottom: -3.6vw; position: relative;
+}
+.footer-watermark .fill {
+  position: absolute; inset: 0;
+  color: rgba(255,255,255,0.024);
+  -webkit-text-stroke: 0;
+}
+.footer-end-strip {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 0 18px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--gray-700); letter-spacing: 0.22em; text-transform: uppercase;
+}
+
+/* draw-line helper */
+.draw-line {
+  height: 1px; background: rgba(255,255,255,0.08);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 1100ms var(--ease);
+}
+.draw-line.in-view { transform: scaleX(1); }
+
+/* ───────── Landing: on iOS ─────────
+   Deliberately the quietest band on the page: a hairline, one line of type, one door out.
+   The app is the only thing here that is not already on this website, so it does not need
+   decoration to earn attention, only somewhere obvious to stand. */
+.ios {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 150px 0 160px;
+}
+.ios-inner { max-width: 1320px; margin: 0 auto; }
+.ios-title {
+  font-family: var(--font-display); font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.05; letter-spacing: -0.035em;
+  color: var(--white); max-width: 14ch; margin: 0 0 28px;
+}
+.ios-title em { font-style: italic; color: var(--gray-500); }
+.ios-line {
+  color: var(--gray-400); font-size: 17px; line-height: 1.6;
+  max-width: 46ch; margin: 0 0 40px;
+}
+.ios-cta {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: var(--white); color: var(--black);
+  padding: 17px 27px; border-radius: 999px; text-decoration: none;
+  font-family: var(--font-display); font-size: 17px; font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: transform 240ms var(--ease);
+}
+.ios-cta .arr { transition: transform 240ms var(--ease); }
+.ios-cta:hover { transform: translateY(-2px); }
+.ios-cta:hover .arr { transform: translateX(4px); }
+.ios-meta {
+  display: flex; gap: 28px; margin-top: 32px;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.28em; text-transform: uppercase; color: var(--gray-600);
+}
+@media (max-width: 720px) {
+  .ios { padding: 100px 0 110px; }
+  .ios-meta { gap: 18px; flex-wrap: wrap; }
+}
+
+/* ───────── Landing: Section horizontal padding ───────── */
+.landing .stats,
+.landing .how,
+.landing .features,
+.landing .manifesto,
+.landing .split,
+.landing .markets-preview,
+.landing .ios,
+.landing .faq,
+.landing .landing-footer {
+  padding-left: 64px;
+  padding-right: 64px;
+}
+.landing .stats .stats-grid { max-width: 1320px; margin: 0 auto; }
+.landing .how { max-width: 1440px; margin-left: auto; margin-right: auto; }
+.landing .split .split-grid { max-width: 1320px; margin: 0 auto; }
+.landing .markets-preview { max-width: 1440px; margin-left: auto; margin-right: auto; }
+.landing .faq .faq-grid { max-width: 1320px; margin: 0 auto; }
+.landing .landing-footer { max-width: 1440px; margin-left: auto; margin-right: auto; }
+
+/* Landing market card structure helpers */
+.lp-market-card .market-row1 { display: flex; align-items: center; gap: 10px; }
+.lp-market-card .market-glyph {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.12);
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  color: var(--white); flex-shrink: 0;
+}
+.lp-market-card .market-asset-block { display: flex; flex-direction: column; gap: 2px; line-height: 1; }
+.lp-market-card .market-asset { font-family: var(--font-mono); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em; color: var(--white); }
+.lp-market-card .market-window { font-family: var(--font-mono); font-size: 10px; color: var(--gray-600); letter-spacing: 0.1em; }
+.lp-market-card .spacer { flex: 1; }
+.lp-market-card.hot { border-color: rgba(224,77,38,0.3); }
+.lp-market-card.hot::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at top right, rgba(224,77,38,0.04), transparent 60%);
+  pointer-events: none; border-radius: inherit;
+}
+
+/* Landing arrow link */
+.arrow-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: var(--white); text-decoration: none;
+  font-family: var(--font-display); font-size: 16px;
+  font-weight: 500; letter-spacing: -0.01em;
+  transition: gap 240ms var(--ease);
+}
+.arrow-link:hover { gap: 12px; }
+
+/* ───────── Tooltips ───────── */
+.tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+}
+.tooltip-icon {
+  width: 12px; height: 12px;
+  color: var(--gray-600);
+  flex-shrink: 0;
+  transition: color 150ms;
+}
+.tooltip-wrap:hover .tooltip-icon { color: var(--gray-400); }
+.tooltip-bubble {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: rgba(20, 20, 20, 0.96);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: var(--gray-300);
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: normal;
+  width: max-content;
+  max-width: 260px;
+  z-index: 9100;
+  pointer-events: none;
+  animation: tooltipFade 150ms var(--ease);
+  backdrop-filter: blur(12px);
+}
+.tooltip-bubble.top { bottom: calc(100% + 8px); }
+.tooltip-bubble.bottom { top: calc(100% + 8px); }
+.tooltip-arrow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 6px; height: 6px;
+  background: rgba(20, 20, 20, 0.96);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.tooltip-bubble.top .tooltip-arrow {
+  bottom: -4px;
+  border-top: 0; border-left: 0;
+}
+.tooltip-bubble.bottom .tooltip-arrow {
+  top: -4px;
+  border-bottom: 0; border-right: 0;
+}
+@keyframes tooltipFade {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ───────── Light Mode (beta) ───────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   CREAM LIGHT MODE — the brand-film palette, brought into the app.
+   #F4EEE3 paper · #141210 ink · #D93E1F vermilion · #2E6B4F matcha.
+
+   Most of the app re-skins for free: tailwind.config maps gray-*, bg, and
+   vermilion to the CSS vars flipped below (so 830 text-gray-* + bg-bg + every
+   vermilion usage follow automatically). The gray ramp is INVERTED — low
+   numbers → ink (text), high numbers → raised cream surfaces — which preserves
+   contrast semantics (text-gray-400/500 stay readable; bg-gray-900 becomes a
+   light card). The literal white/black/neutral utilities (not var-backed) get
+   explicit overrides below.
+   ══════════════════════════════════════════════════════════════════════════ */
+[data-theme="light"] {
+  --black: #F4EEE3;   /* used as a background in places */
+  --bg:    #F4EEE3;
+  --white: #141210;   /* used as foreground in places */
+
+  /* inverted warm ramp: 50 = darkest ink … 950 = lightest raised surface */
+  --gray-50:  #17130E;
+  --gray-100: #211C16;
+  --gray-200: #2E2821;
+  --gray-300: #453E33;
+  --gray-400: #5E574B;  /* muted text — strong contrast on cream */
+  --gray-500: #7C7466;  /* labels / dim text (also the films' INK_DIM family) */
+  --gray-600: #9A9080;  /* faint text / soft dividers */
+  --gray-700: #C4BAA6;  /* hairline dividers */
+  --gray-800: #ECE3D2;  /* recessed surface / border surface */
+  --gray-900: #F6F0E4;  /* card surface */
+  --gray-950: #FBF7EE;  /* raised surface, just above paper */
+
+  --vermilion:   #D93E1F;
+  --vermilion-d: #B83214;
+  --profit: #2E6B4F;    /* matcha — the neon mint is unreadable on cream */
+  --loss:   #C2381F;    /* warm red, legible on cream */
+
+  /* The SAME flip for the Tailwind `@theme` direction tokens, which part-01 declares as literals in
+   * `:root` and which nothing here overrode until now. `--profit` flipped and `--color-profit` did
+   * not, so every surface reading the second one kept the neon on cream: measured on the swipe
+   * stage's UP call, #34D399 on cream is about 1.4:1, where the flipped matcha is legible. The
+   * comment two lines up already said the neon is unreadable here; this is that decision applied to
+   * the other half of the pair. Reaches every `--button-up-*` / `--button-down-*` surface — the
+   * Ticket's calls, the word board's rows and the swipe stage — in light mode only. */
+  --color-profit: #2E6B4F;
+  --color-loss:   #C2381F;
+  --color-new-mint:  #2E6B4F;
+  --color-off-green: #2E6B4F;
+  --color-off-red:   #C2381F;
+}

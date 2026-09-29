@@ -7,21 +7,48 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "ux-gate": "tsx e2e/ux-gate.ts",
+    "capture:phone": "tsx e2e/capture-phone.ts"
   },
   "dependencies": {
+    "@base-ui/react": "catalog:",
     "@cwf/core": "workspace:*",
+    "@cwf/db": "workspace:*",
     "@cwf/markets": "workspace:*",
+    "@cwf/tokens": "workspace:*",
+    "@number-flow/react": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@wagmi/core": "catalog:",
+    "@walletconnect/ethereum-provider": "catalog:",
+    "accounts": "catalog:",
+    "class-variance-authority": "catalog:",
+    "clsx": "catalog:",
+    "idb-keyval": "catalog:",
+    "lucide-react": "catalog:",
+    "motion": "catalog:",
     "next": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "server-only": "catalog:",
+    "tailwind-merge": "catalog:",
+    "viem": "catalog:",
+    "wagmi": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
+    "@axe-core/playwright": "catalog:",
+    "@lhci/cli": "catalog:",
+    "@playwright/test": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
+    "tailwindcss": "catalog:",
+    "tw-animate-css": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "tsx": "catalog:"
   }
 }

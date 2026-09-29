@@ -12,17 +12,27 @@
     "./launch": "./src/launch/stablecoin.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:live": "vitest run --config vitest.live.config.ts"
   },
   "dependencies": {
-    "@cwf/core": "workspace:*",
     "@cwf/clients": "workspace:*",
+    "@cwf/core": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "accounts": "catalog:",
+    "ox": "catalog:",
+    "redis": "catalog:",
     "viem": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "react": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "react": ">=19"
   }
 }

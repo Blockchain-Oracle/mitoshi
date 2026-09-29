@@ -9,23 +9,23 @@
  *   carries it; `recordMemecoin` is the CurveLaunchpad's alone; the rest is owner administration.
  *
  * S17b adds the CurveLaunchpad's user entry points (`buy`, `sell`, `claimFees`, `graduate`) to `sponsor` with their gas
- * caps. Shape = `RelayPolicy` in `relay/types.ts` (S1); this file is listed in `policies/index.ts` when S1's relay lands
- * on the trunk. Geofence posture for launch is open everywhere (`launch: {}`, Q-008).
+ * caps. Typed as `RelayPolicy` (S1 `relay/types.ts`) and listed in `policies/index.ts`. Geofence posture for launch is open everywhere (`launch: {}`, Q-008).
  */
 import type { Abi, Address } from "viem";
 import { relayTargets } from "@cwf/clients";
 import { launchRegistryAbi } from "@cwf/clients/abis/LaunchRegistry";
+import type { RelayPolicy } from "../types";
 
 /** The launch registry on every chain it is deployed on (generated from deployment fragments). */
 const targets: readonly Address[] = Object.values(relayTargets as Record<string, Record<string, readonly string[]>>).flatMap((byArea) => (byArea.launch ?? []) as Address[]);
 
-export const launchPolicy = {
-  area: "launch" as const,
+export const launchPolicy: RelayPolicy = {
+  area: "launch",
   targets,
   abi: launchRegistryAbi as Abi,
-  sponsor: [] as readonly string[],
-  never: ["recordStablecoin", "recordMemecoin", "setCurveLaunchpad", "reserveCodes", "transferOwnership", "acceptOwnership", "renounceOwnership"] as readonly string[],
-  pillar: "launch" as const,
-  entry: [] as readonly string[],
+  sponsor: [],
+  never: ["recordStablecoin", "recordMemecoin", "setCurveLaunchpad", "reserveCodes", "transferOwnership", "acceptOwnership", "renounceOwnership"],
+  pillar: "launch",
+  entry: [],
   maxGas: 0n,
 };

@@ -1,0 +1,331 @@
+.wq-yeslead b { color: #34D399; font-weight: 700; }
+.wq-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+.wq-btn {
+  /* Sized and coloured to match .mc-side, the minute-card UP/DOWN pair. Two boards showing the
+     same BTC market should not have two different button languages: same padding, radius, mono
+     face, tracking and green/rose tints, so Yes/No and UP/DOWN read as one control. */
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px 14px; border-radius: 10px; cursor: pointer; border: 1px solid transparent;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; background: transparent;
+  will-change: transform;
+  transition: transform 240ms cubic-bezier(.34,1.56,.64,1), box-shadow 220ms var(--ease),
+              background 200ms var(--ease), border-color 200ms var(--ease);
+}
+/* a soft gloss sweeps across once on hover — the "alive" cue */
+.wq-btn::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(105deg, transparent 32%, rgba(255,255,255,0.55) 50%, transparent 68%);
+  transform: translateX(-130%); opacity: 0;
+  transition: transform 640ms var(--ease), opacity 260ms var(--ease);
+}
+.wq-btn:hover::before { transform: translateX(130%); opacity: 0.6; }
+.wq-btn:hover { transform: translateY(-2px); }
+.wq-btn:active { transform: translateY(0) scale(0.972); transition-duration: 90ms; }
+.wq-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.wq-btn .wq-side { font-weight: 700; font-size: 12px; transition: transform 220ms var(--ease); }
+.wq-btn .wq-cents {
+  font-family: var(--font-mono); font-weight: 800; font-size: 12px; opacity: 0.82;
+  letter-spacing: -0.02em; text-transform: none;
+  transition: transform 220ms var(--ease), opacity 200ms var(--ease);
+}
+.wq-btn:hover .wq-side { transform: translateX(2px); }
+.wq-btn:hover .wq-cents { transform: scale(1.09); opacity: 1; }
+.wq-btn.yes { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.32); color: var(--profit); }
+.wq-btn.yes:hover { background: rgba(52,211,153,0.24); border-color: rgba(52,211,153,0.78);
+  box-shadow: 0 10px 24px -12px rgba(52,211,153,0.6), inset 0 0 0 1px rgba(52,211,153,0.12); }
+.wq-btn.no { background: rgba(251,113,133,0.08); border-color: rgba(251,113,133,0.32); color: var(--loss); }
+.wq-btn.no:hover { background: rgba(251,113,133,0.22); border-color: rgba(251,113,133,0.7);
+  box-shadow: 0 10px 24px -12px rgba(251,113,133,0.55), inset 0 0 0 1px rgba(251,113,133,0.12); }
+
+/* No phone override any more: .wq-btn now inherits .mc-side's proportions, which are already
+   compact enough on a 390px screen and identical to the minute cards at every width. */
+@media (max-width: 720px) { .wq-actions { gap: 8px; } }
+@media (prefers-reduced-motion: reduce) {
+  .wq-btn, .wq-btn::before, .wq-btn .wq-side, .wq-btn .wq-cents { transition-duration: 1ms; }
+  .wq-btn:hover { transform: none; }
+  .wq-btn:hover::before { opacity: 0; }
+}
+.words-foot { margin-top: 44px; font-family: var(--font-mono); font-size: 11.5px; color: var(--gray-600); line-height: 1.6; max-width: 70ch; }
+
+[data-theme="light"] .wq-card { background: #ffffff; border-color: rgba(20,18,16,0.1); box-shadow: 0 1px 3px rgba(20,18,16,0.05); }
+[data-theme="light"] .wq-card:hover { border-color: rgba(20,18,16,0.22); }
+[data-theme="light"] .wq-card .wq-q, [data-theme="light"] .wq-clock { color: #141210; }
+[data-theme="light"] .wq-oddsbar { background: rgba(251,113,133,0.26); }
+
+/* ══════════════════════════════════════════════════════════════
+   X-trade — yosuku.xyz/trade-from-x  (award redesign)
+   Un-drainable custody rail + focus-follows-step spine.
+   ══════════════════════════════════════════════════════════════ */
+.xt {
+  --xt-verm: #E04D26;
+  --xt-mint: #34D399;
+  --xt-ink: #f3f1ee;
+  --e-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --e-emph: cubic-bezier(0.2, 0, 0, 1);
+  --e-draw: cubic-bezier(0.65, 0, 0.35, 1);
+  position: relative;
+  isolation: isolate;
+}
+.xt-grain {
+  position: fixed; inset: 0; pointer-events: none; z-index: 40;
+  opacity: 0.05; mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* boot reveals */
+@keyframes xt-up { from { opacity: 0; transform: translateY(11px); } to { opacity: 1; transform: none; } }
+.xt-boot { opacity: 0; animation: xt-up 0.62s var(--e-out) both; }
+@keyframes xt-flare { 0% { color: #fff; } 100% { color: var(--xt-verm); } }
+.xt-flare { animation: xt-flare 0.7s var(--e-out) 0.5s both; }
+.xt-ul { transform-origin: left; transform: scaleX(0); animation: xt-draw-ul 0.55s var(--e-draw) 0.95s both; }
+@keyframes xt-draw-ul { to { transform: scaleX(1); } }
+
+/* spine + nodes */
+.xt-spine-fill { transform-origin: top; transition: transform 0.6s var(--e-emph); }
+@keyframes xt-pulse { 0% { box-shadow: 0 0 0 0 rgba(224,77,38,0.30); } 100% { box-shadow: 0 0 0 9px rgba(224,77,38,0); } }
+.xt-node-active { animation: xt-pulse 1.9s var(--e-out) infinite; }
+.xt-check path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: xt-draw 0.42s var(--e-draw) 0.05s both; }
+@keyframes xt-draw { to { stroke-dashoffset: 0; } }
+
+/* custody rail */
+.xt-flow  { stroke-dasharray: 2.5 6; animation: xt-flow 1.05s linear infinite; }
+.xt-flowm { stroke-dasharray: 2.5 6; animation: xt-flow 1.25s linear infinite; }
+@keyframes xt-flow { to { stroke-dashoffset: -17; } }
+.xt-seal { transform-origin: center; animation: xt-shake 6s var(--e-out) infinite; }
+@keyframes xt-shake {
+  0%,36%,48%,100% { transform: translateX(0); }
+  39% { transform: translateX(-2.5px); } 42% { transform: translateX(2.5px); } 45% { transform: translateX(-1.5px); }
+}
+.xt-node-draw { stroke-dasharray: 300; stroke-dashoffset: 300; animation: xt-draw 0.9s var(--e-draw) 0.7s both; }
+
+/* copy-code tactile */
+.xt-copyline { transform-origin: left; transform: scaleX(0); }
+.xt-copyline.on { animation: xt-draw-ul 0.24s var(--e-out) both; }
+.xt-bloom { animation: xt-bloom 0.6s var(--e-emph) both; }
+@keyframes xt-bloom { 0% { box-shadow: 0 0 0 0 rgba(52,211,153,0); } 45% { box-shadow: 0 0 0 7px rgba(52,211,153,0.28); } 100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); } }
+
+/* magnetic-ish CTA lift (transform via inline var) */
+.xt-cta { transition: transform 0.18s var(--e-out), filter 0.18s var(--e-out); }
+.xt-cta:hover { filter: brightness(1.07); }
+.xt-cta:active { transform: translateY(1px) scale(0.99); }
+
+/* focus ring that clears both the canvas and the darker cards */
+.xt :focus-visible { outline: none; box-shadow: 0 0 0 1px #08080b, 0 0 0 3px var(--xt-mint); border-radius: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .xt-boot { opacity: 1; animation: none; }
+  .xt-flare { animation: none; color: var(--xt-verm); }
+  .xt-ul { transform: scaleX(1); animation: none; }
+  .xt-node-active { animation: none; }
+  .xt-check path { stroke-dashoffset: 0; animation: none; }
+  .xt-flow, .xt-flowm, .xt-seal, .xt-node-draw { animation: none; stroke-dashoffset: 0; }
+}
+
+/* X-trade payoff word — fade-up + white→vermilion flare in ONE animation (no shorthand clash) */
+@keyframes xt-payoff { from { opacity: 0; transform: translateY(11px); color: #fff; } to { opacity: 1; transform: none; color: var(--xt-verm); } }
+.xt-payoff { opacity: 0; animation: xt-payoff 0.72s var(--e-out) 0.3s both; }
+@media (prefers-reduced-motion: reduce) { .xt-payoff { opacity: 1; animation: none; color: var(--xt-verm); } }
+
+/* ══════════════════════════════════════════════════════════════
+   Earn — dimensional vault card + theme-aware surfaces (light-mode)
+   ══════════════════════════════════════════════════════════════ */
+.earn-vault {
+  position: relative; overflow: hidden; border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: linear-gradient(158deg, rgba(255,255,255,0.078), rgba(255,255,255,0.022));
+  box-shadow: 0 34px 70px -30px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.09);
+}
+[data-theme="light"] .earn-vault {
+  border-color: rgba(20,18,16,0.12);
+  background: linear-gradient(158deg, #ffffff, #faf5ec);
+  box-shadow: 0 22px 48px -24px rgba(20,18,16,0.26), 0 3px 8px -3px rgba(20,18,16,0.11), inset 0 1px 0 rgba(255,255,255,0.95);
+}
+.earn-vault-glow { position: absolute; top: -42%; right: -16%; width: 62%; height: 130%; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(224,77,38,0.11), transparent 72%); }
+[data-theme="light"] .earn-vault-glow { background: radial-gradient(closest-side, rgba(224,77,38,0.08), transparent 72%); }
+.earn-vault-accent { position: absolute; top: 0; left: 26px; width: 46px; height: 2px; border-radius: 0 0 2px 2px; background: var(--color-vermilion); opacity: 0.9; }
+
+.earn-livedot { display:inline-block; width:6px; height:6px; border-radius:50%; background: var(--color-new-mint); animation: earn-pulse 2.4s ease-out infinite; }
+@keyframes earn-pulse { 0% { box-shadow: 0 0 0 0 rgba(52,211,153,0.45); } 70%,100% { box-shadow: 0 0 0 6px rgba(52,211,153,0); } }
+@media (prefers-reduced-motion: reduce) { .earn-livedot { animation: none; } }
+
+.earn-hair { height: 1px; background: rgba(255,255,255,0.08); }
+[data-theme="light"] .earn-hair { background: rgba(20,18,16,0.10); }
+
+.earn-meter { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.08); overflow: hidden; }
+[data-theme="light"] .earn-meter { background: rgba(20,18,16,0.09); }
+.earn-meter-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--color-vermilion), #f0774f); box-shadow: 0 0 8px rgba(224,77,38,0.45); transition: width .6s cubic-bezier(0.2,0,0,1); }
+
+.earn-chipg { border: 1px solid rgba(52,211,153,0.30); background: rgba(52,211,153,0.09); }
+[data-theme="light"] .earn-chipg { border-color: rgba(45,160,110,0.35); background: rgba(45,160,110,0.10); }
+
+/* the other earn surfaces (were hardcoded white-opacity → invisible on cream) */
+.earn-card { border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); border-radius: 16px; }
+/* Phones: the 24px card padding on top of the page gutter left the fields cramped and pushed
+   long rows (a wallet balance, the MAX/DUSDC suffixes) toward the edge. Give the content back
+   its width instead of shrinking the type. */
+@media (max-width: 480px) {
+  .earn-card, .earn-vault { padding: 16px !important; }
+  .earn-page main .container { padding-left: 14px !important; padding-right: 14px !important; }
+  .earn-field { padding-left: 12px !important; padding-right: 12px !important; }
+}
+[data-theme="light"] .earn-card { border-color: rgba(20,18,16,0.10); background: rgba(20,18,16,0.015); box-shadow: 0 20px 44px -32px rgba(20,18,16,0.16); }
+.earn-field { border: 1px solid rgba(255,255,255,0.10); transition: border-color .2s; }
+.earn-field:focus-within { border-color: rgba(255,255,255,0.25); }
+[data-theme="light"] .earn-field { border-color: rgba(20,18,16,0.16); background: rgba(255,255,255,0.45); }
+[data-theme="light"] .earn-field:focus-within { border-color: rgba(224,77,38,0.5); }
+[data-theme="light"] .earn-field input::placeholder { color: rgba(20,18,16,0.32); }
+.earn-chip { border: 1px solid rgba(255,255,255,0.10); }
+[data-theme="light"] .earn-chip { border-color: rgba(20,18,16,0.14); }
+.earn-ghost { border: 1px solid rgba(255,255,255,0.15); transition: border-color .2s, color .2s; }
+.earn-ghost:hover { border-color: rgba(255,255,255,0.30); }
+[data-theme="light"] .earn-ghost { border-color: rgba(20,18,16,0.2); }
+[data-theme="light"] .earn-ghost:hover { border-color: rgba(224,77,38,0.5); }
+
+/* ══════════════════════════════════════════════════════════════
+   Leaderboard — light-mode surfaces (podium 2nd/3rd + banzuke field
+   were dark-only: white-opacity borders + rgba(0,0,0,·) chips/bands
+   went invisible or muddy on cream).
+   ══════════════════════════════════════════════════════════════ */
+[data-theme="light"] .podium-spot { border-color: rgba(20,18,16,0.12); background: rgba(255,255,255,0.5); box-shadow: 0 18px 40px -30px rgba(20,18,16,0.16); }
+[data-theme="light"] .podium-spot:hover { border-color: rgba(20,18,16,0.28); }
+[data-theme="light"] .podium-rank { color: rgba(20,18,16,0.06); }
+[data-theme="light"] .podium-stats { border-top-color: rgba(20,18,16,0.10); }
+[data-theme="light"] .podium-stats .item { border-right-color: rgba(20,18,16,0.08); }
+[data-theme="light"] .podium-portrait { border-color: rgba(20,18,16,0.14); }
+
+[data-theme="light"] .banzuke-wrap { border-color: rgba(20,18,16,0.09); background: repeating-linear-gradient(0deg, transparent 0 39px, rgba(20,18,16,0.022) 39px 40px); }
+[data-theme="light"] .banzuke-strip { background: rgba(20,18,16,0.02); border-bottom-color: rgba(20,18,16,0.09); }
+[data-theme="light"] .banzuke-cols-head { border-bottom-color: rgba(20,18,16,0.10); }
+[data-theme="light"] .banzuke-cols-head .center { border-left-color: rgba(20,18,16,0.09); border-right-color: rgba(20,18,16,0.09); }
+[data-theme="light"] .banzuke-row { border-bottom-color: rgba(20,18,16,0.06); }
+[data-theme="light"] .banzuke-row:hover { background: rgba(20,18,16,0.03); }
+[data-theme="light"] .banzuke-row .center { border-left-color: rgba(20,18,16,0.09); border-right-color: rgba(20,18,16,0.09); background: rgba(20,18,16,0.045); }
+[data-theme="light"] .bz-divider { background: rgba(20,18,16,0.05); border-top-color: rgba(20,18,16,0.09); border-bottom-color: rgba(20,18,16,0.09); }
+[data-theme="light"] .bz-portrait { border-color: rgba(20,18,16,0.14); }
+
+/* ══════════════════════════════════════════════════════════════
+   Strategies — award card + grid (de-blockified, both themes)
+   ══════════════════════════════════════════════════════════════ */
+.strat-card {
+  --gain: #34D399; --loss: #D14D57;
+  position: relative; border-radius: 18px; padding: 24px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 12px 32px -22px rgba(0,0,0,0.85);
+  transition: transform .22s cubic-bezier(0.16,1,0.3,1), box-shadow .22s cubic-bezier(0.16,1,0.3,1), border-color .22s cubic-bezier(0.16,1,0.3,1);
+  cursor: pointer;
+}
+.strat-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.13); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 24px 50px -24px rgba(0,0,0,0.95); }
+.strat-card:active { transform: translateY(-1px) scale(0.995); }
+.strat-card:focus-visible { outline: none; border-color: var(--color-vermilion); box-shadow: 0 0 0 3px rgba(224,77,38,0.25); }
+[data-theme="light"] .strat-card {
+  --gain: #0F9D6E; --loss: #B23A2A;
+  background: #FCF8F0; border-color: rgba(20,18,16,0.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 16px 36px -24px rgba(70,46,20,0.30);
+}
+[data-theme="light"] .strat-card:hover { border-color: rgba(20,18,16,0.16); box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 24px 50px -26px rgba(70,46,20,0.36); }
+
+.strat-sigil { position: relative; border-radius: 13px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.14); }
+[data-theme="light"] .strat-sigil { box-shadow: inset 0 0 0 1px rgba(20,18,16,0.12); }
+.strat-sigil .glyph { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-jp); color: rgba(255,255,255,0.9); text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+
+.strat-mem { background: rgba(224,77,38,0.12); color: var(--color-vermilion); }
+
+/* ── Earn — compact one-page layout (scoped; the hero CSS is shared with other pages) ── */
+.earn-page .page-hero { padding: 92px 0 12px; }
+.earn-page .page-title { font-size: clamp(2.3rem, 4.6vw, 3.8rem); line-height: 0.94; }
+.earn-page .hero-grid { align-items: center; padding-bottom: 14px; }
+.earn-page .hero-grid .hero-left { margin-bottom: 0; }
+.earn-page main > .container { padding-top: 10px !important; padding-bottom: 22px !important; }
+.earn-page .section-head { margin-bottom: 16px !important; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   APP BAND  ·  the slow strip that carries you to /download
+   ══════════════════════════════════════════════════════════════════════════
+   A cream band across a near-black page. The contrast does the work, so the
+   band needs no border, no shadow and no badge art to be noticed.
+
+   It drifts rather than scrolls. The price ticker at the top of the site runs
+   its loop in 80s and reads as data moving; this one takes 64s over a much
+   larger type size, which reads as a held breath instead of a feed. Slow is
+   the brief, and slow is also what keeps a repeating line from feeling like
+   an advertisement chasing you down the page.
+
+   The whole band is one link. Nothing inside it competes for the click. */
+.appband {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: var(--cream, #F4EEE3);
+  color: #141210;
+  text-decoration: none;
+  padding: clamp(26px, 4.2vw, 44px) 0;
+  isolation: isolate;
+}
+.appband-track {
+  display: flex;
+  align-items: center;
+  gap: clamp(28px, 4vw, 56px);
+  white-space: nowrap;
+  width: max-content;
+  padding-left: clamp(28px, 4vw, 56px);
+  animation: appbandDrift 64s linear infinite;
+  will-change: transform;
+}
+.appband:hover .appband-track { animation-play-state: paused; }
+.appband-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(18px, 2.4vw, 34px);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 4vw, 3.1rem);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+/* The second half of every pair is set in the reading face, not the display
+   face, so the line has a rhythm instead of shouting the whole way across. */
+.appband-cell em {
+  font-family: var(--font-serif, var(--font-display));
+  font-style: italic;
+  font-weight: 500;
+  color: var(--vermilion-d, #B83A1B);
+}
+.appband-mark {
+  display: inline-flex;
+  width: clamp(20px, 2.4vw, 30px);
+  color: #141210;
+  opacity: 0.9;
+  flex: none;
+}
+.appband-mark svg { width: 100%; height: auto; display: block; }
+/* The rule reads as a typographic separator rather than a bullet, which keeps
+   the strip closer to a printed masthead than to a marquee of offers. */
+.appband-rule {
+  width: clamp(26px, 3.4vw, 54px);
+  height: 2px;
+  background: #141210;
+  opacity: 0.25;
+  flex: none;
+}
+/* Fade the ends so the loop never shows its seam against the page edge. */
+.appband::before,
+.appband::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0;
+  width: clamp(40px, 8vw, 130px);
+  z-index: 2; pointer-events: none;
+}
+.appband::before { left: 0;  background: linear-gradient(90deg, var(--cream, #F4EEE3), transparent); }
+.appband::after  { right: 0; background: linear-gradient(270deg, var(--cream, #F4EEE3), transparent); }
+.appband:hover .appband-cell em { color: var(--vermilion, #E04D26); }
+@keyframes appbandDrift { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(-50%,0,0); } }
+
+/* The band inverts in the cream theme.
+   Its whole idea is a band of paper laid across a dark page: the contrast is
+   the design, and there is no border or shadow doing that job for it. On the
+   cream theme the page is already paper, so cream-on-cream dissolves it into
+   the background and the strip stops reading as an object at all. Inverting to
+   ink keeps the same relationship, just the other way up. */

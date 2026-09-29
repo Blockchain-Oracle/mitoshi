@@ -1,0 +1,330 @@
+
+/* ───────── Later bells (collapsed rounds as time chips) ───────── */
+.later-bells { display: flex; flex-direction: column; }
+.later-bells-row {
+  display: flex; align-items: center; gap: 20px;
+  padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.later-bells-asset {
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.12em;
+  color: var(--gray-400); width: 52px; flex-shrink: 0;
+}
+.later-bells-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.bell-chip {
+  font-family: var(--font-mono); font-size: 12px; color: var(--gray-300);
+  border: 1px solid rgba(255,255,255,0.10); border-radius: 999px;
+  padding: 6px 14px; background: rgba(255,255,255,0.02);
+  transition: all 200ms var(--ease);
+}
+.bell-chip:hover { color: #fff; border-color: rgba(255,255,255,0.28); background: rgba(255,255,255,0.05); }
+.bell-chip.more { color: var(--gray-600); border-style: dashed; pointer-events: none; }
+
+
+/* ───────── Market card · hero-chart language ───────── */
+.mc-pricebar {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin: 10px 0 8px;
+}
+.mc-pricebar .px { display: flex; align-items: baseline; gap: 8px; }
+.mc-pricebar .big {
+  font-family: var(--font-mono); font-size: 18px; font-weight: 600;
+  color: var(--white); letter-spacing: -0.02em;
+}
+.mc-pricebar .chg { font-family: var(--font-mono); font-size: 11px; }
+.mc-pricebar .chg.up { color: var(--profit); }
+.mc-pricebar .chg.down { color: var(--loss); }
+.mc-pricebar .strike-meta {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em;
+  color: var(--gray-500);
+}
+.mc-strip {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em;
+  color: var(--gray-600);
+}
+.mc-strip .ramp { display: flex; align-items: center; gap: 8px; }
+.mc-strip .ramp .bar {
+  width: 72px; height: 3px; background: rgba(255,255,255,0.08);
+  border-radius: 999px; position: relative; overflow: hidden;
+}
+.mc-strip .ramp .fill {
+  position: absolute; inset: 0 auto 0 0;
+  background: linear-gradient(90deg, var(--vermilion), var(--white));
+  transition: width 600ms var(--ease);
+}
+.mc-strip .ramp .pct { color: var(--vermilion); font-size: 11px; }
+
+/* Mobile: drop the editorial coordinates/edition ornament + breadcrumb on markets */
+@media (max-width: 1100px) {
+  /* Editorial corner labels (EDITION / R/N / LAT-LON) + crop marks bleed over the
+     card on narrow screens — keep them for the full-width desktop look only. */
+  .page-hero .hero-meta,
+  .page-hero .crop,
+  .markets-hero .breadcrumb { display: none; }
+}
+
+/* Hero bet buttons — the two outcomes as solid, modern, unmistakably-tappable
+   pills (filled side colour so a first-timer can't read them as plain labels). */
+.hero-bet { display: flex; gap: 8px; }
+.hero-bet-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 10px;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.08em; text-decoration: none;
+  border: 1px solid transparent; cursor: pointer;
+  transition: transform 150ms var(--ease), background 200ms var(--ease), box-shadow 200ms var(--ease);
+}
+.hero-bet-btn .c { font-weight: 800; opacity: 0.82; }
+.hero-bet-btn:hover { transform: translateY(-1px); }
+.hero-bet-btn:active { transform: translateY(0); }
+.hero-bet-btn:focus-visible { outline: 2px solid var(--white); outline-offset: 2px; }
+
+/* HIGHER = soft green wash + green edge + green text — clearly a button, stays quiet */
+.hero-bet-btn.up {
+  color: var(--profit);
+  background: rgba(52,211,153,0.08);
+  border-color: rgba(52,211,153,0.32);
+}
+.hero-bet-btn.up:hover { background: rgba(52,211,153,0.15); border-color: var(--profit); }
+
+/* LOWER = soft pink/red wash */
+.hero-bet-btn.down {
+  color: var(--loss);
+  background: rgba(251,113,133,0.08);
+  border-color: rgba(251,113,133,0.32);
+}
+.hero-bet-btn.down:hover { background: rgba(251,113,133,0.15); border-color: var(--loss); }
+
+/* keep the foot helper label quiet next to the buttons */
+.hero-chart-foot > span:first-child {
+  font-size: 9px; max-width: 156px; line-height: 1.4;
+  color: var(--gray-600); letter-spacing: 0.1em;
+}
+
+@media (max-width: 480px) {
+  .hero-chart-foot > span:first-child { display: none; }
+  .hero-bet { width: 100%; }
+  .hero-bet-btn { flex: 1; justify-content: center; }
+}
+
+/* Narrow screens: simplify the chart head so the question + price never cram or
+   wrap into the chart. Drop the verbose framing ("Tap a side… / settled by oracle /
+   live oracle price…") — the question, countdown and price are what matter. */
+@media (max-width: 760px) {
+  .hero-chart-head { padding: 12px 14px; gap: 10px; }
+  .hero-chart-head .meta-soft { display: none; }
+  .hero-chart-head .left { gap: 9px; min-width: 0; }
+  .hero-chart-head .left > div { min-width: 0; }
+  .hero-chart-head .pair { font-size: 12px; letter-spacing: 0.03em; }
+  .hero-chart-head .price { font-size: 15px; }
+  .hero-chart-head .pair-meta { font-size: 9px; white-space: nowrap; }
+  .hero-chart-head .glyph { width: 18px; height: 18px; font-size: 10px; }
+}
+
+/* ── Expanded market modal (morphs open from the hero card) ── */
+.hero-expand-btn {
+  position: absolute; top: 12px; right: 12px; z-index: 4;
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(14,14,17,0.7); backdrop-filter: blur(6px);
+  color: var(--gray-300);
+  opacity: 0; transition: opacity 0.18s var(--ease), background 0.18s var(--ease), border-color 0.18s var(--ease), color 0.18s var(--ease);
+}
+.hero-expand-btn svg { width: 14px; height: 14px; }
+.hero-chart:hover .hero-expand-btn, .hero-expand-btn:focus-visible { opacity: 1; }
+.hero-expand-btn:hover { background: rgba(20,20,24,0.92); border-color: rgba(255,255,255,0.25); color: var(--white); }
+/* touch: no hover, so always show the expand affordance on mobile */
+@media (max-width: 900px) { .hero-chart .hero-expand-btn { opacity: 1; } }
+
+.market-modal-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  background: rgba(3,3,4,0.72);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.market-modal {
+  width: 100%; max-width: 1080px; max-height: 90vh;
+  display: flex; flex-direction: column;
+  background: #0e0e11;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  box-shadow: 0 40px 120px -40px rgba(0,0,0,0.9);
+  overflow: hidden;
+}
+.market-modal-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; padding: 18px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.market-modal-head .mm-title { display: flex; align-items: center; gap: 12px; }
+.market-modal-head .glyph {
+  width: 26px; height: 26px; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 12px; color: var(--white);
+}
+.mm-q { font-family: var(--font-display); font-size: 19px; font-weight: 700; color: var(--white); line-height: 1.1; }
+.mm-head-right { display: flex; align-items: center; gap: 16px; }
+.mm-price { text-align: right; }
+.mm-price .price { font-family: var(--font-mono); font-size: 18px; font-weight: 600; color: var(--white); }
+.mm-price .delta { font-family: var(--font-mono); font-size: 11px; color: var(--vermilion); margin-left: 6px; }
+.mm-close {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.02); color: var(--gray-300);
+  transition: background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease);
+}
+.mm-close svg { width: 16px; height: 16px; }
+.mm-close:hover { background: rgba(255,255,255,0.08); color: var(--white); border-color: rgba(255,255,255,0.25); }
+.market-modal-body {
+  display: grid; grid-template-columns: minmax(0,1fr) 380px;
+  min-height: 0; flex: 1;
+}
+.market-modal-chart { position: relative; min-height: 420px; border-right: 1px solid rgba(255,255,255,0.06); }
+.market-modal-chart canvas { position: absolute; inset: 16px 0 48px 0; width: 100%; }
+.mm-chart-foot {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.05);
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; color: var(--gray-500);
+}
+.mm-fullpage { color: var(--gray-300); transition: color 0.15s var(--ease); }
+.mm-fullpage:hover { color: var(--white); }
+.market-modal-panel { overflow-y: auto; padding: 16px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.16) transparent; }
+.market-modal-panel::-webkit-scrollbar { width: 6px; }
+.market-modal-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.16); border-radius: 999px; }
+@media (max-width: 880px) {
+  .market-modal-body { grid-template-columns: 1fr; }
+  .market-modal-chart { border-right: 0; border-bottom: 1px solid rgba(255,255,255,0.06); min-height: 260px; }
+  .market-modal { max-height: 94vh; }
+}
+
+/* Award-winning scroll cue: hero -> markets (auto-fades on scroll) */
+.scroll-cue {
+  position: relative; width: max-content; margin: 20px auto 2px;
+  display: flex; flex-direction: column; align-items: center; gap: 9px;
+  z-index: 5; background: none; border: 0; cursor: pointer; padding: 6px 12px;
+  opacity: 1; transition: opacity 0.45s var(--ease), transform 0.45s var(--ease);
+}
+.scroll-cue.gone { opacity: 0; transform: translateY(10px); pointer-events: none; }
+.scroll-cue-label {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.22em;
+  text-transform: uppercase; color: var(--gray-500); transition: color 0.2s var(--ease);
+}
+.scroll-cue:hover .scroll-cue-label { color: var(--gray-300); }
+.scroll-cue-track {
+  position: relative; width: 1px; height: 34px; overflow: hidden;
+  background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.02));
+}
+.scroll-cue-dot {
+  position: absolute; left: -1.5px; top: 0;
+  width: 4px; height: 9px; border-radius: 2px; background: var(--vermilion);
+  box-shadow: 0 0 8px rgba(224,77,38,0.6);
+  animation: scrollCueDot 1.9s var(--ease) infinite;
+}
+@keyframes scrollCueDot {
+  0%   { transform: translateY(-12px); opacity: 0; }
+  25%  { opacity: 1; }
+  75%  { opacity: 1; }
+  100% { transform: translateY(34px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .scroll-cue-dot { animation: none; top: 12px; } }
+/* mobile: the Trade button is the CTA — drop the scroll cue so they don't overlap */
+@media (max-width: 900px) { .scroll-cue { display: none; } }
+
+
+/* recompile-nudge */
+
+/* ── /feed — full-screen vertical snap feed (one card per screen) ──
+   The container is FIXED between the chrome (marquee+header above, viewport
+   bottom below — the floating pill nav overlays it, cards pad past it), so
+   card height = container height exactly and `scroll-snap-align: start`
+   lands every swipe on a clean screen. */
+.feed-snap {
+  position: fixed; left: 0; right: 0; top: calc(92px + var(--appstrip)); bottom: 0;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior-y: contain;
+  scrollbar-width: none;
+}
+.feed-snap::-webkit-scrollbar { display: none; }
+.feed-card { height: 100%; scroll-snap-align: start; scroll-snap-stop: always; }
+/* non-scrolling sibling overlay for progress ticks / hint / desktop vignette */
+.feed-chrome { position: fixed; left: 0; right: 0; top: calc(92px + var(--appstrip)); bottom: 0; pointer-events: none; z-index: 10; }
+@media (max-width: 720px) {
+  .feed-snap, .feed-chrome { top: calc(66px + var(--appstrip)); } /* slim mobile marquee (20) + header (46) */
+}
+
+/* ───────── Word markets (/words) ───────── */
+.words-wrap { padding: 120px 0 96px; min-height: 100vh; }
+@media (max-width: 720px) { .words-wrap { padding: 92px 0 120px; } }
+.words-hero { padding: 8px 0 40px; }
+.words-eyebrow {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--gray-500);
+  display: flex; align-items: center; gap: 10px;
+}
+.words-title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(2.4rem, 5.4vw, 4.4rem); line-height: 0.98; letter-spacing: -0.04em;
+  color: var(--white); margin: 16px 0 18px;
+}
+.words-title .accent { color: var(--vermilion); font-style: italic; font-family: 'Noto Serif JP', Georgia, serif; font-weight: 700; }
+.words-sub { color: var(--gray-400); font-size: 16px; max-width: 60ch; line-height: 1.6; }
+.words-spot {
+  font-family: var(--font-mono); font-size: 13px; color: var(--white);
+  border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 3px 10px; margin-left: 6px; white-space: nowrap;
+}
+.words-empty { padding: 80px 0; text-align: center; font-family: var(--font-mono); font-size: 13px; color: var(--gray-500); }
+
+.words-section { margin-top: 40px; }
+.words-sechead {
+  display: flex; align-items: baseline; gap: 14px; padding-bottom: 14px; margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08); position: relative;
+}
+.words-sechead::after { content: ''; position: absolute; left: 0; bottom: -1px; width: 40px; height: 2px; background: var(--vermilion); }
+.words-sec-label { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; color: var(--white); }
+.words-sec-count { font-family: var(--font-mono); font-size: 12px; color: var(--gray-500); }
+
+.words-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+/* Flat black. The warm radial wash and the vermilion hairline read as a glow on a dark page,
+   and the hover halo made whichever card the pointer happened to rest on look like a special
+   one. The odds bar and the Yes/No buttons already carry all the colour these need. */
+.wq-card {
+  position: relative; display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 22px 22px 18px;
+  background: var(--black);
+  transition: border-color 220ms var(--ease), transform 220ms var(--ease);
+}
+.wq-card:hover { border-color: rgba(255,255,255,0.22); transform: translateY(-3px); }
+.wq-top { display: flex; align-items: center; gap: 10px; }
+/* Bitcoin brand mark — orange disc + white ₿, the glyph tilted like the real logo */
+.wq-btc {
+  display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; flex: none;
+  background: radial-gradient(circle at 34% 28%, #ffbe5c, #F7931A 72%);
+  box-shadow: 0 3px 9px rgba(247,147,26,0.4), inset 0 0 0 1px rgba(255,255,255,0.18);
+}
+.wq-btc span { color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 16px; line-height: 1; transform: rotate(13deg); }
+.wq-meta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-500); }
+.wq-clock { margin-left: auto; font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--white); font-variant-numeric: tabular-nums; }
+.wq-clock.urgent { color: var(--vermilion); }
+.wq-q {
+  font-family: var(--font-display); font-weight: 700; font-size: 22px; line-height: 1.22;
+  letter-spacing: -0.025em; color: var(--white); margin: 18px 0 14px; min-height: 2.3em; text-wrap: balance;
+}
+/* the question headline dominates the narrow mobile card — scale it down there */
+@media (max-width: 720px) {
+  .wq-q { font-size: 16px; line-height: 1.3; margin: 14px 0 12px; }
+}
+/* Polymarket-style odds bar — green (yes) fill on a rose (no) track */
+.wq-oddsbar { position: relative; height: 6px; border-radius: 4px; margin: 0 0 10px; background: rgba(251,113,133,0.22); overflow: hidden; }
+.wq-oddsfill { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 4px; background: linear-gradient(90deg, #2ec27e, #34D399); box-shadow: 0 0 10px rgba(52,211,153,0.4); }
+.wq-oddsrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.wq-close { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-600); }
+.wq-yeslead { font-family: var(--font-mono); font-size: 11px; color: var(--gray-500); }
