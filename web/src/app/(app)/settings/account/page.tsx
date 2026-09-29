@@ -1,9 +1,9 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// The trust surface (D-053): every key the chain knows for this account, each revocable, plus grants, linked wallets
+// and region posture. Client-rendered from the wallet session; the chain is read through `/api/keys`.
+import { AccountSettings } from "@/features/account";
 
-export const metadata = { title: pendingFor("/settings/account").title };
+export const metadata = { title: "Account & keys" };
 
-export default function SettingsAccountPage() {
-  return <PendingRoute route="/settings/account" />;
+export default function AccountSettingsPage() {
+  return <AccountSettings />;
 }

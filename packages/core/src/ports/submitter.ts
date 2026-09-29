@@ -86,8 +86,8 @@ export type TxIntent =
   | { kind: "redeem-partial"; marketId: MarketId; outcomeIdx: OutcomeIdx; amountRaw: bigint }
   /** Pay out engine credit for the listed markets (`withdrawCredit`). */
   | { kind: "withdraw-credit"; marketIds: MarketId[] }
-  /** Revoke a TIP-1011 access key on the AccountKeychain (the `/settings/account` trust surface, D-053). */
-  | { kind: "key-revoke"; keyId: Address }
+  /** Revoke TIP-1011 access keys on the AccountKeychain in one transaction (1–8; the `/settings/account` trust surface, D-053). */
+  | { kind: "key-revoke"; keyIds: Address[] }
   /** The relay's S1 proof area: a harmless sponsored call that moves nothing (Multicall3 `getBlockNumber`). */
   | { kind: "noop" }
   | VaultIntent

@@ -5,7 +5,8 @@
 // full caps). The Robinhood session joins with bridge-in (S14w).
 import { INJECTED_CAPS } from "@cwf/markets";
 import { SubmitterSessionProvider } from "@cwf/markets/react";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { walletActions } from "viem";
 import { useConnectorClient } from "wagmi";
 import { useWalletShell } from "./wallet-shell-context";
 import { TEMPO_CHAIN } from "./wagmi-config";
@@ -14,7 +15,9 @@ export function UserSessionProvider({ children }: { children: ReactNode }) {
   const shell = useWalletShell();
   const tempo = shell.tempo;
   const onTempo = tempo !== null && !shell.wrongChain;
-  const { data: client } = useConnectorClient({ chainId: TEMPO_CHAIN.id, query: { enabled: onTempo } });
+  const { data: bare } = useConnectorClient({ chainId: TEMPO_CHAIN.id, query: { enabled: onTempo } });
+  // wagmi's connector client is a bare viem Client; the send module needs the wallet actions (`sendTransactionSync`).
+  const client = useMemo(() => bare?.extend(walletActions), [bare]);
   const authority = tempo?.kind === "passkey" ? "passkey" : "user-wallet";
   return (
     <SubmitterSessionProvider walletClient={onTempo ? (client as never) : undefined} caps={tempo?.caps ?? INJECTED_CAPS} authority={authority} enabled={onTempo}>

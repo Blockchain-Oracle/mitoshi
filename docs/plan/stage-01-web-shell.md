@@ -41,7 +41,7 @@
   capability flags come from the connector (so SM3's `shellDevice` connector can declare full Tempo caps); the connector
   config carries the `accessKey.authorize` hook, activated in S4 when the engine address exists (D38); phone picker never
   dead-ends in mobile Safari (passkey first, WalletConnect listed).
-- [ ] 1b `/settings/account` shell (D44): passkey devices; the live keys/grants list reading AccountKeychain + vault
+- [x] 1b `/settings/account` shell (D44): passkey devices; the live keys/grants list reading AccountKeychain + vault
   grants (scope, remaining limit via `getRemainingLimitWithPeriod`, expiry, last used, revoke, revoke-all behind
   hold-to-confirm 23527); S4 adds the wallet key, S7 grants, S9/S11/S12b/S16 their keys; S13 completes it.
 - [ ] 1b perf gates (D42): `scripts/perf/route-budgets.ts` gzips each route's first-load chunks from the build
@@ -159,6 +159,25 @@
   it until then (no step that can't complete).
 - **1b onboarding — header pill on phones.** Masayume's ≤ 420 px rule hides the wallet pill's *last* span; our port
   ends in a chevron, so the address wrapped onto two lines. `shell-fixes.css` names the address and chevron.
+- **1b settings — keys come from events.** The AccountKeychain can't enumerate keys, and Moderato caps `eth_getLogs` at
+  100,000 blocks, so `/api/keys` scans the account's keychain events (one filtered query per window; every event indexes
+  `account` first) and keeps a contiguous scanned range per account in Postgres (`keys/0001_keychain_scan.sql`). The
+  first visit takes ~40 s across polls with keys shown as found and a "checked back to <date>" line; later visits scan
+  only new blocks. The Tempo Indexer API would answer in one query, but it is MPP-paid (402; 0.0001 pathUSD per query on
+  Moderato), and the MPP client is S3.5's — S5 can switch `/api/keys` to it or to its own follower.
+- **1b settings — keychain facts (measured).** Moderato retired the legacy 5-argument `authorizeKey` (reverts
+  `LegacyAuthorizeKeySelectorChanged`, new selector `0x980a6025`: `(keyId, type, KeyRestrictions)`); authorising emits
+  `KeyAuthorized` but no `SpendingLimitUpdated`, so initial limits are decoded from the authorising transaction (a
+  `calls` entry or the inline `keyAuthorization`); a revoked key reads `expiry = 0` from `getKey`. viem's Tempo chains
+  omit Multicall3 though it is deployed at the canonical address on both networks — `tempoChain` now declares it.
+- **1b settings — wallet actions on the connector client.** wagmi's `useConnectorClient` returns a bare viem Client;
+  `sendBatch` needs `sendTransactionSync`, so the session binds `client.extend(walletActions)` (first real send from
+  the page: the revoke).
+- **1b settings — `key-revoke` takes 1–8 key ids** (one sponsored transaction within the relay's call cap); revoke-all
+  chunks by 8.
+- **1b settings — e2e key authorisation.** Until S4 authorises keys from the UI, `@cwf/markets/testing` rebuilds the
+  virtual authenticator's credential headlessly (same passkey account) and authorises a real key; it lives in markets
+  because only markets may import `viem/tempo` and send.
 - **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
   transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
 - **1b wallet — no cookie read on the server.** wagmi's `cookieToInitialState` would read `headers()` in the root and,

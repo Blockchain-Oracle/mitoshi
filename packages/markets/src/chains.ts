@@ -6,17 +6,20 @@
 import { baseSepolia, robinhood, robinhoodTestnet, tempo, tempoModerato } from "viem/chains";
 import type { Chain } from "viem";
 import { NETWORKS, type Network } from "@cwf/core";
-import { TEMPO } from "@cwf/clients";
+import { TEMPO, UTILITIES } from "@cwf/clients";
 
 export { baseSepolia, robinhood, robinhoodTestnet, tempo, tempoModerato };
 
 /** pathUSD: the fee token on every send (N-12) and the collateral of every market. */
 export const PATH_USD = TEMPO.pathUSD;
 
-/** The Tempo chain for a network, with pathUSD set as the default fee token. */
+/**
+ * The Tempo chain for a network, with pathUSD as the default fee token and Multicall3 declared: viem's Tempo chains
+ * omit it, though it is deployed at the canonical address on both networks (verified), so batched reads work.
+ */
 export function tempoChain(network: Network) {
-  const base = network === "mainnet" ? tempo : tempoModerato;
-  return base.extend({ feeToken: PATH_USD });
+  const base = (network === "mainnet" ? tempo : tempoModerato).extend({ feeToken: PATH_USD });
+  return { ...base, contracts: { ...base.contracts, multicall3: { address: UTILITIES.multicall3 as `0x${string}` } } };
 }
 
 export type TempoChain = ReturnType<typeof tempoChain>;

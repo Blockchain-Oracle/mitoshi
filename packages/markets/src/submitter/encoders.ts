@@ -10,6 +10,9 @@ import { TEMPO, UTILITIES } from "@cwf/clients";
 import type { Call } from "../tx/batch";
 
 /** The relay area a call set belongs to; the relay policy for that area decides sponsorship. */
+/** The relay sponsors at most 8 calls per transaction (C.3.3). */
+export const MAX_REVOKE = 8;
+
 export type RelayArea = "noop" | "keys" | "engine" | "vault" | "parlay" | "range" | "maker" | "leverage" | "private" | "arena" | "strategies" | "stocks" | "themes" | "launch" | "bridge" | "agents";
 
 export interface EncodedIntent {
@@ -29,11 +32,14 @@ export interface EncodeContext {
 
 export type IntentEncoder = (intent: TxIntent, ctx: EncodeContext) => EncodeResult | null;
 
-/** `AccountKeychain.revokeKey(keyId)`: sponsored everywhere (an exit must never need funds). */
+/** `AccountKeychain.revokeKey(keyId)` per key, in one transaction: sponsored everywhere (an exit must never need funds). */
 function encodeKeyRevoke(intent: TxIntent): EncodeResult | null {
   if (intent.kind !== "key-revoke") return null;
-  const data = encodeFunctionData({ abi: Abis.accountKeychain, functionName: "revokeKey", args: [intent.keyId] });
-  return { ok: true, value: { area: "keys", calls: [{ to: TEMPO.accountKeychain, data }], sponsored: true, summary: `revoke key ${intent.keyId}` } };
+  if (intent.keyIds.length === 0 || intent.keyIds.length > MAX_REVOKE) {
+    return { ok: false, diagnosis: diagnosis("sponsor-refused", `the relay co-signs 1–${MAX_REVOKE} revokes per transaction (got ${intent.keyIds.length})`) };
+  }
+  const calls = intent.keyIds.map((keyId) => ({ to: TEMPO.accountKeychain, data: encodeFunctionData({ abi: Abis.accountKeychain, functionName: "revokeKey", args: [keyId] }) }));
+  return { ok: true, value: { area: "keys", calls, sponsored: true, summary: `revoke ${intent.keyIds.length} key(s)` } };
 }
 
 /** Multicall3 `getCurrentBlockTimestamp()`: a view that moves nothing, proves the relay pays exactly what policy allows (S1 gate). */

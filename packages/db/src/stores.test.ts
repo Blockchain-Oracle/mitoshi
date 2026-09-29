@@ -7,13 +7,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createPgFaucetStore, createPgLedger, createSql, runMigrations, type Sql } from "./index";
+import { createPgFaucetStore, createPgKeychainStore, createPgLedger, createSql, runMigrations, type Sql } from "./index";
 
 const BIN = "/opt/homebrew/opt/postgresql@16/bin";
 const hasPg = spawnSync(`${BIN}/initdb`, ["--version"]).status === 0;
 const PORT = 55_437;
 
-describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet)", () => {
+describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain)", () => {
   let dir: string;
   let server: ChildProcess;
   let sql: Sql;
@@ -63,5 +63,18 @@ describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet)", () => {
     expect((await store.lastFunded("0x00000000000000000000000000000000000000a1"))?.id).toBe("k1");
     expect(await store.countSince(0, "ip1")).toBe(1);
     expect(await store.countSince(150)).toBe(0);
+  });
+
+  it("keeps one contiguous scanned range per account and stores each event once", async () => {
+    const store = createPgKeychainStore(sql);
+    const acct = "0x00000000000000000000000000000000000000B1";
+    const e = { name: "KeyAuthorized" as const, blockNumber: 150n, logIndex: 2, txHash: "0x01" as const, keyId: "0x00000000000000000000000000000000000000c1" as const, token: null, signatureType: 1, expirySec: 0n, limit: null, amount: null };
+    expect(await store.range(42431, acct)).toBeNull();
+    await store.save(42431, acct, { lo: 100n, hi: 200n }, [e], 1);
+    await store.save(42431, acct, { lo: 150n, hi: 300n }, [e], 2);
+    await store.save(42431, acct, { lo: 0n, hi: 99n }, [], 3);
+    expect(await store.range(42431, acct.toLowerCase())).toEqual({ lo: 0n, hi: 300n });
+    expect(await store.events(42431, acct)).toEqual([{ ...e, keyId: e.keyId.toLowerCase() }]);
+    expect(await store.events(4217, acct)).toEqual([]);
   });
 });
