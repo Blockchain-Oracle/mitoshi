@@ -1,18 +1,30 @@
-# Ops image (plan C.6): one machine per network on Fly, node:24-slim, `/data` volume.
-FROM node:24-slim AS base
-ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH CI=true
-RUN corepack enable
+# Ops image (plan C.5/C.6): one container per network on Coolify. Pattern from Agari b/Dockerfile (cached
+# install layer; curl for Coolify's health check).
+#
+#   docker build -f services/ops/Dockerfile .
+FROM node:24-slim
+ENV PNPM_HOME=/pnpm \
+    PATH=/pnpm:$PATH \
+    CI=1
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/* \
+    && corepack enable && corepack prepare pnpm@11.24.0 --activate
 WORKDIR /app
 
-FROM base AS deps
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-COPY packages ./packages
-COPY services/ops ./services/ops
-RUN pnpm install --frozen-lockfile --filter @cwf/ops...
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY web/package.json ./web/
+COPY scripts/package.json ./scripts/
+COPY contracts/package.json ./contracts/
+COPY packages/brain/package.json ./packages/brain/
+COPY packages/clients/package.json ./packages/clients/
+COPY packages/core/package.json ./packages/core/
+COPY packages/db/package.json ./packages/db/
+COPY packages/markets/package.json ./packages/markets/
+COPY services/ops/package.json ./services/ops/
+RUN --mount=type=cache,id=mitoshi-pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile --filter "@cwf/ops..."
 
-FROM base AS run
-COPY --from=deps /app /app
-WORKDIR /app/services/ops
+COPY . .
 ENV NODE_ENV=production OPS_HTTP_PORT=8080
 EXPOSE 8080
+WORKDIR /app/services/ops
 CMD ["pnpm", "start"]

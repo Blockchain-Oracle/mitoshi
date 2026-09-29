@@ -2,8 +2,11 @@
 
 | Needed by | Action | Status |
 |---|---|---|
-| S0 | Create a private GitHub repository and push `integration/t1` (CI workflows run from there); add `FLY_API_TOKEN` and RPC secrets | Open |
-| S0 gate | Domain (passkey rpId, Q-019) + DNS; Vercel ×2, Fly ×2, Neon ×2, Upstash accounts (Q-026) | Open |
+| S0 | ~~Private GitHub repo~~ done 2026-09-29 (`Blockchain-Oracle/mitoshi`, default `integration/t1`) | Done |
+| S0 | **Buy `mitoshi.xyz`** on Namecheap (check the .xyz price at checkout), then point DNS: `A @`, `A testnet`, `A *.testnet`, `A ops`, `A stream` → 84.46.247.92 (the agent can set records via the API once an IP is whitelisted) | Open |
+| S0 | Namecheap API: whitelist one static IP (Profile → Tools → API Access), e.g. 84.46.247.92, so the CLI works through the `agari-box` SOCKS tunnel | Open |
+| S0 | Push-to-deploy: choose how GitHub reaches Coolify — (a) expose the Coolify dashboard on a domain so GitHub webhooks reach it, or (b) a GitHub Action that deploys over SSH with a restricted key | Open |
+| S0 gate | ~~Domain + hosting accounts~~ decided: Mitoshi / `mitoshi.xyz` (D-060), Coolify (D-061) | Done |
 | S0 (X11) | Start daily Robinhood Chain testnet faucet claims (5 × 5 tokens / 24 h) | Open |
 | Before S3.5 | Approve and fund the capped mainnet MPP wallet (Q-020) | Open |
 | S1, S4 (NYSE date), S15, S16 | Passkey checks on your own device | Open |

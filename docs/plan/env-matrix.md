@@ -1,14 +1,14 @@
-# Environment matrix (names only; values live in the hosts' secret stores — see `infra/secrets.md`)
+# Environment matrix (names only; values live in Coolify — see `infra/secrets.md`, `infra/coolify.md`)
 
-| Variable | web (Vercel) | ops (Fly) | Testnet | Mainnet |
+| Variable | web (Coolify app) | ops (Coolify app) | Testnet | Mainnet |
 |---|---|---|---|---|
 | `NETWORK` | ✓ | ✓ | `testnet` | `mainnet` |
 | `TEMPO_RPC_HTTP_URL`, `TEMPO_RPC_WS_URL` | ✓ | ✓ | Moderato 42431 | Tempo 4217 |
 | `RH_RPC_HTTP_URL` | ✓ | ✓ | Robinhood testnet 46630 | Robinhood 4663 |
 | `BASE_SEPOLIA_RPC_HTTP_URL` | ✓ | ✓ | ✓ | — |
-| `APP_ORIGIN`, `PASSKEY_RP_ID` | ✓ | — | `https://testnet.<domain>`, `<domain>` | `https://<domain>`, `<domain>` |
-| `DATABASE_URL` | pooled | direct | Neon testnet | Neon mainnet |
-| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | ✓ | — | shared Upstash, per-network prefixes | same |
+| `APP_ORIGIN`, `PASSKEY_RP_ID` | ✓ | — | `https://testnet.mitoshi.xyz`, `mitoshi.xyz` | `https://mitoshi.xyz`, `mitoshi.xyz` |
+| `DATABASE_URL` | ✓ | ✓ | Coolify Postgres `mitoshi-testnet-db` (internal URL) | Coolify Postgres (mainnet) |
+| `REDIS_URL` | ✓ | ✓ | Coolify Redis `mitoshi-testnet-redis` (internal URL) | Coolify Redis (mainnet) |
 | `RELAY_FEE_PAYER_PRIVATE_KEY` | ✓ | — | ✓ | ✓ |
 | `OPS_INTERNAL_TOKEN`, `STREAM_TICKET_SECRET` | ✓ | ✓ | ✓ | ✓ |
 | `SOCIAL_SESSION_SECRET`, `ROOM_TOKEN_SECRET` | ✓ | ✓ | ✓ | ✓ |

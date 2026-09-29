@@ -1,10 +1,12 @@
 **/node_modules
 **/.next
+.git
 contracts/out
 contracts/cache
 contracts/lib
+contracts/broadcast
 reference
 context
 data
-docs
-.git
+mobile/ios
+mobile/android

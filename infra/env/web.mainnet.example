@@ -1,4 +1,4 @@
-# web (mainnet) — names only; set values in the Vercel project
+# web (mainnet) — names only; set values in the Coolify app
 NETWORK=mainnet
 APP_ORIGIN=
 PASSKEY_RP_ID=
@@ -6,8 +6,7 @@ TEMPO_RPC_HTTP_URL=
 TEMPO_RPC_WS_URL=
 RH_RPC_HTTP_URL=
 DATABASE_URL=
-KV_REST_API_URL=
-KV_REST_API_TOKEN=
+REDIS_URL=
 RELAY_FEE_PAYER_PRIVATE_KEY=
 OPS_INTERNAL_TOKEN=
 STREAM_TICKET_SECRET=

@@ -1,9 +1,10 @@
-# ops (mainnet) — names only; set values with `fly secrets set`
+# ops (mainnet) — names only; set values in the Coolify app
 NETWORK=mainnet
 TEMPO_RPC_HTTP_URL=
 TEMPO_RPC_WS_URL=
 RH_RPC_HTTP_URL=
 DATABASE_URL=
+REDIS_URL=
 DRY_RUN=1
 OPS_ACTORS=
 OPS_INTERNAL_TOKEN=

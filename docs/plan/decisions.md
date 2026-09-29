@@ -350,6 +350,23 @@ tempo`; real runs use Moderato/Tempo.
 
 **Why:** proven in S0.6's pipeline run (acceptance/S0.md).
 
+### D-060 — name **Mitoshi 見通し**, domain `mitoshi.xyz` (owner answer, 2026-09-29)
+
+"Outlook, forecast". Answers Q-019. The owner buys `mitoshi.xyz` on Namecheap (verified unregistered in the .xyz
+registry 2026-09-29). Layout: `mitoshi.xyz` = mainnet web; `testnet.mitoshi.xyz` = testnet web; `ops.` / `stream.`
+(per network, under `testnet.` for testnet) = ops health and the D-049 SSE stream; `docs.mitoshi.xyz` = docs (S20).
+Passkey rpId = `mitoshi.xyz` on both networks. Brand strings live only in `web/src/lib/copy.ts`.
+
+### D-061 — hosting on the owner's Coolify, not Vercel/Fly/Neon/Upstash (owner answer, 2026-09-29)
+
+Answers Q-026 and supersedes D-034 (plan D25) and the Vercel/Fly parts of Appendix C.6 and plan §3. Coolify project
+`mitoshi` on the owner's server: per-network web and ops apps built from Dockerfiles in the private repo, Coolify
+PostgreSQL per network (replaces Neon), Coolify Redis per network (replaces Upstash; `Kv.from` over Redis with an
+atomic `take`). Speed Insights → field metrics from the web app's own Web Vitals reporting; Lighthouse CI runs against
+the testnet domain. Details: `infra/coolify.md`.
+
+**Why:** the owner self-hosts everything on Coolify; one server, one bill, push-to-deploy.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
@@ -374,14 +391,14 @@ Defaults apply until answered; none is a scope cut.
 | Q-016 | Safes per chain (signers, threshold) | Single owner key on testnet only | S19 |
 | Q-017 | Moderato v4 | Replay at mainnet addresses | S15a |
 | Q-018 | Launchpad constraints | DBC's (10 % locked, ≤ 2 y vesting, 0.2 % + migration fee) | S17b |
-| Q-019 | Product name, **domain** (passkey rpId) and the pitch | — (domain needed before S0's gate; S0 falls back to the Vercel URL and the domain check moves to S1's gate) | S0, S1, S20 |
+| Q-019 | ~~Product name, domain~~ answered by D-060 (Mitoshi, mitoshi.xyz); the pitch remains | — (domain needed before S0's gate; S0 falls back to the Vercel URL and the domain check moves to S1's gate) | S0, S1, S20 |
 | Q-020 | Capped mainnet MPP wallet (USDC.e) for agents | None until approved (decisions labelled "unpaid") | S3.5, S9, S16a |
 | Q-021 | Also sponsor `EventVault.place` / `moveToPrivate` | Unchanged from Masayume's list (not sponsored) | S7 |
 | Q-022 | Engine deviations T01–T10 (A.7), incl. redeem auto-drains own orders, `UnknownRedStoneSigner` vector change, PD-2 knock-out rule for Boost | As designed | S2.1, S10c |
 | Q-023 | Mirror naming | "Bridged TSLA Stock Token (unofficial)" / `bTSLA`, own lettermark logo | S14c |
 | Q-024 | StockGuard off-hours mode and bands | WIDEN (24/7 at pool price); 150/300/500 bps | S15b |
 | Q-025 | Theme creator fee cap | 50 bps | S16c |
-| Q-026 | Hosting providers | Vercel, Fly, Neon, Upstash | S0 |
+| Q-026 | ~~Hosting providers~~ answered by D-061 (Coolify) | Vercel, Fly, Neon, Upstash | S0 |
 | Q-027 | App name, bundle IDs, URL scheme | `<reverse-domain>.app` (mainnet, later) / `<reverse-domain>.app.testnet`; scheme = the bundle ID; name from Q-019 + "Testnet" | SM1 |
 | Q-028 | Geofence inside the testnet app for App Review (a US reviewer would see browse-only markets) | Same posture as the web, explained in the review notes with a reviewer walkthrough | SM5 |
 | Q-029 | Convert the Apple account to an organization (legal entity + D-U-N-S, ~2–3 weeks) for a later public or unlisted listing and the mainnet build | Stay individual; TestFlight only | after S21 |
