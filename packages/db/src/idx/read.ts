@@ -128,31 +128,40 @@ export function indexReader(sql: Sql) {
     /** Counts of what the index holds at or below `block` (the recount compares them with an independent chain walk). */
     async countsThrough(chainId: number, block: number): Promise<IdxRow> {
       const [row] = await sql`
-        select (select count(*) from idx_events where chain_id = ${chainId} and block_number <= ${block})::int as events,
-          (select count(distinct tx_hash) from idx_events where chain_id = ${chainId} and block_number <= ${block})::int as txs,
+        with ev as (select * from idx_events where chain_id = ${chainId} and block_number <= ${block})
+        select (select count(*) from ev)::int as events, (select count(distinct tx_hash) from ev)::int as txs,
           (select count(*) from idx_fills where chain_id = ${chainId} and block_number <= ${block})::int as fills,
           (select coalesce(sum(lots), 0)::text from idx_fills where chain_id = ${chainId} and block_number <= ${block}) as fill_lots,
-          (select count(*) from idx_markets where opened_tx is not null)::int as windows_opened,
-          (select count(*) from idx_markets where state <> 'open')::int as windows_resolved,
-          (select count(*) from idx_prints)::int as prints,
-          (select count(*) from idx_redemptions)::int as redemptions,
-          (select coalesce(sum(total_base), 0)::text from idx_redemptions) as redeemed_base,
+          (select count(*) from ev where name = 'WindowOpened')::int as windows_opened,
+          (select count(*) from ev where name = 'WindowResolved')::int as windows_resolved,
+          (select count(*) from ev where name = 'PrintRecorded')::int as prints,
+          (select count(*) from idx_redemptions r join ev on ev.tx_hash = r.tx_hash and ev.log_index = r.log_index)::int as redemptions,
+          (select coalesce(sum(r.total_base), 0)::text from idx_redemptions r join ev on ev.tx_hash = r.tx_hash and ev.log_index = r.log_index) as redeemed_base,
           (select count(*) from (select market from idx_events where market is not null group by market having count(distinct seq) < max(seq)) g)::int as markets_with_gaps,
-          (select json_object_agg(name, n) from (select name, count(*)::int as n from idx_events where chain_id = ${chainId} and block_number <= ${block} group by name) c) as by_name`;
+          (select json_object_agg(name, n) from (select name, count(*)::int as n from ev group by name) c) as by_name`;
       return row!;
     },
 
-    /** Per-Window digest at or below `block` (the recount diffs it against its own chain replay, market by market). */
+    /**
+     * Per-Window digest at or below `block`, from stored events and fills only (the recount diffs it against its own
+     * chain replay). `touched_after` marks Windows with events past `block`: their live position sums are not as of it.
+     */
     async marketDigest(chainId: number, block: number): Promise<IdxRow[]> {
       return sql`
-        select m.market, m.state, m.winner, coalesce(m.open_e8::text, '') as open_e8, coalesce(m.close_e8::text, '') as close_e8,
-          (select count(*) from idx_fills f where f.market = m.market and f.chain_id = ${chainId} and f.block_number <= ${block})::int as fills,
-          (select coalesce(sum(lots), 0)::text from idx_fills f where f.market = m.market and f.chain_id = ${chainId} and f.block_number <= ${block}) as fill_lots,
-          (select count(*) from idx_prints p where p.market = m.market)::int as prints,
-          (select coalesce(sum(total_base), 0)::text from idx_redemptions r where r.market = m.market and r.chain_id = ${chainId}) as redeemed_base,
-          (select coalesce(sum(yes_lots), 0)::text from idx_positions p where p.market = m.market) as open_yes_lots,
-          (select coalesce(sum(no_lots), 0)::text from idx_positions p where p.market = m.market) as open_no_lots
-        from idx_markets m where m.opened_tx is not null and m.last_block <= ${block} order by m.market`;
+        with ev as (select * from idx_events where chain_id = ${chainId} and block_number <= ${block} and market is not null)
+        select o.market,
+          coalesce((select case when (r.data->>'state')::int = 1 then 'resolved' else 'voided' end from ev r where r.market = o.market and r.name = 'WindowResolved'), 'open') as state,
+          (select (r.data->>'winner')::int from ev r where r.market = o.market and r.name = 'WindowResolved') as winner,
+          coalesce((select r.data->>'openE8' from ev r where r.market = o.market and r.name = 'WindowResolved'), '') as open_e8,
+          coalesce((select r.data->>'closeE8' from ev r where r.market = o.market and r.name = 'WindowResolved'), '') as close_e8,
+          (select count(*) from idx_fills f where f.market = o.market and f.chain_id = ${chainId} and f.block_number <= ${block})::int as fills,
+          (select coalesce(sum(lots), 0)::text from idx_fills f where f.market = o.market and f.chain_id = ${chainId} and f.block_number <= ${block}) as fill_lots,
+          (select count(*) from ev p where p.market = o.market and p.name = 'PrintRecorded')::int as prints,
+          (select coalesce(sum(r.total_base), 0)::text from idx_redemptions r join ev on ev.tx_hash = r.tx_hash and ev.log_index = r.log_index where r.market = o.market) as redeemed_base,
+          (select coalesce(sum(yes_lots), 0)::text from idx_positions p where p.market = o.market) as open_yes_lots,
+          (select coalesce(sum(no_lots), 0)::text from idx_positions p where p.market = o.market) as open_no_lots,
+          exists (select 1 from idx_events x where x.market = o.market and x.block_number > ${block}) as touched_after
+        from ev o where o.name = 'WindowOpened' order by o.market`;
     },
 
     /** Counts and freshness for `/api/index/status`, `/health` and the soak. */

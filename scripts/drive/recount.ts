@@ -137,8 +137,11 @@ async function main() {
     eq(`${id.slice(0, 10)} fill lots`, w.fillLots, d.fill_lots);
     eq(`${id.slice(0, 10)} prints`, w.prints, d.prints);
     eq(`${id.slice(0, 10)} redeemed`, w.redeemed, d.redeemed_base);
-    eq(`${id.slice(0, 10)} open YES lots`, sum(w.yes), d.open_yes_lots);
-    eq(`${id.slice(0, 10)} open NO lots`, sum(w.no), d.open_no_lots);
+    // Live position sums are current state: compared only for Windows with nothing after the pinned head.
+    if (!d.touched_after) {
+      eq(`${id.slice(0, 10)} open YES lots`, sum(w.yes), d.open_yes_lots);
+      eq(`${id.slice(0, 10)} open NO lots`, sum(w.no), d.open_no_lots);
+    }
     if (w.state !== "open") {
       eq(`${id.slice(0, 10)} open print`, w.openE8, d.open_e8);
       eq(`${id.slice(0, 10)} close print`, w.closeE8, d.close_e8);
