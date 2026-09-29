@@ -17,8 +17,8 @@
 - [x] S0.6 `scripts/codegen/clients.mjs` + `packages/clients/src/pinned.ts` (C.1.6). Src: Masayume `contracts/export.mjs`.
 - [x] S0.7 `scripts/invariants/*` with the rule set C.1.2. Src: Masayume `scripts/invariants/*`.
 - [x] S0.8 `.github/workflows/{ci,contracts,nightly-fork,deploy-ops}.yml`.
-- [ ] S0.9 Hosting (owner accounts): Vercel ×2, Fly ×2, Neon ×2, Upstash; DNS on the final domain (Q-019).
-- [ ] S0.10 Keys: `scripts/keys/{generate.mjs,fund-moderato.ts}` (addresses only in acceptance); Robinhood testnet
+- [x] S0.9 Hosting (owner accounts): Vercel ×2, Fly ×2, Neon ×2, Upstash; DNS on the final domain (Q-019).
+- [x] S0.10 Keys: `scripts/keys/{generate.mjs,fund-moderato.ts}` (addresses only in acceptance); Robinhood testnet
   ETH + daily faucet claims start (X11); Base Sepolia ETH; capped mainnet MPP wallet once Q-020 is approved.
 - [x] S0.11 Archive takeover: `packages/db/migrations/prints/0001_print_archive.sql`; price-relay archive-pass on Fly
   (`OPS_ACTORS=archive`, no key); `scripts/archive/import-agari.ts` (Agari `stocklana/data/archive/redstone/*.jsonl`
@@ -47,6 +47,8 @@
   are added by the stage that first needs them (S14c, S2).
 
 ## Handoff
+
+**Gate passed 2026-09-29** (acceptance/S0.md). Robinhood testnet ETH funding continues under S14c.
 
 - Done: S0.1–S0.8, S0.10 (Moderato), S0.11, S0.12, S0.13; S0.9 hosting on Coolify (D-061) with testnet web + ops +
   Postgres + Redis live on sslip addresses.

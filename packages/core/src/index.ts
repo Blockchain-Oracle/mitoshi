@@ -28,3 +28,7 @@ export * from "./bridge";
 export * from "./themes";
 export * from "./tx";
 export * from "./launch";
+// S17b (integration/t1): the bonding-curve maths and its shared TS<->Solidity vectors. `NETWORKS`/`networkFrom` come
+// from `./constants` and `./launch/currencyGuard` from `./launch`.
+export * from "./launch/curve";
+export { buildCurveVectors, type CurveVectors } from "./launch/curveVectors";

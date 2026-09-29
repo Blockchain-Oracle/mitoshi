@@ -11,6 +11,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "catalog:",
+    "@ai-sdk/google": "catalog:",
+    "@ai-sdk/openai": "catalog:",
     "@cwf/core": "workspace:*",
     "ai": "catalog:",
     "zod": "catalog:"

@@ -1,0 +1,566 @@
+{
+  "_doc": "The engine venue every deploy ensures (S2.11; engine spec A.1.7/A.2; engine-gas.md). Read by contracts/script/{DeployEngine,RegisterSeries}.s.sol and by the app. Amounts are base units of 6-dp pathUSD; times are seconds. Ported from Agari 03b30ab packages/markets/src/deploy/venue-spec.ts (LAUNCH_GRID), seats/bonds dropped (A.1.6), slots \u2192 seconds. S3 (D-091) adds the nine RedStone stock names: Regular 5m/15m/60m, the weekend Gap (open admission until lock) and the 24/7 lane on `<T>---24_7` at 5m/15m/60m; SPCX waits for Data Streams (Q-011).",
+  "collateral": "0x20C0000000000000000000000000000000000000",
+  "grid": {
+    "lotBase": 1000,
+    "tickBase": 1000,
+    "minLots": 1000,
+    "minRestSec": 20,
+    "maxLeadSec": 400000,
+    "fillsCap": 16,
+    "evictionsCap": 16
+  },
+  "redstone": {
+    "signers": [
+      "0xdEB22f54738d54976C4c0fe5ce6d408E40d88499",
+      "0xDD682daEC5A90dD295d14DA4b0bec9281017b5bE",
+      "0x51Ce04Be4b3E32572C4Ec9135221d0691Ba7d202",
+      "0x9c5AE89C4Af6aA32cE58588DBaF90d18a855B6de",
+      "0x8BB8F32Df04c8b654987DAaeD53D6B6091e3B774"
+    ],
+    "threshold": 3,
+    "strictSec": 300,
+    "admissionSec": 900
+  },
+  "check": {
+    "admissionSec": 120,
+    "maxDivergenceBps": 25
+  },
+  "dataStreams": {
+    "proxy": {
+      "4217": "0xcE73c8ad08CBDEaCa6078BF0627C8fe0a9a536E7",
+      "42431": "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64"
+    }
+  },
+  "nodesReserved": 256,
+  "series": [
+    {
+      "key": "BTC-5m",
+      "symbol": "BTC",
+      "ticker": 101,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "BTC"
+    },
+    {
+      "key": "ETH-5m",
+      "symbol": "ETH",
+      "ticker": 102,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "ETH"
+    },
+    {
+      "key": "SOL-5m",
+      "symbol": "SOL",
+      "ticker": 103,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "SOL"
+    },
+    {
+      "key": "TSLA-5m",
+      "symbol": "TSLA",
+      "ticker": 1,
+      "basis": 0,
+      "cadenceSec": 300,
+      "redstoneFeed": "TSLA"
+    },
+    {
+      "key": "TSLA-15m",
+      "symbol": "TSLA",
+      "ticker": 1,
+      "basis": 0,
+      "cadenceSec": 900,
+      "redstoneFeed": "TSLA"
+    },
+    {
+      "key": "TSLA-60m",
+      "symbol": "TSLA",
+      "ticker": 1,
+      "basis": 0,
+      "cadenceSec": 3600,
+      "redstoneFeed": "TSLA"
+    },
+    {
+      "key": "TSLA-gap",
+      "symbol": "TSLA",
+      "ticker": 1,
+      "basis": 1,
+      "cadenceSec": 604800,
+      "redstoneFeed": "TSLA"
+    },
+    {
+      "key": "TSLA-24-5m",
+      "symbol": "TSLA",
+      "ticker": 1,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "TSLA---24_7"
+    },
+    {
+      "key": "TSLA-24-15m",
+      "symbol": "TSLA",
+      "ticker": 1,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "TSLA---24_7"
+    },
+    {
+      "key": "TSLA-24-60m",
+      "symbol": "TSLA",
+      "ticker": 1,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "TSLA---24_7"
+    },
+    {
+      "key": "NVDA-5m",
+      "symbol": "NVDA",
+      "ticker": 2,
+      "basis": 0,
+      "cadenceSec": 300,
+      "redstoneFeed": "NVDA"
+    },
+    {
+      "key": "NVDA-15m",
+      "symbol": "NVDA",
+      "ticker": 2,
+      "basis": 0,
+      "cadenceSec": 900,
+      "redstoneFeed": "NVDA"
+    },
+    {
+      "key": "NVDA-60m",
+      "symbol": "NVDA",
+      "ticker": 2,
+      "basis": 0,
+      "cadenceSec": 3600,
+      "redstoneFeed": "NVDA"
+    },
+    {
+      "key": "NVDA-gap",
+      "symbol": "NVDA",
+      "ticker": 2,
+      "basis": 1,
+      "cadenceSec": 604800,
+      "redstoneFeed": "NVDA"
+    },
+    {
+      "key": "NVDA-24-5m",
+      "symbol": "NVDA",
+      "ticker": 2,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "NVDA---24_7"
+    },
+    {
+      "key": "NVDA-24-15m",
+      "symbol": "NVDA",
+      "ticker": 2,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "NVDA---24_7"
+    },
+    {
+      "key": "NVDA-24-60m",
+      "symbol": "NVDA",
+      "ticker": 2,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "NVDA---24_7"
+    },
+    {
+      "key": "AAPL-5m",
+      "symbol": "AAPL",
+      "ticker": 3,
+      "basis": 0,
+      "cadenceSec": 300,
+      "redstoneFeed": "AAPL"
+    },
+    {
+      "key": "AAPL-15m",
+      "symbol": "AAPL",
+      "ticker": 3,
+      "basis": 0,
+      "cadenceSec": 900,
+      "redstoneFeed": "AAPL"
+    },
+    {
+      "key": "AAPL-60m",
+      "symbol": "AAPL",
+      "ticker": 3,
+      "basis": 0,
+      "cadenceSec": 3600,
+      "redstoneFeed": "AAPL"
+    },
+    {
+      "key": "AAPL-gap",
+      "symbol": "AAPL",
+      "ticker": 3,
+      "basis": 1,
+      "cadenceSec": 604800,
+      "redstoneFeed": "AAPL"
+    },
+    {
+      "key": "AAPL-24-5m",
+      "symbol": "AAPL",
+      "ticker": 3,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "AAPL---24_7"
+    },
+    {
+      "key": "AAPL-24-15m",
+      "symbol": "AAPL",
+      "ticker": 3,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "AAPL---24_7"
+    },
+    {
+      "key": "AAPL-24-60m",
+      "symbol": "AAPL",
+      "ticker": 3,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "AAPL---24_7"
+    },
+    {
+      "key": "MSFT-5m",
+      "symbol": "MSFT",
+      "ticker": 4,
+      "basis": 0,
+      "cadenceSec": 300,
+      "redstoneFeed": "MSFT"
+    },
+    {
+      "key": "MSFT-15m",
+      "symbol": "MSFT",
+      "ticker": 4,
+      "basis": 0,
+      "cadenceSec": 900,
+      "redstoneFeed": "MSFT"
+    },
+    {
+      "key": "MSFT-60m",
+      "symbol": "MSFT",
+      "ticker": 4,
+      "basis": 0,
+      "cadenceSec": 3600,
+      "redstoneFeed": "MSFT"
+    },
+    {
+      "key": "MSFT-gap",
+      "symbol": "MSFT",
+      "ticker": 4,
+      "basis": 1,
+      "cadenceSec": 604800,
+      "redstoneFeed": "MSFT"
+    },
+    {
+      "key": "MSFT-24-5m",
+      "symbol": "MSFT",
+      "ticker": 4,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "MSFT---24_7"
+    },
+    {
+      "key": "MSFT-24-15m",
+      "symbol": "MSFT",
+      "ticker": 4,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "MSFT---24_7"
+    },
+    {
+      "key": "MSFT-24-60m",
+      "symbol": "MSFT",
+      "ticker": 4,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "MSFT---24_7"
+    },
+    {
+      "key": "META-5m",
+      "symbol": "META",
+      "ticker": 5,
+      "basis": 0,
+      "cadenceSec": 300,
+      "redstoneFeed": "META"
+    },
+    {
+      "key": "META-15m",
+      "symbol": "META",
+      "ticker": 5,
+      "basis": 0,
+      "cadenceSec": 900,
+      "redstoneFeed": "META"
+    },
+    {
+      "key": "META-60m",
+      "symbol": "META",
+      "ticker": 5,
+      "basis": 0,
+      "cadenceSec": 3600,
+      "redstoneFeed": "META"
+    },
+    {
+      "key": "META-gap",
+      "symbol": "META",
+      "ticker": 5,
+      "basis": 1,
+      "cadenceSec": 604800,
+      "redstoneFeed": "META"
+    },
+    {
+      "key": "META-24-5m",
+      "symbol": "META",
+      "ticker": 5,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "META---24_7"
+    },
+    {
+      "key": "META-24-15m",
+      "symbol": "META",
+      "ticker": 5,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "META---24_7"
+    },
+    {
+      "key": "META-24-60m",
+      "symbol": "META",
+      "ticker": 5,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "META---24_7"
+    },
+    {
+      "key": "GOOGL-5m",
+      "symbol": "GOOGL",
+      "ticker": 6,
+      "basis": 0,
+      "cadenceSec": 300,
+      "redstoneFeed": "GOOGL"
+    },
+    {
+      "key": "GOOGL-15m",
+      "symbol": "GOOGL",
+      "ticker": 6,
+      "basis": 0,
+      "cadenceSec": 900,
+      "redstoneFeed": "GOOGL"
+    },
+    {
+      "key": "GOOGL-60m",
+      "symbol": "GOOGL",
+      "ticker": 6,
+      "basis": 0,
+      "cadenceSec": 3600,
+      "redstoneFeed": "GOOGL"
+    },
+    {
+      "key": "GOOGL-gap",
+      "symbol": "GOOGL",
+      "ticker": 6,
+      "basis": 1,
+      "cadenceSec": 604800,
+      "redstoneFeed": "GOOGL"
+    },
+    {
+      "key": "GOOGL-24-5m",
+      "symbol": "GOOGL",
+      "ticker": 6,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "GOOGL---24_7"
+    },
+    {
+      "key": "GOOGL-24-15m",
+      "symbol": "GOOGL",
+      "ticker": 6,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "GOOGL---24_7"
+    },
+    {
+      "key": "GOOGL-24-60m",
+      "symbol": "GOOGL",
+      "ticker": 6,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "GOOGL---24_7"
+    },
+    {
+      "key": "AMZN-5m",
+      "symbol": "AMZN",
+      "ticker": 7,
+      "basis": 0,
+      "cadenceSec": 300,
+      "redstoneFeed": "AMZN"
+    },
+    {
+      "key": "AMZN-15m",
+      "symbol": "AMZN",
+      "ticker": 7,
+      "basis": 0,
+      "cadenceSec": 900,
+      "redstoneFeed": "AMZN"
+    },
+    {
+      "key": "AMZN-60m",
+      "symbol": "AMZN",
+      "ticker": 7,
+      "basis": 0,
+      "cadenceSec": 3600,
+      "redstoneFeed": "AMZN"
+    },
+    {
+      "key": "AMZN-gap",
+      "symbol": "AMZN",
+      "ticker": 7,
+      "basis": 1,
+      "cadenceSec": 604800,
+      "redstoneFeed": "AMZN"
+    },
+    {
+      "key": "AMZN-24-5m",
+      "symbol": "AMZN",
+      "ticker": 7,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "AMZN---24_7"
+    },
+    {
+      "key": "AMZN-24-15m",
+      "symbol": "AMZN",
+      "ticker": 7,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "AMZN---24_7"
+    },
+    {
+      "key": "AMZN-24-60m",
+      "symbol": "AMZN",
+      "ticker": 7,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "AMZN---24_7"
+    },
+    {
+      "key": "PLTR-5m",
+      "symbol": "PLTR",
+      "ticker": 8,
+      "basis": 0,
+      "cadenceSec": 300,
+      "redstoneFeed": "PLTR"
+    },
+    {
+      "key": "PLTR-15m",
+      "symbol": "PLTR",
+      "ticker": 8,
+      "basis": 0,
+      "cadenceSec": 900,
+      "redstoneFeed": "PLTR"
+    },
+    {
+      "key": "PLTR-60m",
+      "symbol": "PLTR",
+      "ticker": 8,
+      "basis": 0,
+      "cadenceSec": 3600,
+      "redstoneFeed": "PLTR"
+    },
+    {
+      "key": "PLTR-gap",
+      "symbol": "PLTR",
+      "ticker": 8,
+      "basis": 1,
+      "cadenceSec": 604800,
+      "redstoneFeed": "PLTR"
+    },
+    {
+      "key": "PLTR-24-5m",
+      "symbol": "PLTR",
+      "ticker": 8,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "PLTR---24_7"
+    },
+    {
+      "key": "PLTR-24-15m",
+      "symbol": "PLTR",
+      "ticker": 8,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "PLTR---24_7"
+    },
+    {
+      "key": "PLTR-24-60m",
+      "symbol": "PLTR",
+      "ticker": 8,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "PLTR---24_7"
+    },
+    {
+      "key": "AMD-5m",
+      "symbol": "AMD",
+      "ticker": 9,
+      "basis": 0,
+      "cadenceSec": 300,
+      "redstoneFeed": "AMD"
+    },
+    {
+      "key": "AMD-15m",
+      "symbol": "AMD",
+      "ticker": 9,
+      "basis": 0,
+      "cadenceSec": 900,
+      "redstoneFeed": "AMD"
+    },
+    {
+      "key": "AMD-60m",
+      "symbol": "AMD",
+      "ticker": 9,
+      "basis": 0,
+      "cadenceSec": 3600,
+      "redstoneFeed": "AMD"
+    },
+    {
+      "key": "AMD-gap",
+      "symbol": "AMD",
+      "ticker": 9,
+      "basis": 1,
+      "cadenceSec": 604800,
+      "redstoneFeed": "AMD"
+    },
+    {
+      "key": "AMD-24-5m",
+      "symbol": "AMD",
+      "ticker": 9,
+      "basis": 2,
+      "cadenceSec": 300,
+      "redstoneFeed": "AMD---24_7"
+    },
+    {
+      "key": "AMD-24-15m",
+      "symbol": "AMD",
+      "ticker": 9,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "AMD---24_7"
+    },
+    {
+      "key": "AMD-24-60m",
+      "symbol": "AMD",
+      "ticker": 9,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "AMD---24_7"
+    }
+  ]
+}

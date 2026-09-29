@@ -5,8 +5,14 @@
  * - asks our relay to pay (`feePayer: true`, routed by `withRelay`) when the area policy covers it,
  * - sets its nonce explicitly (expiring for keys and taps, X21),
  * - waits for the receipt in the same round trip (`sendTransactionSync`, ~0.5 s finality).
+ *
+ * Plus (S16c.3, X4) `sendRootWithKeyAuthorization`: a root-signed tx carrying a tx-level `key_authorization`. Scripts
+ * import it; keys never leave the caller's process. Docs: viem `viem/tempo` Account.fromSecp256k1 +
+ * signKeyAuthorization, sendTransactionSync `calls`/`keyAuthorization`/`feeToken` (viem site
+ * tempo/accounts/account.fromSecp256k1, tempo/guides/batch-calls).
  */
-import type { Account, Chain, Hex, TransactionReceipt, Transport, WalletClient } from "viem";
+import { type Account, type Address, type Chain, type Hex, type TransactionReceipt, type Transport, type WalletClient, http } from "viem";
+import type { themeKeyAuthorization } from "../themes/keyAuth";
 import type { Call } from "./batch";
 import { FEE_TOKEN, PRIORITY_FEE_PER_GAS } from "./fee";
 import { nonceFields, type NoncePlan, type NonceFields } from "./nonce";
@@ -59,4 +65,28 @@ export async function sendBatch<chain extends Chain>(
   const signed = { ...parameters, account: client.account, chain: client.chain };
   const receipt = (await client.sendTransactionSync(signed as never)) as TransactionReceipt;
   return { receipt, hash: receipt.transactionHash, fields };
+}
+
+export interface AuthorizeAndCallInput {
+  rootPrivateKey: Hex;
+  keyId: Address;
+  authorization: ReturnType<typeof themeKeyAuthorization>;
+  calls: readonly { to: Address; data: Hex }[];
+  rpcUrl?: string;
+  gas?: bigint;
+}
+
+/**
+ * Sends a root-signed Tempo tx carrying a tx-level `key_authorization` (plan B.4.3's "one root-signed tx
+ * key_authorization + follow"). `cast` can't attach a key authorization, so this one flow signs with viem: the root
+ * signs the authorization digest (`signKeyAuthorization`), then signs the tx that carries it. With a passkey root that
+ * is two WebAuthn prompts — spike X4 measures it against the one-prompt shape (`authorizeKey` as a batch call).
+ * `viem/tempo` and the chain load on use, so page code importing this module does not pull them in (S1 perf, D-071).
+ */
+export async function sendRootWithKeyAuthorization(p: AuthorizeAndCallInput): Promise<TransactionReceipt> {
+  const [{ Account: TempoAccount, Addresses, createClient }, { tempoModerato }] = await Promise.all([import("viem/tempo"), import("viem/chains")]);
+  const root = TempoAccount.fromSecp256k1(p.rootPrivateKey);
+  const client = createClient({ account: root, chain: tempoModerato, feeToken: Addresses.pathUsd, transport: http(p.rpcUrl ?? "https://rpc.moderato.tempo.xyz") });
+  const keyAuthorization = await root.signKeyAuthorization({ accessKeyAddress: p.keyId, keyType: "secp256k1" } as never, { chainId: tempoModerato.id, ...p.authorization } as never);
+  return (await client.sendTransactionSync({ calls: p.calls, keyAuthorization, ...(p.gas ? { gas: p.gas } : {}) } as never)) as TransactionReceipt;
 }

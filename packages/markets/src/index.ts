@@ -2,6 +2,7 @@
  * @cwf/markets — browser- and native-safe chain I/O (plan C.2.4). Server-only code lives under `@cwf/markets/server`,
  * React hooks under `@cwf/markets/react`.
  */
+export * from "./agents";
 export * from "./chains";
 export * from "./deployments";
 export * from "./env";

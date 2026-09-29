@@ -1,0 +1,6 @@
+{
+  "_doc": "HALT_WATCH_FIXTURE proof (adapted from Agari 03b30ab services/ops/src/actors/halt-watch/fixtures/halted-session.json): forces regular hours and injects raw observations; the real rules decide. TSLA's newest RedStone package is 90 s old (redstone-stale), NVDA-24 has 2 signers (redstone-signers), AAPL is not tradable on the exchange (exchange-halt, at once). Every other asset stays live.",
+  "session": "regular",
+  "redstone": { "TSLA": { "ageSec": 90 }, "NVDA-24": { "ageSec": 5, "signers": 2 } },
+  "exchange": { "AAPL": false }
+}

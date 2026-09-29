@@ -12,7 +12,7 @@
 | S1, S4 (NYSE date), S15, S16 | Passkey checks on your own device | Open |
 | S1 gate (geofence) | Put a country header in front of Coolify for the live domains: proxy `mitoshi.xyz` (and the testnet host) through Cloudflare so requests carry `cf-ipcountry`. Coolify stamps none; without it the geofence answers "open" everywhere (Q-008 not enforced live) | Open |
 | Before S11 | X account for trade-from-X | Open |
-| S14c day 1 | Send the LayerZero direct-pathway request (agent drafts) | Open |
+| S14c day 1 | Send the LayerZero direct-pathway request — draft ready in `stage-14-bridge.md` §14c.13 A | Open |
 | Before S19 | Chainlink Data Streams subscription + testnet credentials (Q-011); eligibility/budget for mainnet Stock Tokens (Q-008); Safes (Q-016) | Open |
 | After S0.11 | Retire the laptop RedStone archiver once the overlap check passes | Open |
 | Weekly | Weekly update video | Open |

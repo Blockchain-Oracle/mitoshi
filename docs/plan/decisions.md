@@ -389,6 +389,160 @@ fields (no `minHopPriceX36`), `ExactInputParams`/`ExactOutputParams` carry `uint
 proven by real mainnet calldata and fork execution. (3) Scripted testnet sends use `cast`, not viem (write-boundary).
 
 **Why:** measured on both networks and on a Tempo mainnet fork (`acceptance/S15.md`).
+### D-065 — engine ABI v1 freeze choices (S2.1–S2.6, 2026-09-29)
+
+Refines App. A (`docs/specs/engine.md`) where it left the shape open, each choice the one most faithful to Agari:
+`OpenWindowArgs` carries no policy version (the engine picks the highest covering one, E-26 step 10); one `seq` per
+market-scoped call stamped on every event of that call; enums travel as `uint8` so bad bytes refuse by Agari's names;
+`Market` stores prints as packed `uint128` (6 slots); `IPrintVerifier.verifyPrint` is non-view; all errors live in
+`IEngineErrors` (inherited by `IEventsEngine`) with Agari codes as `@custom:agari`; `sweepExpired` walks the market's
+own levels and visits ≤ 256 nodes per call (Agari scanned a ≤ 512-node slab); T05 (drain own orders) applies to
+`redeem`, `redeemPartial` and `redeemFor`; `openWindow` writes only the non-zero market slots and refuses a `lockAt`
+beyond uint32 (`BadHorizon`); `Redeemed` is emitted by the engine after pay-or-hold. Detail: stage-02 F-S2-04…F-S2-12,
+`docs/specs/interface-checklist.md` §5.
+
+**Why:** the frozen ABI (`engine-abi-v1`) is what every seam builds on; the spec changes only through D-entries.
+
+### D-066 — print verifier refinements (S2.5–S2.7, 2026-09-29)
+
+A policy version names its verifier contract, which must have code and answer `source()` equal to the policy's
+source. RedStone: every posted package must be a valid (OZ `tryRecover`, low-s), distinct, configured signer —
+unknown or malleated → `UnknownRedStoneSigner`, repeated → `DuplicateRedStoneSigner`, zero/oversized value →
+`InvalidPrintValue` (Agari's SDK dropped such packages below N; same outcome, named — T02). Data Streams: a v11
+`marketStatus` outside the policy mask refuses `InsufficientVerification`; the proxy is called non-payable (same
+selector; Tempo has no value). Attested: EIP-712 `verifyingContract` = the calling engine; `verifySpot` signs a typed
+`Spot(feedId, price, expo, observedAt)` under the same domain. Detail: stage-02 F-S2-10, F-S2-13.
+
+**Why:** Agari's rules carried to Tempo's sources with every refusal named; replay bound to engine, chain, market and slot.
+
+### D-080 — Tempo-side bridge gas: adapter lzReceive 1,000,000, `MIN_CREDIT_GAS` 600k, pre-warmed counters (finding, 2026-09-29)
+
+Measured on a Moderato fork (block 37363418, real TIP-20 precompiles): a TIP-20 `mint` to a fresh holder costs
+**510k** gas (TIP-1000 state creation), the whole adapter `lzReceive` 552k, and a first message on a path ~852k
+including the endpoint's own first writes; a warm credit is ~56k. Plan B.1.4/B.1.5's "gas ≥ 400k" and "lzReceive
+550k" would defer or fail fresh holders. So: `MIN_CREDIT_GAS` = 600k (below it `_credit` reverts, retryable); a mint
+that runs out of gas reverts instead of deferring; enforced lzReceive gas on every sender **to** Tempo (lockbox →
+30410, transit → 40444) = **1,000,000**; the adapter keeps `mintedNet`/`totalDeferred` stored +1 so they are never
+zero→non-zero writes (each would cost 250k inside the credit).
+
+**Why:** B.1.4's numbers predate TIP-1000; fresh-holder credits must not be deferred for lack of gas.
+
+### D-100 — spike X4: the theme follow is one root tx `[authorizeKey, follow]` — one passkey prompt; split only past 5 tokens (finding + decision, S16c, 2026-09-29)
+
+Measured on Moderato (`acceptance/S16.md`) with the exact B.4.3 restrictions over the five mirrors (6 daily limits,
+7 target scopes, 6 recipient bindings): **17.48M gas** as a call `AccountKeychain.authorizeKey(...)` inside the root's
+own batch, **17.43M** as a tx-level `key_authorization`; a 1-token key costs 7.37M, so each theme token adds ≈ **2.53M**
+(its limit + its recipient-bound `approve@router` scope). A key authorized earlier in the same tx **is visible** to
+`getKey`/`getAllowedCalls` in a later call of that tx (both shapes; `getTransactionKey()` = 0, root). T1A replaced the
+16.7M per-tx cap with Tempo's 30M; TIP-1010's "> 16M not recommended" is advice, and the 18–19M follow landed in the
+next block. Prompts: the `key_authorization` field needs the root to sign the authorization digest **and** the tx (two
+passkey prompts); `authorizeKey` as a batch call needs one. So:
+1. **Follow = one root-signed, relay-sponsored tx `[AccountKeychain.authorizeKey(keyId, secp256k1, restrictions),
+   ThemeRouter.follow(...)]` — one prompt** — for themes with ≤ 5 tokens (all testnet themes, Q-004; `follow`
+   itself measured 0.93M on a Moderato fork against the deployed router → ≈ 18.4M per follow tx). The tx-level `key_authorization` shape is not used (same gas, one more prompt).
+2. **Past 5 tokens** (tokenCount ≤ 16; 16 tokens ≈ 45M), split: tx 1 = `[authorizeKey(all limits; router + pathUSD +
+   the first 5 token scopes), follow]`, tx 2+ = `setAllowedCalls` chunks of ≤ 5 targets (≈ 10.2M each; one prompt
+   each). `follow` therefore checks that every scope present is allowed (subset), not that all theme tokens are
+   scoped; the rebalancer only trades tokens whose `approve@router` scope exists (`getAllowedCalls`).
+3. A key's self-paid fee counts against its pathUSD limit (625 units on the approve+rebalance tx), so the agent's
+   rebalances stay relay-sponsored (research 16 §4.6).
+
+**Why:** measured; one prompt is the UX the follow modal promises (stage 16: "1–2 prompts"), and the gas fits the
+30M per-tx cap with margin at the testnet theme size.
+
+### D-101 — ThemeRegistry lists a token only through a Safe-recorded guarded pool; the guard is an interface (decision, S16c, 2026-09-29)
+
+B.4.1's "tokens allowed only with a registered guarded `(pathUSD, token)` pool" is enforced as: the owner (Safe) sets
+the StockGuardHook once (`setGuard`) and records each mirror's `PoolKey` (`setTokenPool`), which must have currency0 =
+pathUSD, currency1 = the mirror and hooks = the guard, and which the guard must report through
+`IThemePoolGuard.isGuardedPool(key)`; `publish`/`publishVersion` re-check that live, so a guard swap delists nothing
+retroactively but blocks new versions on pools the new guard doesn't know. The router takes each leg's `PoolKey` from the
+registry. **S15b's StockGuardHook must expose `isGuardedPool(PoolKey) → bool`** (true after `registerPool`). Band rules:
+per band min ≤ target ≤ max ≤ 100 %, tokens need max > 0, targets (tokens + cash) sum to exactly 100 % — which already
+implies Σ min ≤ 100 % ≤ Σ max, so no separate feasibility check. Deploy order: the registry deploys now with no guard;
+`setGuard` + `setTokenPool` × 5 run after S15b–c register the pools (plan "16c.4 deploy after S15b–c").
+
+**Why:** the hook doesn't exist yet; an interface plus a Safe-recorded key keeps the pool choice explicit (fee/tick
+spacing come from S15c's pools, not guessed) and lets the registry deploy today.
+
+### D-102 — ThemeRouter details the plan left open (decision, S16c, 2026-09-29)
+
+1. **Fee base** = Σ buy `amountIn` + Σ sell `minAmountOut`, × the theme's `creatorFeeBps`: known before the swap, so
+   the key's pathUSD approval (buys + fee) is exact. Fees accrue to `feesOwed[creator]`; `claimFees` pays the caller
+   after a receive-policy pre-check.
+2. **Exact approvals are enforced**, not assumed: after settlement any allowance left from the follower to the router
+   on a touched token reverts `AllowanceLeft` — a standing approval would let the router's `transferFrom` bypass the
+   key's TIP-1011 limit (research 16 §4.4).
+3. **Root path** (`getTransactionKey() == 0`) skips the follower's own caps (expiry, per-leg, daily, caps interval and
+   slippage, envelope) and keeps every theme rule (version, allowlist, `allowed`, interval, session, reference age,
+   theme slippage, guard). Exact-in legs must fill completely (extreme price limits; a range-edge stop reverts
+   `PartialFill`). Slippage is one-sided against `P_i` (a better price passes).
+4. **Prices** come from `IThemeOracle.tokenPrice(mirror) → (usdPerTokenE18 = share × multiplier, observedAt, halted)`
+   and `currentSession()`; **S15b's StockReference must expose this view** (or a thin adapter over `read` + the
+   multiplier). A `priceProof` is forwarded as raw calldata to the Safe-set `proofTarget`, only for Safe-allowlisted
+   push selectors (RedStone's payload rides in calldata, so a wrapper can't carry it).
+5. **Key-signed flows are tested in forge**, not only on anvil/Moderato (amends B.6): `test/lib/KeychainTx.sol`
+   builds the keychain V2 signature and `vm.executeTransaction` runs it through Tempo's real handler (scopes, limits,
+   `getTransactionKey()`), including in the invariant handler.
+
+**Why:** each is either needed for exactness (1, 2), stated by B.4.2 (3), or keeps the router independent of S15b's
+unbuilt ABI (4); (5) is measured to work (X4 local half).
+
+### D-095 — spike X5: the compound policy keeps the coin out of the PoolManager; mint recipients too (finding + refinement, S17b, 2026-09-29)
+
+On the local Tempo EVM (`test/spikes/X5CompoundPolicy.t.sol`, PoolManager = the mainnet runtime fixture) a TIP-20 under
+compound policy `(1, blacklist{PoolManager}, …)` refuses every path into the PoolManager — `transfer`, `transferFrom`
+and v4's own `sync → transfer → settle` all revert `PolicyForbids` — while mints to buyers, transfers into the launchpad,
+the launchpad paying out and the issuer burning all work; after `changeTransferPolicyId(1)` the same settle succeeds.
+The spec's third member `1` would let a **mint** land in the PoolManager (measured: `mint(PoolManager)` succeeds under
+`(1, bl, 1)`); the launchpad never mints there, but the curve policy is `(1, bl{PM}, bl{PM})` so no mint can either —
+graduation flips to policy 1 before its own mints. Live confirmation on Moderato: `acceptance/S17.md` (S17b rows).
+Refines B.5.2 `curvePolicyId`.
+
+**Why:** measured; the stricter mint member costs nothing and closes a path the spec left open.
+
+### D-096 — the memecoin launchpad ships with LaunchRegistry v2, owned by the launch lane key (decision, S17b, 2026-09-29)
+
+`LaunchRegistry.setCurveLaunchpad` is owner-only and the S17a registry (`0x9b66…50b7`) is owned by the shared
+`deployer` key, which lanes no longer broadcast from (per-lane keys, S0.10). So `DeployCurveLaunchpad.s.sol` deployed
+a fresh registry (same code) owned by `deployer-launch` `0x64B7…1c96` and bound it to the launchpad:
+`0x8248…94A3` is now `LaunchRegistry` in `deployments/42431/launch.json`; the S17a registry stays in `history[]`. The
+two S17a test stablecoins remain on chain; only their admins can list them in v2 (`recordStablecoin`). The script
+also accepts `LAUNCH_REGISTRY=<existing>` for a deployment whose registry owner binds the launchpad itself. A first
+launchpad deployment (`0xd28e…2a0F`, 06:28 UTC) was superseded at 06:39 so the deployed source matches the
+repo after two invariant fixes (non-payable PositionManager interface; `claimLeftover(address coin)`); it stays in
+history. Testnet owner and protocol treasury = the lane key (Q-016).
+
+**Why:** keeps the per-lane nonce rule without blocking the live gate; nothing of value lived in registry v1.
+
+### D-097 — graduation and locker details the spec left open (decision, S17b, 2026-09-29)
+
+Refines B.5.2. (1) The corrective swap is exact-input with the target as its price limit, run inside
+`PoolManager.unlock` under `try`: raising the v4 price sells freshly minted coin (≤ 10 % of `migrationCoinAmount`,
+reserved in the supply check: `totalSupply ≥ curveSupply + migrationCoin × 1.1`), lowering it pays pathUSD (≤ 10 % of
+the migration quote; free in practice — no coin-side liquidity can exist before graduation). Short of the target →
+the attempt rolls back, `TierSkipped(reason)` and the next tier; three tiers failing → `PoolPoisoned`, and the launch
+stays Complete. (2) pathUSD the position cannot take (ratio rounding, the squatter's pathUSD the correction bought)
+and the migration fee go to partner/creator by their trading-fee shares; the 0.2 % goes to the protocol treasury.
+(3) The leftover (`cap − supply` after the position) is minted to the launchpad at graduation and paid to the
+leftover receiver by `claimLeftover`, so supply is fixed at the cap before the roles are renounced. (4) The locker
+splits LP fees by the liquidity partner and creator still have in the position (collected before every withdrawal);
+rounding dust of the six floors stays in the position like locked liquidity. (5) A creator buy at launch pays the
+base fee (not the anti-snipe start) and is capped at `maxCreatorBuyBps` of the curve supply. (6) `createLaunch`
+refuses a symbol that isn't 1–8 ASCII letters/digits (the registry only matches reserved codes up to 8 bytes).
+(7) Fees are pathUSD-side only, split protocol ≥ `minProtocolShareBps` (default 20 %) / partner / creator.
+
+**Why:** each is the most conservative reading of DBC's mechanism on v4 + TIP-20; all measured in tests and live.
+
+### D-098 — the launch keeper is opt-in and sends through the S1 submitter (decision, S17b, 2026-09-29)
+
+`services/ops/src/actors/launch-keeper` is registered in `main.ts` but outside the default actor set (`OPT_IN`), so an
+empty `OPS_ACTORS` does not start it; the S3 lane owns the deployed set. In the ops process it plans and simulates
+(dry) until S1's `packages/markets/src/tx/send.ts` lands on the trunk and is wired as its `GraduateSender` — ops may
+not send through viem anywhere else (write-boundary). The same pass, with a `cast` sender, graduated the live gate
+launch (`scripts/drive/launch-meme.ts`). `graduate` is never sponsored: the keeper pays its own fee.
+
+**Why:** keeps the write boundary and the S3 lane's deployment untouched while the keeper logic ships and is proven.
 
 ### D-070 — relay: debit at the fill, sponsored sends carry no fee fields, first-tx gas allowance (finding + decision, S1, 2026-09-29)
 
@@ -429,6 +583,93 @@ Measured on the production build (`pnpm perf:budgets`): Next 16.3 + React 19.2's
    (the Coolify deploy step sends `client_payload.url`) and by hand; no Vercel bypass headers.
 
 **Why:** the gate must measure what the page controls; a budget below the framework floor is unmeetable, not strict.
+
+### D-090 — S3 builds on S1's ports; the ops chain module is `@cwf/markets/ops` (S3.1, 2026-09-29)
+
+S3 merges `stage/S1-web-shell` @ `082c13f` (as S3.5 did) instead of re-porting Agari's core planners: S1 already ported
+`packages/core/src/market/*` (windows, calendar, RedStone schedule, halts, tickers, corporate, earnings) from Agari
+03b30ab and `packages/markets/src/tx/send.ts`. The venue actors' chain I/O lives in `packages/markets/src/ops/*`
+(`@cwf/markets/ops`: role clients, EngineLens reads through Multicall3, engine call builders, `sendOps` = simulate one
+call, then `tx/send.ts` with an expiring nonce, self-paid in pathUSD) and `packages/markets/src/prices/*` (RedStone
+payloads, EIP-712 attestations, Data Streams REST). "Fly config" in the stage box is the Coolify app (D-061): the
+existing `services/ops/Dockerfile`, health `/health`, `DRY_RUN` default on.
+
+**Why:** one copy of each planner; chain I/O stays in `packages/markets` (C.1.2 boundaries).
+
+### D-091 — the testnet venue lists the nine RedStone stock names on every lane (S3.4, 2026-09-29)
+
+`venue-spec.json` gains 63 Series (registered on Moderato, `acceptance/S3.md`): TSLA, NVDA, AAPL, MSFT, META, GOOGL,
+AMZN, PLTR, AMD × Regular 5m/15m/60m (Agari's cadences), the weekend Gap (basis 1, cadence 604,800, primary open
+admission `ADMIT_UNTIL_LOCK` as Agari's `policyVersions(…, "gap")`) and the 24/7 lane on RedStone `<T>---24_7` (basis 2,
+5m/15m/60m; the registry's `stock24`). RedStone publishes no `PLTR---24_7` or `AMD---24_7` feed (gateway `latest`,
+2026-09-29, found by halt-watch): their 24/7 Series stay registered and read "paused: no signed source" (the registry sets
+their `redstone24x7FeedId` to null; the roller never lists them). SPCX waits for Data Streams (Q-011). Version 0 of every Series is RedStone
+primary with no check source (the only keyless signed source on Moderato); a Data Streams check arrives as a new
+policy version, never an edit. The node pool is reserved to 256 so the seed maker's quotes don't pay cold slots.
+Measured cost: `openWindow` ≈ 1.07M gas at ≈ 2.7 gwei-equivalent in pathUSD, so all 66 lanes cost ≈ 3 pathUSD a day of
+roller fees.
+
+**Why:** the S3 gate needs a US session and a Gap; the registry already names these lanes (S1 `tickers.ts`).
+
+### D-092 — the S3 soak's house taker and ops' public evidence routes (S3.8, 2026-09-29)
+
+(1) The unattended soak needs fills to exercise settlement and auto-pay before any user trades, so ops has an opt-in
+`house-taker` actor: the `keeper` testnet key takes one small IOC against the seed maker's best quote on a trading
+24/7 Window every 15 minutes. It is never in the default actor set (nor `all`), is an operator wallet (excluded from
+leaderboards and traction like the maker and settler), and its fills are labelled house activity in `/health`.
+(2) Ops serves two read-only routes over public chain-derived data so the gate scripts run against production
+without database access: `GET /index/recount?through=<block>` (block-pinned index counts and per-Window digests
+for `scripts/drive/recount.ts`) and `GET /halts/log?from&to` (halt-watch's recorded observations for
+`halt-replay.ts`). (3) Role keys are Coolify runtime-only variables; `OPS_DRY_ACTORS` rolls actors out of dry run one
+at a time.
+
+**Why:** the gate asks for auto-pay and recount/halt replay on the live venue; the Coolify Postgres is internal only (D-061).
+
+### D-085 — spike X10 and the MPP payer (finding + decision, S3.5, 2026-09-29)
+
+X10, the unpaid 402 probe (`scripts/mpp/probe.ts`, `acceptance/S3.5.md`): `anthropic.mpp.tempo.xyz/v1/messages` and
+`openai.mpp.tempo.xyz/v1/chat/completions` answer with **four offers each — three `charge` (USDC.e
+`0x20c0…b9537d11c60e8b50`, NANOUSD `0x20c0…8b4c619d2eedec7a`, pathUSD) and one `session` (USDC.e, escrow
+`0x4d50…`)**, all on mainnet 4217 with the fee sponsored by the server; a fixed price per request by model (Sonnet/
+Haiku/gpt-4o-mini 1,000 base = $0.001, Opus 5 1,200). The mpp.dev directory lists these hosts as session-only; the live
+challenges are authoritative. **Decision:** the payer prefers **charge** (one TIP-20 transfer → on-chain `reference` per
+request, D-033) and records session payments as channel + cumulative voucher. The payer is an **access key**
+(`Account.fromSecp256k1(MPP_PAYER_PRIVATE_KEY, { access: MPP_ROOT_ADDRESS })`) authorized by the root with TIP-1011
+**daily limits** (testnet 5 pathUSD; mainnet default 2 USDC.e + 2 pathUSD, the owner may change them) and scopes limited
+to token `transfer`/`transferWithMemo` and the escrow; software caps (chain, currency, per-request, per-UTC-day,
+reserved before signing) sit above it; every paid response becomes an `mpp_receipts` row scoped by
+`withReceiptScope`. Mainnet refuses to build a payer unless `MPP_MAINNET_APPROVED=1` (Q-020). Testnet proof uses
+`mpp.dev/api/ping/paid`, a Moderato charge endpoint (0.1 test pathUSD). The testnet roles are `mpp-root` / `mpp-payer`.
+
+**Why:** measured (X10 + a paid Moderato call whose limit dropped by exactly the price); receipts are the agent thesis.
+
+### D-086 — Tempo Indexer API: session-only MPP, testnet queries paid on Moderato, testnet sessions refused (finding, S3.5, 2026-09-29)
+
+`GET api.tempo.xyz/v1/indexer/query` answers every anonymous request with 402 — `session` only, 100 base (pathUSD) per
+request, suggested deposit 10,000, escrow `0x4d50…`, recipient `0xfF87…20f0`, **charged on the network queried**
+(`chainId=42431` → Moderato; this corrects 16 §8, which saw testnet queries charged on mainnet). A Moderato session is
+**rejected by the server** ("Payment verification failed" / `PAYMENT_REJECTED`) for our payer and for the official
+`mppx` 0.11.0 CLI alike, although the signed channel-open transaction is valid (broadcast by hand it lands, tx in
+`acceptance/S3.5.md`). **Decision:** the indexer client supports three auths — API key (`TEMPO_INDEXER_API_KEY`, the
+owner creates it in the Tempo console: owner action), MPP session (live on mainnet after Q-020; testnet once Tempo
+accepts the session), and a **self-hosted tidx** base URL (`TIDX_URL`) — and is proven against a real tidx following
+Moderato (S3.5.3). Q-012's default (own follower + the Indexer API for analytics) stands.
+
+**Why:** measured; the client must be real now without spending mainnet funds or creating accounts for the owner.
+
+### D-087 — indexer sources are generated; the recount compares against the chain until `idx_events` exists (decision, S3.5, 2026-09-29)
+
+`scripts/codegen/clients.mjs` also writes `packages/clients/src/indexer.ts` (`indexerSources`): per chain, every
+deployed contract with its deploy block and each event's **full** signature (`indexed` + names — what `signature=`
+needs to expose decoded columns) and topic0; `codegen:check` in CI keeps it reproducible. The hourly recount (ops actor
+`indexer-recount`, `indexer_recounts` table) counts each event in the indexer (raw `logs` by address + selector) and
+in our own record over one closed range; "our own record" is pluggable — the chain's `eth_getLogs` now, an `idx_events`
+counter when S3's follower creates that table (its schema is S3's). A backfilling self-hosted tidx reports contracts it
+does not yet cover instead of comparing them. **Finding:** a tidx following Moderato over the public RPC is throttled
+(HTTP 429; batch requests > ~50 receipts are "request too large") to ≈4 blocks/s of backfill — a hosted tidx needs a
+provider RPC or a key on the public one.
+
+**Why:** C.4.3 asks for the recount against our index; the chain is the stricter reference until the index exists.
 
 ## Open questions
 

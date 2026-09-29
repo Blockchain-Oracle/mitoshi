@@ -1,0 +1,22 @@
+{
+  "feed": "ETH",
+  "url": "https://oracle-gateway-2.a.redstone.finance/data-packages/latest/redstone-primary-prod",
+  "fetchedAtUtc": "2026-09-29T04:35:31.235Z",
+  "timestampMs": 1790656520000,
+  "signers": [
+    "0xdEB22f54738d54976C4c0fe5ce6d408E40d88499",
+    "0x8BB8F32Df04c8b654987DAaeD53D6B6091e3B774",
+    "0xDD682daEC5A90dD295d14DA4b0bec9281017b5bE",
+    "0x9c5AE89C4Af6aA32cE58588DBaF90d18a855B6de",
+    "0x51Ce04Be4b3E32572C4Ec9135221d0691Ba7d202"
+  ],
+  "valuesE8": [
+    "266389405200",
+    "266377000000",
+    "266389405200",
+    "266389405200",
+    "266389405200"
+  ],
+  "medianE8": "266389405200",
+  "payloadBytes": 724
+}

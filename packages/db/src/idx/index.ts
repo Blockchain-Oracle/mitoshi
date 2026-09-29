@@ -1,0 +1,5 @@
+/** The engine index store (index/0001; C.4.1–C.4.2). Owned by S3. */
+export { applyEvent, leg } from "./apply";
+export { indexReader, type IdxMarketQuery, type IdxPage, type IdxRow, type IndexReader } from "./read";
+export type { IdxCursor, IdxEvent, IdxSeries } from "./types";
+export { indexWriter, INDEX_TABLES, MARKET_PROJECTIONS, type IndexWriter, type WindowResult } from "./write";

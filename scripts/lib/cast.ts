@@ -14,8 +14,14 @@ export const PATH_USD: Address = "0x20C0000000000000000000000000000000000000";
 
 export interface CastReceipt { transactionHash: Hex; blockNumber: string; status: string; gasUsed: string; feeToken?: Address; logs: { address: Address; topics: Hex[]; data: Hex }[] }
 
-/** A testnet role (`~/.config/cwf/testnet/<role>.json`), or an access key signing for its root account (TIP-1011). */
-export type Signer = { role: string } | { accessKeyFile: string; root: Address };
+/**
+ * A testnet role (`~/.config/cwf/testnet/<role>.json`), a throwaway `cast wallet new --json` file signing as itself
+ * (spike accounts), or an access key signing for its root account (TIP-1011).
+ */
+export type Signer = { role: string } | { walletFile: string } | { accessKeyFile: string; root: Address };
+
+/** The private key of a `cast wallet new --json` file (`{ data: [{ address, private_key }] }`). */
+const walletKey = (path: string): Hex => (JSON.parse(readFileSync(path, "utf8")) as { data: { private_key: Hex }[] }).data[0]!.private_key;
 
 export interface CastOptions { rpc?: string; feeToken?: Address; extra?: string[]; signer?: Signer }
 
@@ -24,9 +30,11 @@ function keyArgs(signer: Signer): { args: string[]; secret: string } {
     const file = JSON.parse(readFileSync(join(homedir(), ".config", "cwf", "testnet", `${signer.role}.json`), "utf8")) as { privateKey: Hex };
     return { args: ["--private-key", file.privateKey], secret: file.privateKey };
   }
-  // A `cast wallet new --json` file.
-  const file = JSON.parse(readFileSync(signer.accessKeyFile, "utf8")) as { data: { private_key: Hex }[] };
-  const key = file.data[0]!.private_key;
+  if ("walletFile" in signer) {
+    const key = walletKey(signer.walletFile);
+    return { args: ["--private-key", key], secret: key };
+  }
+  const key = walletKey(signer.accessKeyFile);
   return { args: ["--tempo.access-key", key, "--tempo.root-account", signer.root], secret: key };
 }
 

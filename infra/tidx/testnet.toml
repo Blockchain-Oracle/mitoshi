@@ -1,0 +1,27 @@
+# Self-hosted tidx following Moderato (D-086/D-087) — the config S3.5 ran with `ghcr.io/tempoxyz/tidx:latest`
+# (0.7.0, sha256:1918e222…; amd64 only) and a Postgres 16 container:
+#   docker run -d --platform linux/amd64 --network <net> -p 58080:8080 -v $PWD/testnet.toml:/config.toml:ro \
+#     ghcr.io/tempoxyz/tidx:latest up --config /config.toml
+# The public RPC throttles (429, and "request too large" above ~50 receipts per batch): batch 5 / concurrency 1
+# backfills ≈4 blocks/s. A hosted instance wants a provider RPC. ops reads it with TIDX_URL.
+[http]
+enabled = true
+port = 8080
+bind = "0.0.0.0"
+
+[prometheus]
+enabled = false
+
+[[chains]]
+name = "moderato"
+chain_id = 42431
+rpc_url = "https://rpc.testnet.tempo.xyz"
+backfill = true
+batch_size = 5
+concurrency = 1
+trust_rpc = true
+
+[chains.postgres]
+# password via TIDX_PG_PASSWORD in a hosted setup (password_env); never commit it
+url = "postgres://tidx@tidx-postgres:5432/tidx_moderato"
+password_env = "TIDX_PG_PASSWORD"

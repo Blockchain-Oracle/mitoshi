@@ -1,16 +1,45 @@
 {
   "generatedBy": "scripts/codegen/clients.mjs",
   "fragments": [
+    "42431/engine",
     "42431/launch",
-    "42431/v4"
+    "42431/lz",
+    "42431/stocks",
+    "42431/themes",
+    "42431/v4",
+    "84532/lz",
+    "84532/stocks"
   ],
   "abis": [
+    "AdminLib",
+    "AttestedPrintVerifier",
+    "CurveConfigLib",
+    "CurveGraduationLib",
+    "CurveLaunchpad",
+    "DataStreamsPrintVerifier",
+    "EngineLens",
+    "EventsEngine",
+    "HopComposer",
     "IPoolManager",
     "IPositionDescriptor",
     "IPositionManager",
     "IStateView",
+    "ITIP20",
     "IUniversalRouter",
     "IV4Quoter",
-    "LaunchRegistry"
+    "LaunchRegistry",
+    "LiquidityLocker",
+    "LzPing",
+    "LzPingTempo",
+    "MatchLib",
+    "RedStonePrintVerifier",
+    "ResolveLib",
+    "ScaledUIView",
+    "StockSyncForwarder",
+    "StockSyncReceiver",
+    "TIP20MintBurnAdapter",
+    "ThemeRegistry",
+    "ThemeRouter",
+    "TransitOFT"
   ]
 }
