@@ -1,7 +1,7 @@
 # S2 — The market engine (wave 1) — money gate (App. A)
 
 - [x] S2.0 Toolchain check + `script/check-sizes.sh` (fail > 23.5 KB); spikes X6, X7.
-- [ ] S2.1 **Interface checklist, signed before freeze:** `docs/specs/interface-checklist.md` — every IDreamDex member
+- [x] S2.1 **Interface checklist, signed before freeze:** `docs/specs/interface-checklist.md` — every IDreamDex member
   (A.2.7), the 12 engine semantics, E-01…E-72, and the reads C.2.5 needs (batch `marketsOf`, `positionsOf`,
   `topOfBook`), each mapped to a function and a test; signed by the S4/S7/S8/S10/S12b owners. Freeze
   `docs/specs/engine.md` with the deviation register T01–T10 (A.7). Compile-only interfaces
@@ -57,7 +57,22 @@
   still 1,000 gas/B (404 B deploy = 931,695 gas). The engine is one shared credit pool, first come first served (the
   T7 docs note shared contracts may attribute credits per user via `Preserve`/`Direct`); the plan's design (credits
   minted by redeems and cancels fund the next market's slots) is exactly the shared-pool behaviour, so it stands.
+- **F-S2-04 (S2.1, review).** The S4/S7/S8/S10/S12b owners have not started; the checklist is recorded as **reviewed by
+  the integrator** in their place (wave-1 instruction). A later seam need is an ABI v2 through a D-entry.
+- **F-S2-05 (S2.1, sweep bound).** Agari's `public_sweep_expired` scans node indices `0..high_water` of one Book
+  (≤ 512 nodes). Our pool is global, so the sweep walks the market's own levels (best first, both sides) and visits at
+  most `MAX_SWEEP_VISITS = 256` nodes per call while removing at most `max` (1..32). Same keeper semantics (expired
+  only before `lockAt`; everything at/after `lockAt` or terminal; nothing to do = success), bounded gas.
+- **F-S2-06 (S2.1, T05 scope).** T05 ("redeem auto-drains the holder's own orders") is applied to `redeemPartial` and
+  `redeemFor` as well as `redeem`: Agari refused all redeems with `OpenOrdersRemain`, and T05 replaces that refusal, so
+  no redeem path can be blocked by the redeemer's own resting orders (the drain is at most 16 orders).
+- **F-S2-07 (S2.1, ABI shape).** Choices the spec left open, taken to stay faithful to Agari's semantics: the engine
+  picks the highest covering policy version itself (Agari required the roller to pass exactly that one); one `seq` per
+  call stamped on every event of the call; enums as `uint8` so bad bytes refuse by Agari's names; prints stored as packed
+  `uint128` (a `Market` stays 6 slots — Solidity starts every nested struct on a new slot); `verifyPrint` non-view (the
+  Data Streams proxy writes); all errors in one `IEngineErrors` interface inherited by `IEventsEngine`; the event field
+  `partial` is `isPartial` (reserved word). Listed in `docs/specs/interface-checklist.md` §5.
 
 ## Handoff
 
-S2.0 done (toolchain, size gate, X6, X7). Next: S2.1 interface checklist and frozen ABI.
+S2.0–S2.1 done (ABI frozen, tag `engine-abi-v1`; seams can start). Next: S2.2 storage and book libraries.
