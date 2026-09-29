@@ -22,9 +22,9 @@ const byChain = relayTargets as Record<string, Record<string, readonly string[]>
 const targets: readonly Address[] = Object.values(byChain).flatMap((areas) => (areas.maker ?? []) as Address[]);
 
 /**
- * The costliest sponsored call measured live is `settle` on a Window where the vault holds inventory and resting
- * orders (cancel-all of up to 16 orders ≈ 35k each, one credit withdrawal, one full redeem that deletes the position);
- * with 16 orders in the worst case the bound below keeps ~2× headroom over the measured figure.
+ * Measured live on Moderato (acceptance/S8.md): `merge` 461,769 (2 pairs, first credit/position slots), `pull`
+ * 226,773 (cancel 1 order + collect), `settle` 248,236 (void, nothing resting), `withdraw` 54,731. The worst case is
+ * `settle` on a Window with 16 resting orders (cancel-all ≈ 35k each) plus a full redeem; 2M keeps ≥ 2× headroom.
  */
 const MAKER_MAX_GAS = 2_000_000n;
 
