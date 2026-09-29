@@ -6,3 +6,4 @@ export type Network = keyof typeof NETWORKS;
 export function networkFrom(value: string | undefined): Network {
   return value === "mainnet" ? "mainnet" : "testnet";
 }
+export * from "./launch/currencyGuard";
