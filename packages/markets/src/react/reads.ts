@@ -3,7 +3,7 @@
 /** The reads the shell needs from day one: the chain clock (boot) and the wallet's balance sheet. */
 import type { Address, BalanceSheet, ClockSync, Reading } from "@cwf/core";
 import { keys } from "./keys";
-import { useMarkets } from "./provider";
+import { useMarkets } from "./contexts";
 import { useReadingQuery } from "./useReadingQuery";
 
 const CLOCK_RESYNC_MS = 60_000;

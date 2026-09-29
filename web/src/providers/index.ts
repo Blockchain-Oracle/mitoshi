@@ -1,2 +1,3 @@
 export { AppProviders } from "./AppProviders";
-export { BootNotice, MarketsBoot, useBoot } from "./MarketsBoot";
+export { BootNotice, useBoot } from "./MarketsBoot";
+export { useDataLayer, useDataReady } from "./data/context";
