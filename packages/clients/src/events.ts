@@ -7,5 +7,85 @@ export const events = {
     "PeerSet(uint32,bytes32)",
     "PingLanded(bytes32,uint32,uint64,uint64,uint64)",
     "PingSent(bytes32,uint32,uint64,uint64,uint256)"
+  ],
+  "TIP20MintBurnAdapter": [
+    "CreditDeferred(address,uint32,uint256,uint8)",
+    "DeferredClaimed(address,uint256)",
+    "DeferredSent(address,bytes32,uint32,uint256)",
+    "EnforcedOptionSet(tuple[])",
+    "GuardianSet(address)",
+    "Initialized(uint64)",
+    "MsgInspectorSet(address)",
+    "OFTReceived(bytes32,uint32,address,uint256)",
+    "OFTSent(bytes32,uint32,address,uint256,uint256)",
+    "OwnershipTransferred(address,address)",
+    "PeerSet(uint32,bytes32)",
+    "PreCrimeSet(address)",
+    "RateLimitSet(uint32,bool,uint128,uint64)",
+    "SendsPaused(bool,address)"
+  ],
+  "ITIP20": [
+    "Approval(address,address,uint256)",
+    "Burn(address,uint256)",
+    "BurnBlocked(address,uint256)",
+    "LogoURIUpdated(address,string)",
+    "Mint(address,uint256)",
+    "NextQuoteTokenSet(address,address)",
+    "PauseStateUpdate(address,bool)",
+    "QuoteTokenUpdate(address,address)",
+    "RewardDistributed(address,uint256)",
+    "RewardRecipientSet(address,address)",
+    "SupplyCapUpdate(address,uint256)",
+    "Transfer(address,address,uint256)",
+    "TransferPolicyUpdate(address,uint64)",
+    "TransferWithMemo(address,address,uint256,bytes32)"
+  ],
+  "ScaledUIView": [
+    "UIMultiplierUpdateCancelled(uint256,uint256)",
+    "UIMultiplierUpdated(uint256,uint256,uint256)"
+  ],
+  "StockSyncReceiver": [
+    "AutoPauseAttempted(address,bool)",
+    "AutoPauseSet(bool)",
+    "MultiplierSynced(address,uint128,uint128,uint64,uint128)",
+    "OwnershipTransferred(address,address)",
+    "PeerSet(uint32,bytes32)",
+    "StatusSynced(address,uint8,uint128)",
+    "SyncIgnored(bytes32,address,uint8)",
+    "TokenBound(address,address,address)"
+  ],
+  "LzPing": [
+    "EnforcedOptionSet(tuple[])",
+    "OwnershipTransferred(address,address)",
+    "PeerSet(uint32,bytes32)",
+    "PingLanded(bytes32,uint32,uint64,uint64,uint64)",
+    "PingSent(bytes32,uint32,uint64,uint64,uint256)"
+  ],
+  "HopComposer": [
+    "Bounced(bytes32,uint32,bytes32,uint256,bytes32,uint256)",
+    "EthWithdrawn(address,uint256)",
+    "Hopped(bytes32,uint32,uint32,bytes32,uint256,bytes32,uint256)",
+    "MinHopSet(uint256)",
+    "OwnershipTransferred(address,address)"
+  ],
+  "StockSyncForwarder": [
+    "EnforcedOptionSet(tuple[])",
+    "EthWithdrawn(address,uint256)",
+    "ForwardDeferred(bytes32,bytes)",
+    "Forwarded(bytes32,bytes32,uint256)",
+    "Ignored(bytes32,uint32)",
+    "OwnershipTransferred(address,address)",
+    "PeerSet(uint32,bytes32)"
+  ],
+  "TransitOFT": [
+    "Approval(address,address,uint256)",
+    "EnforcedOptionSet(tuple[])",
+    "MsgInspectorSet(address)",
+    "OFTReceived(bytes32,uint32,address,uint256)",
+    "OFTSent(bytes32,uint32,address,uint256,uint256)",
+    "OwnershipTransferred(address,address)",
+    "PeerSet(uint32,bytes32)",
+    "PreCrimeSet(address)",
+    "Transfer(address,address,uint256)"
   ]
 } as const;

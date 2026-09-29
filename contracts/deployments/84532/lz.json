@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "chainId": 84532,
+  "area": "lz",
+  "commit": "959edd4",
+  "deployedAtUtc": "2026-09-29T04:45:16.712Z",
+  "deployer": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e",
+  "contracts": {
+    "LzPing": {
+      "address": "0xab53F6CaE562909147497B6611C84Bc69eA54a65",
+      "artifact": "LzPing.sol:LzPing",
+      "profile": "evm",
+      "proxy": false,
+      "txHash": "0xfd491001f71081abfc082ad850fff7811bcefbd4eee3ba582f10f5b70c79ea48",
+      "deployBlock": 47444414,
+      "history": []
+    }
+  },
+  "roles": {},
+  "params": {
+    "eid": 40245
+  },
+  "external": {}
+}

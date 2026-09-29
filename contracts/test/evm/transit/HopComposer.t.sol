@@ -113,7 +113,7 @@ contract HopComposerTest is LzTestBase {
     }
 
     function test_emptyFloatRevertsAndStaysRetryable() public {
-        composer.withdrawEth(payable(address(this)), 1 ether);
+        composer.withdrawEth(1 ether);
         (bytes32 guid, bytes memory cm) = _toComposer(address(box), RH, abi.encode(uint256(TEMPO), _b32(alice), 0), 5e18);
         (bool ok, bytes memory err) = _compose(guid, cm);
         assertFalse(ok);
@@ -162,7 +162,7 @@ contract HopComposerTest is LzTestBase {
     function test_withdrawOnlyOwner() public {
         vm.prank(alice);
         vm.expectRevert();
-        composer.withdrawEth(payable(alice), 1);
+        composer.withdrawEth(1);
     }
 
 }

@@ -367,7 +367,7 @@ the testnet domain. Details: `infra/coolify.md`.
 
 **Why:** the owner self-hosts everything on Coolify; one server, one bill, push-to-deploy.
 
-### D-062 — Tempo-side bridge gas: adapter lzReceive 1,000,000, `MIN_CREDIT_GAS` 600k, pre-warmed counters (finding, 2026-09-29)
+### D-080 — Tempo-side bridge gas: adapter lzReceive 1,000,000, `MIN_CREDIT_GAS` 600k, pre-warmed counters (finding, 2026-09-29)
 
 Measured on a Moderato fork (block 37363418, real TIP-20 precompiles): a TIP-20 `mint` to a fresh holder costs
 **510k** gas (TIP-1000 state creation), the whole adapter `lzReceive` 552k, and a first message on a path ~852k

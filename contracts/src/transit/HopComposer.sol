@@ -88,9 +88,10 @@ contract HopComposer is ILayerZeroComposer, Ownable {
         emit MinHopSet(minHopLD_);
     }
 
-    function withdrawEth(address payable to, uint256 amount) external onlyOwner {
-        (bool ok,) = to.call{value: amount}("");
+    /// @notice Returns float to the owner (pays `msg.sender` only, P6).
+    function withdrawEth(uint256 amount) external onlyOwner {
+        (bool ok,) = payable(msg.sender).call{value: amount}("");
         require(ok, "withdraw failed");
-        emit EthWithdrawn(to, amount);
+        emit EthWithdrawn(msg.sender, amount);
     }
 }

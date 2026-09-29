@@ -1,9 +1,20 @@
 {
   "generatedBy": "scripts/codegen/clients.mjs",
   "fragments": [
-    "42431/lz"
+    "42431/lz",
+    "42431/stocks",
+    "84532/lz",
+    "84532/stocks"
   ],
   "abis": [
-    "LzPingTempo"
+    "HopComposer",
+    "ITIP20",
+    "LzPing",
+    "LzPingTempo",
+    "ScaledUIView",
+    "StockSyncForwarder",
+    "StockSyncReceiver",
+    "TIP20MintBurnAdapter",
+    "TransitOFT"
   ]
 }
