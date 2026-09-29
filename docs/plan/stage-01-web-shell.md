@@ -234,6 +234,18 @@
   without `access-control-allow-origin` for other origins, so a browser on another origin reads nothing.
 - **1b real-time — zod out of the ticker path.** `market/tickers.ts` imported zod for one enum schema; it moved to
   `schemas/tickers.ts` like the other validators, so the registry is readable without zod.
+- **After merging S2/S3/S3.5 (integration/t1 182397c).** With the engine now deployed on Moderato, two S1
+  placeholders activated and broke sign-up: (1) the wallet access-key hook passed bare function names as keychain
+  scopes, and ox rejects them ("Unable to normalize signature") — scopes now carry full signatures from the generated
+  engine ABI; and once valid, the connector authorised the key at registration, adding a second passkey prompt, so the
+  hook answers only while an explicit arm step asks (`requestArm`, D-046's arm slot — S4 fills it); (2)
+  `readBalanceSheet` threw whenever the engine was deployed, leaving the header balance at "—": order escrow and engine
+  credit (shown beside the headline, never summed) are now `null` ("not read") until S4's readers, the wallet balance is
+  real, and an unread vault still fails (it is part of the headline). The sign-in failure state gains the same
+  "Technical details" disclosure as the TxFailureCard.
+- **Stream ticket mounted.** `POST /api/stream/ticket` mints S3's 60 s HMAC ticket (`@cwf/markets/stream-ticket`) for the
+  signed-in session's own `user:<address>` topic with `STREAM_TICKET_SECRET` (the ops app's); 401 signed out, 503 when
+  the secret is unset, per-IP limit.
 - **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
   transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
 - **1b wallet — no cookie read on the server.** wagmi's `cookieToInitialState` would read `headers()` in the root and,
