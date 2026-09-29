@@ -41,6 +41,10 @@ export const relayTargets = {
       "0x5d0E0FFd621021F8e4A1e801F2cdE3BCFd8260B2",
       "0xE1576984eA22F1E620CFCCa6bf6154C4b9a3693e"
     ],
+    "themes": [
+      "0xdAb8A7fb64b561716cbE27CB0Eb9c49FB9414a9B",
+      "0x86b12714e58F91762Cb0F00d8830e08d6B642C41"
+    ],
     "v4": [
       "0x33620f62c5b9b2086dd6b62f4a297a9f30347029",
       "0x269ac84585a8c1012ad913573adf8a6c9df48897",

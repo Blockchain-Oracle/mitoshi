@@ -336,6 +336,39 @@ export const deployments = {
       "external": {},
       "commit": "959edd4"
     },
+    "themes": {
+      "contracts": {
+        "ThemeRegistry": {
+          "address": "0xdAb8A7fb64b561716cbE27CB0Eb9c49FB9414a9B",
+          "artifact": "ThemeRegistry.sol:ThemeRegistry",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x1f3dd368c33c92aa45119791ade4571352f8456de179de0b657ed2040fe8e269",
+          "deployBlock": 37380560,
+          "history": []
+        },
+        "ThemeRouter": {
+          "address": "0x86b12714e58F91762Cb0F00d8830e08d6B642C41",
+          "artifact": "ThemeRouter.sol:ThemeRouter",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xb837dc36f100c479bf1b59798c7f62fee8b7581b5b98ab9bf7b9428ea6938085",
+          "deployBlock": 37380562,
+          "history": []
+        }
+      },
+      "roles": {
+        "owner": "0xb0A5F0389098a8B0F33B9B6d6cf2a5917F8A58D6"
+      },
+      "params": {
+        "guard": "unset until S15b registers the StockGuardHook pools (D-101)",
+        "maxCreatorFeeBps": 50,
+        "oracle": "0x0000000000000000000000000000000000000000",
+        "poolManager": "0x33620f62C5b9B2086dD6b62F4A297A9f30347029"
+      },
+      "external": {},
+      "commit": "fc7b90b"
+    },
     "v4": {
       "contracts": {
         "PoolManager": {
