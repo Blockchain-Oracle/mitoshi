@@ -7,7 +7,7 @@
   `docs/specs/engine.md` with the deviation register T01–T10 (A.7). Compile-only interfaces
   `src/engine/interfaces/{IEventsEngine,IEngineLens,IPrintVerifier,IEventsEngineEvents}.sol`, `EngineTypes.sol`,
   `EngineErrors.sol`; tag `engine-abi-v1` (seams can start).
-- [ ] S2.2 `EngineStorage.sol`, `libs/{BookLib,Grid,PositionLib}.sol`. Src: Agari `book/{ladder,slab}.rs`, `grid.rs`,
+- [x] S2.2 `EngineStorage.sol`, `libs/{BookLib,Grid,PositionLib}.sol`. Src: Agari `book/{ladder,slab}.rs`, `grid.rs`,
   `matching/{paths,seats}.rs`. Tests `Book`, `HolderList`, `Grid`.
 - [ ] S2.3 `libs/MatchLib.sol`. Src: `matching/{engine,place,evict,orders}.rs`. Tests `Paths`, Examples 1–7, `Edges`,
   `Sweep`, `OpenPrintGate`.
@@ -75,4 +75,4 @@
 
 ## Handoff
 
-S2.0–S2.1 done (ABI frozen, tag `engine-abi-v1`; seams can start). Next: S2.2 storage and book libraries.
+S2.0–S2.2 done (ABI frozen at `engine-abi-v1`; storage + book libraries). Next: S2.3 MatchLib.

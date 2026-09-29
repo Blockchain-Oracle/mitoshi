@@ -30,6 +30,7 @@ const walk = (dir) => {
       const target = a.metadata?.settings?.compilationTarget ?? {};
       for (const [file, name] of Object.entries(target)) {
         if (!file.startsWith("src/") || name !== entry.name.replace(/\.json$/, "").split(".")[0]) continue;
+        if (!fs.existsSync(file)) continue; // stale artifact of a deleted source
         const code = (a.deployedBytecode?.object ?? "0x").replace(/^0x/, "");
         const size = code.length / 2;
         if (size === 0) continue; // interfaces and abstract contracts
