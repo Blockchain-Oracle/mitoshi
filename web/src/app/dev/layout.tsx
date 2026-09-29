@@ -3,10 +3,16 @@
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { MotionScope } from "@/components/motion-scope";
+import { ToastHost } from "@/components/ui/ToastHost";
 
 export const metadata = { robots: { index: false, follow: false } };
 
 export default function DevLayout({ children }: { children: ReactNode }) {
   if (process.env.NODE_ENV === "production" && process.env.DEV_FIXTURES !== "1") notFound();
-  return <MotionScope>{children}</MotionScope>;
+  return (
+    <MotionScope>
+      {children}
+      <ToastHost limit={1} />
+    </MotionScope>
+  );
 }

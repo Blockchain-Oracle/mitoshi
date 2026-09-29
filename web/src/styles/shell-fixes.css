@@ -126,3 +126,8 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, 
   .header-right .wallet-pill > .wallet-pill-addr,
   .header-right .wallet-pill > svg { display: none; }
 }
+
+/* From 21st.dev 27109 (Sticky Header Navbar) — its hover-focus technique on Masayume's desktop nav: while one link or
+ * menu trigger is hovered, its siblings step back to the AA-safe gray, so the eye lands on the target. */
+.nav-links .nav-link { transition: color 300ms var(--ease); }
+.nav-links:has(.nav-link:hover) .nav-link:not(:hover):not(.active) { color: var(--gray-400); }
