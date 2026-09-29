@@ -3,3 +3,4 @@ export * from "./pinned";
 export { deployments } from "./deployments";
 export { relayTargets } from "./relay-targets";
 export { events } from "./events";
+export { V4, V4_REPLAY, type V4Addresses } from "./addresses/v4";

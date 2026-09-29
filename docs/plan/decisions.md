@@ -367,6 +367,17 @@ the testnet domain. Details: `infra/coolify.md`.
 
 **Why:** the owner self-hosts everything on Coolify; one server, one bill, push-to-deploy.
 
+### D-064 — v4 replay and router ABI findings (finding, S15a, 2026-09-29)
+
+Amends `docs/specs/v4-replay.md`: (1) row 7 (UniversalRouter) differs from mainnet only in its EIP-712 immutables
+(chain id + domain separator of `EIP712("UniversalRouter", "2")`), exactly like row 4; verification masks both for
+rows 4 and 7. (2) Spike X3: the pinned UR `0xa2dc` decodes v4-periphery #497 params — `ExactInputSingleParams` has 5
+fields (no `minHopPriceX36`), `ExactInputParams`/`ExactOutputParams` carry `uint256[] maxHopSlippage` (per-hop maximum
+`amountIn·1e18/amountOut`, empty = off). The one encoder is `packages/markets/src/v4/encode.ts` (`@cwf/markets/v4`),
+proven by real mainnet calldata and fork execution. (3) Scripted testnet sends use `cast`, not viem (write-boundary).
+
+**Why:** measured on both networks and on a Tempo mainnet fork (`acceptance/S15.md`).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
