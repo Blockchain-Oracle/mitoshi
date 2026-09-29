@@ -3,11 +3,12 @@ pragma solidity 0.8.30;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MarketRef, PositionView} from "../../../src/engine/interfaces/IEngineLens.sol";
-import {PlaceArgs, PlaceResult, KIND_BUY_YES, KIND_BUY_NO, KIND_SELL_YES} from "../../../src/engine/EngineTypes.sol";
+import {PlaceArgs, PlaceResult, KIND_BUY_YES, KIND_BUY_NO, KIND_SELL_YES, ORDER_POST_ONLY} from "../../../src/engine/EngineTypes.sol";
 
 /// The one mock the product suites keep (A.6, D-018): an engine + lens that trades honestly until told to lie, so each
 /// product's `EngineAccountingMismatch` assert is proven against every way a venue's report can disagree with the
-/// balances it actually moved. Grid 1000/1000, cu 1; every order fills in full at its own limit.
+/// balances it actually moved. Grid 1000/1000, cu 1; every taker order fills in full at its own limit; a PostOnly buy
+/// rests in full (the maker surface, S8: rest, cancel-all, credit, merge, full redeem; YES wins every redeem).
 contract LyingEngine {
     enum Lie {
         None,
@@ -17,7 +18,10 @@ contract LyingEngine {
         ShortPay, // a sale pays less than it reports
         WithdrawOnBuy, // a buy also "withdraws" credit
         CreditDrift, // moves the product's engine credit
-        RedeemShort // a redemption pays less than it reports
+        RedeemShort, // a redemption pays less than it reports
+        CreditShort, // a credit withdrawal pays less than it debits
+        MergeShort, // a merge pays less than it reports
+        RedeemAllShort // a full redeem pays less than it reports
     }
 
     IERC20 public immutable usd;
@@ -25,6 +29,7 @@ contract LyingEngine {
     uint8 public status = 1;
     bool public optedOut;
     mapping(address holder => PositionView) internal _pos;
+    uint128 internal _nextId;
 
     constructor(IERC20 usd_) {
         usd = usd_;
@@ -48,12 +53,19 @@ contract LyingEngine {
         optedOut = on;
     }
 
+    /// @dev Test knob: the fills a maker's resting bids would have left it (lots on each side, escrow released).
+    function give(address holder, uint64 yesLots, uint64 noLots) external {
+        _pos[holder].yesFree += yesLots;
+        _pos[holder].noFree += noLots;
+    }
+
     function placeOrder(PlaceArgs calldata a) external returns (PlaceResult memory r) {
         PositionView storage p = _pos[msg.sender];
         bool yes = a.kind < KIND_BUY_NO;
         bool buy = a.kind == KIND_BUY_YES || a.kind == KIND_BUY_NO;
         uint64 ticks = yes ? a.priceTicks : 1000 - a.priceTicks;
         uint64 cash = a.lots * ticks;
+        if (a.orderType == ORDER_POST_ONLY) return _rest(p, a, cash);
         r.filledLots = a.lots;
         if (buy) {
             r.cashSpent = cash;
@@ -78,6 +90,45 @@ contract LyingEngine {
         if (lie == Lie.CreditDrift) p.credit += 1;
     }
 
+    function _rest(PositionView storage p, PlaceArgs calldata a, uint64 cash) internal returns (PlaceResult memory r) {
+        usd.transferFrom(msg.sender, address(this), lie == Lie.OverPull ? cash + 1 : cash);
+        p.lockedCash += cash;
+        p.openOrders += 1;
+        r.transferredIn = cash;
+        r.restedLots = lie == Lie.Rested ? a.lots - 1 : a.lots;
+        r.restedOrderId = ++_nextId;
+        if (lie == Lie.PhantomFill) r.filledLots = a.lots;
+        if (lie == Lie.WithdrawOnBuy) {
+            r.withdrawn = 1;
+            usd.transfer(msg.sender, 1);
+        }
+    }
+
+    function cancelAll(bytes32, uint8, bool) external returns (uint256 removed, uint64 withdrawn) {
+        PositionView storage p = _pos[msg.sender];
+        removed = p.openOrders;
+        p.credit += p.lockedCash;
+        p.lockedCash = 0;
+        p.openOrders = 0;
+        withdrawn = 0;
+    }
+
+    function mergeSet(bytes32, uint64 lots, bool) external returns (uint64 cash, uint64 withdrawn) {
+        PositionView storage p = _pos[msg.sender];
+        p.yesFree -= lots;
+        p.noFree -= lots;
+        cash = lots * 1000;
+        withdrawn = cash;
+        usd.transfer(msg.sender, lie == Lie.MergeShort ? cash - 1 : cash);
+    }
+
+    function redeem(bytes32) external returns (uint64 total) {
+        PositionView storage p = _pos[msg.sender];
+        total = p.yesFree * 1000 + p.credit + p.lockedCash;
+        delete _pos[msg.sender];
+        usd.transfer(msg.sender, lie == Lie.RedeemAllShort ? total - 1 : total);
+    }
+
     function redeemPartial(bytes32, uint8 outcome, uint64 lots) external returns (uint64 payout) {
         PositionView storage p = _pos[msg.sender];
         if (outcome == 0) p.yesFree -= lots;
@@ -88,7 +139,7 @@ contract LyingEngine {
 
     function withdrawCredit(bytes32, uint64 amount) external {
         _pos[msg.sender].credit -= amount;
-        usd.transfer(msg.sender, amount);
+        usd.transfer(msg.sender, lie == Lie.CreditShort ? amount - 1 : amount);
     }
 
     // ---- the lens surface products read ----
@@ -104,6 +155,11 @@ contract LyingEngine {
         r.lotBase = 1000;
         r.tickBase = 1000;
         r.minLots = 1;
+    }
+
+    function marketsOf(bytes32[] calldata ids) external view returns (MarketRef[] memory out) {
+        out = new MarketRef[](ids.length);
+        for (uint256 i; i < ids.length; ++i) out[i] = this.marketRef(ids[i]);
     }
 
     function positionOf(bytes32, address holder) external view returns (PositionView memory) {

@@ -139,15 +139,15 @@ library EngineSeam {
     ///         beforehand, proving `Δwallet == withdrawn == cash == lots·1000·cu` and one lot off each free side.
     function mergeMeasured(IEventsEngine engine, IEngineLens lens, IERC20 collateral, bytes32 m, uint64 lots, uint64 cu)
         internal
-        returns (uint256 cash)
+        returns (uint256 back)
     {
         uint256 w0 = collateral.balanceOf(address(this));
         PositionView memory p0 = lens.positionOf(m, address(this));
         (uint64 got, uint64 withdrawn) = engine.mergeSet(m, lots, true);
         uint256 w1 = collateral.balanceOf(address(this));
         PositionView memory p1 = lens.positionOf(m, address(this));
-        cash = uint256(lots) * PAIR_TICKS * cu;
-        bool ok = p0.credit == 0 && got == cash && withdrawn == cash && w1 >= w0 && w1 - w0 == cash && p1.credit == 0
+        back = uint256(lots) * PAIR_TICKS * cu;
+        bool ok = p0.credit == 0 && got == back && withdrawn == back && w1 >= w0 && w1 - w0 == back && p1.credit == 0
             && p0.yesFree >= p1.yesFree && p0.yesFree - p1.yesFree == lots && p0.noFree >= p1.noFree
             && p0.noFree - p1.noFree == lots;
         if (!ok) revert EngineAccountingMismatch();
