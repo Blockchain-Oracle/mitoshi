@@ -70,7 +70,7 @@ abstract contract ThemeBase is Test {
             vm.prank(safe);
             registry.setTokenPool(token, key);
         }
-        oracle.push(token, _poolPriceE18(), uint64(block.timestamp));
+        oracle.push(token, _poolPriceE18(), uint64(vm.getBlockTimestamp()));
     }
 
     /// USD per whole mirror token × 1e18 at TICK (both sides 6 decimals): 2^192 / sqrtP².

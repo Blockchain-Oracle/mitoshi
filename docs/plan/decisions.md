@@ -465,6 +465,29 @@ implies Σ min ≤ 100 % ≤ Σ max, so no separate feasibility check. Deploy or
 **Why:** the hook doesn't exist yet; an interface plus a Safe-recorded key keeps the pool choice explicit (fee/tick
 spacing come from S15c's pools, not guessed) and lets the registry deploy today.
 
+### D-102 — ThemeRouter details the plan left open (decision, S16c, 2026-09-29)
+
+1. **Fee base** = Σ buy `amountIn` + Σ sell `minAmountOut`, × the theme's `creatorFeeBps`: known before the swap, so
+   the key's pathUSD approval (buys + fee) is exact. Fees accrue to `feesOwed[creator]`; `claimFees` pays the caller
+   after a receive-policy pre-check.
+2. **Exact approvals are enforced**, not assumed: after settlement any allowance left from the follower to the router
+   on a touched token reverts `AllowanceLeft` — a standing approval would let the router's `transferFrom` bypass the
+   key's TIP-1011 limit (research 16 §4.4).
+3. **Root path** (`getTransactionKey() == 0`) skips the follower's own caps (expiry, per-leg, daily, caps interval and
+   slippage, envelope) and keeps every theme rule (version, allowlist, `allowed`, interval, session, reference age,
+   theme slippage, guard). Exact-in legs must fill completely (extreme price limits; a range-edge stop reverts
+   `PartialFill`). Slippage is one-sided against `P_i` (a better price passes).
+4. **Prices** come from `IThemeOracle.tokenPrice(mirror) → (usdPerTokenE18 = share × multiplier, observedAt, halted)`
+   and `currentSession()`; **S15b's StockReference must expose this view** (or a thin adapter over `read` + the
+   multiplier). A `priceProof` is forwarded as raw calldata to the Safe-set `proofTarget`, only for Safe-allowlisted
+   push selectors (RedStone's payload rides in calldata, so a wrapper can't carry it).
+5. **Key-signed flows are tested in forge**, not only on anvil/Moderato (amends B.6): `test/lib/KeychainTx.sol`
+   builds the keychain V2 signature and `vm.executeTransaction` runs it through Tempo's real handler (scopes, limits,
+   `getTransactionKey()`), including in the invariant handler.
+
+**Why:** each is either needed for exactness (1, 2), stated by B.4.2 (3), or keeps the router independent of S15b's
+unbuilt ABI (4); (5) is measured to work (X4 local half).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
