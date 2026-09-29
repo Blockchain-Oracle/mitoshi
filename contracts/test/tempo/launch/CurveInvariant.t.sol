@@ -140,8 +140,8 @@ contract CurveInvariantTest is LaunchBase {
     }
 
     /// Solvency: while trading, everyone sells everything and the reserve pays every one of them. A holding worth
-    /// less than one base unit of pathUSD after the fee is refused (`Slippage(0, 0)`: selling would pay nothing), so
-    /// such dust stays sold; everything else comes back and the books still balance.
+    /// nothing after the fee is refused (`Slippage(0, 0)`: selling would pay nothing), so such dust stays sold;
+    /// everything else comes back and the books still balance.
     function afterInvariant() public {
         Launch memory l = pad.getLaunch(token);
         if (l.state != LaunchState.Trading) return;
@@ -152,6 +152,9 @@ contract CurveInvariantTest is LaunchBase {
             if (held == 0) continue;
             (uint256 out,) = pad.quoteSell(token, held);
             if (out == 0) {
+                // Selling pays nothing only when the gross is ≤ 1 base unit of pathUSD: at ≥ $0.000001 per coin that
+                // is < 2 coins (2e6 base units) per holder.
+                assertLt(held, 2e6, "only dust is unsellable");
                 dust += held;
                 continue;
             }
@@ -163,7 +166,6 @@ contract CurveInvariantTest is LaunchBase {
         l = pad.getLaunch(token);
         assertEq(l.coinSold, dust);
         assertEq(ITIP20(token).totalSupply(), dust);
-        assertLt(dust, 1e6, "only dust (< 1 coin) is left unsold");
         (uint256 reserve, uint256 owed) = pad.totals();
         assertEq(PATH_USD.balanceOf(address(pad)), reserve + owed);
         assertGe(l.quoteReserve, _integral(l.sqrtPriceX96));

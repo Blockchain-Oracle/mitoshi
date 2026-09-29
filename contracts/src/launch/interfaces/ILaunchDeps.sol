@@ -10,11 +10,12 @@ interface ILaunchRegistryForCurve {
 }
 
 /// @notice The subset of the pinned v4 PositionManager `0x3fc7…ce11` the graduation uses (v4-periphery MIT ABI; the
-///         contract itself is never compiled here — it is the replayed mainnet runtime on Moderato).
+///         contract itself is never compiled here — it is the replayed mainnet runtime on Moderato). Declared
+///         non-payable: the real functions are payable, but Tempo has no native value and we never send any.
 interface IPositionManagerLite {
-    function multicall(bytes[] calldata data) external payable returns (bytes[] memory results);
-    function modifyLiquidities(bytes calldata unlockData, uint256 deadline) external payable;
-    function initializePool(PoolKeyLite calldata key, uint160 sqrtPriceX96) external payable returns (int24);
+    function multicall(bytes[] calldata data) external returns (bytes[] memory results);
+    function modifyLiquidities(bytes calldata unlockData, uint256 deadline) external;
+    function initializePool(PoolKeyLite calldata key, uint160 sqrtPriceX96) external returns (int24);
     function nextTokenId() external view returns (uint256);
     function ownerOf(uint256 tokenId) external view returns (address);
     function getPositionLiquidity(uint256 tokenId) external view returns (uint128);

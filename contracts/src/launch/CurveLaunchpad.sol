@@ -48,6 +48,7 @@ contract CurveLaunchpad is Ownable2Step, ReentrancyGuardTransient {
 
     event ConfigCreated(uint32 indexed configId, address indexed partner, uint160 sqrtEndX96, uint256 curveSupply, uint256 migrationCoinAmount);
     event LaunchCreated(address indexed token, address indexed creator, uint32 indexed configId, string symbol);
+    /// @dev `quote` is what the trader paid on a buy (fee included) and received on a sell (fee deducted).
     event Trade(address indexed token, address indexed trader, bool isBuy, uint256 quote, uint256 coin, uint256 fee, uint160 sqrtPriceX96, uint256 quoteReserve);
     event Completed(address indexed token, uint256 quoteReserve);
     event FeesClaimed(address indexed account, uint256 amount);
@@ -200,16 +201,16 @@ contract CurveLaunchpad is Ownable2Step, ReentrancyGuardTransient {
     }
 
     /// @notice Pays the unsold supply minted at graduation to the config's leftover receiver.
-    function claimLeftover(address token) external nonReentrant returns (uint256 amount) {
-        Launch storage l = _launches[token];
-        if (l.state != LaunchState.Graduated) revert NotGraduated(token);
+    function claimLeftover(address coin) external nonReentrant returns (uint256 amount) {
+        Launch storage l = _launches[coin];
+        if (l.state != LaunchState.Graduated) revert NotGraduated(coin);
         if (msg.sender != _configs[l.configId].leftoverReceiver) revert NotLeftoverReceiver(msg.sender);
-        amount = _graduations[token].leftover;
+        amount = _graduations[coin].leftover;
         if (amount == 0) revert NothingToClaim();
-        _checkReceive(token, msg.sender);
-        _graduations[token].leftover = 0;
-        ITIP20(token).transfer(msg.sender, amount);
-        emit LeftoverClaimed(token, msg.sender, amount);
+        _checkReceive(coin, msg.sender);
+        _graduations[coin].leftover = 0;
+        ITIP20(coin).transfer(msg.sender, amount);
+        emit LeftoverClaimed(coin, msg.sender, amount);
     }
 
     // ── owner ─────────────────────────────────────────────────────────────────────────────────────────────────────
