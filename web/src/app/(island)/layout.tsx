@@ -3,12 +3,13 @@
 import type { ReactNode } from "react";
 import { IslandChrome } from "@/components/shell/IslandChrome";
 import { LiveRegion } from "@/components/states";
+import { SessionBanners } from "@/components/shell/SessionBanners";
 import { AppProviders, BootNotice } from "@/providers";
 
 export default function IslandLayout({ children }: { children: ReactNode }) {
   return (
     <AppProviders>
-      <IslandChrome notices={<><BootNotice /><LiveRegion /></>}>{children}</IslandChrome>
+      <IslandChrome notices={<><SessionBanners /><BootNotice /><LiveRegion /></>}>{children}</IslandChrome>
     </AppProviders>
   );
 }

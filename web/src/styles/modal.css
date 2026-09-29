@@ -51,3 +51,13 @@
 .modal-disclosure > summary:hover { color: rgba(255, 255, 255, 0.75); }
 .modal-disclosure > *:not(summary) { margin-top: 12px; }
 [data-theme="light"] .modal-disclosure > summary { color: rgba(20, 18, 16, 0.6); }
+
+/* Base UI mounting (components/ui/modal.tsx): the scrim is its own fixed layer; enter/exit are opacity + scale. */
+.modal-scrim { position: fixed; z-index: 99; }
+.modal-root { z-index: 100; padding: calc(var(--safe-top, 0px) + 16px) 16px calc(var(--safe-bottom, 0px) + 16px); }
+.modal-anim { transition: opacity 180ms var(--ease-out), transform 220ms var(--ease-out); }
+.modal-anim[data-starting-style], .modal-anim[data-ending-style] { opacity: 0; }
+.modal.modal-anim[data-starting-style], .modal.modal-anim[data-ending-style] { transform: scale(0.97); }
+.modal-eyebrow { color: var(--gray-400); font-size: 11px; }
+.modal-close { color: var(--gray-400); }
+@media (prefers-reduced-motion: reduce) { .modal-anim { transition: none; } }

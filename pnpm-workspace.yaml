@@ -14,6 +14,7 @@ allowBuilds:
   bufferutil: false
   esbuild: true
   keccak: false
+  "@reown/appkit": false
   sharp: true
   utf-8-validate: false
 
@@ -29,6 +30,8 @@ catalog:
   zod: ^4.1.0
   viem: ^2.56.9
   wagmi: ^3.7.7
+  # WalletConnect for phones with no injected wallet (C.3.1: required for bridge-in); loaded only on demand.
+  "@walletconnect/ethereum-provider": ^2.21.1
   "@wagmi/core": ^3.6.5
   # Exact pin (C.1.3): 0.18.5 was published with an unresolved `hono@catalog:` dependency and cannot install.
   accounts: 0.18.4

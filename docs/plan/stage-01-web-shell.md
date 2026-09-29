@@ -35,7 +35,7 @@
 - [x] 1b transactions: `web/src/components/tx/*` — the `TxLifecycle` family (D43): state machine in
   `packages/core/src/tx/lifecycle.ts` (pure, tested), CTA-with-blocker, signing/submitted/confirmed chips, failure card
   with "moneyMoved", cream receipt (Masayume), "key used" receipt, confirm tiers, journal hooks.
-- [ ] 1b wallet: `web/src/providers/wallet/*` per C.3.1 (Agari replica file-by-file, wagmi 3 names per D46; wallet-picker
+- [x] 1b wallet: `web/src/providers/wallet/*` per C.3.1 (Agari replica file-by-file, wagmi 3 names per D46; wallet-picker
   layout from 21st 8588, centred); `lib/wallet-session.ts`; `UserSessionProvider` with memoised, split context values (no
   per-second re-render); wrong-network banner mounted; two-wallet model (Tempo + Robinhood Chain + Base Sepolia);
   capability flags come from the connector (so SM3's `shellDevice` connector can declare full Tempo caps); the connector
@@ -120,6 +120,14 @@
   active-pill techniques are applied where those surfaces are next touched in this stage.
 - **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
   transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
+- **1b wallet — no cookie read on the server.** wagmi's `cookieToInitialState` would read `headers()` in the root and,
+  under `cacheComponents`, make every app route dynamic. The shell renders "signed out" on the server and restores a
+  remembered connection after hydration (≤ 3 s, Agari's pattern), with `ssr` + cookie storage — no hydration mismatch.
+- **1b wallet — Agari's modal was a RainbowKit bottom sheet on phones.** The sign-in modal is centred on every screen
+  (owner rule) and lists the passkey first, so a phone never dead-ends (WalletConnect listed; without a Reown project
+  id the row says it isn't configured — `WALLETCONNECT_PROJECT_ID` is an owner/integrator value).
+- **1b wallet — access key.** The `accessKey.authorize` hook is wired and returns nothing until an `engine` fragment
+  exists; S4 swaps the scope names for full signatures from the generated engine ABI (D-047, Q-031 defaults).
 
 ## Handoff
 

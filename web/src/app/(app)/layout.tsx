@@ -4,12 +4,14 @@
 import type { ReactNode } from "react";
 import { ShellChrome } from "@/components/shell/ShellChrome";
 import { LiveRegion } from "@/components/states";
+import { HeaderAccount } from "@/components/shell/header/HeaderAccount";
+import { SessionBanners } from "@/components/shell/SessionBanners";
 import { AppProviders, BootNotice } from "@/providers";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <AppProviders>
-      <ShellChrome notices={<><BootNotice /><LiveRegion /></>}>{children}</ShellChrome>
+      <ShellChrome account={<HeaderAccount />} notices={<><SessionBanners /><BootNotice /><LiveRegion /></>}>{children}</ShellChrome>
     </AppProviders>
   );
 }

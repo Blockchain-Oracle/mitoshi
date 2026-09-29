@@ -19,6 +19,7 @@
     "@number-flow/react": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@wagmi/core": "catalog:",
+    "@walletconnect/ethereum-provider": "catalog:",
     "accounts": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",

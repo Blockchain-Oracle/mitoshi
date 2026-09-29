@@ -39,6 +39,20 @@ for (const theme of ["dark", "light"]) {
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
   });
+  await check(`${theme}: sign-in modal is centred, passkey first, axe clean`, async () => {
+    await page.goto(`${base}/markets`, { waitUntil: "networkidle" });
+    await page.getByRole("banner").getByRole("button", { name: "Sign in" }).click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("button", { name: /Create my account/ })).toBeVisible();
+    await page.waitForTimeout(400);
+    const box = (await dialog.boundingBox())!;
+    if (Math.abs(box.x + box.width / 2 - 195) > 4) throw new Error(`not centred (x=${box.x}, w=${box.width})`);
+    await page.screenshot({ path: join(out, `signin-${theme}.png`) });
+    const axe = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(["wcag2a", "wcag2aa"]).analyze();
+    if (axe.violations.length) throw new Error(axe.violations.map((v) => `${v.id} ${v.nodes[0]?.target}`).join(", "));
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+  });
   await check(`${theme}: back chevron goes to the parent`, async () => {
     await page.goto(`${base}/games/duel`, { waitUntil: "networkidle" });
     await page.getByRole("button", { name: "Back" }).click();

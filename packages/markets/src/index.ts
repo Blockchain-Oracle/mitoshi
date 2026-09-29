@@ -12,6 +12,7 @@ export * from "./runtime";
 export * from "./sessions";
 export * from "./submitter";
 export * from "./tx";
+export * from "./transports";
 export { createMarketsProvider } from "./provider";
 
 import { createPublicClient, http, type PublicClient } from "viem";
