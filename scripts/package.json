@@ -9,7 +9,8 @@
   "dependencies": {
     "@cwf/core": "workspace:*",
     "@cwf/markets": "workspace:*",
-    "viem": "catalog:"
+    "viem": "catalog:",
+    "@cwf/db": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

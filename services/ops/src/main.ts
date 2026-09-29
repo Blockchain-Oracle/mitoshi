@@ -2,15 +2,25 @@
 import { startHttp } from "./http/server";
 import { readOpsEnv, runActor, heartbeats, errorText } from "./runtime";
 import { chainHeadPass, CHAIN_HEAD_EVERY_MS } from "./actors/chain-head";
+import { archivePass, ARCHIVE_EVERY_MS } from "./actors/archive";
+import { createSql, runMigrations } from "@cwf/db";
 
 const env = readOpsEnv();
 const log = (actor: string) => (why: string) => console.log(JSON.stringify({ t: new Date().toISOString(), actor, why }));
 
 const registry: Record<string, () => void> = {
   "chain-head": () => runActor({ name: "chain-head", log: log("chain-head"), dryRun: env.dryRun, everyMs: CHAIN_HEAD_EVERY_MS, pass: chainHeadPass(env) }),
+  // Signs nothing, so it runs regardless of DRY_RUN; it only needs DATABASE_URL.
+  archive: () => runActor({ name: "archive", log: log("archive"), dryRun: false, everyMs: ARCHIVE_EVERY_MS, pass: archivePass(createSql()) }),
 };
 
 try {
+  if (process.env.DATABASE_URL) {
+    const sql = createSql();
+    const applied = await runMigrations(sql);
+    await sql.end();
+    console.log(`[ops] migrations: ${applied.length ? applied.join(", ") : "up to date"}`);
+  }
   const wanted = env.actors.length ? env.actors : Object.keys(registry);
   for (const name of wanted) {
     const start = registry[name];

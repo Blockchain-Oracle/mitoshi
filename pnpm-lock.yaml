@@ -226,6 +226,9 @@ importers:
       '@cwf/core':
         specifier: workspace:*
         version: link:../packages/core
+      '@cwf/db':
+        specifier: workspace:*
+        version: link:../packages/db
       '@cwf/markets':
         specifier: workspace:*
         version: link:../packages/markets
