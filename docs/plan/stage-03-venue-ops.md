@@ -10,6 +10,8 @@
   `STREAM_TICKET_SECRET`) passed as a query param, since EventSource can't send headers; exact-origin CORS without
   credentials; `: ping` every 15 s; `Last-Event-ID` resume), funds-watch.
 - [x] `scripts/drive/{recount,halt-replay}.ts`. Src: Agari `scripts/drive/recount.ts`.
+- [x] S3.11 voided Windows fixed: Tempo HTTP transport without JSON-RPC batching + 8 KB Multicall3 chunks (D-130); a
+  failed read or send is never a finished Window (D-131); roll rules unchanged (D-132); `scripts/drive/rpc-load.ts`.
 - **Gate:** 24 h unattended across a US session and a crypto overnight (open, print, settle, auto-pay); recount ==
   index; recorded halts replayed; Gap proven over the first Friday close → Monday open after the gate (dates recorded in acceptance).
   **Rows:** M-06, M-07, M-08, G-03 (ops), G-07, G-12, G-13, G-14, G-15, L-73, UX-03 (ops stream).
@@ -40,6 +42,17 @@
 - **F-S3-08 (ops routes).** The Coolify Postgres is internal, so the gate scripts read ops' public routes
   (`/index/recount`, `/halts/log`; D-092). The web `/api/index/*` is on this branch and serves once the web app
   deploys a trunk containing S3 (touching only `web/src/app/api/index/**` and `web/src/lib/index-*.ts`).
+- **F-S3-09 (S3.11, voids).** 391 of 632 Windows of the first soak voided (61.9 %; 93 % from 08:45Z). Cause: the
+  public RPC refuses a JSON-RPC batch over a small weight budget (9 `eth_call`s → 413) and answers a rate-limited batch
+  with one object; viem's process-wide batch scheduler put every actor's requests into one batch and threw `reading
+  'error'` for all of them. Opens, prints and quotes failed together at every busy boundary. No void was "expected":
+  nothing opened out of session or without a signed source (D-132). Fix D-130; acceptance/S3.md S3.11.
+- **F-S3-10 (S3.11, give-up).** The relay wrote a slot off after 5 failed sends even when none reached the engine
+  (≈ 15 s of a 900 s admission), and a rate-limited `fetchMarkets` chunk read as "no Window", which advanced the relay
+  past Windows it never read. Both fixed (D-131).
+- **F-S3-11 (S3.11, CORS).** The stream and price routes already answer exact-origin CORS for `https://testnet.mitoshi.xyz`
+  and `http://localhost:3000` on testnet (no credentials, D-049; live probe 11:46Z: both echoed, `https://evil.example`
+  gets none). An origin outside the list gets no header by design; `OPS_CORS_ORIGINS` overrides. Test added.
 
 ## Handoff
 

@@ -1,7 +1,8 @@
 /**
  * Venue reads for the ops actors (plan C.2.5 lens views): the deployed engine and lens from the generated fragments,
  * every Series with its dated policy versions, and Windows by id with their four prints decoded. Batched through
- * Multicall3 with per-call failure (an unknown market reads as null, never a thrown pass). Replaces Agari
+ * Multicall3 with per-call failure: an unknown market (the lens reverts `UnknownMarket`) reads as null; a failed RPC
+ * read throws, so an actor never mistakes an unread Window for a missing one (D-131). Replaces Agari
  * 03b30ab:packages/markets/src/ops/{venue,accounts}.ts (Solana account fetches → EngineLens `extsload` views).
  */
 import { encodeAbiParameters, getAddress, keccak256, type Address, type Hex } from "viem";
@@ -9,6 +10,7 @@ import { deployments } from "@cwf/clients";
 import { engineLensAbi } from "@cwf/clients/abis/EngineLens";
 import { TICKERS, tickerById, type LaneBasis, type TickerSymbol } from "@cwf/core";
 import type { OpsClient } from "./client";
+import { engineErrorName } from "./send";
 
 export interface Venue {
   chainId: number;
@@ -215,7 +217,11 @@ function marketView(id: Hex, m: RawMarket): MarketView {
 export async function fetchMarkets(client: OpsClient, venue: Venue, ids: readonly Hex[]): Promise<Array<MarketView | null>> {
   if (ids.length === 0) return [];
   const res = await client.public.multicall({ contracts: ids.map((id) => ({ address: venue.lens, abi: engineLensAbi, functionName: "marketOf" as const, args: [id] as const })), allowFailure: true });
-  return res.map((r, i) => (r.status === "success" ? marketView(ids[i]!, r.result as unknown as RawMarket) : null));
+  return res.map((r, i) => {
+    if (r.status === "success") return marketView(ids[i]!, r.result as unknown as RawMarket);
+    if (engineErrorName(r.error) === "UnknownMarket") return null;
+    throw new Error(`marketOf ${ids[i]} not read: ${r.error instanceof Error ? r.error.message.split("\n")[0] : String(r.error)}`);
+  });
 }
 
 export interface PositionView {

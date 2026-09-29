@@ -3,7 +3,8 @@
  * One price-relay pass: the Windows that still owe prints (per Series `[lowIndex, nextIndex)`, 8 back at most), their
  * empty slots on the chain clock, then per slot: copy the open from the previous close when the engine allows it (E-48),
  * else build the source's proof and `recordPrint`. Check slots first (their window closes at T + checkAdmission).
- * A slot past its deadline is reported missed once; the settler voids the Window.
+ * A slot past its deadline, or refused by the engine `MAX_FAILED_ATTEMPTS` times, is reported missed once; the settler
+ * voids the Window. Transport failures never count toward giving up (D-131).
  */
 import { copyOpenFromPrevCall, fetchMarkets, fetchSeries, listSeries, marketIdOf, OpsSendError, recordPrintCall, sendOps, type MarketView, type OpsClient, type SeriesView, type Venue } from "@cwf/markets/ops";
 import type { PassResult } from "../../runtime/actor";
@@ -78,6 +79,13 @@ function reportMissed(st: RelayState, slot: PrintSlot) {
 
 type Job = { slot: PrintSlot; prev: MarketView | null; copy: boolean };
 
+/**
+ * Whether a failed send is the chain's answer (an engine error, or a mined revert) and so counts toward giving the slot
+ * up. A transport failure (RPC 413/429/5xx, timeout) never reached the engine: the slot is retried every pass until
+ * its deadline, never written off early (D-131).
+ */
+export const chainRefused = (error: unknown): boolean => error instanceof OpsSendError && (error.errorName !== null || error.txHash !== null);
+
 async function run(st: RelayState, job: Job, nowSec: number): Promise<string> {
   const { slot } = job;
   const key = slotKey(slot);
@@ -112,7 +120,7 @@ async function run(st: RelayState, job: Job, nowSec: number): Promise<string> {
     }
     if (name === "PrintTooEarly") return `${label(slot)} too early (chain clock)`;
     const prev = st.failures.get(key)?.attempts ?? 0;
-    st.failures.set(key, { attempts: prev + 1, reason: errorText(error).slice(0, 300) });
+    st.failures.set(key, { attempts: prev + (chainRefused(error) ? 1 : 0), reason: errorText(error).slice(0, 300) });
     st.counters.failed++;
     return `${label(slot)} failed (${name ?? "no engine error"}): ${errorText(error).slice(0, 160)}`;
   }

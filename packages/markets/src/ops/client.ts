@@ -4,11 +4,12 @@
  * transactions paying fees in pathUSD. Without a key the client reads only and every send refuses (the actor is dry).
  * Ported in shape from Agari 03b30ab:packages/markets/src/ops/client.ts (`createOpsClient`), Solana RPC → viem.
  */
-import { createPublicClient, createWalletClient, http, type Account, type Address, type Hex, type PublicClient, type Transport, type WalletClient } from "viem";
+import { createPublicClient, createWalletClient, type Account, type Address, type Hex, type PublicClient, type Transport, type WalletClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { UTILITIES } from "@cwf/clients";
 import { NETWORKS, TEMPO_RPC_HTTP, type Network } from "@cwf/core";
 import { tempoChain, type TempoChain } from "../chains";
+import { MULTICALL_CHUNK_BYTES, tempoHttp } from "../rpc-http";
 
 export interface OpsClient {
   network: Network;
@@ -26,12 +27,15 @@ export interface OpsClientInput {
   rpcUrl?: string;
   /** 0x-prefixed secp256k1 key; never logged. */
   privateKey?: Hex | null;
+  /** Tests: the fetch the transport sends through. */
+  fetchFn?: typeof fetch;
 }
 
 export function createOpsClient(input: OpsClientInput): OpsClient {
   const chain = tempoChain(input.network);
-  const transport = http(input.rpcUrl || TEMPO_RPC_HTTP[input.network], { batch: { wait: 10 }, retryCount: 3, timeout: 30_000 });
-  const pub = createPublicClient({ chain: { ...chain, contracts: { ...chain.contracts, multicall3: { address: UTILITIES.multicall3 as Address } } }, transport, batch: { multicall: { wait: 10 } } }) as unknown as PublicClient;
+  // No JSON-RPC batching: the public RPC refuses batches over a small weight budget, whole (D-130, `../rpc-http`).
+  const transport = tempoHttp(input.rpcUrl || TEMPO_RPC_HTTP[input.network], input.fetchFn ? { fetchFn: input.fetchFn } : {});
+  const pub = createPublicClient({ chain: { ...chain, contracts: { ...chain.contracts, multicall3: { address: UTILITIES.multicall3 as Address } } }, transport, batch: { multicall: { wait: 10, batchSize: MULTICALL_CHUNK_BYTES } } }) as unknown as PublicClient;
   const account = input.privateKey ? privateKeyToAccount(input.privateKey) : null;
   const wallet = account ? createWalletClient({ account, chain, transport }) : null;
   return { network: input.network, chainId: NETWORKS[input.network], chain, public: pub, wallet, address: account?.address ?? null };
