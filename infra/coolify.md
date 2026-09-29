@@ -14,7 +14,7 @@ Apps are public through Coolify's proxy on 80/443.
 | testnet | `mitoshi-testnet-redis` | Redis (passkey challenges, sessions; replaces Upstash) | `3mpjtxc1cofmctbfnufzjwvg` | internal only |
 | mainnet | web, ops, Postgres, Redis | created at S19 with the owner's go | — | `https://mitoshi.xyz`, `ops.mitoshi.xyz`, `stream.mitoshi.xyz` |
 
-Until the domain exists, apps answer on Coolify's `*.84.46.247.92.sslip.io` addresses. Passkey rpId = `mitoshi.xyz`
+`mitoshi.xyz` registered 2026-09-29 (Namecheap BasicDNS; A `@`, `www`, `testnet`, `*.testnet`, `ops`, `stream` → 84.46.247.92). Testnet apps carry their domains; certificates issue once DNS propagates. The `sslip.io` addresses remain as fallbacks. Passkey rpId = `mitoshi.xyz`
 (both networks), so the S1 passkey gate needs the real domain.
 
 Source: private repo `Blockchain-Oracle/mitoshi`, branch `integration/t1`, read-only deploy key `mitoshi-deploy-key`
