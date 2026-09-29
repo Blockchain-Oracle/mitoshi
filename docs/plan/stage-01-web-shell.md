@@ -1,6 +1,6 @@
 # S1 — Web shell, accounts, relay, geofence (wave 1)
 
-- [ ] 1a core: port Masayume `packages/core/src/**` minus Somnia modules (C.2.1 list); add Agari
+- [x] 1a core: port Masayume `packages/core/src/**` minus Somnia modules (C.2.1 list); add Agari
   `packages/core/src/{market,orders,reserves,auth,types/session-lanes}`; types per C.2.1 (drop poolAddress/nonce/token
   ids/venueId; `MarketStatus` clock-derived); calendar = RedStone `NY_MARKET_NEXT_CHANGE_TIME` ∩ Alpaca; tickers 9 names +
   SPCX + BTC/ETH/SOL; stubs `stocks/ bridge/ themes/ launch/` with vectors.
@@ -65,7 +65,18 @@
 
 ## Findings
 
-_None yet._
+- **1a core — identities S2 must share.** `packages/core/src/market/tickers.ts` fixes the engine's `uint16 ticker`
+  numbers (TSLA 1 … AMD 9, SPCX 10, BTC 101, ETH 102, SOL 103) and `types/market.ts` fixes the `uint8 basis` order
+  (`regular` 0, `gap` 1, `crypto24` 2, `stock24` 3) and the print-source numbers (RedStone 2, Attested 4, Data Streams
+  5, engine A.1.2). S2.11's `venue-spec.json` and `RegisterSeries` must read these, not restate them.
+- **1a core — sources.** Agari (03b30ab) supplies `lifecycle/` too: its `market/` depends on the lock-aware phase
+  (`lockAtSec`, `isStalledOpening`). Agari's Solana-only modules are not carried: `pyth-schedule` (replaced by
+  `redstone-schedule.ts`, the `NY_MARKET_NEXT_CHANGE_TIME` ∩ Alpaca agreement), `baskets`, `valuation`, `premium`,
+  `testing/ids` (base58; replaced by `testing/fixtures.ts`). `book.vectors.json` is Agari's slot-based file, kept until
+  S2.8 regenerates it in seconds.
+- **1a core — halts.** Pyth/Switchboard/issuer signals become RedStone freshness + signer count, Data Streams freshness
+  + `marketStatus`, and the exchange's tradable flag; "Trading halted" only for the exchange halt or a closed-market
+  report (Q-S6-9 grammar kept).
 
 ## Handoff
 

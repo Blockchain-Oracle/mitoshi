@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Pure domain logic: markets, orders, units, tx lifecycle, shell protocol. No I/O.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./*": "./src/*/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"
@@ -17,5 +18,6 @@
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
-  }
+  },
+  "sideEffects": false
 }

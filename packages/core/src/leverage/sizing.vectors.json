@@ -1,0 +1,288 @@
+{
+  "note": "Shared golden vectors for the boost's arithmetic. ONE = 1e6; levels are the venue's YES terms (invert = a NO taker, priced one \u2212 level). Both forge (contracts/test/LeverageVectors.t.sol, over LeverageMath) and vitest (sizing.test.ts beside this file, over the mirror) assert every row: the size a stake affords, the cost and limit of that size, and the terms behind the cost (stake + fronted \u2212 premium == cost).",
+  "count": 10,
+  "vectors": [
+    {
+      "name": "10 at 2x buys 32 at 0.60 exactly",
+      "leverageBps": 20000,
+      "premiumBps": 800,
+      "stake": "10000000",
+      "invert": false,
+      "lot": "10000",
+      "levels": [
+        {
+          "price": "600000",
+          "quantity": "300000000"
+        },
+        {
+          "price": "620000",
+          "quantity": "300000000"
+        }
+      ],
+      "expect": {
+        "budget": "19200000",
+        "quantityRaw": "32000000",
+        "costRaw": "19200000",
+        "filledRaw": "32000000",
+        "limitYesRaw": "600000",
+        "stake": "10000000",
+        "fronted": "10000000",
+        "premium": "800000",
+        "winIfRight": "22000000"
+      }
+    },
+    {
+      "name": "10 at 3x floors to the lot and the stake follows",
+      "leverageBps": 30000,
+      "premiumBps": 800,
+      "stake": "10000000",
+      "invert": false,
+      "lot": "10000",
+      "levels": [
+        {
+          "price": "600000",
+          "quantity": "300000000"
+        },
+        {
+          "price": "620000",
+          "quantity": "300000000"
+        }
+      ],
+      "expect": {
+        "budget": "28400000",
+        "quantityRaw": "47330000",
+        "costRaw": "28398000",
+        "filledRaw": "47330000",
+        "limitYesRaw": "600000",
+        "stake": "9999295",
+        "fronted": "19998592",
+        "premium": "1599887",
+        "winIfRight": "27331408"
+      }
+    },
+    {
+      "name": "DOWN takes the bids inverted: NO at 0.42",
+      "leverageBps": 20000,
+      "premiumBps": 800,
+      "stake": "10000000",
+      "invert": true,
+      "lot": "10000",
+      "levels": [
+        {
+          "price": "580000",
+          "quantity": "300000000"
+        },
+        {
+          "price": "550000",
+          "quantity": "300000000"
+        }
+      ],
+      "expect": {
+        "budget": "19200000",
+        "quantityRaw": "45710000",
+        "costRaw": "19198200",
+        "filledRaw": "45710000",
+        "limitYesRaw": "580000",
+        "stake": "9999062",
+        "fronted": "9999063",
+        "premium": "799925",
+        "winIfRight": "35710937"
+      }
+    },
+    {
+      "name": "200 at 3x walks into the second ask",
+      "leverageBps": 30000,
+      "premiumBps": 800,
+      "stake": "200000000",
+      "invert": false,
+      "lot": "10000",
+      "levels": [
+        {
+          "price": "600000",
+          "quantity": "300000000"
+        },
+        {
+          "price": "620000",
+          "quantity": "300000000"
+        }
+      ],
+      "expect": {
+        "budget": "568000000",
+        "quantityRaw": "600000000",
+        "costRaw": "366000000",
+        "filledRaw": "600000000",
+        "limitYesRaw": "620000",
+        "stake": "128873238",
+        "fronted": "257746480",
+        "premium": "20619718",
+        "winIfRight": "342253520"
+      }
+    },
+    {
+      "name": "no premium: the whole notional deploys",
+      "leverageBps": 20000,
+      "premiumBps": 0,
+      "stake": "5000000",
+      "invert": false,
+      "lot": "10000",
+      "levels": [
+        {
+          "price": "600000",
+          "quantity": "300000000"
+        },
+        {
+          "price": "620000",
+          "quantity": "300000000"
+        }
+      ],
+      "expect": {
+        "budget": "10000000",
+        "quantityRaw": "16660000",
+        "costRaw": "9996000",
+        "filledRaw": "16660000",
+        "limitYesRaw": "600000",
+        "stake": "4998000",
+        "fronted": "4998000",
+        "premium": "0",
+        "winIfRight": "11662000"
+      }
+    },
+    {
+      "name": "a 15% premium at 3x",
+      "leverageBps": 30000,
+      "premiumBps": 1500,
+      "stake": "1000000",
+      "invert": false,
+      "lot": "10000",
+      "levels": [
+        {
+          "price": "600000",
+          "quantity": "300000000"
+        },
+        {
+          "price": "620000",
+          "quantity": "300000000"
+        }
+      ],
+      "expect": {
+        "budget": "2700000",
+        "quantityRaw": "4500000",
+        "costRaw": "2700000",
+        "filledRaw": "4500000",
+        "limitYesRaw": "600000",
+        "stake": "1000000",
+        "fronted": "2000000",
+        "premium": "300000",
+        "winIfRight": "2500000"
+      }
+    },
+    {
+      "name": "a thin book caps the size at what rests",
+      "leverageBps": 20000,
+      "premiumBps": 800,
+      "stake": "50000000",
+      "invert": false,
+      "lot": "10000",
+      "levels": [
+        {
+          "price": "600000",
+          "quantity": "20000000"
+        }
+      ],
+      "expect": {
+        "budget": "96000000",
+        "quantityRaw": "20000000",
+        "costRaw": "12000000",
+        "filledRaw": "20000000",
+        "limitYesRaw": "600000",
+        "stake": "6250000",
+        "fronted": "6250000",
+        "premium": "500000",
+        "winIfRight": "13750000"
+      }
+    },
+    {
+      "name": "a whole-contract lot floors harder",
+      "leverageBps": 20000,
+      "premiumBps": 800,
+      "stake": "10000000",
+      "invert": false,
+      "lot": "1000000",
+      "levels": [
+        {
+          "price": "600000",
+          "quantity": "300000000"
+        },
+        {
+          "price": "620000",
+          "quantity": "300000000"
+        }
+      ],
+      "expect": {
+        "budget": "19200000",
+        "quantityRaw": "32000000",
+        "costRaw": "19200000",
+        "filledRaw": "32000000",
+        "limitYesRaw": "600000",
+        "stake": "10000000",
+        "fronted": "10000000",
+        "premium": "800000",
+        "winIfRight": "22000000"
+      }
+    },
+    {
+      "name": "a small stake",
+      "leverageBps": 20000,
+      "premiumBps": 800,
+      "stake": "370000",
+      "invert": false,
+      "lot": "10000",
+      "levels": [
+        {
+          "price": "600000",
+          "quantity": "300000000"
+        },
+        {
+          "price": "620000",
+          "quantity": "300000000"
+        }
+      ],
+      "expect": {
+        "budget": "710400",
+        "quantityRaw": "1180000",
+        "costRaw": "708000",
+        "filledRaw": "1180000",
+        "limitYesRaw": "600000",
+        "stake": "368750",
+        "fronted": "368750",
+        "premium": "29500",
+        "winIfRight": "811250"
+      }
+    },
+    {
+      "name": "near the top of the band at 2x",
+      "leverageBps": 20000,
+      "premiumBps": 800,
+      "stake": "10000000",
+      "invert": false,
+      "lot": "10000",
+      "levels": [
+        {
+          "price": "940000",
+          "quantity": "300000000"
+        }
+      ],
+      "expect": {
+        "budget": "19200000",
+        "quantityRaw": "20420000",
+        "costRaw": "19194800",
+        "filledRaw": "20420000",
+        "limitYesRaw": "940000",
+        "stake": "9997291",
+        "fronted": "9997292",
+        "premium": "799783",
+        "winIfRight": "10422708"
+      }
+    }
+  ]
+}

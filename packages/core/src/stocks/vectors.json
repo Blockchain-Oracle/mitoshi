@@ -1,0 +1,12 @@
+{
+  "_doc": "Stock-token unit vectors (S1 stub; S14w adds sync and reserve cases). CRWD mainnet multiplier 4e18 per docs/specs/pillar2.md B.1.",
+  "multiplier": [
+    { "raw": "1000000", "multiplierE18": "1000000000000000000", "ui": "1000000", "rawBack": "1000000" },
+    { "raw": "1000000", "multiplierE18": "4000000000000000000", "ui": "4000000", "rawBack": "1000000" },
+    { "raw": "333333", "multiplierE18": "1500000000000000000", "ui": "499999", "rawBack": "333333" },
+    { "raw": "1", "multiplierE18": "3000000000000000000", "ui": "3", "rawBack": "1" }
+  ],
+  "tokenPrice": [
+    { "sharePriceE18": "250000000000000000000", "multiplierE18": "4000000000000000000", "tokenPriceE18": "1000000000000000000000" }
+  ]
+}
