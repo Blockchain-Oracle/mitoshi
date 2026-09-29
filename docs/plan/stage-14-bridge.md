@@ -9,7 +9,7 @@
 - [x] 14c.9 `script/stocks/IssueMirrors.s.sol` (B.2) for TSLA, AMZN, PLTR, NFLX, AMD on Moderato.
 - [ ] 14c.10 Deploy + `EnsureLzConfig` / `CheckLzConfig` per network (B.1.5 table); fragments `46630/84532/42431`.
 - [x] 14c.11 Invariants (direct + hop: locked == supply + deferred + in flight + owed); sizes both profiles.
-- [ ] 14c.12 Forks: RH testnet lock/unlock; Base hop; Moderato adapter (real LZD wrap, fresh-address mint gas); RH
+- [x] 14c.12 Forks: RH testnet lock/unlock; Base hop; Moderato adapter (real LZD wrap, fresh-address mint gas); RH
   mainnet CRWD multiplier (effectiveAt 1782999000).
 - [ ] 14c.13 Owner-approved outreach: LayerZero direct 40451↔40444 request; Wormhole plan-B probe.
 - [ ] 14o ops `stock-sync`, `reserve-watch`, `bridge-watch`; migrations `bridge_messages`, `reserve_snapshots`,
@@ -68,6 +68,14 @@
 - **F14-12 Invariants:** direct path on a Moderato fork (real TIP-20 + LZD; `LockboxAlt` differs only in paying LZD) —
   24 runs × 24 calls, conservation / outstanding bound / no unbacked mint + `afterInvariant` settle-and-redeem-everyone
   empties the lockbox; hop path (evm) — 48 × 30 incl. bounces and owed. Both green.
+- **F14-13 Forks (live contracts, read-only):** RH testnet — lock through the live endpoint 0.000103 ETH to Base,
+  unlock of real faucet TSLA 105k gas (MIN_UNLOCK_GAS 120k + 150k enforced OK), testnet Stock flags = token-paused
+  supported only. Base Sepolia — deployed TransitTSLA/HopComposerTSLA: compose + onward send **319k gas** (< the 400k
+  budget), onward Base → Moderato fee at 1M gas **0.000111 ETH**, empty float leaves the compose stored. Moderato —
+  deployed AdapterTSLA: fresh-holder credit **582k**, warm 84k (D-080's 1M holds); bridge back via the hop 0.219679 LZD
+  paid in pathUSD, packet emitted by the live endpoint. RH mainnet — CRWD `uiMultiplier` 4e18 / pending 4e18 /
+  `effectiveAt` 1782999000, oracle supported; the default config is flagged (unpinned, dead DVN), the B.1.5 mainnet row
+  applies to the real Uln302s and checks clean; RH → Tempo sync fee for one token 0.0000918 ETH.
 
 ## Handoff
 

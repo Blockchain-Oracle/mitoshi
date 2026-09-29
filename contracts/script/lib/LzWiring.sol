@@ -130,6 +130,17 @@ abstract contract LzWiring is Script {
         if (rlib != local.receiveLib) f += _fail(l, "receive library differs");
         f += _checkUln(l, IUlnView(local.receiveLib).getAppUlnConfig(l.oapp, l.remoteEid), _uln(local.dvns, remote.confirmations), "receive");
         if (IWiredOApp(l.oapp).peers(l.remoteEid) != _peer(l.remotePeer)) f += _fail(l, "peer differs");
+        // the *effective* config (app config merged over LayerZero's default) must never route through a dead DVN
+        if (l.sends) f += _checkDead(l, ep.getConfig(l.oapp, local.sendLib, l.remoteEid, CONFIG_ULN), "send effective");
+        f += _checkDead(l, ep.getConfig(l.oapp, local.receiveLib, l.remoteEid, CONFIG_ULN), "receive effective");
+    }
+
+    function _checkDead(Link memory l, bytes memory cfg, string memory side) internal pure returns (uint256 f) {
+        UlnConfig memory u = abi.decode(cfg, (UlnConfig));
+        address[5] memory dead = LzNetworks.deadDvns();
+        for (uint256 i; i < u.requiredDVNs.length; i++) {
+            for (uint256 j; j < 5; j++) if (u.requiredDVNs[i] == dead[j]) f += _fail(l, string.concat(side, ": dead DVN"));
+        }
     }
 
     function _checkUln(Link memory l, UlnConfig memory got, UlnConfig memory want, string memory side)
