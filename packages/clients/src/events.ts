@@ -105,6 +105,27 @@ export const events = {
     "SyncIgnored(bytes32,address,uint8)",
     "TokenBound(address,address,address)"
   ],
+  "ThemeRegistry": [
+    "AgentSet(uint64,uint256)",
+    "Delisted(uint64,bool)",
+    "GuardSet(address)",
+    "OwnershipTransferStarted(address,address)",
+    "OwnershipTransferred(address,address)",
+    "ThemePublished(uint64,address,uint32,bytes32,string)",
+    "TokenPoolSet(address,bytes32,tuple)"
+  ],
+  "ThemeRouter": [
+    "CapsUpdated(address,uint64,tuple)",
+    "FeesClaimed(address,uint256)",
+    "Followed(address,uint64,uint32,address,tuple)",
+    "OracleSet(address)",
+    "OwnershipTransferStarted(address,address)",
+    "OwnershipTransferred(address,address)",
+    "ProofSelectorSet(bytes4,bool)",
+    "ProofTargetSet(address)",
+    "Rebalanced(address,uint64,bytes32,uint32,address,uint256,uint256)",
+    "Unfollowed(address,uint64)"
+  ],
   "IPoolManager": [
     "Approval(address,address,uint256,uint256)",
     "Donate(bytes32,address,uint256,uint256)",

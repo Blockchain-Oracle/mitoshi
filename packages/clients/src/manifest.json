@@ -5,6 +5,7 @@
     "42431/launch",
     "42431/lz",
     "42431/stocks",
+    "42431/themes",
     "42431/v4",
     "84532/lz",
     "84532/stocks"
@@ -33,6 +34,8 @@
     "StockSyncForwarder",
     "StockSyncReceiver",
     "TIP20MintBurnAdapter",
+    "ThemeRegistry",
+    "ThemeRouter",
     "TransitOFT"
   ]
 }

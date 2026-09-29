@@ -438,8 +438,8 @@ own batch, **17.43M** as a tx-level `key_authorization`; a 1-token key costs 7.3
 next block. Prompts: the `key_authorization` field needs the root to sign the authorization digest **and** the tx (two
 passkey prompts); `authorizeKey` as a batch call needs one. So:
 1. **Follow = one root-signed, relay-sponsored tx `[AccountKeychain.authorizeKey(keyId, secp256k1, restrictions),
-   ThemeRouter.follow(...)]` — one prompt** — for themes with ≤ 5 tokens (all testnet themes, Q-004; ≈ 18.7M with
-   `follow`). The tx-level `key_authorization` shape is not used (same gas, one more prompt).
+   ThemeRouter.follow(...)]` — one prompt** — for themes with ≤ 5 tokens (all testnet themes, Q-004; `follow`
+   itself measured 0.93M on a Moderato fork against the deployed router → ≈ 18.4M per follow tx). The tx-level `key_authorization` shape is not used (same gas, one more prompt).
 2. **Past 5 tokens** (tokenCount ≤ 16; 16 tokens ≈ 45M), split: tx 1 = `[authorizeKey(all limits; router + pathUSD +
    the first 5 token scopes), follow]`, tx 2+ = `setAllowedCalls` chunks of ≤ 5 targets (≈ 10.2M each; one prompt
    each). `follow` therefore checks that every scope present is allowed (subset), not that all theme tokens are
