@@ -1,0 +1,23 @@
+{
+  "name": "@cwf/brain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Model routing and agent reasoning (server-side; fetch only).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@cwf/core": "workspace:*",
+    "ai": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

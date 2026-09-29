@@ -1,0 +1,21 @@
+{
+  "name": "@cwf/clients",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Generated ABIs, deployments and pinned addresses (pnpm codegen).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "viem": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

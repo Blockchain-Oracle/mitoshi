@@ -8,7 +8,7 @@
 - [x] S0.3 Root: `package.json`, `pnpm-workspace.yaml` (catalog C.1.3; workspace includes `mobile`, whose Expo-pinned
   React/RN versions live in a named `mobile` catalog, D.1), `tsconfig.base.json`, `vitest.config.ts`, `.nvmrc` 24,
   `.gitignore`, `THIRD_PARTY_NOTICES.md`. Src: Masayume root.
-- [ ] S0.4 Scaffolds: `packages/{core,markets,brain,db,clients}`, `services/ops` (hello `runActor` + `/health`),
+- [x] S0.4 Scaffolds: `packages/{core,markets,brain,db,clients}`, `services/ops` (hello `runActor` + `/health`),
   `web` (hello + `/api/health`), `scripts/{codegen,invariants,keys,deploy,drive,archive,e2e}`.
 - [ ] S0.5 `contracts/`: `foundry.toml` (default Tempo, `evm`, `ci`, `invariant` profiles, rpc endpoints), all libs
   (forge-std, tempo-std@b9860ac, OZ 5.x + upgradeable, solady, OZ uniswap-hooks@2ae32be, v4-core@46c6834 +

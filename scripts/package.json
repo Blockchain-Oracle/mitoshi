@@ -1,0 +1,19 @@
+{
+  "name": "@cwf/scripts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "echo 'scripts: typechecked per tool'"
+  },
+  "dependencies": {
+    "@cwf/core": "workspace:*",
+    "@cwf/markets": "workspace:*",
+    "viem": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

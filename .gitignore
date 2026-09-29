@@ -38,3 +38,4 @@ mobile/.expo/
 
 # OS
 .DS_Store
+next-env.d.ts
