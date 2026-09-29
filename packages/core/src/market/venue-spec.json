@@ -1,0 +1,33 @@
+{
+  "_doc": "The engine venue every deploy ensures (S2.11; engine spec A.1.7/A.2; engine-gas.md). Read by contracts/script/{DeployEngine,RegisterSeries}.s.sol and by the app. Amounts are base units of 6-dp pathUSD; times are seconds. Ported from Agari 03b30ab packages/markets/src/deploy/venue-spec.ts (LAUNCH_GRID), seats/bonds dropped (A.1.6), slots → seconds.",
+  "collateral": "0x20C0000000000000000000000000000000000000",
+  "grid": {
+    "lotBase": 1000,
+    "tickBase": 1000,
+    "minLots": 1000,
+    "minRestSec": 20,
+    "maxLeadSec": 400000,
+    "fillsCap": 16,
+    "evictionsCap": 16
+  },
+  "redstone": {
+    "signers": [
+      "0xdEB22f54738d54976C4c0fe5ce6d408E40d88499",
+      "0xDD682daEC5A90dD295d14DA4b0bec9281017b5bE",
+      "0x51Ce04Be4b3E32572C4Ec9135221d0691Ba7d202",
+      "0x9c5AE89C4Af6aA32cE58588DBaF90d18a855B6de",
+      "0x8BB8F32Df04c8b654987DAaeD53D6B6091e3B774"
+    ],
+    "threshold": 3,
+    "strictSec": 300,
+    "admissionSec": 900
+  },
+  "check": { "admissionSec": 120, "maxDivergenceBps": 25 },
+  "dataStreams": { "proxy": { "4217": "0xcE73c8ad08CBDEaCa6078BF0627C8fe0a9a536E7", "42431": "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64" } },
+  "nodesReserved": 32,
+  "series": [
+    { "key": "BTC-5m", "symbol": "BTC", "ticker": 101, "basis": 2, "cadenceSec": 300, "redstoneFeed": "BTC" },
+    { "key": "ETH-5m", "symbol": "ETH", "ticker": 102, "basis": 2, "cadenceSec": 300, "redstoneFeed": "ETH" },
+    { "key": "SOL-5m", "symbol": "SOL", "ticker": 103, "basis": 2, "cadenceSec": 300, "redstoneFeed": "SOL" }
+  ]
+}

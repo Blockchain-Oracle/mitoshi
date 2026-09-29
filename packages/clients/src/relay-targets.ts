@@ -2,6 +2,16 @@
 /** Contract addresses per chain and area; relay policies allowlist from here. */
 export const relayTargets = {
   "42431": {
+    "engine": [
+      "0x295Bba557cB1BF159Fdb9A62AB399b0012b12526",
+      "0xCa30Dd5b56C80757a7cd121cab75B06c39861585",
+      "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+      "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+      "0x38Ad9Fe54b3b271f737CdC231d7B85b1616A1377",
+      "0x1af066e5133285acf151cc1282e1a5fd23888e28",
+      "0xc33df633b43e47e2aa0f8302611141737c89daf3",
+      "0xb8dceeaf9bdb5fffde6cbb05abb946102f3132b1"
+    ],
     "launch": [
       "0x9b664B9B73497Aa140EdA23a81fCC3db279c50b7"
     ],

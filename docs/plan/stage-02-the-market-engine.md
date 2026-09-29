@@ -26,7 +26,7 @@
   `matching/tests/{random,support}.rs`.
 - [x] S2.10 Gas + sizes: `Gas.t.sol` for every A.1.7 row, cold vs credit, via gas snapshot cheatcodes (per-tx under Foundry isolation) and `--gas-snapshot-check` in CI; Moderato measurements; set `fillsCap` and walk
   `maxNodes`; `docs/specs/engine-gas.md`.
-- [ ] S2.11 Deploy: `script/{DeployEngine,RegisterSeries,ReserveNodes}.s.sol` (ensure-style, fails on drift;
+- [x] S2.11 Deploy: `script/{DeployEngine,RegisterSeries,ReserveNodes}.s.sol` (ensure-style, fails on drift;
   `packages/core/src/market/venue-spec.json`: lot = tick = 1000, minLots 1000, minRest 20 s, maxLead 400,000, caps
   16/16, RedStone strict 300 / admission 900 / threshold 3, check admission 120, divergence 25 bp);
   `deployments/42431/engine.json`.
@@ -145,7 +145,19 @@
   caps stay 16/16 (worst placement ≈ 1.95M gross ≪ 30M), on-chain walks use `maxNodes = 64`, the house reserves the
   pool at deploy. Table and reasoning: `docs/specs/engine-gas.md`; the Moderato receipts of the S2.12 drive add the
   tx-level column.
+- **F-S2-17 (S2.11, deploy).** Forge deploys a script's linked libraries up front (CREATE2 through the deterministic
+  deployer, so addresses are stable), so the ensure flow is `scripts/deploy/engine.sh`: `DeployEngine` only when no
+  fragment exists, then `EnsureEngine` (read-only; fails on any drift from `venue-spec.json` and the roles),
+  `RegisterSeries` and `ReserveNodes` (create what is missing, fail on drift). Proven on a local
+  `anvil --network tempo` Moderato fork first (idempotent rerun = no transactions; a wrong roller and a changed grid
+  both fail loudly), then run on Moderato (acceptance/S2.md, 17 receipts). `finalize.ts` now locates contracts only in
+  CREATE/CREATE2 transactions (a CALL's `contractAddress` is its target — it had overwritten the engine's deploy block)
+  and records the linked libraries. Crypto Series tickers are 101/102/103 (BTC/ETH/SOL; Agari's registry numbers
+  stocks 1–10 and drive Series 900+), basis Token 24/7, 5 m, RedStone primary, no check source on testnet (Data
+  Streams needs credentials on Moderato, Q-011). The pool is reserved to 32 nodes. `relay/policies/engine.ts`
+  sponsors a holder's own trading and exits, never the admin/roller surface, and leaves capital intake (`mintSet`)
+  and keeper calls unsponsored; S4 owns the final list.
 
 ## Handoff
 
-S2.0–S2.10 done. Next: S2.11 deploy scripts.
+S2.0–S2.11 done; the venue is live on Moderato (`contracts/deployments/42431/engine.json`). Next: S2.12 fork + live drive.
