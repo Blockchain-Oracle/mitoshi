@@ -40,4 +40,22 @@
 
 ## Handoff
 
-_Not started._
+**15a done** (branch `stage/S15a-v4`, commit `5831130`; evidence `acceptance/S15.md`).
+- Uniswap v4 lives on Moderato at the mainnet addresses (`packages/clients/src/addresses/v4.ts` → `V4[42431]`,
+  fragment `deployments/42431/v4.json`, ABIs from MIT interfaces + `src/v4/IUniversalRouter.sol`). Replay provenance
+  in `V4_REPLAY`; re-verify any time with `tsx scripts/v4/verify-replay.ts --no-write` and
+  `forge test --match-path "test/fork/v4/*"` (needs network; mainnet read-only).
+- The one encoder: `@cwf/markets/v4` (`packages/markets/src/v4/encode.ts`) — periphery #497 layout (D-064). Use
+  `swapExactInSingle` / `swapExactIn` (output always TAKE_ALL to msg.sender), `initializeAndMint` for pool bootstrap
+  (15c, 17b graduation), `poolKey`/`poolId`. Never re-derive layouts elsewhere; any router change needs a new X3 probe.
+- `contracts/test/lib/PoolManagerFixture.sol` etches the exact mainnet PoolManager runtime at its own address for
+  15b's StockGuardHook unit tests (never compile PoolManager — BUSL).
+- Mainnet config: `V4[4217]` incl. the aggregator hook `0x7169…6888` and USDC.e for 15d's route; the fork probe already
+  executes pathUSD → USDC.e through that hook.
+- Scripted sends: `scripts/lib/cast.ts` (on the S17a branch) / `scripts/v4/lib.ts` `castBatch` — viem sends are
+  outside the write boundary. A throwaway pool `(pathUSD, AlphaUSD, 3000, 60)` exists on Moderato (position NFT #1,
+  owner = deployer); it is not a product pool.
+
+Next: 15b (StockGuardHook, X12) — its HookMiner/Arachnid deploy needs the root key; 15c pools use
+`initializeAndMint`; 15d `relay/policies/v4.ts` (the `v4` area is exempt from the coverage rule, but user swaps need a
+policy for sponsorship).
