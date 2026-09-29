@@ -14,7 +14,7 @@ contract SetsTest is EngineFixture {
     function test_mintSetPullsThePairCost() public {
         uint256 before = usd.balanceOf(who(1));
         vm.expectEmit(true, true, false, true, address(engine));
-        emit Ev.CompleteSet(m, 1, who(1), true, 2_500, 2_500_000, 0, 2_500_000, 0, 2_500);
+        emit Ev.CompleteSet(m, 3, who(1), true, 2_500, 2_500_000, 0, 2_500_000, 0, 2_500);
         assertEq(mint(1, 2_500), 2_500_000);
         assertEq(before - usd.balanceOf(who(1)), 2_500_000);
         assertEq(pos(1).yesFree, 2_500);
@@ -66,7 +66,7 @@ contract SetsTest is EngineFixture {
         vm.expectRevert(E.MarketNotTrading.selector);
         engine.mintSet(m, 10, false);
         vm.stopPrank();
-        bytes32 later = list(LOCK + 300, LOCK + 600, true);
+        bytes32 later = list(LOCK + 300, LOCK + 600, false);
         vm.warp(LOCK + 10);
         vm.prank(who(1));
         vm.expectRevert(E.MarketNotTrading.selector);
@@ -97,7 +97,7 @@ contract SetsTest is EngineFixture {
         uint256 otherBefore = usd.balanceOf(who(2));
         vm.prank(who(1));
         vm.expectEmit(true, true, false, true, address(engine));
-        emit Ev.CreditWithdrawn(m, 3, who(1), 150_000);
+        emit Ev.CreditWithdrawn(m, 5, who(1), 150_000);
         engine.withdrawCredit(m, 150_000);
         assertEq(usd.balanceOf(who(1)) - before, 150_000);
         assertEq(usd.balanceOf(who(2)), otherBefore);

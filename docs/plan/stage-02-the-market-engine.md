@@ -14,7 +14,7 @@
 - [x] S2.4 `EventsEngine.sol` (dispatch, funding, `_pull`/`_pay` with P12 + TIP-403 fallback, sets, `withdrawCredit`,
   `reserveNodes`, `sweepSurplus`, `extsload`, roles, mode, transient guard). Src: `user_place_order.rs`, `user_sets.rs`.
 - [x] S2.5 `libs/AdminLib.sol`. Src: `admin_series.rs`, `policy_rules.rs`, `window_rules.rs`, `roller_open_window.rs`.
-- [ ] S2.6 `libs/ResolveLib.sol`. Src: `print_rules.rs`, `normalize.rs`, `copy_open_from_prev.rs`, `resolve_rules.rs`,
+- [x] S2.6 `libs/ResolveLib.sol`. Src: `print_rules.rs`, `normalize.rs`, `copy_open_from_prev.rs`, `resolve_rules.rs`,
   `resolve_window.rs`, `redeem.rs`. Tests `Prints`, `Resolve`, `Redeem`, Example 8.
 - [ ] S2.7 `verifiers/{RedStonePrintVerifier,DataStreamsPrintVerifier,AttestedPrintVerifier}.sol` + `verifiers/lib/*`.
   Src: `print/{redstone,median,attested}.rs`; fixtures = Agari's two archived TSLA payloads + the SPY v11 report; spike X12
@@ -95,7 +95,14 @@
 - **F-S2-11 (S2.5, openWindow writes).** `openWindow` writes only the market's non-zero slots (s0, s4, s5) plus
   `marketIdOf`, so a listing creates 4 new slots instead of 7 (≈ 1.0M gas gross, not 1.8M). `lockAt` must fit uint32
   (node expiries) or the listing refuses `BadHorizon`.
+- **F-S2-12 (S2.6, redeem shape).** `ResolveLib` returns a `Redemption` and the engine emits `Redeemed` after deciding
+  pay-or-hold, so the event's `heldAsCredit` is exact; a held payout re-creates the position as `{credit: total}`
+  (then `withdrawCredit` pays once the policy clears). Full redeem deletes the position (both slots zero → storage
+  credits); a second redeem, or a holder with nothing, refuses `NothingToRedeem`. A losing position still redeems (pays
+  0) and clears, as in Agari. Conservation after settlement is Agari's `owed_after_settlement` (credit + escrow + payout
+  per holder); the fixture switches form by market state. The engine now implements the whole `IEventsEngine`; the
+  test-only listing hook is gone (markets list through `registerSeries` → `addPolicyVersion` → `openWindow`).
 
 ## Handoff
 
-S2.0–S2.5 done (ABI frozen at `engine-abi-v1`; storage, book, MatchLib, EventsEngine, AdminLib). Next: S2.6 ResolveLib.
+S2.0–S2.6 done (the engine implements the frozen ABI end to end). Next: S2.7 verifiers.

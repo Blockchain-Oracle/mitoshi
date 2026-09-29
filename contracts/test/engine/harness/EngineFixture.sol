@@ -7,7 +7,9 @@ import {StdTokens} from "tempo-std/StdTokens.sol";
 import {ITIP20} from "tempo-std/interfaces/ITIP20.sol";
 import {ITIP20RolesAuth} from "tempo-std/interfaces/ITIP20RolesAuth.sol";
 import {EngineStorage} from "../../../src/engine/EngineStorage.sol";
-import {EngineTestHook} from "./EngineTestHook.sol";
+import {EventsEngine} from "../../../src/engine/EventsEngine.sol";
+import {TestPrintVerifier} from "./TestPrintVerifier.sol";
+import {Policies} from "./Policies.sol";
 import "../../../src/engine/EngineTypes.sol";
 
 /// The real engine over a real TIP-20 created through the factory precompile (A.6), with funded, approved actors and the
@@ -18,7 +20,10 @@ abstract contract EngineFixture is Test {
     uint256 internal constant FUND = 1_000_000e6;
 
     ITIP20 internal usd;
-    EngineTestHook internal engine;
+    EventsEngine internal engine;
+    TestPrintVerifier internal rsVerifier;
+    address internal roller = makeAddr("roller");
+    uint16 internal nextTicker;
     address internal admin = makeAddr("admin");
     address internal treasury = makeAddr("treasury");
     bytes32 internal m;
@@ -31,13 +36,34 @@ abstract contract EngineFixture is Test {
             StdPrecompiles.TIP20_FACTORY.createToken("Test USD", "tUSD", "USD", StdTokens.PATH_USD, address(this), keccak256("engine-fixture"))
         );
         ITIP20RolesAuth(address(usd)).grantRole(usd.ISSUER_ROLE(), address(this));
-        engine = new EngineTestHook(address(usd), admin, treasury);
+        engine = new EventsEngine(address(usd), admin, treasury);
+        rsVerifier = new TestPrintVerifier(SOURCE_REDSTONE);
+        vm.prank(admin);
+        engine.setRoller(roller, true);
         m = list(START, LOCK, true);
     }
 
+    /// Lists a Window the production way: a fresh Regular Series (cadence = the Window's span, minLots 1, caps 32/16,
+    /// the RedStone launch policy), `openWindow` by the roller, and — when asked — its open print through `recordPrint`.
     function list(uint40 tradingStart, uint40 lockAt, bool openPrint) internal returns (bytes32 id) {
-        id = engine.listForTest(tradingStart, lockAt, openPrint);
+        vm.startPrank(admin);
+        bytes32 sid = engine.registerSeries(
+            RegisterSeriesArgs(++nextTicker, BASIS_REGULAR, uint32(lockAt - tradingStart), 1000, 1000, 1, 20, 400_000, 32, 16)
+        );
+        engine.addPolicyVersion(sid, 0, Policies.launch(address(rsVerifier), 0, OPEN_ENDED));
+        vm.stopPrank();
+        vm.prank(roller);
+        id = engine.openWindow(OpenWindowArgs(sid, 0, tradingStart, lockAt, lockAt, 0, 2));
         markets.push(id);
+        if (openPrint) recordOpen(id, 36_500_000_000);
+    }
+
+    function recordOpen(bytes32 id, int256 priceE8) internal {
+        engine.recordPrint(id, WHICH_OPEN, abi.encode(priceE8, int8(-8), uint8(5)));
+    }
+
+    function recordClose(bytes32 id, int256 priceE8) internal {
+        engine.recordPrint(id, WHICH_CLOSE, abi.encode(priceE8, int8(-8), uint8(5)));
     }
 
     function who(uint256 n) internal returns (address a) {
@@ -104,17 +130,29 @@ abstract contract EngineFixture is Test {
     }
 
     /// Conservation as equality (A.6): the engine's balance, its ledger and what every holder is owed agree exactly.
+    /// Before settlement a market owes `backing·1000·cu + Σcredit + ΣlockedCash`; once terminal it owes every holder's
+    /// `credit + lockedCash + payout(outcome lots)` (Agari `owed_after_settlement`).
     function assertConserved() internal {
         uint256 owed;
         for (uint256 i; i < markets.length; ++i) {
-            owed += uint256(backingOf(markets[i])) * 1000;
+            (uint8 state, uint32 py, uint32 pn) = _resolution(markets[i]);
+            if (state == STATE_OPEN) owed += uint256(backingOf(markets[i])) * 1000;
             for (uint256 j; j < actors.length; ++j) {
                 Position memory p = pos(markets[i], _n(actors[j]));
                 owed += uint256(p.credit) + p.lockedCash;
+                if (state != STATE_OPEN) {
+                    owed += (uint256(p.yesFree + p.yesLocked) * 1000 * py + uint256(p.noFree + p.noLocked) * 1000 * pn) / PAYOUT_DENOMINATOR;
+                }
             }
         }
         assertEq(totalOwed(), owed, "totalOwed == owed");
         assertEq(usd.balanceOf(address(engine)), totalOwed(), "balance == totalOwed");
+    }
+
+    function _resolution(bytes32 mkt) internal view returns (uint8 state, uint32 py, uint32 pn) {
+        bytes32 s4 = bytes32(uint256(keccak256(abi.encode(mkt, uint256(EngineStorage.SLOT) + EngineStorage.OFF_MARKETS))) + 4);
+        uint256 v = uint256(engine.extsload(s4));
+        (py, pn, state) = (uint32(v >> 144), uint32(v >> 176), uint8(v >> 208));
     }
 
     function _n(address a) internal pure returns (uint256) {

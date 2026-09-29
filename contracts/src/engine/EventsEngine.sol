@@ -7,10 +7,10 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
 import {StdPrecompiles} from "tempo-std/StdPrecompiles.sol";
 import {EngineStorage} from "./EngineStorage.sol";
-import {IEngineErrors} from "./EngineErrors.sol";
-import {IEventsEngineEvents} from "./interfaces/IEventsEngineEvents.sol";
 import {MatchLib} from "./libs/MatchLib.sol";
 import {AdminLib} from "./libs/AdminLib.sol";
+import {ResolveLib, Redemption} from "./libs/ResolveLib.sol";
+import {IEventsEngine} from "./interfaces/IEventsEngine.sol";
 import {BookLib} from "./libs/BookLib.sol";
 import {Grid} from "./libs/Grid.sol";
 import "./EngineTypes.sol";
@@ -25,7 +25,7 @@ import "./EngineTypes.sol";
 ///      is the donation-safe ledger (`sweepSurplus` sends the difference to the immutable treasury). Every payout
 ///      pre-checks the receiver's TIP-1028 receive policy (P12): a TIP-20 transfer to a blocking receiver would
 ///      *succeed* into the ReceivePolicyGuard, so the engine refuses instead (`ReceivePolicyBlocked`).
-contract EventsEngine is IEngineErrors, IEventsEngineEvents, ReentrancyGuardTransient {
+contract EventsEngine is IEventsEngine, ReentrancyGuardTransient {
     using SafeERC20 for IERC20;
 
     IERC20 private immutable _collateral;
@@ -133,6 +133,53 @@ contract EventsEngine is IEngineErrors, IEventsEngineEvents, ReentrancyGuardTran
         pos.credit = credit - amount;
         emit CreditWithdrawn(m, ++mk.eventSeq, msg.sender, amount);
         _pay(msg.sender, amount);
+    }
+
+    // ------------------------------------------------------------------------------------------------ prints and settlement
+
+    /// @notice Permissionless, verified print for one slot (E-43); the first valid print wins.
+    function recordPrint(bytes32 m, uint8 which, bytes calldata proof) external nonReentrant {
+        ResolveLib.recordPrint(m, which, proof);
+    }
+
+    function copyOpenFromPrev(bytes32 m, bytes32 prev) external nonReentrant {
+        ResolveLib.copyOpenFromPrev(m, prev);
+    }
+
+    function settle(bytes32 m) external nonReentrant {
+        ResolveLib.settle(m);
+    }
+
+    function voidExpired(bytes32 m) external nonReentrant {
+        ResolveLib.voidExpired(m);
+    }
+
+    // ------------------------------------------------------------------------------------------------ redemption
+
+    function redeem(bytes32 m) external nonReentrant returns (uint64 total) {
+        Redemption memory r = ResolveLib.redeemFull(m, msg.sender);
+        total = r.total;
+        emit Redeemed(m, r.seq, msg.sender, msg.sender, r.yesLots, r.noLots, r.payout, r.credit, total, false, false);
+        _pay(msg.sender, total);
+    }
+
+    function redeemPartial(bytes32 m, uint8 outcome, uint64 lots) external nonReentrant returns (uint64 payout) {
+        Redemption memory r = ResolveLib.redeemPartial(m, msg.sender, outcome, lots);
+        payout = r.payout;
+        emit Redeemed(m, r.seq, msg.sender, msg.sender, r.yesLots, r.noLots, payout, 0, payout, true, false);
+        _pay(msg.sender, payout);
+    }
+
+    /// @notice Permissionless crank paying `holder` its full redeem (E-55). A payout the holder's receive policy would
+    ///         divert, or a transfer a TIP-403 token policy reverts, is held as the holder's credit instead (P12, D-014).
+    function redeemFor(bytes32 m, address holder) external nonReentrant returns (uint64 paid, bool heldAsCredit) {
+        EngineStorage.Layout storage l = EngineStorage.layout();
+        if (l.crankOptOut[holder]) revert CrankRefused();
+        Redemption memory r = ResolveLib.redeemFull(m, holder);
+        heldAsCredit = !_payOrHold(holder, r.total);
+        if (heldAsCredit) l.positions[r.mIdx][holder].credit = r.total;
+        else paid = r.total;
+        emit Redeemed(m, r.seq, holder, msg.sender, r.yesLots, r.noLots, r.payout, r.credit, r.total, false, heldAsCredit);
     }
 
     // ------------------------------------------------------------------------------------------------ roller and admin

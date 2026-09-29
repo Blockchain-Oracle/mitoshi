@@ -5,7 +5,7 @@ import {EngineFixture} from "./harness/EngineFixture.sol";
 import {IEngineErrors as E} from "../../src/engine/EngineErrors.sol";
 import {IEventsEngineEvents as Ev} from "../../src/engine/interfaces/IEventsEngineEvents.sol";
 import {EngineStorage} from "../../src/engine/EngineStorage.sol";
-import {EngineTestHook} from "./harness/EngineTestHook.sol";
+import {EventsEngine} from "../../src/engine/EventsEngine.sol";
 import {TestPrintVerifier} from "./harness/TestPrintVerifier.sol";
 import {Policies} from "./harness/Policies.sol";
 import "../../src/engine/EngineTypes.sol";
@@ -52,11 +52,11 @@ contract AdminRolesTest is EngineFixture {
 
     function test_constructorRefusesZeroes() public {
         vm.expectRevert(E.InvalidOrderArgs.selector);
-        new EngineTestHook(address(0), admin, treasury);
+        new EventsEngine(address(0), admin, treasury);
         vm.expectRevert(E.InvalidOrderArgs.selector);
-        new EngineTestHook(address(usd), address(0), treasury);
+        new EventsEngine(address(usd), address(0), treasury);
         vm.expectRevert(E.InvalidOrderArgs.selector);
-        new EngineTestHook(address(usd), admin, address(0));
+        new EventsEngine(address(usd), admin, address(0));
     }
 }
 
@@ -99,7 +99,7 @@ contract AdminSeriesTest is EngineFixture {
     function test_registerSeriesChecks() public {
         assertEq(sid, keccak256(abi.encode(uint16(7), uint32(300), uint8(BASIS_REGULAR))));
         bytes32 slot = keccak256(abi.encode(sid, uint256(EngineStorage.SLOT) + EngineStorage.OFF_SERIES_IDX_OF));
-        assertEq(uint256(engine.extsload(slot)), 2, "1-based; the fixture's test series is 1");
+        assertEq(uint256(engine.extsload(slot)), 2, "1-based; the fixture's own series is 1");
         vm.startPrank(admin);
         vm.expectRevert(E.SeriesExists.selector);
         engine.registerSeries(_args(BASIS_REGULAR, 300));
