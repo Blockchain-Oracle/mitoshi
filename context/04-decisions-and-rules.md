@@ -71,7 +71,7 @@ Prior work by the same owner. Treated as a **product baseline** under
 | Repo | Pin | What it is |
 |---|---|---|
 | `/Users/abu/dev/hackathon/sommina-events` | `68f7a09` (2026-09-10, `main`) | **Masayume** — price markets + games + agents on Somnia. 10 contracts. Built on **DreamDEX** |
-| `/Users/abu/dev/hackathon/stocklana` — **read the worktree `/Users/abu/dev/hackathon/agari-wt/w1`** (the main checkout is on an old branch) | `integration/w1`, moves daily (`a442988` on 2026-09-21) | **Agari** — stock-price prediction market on Solana, source-led port of Masayume. **9 working Anchor programs incl. its own order-book engine (`agari-events`)**; parity 50 Done |
+| `/Users/abu/dev/hackathon/stocklana` — **read the worktree `/Users/abu/dev/hackathon/agari-wt/w1`** (the main checkout is on an old branch) | `integration/w1`, moves daily (`254f538` → `c732158` on 2026-09-21) | **Agari** — stock-price prediction market on Solana, source-led port of Masayume. **9 working Anchor programs incl. its own order-book engine (`agari-events`)**; parity at `254f538`: 103 rows — Done 59 · Partial 27 · Pending 1 · Excluded 14 · Blocked 2 (`tempo/fidelity/agari-side.md` §5) |
 | `/Users/abu/dev/hackathon/nansen` | — | Research-only context for the Nansen Meridian buildathon. No code |
 
 **These repos contain inherited code with unexamined decisions in it.** Masayume was
@@ -92,7 +92,9 @@ candles), `agari-maker`, `agari-vault`, `agari-strategy`, `agari-parlay`, `agari
 implementation-grade DreamDEX spec (`stocklana/context/06`), an engine review with 26
 corrections (`context/08`), and a decision log of hard-won fixes (e.g. D-114: exits never
 depend on the owner; positions healthy and sellable at birth). **That is the engine
-reference for Tempo.** Because Tempo is EVM and Masayume's ten contracts are already
+reference for Tempo.** (Masayume deployed **nine** custom contracts plus OpenZeppelin's stock
+`ERC2771Forwarder`; `ArenaAgents` is a base of `GameArena` — `tempo/fidelity/masayume-side.md` §3.1.)
+Because Tempo is EVM and Masayume's contracts are already
 Solidity, the Tempo port is: Masayume's contracts retargeted, plus a Solidity engine
 written from Agari's spec.
 
@@ -151,19 +153,26 @@ grading language, framework, design patterns or code quality. Two videos (2–3 
 
 ## Agent-layer findings that constrain architecture
 
-- **TIP-1011 Access Keys replace most of EventVault.** Periodic spending limits that reset
-  on intervals, call scoping (target + selector), recipient-bound transfers — all native.
-  The TIP names its own motivation as replacing "a proxy contract that enforces
-  destination/function restrictions," which is exactly what EventVault is. Only the
-  market-semantic caps (per-trade stake, open positions, price ceiling) still need a contract.
+- **TIP-1011 Access Keys replace EventVault's grant mechanics, not its caps.** Periodic
+  spending limits, call scoping (target + selector), recipient-bound transfers and expiry are
+  native, live since T3 and tested on Moderato (`tempo/16` §4). **Corrected 2026-09-21:** the
+  limits count only *direct* TIP-20 `transfer/approve` by the account (plus fees) — our
+  contracts' `transferFrom` is not counted — and recipient binding covers only TIP-20
+  transfer/approve/transferWithMemo. So every contract pays `msg.sender` only and the caps
+  (stake per trade, daily spend, open positions, price ceiling) are enforced on chain by
+  reading `getTransactionKey()` (KeyPolicy, `tempo/17-architecture.md` §3.2). Only EOA-style
+  accounts can grant keys; contracts cannot (TIP-1111, T12, unscheduled).
 - **ERC-8004 registries are predeployed**, so agent identity and reputation are on-chain
   and portable instead of a bespoke `StrategyRegistry` plus off-chain ranking.
 - **MPP turns decision provenance into receipts.** Masayume records the model used in its
   own database; on Tempo a paid inference or data call is an on-chain TIP-20 transfer.
 
-Design invariants worth preserving from Masayume: strategies are **data, never code**;
-persona is **untrusted prompt input, never an enforcement rule**; the spec hash **never
-pins a vendor**.
+Design invariants worth preserving: strategies are **data, never code**; persona is
+**untrusted prompt input, never an enforcement rule**; the spec hash **never pins a vendor**.
+**Provenance (corrected 2026-09-21):** "strategies are data, never code" is attributed in
+source to upstream **Yosuku** (`M:packages/core/src/strategies/types.ts:5`, "reference
+`StrategySpec`"), not authored for Masayume. "No model name in the spec" is Masayume's
+(`types.ts:21-23`). See `tempo/fidelity/masayume-side.md` §4.2.
 
 Design decision *not* to inherit unexamined: the ranking function
 (`ranking.ts:23`, attributed to upstream Yosuku) orders agents by entrusted capital and

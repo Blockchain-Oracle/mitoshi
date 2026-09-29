@@ -100,8 +100,9 @@ Plus a migration path between them, and an operator to trigger it.
 
 That roughly doubles the memecoin path's contract surface versus the earlier estimate in
 `02-idea-gap-analysis.md`, which assumed one AMM. **Deployments on Tempo cost 5–10×
-Ethereum**, so per-launch pool creation is a real cost to design around — consider a
-singleton pool contract with per-launch state rather than deploying a pool per token.
+Ethereum in gas** (≈ $0.015 per max-size contract in dollars and ~84% of a block's 30M general lane,
+`16` §6 — corrected 2026-09-21), so a singleton pool contract with per-launch state is still the better
+shape for block space rather than deploying a pool per token.
 
 ### The cheaper variant worth considering
 

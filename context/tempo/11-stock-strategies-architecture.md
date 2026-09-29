@@ -71,11 +71,18 @@ calls and trade a theme. One strategy browser shows both kinds.
 1. **Source chain** — Robinhood Chain (recommended) or xStocks on Solana?
 2. **Tempo-side token** — TIP-20 (memos, logo, TIP-403; mint via the bridge receiver) or a plain OFT token?
 3. **Account model** — an account per user (Glider-style, non-custodial) or a pooled vault per theme
-   (one rebalance serves all; cheaper — Tempo deployments cost 5–10× Ethereum)?
+   (one rebalance serves all; fewer transactions — though deploy cost in dollars is negligible, `16` §6; and a
+   contract cannot grant access keys, so a pooled vault loses TIP-1011 delegation until T12)?
 4. **AI's role** — choose weights, or only execute/time a fixed allocation?
 5. **Themes and tickers** — testnet has 5 tokens; mainnet has Robinhood's list; is a gold ETF token available?
 
-## Still to verify
+## Still to verify — answered 2026-09-21
 
-LayerZero / CCIP endpoints on both **testnets**; equity price coverage on Tempo; TIP-20 behaviour in
-Uniswap v4 pools; Robinhood's mainnet Stock Token list (the contracts page renders it client-side).
+- LayerZero / CCIP on both testnets → **no direct LayerZero pathway 40451↔40444, no CCIP lane either way**;
+  Base Sepolia hop works; mainnet LayerZero 30416↔30410 works with explicit DVNs (`14`).
+- Equity price coverage on Tempo → RedStone pull + Chainlink Data Streams; no push feeds; Pyth unusable (`15`).
+- TIP-20 behaviour in Uniswap v4 pools → `13`.
+- Robinhood's mainnet Stock Token list → **195 tokens incl. GLD**, full list in `14` Appendix A.
+- Account model constraint: only EOA-style accounts can grant access keys (`16` §4.3).
+
+The architecture that uses these answers: `17-architecture.md`.

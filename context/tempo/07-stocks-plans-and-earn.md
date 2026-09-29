@@ -28,12 +28,15 @@ Price data on Tempo:
 | Chainlink Price Feeds | Live on Tempo | FX, stablecoins, tokenized assets — check directory for equities |
 | Alpha Vantage via MPP | Live | Off-chain, paid per query — cross-check or attested fallback |
 
-**Open item:** confirm *which equity tickers* RedStone and Chainlink actually serve to Tempo
-before fixing the ticker list. Likely yes for majors; not yet verified.
+**Open item — answered 2026-09-21 (`15-equity-prices-on-tempo.md`):** no provider pushes any US equity
+feed on Tempo; RedStone pull (free, 9 names + crypto + XAU) and Chainlink Data Streams (paid, mainnet,
+every ticker incl. NFLX/SPY/QQQ/IAU/SPCX) verify on chain; Pyth is unusable on Tempo.
 
 What carries over from Agari unchanged: Regular Windows (09:30–16:00 ET, NYSE calendar),
 the weekend **Gap** Window (Fri close → Mon open), halts and void rules (D-057), the
 close ≥ open → Up tie rule (PD-3), corporate-action handling, pre-IPO lane (D-100/D-103).
+*Correction (2026-09-21, `fidelity/agari-side.md` §0.1):* the pre-IPO **mechanism** carries; its price
+source (PreStocks) is a Solana asset and does not. SpaceX is now listed (SPCX).
 
 ## 3. Glider — what it actually is (shallow)
 
@@ -77,8 +80,10 @@ They let a user get "AI stocks" exposure without the product ever touching a sha
    **siUSD** (InfiniFi), **wsrUSD** (Reservoir), **senpathUSDE** (Sentora pathUSD Earn),
    **YLDS / wYLDS** (Hastra). Idle Trading Balance can sit in one of these.
 
-Agari's latest commit (`2adcb12`, S14.7) is "what idle collateral earns, answered instead of
-invented" — the Solana equivalent of source 2. Use it as the reference; don't redo it.
+Agari's S14.7 (`2adcb12`) is "what idle collateral earns, answered instead of invented". *Corrected
+2026-09-21:* it is an honest **"idle money earns nothing here"** (no lender on devnet), not a yield
+integration (`fidelity/agari-side.md` §6). Its rules carry (never an APY, realized-only, name the source);
+on Tempo mainnet a real yield-bearing dollar can be integrated.
 
 > **Superseded (2026-09-21):** §1's "users never buy or hold stocks" was overturned — stock tokens
 > on Tempo are now a headline pillar (decisions 5, 7, 9; `11-stock-strategies-architecture.md`).

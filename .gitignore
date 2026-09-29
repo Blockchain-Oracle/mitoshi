@@ -1,0 +1,40 @@
+# Local agent/tool folders (no tool config in the repo)
+.agents/
+.claude/
+.21st/
+skills-lock.json
+
+# Dependencies and builds
+node_modules/
+.pnpm-store/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.turbo/
+.vercel/
+
+# Contracts
+contracts/out/
+contracts/cache/
+contracts/broadcast/*/dry-run/
+
+# Mobile
+mobile/ios/
+mobile/android/
+mobile/.expo/
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+!**/env/*.example
+*.pem
+*.p8
+*.keystore
+*.jks
+
+# OS
+.DS_Store

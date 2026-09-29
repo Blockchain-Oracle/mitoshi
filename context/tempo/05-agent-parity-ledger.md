@@ -3,6 +3,11 @@
 Method: `reference-product-fidelity` §1–§3. Scope: the **agent / strategy / copy-trading
 subsystem only**. Market engine, games and tickets are covered elsewhere.
 
+> **Folded into `12-parity-ledger.md` (2026-09-21)**, where these rows are renamed **AG-n** (their `A-n` IDs
+> collided with Agari's add-on rows) and corrected by `16`: ERC-8004 addresses differ on Moderato; access-key
+> limits don't count contract `transferFrom` (caps stay on chain); self-feedback is refused by the Reputation
+> Registry. Read `12` §10 for the corrections.
+
 ## 1. Authority record
 
 | Field | Content |

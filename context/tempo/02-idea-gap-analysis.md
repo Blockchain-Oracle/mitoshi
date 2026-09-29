@@ -134,7 +134,7 @@ in v4 pools and memecoins can graduate into one. The memecoin path needs the bon
 as a v4 hook) — not a destination AMM. See `06-…` and `11-…`.
 
 **Residual caveats that stand:** no enshrined liquidity or routing, no fee payability,
-contract deployments cost 5–10× Ethereum (your AMM, not the tokens), and the narrative
+contract deployments cost 5–10× Ethereum in gas (≈ $0.015 per max-size contract in dollars, `16` §6), and the narrative
 question — a memecoin venue on Stripe's payments chain — still needs an answer in the
 pitch. The strongest available answer is that both launch types share one compliant
 issuance pipeline, and that the memecoin curve is the on-ramp that funds the serious one.
@@ -176,6 +176,6 @@ Tempo *removes* work at the account, payment, agent-identity and indexing layers
 
 **That layer now has a working reference.** Agari built a DreamDEX-style order-book engine
 on Solana, with an implementation-grade spec and a log of corrections. And because Tempo
-is EVM, Masayume's ten Solidity contracts carry over far more directly than they did to
+is EVM, Masayume's nine Solidity contracts (plus OZ's forwarder, dropped on Tempo) carry over far more directly than they did to
 Solana: they need retargeting from DreamDEX to the new engine, not rewriting in another
 language. The Tempo port is closer to Masayume than Agari was.

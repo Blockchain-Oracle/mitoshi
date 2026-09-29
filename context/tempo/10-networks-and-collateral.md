@@ -6,7 +6,7 @@ Captured 2026-09-21. **Owner decision:** deploy on both Tempo testnet (Moderato)
 
 - **Tempo has no native gas token — it is not ETH.** Fees are paid in USD stablecoins
   (`00-network-facts.md`). Fees can also be sponsored, so a user needs no gas token at all
-  (production sponsorship needs an approved payer; the public sponsor is testnet-only).
+  (the public sponsor is testnet-only; production needs a funded fee-payer key — self-hosting `Handler.relay` needs no approval; "approved" applies only to Tempo's *hosted* sponsor (Console key + billing), corrected 2026-09-21 per `tempo/16` §7).
 - **Circle USDC is not on Tempo.** Tempo is on neither Circle's testnet faucet nor Circle's official
   USDC contract-address list (checked 2026-09-21, zero mentions in both). USDC on Tempo exists only as
   **USDC.e**, bridged through LayerZero/Stargate. Tempo's own docs route native USDC out via Ethereum

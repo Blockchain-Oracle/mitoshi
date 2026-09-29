@@ -31,8 +31,9 @@ reason businesses can't use crypto rails, and a memo field is how an invoice num
 rides along with the money.
 
 **Fee sponsorship.** A third party pays a user's fees. Onboarding with literally
-zero assets. *Caveat from the corpus: the public sponsor is testnet-only; production
-needs an approved hosted or self-managed payer.*
+zero assets. *Caveat from the corpus: the public sponsor is testnet-only. Correction (2026-09-21,
+`tempo/16` §7): a self-managed payer needs no approval — "approved" applies only to Tempo's
+hosted sponsor.*
 
 **Virtual addresses.** Distinct per-customer deposit addresses that forward TIP-20
 funds to a master address — exactly how bank virtual accounts work, which is how

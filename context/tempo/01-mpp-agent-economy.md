@@ -89,7 +89,6 @@ deployed and none of them are assembled into a product. That gap is the stronges
 ## Caveats to preserve
 
 - Colosseum's corpus calls MPP "advanced and still fast-moving."
-- Fee sponsorship: the **public sponsor is testnet-only**; production requires an
-  approved hosted or self-managed payer.
+- Fee sponsorship: the **public sponsor is testnet-only**; production needs a funded fee-payer key — self-hosting `Handler.relay` needs no approval; "approved" applies only to Tempo's *hosted* sponsor (Console key + billing), corrected 2026-09-21 per `tempo/16` §7.
 - Service listings, prices and capability claims at `mpp.dev` are provider-supplied.
 - Tempo Zones (private zones) are **testnet-only** and not production-ready.
