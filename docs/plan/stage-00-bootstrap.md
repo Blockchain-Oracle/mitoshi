@@ -14,7 +14,7 @@
   (forge-std, tempo-std@b9860ac, OZ 5.x + upgradeable, solady, OZ uniswap-hooks@2ae32be, v4-core@46c6834 +
   v4-periphery interfaces/libraries, LayerZero oapp-evm/oft-evm/oft-evm-upgradeable/protocol/messagelib/test-devtools),
   `script/lib/DeploymentWriter.sol`, `deployments/README.md` (fragment schema C.1.6).
-- [ ] S0.6 `scripts/codegen/clients.mjs` + `packages/clients/src/pinned.ts` (C.1.6). Src: Masayume `contracts/export.mjs`.
+- [x] S0.6 `scripts/codegen/clients.mjs` + `packages/clients/src/pinned.ts` (C.1.6). Src: Masayume `contracts/export.mjs`.
 - [ ] S0.7 `scripts/invariants/*` with the rule set C.1.2. Src: Masayume `scripts/invariants/*`.
 - [ ] S0.8 `.github/workflows/{ci,contracts,nightly-fork,deploy-ops}.yml`.
 - [ ] S0.9 Hosting (owner accounts): Vercel ×2, Fly ×2, Neon ×2, Upstash; DNS on the final domain (Q-019).
@@ -40,7 +40,11 @@
   2ae32be, v4-core 46c6834, v4-periphery 9969eec, v4-hooks-public e4eabe5, permit2 cc56ad0 (v4-periphery's pin, added
   directly instead of recursive submodules). LayerZero also needs `solidity-bytes-utils`.
 - Foundry 1.8.3 `network = "tempo"` sets `evm_version = "osaka"` itself.
-- Deployment fragments: scripts write `<area>.pending.json`; `scripts/deploy/finalize.ts` (S0.6) adds tx hashes/blocks.
+- Deployment fragments: scripts write `<area>.pending.json`; `scripts/deploy/finalize.ts` adds tx hashes/blocks.
+- With `network = "tempo"`, forge scripts must target a Tempo node (Moderato or `anvil --network tempo`): against plain
+  anvil the receipt can't be parsed and `deployBlock` is lost.
+- `pinned.ts` holds only fully verified addresses; abbreviated ones in the plan (LayerZero dead DVNs, RedStone signers)
+  are added by the stage that first needs them (S14c, S2).
 
 ## Handoff
 
