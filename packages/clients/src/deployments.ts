@@ -114,6 +114,228 @@ export const deployments = {
       "external": {},
       "commit": "5831130"
     },
+    "lz": {
+      "contracts": {
+        "LzPing": {
+          "address": "0x6B053153397c2019D23561a16f2ad6134bCc3Dfb",
+          "artifact": "LzPingTempo.sol:LzPingTempo",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xb03a0b1d1b068d99037010ba961833f69720d05caf293f5a9d436728374f23ef",
+          "deployBlock": 37364864,
+          "history": []
+        }
+      },
+      "roles": {},
+      "params": {
+        "eid": 40444
+      },
+      "external": {},
+      "commit": "ad79a36"
+    },
+    "stocks": {
+      "contracts": {
+        "AdapterAMD": {
+          "address": "0x535aFE496eAEE0736570Cc4Abe2db7D18CF41023",
+          "artifact": "TIP20MintBurnAdapter.sol:TIP20MintBurnAdapter",
+          "profile": "default",
+          "proxy": true,
+          "txHash": "0x147b9166345edfc1ef91f66e3e22adcc8a9697b3e1083aaa750f4d16ff38d86f",
+          "deployBlock": 37367714,
+          "history": []
+        },
+        "AdapterAMDImplementation": {
+          "address": "0xB96540a1156B81047cE3220285bA9674D5d92a98",
+          "artifact": "TIP20MintBurnAdapter.sol:TIP20MintBurnAdapter",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xe7622b09305c5b7b26f86a391e24b51716a5e8ca8d5bd4cb45d056228a201c69",
+          "deployBlock": 37367709,
+          "history": []
+        },
+        "AdapterAMZN": {
+          "address": "0x48A9873c3B376D2fE54ea2C1A38da1EB2C25C862",
+          "artifact": "TIP20MintBurnAdapter.sol:TIP20MintBurnAdapter",
+          "profile": "default",
+          "proxy": true,
+          "txHash": "0x208408884b3017ce9706703866920fc5600df6325cf8d9d027cbdce280a48452",
+          "deployBlock": 37367605,
+          "history": []
+        },
+        "AdapterAMZNImplementation": {
+          "address": "0x620E56e118d5b597B0Fe7a69EFfCd353328CDc30",
+          "artifact": "TIP20MintBurnAdapter.sol:TIP20MintBurnAdapter",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x3a5d328f6495e8eb37b25e86f147060b39ca0bcca45374ef5ea5746a6e519975",
+          "deployBlock": 37367600,
+          "history": []
+        },
+        "AdapterNFLX": {
+          "address": "0x1546e137E4FaFa52c0E83CED103322AD3B62E801",
+          "artifact": "TIP20MintBurnAdapter.sol:TIP20MintBurnAdapter",
+          "profile": "default",
+          "proxy": true,
+          "txHash": "0x78e3b92988e2c1adc23fa11c328096bc357e50aeadeb67dcb97fac676fc40725",
+          "deployBlock": 37367674,
+          "history": []
+        },
+        "AdapterNFLXImplementation": {
+          "address": "0x1cE0C59Cc2f5D721a496C4FD864727769E14B773",
+          "artifact": "TIP20MintBurnAdapter.sol:TIP20MintBurnAdapter",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x5b45fd984ea7772c7d48a48bfdfe10bb46e9d4b0f2427ccda99f3302db92920a",
+          "deployBlock": 37367672,
+          "history": []
+        },
+        "AdapterPLTR": {
+          "address": "0x8F859355d347b5C03d8E94F6519AdB117bf94a6c",
+          "artifact": "TIP20MintBurnAdapter.sol:TIP20MintBurnAdapter",
+          "profile": "default",
+          "proxy": true,
+          "txHash": "0x42b0f45ad027768da6d22eb861f00c482570c07801a43e1c633b010dc8cbeddd",
+          "deployBlock": 37367639,
+          "history": []
+        },
+        "AdapterPLTRImplementation": {
+          "address": "0xCbEa3D4980795f4e4D7F750cbd3C7a3114934227",
+          "artifact": "TIP20MintBurnAdapter.sol:TIP20MintBurnAdapter",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x937d64a845a1bc543874c5f07fc1e3d55be174b02fac737a4eacff99371c6187",
+          "deployBlock": 37367637,
+          "history": []
+        },
+        "AdapterTSLA": {
+          "address": "0x5c1069C9F9912D5B8f6250359b5f2FB6F6a426b3",
+          "artifact": "TIP20MintBurnAdapter.sol:TIP20MintBurnAdapter",
+          "profile": "default",
+          "proxy": true,
+          "txHash": "0x857f4f35f88b10bf9d45719e1f8433b8d98576bfc3cff8531c9973453e9a2976",
+          "deployBlock": 37367562,
+          "history": []
+        },
+        "AdapterTSLAImplementation": {
+          "address": "0x984d9E7DDfC041e539CaE85c98627662193dc72F",
+          "artifact": "TIP20MintBurnAdapter.sol:TIP20MintBurnAdapter",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x3ec8ec7bf995a2d6ca37f01a22d67799cbc71ea0507a63688fd2716b431bb0a6",
+          "deployBlock": 37367560,
+          "history": []
+        },
+        "MirrorAMD": {
+          "address": "0x20C000000000000000000000b21134EaB38DfecC",
+          "artifact": "ITIP20.sol:ITIP20",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xb73fb458280737b6a416a1a4a7ce921fcfe41011ab1713bb1e60d4de5e5fbe4d",
+          "deployBlock": 37367729,
+          "history": []
+        },
+        "MirrorAMZN": {
+          "address": "0x20c00000000000000000000086081D645cF16774",
+          "artifact": "ITIP20.sol:ITIP20",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x447d55e6b80ac7e34e4d584467e1ba4523cca875ce2b662c8880a38d8382056d",
+          "deployBlock": 37367619,
+          "history": []
+        },
+        "MirrorNFLX": {
+          "address": "0x20c000000000000000000000Abbbf91DE8978A6d",
+          "artifact": "ITIP20.sol:ITIP20",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x4c6aea8f4b2f647de987c350478bb6b5b0080493bcc5f1c584e6a41f3ea01a97",
+          "deployBlock": 37367689,
+          "history": []
+        },
+        "MirrorPLTR": {
+          "address": "0x20C0000000000000000000001edEEA054Ea97549",
+          "artifact": "ITIP20.sol:ITIP20",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x61c9703b69e7c71cdbc3e52cfab6fbae5b5b58aadc95f198069771353fe1d6ee",
+          "deployBlock": 37367655,
+          "history": []
+        },
+        "MirrorTSLA": {
+          "address": "0x20c000000000000000000000a81E861906820FB7",
+          "artifact": "ITIP20.sol:ITIP20",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x448cd194524c11333c022c5129a4623bb19202214159a0f47489158ef6f7adb8",
+          "deployBlock": 37367578,
+          "history": []
+        },
+        "ScaledUIViewAMD": {
+          "address": "0x5b2C026CCd72da795F8C97Eb697755E255f82319",
+          "artifact": "ScaledUIView.sol:ScaledUIView",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x295c84c1278457a9afdcd63c3b2385d0d3fe5cea5230f3b827889e90f706e4bc",
+          "deployBlock": 37367725,
+          "history": []
+        },
+        "ScaledUIViewAMZN": {
+          "address": "0xfbD49C65De95a8dD785C757cd17F621e698C02Ee",
+          "artifact": "ScaledUIView.sol:ScaledUIView",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x1fcc059bdc245b970bbea0d6350dbb505c63249d4bdcca9813adfb23fb3b8964",
+          "deployBlock": 37367615,
+          "history": []
+        },
+        "ScaledUIViewNFLX": {
+          "address": "0xF042Aca1A896D2fc257544B54c7Df3EC8F186E10",
+          "artifact": "ScaledUIView.sol:ScaledUIView",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x67470dcfa45d81f8d67d8b30298a1160b9020c3e17290cacc42f9a35430ce12e",
+          "deployBlock": 37367680,
+          "history": []
+        },
+        "ScaledUIViewPLTR": {
+          "address": "0x5b6A5f7141cE3a3C7c234A461b723fA810264A55",
+          "artifact": "ScaledUIView.sol:ScaledUIView",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xb4b0056bf60e0b5cd083e80d63fdc02919788fa9fd4872f53dc9b0ba6d49cbc8",
+          "deployBlock": 37367648,
+          "history": []
+        },
+        "ScaledUIViewTSLA": {
+          "address": "0x5d0E0FFd621021F8e4A1e801F2cdE3BCFd8260B2",
+          "artifact": "ScaledUIView.sol:ScaledUIView",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x50cfe7c365e1ba97272dd8530b106da05c98d03eb789eb69207a1175519d570b",
+          "deployBlock": 37367573,
+          "history": []
+        },
+        "StockSyncReceiver": {
+          "address": "0xE1576984eA22F1E620CFCCa6bf6154C4b9a3693e",
+          "artifact": "StockSyncReceiver.sol:StockSyncReceiver",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x140aed4b8565ba1e2175346969cf83e1a2cc1fac1d7eeabc7384bf4d5ef9e56a",
+          "deployBlock": 37367556,
+          "history": []
+        }
+      },
+      "roles": {
+        "GUARDIAN": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e",
+        "SAFE": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e"
+      },
+      "params": {
+        "srcChainId": 46630,
+        "supplyCap": 1000000000
+      },
+      "external": {},
+      "commit": "959edd4"
+    },
     "v4": {
       "contracts": {
         "PoolManager": {
@@ -203,6 +425,76 @@ export const deployments = {
         "proxyAdmin": "0xf89e752995eabd3d6bf5fcce71c8cbb52fe7cab1"
       },
       "commit": "ad79a36"
+    }
+  },
+  "84532": {
+    "lz": {
+      "contracts": {
+        "LzPing": {
+          "address": "0xab53F6CaE562909147497B6611C84Bc69eA54a65",
+          "artifact": "LzPing.sol:LzPing",
+          "profile": "evm",
+          "proxy": false,
+          "txHash": "0xfd491001f71081abfc082ad850fff7811bcefbd4eee3ba582f10f5b70c79ea48",
+          "deployBlock": 47444414,
+          "history": []
+        }
+      },
+      "roles": {},
+      "params": {
+        "eid": 40245
+      },
+      "external": {},
+      "commit": "959edd4"
+    },
+    "stocks": {
+      "contracts": {
+        "HopComposerTSLA": {
+          "address": "0x984d9E7DDfC041e539CaE85c98627662193dc72F",
+          "artifact": "HopComposer.sol:HopComposer",
+          "profile": "evm",
+          "proxy": false,
+          "txHash": "0xdceb3ddb87139b40147b79a88be7afc803dc058f0848799a55124af7991c5361",
+          "deployBlock": 47444860,
+          "history": [
+            {
+              "address": "0x705cc5A0658ec8415a5126f744c975DB121a9893",
+              "deployBlock": 47444644,
+              "retiredAtUtc": "2026-09-29T05:00:07.872Z"
+            }
+          ]
+        },
+        "StockSyncForwarder": {
+          "address": "0x895706548a1FA0C2614e9A95748e14314F6EBe2d",
+          "artifact": "StockSyncForwarder.sol:StockSyncForwarder",
+          "profile": "evm",
+          "proxy": false,
+          "txHash": "0x3e5da55b48272ba488675b89e32c4938869e897615bf8388978d30acd25b4ce7",
+          "deployBlock": 47444859,
+          "history": [
+            {
+              "address": "0x0C7c576188836453Cf30Fec40E09188AD8405995",
+              "deployBlock": 47444642,
+              "retiredAtUtc": "2026-09-29T05:00:07.872Z"
+            }
+          ]
+        },
+        "TransitTSLA": {
+          "address": "0x6477350b26d9c44c8c3caE0B7284523d050f4064",
+          "artifact": "TransitOFT.sol:TransitOFT",
+          "profile": "evm",
+          "proxy": false,
+          "txHash": "0x85fad0636d342157c5d3ec03808126ca27fea3859fac8f10035952a25da9bb5f",
+          "deployBlock": 47444643,
+          "history": []
+        }
+      },
+      "roles": {},
+      "params": {
+        "floatWei": 0
+      },
+      "external": {},
+      "commit": "959edd4"
     }
   }
 } as const;

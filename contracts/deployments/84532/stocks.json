@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "chainId": 84532,
+  "area": "stocks",
+  "commit": "959edd4",
+  "deployedAtUtc": "2026-09-29T05:00:07.872Z",
+  "deployer": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e",
+  "contracts": {
+    "HopComposerTSLA": {
+      "address": "0x984d9E7DDfC041e539CaE85c98627662193dc72F",
+      "artifact": "HopComposer.sol:HopComposer",
+      "profile": "evm",
+      "proxy": false,
+      "txHash": "0xdceb3ddb87139b40147b79a88be7afc803dc058f0848799a55124af7991c5361",
+      "deployBlock": 47444860,
+      "history": [
+        {
+          "address": "0x705cc5A0658ec8415a5126f744c975DB121a9893",
+          "deployBlock": 47444644,
+          "retiredAtUtc": "2026-09-29T05:00:07.872Z"
+        }
+      ]
+    },
+    "StockSyncForwarder": {
+      "address": "0x895706548a1FA0C2614e9A95748e14314F6EBe2d",
+      "artifact": "StockSyncForwarder.sol:StockSyncForwarder",
+      "profile": "evm",
+      "proxy": false,
+      "txHash": "0x3e5da55b48272ba488675b89e32c4938869e897615bf8388978d30acd25b4ce7",
+      "deployBlock": 47444859,
+      "history": [
+        {
+          "address": "0x0C7c576188836453Cf30Fec40E09188AD8405995",
+          "deployBlock": 47444642,
+          "retiredAtUtc": "2026-09-29T05:00:07.872Z"
+        }
+      ]
+    },
+    "TransitTSLA": {
+      "address": "0x6477350b26d9c44c8c3caE0B7284523d050f4064",
+      "artifact": "TransitOFT.sol:TransitOFT",
+      "profile": "evm",
+      "proxy": false,
+      "txHash": "0x85fad0636d342157c5d3ec03808126ca27fea3859fac8f10035952a25da9bb5f",
+      "deployBlock": 47444643,
+      "history": []
+    }
+  },
+  "roles": {},
+  "params": {
+    "floatWei": 0
+  },
+  "external": {}
+}
