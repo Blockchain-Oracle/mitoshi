@@ -2,6 +2,7 @@
   "generatedBy": "scripts/codegen/clients.mjs",
   "fragments": [
     "42431/engine",
+    "42431/fair",
     "42431/launch",
     "42431/lz",
     "42431/stocks",
@@ -21,6 +22,7 @@
     "EngineLens",
     "EventVault",
     "EventsEngine",
+    "FairValueGuard",
     "HopComposer",
     "IPoolManager",
     "IPositionDescriptor",

@@ -1,0 +1,11 @@
+{
+  "_doc": "FairValueGuard parameters every deploy sets (A.5.4, PD-2). σ in annualized basis points on the Series' clock (calendar year for the 24/7 crypto lanes), the S3 house maker's defaults (services/ops seed-maker env.ts: BTC 5,000, ETH 6,500, SOL 8,000), so the bound and the maker quote one model; the script turns each into sigmaE8 = floor(sqrt(bps^2 * 1e8 / yearSec)) (fair.ts sigmaE8FromBps). Spot = the RedStone verifier's verifySpot on the Series' own RedStone feed. Keys match venue-spec.json series.",
+  "maxSpotAgeSec": 120,
+  "calendarYearSec": 31536000,
+  "tradingYearSec": 5896800,
+  "series": [
+    { "key": "BTC-5m", "sigmaBps": 5000, "clock": "calendar" },
+    { "key": "ETH-5m", "sigmaBps": 6500, "clock": "calendar" },
+    { "key": "SOL-5m", "sigmaBps": 8000, "clock": "calendar" }
+  ]
+}

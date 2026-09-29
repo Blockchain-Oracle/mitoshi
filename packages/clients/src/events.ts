@@ -44,6 +44,13 @@ export const events = {
     "OrderRemoved(bytes32,uint48,address,uint128,uint8,uint16,uint64,uint8)",
     "OrdersCancelled(bytes32,uint48,address,uint8,uint32,uint32,uint64)"
   ],
+  "FairValueGuard": [
+    "MaxSpotAgeSet(uint32)",
+    "OwnershipTransferStarted(address,address)",
+    "OwnershipTransferred(address,address)",
+    "SigmaSet(bytes32,uint64)",
+    "SpotSourceSet(uint16,address,bytes32)"
+  ],
   "LaunchRegistry": [
     "CodeReserved(string)",
     "CurveLaunchpadSet(address)",
