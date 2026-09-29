@@ -117,3 +117,6 @@ html[data-shell="app"] .grain { display: none; }
 @media (min-width: 1024px) { .capability-pending { padding: 64px var(--spacing-gutter-desktop); } }
 .footer .footer-links { display: flex; flex-direction: row; flex-wrap: wrap; }
 .marquee-waiting { overflow: hidden; text-overflow: ellipsis; padding-right: 16px; }
+
+/* Inputs never zoom on iOS (§2.5 ≥ 16 px): the floor applies app-wide, larger type stays larger. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select { font-size: max(16px, 1em); }

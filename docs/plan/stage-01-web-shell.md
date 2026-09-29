@@ -32,7 +32,7 @@
   stake attach in S4); the modal has a slot for the arm step, filled when its target exists (wallet access key in S4 once the engine
   is deployed; Trading Balance arm in S7 once EventVault is); contextual first-use explainers replace the 5-step
   tutorial (Masayume `features/onboarding` copy reused where it still fits).
-- [ ] 1b transactions: `web/src/components/tx/*` — the `TxLifecycle` family (D43): state machine in
+- [x] 1b transactions: `web/src/components/tx/*` — the `TxLifecycle` family (D43): state machine in
   `packages/core/src/tx/lifecycle.ts` (pure, tested), CTA-with-blocker, signing/submitted/confirmed chips, failure card
   with "moneyMoved", cream receipt (Masayume), "key used" receipt, confirm tiers, journal hooks.
 - [ ] 1b wallet: `web/src/providers/wallet/*` per C.3.1 (Agari replica file-by-file, wagmi 3 names per D46; wallet-picker
@@ -118,6 +118,8 @@
 - **1b shell — 21st starts still to land.** 24857 + 1600 (account pill) land with the wallet; 23552 (segmented
   control) and 23557 (skeleton swap) with the settings surface; 24297 (toast) and the 27109/21349/19177 header and
   active-pill techniques are applied where those surfaces are next touched in this stage.
+- **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
+  transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
 
 ## Handoff
 

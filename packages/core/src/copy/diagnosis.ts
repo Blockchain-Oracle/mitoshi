@@ -10,7 +10,7 @@ export interface DiagnosisCopy {
 const COPY: Record<DiagnosisKind, DiagnosisCopy> = {
   "signer-required": { headline: "Connect a wallet first", body: "Reading works without one; writing needs your signature." },
   "wrong-chain": { headline: "Wrong network", body: "This wallet is on another network. Switch to Tempo and try again." },
-  "user-rejected": { headline: "You cancelled in your wallet", body: "Nothing was sent. Try again when you're ready." },
+  "user-rejected": { headline: "You cancelled", body: "Nothing was sent. Try again when you're ready." },
   "fee-token": { headline: "Fee not covered", body: FEE_TOKEN_SHORT },
   "insufficient-collateral": { headline: "Not enough funds", body: "Your stake exceeds what your account holds. Add funds or lower the stake." },
   "insufficient-allowance": { headline: "Approval needed", body: "The venue needs permission to take your stake. It's absorbed into your next bet." },

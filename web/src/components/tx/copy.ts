@@ -1,0 +1,32 @@
+/** The TxLifecycle family's words (D-045 grammar: the CTA names its blocker; failures say whether money moved). */
+export const TX = {
+  signingPasskey: "Confirm with your passkey…",
+  signingKey: "Signing with your trading key…",
+  signingWallet: "Confirm in your wallet…",
+  submitted: "Sent — waiting for the chain",
+  confirmedPending: "Confirmed",
+  confirmed: "Confirmed",
+  settled: (delivered: number, legs: number) => (legs > 1 ? `Delivered ${delivered} of ${legs}` : "Delivered"),
+  unknown: "Waiting for the chain to answer",
+  unknownBody: "It is either in or it never left; we'll show you which. Nothing is retried on its own.",
+  scheduled: (sec: number) => `Starting in ${sec}s`,
+  undo: "Undo",
+  moneyMoved: {
+    no: "Nothing was taken.",
+    yes: "Money moved — your receipt shows where.",
+    unknown: "We're checking whether it landed. Nothing is retried on its own.",
+  },
+  retry: "Try again",
+  technical: "Technical details",
+  noFees: "No fees to pay",
+  chips: { signing: "Signing", submitted: "Sent", confirmed: "Confirmed" },
+  typedConfirm: (code: string) => `Type ${code} to confirm`,
+  typedMismatch: "That doesn't match yet.",
+  keyUsed: {
+    title: "Signed by your trading key",
+    left: (left: string, limit: string) => `${left} of ${limit} left this period`,
+    expires: (when: string) => `Key expires ${when}`,
+    manage: "Manage keys",
+  },
+  explorer: "View on the explorer",
+} as const;

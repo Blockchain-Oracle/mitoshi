@@ -26,4 +26,5 @@ export * from "./x";
 export * from "./stocks";
 export * from "./bridge";
 export * from "./themes";
+export * from "./tx";
 export * from "./launch";
