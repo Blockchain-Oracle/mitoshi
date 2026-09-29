@@ -19,7 +19,7 @@ coverage/
 # Contracts
 contracts/out/
 contracts/cache/
-contracts/broadcast/*/dry-run/
+contracts/broadcast/**/dry-run/
 
 # Mobile
 mobile/ios/
