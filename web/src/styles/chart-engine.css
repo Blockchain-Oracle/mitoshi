@@ -1,0 +1,20 @@
+/* The shared chart helper's theme (components/ui/chart-engine.tsx; From 21st.dev 29968 + 29532): `--spectrum-chart-*` read
+ * Masayume's direction tokens, so up/down/surface follow both themes; the keyframes and states live here. */
+.chart-engine {
+  --spectrum-chart-up: var(--color-profit);
+  --spectrum-chart-down: var(--color-loss);
+  --spectrum-chart-surface: var(--color-surface-1);
+  color: var(--color-ink-muted);
+}
+@keyframes spectrum-mc-rise { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+@keyframes spectrum-mc-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes spectrum-sk-pulse { from { opacity: 1; } to { opacity: 0.4; } }
+.chart-state { position: relative; display: flex; width: 100%; align-items: center; justify-content: center; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.chart-skeleton { position: absolute; inset: 1rem; display: flex; flex-direction: column; justify-content: space-between; }
+.chart-skeleton-rule { height: 1px; width: 100%; background: var(--color-hairline); animation: spectrum-sk-pulse 1.5s ease-in-out infinite alternate; }
+.chart-range { position: relative; display: inline-grid; grid-template-columns: repeat(var(--range-count), minmax(0, 1fr)); padding: 2px; border-radius: 999px; background: var(--color-surface-2); }
+.chart-range-thumb { position: absolute; inset-block: 2px; left: 2px; width: calc((100% - 4px) / var(--range-count)); border-radius: 999px; background: var(--color-surface-3); transform: translateX(calc(var(--range-index) * 100%)); transition: transform 380ms var(--ease-out); }
+.chart-range-tab { position: relative; z-index: 1; padding: 0 0.75rem; font-family: var(--font-data); font-size: var(--text-caption); color: var(--color-ink-secondary); border-radius: 999px; }
+.chart-range-tab.is-active { color: var(--color-ink); }
+.chart-range-tab:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .chart-range-thumb, .chart-skeleton-rule { transition: none; animation: none; } }

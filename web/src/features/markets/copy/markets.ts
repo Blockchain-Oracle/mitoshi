@@ -61,9 +61,10 @@ export const HERO = {
   buyDown: "Buy DOWN",
   noDepth: "no resting offers",
   contracts: "contracts",
-  chartLabel: (asset: string, opening: string, live: string) => `${asset} price: opening print ${opening}, live ${live}`,
+  chartLabel: (asset: string, opening: string, live: string) => `${asset ? `${asset} ` : ""}price chart: opening print ${opening}, live ${live}`,
   chartReadout: (time: string, price: string) => `${time} · ${price}`,
   scrubHint: "Arrow keys move through the prices; Escape returns to live.",
+  vsLine: "vs the line",
   source: (source: string) => `Settles on the ${source} signed print at the close · the chart follows the same feed`,
   sources: { redstone: "RedStone", datastreams: "Chainlink Data Streams", attested: "attested" } as Record<string, string>,
   sourceUnknown: "signed oracle",
@@ -88,6 +89,7 @@ export const HERO_HEAD = {
   betweenRounds: "Between rounds",
   settlesIn: "Settles in",
   opensIn: "Opens in",
+  minuteLeft: "One minute left",
   aboveLine: "above the UP line",
   needsForUp: "for UP to win",
   needs: "needs",
@@ -99,4 +101,22 @@ export const HERO_HEAD = {
   roomQualifier: "bettors only",
   roomPending: "The Room opens with the social service — it is not connected yet.",
   upCosts: (cents: string) => `UP costs ${cents}`,
+} as const;
+
+/** The hero's Depth view (21st 29968): the UP side of the book, cumulative contracts. */
+export const DEPTH = {
+  toggle: "Chart view",
+  price: "Price",
+  depth: "Depth",
+  title: "Order book depth, UP terms",
+  mid: "Mid",
+  spread: "Spread",
+  bidDepth: "UP bids",
+  askDepth: "UP asks",
+  empty: "No resting orders on either side of this Window right now.",
+  error: "Couldn't read this Window's book. Nothing changed; try again.",
+  retry: "Try again",
+  caption: "Order book depth for this Window — cumulative contracts by price, UP terms",
+  bid: "Bid",
+  ask: "Ask",
 } as const;

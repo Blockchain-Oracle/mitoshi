@@ -7,8 +7,11 @@
  */
 import type { EventMarket, Lane, MarketId, Side } from "@cwf/core";
 import { MessageCircle } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useState } from "react";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { ReadingBoundary } from "@/components/states";
-import { HERO, HERO_HEAD, MARKETS } from "../copy";
+import { DEPTH, HERO, HERO_HEAD, MARKETS } from "../copy";
 import type { LaneTabKey } from "../data/lane-view";
 import { useChartSeries } from "../data/useChartSeries";
 import { useTopOfBook } from "../data/useTopOfBook";
@@ -26,10 +29,14 @@ export interface HeroChartProps {
   onSelect: (marketId: MarketId, side: Side) => void;
 }
 
+// The depth view (21st 29968) is its own island: loaded only when the user switches to it (§3.1).
+const HeroDepth = dynamic(() => import("./HeroDepth"), { ssr: false, loading: () => <div className="h-56" /> });
+
 const cents = (c: number | null) => (c === null ? HERO_HEAD.noPrice : `${c}¢`);
 
 export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: HeroChartProps) {
   const series = useChartSeries(market);
+  const [view, setView] = useState<"price" | "depth">("price");
   const book = useTopOfBook(market);
   const latestRaw = series?.ok ? (series.value.latest?.valueRaw ?? null) : null;
   const source = market.printSource ? (HERO.sources[market.printSource] ?? HERO.sourceUnknown) : HERO.sourceUnknown;
@@ -47,11 +54,18 @@ export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: H
         </div>
         <HeroSettlesIn tradingStartSec={market.tradingStartSec} expirySec={market.expirySec} intervalSec={market.intervalSec} />
       </div>
+      <div className="flex justify-end px-1">
+        <SegmentedControl label={DEPTH.toggle} value={view} onValueChange={setView} options={[{ value: "price", label: DEPTH.price }, { value: "depth", label: DEPTH.depth }]} />
+      </div>
       <div className="hero-chart-canvas">
         <div className="mh-chart-fill">
-          <ReadingBoundary reading={series} shape="chart">
-            {(chart) => <PriceChart points={chart.points} openingRaw={openingRaw} className="h-full w-full" />}
-          </ReadingBoundary>
+          {view === "depth" ? (
+            <HeroDepth market={market} />
+          ) : (
+            <ReadingBoundary reading={series} shape="chart">
+              {(chart) => <PriceChart points={chart.points} openingRaw={openingRaw} interactive className="h-full w-full" />}
+            </ReadingBoundary>
+          )}
         </div>
       </div>
       <p className="px-1 type-caption text-ink-muted">{HERO.source(source)}</p>

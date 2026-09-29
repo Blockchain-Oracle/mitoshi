@@ -68,19 +68,18 @@
 
 ## Handoff
 
-**UI lane (`stage/S4-ui`, 2026-09-29 17:10Z) — paused: the machine's data volume fell below 4 GB (1.7–2.7 GB free,
-load average ~30), per the lane's stop rule.** Nothing was built or run against the new code yet; `tsc` on `web` passes.
-- Done: box 2's UI (9897a1b) — the arm step in the ceremony slot (`features/tap-trading`, D-140), S1's access-key policy
-  switched to `walletKeyAuthorization()` (web test against the relay's `walletKeyRule`), the device's key marked on
-  `/settings/account`.
-- In progress (a8cf7b0, box 3 open): `@cwf/markets/react` Window reads (`window-reads.ts`); `features/markets/*`
-  (hero + lazy lightweight-charts, lanes with ticker pin, word board, ticket rail/slide-over with sticky CTA dock and
-  pre-open scheduled calls, pinned calls + settled toast, verdict with the false-"Paid" fix and the void card, Collect
-  batch, portfolio with Collect on top and cash-out); `/markets`, `/markets/[id]`, `/portfolio` now render it.
-- Next: free disk, `pnpm build` + budgets, run it locally against Moderato and fix what the run shows; commit box 3;
-  box 4 (21st revamps: 16240 ticket, 22249 card, 19328 countdown, 20107 readout/scrub, 29968 depth, 23527 cash-out
-  hold, 24692 reveal, 27124 positions, 29532 portfolio chart; register in `components.md`); then the gate
-  (virtual-authenticator run incl. the NYSE stock call — next session Wed 2026-09-30 13:30–20:00Z).
+**UI lane (`stage/S4-ui`, 2026-09-29 ~18:00Z) — paused again: the data volume fell back under 4 GB (1.6 GB free) while
+another process filled it; this lane's build was stopped and its `.next` removed (nothing of this lane was using it).**
+- Done: box 2's UI (9897a1b). Box 3 port in progress (a8cf7b0). Box 4 started (this commit): the shared `chart-engine`
+  (21st 29968/29532, generators removed, tokens), the depth chart (29968) as the hero's lazy Depth view, the hero chart's
+  readout and keyboard scrub (20107) around lightweight-charts, the rolling headline clock (19328); both screens are now
+  lazy islands under `MotionScope` (keeps motion out of the first load). Not yet built.
+- Local gate setup ready: Postgres `s4ui-pg` (127.0.0.1:55433, migrated) and Redis `s4ui-redis` (127.0.0.1:56380) in
+  docker; a CORS pass-through to the ops stream and ops HTTP on 127.0.0.1:3199 (scratchpad `sse-proxy.mjs`); a gitignored
+  `web/.env.local` (relay fee payer from `~/.config/cwf/testnet/relay-fee-payer.json`, `NEXT_PUBLIC_INDEX_URL` pointed at
+  an unreachable host so the provider reads the chain — the local index DB is empty; new env passthrough in `lib/env.ts`).
+- Next: with ≥ 4 GB free, `pnpm build` + budgets; finish box 4 (16240 ticket, 22249 card readout, 23527 cash-out hold,
+  24692 reveal, 27124 positions, 29532 portfolio chart; `components.md` rows); run locally and fix; commit box 3/4; gate.
 
 **Backend lane (`stage/S4-backend`, 2026-09-29) — done, proven live on Moderato (acceptance/S4.md); the UI part is next.**
 Box 1 is ticked. Box 2's X20 and box 3's backend (claim-all, cash-out, held state, live data) are proven; the boxes stay
