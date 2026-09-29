@@ -47,9 +47,9 @@
     "@types/react-dom": "catalog:",
     "babel-plugin-react-compiler": "catalog:",
     "tailwindcss": "catalog:",
+    "tsx": "catalog:",
     "tw-animate-css": "catalog:",
     "typescript": "catalog:",
-    "vitest": "catalog:",
-    "tsx": "catalog:"
+    "vitest": "catalog:"
   }
 }

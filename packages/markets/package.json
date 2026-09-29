@@ -31,8 +31,10 @@
     "@cwf/core": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "accounts": "catalog:",
+    "mppx": "catalog:",
     "ox": "catalog:",
     "redis": "catalog:",
+    "tidx.ts": "catalog:",
     "viem": "catalog:",
     "zod": "catalog:"
   },

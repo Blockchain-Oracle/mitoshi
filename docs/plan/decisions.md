@@ -625,6 +625,52 @@ at a time.
 
 **Why:** the gate asks for auto-pay and recount/halt replay on the live venue; the Coolify Postgres is internal only (D-061).
 
+### D-085 — spike X10 and the MPP payer (finding + decision, S3.5, 2026-09-29)
+
+X10, the unpaid 402 probe (`scripts/mpp/probe.ts`, `acceptance/S3.5.md`): `anthropic.mpp.tempo.xyz/v1/messages` and
+`openai.mpp.tempo.xyz/v1/chat/completions` answer with **four offers each — three `charge` (USDC.e
+`0x20c0…b9537d11c60e8b50`, NANOUSD `0x20c0…8b4c619d2eedec7a`, pathUSD) and one `session` (USDC.e, escrow
+`0x4d50…`)**, all on mainnet 4217 with the fee sponsored by the server; a fixed price per request by model (Sonnet/
+Haiku/gpt-4o-mini 1,000 base = $0.001, Opus 5 1,200). The mpp.dev directory lists these hosts as session-only; the live
+challenges are authoritative. **Decision:** the payer prefers **charge** (one TIP-20 transfer → on-chain `reference` per
+request, D-033) and records session payments as channel + cumulative voucher. The payer is an **access key**
+(`Account.fromSecp256k1(MPP_PAYER_PRIVATE_KEY, { access: MPP_ROOT_ADDRESS })`) authorized by the root with TIP-1011
+**daily limits** (testnet 5 pathUSD; mainnet default 2 USDC.e + 2 pathUSD, the owner may change them) and scopes limited
+to token `transfer`/`transferWithMemo` and the escrow; software caps (chain, currency, per-request, per-UTC-day,
+reserved before signing) sit above it; every paid response becomes an `mpp_receipts` row scoped by
+`withReceiptScope`. Mainnet refuses to build a payer unless `MPP_MAINNET_APPROVED=1` (Q-020). Testnet proof uses
+`mpp.dev/api/ping/paid`, a Moderato charge endpoint (0.1 test pathUSD). The testnet roles are `mpp-root` / `mpp-payer`.
+
+**Why:** measured (X10 + a paid Moderato call whose limit dropped by exactly the price); receipts are the agent thesis.
+
+### D-086 — Tempo Indexer API: session-only MPP, testnet queries paid on Moderato, testnet sessions refused (finding, S3.5, 2026-09-29)
+
+`GET api.tempo.xyz/v1/indexer/query` answers every anonymous request with 402 — `session` only, 100 base (pathUSD) per
+request, suggested deposit 10,000, escrow `0x4d50…`, recipient `0xfF87…20f0`, **charged on the network queried**
+(`chainId=42431` → Moderato; this corrects 16 §8, which saw testnet queries charged on mainnet). A Moderato session is
+**rejected by the server** ("Payment verification failed" / `PAYMENT_REJECTED`) for our payer and for the official
+`mppx` 0.11.0 CLI alike, although the signed channel-open transaction is valid (broadcast by hand it lands, tx in
+`acceptance/S3.5.md`). **Decision:** the indexer client supports three auths — API key (`TEMPO_INDEXER_API_KEY`, the
+owner creates it in the Tempo console: owner action), MPP session (live on mainnet after Q-020; testnet once Tempo
+accepts the session), and a **self-hosted tidx** base URL (`TIDX_URL`) — and is proven against a real tidx following
+Moderato (S3.5.3). Q-012's default (own follower + the Indexer API for analytics) stands.
+
+**Why:** measured; the client must be real now without spending mainnet funds or creating accounts for the owner.
+
+### D-087 — indexer sources are generated; the recount compares against the chain until `idx_events` exists (decision, S3.5, 2026-09-29)
+
+`scripts/codegen/clients.mjs` also writes `packages/clients/src/indexer.ts` (`indexerSources`): per chain, every
+deployed contract with its deploy block and each event's **full** signature (`indexed` + names — what `signature=`
+needs to expose decoded columns) and topic0; `codegen:check` in CI keeps it reproducible. The hourly recount (ops actor
+`indexer-recount`, `indexer_recounts` table) counts each event in the indexer (raw `logs` by address + selector) and
+in our own record over one closed range; "our own record" is pluggable — the chain's `eth_getLogs` now, an `idx_events`
+counter when S3's follower creates that table (its schema is S3's). A backfilling self-hosted tidx reports contracts it
+does not yet cover instead of comparing them. **Finding:** a tidx following Moderato over the public RPC is throttled
+(HTTP 429; batch requests > ~50 receipts are "request too large") to ≈4 blocks/s of backfill — a hosted tidx needs a
+provider RPC or a key on the public one.
+
+**Why:** C.4.3 asks for the recount against our index; the chain is the stricter reference until the index exists.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

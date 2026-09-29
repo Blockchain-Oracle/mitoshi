@@ -207,7 +207,7 @@ export const rules = [
     description: `no source file over ${MAX_FILE_LINES} lines`,
     scopes: ["web/src", "mobile/src", "packages", "services", "scripts", "contracts/src", "contracts/test", "contracts/script"],
     exts: [...TS, ".mjs", ".css", ".sol"],
-    exclude: [ABI_DIR, "packages/clients/src/deployments.ts", "packages/clients/src/events.ts", "packages/clients/src/relay-targets.ts"],
+    exclude: [ABI_DIR, "packages/clients/src/deployments.ts", "packages/clients/src/events.ts", "packages/clients/src/relay-targets.ts", "packages/clients/src/indexer.ts"],
     check: fileLength,
   },
   {

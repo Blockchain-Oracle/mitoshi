@@ -15,6 +15,7 @@ import { startEarnings } from "./calendar/earnings";
 import { startCalendar } from "./calendar";
 import { startFundsWatch } from "./actors/funds-watch";
 import { startHouseTaker } from "./actors/house-taker";
+import { indexerRecountPass, INDEXER_RECOUNT_EVERY_MS } from "./actors/indexer-recount";
 import { keeperDeps, launchKeeperPass, LAUNCH_KEEPER_EVERY_MS } from "./actors/launch-keeper";
 import { memeAddresses } from "@cwf/markets/launch";
 import { tempoReadClient } from "@cwf/markets";
@@ -44,6 +45,14 @@ export const ACTORS: Record<string, ActorEntry> = {
   earnings: { start: (d) => startEarnings(d) },
   calendar: { start: (d) => startCalendar(d) },
   "funds-watch": { start: (d) => startFundsWatch(d) },
+  // S3.5: the hourly Tempo Indexer API / tidx recount. Reads only on an API key or self-hosted tidx (idles with the
+  // reason until one is configured); a paid MPP route honours DRY_RUN inside the pass. Needs DATABASE_URL.
+  "indexer-recount": {
+    start: (d) => {
+      if (!d.sql) throw new Error("indexer-recount needs DATABASE_URL");
+      return runActor({ name: "indexer-recount", log: d.log, dryRun: d.env.dryRun, everyMs: INDEXER_RECOUNT_EVERY_MS, pass: indexerRecountPass(d.env, d.sql) });
+    },
+  },
   // Opt-in (S3 soak): house-key trades so an unattended soak exercises fills and auto-pay; never in the default set.
   "house-taker": { start: (d) => startHouseTaker(d) },
   // Opt-in (S17b): graduates Complete memecoins. Until `tx/send.ts` is wired as its sender (D-098) it plans and
@@ -58,4 +67,4 @@ export const ACTORS: Record<string, ActorEntry> = {
   },
 };
 
-export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch"] as const;
+export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount"] as const;

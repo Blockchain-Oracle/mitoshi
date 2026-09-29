@@ -12,8 +12,12 @@ import { createRequire } from "node:module";
 const require = createRequire(join(import.meta.dirname, "..", "package.json"));
 const { generatePrivateKey, privateKeyToAddress } = await import(require.resolve("viem/accounts"));
 
-/** Roles from plan C.5.2 / C.6 that sign on their own. Mainnet adds MPP payer after Q-020. */
-export const ROLES = ["deployer", "deployer-launch", "deployer-themes", "deployer-products", "deployer-vault", "deployer-maker", "relay-fee-payer", "roller", "price-relay", "settler", "seed-maker", "earn-quoter", "keeper", "x-relay", "desk", "stock-sync", "ops-fee-payer"];
+/**
+ * Roles from plan C.5.2 / C.6 that sign on their own. `mpp-root` holds the MPP budget and `mpp-payer` is the access key
+ * it authorizes (TIP-1011 periodic limits, C.5.3); on testnet they pay the Tempo Indexer API in Moderato pathUSD (S3.5),
+ * on mainnet they are created only after Q-020.
+ */
+export const ROLES = ["deployer", "deployer-launch", "deployer-themes", "deployer-products", "deployer-vault", "deployer-maker", "relay-fee-payer", "roller", "price-relay", "settler", "seed-maker", "earn-quoter", "keeper", "x-relay", "desk", "stock-sync", "ops-fee-payer", "mpp-root", "mpp-payer"];
 
 const network = process.argv[2];
 if (network !== "testnet" && network !== "mainnet") throw new Error("usage: generate.mjs <testnet|mainnet>");

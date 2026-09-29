@@ -14,11 +14,13 @@
 | `SOCIAL_SESSION_SECRET`, `ROOM_TOKEN_SECRET` | ✓ | ✓ | ✓ | ✓ |
 | `<ROLE>_PRIVATE_KEY` (roller, relay, settler, maker, keeper, …) | — | ✓ | ✓ | ✓ |
 | `DRY_RUN`, `OPS_ACTORS`, `OPS_HTTP_PORT=8080`, `OPS_STUCK_PASS_MS` | — | ✓ | ✓ | ✓ |
-| `MPP_PAYER_PRIVATE_KEY`, `MPP_ROOT_ADDRESS` | — | ✓ | — | after Q-020 |
+| `MPP_PAYER_PRIVATE_KEY`, `MPP_ROOT_ADDRESS` | — | ✓ | ✓ (roles `mpp-payer` / `mpp-root`, Moderato pathUSD, D-085) | after Q-020 |
+| `MPP_MAINNET_APPROVED`, `MPP_MAX_PER_REQUEST_BASE`, `MPP_MAX_PER_DAY_BASE` | — | ✓ | caps optional | `MPP_MAINNET_APPROVED=1` only with the owner's go (Q-020) |
 | `THEME_KEY_KEK` | — | ✓ | ✓ | KMS-wrapped |
 | AI provider keys | ✓ | ✓ | ✓ | ✓ |
 | `DATASTREAMS_API_KEY`, `DATASTREAMS_API_SECRET` | ✓ | ✓ | after Q-011 | ✓ |
 | `FINNHUB_API_KEY`, `ALPACA_*`, `TEMPO_INDEXER_API_KEY` | ✓ | ✓ | ✓ | ✓ |
+| `TIDX_URL`, `TIDX_BASIC_AUTH` (self-hosted tidx), `INDEXER_VIA_MPP` | — | ✓ | optional (D-086) | optional; MPP after Q-020 |
 | `APNS_KEY_P8`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `FCM_SERVICE_ACCOUNT` | — | ✓ | SM2 | — |
 | `WALLETCONNECT_PROJECT_ID` | ✓ | — | ✓ | ✓ |
 | `CWF_REGION_OVERRIDE`, `DEV_FIXTURES` | ✓ | — | optional | never |
