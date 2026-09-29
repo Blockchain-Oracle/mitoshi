@@ -57,21 +57,26 @@
 
 ## Handoff
 
-**State (2026-09-29 07:45Z): every S3 box is built and the venue runs live on Coolify; the 24 h soak is running and
-the gate is not yet passed.** Branch `stage/S3-ops` (built on `stage/S1-web-shell` @ `082c13f`, D-090 — merge S1 first).
+**State (2026-09-29 13:30Z): every S3 box is built and the venue runs live on Coolify; the soak clock RESTARTED at
+12:14:20Z after the S3.11 void fix (D-133) and the gate is not yet passed.** Branch `stage/S3-ops` (built on
+`stage/S1-web-shell` @ `082c13f`, D-090 — merge S1 first); the fix is `stage/S3-fix` (a07b119, e072ffb, f14cb30 + docs)
+on `integration/t1` @ `9e2a333`.
 
-- **Live:** `mitoshi-ops-testnet` (uuid `8iaimzcz5gcmont5hqbm6yhk`) deployed from `stage/S3-ops` (the app's git branch
-  was set back to `integration/t1` afterwards without a redeploy: **do not redeploy ops from the trunk until S3 is
-  merged**, or the venue stops). `DRY_RUN=0`, `OPS_DRY_ACTORS` empty, `OPS_ACTORS` = chain-head, archive, spot,
+- **Live:** `mitoshi-ops-testnet` (uuid `8iaimzcz5gcmont5hqbm6yhk`) deployed from `stage/S3-fix` @ `f14cb30`
+  (2026-09-29 12:14:20Z; the app's git branch was set back to `integration/t1` afterwards without a redeploy: **do not
+  redeploy ops from the trunk until `stage/S3-fix` is merged**, or the voids return). `TEMPO_RPC_UNITS_PER_SEC` unset
+  (30, adaptive; `/health.rpc` shows the rate in force and 429s, D-134). `DRY_RUN=0`, `OPS_DRY_ACTORS` empty, `OPS_ACTORS` = chain-head, archive, spot,
   indexer, roller, price-relay, settler, seed-maker, halt-watch, earnings, calendar, funds-watch, house-taker. Health:
   `https://ops.testnet.mitoshi.xyz/health`; stream `https://stream.testnet.mitoshi.xyz/v1/stream?topics=…`.
 - **Venue:** 66 Series (D-091): BTC/ETH/SOL 5m; 9 stocks × Regular 5m/15m/60m, Gap, 24/7 5m/15m/60m (PLTR/AMD 24/7
   paused: no RedStone feed). Pool reserved to 256 nodes.
-- **Soak window (gate):** started 2026-09-29 07:04Z (roller live). It must run unattended through the Tuesday US
+- **Soak window (gate):** first run 07:04Z voided 62 % of Windows (F-S3-09) and does not count; **restarted
+  2026-09-29 12:14:20Z**, ends **2026-09-30 12:15Z** (D-133), still spanning the Tuesday US session and the crypto
+  overnight. (Superseded first-run text follows:) started 2026-09-29 07:04Z (roller live). It must run unattended through the Tuesday US
   session (2026-09-29 13:30–20:00Z; Regular Windows were prelisted at 07:04Z) and the crypto overnight, ending
-  **2026-09-30 07:05Z**. At the end check, and record in `acceptance/S3.md`:
+  ~~2026-09-30 07:05Z~~ → **2026-09-30 12:15Z** (restart). At the end check, and record in `acceptance/S3.md`:
   1. `/health` ok, no actor with `failures ≥ 3` or silent; `window-roller`, `price-relay`, `settler` counters (opened,
-     recorded, copied, settled, redeemFor, **missed = 0**, failed) — note ops restarts (`commit`/`startedMs`).
+     recorded, copied, settled, redeemFor, **missed = 0**, failed), `rpc` (rate, 429s), and the void rate by lane — note ops restarts (`commit`/`startedMs`).
   2. `pnpm --dir scripts exec tsx drive/recount.ts` → **OK** (index == chain replay, total and per Window).
   3. `pnpm --dir scripts exec tsx drive/halt-replay.ts --from 1790665440` → OK; list any real halt transitions (a
      RedStone stall in session would show here).
