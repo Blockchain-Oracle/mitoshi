@@ -6,6 +6,13 @@ import { archivePass, ARCHIVE_EVERY_MS } from "./actors/archive";
 import { chainHeadPass, CHAIN_HEAD_EVERY_MS } from "./actors/chain-head";
 import { startIndexer } from "./actors/indexer";
 import { startWindowRoller } from "./actors/window-roller";
+import { startPriceRelay } from "./actors/price-relay";
+import { startSettler } from "./actors/settler";
+import { startSeedMaker } from "./actors/seed-maker";
+import { startHaltWatch } from "./actors/halt-watch";
+import { startEarnings } from "./calendar/earnings";
+import { startCalendar } from "./calendar";
+import { startFundsWatch } from "./actors/funds-watch";
 import { runActor, type VenueDeps } from "./runtime";
 
 export interface ActorEntry {
@@ -25,6 +32,13 @@ export const ACTORS: Record<string, ActorEntry> = {
   spot: { start: () => undefined, spot: true },
   indexer: { start: (d) => startIndexer(d) },
   roller: { start: (d) => startWindowRoller(d) },
+  "price-relay": { start: (d) => startPriceRelay(d) },
+  settler: { start: (d) => startSettler(d) },
+  "seed-maker": { start: (d) => startSeedMaker(d), spot: true },
+  "halt-watch": { start: (d) => startHaltWatch(d), spot: true },
+  earnings: { start: (d) => startEarnings(d) },
+  calendar: { start: (d) => startCalendar(d) },
+  "funds-watch": { start: (d) => startFundsWatch(d) },
 };
 
-export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller"] as const;
+export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch"] as const;

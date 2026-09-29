@@ -4,7 +4,7 @@
  * One roller pass: re-read every registry Series on the chain clock, plan each by lane, and open what is due. Every
  * send is preceded by a fresh Series read and a simulation; "already opened" engine errors count as done.
  */
-import { laneKey, laneListable } from "@cwf/core";
+import { laneKey, laneListable, TICKERS } from "@cwf/core";
 import { fetchSeries, listSeries, openWindowCall, OpsSendError, sendOps, type OpsClient, type SeriesView, type Venue } from "@cwf/markets/ops";
 import type { PassResult } from "../../runtime/actor";
 import { errorText } from "../../runtime/env";
@@ -53,6 +53,8 @@ async function refreshSeries(state: RollerState): Promise<void> {
 }
 
 export function planFor(s: SeriesView, clock: PlanClock): SeriesPlan {
+  // A 24/7 stock lane whose feed RedStone does not publish can never print: paused, never listed to void.
+  if (s.lane === "stock24" && TICKERS[s.symbol!].redstone24x7FeedId === null) return { kind: "closed", wakeSec: null, state: "paused: no signed source (no RedStone 24/7 feed)" };
   return planByLane(
     { key: seriesKey(s), symbol: s.symbol!, lane: s.lane!, cadenceSec: s.cadenceSec, maxLeadSec: s.maxLeadSec, nextIndex: s.nextIndex, lastExpirySec: s.lastExpirySec, versions: s.versions.map(versionWindow) },
     clock,

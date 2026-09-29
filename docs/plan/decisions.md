@@ -455,7 +455,9 @@ existing `services/ops/Dockerfile`, health `/health`, `DRY_RUN` default on.
 `venue-spec.json` gains 63 Series (registered on Moderato, `acceptance/S3.md`): TSLA, NVDA, AAPL, MSFT, META, GOOGL,
 AMZN, PLTR, AMD × Regular 5m/15m/60m (Agari's cadences), the weekend Gap (basis 1, cadence 604,800, primary open
 admission `ADMIT_UNTIL_LOCK` as Agari's `policyVersions(…, "gap")`) and the 24/7 lane on RedStone `<T>---24_7` (basis 2,
-5m/15m/60m; the registry's `stock24`). SPCX waits for Data Streams (Q-011). Version 0 of every Series is RedStone
+5m/15m/60m; the registry's `stock24`). RedStone publishes no `PLTR---24_7` or `AMD---24_7` feed (gateway `latest`,
+2026-09-29, found by halt-watch): their 24/7 Series stay registered and read "paused: no signed source" (the registry sets
+their `redstone24x7FeedId` to null; the roller never lists them). SPCX waits for Data Streams (Q-011). Version 0 of every Series is RedStone
 primary with no check source (the only keyless signed source on Moderato); a Data Streams check arrives as a new
 policy version, never an edit. The node pool is reserved to 256 so the seed maker's quotes don't pay cold slots.
 Measured cost: `openWindow` ≈ 1.07M gas at ≈ 2.7 gwei-equivalent in pathUSD, so all 66 lanes cost ≈ 3 pathUSD a day of

@@ -142,6 +142,19 @@ export function indexReader(sql: Sql) {
       return row!;
     },
 
+    /** Per-Window digest at or below `block` (the recount diffs it against its own chain replay, market by market). */
+    async marketDigest(chainId: number, block: number): Promise<IdxRow[]> {
+      return sql`
+        select m.market, m.state, m.winner, coalesce(m.open_e8::text, '') as open_e8, coalesce(m.close_e8::text, '') as close_e8,
+          (select count(*) from idx_fills f where f.market = m.market and f.chain_id = ${chainId} and f.block_number <= ${block})::int as fills,
+          (select coalesce(sum(lots), 0)::text from idx_fills f where f.market = m.market and f.chain_id = ${chainId} and f.block_number <= ${block}) as fill_lots,
+          (select count(*) from idx_prints p where p.market = m.market)::int as prints,
+          (select coalesce(sum(total_base), 0)::text from idx_redemptions r where r.market = m.market and r.chain_id = ${chainId}) as redeemed_base,
+          (select coalesce(sum(yes_lots), 0)::text from idx_positions p where p.market = m.market) as open_yes_lots,
+          (select coalesce(sum(no_lots), 0)::text from idx_positions p where p.market = m.market) as open_no_lots
+        from idx_markets m where m.opened_tx is not null and m.last_block <= ${block} order by m.market`;
+    },
+
     /** Counts and freshness for `/api/index/status`, `/health` and the soak. */
     async status(): Promise<IdxRow> {
       const [row] = await sql`

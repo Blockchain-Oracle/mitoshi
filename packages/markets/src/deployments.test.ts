@@ -8,7 +8,8 @@ describe("deployments", () => {
     expect(launch?.LaunchRegistry?.deployBlock).toBeGreaterThan(0);
   });
   it("answers not deployed for an area with no fragment", () => {
-    expect(isDeployed("engine", 42431)).toBe(false);
+    expect(isDeployed("vault", 42431)).toBe(false);
+    expect(isDeployed("engine", 42431)).toBe(true);
     expect(deploymentOf("launch", 4217)).toBeNull();
   });
 });

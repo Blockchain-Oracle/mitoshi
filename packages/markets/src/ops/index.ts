@@ -10,3 +10,4 @@ export * from "./logs";
 export * from "../prices/redstone";
 export * from "../prices/attested";
 export * from "../prices/datastreams";
+export { fundAddress, FaucetUnavailableError } from "../faucet/fund";
