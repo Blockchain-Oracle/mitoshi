@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "ux-gate": "tsx e2e/ux-gate.ts"
+    "ux-gate": "tsx e2e/ux-gate.ts",
+    "capture:phone": "tsx e2e/capture-phone.ts"
   },
   "dependencies": {
     "@base-ui/react": "catalog:",

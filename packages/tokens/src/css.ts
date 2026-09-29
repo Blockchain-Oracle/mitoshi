@@ -15,7 +15,20 @@ function themeVars(theme: ThemeName): Record<string, string> {
     "ms-surface-1": s["surface-1"], "ms-surface-2": s["surface-2"], "ms-surface-3": s["surface-3"],
     "ms-hairline": s.hairline, "ms-border-strong": s["border-strong"],
     ...tradingTokens(theme),
+    ...accentFill(theme),
   };
+}
+
+/**
+ * The accent as a FILL under small text must pass AA (§2.5): dark keeps vermilion with cream-ink on it (Masayume's
+ * own `--button-primary-ink`, 4.7:1); light fills with the pressed vermilion under cream (5.6:1) — white on the light
+ * vermilion measured 4.2:1. Both are palette values; nothing new is invented.
+ */
+export function accentFill(theme: ThemeName): Record<string, string> {
+  const p = tokens.palette[theme];
+  return theme === "dark"
+    ? { "accent-fill": p.vermilion, "accent-fill-pressed": p["vermilion-d"], "on-accent": tokens.shared["cream-ink"] }
+    : { "accent-fill": p["vermilion-d"], "accent-fill-pressed": p["gray-100"], "on-accent": p["gray-950"] };
 }
 
 const SEMANTIC = `@theme inline {
@@ -36,6 +49,9 @@ const SEMANTIC = `@theme inline {
   --color-accent-wash: color-mix(in srgb, var(--vermilion) 12%, transparent);
   --color-profit-wash: color-mix(in srgb, var(--profit) 14%, transparent);
   --color-loss-wash: color-mix(in srgb, var(--loss) 14%, transparent);
+  --color-accent-fill: var(--accent-fill);
+  --color-accent-fill-pressed: var(--accent-fill-pressed);
+  --color-on-accent: var(--on-accent);
   --color-up: var(--up);
   --color-down: var(--down);
   --color-yes: var(--yes);

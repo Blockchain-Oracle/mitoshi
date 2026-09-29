@@ -11,7 +11,7 @@
   in SM3); randomness via `crypto.getRandomValues` only (polyfilled on native).
 - [x] 1b tokens + design base: `packages/tokens` from Masayume's CSS variables (§2.2) with a check against the ported
   styles; Tailwind 4 `@theme inline` + trading tokens; `next/font`; `LazyMotion` + `MotionConfig`; Base UI; spike X23.
-- [ ] 1b shell: port Masayume `web/src/{app/layout.tsx, components/**, styles/**, providers/{AppProviders,MarketsBoot,
+- [x] 1b shell: port Masayume `web/src/{app/layout.tsx, components/**, styles/**, providers/{AppProviders,MarketsBoot,
   query-client,persist}, features/{recovery,install}}` **with the ux-audit fixes** (E.5 S1 row): `viewport {viewportFit:
   'cover', themeColor}` and safe-area insets on header, ticker, strip and panels; back chevron below top level; compact
   top chrome; route-group providers (landing/docs/proof/status carry no wallet stack, D41); `loading.tsx` per dynamic
@@ -100,6 +100,24 @@
   is for fills, borders, underlines and large text; small labels use ink (applied in the X23 ticket's "Max").
 - **1b tokens — fonts.** Only Sora and Inter preload (≤ 2 preloads, §3.2); JetBrains Mono and Noto Serif JP load on
   use (`next/font/google` has no glyph-subset option; the JP face stays latin-subset with CJK by unicode-range).
+- **1b shell — pathname reads.** With `cacheComponents`, `usePathname()` outside Suspense blocks the static shell of
+  every dynamic route, so the header reads the path inside a Suspense boundary (the prerendered shell has no active
+  item) and the island route (`/trade-from-x`) is its own route group instead of a pathname check.
+- **1b shell — unlayered Yosuku rules.** Yosuku's `a { color: inherit }` and `.capability-pending { padding }` are
+  unlayered, so they beat Tailwind utilities: colour utilities on links use `!` (Agari did the same) and the shell's
+  overrides live in `styles/shell-fixes.css`, after the verbatim port.
+- **1b shell — contrast.** Yosuku's white-on-vermilion buttons (3.9:1) and gray-500 small text (4.2–4.3:1) fail AA;
+  `@cwf/tokens` adds the fill pair `--accent-fill`/`--on-accent` (dark: vermilion + cream-ink 4.7:1, Masayume's own
+  `--button-primary-ink`; light: pressed vermilion + cream 5.6:1) and the shell's small text uses gray-400. Every
+  later stage's gate run will find the remaining gray-500 small text on its own surfaces (the Yosuku sheet is global).
+- **1b shell — phone fast paths.** The pill nav is Markets · Stocks · Games · Portfolio · More (Masayume: Markets ·
+  Reels · Games · Portfolio): both pillars are first-class (E.1 landing note); Reels is the first More row and a
+  desktop top link. Desktop gains a Stocks group (Stocks, Themes, Bridge, Reserves); Launch sits in Build.
+- **1b shell — CSS split.** The 40 feature `@import`s are gone from the global sheet (each feature imports its own);
+  the verbatim Yosuku system stays global (≈ 540 KB unminified in dev). Its size is measured by the perf step.
+- **1b shell — 21st starts still to land.** 24857 + 1600 (account pill) land with the wallet; 23552 (segmented
+  control) and 23557 (skeleton swap) with the settings surface; 24297 (toast) and the 27109/21349/19177 header and
+  active-pill techniques are applied where those surfaces are next touched in this stage.
 
 ## Handoff
 

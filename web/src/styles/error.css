@@ -1,0 +1,97 @@
+/* Ported from Masayume 68f7a09:web/src/styles/error.css */
+/* The error boundary — reference/yosuku/app/error.tsx, its inline styles as classes with the
+ * source values named above each rule. Every colour is a theme token, so the screen reads on
+ * cream as well as on ink. */
+
+/* minHeight 100vh · flex column · centered both ways · textAlign center · gap 20px ·
+   padding 48px 24px · background var(--bg) · color var(--white) */
+.boundary {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 20px;
+  padding: 48px 24px;
+  background: var(--bg);
+  color: var(--white);
+}
+/* Inside the shell the header and footer already frame the page; a full viewport on top of
+   them pushes the way out below the fold. The root boundary has no shell and keeps 100vh. */
+.boundary:not(.boundary-root) { min-height: 70vh; }
+
+/* fontFamily var(--font-display) · clamp(1.5rem, 4vw, 2.2rem) · 700 · -0.01em · margin 0 */
+.boundary-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* fontFamily var(--font-body) · 15px · maxWidth 440px · margin 0 · color var(--gray-400) · lineHeight 1.6 */
+.boundary-body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  max-width: 440px;
+  margin: 0;
+  color: var(--gray-400);
+  line-height: 1.6;
+}
+
+/* flex · gap 12px · wrap · center · marginTop 8px */
+.boundary-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* fontFamily var(--font-mono) · 13px · 0.06em · uppercase · color #FBF7EE · background var(--vermilion) ·
+   no border · radius 8px · padding 12px 22px · pointer */
+.boundary-retry {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #FBF7EE;
+  background: var(--vermilion);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 22px;
+  cursor: pointer;
+}
+
+/* same type · color var(--white) · transparent · 1px solid var(--gray-700) · radius 8px ·
+   padding 12px 22px · no underline */
+.boundary-out {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: transparent;
+  border: 1px solid var(--gray-700);
+  border-radius: 8px;
+  padding: 12px 22px;
+  text-decoration: none;
+}
+
+/* Ours: the technical escape hatch, quiet, under the reference's actions. */
+.boundary-details {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gray-600);
+  max-width: 560px;
+  width: 100%;
+}
+.boundary-details summary { cursor: pointer; }
+.boundary-details pre {
+  margin: 8px 0 0;
+  white-space: pre-wrap;
+  overflow-x: auto;
+  text-align: left;
+  color: var(--gray-500);
+}

@@ -233,7 +233,7 @@ export function SwapTicket(props: SwapTicketProps) {
         whileTap={live && !reduced ? { scale: 0.97 } : undefined}
         className={cn(
           "min-h-touch rounded-md px-4 type-body-strong transition-colors",
-          live ? "bg-accent text-cream-ink hover:bg-accent-hover active:bg-accent-pressed" : "cursor-not-allowed bg-surface-2 text-ink-secondary",
+          live ? "bg-accent-fill text-on-accent hover:bg-accent-fill-pressed active:bg-accent-fill-pressed" : "cursor-not-allowed bg-surface-2 text-ink-secondary",
         )}
       >
         <AnimatePresence mode="wait" initial={false}>

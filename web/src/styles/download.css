@@ -1,0 +1,62 @@
+/* Ported from Masayume 68f7a09:web/src/styles/download.css */
+/* /download — what the reference's .dl-* block (part-18.css, ported verbatim) does not cover.
+ * Each rule names the source it corrects or the piece that is ours. */
+
+/* .dl-cta takes `color: var(--white)`, which the light theme remaps to ink (part-13). The
+   button is vermilion in both themes, so its ink is a literal — the .reel-take rule. */
+.dl-cta { color: #fff; }
+
+/* Ours: the CTA once the app is installed — a statement, not an action. Same shape, no lift. */
+.dl-cta.is-inert {
+  background: transparent;
+  color: var(--white);
+  border-color: var(--gray-700);
+  cursor: default;
+}
+.dl-cta.is-inert:hover { background: transparent; transform: none; box-shadow: none; }
+.dl-cta:disabled { opacity: 0.7; cursor: progress; }
+
+/* Ours: the numbered steps under "Add to Home Screen" (iOS), in the page's own eyebrow voice. */
+.dl-steps {
+  list-style: none;
+  counter-reset: step;
+  margin: 18px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 46ch;
+}
+.dl-steps li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  color: var(--gray-400);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.dl-steps li::before {
+  counter-increment: step;
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--vermilion);
+}
+
+/* Ours: the one-line hint under "Install from your browser menu". */
+.dl-hint {
+  margin: 14px 0 0;
+  max-width: 46ch;
+  color: var(--gray-500);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* Ours: the status-bar band above the capture (PhoneShot.tsx) — 47 of a 390-wide screen. It
+   stays transparent so it takes the screen's own #050505 ground from part-18. */
+.dl-phone-bar { width: 100%; aspect-ratio: 390 / 47; }
+
+/* .dl-points { border-top: 1px solid rgba(255,255,255,0.08) } is invisible on cream:
+   part-14's border-white/[0.08] light value. */
+[data-theme="light"] .dl-points { border-top-color: rgba(20, 18, 16, 0.11); }

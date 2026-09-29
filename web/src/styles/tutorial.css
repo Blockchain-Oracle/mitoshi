@@ -1,0 +1,154 @@
+/* Ported from Masayume 68f7a09:web/src/styles/tutorial.css */
+/* The first-run walkthrough — ported from reference/yosuku/components/Tutorial.tsx.
+ *
+ * The reference writes this as inline Tailwind arbitrary values on the JSX
+ * (`z-[9500]`, `text-[11px]`, `p-4` on a flex wrapper). `design-literals` bans px
+ * in TS/TSX, so the px-bearing values live here, with the source utility string
+ * named above each rule so fidelity stays checkable line by line.
+ *
+ * Everything that survives as a plain utility stays a utility on the component —
+ * `bg-neutral-900/95`, `border-white/10`, `text-white`, `text-gray-*` — so
+ * yosuku/part-14.css remaps them on cream exactly as it does everywhere else,
+ * with no second set of light-theme rules here. */
+
+/* fixed inset-0 z-[9500] bg-black/70 backdrop-blur-sm */
+.tutorial-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background-color: rgb(0 0 0 / 0.7);
+  backdrop-filter: blur(4px);
+}
+
+/* The reference is one `fixed inset-0 flex items-end justify-center p-4 sm:items-center`
+   wrapper holding a `w-full max-w-xl` card. Base UI splits the backdrop from the
+   popup, so the card places itself: bottom sheet on phones, centred from `sm`. */
+.tutorial-card {
+  position: fixed;
+  z-index: 9500;
+  bottom: 16px; /* p-4 */
+  left: 50%;
+  width: calc(100% - 32px); /* p-4 on both sides */
+  max-width: 36rem; /* max-w-xl */
+  transform: translateX(-50%);
+  /* Not in the reference: without a ceiling the closing step runs off a short
+     phone viewport, where the reference simply clips. The rounded corners still
+     need the horizontal clip, so only the block axis scrolls. */
+  max-height: calc(100dvh - 32px);
+  overflow: hidden auto;
+}
+
+/* sm:items-center */
+@media (min-width: 640px) {
+  .tutorial-card {
+    top: 50%;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* The container is focused programmatically to put the reader at the top of the
+   dialog, not because it is a control — so it must not wear the global 2px
+   vermilion focus ring, which reads as a border around the whole card. Every
+   interactive element inside keeps its own. */
+.tutorial-card:focus,
+.tutorial-card:focus-visible {
+  outline: none;
+}
+
+/* Three `*-white` utilities on this card fall through part-14.css's light remap,
+ * so on cream they render white-on-cream — the background form of the invisible
+ * `var(--white)` bug (see RESUME.md). The reference has the same defect: its
+ * tutorial card is `bg-neutral-900/95`, which part-14 turns to cream in light
+ * mode, taking these with it. Invisible is not fidelity, so they are remapped
+ * here, each on part-14's own ladder rather than a value picked by eye:
+ *   bg-white/20            — part-14 stops at /10 → 0.08; the next step is 0.16
+ *   border-white/[0.12]    — an arbitrary value between its /10 and /15 buckets
+ *   hover:bg-white/[0.06]  — its hover ladder covers /5 and [0.05], not [0.06]
+ *
+ * Scoped to this card because nothing else in web/src uses any of the three. The
+ * gap itself is general: check for it before porting the next dark component. */
+[data-theme="light"] .tutorial-card .bg-white\/20 {
+  background-color: rgba(20, 18, 16, 0.16);
+}
+
+[data-theme="light"] .tutorial-card .border-white\/\[0\.12\] {
+  border-color: rgba(20, 18, 16, 0.11);
+}
+
+[data-theme="light"] .tutorial-card .hover\:bg-white\/\[0\.06\]:hover {
+  background-color: rgba(20, 18, 16, 0.05);
+}
+
+/* motion.div key={step} initial={{opacity:0,y:20,scale:0.95}} animate={{opacity:1,y:0,scale:1}}
+   transition={{duration:0.2}} — the same per-step reveal, on Yosuku's own curve
+   instead of a second animation library (the Toast set this precedent). */
+@keyframes tutorial-step-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tutorial-step {
+  animation: tutorial-step-in 200ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-step {
+    animation: none;
+  }
+}
+
+/* Light-mode ink for this card's muted text.
+ *
+ * The reference writes its body copy as `text-gray-400/500/600`. Those utilities
+ * do NOT follow `[data-theme="light"]` — Yosuku's tailwind.config maps `gray-*` to
+ * CSS vars but never loads it under Tailwind 4, so they compile to the static dark
+ * ramp (recorded in the parity ledger, 2026-09-01). Everywhere else that stays
+ * legible; here it does not. Measured on the card: `text-gray-400` is
+ * rgb(163,163,163) on cream at **2.36:1**, well under AA, and it is the body copy
+ * of the one screen whose whole job is to be read. That is the "evidence of
+ * unreadable text" the ledger reserved as the trigger to diverge.
+ *
+ * Scoped to this card rather than fixed globally: a global gray remap would move
+ * 811 utilities across every route in one unreviewed step. The values are not
+ * invented — each gray step is converted to its white-opacity equivalent on the
+ * dark ground, then takes part-14.css's own replacement for that step:
+ *   gray-400 (#a3a3a3 ≈ white/60, body)      → part-14's 0.80 step
+ *   gray-500 (#737373 ≈ white/40, notes)     → part-14's 0.62 step
+ *   gray-600 (#525252 ≈ white/25, fineprint) → part-14's 0.50 step */
+[data-theme="light"] .tutorial-card .text-gray-400 {
+  color: rgba(20, 18, 16, 0.8);
+}
+
+[data-theme="light"] .tutorial-card .text-gray-500 {
+  color: rgba(20, 18, 16, 0.62);
+}
+
+[data-theme="light"] .tutorial-card .text-gray-600 {
+  color: rgba(20, 18, 16, 0.5);
+}
+
+/* Skip and Close are `text-gray-NNN hover:text-white`. The three rules above tie
+   part-14's `.hover\:text-white:hover` on specificity and this file is imported
+   later, so without this they would win on hover too and the control would go
+   *fainter* when pointed at. Same value part-14 uses. */
+[data-theme="light"] .tutorial-card .hover\:text-white:hover {
+  color: #141210;
+}
+
+/* font-mono text-[10px] uppercase tracking-[0.16em] */
+.tutorial-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+
+/* text-[11px] */
+.tutorial-fineprint {
+  font-size: 11px;
+}

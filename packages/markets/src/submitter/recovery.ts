@@ -1,6 +1,8 @@
 // Ported from Masayume 68f7a09:packages/markets/src/submitter/recovery.ts
 import type { Address, IntentJournal, IntentRecord } from "@cwf/core";
-import type { ReconcileVerdict } from "./reconcile";
+import { reconcileRecord, type AreaEvidence, type ReconcileVerdict } from "./reconcile";
+import { getPublicClient } from "../runtime/read-runtime";
+import { nowSec } from "../runtime/clock";
 
 /**
  * Recovery of writes the journal still holds open — a send that timed out, a tab closed between the passkey prompt
@@ -58,3 +60,10 @@ export async function recoverUnresolved(journal: IntentJournal, wallet: Address,
   for (const record of records) results.push(await recoverOne(journal, wallet, record, reconcile, nowMs));
   return results;
 }
+
+/** Area evidence readers register here as their areas deploy (engine fills in S4); none means "unknown" past expiry. */
+export const AREA_EVIDENCE: { current: AreaEvidence | undefined } = { current: undefined };
+
+/** The real reconciler: the receipt when there is a digest; the expiring window plus area evidence when there is not. */
+export const chainReconciler: Reconciler = (wallet, record) =>
+  reconcileRecord({ client: getPublicClient(), wallet, record, chainNowSec: nowSec(), evidence: AREA_EVIDENCE.current });

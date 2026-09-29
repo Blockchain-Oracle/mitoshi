@@ -22,18 +22,30 @@ function tick() {
   for (const l of listeners) l();
 }
 
+function start() {
+  if (timer || typeof document === "undefined" || document.visibilityState === "hidden") return;
+  tick();
+  timer = setInterval(tick, 1_000);
+}
+
+function stop() {
+  if (timer) clearInterval(timer);
+  timer = null;
+}
+
+let visibilityBound = false;
+
 function subscribe(listener: Listener): () => void {
   listeners.add(listener);
-  if (!timer) {
-    tick();
-    timer = setInterval(tick, 1_000);
+  if (!visibilityBound && typeof document !== "undefined") {
+    visibilityBound = true;
+    // Hidden tabs tick nothing (AD-6); a returning tab re-reads the clock at once.
+    document.addEventListener("visibilitychange", () => (document.visibilityState === "hidden" ? stop() : listeners.size > 0 && start()));
   }
+  start();
   return () => {
     listeners.delete(listener);
-    if (listeners.size === 0 && timer) {
-      clearInterval(timer);
-      timer = null;
-    }
+    if (listeners.size === 0) stop();
   };
 }
 

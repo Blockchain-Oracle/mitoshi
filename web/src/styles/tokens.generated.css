@@ -17,6 +17,9 @@
   --chart-text: #A3A3A3;
   --chart-crosshair: #737373;
   --chart-ground: #050505;
+  --accent-fill: #E04D26;
+  --accent-fill-pressed: #B83A1B;
+  --on-accent: #141210;
 }
 
 [data-theme="light"] {
@@ -36,6 +39,9 @@
   --chart-text: #5E574B;
   --chart-crosshair: #7C7466;
   --chart-ground: #F4EEE3;
+  --accent-fill: #B83214;
+  --accent-fill-pressed: #211C16;
+  --on-accent: #FBF7EE;
 }
 
 @theme inline {
@@ -56,6 +62,9 @@
   --color-accent-wash: color-mix(in srgb, var(--vermilion) 12%, transparent);
   --color-profit-wash: color-mix(in srgb, var(--profit) 14%, transparent);
   --color-loss-wash: color-mix(in srgb, var(--loss) 14%, transparent);
+  --color-accent-fill: var(--accent-fill);
+  --color-accent-fill-pressed: var(--accent-fill-pressed);
+  --color-on-accent: var(--on-accent);
   --color-up: var(--up);
   --color-down: var(--down);
   --color-yes: var(--yes);

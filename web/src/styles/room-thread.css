@@ -1,0 +1,164 @@
+/* Ported from Masayume 68f7a09:web/src/styles/room-thread.css */
+/* The Room's thread and composer — the second half of CommentRoom.tsx.
+ *
+ * Split from room.css only because `file-length` caps a CSS module at 400 lines;
+ * the two are one component's presentation and share its tokens. */
+
+.room-thread {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 20px;
+}
+
+.room-empty {
+  margin: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgb(var(--room-ink-rgb) / 0.4);
+  text-align: center;
+}
+
+.room-line {
+  display: flex;
+  gap: 10px;
+}
+
+.room-line[data-mine="true"] {
+  flex-direction: row-reverse;
+}
+
+/* The author disc: a hue derived from the address, so the same wallet is the same
+   colour every time without a profile system behind it. */
+.room-avatar {
+  display: flex;
+  height: 26px;
+  width: 26px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: hsl(var(--room-hue, 0) 45% 50% / 0.22);
+  color: hsl(var(--room-hue, 0) 55% 72%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+[data-theme="light"] .room-avatar {
+  color: hsl(var(--room-hue, 0) 60% 32%);
+}
+
+.room-bubble {
+  min-width: 0;
+  max-width: 78%;
+  border: 1px solid var(--room-rule);
+  border-radius: 14px;
+  background: var(--room-inset);
+  padding: 9px 12px;
+}
+
+.room-line[data-mine="true"] .room-bubble {
+  border-color: color-mix(in srgb, var(--vermilion) 28%, transparent);
+  background: rgba(224, 77, 38, 0.07);
+}
+
+.room-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 3px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgb(var(--room-ink-rgb) / 0.4);
+}
+
+.room-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgb(var(--room-ink-rgb) / 0.9);
+  overflow-wrap: anywhere;
+}
+
+.room-compose {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid var(--room-rule);
+  padding: 12px 14px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.room-compose input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--room-rule);
+  border-radius: 9999px;
+  background: var(--room-inset);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: rgb(var(--room-ink-rgb));
+  outline: none;
+  transition: border-color 150ms var(--ease-out);
+}
+
+.room-compose input::placeholder {
+  color: rgb(var(--room-ink-rgb) / 0.35);
+}
+
+.room-compose input:focus {
+  border-color: color-mix(in srgb, var(--vermilion) 45%, transparent);
+}
+
+.room-count {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgb(var(--room-ink-rgb) / 0.35);
+  font-variant-numeric: tabular-nums;
+}
+
+.room-count[data-low="true"] {
+  color: var(--vermilion);
+}
+
+.room-send {
+  display: flex;
+  height: 36px;
+  width: 36px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--vermilion);
+  color: #fff;
+  outline: none;
+  transition: opacity 150ms var(--ease-out);
+}
+
+.room-send:disabled {
+  opacity: 0.4;
+}
+
+/* The failure line sits above the composer so it is read before the next attempt. */
+.room-error {
+  position: relative;
+  z-index: 10;
+  border-top: 1px solid color-mix(in srgb, var(--loss) 22%, transparent);
+  background: color-mix(in srgb, var(--loss) 8%, transparent);
+  padding: 9px 16px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--loss);
+}

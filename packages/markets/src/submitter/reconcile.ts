@@ -9,7 +9,12 @@
  * - Before the window closes, it is still "unknown".
  */
 import type { Address, IntentRecord } from "@cwf/core";
-import type { Hex, PublicClient } from "viem";
+import type { Hex } from "viem";
+
+/** The one read reconciliation needs (any viem client, Tempo receipts included). */
+export interface ReceiptReader {
+  getTransactionReceipt(args: { hash: Hex }): Promise<{ status: string }>;
+}
 
 export type ReconcileVerdict = "confirmed" | "reverted" | "absent" | "unknown";
 
@@ -20,7 +25,7 @@ export type AreaEvidence = (wallet: Address, record: IntentRecord, sinceSec: num
 export const EXPIRY_GRACE_SEC = 3;
 
 export async function reconcileRecord(input: {
-  client: Pick<PublicClient, "getTransactionReceipt">;
+  client: ReceiptReader;
   wallet: Address;
   record: IntentRecord;
   chainNowSec: number;
@@ -29,7 +34,7 @@ export async function reconcileRecord(input: {
   const { client, record } = input;
   if (record.txHash) {
     const receipt = await client.getTransactionReceipt({ hash: record.txHash as Hex }).catch(() => null);
-    if (!receipt) return "unknown";
+    if (!receipt || receipt.status === "pending") return "unknown";
     return receipt.status === "reverted" ? "reverted" : "confirmed";
   }
   if (record.validBeforeSec === null || input.chainNowSec < record.validBeforeSec + EXPIRY_GRACE_SEC) return "unknown";

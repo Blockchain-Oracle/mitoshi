@@ -1,0 +1,59 @@
+/* Ported from Masayume 68f7a09:web/src/styles/leaderboard-theme.css */
+/* /leaderboard — light-mode twins for the ported board (part-07..09), plus the few rules the
+ * board needs that the reference kept inline. The reference's own leaderboard has the same
+ * defect on cream: every hairline is white-at-alpha and the "you" bar's ink is `--white`,
+ * which light mode remaps to ink. Values below come from part-14's own ladder. */
+
+/* Hairlines on cream (part-14: /5–/[0.06] → 0.07, /10–/[0.08] → 0.11, /15–/20 → 0.16, /25–/30 → 0.22). */
+[data-theme="light"] .lb-hero-grid,
+[data-theme="light"] .banzuke-cols-head { border-bottom-color: rgba(20, 18, 16, 0.11); }
+[data-theme="light"] .lb-filter-bar,
+[data-theme="light"] .banzuke-row { border-bottom-color: rgba(20, 18, 16, 0.07); }
+[data-theme="light"] .podium-spot { border-color: rgba(20, 18, 16, 0.11); background: rgba(20, 18, 16, 0.02); }
+[data-theme="light"] .podium-spot:hover { border-color: rgba(20, 18, 16, 0.22); }
+[data-theme="light"] .podium-spot.s1 { border-color: rgba(224, 77, 38, 0.3); }
+[data-theme="light"] .podium-rank { color: rgba(20, 18, 16, 0.05); }
+[data-theme="light"] .podium-portrait { border-color: rgba(20, 18, 16, 0.16); }
+[data-theme="light"] .podium-stats { border-top-color: rgba(20, 18, 16, 0.07); }
+[data-theme="light"] .podium-stats .item { border-right-color: rgba(20, 18, 16, 0.07); }
+[data-theme="light"] .banzuke-wrap {
+  border-color: rgba(20, 18, 16, 0.07);
+  background: repeating-linear-gradient(0deg, transparent 0 39px, rgba(20, 18, 16, 0.02) 39px 40px), var(--bg);
+}
+[data-theme="light"] .banzuke-strip { background: rgba(20, 18, 16, 0.03); border-bottom-color: rgba(20, 18, 16, 0.07); }
+[data-theme="light"] .banzuke-cols-head .center,
+[data-theme="light"] .banzuke-row .center { border-left-color: rgba(20, 18, 16, 0.07); border-right-color: rgba(20, 18, 16, 0.07); }
+[data-theme="light"] .banzuke-row .center { background: rgba(20, 18, 16, 0.04); }
+[data-theme="light"] .banzuke-row:hover { background: rgba(20, 18, 16, 0.03); }
+[data-theme="light"] .bz-portrait { border-color: rgba(20, 18, 16, 0.16); color: rgba(255, 255, 255, 0.8); }
+[data-theme="light"] .bz-divider { background: rgba(20, 18, 16, 0.04); border-top-color: rgba(20, 18, 16, 0.07); border-bottom-color: rgba(20, 18, 16, 0.07); }
+[data-theme="light"] .asset-tab .glyph { border-color: rgba(20, 18, 16, 0.22); }
+
+/* The "you" bar sits on solid vermilion in both themes — its ink must stay light (part-14's own
+ * rule for labels on a saturated fill), and its pill stays cream, not ink. */
+[data-theme="light"] .you-bar { color: #FBF7EE; }
+[data-theme="light"] .you-bar .you-cta { background: #FBF7EE; color: var(--vermilion); }
+
+/* The reference's inline styles, as classes. */
+.lb-meta-col .stamp .stamp-sub { margin-top: 4px; font-size: 8px; }
+.lb-state {
+  padding: 64px 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gray-500);
+  text-align: center;
+}
+.lb-state-empty { padding: 96px 24px; font-size: 12px; line-height: 2; }
+.lb-state-glyph { font-size: 30px; margin-bottom: 14px; opacity: 0.5; }
+.lb-state-sub { color: var(--gray-600); }
+.lb-freshness { margin-top: 16px; font-family: var(--font-mono); font-size: 11px; line-height: 1.6; color: var(--gray-500); }
+.lb-retry { margin-top: 16px; }
+.lb-section-head { margin-top: 48px; margin-bottom: 24px; }
+/* The app shell already clears the fixed chrome; the reference's 124px hero margin was its own. */
+.lb-page .lb-hero { margin-top: 0; padding-bottom: 0; }
+.lb-meta-col .big .lb-symbol { text-transform: none; }
+
+/* Below the pill nav's breakpoint the bar floats above the nav, by the shell's own clearance. */
+@media (max-width: 720px) {
+  .you-bar { bottom: var(--claim-pill-offset); }
+}

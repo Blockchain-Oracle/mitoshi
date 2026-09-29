@@ -19,7 +19,8 @@ const base = flag("base", "http://localhost:3101");
 const out = flag("out", "ux-gate-out");
 const widths = flag("widths", "320,390,768,1440").split(",").map(Number);
 const themes = flag("themes", "dark,light").split(",");
-const routes = args.length ? args : ["/"];
+/** `route!404` expects that status (a not-found page); its own document 404 is then not a finding. */
+const routes = (args.length ? args : ["/"]).map((r) => { const [path, status] = r.split("!"); return { path: path!, expect: status ? Number(status) : 200 }; });
 
 interface Finding {
   route: string;
@@ -50,7 +51,7 @@ async function measure(page: Page) {
 const browser = await chromium.launch();
 const findings: Finding[] = [];
 mkdirSync(out, { recursive: true });
-for (const route of routes) {
+for (const { path: route, expect } of routes) {
   for (const theme of themes) {
     for (const width of widths) {
       const context = await browser.newContext({ viewport: { width, height: width < 768 ? 844 : 900 }, deviceScaleFactor: 1, colorScheme: theme === "light" ? "light" : "dark" });
@@ -61,8 +62,8 @@ for (const route of routes) {
       page.on("pageerror", (e) => errors.push(e.message));
       const res = await page.goto(`${base}${route}`, { waitUntil: "networkidle" });
       const add = (kind: string, detail: string) => findings.push({ route, width, theme, kind, detail });
-      if (!res || res.status() >= 400) add("status", String(res?.status()));
-      for (const e of errors) add("console", e.split("\n")[0]!.slice(0, 200));
+      if (!res || res.status() !== expect) add("status", `${res?.status()} (expected ${expect})`);
+      for (const e of errors) if (!(expect === 404 && e.includes("status of 404"))) add("console", e.split("\n")[0]!.slice(0, 200));
       const m = await measure(page);
       if (m.overflow > 0) add("overflow", `${m.overflow}px horizontal scroll`);
       for (const s of m.small) add("target", s);
