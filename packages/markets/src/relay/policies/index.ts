@@ -5,8 +5,9 @@
  */
 import type { RelayPolicy } from "../types";
 import { keysPolicy } from "./keys";
+import { launchPolicy } from "./launch";
 import { noopPolicy } from "./noop";
 
-export { keysPolicy, noopPolicy };
+export { keysPolicy, launchPolicy, noopPolicy };
 
-export const POLICIES: readonly RelayPolicy[] = [noopPolicy, keysPolicy];
+export const POLICIES: readonly RelayPolicy[] = [noopPolicy, keysPolicy, launchPolicy];

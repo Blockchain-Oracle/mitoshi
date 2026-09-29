@@ -7,7 +7,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./server": "./src/server/index.ts",
-    "./react": "./src/react/index.ts"
+    "./react": "./src/react/index.ts",
+    "./v4": "./src/v4/encode.ts",
+    "./launch": "./src/launch/stablecoin.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json"

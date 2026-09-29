@@ -3,8 +3,9 @@
  *
  * A stablecoin launch is locked to currency "USD" with a typed confirmation; a memecoin's currency is its symbol and
  * may not be a reserved code (ISO-4217 fiat, the Stock Token tickers, "USD"). The full reserved list lives on chain in
- * `LaunchRegistry.isReservedCode`; this pre-check mirrors its shape so the form refuses before a signature.
+ * `LaunchRegistry.isReservedCode`; `currencyGuard.ts` (S17a) mirrors it so the form refuses before a signature.
  */
+export * from "./currencyGuard";
 export const STABLECOIN_CURRENCY = "USD";
 
 /** A token symbol the launch form accepts: 2–11 upper-case letters or digits, starting with a letter. */

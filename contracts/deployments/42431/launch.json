@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "chainId": 42431,
+  "area": "launch",
+  "commit": "5831130",
+  "deployedAtUtc": "2026-09-29T04:33:23.506Z",
+  "deployer": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e",
+  "contracts": {
+    "LaunchRegistry": {
+      "address": "0x9b664B9B73497Aa140EdA23a81fCC3db279c50b7",
+      "artifact": "LaunchRegistry.sol:LaunchRegistry",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0xab8f921c33896492c68d5ff383083e842cb8e1ac20d9f28428b06233c940a9f7",
+      "deployBlock": 37367355,
+      "history": []
+    }
+  },
+  "roles": {
+    "owner": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e"
+  },
+  "params": {
+    "reservedCodes": 370
+  },
+  "external": {}
+}
