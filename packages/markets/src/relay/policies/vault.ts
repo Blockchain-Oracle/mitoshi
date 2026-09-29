@@ -12,8 +12,9 @@
  * - Not sponsored (absent from both lists, the sender pays): `place` and `moveToPrivate` (Masayume's list; Q-021 asks
  *   whether to sponsor them), `creditFor` / `creditPrivateFor` (capital intake for someone else).
  * - Geofence: `placeFor` is the markets entry (Q-008); exits stay open everywhere.
- * - `maxGas`: a tap is the vault's reads + one engine IOC at 16 fills / 4 evictions (≈ 848k + 192k gross,
- *   engine-gas.md) + the vault's own new slots for a first position (≈ 250k each, ≤ 4); 3M covers it.
+ * - `maxGas`: measured on Moderato (acceptance/S7.md): an owner's **first** tap in a Window 3,031,167 gas (≈ 10 new
+ *   slots at 250k: the vault's engine position and counters, `positionOf`, `positionGrantOf`, the tally, `marketsOf`),
+ *   a later tap 1,033,108. Worst case adds 16 fills + 4 evictions (≈ 848k + 192k gross, engine-gas.md) → 4.5M.
  */
 import type { Abi, Address } from "viem";
 import { relayTargets } from "@cwf/clients";
@@ -31,5 +32,5 @@ export const vaultPolicy = {
   never: ["deposit", "depositAndGrant", "grant", "fundGrant"] as readonly string[],
   pillar: "markets" as const,
   entry: ["placeFor"] as readonly string[],
-  maxGas: 3_000_000n,
+  maxGas: 4_500_000n,
 };
