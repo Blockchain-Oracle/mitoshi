@@ -2,6 +2,7 @@
 
 | Needed by | Action | Status |
 |---|---|---|
+| S0 | Create a private GitHub repository and push `integration/t1` (CI workflows run from there); add `FLY_API_TOKEN` and RPC secrets | Open |
 | S0 gate | Domain (passkey rpId, Q-019) + DNS; Vercel ×2, Fly ×2, Neon ×2, Upstash accounts (Q-026) | Open |
 | S0 (X11) | Start daily Robinhood Chain testnet faucet claims (5 × 5 tokens / 24 h) | Open |
 | Before S3.5 | Approve and fund the capped mainnet MPP wallet (Q-020) | Open |

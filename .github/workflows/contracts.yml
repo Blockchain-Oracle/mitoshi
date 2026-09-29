@@ -1,0 +1,32 @@
+name: contracts
+on:
+  push:
+    paths: ["contracts/**", ".github/workflows/contracts.yml"]
+  pull_request:
+    paths: ["contracts/**"]
+
+jobs:
+  forge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @cwf/contracts
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.8.3
+      - name: Tempo profile
+        working-directory: contracts
+        run: forge build --sizes && forge test --no-match-path "test/fork/**"
+      - name: evm profile
+        working-directory: contracts
+        env:
+          FOUNDRY_PROFILE: evm
+        run: forge build --sizes && forge test --no-match-path "test/fork/**"

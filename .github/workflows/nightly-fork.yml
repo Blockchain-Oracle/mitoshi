@@ -1,0 +1,31 @@
+name: nightly-fork
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  fork:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @cwf/contracts
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.8.3
+      - name: Fork suites (Moderato, Tempo mainnet read-only, Robinhood testnet)
+        working-directory: contracts
+        env:
+          TEMPO_RPC_HTTP_URL: ${{ secrets.TEMPO_RPC_HTTP_URL }}
+          RH_RPC_HTTP_URL: ${{ secrets.RH_RPC_HTTP_URL }}
+          RH_TESTNET_RPC_HTTP_URL: ${{ secrets.RH_TESTNET_RPC_HTTP_URL }}
+        run: |
+          if [ -d test/fork ]; then forge test --match-path "test/fork/**"; else echo "no fork suites yet (S2 adds them)"; fi
