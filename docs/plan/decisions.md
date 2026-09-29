@@ -415,6 +415,19 @@ selector; Tempo has no value). Attested: EIP-712 `verifyingContract` = the calli
 
 **Why:** Agari's rules carried to Tempo's sources with every refusal named; replay bound to engine, chain, market and slot.
 
+### D-095 — spike X5: the compound policy keeps the coin out of the PoolManager; mint recipients too (finding + refinement, S17b, 2026-09-29)
+
+On the local Tempo EVM (`test/spikes/X5CompoundPolicy.t.sol`, PoolManager = the mainnet runtime fixture) a TIP-20 under
+compound policy `(1, blacklist{PoolManager}, …)` refuses every path into the PoolManager — `transfer`, `transferFrom`
+and v4's own `sync → transfer → settle` all revert `PolicyForbids` — while mints to buyers, transfers into the launchpad,
+the launchpad paying out and the issuer burning all work; after `changeTransferPolicyId(1)` the same settle succeeds.
+The spec's third member `1` would let a **mint** land in the PoolManager (measured: `mint(PoolManager)` succeeds under
+`(1, bl, 1)`); the launchpad never mints there, but the curve policy is `(1, bl{PM}, bl{PM})` so no mint can either —
+graduation flips to policy 1 before its own mints. Live confirmation on Moderato: `acceptance/S17.md` (S17b rows).
+Refines B.5.2 `curvePolicyId`.
+
+**Why:** measured; the stricter mint member costs nothing and closes a path the spec left open.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
