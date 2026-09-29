@@ -43,6 +43,25 @@ describe("RpcBudget", () => {
     expect(b.stats().limited).toBe(1);
   });
 
+  it("lowers its rate on a 429 and raises it back once the RPC is quiet", () => {
+    let t = 0;
+    const b = new RpcBudget(30, 30, () => t);
+    b.backOff(10);
+    expect(b.stats().rate).toBe(22.5);
+    t = 500;
+    b.backOff(10); // inside the same second: one cut per second
+    expect(b.stats().rate).toBe(22.5);
+    t = 1_600;
+    b.backOff(10);
+    expect(b.stats().rate).toBeCloseTo(16.9, 1);
+    t = 1_600 + 5_000 + 4_000;
+    void b.acquire("eth_blockNumber");
+    expect(b.stats().rate).toBeGreaterThan(20);
+    t += 60_000;
+    void b.acquire("eth_blockNumber");
+    expect(b.stats().rate).toBe(30);
+  });
+
   it("reads the RPC's retry hint", () => {
     expect(retryHintMs('{"error":{"code":-32005,"message":"rate limited, try again in 273ms"}}')).toBe(273);
     expect(retryHintMs("nope")).toBeNull();

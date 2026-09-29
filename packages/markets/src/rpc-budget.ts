@@ -36,12 +36,18 @@ export const weightOf = (method: string) => METHOD_WEIGHT[method] ?? DEFAULT_WEI
 
 export interface RpcBudgetStats {
   unitsPerSec: number;
+  /** The rate in force now: lowered on each 429, raised back while none come (the IP's limit is shared). */
+  rate: number;
   /** Units and requests granted over the last full minute, per method. */
   lastMinute: { units: number; requests: Record<string, number> };
   queued: number;
   maxWaitMs: number;
   limited: number;
 }
+
+const MIN_RATE = 3;
+const RAISE_PER_SEC = 0.5;
+const QUIET_MS = 5_000;
 
 type Waiter = { weight: number; priority: number; resolve: () => void; since: number };
 
@@ -58,6 +64,10 @@ export class RpcBudget {
   private last = { units: 0, requests: {} as Record<string, number> };
   private maxWaitMs = 0;
   private limited = 0;
+  /** Adaptive rate (AIMD): × 0.75 on a 429 (at most once a second), + 0.5 units/s per quiet second, within [min, max]. */
+  private rate: number;
+  private lastCutMs = Number.NEGATIVE_INFINITY;
+  private lastRaiseMs: number;
 
   constructor(
     readonly unitsPerSec: number,
@@ -67,6 +77,8 @@ export class RpcBudget {
   ) {
     this.tokens = burst;
     this.lastMs = now();
+    this.rate = unitsPerSec;
+    this.lastRaiseMs = this.lastMs;
     this.minute.startMs = this.lastMs;
   }
 
@@ -84,6 +96,12 @@ export class RpcBudget {
   /** The RPC answered "rate limited, try again in N ms": nothing goes until then. */
   backOff(ms: number): void {
     this.limited++;
+    const t = this.now();
+    if (t - this.lastCutMs >= 1_000) {
+      this.rate = Math.max(MIN_RATE, this.rate * 0.75);
+      this.lastCutMs = t;
+      this.lastRaiseMs = t;
+    }
     this.pausedUntilMs = Math.max(this.pausedUntilMs, this.now() + ms);
     this.tokens = Math.min(this.tokens, 0);
     this.drain();
@@ -91,7 +109,7 @@ export class RpcBudget {
 
   stats(): RpcBudgetStats {
     this.rollMinute();
-    return { unitsPerSec: this.unitsPerSec, lastMinute: this.last, queued: this.queue.length, maxWaitMs: this.maxWaitMs, limited: this.limited };
+    return { unitsPerSec: this.unitsPerSec, rate: Math.round(this.rate * 10) / 10, lastMinute: this.last, queued: this.queue.length, maxWaitMs: this.maxWaitMs, limited: this.limited };
   }
 
   private count(method: string, weight: number) {
@@ -109,7 +127,11 @@ export class RpcBudget {
 
   private drain() {
     const t = this.now();
-    this.tokens = Math.min(this.burst, this.tokens + ((t - this.lastMs) / 1000) * this.unitsPerSec);
+    if (t - this.lastCutMs >= QUIET_MS && t - this.lastRaiseMs >= 1_000) {
+      this.rate = Math.min(this.unitsPerSec, this.rate + ((t - this.lastRaiseMs) / 1000) * RAISE_PER_SEC);
+      this.lastRaiseMs = t;
+    }
+    this.tokens = Math.min(this.burst, this.tokens + ((t - this.lastMs) / 1000) * this.rate);
     this.lastMs = t;
     while (this.queue.length && t >= this.pausedUntilMs && this.tokens >= this.queue[0]!.weight) {
       const w = this.queue.shift()!;
@@ -118,7 +140,7 @@ export class RpcBudget {
       w.resolve();
     }
     if (!this.queue.length || this.timer) return;
-    const needMs = Math.max(this.pausedUntilMs - t, ((this.queue[0]!.weight - this.tokens) / this.unitsPerSec) * 1000, 1);
+    const needMs = Math.max(this.pausedUntilMs - t, ((this.queue[0]!.weight - this.tokens) / this.rate) * 1000, 1);
     this.timer = setTimeout(() => {
       this.timer = null;
       this.drain();

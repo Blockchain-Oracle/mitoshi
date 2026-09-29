@@ -840,7 +840,9 @@ the seed maker's re-quotes (≈ 0.5 sends/s across 55 Windows) alone use most of
 `TEMPO_RPC_UNITS_PER_SEC` (default 30; 0 = unpaced, for a private node) with the measured method weights. Queue order:
 tier 0 the print path (price-relay, roller, settler), tier 1 the house (seed maker, house taker) and the indexer,
 tier 2 watchers (halt-watch, funds-watch); inside a tier the send path, then reads, then log scans. A 429 pauses the
-bucket for the time the RPC names. `/health` shows `rpc` (units and requests per method over the last minute, queue,
+bucket for the time the RPC names and cuts the rate × 0.75 (once a second, floor 3 units/s); after 5 quiet seconds it
+climbs back 0.5 units/s per second to the ceiling — the IP's limit is shared with whatever else runs on the box, so
+the ceiling alone is not enough (first deploy: 21 units/s of demand still drew 291 429s in 4 min). `/health` shows `rpc` (units and requests per method over the last minute, queue,
 max wait, 429s). Live probe, 10 clients × 3 boundary passes through one budget: 30/30, no 429 retries exhausted.
 
 **Why:** the prints decide whether a Window settles; quotes can wait a few seconds at a boundary, prints cannot miss.
