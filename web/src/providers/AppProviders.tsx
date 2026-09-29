@@ -5,6 +5,7 @@
 // recovery, Add money and toasts are lazy islands beside the page (§3.1).
 import { QueryClientProvider } from "@tanstack/react-query";
 import { MarketsProvider } from "@cwf/markets/react";
+import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { ToastHost } from "@/components/ui/ToastHost";
 import { FundsHost } from "@/features/funding/FundsHost";
@@ -14,6 +15,9 @@ import { MarketsBoot } from "./MarketsBoot";
 import { usePersistedReadCache } from "./persist";
 import { WalletShellProvider } from "./wallet/WalletShellProvider";
 import { getQueryClient } from "./query-client";
+
+// Live prices into the query cache (the stream shares the ticker's one connection); lazy, after hydration.
+const PriceCache = dynamic(() => import("@/features/prices/PriceCache"), { ssr: false });
 
 const CHAIN_ID = webEnv.markets.network === "mainnet" ? 4217 : 42431;
 
@@ -31,6 +35,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <FundsHost />
             {children}
             <ToastHost limit={1} />
+            <PriceCache />
           </MarketsBoot>
         </WalletShellProvider>
       </MarketsProvider>

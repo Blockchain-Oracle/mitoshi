@@ -7,6 +7,7 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "@playwright/test";
+import { settle } from "./lib/settle";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "http://localhost:3102");
@@ -21,11 +22,13 @@ for (const theme of ["dark", "light"] as const) {
     await ctx.addInitScript((t) => localStorage.setItem("cwf_theme", t), theme);
     const page = await ctx.newPage();
     for (const route of ROUTES) {
-      await page.goto(`${base}${route}`, { waitUntil: "networkidle" });
+      await page.goto(`${base}${route}`, { waitUntil: "load" });
+      await settle(page);
       await page.waitForTimeout(600);
       await page.screenshot({ path: join(out, `${theme}-${width}${route.replace(/\//g, "_") || "_"}.png`), fullPage: true, animations: "disabled" });
     }
-    await page.goto(`${base}/markets`, { waitUntil: "networkidle" });
+    await page.goto(`${base}/markets`, { waitUntil: "load" });
+    await settle(page);
     await page.waitForTimeout(600);
     if (width === 390) await page.getByRole("button", { name: /Everything in Mitoshi/ }).click();
     else await page.getByRole("button", { name: "Explore" }).click();

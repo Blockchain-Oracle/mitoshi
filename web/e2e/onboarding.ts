@@ -11,6 +11,7 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, expect } from "@playwright/test";
+import { settle } from "./lib/settle";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "http://localhost:3101");
@@ -40,7 +41,8 @@ for (const width of [390, 1440]) {
   });
 
   try {
-    await page.goto(`${base}/markets`, { waitUntil: "networkidle" });
+    await page.goto(`${base}/markets`, { waitUntil: "load" });
+    await settle(page);
     await page.getByRole("button", { name: "Sign in", exact: true }).first().click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -66,7 +68,8 @@ for (const width of [390, 1440]) {
     await expect(hint).toBeVisible();
     await hint.getByRole("button").click();
     await expect(hint).toBeHidden();
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "load" });
+    await settle(page);
     await expect(page.getByRole("complementary", { name: "How a Window works" })).toBeHidden();
     // Add money from the header: the same account today is told about the cooldown up front and offered no button that would fail.
     await page.getByRole("button", { name: /^Balance \$/ }).click();

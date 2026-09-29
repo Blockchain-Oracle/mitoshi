@@ -6,13 +6,15 @@
  */
 import { mkdirSync } from "node:fs";
 import { chromium } from "@playwright/test";
+import { settle } from "./lib/settle";
 
 const i = process.argv.indexOf("--base");
 const base = i >= 0 ? process.argv[i + 1]! : "http://localhost:3101";
 mkdirSync("public/app", { recursive: true });
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: "dark" });
-await page.goto(`${base}/`, { waitUntil: "networkidle" });
+await page.goto(`${base}/`, { waitUntil: "load" });
+await settle(page);
 await page.screenshot({ path: "public/app/phone-home.png" });
 await browser.close();
 console.log("wrote public/app/phone-home.png");

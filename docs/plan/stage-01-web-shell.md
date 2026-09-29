@@ -52,7 +52,7 @@
   `x-vercel-protection-bypass` + `x-vercel-set-bypass-cookie`) against the testnet preview for `/`, `/markets`, `/markets/[id]`,
   `/portfolio`, `/proof/[market]`, `/status`, asserting lab LCP ≤ 2.5 s, CLS ≤ 0.05, TBT ≤ 200 ms; field INP/LCP p75
   from Speed Insights on both Vercel projects, checked at each S19 deploy; each later stage appends its routes.
-- [ ] 1b real-time client (D40): `packages/markets/src/runtime/stream.ts` — one SSE connection to `stream.<domain>`
+- [x] 1b real-time client (D40): `packages/markets/src/runtime/stream.ts` — one SSE connection to `stream.<domain>`
   (ops) + chain WS logs → `setQueryData` batched per frame; paused when hidden.
 - [x] 1c routes: `/api/auth/[...path]` + `server/{kv,session}.ts` (C.3.2); `/api/relay` + `/api/relay/status` with a
   `noop` area (C.3.3); `/api/faucet{,/challenge}` (C.3.4); `packages/db/migrations/{relay,faucet}/0001_*.sql` run on both Neon
@@ -219,6 +219,21 @@
   Pixel A/B of 48 screenshots (10 routes + menu + sign-in, 390/1440, both themes) against the unpurged build: identical
   except the grain overlay's own noise. A stage porting a Masayume surface brings its classes into `src/` and its rules
   return by themselves.
+- **1b real-time — SSE over fetch.** The client reads the ops stream with `fetch` + its own SSE parser, not
+  `EventSource`: it can send `lastEventId` on every reconnect (topic-set changes, un-hiding), close while hidden, and
+  run in Node, so it is tested against real servers (a local one for behaviour, the live ops stream for the wire). One
+  `@cwf/markets/stream` hub per page: the ticker (every page, idle-loaded) and the app's price cache (`keys.price`,
+  `setQueryData` once per frame) share one connection. Per-user topics ask `/api/stream/ticket`; until that route is
+  mounted (with S3's mint function after the merge) they are dropped, never faked. `watchChainLogs` rides the read
+  runtime's WebSocket; viem applies `args` filters only to a single `event` (with `events` it silently ignored them —
+  the live test caught unrelated transfers), so the watcher enforces one event when filtering.
+- **1b real-time — no `networkidle`.** With the stream configured a page holds one SSE connection for its life, so
+  Playwright's `networkidle` never comes; the e2e scripts wait on `load` + the idle-island window (`e2e/lib/settle.ts`).
+- **1b real-time — deploy.** Set `NEXT_PUBLIC_STREAM_URL=https://stream.testnet.mitoshi.xyz` on the web app, and the ops
+  app's stream CORS allow-list must include the web origin(s) (the sslip host and `mitoshi.xyz`); today it answers
+  without `access-control-allow-origin` for other origins, so a browser on another origin reads nothing.
+- **1b real-time — zod out of the ticker path.** `market/tickers.ts` imported zod for one enum schema; it moved to
+  `schemas/tickers.ts` like the other validators, so the registry is readable without zod.
 - **Order within the stage.** Onboarding needs the wallet connector and the auth/faucet routes, so the steps land as
   transactions → wallet → 1c routes → onboarding → settings → perf → real-time (sequencing only; every box lands).
 - **1b wallet — no cookie read on the server.** wagmi's `cookieToInitialState` would read `headers()` in the root and,

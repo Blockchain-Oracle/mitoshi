@@ -16,7 +16,8 @@
     "./caps": "./src/sessions/caps.ts",
     "./errors": "./src/errors/index.ts",
     "./key-status": "./src/keys/status.ts",
-    "./react-session": "./src/react/session-builder.tsx"
+    "./react-session": "./src/react/session-builder.tsx",
+    "./stream": "./src/runtime/stream-hub.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",

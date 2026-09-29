@@ -5,3 +5,4 @@ export { MarketsProvider, useMarkets, useMarketsEnv } from "./provider";
 export { useBalanceSheet, useChainClock } from "./reads";
 export { SubmitterSessionValue, useSigner, useSubmitter, useUserSession, type SignerState } from "./session";
 export { isInfrastructureFailure, useReadingQuery, type PollInterval, type ReadingQueryOptions } from "./useReadingQuery";
+export { usePrice, usePriceStream, useStreamTopic } from "./stream";

@@ -1,7 +1,6 @@
 // Ported from Agari 03b30ab:packages/core/src/market/tickers.ts — the Solana registry (xStocks/Ondo/PreStocks mints,
 // Pyth feeds, baskets, valuation lanes) replaced by the Tempo universe: nine RedStone-covered names, SPCX and three
 // crypto assets (plan S1 1a; C.4.4 archive feeds; docs/specs/engine.md A.1.1 `uint16 ticker`).
-import { z } from "zod";
 import { GAP_CADENCE_SEC, type LaneBasis } from "../types/market";
 
 /**
@@ -94,7 +93,6 @@ export const TICKERS: Readonly<Record<TickerSymbol, Ticker>> = {
 
 export const isTickerSymbol = (v: unknown): v is TickerSymbol => typeof v === "string" && (TICKER_SYMBOLS as readonly string[]).includes(v);
 export const isStockSymbol = (v: unknown): v is StockSymbol => typeof v === "string" && (STOCK_SYMBOLS as readonly string[]).includes(v);
-export const tickerSymbolSchema = z.enum(TICKER_SYMBOLS);
 
 /** Whether a ticker may be listed on a lane at all: stocks never on `crypto24`, crypto only there. */
 export const laneListable = (symbol: TickerSymbol, basis: LaneBasis): boolean => TICKERS[symbol].lanes.includes(basis);
