@@ -8,6 +8,7 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, expect } from "@playwright/test";
+import { settle } from "./lib/settle";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "http://localhost:3101");
@@ -23,7 +24,8 @@ for (const theme of ["dark", "light"]) {
   const phone = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, colorScheme: theme as "dark" | "light" });
   await phone.addInitScript((t) => localStorage.setItem("cwf_theme", t), theme);
   const page = await phone.newPage();
-  await page.goto(`${base}/markets`, { waitUntil: "networkidle" });
+  await page.goto(`${base}/markets`, { waitUntil: "load" });
+  await settle(page);
   await check(`${theme}: More opens from the right with search`, async () => {
     await page.getByRole("button", { name: /Everything in Mitoshi/ }).click();
     const dialog = page.getByRole("dialog");
@@ -40,7 +42,8 @@ for (const theme of ["dark", "light"]) {
     await expect(dialog).toBeHidden();
   });
   await check(`${theme}: sign-in modal is centred, passkey first, axe clean`, async () => {
-    await page.goto(`${base}/markets`, { waitUntil: "networkidle" });
+    await page.goto(`${base}/markets`, { waitUntil: "load" });
+    await settle(page);
     await page.getByRole("banner").getByRole("button", { name: "Sign in" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog.getByRole("button", { name: /Create my account/ })).toBeVisible();
@@ -54,7 +57,8 @@ for (const theme of ["dark", "light"]) {
     await expect(dialog).toBeHidden();
   });
   await check(`${theme}: back chevron goes to the parent`, async () => {
-    await page.goto(`${base}/games/duel`, { waitUntil: "networkidle" });
+    await page.goto(`${base}/games/duel`, { waitUntil: "load" });
+    await settle(page);
     await page.getByRole("button", { name: "Back" }).click();
     await page.waitForURL(`${base}/games`);
   });
@@ -63,7 +67,8 @@ for (const theme of ["dark", "light"]) {
   const desk = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: theme as "dark" | "light" });
   await desk.addInitScript((t) => localStorage.setItem("cwf_theme", t), theme);
   const dp = await desk.newPage();
-  await dp.goto(`${base}/`, { waitUntil: "networkidle" });
+  await dp.goto(`${base}/`, { waitUntil: "load" });
+  await settle(dp);
   await check(`${theme}: ⌘K palette searches and navigates`, async () => {
     await dp.keyboard.press("Meta+k");
     const input = dp.getByRole("combobox", { name: /Search destinations/ });

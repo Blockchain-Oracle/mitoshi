@@ -9,6 +9,7 @@ import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, type Page } from "@playwright/test";
+import { settle } from "./lib/settle";
 
 const args = process.argv.slice(2);
 const flag = (name: string, fallback: string) => {
@@ -60,7 +61,8 @@ for (const { path: route, expect } of routes) {
       const errors: string[] = [];
       page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
       page.on("pageerror", (e) => errors.push(e.message));
-      const res = await page.goto(`${base}${route}`, { waitUntil: "networkidle" });
+      const res = await page.goto(`${base}${route}`, { waitUntil: "load" });
+      await settle(page);
       const add = (kind: string, detail: string) => findings.push({ route, width, theme, kind, detail });
       if (!res || res.status() !== expect) add("status", `${res?.status()} (expected ${expect})`);
       for (const e of errors) if (!(expect === 404 && e.includes("status of 404"))) add("console", e.split("\n")[0]!.slice(0, 200));

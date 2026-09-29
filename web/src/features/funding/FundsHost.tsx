@@ -7,6 +7,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { OPEN_FUNDS_EVENT } from "@/lib/funds-event";
+import { useDataReady } from "@/providers/data/context";
 import { CREDITED_EVENT } from "./copy";
 import { isWelcomeSuppressed, type CreditedDetail } from "./credited";
 
@@ -14,6 +15,8 @@ const AddFunds = dynamic(() => import("./AddFunds"), { ssr: false });
 const CreditWelcome = dynamic(() => import("./CreditWelcome"), { ssr: false });
 
 export function FundsHost() {
+  // Add money reads balances through the query client: an early "+" waits (≤ a moment) for the late data layer.
+  const dataReady = useDataReady();
   const [fundsOpen, setFundsOpen] = useState(false);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
   const [welcomeMounted, setWelcomeMounted] = useState(false);
@@ -39,7 +42,7 @@ export function FundsHost() {
 
   return (
     <>
-      {fundsMounted ? <AddFunds open={fundsOpen} onOpenChange={setFundsOpen} /> : null}
+      {fundsMounted && dataReady ? <AddFunds open={fundsOpen} onOpenChange={setFundsOpen} /> : null}
       {welcomeMounted && !fundsOpen ? <CreditWelcome open={welcomeOpen} onOpenChange={setWelcomeOpen} /> : null}
     </>
   );

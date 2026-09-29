@@ -19,6 +19,7 @@
     "./errors": "./src/errors/index.ts",
     "./key-status": "./src/keys/status.ts",
     "./react-session": "./src/react/session-builder.tsx",
+    "./stream": "./src/runtime/stream-hub.ts",
     "./ops": "./src/ops/index.ts",
     "./stream-ticket": "./src/server/stream-ticket.ts"
   },

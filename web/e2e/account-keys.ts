@@ -13,6 +13,7 @@ import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, expect } from "@playwright/test";
 import { authorizeTestKey } from "@cwf/markets/testing";
+import { settle } from "./lib/settle";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "http://localhost:3101");
@@ -32,7 +33,8 @@ const { authenticatorId } = await cdp.send("WebAuthn.addVirtualAuthenticator", {
 
 let failed = false;
 try {
-  await page.goto(`${base}/settings/account`, { waitUntil: "networkidle" });
+  await page.goto(`${base}/settings/account`, { waitUntil: "load" });
+  await settle(page);
   await page.getByRole("button", { name: "Sign in", exact: true }).first().click();
   await page.getByRole("button", { name: "Create my account" }).click();
   await expect(page.getByRole("dialog").getByText(/You're funded/)).toBeVisible({ timeout: 60_000 });
@@ -46,7 +48,8 @@ try {
   const key = await authorizeTestKey({ rpcUrl: "https://rpc.moderato.tempo.xyz", rootP256PrivateKey: rootKey, webAuthn: { rpId: new URL(base).hostname, origin: base }, limitBase: 25_000_000n, periodSec: 86_400n, validForSec: 86_400 });
   console.log(JSON.stringify({ step: "authorized", ...key }));
 
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload({ waitUntil: "load" });
+  await settle(page);
   await expect(page.getByText(key.account, { exact: false })).toBeVisible({ timeout: 20_000 });
   const row = page.getByRole("listitem").filter({ hasText: "Trading key" });
   await expect(row).toContainText("$25.00 of $25.00 pathUSD left", { timeout: 60_000 });

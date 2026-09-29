@@ -4,6 +4,8 @@
 // Persisted per-browser; first visit with no stored choice follows the OS.
 // Ported from reference/yosuku/lib/theme.ts @ 3c56ef5 — only the storage key is Masayume's.
 const STORAGE_KEY = "cwf_theme";
+/** Dismissed first-use explainers (`cwf.explained.<id>` = "1"): the head script marks them on <html> before first paint. */
+export const EXPLAINED_PREFIX = "cwf.explained.";
 
 export type Theme = "dark" | "light";
 
@@ -60,4 +62,4 @@ export function initTheme(): Theme {
 
 // Blocking snippet injected before the app renders so the correct theme paints on the
 // FIRST frame — no flash of dark. Kept tiny and dependency-free; mirrors resolveTheme().
-export const THEME_INIT_SCRIPT = `(()=>{try{var t=localStorage.getItem('${STORAGE_KEY}');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`;
+export const THEME_INIT_SCRIPT = `(()=>{try{var t=localStorage.getItem('${STORAGE_KEY}');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('${EXPLAINED_PREFIX}')===0&&localStorage.getItem(k)==='1')document.documentElement.classList.add('cwf-explained-'+k.slice(${EXPLAINED_PREFIX.length}));}}catch(e){}})();`;
