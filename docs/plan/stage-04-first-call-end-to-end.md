@@ -48,6 +48,8 @@
 - **F-S4-09** (S4.2) The gateway's 502 on `eth_sendRawTransactionSync` often comes back for a transaction that did
   land (three in one run). `tx/send.ts` now hashes the signed bytes and asks the chain until the expiring window
   closes: landed → the receipt; window passed → `NotIncludedError` (definite); never a resend (D-137).
+- **F-S4-10** (S4.3, X21) Five concurrent taps from one IP met Moderato's public RPC rate limit on their fills; the
+  transport now retries rate-limited non-send requests after the hinted delay. Five taps in 1.2 s all confirmed (D-139).
 
 ## Handoff
 

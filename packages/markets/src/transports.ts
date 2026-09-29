@@ -9,7 +9,31 @@
 import { createTransport, fallback, http, webSocket, type Hex, type Transport } from "viem";
 import { Transaction } from "viem/tempo";
 
-/** Routes like viem's `withRelay` (policy "sign-only"), with no retries of its own. */
+/** Moderato's rate-limit answer ("Request exceeds defined limit. rate limited, try again in 118ms"), with its hint. */
+export function rateLimitDelayMs(error: unknown): number | null {
+  const text = [error, (error as { details?: unknown })?.details, (error as { cause?: { message?: unknown } })?.cause?.message].map((x) => (x instanceof Error ? x.message : String(x ?? ""))).join(" ");
+  if (!/rate limited|exceeds defined limit|status: 429/i.test(text)) return null;
+  const hint = /try again in (\d+)\s*ms/i.exec(text);
+  return Math.min(hint ? Number(hint[1]) + 25 : 250, 2_000);
+}
+
+/**
+ * A request that is safe to repeat (never a raw send) is retried only when the RPC rate-limited it, after the hinted
+ * delay, at most three times (X21: five concurrent taps from one IP met Moderato's limit).
+ */
+async function withRateLimitRetry<T>(run: () => Promise<T>): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await run();
+    } catch (error) {
+      const delay = rateLimitDelayMs(error);
+      if (delay === null || attempt >= 3) throw error;
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+}
+
+/** Routes like viem's `withRelay` (policy "sign-only"), with no retries of its own beyond rate limits. */
 export function relayProxy(rpc: Transport, relay: Transport, send: Transport = rpc): Transport {
   return (config) => {
     const rpcT = rpc(config);
@@ -21,17 +45,17 @@ export function relayProxy(rpc: Transport, relay: Transport, send: Transport = r
       type: "relayProxy",
       retryCount: 0,
       request: (async ({ method, params }: { method: string; params?: unknown }, options?: unknown) => {
-        if (method === "eth_fillTransaction") return relayT.request({ method, params } as never, options as never);
+        if (method === "eth_fillTransaction") return withRateLimitRetry(() => relayT.request({ method, params } as never, options as never));
         if (method === "eth_sendRawTransactionSync" || method === "eth_sendRawTransaction") {
           const serialized = (params as [Hex])[0];
           const tx = Transaction.deserialize(serialized as never) as { feePayerSignature?: unknown };
           if (tx.feePayerSignature === null) {
-            const signed = await relayT.request({ method: "eth_signRawTransaction", params: [serialized] } as never, options as never);
+            const signed = await withRateLimitRetry(() => relayT.request({ method: "eth_signRawTransaction", params: [serialized] } as never, options as never));
             return sendT.request({ method, params: [signed] } as never, options as never);
           }
           return sendT.request({ method, params } as never, options as never);
         }
-        return rpcT.request({ method, params } as never, options as never);
+        return withRateLimitRetry(() => rpcT.request({ method, params } as never, options as never));
       }) as never,
     });
   };

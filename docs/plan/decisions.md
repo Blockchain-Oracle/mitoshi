@@ -845,6 +845,19 @@ approving the exact escrow (never max); the `/settings/account` pipeline reads t
 **Why:** X20 is D-047's proof; the limit semantics decide what "$25/day" means on the trust surface ("up to $25 of
 new spending authority per day").
 
+### D-139 — spike X21: rapid taps are parallel expiring-nonce transactions; the only limit met was the public RPC's rate (finding, S4.3, 2026-09-29)
+
+Five orders from one wallet-mode key, started 300 ms apart, each its own Tempo transaction with `nonceKey =
+maxUint256`, `nonce = 0` and `validBefore` = chain-clock now + 25 s set explicitly by `tx/nonce.ts`, sent through
+the production order lane concurrently (the session queues only protocol nonces): all five confirmed, four in one
+block (37,416,181) in run 1, within 4.4 s in run 3 — no nonce contention, no replacement, each decided by its own
+window. The one failure mode was Moderato's public RPC rate limit (`rate limited, try again in 118ms`) on the
+concurrent fills; the transport retries a rate-limited **non-send** request after the hinted delay (≤ 3), never a raw
+send (D-137). A production relay on its own RPC endpoint moves this limit off the users' IPs.
+
+**Why:** X21 is the rapid-tap proof L-08/§2.4 assume; expiring nonces are what make "tap, tap, tap" safe without a
+client-side queue.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
