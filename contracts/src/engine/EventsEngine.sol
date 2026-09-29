@@ -10,6 +10,7 @@ import {EngineStorage} from "./EngineStorage.sol";
 import {IEngineErrors} from "./EngineErrors.sol";
 import {IEventsEngineEvents} from "./interfaces/IEventsEngineEvents.sol";
 import {MatchLib} from "./libs/MatchLib.sol";
+import {AdminLib} from "./libs/AdminLib.sol";
 import {BookLib} from "./libs/BookLib.sol";
 import {Grid} from "./libs/Grid.sol";
 import "./EngineTypes.sol";
@@ -132,6 +133,24 @@ contract EventsEngine is IEngineErrors, IEventsEngineEvents, ReentrancyGuardTran
         pos.credit = credit - amount;
         emit CreditWithdrawn(m, ++mk.eventSeq, msg.sender, amount);
         _pay(msg.sender, amount);
+    }
+
+    // ------------------------------------------------------------------------------------------------ roller and admin
+
+    /// @notice Lists a Window (E-26). Roller only; Normal mode only.
+    function openWindow(OpenWindowArgs calldata a) external nonReentrant returns (bytes32 marketId) {
+        if (!EngineStorage.layout().isRoller[msg.sender]) revert NotRoller();
+        marketId = AdminLib.openWindow(a);
+    }
+
+    /// @notice Registers a Series (E-23). Admin only.
+    function registerSeries(RegisterSeriesArgs calldata a) external onlyAdmin returns (bytes32 seriesId) {
+        seriesId = AdminLib.registerSeries(a, _decimals);
+    }
+
+    /// @notice Appends an immutable policy version (E-25). Admin only.
+    function addPolicyVersion(bytes32 seriesId, uint8 index, PolicyVersion calldata v) external onlyAdmin {
+        AdminLib.addPolicyVersion(seriesId, index, v);
     }
 
     // ------------------------------------------------------------------------------------------------ roles and mode
