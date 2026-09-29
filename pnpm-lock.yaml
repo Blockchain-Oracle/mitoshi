@@ -356,6 +356,9 @@ importers:
 
   services/ops:
     dependencies:
+      '@cwf/clients':
+        specifier: workspace:*
+        version: link:../../packages/clients
       '@cwf/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -368,6 +371,9 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.23.15
+      viem:
+        specifier: 'catalog:'
+        version: 2.56.9(typescript@5.9.3)(zod@4.6.5)
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

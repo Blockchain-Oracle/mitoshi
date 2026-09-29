@@ -1,0 +1,5 @@
+{
+  "_doc": "Corporate skips and stock-token multiplier changes (C.5.2; Agari session-lanes.md §3.4). `skips[]`: {symbol, date (ET YYYY-MM-DD), why, lanes?}; `multipliers[]`: {symbol, effectiveSec, from, to, why}. Re-read on change; a committed entry applies without a restart.",
+  "skips": [],
+  "multipliers": []
+}

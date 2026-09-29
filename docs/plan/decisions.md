@@ -438,6 +438,18 @@ Amends D20 / D-055's "budgets debited only on raw-send methods". Measured on Mod
 
 **Why:** measured; without (1) the budgets are decorative, and without (2) and (3) no new user could be sponsored.
 
+### D-090 — S3 builds on S1's ports; the ops chain module is `@cwf/markets/ops` (S3.1, 2026-09-29)
+
+S3 merges `stage/S1-web-shell` @ `082c13f` (as S3.5 did) instead of re-porting Agari's core planners: S1 already ported
+`packages/core/src/market/*` (windows, calendar, RedStone schedule, halts, tickers, corporate, earnings) from Agari
+03b30ab and `packages/markets/src/tx/send.ts`. The venue actors' chain I/O lives in `packages/markets/src/ops/*`
+(`@cwf/markets/ops`: role clients, EngineLens reads through Multicall3, engine call builders, `sendOps` = simulate one
+call, then `tx/send.ts` with an expiring nonce, self-paid in pathUSD) and `packages/markets/src/prices/*` (RedStone
+payloads, EIP-712 attestations, Data Streams REST). "Fly config" in the stage box is the Coolify app (D-061): the
+existing `services/ops/Dockerfile`, health `/health`, `DRY_RUN` default on.
+
+**Why:** one copy of each planner; chain I/O stays in `packages/markets` (C.1.2 boundaries).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
