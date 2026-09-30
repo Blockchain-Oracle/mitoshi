@@ -78,7 +78,10 @@ export async function sendBatch<chain extends Chain>(
 ): Promise<SendResult> {
   const { parameters, fields } = buildSendParameters(request);
   // The Tempo chain config types the extra fields (`calls`, `feeToken`, `nonceKey`, `validBefore`, `feePayer`).
-  const signed = { ...parameters, account: client.account, chain: client.chain };
+  // A wallet-held signer (the passkey connector, a wallet app) whose provider has a default fee payer marks every
+  // transaction for sponsorship unless told otherwise (accounts 0.18.4): an unsponsored write says `feePayer: false`
+  // (F-S7-10, D-156 — capital intake could not be sent at all). Local accounts are unchanged.
+  const signed = { ...parameters, ...(!request.sponsored && client.account.type === "json-rpc" ? { feePayer: false as const } : {}), account: client.account, chain: client.chain };
   try {
     const receipt = (await client.sendTransactionSync(signed as never)) as TransactionReceipt;
     return { receipt, hash: receipt.transactionHash, fields };

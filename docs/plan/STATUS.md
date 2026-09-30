@@ -20,8 +20,8 @@ Updated 2026-09-30. **Never trust memory over this file.**
 
 - S1/S16: the relay engine doesn't honour `themesPolicy.batches` (the one-tx key-authorization + follow is refused).
 - ~~S4: register `relay/policies/engine.ts`~~ — done in S4.1 (D-135).
-- S1/S7: `vaultPolicy` sponsors `placeFor` without the `asyncSender` grant check `relay/types.ts` expects.
-- S3/S7: settler reports the vault as "tracked" but has no `crankSettle` work yet.
+- ~~S1/S7: `vaultPolicy` sponsors `placeFor` without the `asyncSender` grant check~~ — done in `stage/S7-web` (D-157).
+- ~~S3/S7: settler has no `crankSettle` work~~ — done in `stage/S7-web` (D-155; migration index/0002 to run on deploy).
 - S15: `reference-writer` reads `KEEPER_PRIVATE_KEY` from env only (not S3's `roleKey()` fallback); key missing from
   `ops.mainnet.example` / `infra/secrets.md`; `relay/policies/guard.ts` not yet registered.
 - S17b: the launch keeper has no sender wired; S1: `/api/stream/ticket` answers 401 to a signed-in user (S4 finding; per-user stream falls back to polling); S3.5: `idx_events` counter in recount.
