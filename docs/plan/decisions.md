@@ -1044,6 +1044,32 @@ the owner's phone (Handoff); the pressed state is ≤ 205 ms everywhere (§2.4's
 
 **Why:** a flow target is a gate, and a missed gate is recorded with its numbers, never rounded off.
 
+### D-165 — the parlay reserve's Tempo seam: rested depth at 20 s, a 0.05 fair-value floor per leg, one spot per leg (decision, S10a, 2026-09-30)
+
+Masayume's `ParlayReserve` ports with its maths, caps and launch parameters unchanged (12 % margin, λ 0.40, 3 legs, 60 %
+exposure, 500 per ticket, 1,000 per instant, a 2 % floor, priced over at least 20 contracts). What the Tempo seam adds:
+
+- **D-109 rest floor** `params.minRestSec` = 20 s, the venue grid's own `minRestSec` (`venue-spec.json`); a leg is priced
+  over orders rested `max(Series, params)`, so a spoofed offer must sit takeable for 20 s. Agari's `max_spread_ticks`
+  guard is not carried (it shipped off; Masayume never had it).
+- **PD-2 floor** `params.fairSlackRaw` = 0.05 per whole contract: `openParlay(legs, maxPayout, maxStake, spotProofs)`
+  takes one signed RedStone spot per leg (a leg may be on another ticker) and refuses `BelowFairValue` when a leg's book
+  price + 0.05 is under the guard's model for that side. One-sided: a leg the book prices above the model is the
+  house's gain. The σ is the guard's per-Series σ (the house maker's), so the bound and the quotes share one model; a
+  Series the guard has no σ or spot source for refuses by name (`SigmaNotSet`, `NoSpotSource`) — on testnet that is
+  every Series but the three crypto 5-minute lanes until their σ is set.
+- **L-38**: `lockedByExpiry[E]` is released the moment the last pending leg at E is decided and won (`ExpiryReleased`),
+  and at the ticket's end for every boundary not yet released — the mapping, not Agari's 32 slots (D-110's known limit).
+- **D-108**: `resolveLeg` takes only the next leg in close order (`nextLegOf`); there is no stale sweep to guard (a leg
+  voids only through the engine's permissionless `voidExpired`).
+- `LegExpired` stays as a defensive check: the lens derives status from the clock, so a Window past `lockAt` already
+  refuses `MarketNotTrading(…, LOCKED)`.
+- Deployed by its own key role **`deployer-tickets`** (admin = the broadcaster on testnet, Q-016), funded from `deployer`.
+
+**Why:** A.4.6 and PD-2 require the bound before mainnet; the slack is the smallest tolerance that lets an honest maker's
+quote survive the spot moving between its requote and the open (5-minute crypto lanes move ≈ 1–3 ¢ a minute near the
+money). `setParams` tunes both without a redeploy.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
