@@ -104,7 +104,7 @@ jobs:
       - name: Main-thread tasks
         if: always() && env.REF != ''
         continue-on-error: true
-        run: WEB_DIR=target/web node scripts/perf/trace-tasks.mjs http://localhost:3000 / /markets /portfolio --seconds 20 --chrome
+        run: WEB_DIR=target/web node scripts/perf/trace-tasks.mjs http://localhost:3000 / /markets /markets/0x0000000000000000000000000000000000000000000000000000000000000001 /portfolio --seconds 20 --shifts 3 --chrome
       - name: Server logs
         if: always() && env.REF != ''
         run: tail -n 60 "$RUNNER_TEMP/next.log" "$RUNNER_TEMP/serve.log" || true

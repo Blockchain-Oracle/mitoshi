@@ -4,7 +4,10 @@
  * timers, animation frames, style, layout, paint — and the tasks' blocking sum. Run on the same host as Lighthouse
  * (`lighthouse.yml` branch mode runs it after the gate) so the breakdown matches the numbers.
  *
- *   WEB_DIR=web node scripts/perf/trace-tasks.mjs http://localhost:3000 /markets /portfolio [--seconds 12] [--chrome]
+ * `--shifts N` also loads each route N times unthrottled (as Lighthouse's simulated runs load) and lists every
+ * layout shift with its sources' rects, next to when the late fonts (`html.wf-late`) and the hero chart arrived.
+ *
+ *   WEB_DIR=web node scripts/perf/trace-tasks.mjs http://localhost:3000 /markets /portfolio [--seconds 12] [--shifts 3] [--chrome]
  */
 import { appendFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -13,7 +16,8 @@ import { join, resolve } from "node:path";
 const args = process.argv.slice(2);
 const flag = (name) => args.includes(name);
 const option = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
-const [base, ...rest] = args.filter((a, i) => !a.startsWith("--") && !(i > 0 && args[i - 1] === "--seconds"));
+const [base, ...rest] = args.filter((a, i) => !a.startsWith("--") && !(i > 0 && (args[i - 1] === "--seconds" || args[i - 1] === "--shifts")));
+const shiftRuns = Number(option("--shifts", "0"));
 const routes = rest.length ? rest : ["/markets"];
 const seconds = Number(option("--seconds", "12"));
 const require = createRequire(join(resolve(process.env.WEB_DIR ?? "web"), "package.json"));
@@ -59,7 +63,27 @@ async function trace(route) {
   return `#### ${route}: ${lines.length} tasks over 50 ms, blocking ${blocking.toFixed(0)} ms (4× CPU, ${seconds} s)\n${lines.join("\n")}\n`;
 }
 
+const PROBE = `window.__ls=[];window.__marks={};new PerformanceObserver(l=>{for(const e of l.getEntries())window.__ls.push({t:Math.round(e.startTime),v:e.value,src:(e.sources||[]).map(s=>{const n=s.node;const d=n&&n.nodeType===1?n.tagName.toLowerCase()+(typeof n.className==="string"&&n.className?"."+n.className.split(" ").slice(0,2).join("."):""):(n?n.nodeName:"?");return d+" y "+Math.round(s.previousRect.y)+"→"+Math.round(s.currentRect.y)+" h "+Math.round(s.previousRect.height)+"→"+Math.round(s.currentRect.height)})})}).observe({type:"layout-shift",buffered:true});new MutationObserver(()=>{const m=window.__marks;if(!m.wf&&document.documentElement.classList.contains("wf-late"))m.wf=Math.round(performance.now());if(!m.chart&&document.querySelector(".hero-chart canvas"))m.chart=Math.round(performance.now());if(!m.hero&&document.querySelector(".hero-chart-head"))m.hero=Math.round(performance.now());}).observe(document,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]});`;
+
+async function shifts(route) {
+  const lines = [];
+  for (let i = 0; i < shiftRuns; i++) {
+    const browser = await chromium.launch(flag("--chrome") ? { channel: "chrome" } : {});
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 3 });
+    const page = await ctx.newPage();
+    await page.addInitScript(PROBE);
+    await page.goto(base + route, { waitUntil: "load" });
+    await page.waitForTimeout(8000);
+    const [ls, marks] = await page.evaluate("[window.__ls, window.__marks]");
+    await browser.close();
+    lines.push(`- run ${i + 1}: Σ ${ls.reduce((a, e) => a + e.v, 0).toFixed(4)} · hero ${marks.hero ?? "–"} ms · chart ${marks.chart ?? "–"} ms · wf-late ${marks.wf ?? "–"} ms`);
+    for (const e of ls) lines.push(`  - ${e.t} ms ${e.v.toFixed(4)}: ${e.src.join(" · ")}`);
+  }
+  return `#### ${route}: layout shifts, ${shiftRuns} unthrottled loads\n${lines.join("\n")}\n`;
+}
+
 let out = "";
 for (const r of routes) out += `${await trace(r)}\n`;
+if (shiftRuns > 0) for (const r of routes) out += `${await shifts(r)}\n`;
 console.log(out);
 if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `<details><summary>Main-thread tasks (diagnosis)</summary>\n\n${out}\n</details>\n`);
