@@ -129,11 +129,27 @@ async function quoteWindow(w: Live) {
   ok(r, "maker vault.quote (S8 depth, 20 a side)", { m: w.m, feed: w.feed, fairUpE6: up, spotE8: spot.medianE8, bidTicks: bid, askTicks: ask });
 }
 
+/** The vault's closed Windows settle for anyone (pull + one full redeem into the vault), freeing its Window slots. */
+async function settleVault(quoted: Set<string>) {
+  for (const m of [...quoted]) {
+    const r = await lens("marketRef", [m]);
+    if (r.status !== 4 && r.status !== 5) continue;
+    quoted.delete(m);
+    const book = await vault("bookOf", [m]);
+    if (book.settled || book.quoteCount === 0) continue;
+    const res = await Promise.resolve()
+      .then(() => ok(castSend([VAULT, enc(marketMakerVaultAbi, "settle", [m])], { signer: supplier.signer, rpc: RPC }), "anyone vault.settle (a closed Window)", { m, status: r.status }))
+      .catch((e) => log("vault settle error", { m, why: String(e).slice(0, 200) }));
+    void res;
+  }
+}
+
 async function makerLoop() {
   await setup();
   const quoted = new Set<string>();
   for (;;) {
     try {
+      await settleVault(quoted);
       for (const w of await liveCrypto(150)) {
         if (quoted.has(w.m)) continue;
         quoted.add(w.m);
