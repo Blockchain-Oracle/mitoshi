@@ -103,6 +103,18 @@ export const events = {
     "PoolCorrected(address,uint8,uint256,uint256,uint256)",
     "TierSkipped(address,uint8,bytes)"
   ],
+  "LeverageReserve": [
+    "AdminChanged(address)",
+    "Exited(uint256,address,uint8,uint256,uint256,uint256,uint256,address)",
+    "Opened(uint256,address,bytes32,uint8,uint32,uint256,uint256,uint256,uint256,uint256)",
+    "OwedClaimed(address,uint256)",
+    "ParamsUpdated(tuple)",
+    "PausedSet(bool)",
+    "PayoutHeld(address,uint256,uint256)",
+    "Supplied(address,uint256,uint256,uint256)",
+    "SupplyRedeemed(address,uint256,uint256,uint256)",
+    "Swept(uint256)"
+  ],
   "LzPingTempo": [
     "EnforcedOptionSet(tuple[])",
     "OwnershipTransferred(address,address)",

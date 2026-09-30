@@ -26,6 +26,9 @@ export const relayTargets = {
       "0xf35d3cd3bbc309655c2a36ce22aaab1db3b8eb55",
       "0x280e62dbd17f76303d382dc138ab0d58cbbe346e"
     ],
+    "leverage": [
+      "0x1c623E5539351C01FB193f962C7502cCcFd9206D"
+    ],
     "lz": [
       "0x6B053153397c2019D23561a16f2ad6134bCc3Dfb"
     ],

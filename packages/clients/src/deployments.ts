@@ -310,6 +310,42 @@ export const deployments = {
       "external": {},
       "commit": "321c441"
     },
+    "leverage": {
+      "contracts": {
+        "LeverageReserve": {
+          "address": "0x1c623E5539351C01FB193f962C7502cCcFd9206D",
+          "artifact": "LeverageReserve.sol:LeverageReserve",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xb826de3d5cf2bdf1348d85dc6221d0a4f989400832ad705cf08d23f088a31bc0",
+          "deployBlock": 37533859,
+          "history": []
+        }
+      },
+      "roles": {
+        "ADMIN": "0x5DFC4211902A8EE7932286861e2D8C66841441E8"
+      },
+      "params": {
+        "collateral": "0x20C0000000000000000000000000000000000000",
+        "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+        "fairSlackRaw": 50000,
+        "guard": "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1",
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+        "maintenanceBps": 12000,
+        "maxEntryPriceRaw": 950000,
+        "maxExposureBps": 6000,
+        "maxFrontedPerPosition": 200000000,
+        "maxLeverageBps": 30000,
+        "maxOpenPositions": 64,
+        "maxWindowFronted": 500000000,
+        "minEntryPriceRaw": 50000,
+        "minRestSec": 20,
+        "minTimeLeftSec": 90,
+        "premiumBps": 800
+      },
+      "external": {},
+      "commit": "69e757e"
+    },
     "lz": {
       "contracts": {
         "LzPing": {

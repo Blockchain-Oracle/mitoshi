@@ -7,6 +7,7 @@ import type { RelayPolicy } from "../types";
 import { enginePolicy } from "./engine";
 import { keysPolicy } from "./keys";
 import { launchPolicy } from "./launch";
+import { leveragePolicy } from "./leverage";
 import { noopPolicy } from "./noop";
 import { parlayPolicy } from "./parlay";
 import { rangePolicy } from "./range";
@@ -14,6 +15,6 @@ import { stocksRelayPolicy } from "./stocks";
 import { themesPolicy } from "./themes";
 import { vaultPolicy } from "./vault";
 
-export { enginePolicy, keysPolicy, launchPolicy, noopPolicy, parlayPolicy, rangePolicy, stocksRelayPolicy, themesPolicy, vaultPolicy };
+export { enginePolicy, keysPolicy, launchPolicy, leveragePolicy, noopPolicy, parlayPolicy, rangePolicy, stocksRelayPolicy, themesPolicy, vaultPolicy };
 
-export const POLICIES: readonly RelayPolicy[] = [noopPolicy, keysPolicy, launchPolicy, themesPolicy, stocksRelayPolicy, vaultPolicy, enginePolicy, parlayPolicy, rangePolicy];
+export const POLICIES: readonly RelayPolicy[] = [noopPolicy, keysPolicy, launchPolicy, themesPolicy, stocksRelayPolicy, vaultPolicy, enginePolicy, parlayPolicy, rangePolicy, leveragePolicy];

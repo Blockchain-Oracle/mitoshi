@@ -48,6 +48,11 @@
   position healthy, and settles it on the real close. Two Masayume tests change with D-114: a knock-out on a book too
   thin for the whole position refuses instead of selling part; the pool's "refund as credit" knob is the engine's
   `sweep`, which finds nothing (a taker never accrues credit). The mock's taker fee has no engine equivalent (T10).
+- F-S10-12 (10c.2, deploy): Tempo creation gas runs ≈ 1,000 gas per runtime byte plus 250k per fresh slot: ParlayReserve
+  (13.1 KB) 16.4M, RangeReserve (15.5 KB) 19.4M, LeverageReserve (21.6 KB) 24.8M — against Moderato's 30M transaction
+  cap. Forge's default 130 % estimate multiplier put the leverage create at 32.9M and the node refused it before
+  sending; `--gas-estimate-multiplier 110` deployed it. A product past ≈ 24 KB runtime cannot deploy in one transaction
+  at all, a tighter bound than the 23.5 KB size rule for anything with a heavy constructor.
 
 ## Handoff
 

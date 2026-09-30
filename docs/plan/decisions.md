@@ -1144,6 +1144,20 @@ reserve's own engine position:
 **Why:** A.4.3, Agari's D-114/D-116 and PD-2 — a reserve that fronts capital must not be knocked out or opened on a
 book someone arranged, and a void must never cost its suppliers the front.
 
+### D-175 — Boost relay policy and the leverage-keeper: owner trades, exits and cranks sponsored; the keeper proves its own spot (decision, S10c, 2026-09-30)
+
+`relay/policies/leverage.ts`, registered in `POLICIES`, D-166's rule: **sponsored** `open`, `close`, `knockOut`, `settle`,
+`claimOwed`, `withdraw`, `sweep` (every one pays only the owner, the caller, or moves the reserve's own credit);
+**never** `supply` and `setParams`/`setPaused`/`setAdmin`; `open` is the markets entry; `maxGas` 7M. The
+**leverage-keeper** (Masayume's actor, onto `runActor`, in the default ops set, `keeper` role) cranks `settle` once the
+engine decides a Window and `knockOut` only when `markOf` says rested depth takes the whole position under the line
+AND `fairMarkOf` at a fresh RedStone spot (built from one gateway `latest` response per pass, the verifier's own signer
+set and threshold) agrees — the proof it sends is that same spot. It pays its own fees (ops budget); without the key or
+under `DRY_RUN` it scans and reports.
+
+**Why:** knock-outs and settlements must never wait on the owner or on a user remembering to crank; the keeper sends
+only calls the contract would accept, and never a knock-out the model would refuse.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
