@@ -66,6 +66,19 @@ export const indexerSources = {
       ],
     },
     {
+      area: "fair",
+      contract: "FairValueGuard",
+      address: "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1",
+      deployBlock: 37389221,
+      events: [
+        {"name":"MaxSpotAgeSet","signature":"MaxSpotAgeSet(uint32 maxSpotAgeSec)","topic0":"0x355af3458eb179a759146963f0343e6b66afeb58fcfe3e27ce970436ad77d49d"},
+        {"name":"OwnershipTransferStarted","signature":"OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner)","topic0":"0x38d16b8cac22d99fc7c124b9cd0de2d3fa1faef420bfe791d8c362d765e22700"},
+        {"name":"OwnershipTransferred","signature":"OwnershipTransferred(address indexed previousOwner, address indexed newOwner)","topic0":"0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"},
+        {"name":"SigmaSet","signature":"SigmaSet(bytes32 indexed seriesId, uint64 sigmaE8)","topic0":"0xed46fe2a3e801f5dc622414696cd03691b4dd0b315c4e1f3ae21adb8d47fd680"},
+        {"name":"SpotSourceSet","signature":"SpotSourceSet(uint16 indexed ticker, address verifier, bytes32 feedId)","topic0":"0x3ca0727cca150630f72e7715fc33773da83ce694b642545774367a642bb24c9e"},
+      ],
+    },
+    {
       area: "guard",
       contract: "StockGuardHook",
       address: "0xFB0579c1dbFfbBabb05834998b5542B9Bd4FA0C0",

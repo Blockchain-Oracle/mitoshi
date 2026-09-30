@@ -1,4 +1,4 @@
-// Ported from Masayume 68f7a09:packages/core/src/range/cdf-table.ts
+// Ported from Masayume 68f7a09:packages/core/src/range/cdf-table.ts — unchanged.
 /** Φ(z) × 1e6 for z = 0.00, 0.05 … 4.00 — the 81 integers `RangeMath.CDF` packs, generated offline from erf. */
 export const CDF_TABLE_E6: readonly number[] = [
   500_000, 519_939, 539_828, 559_618, 579_260, 598_706, 617_911, 636_831, 655_422,

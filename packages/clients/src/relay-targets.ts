@@ -12,6 +12,9 @@ export const relayTargets = {
       "0xc33df633b43e47e2aa0f8302611141737c89daf3",
       "0xb8dceeaf9bdb5fffde6cbb05abb946102f3132b1"
     ],
+    "fair": [
+      "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1"
+    ],
     "guard": [
       "0xFB0579c1dbFfbBabb05834998b5542B9Bd4FA0C0",
       "0xccBc2E760C22DBBdb3E1C2458C98593942A7Bd90"

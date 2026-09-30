@@ -156,6 +156,32 @@ export const deployments = {
       "external": {},
       "commit": "6b78abe"
     },
+    "fair": {
+      "contracts": {
+        "FairValueGuard": {
+          "address": "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1",
+          "artifact": "FairValueGuard.sol:FairValueGuard",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xb3f8c662599ef258cc1509c0f674eabf5f8cb64f7804ac43d27b5887225a306a",
+          "deployBlock": 37389221,
+          "history": []
+        }
+      },
+      "roles": {
+        "owner": "0xF368eE3b38bC3682A4f55Fd03778123269B69Fe5"
+      },
+      "params": {
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+        "maxSpotAgeSec": 120,
+        "sigmaE8.BTC-5m": 8903,
+        "sigmaE8.ETH-5m": 11574,
+        "sigmaE8.SOL-5m": 14245,
+        "spotVerifier": "0x38Ad9Fe54b3b271f737CdC231d7B85b1616A1377"
+      },
+      "external": {},
+      "commit": "5e11092"
+    },
     "guard": {
       "contracts": {
         "StockGuardHook": {
