@@ -7,7 +7,8 @@
  */
 import type { Address, Hex, OrderOutcome, OrderRequest, Quote } from "@cwf/core";
 import { reduceTx, TX_IDLE, type TxState } from "@cwf/core";
-import { invalidateAfterWrite, useSubmitter } from "@cwf/markets/react";
+import { invalidateAfterWrite } from "@cwf/markets/react";
+import { useTapSubmitter } from "@/providers/wallet/tap-session";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useReducer, useRef, useState } from "react";
 import { announce } from "@/components/states/LiveRegion";
@@ -29,7 +30,7 @@ function txHashOf(outcome: OrderOutcome): Hex | null {
 }
 
 export function usePlaceBet(wallet: Address | null) {
-  const submitter = useSubmitter();
+  const submitter = useTapSubmitter();
   const queryClient = useQueryClient();
   const [tx, dispatch] = useReducer(reduceTx, TX_IDLE);
   const [outcome, setOutcome] = useState<OrderOutcome | null>(null);
@@ -41,10 +42,23 @@ export function usePlaceBet(wallet: Address | null) {
       inFlight.current = true;
       setOutcome(null);
       dispatch({ type: "confirm", nowMs: Date.now() });
+      // Tap timing (§2.4 "Call card ≤ 1 s p50"): the lane's pre-send checks, then the send → receipt; read by the gate.
+      const markSafe = (name: string) => {
+        try {
+          performance.mark(name);
+        } catch {
+          // no Performance API
+        }
+      };
+      markSafe("cwf:tap:start");
       try {
         const result = await submitter.submitOrder({ ...request, wallet }, (phase, detail) => {
-          if (phase === "submitted") dispatch({ type: "submitted", txHash: detail?.txHash ?? null, validBeforeSec: null });
+          if (phase === "submitted") {
+            markSafe("cwf:tap:sent");
+            dispatch({ type: "submitted", txHash: detail?.txHash ?? null, validBeforeSec: null });
+          }
         });
+        markSafe("cwf:tap:done");
         setOutcome(result);
         const hash = txHashOf(result);
         switch (result.status) {

@@ -11,13 +11,15 @@ import { invalidateAfterWrite } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useTxLifecycle } from "@/components/tx";
+import { useTapSubmitter } from "@/providers/wallet/tap-session";
 
 export function collectableRows(rows: readonly ClaimableRow[]): ClaimableRow[] {
   return rows.filter((r) => !r.heldByReceivePolicy && r.netPayoutBase > 0n);
 }
 
 export function useCollect(wallet: Address | null) {
-  const tx = useTxLifecycle();
+  // Collect is in the wallet key's scope (redeem, withdrawCredit): no prompt when it is armed.
+  const tx = useTxLifecycle({ submitter: useTapSubmitter() });
   const queryClient = useQueryClient();
   const { run } = tx;
   const collect = useCallback(

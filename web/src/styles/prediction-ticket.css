@@ -28,3 +28,4 @@
 .pt-towin-note { font-size: var(--text-caption); color: var(--color-ink-secondary); }
 .pt-towin-figure { font-size: 2rem; font-weight: 600; line-height: 1; color: var(--color-profit); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .pt-pill-thumb, .pt-pill, .pt-add { transition: none; } }
+.pt-towin-figure.is-empty { color: var(--color-ink-muted); }

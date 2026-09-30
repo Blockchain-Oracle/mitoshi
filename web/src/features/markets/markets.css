@@ -25,3 +25,13 @@
 /* Eight lanes list some assets: the hero's cadence row scrolls on a phone instead of wrapping "24/7 5m" in two. */
 .mh-cadence-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
 .mh-cadence { white-space: nowrap; min-height: 44px; }
+/* UX gate (§2.5, axe color-contrast): the reference's muted captions fall under 4.5:1 on these grounds — they read at
+ * the secondary ink here, and the live pill's vermilion-on-wash takes the ink it needs in the light theme. */
+.markets-section .section-desc, .words-empty { color: var(--color-ink-secondary); }
+[data-theme="light"] .markets-section .live-pill { color: var(--color-accent-pressed); }
+.connect-card-link { color: var(--color-ink-secondary); font-size: var(--text-caption); }
+/* CLS (§3.1 ≤ 0.05): the hero keeps one height from its placeholder to its live face (measured at 320–1440 on the
+ * production build), so the lanes below never jump when the island lands. */
+.markets-hero { min-height: 47.5rem; }
+@media (min-width: 768px) { .markets-hero { min-height: 46.5rem; } }
+@media (min-width: 1024px) { .markets-hero { min-height: 63rem; } }

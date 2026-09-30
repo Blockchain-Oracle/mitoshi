@@ -19,7 +19,7 @@ import { TapChip } from "@/features/tap-trading/TapChip";
 import { nowMs as clockNow, useNowMs } from "@/lib/clock";
 import { readRegionPosture } from "@/lib/region-mark";
 import { useWalletSession } from "@/lib/wallet-session";
-import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
+import { useTapArmed } from "@/providers/wallet/tap-session";
 import { CALL, TICKET } from "../copy";
 import { CallCard } from "../calls/CallCard";
 import { ToWin } from "@/components/ui/prediction-ticket";
@@ -49,7 +49,7 @@ export interface TicketProps {
 export function Ticket({ market, side: urlSide, head }: TicketProps) {
   const nowMs = useNowMs();
   const session = useWalletSession();
-  const shell = useWalletShell();
+  const tapArmed = useTapArmed();
   const { address, hasSigner } = useSigner();
   const t = useTicket({ market, side: urlSide, wallet: address, nowMs });
   const { side, stakeBase, phase } = t;
@@ -74,7 +74,9 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
 
   // A new stake, side or price starts a new composition; the previous outcome no longer describes it.
   const { reset } = bet;
-  useEffect(() => reset(), [stakeBase, side, priceCents, reset]);
+  // …and so does another Window: a requote or an outcome never carries over to the next market (the rail keeps one
+  // ticket mounted while the hero changes).
+  useEffect(() => reset(), [market.marketId, stakeBase, side, priceCents, reset]);
 
   const input = {
     connected: session.isConnected,
@@ -114,7 +116,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
     if (!side || !displayed) return;
     void bet.place({ market, side, stakeBase, displayedQuote: displayed, route: { kind: "wallet" } }, { resting: listed });
   };
-  const signer = shell.walletKey ? "access-key" : session.kind === "passkey" ? "passkey" : "injected";
+  const signer = tapArmed ? "access-key" : session.kind === "passkey" ? "passkey" : "injected";
   const booked = bet.state.outcome?.status === "confirmed" ? bet.state.outcome.booked : null;
   const scheduled = listed && bet.state.outcome?.status === "nothingFilled" ? bet.state.outcome : null;
 
@@ -149,7 +151,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
           <div className="tk-cta-dock">
             <ToWin label={TICKET.toWin} amount={displayed ? formatBaseUnits(displayed.payoutIfRightBase, decimals, { group: false, minDp: 2, maxDp: 2 }) : null} note={displayed ? TICKET.avgPrice(Math.round(displayed.avgPriceBps / 100)) : null} />
             <TicketCta blocker={blocker} ctx={ctx} tx={bet.state.tx} side={side} costBase={displayed?.maxCostBase ?? null} decimals={decimals} signer={signer} onConfirm={place} action={listed ? TICKET.scheduled.cta : TICKET.buy} />
-            <p className="tk-foot">{shell.walletKey ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
+            <p className="tk-foot">{tapArmed ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
           </div>
         </>
       )}

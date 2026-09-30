@@ -29,6 +29,8 @@ export type PendingOpen = { kind: "picker"; mode: "tempo" | "robinhood" } | { ki
 export interface WalletRuntimeProps {
   publish: (shell: WalletShell) => void;
   publishSession: (session: SubmitterSession | null) => void;
+  /** The wallet-key session (D-141): taps sign with it when this device holds an armed key. */
+  publishTap: (session: SubmitterSession | null) => void;
   /** An open the user asked for before the runtime loaded; consumed once on mount. */
   takePending: () => PendingOpen;
 }
@@ -41,7 +43,7 @@ export default function WalletRuntime(props: WalletRuntimeProps) {
   );
 }
 
-function Runtime({ publish, publishSession, takePending }: WalletRuntimeProps) {
+function Runtime({ publish, publishSession, publishTap, takePending }: WalletRuntimeProps) {
   const hydrated = useSyncExternalStore(subscribeNothing, () => true, () => false);
   const connections = useConnections();
   const { reconnectAsync } = useReconnect();
@@ -138,6 +140,7 @@ function Runtime({ publish, publishSession, takePending }: WalletRuntimeProps) {
     enabled: onTempo,
   });
   useEffect(() => publishSession(session), [publishSession, session]);
+  useEffect(() => publishTap(onTempo ? walletKey.session : null), [publishTap, onTempo, walletKey.session]);
 
   return (
     <>

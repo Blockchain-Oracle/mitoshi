@@ -96,7 +96,7 @@ export function ToWin({ label, amount, note }: { label: string; amount: string |
         <div className="pt-towin-label">{label}</div>
         {note ? <p className="pt-towin-note">{note}</p> : null}
       </div>
-      <span className="pt-towin-figure numbers">{amount === null ? "—" : <NumberFlow value={Number(amount)} format={{ style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }} willChange />}</span>
+      <span className={cn("pt-towin-figure numbers", amount === null && "is-empty")}>{amount === null ? "—" : <NumberFlow value={Number(amount)} format={{ style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }} willChange />}</span>
     </div>
   );
 }

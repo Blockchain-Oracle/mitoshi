@@ -54,7 +54,7 @@ export function TicketDock({ market, side, sessionId }: { market: EventMarket; s
     );
   }
   const head = (
-    <header className="flex items-center justify-between gap-3">
+    <header className="flex items-center justify-between gap-3 pr-12">
       <div className="flex flex-col gap-0.5">
         <span className="type-title text-ink">{market.asset} · {formatCadence(market.intervalSec)}</span>
         <span className="type-caption text-ink-secondary">{TICKET.title}</span>

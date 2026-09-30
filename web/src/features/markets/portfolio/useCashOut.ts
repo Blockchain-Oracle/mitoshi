@@ -9,7 +9,8 @@ import type { Address, ExitQuote, MarketId, Side } from "@cwf/core";
 import { isOk } from "@cwf/core";
 import { diagnosisCopy } from "@cwf/core/copy";
 import { formatBaseUnits } from "@cwf/core/units";
-import { invalidateAfterWrite, useMarketsPort, useSubmitter } from "@cwf/markets/react";
+import { invalidateAfterWrite, useMarketsPort } from "@cwf/markets/react";
+import { useTapSubmitter } from "@/providers/wallet/tap-session";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { announce } from "@/components/states/LiveRegion";
@@ -24,7 +25,7 @@ export interface CashOutTarget {
 }
 
 export function useCashOut(target: CashOutTarget, wallet: Address | null) {
-  const submitter = useSubmitter();
+  const submitter = useTapSubmitter();
   const port = useMarketsPort();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);

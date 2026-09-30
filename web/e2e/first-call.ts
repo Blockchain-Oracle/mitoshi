@@ -42,33 +42,84 @@ await cdp.send("WebAuthn.addVirtualAuthenticator", {
 let assertions = 0;
 cdp.on("WebAuthn.credentialAsserted", () => { assertions += 1; });
 
+/** Close the ticket's slide-over (below `lg`) with its own close button, then make sure it is gone. */
+async function closeTicket(p: Page) {
+  if (width >= 1024) return;
+  const dialog = p.getByRole("dialog");
+  if (!(await dialog.count())) return;
+  await p.keyboard.press("Escape");
+  if (await dialog.isVisible().catch(() => false)) await dialog.getByRole("button", { name: /close/i }).last().click().catch(() => undefined);
+  await expect(dialog).toBeHidden({ timeout: 5_000 }).catch(() => undefined);
+}
+
 async function openLane(p: Page, label: RegExp) {
   await p.getByRole("tab", { name: label }).first().click();
 }
 
 /** One call from a lane card: tap the side on the card → the ticket (rail or slide-over) → stake → confirm. */
-async function call(p: Page, lane: RegExp, asset: string, side: "UP" | "DOWN", stake: string) {
+async function callOnce(p: Page, lane: RegExp, asset: string, side: "UP" | "DOWN", stake: string) {
+  note({ step: "calling", asset, side });
   await openLane(p, lane);
   const ticker = p.getByRole("radio", { name: asset, exact: true });
   if (await ticker.count()) await ticker.first().click();
-  await p.getByRole("button", { name: new RegExp(`^Bet ${side} · ${asset} ·`) }).first().click();
+  // A Window inside its last 30 s takes no entries and its card shows none; the next one rolls in — wait for it.
+  const bet = p.getByRole("button", { name: new RegExp(`^Bet ${side} · ${asset} ·`) }).first();
+  await expect(bet).toBeVisible({ timeout: 120_000 });
+  await bet.click();
   const ticket = p.getByRole("region", { name: "Your call", exact: true }).last();
   await expect(ticket).toBeVisible({ timeout: 20_000 });
-  const amount = ticket.getByLabel("Bet amount in dollars");
-  await amount.fill(stake);
+  await ticket.getByLabel("Bet amount in dollars").fill(stake);
   const cta = ticket.getByRole("button", { name: new RegExp(`^Buy ${side} for \\$`) });
-  await expect(cta).toBeEnabled({ timeout: 45_000 });
+  // A fresh Window has no maker quotes until its open print lands, and the testnet seed maker quotes thin books.
+  if (!(await expect(cta).toBeEnabled({ timeout: 75_000 }).then(() => true, () => false))) {
+    note({ step: "not-placed", asset, side, text: "no liquidity within 75 s" });
+    await closeTicket(p);
+    return null;
+  }
   const before = assertions;
+  await p.evaluate(() => performance.clearMarks());
   const t0 = Date.now();
   await cta.click();
-  const pressed = Date.now() - t0;
-  await expect(ticket.getByText(/Call placed/)).toBeVisible({ timeout: 45_000 });
+  const placed = ticket.getByText(/Call placed/);
+  const outcome = ticket.getByRole("status").filter({ hasText: /Nothing filled|book moved|Waiting for the chain/ });
+  const alert = ticket.getByRole("alert");
+  const answered = await expect(placed.or(outcome).or(alert).first()).toBeVisible({ timeout: 120_000 }).then(() => true, () => false);
+  if (!answered) {
+    // The book moved between "enabled" and the tap: the CTA fell back to its blocker, nothing was sent.
+    note({ step: "not-placed", asset, side, text: `CTA: ${(await cta.or(ticket.getByRole("button").filter({ hasText: /liquidity|quote|Placing/ })).first().innerText().catch(() => "?")).slice(0, 80)}` });
+    await closeTicket(p);
+    return null;
+  }
   const tapToCallMs = Date.now() - t0;
+  const marks = await p.evaluate(() => Object.fromEntries(performance.getEntriesByType("mark").filter((m) => m.name.startsWith("cwf:tap")).map((m) => [m.name, Math.round(m.startTime)])));
+  const preSendMs = marks["cwf:tap:sent"] && marks["cwf:tap:start"] ? marks["cwf:tap:sent"] - marks["cwf:tap:start"] : null;
+  const sendMs = marks["cwf:tap:done"] && marks["cwf:tap:sent"] ? marks["cwf:tap:done"] - marks["cwf:tap:sent"] : null;
+  if (!(await placed.isVisible())) {
+    const text = (await outcome.or(alert).first().innerText().catch(() => "")).slice(0, 160);
+    note({ step: "not-placed", asset, side, tapToCallMs, text, prompts: assertions - before });
+    await closeTicket(p);
+    return null;
+  }
   const tx = await ticket.getByRole("link", { name: /verify on the Tempo explorer/ }).getAttribute("href");
-  note({ step: "call", asset, side, stake, tapToCallMs, pressedMs: pressed, prompts: assertions - before, tx });
+  note({ step: "call", asset, side, stake, tapToCallMs, preSendMs, sendMs, prompts: assertions - before, tx });
   await ticket.getByRole("button", { name: "Place another" }).click();
-  if (width < 1024) await p.keyboard.press("Escape");
+  await closeTicket(p);
   return { tapToCallMs, prompts: assertions - before, tx };
+}
+
+/** The first of `assets` whose book fills the call (two passes), on `lane`. */
+async function call(p: Page, lane: RegExp, assets: string | string[], side: "UP" | "DOWN", stake: string) {
+  const list = Array.isArray(assets) ? assets : [assets];
+  for (let pass = 0; pass < 2; pass++) {
+    for (const asset of list) {
+      const done = await callOnce(p, lane, asset, side, stake).catch((e: Error) => {
+        note({ step: "not-placed", asset, side, text: e.message.split("\n")[0] });
+        return null;
+      });
+      if (done) return { ...done, asset };
+    }
+  }
+  throw new Error(`${list.join("/")} ${side}: no fill`);
 }
 
 let failed = false;
@@ -95,18 +146,18 @@ try {
 
   // 2. Calls — crypto and 24/7 stock lanes, both sides; the first publishes the key (sponsored, D-136).
   const calls = [
-    await call(page, /^Crypto 5m/, "BTC", "UP", "1"),
-    await call(page, /^Crypto 5m/, "ETH", "DOWN", "1"),
-    await call(page, /^Crypto 5m/, "SOL", "UP", "1"),
-    await call(page, /^24\/7 5m/, "TSLA", "DOWN", "1"),
-    await call(page, /^24\/7 5m/, "AAPL", "UP", "1"),
+    await call(page, /^Crypto 5m/, ["BTC", "ETH", "SOL"], "UP", "1"),
+    await call(page, /^Crypto 5m/, ["ETH", "SOL", "BTC"], "DOWN", "1"),
+    await call(page, /^Crypto 5m/, ["SOL", "BTC", "ETH"], "UP", "1"),
+    await call(page, /^24\/7 5m/, ["TSLA", "META", "MSFT"], "DOWN", "1"),
+    await call(page, /^24\/7 5m/, ["AAPL", "GOOGL", "AMZN", "NVDA"], "UP", "1"),
   ];
-  if (stockSession) calls.push(await call(page, /^5m/, "NVDA", "UP", "1"));
+  if (stockSession) calls.push(await call(page, /^5m/, ["NVDA", "TSLA", "AAPL", "MSFT", "META", "AMZN", "GOOGL"], "UP", "1"));
   note({ step: "cold-to-first-call", ms: calls[0]!.tapToCallMs, sinceColdMs: Date.now() - tCold });
 
   // 3. Rapid taps (X21): three more calls back to back on one Window, remembered stake.
   const rapid = [];
-  for (let i = 0; i < 3; i++) rapid.push(await call(page, /^Crypto 5m/, "BTC", i % 2 ? "DOWN" : "UP", "1"));
+  for (let i = 0; i < 3; i++) rapid.push(await call(page, /^Crypto 5m/, ["BTC", "ETH", "SOL"], i % 2 ? "DOWN" : "UP", "1"));
   const all = [...calls, ...rapid];
   const sorted = all.map((c) => c.tapToCallMs).sort((a, b) => a - b);
   note({ step: "taps", count: all.length, p50Ms: sorted[Math.floor(sorted.length / 2)], maxMs: sorted.at(-1), promptsTotal: all.reduce((s, c) => s + c.prompts, 0) });
@@ -142,8 +193,8 @@ try {
   if (errors.length) note({ step: "console-errors", errors: errors.slice(0, 5) });
 } catch (error) {
   failed = true;
-  await page.screenshot({ path: join(out, `fail-${width}.png`), fullPage: true }).catch(() => undefined);
-  note({ step: "FAIL", message: (error as Error).message.split("\n")[0] });
+  await page.screenshot({ path: join(out, `fail-${width}.png`) }).catch(() => undefined);
+  note({ step: "FAIL", message: (error as Error).message.split("\n").slice(0, 6).join(" | ") });
 }
 writeFileSync(join(out, `first-call-${width}.json`), JSON.stringify(log, null, 2));
 await browser.close();
