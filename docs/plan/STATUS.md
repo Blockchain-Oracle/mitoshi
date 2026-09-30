@@ -1,6 +1,6 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-09-29. **Never trust memory over this file.**
+Updated 2026-09-30. **Never trust memory over this file.**
 
 ## Where we are
 
@@ -9,8 +9,10 @@ Updated 2026-09-29. **Never trust memory over this file.**
 - **S0 and S2 gates passed.** On the trunk (e1ab0d3): S2 engine, S3 venue ops (live on Coolify, 24 h soak until
   2026-09-30 07:05Z), S3.5 clients, S14c bridge (RH legs wait for testnet ETH), S15a v4 + encoder, S15b/c guard +
   pools, S16c themes contracts (configured), S17a/b launchpads, S7 EventVault contracts, S1 up to 05990e6.
-  Running: S1 web shell, S8 maker vault, S10 specialist tickets. S4 backend done on `stage/S4-backend` (ports, lanes,
-  relay engine policy, X20/X21, claim-all, cash-out, held state, live data — acceptance/S4.md); S4 UI part on `stage/S4-ui`: boxes 2–4 done, gate (1) run on Moderato (acceptance/S4.md runs A/B; tap target D-143 missed, void waits); the owner's device run is prepared in the S4 Handoff.
+  Running: S10 specialist tickets. **S4 merged to the trunk (2ab3639)**: backend + UI, gate (1) passed on Moderato
+  (acceptance/S4.md: 0 prompts cold → first call after the arm step, NVDA stock call in NYSE hours, 6 wins auto-paid);
+  open: tap → Call card p50 5.97 s vs 1 s (D-143, re-measure on the deployed site), a void shown "Returned" on a real
+  position, lab LCP/TBT on the deployed site; gate (2) = the owner's device run (steps in the S4 Handoff) → `m1-first-call`.
 - Live on testnet (Coolify): `https://testnet.mitoshi.xyz` (web), `https://ops.testnet.mitoshi.xyz/health` with `chain-head` + `archive` (RedStone prints every
   5 min, < 60 s after T). 12 testnet role keys funded (`acceptance/S0.md`).
 
@@ -22,7 +24,7 @@ Updated 2026-09-29. **Never trust memory over this file.**
 - S3/S7: settler reports the vault as "tracked" but has no `crankSettle` work yet.
 - S15: `reference-writer` reads `KEEPER_PRIVATE_KEY` from env only (not S3's `roleKey()` fallback); key missing from
   `ops.mainnet.example` / `infra/secrets.md`; `relay/policies/guard.ts` not yet registered.
-- S17b: the launch keeper has no sender wired; S1: mount `/api/stream/ticket`; S3.5: `idx_events` counter in recount.
+- S17b: the launch keeper has no sender wired; S1: `/api/stream/ticket` answers 401 to a signed-in user (S4 finding; per-user stream falls back to polling); S3.5: `idx_events` counter in recount.
 
 ## Waiting on the owner
 
