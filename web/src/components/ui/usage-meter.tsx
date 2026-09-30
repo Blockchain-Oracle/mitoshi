@@ -38,7 +38,7 @@ export function UsageMeter({ rows, title, className }: { rows: readonly UsageRow
             <Meter.Track className="h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
               <Meter.Indicator className={cn("h-full rounded-full transition-[width] duration-300 motion-reduce:transition-none", row.warn ? "bg-warning" : "bg-accent-fill")} />
             </Meter.Track>
-            {row.note ? <span className="type-caption text-ink-muted">{row.note}</span> : null}
+            {row.note ? <span className="type-caption text-ink-secondary">{row.note}</span> : null}
           </Meter.Root>
         );
       })}

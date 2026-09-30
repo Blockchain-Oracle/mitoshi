@@ -45,7 +45,7 @@ cdp.on("WebAuthn.credentialAsserted", () => { assertions += 1; });
 async function axe(p: Page, name: string, include?: string) {
   const builder = new AxeBuilder({ page: p }).withTags(["wcag2a", "wcag2aa"]);
   const r = await (include ? builder.include(include) : builder).analyze();
-  note({ step: "axe", name, violations: r.violations.map((v) => `${v.id}(${v.nodes.length})`) });
+  note({ step: "axe", name, violations: r.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).slice(0, 4).join(" ; ")}`) });
 }
 
 async function closeTicket(p: Page) {
@@ -88,12 +88,20 @@ async function tap(p: Page, assets: string[], side: "UP" | "DOWN", stake: string
     const before = assertions;
     const t0 = Date.now();
     await cta.click();
+    await p.waitForTimeout(600);
+    await p.screenshot({ path: join(out, `after-click-${t0}.png`) }).catch(() => undefined);
     const placed = ticket.getByText(/Call placed/);
     const other = ticket.getByRole("status").filter({ hasText: /Nothing filled|book moved|Waiting for the chain/ }).or(ticket.getByRole("alert"));
     await expect(placed.or(other).first()).toBeVisible({ timeout: 120_000 }).catch(() => undefined);
     const ms = Date.now() - t0;
     if (!(await placed.isVisible())) {
-      note({ step: "not-placed", side, ms, text: (await other.first().innerText().catch(() => "")).slice(0, 160), prompts: assertions - before });
+      await p.screenshot({ path: join(out, `not-placed-${Date.now()}.png`) }).catch(() => undefined);
+      const cta2 = (await ticket.innerText().catch(() => "")).split("\n").filter((l) => /Buy|Confirm|Signing|Sent|Waiting|Budget|cap|Try/.test(l)).slice(0, 4).join(" | ");
+      const tech = ticket.getByText("Technical details");
+      if (await tech.count()) await tech.first().click().catch(() => undefined);
+      const all = await ticket.innerText().catch(() => "");
+      const technical = all.slice(all.indexOf("Technical details"), all.indexOf("Technical details") + 400);
+      note({ step: "not-placed", side, ms, text: (await other.first().innerText().catch(() => "")).slice(0, 160), ticket: cta2, technical, prompts: assertions - before, errors: errors.slice(-3) });
       await closeTicket(p);
       continue;
     }
@@ -107,7 +115,7 @@ async function tap(p: Page, assets: string[], side: "UP" | "DOWN", stake: string
 }
 
 /** The allowance pill's figure, as read by a screen reader. */
-const pillText = (p: Page) => p.getByRole("button", { name: /^Tap-trading: / }).first().getAttribute("aria-label");
+const pillText = (p: Page) => p.locator('[aria-label^="Tap-trading:"]').first().getAttribute("aria-label", { timeout: 10_000 }).catch(() => null);
 
 let failed = false;
 try {
@@ -125,7 +133,12 @@ try {
   await expect(dialog.getByText(/Set aside \$25 and every tap signs with no prompt/)).toBeVisible();
   await page.screenshot({ path: join(out, `arm-${width}.png`) });
   await axe(page, "arm-modal", '[role="dialog"]');
-  await dialog.getByRole("button", { name: /^Set aside \$25$/ }).click();
+  // The caps presets (21st 23552) behind "Adjust": $1 taps — a per-tap cap the thin testnet book can exceed.
+  await dialog.getByText(/^Adjust —/).click();
+  await dialog.getByRole("radio", { name: "$1 taps" }).click();
+  await expect(dialog.getByText(/Set aside \$10 and every tap signs with no prompt/)).toBeVisible();
+  await page.screenshot({ path: join(out, `arm-adjust-${width}.png`) });
+  await dialog.getByRole("button", { name: /^Set aside \$10$/ }).click();
   const armedOk = await expect(dialog.getByText("Tap-trading is on.")).toBeVisible({ timeout: 90_000 }).then(() => true, () => false);
   if (!armedOk) {
     const details = dialog.getByText(/Technical details/);
@@ -146,11 +159,18 @@ try {
   note({ step: "taps", count: taps.length, p50Ms: sorted[1], prompts: taps.reduce((s, t) => s + t.prompts, 0), pill: await pillText(page) });
 
   // 3. A call over the per-tap cap: the CTA names the reason and the fix; nothing is sent, no prompt.
-  const ticket = await openTicket(page, ["BTC", "ETH", "SOL"], "UP");
+  let ticket: Locator | null = null;
+  for (const asset of ["BTC", "ETH", "SOL"]) {
+    ticket = await openTicket(page, [asset], "UP");
+    // A Listed Window takes only a scheduled call from the wallet (its own reason on the CTA): try a Trading one.
+    if (ticket && !(await ticket.getByText("Your price").count())) break;
+    await closeTicket(page);
+    ticket = null;
+  }
   if (ticket) {
     const before = assertions;
-    await ticket.getByLabel("Bet amount in dollars").fill("7");
-    const refusal = ticket.getByRole("button", { name: /Over your \$5 per tap — lower the stake/ });
+    await ticket.getByLabel("Bet amount in dollars").fill("1.5");
+    const refusal = ticket.getByRole("button", { name: /Over your \$1 per tap — lower the stake/ });
     const shown = await expect(refusal).toBeVisible({ timeout: 60_000 }).then(() => true, () => false);
     await page.screenshot({ path: join(out, `cap-refusal-${width}.png`) });
     note({ step: "cap-refusal", shown, disabled: shown ? await refusal.isDisabled() : null, walletChoice: await ticket.getByText(/Pay from your wallet instead · asks your passkey/).count(), prompts: assertions - before });
@@ -181,40 +201,58 @@ try {
   watch(killed);
   await killed.goto(`${base}/markets`, { waitUntil: "load" });
   await settle(killed);
-  const kt = await openTicket(killed, ["ETH", "BTC", "SOL"], "DOWN");
-  if (kt) {
+  let killedDone = false;
+  for (const [asset, side] of [["ETH", "UP"], ["SOL", "DOWN"], ["BTC", "UP"], ["ETH", "DOWN"]] as const) {
+    const kt = await openTicket(killed, [asset], side);
+    if (!kt) continue;
     await kt.getByLabel("Bet amount in dollars").fill("1");
-    const cta = kt.getByRole("button", { name: /^Buy DOWN for \$/ });
-    if (await expect(cta).toBeEnabled({ timeout: 75_000 }).then(() => true, () => false)) {
-      await cta.click();
-      await killed.waitForTimeout(700);
-      await killed.close({ runBeforeUnload: false });
-      note({ step: "tab-killed", afterMs: 700 });
-      await page.waitForTimeout(40_000); // past the tap's 25 s validBefore
-      const next = await context.newPage();
-      watch(next);
-      await next.goto(`${base}/markets`, { waitUntil: "load" });
-      const toast = next.getByText(/An earlier call landed|An earlier send never reached the chain|still being checked/).first();
-      const seen = await expect(toast).toBeVisible({ timeout: 60_000 }).then(() => true, () => false);
-      note({ step: "killed-tab-recovery", seen, text: seen ? await toast.innerText() : null });
-      await next.screenshot({ path: join(out, `recovery-${width}.png`) });
-      await next.close();
+    const cta = kt.getByRole("button", { name: new RegExp(`^Buy ${side} for \\$`) });
+    if (!(await expect(cta).toBeEnabled({ timeout: 45_000 }).then(() => true, () => false))) {
+      note({ step: "killed-tab-skip", asset, side });
+      await closeTicket(killed);
+      continue;
     }
+    const t0 = Date.now();
+    await cta.click();
+    // Kill it once the write is journaled and on its way ("Sent — waiting for the chain"), before any receipt.
+    const sent = await expect(kt.getByRole("button", { name: /Sent — waiting for the chain/ })).toBeVisible({ timeout: 20_000 }).then(() => true, () => false);
+    await killed.close({ runBeforeUnload: false });
+    note({ step: "tab-killed", asset, side, afterMs: Date.now() - t0, sent });
+    await page.waitForTimeout(40_000); // past the tap's 25 s validBefore
+    const next = await context.newPage();
+    watch(next);
+    await next.goto(`${base}/markets`, { waitUntil: "domcontentloaded", timeout: 90_000 });
+    const toast = next.getByText(/An earlier call landed|An earlier send never reached the chain|still being checked/).first();
+    const seen = await expect(toast).toBeVisible({ timeout: 60_000 }).then(() => true, () => false);
+    note({ step: "killed-tab-recovery", seen, text: seen ? await toast.innerText() : null });
+    await next.screenshot({ path: join(out, `recovery-${width}.png`) });
+    await next.close();
+    killedDone = true;
+    break;
   }
+  if (!killedDone) note({ step: "killed-tab-recovery", seen: false, text: "no fillable Window for the killed-tab tap" });
 
   // 6. The grant on the trust surface.
-  await page.goto(`${base}/settings/account`, { waitUntil: "load" });
+  await page.goto(`${base}/settings/account`, { waitUntil: "domcontentloaded", timeout: 90_000 });
   await settle(page);
   await expect(page.getByText(/Tap-trading key · this device/).first()).toBeVisible({ timeout: 60_000 });
   await page.screenshot({ path: join(out, `settings-grant-${width}.png`), fullPage: true });
   await axe(page, "settings");
   note({ step: "grant-listed" });
 
-  // 7. Partial withdraw with Max and its inline reason.
-  await page.goto(`${base}/portfolio`, { waitUntil: "load" });
+  // 7. Stop it (revoke) from the trust surface: one assertion, sponsored; the unspent budget returns to the balance.
+  before = assertions;
+  await page.getByRole("button", { name: "Stop", exact: true }).first().click();
+  const stopped = await expect(page.getByText(/No live grants/)).toBeVisible({ timeout: 90_000 }).then(() => true, () => false);
+  await page.screenshot({ path: join(out, `settings-stopped-${width}.png`), fullPage: true });
+  note({ step: "revoke", stopped, prompts: assertions - before, history: await page.getByText(/Stopped grants/).count() });
+
+  // 8. Portfolio: add money, then a partial withdraw with Max and its inline reason.
+  await page.goto(`${base}/portfolio`, { waitUntil: "domcontentloaded", timeout: 90_000 });
   await settle(page);
   const field = page.getByLabel("Withdraw to your account");
   await expect(field).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("button", { name: "Max" }).last()).toBeEnabled({ timeout: 60_000 });
   await field.fill("99999");
   const reason = await page.getByRole("alert").filter({ hasText: /Your Trading Balance has \$[\d.,]+ free/ }).first().innerText().catch(() => null);
   await page.getByRole("button", { name: "Max" }).last().click();
@@ -227,7 +265,7 @@ try {
   await axe(page, "portfolio");
   note({ step: "partial-withdraw", reason, max, withdrawn, prompts: assertions - before });
 
-  // 8. Verdicts paid into the Trading Balance by the settler's crank, no prompt.
+  // 9. Verdicts paid into the Trading Balance by the settler's crank, no prompt.
   await page.goto(`${base}/markets`, { waitUntil: "load" });
   await settle(page);
   before = assertions;
@@ -236,19 +274,11 @@ try {
   while (Date.now() < deadline) {
     const section = page.getByRole("region", { name: "Your calls", exact: true });
     seen = { paid: await section.getByText("Paid into your Trading Balance").count(), lost: await section.getByText("Not this time").count() };
-    if (seen.paid > 0 || seen.lost >= taps.length) break;
+    if (seen.paid > 0 && seen.paid + seen.lost >= taps.length) break;
     await page.waitForTimeout(20_000);
   }
   await page.screenshot({ path: join(out, `verdicts-${width}.png`), fullPage: true });
   note({ step: "verdicts", ...seen, prompts: assertions - before });
-
-  // 9. Stop it (revoke): one assertion, sponsored; the budget returns.
-  await page.goto(`${base}/settings/account`, { waitUntil: "load" });
-  await settle(page);
-  before = assertions;
-  await page.getByRole("button", { name: "Stop", exact: true }).first().click();
-  const stopped = await expect(page.getByText(/No live grants/)).toBeVisible({ timeout: 90_000 }).then(() => true, () => false);
-  note({ step: "revoke", stopped, prompts: assertions - before });
   if (errors.length) note({ step: "console-errors", errors: errors.slice(0, 8) });
 } catch (error) {
   failed = true;

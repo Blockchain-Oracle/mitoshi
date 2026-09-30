@@ -65,7 +65,9 @@ export function usePlaceBet(wallet: Address | null) {
           case "confirmed":
           case "nothingFilled":
             dispatch({ type: "receipt", txHash: hash!, status: "success" });
-            await invalidateAfterWrite(queryClient, { wallet, marketId: request.market.marketId });
+            // Refresh what the fill changed without holding the tap lock: awaiting every refetch here absorbed the
+            // next tap for as long as the slowest read took (S7 gate: > 2 min on a cold index).
+            void invalidateAfterWrite(queryClient, { wallet, marketId: request.market.marketId });
             break;
           case "requote":
             dispatch({ type: "reset" });

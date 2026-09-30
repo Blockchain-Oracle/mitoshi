@@ -86,9 +86,9 @@ export function SessionManagerBody() {
             <button type="button" className={secondary} disabled={busy} onClick={() => void w.extend()}>{w.busy === "extend" ? SESSION.busy : M.extend(SESSION.expiries.h24)}</button>
           </>
         )}
-        <p className="type-caption text-ink-muted">{M.rootNote}</p>
+        <p className="type-caption text-ink-secondary">{M.rootNote}</p>
         <button type="button" className={secondary} disabled={busy} onClick={() => void w.revoke()}>{w.busy === "revoke" ? M.revoking : M.revoke}</button>
-        <p className="type-caption text-ink-muted">{M.revokeNote}</p>
+        <p className="type-caption text-ink-secondary">{M.revokeNote}</p>
         {view.keyAddress && (needsKey || expired) ? (
           <button type="button" className="min-h-touch self-start py-2 type-caption text-ink underline" onClick={() => void actions.forgetKey()}>{M.forget}</button>
         ) : null}

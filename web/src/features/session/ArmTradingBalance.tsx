@@ -90,7 +90,7 @@ export function ArmTradingBalance(_props: { onDone?: () => void }) {
               <SegmentedControl label={SESSION.expiryLabel} value={expiry} onValueChange={setExpiry} options={expiryOptions} />
             </div>
             <p className="type-caption text-ink-secondary">{SESSION.example(usd(p.perTapBase), tapsPerDay(p), usd(p.dailyBase))}</p>
-            <p className="type-caption text-ink-muted">{SESSION.resets}</p>
+            <p className="type-caption text-ink-secondary">{SESSION.resets}</p>
           </div>
         </MotionScope>
       </details>

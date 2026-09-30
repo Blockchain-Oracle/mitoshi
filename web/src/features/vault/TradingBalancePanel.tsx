@@ -94,13 +94,13 @@ export function TradingBalancePanel() {
         <div className="flex flex-col gap-2">
           <AmountField value={inText} onChange={setIn} maxBase={wallet} label={VAULT.deposit.label} over={VAULT.amount.overWallet} hint={VAULT.amount.walletHolds} disabled={deposit.state.kind === "signing" || deposit.state.kind === "submitted"} />
           <TxCta state={idleOr(deposit, inProblem ?? (inBase === 0n ? VAULT.amount.zero : null))} action={VAULT.deposit.cta(usd(inBase))} signer="passkey" onConfirm={() => void runDeposit()} />
-          <p className="type-caption text-ink-muted">{VAULT.deposit.note}</p>
+          <p className="type-caption text-ink-secondary">{VAULT.deposit.note}</p>
           {deposit.state.kind === "failed" ? <TxFailureCard state={deposit.state} onRetry={() => deposit.dispatch({ type: "reset" })} /> : null}
         </div>
         <div className="flex flex-col gap-2">
           <AmountField value={outText} onChange={setOut} maxBase={free} label={VAULT.withdraw.label} over={VAULT.amount.overBalance} hint={VAULT.amount.balanceHolds} disabled={withdraw.state.kind === "signing" || withdraw.state.kind === "submitted"} />
           <TxCta state={idleOr(withdraw, outProblem ?? (outBase === 0n ? VAULT.amount.zero : null))} action={VAULT.withdraw.cta(usd(outBase))} signer="passkey" sponsored onConfirm={() => void runWithdraw()} />
-          <p className="type-caption text-ink-muted">{VAULT.withdraw.note}</p>
+          <p className="type-caption text-ink-secondary">{VAULT.withdraw.note}</p>
           {withdraw.state.kind === "failed" ? (
             withdraw.state.diagnosis.kind === "receive-policy" ? <p role="alert" className="type-caption text-ink">{VAULT.receivePolicy}</p> : <TxFailureCard state={withdraw.state} onRetry={() => withdraw.dispatch({ type: "reset" })} />
           ) : null}
