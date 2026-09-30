@@ -1082,6 +1082,31 @@ gate). The wallet-mode key stays scoped to the engine (D-136): a parlay is signe
 **Why:** the reserve pays nobody but the ticket's owner or the caller, so sponsoring moves no one else's money; the
 supplier's capital pays its own way in, as in the maker vault (D-118).
 
+### D-172 — the range reserve's Tempo seam: engine prints in cents, a ticker per asset, a 2σ drift bound on a same-call spot (decision, S10b, 2026-09-30)
+
+Masayume's `RangeReserve` ports with `RangeMath`, its vectors and its launch parameters unchanged (12 % margin, 60 %
+exposure, the centre read over 20 contracts a side, spread ≤ 0.20, a 3 %–97 % centre, a 2 %–97 % band probability,
+60 s–2 days, 6 h stale grace, 500 per round, 1,000 per instant). The OracleHub and `WindowQuestion` go:
+
+- **Prints:** the opening print is the engine's recorded open and the closing print its recorded close, both
+  `priceE8 / 1e6` → cents (floored, so a sub-cent remainder never lifts a close over a band edge; edges are inside).
+  A voided Window refunds through `settle`.
+- **Asset proof:** `setAssetTicker(asset, ticker)` binds an asset name to an engine ticker; `openRange` refuses
+  `NoTicker` / `WrongAsset` unless the Window's Series carries that ticker (in place of the hub's question key).
+- **Centre (D-109, Agari's mark factor):** the YES mid over rested depth at max(Series, params) `minRestSec` = 20 s,
+  on the scale `PAIR_TICKS × tickBase` (the engine's grid makes that `one`), so a 0.65 mid reads 650,000.
+- **PD-2 / D-119:** `openRange(…, spotProof)` verifies a signed spot for the Window's ticker through the
+  FairValueGuard's `spotOf` and refuses `StaleBasis` when `|probitE4(centre) − z(spot)| > maxDriftE4` = 20,000 (2σ),
+  z taken with the reserve's own σ over the seconds to expiry (RangeMath's linear z, as the band maths). Two-sided;
+  `previewDriftE4` answers the same test for a spot the client supplies. The spot and drift are kept per round.
+- **D-108 (Agari):** `voidStale` refuses `MustSettle` while the engine has resolved or voided the Window.
+- **σ:** Masayume's measured BTC 6,200 and ETH 7,800; SOL (never listed by Masayume) the house maker's 14,245 until
+  measured. Assets are the three crypto 5-minute lanes, the only tickers the guard has a spot source for on testnet.
+- `minTimeLeftSec` counts to `lockAt` (no entries in trading's last minute), τ to `expiry` (T08).
+
+**Why:** A.4.7 and D-119 — a quiet book pins the distribution while the spot runs; with a signed spot in the call the
+reserve refuses on chain what Agari could only refuse in the browser.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

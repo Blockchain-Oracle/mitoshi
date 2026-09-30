@@ -30,6 +30,14 @@
   wins the 5-minute leg on its real close and voids the 10-minute one. The engine derives status from the clock, so
   `LegExpired` is unreachable behind `MarketNotTrading(…, LOCKED)`; the mock's "(1, 1) names no winner" vector does
   not exist on the engine (its void is 0.5/0.5 and a tie settles Up), so that test now proves both. D-165.
+- F-S10-10 (10b.1, contracts): `RangeReserve`/`RangePricing`/`IRangeReserve` ported onto the engine seam (D-172);
+  runtime 15,502 B. Masayume's lifecycle 10 + pricing 11 + RangeMath 6 + vectors 1 + Moonshot 2 run on the real engine
+  (a real open print at P0, a real maker's rested book, real closes and voids); the seam suite adds 16
+  (`test_mustSettle` ×2, `test_staleBasis_driftAbove2Sigma` + 2, `test_centerScale_derivesFromGrid`, rested centre,
+  `test_bandInclusiveCentsAtSeam` ×4, a Moonshot round, P12 ×3, constructor); the Moderato fork test prices a ±$100
+  band on the archived BTC 06:10Z open and settles it on the real 06:15Z close. On the engine's tick grid Masayume's
+  0.841345 centre becomes 0.8415 (vector re-derived exactly); the mock's "answer then clear" stale case has no engine
+  equivalent (a verdict is final), so it split into the grace test and `test_mustSettle`.
 
 ## Handoff
 
