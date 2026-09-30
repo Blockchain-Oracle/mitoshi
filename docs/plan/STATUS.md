@@ -13,6 +13,11 @@ Updated 2026-09-30. **Never trust memory over this file.**
   (acceptance/S4.md: 0 prompts cold → first call after the arm step, NVDA stock call in NYSE hours, 6 wins auto-paid);
   open: tap → Call card p50 5.97 s vs 1 s (D-143, re-measure on the deployed site), a void shown "Returned" on a real
   position, lab LCP/TBT on the deployed site; gate (2) = the owner's device run (steps in the S4 Handoff) → `m1-first-call`.
+  **S4-fix (`stage/S4-fix`, 2026-09-30):** deployed tap → card p50 1,836 ms → confirmed-pending card on the key's
+  signature + one-round reads/relay checks (local 836 ms; D-150); stream-ticket 401 = no server session → 30-day
+  session + chain-log fallback (D-151); lab: Tempo Wallet iframe/runtime on use, one lens read per Window, hero lines
+  (D-152); "Returned" proven on 9 real voided positions via the verdict read (D-153). Needs: merge + deploy, then the
+  re-runs in the S4 Handoff (tap-latency, stream-ticket, `lighthouse.yml`).
 - Live on testnet (Coolify): `https://testnet.mitoshi.xyz` (web), `https://ops.testnet.mitoshi.xyz/health` with `chain-head` + `archive` (RedStone prints every
   5 min, < 60 s after T). 12 testnet role keys funded (`acceptance/S0.md`).
 
@@ -24,7 +29,7 @@ Updated 2026-09-30. **Never trust memory over this file.**
 - S3/S7: settler reports the vault as "tracked" but has no `crankSettle` work yet.
 - S15: `reference-writer` reads `KEEPER_PRIVATE_KEY` from env only (not S3's `roleKey()` fallback); key missing from
   `ops.mainnet.example` / `infra/secrets.md`; `relay/policies/guard.ts` not yet registered.
-- S17b: the launch keeper has no sender wired; S1: `/api/stream/ticket` answers 401 to a signed-in user (S4 finding; per-user stream falls back to polling); S3.5: `idx_events` counter in recount.
+- S17b: the launch keeper has no sender wired; ~~S1: `/api/stream/ticket` 401 to a signed-in user~~ — S4-fix (D-151; non-passkey wallets wait on S13's social session and follow the chain meanwhile); S3.5: `idx_events` counter in recount.
 
 ## Waiting on the owner
 
