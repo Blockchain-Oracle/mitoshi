@@ -99,6 +99,12 @@ jobs:
       - name: Lighthouse CI assert
         if: always() && steps.collect.outcome == 'success'
         run: npx -y @lhci/cli@0.15.1 assert --config=lighthouserc.json
+      # Diagnosis only (after the gate, never part of it): each route's main-thread tasks over 50 ms at 4x CPU on this
+      # host, with what ran inside them (scripts by chunk, timers, frames, layout), into the job summary.
+      - name: Main-thread tasks
+        if: always() && env.REF != ''
+        continue-on-error: true
+        run: WEB_DIR=target/web node scripts/perf/trace-tasks.mjs http://localhost:3000 / /markets /portfolio --seconds 20 --chrome
       - name: Server logs
         if: always() && env.REF != ''
         run: tail -n 60 "$RUNNER_TEMP/next.log" "$RUNNER_TEMP/serve.log" || true
