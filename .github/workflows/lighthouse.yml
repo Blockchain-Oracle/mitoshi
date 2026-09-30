@@ -35,6 +35,8 @@ jobs:
             echo "::error::give either url (a deployed build) or ref (a branch to build here)"; exit 1
           fi
           echo "Measuring ${REF:+ref $REF served at }$BASE" | tee -a "$GITHUB_STEP_SUMMARY"
+          # The sans faces Chrome can match with local() here (the metric-matched fallbacks, D-182).
+          echo "Local sans faces: $(fc-list : family | grep -iE 'arial|liberation sans|arimo|roboto|dejavu sans' | sort -u | paste -sd ';' -)" | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:

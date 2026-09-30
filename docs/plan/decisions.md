@@ -1244,6 +1244,21 @@ path production never runs, and a second origin changes the page's connection gr
 same-origin (`NEXT_PUBLIC_INDEX_URL` unset); the proxy reproduces that with no change to the deployed server. The ops
 and stream CORS lists already allow `http://localhost:3000`.
 
+### D-182 — metric-matched fallbacks exist on every platform (finding + decision, S4-perf, 2026-09-30)
+
+**Finding** (`lighthouse.yml` branch mode on trunk, run 36689048574): `/` CLS 0.085 is one shift of the pillars
+(`section.grid`), caused by "Web font loaded" — Inter and JetBrains Mono, the second font stage — not Sora (D-152's
+reserve holds). next/font writes each fallback face as `src: local(Arial)`; the lab's Linux host (like Android and
+ChromeOS) has no Arial, so "Inter Fallback" has no face, text renders in the platform sans at its own metrics and
+re-wraps when Inter arrives. On macOS the same page measures no height change at any width (Arial exists).
+**Decision:** `styles/font-fallbacks.css` repeats next/font's fallback rules for Sora, Inter and JetBrains Mono with
+next/font's own overrides and `src` Arial first, then Arial's metric twins (Liberation Sans, Arimo) and Roboto (latin
+average width within 0.2 % of Arial). A superset of next/font's rule: nothing changes where Arial exists.
+`font-fallbacks.test.ts` holds the overrides equal to next/font's computation. The workflow lists the runner's local
+sans faces in the job summary.
+
+**Why:** a fallback that only exists on Apple and Windows machines is not a fallback for most phones.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
