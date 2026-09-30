@@ -159,7 +159,9 @@ export async function submitVaultOrder(ctx: OrderLaneContext, req: OrderRequest,
     });
     onPhase?.("submitted");
     try {
-      const { receipt, hash } = await sendBatch(ctx.client, { calls, sponsored, nonce: plan, nowSec });
+      // Signed and final: the surface may show the call as confirmed-pending while the chain includes it (D43, D-150).
+      const onSigned = (hash: `0x${string}` | null) => onPhase?.("confirming", hash ? { txHash: hash } : undefined);
+      const { receipt, hash } = await sendBatch(ctx.client, { calls, sponsored, nonce: plan, nowSec }, { onSigned });
       await ctx.journal.markSent(record.id, hash);
       if (receipt.status !== "success") {
         await ctx.journal.markFailed(record.id, "reverted on chain");
