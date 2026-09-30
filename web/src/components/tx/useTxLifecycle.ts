@@ -6,6 +6,7 @@
  * A timed-out send is left `unknown` for recovery — never re-sent.
  */
 import { reduceTx, TX_IDLE, type TxEvent, type TxIntent, type TxOutcome, type TxState } from "@cwf/core";
+import type { MarketsSubmitter } from "@cwf/markets";
 import { useSubmitter } from "@cwf/markets/react";
 import { useCallback, useReducer } from "react";
 import { announce } from "@/components/states/LiveRegion";
@@ -18,9 +19,10 @@ export interface TxRunner {
   run: (intent: TxIntent) => Promise<TxOutcome | null>;
 }
 
-export function useTxLifecycle(options: { optimistic?: boolean } = {}): TxRunner {
+export function useTxLifecycle(options: { optimistic?: boolean; submitter?: MarketsSubmitter | null } = {}): TxRunner {
   const [state, dispatch] = useReducer(reduceTx, TX_IDLE);
-  const submitter = useSubmitter();
+  const own = useSubmitter();
+  const submitter = options.submitter === undefined ? own : options.submitter;
   const run = useCallback(
     async (intent: TxIntent) => {
       if (!submitter) return null;

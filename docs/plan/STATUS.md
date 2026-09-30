@@ -10,7 +10,7 @@ Updated 2026-09-29. **Never trust memory over this file.**
   2026-09-30 07:05Z), S3.5 clients, S14c bridge (RH legs wait for testnet ETH), S15a v4 + encoder, S15b/c guard +
   pools, S16c themes contracts (configured), S17a/b launchpads, S7 EventVault contracts, S1 up to 05990e6.
   Running: S1 web shell, S8 maker vault, S10 specialist tickets. S4 backend done on `stage/S4-backend` (ports, lanes,
-  relay engine policy, X20/X21, claim-all, cash-out, held state, live data — acceptance/S4.md); S4 UI part next.
+  relay engine policy, X20/X21, claim-all, cash-out, held state, live data — acceptance/S4.md); S4 UI part on `stage/S4-ui`: boxes 2–4 done, gate (1) run on Moderato (acceptance/S4.md runs A/B; tap target D-143 missed, void waits); the owner's device run is prepared in the S4 Handoff.
 - Live on testnet (Coolify): `https://testnet.mitoshi.xyz` (web), `https://ops.testnet.mitoshi.xyz/health` with `chain-head` + `archive` (RedStone prints every
   5 min, < 60 s after T). 12 testnet role keys funded (`acceptance/S0.md`).
 

@@ -1,0 +1,74 @@
+/* Ported from Masayume 68f7a09:web/src/features/markets/portfolio/plate/ledger-plate.css — the balance plate and pool rows
+ * (reference BalancePlate.tsx / PoolRows.tsx); vermilion literals are the accent token here. */
+:root .ledger-plate, :root .plate-rows { --lp-paper: var(--ms-surface-1); --lp-paper-raised: var(--ms-surface-2); --lp-ink: var(--white); --lp-mute: var(--gray-400); --lp-line: var(--ms-hairline); background: var(--lp-paper); color: var(--lp-ink); }
+:root[data-theme="light"] .ledger-plate, :root[data-theme="light"] .plate-rows { --lp-paper: #FAF8F5; --lp-paper-raised: #FFFDF8; --lp-ink: #1A1612; --lp-mute: #6B6353; --lp-line: rgba(201, 191, 166, 0.4); }
+
+/* font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--lp-mute)] */
+.lp-eyebrow { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--lp-mute); }
+/* font-display font-[800] tabular-nums leading-none text-[32px] sm:text-5xl text-[var(--color-accent)] */
+.lp-figure { font-family: var(--font-display); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; font-size: 32px; color: var(--color-accent); }
+@media (min-width: 640px) { .lp-figure { font-size: 48px; } }
+.lp-figure--pending { opacity: 0.55; }
+/* font-mono text-[12px] sm:text-[18px] text-[var(--lp-mute)] */
+.lp-unit { font-family: var(--font-mono); font-size: 12px; color: var(--lp-mute); }
+@media (min-width: 640px) { .lp-unit { font-size: 18px; } }
+/* mt-1 font-mono text-[11px] text-[var(--lp-mute)]; tabular-nums text-[var(--lp-ink)] */
+.lp-elsewhere { margin-top: 4px; font-family: var(--font-mono); font-size: 11px; color: var(--lp-mute); }
+.lp-elsewhere-ink { font-variant-numeric: tabular-nums; color: var(--lp-ink); }
+/* flex h-1.5 overflow-hidden rounded-full bg-[#C9BFA6]/25 */
+.lp-bar { display: flex; height: 6px; overflow: hidden; border-radius: 999px; background: var(--lp-line); }
+/* bg-[var(--color-accent)] · bg-[var(--color-accent)]/35 */
+.lp-bar-wallet { background: var(--color-accent); }
+.lp-bar-account { background: color-mix(in srgb, var(--color-accent) 35%, transparent); }
+/* h-2 w-2 shrink-0 rounded-full; text-[12px] text-[var(--lp-mute)]; font-mono text-[13px] tabular-nums text-[var(--lp-ink)] */
+.lp-leg-dot { height: 8px; width: 8px; flex-shrink: 0; border-radius: 999px; }
+.lp-leg-dot--wallet { background: var(--color-accent); }
+.lp-leg-dot--account { background: color-mix(in srgb, var(--color-accent) 35%, transparent); }
+.lp-leg-label { font-size: 12px; color: var(--lp-mute); }
+.lp-leg-value { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--lp-ink); }
+/* ml-auto flex items-baseline gap-2 font-mono text-[12px] text-[var(--lp-mute)]; text-[#C9BFA6] separator */
+.lp-counts { margin-left: auto; display: flex; align-items: baseline; gap: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--lp-mute); }
+.lp-counts-ink { font-variant-numeric: tabular-nums; color: var(--lp-ink); }
+.lp-counts-sep { color: var(--lp-line); }
+
+/* PoolRows: mt-6 border-t border-[#C9BFA6]/40 pt-4 */
+.pool-rows { margin-top: 24px; border-top: 1px solid var(--lp-line); padding-top: 16px; }
+/* border-b border-[#C9BFA6]/30 last:border-0 */
+.pool-line { border-bottom: 1px solid var(--lp-line); }
+.pool-line:last-child { border-bottom: 0; }
+/* py-2.5 */
+.pool-body { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; column-gap: 16px; row-gap: 4px; padding: 10px 0; }
+/* font-display text-[14px] font-[700] text-[var(--lp-ink)] */
+.pool-label { font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--lp-ink); }
+/* text-[11px] text-[var(--lp-mute)] */
+.pool-blocked { font-size: 11px; color: var(--lp-mute); }
+/* mt-0.5 text-[11px] leading-snug text-[var(--lp-mute)] */
+.pool-note { margin-top: 2px; font-size: 11px; line-height: 1.375; color: var(--lp-mute); }
+/* shrink-0 font-mono text-[18px] tabular-nums text-[var(--lp-ink)]; ml-1 text-[10px] text-[var(--lp-mute)] */
+.pool-amount { flex-shrink: 0; font-family: var(--font-mono); font-size: 18px; font-variant-numeric: tabular-nums; color: var(--lp-ink); }
+.pool-unit { margin-left: 4px; font-size: 10px; color: var(--lp-mute); }
+/* mb-3 inline-block rounded-md border border-[var(--color-accent)]/45 px-2.5 py-1 text-[11px] font-bold text-[var(--color-accent)] hover:bg-[var(--color-accent)]/[0.07] */
+.pool-action { margin-bottom: 12px; display: inline-block; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent); padding: 4px 10px; font-size: 11px; font-weight: 700; color: var(--color-accent); transition: background-color 180ms var(--ease); }
+.pool-action:hover { background: color-mix(in srgb, var(--color-accent) 7%, transparent); }
+/* summary: flex cursor-pointer list-none items-center gap-3; chevron text-[var(--lp-mute)] group-open:rotate-90 */
+.pool-summary { display: flex; cursor: pointer; list-style: none; align-items: center; gap: 12px; }
+.pool-summary::-webkit-details-marker { display: none; }
+.pool-summary .pool-action { margin: 8px 0 0; }
+.pool-chevron { flex-shrink: 0; color: var(--lp-mute); transition: transform 180ms var(--ease); }
+details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
+/* plate-rows pb-4 */
+.pool-panel { padding-bottom: 16px; }
+
+/* The plate's own disclosure row (reference: "Creator earnings and recovery"): plate-rows mt-2 border-t border-[#C9BFA6]/40;
+   summary py-3.5 font-display text-[14px] font-[700] text-[var(--lp-ink)] */
+.lp-disclosure { margin-top: 8px; border-top: 1px solid var(--lp-line); }
+.lp-disclosure-summary { display: flex; cursor: pointer; list-style: none; align-items: center; justify-content: space-between; padding: 14px 0; font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--lp-ink); }
+.lp-disclosure-summary::-webkit-details-marker { display: none; }
+
+/* The disconnected card (reference page L277–292): border border-white/[0.08] rounded bg-bg p-10 text-center;
+   icon ring w-16 h-16 border border-white/10 rounded-full; text-gray-500 icon; text-[11px] text-gray-600 link */
+.connect-card { width: 100%; border: 1px solid var(--ms-hairline); border-radius: 4px; background: var(--bg); padding: 40px; text-align: center; }
+.connect-card-ring { width: 64px; height: 64px; margin: 0 auto 24px; border: 1px solid var(--ms-hairline); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: var(--gray-500); }
+.connect-card-title { font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--white); margin-bottom: 24px; }
+.connect-card-link { font-size: 11px; color: var(--gray-600); transition: color 180ms var(--ease); }
+.connect-card-link:hover { color: var(--white); }

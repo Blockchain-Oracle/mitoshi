@@ -26,6 +26,8 @@ export const webEnv: WebEnv = {
     rpcWsUrls: process.env.NEXT_PUBLIC_TEMPO_RPC_WS_URLS,
     opsUrl: process.env.NEXT_PUBLIC_OPS_URL,
     streamUrl: process.env.NEXT_PUBLIC_STREAM_URL,
+    // Our index API (default `/api/index`, same origin); a deployment whose indexer lives elsewhere points here.
+    indexUrl: process.env.NEXT_PUBLIC_INDEX_URL,
   }),
   ...(process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ? { walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID } : {}),
   appOrigin: origin(process.env.NEXT_PUBLIC_APP_ORIGIN),

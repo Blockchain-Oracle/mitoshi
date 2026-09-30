@@ -1,13 +1,13 @@
 # S4 — First call end to end (M1)
 
 - [x] Provider methods (C.2.2) and the order lane (C.2.3); `relay/policies/engine.ts` + `scripts/drive/relay-engine.ts`.
-- [ ] Spike X20; fill the D37 arm slot with the D38 wallet access key (scopes from `deployments/42431/engine.json`;
+- [x] Spike X20; fill the D37 arm slot with the D38 wallet access key (scopes from `deployments/42431/engine.json`;
   Q-031 defaults); the key listed and revocable in `/settings/account`.
-- [ ] Port Masayume `web/src/features/markets/{hero,lanes,word-board,ticket,verdict,claims,balance,portfolio}` onto the
+- [x] Port Masayume `web/src/features/markets/{hero,lanes,word-board,ticket,verdict,claims,balance,portfolio}` onto the
   new types (ticket builds `[approve, placeOrder(IOC)]`, signed by the wallet access key when armed (D38); requote on the
   price-moved error; pre-open PostOnly); claim-all batch; cash-out (Agari `submitter/cash-out.ts`); add-money = faucet
   (testnet); held-by-receive-policy state; live data from the D40 stream.
-- [ ] UX rebuild of the hot loop (E.5 S4 row; D36, D39): ticket = Masayume's nine blocks in the right-edge slide-over
+- [x] UX rebuild of the hot loop (E.5 S4 row; D36, D39): ticket = Masayume's nine blocks in the right-edge slide-over
   with a sticky safe-area CTA, rebuilt from 21st **16240 be-ui-prediction-market** (Up/Down, quick amounts, payout
   quote, loading/success/error button) under Masayume tokens; stake remembered after a fill; verdict pinned to the
   user's position (Call card → settling → stamp → paid) with an app-wide "your Window settled" toast; auto-pay shown as
@@ -66,7 +66,62 @@
   `useLiveMarketData`. S1's sign-in `accessKeyPolicy` scopes also `cancelAll`; S4's wallet-key rule and builder
   (`keys/wallet-key.ts`) now include it, and a test proves the hook's exact shape is sponsored.
 
+- **F-S4-15** (S4 UI gate) The accounts SDK signs with a stored access key but falls back to the root on any failure of
+  that path (`catch {}` in `Provider.sendTransactionSync_`, 0.18.4): one gate tap asked for the passkey, and an
+  ambiguous send would become a second transaction. Taps now sign with our own WebCrypto key through our lane (D-141);
+  run B: 9 taps, 0 prompts.
+- **F-S4-16** (S4 UI gate) The testnet seed maker's 5-lot books are drained by the gate's own taps (and fresh Windows
+  have no quotes until their open print): calls fail honestly ("No liquidity at this size", "The book moved… Nothing was
+  taken"). The gate brings resting liquidity (`scripts/drive/gate-maker.ts`, PostOnly inside the spread on every 5m
+  Window — real orders) and tries the next ticker when a book is empty.
+- **F-S4-17** (S4 UI, local) `/api/stream/ticket` answers 401 `no_session` for a passkey user on the local run (no
+  session cookie from the ceremony on `localhost`), so `user:<addr>` topics were dropped and wallet reads refreshed on
+  their polls — the verdicts still landed with no prompt. For S1 to check on the deployed origin.
+- **F-S4-18** (S4 UI) The rail keeps one ticket mounted while the hero changes Window: a requote from the previous
+  Window leaked into the next one. The composition now resets on a new Window.
+
 ## Handoff
+
+**UI lane (`stage/S4-ui`, 2026-09-29 ~20:00Z) — boxes 2–4 done; gate (1) run on Moderato; gate (2) is the owner's.**
+
+What exists (all behind `/markets`, `/markets/[id]`, `/portfolio`, the onboarding modal and `/settings/account`):
+- Arm step in the ceremony slot + ticket chip (D-140); taps, cash-outs and collects sign with this device's own wallet key
+  through our lane (D-141, `@cwf/markets` `keys/wallet-key-session.ts`, `providers/wallet/useWalletKey.ts`); the key on
+  the trust surface with "counts new approvals, not fills".
+- The port: Window reads in `@cwf/markets/react` (`window-reads.ts`), hero, lanes by (basis, cadence) + ticker pin, word
+  board, ticket (Masayume's blocks; pre-open scheduled calls), pinned calls through their verdict + app-wide settled toast
+  (D-048), ClaimWinnings with the false-"Paid" fix and the void card, Collect in one batch at the top of Portfolio,
+  cash-out, history journal, P&L curve. 21st adoptions registered in `docs/design/components.md` (16240, 22249 + 2537,
+  19328, 20107, 29968 + chart-engine, 29532, 23527, 24692, 27124).
+- Gate (1) evidence in `acceptance/S4.md` (runs A and B): one ceremony + one arm; 9 taps with 0 prompts (run B); **the
+  NYSE stock call made** (NVDA 5m, 19:23:38 UTC); 6 wins "Paid automatically" + a loss, 0 prompts from verdict to paid;
+  key listed; UX gate 0 findings; budgets within §3.1.
+- Not met / waiting: tap → Call card p50 5.97 s vs ≤ 1 s (D-143, re-measure on the deployed relay and the phone); no
+  void occurred to show "Returned" live (waits on a void); Lighthouse lab numbers below.
+
+Local gate setup (reproducible): `docker run` Postgres 17 (`s4ui-pg`, :55433, `pnpm --filter @cwf/db migrate`) and Redis
+(`s4ui-redis`, :56380); a gitignored `web/.env.local` (relay fee payer from `~/.config/cwf/testnet/relay-fee-payer.json`,
+`NEXT_PUBLIC_OPS_URL`/`NEXT_PUBLIC_STREAM_URL`/`NEXT_PUBLIC_INDEX_URL` → a local CORS pass-through to
+`ops.testnet.mitoshi.xyz` / `stream.testnet.mitoshi.xyz` whose `/api/index` answers non-JSON so the provider reads the
+chain); `NODE_OPTIONS=--max-old-space-size=4096 pnpm build`, `next start -p 3104`; `pnpm --filter @cwf/scripts exec tsx
+drive/gate-maker.ts`; `pnpm --filter @cwf/web exec tsx e2e/first-call.ts --base http://localhost:3104 --width 390 --stock`.
+
+**Gate (2) — the owner's own device (prepare, then tag `m1-first-call`):**
+1. Integrator: merge `stage/S4-ui`, deploy the testnet web (Coolify `vhxmiwhhjhngikv2ut5mqjio`) with
+   `NEXT_PUBLIC_OPS_URL=https://ops.testnet.mitoshi.xyz`, `NEXT_PUBLIC_STREAM_URL=https://stream.testnet.mitoshi.xyz`,
+   `STREAM_TICKET_SECRET` (same as ops), and the index (`/api/index` on the web's Postgres or `NEXT_PUBLIC_INDEX_URL`);
+   confirm ops allows the `https://testnet.mitoshi.xyz` origin; keep a maker quoting 5m Windows during the run.
+2. On a NYSE trading day between 13:30 and 20:00 UTC, on the phone: `https://testnet.mitoshi.xyz/markets` →
+   Sign in → name the passkey → **Create my account** (Face ID/Touch ID once) → wait for "You're funded".
+3. In the same modal: **Arm tap-trading** (one more Face ID) → "Tap-trading is on." → **Go to Markets**.
+4. Lane **5m** (the NYSE-session lane): pick a stock (NVDA/TSLA/AAPL…) → UP or DOWN → $1 → **Buy … for $…** — no
+   prompt; note the time from tap to the Call card. Then **Crypto 5m** BTC the other side.
+5. Leave the app open (or come back): each call stays pinned under "Your calls" → Settling… → the stamp → **Paid
+   automatically** for a win (≈ 5 min after the close), **Not this time** for a loss — no prompt. A "your … Window
+   settled" toast appears wherever you are in the app.
+6. `/settings/account`: "Tap-trading key on this device" with its limit; revoke it → the next call asks for Face ID.
+7. `/portfolio`: Collect on top if anything waits (one confirm), the ledger plate, Your bets → History, Realised P&L.
+8. Send the tx links (Call cards' "verify") for `acceptance/S4.md`; on a clean run tag `m1-first-call`.
 
 **Backend lane (`stage/S4-backend`, 2026-09-29) — done, proven live on Moderato (acceptance/S4.md); the UI part is next.**
 Box 1 is ticked. Box 2's X20 and box 3's backend (claim-all, cash-out, held state, live data) are proven; the boxes stay

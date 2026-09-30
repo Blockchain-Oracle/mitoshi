@@ -991,6 +991,59 @@ The gate is "24 h unattended"; the first soak ran with a defect that voided 93 %
 count. The clock restarts at the fix's deploy (time in `acceptance/S3.md` and the stage Handoff) and must again span a
 US session and a crypto overnight.
 
+### D-140 — the wallet key is armed by one explicit `wallet_authorizeAccessKey`, offered in the ceremony and on the ticket (decision, S4 UI, 2026-09-29)
+
+The accounts SDK calls the connector's `accessKey.authorize` hook on every connect and, when a default is set, before
+any transaction with no matching key — either would put a key prompt where the user did not ask for one (a second
+biometric inside sign-up, or one on a tap). So the hook answers only while an arm runs (`requestArm`), and the arm is
+one explicit `wallet_authorizeAccessKey` on the passkey provider with the terms built by `walletKeyAuthorization()`
+(the relay's exact D-136 shape — a web test checks the RPC params against `walletKeyRule`). It is offered in the
+ceremony's arm slot (D-046) after funding, and from the ticket's "tap-trading" chip for accounts that skipped it; an
+injected wallet is never offered it (X8). The SDK keeps the key (non-extractable WebCrypto P-256) and signs the calls
+it covers with no prompt (`AccessKeyTransaction` in its `eth_fillTransaction`/`eth_sendTransactionSync` path),
+publishing the authorization with the first call (sponsored, D-136). The device keeps only the terms it armed
+(`cwf.walletKey.v1.<chain>.<account>`), so the ticket can say "no prompt" and `/settings/account` can list the key as
+"armed on this device" until the chain has it; after that the chain is the only source and the row carries the
+limit's meaning ("counts new spending approvals, not fills", D-138).
+
+**Why:** D-046's one biometric to a funded account and D-047's zero prompts per tap, without ever surprising the user
+with a key prompt, and one builder so the UI and the relay cannot drift.
+
+### D-141 — taps sign with our own wallet key through our lane, not the accounts SDK's access-key path (finding + decision, S4 UI gate, 2026-09-29)
+
+**Finding** (virtual-authenticator gate on Moderato, `web/e2e/first-call.ts`): with the key in the SDK's store (D-140's
+first shape), 8 of 9 taps signed with no prompt but one asked for the passkey. The SDK's `eth_sendTransactionSync` /
+`eth_fillTransaction` try the access key and on ANY failure fall back to the root (`catch {}` in
+`Provider.sendTransactionSync_`, accounts 0.18.4) — a surprise biometric, and after an ambiguous send a second
+transaction for the same call, which D-137 (writes are never retried) exists to prevent.
+**Decision:** the browser makes its own non-extractable WebCrypto P-256 key (`@cwf/markets` `newWalletKey`, the
+`sessions/session-key.ts` path X20/X21 proved), the passkey authorises it once through `wallet_authorizeAccessKey` with
+the key's address (the SDK keeps no key material), the pair lives in IndexedDB as a CryptoKey handle, and a submitter
+session with authority `access-key` (`walletKeySession`) signs calls, cash-outs and collects through `tx/send.ts`,
+publishing the authorization with its first send (sponsored, D-136). Revoked or expired keys (read from the
+AccountKeychain) are forgotten; root actions (revoking keys) stay on the passkey session. D-140's arm step is unchanged
+for the user.
+
+**Why:** "zero prompts per tap" must hold when the network hiccups too, and a money write is sent once or not at all.
+
+### D-142 — the order lane's pre-send reads run together (decision, S4 UI, 2026-09-29)
+
+The status gate, the account reads (engine venue, the wallet's position, its pathUSD balance) start at once; the fresh
+quote joins them as soon as the Window is known. Measured in the gate: 0.5–1.5 s from tap to send (was up to 2.1 s with
+the reads in a row) on a heavily loaded machine.
+
+**Why:** the tap's latency budget (§2.4); nothing about the checks changed, only their order.
+
+### D-143 — the tap target is missed on this testnet setup; measured and recorded, not hidden (finding, S4 UI gate, 2026-09-29)
+
+§2.4 asks for the Call card ≤ 1 s p50. The gate measured tap → Call card p50 ≈ 6–10 s (pre-send 0.5–1.5 s; send → receipt
+4–11 s; the first tap ≈ 10–12 s because it publishes the key, ~6.8M gas) on a machine at load average 50–190 with the
+relay running locally and every read and send going to Moderato's public RPC (per-IP rate limit, D-134). X20's scripted
+taps measured 2.3–4.0 s on the same chain. The target is re-measured on the deployed testnet (relay on Coolify) and on
+the owner's phone (Handoff); the pressed state is ≤ 205 ms everywhere (§2.4's first half passes).
+
+**Why:** a flow target is a gate, and a missed gate is recorded with its numbers, never rounded off.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

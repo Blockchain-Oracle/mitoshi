@@ -19,7 +19,7 @@ const TOKENS: Record<string, string> = {
 export const tokenName = (token: string) => TOKENS[token.toLowerCase()] ?? shortHex(token);
 export const whenText = (sec: bigint) => new Date(Number(sec) * 1_000).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
-export function KeyRow({ keyState, nowSec, network, onRevoke, revoking }: { keyState: KeyState; nowSec: bigint; network: Network; onRevoke?: () => void; revoking?: boolean }) {
+export function KeyRow({ keyState, nowSec, network, onRevoke, revoking, thisDevice = false }: { keyState: KeyState; nowSec: bigint; network: Network; onRevoke?: () => void; revoking?: boolean; thisDevice?: boolean }) {
   const status = keyStatus(keyState, nowSec);
   const expiry = keyState.live?.expirySec ?? keyState.expirySec;
   const link = (hash: string) => txUrl(hash as `0x${string}`, network);
@@ -27,7 +27,7 @@ export function KeyRow({ keyState, nowSec, network, onRevoke, revoking }: { keyS
     <li className="flex flex-col gap-3 rounded-lg border border-hairline bg-surface-1 p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col">
-          <span className="type-body-strong text-ink">{keyState.admin ? K.kind.admin : K.kind.key}</span>
+          <span className="type-body-strong text-ink">{keyState.admin ? K.kind.admin : thisDevice ? K.thisDevice : K.kind.key}</span>
           <span className="numbers type-caption text-ink-secondary">
             {shortHex(keyState.keyId)}
             {keyState.signatureType !== null ? ` · ${K.sig[keyState.signatureType] ?? `type ${keyState.signatureType}`}` : ""}
@@ -51,6 +51,7 @@ export function KeyRow({ keyState, nowSec, network, onRevoke, revoking }: { keyS
             ))
           )
         ) : null}
+        {thisDevice && status === "active" ? <div className="sm:col-span-2"><dd>{K.approvalsNote(dollars(keyState.tokens[0]?.limit ?? null))}</dd></div> : null}
         {/* A revoked key can no longer sign; the precompile reads its expiry as 0, so no expiry line is shown. */}
         {status === "revoked" ? null : <div><dt className="sr-only">Expiry</dt><dd>{expiry === null ? "—" : expiry === 0n ? K.neverExpires : expiry <= nowSec ? K.expired(whenText(expiry)) : K.expires(whenText(expiry))}</dd></div>}
         <div>

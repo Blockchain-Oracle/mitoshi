@@ -4,3 +4,4 @@ export { readKeyStates, type KeyState, type KeyTokenState } from "./live";
 export { keyStatus, type KeyStatus } from "./status";
 export { limitsInTransaction, withAuthorizedLimits, type AuthorizedLimit } from "./authorization";
 export * from "./wallet-key";
+export { newWalletKey, walletKeyOnChain, walletKeyReader, walletKeySession, type WalletKeyRecord, type WalletKeySessionInput } from "./wallet-key-session";

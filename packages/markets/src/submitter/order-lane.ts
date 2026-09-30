@@ -67,10 +67,13 @@ export function bookExecution(result: { filledLots: bigint; cashSpent: bigint; f
   };
 }
 
-async function assertFunded(wallet: Address, pullBase: bigint): Promise<void> {
-  if (pullBase === 0n) return;
+async function collateralBalance(wallet: Address): Promise<bigint> {
   const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
-  const balance = await client.readContract({ address: venue.collateral, abi: erc20Abi, functionName: "balanceOf", args: [wallet] });
+  return client.readContract({ address: venue.collateral, abi: erc20Abi, functionName: "balanceOf", args: [wallet] });
+}
+
+function assertFunded(balance: bigint, pullBase: bigint): void {
+  if (pullBase === 0n) return;
   if (balance < pullBase) throw new OrderRefusedError(diagnosis("insufficient-collateral", `wallet holds ${balance} but the order escrows ${pullBase} after engine credit`));
 }
 
@@ -97,22 +100,24 @@ export async function submitOrder(ctx: OrderLaneContext, req: OrderRequest, onPh
   let w: WindowFacts | null = null;
   let reservationId: string | null = null;
   try {
+    // Reads that don't depend on the Window start with the status gate (one round trip, not a queue of them).
+    const accountReads = Promise.all([engineVenue(), readPositions(ctx.wallet, [req.market.marketId]), collateralBalance(ctx.wallet)]);
+    accountReads.catch(() => undefined);
     w = await statusGate(req.market.marketId, true);
     const preOpen = w.status === ONCHAIN_STATUS.Listed;
     const stop = await ctx.stopGate.checkAndReserve(ctx.wallet, req.displayedQuote.maxCostBase);
     if (!stop.ok) return refused(diagnosis("daily-stop", stop.reason));
     reservationId = stop.reservationId;
 
-    const quote = preOpen ? req.displayedQuote : await freshQuote(w, req, ctx.nowMs());
+    // The fresh quote and the account reads land together (the tap's latency budget, §2.4 "Call card ≤ 1 s p50").
+    const [quote, [venue, [position], walletBalance]] = await Promise.all([preOpen ? Promise.resolve(req.displayedQuote) : freshQuote(w, req, ctx.nowMs()), accountReads]);
     const nowSec = ctx.nowSec();
     const window = { lockAtSec: w.snapshot.lockAtSec, intervalSec: w.market.intervalSec };
     const expireTsSec = preOpen ? restingExpirySec(nowSec, window) : takerExpirySec(nowSec, window);
-    const venue = await engineVenue();
-    const [position] = await readPositions(ctx.wallet, [w.marketId]);
     const creditBase = position?.credit ?? 0n;
     const lots = quote.contractsRaw / w.series.lotBase;
     const pull = quote.maxCostBase > creditBase ? quote.maxCostBase - creditBase : 0n;
-    await assertFunded(ctx.wallet, pull);
+    assertFunded(walletBalance, pull);
 
     const clientId = newClientId(randomU64);
     const calls = walletOrderCalls({
