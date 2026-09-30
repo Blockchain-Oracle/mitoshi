@@ -38,9 +38,17 @@ export interface RelayContext {
   nowSec: number;
 }
 
+/** The one chain read an async sender rule needs (the relay's own public client; any viem client fits). */
+export interface RelayReader {
+  readContract(args: { address: Address; abi: Abi; functionName: string; args?: readonly unknown[] }): Promise<unknown>;
+}
+
 export interface AsyncSenderCheck {
-  /** Async sender rule (e.g. vault `placeFor` needs `grantOf(id).actor == from && isGrantLive`). */
-  (input: { from: Address; call: RelayCall; functionName: string; args: readonly unknown[] }): Promise<boolean>;
+  /**
+   * Async sender rule (e.g. vault `placeFor` needs `grantOf(id).actor == from && isGrantLive`). `read` is the relay's
+   * chain reader; null where the relay was built without one, and a rule that needs the chain then refuses (fails closed).
+   */
+  (input: { from: Address; call: RelayCall; functionName: string; args: readonly unknown[]; read: RelayReader | null }): Promise<boolean>;
 }
 
 export interface RelayPolicy {

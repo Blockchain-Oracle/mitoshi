@@ -34,3 +34,66 @@ export function sessionKeyAccount(record: Pick<SessionKeyRecord, "keyPair">) {
 export function accessKeyAccount(record: Pick<SessionKeyRecord, "keyPair">, root: Address) {
   return Account.fromWebCryptoP256(record.keyPair, { access: root });
 }
+
+// ------------------------------------------------------------------ this browser's store (IndexedDB)
+// One key per (chain, owner), kept as a CryptoKey handle: it survives reloads and a killed tab, and clearing site data
+// deletes it — by design (the grant is then revoked or re-keyed from `/settings/account`). Structured clone keeps the
+// non-extractable private key usable without its bytes ever being readable (WebCrypto).
+
+const DB_NAME = "cwf-session-keys";
+const STORE = "keys";
+
+function openStore(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof indexedDB === "undefined") return reject(new Error("IndexedDB is unavailable in this browser"));
+    const open = indexedDB.open(DB_NAME, 1);
+    open.onupgradeneeded = () => open.result.createObjectStore(STORE);
+    open.onsuccess = () => resolve(open.result);
+    open.onerror = () => reject(open.error ?? new Error("IndexedDB open failed"));
+  });
+}
+
+async function withStore<T>(mode: IDBTransactionMode, act: (store: IDBObjectStore) => IDBRequest): Promise<T> {
+  const db = await openStore();
+  try {
+    return await new Promise<T>((resolve, reject) => {
+      const tx = db.transaction(STORE, mode);
+      const req = act(tx.objectStore(STORE));
+      tx.oncomplete = () => resolve(req.result as T);
+      tx.onerror = () => reject(tx.error ?? new Error("IndexedDB transaction failed"));
+      tx.onabort = () => reject(tx.error ?? new Error("IndexedDB transaction aborted"));
+    });
+  } finally {
+    db.close();
+  }
+}
+
+const storeKey = (chainId: number, owner: Address) => `${chainId}.${owner.toLowerCase()}`;
+
+/** This browser's session key for `owner` on `chainId`, or null (none, another browser, cleared, or no IndexedDB). */
+export async function loadSessionKey(chainId: number, owner: Address): Promise<SessionKeyRecord | null> {
+  try {
+    const found = await withStore<SessionKeyRecord | undefined>("readonly", (s) => s.get(storeKey(chainId, owner)));
+    return found && found.owner.toLowerCase() === owner.toLowerCase() ? found : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Keeps the key; false when this browser cannot (private mode without IndexedDB) — the arm then refuses honestly. */
+export async function saveSessionKey(chainId: number, record: SessionKeyRecord): Promise<boolean> {
+  try {
+    await withStore("readwrite", (s) => s.put(record, storeKey(chainId, record.owner)));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function forgetSessionKey(chainId: number, owner: Address): Promise<void> {
+  try {
+    await withStore("readwrite", (s) => s.delete(storeKey(chainId, owner)));
+  } catch {
+    // nothing to forget where storage never worked
+  }
+}

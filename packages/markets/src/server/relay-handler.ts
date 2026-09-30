@@ -33,7 +33,7 @@ export function createRelayHandler(config: RelayHandlerConfig) {
   const account = privateKeyToAccount(config.feePayerPrivateKey);
   const reader = createPublicClient({ chain: config.chain, transport: http(config.rpcUrl) });
   const validate = createRelayValidator({
-    engine: { chainId: config.chain.id, feePayer: account.address, policies: config.policies },
+    engine: { chainId: config.chain.id, feePayer: account.address, policies: config.policies, reader: reader as never },
     ledger: config.ledger,
     limits: config.limits,
     getContext: () => relayContext.getStore(),
