@@ -30,6 +30,37 @@
   wins the 5-minute leg on its real close and voids the 10-minute one. The engine derives status from the clock, so
   `LegExpired` is unreachable behind `MarketNotTrading(…, LOCKED)`; the mock's "(1, 1) names no winner" vector does
   not exist on the engine (its void is 0.5/0.5 and a tie settles Up), so that test now proves both. D-165.
+- F-S10-10 (10b.1, contracts): `RangeReserve`/`RangePricing`/`IRangeReserve` ported onto the engine seam (D-172);
+  runtime 15,502 B. Masayume's lifecycle 10 + pricing 11 + RangeMath 6 + vectors 1 + Moonshot 2 run on the real engine
+  (a real open print at P0, a real maker's rested book, real closes and voids); the seam suite adds 16
+  (`test_mustSettle` ×2, `test_staleBasis_driftAbove2Sigma` + 2, `test_centerScale_derivesFromGrid`, rested centre,
+  `test_bandInclusiveCentsAtSeam` ×4, a Moonshot round, P12 ×3, constructor); the Moderato fork test prices a ±$100
+  band on the archived BTC 06:10Z open and settles it on the real 06:15Z close. On the engine's tick grid Masayume's
+  0.841345 centre becomes 0.8415 (vector re-derived exactly); the mock's "answer then clear" stale case has no engine
+  equivalent (a verdict is final), so it split into the grace test and `test_mustSettle`.
+- F-S10-11 (10c.1, contracts): `LeverageReserve`/`LeverageGateway`/`LeverageMath`/`ILeverageReserve` ported onto the
+  engine seam (D-174); runtime 21,629 B. Masayume's open 19 + lifecycle 15 + vectors 2 run on the real engine (a real
+  maker's book, the reserve's own engine position, real closes and voids; the engine's 0.001 lot sizes DOWN to 45.714
+  where Masayume's 0.01 lot gave 45.71); the seam suite adds 14 (D-114 at birth ×3, knock-out over rested depth,
+  pay-or-owe exits, `LyingEngine` accounting ×2 covering five buy lies, a short sale and a short redemption; D-116 ×2;
+  PD-2 entry ceiling, knock-out second test, proof freshness; P12; constructor); the Moderato fork test opens a 2×
+  boost on the archived BTC Window, refuses a knock-out into a rested lowball bid because the real packages price the
+  position healthy, and settles it on the real close. Two Masayume tests change with D-114: a knock-out on a book too
+  thin for the whole position refuses instead of selling part; the pool's "refund as credit" knob is the engine's
+  `sweep`, which finds nothing (a taker never accrues credit). The mock's taker fee has no engine equivalent (T10).
+- F-S10-12 (10c.2, deploy): Tempo creation gas runs ≈ 1,000 gas per runtime byte plus 250k per fresh slot: ParlayReserve
+  (13.1 KB) 16.4M, RangeReserve (15.5 KB) 19.4M, LeverageReserve (21.6 KB) 24.8M — against Moderato's 30M transaction
+  cap. Forge's default 130 % estimate multiplier put the leverage create at 32.9M and the node refused it before
+  sending; `--gas-estimate-multiplier 110` deployed it. A product past ≈ 24 KB runtime cannot deploy in one transaction
+  at all, a tighter bound than the 23.5 KB size rule for anything with a heavy constructor.
+- F-S10-13 (10d.1, contracts): `PrivateDesk`/`PrivateGateway`/`IPrivateDesk` ported onto the engine seam (D-176);
+  runtime 13,035 B. Masayume's budget 9 + lifecycle 9 run on the real engine (the engine's 0.001 lot: 10 at 0.60 buys
+  16.666 for 9.9996; Masayume's 0.01 lot bought 16.66 for 9.996); the seam suite adds 8 (D-117 credit-needs-budget ×2,
+  the three counters at every step with a dishonest over-credit, `LyingEngine` mint ×5 lies and settlement, P12, the
+  sweep, constructor); the three-counter invariant (128 × 200, random owners, dishonest desk credits, prints and
+  voids) holds the wallet identity, both sub-sums and engine position = unsettled slots, and `afterInvariant` empties
+  the desk to zero; the Moderato fork test opens, settles on the real close, sweeps, credits and withdraws. One Masayume
+  line changes with D-117: the desk crediting itself refuses `NoBudget` before the pool is consulted.
 
 ## Handoff
 

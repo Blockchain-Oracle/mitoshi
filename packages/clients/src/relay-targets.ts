@@ -26,6 +26,9 @@ export const relayTargets = {
       "0xf35d3cd3bbc309655c2a36ce22aaab1db3b8eb55",
       "0x280e62dbd17f76303d382dc138ab0d58cbbe346e"
     ],
+    "leverage": [
+      "0x1c623E5539351C01FB193f962C7502cCcFd9206D"
+    ],
     "lz": [
       "0x6B053153397c2019D23561a16f2ad6134bCc3Dfb"
     ],
@@ -36,6 +39,12 @@ export const relayTargets = {
       "0x57baD0Beb33C8f8557Dc7430F90Ba166587f3939"
     ],
     "pools": [],
+    "private": [
+      "0x0c894dB5057E18F5C9E09C72faAc0b6098613CD8"
+    ],
+    "range": [
+      "0xf19342733Bb451503f3806b0d44CC58A3D345052"
+    ],
     "stocks": [
       "0x535aFE496eAEE0736570Cc4Abe2db7D18CF41023",
       "0xB96540a1156B81047cE3220285bA9674D5d92a98",

@@ -2,7 +2,7 @@
 pragma solidity 0.8.30;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {MarketRef, PositionView} from "../../../src/engine/interfaces/IEngineLens.sol";
+import {MarketRef, PositionView, LevelRaw} from "../../../src/engine/interfaces/IEngineLens.sol";
 import {PlaceArgs, PlaceResult, KIND_BUY_YES, KIND_BUY_NO, KIND_SELL_YES, ORDER_POST_ONLY} from "../../../src/engine/EngineTypes.sol";
 
 /// The one mock the product suites keep (A.6, D-018): an engine + lens that trades honestly until told to lie, so each
@@ -28,6 +28,9 @@ contract LyingEngine {
     Lie public lie;
     uint8 public status = 1;
     bool public optedOut;
+    /// @dev The one-level book the lens reports (S10c: the leverage reserve walks it), YES ticks, deep.
+    uint16 public askTicks = 520;
+    uint16 public bidTicks = 480;
     mapping(address holder => PositionView) internal _pos;
     uint128 internal _nextId;
 
@@ -155,6 +158,27 @@ contract LyingEngine {
         r.lotBase = 1000;
         r.tickBase = 1000;
         r.minLots = 1;
+        // S10c: a ticker, a Series and an open print, so the FairValueGuard can model a Window of this lens.
+        r.ticker = 1;
+        r.seriesId = keccak256("lying-series");
+        r.openE8 = 365e8;
+    }
+
+    function levelsRaw(bytes32, bool isBid, uint256, uint32, uint256) external view returns (LevelRaw[] memory out) {
+        out = new LevelRaw[](1);
+        out[0] = LevelRaw(uint256(isBid ? bidTicks : askTicks) * 1000, 1e12);
+    }
+
+    function grid(bytes32) external pure returns (uint256 tickSize, uint256 minQuantity, uint256 lotSize) {
+        return (1000, 1000, 1000);
+    }
+
+    function isResolved(bytes32) external view returns (bool) {
+        return status == 4;
+    }
+
+    function isVoided(bytes32) external view returns (bool) {
+        return status == 5;
     }
 
     function marketsOf(bytes32[] calldata ids) external view returns (MarketRef[] memory out) {

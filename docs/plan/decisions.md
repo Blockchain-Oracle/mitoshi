@@ -1101,6 +1101,115 @@ supplier's capital pays its own way in, as in the maker vault (D-118).
   is listed apart, disabled, with the reason ("no fair-value model yet") — never offered and then refused.
 
 **Why:** E.4 names the composition; the signing and proof choices follow from D-136 and PD-2.
+### D-172 — the range reserve's Tempo seam: engine prints in cents, a ticker per asset, a 2σ drift bound on a same-call spot (decision, S10b, 2026-09-30)
+
+Masayume's `RangeReserve` ports with `RangeMath`, its vectors and its launch parameters unchanged (12 % margin, 60 %
+exposure, the centre read over 20 contracts a side, spread ≤ 0.20, a 3 %–97 % centre, a 2 %–97 % band probability,
+60 s–2 days, 6 h stale grace, 500 per round, 1,000 per instant). The OracleHub and `WindowQuestion` go:
+
+- **Prints:** the opening print is the engine's recorded open and the closing print its recorded close, both
+  `priceE8 / 1e6` → cents (floored, so a sub-cent remainder never lifts a close over a band edge; edges are inside).
+  A voided Window refunds through `settle`.
+- **Asset proof:** `setAssetTicker(asset, ticker)` binds an asset name to an engine ticker; `openRange` refuses
+  `NoTicker` / `WrongAsset` unless the Window's Series carries that ticker (in place of the hub's question key).
+- **Centre (D-109, Agari's mark factor):** the YES mid over rested depth at max(Series, params) `minRestSec` = 20 s,
+  on the scale `PAIR_TICKS × tickBase` (the engine's grid makes that `one`), so a 0.65 mid reads 650,000.
+- **PD-2 / D-119:** `openRange(…, spotProof)` verifies a signed spot for the Window's ticker through the
+  FairValueGuard's `spotOf` and refuses `StaleBasis` when `|probitE4(centre) − z(spot)| > maxDriftE4` = 20,000 (2σ),
+  z taken with the reserve's own σ over the seconds to expiry (RangeMath's linear z, as the band maths). Two-sided;
+  `previewDriftE4` answers the same test for a spot the client supplies. The spot and drift are kept per round.
+- **D-108 (Agari):** `voidStale` refuses `MustSettle` while the engine has resolved or voided the Window.
+- **σ:** Masayume's measured BTC 6,200 and ETH 7,800; SOL (never listed by Masayume) the house maker's 14,245 until
+  measured. Assets are the three crypto 5-minute lanes, the only tickers the guard has a spot source for on testnet.
+- `minTimeLeftSec` counts to `lockAt` (no entries in trading's last minute), τ to `expiry` (T08).
+
+**Why:** A.4.7 and D-119 — a quiet book pins the distribution while the spot runs; with a signed spot in the call the
+reserve refuses on chain what Agari could only refuse in the browser.
+
+### D-173 — range relay policy: the opener's round, settlement and exits sponsored; supply and admin never (decision, S10b, 2026-09-30)
+
+`relay/policies/range.ts`, registered in `POLICIES`, D-166's rule for the range reserve. **Sponsored:** `openRange`,
+`settle`, `voidStale`, `claim`, `claimOwed`, `withdraw`. **Never:** `supply` and `setParams`/`setVolatility`/
+`setAssetTicker`/`setPaused`/`setAdmin`. `openRange` is the markets entry; `maxGas` 6M. Moonshot rounds are range rounds.
+
+**Why:** every sponsored call pays only the round's owner or the caller; capital pays its own way in.
+
+### D-174 — the leverage reserve's Tempo seam: Agari's D-114/D-116 carried, PD-2 on entry and on the knock-out (decision, S10c, 2026-09-30)
+
+Masayume's `LeverageReserve`/`LeverageGateway`/`LeverageMath` port with the maths, vectors and launch parameters
+unchanged (3×, 8 % premium on the front, 120 % maintenance, 60 % exposure; entry 0.05–0.95, 200 per position, 500 per
+Window, 64 open, no opens in the last 90 s — now counted to `lockAt`). The DreamDEX pool and ERC-6909 become the
+reserve's own engine position:
+
+- **Measured trades (D-114):** every buy and sale is an IOC through `EngineSeam.placeMeasured` (`withdrawProceeds`,
+  `expireSec = min(now + 60, lockAt)`), every settlement a `redeemPartialMeasured` of exactly the position's lots; a
+  report that disagrees with the money reverts `EngineAccountingMismatch`. `sweep(bytes32 marketId)` replaces
+  `sweep(pool)`; the real engine never leaves a taker a credit, so it finds nothing.
+- **Healthy and sellable at birth (D-114):** after the fill, rested depth (max(Series, params) `minRestSec` = 20 s) must
+  take the whole size (`ThinBook`) at a mark above the line (`UnhealthyAtEntry`). The entry itself takes live orders.
+- **Knock-out (D-114 + PD-2, Q-022):** judged on the whole position over rested depth — a thinned book refuses
+  (`ThinBook`) instead of Masayume's partial sale — sold with the last rested level as the limit, and only when the
+  fair-value mark on a same-call signed spot (`fairSide × quantity`) is also under the line (`FairValueHealthy`).
+  `knockOut(id, spotProof)`; `markOf` (book) and `fairMarkOf(id, spotE8)` (model) preview both halves.
+- **Entry ceiling (PD-2):** `open(…, spotProof)` refuses `AboveFairValue` when the side's entry price is more than
+  `fairSlackRaw` = 0.05 above the model (a ceiling: a cheap entry is the owner's gain).
+- **Void bound (D-116):** `fronted × PAYOUT_DENOMINATOR ≤ quantity × PAYOUT_VOID` on the quote and on the fill
+  (`VoidWouldShort`): 3× refuses above ≈ 71¢, 2× never does.
+- **Pay or owe (D-114):** every exit pays the owner through `_payOrOwe`; the open's change goes back the same way;
+  a supplier's own withdrawal is P12-checked.
+- The `LyingEngine` gained the lens reads the reserve needs (a one-level book, the grid, a ticker/Series/open print,
+  terminal flags) so the accounting assert is proven for buys, sales and redemptions.
+
+**Why:** A.4.3, Agari's D-114/D-116 and PD-2 — a reserve that fronts capital must not be knocked out or opened on a
+book someone arranged, and a void must never cost its suppliers the front.
+
+### D-175 — Boost relay policy and the leverage-keeper: owner trades, exits and cranks sponsored; the keeper proves its own spot (decision, S10c, 2026-09-30)
+
+`relay/policies/leverage.ts`, registered in `POLICIES`, D-166's rule: **sponsored** `open`, `close`, `knockOut`, `settle`,
+`claimOwed`, `withdraw`, `sweep` (every one pays only the owner, the caller, or moves the reserve's own credit);
+**never** `supply` and `setParams`/`setPaused`/`setAdmin`; `open` is the markets entry; `maxGas` 7M. The
+**leverage-keeper** (Masayume's actor, onto `runActor`, in the default ops set, `keeper` role) cranks `settle` once the
+engine decides a Window and `knockOut` only when `markOf` says rested depth takes the whole position under the line
+AND `fairMarkOf` at a fresh RedStone spot (built from one gateway `latest` response per pass, the verifier's own signer
+set and threshold) agrees — the proof it sends is that same spot. It pays its own fees (ops budget); without the key or
+under `DRY_RUN` it scans and reports.
+
+**Why:** knock-outs and settlements must never wait on the owner or on a user remembering to crank; the keeper sends
+only calls the contract would accept, and never a knock-out the model would refuse.
+
+### D-176 — the private desk's Tempo seam: Agari's D-117 carried; the claim is EIP-712 over this contract, verified against its `desk()` (decision, S10d, 2026-09-30)
+
+Masayume's `PrivateDesk`/`PrivateGateway` port with the owner/slot split, the keys and launch parameters unchanged
+(a 1–25 stake band, no mints in the last 60 s — counted to `lockAt`). On the engine:
+
+- **Custody (D-117):** a slot's mint is a measured engine IOC (`placeMeasured`) and its settlement a measured
+  `redeemPartial` of exactly its lots; the desk's one engine position pools every slot's contracts, and the invariant
+  suite proves that position equals the unsettled slots' contracts per Window and side. `owed + pool + inSlots` equals
+  the wallet after every call; `owed` and `inSlots` equal their sums over owners and slots.
+- **A credit needs a budget (D-117):** `creditFromPool` refuses `NoBudget(owner)` unless the owner has ever deposited
+  (`hasBudget`, set by the first deposit and never cleared, so a payout can still reach an owner who withdrew to zero).
+  Tighter than Masayume, which credited any address; a compromised desk key cannot credit itself.
+- **Sizing** walks every live order (not rested only): the desk spends the owner's own stake under the owner's own
+  guard, so PD-2's rested rule, which protects a reserve's capital, does not apply (D-117).
+- **P12:** the owner's `withdraw` refuses `ReceivePolicyBlocked` rather than pushing into the guard.
+- **Claims (PD-4):** the desk service signs the Masayume claim (owner, slot, credit key, market, side, stake, issued) as
+  EIP-712 with `chainId` and `verifyingContract` = this contract; anyone verifies it against the on-chain `desk()`.
+  The contract pins the key only — no claim is submitted on chain. Desk key = the testnet `desk` role (`0x9540…4cb9`),
+  never the deployer; `setDesk` rotates it.
+- The pause stops charges and mints only; `sweep(marketId)` books any engine credit (none arises) into the pool.
+
+**Why:** A.4.4 and D-117 — link-reduction with conservation a random sequence cannot break; never "anonymous".
+
+### D-177 — private-desk relay policy: the owner's exits and the settle crank sponsored; intake, delegation, the desk key and admin never (decision, S10d, 2026-09-30)
+
+`relay/policies/private.ts`, registered in `POLICIES`, the trading-balance rule (D-118): **sponsored** `withdraw`,
+`revoke`, `settleSlot`, `sweep`; **never** `deposit`/`depositAndAllow` (intake), `allow` (delegation setup, as the vault's
+`grant`), the desk key's `chargeToPool`/`fundSlot`/`mintInSlot`/`sweepSlotToPool`/`creditFromPool` (the desk service
+pays its own fees from the ops budget) and `setDesk`/`setParams`/`setPaused`/`setAdmin`. `deposit`/`depositAndAllow`
+are the markets entry; `maxGas` 3M.
+
+**Why:** an owner must always be able to take money back or cancel the desk's permission without funds; the desk's
+own sends are an operator cost, not a user's.
 
 ## Open questions
 
