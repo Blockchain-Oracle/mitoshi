@@ -1082,6 +1082,26 @@ gate). The wallet-mode key stays scoped to the engine (D-136): a parlay is signe
 **Why:** the reserve pays nobody but the ticket's owner or the caller, so sponsoring moves no one else's money; the
 supplier's capital pays its own way in, as in the maker vault (D-118).
 
+### D-167 — the parlay web: E.4's slip, a passkey-signed open, a signed spot from our own route (decision, S10a, 2026-09-30)
+
+- **Composition (E.4):** the Windows list is 21st 109's product list (the two sides are the "Add" buttons) instead of
+  Masayume's per-leg dropdown; the slip is 109's cart with 29940 as the per-leg **Window stepper** (a leg moves to a
+  later round of its lane — the "29940 per leg" slot; a parlay has no per-leg quantity), 29356 totals, 16240's chips,
+  23527's hold, in the rail from `lg` and the 31360 right-edge slide-over below it, opened from a floating dock that
+  sits above the phone nav and receives 24524's arc.
+- **Signing:** a parlay open is signed by the account's passkey (one prompt), not the wallet-mode key: that key is
+  scoped to the engine's selectors (D-136) and would be refused `CallNotAllowed`. Settle and claim are the same lane.
+- **The PD-2 proof:** `/api/prices/redstone-payload?feed=…` builds the `verifySpot` payload server-side from the
+  RedStone gateway (`@cwf/core/prices/redstone` `latestSpot`, the venue's five signers, threshold 3, feeds limited to
+  the venue's own, no cache, one gateway fetch shared for 1.5 s). The slip re-reads it every 15 s and checks each leg
+  against the guard's `previewFairUpE6` at that spot + the reserve's slack — the rule the open enforces — so a refusal
+  is named before the hold; the payload itself is sent when younger than 60 s (the guard allows 120 s), else fetched
+  again. The reserve's caps are asked with `checkCapacity` (the view `previewOpen` does not cover).
+- **Only priceable Windows are offered:** a lane whose Series has no σ or whose ticker has no spot source in the guard
+  is listed apart, disabled, with the reason ("no fair-value model yet") — never offered and then refused.
+
+**Why:** E.4 names the composition; the signing and proof choices follow from D-136 and PD-2.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

@@ -62,6 +62,10 @@ export interface ParlayParams {
   minCombinedProbRaw: bigint;
   /** The least depth (raw contracts) a leg is priced over; a bigger payout is priced over its own size. */
   priceDepthRaw: bigint;
+  /** D-109: a leg is priced only over orders rested at least max(the Series' `minRestSec`, this). */
+  minRestSec: number;
+  /** PD-2 (D-165): a leg refuses when its book price is more than this below the fair-value model, per whole unit. */
+  fairSlackRaw: bigint;
 }
 
 /** Where the reserve lives on one chain — regenerated from `contracts/deployments` (AD-10). */
@@ -114,11 +118,14 @@ export type ParlayRefusal =
 
 /** Reserve writes: every one journals, simulates, sends and books through the same lane shape as a vault write. */
 export type ParlayIntent =
-  | { kind: "parlay-open"; legs: ParlayLegInput[]; maxPayoutBase: bigint; maxStakeBase: bigint }
+  /** PD-2: one signed RedStone spot per leg (`verifySpot` payload, ≤ the guard's max age), fetched just before the send. */
+  | { kind: "parlay-open"; legs: ParlayLegInput[]; maxPayoutBase: bigint; maxStakeBase: bigint; spotProofs: `0x${string}`[] }
   /** Permissionless: anyone may settle a leg whose Window the venue has resolved or voided. */
   | { kind: "parlay-resolve-leg"; parlayId: bigint; legIdx: number; marketId: MarketId }
   /** Permissionless: the payout only ever goes to the ticket's owner. */
   | { kind: "parlay-claim"; parlayId: bigint }
+  /** P12: collect a payout the owner's receive policy held as owed (pays `msg.sender` only). */
+  | { kind: "parlay-claim-owed" }
   | { kind: "parlay-supply"; amountBase: bigint }
   | { kind: "parlay-withdraw"; shares: bigint };
 

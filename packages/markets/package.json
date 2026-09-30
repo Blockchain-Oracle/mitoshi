@@ -21,6 +21,7 @@
     "./react-session": "./src/react/session-builder.tsx",
     "./stream": "./src/runtime/stream-hub.ts",
     "./ops": "./src/ops/index.ts",
+    "./parlay": "./src/parlay/index.ts",
     "./stream-ticket": "./src/server/stream-ticket.ts",
     "./drive": "./src/testing/wallet-mode.ts"
   },
