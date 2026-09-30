@@ -9,7 +9,8 @@ Updated 2026-09-30. **Never trust memory over this file.**
 - **S0 and S2 gates passed.** On the trunk (e1ab0d3): S2 engine, S3 venue ops (live on Coolify, 24 h soak until
   2026-09-30 07:05Z), S3.5 clients, S14c bridge (RH legs wait for testnet ETH), S15a v4 + encoder, S15b/c guard +
   pools, S16c themes contracts (configured), S17a/b launchpads, S7 EventVault contracts, S1 up to 05990e6.
-  Running: S10 specialist tickets. **S4 merged to the trunk (2ab3639)**: backend + UI, gate (1) passed on Moderato
+  Running: S10 specialist tickets, S4-perf (lab vitals). **S7 merged (546a8ed, gate passed on Moderato; web deployed; ops
+  redeploy after the S3 soak applies `index/0002_vault_index.sql` and starts the vault crank).** **S4 merged to the trunk (2ab3639; S4-fix cc65634: tap → Call card p50 942 ms deployed)**: backend + UI, gate (1) passed on Moderato
   (acceptance/S4.md: 0 prompts cold → first call after the arm step, NVDA stock call in NYSE hours, 6 wins auto-paid);
   open: tap → Call card p50 5.97 s vs 1 s (D-143, re-measure on the deployed site), a void shown "Returned" on a real
   position, lab LCP/TBT on the deployed site; gate (2) = the owner's device run (steps in the S4 Handoff) → `m1-first-call`.
