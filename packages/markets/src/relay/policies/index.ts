@@ -8,10 +8,11 @@ import { enginePolicy } from "./engine";
 import { keysPolicy } from "./keys";
 import { launchPolicy } from "./launch";
 import { noopPolicy } from "./noop";
+import { parlayPolicy } from "./parlay";
 import { stocksRelayPolicy } from "./stocks";
 import { themesPolicy } from "./themes";
 import { vaultPolicy } from "./vault";
 
-export { enginePolicy, keysPolicy, launchPolicy, noopPolicy, stocksRelayPolicy, themesPolicy, vaultPolicy };
+export { enginePolicy, keysPolicy, launchPolicy, noopPolicy, parlayPolicy, stocksRelayPolicy, themesPolicy, vaultPolicy };
 
-export const POLICIES: readonly RelayPolicy[] = [noopPolicy, keysPolicy, launchPolicy, themesPolicy, stocksRelayPolicy, vaultPolicy, enginePolicy];
+export const POLICIES: readonly RelayPolicy[] = [noopPolicy, keysPolicy, launchPolicy, themesPolicy, stocksRelayPolicy, vaultPolicy, enginePolicy, parlayPolicy];

@@ -123,6 +123,23 @@ export const events = {
     "Swept(uint256)",
     "WindowSettled(bytes32,uint256,uint256,uint256,int256,address)"
   ],
+  "ParlayReserve": [
+    "AdminChanged(address)",
+    "ExpiryReleased(uint256,uint64,uint256)",
+    "LegPriced(uint256,uint8,bytes32,uint8,uint256,uint64)",
+    "LegResolved(uint256,uint8,bytes32,uint8,address)",
+    "OwedClaimed(address,uint256)",
+    "ParamsUpdated(tuple)",
+    "ParlayClaimed(uint256,address,uint256,address)",
+    "ParlayLost(uint256,address,uint256,uint8)",
+    "ParlayOpened(uint256,address,uint8,uint256,uint256,uint256,uint64)",
+    "ParlayVoided(uint256,address,uint256,uint8)",
+    "ParlayWon(uint256,address,uint256)",
+    "PausedSet(bool)",
+    "PayoutHeld(address,uint256,uint256)",
+    "Supplied(address,uint256,uint256,uint256)",
+    "SupplyRedeemed(address,uint256,uint256,uint256)"
+  ],
   "TIP20MintBurnAdapter": [
     "CreditDeferred(address,uint32,uint256,uint8)",
     "DeferredClaimed(address,uint256)",

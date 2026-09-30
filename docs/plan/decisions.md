@@ -1070,6 +1070,18 @@ exposure, 500 per ticket, 1,000 per instant, a 2 % floor, priced over at least 2
 quote survive the spot moving between its requote and the open (5-minute crypto lanes move ≈ 1–3 ¢ a minute near the
 money). `setParams` tunes both without a redeploy.
 
+### D-166 — parlay relay policy: the opener's trade, cranks and exits sponsored; supply and admin never (decision, S10a, 2026-09-30)
+
+`relay/policies/parlay.ts`, registered in `POLICIES`. **Sponsored:** `openParlay` (the opener's own stake at the chain's
+floored price under their `maxStake` — a trade, like `EventsEngine.placeOrder` under D-135), `resolveLeg` (permissionless
+and idempotent), `claim` (pays the owner whoever calls), `claimOwed` and `withdraw` (pay `msg.sender`, P12). **Never:**
+`supply` (capital intake, D-020/D-029) and `setParams`/`setPaused`/`setAdmin`. An exact `pathUSD.approve(reserve)`
+rides along with an open; `openParlay` is the markets entry for the geofence; `maxGas` 6M (measured in the S10a live
+gate). The wallet-mode key stays scoped to the engine (D-136): a parlay is signed by the passkey, one prompt.
+
+**Why:** the reserve pays nobody but the ticket's owner or the caller, so sponsoring moves no one else's money; the
+supplier's capital pays its own way in, as in the maker vault (D-118).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

@@ -362,6 +362,40 @@ export const deployments = {
       "external": {},
       "commit": "1ae4a69"
     },
+    "parlay": {
+      "contracts": {
+        "ParlayReserve": {
+          "address": "0x57baD0Beb33C8f8557Dc7430F90Ba166587f3939",
+          "artifact": "ParlayReserve.sol:ParlayReserve",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x60cf7008becd9e256fc1f99566edca9d17bf4f4376a1add14bf82de075050b35",
+          "deployBlock": 37530275,
+          "history": []
+        }
+      },
+      "roles": {
+        "ADMIN": "0x5DFC4211902A8EE7932286861e2D8C66841441E8"
+      },
+      "params": {
+        "collateral": "0x20C0000000000000000000000000000000000000",
+        "correlationBps": 4000,
+        "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+        "fairSlackRaw": 50000,
+        "guard": "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1",
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+        "marginBps": 1200,
+        "maxExpiryLocked": 1000000000,
+        "maxExposureBps": 6000,
+        "maxLegs": 3,
+        "maxPayoutCap": 500000000,
+        "minCombinedProbRaw": 20000,
+        "minRestSec": 20,
+        "priceDepthRaw": 20000000
+      },
+      "external": {},
+      "commit": "b721516"
+    },
     "pools": {
       "contracts": {},
       "roles": {},

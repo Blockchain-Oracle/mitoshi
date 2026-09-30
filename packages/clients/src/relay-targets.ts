@@ -32,6 +32,9 @@ export const relayTargets = {
     "maker": [
       "0xa31F6B5a585fF331cC13Fd1c6FAa282024Ca32a6"
     ],
+    "parlay": [
+      "0x57baD0Beb33C8f8557Dc7430F90Ba166587f3939"
+    ],
     "pools": [],
     "stocks": [
       "0x535aFE496eAEE0736570Cc4Abe2db7D18CF41023",
