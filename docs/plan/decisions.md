@@ -1107,6 +1107,14 @@ exposure, the centre read over 20 contracts a side, spread ≤ 0.20, a 3 %–97 
 **Why:** A.4.7 and D-119 — a quiet book pins the distribution while the spot runs; with a signed spot in the call the
 reserve refuses on chain what Agari could only refuse in the browser.
 
+### D-173 — range relay policy: the opener's round, settlement and exits sponsored; supply and admin never (decision, S10b, 2026-09-30)
+
+`relay/policies/range.ts`, registered in `POLICIES`, D-166's rule for the range reserve. **Sponsored:** `openRange`,
+`settle`, `voidStale`, `claim`, `claimOwed`, `withdraw`. **Never:** `supply` and `setParams`/`setVolatility`/
+`setAssetTicker`/`setPaused`/`setAdmin`. `openRange` is the markets entry; `maxGas` 6M. Moonshot rounds are range rounds.
+
+**Why:** every sponsored call pays only the round's owner or the caller; capital pays its own way in.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

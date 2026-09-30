@@ -140,6 +140,21 @@ export const events = {
     "Supplied(address,uint256,uint256,uint256)",
     "SupplyRedeemed(address,uint256,uint256,uint256)"
   ],
+  "RangeReserve": [
+    "AdminChanged(address)",
+    "AssetTickerSet(string,uint16)",
+    "OwedClaimed(address,uint256)",
+    "ParamsUpdated(tuple)",
+    "PausedSet(bool)",
+    "PayoutHeld(address,uint256,uint256)",
+    "RangeBasis(uint256,int256,uint256,uint64,uint32,int64,int32)",
+    "RangeClaimed(uint256,address,uint256,address)",
+    "RangeOpened(uint256,address,bytes32,uint8,int256,int256,uint256,uint256,uint256,uint64)",
+    "RangeSettled(uint256,address,uint8,int256,address)",
+    "Supplied(address,uint256,uint256,uint256)",
+    "SupplyRedeemed(address,uint256,uint256,uint256)",
+    "VolatilitySet(string,uint64)"
+  ],
   "TIP20MintBurnAdapter": [
     "CreditDeferred(address,uint32,uint256,uint8)",
     "DeferredClaimed(address,uint256)",
