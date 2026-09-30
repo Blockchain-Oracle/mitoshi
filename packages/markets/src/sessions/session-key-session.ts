@@ -26,9 +26,11 @@ export interface SessionKeySessionInput {
 
 /** Runs `task` holding the browser-wide lock for `key` (a no-op where the Web Locks API is missing, e.g. Node). */
 export function withKeyLock<T>(key: Address, task: () => Promise<T>): Promise<T> {
-  const locks = typeof navigator !== "undefined" ? (navigator as { locks?: LockManager }).locks : undefined;
+  // The Web Locks shape used here, declared locally (server-side packages type-check this module without the DOM lib).
+  const nav = (globalThis as { navigator?: { locks?: { request(name: string, task: () => Promise<T>): Promise<T> } } }).navigator;
+  const locks = nav?.locks;
   if (!locks) return task();
-  return locks.request(`cwf.sessionKey.${key.toLowerCase()}`, task) as Promise<T>;
+  return locks.request(`cwf.sessionKey.${key.toLowerCase()}`, task);
 }
 
 function serialised(session: SubmitterSession): SubmitterSession {

@@ -43,25 +43,57 @@ export function accessKeyAccount(record: Pick<SessionKeyRecord, "keyPair">, root
 const DB_NAME = "cwf-session-keys";
 const STORE = "keys";
 
-function openStore(): Promise<IDBDatabase> {
+// The few IndexedDB shapes used here, declared locally: this module is type-checked by server-side packages too (no DOM lib).
+interface IdbRequest {
+  result: unknown;
+  error: unknown;
+  onsuccess: (() => void) | null;
+  onerror: (() => void) | null;
+}
+interface IdbStore {
+  get(key: string): IdbRequest;
+  put(value: unknown, key: string): IdbRequest;
+  delete(key: string): IdbRequest;
+}
+interface IdbTransaction {
+  objectStore(name: string): IdbStore;
+  error: unknown;
+  oncomplete: (() => void) | null;
+  onerror: (() => void) | null;
+  onabort: (() => void) | null;
+}
+interface IdbDatabase {
+  transaction(store: string, mode: "readonly" | "readwrite"): IdbTransaction;
+  createObjectStore(name: string): unknown;
+  close(): void;
+}
+interface IdbOpenRequest extends IdbRequest {
+  result: IdbDatabase;
+  onupgradeneeded: (() => void) | null;
+}
+const idb = () => (globalThis as { indexedDB?: { open(name: string, version: number): IdbOpenRequest } }).indexedDB;
+const failed = (e: unknown, what: string) => (e instanceof Error ? e : new Error(what));
+
+function openStore(): Promise<IdbDatabase> {
   return new Promise((resolve, reject) => {
-    if (typeof indexedDB === "undefined") return reject(new Error("IndexedDB is unavailable in this browser"));
-    const open = indexedDB.open(DB_NAME, 1);
-    open.onupgradeneeded = () => open.result.createObjectStore(STORE);
+    const factory = idb();
+    if (!factory) return reject(new Error("IndexedDB is unavailable in this browser"));
+    const open = factory.open(DB_NAME, 1);
+    open.onupgradeneeded = () => void open.result.createObjectStore(STORE);
     open.onsuccess = () => resolve(open.result);
-    open.onerror = () => reject(open.error ?? new Error("IndexedDB open failed"));
+    open.onerror = () => reject(failed(open.error, "IndexedDB open failed"));
   });
 }
 
-async function withStore<T>(mode: IDBTransactionMode, act: (store: IDBObjectStore) => IDBRequest): Promise<T> {
+async function withStore<T>(mode: "readonly" | "readwrite", act: (store: IdbStore) => IdbRequest): Promise<T> {
   const db = await openStore();
   try {
     return await new Promise<T>((resolve, reject) => {
       const tx = db.transaction(STORE, mode);
       const req = act(tx.objectStore(STORE));
       tx.oncomplete = () => resolve(req.result as T);
-      tx.onerror = () => reject(tx.error ?? new Error("IndexedDB transaction failed"));
-      tx.onabort = () => reject(tx.error ?? new Error("IndexedDB transaction aborted"));
+      tx.onerror = () => reject(failed(tx.error, "IndexedDB transaction failed"));
+      tx.onabort = () => reject(failed(tx.error, "IndexedDB transaction aborted"));
     });
   } finally {
     db.close();

@@ -16,6 +16,8 @@ export interface StreamFrame {
 
 /** Engine events whose Window's book, snapshot or list changes. */
 const MARKET_EVENTS = new Set(["Fill", "OrderExecuted", "OrderRemoved", "OrderReduced", "CompleteSet", "PrintRecorded", "WindowResolved", "WindowOpened", "Redeemed", "CreditWithdrawn"]);
+/** EventVault events (S7), published on the owner's `user:` topic: the Trading Balance and what it holds changed. */
+const VAULT_EVENTS = new Set(["Deposited", "Credited", "Withdrawn", "PrivateMoved", "PrivateCredited", "PrivateWithdrawn", "GrantCreated", "GrantFunded", "GrantRevoked", "Executed", "Settled"]);
 
 export function parseFrame(data: string): StreamFrame | null {
   try {
@@ -30,6 +32,10 @@ export function parseFrame(data: string): StreamFrame | null {
 /** The cache operations one stream message implies. */
 export function opsFor(event: string, frame: StreamFrame): CacheOp[] {
   const d = frame.data;
+  if (VAULT_EVENTS.has(event) && frame.topic.startsWith("user:")) {
+    const wallet = frame.topic.slice(5);
+    return [keys.vault(wallet), keys.balanceSheet(wallet), keys.history(wallet)].map((key) => ({ kind: "invalidate" as const, key }));
+  }
   if (!MARKET_EVENTS.has(event)) return [];
   const market = typeof d.market === "string" ? d.market.toLowerCase() : null;
   const ops: CacheOp[] = [];

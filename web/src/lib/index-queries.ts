@@ -74,7 +74,7 @@ function walletQuery(wallet: string, resource: string | undefined, query: Record
     case "claims":
       return { scope: "wallet", run: (r) => r.claims(owner) };
     case "vault":
-      throw new NotDeployed("the Trading Balance vault is not deployed on this network yet");
+      return { scope: "wallet", run: (r) => r.vault(owner) };
     default:
       return null;
   }

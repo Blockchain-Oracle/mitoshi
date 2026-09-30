@@ -7,6 +7,7 @@
  */
 import type postgres from "postgres";
 import type { IdxEvent } from "./types";
+import { applyVaultEvent, VAULT_EVENTS } from "./apply-vault";
 
 type Tx = postgres.TransactionSql;
 type Data = Record<string, unknown>;
@@ -154,6 +155,11 @@ async function redeemed(tx: Tx, e: IdxEvent) {
 
 /** Applies one engine event's projections; engine-wide events update their own tables; unknown names are stored raw only. */
 export async function applyEvent(tx: Tx, e: IdxEvent): Promise<void> {
+  // The EventVault's events (index/0002, S7) have their own projections; they carry no engine `seq`.
+  if (VAULT_EVENTS.has(e.name)) {
+    await applyVaultEvent(tx, e);
+    return;
+  }
   const d = e.data;
   if (e.name === "SeriesRegistered") return; // written by the writer with the registry symbol (upsertSeries)
   if (e.name === "CrankOptOutSet") {
