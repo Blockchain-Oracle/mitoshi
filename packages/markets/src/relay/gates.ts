@@ -46,19 +46,17 @@ export async function checkGates(ledger: LedgerStore, limits: GateLimits, input:
   if (input.feePayerBalanceMicros === null || input.feePayerBalanceMicros < limits.breakerMinBalanceMicros) {
     return { ok: false, code: "breaker", reason: "the fee payer is below its safety balance" };
   }
-  const [sender, global] = await Promise.all([
+  // Every total in one round trip to the ledger (a sponsored tap waits on this, D-150).
+  const none = Promise.resolve(null);
+  const [sender, global, deviceHour, deviceDay] = await Promise.all([
     ledger.totals({ sinceSec: input.nowSec - HOUR, sender: input.sender }),
     ledger.totals({ sinceSec: input.nowSec - DAY }),
+    input.device ? ledger.totals({ sinceSec: input.nowSec - HOUR, device: input.device }) : none,
+    input.device ? ledger.totals({ sinceSec: input.nowSec - DAY, device: input.device }) : none,
   ]);
   if (sender.count >= limits.perSenderPerHour) return { ok: false, code: "budget", reason: "sender hourly budget used" };
   if (global.feeMicros + input.feeMicros > limits.globalFeePerDayMicros) return { ok: false, code: "budget", reason: "daily sponsorship budget used" };
-  if (input.device) {
-    const [deviceHour, deviceDay] = await Promise.all([
-      ledger.totals({ sinceSec: input.nowSec - HOUR, device: input.device }),
-      ledger.totals({ sinceSec: input.nowSec - DAY, device: input.device }),
-    ]);
-    if (deviceHour.count >= limits.perDevicePerHour) return { ok: false, code: "budget", reason: "device hourly budget used" };
-    if (deviceDay.feeMicros + input.feeMicros > limits.perDeviceFeePerDayMicros) return { ok: false, code: "budget", reason: "device daily fee budget used" };
-  }
+  if (deviceHour && deviceHour.count >= limits.perDevicePerHour) return { ok: false, code: "budget", reason: "device hourly budget used" };
+  if (deviceDay && deviceDay.feeMicros + input.feeMicros > limits.perDeviceFeePerDayMicros) return { ok: false, code: "budget", reason: "device daily fee budget used" };
   return null;
 }

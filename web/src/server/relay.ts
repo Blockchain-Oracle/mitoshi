@@ -40,11 +40,22 @@ export function relayHandler(): Relay {
       if (lastVerdicts.length > 20) lastVerdicts.shift();
     },
   });
+  let refreshing: Promise<bigint | null> | null = null;
+  const refresh = () =>
+    (refreshing ??= client
+      .readContract({ address: PATH_USD, abi: erc20Abi, functionName: "balanceOf", args: [built.feePayer] })
+      .catch(() => null)
+      .then((value) => {
+        cached = { atMs: Date.now(), value };
+        refreshing = null;
+        return value;
+      }));
+  // Stale-while-revalidate: after the first read no fill waits on the RPC for the breaker's balance (D-150); a stale
+  // value is at most one TTL plus one read old, and an unreadable balance still holds the breaker (null).
   async function balance(): Promise<bigint | null> {
-    if (cached && Date.now() - cached.atMs < BALANCE_TTL_MS) return cached.value;
-    const value = await client.readContract({ address: PATH_USD, abi: erc20Abi, functionName: "balanceOf", args: [built.feePayer] }).catch(() => null);
-    cached = { atMs: Date.now(), value };
-    return value;
+    if (!cached) return refresh();
+    if (Date.now() - cached.atMs >= BALANCE_TTL_MS) void refresh();
+    return cached.value;
   }
   relay = { ...built, balance, lastVerdicts };
   return relay;
