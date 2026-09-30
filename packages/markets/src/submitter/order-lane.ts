@@ -10,10 +10,10 @@
 import { erc20Abi, type Account, type Chain, type Transport, type WalletClient } from "viem";
 import { admissibilityBlocker, belowMinStake, diagnosis, formatCadence, ONCHAIN_STATUS, type Address, type AttributionHook, type BookedOrder, type Diagnosis, type IntentJournal, type OrderOutcome, type OrderRequest, type PhaseListener, type Quote, type StopGate } from "@cwf/core";
 import { diagnoseWrite as diagnose, isAmbiguousSend } from "./diagnose-write";
-import { engineVenue, readBook, readPositions, type WindowFacts } from "../engine/lens";
+import { engineVenue, readBook, readPositions, readSeries, type WindowFacts } from "../engine/lens";
 import { newClientId, ORDER_TYPE, walletOrderCalls } from "../engine/calls";
 import { decodeEngineEvents, ownExecution } from "../engine/decode";
-import { ownLimitTicksOf, quoteFromBook } from "../engine/quote";
+import { ownLimitTicksOf, quoteFromBook, type YesBook } from "../engine/quote";
 import { randomU64 } from "../random";
 import { getPublicClient } from "../runtime/read-runtime";
 import { sendBatch, type PendingKeyAuthorization } from "../tx/send";
@@ -48,9 +48,9 @@ function summarize({ side, market, stakeBase }: OrderRequest): string {
 }
 
 /** Fresh quote off the chain book; refuses the unfillable and the inadmissible, surfaces a dearer book as a requote. */
-export async function freshQuote(w: WindowFacts, req: OrderRequest, nowMs: number): Promise<Quote> {
+export async function freshQuote(w: WindowFacts, req: OrderRequest, nowMs: number, book?: Promise<YesBook>): Promise<Quote> {
   if (belowMinStake(req.stakeBase, w.market.decimals)) throw new OrderRefusedError(diagnosis("below-min-quantity", `stake ${req.stakeBase} is below the minimum`));
-  const quote = quoteFromBook(await readBook(w.marketId, w.series.minRestSec), w.series, req.side, req.stakeBase, nowMs);
+  const quote = quoteFromBook(await (book ?? readBook(w.marketId, w.series.minRestSec)), w.series, req.side, req.stakeBase, nowMs);
   if (!quote) throw new OrderRefusedError(diagnosis("no-liquidity", `nothing fillable for ${req.stakeBase} on the ${req.side} side`));
   const band = admissibilityBlocker(quote.avgPriceBps);
   if (band) throw new OrderRefusedError(diagnosis("outside-band", `${band}: the book quotes ${quote.avgPriceBps} bps`));
@@ -100,9 +100,13 @@ export async function submitOrder(ctx: OrderLaneContext, req: OrderRequest, onPh
   let w: WindowFacts | null = null;
   let reservationId: string | null = null;
   try {
-    // Reads that don't depend on the Window start with the status gate (one round trip, not a queue of them).
+    // Every pre-send read starts at once — the status gate, the account reads and the book (its Series facts are
+    // cached for the process, so the book read needs no answer from the gate) — one round trip, not two (D-142, D-150).
     const accountReads = Promise.all([engineVenue(), readPositions(ctx.wallet, [req.market.marketId]), collateralBalance(ctx.wallet)]);
     accountReads.catch(() => undefined);
+    const seriesId = req.market.seriesId.toLowerCase();
+    const book = readSeries([req.market.seriesId]).then((m) => readBook(req.market.marketId, m.get(seriesId)!.minRestSec));
+    book.catch(() => undefined);
     w = await statusGate(req.market.marketId, true);
     const preOpen = w.status === ONCHAIN_STATUS.Listed;
     const stop = await ctx.stopGate.checkAndReserve(ctx.wallet, req.displayedQuote.maxCostBase);
@@ -110,7 +114,7 @@ export async function submitOrder(ctx: OrderLaneContext, req: OrderRequest, onPh
     reservationId = stop.reservationId;
 
     // The fresh quote and the account reads land together (the tap's latency budget, §2.4 "Call card ≤ 1 s p50").
-    const [quote, [venue, [position], walletBalance]] = await Promise.all([preOpen ? Promise.resolve(req.displayedQuote) : freshQuote(w, req, ctx.nowMs()), accountReads]);
+    const [quote, [venue, [position], walletBalance]] = await Promise.all([preOpen ? Promise.resolve(req.displayedQuote) : freshQuote(w, req, ctx.nowMs(), book), accountReads]);
     const nowSec = ctx.nowSec();
     const window = { lockAtSec: w.snapshot.lockAtSec, intervalSec: w.market.intervalSec };
     const expireTsSec = preOpen ? restingExpirySec(nowSec, window) : takerExpirySec(nowSec, window);
@@ -132,7 +136,9 @@ export async function submitOrder(ctx: OrderLaneContext, req: OrderRequest, onPh
     });
     onPhase?.("submitted");
     try {
-      const { receipt, hash } = await sendBatch(ctx.client, { calls, sponsored, nonce: plan, nowSec, keyAuthorization: ctx.pendingKeyAuthorization?.current ?? undefined });
+      // Signed and final: the surface may show the call as confirmed-pending while the chain includes it (D43, D-150).
+      const onSigned = (hash: `0x${string}` | null) => onPhase?.("confirming", hash ? { txHash: hash } : undefined);
+      const { receipt, hash } = await sendBatch(ctx.client, { calls, sponsored, nonce: plan, nowSec, keyAuthorization: ctx.pendingKeyAuthorization?.current ?? undefined }, { onSigned });
       if (ctx.pendingKeyAuthorization) ctx.pendingKeyAuthorization.current = null;
       await ctx.journal.markSent(record.id, hash);
       if (receipt.status !== "success") {

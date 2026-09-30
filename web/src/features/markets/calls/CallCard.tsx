@@ -24,9 +24,15 @@ export interface CallCardData {
   decimals: number;
   tradingStartSec: number;
   expirySec: number;
-  txHash: `0x${string}`;
+  /** Null while a confirmed-pending call waits for a hash it can name (a relay co-signature still to come). */
+  txHash: `0x${string}` | null;
   placedAtMs: number;
   resting?: boolean;
+  /**
+   * Confirmed-pending (D43, D-150): signed and handed to the chain, receipt not back yet. The figures are the quote the
+   * user confirmed (stake = its cap); the receipt replaces them with what the engine booked, or the ticket rolls back.
+   */
+  pending?: boolean;
 }
 
 export function CallCard({ card, actions }: { card: CallCardData; actions?: ReactNode }) {
@@ -41,7 +47,7 @@ export function CallCard({ card, actions }: { card: CallCardData; actions?: Reac
 
   return (
     <div>
-      <div className="call-card">
+      <div className="call-card" data-call-state={card.pending ? "pending" : "confirmed"} aria-busy={card.pending || undefined}>
         <div aria-hidden className="call-grain" />
         <div aria-hidden className="call-spark" />
         <span aria-hidden className="call-tick tl" />
@@ -51,19 +57,19 @@ export function CallCard({ card, actions }: { card: CallCardData; actions?: Reac
         <div className="call-body">
           <div className="call-masthead">
             <span className="call-brand">{BRAND.name.toUpperCase()}</span>
-            <span className="call-folio">N° {card.txHash.replace(/^0x/i, "").slice(0, 6).toUpperCase()}</span>
+            <span className="call-folio">N° {card.txHash ? card.txHash.replace(/^0x/i, "").slice(0, 6).toUpperCase() : "······"}</span>
           </div>
           <div className="call-rule" />
           <div className="call-eyebrow">
             <span>{card.side === "up" ? CALL.up : CALL.down}</span>
             <span className="call-eyebrow-dot">·</span>
-            <span className="call-eyebrow-note">{card.resting ? CALL.scheduled : CALL.placed}</span>
+            <span className="call-eyebrow-note" role={card.pending ? "status" : undefined}>{card.pending ? CALL.confirming : card.resting ? CALL.scheduled : CALL.placed}</span>
           </div>
           <h3 className="call-band">{band}</h3>
           <p className="call-wins-if">{CALL.winsIf(card.asset, card.side)}</p>
           <div className="call-wager">
             <div className="min-w-0">
-              <div className="call-label">{CALL.youStake}</div>
+              <div className="call-label">{card.pending ? CALL.youStakeUpTo : CALL.youStake}</div>
               <div className="call-figure">{money(card.stakeBase)}</div>
             </div>
             <div className="call-arrow" aria-hidden>→</div>
@@ -87,7 +93,7 @@ export function CallCard({ card, actions }: { card: CallCardData; actions?: Reac
               </div>
             )}
           </div>
-          <a href={txUrl(card.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="call-verify">{CALL.verify}</a>
+          {card.txHash ? <a href={txUrl(card.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="call-verify">{CALL.verify}</a> : null}
         </div>
       </div>
       {actions}

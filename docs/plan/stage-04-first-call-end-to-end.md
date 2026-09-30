@@ -80,7 +80,42 @@
 - **F-S4-18** (S4 UI) The rail keeps one ticket mounted while the hero changes Window: a requote from the previous
   Window leaked into the next one. The composition now resets on a new Window.
 
+- **F-S4-19** (S4-fix) Tap → Call card on the deployed testnet: p50 1,836 ms (pre-send 521 · relay fill 451 · sign 5 ·
+  no co-sign · send → receipt 696 · render 8; 12 taps, 0 prompts). The card waited for the receipt; the fill already
+  carries the fee payer's signature, so `validate` runs once. Confirmed-pending card on the key's signature, one-round
+  pre-send and relay checks (D-150); local after: press → card p50 836 ms.
+- **F-S4-20** (S4-fix) `/api/stream/ticket` 401s were signed-in users without a server session: a 24 h passkey session
+  under an indefinitely restored wagmi connection, and every non-passkey wallet (no route issues the social session).
+  Cookies and the proxy were fine. Session 30 days; the page follows the wallet's own engine events on the chain when
+  the stream carries no `user:` topic (D-151).
+- **F-S4-21** (S4-fix) Lab on the deployed site (`lighthouse.yml`): `/` CLS 0.085, `/markets` TBT 2,360 ms,
+  `/markets/[id]` 5,042, `/portfolio` 580. Tempo Wallet's iframe (+ Stripe ×3, a recorder) mounted at wagmi setup on
+  every app page; the wallet runtime evaluated for every visitor; every lane card re-read its Window (a second 230 KB
+  multicall); the heading's font swap moved the pillars. All four fixed (D-152); the gate is the next deploy's run.
+- **F-S4-22** (S4-fix) Voids: 4 real voided Windows with fills (2026-09-29, missing print); the production verdict read
+  stamps all 9 holders `void`, 8 paid (7 auto), 1 collectable (D-153). No void can be caused on demand without stopping
+  the print path.
+
 ## Handoff
+
+**S4-fix lane (`stage/S4-fix`, 2026-09-30) — the gate's open items: tap latency, the stream-ticket 401, lab vitals, void
+"Returned" (D-150…D-153, acceptance/S4.md "S4-fix" rows).**
+- Tap: confirmed-pending Call card on the key's signature (D43), one-round pre-send, relay `validate` in one round.
+  Deployed before: press → card p50 1,836 ms. Local after: 836 ms p50 (and 2.1 s with the in-process relay starved at
+  host load 300+). **Integrator:** deploy the web, then `pnpm --filter @cwf/web exec tsx e2e/tap-latency.ts --base
+  https://testnet.mitoshi.xyz --taps 12 --out <dir>` with `pnpm --filter @cwf/scripts exec tsx drive/gate-maker.ts`
+  running (the seed maker's books are thin, F-S4-16); `summary.pressToCardMs.p50` is §2.4's number.
+- Stream: after the deploy, `pnpm --filter @cwf/web exec tsx e2e/stream-ticket.ts --base https://testnet.mitoshi.xyz`
+  (6 checks). Non-passkey wallets still get no ticket until S13 issues `cwf_social`; they follow the chain instead.
+- Lab: `gh workflow run lighthouse.yml -f url=https://testnet.mitoshi.xyz` after the deploy (quiet host); workstation
+  numbers are not the gate. `e2e/long-tasks.ts`, `e2e/rpc-reads.ts`, `e2e/cls.ts`, `e2e/lab-vitals.ts` compare builds.
+  If `/markets` TBT is still over 200 ms, the next levers are the lane cards' `levels` reads (~50 per load) and
+  the lane list's single 230 KB decode.
+- Void: `pnpm --filter @cwf/scripts exec tsx drive/void-returned.ts` lists every voided Window with fills and each
+  holder's pinned verdict; the UI card on a passkey user's own call is captured the next time one voids.
+- Local setup used: `s4fix-pg` (:55443), `s4fix-redis` (:56390), `web/.env.local` (no stream URL, index/ops through a
+  scratch CORS pass-through on :3199).
+
 
 **UI lane (`stage/S4-ui`, 2026-09-29 ~20:00Z) — boxes 2–4 done; gate (1) run on Moderato; gate (2) is the owner's.**
 

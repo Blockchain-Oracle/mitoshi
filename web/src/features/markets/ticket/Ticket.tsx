@@ -119,23 +119,32 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
   const signer = tapArmed ? "access-key" : session.kind === "passkey" ? "passkey" : "injected";
   const booked = bet.state.outcome?.status === "confirmed" ? bet.state.outcome.booked : null;
   const scheduled = listed && bet.state.outcome?.status === "nothingFilled" ? bet.state.outcome : null;
+  // Confirmed-pending (D43, D-150): the key signed, the chain is including it; the figures are the confirmed quote.
+  const tx = bet.state.tx;
+  const pending = !booked && !scheduled && tx.kind === "confirmed" && tx.pending && bet.confirmedCall ? { txHash: tx.txHash, ...bet.confirmedCall } : null;
+  const cardQuote = pending ? pending.quote : displayed;
+  const [placedAtMs, setPlacedAtMs] = useState(0);
+  const showingCard = Boolean(pending || booked || scheduled);
+  useEffect(() => setPlacedAtMs(showingCard ? (t) => t || clockNow() : 0), [showingCard]);
 
   const another = () => bet.reset();
 
   return (
     <section aria-label={TICKET.title} className="tk-ticket flex flex-col gap-3">
       {head}
-      {booked || scheduled ? (
+      {booked || scheduled || pending ? (
         <CallCard
           card={{
-            asset: market.asset, side: booked?.side ?? side ?? "up", lineRaw: t.openingRaw, stakeBase: booked?.costBase ?? displayed?.maxCostBase ?? 0n, contractsRaw: booked?.contractsRaw ?? displayed?.contractsRaw ?? 0n, decimals,
-            tradingStartSec: market.tradingStartSec, expirySec: market.expirySec, txHash: booked?.txHash ?? scheduled!.txHash, placedAtMs: Date.now(), resting: !booked,
+            asset: market.asset, side: booked?.side ?? pending?.side ?? side ?? "up", lineRaw: t.openingRaw, stakeBase: booked?.costBase ?? cardQuote?.maxCostBase ?? 0n, contractsRaw: booked?.contractsRaw ?? cardQuote?.contractsRaw ?? 0n, decimals,
+            tradingStartSec: market.tradingStartSec, expirySec: market.expirySec, txHash: booked?.txHash ?? scheduled?.txHash ?? pending?.txHash ?? null, placedAtMs: placedAtMs || clockNow(),
+            resting: !booked && !pending, pending: pending !== null,
           }}
-          actions={
+          actions={pending ? null : (
             <div className="call-actions">
               <Link href="/portfolio">{CALL.portfolio}</Link>
               <button type="button" onClick={another}>{CALL.another}</button>
             </div>
+          )
           }
         />
       ) : (

@@ -152,3 +152,17 @@
 @utility stamp-press {
   transform: rotate(var(--verdict-stamp-rotation));
 }
+
+/* The landing's LCP heading keeps the height Sora gives it before Sora arrives (D-152): the metric-matched fallback wraps
+ * "Prediction markets and stocks, one passkey away." in 3 lines at 390 px where Sora takes 4, and the swap pushed the
+ * pillars down (lab CLS 0.085). Line counts measured for that copy at 320–1440 px (Sora ≥ fallback at every width):
+ * 4 below 430 px, 3 up to `md`, 2 from `md`. Change the copy, re-measure. */
+@utility hero-lines {
+  min-height: 4lh;
+  @media (width >= 26.875rem) {
+    min-height: 3lh;
+  }
+  @media (width >= 48rem) {
+    min-height: 2lh;
+  }
+}

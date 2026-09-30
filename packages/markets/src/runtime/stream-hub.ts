@@ -14,6 +14,9 @@ let config: { url: string | null; ticket?: () => Promise<string | null> } = { ur
 let client: StreamClient | null = null;
 const listeners = new Map<string, Set<Listener>>();
 const stateListeners = new Set<(s: StreamState) => void>();
+/** Whether the last connection that asked for a `user:` topic got its ticket (null: none asked yet). */
+let userGrant: boolean | null = null;
+const grantListeners = new Set<(granted: boolean | null) => void>();
 
 export function configureStream(next: { url: string | null; ticket?: () => Promise<string | null> }): void {
   if (next.url === config.url) return void (config = next);
@@ -33,6 +36,11 @@ function hub(): StreamClient | null {
       for (const [topic, list] of byTopic) for (const l of listeners.get(topic) ?? []) l(list);
     },
     onState: (s) => stateListeners.forEach((l) => l(s)),
+    onUserGrant: (granted) => {
+      if (granted === userGrant) return;
+      userGrant = granted;
+      grantListeners.forEach((l) => l(granted));
+    },
   });
   return client;
 }
@@ -59,6 +67,16 @@ export function streamState(): StreamState {
 export function subscribeStreamState(listener: (s: StreamState) => void): () => void {
   stateListeners.add(listener);
   return () => stateListeners.delete(listener);
+}
+
+/** Whether the stream carries the signed-in user's own topic (false: no ticket — follow the chain instead, D-151). */
+export function userStreamGranted(): boolean | null {
+  return userGrant;
+}
+
+export function subscribeUserGrant(listener: (granted: boolean | null) => void): () => void {
+  grantListeners.add(listener);
+  return () => grantListeners.delete(listener);
 }
 
 /** A price tick on the `prices` / `symbol:<T>` topics (services/ops `wireTick`). */
