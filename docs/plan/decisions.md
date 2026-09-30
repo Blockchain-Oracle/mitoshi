@@ -1181,6 +1181,17 @@ Masayume's `PrivateDesk`/`PrivateGateway` port with the owner/slot split, the ke
 
 **Why:** A.4.4 and D-117 — link-reduction with conservation a random sequence cannot break; never "anonymous".
 
+### D-177 — private-desk relay policy: the owner's exits and the settle crank sponsored; intake, delegation, the desk key and admin never (decision, S10d, 2026-09-30)
+
+`relay/policies/private.ts`, registered in `POLICIES`, the trading-balance rule (D-118): **sponsored** `withdraw`,
+`revoke`, `settleSlot`, `sweep`; **never** `deposit`/`depositAndAllow` (intake), `allow` (delegation setup, as the vault's
+`grant`), the desk key's `chargeToPool`/`fundSlot`/`mintInSlot`/`sweepSlotToPool`/`creditFromPool` (the desk service
+pays its own fees from the ops budget) and `setDesk`/`setParams`/`setPaused`/`setAdmin`. `deposit`/`depositAndAllow`
+are the markets entry; `maxGas` 3M.
+
+**Why:** an owner must always be able to take money back or cancel the desk's permission without funds; the desk's
+own sends are an operator cost, not a user's.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

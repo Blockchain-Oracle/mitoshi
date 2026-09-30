@@ -39,6 +39,9 @@ export const relayTargets = {
       "0x57baD0Beb33C8f8557Dc7430F90Ba166587f3939"
     ],
     "pools": [],
+    "private": [
+      "0x0c894dB5057E18F5C9E09C72faAc0b6098613CD8"
+    ],
     "range": [
       "0xf19342733Bb451503f3806b0d44CC58A3D345052"
     ],

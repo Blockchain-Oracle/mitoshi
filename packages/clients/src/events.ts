@@ -152,6 +152,22 @@ export const events = {
     "Supplied(address,uint256,uint256,uint256)",
     "SupplyRedeemed(address,uint256,uint256,uint256)"
   ],
+  "PrivateDesk": [
+    "AdminChanged(address)",
+    "Allowed(address,uint256)",
+    "Charged(address,bytes32,uint256)",
+    "Credited(address,bytes32,uint256)",
+    "Deposited(address,uint256,uint256)",
+    "DeskChanged(address)",
+    "ParamsUpdated(tuple)",
+    "PausedSet(bool)",
+    "SlotFunded(bytes32,uint256)",
+    "SlotMinted(bytes32,bytes32,uint8,uint256,uint256)",
+    "SlotSettled(bytes32,bytes32,uint256,address)",
+    "SlotSwept(bytes32,uint256)",
+    "Swept(uint256)",
+    "Withdrawn(address,uint256,uint256)"
+  ],
   "RangeReserve": [
     "AdminChanged(address)",
     "AssetTickerSet(string,uint16)",

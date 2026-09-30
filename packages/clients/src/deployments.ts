@@ -439,6 +439,33 @@ export const deployments = {
       "external": {},
       "commit": "f98d630"
     },
+    "private": {
+      "contracts": {
+        "PrivateDesk": {
+          "address": "0x0c894dB5057E18F5C9E09C72faAc0b6098613CD8",
+          "artifact": "PrivateDesk.sol:PrivateDesk",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x5336d5b69d5b5f79c1cb6a5964d23b286fac523613577ed27b70f796615004ca",
+          "deployBlock": 37534921,
+          "history": []
+        }
+      },
+      "roles": {
+        "ADMIN": "0x5DFC4211902A8EE7932286861e2D8C66841441E8",
+        "DESK": "0x9540cDCD69636229Be905225979a7e5BAA044cb9"
+      },
+      "params": {
+        "collateral": "0x20C0000000000000000000000000000000000000",
+        "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+        "maxStake": 25000000,
+        "minStake": 1000000,
+        "minTimeLeftSec": 60
+      },
+      "external": {},
+      "commit": "8b7b457"
+    },
     "range": {
       "contracts": {
         "RangeReserve": {
