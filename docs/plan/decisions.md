@@ -1158,6 +1158,29 @@ under `DRY_RUN` it scans and reports.
 **Why:** knock-outs and settlements must never wait on the owner or on a user remembering to crank; the keeper sends
 only calls the contract would accept, and never a knock-out the model would refuse.
 
+### D-176 — the private desk's Tempo seam: Agari's D-117 carried; the claim is EIP-712 over this contract, verified against its `desk()` (decision, S10d, 2026-09-30)
+
+Masayume's `PrivateDesk`/`PrivateGateway` port with the owner/slot split, the keys and launch parameters unchanged
+(a 1–25 stake band, no mints in the last 60 s — counted to `lockAt`). On the engine:
+
+- **Custody (D-117):** a slot's mint is a measured engine IOC (`placeMeasured`) and its settlement a measured
+  `redeemPartial` of exactly its lots; the desk's one engine position pools every slot's contracts, and the invariant
+  suite proves that position equals the unsettled slots' contracts per Window and side. `owed + pool + inSlots` equals
+  the wallet after every call; `owed` and `inSlots` equal their sums over owners and slots.
+- **A credit needs a budget (D-117):** `creditFromPool` refuses `NoBudget(owner)` unless the owner has ever deposited
+  (`hasBudget`, set by the first deposit and never cleared, so a payout can still reach an owner who withdrew to zero).
+  Tighter than Masayume, which credited any address; a compromised desk key cannot credit itself.
+- **Sizing** walks every live order (not rested only): the desk spends the owner's own stake under the owner's own
+  guard, so PD-2's rested rule, which protects a reserve's capital, does not apply (D-117).
+- **P12:** the owner's `withdraw` refuses `ReceivePolicyBlocked` rather than pushing into the guard.
+- **Claims (PD-4):** the desk service signs the Masayume claim (owner, slot, credit key, market, side, stake, issued) as
+  EIP-712 with `chainId` and `verifyingContract` = this contract; anyone verifies it against the on-chain `desk()`.
+  The contract pins the key only — no claim is submitted on chain. Desk key = the testnet `desk` role (`0x9540…4cb9`),
+  never the deployer; `setDesk` rotates it.
+- The pause stops charges and mints only; `sweep(marketId)` books any engine credit (none arises) into the pool.
+
+**Why:** A.4.4 and D-117 — link-reduction with conservation a random sequence cannot break; never "anonymous".
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

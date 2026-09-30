@@ -53,6 +53,14 @@
   cap. Forge's default 130 % estimate multiplier put the leverage create at 32.9M and the node refused it before
   sending; `--gas-estimate-multiplier 110` deployed it. A product past ≈ 24 KB runtime cannot deploy in one transaction
   at all, a tighter bound than the 23.5 KB size rule for anything with a heavy constructor.
+- F-S10-13 (10d.1, contracts): `PrivateDesk`/`PrivateGateway`/`IPrivateDesk` ported onto the engine seam (D-176);
+  runtime 13,035 B. Masayume's budget 9 + lifecycle 9 run on the real engine (the engine's 0.001 lot: 10 at 0.60 buys
+  16.666 for 9.9996; Masayume's 0.01 lot bought 16.66 for 9.996); the seam suite adds 8 (D-117 credit-needs-budget ×2,
+  the three counters at every step with a dishonest over-credit, `LyingEngine` mint ×5 lies and settlement, P12, the
+  sweep, constructor); the three-counter invariant (128 × 200, random owners, dishonest desk credits, prints and
+  voids) holds the wallet identity, both sub-sums and engine position = unsettled slots, and `afterInvariant` empties
+  the desk to zero; the Moderato fork test opens, settles on the real close, sweeps, credits and withdraws. One Masayume
+  line changes with D-117: the desk crediting itself refuses `NoBudget` before the pool is consulted.
 
 ## Handoff
 
