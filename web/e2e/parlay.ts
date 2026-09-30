@@ -100,7 +100,7 @@ try {
     const t0 = Date.now();
     await hold(page, /^Hold to place/);
     const receipt = slip.getByRole("link", { name: "View the transaction" });
-    const failure = slip.getByRole("alert");
+    const failure = slip.getByRole("alert").filter({ hasText: /Nothing was taken|moved|Money|Try again|checking/ });
     await expect(receipt.or(failure).first()).toBeVisible({ timeout: 120_000 });
     if (await receipt.isVisible()) {
       placedTx = await receipt.getAttribute("href");

@@ -52,6 +52,8 @@ export const MARKETS = {
 
 export const HERO = {
   openingPrint: "opening print",
+  bandLow: "band low",
+  bandHigh: "band high",
   livePrice: "live · signed spot",
   pendingPrint: "waiting for the opening print",
   pendingDistance: "No opening print yet — nothing to measure against.",

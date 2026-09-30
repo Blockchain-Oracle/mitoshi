@@ -20,6 +20,7 @@ import { HeroCadenceTabs } from "./HeroCadenceTabs";
 import { HeroQuestion } from "./HeroQuestion";
 import { HeroSettlesIn } from "./HeroSettlesIn";
 import { PriceChart } from "./PriceChart";
+import { useDrawnBand } from "@/features/range/band-store";
 
 export interface HeroChartProps {
   market: EventMarket;
@@ -36,6 +37,7 @@ const cents = (c: number | null) => (c === null ? HERO_HEAD.noPrice : `${c}¢`);
 
 export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: HeroChartProps) {
   const series = useChartSeries(market);
+  const drawn = useDrawnBand();
   const [view, setView] = useState<"price" | "depth">("price");
   const book = useTopOfBook(market);
   const latestRaw = series?.ok ? (series.value.latest?.valueRaw ?? null) : null;
@@ -63,7 +65,7 @@ export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: H
             <HeroDepth market={market} />
           ) : (
             <ReadingBoundary reading={series} shape="chart">
-              {(chart) => <PriceChart points={chart.points} openingRaw={openingRaw} interactive className="h-full w-full" />}
+              {(chart) => <PriceChart points={chart.points} openingRaw={openingRaw} interactive band={drawn && drawn.marketId === market.marketId ? drawn : null} className="h-full w-full" />}
             </ReadingBoundary>
           )}
         </div>

@@ -21,6 +21,10 @@ import { BetsPanel } from "./BetsPanel";
 import { LedgerPlate } from "./LedgerPlate";
 import { RecordChart } from "./RecordChart";
 import { TradingBalancePanel } from "@/features/vault/TradingBalancePanel";
+import dynamic from "next/dynamic";
+
+// Boosts (S10c) load as their own island: the leverage reads and lane stay out of the Portfolio's first load.
+const BoostPositions = dynamic(() => import("@/features/boost/BoostPositions").then((m) => m.BoostPositions), { ssr: false });
 
 const CONNECTION = new Set(["rpc-down", "indexer-down", "send-unknown", "unknown"]);
 
@@ -92,6 +96,7 @@ function Screen() {
       </LedgerPlate>
       <Link href="/portfolio/edge" className="min-h-touch self-start py-2 type-caption text-accent">{PORTFOLIO.traderEdge}</Link>
       <BetsPanel wallet={wallet} positions={positions} history={history} index="01" retry={retry} />
+      <BoostPositions wallet={wallet} index="02" />
       <RecordChart history={history} onRetry={() => void queryClient.invalidateQueries({ queryKey: keys.history(wallet) })} />
     </div>
   );

@@ -13,7 +13,9 @@ import { diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/cop
 import { minStakeBase } from "@cwf/core/sizing";
 import { formatBaseUnits } from "@cwf/core/units";
 import { useBalanceSheet, useSeriesGrid, useSigner } from "@cwf/markets/react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
+import { LoadingState } from "@/components/states";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { SESSION, SessionFallbackCta, TapTradingChip, useTicketRoute } from "@/features/session";
 import { nowMs as clockNow, useNowMs } from "@/lib/clock";
@@ -24,7 +26,7 @@ import { CALL, TICKET } from "../copy";
 import { CallCard } from "../calls/CallCard";
 import { ToWin } from "@/components/ui/prediction-ticket";
 import { useTopOfBook } from "../data/useTopOfBook";
-import { AmountBlock, BetModes, SideSegments } from "./ComposeBlocks";
+import { AmountBlock, BetModes, SideSegments, type BetMode } from "./ComposeBlocks";
 import "@/styles/prediction-ticket.css";
 import { DEFAULT_PRICE_CENTS, PriceControl } from "./PriceControl";
 import { AccountGate, OutcomeNote, ReadoutStrip, TicketCta, type ReadoutCells } from "./StatusBlocks";
@@ -32,6 +34,10 @@ import { commonBlocker, deriveBlocker } from "./ticket-guards";
 import { usePlaceBet } from "./usePlaceBet";
 import { useQuote } from "./useQuote";
 import { useTicket } from "./useTicket";
+
+/** The Range mode body loads on first use (a lazy island, plan 3.1): the band slider, its quote and its lane. */
+const BoostTicketMode = dynamic(() => import("@/features/boost/BoostTicketMode").then((m) => m.BoostTicketMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
+const RangeTicketMode = dynamic(() => import("@/features/range/RangeTicketMode").then((m) => m.RangeTicketMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
 
 const usd = (b: bigint, decimals: number) => `$${formatBaseUnits(b, decimals, { minDp: 2, maxDp: 2 })}`;
 
@@ -131,6 +137,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
   useEffect(() => setPlacedAtMs(showingCard ? (t) => t || clockNow() : 0), [showingCard]);
 
   const another = () => bet.reset();
+  const [betMode, setBetMode] = useState<BetMode>("direction");
 
   return (
     <section aria-label={TICKET.title} className="tk-ticket flex flex-col gap-3">
@@ -152,7 +159,8 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
         />
       ) : (
         <>
-          <BetModes />
+          <BetModes mode={betMode} onMode={setBetMode} />
+          {betMode === "range" ? <RangeTicketMode market={market} /> : betMode === "boost" ? <BoostTicketMode market={market} side={side} /> : <>
           <SideSegments side={side} onSelect={t.selectSide} prices={{ up: priceText(top.upCents), down: priceText(top.downCents) }} />
           {listed ? <PriceControl priceCents={priceCents} onChange={setPriceCents} side={side} /> : null}
           <AmountBlock value={t.stakeText} onChange={t.setStakeText} stakeBase={stakeBase} onStakeBase={t.setStakeBase} balanceBase={spendBase} decimals={decimals} belowMin={stakeBase > 0n && belowMinStake(stakeBase, decimals)} remembered={t.remembered} costBase={displayed?.expectedCostBase ?? null} />
@@ -169,6 +177,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
             )}
             <p className="tk-foot">{tb.viaBalance ? SESSION.footnote : tapArmed ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
           </div>
+          </>}
         </>
       )}
     </section>

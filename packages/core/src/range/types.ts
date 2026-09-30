@@ -41,7 +41,6 @@ export interface RangeRound {
   status: RangeRoundStatus;
   side: RangeSide;
   marketId: MarketId;
-  oracleQuestionId: bigint;
   expirySec: number;
   openedAtSec: number;
   settledAtSec: number | null;
@@ -72,6 +71,10 @@ export interface RangeParams {
   staleAfterSec: number;
   maxPayoutCapBase: bigint;
   maxExpiryLockedBase: bigint;
+  /** D-109: the centre is read over orders rested at least max(the Series' `minRestSec`, this). */
+  minRestSec: number;
+  /** PD-2/D-119 (D-172): the most the book's centre may sit from a same-call signed spot, in σ × 1e4 (two-sided). */
+  maxDriftE4: number;
 }
 
 /** Where the reserve lives on one chain — regenerated from `contracts/deployments` (AD-10). */
@@ -121,13 +124,16 @@ export type RangeRefusal =
 
 /** Reserve writes: every one journals, simulates, sends and books through the same lane shape as a vault write. */
 export type RangeIntent =
-  | { kind: "range-open"; marketId: MarketId; asset: string; side: RangeSide; lowPrint: bigint; highPrint: bigint; maxPayoutBase: bigint; maxStakeBase: bigint }
-  /** Permissionless: anyone may settle a round whose question the hub has answered. */
+  /** PD-2: one signed RedStone spot for the Window's ticker (`verifySpot` payload), fetched just before the send. */
+  | { kind: "range-open"; marketId: MarketId; asset: string; side: RangeSide; lowPrint: bigint; highPrint: bigint; maxPayoutBase: bigint; maxStakeBase: bigint; spotProof: `0x${string}` }
+  /** Permissionless: anyone may settle a round once the engine has answered its Window. */
   | { kind: "range-settle"; roundId: bigint; marketId: MarketId }
-  /** Permissionless: refunds a round the hub never answered, after the grace. */
+  /** Permissionless: refunds a round the engine never answered, after the grace (`MustSettle` once it has). */
   | { kind: "range-void-stale"; roundId: bigint }
   /** Permissionless: the payout only ever goes to the round's owner. */
   | { kind: "range-claim"; roundId: bigint }
+  /** P12: collect a payout the owner's receive policy held as owed. */
+  | { kind: "range-claim-owed" }
   | { kind: "range-supply"; amountBase: bigint }
   | { kind: "range-withdraw"; shares: bigint };
 

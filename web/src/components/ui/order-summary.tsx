@@ -23,16 +23,16 @@ export interface OrderSummaryProps {
   className?: string;
 }
 
-const TONE = { accent: "text-accent", profit: "text-profit", muted: "text-ink-muted" } as const;
+const TONE = { accent: "text-accent", profit: "text-profit", muted: "text-ink-secondary" } as const;
 
 function Row({ row, strong = false }: { row: SummaryRow; strong?: boolean }) {
   return (
     <div className="flex items-start justify-between gap-4">
       <dt className={cn("min-w-0", strong ? "type-body-strong text-ink" : "type-caption text-ink-secondary")}>
         {row.label}
-        {row.note ? <span className="block type-caption text-ink-muted">{row.note}</span> : null}
+        {row.note ? <span className="block type-caption text-ink-secondary">{row.note}</span> : null}
       </dt>
-      <dd className={cn("numbers shrink-0 text-right", strong ? "type-data-lg" : "type-data", row.tone && row.value !== null ? TONE[row.tone] : row.value === null ? "text-ink-muted" : "text-ink")}>{row.value ?? "—"}</dd>
+      <dd className={cn("numbers shrink-0 text-right", strong ? "type-data-lg" : "type-data", row.tone && row.value !== null ? TONE[row.tone] : row.value === null ? "text-ink-secondary" : "text-ink")}>{row.value ?? "—"}</dd>
     </div>
   );
 }

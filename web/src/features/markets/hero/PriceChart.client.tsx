@@ -21,12 +21,15 @@ export interface PriceChartProps {
   className?: string;
   /** The hero's full chart takes the readout and the scrub; the ticket's mini chart is a picture. */
   interactive?: boolean;
+  /** The band the Range ticket is composing on this Window (S10b, E.1): its two edges drawn as dashed price lines. */
+  band?: { lowE8: bigint; highE8: bigint } | null;
 }
 
 interface Built {
   chart: IChartApi;
   series: ISeriesApi<"Line">;
   priceLine: IPriceLine | null;
+  bandLines: IPriceLine[];
   lastTime: number;
   count: number;
 }
@@ -58,7 +61,7 @@ function build(container: HTMLDivElement, interactive: boolean): Built {
     handleScale: false,
   });
   const series = chart.addSeries(LineSeries, { color: cssVar(container, "--color-ink"), lineWidth: 2, priceLineVisible: false, lastValueVisible: true, priceFormat: { type: "price", precision: 2, minMove: 0.01 } });
-  return { chart, series, priceLine: null, lastTime: 0, count: 0 };
+  return { chart, series, priceLine: null, bandLines: [], lastTime: 0, count: 0 };
 }
 
 function includeInAutoscale(series: ISeriesApi<"Line">, price: number): void {
@@ -73,7 +76,7 @@ function includeInAutoscale(series: ISeriesApi<"Line">, price: number): void {
 
 const timeText = (sec: number) => new Date(sec * 1000).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
 
-export function PriceChartClient({ points, openingRaw, className, interactive = false }: PriceChartProps) {
+export function PriceChartClient({ points, openingRaw, className, interactive = false, band = null }: PriceChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const builtRef = useRef<Built | null>(null);
   const pointsRef = useRef(points);
@@ -119,6 +122,24 @@ export function PriceChartClient({ points, openingRaw, className, interactive = 
     includeInAutoscale(built.series, price);
     built.priceLine = built.series.createPriceLine({ price, color: cssVar(container, "--color-ink-secondary"), lineWidth: 1, lineStyle: LineStyle.Solid, axisLabelVisible: true, title: HERO.openingPrint });
   }, [openingRaw]);
+
+  // The Range band: two dashed edges in the accent, replaced as the ticket moves them, removed when it leaves Range.
+  const bandLow = band?.lowE8 ?? null;
+  const bandHigh = band?.highE8 ?? null;
+  useEffect(() => {
+    const built = builtRef.current;
+    const container = containerRef.current;
+    if (!built || !container) return;
+    for (const line of built.bandLines) built.series.removePriceLine(line);
+    built.bandLines = [];
+    if (bandLow === null || bandHigh === null) return;
+    const color = cssVar(container, "--color-accent");
+    for (const [raw, title] of [[bandLow, HERO.bandLow], [bandHigh, HERO.bandHigh]] as const) {
+      const price = toChartValue(raw);
+      includeInAutoscale(built.series, price);
+      built.bandLines.push(built.series.createPriceLine({ price, color, lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title }));
+    }
+  }, [bandLow, bandHigh]);
 
   const moveTo = (idx: number | null) => {
     const built = builtRef.current;

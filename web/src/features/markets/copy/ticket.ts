@@ -81,6 +81,7 @@ export const TICKET_PENDING = {
   modeLabel: "Bet type",
   modeDirection: "Up / Down",
   modeRange: "Range",
+  modeBoost: "Boost",
   rangePending: "Range bets settle against the RangeReserve contract, which is not deployed yet. Up / Down is live.",
   leverageLabel: "Leverage",
   leveragePending: (multiple: string) => `${multiple} needs the prefunded reserve that backs leveraged payouts. It is not deployed yet, so every bet here is 1×.`,

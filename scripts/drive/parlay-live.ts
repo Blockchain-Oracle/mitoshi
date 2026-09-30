@@ -107,6 +107,14 @@ async function setup() {
   if (((await reserve("liquid")) as bigint) < 500n * ONE) {
     ok(castBatch([approve(RESERVE, 1_000n * ONE), { to: RESERVE, data: enc(parlayReserveAbi, "supply", [1_000n * ONE]) }], { signer: house.signer, rpc: RPC }), "house supply 1,000 to the parlay reserve (self-paid)");
   }
+  // The other two reserves the gate opens against get the same house capital (self-paid; `supply` is never sponsored).
+  const LIQ = [{ type: "function", name: "liquid", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] }] as const;
+  const SUP = [{ type: "function", name: "supply", stateMutability: "nonpayable", inputs: [{ type: "uint256", name: "amount" }], outputs: [{ type: "uint256" }] }] as const;
+  for (const [area, name] of [["range", "RangeReserve"], ["leverage", "LeverageReserve"]] as const) {
+    const at = getAddress(d["42431"]![area]!.contracts[name]!.address);
+    if (((await client.readContract({ address: at, abi: LIQ, functionName: "liquid" })) as bigint) >= 500n * ONE) continue;
+    ok(castBatch([approve(at, 1_000n * ONE), { to: at, data: enc(SUP, "supply", [1_000n * ONE]) }], { signer: house.signer, rpc: RPC }), `house supply 1,000 to the ${area} reserve (self-paid)`);
+  }
   if (((await vault("liquid")) as bigint) < 150n * ONE) {
     ok(castBatch([approve(VAULT, 300n * ONE), { to: VAULT, data: enc(marketMakerVaultAbi, "supply", [300n * ONE]) }], { signer: supplier.signer, rpc: RPC }), "supplier supply 300 to the S8 maker vault (self-paid)");
   }

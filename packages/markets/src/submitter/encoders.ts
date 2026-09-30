@@ -10,6 +10,8 @@ import { TEMPO, UTILITIES } from "@cwf/clients";
 import type { Call } from "../tx/batch";
 import { encodeEngineIntent } from "./engine-encoders";
 import { encodeParlayIntent } from "../parlay/encoders";
+import { encodeRangeIntent } from "../range/encoders";
+import { encodeLeverageIntent } from "../leverage/encoders";
 import { encodeVaultIntent } from "../vault/calls";
 
 /** The relay area a call set belongs to; the relay policy for that area decides sponsorship. */
@@ -54,7 +56,7 @@ function encodeNoop(intent: TxIntent): EncodeResult | null {
   return { ok: true, value: { area: "noop", calls: [{ to: UTILITIES.multicall3, data }], sponsored: true, summary: "sponsored no-op" } };
 }
 
-export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeNoop, encodeEngineIntent, encodeVaultIntent, encodeParlayIntent];
+export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeNoop, encodeEngineIntent, encodeVaultIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent];
 
 /** The first encoder that claims the intent; an unclaimed intent's area is not deployed on this chain yet. */
 export async function encodeIntent(intent: TxIntent, ctx: EncodeContext, encoders: readonly IntentEncoder[] = DEFAULT_ENCODERS): Promise<EncodeResult> {

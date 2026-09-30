@@ -56,6 +56,10 @@ export interface LeverageParams {
   maxWindowFrontedBase: bigint;
   maxOpenPositions: number;
   minTimeLeftSec: number;
+  /** PD-2a (D-174): the knock-out and the at-birth walks count orders rested at least max(Series, this). */
+  minRestSec: number;
+  /** PD-2b (D-174): an entry refuses when its price is more than this above the fair-value model, per whole unit. */
+  fairSlackRaw: bigint;
 }
 
 /** Where the reserve lives on one chain — regenerated from `contracts/deployments` (AD-10). */
@@ -111,13 +115,16 @@ export interface LeverageMark {
 /** Reserve writes: every one journals, simulates, sends and books through the same lane shape as a vault write. */
 export type LeverageIntent =
   /** Stake-first: the reserve sizes the boost at execution; `minQuantityRaw` is the owner's guard against a moved book. */
-  | { kind: "leverage-open"; marketId: MarketId; side: Side; stakeBase: bigint; leverageBps: number; minQuantityRaw: bigint }
+  /** PD-2: one signed RedStone spot for the Window's ticker (`verifySpot` payload), fetched just before the send. */
+  | { kind: "leverage-open"; marketId: MarketId; side: Side; stakeBase: bigint; leverageBps: number; minQuantityRaw: bigint; spotProof: `0x${string}` }
   /** The owner's cash-out at the book's bids; `minProceedsBase` is their own slippage guard. */
   | { kind: "leverage-close"; positionId: bigint; marketId: MarketId; minProceedsBase: bigint }
-  /** Permissionless once the mark is under the line: sells at the bids, the reserve repaid first. */
-  | { kind: "leverage-knock-out"; positionId: bigint; marketId: MarketId }
+  /** Permissionless once the mark is under the line over rested depth and the model agrees (D-174): sells at the bids. */
+  | { kind: "leverage-knock-out"; positionId: bigint; marketId: MarketId; spotProof: `0x${string}` }
   /** Permissionless: settles a position whose Window the venue resolved or voided. */
   | { kind: "leverage-settle"; positionId: bigint; marketId: MarketId }
+  /** P12: collect a payout the owner's receive policy held as owed. */
+  | { kind: "leverage-claim-owed" }
   | { kind: "leverage-supply"; amountBase: bigint }
   | { kind: "leverage-withdraw"; shares: bigint };
 
