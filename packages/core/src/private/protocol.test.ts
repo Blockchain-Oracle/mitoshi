@@ -14,13 +14,14 @@ const INPUT = {
   stakeText: "10.00",
   symbol: "tUSDC",
   issuedAtMs: 1_788_400_000_000,
+  commitment: `0x${"cc".repeat(32)}`,
 };
 
 describe("privateOpenMessage", () => {
   it("names the actual bet, in a fixed order the desk rebuilds byte for byte", () => {
     expect(privateOpenMessage(INPUT)).toBe(
       [
-        "Masayume — private bet",
+        "Mitoshi — private bet",
         "",
         "Side: UP",
         "Stake: 10.00 tUSDC",
@@ -28,6 +29,7 @@ describe("privateOpenMessage", () => {
         `Market: 0x${"11".repeat(32)}`,
         "Desk: 0x4356f421bfaf8bfeef5188c3a511ad79a5947c67 on chain 50312",
         "Wallet: 0xd357a1b7f6e1c2d3e4f5061728394a5b6c7d9358",
+        `Keys: 0x${"cc".repeat(32)}`,
         "Issued: 2026-09-03T01:46:40.000Z",
         "",
         "Signing lets the desk place this one bet from your private balance. It moves no funds by itself and costs nothing. Kept separate from your wallet, so it is harder to link back to you — not anonymous.",
@@ -38,6 +40,7 @@ describe("privateOpenMessage", () => {
   it("changes with every field that changes the bet", () => {
     const base = privateOpenMessage(INPUT);
     expect(privateOpenMessage({ ...INPUT, side: "down" })).not.toBe(base);
+    expect(privateOpenMessage({ ...INPUT, commitment: `0x${"ce".repeat(32)}` })).not.toBe(base);
     expect(privateOpenMessage({ ...INPUT, stakeText: "10.01" })).not.toBe(base);
     expect(privateOpenMessage({ ...INPUT, issuedAtMs: INPUT.issuedAtMs + 1 })).not.toBe(base);
     expect(privateOpenMessage({ ...INPUT, chainId: 1 })).not.toBe(base);
@@ -64,7 +67,7 @@ describe("the wire schemas", () => {
   });
 
   it("accepts the open request the browser sends", () => {
-    const parsed = privateOpenRequestSchema.safeParse({ owner: INPUT.owner, marketId: INPUT.marketId, side: "up", stakeBase: "10000000", minQuantityRaw: "15000000", issuedAtMs: INPUT.issuedAtMs, signature: "0xab" });
+    const parsed = privateOpenRequestSchema.safeParse({ owner: INPUT.owner, marketId: INPUT.marketId, side: "up", stakeBase: "10000000", minQuantityRaw: "15000000", issuedAtMs: INPUT.issuedAtMs, signature: "0xab", secret: `0x${"dd".repeat(32)}` });
     expect(parsed.success).toBe(true);
   });
 });

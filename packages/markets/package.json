@@ -24,6 +24,7 @@
     "./parlay": "./src/parlay/index.ts",
     "./range": "./src/range/index.ts",
     "./leverage": "./src/leverage/index.ts",
+    "./private": "./src/private/index.ts",
     "./stream-ticket": "./src/server/stream-ticket.ts",
     "./drive": "./src/testing/wallet-mode.ts"
   },

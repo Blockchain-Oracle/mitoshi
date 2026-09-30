@@ -23,17 +23,19 @@ export interface PrivateOpenMessageInput {
   stakeText: string;
   symbol: string;
   issuedAtMs: number;
+  /** `keccak256(secret)`: the browser's 32-byte secret the bet's keys derive from (C.2.4 — P-256 signatures are randomised). */
+  commitment: string;
 }
 
 /**
  * The exact text the wallet signs to authorise one private bet — the reference's `openAuthMessage`,
  * built to be READ, not just verified: the prompt names the actual bet ("UP, 10.00 pathUSD on BTC 5m")
  * rather than a hash. The browser and the desk build it from the same fields; any drift refuses loudly.
- * The signature is also the desk's secret seed for the bet's three keys, so it never leaves the two of them.
+ * The committed secret (not the signature — P-256 signatures are randomised) seeds the bet's three keys.
  */
 export function privateOpenMessage(input: PrivateOpenMessageInput): string {
   return [
-    "Masayume — private bet",
+    "Mitoshi — private bet",
     "",
     `Side: ${input.side.toUpperCase()}`,
     `Stake: ${input.stakeText} ${input.symbol}`,
@@ -41,6 +43,7 @@ export function privateOpenMessage(input: PrivateOpenMessageInput): string {
     `Market: ${input.marketId}`,
     `Desk: ${input.contract.toLowerCase()} on chain ${input.chainId}`,
     `Wallet: ${input.owner.toLowerCase()}`,
+    `Keys: ${input.commitment.toLowerCase()}`,
     `Issued: ${new Date(input.issuedAtMs).toISOString()}`,
     "",
     `Signing lets the desk place this one bet from your private balance. It moves no funds by itself and costs nothing. ${PRIVATE_HONESTY}`,
@@ -79,6 +82,8 @@ export const privateOpenRequestSchema = z.object({
   minQuantityRaw: decimalString,
   issuedAtMs: z.number().int().positive(),
   signature: signatureSchema,
+  /** The 32-byte secret the signed text commits to (`Keys: keccak256(secret)`); the desk derives the slot's keys from it. */
+  secret: bytes32Schema,
 });
 export type PrivateOpenRequest = z.infer<typeof privateOpenRequestSchema>;
 
@@ -113,5 +118,5 @@ export const privateTicketSchema = z.object({
 });
 
 /** The backup file: plain JSON on purpose — it has to survive a lost laptop, a new device, and this app going away. */
-export const PRIVATE_BACKUP_KIND = "masayume.private.claims";
+export const PRIVATE_BACKUP_KIND = "mitoshi.private.claims";
 export const PRIVATE_BACKUP_VERSION = 1;
