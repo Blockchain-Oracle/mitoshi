@@ -63,6 +63,10 @@
   admits only packages stamped exactly T, so the roller now skips the two Windows per 24/7 lane touching it (D-185).
   Other boundaries: 09:30:00 ET was short on the plain feed twice in the laptop archive (09-15 AMZN/MSFT, 09-16 GOOGL,
   2 signers), never in the ops archive — sporadic, left listed.
+- **F-S3-13 (S3 fix 2, false stale).** halt-watch recorded every feed `redstone-stale` at once twice (09-29 14:45Z,
+  09-30 10:01Z) when ops' own RedStone fetch failed under host load; now such a pass is `unread`, the board holds and
+  `/health` says why (D-186). The gate's halt-replay MISMATCH was `/halts/log` sorting ids as text; in id order the log
+  replays exactly.
 
 ## Handoff
 

@@ -6,7 +6,7 @@
  * `BTC`) and a stock's 24/7 feed under `<T>-24` (`TSLA---24_7`). Consumers: the seed maker, halt-watch (package ages),
  * `/prices/latest`, the stream's `prices` / `symbol:<T>` topics and `price_ticks` (30-day retention).
  */
-import { REDSTONE_TICKERS, TICKERS, type TickerSymbol } from "@cwf/core";
+import { REDSTONE_STALE_SEC, REDSTONE_TICKERS, TICKERS, type TickerSymbol } from "@cwf/core";
 import { latestMedian } from "@cwf/markets/ops";
 import { errorText } from "../runtime/env";
 import { registerHeartbeat } from "../runtime/heartbeat";
@@ -33,6 +33,8 @@ export interface SpotFeed {
   at(symbol: SpotSymbol, sec: number, windowSec: number): SpotQuote | null;
   subscribe(listener: (quote: SpotQuote) => void): () => void;
   symbols(): SpotSymbol[];
+  /** Wall time (unix s) of the last RedStone `latest` read that answered with feeds; null before the first. */
+  lastReadSec(): number | null;
 }
 
 export interface SpotFeedHandle extends SpotFeed {
@@ -62,6 +64,7 @@ export function createSpotFeed(input: { sources: RedstoneSources; log: (why: str
   const beat = registerHeartbeat("spot-feed", false, input.everyMs ?? SPOT_EVERY_MS);
   const feeds = spotFeeds();
   let timer: NodeJS.Timeout | null = null;
+  let lastReadSec: number | null = null;
 
   const emit = (q: SpotQuote) => {
     const list = history.get(q.symbol) ?? [];
@@ -78,12 +81,19 @@ export function createSpotFeed(input: { sources: RedstoneSources; log: (why: str
     try {
       const { text } = await fetchRedstoneLatest(input.sources.gateways);
       let seen = 0;
+      let newestSec = 0;
       for (const { symbol, feed } of feeds) {
         const m = latestMedian(text, feed, input.sources.signers);
         if (!m) continue;
         seen++;
+        newestSec = Math.max(newestSec, m.publishTimeSec);
         emit({ symbol, priceE8: m.priceE8, publishTimeSec: m.publishTimeSec, signers: m.signers, source: "redstone" });
       }
+      const nowSec = Math.floor(Date.now() / 1000);
+      if (seen === 0) throw new Error("redstone latest carried none of our feeds");
+      // Every feed old at once is a stale answer (or our clock), not RedStone stopping each feed: a failed read (D-186).
+      if (nowSec - newestSec > REDSTONE_STALE_SEC) throw new Error(`redstone latest is stale: its newest package is ${nowSec - newestSec} s old`);
+      lastReadSec = nowSec;
       beat.lastOkMs = Date.now();
       beat.failures = 0;
       beat.lastWhy = `redstone latest: ${seen}/${feeds.length} feeds`;
@@ -118,6 +128,7 @@ export function createSpotFeed(input: { sources: RedstoneSources; log: (why: str
       return () => listeners.delete(listener);
     },
     symbols: () => [...history.keys()],
+    lastReadSec: () => lastReadSec,
     start() {
       if (timer) return;
       void poll();

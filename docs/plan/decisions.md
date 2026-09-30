@@ -1252,6 +1252,29 @@ and Sun 04:00 ET prove complete (archive, 2026-10-03/04), it narrows to session 
 
 **Why:** no lane is removed; only the Windows RedStone cannot print are.
 
+### D-186 — a pass that can't read RedStone is a fetch failure in health, never a halt; halt-replay replays in write order (finding + decision, S3 fix 2, 2026-09-30)
+
+**Finding:** halt-watch confirmed every RedStone-sourced asset `redstone-stale` at once — the 19 watched in hours on
+2026-09-29 14:45:46–14:48:08Z, the 10 always-on ones on 09-30 10:00:46–10:04:11Z — while RedStone was current (the
+archive holds 5/5 at those boundaries): the ops box's own `latest` fetch was failing under host load (agari-box OOM,
+`context/ops/agari-box-oom-*`), so every feed's newest package aged past 60 s together, and users would have seen
+"Signed price stale" for ≈ 3 min. The gate's `halt-replay --from 1790665440` MISMATCH was a second defect: `/halts/log`
+selected `id::text` and ordered `by id`, which Postgres resolves to the text output column (1, 10 … 19, 2, 20 …), so
+rows 40, 50 … 80 were replayed after rows 4 … 8. In id order the recorded log replays exactly (82 passes, OK).
+**Decision:** (1) the spot feed counts a read only when RedStone answers with our feeds and a package younger than 60 s;
+a failed or all-stale answer is a spot-feed failure (heartbeat, `/health` failing after 3 in a row) and leaves
+`lastReadSec()` unchanged. (2) halt-watch observes a RedStone-sourced asset `unread` when its view is older than 30 s
+(three spot reads) or when every watched RedStone feed (≥ 2) is stale at once; an unread pass moves neither a confirmed
+reason nor a pending streak (Alpaca's exchange halt still applies), is logged to `halt_log` for replay, and `/health`
+shows it (`halt-watch` detail `redstone`: readable, why, last read age, since, passes). One feed stalling while others
+are current still halts after two passes. A RedStone-wide stop also reads as unread: the roller keeps listing and a
+Window that can't print voids with funds returned; no label claims a stale market we did not observe. (3) `/halts/log`
+orders by the numeric id and `halt-replay` sorts rows numerically. What it compares: each recorded pass's observed
+reasons fed back through `stepHalts` must give the recorded board, so it proves the board follows the rules from what
+halt-watch saw; it does not re-read RedStone, and it flags the pre-fix all-at-once passes.
+
+**Why:** a label must describe the market, not our own fetch.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

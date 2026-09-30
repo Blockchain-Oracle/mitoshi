@@ -69,11 +69,12 @@ export function startHttp(input: HttpInputs): Promise<{ close(): Promise<void> }
         return void Promise.all([reader.countsThrough(chainId, through), reader.marketDigest(chainId, through), reader.status()]).then(([counts, markets, status]) => json(200, { chainId, through, counts, markets, cursors: status.cursors }), fail);
       }
       case "/halts/log": {
-        // halt-watch's recorded observations (public source-health data) for `scripts/drive/halt-replay.ts`.
+        // halt-watch's recorded observations (public source-health data) for `scripts/drive/halt-replay.ts`, in write order:
+        // `order by id` would sort the `id::text` output column as text (1, 10 … 19, 2, 20 …) and break the replay (D-186).
         const from = Number(url.searchParams.get("from") ?? 0);
         const to = Number(url.searchParams.get("to") ?? Math.floor(Date.now() / 1000));
         if (!input.sql) return json(503, { error: "no database" });
-        return void input.sql`select id::text, pass_sec::text, in_hours, observed, confirmed, fixture from halt_log where pass_sec between ${from} and ${to} order by id limit 20000`.then((rows) => json(200, { rows }), fail);
+        return void input.sql`select id::text, pass_sec::text, in_hours, observed, confirmed, fixture from halt_log where pass_sec between ${from} and ${to} order by halt_log.id limit 20000`.then((rows) => json(200, { rows }), fail);
       }
       case "/v1/stream":
         return void serveStream(req, res, { bus: input.bus, snapshot: input.snapshot, secret: input.env.streamTicketSecret, cors }).catch((e) => input.log(`stream: ${errorText(e)}`));
