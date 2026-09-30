@@ -15,20 +15,21 @@ import { Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { MotionScope } from "@/components/motion-scope";
-import { TxCta, useTxLifecycle } from "@/components/tx";
+import { TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { nowMs as clockNow } from "@/lib/clock";
 import { DEFAULT_EXPIRY, DEFAULT_PRESET, expiryOptions, PRESETS, presetOptions, tapsPerDay, termsOf, usd, leftNowBase, type ExpiryId, type PresetId } from "./caps";
 import { SESSION } from "./copy";
-import { useSessionActions, useSessionView } from "./context";
+import { useRootSubmitter, useSessionActions, useSessionView } from "./context";
 
 const hoursText = (id: ExpiryId) => SESSION.expiries[id];
 const until = (sec: number) => new Date(sec * 1000).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
 
-export function ArmTradingBalance({ onDone }: { onDone?: () => void }) {
+/** `onDone` is kept for the arm-slot contract; the host's own way on (Go to Markets, Close) is the skip. */
+export function ArmTradingBalance(_props: { onDone?: () => void }) {
   const view = useSessionView();
   const actions = useSessionActions();
-  const tx = useTxLifecycle();
+  const tx = useTxLifecycle({ submitter: useRootSubmitter() });
   const sheet = useBalanceSheet(view.owner);
   const [preset, setPreset] = useState<PresetId>(DEFAULT_PRESET);
   const [expiry, setExpiry] = useState<ExpiryId>(DEFAULT_EXPIRY);
@@ -58,8 +59,8 @@ export function ArmTradingBalance({ onDone }: { onDone?: () => void }) {
     const outcome = await tx.run({ kind: "vault-deposit-and-grant", amountBase, terms });
     if (!outcome) return setProblem(SESSION.failed);
     if (outcome.status === "confirmed") {
+      // The armed face replaces this one in place (the host's own way on — Go to Markets, Close — stays the user's).
       await actions.refresh();
-      onDone?.();
       return;
     }
     if (outcome.status === "refused") setProblem(outcome.diagnosis.kind === "user-rejected" ? SESSION.aborted : SESSION.failed);
@@ -73,6 +74,7 @@ export function ArmTradingBalance({ onDone }: { onDone?: () => void }) {
       <p className="type-caption text-ink-secondary">{SESSION.facts(usd(p.perTapBase), usd(p.dailyBase), hoursText(expiry))}</p>
       <p className="type-caption text-ink-secondary">{SESSION.fees}</p>
       {problem ? <p role="alert" className="type-caption text-ink">{problem}</p> : null}
+      {tx.state.kind === "failed" ? <TxFailureCard state={tx.state} onRetry={() => void arm()} /> : null}
       <TxCta state={state} action={problem ? SESSION.retry : SESSION.cta(budget)} signer="passkey" onConfirm={() => void arm()} />
       <p className="type-caption text-ink-secondary">{SESSION.skip}</p>
       <details className="modal-disclosure">

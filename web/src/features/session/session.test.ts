@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { simulateCaps, utcDayOf, type Address, type MarketsSubmitter, type OrderOutcome, type VaultGrant, type VaultSnapshot } from "@cwf/core";
+import { simulateCaps, utcDayOf, type Address, type OrderOutcome, type VaultGrant, type VaultSnapshot } from "@cwf/core";
 import type { MarketsSubmitter as Submitter } from "@cwf/markets";
 import { routeTaps } from "@/providers/wallet/tap-session";
 import { fallbackOf, PRESETS, termsOf, topUpBase } from "./caps";
@@ -66,7 +66,7 @@ describe("routing taps (S7): vault-grant calls to the session key, everything el
   it("sends a vault-grant call as the session key and books its cost; a wallet call goes to the wallet key", async () => {
     const calls: string[] = [];
     const booked: bigint[] = [];
-    const routed: MarketsSubmitter = routeTaps(stub("walletKey", calls), stub("user", calls), stub("sessionKey", calls), (c) => booked.push(c));
+    const routed: Submitter = routeTaps(stub("walletKey", calls), stub("user", calls), stub("sessionKey", calls), (c) => booked.push(c));
     await routed.submitOrder({ route: { kind: "vault-grant", grantId: 7n }, wallet: OWNER } as never);
     await routed.submitOrder({ route: { kind: "wallet" }, wallet: OWNER } as never);
     await routed.submitTx({ kind: "noop" });

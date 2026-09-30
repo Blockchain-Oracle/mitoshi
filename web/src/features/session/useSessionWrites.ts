@@ -9,7 +9,7 @@ import { useCallback, useState } from "react";
 import { useTxLifecycle } from "@/components/tx";
 import { nowMs as clockNow } from "@/lib/clock";
 import { topUpBase } from "./caps";
-import { useSessionActions, useSessionView } from "./context";
+import { useRootSubmitter, useSessionActions, useSessionView } from "./context";
 
 export type SessionWrite = "add" | "extend" | "rekey" | "revoke" | null;
 
@@ -22,7 +22,7 @@ export const extendedExpirySec = (grant: VaultGrant, extraSec: number, now = now
 export function useSessionWrites() {
   const view = useSessionView();
   const actions = useSessionActions();
-  const tx = useTxLifecycle();
+  const tx = useTxLifecycle({ submitter: useRootSubmitter() });
   const [busy, setBusy] = useState<SessionWrite>(null);
 
   const run = useCallback(

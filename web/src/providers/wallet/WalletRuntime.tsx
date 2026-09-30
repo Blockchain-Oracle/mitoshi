@@ -132,7 +132,18 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
   // (wagmi's connector client is a bare viem Client; the send module needs `sendTransactionSync`).
   const onTempo = tempo !== null && !wrongChain;
   const { data: bare } = useConnectorClient({ chainId: TEMPO_CHAIN.id, query: { enabled: onTempo } });
-  const client = useMemo(() => bare?.extend(walletActions), [bare]);
+  const passkey = tempo?.kind === "passkey";
+  const client = useMemo(() => {
+    const c = bare?.extend(walletActions);
+    // The passkey connector is configured with our relay as its fee payer, and the accounts SDK then marks EVERY
+    // transaction for sponsorship unless the request says `feePayer: false` — so a write the relay never pays for
+    // (capital intake: a vault deposit, D-020) could not be sent at all (F-S7-10). A write that does not ask for a fee
+    // payer says so explicitly; sponsored writes are unchanged (`feePayer: true`).
+    if (!c || !passkey) return c;
+    return c.extend((base) => ({
+      sendTransactionSync: ((args: Record<string, unknown>) => base.sendTransactionSync({ ...args, feePayer: args.feePayer ?? false } as never)) as typeof base.sendTransactionSync,
+    }));
+  }, [bare, passkey]);
   const session = useSubmitterSessionState({
     walletClient: onTempo ? (client as never) : undefined,
     caps: tempo?.caps ?? INJECTED_CAPS,

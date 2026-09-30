@@ -1,13 +1,15 @@
 "use client";
 /**
- * Tap-trading's contexts, split and memoised (E.5 S7 "memoised split context — no per-second re-render"): the view
- * changes only when a read or the key changes (never on a clock tick — time is read by the leaf that shows it), the
- * actions are stable callbacks, and the session key's submitter is its own value. Light: no chain code here, so the
- * ticket and the header can read it in the first load; the runtime that fills it is a lazy island (§3.1).
+ * Tap-trading's state, split and memoised (E.5 S7 "memoised split context — no per-second re-render"): the view changes
+ * only when a read or the key changes (never on a clock tick — time is read by the leaf that shows it), the actions are
+ * stable callbacks, and the session key's and the owner's submitters are their own slices. It is a tiny external store
+ * rather than React context because the sign-up ceremony's modal (the D37 arm slot) is rendered by the lazy wallet
+ * runtime outside the app tree; every reader subscribes to exactly its slice (`useSyncExternalStore`). Light: no chain
+ * code here; the runtime that fills it is a lazy island (§3.1).
  */
-import type { Address, TxOutcome } from "@cwf/core";
+import type { Address } from "@cwf/core";
 import type { MarketsSubmitter } from "@cwf/markets";
-import { createContext, useContext } from "react";
+import { useSyncExternalStore } from "react";
 import { OFF, type SessionView } from "./view";
 
 export interface SessionActions {
@@ -30,12 +32,31 @@ export const NO_ACTIONS: SessionActions = {
   bookTap: () => undefined,
 };
 
-export const SessionViewContext = createContext<SessionView>(OFF);
-export const SessionActionsContext = createContext<SessionActions>(NO_ACTIONS);
-export const SessionSubmitterContext = createContext<MarketsSubmitter | null>(null);
+interface SessionState {
+  view: SessionView;
+  actions: SessionActions;
+  /** The session key's submitter while armed. */
+  sessionKey: MarketsSubmitter | null;
+  /** The owner's own (passkey) submitter, for root writes from anywhere — the ceremony's modal included. */
+  root: MarketsSubmitter | null;
+}
 
-export const useSessionView = () => useContext(SessionViewContext);
-export const useSessionActions = () => useContext(SessionActionsContext);
-export const useSessionSubmitter = () => useContext(SessionSubmitterContext);
+let state: SessionState = { view: OFF, actions: NO_ACTIONS, sessionKey: null, root: null };
+const listeners = new Set<() => void>();
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+};
 
-export type RootOutcome = TxOutcome | null;
+/** The provider's one writer: replaces the slices that changed and tells only their readers. */
+export function publishSession(next: Partial<SessionState>): void {
+  const merged = { ...state, ...next };
+  if ((Object.keys(next) as (keyof SessionState)[]).every((k) => merged[k] === state[k])) return;
+  state = merged;
+  for (const listener of listeners) listener();
+}
+
+export const useSessionView = () => useSyncExternalStore(subscribe, () => state.view, () => OFF);
+export const useSessionActions = () => useSyncExternalStore(subscribe, () => state.actions, () => NO_ACTIONS);
+export const useSessionSubmitter = () => useSyncExternalStore(subscribe, () => state.sessionKey, () => null);
+export const useRootSubmitter = () => useSyncExternalStore(subscribe, () => state.root, () => null);

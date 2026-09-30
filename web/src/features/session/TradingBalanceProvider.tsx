@@ -9,14 +9,14 @@
 import type { Address, Reading, VaultSnapshot } from "@cwf/core";
 import { keys, useSubmitter } from "@cwf/markets/react";
 import dynamic from "next/dynamic";
-import { useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
 import { nowMs as clockNow } from "@/lib/clock";
 import { useWalletSession } from "@/lib/wallet-session";
 import { useDataLayer } from "@/providers/data/context";
 import { routeTaps, TapSubmitterContext } from "@/providers/wallet/tap-session";
-import { NO_ACTIONS, SessionActionsContext, SessionSubmitterContext, SessionViewContext, type SessionActions } from "./context";
+import { NO_ACTIONS, publishSession, type SessionActions } from "./context";
 import type { RuntimeState } from "./TradingBalanceRuntime";
-import { deriveStatus, type SessionView } from "./view";
+import { deriveStatus, OFF, type SessionView } from "./view";
 
 const TradingBalanceRuntime = dynamic(() => import("./TradingBalanceRuntime"), { ssr: false });
 
@@ -46,7 +46,9 @@ export function TradingBalanceProvider({ children }: { children: ReactNode }) {
 
   const view = useMemo<SessionView>(() => {
     const snapshot = owner && passkey ? runtime.snapshot : undefined;
-    const status = deriveStatus({ owner, passkey, snapshot, keyLoaded: runtime.keyLoaded, keyAddress: runtime.keyAddress, nowSec: Math.floor(clockNow() / 1000) });
+    // The clock is read only once a snapshot exists (never during a prerender, where there is no account).
+    const nowSec = snapshot ? Math.floor(clockNow() / 1000) : 0;
+    const status = deriveStatus({ owner, passkey, snapshot, keyLoaded: runtime.keyLoaded, keyAddress: runtime.keyAddress, nowSec });
     return {
       status,
       owner,
@@ -85,14 +87,14 @@ export function TradingBalanceProvider({ children }: { children: ReactNode }) {
   const armed = view.status === "armed" && runtime.submitter !== null;
   const routed = useMemo(() => (armed && user && runtime.submitter ? routeTaps(outerTap, user, runtime.submitter, bookTap) : outerTap), [armed, user, runtime.submitter, outerTap, bookTap]);
 
+  // One writer into the store every tap-trading surface reads (also the ceremony's modal, outside this tree).
+  useLayoutEffect(() => publishSession({ view, actions, sessionKey: armed ? runtime.submitter : null, root: user }), [view, actions, armed, runtime.submitter, user]);
+  useEffect(() => () => publishSession({ view: OFF, actions: NO_ACTIONS, sessionKey: null, root: null }), []);
+
   return (
-    <SessionViewContext.Provider value={view}>
-      <SessionActionsContext.Provider value={actions}>
-        <SessionSubmitterContext.Provider value={armed ? runtime.submitter : null}>
-          <TapSubmitterContext.Provider value={routed}>{children}</TapSubmitterContext.Provider>
-          {client && owner && passkey ? <TradingBalanceRuntime owner={owner} publish={setRuntime} /> : null}
-        </SessionSubmitterContext.Provider>
-      </SessionActionsContext.Provider>
-    </SessionViewContext.Provider>
+    <>
+      <TapSubmitterContext.Provider value={routed}>{children}</TapSubmitterContext.Provider>
+      {client && owner && passkey ? <TradingBalanceRuntime owner={owner} publish={setRuntime} /> : null}
+    </>
   );
 }
