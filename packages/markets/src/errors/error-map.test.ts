@@ -41,3 +41,12 @@ describe("diagnose — node refusals carried in viem's details (X20)", () => {
     expect(diagnose(rpc("Execution reverted with reason: Account keychain error: CallNotAllowed(CallNotAllowed).")).kind).toBe("call-not-allowed");
   });
 });
+
+describe("diagnose — the public RPC's per-IP limit (S7 gate)", () => {
+  it("names a refused raw send as rate-limited (nothing sent, retry shortly), not as an unknown failure", () => {
+    const rpc = (details: string) => new BaseError("An error occurred.", { details });
+    expect(diagnose(rpc("Request exceeds defined limit.")).kind).toBe("rate-limited");
+    expect(diagnose(rpc("rate limited, try again in 118ms")).kind).toBe("rate-limited");
+    expect(diagnose(rpc("Request exceeds defined limit.")).retryable).toBe(true);
+  });
+});

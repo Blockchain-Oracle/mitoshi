@@ -74,7 +74,7 @@ async function openTicket(p: Page, assets: string[], side: "UP" | "DOWN"): Promi
 
 /** One tap from the Trading Balance: stake → the CTA → the Call card; counts WebAuthn assertions (must be 0). */
 async function tap(p: Page, assets: string[], side: "UP" | "DOWN", stake: string) {
-  for (let pass = 0; pass < 2; pass++) {
+  for (let pass = 0; pass < 4; pass++) {
     const ticket = await openTicket(p, assets, side);
     if (!ticket) continue;
     await ticket.getByLabel("Bet amount in dollars").fill(stake);
@@ -92,10 +92,13 @@ async function tap(p: Page, assets: string[], side: "UP" | "DOWN", stake: string
     await p.screenshot({ path: join(out, `after-click-${t0}.png`) }).catch(() => undefined);
     const placed = ticket.getByText(/Call placed/);
     const other = ticket.getByRole("status").filter({ hasText: /Nothing filled|book moved|Waiting for the chain/ }).or(ticket.getByRole("alert"));
-    await expect(placed.or(other).first()).toBeVisible({ timeout: 120_000 }).catch(() => undefined);
+    // A Window that closes for entries mid-tap moves the ticket to the next one and resets it (S4 behaviour); the
+    // absorbed tap then answers nothing here — wait it out and tap again on the next Window.
+    await expect(placed.or(other).first()).toBeVisible({ timeout: 45_000 }).catch(() => undefined);
     const ms = Date.now() - t0;
     if (!(await placed.isVisible())) {
       await p.screenshot({ path: join(out, `not-placed-${Date.now()}.png`) }).catch(() => undefined);
+      if (await ticket.getByText(/moved you to the next/).count()) await p.waitForTimeout(20_000);
       const cta2 = (await ticket.innerText().catch(() => "")).split("\n").filter((l) => /Buy|Confirm|Signing|Sent|Waiting|Budget|cap|Try/.test(l)).slice(0, 4).join(" | ");
       const tech = ticket.getByText("Technical details");
       if (await tech.count()) await tech.first().click().catch(() => undefined);
@@ -249,9 +252,13 @@ try {
     const tech = page.getByText("Technical details");
     if (await tech.count()) await tech.first().click().catch(() => undefined);
     const all = await page.locator("body").innerText();
-    note({ step: "revoke-first-attempt", text: all.slice(all.indexOf("Something went sideways"), all.indexOf("Something went sideways") + 90), technical: all.slice(all.indexOf("Details:"), all.indexOf("Details:") + 80) });
-    await page.getByRole("button", { name: "Stop", exact: true }).first().click();
-    stopped = await expect(page.getByText(/No live grants/)).toBeVisible({ timeout: 90_000 }).then(() => true, () => false);
+    note({ step: "revoke-first-attempt", text: all.slice(all.indexOf("The network is busy"), all.indexOf("The network is busy") + 120), technical: all.slice(all.indexOf("Details:"), all.indexOf("Details:") + 80) });
+    for (let attempt = 2; attempt <= 4 && !stopped; attempt++) {
+      await page.waitForTimeout(15_000);
+      await page.getByRole("button", { name: "Stop", exact: true }).first().click();
+      stopped = await expect(page.getByText(/No live grants/)).toBeVisible({ timeout: 90_000 }).then(() => true, () => false);
+      note({ step: "revoke-attempt", attempt, stopped });
+    }
   }
   await page.screenshot({ path: join(out, `settings-stopped-${width}.png`), fullPage: true });
   note({ step: "revoke", stopped, prompts: assertions - before, history: await page.getByText(/Stopped grants/).count() });
