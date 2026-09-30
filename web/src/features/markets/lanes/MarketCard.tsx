@@ -15,14 +15,13 @@ import { useClockValue } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { HERO_HEAD, LANE_CARD, MARKETS } from "../copy";
 import { useChartSeries } from "../data/useChartSeries";
-import { useTopOfBook } from "../data/useTopOfBook";
+import type { TopOfBook } from "../data/useTopOfBook";
 import { AssetDisc } from "../hero/AssetDisc";
 import { usd0 } from "../units";
 import { CardSpark } from "./CardSpark";
 
-const CARD_BOOK_POLL_MS = 15_000;
-
-interface MarketCardProps {
+/** The book's top arrives as plain values from the lane page's one subscription (D-184). */
+interface MarketCardProps extends TopOfBook {
   market: EventMarket;
   selected: boolean;
   onSelect: (marketId: MarketId, side?: Side) => void;
@@ -30,12 +29,11 @@ interface MarketCardProps {
 
 const price = (value: number | null, hydrating: boolean) => (value === null ? (hydrating ? LANE_CARD.priceLoading : HERO_HEAD.noPrice) : `${value}¢`);
 
-export function MarketCard({ market, selected, onSelect }: MarketCardProps) {
+export function MarketCard({ market, selected, onSelect, upCents, downCents, hydrating }: MarketCardProps) {
   // The phase, not the second: the card re-renders when its Window changes phase; its countdown ticks as its own leaf (D-181).
   const p = useClockValue((nowMs) => (nowMs > 0 ? phase(market, nowMs) : null));
   const reduce = useReducedMotion() === true;
   const series = useChartSeries(market);
-  const { upCents, downCents, hydrating } = useTopOfBook(market, CARD_BOOK_POLL_MS);
   const openingRaw = market.openingPriceRaw;
   const points = series?.ok ? series.value.points : [];
   const latestRaw = series?.ok ? (series.value.latest?.valueRaw ?? null) : null;

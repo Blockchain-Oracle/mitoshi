@@ -1292,6 +1292,26 @@ countdown and price keep updating the DOM. MotionScope loads `domAnimation` from
 **Why:** the lab counts every long task for the page's whole life; cards nobody can see should not be drawn every
 second.
 
+### D-184 — a list renders its data in the background, from one subscription (finding + decision, S4-perf, 2026-09-30)
+
+**Finding** (4× CPU trace on the lab host, after D-181/D-183): /markets' longest task is the lane list's arrival — one
+~250 ms synchronous render of the hero, the lane page and ~50 word-board cards (TanStack's store updates render
+synchronously), repeated on every lanes refetch (poll or stream event); and each card subscribed to its own book, so a
+batch of book answers re-rendered every card in one blocking pass.
+**Decision:** `useLanesState` reads the lane list through `useDeferredValue` (React 19): the page first re-renders
+with the previous list (children bail out), then renders the new one in the background, time-sliced and
+interruptible — the same content, drawn in pieces. The lane page and the word board read their Windows' books through
+one `useQueries` subscription each (`useBookDepths` / `useTopsOfBook`): every Window keeps its own depth query — the
+same key, read, poll and stream invalidation as a card's `useBookDepth` (`bookDepthQuery`; `book-depths.test.ts` shows
+one fetch answers both with the same value) — and the list takes the answers at once, deferred, handing each card its
+top as plain values so only cards whose numbers moved re-render. Real books on Moderato (the gate maker's quotes, this
+build vs the deployed trunk at the same moment): 50 of 51 word cards equal, the one difference a poll caught between
+answers, once in each direction.
+The signed-out Portfolio is the connect card alone: the signed-in ledger (Trading Balance controls, tx components,
+charts) is its own island chosen by `PortfolioPage` (D-183), one chunk hop as before for a signed-in visitor.
+
+**Why:** the lab counts the page's long tasks; the same pixels arrive in slices instead of one blocking pass.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

@@ -9,12 +9,13 @@ import type { EventMarket, LaneSet, MarketId, Side } from "@cwf/core";
 import { groupByHorizon } from "@cwf/core";
 import { PLAIN_WORDS, wordQuestion } from "@cwf/core/copy";
 import { formatWallClock } from "@cwf/core/units";
+import { useDeferredValue } from "react";
 import { Countdown } from "@/components/data";
 import { useClockValue } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { MARKETS, WORD_BOARD } from "../copy";
 import { laneTabKey, laneTabLabel } from "../data/lane-view";
-import { useTopOfBook } from "../data/useTopOfBook";
+import { useTopsOfBook, type TopOfBook } from "../data/useTopOfBook";
 import { AssetDisc } from "../hero/AssetDisc";
 import { PRICE_SCALE } from "../units";
 
@@ -27,8 +28,9 @@ function impliedUpShare(up: number | null, down: number | null): number | null {
   return Math.round((up / (up + down)) * 100);
 }
 
-function WordCard({ market, onSelect }: { market: EventMarket; onSelect: Select }) {
-  const { upCents, downCents, hydrating } = useTopOfBook(market, WORD_BOOK_POLL_MS);
+// The card takes its book's top as plain values from the board's one subscription (D-184), so a batch of answers
+// re-renders only the cards whose numbers moved.
+function WordCard({ market, upCents, downCents, hydrating, onSelect }: { market: EventMarket; onSelect: Select } & TopOfBook) {
   const closeClock = formatWallClock(market.expirySec * 1000);
   const question = wordQuestion({ ...market, marketId: String(market.marketId) }, PRICE_SCALE, closeClock);
   const share = impliedUpShare(upCents, downCents);
@@ -65,6 +67,11 @@ export function WordMarketBoard({ laneSet, onSelect }: { laneSet: LaneSet | null
   // countdown reads the shared clock as its own leaf.
   const minuteMs = useClockValue((nowMs) => Math.floor(nowMs / 60_000) * 60_000);
   const groups = groupByHorizon(laneSet, minuteMs);
+  // Every card's book through one subscription, rendered in the background (D-184): a batch of book answers re-renders
+  // the board once, time-sliced, instead of ~50 cards in one blocking pass.
+  const shown = groups.flatMap((group) => group.markets);
+  const tops = useDeferredValue(useTopsOfBook(shown, WORD_BOOK_POLL_MS));
+  const topById = new Map(shown.map((m, i) => [m.marketId, tops[i]] as const));
   if (laneSet === null || minuteMs === 0) return <div className="words-empty">{WORD_BOARD.reading}</div>;
   if (groups.length === 0) return <div className="words-empty">{WORD_BOARD.between}</div>;
   return (
@@ -77,7 +84,7 @@ export function WordMarketBoard({ laneSet, onSelect }: { laneSet: LaneSet | null
           </div>
           <div className="words-grid">
             {group.markets.map((m) => (
-              <WordCard key={m.marketId} market={m} onSelect={onSelect} />
+              <WordCard key={m.marketId} market={m} upCents={topById.get(m.marketId)?.upCents ?? null} downCents={topById.get(m.marketId)?.downCents ?? null} hydrating={topById.get(m.marketId)?.hydrating ?? true} onSelect={onSelect} />
             ))}
           </div>
         </section>
