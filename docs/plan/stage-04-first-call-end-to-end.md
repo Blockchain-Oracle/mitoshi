@@ -88,6 +88,10 @@
   under an indefinitely restored wagmi connection, and every non-passkey wallet (no route issues the social session).
   Cookies and the proxy were fine. Session 30 days; the page follows the wallet's own engine events on the chain when
   the stream carries no `user:` topic (D-151).
+- **F-S4-21** (integrator, deployed cc65634) Tap → Call card p50 **942 ms** over 12 deployed taps with 0 prompts: the
+  §2.4 tap target is met on the testnet (D-143 closed on the deployed site; the owner's phone run confirms it). Stream
+  ticket 6/6 deployed. Lab vitals still fail on the GitHub host: `/` CLS 0.085, `/markets` and `/markets/[id]` TBT
+  ≈ 1.56–1.59 s and CLS 0.052, `/portfolio` TBT 431 ms; script transfer 640–745 KB on the app routes (acceptance/S4.md).
 - **F-S4-21** (S4-fix) Lab on the deployed site (`lighthouse.yml`): `/` CLS 0.085, `/markets` TBT 2,360 ms,
   `/markets/[id]` 5,042, `/portfolio` 580. Tempo Wallet's iframe (+ Stripe ×3, a recorder) mounted at wagmi setup on
   every app page; the wallet runtime evaluated for every visitor; every lane card re-read its Window (a second 230 KB
