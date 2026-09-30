@@ -68,7 +68,8 @@ jobs:
         run: |
           set -eu
           pnpm install --frozen-lockfile --filter "@cwf/web..."
-          pnpm --filter @cwf/web build
+          # next/font fetches the Google faces at build time; one retry covers a transient fetch failure.
+          pnpm --filter @cwf/web build || { echo "::warning::build failed once; retrying"; pnpm --filter @cwf/web build; }
           git log -1 --format='Built %h %s' | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Serve ref
         if: env.REF != ''
