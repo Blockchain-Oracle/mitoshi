@@ -130,17 +130,13 @@ async function quoteWindow(w: Live) {
 }
 
 /** The vault's closed Windows settle for anyone (pull + one full redeem into the vault), freeing its Window slots. */
-async function settleVault(quoted: Set<string>) {
-  for (const m of [...quoted]) {
+async function settleVault() {
+  for (const m of (await vault("openWindows")) as Hex[]) {
     const r = await lens("marketRef", [m]);
     if (r.status !== 4 && r.status !== 5) continue;
-    quoted.delete(m);
-    const book = await vault("bookOf", [m]);
-    if (book.settled || book.quoteCount === 0) continue;
-    const res = await Promise.resolve()
+    await Promise.resolve()
       .then(() => ok(castSend([VAULT, enc(marketMakerVaultAbi, "settle", [m])], { signer: supplier.signer, rpc: RPC }), "anyone vault.settle (a closed Window)", { m, status: r.status }))
       .catch((e) => log("vault settle error", { m, why: String(e).slice(0, 200) }));
-    void res;
   }
 }
 
@@ -149,7 +145,7 @@ async function makerLoop() {
   const quoted = new Set<string>();
   for (;;) {
     try {
-      await settleVault(quoted);
+      await settleVault();
       for (const w of await liveCrypto(150)) {
         if (quoted.has(w.m)) continue;
         quoted.add(w.m);
@@ -181,9 +177,31 @@ async function pickLegs(): Promise<{ legs: { marketId: Hex; outcomeIdx: number }
 
 async function openOnce() {
   await setup();
-  const { legs, spots, fair } = await pickLegs();
   const payout = 20n * ONE;
-  const [stake, combined, prices] = (await client.readContract({ address: RESERVE, abi: READ_ABI, functionName: "previewOpen", args: [legs, payout] })) as unknown as [bigint, bigint, bigint[]];
+  const slack = ((await reserve("params")) as readonly unknown[])[9] as bigint;
+  let chosen: { legs: { marketId: Hex; outcomeIdx: number }[]; spots: Hex[]; fair: bigint[]; preview: [bigint, bigint, bigint[]] } | null = null;
+  for (let i = 0; i < 12 && !chosen; i++) {
+    const picked = await pickLegs();
+    // The four side pairs: the first the book prices at or above the model on both legs (what the reserve accepts).
+    for (const sides of [[0, 0], [0, 1], [1, 0], [1, 1]]) {
+      const legs = picked.legs.map((l, k) => ({ ...l, outcomeIdx: sides[k]! }));
+      const pv = await client.readContract({ address: RESERVE, abi: READ_ABI, functionName: "previewOpen", args: [legs, payout] }).then((r) => r as unknown as [bigint, bigint, bigint[]], (e) => {
+        log("not priceable yet (the vault's quotes rest 20 s first, D-109)", { reason: reason(e) });
+        return null;
+      });
+      if (!pv) break;
+      const fairSide = legs.map((l, k) => (l.outcomeIdx === 0 ? picked.fair[k]! : 1_000_000n - picked.fair[k]!));
+      if (pv[2].every((price, k) => price + slack >= fairSide[k]!)) {
+        chosen = { legs, spots: picked.spots, fair: fairSide, preview: pv };
+        break;
+      }
+      log("side pair under the model, trying another", { sides, prices: pv[2], fairSide });
+    }
+    if (!chosen) await sleep(10_000);
+  }
+  if (!chosen) throw new Error("no priceable pair within two minutes");
+  const { legs, spots, fair } = chosen;
+  const [stake, combined, prices] = chosen.preview;
   log("previewOpen (the chain's price over rested depth)", { legs, stake, combined, prices, fairUpE6: fair });
   const maxStake = stake + stake / 100n;
   const data = enc(parlayReserveAbi, "openParlay", [legs, payout, maxStake, spots]);

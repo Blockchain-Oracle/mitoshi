@@ -103,7 +103,7 @@ export function ParlaySlip({ reserve, windows }: { reserve: ParlayReserveState; 
         title={PARLAY.slip.summary}
         rows={[
           { label: PARLAY.slip.rows.legs, value: quote ? formatProbPct(quote.combinedProbRaw, ONE) : null, ...(quote?.correlated ? { note: PARLAY.slip.rows.correlated } : {}) },
-          { label: PARLAY.slip.rows.multiplier, value: quote ? formatMultiplier(quote.multiplierMilli) : null, tone: "accent" },
+          { label: PARLAY.slip.rows.multiplier, value: quote ? formatMultiplier(quote.multiplierMilli) : null },
           { label: PARLAY.slip.rows.stake, value: quote ? usd(quote.stakeBase) : null },
           { label: PARLAY.slip.rows.house, value: houseBase !== null ? usd(houseBase) : null, tone: "muted" },
         ]}
@@ -126,7 +126,7 @@ export function ParlaySlip({ reserve, windows }: { reserve: ParlayReserveState; 
       {outcome?.status === "confirmed" ? (
         <div role="status" className="ps-receipt">
           <p className="type-body-strong text-ink">{PARLAY.outcome.placed(outcome.parlayId?.toString() ?? "", slip.legs.length, usd(outcome.stakeBase), quote ? usd(quote.maxPayoutBase) : "")}</p>
-          <a href={txUrl(outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="type-caption text-accent underline">{PARLAY.outcome.viewReceipt}</a>
+          <a href={txUrl(outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption text-cream-ink underline">{PARLAY.outcome.viewReceipt}</a>
           <button type="button" className="min-h-touch type-body-strong text-ink underline" onClick={() => { writes.reset(); slip.clear(); }}>{PARLAY.outcome.another}</button>
         </div>
       ) : null}

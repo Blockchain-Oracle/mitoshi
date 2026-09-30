@@ -8,8 +8,10 @@
 .pl-hero { margin-bottom: 40px; }
 .pl-eyebrow {
   display: block; margin-bottom: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.22em;
-  text-transform: uppercase; color: color-mix(in srgb, var(--vermilion) 80%, transparent);
+  text-transform: uppercase; color: var(--gray-400);
 }
+/* AA on the ground in both themes: the shared section description's gray-500 is 4.29:1 here (axe). */
+.pl-page .section-desc { color: var(--gray-400); }
 /* Named `pl-block`, not `pl-section`: `pl-` is Tailwind's padding-left namespace (Masayume's finding). */
 .pl-block { margin-bottom: 40px; }
 .pl-block-body { margin-top: 24px; }
@@ -50,7 +52,7 @@
 .pw-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--white); }
 .pw-cadence { font-family: var(--font-mono); font-size: 12px; font-weight: 400; color: var(--gray-400); }
 .pw-meta { font-family: var(--font-mono); font-size: 12px; color: var(--gray-400); font-variant-numeric: tabular-nums; }
-.pw-held { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--vermilion); }
+.pw-held { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); }
 .pw-sides { display: flex; gap: 6px; flex-shrink: 0; }
 .pw-side {
   display: inline-flex; align-items: center; gap: 4px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--ms-hairline);
@@ -73,7 +75,7 @@
 .ps-head-title { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-display); font-weight: 700; font-size: 16px; color: var(--white); }
 .ps-count {
   display: grid; place-items: center; min-width: 44px; height: 28px; padding: 0 10px; border-radius: 9999px;
-  background: color-mix(in srgb, var(--vermilion) 14%, transparent); color: var(--vermilion); font-size: 12px;
+  border: 1px solid color-mix(in srgb, var(--vermilion) 55%, transparent); color: var(--white); font-size: 12px;
 }
 .ps { display: flex; flex-direction: column; gap: 16px; }
 .ps-empty { font-size: 13px; color: var(--gray-400); }
@@ -94,15 +96,18 @@
   display: inline-flex; align-items: center; gap: 4px; padding: 0 12px; border-radius: 9999px; font-size: 13px;
   font-family: var(--font-display); font-weight: 700; color: var(--gray-400);
 }
-.ps-side--up.is-on { background: color-mix(in srgb, var(--up) 16%, transparent); color: var(--up); }
-.ps-side--down.is-on { background: color-mix(in srgb, var(--down) 16%, transparent); color: var(--down); }
+.ps-side.is-on { color: var(--white); }
+.ps-side--up.is-on { background: color-mix(in srgb, var(--up) 16%, transparent); }
+.ps-side--down.is-on { background: color-mix(in srgb, var(--down) 16%, transparent); }
+.ps-side--up svg { color: var(--up); }
+.ps-side--down svg { color: var(--down); }
 .ps-side:focus-visible { outline: 2px solid var(--vermilion); outline-offset: 1px; }
 .ps-note { font-size: 12px; color: var(--gray-400); }
-.ps-note--warn { color: var(--color-warning); }
+.ps-note--warn { color: var(--white); border-left: 2px solid var(--color-warning); padding-left: 8px; }
 .ps-amount { display: flex; flex-direction: column; gap: 8px; }
 .ps-receipt { display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 12px; background: var(--color-cream); }
 .ps-receipt p, .ps-receipt button { color: var(--color-cream-ink); }
-.ps-foot { font-size: 12px; line-height: 1.5; color: var(--gray-500); }
+.ps-foot { font-size: 12px; line-height: 1.5; color: var(--gray-400); }
 @media (max-width: 23.75rem) { .ps-leg-controls { grid-template-columns: 1fr; } }
 
 /* the 24524 chip, appended to <body> for the flight */
@@ -133,14 +138,14 @@
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px;
   border-radius: 9999px; background: var(--ms-surface-2); color: var(--gray-300);
 }
-.pl-pill--won { background: color-mix(in srgb, var(--vermilion) 15%, transparent); color: var(--vermilion); }
+.pl-pill--won { background: color-mix(in srgb, var(--vermilion) 15%, transparent); color: var(--white); }
 .pl-pill--dead { color: var(--gray-400); }
 .pl-card-right { text-align: right; }
-.pl-card-x { font-family: var(--font-display); font-weight: 800; font-size: 18px; line-height: 1; color: var(--vermilion); }
-.pl-card-sub { font-size: 11px; color: var(--gray-400); margin-top: 4px; }
+.pl-card-x { font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1; color: var(--vermilion); }
+.pl-card-sub { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
 .pl-cleg { display: flex; align-items: center; gap: 12px; min-height: 44px; border-top: 1px solid var(--ms-hairline); }
 .pl-cleg:first-child { border-top: 0; }
-.pl-cleg-idx { font-size: 11px; color: var(--gray-500); width: 18px; flex-shrink: 0; }
+.pl-cleg-idx { font-size: 11px; color: var(--gray-400); width: 18px; flex-shrink: 0; }
 .pl-cleg-dot {
   width: 22px; height: 22px; border-radius: 9999px; display: grid; place-items: center; flex-shrink: 0;
   border: 1px solid var(--ms-border-strong); color: var(--gray-400);
@@ -154,12 +159,12 @@
 .pl-cleg-side--down { color: var(--down); }
 .pl-cleg-line { color: var(--gray-400); }
 .pl-cleg-state { font-size: 12px; flex-shrink: 0; display: inline-flex; align-items: center; }
-.pl-cleg-state--won { color: var(--vermilion); }
+.pl-cleg-state--won { color: var(--white); }
 .pl-cleg-state--lost { color: var(--gray-400); }
 .pl-cleg-state--pending { color: var(--gray-300); }
 .pl-settle {
   font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; padding: 0 14px;
-  border-radius: 9999px; border: 1px solid color-mix(in srgb, var(--vermilion) 55%, transparent); color: var(--vermilion);
+  border-radius: 9999px; border: 1px solid color-mix(in srgb, var(--vermilion) 55%, transparent); color: var(--white);
 }
 .pl-settle:hover:not(:disabled) { background: color-mix(in srgb, var(--vermilion) 10%, transparent); }
 .pl-settle:disabled { opacity: 0.6; cursor: not-allowed; }

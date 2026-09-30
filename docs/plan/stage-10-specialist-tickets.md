@@ -64,9 +64,25 @@
 
 ## Handoff
 
-- 10a.1 done: parlay contracts + suites + `script/products/DeployParlayReserve.s.sol` (launch params, D-165). Next:
-  10a.2 deploy on Moderato with `deployer-tickets` + `relay/policies/parlay.ts`; 10a.3 `packages/markets/src/parlay`
-  + the `/parlay` slip (E.4); 10a.4 the live gate against the S8 maker vault's depth.
-- 10.0 done (guard live at `0xaCA8…47B1`). Next: 10a Parlay / 10b Range — `src/products/{parlay,range}/*`,
-  `RangeMath.sol` + `RangeMath.t.sol` and `packages/core/src/range/` landed with 10.0 (FairValue reuses Φ, √, Φ⁻¹);
-  the parlay files are in progress in the worktree (uncommitted).
+Branch `stage/S10-tickets` (merged with trunk 58d1277 at 71fbdb3). Commits: `b721516` 10a.1 parlay contracts + suites ·
+`9a26db6` 10a.2 ParlayReserve live + `deployer-tickets` + parlay relay policy (D-166) · `e226eb2` 10a.3 `/parlay` slip,
+`packages/markets/src/parlay`, `/api/prices/redstone-payload` (D-167) · `570e148` drive fix · `f2bc39e` merge of
+`slice/S10bcd-contracts` (10b.1–2 range, 10c.1–2 leverage + leverage-keeper, 10d.1–2 private: contracts, suites,
+Moderato deploys, relay policies, D-172…D-177) · `71fbdb3` trunk merge.
+
+- **Live on Moderato** (all by `deployer-tickets` 0x5DFC…41E8): ParlayReserve `0x57baD0Beb33C8f8557Dc7430F90Ba166587f3939`,
+  RangeReserve `0xf19342733Bb451503f3806b0d44CC58A3D345052`, LeverageReserve `0x1c623E5539351C01FB193f962C7502cCcFd9206D`,
+  PrivateDesk `0x0c894dB5057E18F5C9E09C72faAc0b6098613CD8` (desk = the `desk` role). Only the three crypto 5m lanes have
+  a σ + spot source in the guard, so they are the lanes these products can price today.
+- **10a Parlay:** browser gate passed once at 390 px (`web/e2e/parlay.ts`: sign-up, two legs, hold to place — 1 prompt,
+  sponsored — settle in close order, the ticket lost honestly); the drive `scripts/drive/parlay-live.ts` keeps the S8
+  maker vault quoting 20 a side on every crypto 5m Window (`maker`), and has `open`, `settle`, `refusals` modes.
+  Remaining for 10a.4: a won ticket claimed, the refusals recorded, the UX gate at 320/390/768/1440 both themes.
+- **Next, in order (sequential, one worktree):** 10b Range + Moonshot web (`packages/markets/src/range`, `/games/range`,
+  `/games/moonshot`, band on the hero chart, 31347 + 32784 selector), 10c Boost web (29217 slider in the ticket, Boost
+  positions, keeper), 10d Private desk service + web (server-side claims per account, committed secret, 27122 desk),
+  10e `/surface` (31861 + 30538) + `/api/prices/datastreams-report`, then the stage gate (each product opened on
+  Moderato against S8 depth with a real RedStone spot, thin books refused by name, UX gate on every ticket).
+- Local gate setup: containers `s10-pg` (:55441) and `s10-redis` (:56391), a gitignored `web/.env.local` (relay fee
+  payer from `~/.config/cwf/testnet/relay-fee-payer.json`, `NEXT_PUBLIC_INDEX_URL` → a CORS pass-through to
+  `testnet.mitoshi.xyz/api/index` on :3199), `next dev -p 3110`.
