@@ -1,4 +1,5 @@
-// Ported from Masayume 68f7a09:packages/core/src/vault/types.ts
+// Ported from Masayume 68f7a09:packages/core/src/vault/types.ts — `VaultCaps.market` added (D-091), the forwarder
+// dropped from `VaultDeployment` (D-003: our fee relay replaces the ERC-2771 forwarder).
 import type { MarketId } from "../types/market";
 import type { Address } from "../types/primitives";
 
@@ -13,12 +14,16 @@ export function grantKindOf(index: number): GrantKind {
   return kind;
 }
 
-/** Every cap in collateral base units except the position count; `maxPriceRaw` 0 means no limit. */
+/**
+ * Every cap in collateral base units except the position count; `maxPriceRaw` 0 means no limit. `market` scopes the
+ * grant to one Window (D-091, `Caps.market`); null — the contract's zero — means any Window.
+ */
 export interface VaultCaps {
   maxStakePerTradeBase: bigint;
   maxDailySpendBase: bigint;
   maxOpenPositions: number;
   maxPriceRaw: bigint;
+  market: MarketId | null;
 }
 
 export interface VaultGrant {
@@ -48,7 +53,6 @@ export interface VaultAccount {
 export interface VaultDeployment {
   chainId: number;
   eventVault: Address;
-  forwarder: Address;
   collateral: Address;
   /** The block the vault was deployed in: where its event history starts. */
   fromBlock: bigint;
