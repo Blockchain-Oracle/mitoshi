@@ -4,24 +4,36 @@
 /**
  * recount (S3 gate "recount == index"): walks every engine log from the deploy block to a pinned head with its own
  * `eth_getLogs` + ABI decode (nothing read from the database), replays Windows, prints, fills, sets and redemptions,
- * and diffs the totals and every Window's digest against ops `GET /index/recount?through=<head>`. Exit 1 on any mismatch.
+ * and diffs the totals and every Window's digest against ops `GET /index/recount?through=<head>`. The index also holds
+ * the EventVault's logs (S7, D-161), so those are walked and counted by name too. Log windows follow what the RPC
+ * accepts: it refuses more than 20,000 results and names a range that fits (D-187). Exit 1 on any mismatch.
  *
  *   pnpm --dir scripts exec tsx drive/recount.ts [--ops https://ops.testnet.mitoshi.xyz] [--rpc https://rpc.moderato.tempo.xyz]
  */
-import { createPublicClient, decodeEventLog, getAddress, http, type Hex } from "viem";
+import { createPublicClient, decodeEventLog, getAddress, type Address, type Hex, type Log } from "viem";
 import { tempoModerato } from "viem/chains";
 import { deployments } from "@cwf/clients";
 import { eventsEngineAbi } from "@cwf/clients/abis/EventsEngine";
+import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
+import { tempoHttp, vaultVenueOf, walkLogWindows } from "@cwf/markets/ops";
 
 const arg = (name: string, fallback: string) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1]! : fallback);
 const OPS = arg("--ops", "https://ops.testnet.mitoshi.xyz").replace(/\/$/, "");
 const RPC = arg("--rpc", process.env.TEMPO_RPC_HTTP_URL ?? "https://rpc.moderato.tempo.xyz");
-const WINDOW = 50_000n;
 
-const client = createPublicClient({ chain: tempoModerato, transport: http(RPC) });
+const client = createPublicClient({ chain: tempoModerato, transport: tempoHttp(RPC) });
 const frag = (deployments as unknown as Record<string, Record<string, { contracts: Record<string, { address: string; deployBlock: number }> }>>)["42431"]!.engine!;
 const ENGINE = getAddress(frag.contracts.EventsEngine!.address);
 const DEPLOY = BigInt(frag.contracts.EventsEngine!.deployBlock);
+const VAULT = vaultVenueOf(tempoModerato.id);
+
+/** Every log of `address` in `[from, to]`, in windows the RPC accepts. */
+async function logsOf(address: Address, from: bigint, to: bigint, onLogs: (logs: Log[]) => void): Promise<void> {
+  const stats = await walkLogWindows(from, to, async (a, b) => onLogs(await client.getLogs({ address, fromBlock: a, toBlock: b })), {
+    onRefused: (a, b, why) => console.log(`  ${address.slice(0, 10)} ${a}-${b} refused: ${why.split("\n")[0]}`),
+  });
+  console.log(`  ${address.slice(0, 10)} blocks ${from}-${to}: ${stats.windows} windows, ${stats.refused} refused`);
+}
 
 type Market = { state: string; winner: number | null; openE8: string; closeE8: string; fills: number; fillLots: bigint; prints: number; redeemed: bigint; yes: Map<string, bigint>; no: Map<string, bigint> };
 const markets = new Map<string, Market>();
@@ -41,9 +53,23 @@ async function main() {
   let redeemedBase = 0n;
   let opened = 0;
   let logs = 0;
-  for (let from = DEPLOY; from <= head; from += WINDOW) {
-    const to = from + WINDOW - 1n > head ? head : from + WINDOW - 1n;
-    for (const log of await client.getLogs({ address: ENGINE, fromBlock: from, toBlock: to })) {
+  let vaultLogs = 0;
+  if (VAULT) {
+    await logsOf(VAULT.vault, VAULT.deployBlock, head, (found) => {
+      for (const log of found) {
+        let name: string;
+        try {
+          name = decodeEventLog({ abi: eventVaultAbi, data: log.data, topics: log.topics as [Hex, ...Hex[]] }).eventName;
+        } catch {
+          continue; // the indexer stores only the vault's decodable events
+        }
+        vaultLogs++;
+        byName[name] = (byName[name] ?? 0) + 1;
+      }
+    });
+  }
+  await logsOf(ENGINE, DEPLOY, head, (found) => {
+    for (const log of found) {
       logs++;
       const e = decodeEventLog({ abi: eventsEngineAbi, data: log.data, topics: log.topics as [Hex, ...Hex[]] });
       const a = e.args as Record<string, unknown>;
@@ -96,15 +122,17 @@ async function main() {
           break;
       }
     }
-  }
+  });
   // Wait for the index to hold everything at or below the pinned head.
-  type Served = { counts: Record<string, unknown>; markets: Array<Record<string, unknown>>; cursors: Array<{ block: string }> };
+  type Served = { counts: Record<string, unknown>; markets: Array<Record<string, unknown>>; cursors: Array<{ address?: string; block: string }> };
   let served = null as Served | null;
   for (let i = 0; i < 30; i++) {
     const res = await fetch(`${OPS}/index/recount?through=${head}`, { signal: AbortSignal.timeout(30_000) });
     if (res.ok) {
       served = (await res.json()) as Served;
-      if (served!.cursors?.some((c) => BigInt(c.block) >= head)) break;
+      const at = (a: string | undefined) => served!.cursors?.find((c) => c.address?.toLowerCase() === a?.toLowerCase());
+      // Every source the index follows must have reached the pinned head (engine, and the vault when deployed).
+      if ([ENGINE, VAULT?.vault].filter(Boolean).every((a) => at(a) && BigInt(at(a)!.block) >= head)) break;
     }
     await new Promise((r) => setTimeout(r, 2_000));
   }
@@ -112,7 +140,7 @@ async function main() {
   const c = served.counts;
   const mismatches: string[] = [];
   const eq = (what: string, chain: unknown, index: unknown) => void (String(chain) !== String(index) && mismatches.push(`${what}: chain ${chain} ≠ index ${index}`));
-  eq("events", logs, c.events);
+  eq("events", logs + vaultLogs, c.events);
   eq("fills", fills, c.fills);
   eq("fill lots", fillLots, c.fill_lots);
   eq("windows opened", opened, c.windows_opened);
@@ -147,7 +175,7 @@ async function main() {
       eq(`${id.slice(0, 10)} close print`, w.closeE8, d.close_e8);
     }
   }
-  console.log(`recount through block ${head}: ${logs} logs, ${markets.size} Windows (${opened} opened, ${[...markets.values()].filter((x) => x.state !== "open").length} terminal), ${fills} fills / ${fillLots} lots, ${byName.PrintRecorded ?? 0} prints, ${redemptions} redemptions / ${redeemedBase} base`);
+  console.log(`recount through block ${head}: ${logs} engine logs + ${vaultLogs} vault logs, ${markets.size} Windows (${opened} opened, ${[...markets.values()].filter((x) => x.state !== "open").length} terminal), ${fills} fills / ${fillLots} lots, ${byName.PrintRecorded ?? 0} prints, ${redemptions} redemptions / ${redeemedBase} base`);
   console.log(mismatches.length === 0 ? "recount: OK — the index equals an independent chain replay, total for total and Window for Window" : `recount: MISMATCH\n  - ${mismatches.join("\n  - ")}`);
   process.exitCode = mismatches.length === 0 ? 0 : 1;
 }

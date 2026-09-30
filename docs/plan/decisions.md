@@ -1275,6 +1275,20 @@ halt-watch saw; it does not re-read RedStone, and it flags the pre-fix all-at-on
 
 **Why:** a label must describe the market, not our own fetch.
 
+### D-187 — recount walks logs in windows the RPC accepts and counts every source the index holds (finding + decision, S3 fix 2, 2026-09-30)
+
+**Finding:** the end-of-soak `recount.ts` died on its fixed 50,000-block `eth_getLogs` windows: Moderato refuses a
+window holding more than 20,000 logs with `-32602 "query exceeds max results 20000, retry with the range A-B"`, B being
+the last block that fits (probed 2026-09-30). Since S7's deploy (ops 13:48Z) the index also holds the EventVault's logs
+in `idx_events` (D-161), which the engine-only recount would count as a mismatch, and it waited for any cursor, not
+every one. **Decision:** `walkLogWindows` (`@cwf/markets/ops`) covers a range exactly once, in order: a refused window
+is retried with the range the RPC names (else halved, down to 100 blocks), and every answered window doubles the next up
+to 100,000 — the ops indexer's rule plus the RPC's hint. `recount.ts` walks the engine and the vault through
+`tempoHttp` (D-130), counts the vault's decodable events by name, and waits until every source's cursor has reached its
+pinned head before diffing.
+
+**Why:** the gate's "recount == index" must run to the end against the live chain.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

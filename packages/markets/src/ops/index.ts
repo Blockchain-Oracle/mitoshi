@@ -13,3 +13,5 @@ export * from "../prices/redstone";
 export * from "../prices/attested";
 export * from "../prices/datastreams";
 export { fundAddress, FaucetUnavailableError } from "../faucet/fund";
+export * from "./log-walk";
+export { tempoHttp } from "../rpc-http";
