@@ -1266,11 +1266,14 @@ options and output; `display.test.ts`). Nothing shown changes: the same countdow
 reserve holds). next/font writes each fallback face as `src: local(Arial)`; the lab's Linux host (like Android and
 ChromeOS) has no Arial, so "Inter Fallback" has no face, text renders in the platform sans at its own metrics and
 re-wraps when Inter arrives. On macOS the same page measures no height change at any width (Arial exists).
-**Decision:** `styles/font-fallbacks.css` repeats next/font's fallback rules for Sora, Inter and JetBrains Mono with
-next/font's own overrides and `src` Arial first, then Arial's metric twins (Liberation Sans, Arimo) and Roboto (latin
-average width within 0.2 % of Arial). A superset of next/font's rule: nothing changes where Arial exists.
-`font-fallbacks.test.ts` holds the overrides equal to next/font's computation. The workflow lists the runner's local
-sans faces in the job summary.
+**Decision:** `styles/font-fallbacks.css` repeats next/font's fallback rules for Sora and Inter with next/font's own
+overrides and `src` Arial first, then Arial's metric twins (Liberation Sans, Arimo) and Roboto (latin average width
+within 0.2 % of Arial) — a superset of next/font's rule, so nothing changes where Arial exists. JetBrains Mono (the
+figures) falls back to a monospace face instead of next/font's Arial — Menlo, DejaVu Sans Mono, Liberation Mono,
+Cousine, Droid Sans Mono, Courier New all advance 0.600–0.602 em like it — at 100 % with its own ascent and descent.
+`font-fallbacks.test.ts` holds the sans overrides equal to next/font's computation and the mono ones to JetBrains
+Mono's metrics. The workflow lists the runner's local sans faces (DejaVu, Liberation; no Arial) in the job summary.
+Runner (run 36706089863, fonts only): `/` CLS 0.085 → 0.000.
 
 **Why:** a fallback that only exists on Apple and Windows machines is not a fallback for most phones.
 

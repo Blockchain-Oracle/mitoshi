@@ -16,9 +16,10 @@ const rules = new Map(
   }),
 );
 const pct = (v: string) => Number.parseFloat(v);
+const metrics = require("next/dist/server/capsize-font-metrics.json") as Record<string, { unitsPerEm: number; xWidthAvg: number; ascent: number; descent: number; lineGap: number }>;
 
 describe("font fallbacks (D-182)", () => {
-  for (const family of ["Sora", "Inter", "JetBrains Mono"]) {
+  for (const family of ["Sora", "Inter"]) {
     it(`${family}: next/font's overrides, on Arial and its metric twins`, () => {
       const rule = rules.get(`${family} Fallback`);
       const next = getFallbackFontOverrideMetrics(family);
@@ -33,4 +34,18 @@ describe("font fallbacks (D-182)", () => {
       for (const face of ["Liberation Sans", "Arimo", "Roboto"]) expect(rule!.src).toContain(`local("${face}")`);
     });
   }
+
+  it("JetBrains Mono: a monospace face sized and boxed as JetBrains Mono", () => {
+    const rule = rules.get("JetBrains Mono Fallback")!;
+    const jbm = metrics.jetBrainsMono!;
+    const courier = metrics.courierNew!;
+    // Every candidate advances ~0.600 em (Courier New's class; DejaVu Sans Mono and Menlo 0.602): size-adjust ≈ 100 %.
+    const size = (jbm.xWidthAvg / jbm.unitsPerEm / (courier.xWidthAvg / courier.unitsPerEm)) * 100;
+    expect(Math.abs(pct(rule.size) - size)).toBeLessThan(0.5);
+    expect(pct(rule.ascent)).toBeCloseTo((jbm.ascent / jbm.unitsPerEm) * 100, 2);
+    expect(pct(rule.descent)).toBeCloseTo((-jbm.descent / jbm.unitsPerEm) * 100, 2);
+    expect(pct(rule.lineGap)).toBe(0);
+    for (const face of ["Menlo", "DejaVu Sans Mono", "Liberation Mono", "Droid Sans Mono", "Courier New"]) expect(rule.src).toContain(`local("${face}")`);
+    expect(rule.src).not.toContain("Arial");
+  });
 });

@@ -4,8 +4,8 @@
  * down when Inter and JetBrains Mono load) and the hero chart shifting on /markets. These rules keep next/font's names
  * and overrides and add Arial's metric twins — Liberation Sans (Linux), Arimo (ChromeOS) — and Roboto (Android; latin
  * average width 911/2048 em against Arial's 913), Arial first. A superset of next/font's rule: a browser that picks
- * either one renders what it did before wherever Arial exists. Overrides = next/font's own computation for each face
- * (`font-fallbacks.test.ts` keeps them equal). */
+ * either one renders what it did before wherever Arial exists. Overrides = next/font's own computation for each sans
+ * face (`font-fallbacks.test.ts` keeps them equal). */
 @font-face {
   font-family: "Sora Fallback";
   src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"), local("Arimo"), local("Roboto"), local("Roboto Regular"), local("Roboto-Regular");
@@ -24,11 +24,15 @@
   size-adjust: 107.12%;
 }
 
+/* JetBrains Mono stands in for figures, so its fallback is a monospace face, not next/font's Arial: every candidate
+ * advances 0.600–0.602 em like JetBrains Mono (0.600), so the size stays 100 % and the line box takes JetBrains Mono's
+ * own ascent (1020/1000) and descent (300/1000). Menlo (Apple), DejaVu Sans Mono and Liberation Mono (Linux), Cousine
+ * (ChromeOS), Droid Sans Mono (Android), Courier New (Windows); where none exists, next/font's rule still applies. */
 @font-face {
   font-family: "JetBrains Mono Fallback";
-  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"), local("Arimo"), local("Roboto"), local("Roboto Regular"), local("Roboto-Regular");
-  ascent-override: 75.79%;
-  descent-override: 22.29%;
+  src: local("Menlo"), local("Menlo-Regular"), local("DejaVu Sans Mono"), local("DejaVuSansMono"), local("Liberation Mono"), local("LiberationMono"), local("Cousine"), local("Droid Sans Mono"), local("DroidSansMono"), local("Courier New"), local("CourierNewPSMT");
+  ascent-override: 102%;
+  descent-override: 30%;
   line-gap-override: 0%;
-  size-adjust: 134.59%;
+  size-adjust: 100%;
 }
