@@ -9,7 +9,7 @@ const ONE = 1_000_000n;
 const FEED = 100_000_000n;
 const NOW_SEC = 1_788_400_000;
 const spec: AgentSpec = { preset: "agent", persona: "Follow the trend.", posture: "balanced", cadences: [900] };
-const envelope = { maxStakePerTradeBase: 5n * ONE, maxDailySpendBase: 50n * ONE, maxOpenPositions: 2, maxPriceRaw: 0n };
+const envelope = { maxStakePerTradeBase: 5n * ONE, maxDailySpendBase: 50n * ONE, maxOpenPositions: 2, maxPriceRaw: 0n, market: null };
 const context: AgentContext = {
   asset: "BTC",
   intervalSec: 900,

@@ -56,6 +56,22 @@ export function topicsOf(e: { name: string; market: string | null; data: Record<
     case "WindowOpened":
       out.push("markets");
       break;
+    // EventVault (S7): every event names its owner; a tap and a settlement are activity too.
+    case "Deposited":
+    case "Credited":
+    case "Withdrawn":
+    case "PrivateMoved":
+    case "PrivateCredited":
+    case "PrivateWithdrawn":
+    case "GrantCreated":
+    case "GrantRevoked":
+      add("owner");
+      break;
+    case "Executed":
+    case "Settled":
+      add("owner");
+      out.push("activity");
+      break;
   }
   for (const u of users) out.push(`user:${u}`);
   return out;

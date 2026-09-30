@@ -36,7 +36,7 @@ export function createRelayHandler(config: RelayHandlerConfig) {
   // sender's fill does not wait on an RPC round trip for it (the tap's latency, D-150).
   const seen = new Set<string>();
   const validate = createRelayValidator({
-    engine: { chainId: config.chain.id, feePayer: account.address, policies: config.policies },
+    engine: { chainId: config.chain.id, feePayer: account.address, policies: config.policies, reader: reader as never },
     ledger: config.ledger,
     limits: config.limits,
     getContext: () => relayContext.getStore(),

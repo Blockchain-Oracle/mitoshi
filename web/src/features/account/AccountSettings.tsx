@@ -1,7 +1,7 @@
 "use client";
 // `/settings/account`, the trust surface (D-053) — S1's shell: the account and its owner, every key the chain knows
 // with its live limits and one-step revoke, where Trading Balance grants will appear (S7), linked wallets and the
-// region posture. S4 adds the wallet key, S7 grants, S9/S11/S12b/S16 their keys; S13 completes it.
+// region posture. S4 adds the wallet key, S7 the Trading Balance grants, S9/S11/S12b/S16 their keys; S13 completes it.
 import { useEffect, useState } from "react";
 import type { RegionPosture } from "@cwf/core";
 import { webEnv } from "@/lib/env";
@@ -28,6 +28,8 @@ function KeysLoading() {
   );
 }
 const KeysSection = dynamic(() => import("./KeysSection").then((m) => m.KeysSection), { ssr: false, loading: KeysLoading });
+// The Trading Balance's grants (S7): the same lazy-island rule — its content waits on the chain and the index anyway.
+const GrantsSection = dynamic(() => import("./GrantsSection").then((m) => m.GrantsSection), { ssr: false });
 const card = "flex flex-col gap-2 rounded-lg border border-hairline bg-surface-1 p-4";
 
 export function AccountSettings() {
@@ -68,10 +70,14 @@ export function AccountSettings() {
 
           {dataReady ? <KeysSection account={session.address} network={network} /> : <KeysLoading />}
 
-          <section aria-labelledby="grants-title" className={card}>
-            <h2 id="grants-title" className="type-title text-ink">{P.grants.title}</h2>
-            <p className="type-body text-ink-secondary">{P.grants.pending}</p>
-          </section>
+          {dataReady ? (
+            <GrantsSection account={session.address} network={network} />
+          ) : (
+            <section aria-labelledby="grants-title" className={card} aria-busy="true">
+              <h2 id="grants-title" className="type-title text-ink">{P.grants.title}</h2>
+              <p className="type-body text-ink-secondary">{P.grants.loading}</p>
+            </section>
+          )}
 
           <section aria-labelledby="linked-title" className={card}>
             <h2 id="linked-title" className="type-title text-ink">{P.linked.title}</h2>

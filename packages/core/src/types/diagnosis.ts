@@ -39,6 +39,8 @@ export const DIAGNOSIS_KINDS = [
   "region-restricted",
   "indexer-down",
   "rpc-down",
+  /** The chain endpoint refused a request for this connection's rate (HTTP 429): nothing was sent; try again shortly. */
+  "rate-limited",
   "contract-revert",
   "send-unknown",
   "unknown",
@@ -58,6 +60,8 @@ export interface Diagnosis {
 const RETRYABLE_KINDS: ReadonlySet<DiagnosisKind> = new Set<DiagnosisKind>([
   "indexer-down",
   "rpc-down",
+  /** The chain endpoint refused a request for this connection's rate (HTTP 429): nothing was sent; try again shortly. */
+  "rate-limited",
   "send-unknown",
   "sponsor-refused",
   "user-rejected",

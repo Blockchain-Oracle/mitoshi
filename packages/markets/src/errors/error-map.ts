@@ -57,6 +57,8 @@ const MESSAGE_KINDS: ReadonlyArray<readonly [RegExp, DiagnosisKind]> = [
   [/sponsorship rejected/i, "sponsor-refused"],
   [/unavailable for legal reasons|region restricted/i, "region-restricted"],
   [/insufficient fee token|fee token/i, "fee-token"],
+  // The public RPC's per-IP limit (D-134): a refused request, never an accepted one — the node never saw the write.
+  [/exceeds defined limit|rate limited|too many requests/i, "rate-limited"],
 ];
 
 type Named = { name?: unknown; shortMessage?: unknown; message?: unknown; data?: { errorName?: unknown } };

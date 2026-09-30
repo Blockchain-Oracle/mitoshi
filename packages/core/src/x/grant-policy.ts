@@ -7,7 +7,7 @@ export const X_MONETARY_CEILING = (1n << 128n) - 1n;
 export const X_GRANT = { openWindows: 8, days: 30 } as const;
 
 export function xGrantCaps(): VaultCaps {
-  return { maxStakePerTradeBase: X_MONETARY_CEILING, maxDailySpendBase: X_MONETARY_CEILING, maxOpenPositions: X_GRANT.openWindows, maxPriceRaw: 0n };
+  return { maxStakePerTradeBase: X_MONETARY_CEILING, maxDailySpendBase: X_MONETARY_CEILING, maxOpenPositions: X_GRANT.openWindows, maxPriceRaw: 0n, market: null };
 }
 
 export function isBalanceOnlyXGrant(grant: VaultGrant): boolean {

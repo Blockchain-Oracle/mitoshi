@@ -17,6 +17,7 @@ export * from "./submitter";
 export * from "./tx";
 export * from "./transports";
 export * from "./provider";
+export * from "./vault";
 
 import { createPublicClient, http, type PublicClient } from "viem";
 import type { Network } from "@cwf/core";

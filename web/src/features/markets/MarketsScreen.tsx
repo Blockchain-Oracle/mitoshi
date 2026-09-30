@@ -13,6 +13,7 @@ import SectionHead from "@/components/shell/SectionHead";
 import { useWalletSession } from "@/lib/wallet-session";
 import { SECTIONS } from "./copy";
 import { YourCalls } from "./calls/YourCalls";
+import { MarketsAllowance } from "@/features/session/MarketsAllowance";
 import { tickerMarkets, type LaneTabKey } from "./data/lane-view";
 import { useLanesState } from "./data/useLanesState";
 import { useMarketsSelection } from "./data/useSelection";
@@ -59,6 +60,7 @@ function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
       />
       <div className="markets-main">
         <div className="container">
+          <MarketsAllowance />
           <YourCalls />
           <section className="markets-section flex flex-col gap-4" aria-label={SECTIONS.lanes.title}>
             <SectionHead number={SECTIONS.lanes.index} title={SECTIONS.lanes.title} live />
