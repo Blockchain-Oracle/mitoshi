@@ -2,8 +2,8 @@
  * The wagmi 3 config (plan C.3.1; web-stack §4.4; D-055 wagmi 3 names). Testnet chains: Moderato (pathUSD as the
  * default fee token), Robinhood Chain testnet and Base Sepolia (the two-wallet model); mainnet: Tempo and Robinhood.
  * Connectors: passkeys (`webAuthn` with our `/api/auth` ceremony and `/api/relay` fee payer), Tempo Wallet, EIP-6963
- * injected wallets, and WalletConnect (phones have no injected wallet for bridge-in). `ssr` + cookie storage restore a
- * connection after a reload; the shell renders "signed out" first and restores after hydration (Agari's pattern), so no
+ * injected wallets, and WalletConnect (phones have no injected wallet for bridge-in); Tempo Wallet and WalletConnect are
+ * built on first use (D-152). `ssr` + cookie storage restore a connection after a reload; the shell renders "signed out" first and restores after hydration (Agari's pattern), so no
  * cookie is read on the server and the static shell survives (D-050).
  */
 import { tempoChain, tempoTransport } from "@cwf/markets";
@@ -14,6 +14,8 @@ import { injected, walletConnect } from "wagmi/connectors";
 import { tempoWallet, webAuthn } from "wagmi/tempo";
 import { webEnv } from "@/lib/env";
 import { accessKeyPolicy } from "./access-key";
+import { TEMPO_WALLET_CONNECTOR_ID } from "./connector-kind";
+import { lazyConnector } from "./lazy-connector";
 
 const env = webEnv.markets;
 export const TEMPO_CHAIN = tempoChain(env.network);
@@ -44,9 +46,11 @@ export function getWagmiConfig(): Config {
         // policy returns undefined and no key is created.
         accessKey: { authorize: accessKeyPolicy },
       }),
-      tempoWallet(),
+      // Built on first use: its wallet.tempo.xyz iframe (and ~1 MB of third-party script) mounts at setup (D-152).
+      lazyConnector({ id: TEMPO_WALLET_CONNECTOR_ID, name: "Tempo Wallet", rdns: TEMPO_WALLET_CONNECTOR_ID, type: "injected" }, () => tempoWallet()),
       injected(),
-      ...(WALLETCONNECT_ENABLED ? [walletConnect({ projectId: webEnv.walletConnectProjectId!, showQrModal: true })] : []),
+      // wagmi's WalletConnect initialises its provider (and relay socket) in `setup` — also built on first use.
+      ...(WALLETCONNECT_ENABLED ? [lazyConnector({ id: "walletConnect", name: "WalletConnect", type: "walletConnect" }, () => walletConnect({ projectId: webEnv.walletConnectProjectId!, showQrModal: true }))] : []),
     ],
     multiInjectedProviderDiscovery: true,
     ssr: true,

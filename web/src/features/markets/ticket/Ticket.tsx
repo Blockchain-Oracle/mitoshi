@@ -15,7 +15,7 @@ import { formatBaseUnits } from "@cwf/core/units";
 import { useBalanceSheet, useSeriesGrid, useSigner } from "@cwf/markets/react";
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { TapChip } from "@/features/tap-trading/TapChip";
+import { SESSION, SessionFallbackCta, TapTradingChip, useTicketRoute } from "@/features/session";
 import { nowMs as clockNow, useNowMs } from "@/lib/clock";
 import { readRegionPosture } from "@/lib/region-mark";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -71,6 +71,9 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
 
   const bet = usePlaceBet(address);
   const displayed = listed ? (resting?.ok ? resting.quote : null) : (bet.requoted ?? quoteState.quote);
+  // S7: the Trading Balance's session key takes the call when armed and its caps cover it; else the CTA says why.
+  const tb = useTicketRoute({ market, side, stakeBase, quote: displayed, listed });
+  const spendBase = tb.viaBalance ? tb.availableBase : availableBase;
 
   // A new stake, side or price starts a new composition; the previous outcome no longer describes it.
   const { reset } = bet;
@@ -87,7 +90,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
     phase,
     placing: bet.placing,
     side,
-    availableBase,
+    availableBase: spendBase,
     stakeBase,
     decimals,
     quote: quoteState.reading,
@@ -98,7 +101,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
   const ctx: BlockerContext = {
     cadence: formatCadence(market.intervalSec),
     minStakeText: usd(minStakeBase(decimals), decimals),
-    spendableText: availableBase !== null ? usd(availableBase, decimals) : undefined,
+    spendableText: spendBase !== null ? usd(spendBase, decimals) : undefined,
     quotedCents: displayed?.oddsCents,
     fillableStakeText: displayed?.partial ? usd(displayed.fillableStakeBase, decimals) : undefined,
   };
@@ -114,28 +117,37 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
 
   const place = () => {
     if (!side || !displayed) return;
-    void bet.place({ market, side, stakeBase, displayedQuote: displayed, route: { kind: "wallet" } }, { resting: listed });
+    void bet.place({ market, side, stakeBase, displayedQuote: displayed, route: tb.route }, { resting: listed });
   };
-  const signer = tapArmed ? "access-key" : session.kind === "passkey" ? "passkey" : "injected";
+  const signer = tb.viaBalance ? "session-key" : tapArmed ? "access-key" : session.kind === "passkey" ? "passkey" : "injected";
   const booked = bet.state.outcome?.status === "confirmed" ? bet.state.outcome.booked : null;
   const scheduled = listed && bet.state.outcome?.status === "nothingFilled" ? bet.state.outcome : null;
+  // Confirmed-pending (D43, D-150): the key signed, the chain is including it; the figures are the confirmed quote.
+  const tx = bet.state.tx;
+  const pending = !booked && !scheduled && tx.kind === "confirmed" && tx.pending && bet.confirmedCall ? { txHash: tx.txHash, ...bet.confirmedCall } : null;
+  const cardQuote = pending ? pending.quote : displayed;
+  const [placedAtMs, setPlacedAtMs] = useState(0);
+  const showingCard = Boolean(pending || booked || scheduled);
+  useEffect(() => setPlacedAtMs(showingCard ? (t) => t || clockNow() : 0), [showingCard]);
 
   const another = () => bet.reset();
 
   return (
     <section aria-label={TICKET.title} className="tk-ticket flex flex-col gap-3">
       {head}
-      {booked || scheduled ? (
+      {booked || scheduled || pending ? (
         <CallCard
           card={{
-            asset: market.asset, side: booked?.side ?? side ?? "up", lineRaw: t.openingRaw, stakeBase: booked?.costBase ?? displayed?.maxCostBase ?? 0n, contractsRaw: booked?.contractsRaw ?? displayed?.contractsRaw ?? 0n, decimals,
-            tradingStartSec: market.tradingStartSec, expirySec: market.expirySec, txHash: booked?.txHash ?? scheduled!.txHash, placedAtMs: Date.now(), resting: !booked,
+            asset: market.asset, side: booked?.side ?? pending?.side ?? side ?? "up", lineRaw: t.openingRaw, stakeBase: booked?.costBase ?? cardQuote?.maxCostBase ?? 0n, contractsRaw: booked?.contractsRaw ?? cardQuote?.contractsRaw ?? 0n, decimals,
+            tradingStartSec: market.tradingStartSec, expirySec: market.expirySec, txHash: booked?.txHash ?? scheduled?.txHash ?? pending?.txHash ?? null, placedAtMs: placedAtMs || clockNow(),
+            resting: !booked && !pending, pending: pending !== null,
           }}
-          actions={
+          actions={pending ? null : (
             <div className="call-actions">
               <Link href="/portfolio">{CALL.portfolio}</Link>
               <button type="button" onClick={another}>{CALL.another}</button>
             </div>
+          )
           }
         />
       ) : (
@@ -143,15 +155,19 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
           <BetModes />
           <SideSegments side={side} onSelect={t.selectSide} prices={{ up: priceText(top.upCents), down: priceText(top.downCents) }} />
           {listed ? <PriceControl priceCents={priceCents} onChange={setPriceCents} side={side} /> : null}
-          <AmountBlock value={t.stakeText} onChange={t.setStakeText} stakeBase={stakeBase} onStakeBase={t.setStakeBase} balanceBase={availableBase} decimals={decimals} belowMin={stakeBase > 0n && belowMinStake(stakeBase, decimals)} remembered={t.remembered} costBase={displayed?.expectedCostBase ?? null} />
+          <AmountBlock value={t.stakeText} onChange={t.setStakeText} stakeBase={stakeBase} onStakeBase={t.setStakeBase} balanceBase={spendBase} decimals={decimals} belowMin={stakeBase > 0n && belowMinStake(stakeBase, decimals)} remembered={t.remembered} costBase={displayed?.expectedCostBase ?? null} />
           <ReadoutStrip cells={cellsOf(displayed, decimals)} live={displayed !== null} caption={caption} chance={displayed ? TICKET.chance(Math.round(displayed.avgPriceBps / 100)) : null} />
-          <AccountGate connected={session.isConnected} onSignIn={session.connect} availableBase={availableBase} stakeBase={stakeBase} decimals={decimals} chip={<TapChip />} />
+          <AccountGate connected={session.isConnected} onSignIn={session.connect} availableBase={spendBase} stakeBase={stakeBase} decimals={decimals} chip={<TapTradingChip />} />
           {t.advancedFrom ? <p role="status" className="type-caption text-ink-secondary">{TICKET.advanced(formatCadence(t.advancedFrom.intervalSec), formatCadence(market.intervalSec))}</p> : null}
           <OutcomeNote tx={bet.state.tx} outcome={bet.state.outcome} decimals={decimals} onDismiss={bet.reset} />
           <div className="tk-cta-dock">
             <ToWin label={TICKET.toWin} amount={displayed ? formatBaseUnits(displayed.payoutIfRightBase, decimals, { group: false, minDp: 2, maxDp: 2 }) : null} note={displayed ? TICKET.avgPrice(Math.round(displayed.avgPriceBps / 100)) : null} />
-            <TicketCta blocker={blocker} ctx={ctx} tx={bet.state.tx} side={side} costBase={displayed?.maxCostBase ?? null} decimals={decimals} signer={signer} onConfirm={place} action={listed ? TICKET.scheduled.cta : TICKET.buy} />
-            <p className="tk-foot">{tapArmed ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
+            {tb.fallback && !blocker ? (
+              <SessionFallbackCta route={tb} walletKeyArmed={tapArmed} tone={side ?? "accent"} />
+            ) : (
+              <TicketCta blocker={blocker} ctx={ctx} tx={bet.state.tx} side={side} costBase={displayed?.maxCostBase ?? null} decimals={decimals} signer={signer} onConfirm={place} action={listed ? TICKET.scheduled.cta : TICKET.buy} />
+            )}
+            <p className="tk-foot">{tb.viaBalance ? SESSION.footnote : tapArmed ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
           </div>
         </>
       )}

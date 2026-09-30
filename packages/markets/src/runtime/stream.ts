@@ -32,6 +32,12 @@ export interface StreamClientOptions {
   ticket?: () => Promise<string | null>;
   onBatch: (events: StreamEvent[]) => void;
   onState?: (state: StreamState) => void;
+  /**
+   * Whether this connection carries the per-user topics it was asked for: false when no ticket could be minted (no
+   * server session — a wallet sign-in, an expired or lost passkey session), so the caller can follow the user's own
+   * events another way (D-049's chain logs, D-151).
+   */
+  onUserGrant?: (granted: boolean) => void;
   fetch?: typeof fetch;
   visibility?: StreamVisibility | null;
   schedule?: (run: () => void) => void;
@@ -100,6 +106,7 @@ export function createStreamClient(options: StreamClientOptions): StreamClient {
     if (visibility?.hidden()) return setState("paused");
     const wantsUser = topics.some((t) => t.startsWith("user:"));
     const ticket = wantsUser && options.ticket ? await options.ticket().catch(() => null) : null;
+    if (wantsUser) options.onUserGrant?.(ticket !== null);
     const granted = wantsUser && !ticket ? topics.filter((t) => !t.startsWith("user:")) : topics;
     if (granted.length === 0) return setState("idle");
     const params = new URLSearchParams({ topics: granted.join(",") });

@@ -30,6 +30,7 @@ const COPY: Record<DiagnosisKind, DiagnosisCopy> = {
   "faucet-refused": { headline: "Faucet refused", body: "Test funds are limited to once a day per account. Nothing was sent; try again later." },
   "indexer-down": { headline: "The indexer isn't answering", body: "Numbers stay at their last-good values until it's back." },
   "rpc-down": { headline: "The chain endpoint isn't answering", body: "We're rotating to the backup RPC. Last-good values stay on screen." },
+  "rate-limited": { headline: "The network is busy", body: "Too many requests from this connection right now. Nothing was sent — try again in a moment." },
   "contract-revert": { headline: "The contract refused", body: "Nothing moved. The technical details name the reason." },
   "grant-refused": { headline: "Outside the grant", body: "This order sits outside what the grant allows — its caps, expiry or actor. Adjust the grant or the size." },
   "not-deployed": { headline: "Not on this network yet", body: "This part of the app is not deployed on this network yet. Nothing was sent." },

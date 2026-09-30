@@ -19,6 +19,7 @@ import { chainWalletFills, DEFAULT_LOOKBACK_BLOCKS, LOG_WINDOW } from "./chain-l
 import { decodeEngineEvents, type RedeemedView } from "../engine/decode";
 import { pinVerdict, type PinnedVerdict } from "../engine/verdict";
 import { nowSec } from "../runtime/clock";
+import { readVaultVerdict } from "../vault/positions";
 
 const SIDES: readonly LedgerSide[] = ["BUY_YES", "SELL_YES", "BUY_NO", "SELL_NO"];
 const lower = (a: string) => a.toLowerCase();
@@ -193,8 +194,10 @@ export const getPinnedVerdict = (wallet: Address, marketId: MarketId): Promise<R
       return lf ? [lf] : [];
     });
     const ledger = buildLedgers(own, [], USD_DECIMALS).get(marketId);
-    return pinVerdict({
+    const pinned = pinVerdict({
       wallet, snapshot: w.snapshot, position: position ?? null, lotBase: w.series.lotBase, redeemed, costBasisBase: ledger ? ledger.costBase - ledger.proceedsBase : null,
       settledAtMs: w.market.resolvedAtMs, nowSec: nowSec(),
     });
+    // Nothing in the wallet's own engine position: the call may be the Trading Balance's (a session-key tap, S7).
+    return pinned ?? (await readVaultVerdict(wallet, marketId));
   });

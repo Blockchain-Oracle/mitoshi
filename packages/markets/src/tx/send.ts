@@ -12,7 +12,7 @@
  * tempo/accounts/account.fromSecp256k1, tempo/guides/batch-calls).
  */
 import { type Account, type Address, type Chain, type Hex, type TransactionReceipt, type Transport, type WalletClient, http, keccak256 } from "viem";
-import { getBlock, getTransactionReceipt } from "viem/actions";
+import { getBlock, getTransactionReceipt, prepareTransactionRequest, sendRawTransactionSync } from "viem/actions";
 import type { themeKeyAuthorization } from "../themes/keyAuth";
 import type { Call } from "./batch";
 import { FEE_TOKEN, PRIORITY_FEE_PER_GAS } from "./fee";
@@ -67,19 +67,34 @@ export function buildSendParameters(request: SendRequest) {
   };
 }
 
+export interface SendHooks {
+  /**
+   * The transaction is signed and its bytes are final (the relay's fill already carries the fee payer's signature):
+   * called with its hash just before the one sync send, so a surface can show the write as confirmed-pending (D43,
+   * D-150) while the chain includes it. Only a local signer (our wallet key, a script's key) splits the send this way.
+   */
+  onSigned?: (hash: Hex | null) => void;
+}
+
 /**
- * Signs and sends through the session's wallet client, returning the receipt. `onSubmitted` fires once the signature
- * exists and before the receipt, so the journal can record "sent" (a hash is known only after inclusion with sync
- * sends; the journal records by expiry instead, L-08).
+ * Signs and sends through the session's wallet client, returning the receipt. With `hooks.onSigned` and a local
+ * account the send runs viem's own `sendTransactionSync` steps in the open (`prepareTransactionRequest` → the account
+ * signs → the chain's envelope → `sendRawTransactionSync`, viem site docs/actions/wallet/sendRawTransactionSync) so the
+ * hash is known before the receipt; otherwise one `sendTransactionSync`. Either way the transaction is sent once.
  */
 export async function sendBatch<chain extends Chain>(
   client: WalletClient<Transport, chain, Account>,
   request: SendRequest,
+  hooks: SendHooks = {},
 ): Promise<SendResult> {
   const { parameters, fields } = buildSendParameters(request);
   // The Tempo chain config types the extra fields (`calls`, `feeToken`, `nonceKey`, `validBefore`, `feePayer`).
-  const signed = { ...parameters, account: client.account, chain: client.chain };
+  // A wallet-held signer (the passkey connector, a wallet app) whose provider has a default fee payer marks every
+  // transaction for sponsorship unless told otherwise (accounts 0.18.4): an unsponsored write says `feePayer: false`
+  // (F-S7-10, D-156 — capital intake could not be sent at all). Local accounts are unchanged.
+  const signed = { ...parameters, ...(!request.sponsored && client.account.type === "json-rpc" ? { feePayer: false as const } : {}), account: client.account, chain: client.chain };
   try {
+    if (hooks.onSigned && client.account.type === "local") return { ...(await sendSplit(client, signed, hooks.onSigned)), fields };
     const receipt = (await client.sendTransactionSync(signed as never)) as TransactionReceipt;
     return { receipt, hash: receipt.transactionHash, fields };
   } catch (error) {
@@ -91,6 +106,22 @@ export async function sendBatch<chain extends Chain>(
     if (!receipt) throw new NotIncludedError(keccak256(raw), fields.validBefore, error);
     return { receipt, hash: receipt.transactionHash, fields };
   }
+}
+
+async function sendSplit<chain extends Chain>(client: WalletClient<Transport, chain, Account>, signed: Record<string, unknown>, onSigned: (hash: Hex | null) => void) {
+  const account = client.account;
+  const request = await prepareTransactionRequest(client, signed as never);
+  const chain = client.chain;
+  const signedTx = (await account.signTransaction!(request as never, { serializer: chain?.serializers?.transaction } as never)) as Hex;
+  const envelope = chain?.serializers?.transactionEnvelope as ((p: { serializedTransaction: Hex; transaction: unknown }) => Promise<Hex>) | undefined;
+  const serializedTransaction = envelope ? await envelope({ serializedTransaction: signedTx, transaction: request }) : signedTx;
+  // The hash is final only when the fee payer has signed too (the relay's fill signs; a sponsored tx without that
+  // signature is co-signed inside the send, which changes its bytes): otherwise the surface waits for the receipt's.
+  const { Transaction } = await import("viem/tempo");
+  const tx = Transaction.deserialize(serializedTransaction as never) as { feePayerSignature?: unknown };
+  onSigned(signed.feePayer === true && !tx.feePayerSignature ? null : keccak256(serializedTransaction));
+  const receipt = (await sendRawTransactionSync(client, { serializedTransaction } as never)) as TransactionReceipt;
+  return { receipt, hash: receipt.transactionHash };
 }
 
 /** The expiring window closed with no receipt: the transaction can never land (L-08), so this is a definite failure. */

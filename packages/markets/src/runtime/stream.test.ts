@@ -122,17 +122,21 @@ describe("stream client (one connection, real HTTP)", () => {
     const url = await srv.listen();
     cleanup.push(srv.close);
     let ticket: string | null = null;
-    const client = createStreamClient({ url, onBatch: () => undefined, visibility: null, debounceMs: 5, ticket: async () => ticket });
+    const grants: boolean[] = [];
+    const client = createStreamClient({ url, onBatch: () => undefined, visibility: null, debounceMs: 5, ticket: async () => ticket, onUserGrant: (g) => grants.push(g) });
     cleanup.push(async () => client.close());
     client.subscribe("prices");
     client.subscribe("user:0x00000000000000000000000000000000000000a1");
     await until(() => srv.open.size === 1);
     expect(srv.requests[0]!.searchParams.get("topics")).toBe("prices");
+    // No ticket: the caller hears it, so it can follow the user's events on the chain instead (D-151).
+    expect(grants).toEqual([false]);
     ticket = "0xabc.1.def";
     srv.dropAll();
     await until(() => srv.requests.length >= 2 && srv.open.size === 1);
     const again = srv.requests.at(-1)!;
     expect(again.searchParams.get("topics")).toBe("prices,user:0x00000000000000000000000000000000000000a1");
     expect(again.searchParams.get("ticket")).toBe("0xabc.1.def");
+    expect(grants).toEqual([false, true]);
   });
 });

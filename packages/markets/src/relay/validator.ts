@@ -32,11 +32,14 @@ export function createRelayValidator(deps: ValidatorDeps) {
       deps.onVerdict?.({ ok: false, code: "malformed", reason: "unparseable request fields" }, ctx, null);
       return false;
     }
+    // The balance read and the new-sender check start together (a tap's fill waits on this hook, D-150).
+    const balance = deps.feePayerBalance();
+    balance.catch(() => undefined);
     const isNew = request.from && deps.senderIsNew ? await deps.senderIsNew(request.from).catch(() => false) : false;
     let verdict = await evaluate(deps.engine, request, ctx, { isNew });
     if (verdict.ok && request.from) {
       const gate = await checkGates(deps.ledger, deps.limits, {
-        sender: request.from, device: ctx.device, feeMicros: verdict.feeMicros, nowSec: ctx.nowSec, feePayerBalanceMicros: await deps.feePayerBalance(),
+        sender: request.from, device: ctx.device, feeMicros: verdict.feeMicros, nowSec: ctx.nowSec, feePayerBalanceMicros: await balance.catch(() => null),
       });
       if (gate) verdict = gate;
     }

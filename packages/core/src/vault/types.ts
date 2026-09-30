@@ -1,4 +1,5 @@
-// Ported from Masayume 68f7a09:packages/core/src/vault/types.ts
+// Ported from Masayume 68f7a09:packages/core/src/vault/types.ts — `VaultCaps.market` added (D-091), the forwarder
+// dropped from `VaultDeployment` (D-003: our fee relay replaces the ERC-2771 forwarder).
 import type { MarketId } from "../types/market";
 import type { Address } from "../types/primitives";
 
@@ -13,12 +14,16 @@ export function grantKindOf(index: number): GrantKind {
   return kind;
 }
 
-/** Every cap in collateral base units except the position count; `maxPriceRaw` 0 means no limit. */
+/**
+ * Every cap in collateral base units except the position count; `maxPriceRaw` 0 means no limit. `market` scopes the
+ * grant to one Window (D-091, `Caps.market`); null — the contract's zero — means any Window.
+ */
 export interface VaultCaps {
   maxStakePerTradeBase: bigint;
   maxDailySpendBase: bigint;
   maxOpenPositions: number;
   maxPriceRaw: bigint;
+  market: MarketId | null;
 }
 
 export interface VaultGrant {
@@ -48,7 +53,6 @@ export interface VaultAccount {
 export interface VaultDeployment {
   chainId: number;
   eventVault: Address;
-  forwarder: Address;
   collateral: Address;
   /** The block the vault was deployed in: where its event history starts. */
   fromBlock: bigint;
@@ -70,6 +74,26 @@ export interface VaultHoldings {
   downRaw: bigint;
   upGrantId: bigint;
   downGrantId: bigint;
+}
+
+/** One Window the owner traded through the vault (S7): holdings now, the vault's own tally, and the Window. */
+export interface VaultBet {
+  marketId: MarketId;
+  asset: string;
+  intervalSec: number;
+  expirySec: number;
+  lockAtSec: number;
+  decimals: number;
+  state: "open" | "resolved" | "voided";
+  /** Held now (outcome raw units): zero once cranked or sold. */
+  upRaw: bigint;
+  downRaw: bigint;
+  costBase: bigint;
+  proceedsBase: bigint;
+  payoutBase: bigint;
+  /** 0 until the Window was cranked into the Trading Balance. */
+  settledAtSec: number;
+  lastAtSec: number;
 }
 
 export const VAULT_NOT_DEPLOYED = "EventVault is not deployed on this network yet" as const;

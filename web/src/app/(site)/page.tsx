@@ -17,7 +17,8 @@ export default function Landing() {
       <section className="flex flex-col gap-5">
         <span className="size-12 text-ink"><MitoshiMark /></span>
         <p className="type-label-micro text-ink-secondary">{BRAND.name} · <span lang="ja">{BRAND.kanji}</span> · {BRAND.tagline}</p>
-        <h1 className="max-w-3xl type-display text-ink">Prediction markets and stocks, one passkey away.</h1>
+        {/* `hero-lines` (styles/base.css) reserves Sora's line count for this copy, so the font swap moves nothing (D-152). */}
+        <h1 className="max-w-3xl hero-lines type-display text-ink">Prediction markets and stocks, one passkey away.</h1>
         <p className="max-w-2xl type-body text-ink-secondary">{BRAND.description}</p>
         <div className="flex flex-wrap gap-3">
           <Link href="/markets" className="inline-flex min-h-touch items-center gap-2 rounded-full bg-accent-fill px-5 type-body-strong text-on-accent!">

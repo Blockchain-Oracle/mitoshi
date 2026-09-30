@@ -21,6 +21,13 @@ describe("stream → query cache", () => {
     expect(parseFrame("not json")).toBeNull();
   });
 
+  it("a Trading Balance event on the owner's topic refreshes the vault, the balance sheet and history (S7)", () => {
+    for (const name of ["Executed", "Settled", "GrantCreated", "GrantRevoked", "Deposited", "Withdrawn"]) {
+      expect(opsFor(name, { topic: `user:${W}`, data: { owner: W } }).map((o) => o.key), name).toEqual([["cwf", "vault", W], ["cwf", "balanceSheet", W], ["cwf", "history", W]]);
+    }
+    expect(opsFor("Executed", { topic: "activity", data: { owner: W } })).toEqual([]);
+  });
+
   it("coalesces a frame: the last set per key wins, each invalidation once", () => {
     const set = (v: number): CacheOp => ({ kind: "set", key: ["cwf", "price", "BTC"], value: v });
     const inv: CacheOp = { kind: "invalidate", key: ["cwf", "onchain", M] };

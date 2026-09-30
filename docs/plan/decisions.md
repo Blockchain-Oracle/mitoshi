@@ -1044,6 +1044,189 @@ the owner's phone (Handoff); the pressed state is ≤ 205 ms everywhere (§2.4's
 
 **Why:** a flow target is a gate, and a missed gate is recorded with its numbers, never rounded off.
 
+### D-150 — the Call card is confirmed-pending once the key has signed; the tap's reads and the relay's checks each take one round (finding + decision, S4-fix, 2026-09-30)
+
+**Finding** (deployed testnet, `web/e2e/tap-latency.ts`: CDP virtual authenticator, fresh passkey + arm, 12 taps on
+Crypto 5m, the page's own marks and the browser's network timings; p50): press → handler 3 ms · pre-send 521 ms (the
+status gate, then the book — two WebSocket round trips) · relay fill 451 ms (policy `validate`: a new-sender RPC read,
+the ledger totals in two rounds, the fee payer's balance read inline every 30 s, plus the node's fill) · the wallet
+key's P-256 signature 5 ms · **no co-sign** (accounts 0.18.4 signs the fee payer into the fill, so `validate` runs once,
+not twice) · `eth_sendRawTransactionSync` 696 ms (inclusion ~0.5 s + the gateway) · receipt → card 8 ms: **press → Call
+card p50 1,836 ms** (max 2,790; 0 prompts), the card waiting for the receipt. An earlier run the same morning agreed
+(pre-send 478, fill 410, send 821 ms). Nothing refetches before the card (the invalidations run after it renders), and
+the web relay is not on the ops RPC budget (D-134 paces ops clients only), so nothing queues the send.
+**Decision:** (1) the send runs viem's own `sendTransactionSync` steps in the open for a local signer
+(`prepareTransactionRequest` → sign → envelope → `sendRawTransactionSync`), so the final hash is known before the
+receipt — still one send, never retried (D-137); (2) the ticket shows the Call card **confirmed-pending** (D43) at that
+moment: the confirmed quote's figures ("You stake up to", "Confirming on Tempo…"), the receipt swaps in what the engine
+booked, and a revert, refusal, `unknown` or nothing-filled rolls back to the ticket with the chain's answer; nothing
+pins to "Your calls" before the receipt; (3) the book read starts with the status gate (Series facts are cached), one
+round; (4) the relay skips the new-sender read for a sender already seen with a nonce, reads the four ledger totals in
+one round, and keeps the fee payer's balance stale-while-revalidate. Local build and local relay after: press → card
+p50 836 ms (pre-send 253 ms), press → confirmed p50 1.64 s. The deployed number is the integrator's re-run of the script.
+
+**Why:** §2.4's "Call card ≤ 1 s p50" can only be met by showing the call when it is irrevocably sent — Tempo's ~0.5 s
+inclusion plus a sync round trip is already most of a second — and D43 already names that state; the card never claims
+a fill it has not seen.
+
+### D-151 — a signed-in user without a server session follows their own events on the chain; the passkey session lives 30 days (finding + decision, S4-fix, 2026-09-30)
+
+**Finding** (deployed testnet, virtual authenticator): sign-up and login set `cwf_passkey` (`Path=/; SameSite=Lax;
+HttpOnly; Secure`) and `/api/stream/ticket` answers 200 — cookie name, path, domain and Coolify's proxy are fine. It
+answers 401 to users the page still shows signed in without a server session: (1) the passkey session lived 24 h while
+wagmi restores the connection with no ceremony indefinitely, so every returning user after a day (and anyone whose
+session was lost: Redis, cleared cookies); (2) every Tempo Wallet, injected or WalletConnect user — no route issues the
+social session (`cwf_social`, S13's). The hub then dropped `user:<address>` silently and wallet reads fell back to polls.
+F-S4-17's local 401 on a fresh sign-up did not reproduce on this build (localhost: 200).
+**Decision:** the session lives 30 days (it backs only the faucet claim and the ticket; authority stays on chain); the
+stream reports whether it carries the per-user topic, and when it does not (or no stream is configured) the page
+watches the wallet's own engine events on the chain — D-049's "chain WebSocket logs for the user's own events": one
+`eth_subscribe` log filter per event ops routes to `user:<address>` (`Fill` taker/maker, `OrderExecuted`,
+`OrderRemoved`, `OrderReduced`, `CompleteSet`, `CreditWithdrawn`, `Redeemed` — each with the wallet as an indexed
+topic), mapped to exactly the invalidations the stream frames make. No prompt, no weaker ticket.
+
+**Why:** "signed in" in the UI must mean live updates whatever the server session's state; minting a ticket without a
+proof would have made it meaningless, and a sign-in prompt to repair a stream is not acceptable UX.
+
+### D-152 — third-party wallet code and the wallet runtime load on use; a Window is read once per render pass (finding + decision, S4-fix, 2026-09-30)
+
+**Finding** (Lighthouse CI `lighthouse.yml` on the deployed testnet, quiet GitHub host, median of 3): `/` CLS 0.085;
+`/markets` TBT 2,360 ms; `/markets/[id]` TBT 5,042 ms; `/portfolio` TBT 580 ms; LCP within 2.5 s on every route.
+Causes: (1) wagmi sets up the Tempo Wallet connector on every app page and accounts 0.18.4's dialog adapter mounts its
+`wallet.tempo.xyz` iframe at setup — with Stripe ×3, a session recorder and surveys, ~1 MB of third-party script
+(`resource-summary` script 2.5 MB on `/markets`); (2) the wallet runtime (accounts SDK + zod, 784 KB) evaluated on idle
+for every visitor; (3) each lane card re-read its own Window right after the lane list read all ~69 of them — a second
+230 KB multicall whose ABI decode was the longest task left (0.35–0.5 s at 4× CPU); (4) the landing heading wraps in
+3 lines in Sora's metric fallback and 4 in Sora at 390 px, so the font swap pushed the pillars down.
+**Decision:** Tempo Wallet and WalletConnect are `lazyConnector`s (built on first use or when last used — wagmi's
+reconnect); the runtime mounts when a connection is stored or on the first interaction (a "Sign in" tapped earlier is
+queued, as before); display reads share a lens answer for 1 s and join a read in flight (`readWindowsShared`; the order
+lane's status gate still reads at submit); the heading reserves Sora's lines (`hero-lines`). Same host, 4× CPU,
+long-task blocking over 12 s (`e2e/long-tasks.ts`, deployed before → local build after): `/markets` 3,529 → 679 ms,
+`/markets/[id]` 2,795 → 230, `/portfolio` 1,246 → 72, `/` 276 → 80. Lab numbers on this workstation (load 25–125) are
+not the gate; the gate is `lighthouse.yml` on the next deploy.
+
+**Why:** a visitor who only reads should not pay for a wallet they have not opened; the lens stays the source for
+every figure, read once.
+
+### D-153 — "Returned" is proven on real voided positions through the verdict read; the card on a user's own call waits for a void (finding, S4-fix, 2026-09-30)
+
+No void can be produced honestly on demand: `voidExpired` needs a primary print missed past its deadline (or a
+cross-check divergence), and the only way to cause one now is to stop the live print path (the S3 soak) — not done.
+Real voids exist: 4 Windows that real orders crossed voided on 2026-09-29 (`void_reason` 1, missing print, during the
+S3 RPC defect, D-130/D-131). `scripts/drive/void-returned.ts` runs the production `getPinnedVerdict` — the read the
+pinned card and ClaimWinnings render — for all 9 holders: verdict `void` for every one; 8 `paid` (7 by the settler's
+`redeemFor`, `paidBy: auto`; 1 by the holder) with the engine's `Redeemed` payout (0.5 per contract each side), 1
+`stamped` (unredeemed, collectable). The UI card ("Returned" + reason) on a passkey user's own call is observed the next
+time a Window with such a call voids: the settler voids it within a minute of the missed deadline, `first-call.ts`
+already counts "Returned" in "Your calls", and the index's `state=voided` query lists every one.
+
+**Why:** a void is the chain's answer to a missed print; staging one would be a fake.
+
+### D-155 — the settler cranks the vault's owners as soon as a Window is terminal; no claim grace (decision, S7 off-chain, 2026-09-30)
+
+The engine's `redeemFor` refuses the vault (its crank opt-out, T09/D-015), so `EventVault.crankSettle(owner, m)` is the
+only way a Trading Balance owner is paid. The settler's vault worklist (`services/ops/src/actors/settler/vault-crank.ts`)
+takes (Window, owner) pairs the index saw trade through the vault on a resolved or voided Window with no `Settled` yet,
+confirms on chain which still hold a position or a grant tag (`positionOf` / `positionGrantOf`, one multicall), and sends
+each crank from the settler key inside the same send budget as the engine work, after it. Unlike `redeemFor` there is
+no 300 s grace: the owner has no self-claim the grace would protect, and "verdict → paid" needs no prompt (§2.4).
+`NothingToSettle` / `MarketNotSettled` are benign (ops/send now names vault errors too).
+
+**Why:** the vault owner would otherwise wait for nothing; the payout lands in the Trading Balance within a pass.
+
+### D-156 — a passkey write that does not ask for a fee payer says `feePayer: false` (finding + decision, S7 gate, 2026-09-30)
+
+**Finding (F-S7-10):** the passkey connector is configured with our relay as its fee payer (`webAuthn({ feePayer })`), and
+accounts 0.18.4 then marks every transaction for sponsorship unless the request carries `feePayer: false`
+(`Provider.getWalletClient`). A never-sponsored root write (capital intake: `[approve, depositAndGrant]`, D-020) was
+refused by the relay at `eth_signRawTransaction` and could not be sent at all. **Decision:** the one send module says
+so: `sendBatch` adds `feePayer: false` to an unsponsored send from a wallet-held (`json-rpc`) signer — the passkey
+connector, a wallet app (`tx/send.ts`, one line; the write boundary keeps every send there); sponsored writes carry
+`feePayer: true` as before; local accounts (keys, ops, drives) are untouched.
+
+**Why:** intake stays self-paid (the relay's `never` list is unchanged) and the user can still make it.
+
+### D-157 — the relay's async sender rule reads the chain through the relay's own client (decision, S7, 2026-09-30)
+
+C.3.3's async sender rule is implemented: `EngineConfig.reader` (the relay handler's public client) is passed to every
+`asyncSender`; the vault's `placeFor` is sponsored only when `grantOf(id).actor == from && isGrantLive(id)`; without a
+reader the rule refuses (fails closed); a live answer is remembered 15 s per (vault, grant, sender), a refusal never.
+**Finding (F-S7-09):** on Moderato the node's fill estimate already reverts a foreign `placeFor` (`NotGrantActor`)
+before the relay's `validate` runs, so the rule's real work is the raw-sign path (a hand-built transaction with its own
+gas limit), where without it the relay would co-sign a transaction that reverts and pay for it.
+
+**Why:** the relay never pays for a tap its sender may not make.
+
+### D-158 — a delegated tap is pre-checked at the worst the fill can charge (decision, S7, 2026-09-30)
+
+The vault checks the per-tap and daily caps against the actual fill; the browser does not know it before sending, so
+`simulateCaps` runs with `spendBase = quote.maxCostBase` (the escrow at the protective limit, ≤ the stake) in both the
+ticket's route (`useTicketRoute`) and the lane (`assertGrantCovers`). It can refuse a tap the contract would accept by
+a cent; it never passes one the contract would refuse (which would only fail after a signature).
+
+**Why:** "a cap refusal shown with its reason, never a surprise" — the refusal must come before anything is signed.
+
+### D-159 — tap-trading state is one external store with split slices (decision, S7 web, 2026-09-30)
+
+The D37 arm slot lives in the sign-up modal, which the lazy wallet runtime renders outside the app tree, so React
+context from the app cannot reach it. `features/session/context.ts` is a tiny store written by the provider only
+(`publishSession`), read per slice with `useSyncExternalStore` (view, actions, session-key submitter, root submitter):
+a reader re-renders only when its slice changes, and the view re-derives on reads and once at the grant's expiry —
+never per second (E.5 S7). Taps routed `vault-grant` reach the session key through the existing `TapSubmitterContext`
+(`routeTaps`); cash-outs, collects and wallet calls keep their own signer.
+
+**Why:** one source for every surface, the ceremony's modal included, with no clock-driven re-render.
+
+### D-160 — when tap-trading can't take a call, the CTA says why and offers the fix; the wallet is a labelled choice (decision, S7, 2026-09-30)
+
+Masayume fell back silently to the chosen source (a prompt the user did not expect). Here the CTA's label is the
+reason ("Budget used — add $25", "Today's $25 used — resets 00:00 UTC", "Over your $5 per tap — lower the stake",
+"Tap-trading expired — renew", "Scheduled calls pay from your wallet"); the budget and expiry cases run their one-step
+fix (one passkey confirmation), the rest block; "Pay from your wallet instead · asks your passkey / no prompt" is a
+separate tap that switches this composition's route.
+
+**Why:** E.5 S7 "the fallback reason always rendered on the CTA" and the gate's "never a surprise prompt".
+
+### D-161 — vault events are indexed without a Window, applied exactly once (decision, S7, 2026-09-30)
+
+The indexer follows EventVault as a second source (own cursor, window sizing, one `eth_getLogs` per window) and stores
+its logs in `idx_events` with `market`/`seq` NULL, so a Window rebuild never replays them and each `idx_vault_*`
+projection (index/0002) applies once, in (block, log index) order, with the contract's own arithmetic (a deposit states
+the balance; a grant takes its budget; a revoke returns it; buys spend available or the grant's budget; sales and
+settlements pay available). The chain stays the truth for money on screen; the projections serve the crank worklist,
+`/api/index/wallet/<addr>/vault` and history. Proven equal to `accountOf`/`grantOf` on every real vault log.
+
+**Why:** idempotent, rebuildable and exact without teaching the engine's `seq` machinery about the vault.
+
+### D-162 — "Add to budget" and "Extend" are one root transaction each (decision, S7, 2026-09-30)
+
+Add to budget tops the grant up to its daily cap: `fundGrant` from the free Trading Balance when it holds enough, else a
+new intent `vault-deposit-and-fund` = `[approve(vault, x), deposit(x), fundGrant(id, x)]` (never sponsored). Extend and
+renew re-grant the same key with the same caps and budget and a later expiry (`grant()` returns the old budget and
+takes it back in one call); the contract starts the new grant's day at zero spend — a property of `grant`, kept as-is
+(D-003). Re-key does the same for a fresh key on this device.
+
+**Why:** each E.5 S7 action is one tap and one passkey confirmation.
+
+### D-163 — killed-tab evidence counts only inside the record's own life (finding + decision, S7 gate, 2026-09-30)
+
+A tap journaled but killed before its broadcast was reported "landed": the evidence matched the same key's earlier tap
+on the same Window. `vaultEvidence` now counts an `Executed` by the record's actor on its Window only between the
+record's creation (less 10 s of device/chain skew) and its `validBefore` (+ grace) — an expiring transaction can land
+nowhere else; outside, it is "absent" ("never reached the chain, nothing was spent"). Nothing is ever re-sent (AD-3).
+
+**Why:** recovery must not claim a write that never left.
+
+### D-164 — a request the RPC refused for rate is its own diagnosis (finding + decision, S7 gate, 2026-09-30)
+
+**Finding (F-S7-11):** the passkey SDK sends the root's co-signed transaction straight to the public RPC; under the
+per-IP limit (D-134, shared by every process on one machine) the node answers "Request exceeds defined limit" and the
+write is refused before acceptance. **Decision:** diagnosis kind `rate-limited` (retryable), copy "The network is busy —
+too many requests from this connection right now. Nothing was sent — try again in a moment." A production relay and
+RPC endpoint off the users' IPs moves the limit away (D-139).
+
+**Why:** the failure card must say what happened and that no money moved.
 ### D-165 — the parlay reserve's Tempo seam: rested depth at 20 s, a 0.05 fair-value floor per leg, one spot per leg (decision, S10a, 2026-09-30)
 
 Masayume's `ParlayReserve` ports with its maths, caps and launch parameters unchanged (12 % margin, λ 0.40, 3 legs, 60 %

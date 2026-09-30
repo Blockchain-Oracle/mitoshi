@@ -4,8 +4,10 @@
  * TxLifecycle reducer (D-052) so the CTA, the chips and the failure card read one state: a second tap while one is in
  * flight is absorbed; a requote comes back as the new cost to confirm; an ambiguous send is "unknown", never re-sent.
  * On a fill: the reads it changes refresh, the stake is remembered (D-048) and the call pins to the user (calls store).
+ * Once the key has signed and the bytes are final, the call shows as confirmed-pending (D43, D-150): the Call card is on
+ * screen while the chain includes it, and rolls back to the ticket with the chain's answer if it did not fill.
  */
-import type { Address, Hex, OrderOutcome, OrderRequest, Quote } from "@cwf/core";
+import type { Address, Hex, OrderOutcome, OrderRequest, Quote, Side } from "@cwf/core";
 import { reduceTx, TX_IDLE, type TxState } from "@cwf/core";
 import { invalidateAfterWrite } from "@cwf/markets/react";
 import { useTapSubmitter } from "@/providers/wallet/tap-session";
@@ -34,6 +36,8 @@ export function usePlaceBet(wallet: Address | null) {
   const queryClient = useQueryClient();
   const [tx, dispatch] = useReducer(reduceTx, TX_IDLE);
   const [outcome, setOutcome] = useState<OrderOutcome | null>(null);
+  /** The call as the user confirmed it: what a confirmed-pending card shows until the receipt names the fill. */
+  const [confirmedCall, setConfirmedCall] = useState<{ side: Side; quote: Quote } | null>(null);
   const inFlight = useRef(false);
 
   const place = useCallback(
@@ -41,6 +45,7 @@ export function usePlaceBet(wallet: Address | null) {
       if (inFlight.current || !submitter || !wallet) return;
       inFlight.current = true;
       setOutcome(null);
+      setConfirmedCall({ side: request.side, quote: request.displayedQuote });
       dispatch({ type: "confirm", nowMs: Date.now() });
       // Tap timing (§2.4 "Call card ≤ 1 s p50"): the lane's pre-send checks, then the send → receipt; read by the gate.
       const markSafe = (name: string) => {
@@ -53,9 +58,11 @@ export function usePlaceBet(wallet: Address | null) {
       markSafe("cwf:tap:start");
       try {
         const result = await submitter.submitOrder({ ...request, wallet }, (phase, detail) => {
-          if (phase === "submitted") {
-            markSafe("cwf:tap:sent");
-            dispatch({ type: "submitted", txHash: detail?.txHash ?? null, validBeforeSec: null });
+          if (phase === "submitted") markSafe("cwf:tap:sent");
+          if (phase === "confirming") {
+            markSafe("cwf:tap:signed");
+            // A pre-open call rests by design; only a taker is shown as placed before its receipt.
+            dispatch({ type: "submitted", txHash: detail?.txHash ?? null, validBeforeSec: null, optimistic: !options.resting });
           }
         });
         markSafe("cwf:tap:done");
@@ -65,15 +72,19 @@ export function usePlaceBet(wallet: Address | null) {
           case "confirmed":
           case "nothingFilled":
             dispatch({ type: "receipt", txHash: hash!, status: "success" });
-            await invalidateAfterWrite(queryClient, { wallet, marketId: request.market.marketId });
+            // Refresh what the fill changed without holding the tap lock: awaiting every refetch here absorbed the
+            // next tap for as long as the slowest read took (S7 gate: > 2 min on a cold index).
+            void invalidateAfterWrite(queryClient, { wallet, marketId: request.market.marketId });
             break;
           case "requote":
             dispatch({ type: "reset" });
             break;
           case "reverted":
+            announce(TICKET.rolledBack);
             dispatch(hash ? { type: "receipt", txHash: hash, status: "reverted", diagnosis: result.diagnosis } : { type: "error", diagnosis: result.diagnosis });
             break;
           case "refused":
+            if (result.diagnosis.kind !== "requote") announce(TICKET.rolledBack);
             dispatch({ type: "error", diagnosis: result.diagnosis });
             break;
           case "unknown":
@@ -107,9 +118,10 @@ export function usePlaceBet(wallet: Address | null) {
 
   const reset = useCallback(() => {
     setOutcome(null);
+    setConfirmedCall(null);
     dispatch({ type: "reset" });
   }, []);
   const requoted: Quote | null = outcome?.status === "requote" ? outcome.quote : null;
   const placing = tx.kind === "signing" || tx.kind === "submitted";
-  return { state: { tx, outcome } satisfies PlaceBetState, place, reset, requoted, placing };
+  return { state: { tx, outcome } satisfies PlaceBetState, place, reset, requoted, placing, confirmedCall };
 }

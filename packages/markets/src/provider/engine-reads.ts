@@ -40,8 +40,51 @@ async function discover(fromIndex: () => Promise<MarketId[]>, lookback: number):
   }
 }
 
+/**
+ * One lens read per Window per render pass (D-152). The lane list reads every live Window head-fresh, and each lane
+ * card then asked for its own Window's snapshot right after — the same ~69 Windows again, a second 230 KB multicall
+ * whose ABI decode was /markets' longest task (0.35–0.5 s at 4× CPU). A display read of a Window answered by the lens
+ * within the last `SHARED_READ_MS` reuses that answer; anything older is read again. The order lane's status gate
+ * never uses this: it reads the Window itself at submit (canon #1).
+ */
+export const SHARED_READ_MS = 1_000;
+const recent = new Map<MarketId, { atMs: number; facts: WindowFacts | null }>();
+const inflight = new Map<MarketId, Promise<WindowFacts | null>>();
+
+export async function readWindowsShared(ids: readonly MarketId[], nowMsFn: () => number = Date.now): Promise<Map<MarketId, WindowFacts>> {
+  const now = nowMsFn();
+  const waits: [MarketId, Promise<WindowFacts | null>][] = [];
+  const want: MarketId[] = [];
+  for (const id of ids) {
+    const hit = recent.get(id);
+    const flying = inflight.get(id);
+    if (hit && now - hit.atMs <= SHARED_READ_MS) waits.push([id, Promise.resolve(hit.facts)]);
+    else if (flying) waits.push([id, flying]);
+    else want.push(id);
+  }
+  if (want.length > 0) {
+    // One read for everything not answered or in flight; each id's promise settles with it.
+    const read = readWindows(want).then((m) => {
+      const at = nowMsFn();
+      for (const id of want) recent.set(id, { atMs: at, facts: m.get(id) ?? null });
+      if (recent.size > 2_000) for (const [id, v] of recent) if (at - v.atMs > SHARED_READ_MS) recent.delete(id);
+      return m;
+    });
+    const settle = read.finally(() => want.forEach((id) => inflight.delete(id)));
+    settle.catch(() => undefined);
+    for (const id of want) {
+      const one = read.then((m) => m.get(id) ?? null);
+      inflight.set(id, one);
+      waits.push([id, one]);
+    }
+  }
+  const out = new Map<MarketId, WindowFacts>();
+  for (const [id, facts] of await Promise.all(waits.map(async ([id, p]) => [id, await p] as const))) if (facts) out.set(id, facts);
+  return out;
+}
+
 export async function windowFacts(marketId: MarketId): Promise<WindowFacts> {
-  const facts = (await readWindows([marketId])).get(marketId);
+  const facts = (await readWindowsShared([marketId])).get(marketId);
   if (!facts) throw new ReadingError(diagnosis("market-not-trading", `unknown Window ${marketId}`, { errorName: "UnknownMarket" }));
   return facts;
 }
@@ -50,12 +93,12 @@ export const listLiveLanes = (): Promise<Reading<LaneSet>> =>
   engineReading("lanes", async () => {
     const now = nowSec();
     const ids = await discover(() => indexLiveIds(now), 2);
-    const windows = [...(await readWindows(ids)).values()].map((w) => w.market);
+    const windows = [...(await readWindowsShared(ids)).values()].map((w) => w.market);
     return groupIntoLanes(windows.filter((m) => m.state === "open" && m.lockAtSec > now));
   });
 
 export const getMarket = (marketId: MarketId): Promise<Reading<EventMarket | null>> =>
-  engineReading(`market:${marketId}`, async () => (await readWindows([marketId])).get(marketId)?.market ?? null);
+  engineReading(`market:${marketId}`, async () => (await readWindowsShared([marketId])).get(marketId)?.market ?? null);
 
 export const listSettled = (limit = 50): Promise<Reading<EventMarket[]>> =>
   engineReading(`settled:${limit}`, async () => {

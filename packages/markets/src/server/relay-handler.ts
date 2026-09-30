@@ -32,8 +32,11 @@ export const relayContext = new AsyncLocalStorage<RelayContext>();
 export function createRelayHandler(config: RelayHandlerConfig) {
   const account = privateKeyToAccount(config.feePayerPrivateKey);
   const reader = createPublicClient({ chain: config.chain, transport: http(config.rpcUrl) });
+  // A sender that has transacted can never be new again (protocol nonces only grow): remember it, so a returning
+  // sender's fill does not wait on an RPC round trip for it (the tap's latency, D-150).
+  const seen = new Set<string>();
   const validate = createRelayValidator({
-    engine: { chainId: config.chain.id, feePayer: account.address, policies: config.policies },
+    engine: { chainId: config.chain.id, feePayer: account.address, policies: config.policies, reader: reader as never },
     ledger: config.ledger,
     limits: config.limits,
     getContext: () => relayContext.getStore(),
@@ -41,7 +44,12 @@ export function createRelayHandler(config: RelayHandlerConfig) {
     onVerdict: config.onVerdict,
     // TIP-1000 first-transaction gas: a sender whose protocol nonce is 0 has never transacted. "pending" so a fill that
     // races its own earlier send is not given the allowance twice.
-    senderIsNew: async (sender) => (await reader.getTransactionCount({ address: sender, blockTag: "pending" })) === 0,
+    senderIsNew: async (sender) => {
+      if (seen.has(sender.toLowerCase())) return false;
+      const isNew = (await reader.getTransactionCount({ address: sender, blockTag: "pending" })) === 0;
+      if (!isNew) seen.add(sender.toLowerCase());
+      return isNew;
+    },
   });
   const handler = Handler.relay({
     chains: [config.chain] as never,

@@ -100,6 +100,26 @@ export function indexReader(sql: Sql) {
         order by m.resolved_ts_sec desc nulls last limit 500`;
     },
 
+    /**
+     * A wallet's Trading Balance history (index/0002, S7): the account as the events moved it, every grant it made (live,
+     * revoked or replaced — the trust surface's history), its latest vault fills and settlements. One row.
+     */
+    async vault(owner: string): Promise<IdxRow[]> {
+      const [account] = await sql`select owner, available_base::text, private_available_base::text, deposited_base::text, withdrawn_base::text, updated_block::text from idx_vault_accounts where owner = ${owner}`;
+      const grants = await sql`
+        select grant_id::text, owner, actor, kind, max_stake_per_trade_base::text, max_daily_spend_base::text, max_open_positions, max_price_raw::text, market,
+          expires_at_sec::text, budget_base::text, funded_base::text, spent_base::text, taps, revoked, returned_base::text, created_tx, created_at_sec::text,
+          revoked_tx, revoked_at_sec::text, last_used_tx, last_used_at_sec::text
+        from idx_vault_grants where owner = ${owner} order by grant_id desc limit 100`;
+      const executions = await sql`
+        select tx_hash, log_index, market, grant_id::text, outcome_idx, is_buy, cash_delta::text, token_delta::text, actor, at_sec::text
+        from idx_vault_executions where owner = ${owner} order by at_sec desc, log_index desc limit 200`;
+      const settlements = await sql`
+        select tx_hash, market, payout_base::text, yes_redeemed::text, no_redeemed::text, settled_by, at_sec::text
+        from idx_vault_settlements where owner = ${owner} order by at_sec desc limit 200`;
+      return [{ account: account ?? null, grants, executions, settlements }];
+    },
+
     async orders(q: { owner?: string; market?: string; openOnly?: boolean; limit?: number }): Promise<IdxRow[]> {
       return sql`
         select *, lots::text, filled_lots::text, remaining_lots::text, rested_order_id::text from idx_orders
