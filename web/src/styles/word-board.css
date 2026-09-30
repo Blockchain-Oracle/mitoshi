@@ -50,3 +50,17 @@
 .wq-q-pending {
   color: var(--gray-500);
 }
+
+/* Rendering on approach (D-183): ~50 cards sit screens below the fold on a phone and each carries a live countdown.
+   Off screen, a card keeps its place (its last rendered height, or this estimate) and skips style, layout and paint;
+   it is still in the page, the accessibility tree and find-in-page, and renders as it nears the viewport. */
+.wq-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 224px;
+}
+
+@media (min-width: 721px) {
+  .wq-card {
+    contain-intrinsic-size: auto 269px;
+  }
+}

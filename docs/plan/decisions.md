@@ -1277,6 +1277,21 @@ Runner (run 36706089863, fonts only): `/` CLS 0.085 → 0.000.
 
 **Why:** a fallback that only exists on Apple and Windows machines is not a fallback for most phones.
 
+### D-183 — what is off screen or not yet used costs the main thread nothing (decision, S4-perf, 2026-09-30)
+
+**Finding** (4× CPU traces, local and on the lab host): after D-181 the /markets steady state is still the rendering
+pipeline — each second ~70 countdowns change text and the browser re-lays out ~230 of ~2,600 layout objects and
+repaints (50–100 ms tasks at 4×), and the first data render lays out ~2,500 objects at once; ~50 of the 58 cards are
+screens below the fold on a phone. MotionScope's lazy `import("motion/react")` pulled the whole motion entry.
+**Decision:** word-board and lane cards take `content-visibility: auto` with their measured heights as
+`contain-intrinsic-size: auto …` (224/269 px, 342/475 px): off screen a card keeps its place and skips style, layout
+and paint, stays in the DOM, the accessibility tree and find-in-page, and renders as it nears the viewport; its
+countdown and price keep updating the DOM. MotionScope loads `domAnimation` from a module of its own
+(`components/motion-features.ts`, motion docs "Reduce bundle size"), so the lazy chunk is the feature package.
+
+**Why:** the lab counts every long task for the page's whole life; cards nobody can see should not be drawn every
+second.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
