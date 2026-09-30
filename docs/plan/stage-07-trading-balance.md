@@ -83,7 +83,8 @@
 `bd5574f` S7.7 `@cwf/markets` vault reads/intents/order route, P-256 session key + IndexedDB store, relay grant-sender
 rule · `43fe8bb` S7.8 live drive (two runs) · `1cf1e44` S7.9 settler crank + `idx_vault_*` + the indexer's vault source ·
 `e3547f4` S7.10 web port · `682b15c` / `bf0469c` S7.11 store + gate fixes (coordinator committed the WIP mid-step) ·
-`81a1209` S7.12 killed-tab evidence window · `76981b6` S7.13 `rate-limited` copy · this commit (gate evidence, docs).
+`81a1209` S7.12 killed-tab evidence window · `76981b6` S7.13 `rate-limited` copy · `426345a` S7.14 the no-fee-payer rule
+in `tx/send.ts` + docs · the final gate run on that code (acceptance/S7.md, "final code" row) and the UX gate.
 
 What exists:
 - `packages/core/src/vault/caps.ts` `simulateCaps` with the D-091 scope; `caps.vectors.json` 12 rows (forge + vitest).
