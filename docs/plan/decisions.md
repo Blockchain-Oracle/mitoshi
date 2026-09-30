@@ -1244,6 +1244,21 @@ path production never runs, and a second origin changes the page's connection gr
 same-origin (`NEXT_PUBLIC_INDEX_URL` unset); the proxy reproduces that with no change to the deployed server. The ops
 and stream CORS lists already allow `http://localhost:3000`.
 
+### D-181 — a list re-renders when what it shows changes, not on every clock tick (finding + decision, S4-perf, 2026-09-30)
+
+**Finding:** Lighthouse never sees the app pages go network-quiet (the price stream stays open), so every run lasts
+its 45 s limit and simulated TTI lands after the last long task — TBT counts the page's steady state, not just its
+load. On /markets that steady state is the clock: the word board read `useNowMs()` and handed `nowMs` to every
+WordCard (~60), so each second re-rendered the whole board, each card formatting its close time through
+`toLocaleTimeString` (a new Intl.DateTimeFormat per call); the eight lane cards did the same for their phase. A 4×
+CPU profile shows a 50–145 ms task every second, WordCard and `formatWallClock` on top.
+**Decision:** `useClockValue(derive)` (lib/clock) subscribes to the shared clock but re-renders its reader only when
+the derived primitive changes: the board derives the minute it already grouped on, a lane card its Window's phase.
+Countdowns tick as their own leaves, as they already subscribed. `formatWallClock` keeps one formatter (same locale,
+options and output; `display.test.ts`). Nothing shown changes: the same countdowns, groups and phases, each second.
+
+**Why:** the clock ticks for the numbers that move, not for the sixty cards around them.
+
 ### D-182 — metric-matched fallbacks exist on every platform (finding + decision, S4-perf, 2026-09-30)
 
 **Finding** (`lighthouse.yml` branch mode on trunk, run 36689048574): `/` CLS 0.085 is one shift of the pillars

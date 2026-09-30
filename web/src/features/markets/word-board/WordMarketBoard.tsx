@@ -10,7 +10,7 @@ import { groupByHorizon } from "@cwf/core";
 import { PLAIN_WORDS, wordQuestion } from "@cwf/core/copy";
 import { formatWallClock } from "@cwf/core/units";
 import { Countdown } from "@/components/data";
-import { useNowMs } from "@/lib/clock";
+import { useClockValue } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { MARKETS, WORD_BOARD } from "../copy";
 import { laneTabKey, laneTabLabel } from "../data/lane-view";
@@ -27,7 +27,7 @@ function impliedUpShare(up: number | null, down: number | null): number | null {
   return Math.round((up / (up + down)) * 100);
 }
 
-function WordCard({ market, nowMs, onSelect }: { market: EventMarket; nowMs: number; onSelect: Select }) {
+function WordCard({ market, onSelect }: { market: EventMarket; onSelect: Select }) {
   const { upCents, downCents, hydrating } = useTopOfBook(market, WORD_BOOK_POLL_MS);
   const closeClock = formatWallClock(market.expirySec * 1000);
   const question = wordQuestion({ ...market, marketId: String(market.marketId) }, PRICE_SCALE, closeClock);
@@ -38,7 +38,7 @@ function WordCard({ market, nowMs, onSelect }: { market: EventMarket; nowMs: num
       <div className="wq-top">
         <AssetDisc asset={market.asset} className="wq-btc" />
         <span className="wq-meta">{market.asset} · {laneTabLabel(laneTabKey(market.lane, market.intervalSec))}</span>
-        <Countdown expirySec={market.expirySec} intervalSec={market.intervalSec} nowMs={nowMs} className="wq-clock" />
+        <Countdown expirySec={market.expirySec} intervalSec={market.intervalSec} className="wq-clock" />
       </div>
       <p className={cn("wq-q", question.pending && "wq-q-pending")}>{question.text}</p>
       {share === null ? <div className="wq-oddsbar wq-oddsbar-unknown" aria-hidden /> : <div className="wq-oddsbar" aria-hidden><div className="wq-oddsfill" style={{ width: `${share}%` }} /></div>}
@@ -61,10 +61,11 @@ function WordCard({ market, nowMs, onSelect }: { market: EventMarket; nowMs: num
 }
 
 export function WordMarketBoard({ laneSet, onSelect }: { laneSet: LaneSet | null; onSelect: Select }) {
-  const nowMs = useNowMs();
-  // Group on a minute's resolution so the board re-sorts once a minute, not every tick; the countdowns tick themselves.
-  const groups = groupByHorizon(laneSet, nowMs === 0 ? 0 : Math.floor(nowMs / 60_000) * 60_000);
-  if (laneSet === null || nowMs === 0) return <div className="words-empty">{WORD_BOARD.reading}</div>;
+  // The board groups on a minute's resolution and re-renders once a minute, not every tick (D-181): each card's
+  // countdown reads the shared clock as its own leaf.
+  const minuteMs = useClockValue((nowMs) => Math.floor(nowMs / 60_000) * 60_000);
+  const groups = groupByHorizon(laneSet, minuteMs);
+  if (laneSet === null || minuteMs === 0) return <div className="words-empty">{WORD_BOARD.reading}</div>;
   if (groups.length === 0) return <div className="words-empty">{WORD_BOARD.between}</div>;
   return (
     <>
@@ -76,7 +77,7 @@ export function WordMarketBoard({ laneSet, onSelect }: { laneSet: LaneSet | null
           </div>
           <div className="words-grid">
             {group.markets.map((m) => (
-              <WordCard key={m.marketId} market={m} nowMs={nowMs} onSelect={onSelect} />
+              <WordCard key={m.marketId} market={m} onSelect={onSelect} />
             ))}
           </div>
         </section>
