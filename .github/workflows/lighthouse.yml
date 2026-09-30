@@ -1,39 +1,109 @@
 name: lighthouse
-# Lab performance gate (plan §3.1, D-042/D-071) against a deployed testnet build: Lighthouse CI, mobile 390 px, 4x CPU,
-# simulated 4G, 3 runs, median run; LCP <= 2.5 s, CLS <= 0.05, TBT <= 200 ms. Hosting is Coolify (D-061): the deploy
-# step (Coolify CLI) fires `repository_dispatch` type `coolify-deployment-success` with `client_payload.url`; it
-# also runs by hand with a URL. Each later stage appends its routes to ROUTES.
+# Lab performance gate (plan §3.1, D-042/D-071): Lighthouse CI, mobile 390 px, 4x CPU, simulated 4G, 3 runs, median
+# run; LCP <= 2.5 s, CLS <= 0.05, TBT <= 200 ms. Two modes, one config (`lighthouserc.json`):
+# - deployed: against a deployed testnet build. Hosting is Coolify (D-061): the deploy step (Coolify CLI) fires
+#   `repository_dispatch` type `coolify-deployment-success` with `client_payload.url`; it also runs by hand with `url`.
+# - branch (D-180): `ref` is built on this runner with production's public config and served by `next start` behind
+#   `scripts/perf/lighthouse-serve.mjs` (one origin; `/api/index/*` is the live testnet index), so a branch is
+#   measured on the same quiet host before it is deployed:
+#     gh workflow run lighthouse.yml --ref <branch carrying this file> -f ref=<branch|sha to measure>
+# Each later stage appends its routes to ROUTES.
 on:
   repository_dispatch:
     types: [coolify-deployment-success]
   workflow_dispatch:
     inputs:
       url:
-        description: Base URL of the deployed build (no trailing slash)
-        required: true
+        description: Base URL of the deployed build (no trailing slash); leave empty to measure `ref` instead
+        required: false
+      ref:
+        description: Branch, tag or SHA to build and serve on the runner (used when `url` is empty)
+        required: false
 
 jobs:
   lighthouse:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
     env:
-      BASE: ${{ github.event.client_payload.url || inputs.url }}
+      BASE: ${{ github.event.client_payload.url || inputs.url || 'http://localhost:3000' }}
+      REF: ${{ (github.event_name == 'workflow_dispatch' && !inputs.url) && inputs.ref || '' }}
       ROUTES: "/ /markets /markets/0x0000000000000000000000000000000000000000000000000000000000000001 /portfolio /proof/0x0000000000000000000000000000000000000000000000000000000000000001 /status"
     steps:
+      - name: Mode
+        run: |
+          if [ -z "${{ github.event.client_payload.url || inputs.url || inputs.ref }}" ]; then
+            echo "::error::give either url (a deployed build) or ref (a branch to build here)"; exit 1
+          fi
+          echo "Measuring ${REF:+ref $REF served at }$BASE" | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-      - name: Lighthouse CI
+
+      # Branch mode: build `ref` with production's public values (no secrets; the testnet web's inlined config) and serve
+      # it as production does. The runner page is http://localhost:3000, an origin the ops/stream CORS list allows.
+      - name: Check out ref
+        if: env.REF != ''
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.REF }}
+          path: target
+          submodules: false
+      - uses: pnpm/action-setup@v4
+        if: env.REF != ''
+        with:
+          package_json_file: target/package.json
+      - name: Build ref
+        if: env.REF != ''
+        working-directory: target
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+          NEXT_TELEMETRY_DISABLED: "1"
+          NEXT_PUBLIC_NETWORK: testnet
+          NEXT_PUBLIC_APP_ORIGIN: http://localhost:3000
+          NEXT_PUBLIC_OPS_URL: https://ops.testnet.mitoshi.xyz
+          NEXT_PUBLIC_STREAM_URL: https://stream.testnet.mitoshi.xyz
+        run: |
+          set -eu
+          pnpm install --frozen-lockfile --filter "@cwf/web..."
+          pnpm --filter @cwf/web build
+          git log -1 --format='Built %h %s' | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Serve ref
+        if: env.REF != ''
+        run: |
+          set -eu
+          (cd target/web && NODE_ENV=production nohup pnpm exec next start -p 3001 > "$RUNNER_TEMP/next.log" 2>&1 &)
+          PORT=3000 APP_UPSTREAM=http://127.0.0.1:3001 INDEX_UPSTREAM=https://testnet.mitoshi.xyz \
+            nohup node scripts/perf/lighthouse-serve.mjs > "$RUNNER_TEMP/serve.log" 2>&1 &
+          for _ in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/ && break; sleep 1; done
+          curl -sf -o /dev/null http://localhost:3000/ || { cat "$RUNNER_TEMP/next.log" "$RUNNER_TEMP/serve.log"; exit 1; }
+          curl -sf "http://localhost:3000/api/index/markets?settled=1&limit=1" | head -c 300; echo
+          # Warm every route twice (a deployed server has served them already).
+          for _ in 1 2; do for r in $ROUTES; do curl -s -o /dev/null -w "%{http_code} %{time_total}s $r\n" "$BASE$r"; done; done
+
+      - name: Lighthouse CI collect
+        id: collect
         run: |
           set -eu
           urls=""
           for r in $ROUTES; do urls="$urls --url=${BASE%/}$r"; done
           npx -y @lhci/cli@0.15.1 collect --config=lighthouserc.json $urls
-          npx -y @lhci/cli@0.15.1 assert --config=lighthouserc.json
+      - name: Lighthouse reports
+        if: always()
+        run: |
           npx -y @lhci/cli@0.15.1 upload --config=lighthouserc.json
+          node scripts/perf/lighthouse-summary.mjs .lighthouseci
+      - name: Lighthouse CI assert
+        if: always() && steps.collect.outcome == 'success'
+        run: npx -y @lhci/cli@0.15.1 assert --config=lighthouserc.json
+      - name: Server logs
+        if: always() && env.REF != ''
+        run: tail -n 60 "$RUNNER_TEMP/next.log" "$RUNNER_TEMP/serve.log" || true
+      # `.lighthouseci` is a dot-directory: upload-artifact v4 skips hidden files unless told (the empty-artifact warning).
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: lighthouse-reports
           path: .lighthouseci
+          include-hidden-files: true
+          if-no-files-found: warn

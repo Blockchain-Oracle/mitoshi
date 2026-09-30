@@ -1123,6 +1123,23 @@ already counts "Returned" in "Your calls", and the index's `state=voided` query 
 
 **Why:** a void is the chain's answer to a missed print; staging one would be a fake.
 
+### D-180 — a branch is measured on the lab gate's host before it is deployed (decision, S4-perf, 2026-09-30)
+
+`lighthouse.yml` gains a `workflow_dispatch` `ref` mode beside the deployed-URL mode (`repository_dispatch` and `url`
+unchanged): the runner builds `ref` with the testnet web's public build values (`NEXT_PUBLIC_NETWORK=testnet`, the ops
+and stream URLs, `NEXT_PUBLIC_APP_ORIGIN=http://localhost:3000`; no secret) and serves it with `next start` behind
+`scripts/perf/lighthouse-serve.mjs`: one origin, `http://localhost:3000`, where `/api/index/*` is the live testnet index
+(public GETs, no cookie forwarded) and everything else is the branch. The same `lighthouserc.json` collects and asserts;
+`scripts/perf/lighthouse-summary.mjs` writes the median run's LCP/CLS/TBT/script per route, its shifting elements,
+longest tasks and costliest scripts to the job summary; the `.lighthouseci` artifact uploads (a dot-directory, which
+`upload-artifact` v4 skips unless `include-hidden-files`, the empty-artifact warning) before the assert can fail.
+
+**Why the proxy, not `NEXT_PUBLIC_INDEX_URL=https://testnet.mitoshi.xyz/api/index`:** the deployed index answers with no
+CORS headers, and an allowance would only exist after a deploy, so every pre-deploy run would take the chain fallback
+path production never runs, and a second origin changes the page's connection graph. Production reads the index
+same-origin (`NEXT_PUBLIC_INDEX_URL` unset); the proxy reproduces that with no change to the deployed server. The ops
+and stream CORS lists already allow `http://localhost:3000`.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
