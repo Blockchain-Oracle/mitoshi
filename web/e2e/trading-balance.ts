@@ -243,7 +243,16 @@ try {
   // 7. Stop it (revoke) from the trust surface: one assertion, sponsored; the unspent budget returns to the balance.
   before = assertions;
   await page.getByRole("button", { name: "Stop", exact: true }).first().click();
-  const stopped = await expect(page.getByText(/No live grants/)).toBeVisible({ timeout: 90_000 }).then(() => true, () => false);
+  let stopped = await expect(page.getByText(/No live grants/)).toBeVisible({ timeout: 90_000 }).then(() => true, () => false);
+  if (!stopped) {
+    // The public RPC's per-IP limit can refuse the raw send ("Nothing was taken"): the user's own next step is Stop again.
+    const tech = page.getByText("Technical details");
+    if (await tech.count()) await tech.first().click().catch(() => undefined);
+    const all = await page.locator("body").innerText();
+    note({ step: "revoke-first-attempt", text: all.slice(all.indexOf("Something went sideways"), all.indexOf("Something went sideways") + 90), technical: all.slice(all.indexOf("Details:"), all.indexOf("Details:") + 80) });
+    await page.getByRole("button", { name: "Stop", exact: true }).first().click();
+    stopped = await expect(page.getByText(/No live grants/)).toBeVisible({ timeout: 90_000 }).then(() => true, () => false);
+  }
   await page.screenshot({ path: join(out, `settings-stopped-${width}.png`), fullPage: true });
   note({ step: "revoke", stopped, prompts: assertions - before, history: await page.getByText(/Stopped grants/).count() });
 

@@ -50,6 +50,9 @@ describe("EventVault reads on Moderato", () => {
     const sinceSec = Number(block.timestamp) - 5;
     const record = { id: "r1", kind: "order", wallet: KEY, createdAtMs: sinceSec * 1000, state: "unknown", summary: "Up", chainId: 42431, validBeforeSec: sinceSec + 25, nonceKind: "expiring", sponsored: true, marketId: M } as IntentRecord;
     expect(await vaultEvidence(KEY, record, sinceSec)).toBe("landed");
+    // The same key's tap on the same Window, but outside this record's own life (written 2 min later): absent.
+    const later = { ...record, createdAtMs: (sinceSec + 120) * 1000, validBeforeSec: sinceSec + 145 };
+    expect(await vaultEvidence(KEY, later, sinceSec + 120)).toBe("absent");
     expect(await vaultEvidence("0x00000000000000000000000000000000000000b2", { ...record, wallet: "0x00000000000000000000000000000000000000b2" }, sinceSec)).toBe("absent");
   });
 });
