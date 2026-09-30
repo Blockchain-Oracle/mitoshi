@@ -13,6 +13,10 @@
 - [x] S3.11 voided Windows fixed: Tempo HTTP transport without JSON-RPC batching + 8 KB Multicall3 chunks (D-130); a
   failed read or send is never a finished Window (D-131); roll rules unchanged (D-132); one paced RPC budget per URL,
   print path first (D-134); `scripts/drive/rpc-load.ts`.
+- [ ] S3 fix 2 (end-of-soak causes, D-185…D-187): the roller never lists a 24/7 stock Window on RedStone's 04:00 ET
+  `---24_7` gap (D-185); halt-watch holds the board when it can't read RedStone and says so in health, and halt-replay
+  replays the log in id order (D-186); `recount.ts` walks logs in windows the RPC accepts and counts every indexed source
+  (D-187).
 - **Gate:** 24 h unattended across a US session and a crypto overnight (open, print, settle, auto-pay); recount ==
   index; recorded halts replayed; Gap proven over the first Friday close → Monday open after the gate (dates recorded in acceptance).
   **Rows:** M-06, M-07, M-08, G-03 (ops), G-07, G-12, G-13, G-14, G-15, L-73, UX-03 (ops stream).
@@ -54,6 +58,11 @@
 - **F-S3-11 (S3.11, CORS).** The stream and price routes already answer exact-origin CORS for `https://testnet.mitoshi.xyz`
   and `http://localhost:3000` on testnet (no credentials, D-049; live probe 11:46Z: both echoed, `https://evil.example`
   gets none). An origin outside the list gets no header by design; `OPS_CORS_ORIGINS` overrides. Test added.
+- **F-S3-12 (S3 fix 2, 04:00 ET).** All 42 end-of-soak voids came from one instant: RedStone signs no `<T>---24_7`
+  package at 04:00:00 ET (08:00Z EDT), every day archived (09-28, 09-29, 09-30), while 04:00:10 is 5/5. The verifier
+  admits only packages stamped exactly T, so the roller now skips the two Windows per 24/7 lane touching it (D-185).
+  Other boundaries: 09:30:00 ET was short on the plain feed twice in the laptop archive (09-15 AMZN/MSFT, 09-16 GOOGL,
+  2 signers), never in the ops archive — sporadic, left listed.
 
 ## Handoff
 

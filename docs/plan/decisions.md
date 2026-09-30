@@ -1228,6 +1228,30 @@ RPC endpoint off the users' IPs moves the limit away (D-139).
 
 **Why:** the failure card must say what happened and that no money moved.
 
+### D-185 — 24/7 stock Windows never open or close on RedStone's 04:00 ET `---24_7` gap (finding + decision, S3 fix 2, 2026-09-30)
+
+**Finding** (`print_archive`, every 5-minute boundary 2026-09-28 00:30 → 09-30 09:45 ET present; RedStone gateway
+`historical` probed 2026-09-30 13:49Z): RedStone publishes no `<T>---24_7` package, and no `---PRE_AFTER`, stamped
+exactly 04:00:00 ET, the overnight → pre-market switch: 0 signers for all seven 24/7 names (TSLA, NVDA, AAPL, MSFT,
+META, GOOGL, AMZN) on 09-28, 09-29 and 09-30 at 08:00:00Z, while 03:59:50 and 04:00:10 carry 5/5 and the plain,
+`---EXTENDED` and BTC/ETH/SOL feeds are complete at that instant. The engine's verifier admits only packages stamped
+exactly T (`RedStoneTimestampMismatch`), so a Window whose open or close T is 04:00 ET can never print: at 2026-09-30
+08:00Z the soak voided 42 (7 names × 3 cadences × the Window ending there and the one starting there). No other
+archived boundary on a feed a lane depends on is short: 09:30, 16:00 and 20:00 ET carry 5/5 on `---24_7` (gateway,
+09-29/30), crypto has none, and the plain feeds' only short boundaries are 09:30:00 ET on 09-15 (AMZN, MSFT: 2 signers)
+and 09-16 (GOOGL: 2) in the laptop archive (regular hours only, each fetched once; 09:30:10 was 5/5) — sporadic, none
+in the three ops-archived sessions, so the SessionOpen Windows stay listed (a miss there voids with funds returned).
+**Decision:** the roller never lists a 24/7 stock Window printed by RedStone whose open or close T is 04:00:00 ET
+(`isRedStone24x7Gap` in core, ET wall time from `et-time.ts` like the calendar: 08:00Z under EDT, 09:00Z under EST).
+03:55–04:00 and 04:00–04:05 (5m), 03:45–04:00 and 04:00–04:15 (15m), 03:00–04:00 and 04:00–05:00 (60m) ET are not
+listed; the grid does not shift (every Window stays aligned to its cadence, as the engine checks). The next Window
+(04:05, 04:15, 05:00 ET) lists when the first skipped one would have (the lead before 03:55, 03:45, 03:00 ET), so the
+lane shows it with the existing "OPENS <time>" line instead of sitting empty. Crypto, Data Streams versions and the
+Regular and Gap lanes are unaffected. The rule applies every day: the archive holds no weekend of `---24_7` yet; if Sat
+and Sun 04:00 ET prove complete (archive, 2026-10-03/04), it narrows to session days.
+
+**Why:** no lane is removed; only the Windows RedStone cannot print are.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
