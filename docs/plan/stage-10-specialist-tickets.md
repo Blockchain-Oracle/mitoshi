@@ -38,6 +38,16 @@
   band on the archived BTC 06:10Z open and settles it on the real 06:15Z close. On the engine's tick grid Masayume's
   0.841345 centre becomes 0.8415 (vector re-derived exactly); the mock's "answer then clear" stale case has no engine
   equivalent (a verdict is final), so it split into the grace test and `test_mustSettle`.
+- F-S10-11 (10c.1, contracts): `LeverageReserve`/`LeverageGateway`/`LeverageMath`/`ILeverageReserve` ported onto the
+  engine seam (D-174); runtime 21,629 B. Masayume's open 19 + lifecycle 15 + vectors 2 run on the real engine (a real
+  maker's book, the reserve's own engine position, real closes and voids; the engine's 0.001 lot sizes DOWN to 45.714
+  where Masayume's 0.01 lot gave 45.71); the seam suite adds 14 (D-114 at birth ×3, knock-out over rested depth,
+  pay-or-owe exits, `LyingEngine` accounting ×2 covering five buy lies, a short sale and a short redemption; D-116 ×2;
+  PD-2 entry ceiling, knock-out second test, proof freshness; P12; constructor); the Moderato fork test opens a 2×
+  boost on the archived BTC Window, refuses a knock-out into a rested lowball bid because the real packages price the
+  position healthy, and settles it on the real close. Two Masayume tests change with D-114: a knock-out on a book too
+  thin for the whole position refuses instead of selling part; the pool's "refund as credit" knob is the engine's
+  `sweep`, which finds nothing (a taker never accrues credit). The mock's taker fee has no engine equivalent (T10).
 
 ## Handoff
 

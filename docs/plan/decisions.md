@@ -1115,6 +1115,35 @@ reserve refuses on chain what Agari could only refuse in the browser.
 
 **Why:** every sponsored call pays only the round's owner or the caller; capital pays its own way in.
 
+### D-174 — the leverage reserve's Tempo seam: Agari's D-114/D-116 carried, PD-2 on entry and on the knock-out (decision, S10c, 2026-09-30)
+
+Masayume's `LeverageReserve`/`LeverageGateway`/`LeverageMath` port with the maths, vectors and launch parameters
+unchanged (3×, 8 % premium on the front, 120 % maintenance, 60 % exposure; entry 0.05–0.95, 200 per position, 500 per
+Window, 64 open, no opens in the last 90 s — now counted to `lockAt`). The DreamDEX pool and ERC-6909 become the
+reserve's own engine position:
+
+- **Measured trades (D-114):** every buy and sale is an IOC through `EngineSeam.placeMeasured` (`withdrawProceeds`,
+  `expireSec = min(now + 60, lockAt)`), every settlement a `redeemPartialMeasured` of exactly the position's lots; a
+  report that disagrees with the money reverts `EngineAccountingMismatch`. `sweep(bytes32 marketId)` replaces
+  `sweep(pool)`; the real engine never leaves a taker a credit, so it finds nothing.
+- **Healthy and sellable at birth (D-114):** after the fill, rested depth (max(Series, params) `minRestSec` = 20 s) must
+  take the whole size (`ThinBook`) at a mark above the line (`UnhealthyAtEntry`). The entry itself takes live orders.
+- **Knock-out (D-114 + PD-2, Q-022):** judged on the whole position over rested depth — a thinned book refuses
+  (`ThinBook`) instead of Masayume's partial sale — sold with the last rested level as the limit, and only when the
+  fair-value mark on a same-call signed spot (`fairSide × quantity`) is also under the line (`FairValueHealthy`).
+  `knockOut(id, spotProof)`; `markOf` (book) and `fairMarkOf(id, spotE8)` (model) preview both halves.
+- **Entry ceiling (PD-2):** `open(…, spotProof)` refuses `AboveFairValue` when the side's entry price is more than
+  `fairSlackRaw` = 0.05 above the model (a ceiling: a cheap entry is the owner's gain).
+- **Void bound (D-116):** `fronted × PAYOUT_DENOMINATOR ≤ quantity × PAYOUT_VOID` on the quote and on the fill
+  (`VoidWouldShort`): 3× refuses above ≈ 71¢, 2× never does.
+- **Pay or owe (D-114):** every exit pays the owner through `_payOrOwe`; the open's change goes back the same way;
+  a supplier's own withdrawal is P12-checked.
+- The `LyingEngine` gained the lens reads the reserve needs (a one-level book, the grid, a ticker/Series/open print,
+  terminal flags) so the accounting assert is proven for buys, sales and redemptions.
+
+**Why:** A.4.3, Agari's D-114/D-116 and PD-2 — a reserve that fronts capital must not be knocked out or opened on a
+book someone arranged, and a void must never cost its suppliers the front.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
