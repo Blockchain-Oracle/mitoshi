@@ -11,6 +11,7 @@ import * as engine from "./engine-reads";
 import * as wallet from "./wallet-reads";
 import { fetchAssetPrice, fetchPriceHistory } from "./prices";
 import { getVaultHoldings, getVaultSnapshot } from "../vault/read";
+import { getVaultBets } from "../vault/positions";
 
 export function createMarketsProvider(): MarketsProvider {
   return {
@@ -39,6 +40,7 @@ export function createMarketsProvider(): MarketsProvider {
     getResolution: engine.getResolution,
     getVaultSnapshot,
     getVaultHoldings: (wallet, onchain) => getVaultHoldings(wallet, onchain.marketId),
+    listVaultBets: getVaultBets,
   };
 }
 

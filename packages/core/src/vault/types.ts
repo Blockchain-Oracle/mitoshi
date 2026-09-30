@@ -76,4 +76,24 @@ export interface VaultHoldings {
   downGrantId: bigint;
 }
 
+/** One Window the owner traded through the vault (S7): holdings now, the vault's own tally, and the Window. */
+export interface VaultBet {
+  marketId: MarketId;
+  asset: string;
+  intervalSec: number;
+  expirySec: number;
+  lockAtSec: number;
+  decimals: number;
+  state: "open" | "resolved" | "voided";
+  /** Held now (outcome raw units): zero once cranked or sold. */
+  upRaw: bigint;
+  downRaw: bigint;
+  costBase: bigint;
+  proceedsBase: bigint;
+  payoutBase: bigint;
+  /** 0 until the Window was cranked into the Trading Balance. */
+  settledAtSec: number;
+  lastAtSec: number;
+}
+
 export const VAULT_NOT_DEPLOYED = "EventVault is not deployed on this network yet" as const;

@@ -37,11 +37,18 @@ describe("vault intents → calls (C.2.3 vault rows)", () => {
     expect(approve.args).toEqual([vault.eventVault, 5_000_000n]);
     const call = decodeFunctionData({ abi: eventVaultAbi, data: arm.calls[1]!.data });
     expect(call.functionName).toBe("depositAndGrant");
-    const [, kind, actor, caps] = call.args as [bigint, number, Address, { market: string }];
+    const [, kind, actor, caps] = call.args as unknown as [bigint, number, Address, { market: string }];
     expect([kind, actor.toLowerCase(), caps.market]).toEqual([0, KEY, `0x${"0".repeat(64)}`]);
-    for (const intent of [{ kind: "vault-deposit", amountBase: 1n }, { kind: "vault-grant", terms }, { kind: "vault-fund-grant", grantId: 3n, amountBase: 25_000_000n }, { kind: "vault-move-private", amountBase: 1n }] as TxIntent[]) {
+    for (const intent of [{ kind: "vault-deposit", amountBase: 1n }, { kind: "vault-grant", terms }, { kind: "vault-fund-grant", grantId: 3n, amountBase: 25_000_000n }, { kind: "vault-move-private", amountBase: 1n }, { kind: "vault-deposit-and-fund", grantId: 3n, amountBase: 25_000_000n }] as TxIntent[]) {
       expect(encode(intent).sponsored, intent.kind).toBe(false);
     }
+  });
+
+  it("add to budget from the wallet is one root transaction: exact approve, deposit, fundGrant", () => {
+    const add = encode({ kind: "vault-deposit-and-fund", grantId: 3n, amountBase: 25_000_000n });
+    expect(add.sponsored).toBe(false);
+    expect(add.calls.map((c) => c.to)).toEqual([vault.collateral, vault.eventVault, vault.eventVault]);
+    expect([fn(add.calls[1]!.data), fn(add.calls[2]!.data)]).toEqual(["deposit", "fundGrant"]);
   });
 
   it("exits and housekeeping are one sponsored call each", () => {

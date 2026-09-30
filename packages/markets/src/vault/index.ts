@@ -4,3 +4,4 @@ export { crankSettleCall, encodeVaultIntent, placeCall, placeForCall, summarizeV
 export { diagnoseVault, VAULT_REVERT_KINDS, vaultErrorName } from "./errors";
 export { assertGrantCovers, bookVaultFill, CAP_ERROR, capRefusalText, submitVaultOrder } from "./order";
 export { vaultEvidence, vaultReconciler } from "./recovery";
+export { getVaultBets, listVaultBets, readVaultVerdict } from "./positions";

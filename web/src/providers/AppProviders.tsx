@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import type { ReactNode } from "react";
 import { ToastHost } from "@/components/ui/ToastHost";
 import { FundsHost } from "@/features/funding/FundsHost";
+import { TradingBalanceProvider } from "@/features/session/TradingBalanceProvider";
 import { WriteRecoveryGate } from "@/features/recovery";
 import { DataLayer } from "./data/DataLayer";
 import { useDataReady } from "./data/context";
@@ -25,16 +26,19 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <DataLayer>
       <WalletShellProvider>
-        {/* Writes the journal still holds open are asked about once per session; nothing is re-sent. */}
-        <WriteRecoveryGate />
-        {/* Add money (`openFunds()` from anywhere) and the first-credit welcome, both lazy. */}
-        <FundsHost />
-        {children}
-        <ToastHost limit={1} />
-        <WhenDataReady>
-          <PriceCache />
-          <SettledToasts />
-        </WhenDataReady>
+        {/* Tap-trading from the Trading Balance (S7): its view, actions and the session key's route for taps. */}
+        <TradingBalanceProvider>
+          {/* Writes the journal still holds open are asked about once per session; nothing is re-sent. */}
+          <WriteRecoveryGate />
+          {/* Add money (`openFunds()` from anywhere) and the first-credit welcome, both lazy. */}
+          <FundsHost />
+          {children}
+          <ToastHost limit={1} />
+          <WhenDataReady>
+            <PriceCache />
+            <SettledToasts />
+          </WhenDataReady>
+        </TradingBalanceProvider>
       </WalletShellProvider>
     </DataLayer>
   );

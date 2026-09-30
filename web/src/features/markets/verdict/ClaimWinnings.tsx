@@ -72,7 +72,9 @@ export function ClaimWinnings({ verdict, pinned, market, resolution, rows }: Cla
   const busy = tx.kind === "signing" || tx.kind === "submitted";
   const settledSec = market.resolvedAtMs ? Math.floor(market.resolvedAtMs / 1000) : market.expirySec;
   const autoInSec = settledSec + AUTO_PAY_GRACE_SEC - Math.floor(nowMs / 1000);
-  const paidWord = pinned.paidBy === "auto" ? VERDICT_UI.claim.paidAuto : VERDICT_UI.claim.claimed;
+  // A Trading Balance call (S7) is paid into the balance by the settler's crank: nothing to collect, no grace.
+  const intoBalance = pinned.into === "trading-balance";
+  const paidWord = intoBalance ? VERDICT_UI.claim.paidIntoBalance : pinned.paidBy === "auto" ? VERDICT_UI.claim.paidAuto : VERDICT_UI.claim.claimed;
   const words = isVoid ? voidWords(market, resolution) : null;
 
   const footer = paid ? (
@@ -82,6 +84,8 @@ export function ClaimWinnings({ verdict, pinned, market, resolution, rows }: Cla
       </div>
       {pinned.txHash ? <p className="cw-foot">{VERDICT_UI.claim.paidTx} <Hash value={pinned.txHash} href={txUrl(pinned.txHash, webEnv.markets.network)} /></p> : null}
     </>
+  ) : intoBalance ? (
+    <p className="cw-foot" role="status">{VERDICT_UI.claim.settlingIntoBalance}</p>
   ) : held ? (
     <div className="cw-loss mt-3" role="status">
       <div className="cw-loss-eyebrow">{VERDICT_UI.claim.held}</div>

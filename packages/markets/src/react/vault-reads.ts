@@ -4,7 +4,7 @@
  * Tempo port): one keyed query each under `keys.vault(wallet)`, so a vault write's `invalidateAfterWrite` refreshes
  * both, and the balance poll is the fallback for a tab whose stream is down.
  */
-import type { Address, MarketId, Reading, VaultHoldings, VaultSnapshot } from "@cwf/core";
+import type { Address, MarketId, Reading, VaultBet, VaultHoldings, VaultSnapshot } from "@cwf/core";
 import { keys } from "./keys";
 import { usePortReading } from "./window-reads";
 
@@ -21,4 +21,9 @@ export function useVaultHoldings(wallet: Address | null, marketId: MarketId | nu
     enabled: wallet !== null && marketId !== null,
     pollMs: VAULT_POLL_MS,
   });
+}
+
+/** The owner's recent Windows traded through the Trading Balance (newest first), for Portfolio's vault rows. */
+export function useVaultBets(wallet: Address | null, enabled = true): Reading<VaultBet[]> | null {
+  return usePortReading([...keys.vault(wallet), "bets"], (p) => p.listVaultBets(wallet!), { enabled: enabled && wallet !== null, pollMs: VAULT_POLL_MS });
 }

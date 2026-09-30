@@ -3,7 +3,8 @@
 // in the same atomic batch as the deposit, one signature), and sponsorship is the relay's vault policy (D-003).
 /**
  * EventVault intents (plan C.2.3 vault rows):
- * - capital intake and delegation setup — `deposit`, `depositAndGrant`, `grant`, `fundGrant` — are root-signed and
+ * - capital intake and delegation setup — `deposit`, `depositAndGrant`, `grant`, `fundGrant` (and deposit + fund in one
+ *   batch, "Add to budget") — are root-signed and
  *   **never sponsored** (the relay's `never` list refuses them anyway): the owner pays for money moving in and for
  *   arming a key; each carries its exact `pathUSD.approve(vault, amount)` in the same transaction;
  * - exits and housekeeping — `withdraw`, `withdrawPrivate`, `revoke`, `crankSettle`, `sweep` — are one call, sponsored
@@ -54,6 +55,8 @@ export function summarizeVault(intent: VaultIntent, decimals = USD_DECIMALS): st
       return `add ${amount(intent.amountBase)} and arm tap-trading with a ${amount(intent.terms.budgetBase)} budget`;
     case "vault-fund-grant":
       return `add ${amount(intent.amountBase)} to the tap-trading budget`;
+    case "vault-deposit-and-fund":
+      return `add ${amount(intent.amountBase)} from your wallet to the tap-trading budget`;
     case "vault-revoke":
       return `stop tap-trading grant #${intent.grantId}`;
     case "vault-crank-settle":
@@ -73,6 +76,11 @@ function callsOf(vault: Address, collateral: Address, intent: VaultIntent): { ca
       return { calls: [vaultCall(vault, "grant", grantArgs(intent.terms))], sponsored: false };
     case "vault-fund-grant":
       return { calls: [vaultCall(vault, "fundGrant", [intent.grantId, intent.amountBase])], sponsored: false };
+    case "vault-deposit-and-fund":
+      return {
+        calls: [approveCall(collateral, vault, intent.amountBase), vaultCall(vault, "deposit", [intent.amountBase]), vaultCall(vault, "fundGrant", [intent.grantId, intent.amountBase])],
+        sponsored: false,
+      };
     case "vault-move-private":
       return { calls: [vaultCall(vault, "moveToPrivate", [intent.amountBase])], sponsored: false };
     case "vault-withdraw":

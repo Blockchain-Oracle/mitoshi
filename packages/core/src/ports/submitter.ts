@@ -105,6 +105,8 @@ export type VaultIntent =
   /** Deposit and grant in one transaction, so no grant ever exists without its budget (Story 6.1). */
   | { kind: "vault-deposit-and-grant"; amountBase: bigint; terms: GrantTerms }
   | { kind: "vault-fund-grant"; grantId: bigint; amountBase: bigint }
+  /** Deposit from the wallet straight into a live grant's budget in one transaction ("Add to budget", S7). */
+  | { kind: "vault-deposit-and-fund"; grantId: bigint; amountBase: bigint }
   | { kind: "vault-revoke"; grantId: bigint }
   /** Permissionless: anyone may crank a settled Window into its owner's balance. */
   | { kind: "vault-crank-settle"; owner: Address; marketId: MarketId }

@@ -12,6 +12,11 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { dollars, shortAddress } from "@/providers/wallet/format";
 import { openFunds } from "@/lib/funds-event";
 import type { AccountMenuProps } from "./AccountMenu";
+import { useSessionView } from "@/features/session/context";
+
+// The persistent tap-trading allowance pill (S7, UX-06): a lazy island that loads only once a Trading Balance grant
+// exists, compact in the header (the full pill with its one-tap fix lives on the ticket and Portfolio).
+const AllowancePill = dynamic(() => import("@/features/session/AllowancePill").then((m) => m.AllowancePill), { ssr: false });
 
 // The account menu (Base UI Menu + floating-ui) is a lazy island preloaded on idle (§3.1); until it arrives the pill
 // renders the same trigger; a press (pointerdown, or click for keyboards) loads it and opens it, even mid-swap.
@@ -31,6 +36,7 @@ const loadMenu = () => (menuModule ??= import("./AccountMenu").then((m) => m.Acc
 
 export function HeaderAccount() {
   const session = useWalletSession();
+  const tapTrading = useSessionView();
   const [Menu, setMenu] = useState<ComponentType<AccountMenuProps> | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const load = useCallback(() => void loadMenu().then((C) => setMenu(() => C)), []);
@@ -47,6 +53,7 @@ export function HeaderAccount() {
   }
   return (
     <>
+      {tapTrading.grant && tapTrading.status !== "disarmed" ? <AllowancePill compact className="max-sm:hidden" /> : null}
       <MoneyPill address={session.address} />
       {Menu ? (
         <Menu open={menuOpen} onOpenChange={setMenuOpen} />
