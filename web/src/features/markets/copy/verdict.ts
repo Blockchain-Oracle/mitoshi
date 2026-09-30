@@ -33,6 +33,8 @@ export const VERDICT_UI = {
     youWon: "You won",
     claimed: "Collected",
     paidAuto: "Paid automatically",
+    paidIntoBalance: "Paid into your Trading Balance",
+    settlingIntoBalance: "Settling into your Trading Balance — the settler pays it on its own, no prompt.",
     paid: "Paid to your wallet",
     held: "Held by your receive policy",
     heldBody: "Your account's receive policy blocks payments from the engine, so the payout is waiting as credit. Allow the engine in your policy and collect it here.",

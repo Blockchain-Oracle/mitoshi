@@ -1123,6 +1123,111 @@ already counts "Returned" in "Your calls", and the index's `state=voided` query 
 
 **Why:** a void is the chain's answer to a missed print; staging one would be a fake.
 
+### D-155 — the settler cranks the vault's owners as soon as a Window is terminal; no claim grace (decision, S7 off-chain, 2026-09-30)
+
+The engine's `redeemFor` refuses the vault (its crank opt-out, T09/D-015), so `EventVault.crankSettle(owner, m)` is the
+only way a Trading Balance owner is paid. The settler's vault worklist (`services/ops/src/actors/settler/vault-crank.ts`)
+takes (Window, owner) pairs the index saw trade through the vault on a resolved or voided Window with no `Settled` yet,
+confirms on chain which still hold a position or a grant tag (`positionOf` / `positionGrantOf`, one multicall), and sends
+each crank from the settler key inside the same send budget as the engine work, after it. Unlike `redeemFor` there is
+no 300 s grace: the owner has no self-claim the grace would protect, and "verdict → paid" needs no prompt (§2.4).
+`NothingToSettle` / `MarketNotSettled` are benign (ops/send now names vault errors too).
+
+**Why:** the vault owner would otherwise wait for nothing; the payout lands in the Trading Balance within a pass.
+
+### D-156 — a passkey write that does not ask for a fee payer says `feePayer: false` (finding + decision, S7 gate, 2026-09-30)
+
+**Finding (F-S7-10):** the passkey connector is configured with our relay as its fee payer (`webAuthn({ feePayer })`), and
+accounts 0.18.4 then marks every transaction for sponsorship unless the request carries `feePayer: false`
+(`Provider.getWalletClient`). A never-sponsored root write (capital intake: `[approve, depositAndGrant]`, D-020) was
+refused by the relay at `eth_signRawTransaction` and could not be sent at all. **Decision:** the one send module says
+so: `sendBatch` adds `feePayer: false` to an unsponsored send from a wallet-held (`json-rpc`) signer — the passkey
+connector, a wallet app (`tx/send.ts`, one line; the write boundary keeps every send there); sponsored writes carry
+`feePayer: true` as before; local accounts (keys, ops, drives) are untouched.
+
+**Why:** intake stays self-paid (the relay's `never` list is unchanged) and the user can still make it.
+
+### D-157 — the relay's async sender rule reads the chain through the relay's own client (decision, S7, 2026-09-30)
+
+C.3.3's async sender rule is implemented: `EngineConfig.reader` (the relay handler's public client) is passed to every
+`asyncSender`; the vault's `placeFor` is sponsored only when `grantOf(id).actor == from && isGrantLive(id)`; without a
+reader the rule refuses (fails closed); a live answer is remembered 15 s per (vault, grant, sender), a refusal never.
+**Finding (F-S7-09):** on Moderato the node's fill estimate already reverts a foreign `placeFor` (`NotGrantActor`)
+before the relay's `validate` runs, so the rule's real work is the raw-sign path (a hand-built transaction with its own
+gas limit), where without it the relay would co-sign a transaction that reverts and pay for it.
+
+**Why:** the relay never pays for a tap its sender may not make.
+
+### D-158 — a delegated tap is pre-checked at the worst the fill can charge (decision, S7, 2026-09-30)
+
+The vault checks the per-tap and daily caps against the actual fill; the browser does not know it before sending, so
+`simulateCaps` runs with `spendBase = quote.maxCostBase` (the escrow at the protective limit, ≤ the stake) in both the
+ticket's route (`useTicketRoute`) and the lane (`assertGrantCovers`). It can refuse a tap the contract would accept by
+a cent; it never passes one the contract would refuse (which would only fail after a signature).
+
+**Why:** "a cap refusal shown with its reason, never a surprise" — the refusal must come before anything is signed.
+
+### D-159 — tap-trading state is one external store with split slices (decision, S7 web, 2026-09-30)
+
+The D37 arm slot lives in the sign-up modal, which the lazy wallet runtime renders outside the app tree, so React
+context from the app cannot reach it. `features/session/context.ts` is a tiny store written by the provider only
+(`publishSession`), read per slice with `useSyncExternalStore` (view, actions, session-key submitter, root submitter):
+a reader re-renders only when its slice changes, and the view re-derives on reads and once at the grant's expiry —
+never per second (E.5 S7). Taps routed `vault-grant` reach the session key through the existing `TapSubmitterContext`
+(`routeTaps`); cash-outs, collects and wallet calls keep their own signer.
+
+**Why:** one source for every surface, the ceremony's modal included, with no clock-driven re-render.
+
+### D-160 — when tap-trading can't take a call, the CTA says why and offers the fix; the wallet is a labelled choice (decision, S7, 2026-09-30)
+
+Masayume fell back silently to the chosen source (a prompt the user did not expect). Here the CTA's label is the
+reason ("Budget used — add $25", "Today's $25 used — resets 00:00 UTC", "Over your $5 per tap — lower the stake",
+"Tap-trading expired — renew", "Scheduled calls pay from your wallet"); the budget and expiry cases run their one-step
+fix (one passkey confirmation), the rest block; "Pay from your wallet instead · asks your passkey / no prompt" is a
+separate tap that switches this composition's route.
+
+**Why:** E.5 S7 "the fallback reason always rendered on the CTA" and the gate's "never a surprise prompt".
+
+### D-161 — vault events are indexed without a Window, applied exactly once (decision, S7, 2026-09-30)
+
+The indexer follows EventVault as a second source (own cursor, window sizing, one `eth_getLogs` per window) and stores
+its logs in `idx_events` with `market`/`seq` NULL, so a Window rebuild never replays them and each `idx_vault_*`
+projection (index/0002) applies once, in (block, log index) order, with the contract's own arithmetic (a deposit states
+the balance; a grant takes its budget; a revoke returns it; buys spend available or the grant's budget; sales and
+settlements pay available). The chain stays the truth for money on screen; the projections serve the crank worklist,
+`/api/index/wallet/<addr>/vault` and history. Proven equal to `accountOf`/`grantOf` on every real vault log.
+
+**Why:** idempotent, rebuildable and exact without teaching the engine's `seq` machinery about the vault.
+
+### D-162 — "Add to budget" and "Extend" are one root transaction each (decision, S7, 2026-09-30)
+
+Add to budget tops the grant up to its daily cap: `fundGrant` from the free Trading Balance when it holds enough, else a
+new intent `vault-deposit-and-fund` = `[approve(vault, x), deposit(x), fundGrant(id, x)]` (never sponsored). Extend and
+renew re-grant the same key with the same caps and budget and a later expiry (`grant()` returns the old budget and
+takes it back in one call); the contract starts the new grant's day at zero spend — a property of `grant`, kept as-is
+(D-003). Re-key does the same for a fresh key on this device.
+
+**Why:** each E.5 S7 action is one tap and one passkey confirmation.
+
+### D-163 — killed-tab evidence counts only inside the record's own life (finding + decision, S7 gate, 2026-09-30)
+
+A tap journaled but killed before its broadcast was reported "landed": the evidence matched the same key's earlier tap
+on the same Window. `vaultEvidence` now counts an `Executed` by the record's actor on its Window only between the
+record's creation (less 10 s of device/chain skew) and its `validBefore` (+ grace) — an expiring transaction can land
+nowhere else; outside, it is "absent" ("never reached the chain, nothing was spent"). Nothing is ever re-sent (AD-3).
+
+**Why:** recovery must not claim a write that never left.
+
+### D-164 — a request the RPC refused for rate is its own diagnosis (finding + decision, S7 gate, 2026-09-30)
+
+**Finding (F-S7-11):** the passkey SDK sends the root's co-signed transaction straight to the public RPC; under the
+per-IP limit (D-134, shared by every process on one machine) the node answers "Request exceeds defined limit" and the
+write is refused before acceptance. **Decision:** diagnosis kind `rate-limited` (retryable), copy "The network is busy —
+too many requests from this connection right now. Nothing was sent — try again in a moment." A production relay and
+RPC endpoint off the users' IPs moves the limit away (D-139).
+
+**Why:** the failure card must say what happened and that no money moved.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

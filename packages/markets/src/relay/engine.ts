@@ -9,7 +9,7 @@ import { decodeFunctionData, maxUint256, toFunctionSelector, type Abi, type AbiF
 import { Abis } from "viem/tempo";
 import { EXPIRING_NONCE_MAX_SEC, isRestricted } from "@cwf/core";
 import { TEMPO, UTILITIES } from "@cwf/clients";
-import type { PolicyVerdict, RefusalCode, RelayCall, RelayContext, RelayPolicy, RelayRequest } from "./types";
+import type { PolicyVerdict, RefusalCode, RelayCall, RelayContext, RelayPolicy, RelayReader, RelayRequest } from "./types";
 import { normalizeKeyAuthorization } from "./key-auth";
 
 export const MAX_CALLS = 8;
@@ -30,6 +30,8 @@ export interface EngineConfig {
   chainId: number;
   feePayer: Address;
   policies: readonly RelayPolicy[];
+  /** The chain reader async sender rules use (vault `placeFor`'s grant check); absent, those rules refuse. */
+  reader?: RelayReader;
 }
 
 const lower = (a: string) => a.toLowerCase();
@@ -105,7 +107,7 @@ export async function evaluate(config: EngineConfig, request: RelayRequest, ctx:
     if (policy.pillar && isRestricted(ctx.region, policy.pillar) && policy.entry.includes(fn.name)) {
       return refuse("region", `${policy.area}.${fn.name} is browse-only in this region`);
     }
-    if (policy.asyncSender && !(await policy.asyncSender({ from: request.from, call, functionName: fn.name, args: fn.args }))) {
+    if (policy.asyncSender && !(await policy.asyncSender({ from: request.from, call, functionName: fn.name, args: fn.args, read: config.reader ?? null }).catch(() => false))) {
       return refuse("sender", `${request.from} may not call ${policy.area}.${fn.name}`);
     }
   }

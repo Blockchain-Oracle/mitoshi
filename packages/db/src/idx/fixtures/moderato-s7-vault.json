@@ -1,0 +1,590 @@
+{
+ "_doc": "Every EventVault log on Moderato (vault 0x5E38dc8b7402FFB608134872a64663e5D75235b8, blocks 37385655–37532056), decoded by @cwf/markets/ops fetchVaultEvents, and the chain's own accountOf/grantOf at block 37532056. Fixture for the vault projection test.",
+ "toBlock": "37532056",
+ "vault": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+ "events": [
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x38ab51fb1524e6847b81d2679bf618ab981e207396e2e2e57e9aefa8304d9e49",
+   "logIndex": 16,
+   "blockNumber": 37386465,
+   "blockTimeSec": 1790667880,
+   "name": "Deposited",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x118d23EE8f38666bE9987e95F023B4B444651ff0",
+    "amount": "10000000",
+    "available": "10000000"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x38ab51fb1524e6847b81d2679bf618ab981e207396e2e2e57e9aefa8304d9e49",
+   "logIndex": 17,
+   "blockNumber": 37386465,
+   "blockTimeSec": 1790667880,
+   "name": "GrantCreated",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "1",
+    "owner": "0x118d23EE8f38666bE9987e95F023B4B444651ff0",
+    "actor": "0x8Ae1C05a4038bad04d17B763A15BfD791F524D0a",
+    "kind": 0,
+    "caps": {
+     "maxStakePerTrade": "2000000",
+     "maxDailySpend": "5000000",
+     "maxOpenPositions": 3,
+     "maxPriceRaw": "950000",
+     "market": "0x42bd67a68cdb00c58657eb826592605acc9787a014ce132c85e08e8c1b7ea56c"
+    },
+    "expiresAtSec": "1790689479",
+    "budget": "5000000"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x3866f7c47b0622cec515d48732f188e50fa8e21d5b12b551db3961f338ccc499",
+   "logIndex": 10,
+   "blockNumber": 37386553,
+   "blockTimeSec": 1790667933,
+   "name": "Executed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x118d23EE8f38666bE9987e95F023B4B444651ff0",
+    "marketId": "0x42bd67a68cdb00c58657eb826592605acc9787a014ce132c85e08e8c1b7ea56c",
+    "grantId": "1",
+    "outcomeIdx": 0,
+    "isBuy": true,
+    "cashDelta": "520000",
+    "tokenDelta": "1000000",
+    "actor": "0x8Ae1C05a4038bad04d17B763A15BfD791F524D0a",
+    "atSec": "1790667933"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x4e37a3cf9240288b38194d933df38fd0093b1ba7b69372034ff2e2d8f4996e5c",
+   "logIndex": 8,
+   "blockNumber": 37386557,
+   "blockTimeSec": 1790667936,
+   "name": "Executed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x118d23EE8f38666bE9987e95F023B4B444651ff0",
+    "marketId": "0x42bd67a68cdb00c58657eb826592605acc9787a014ce132c85e08e8c1b7ea56c",
+    "grantId": "1",
+    "outcomeIdx": 1,
+    "isBuy": true,
+    "cashDelta": "520000",
+    "tokenDelta": "1000000",
+    "actor": "0x8Ae1C05a4038bad04d17B763A15BfD791F524D0a",
+    "atSec": "1790667936"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x569718fd64ca044aa472c83719dd793d7e9b25d69edb8306e6bf4dd9a9df456b",
+   "logIndex": 8,
+   "blockNumber": 37386562,
+   "blockTimeSec": 1790667939,
+   "name": "GrantRevoked",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "1",
+    "owner": "0x118d23EE8f38666bE9987e95F023B4B444651ff0",
+    "returned": "3960000"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x4f74c28e81e56d46f1b92745d02405473d218f74832610cbaf9d9702c0f4111f",
+   "logIndex": 5,
+   "blockNumber": 37387033,
+   "blockTimeSec": 1790668221,
+   "name": "Settled",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x118d23EE8f38666bE9987e95F023B4B444651ff0",
+    "marketId": "0x42bd67a68cdb00c58657eb826592605acc9787a014ce132c85e08e8c1b7ea56c",
+    "payout": "1000000",
+    "yesRedeemed": "1000000",
+    "noRedeemed": "1000000",
+    "by": "0x8Ae1C05a4038bad04d17B763A15BfD791F524D0a",
+    "atSec": "1790668221"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x332354bdb965e0a6a1a9766427e25c209a142e85751c17224cdc4b9b16631571",
+   "logIndex": 12,
+   "blockNumber": 37387038,
+   "blockTimeSec": 1790668224,
+   "name": "Withdrawn",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x118d23EE8f38666bE9987e95F023B4B444651ff0",
+    "amount": "4980000",
+    "available": "4980000"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x4772c378db01d8ac87c1ca1b783e2c6b151a132a89baf1d33be4a1deb44e8b8b",
+   "logIndex": 3,
+   "blockNumber": 37404541,
+   "blockTimeSec": 1790678737,
+   "name": "Deposited",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0xde00c0067469F64185ed0b6AF7551dfEC28bf19b",
+    "amount": "5000000",
+    "available": "5000000"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x9a48dd669a585b7a0e360af96bdea36182594dde8ae946a1659c0d47d022beca",
+   "logIndex": 7,
+   "blockNumber": 37404545,
+   "blockTimeSec": 1790678739,
+   "name": "Executed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0xde00c0067469F64185ed0b6AF7551dfEC28bf19b",
+    "marketId": "0xb58d5018b72fc5f10b69a7cb50d1691683f6637dcbbdeef57df67b3032f82239",
+    "grantId": "0",
+    "outcomeIdx": 0,
+    "isBuy": true,
+    "cashDelta": "1042000",
+    "tokenDelta": "2000000",
+    "actor": "0xde00c0067469F64185ed0b6AF7551dfEC28bf19b",
+    "atSec": "1790678739"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x87e4e7c1f998fd9df851558a1f1e4df52fe77f55844eebe976c077c32edf2be0",
+   "logIndex": 18,
+   "blockNumber": 37531034,
+   "blockTimeSec": 1790754617,
+   "name": "Deposited",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x01fdCbe0De47Adf22E26E4f6b1eFFD7A1cBe4B37",
+    "amount": "10000000",
+    "available": "10000000"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x87e4e7c1f998fd9df851558a1f1e4df52fe77f55844eebe976c077c32edf2be0",
+   "logIndex": 19,
+   "blockNumber": 37531034,
+   "blockTimeSec": 1790754617,
+   "name": "GrantCreated",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "2",
+    "owner": "0x01fdCbe0De47Adf22E26E4f6b1eFFD7A1cBe4B37",
+    "actor": "0x06092aDE7c10050F2c4839B8EdC4B93e59F081A9",
+    "kind": 0,
+    "caps": {
+     "maxStakePerTrade": "2000000",
+     "maxDailySpend": "5000000",
+     "maxOpenPositions": 3,
+     "maxPriceRaw": "950000",
+     "market": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "expiresAtSec": "1790776216",
+    "budget": "5000000"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x34ed5904288061e0ffcb535eaefc1d15efc8e55bf9790ecddc6c8a3577518b98",
+   "logIndex": 4,
+   "blockNumber": 37531041,
+   "blockTimeSec": 1790754621,
+   "name": "Executed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x01fdCbe0De47Adf22E26E4f6b1eFFD7A1cBe4B37",
+    "marketId": "0x4fca034f5b969fefb41f3df8d5b5100690c96344294c9db56723a33d8bce52d5",
+    "grantId": "2",
+    "outcomeIdx": 0,
+    "isBuy": true,
+    "cashDelta": "972020",
+    "tokenDelta": "1855000",
+    "actor": "0x06092aDE7c10050F2c4839B8EdC4B93e59F081A9",
+    "atSec": "1790754621"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x96293beac2b3409ca1c0dc35cca6b3b2ac51e3519a3bfc58fa26fa9c6e1857f3",
+   "logIndex": 5,
+   "blockNumber": 37531047,
+   "blockTimeSec": 1790754625,
+   "name": "Executed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x01fdCbe0De47Adf22E26E4f6b1eFFD7A1cBe4B37",
+    "marketId": "0x4fca034f5b969fefb41f3df8d5b5100690c96344294c9db56723a33d8bce52d5",
+    "grantId": "2",
+    "outcomeIdx": 1,
+    "isBuy": true,
+    "cashDelta": "970812",
+    "tokenDelta": "1818000",
+    "actor": "0x06092aDE7c10050F2c4839B8EdC4B93e59F081A9",
+    "atSec": "1790754625"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x4ce246e8e6bdb312af0c271c64162bcada509f368d88210a6d82925817b07ca2",
+   "logIndex": 7,
+   "blockNumber": 37531056,
+   "blockTimeSec": 1790754630,
+   "name": "GrantFunded",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "2",
+    "amount": "2000000",
+    "budget": "5057168"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0xc0991f581a2bcbfaf5ff22aa2a00cb66ce771df1b27bc8cbe6c469dbf4da5046",
+   "logIndex": 17,
+   "blockNumber": 37531060,
+   "blockTimeSec": 1790754633,
+   "name": "GrantRevoked",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "2",
+    "owner": "0x01fdCbe0De47Adf22E26E4f6b1eFFD7A1cBe4B37",
+    "returned": "5057168"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0xc0991f581a2bcbfaf5ff22aa2a00cb66ce771df1b27bc8cbe6c469dbf4da5046",
+   "logIndex": 18,
+   "blockNumber": 37531060,
+   "blockTimeSec": 1790754633,
+   "name": "GrantCreated",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "3",
+    "owner": "0x01fdCbe0De47Adf22E26E4f6b1eFFD7A1cBe4B37",
+    "actor": "0x06092aDE7c10050F2c4839B8EdC4B93e59F081A9",
+    "kind": 0,
+    "caps": {
+     "maxStakePerTrade": "2000000",
+     "maxDailySpend": "5000000",
+     "maxOpenPositions": 3,
+     "maxPriceRaw": "950000",
+     "market": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "expiresAtSec": "1790862616",
+    "budget": "5057168"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0xb368a505f9109a801bdc029f608a9a87ed72c8096194ce374d760140e3133584",
+   "logIndex": 1,
+   "blockNumber": 37531097,
+   "blockTimeSec": 1790754655,
+   "name": "GrantRevoked",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "3",
+    "owner": "0x01fdCbe0De47Adf22E26E4f6b1eFFD7A1cBe4B37",
+    "returned": "5057168"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0xcb6a7e42d819c973360e263dcfc1f4215d2b0027ee924ae910817cf4296bb13c",
+   "logIndex": 4,
+   "blockNumber": 37531102,
+   "blockTimeSec": 1790754658,
+   "name": "Withdrawn",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x01fdCbe0De47Adf22E26E4f6b1eFFD7A1cBe4B37",
+    "amount": "4028584",
+    "available": "4028584"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0xdb16c820f6e09d7b88fa81f78e15992df4f618be81e70bda14b5090f5accdc29",
+   "logIndex": 2,
+   "blockNumber": 37531211,
+   "blockTimeSec": 1790754724,
+   "name": "Deposited",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x4B38DAD0F2bF5EdB1b45E329fBE395b7eFCe3F70",
+    "amount": "10000000",
+    "available": "10000000"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0xdb16c820f6e09d7b88fa81f78e15992df4f618be81e70bda14b5090f5accdc29",
+   "logIndex": 3,
+   "blockNumber": 37531211,
+   "blockTimeSec": 1790754724,
+   "name": "GrantCreated",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "4",
+    "owner": "0x4B38DAD0F2bF5EdB1b45E329fBE395b7eFCe3F70",
+    "actor": "0x6939408E585dF91928f0b1551Fb26F755A88cBe1",
+    "kind": 0,
+    "caps": {
+     "maxStakePerTrade": "2000000",
+     "maxDailySpend": "5000000",
+     "maxOpenPositions": 3,
+     "maxPriceRaw": "950000",
+     "market": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "expiresAtSec": "1790776321",
+    "budget": "5000000"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0xe484a8d843131cc3808824f2a2de8e38e6f056ddce595c5774ba6725394df034",
+   "logIndex": 8,
+   "blockNumber": 37531217,
+   "blockTimeSec": 1790754727,
+   "name": "Executed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x4B38DAD0F2bF5EdB1b45E329fBE395b7eFCe3F70",
+    "marketId": "0x4fca034f5b969fefb41f3df8d5b5100690c96344294c9db56723a33d8bce52d5",
+    "grantId": "4",
+    "outcomeIdx": 0,
+    "isBuy": true,
+    "cashDelta": "971734",
+    "tokenDelta": "1858000",
+    "actor": "0x6939408E585dF91928f0b1551Fb26F755A88cBe1",
+    "atSec": "1790754727"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0xde2f1cec720762284dbb238958c11a403f439de6b18f064517f522823dd58f73",
+   "logIndex": 7,
+   "blockNumber": 37531222,
+   "blockTimeSec": 1790754730,
+   "name": "Executed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x4B38DAD0F2bF5EdB1b45E329fBE395b7eFCe3F70",
+    "marketId": "0x4fca034f5b969fefb41f3df8d5b5100690c96344294c9db56723a33d8bce52d5",
+    "grantId": "4",
+    "outcomeIdx": 1,
+    "isBuy": true,
+    "cashDelta": "971296",
+    "tokenDelta": "1912000",
+    "actor": "0x6939408E585dF91928f0b1551Fb26F755A88cBe1",
+    "atSec": "1790754730"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0xe4537cccc3a8793b8d61c1afec1341ab16798d2eca1b3c2808d7a203e2f46c1d",
+   "logIndex": 0,
+   "blockNumber": 37531231,
+   "blockTimeSec": 1790754736,
+   "name": "GrantFunded",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "4",
+    "amount": "2000000",
+    "budget": "5056970"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x70a792e39cadaa2c7d0e766e6277dc70dc39384abd37b818fb9e3b63b268bbb5",
+   "logIndex": 1,
+   "blockNumber": 37531235,
+   "blockTimeSec": 1790754738,
+   "name": "GrantRevoked",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "4",
+    "owner": "0x4B38DAD0F2bF5EdB1b45E329fBE395b7eFCe3F70",
+    "returned": "5056970"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x70a792e39cadaa2c7d0e766e6277dc70dc39384abd37b818fb9e3b63b268bbb5",
+   "logIndex": 2,
+   "blockNumber": 37531235,
+   "blockTimeSec": 1790754738,
+   "name": "GrantCreated",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "5",
+    "owner": "0x4B38DAD0F2bF5EdB1b45E329fBE395b7eFCe3F70",
+    "actor": "0x6939408E585dF91928f0b1551Fb26F755A88cBe1",
+    "kind": 0,
+    "caps": {
+     "maxStakePerTrade": "2000000",
+     "maxDailySpend": "5000000",
+     "maxOpenPositions": 3,
+     "maxPriceRaw": "950000",
+     "market": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "expiresAtSec": "1790862721",
+    "budget": "5056970"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x152a8ac3abc4d7ffa981497e2479fa2934b70c1dc0ac27e359c221140ee32ee3",
+   "logIndex": 4,
+   "blockNumber": 37531241,
+   "blockTimeSec": 1790754742,
+   "name": "GrantRevoked",
+   "market": null,
+   "seq": null,
+   "data": {
+    "grantId": "5",
+    "owner": "0x4B38DAD0F2bF5EdB1b45E329fBE395b7eFCe3F70",
+    "returned": "5056970"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x5e38dc8b7402ffb608134872a64663e5d75235b8",
+   "txHash": "0x0221f006773e985e5a837aa0d5cdf87381807f7571fd8be609eb11daf814218c",
+   "logIndex": 7,
+   "blockNumber": 37531244,
+   "blockTimeSec": 1790754743,
+   "name": "Withdrawn",
+   "market": null,
+   "seq": null,
+   "data": {
+    "owner": "0x4B38DAD0F2bF5EdB1b45E329fBE395b7eFCe3F70",
+    "amount": "4028485",
+    "available": "4028485"
+   }
+  }
+ ],
+ "chain": {
+  "accounts": {
+   "0x118d23ee8f38666be9987e95f023b4b444651ff0": {
+    "available": "4980000",
+    "privateAvailable": "0",
+    "totalDeposited": "10000000",
+    "totalWithdrawn": "4980000"
+   },
+   "0xde00c0067469f64185ed0b6af7551dfec28bf19b": {
+    "available": "3958000",
+    "privateAvailable": "0",
+    "totalDeposited": "5000000",
+    "totalWithdrawn": "0"
+   },
+   "0x01fdcbe0de47adf22e26e4f6b1effd7a1cbe4b37": {
+    "available": "4028584",
+    "privateAvailable": "0",
+    "totalDeposited": "10000000",
+    "totalWithdrawn": "4028584"
+   },
+   "0x4b38dad0f2bf5edb1b45e329fbe395b7efce3f70": {
+    "available": "4028485",
+    "privateAvailable": "0",
+    "totalDeposited": "10000000",
+    "totalWithdrawn": "4028485"
+   }
+  },
+  "grants": {
+   "1": {
+    "revoked": true,
+    "budget": "0",
+    "owner": "0x118d23ee8f38666be9987e95f023b4b444651ff0"
+   },
+   "2": {
+    "revoked": true,
+    "budget": "0",
+    "owner": "0x01fdcbe0de47adf22e26e4f6b1effd7a1cbe4b37"
+   },
+   "3": {
+    "revoked": true,
+    "budget": "0",
+    "owner": "0x01fdcbe0de47adf22e26e4f6b1effd7a1cbe4b37"
+   },
+   "4": {
+    "revoked": true,
+    "budget": "0",
+    "owner": "0x4b38dad0f2bf5edb1b45e329fbe395b7efce3f70"
+   },
+   "5": {
+    "revoked": true,
+    "budget": "0",
+    "owner": "0x4b38dad0f2bf5edb1b45e329fbe395b7efce3f70"
+   }
+  }
+ }
+}

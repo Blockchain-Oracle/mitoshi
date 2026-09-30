@@ -5,7 +5,7 @@ import type { AssetPrice, ClockSync, PricePoint, Resolution } from "../types/fee
 import type { EventMarket, LaneSet, MarketId, OnchainSnapshot, SeriesId, Side } from "../types/market";
 import type { Address } from "../types/primitives";
 import type { BalanceSheet, BookDepth, BookParams, ClaimableRow, Holdings, OpenPosition, Quote } from "../types/trading";
-import type { VaultHoldings, VaultSnapshot } from "../vault/types";
+import type { VaultBet, VaultHoldings, VaultSnapshot } from "../vault/types";
 
 /** What a book read needs to address a market: one engine, so the id alone (plan C.2.1). */
 export interface BookTarget {
@@ -39,6 +39,8 @@ export interface PinnedVerdictView {
   paidBy: "auto" | "self" | null;
   paidBase: bigint | null;
   txHash: `0x${string}` | null;
+  /** Where the payout lands: the wallet (engine), or the Trading Balance (a vault call cranked by `crankSettle`, S7). */
+  into?: "wallet" | "trading-balance";
 }
 
 /** The ONE chain port for reads (AD-1). Every method returns a `Reading<T>`; nothing here throws for a chain failure. */
@@ -78,4 +80,6 @@ export interface MarketsProvider {
   getVaultSnapshot(wallet: Address): Promise<Reading<VaultSnapshot | null>>;
   /** What the vault holds for the wallet on one Window; zeros (not an error) when there is no vault. */
   getVaultHoldings(wallet: Address, onchain: OnchainSnapshot): Promise<Reading<VaultHoldings>>;
+  /** The owner's recent Windows traded through the Trading Balance, newest first; empty without a vault (S7). */
+  listVaultBets(wallet: Address): Promise<Reading<VaultBet[]>>;
 }

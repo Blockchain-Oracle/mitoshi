@@ -4,15 +4,15 @@
  * 300 s claim grace pays every remaining holder with `redeemFor` — skipping holders who opted out of third-party
  * cranks (T09, `lens.crankOptedOut`; the products that manage their own redemption). The worklist comes from the index
  * (Windows past expiry or a deadline, terminal Windows with unredeemed holders or open orders); every send re-reads
- * the Window and each holder's position on chain first. One writer: the `settler` key. The EventVault `crankSettle`
- * worklist joins when the vault's fragment exists (S7); until then the heartbeat names it as not deployed.
+ * the Window and each holder's position on chain first. One writer: the `settler` key. The EventVault's owners are
+ * paid by its `crankSettle` worklist (`vault-crank.ts`, S7) inside the same send budget, after the engine's work.
  */
 import type { Address, Hex } from "viem";
 import { engineLensAbi } from "@cwf/clients/abis/EngineLens";
-import { deploymentOf } from "@cwf/markets";
 import { chainNowSec, createOpsClient, crankOptedOut, fetchMarkets, OpsSendError, positionsOf, redeemForCall, sendOps, settleCall, sweepExpiredCall, venueOf, voidExpiredCall, type MarketView } from "@cwf/markets/ops";
 import { errorText, runActor, roleKey, type VenueDeps } from "../../runtime";
 import { decideSettle, type SettleAction } from "./decide";
+import { vaultCranker } from "./vault-crank";
 
 const PASS_MS = 5_000;
 const MAX_SENDS_PER_PASS = 24;
@@ -31,7 +31,7 @@ export function startSettler(deps: VenueDeps): { stop: () => void } {
   if (!venue) throw new Error(`no engine fragment for chain ${client.chainId}`);
   const dryRun = deps.env.dryRun || !key;
   if (!key) deps.log("SETTLER_PRIVATE_KEY / settler.json missing: scanning and reporting only");
-  const vault = deploymentOf("vault", client.chainId);
+  const vault = vaultCranker(client, sql, dryRun);
   const work = new Map<string, Work>();
   const optedOut = new Set<string>();
   const counts: Record<string, number> = {};
@@ -132,11 +132,12 @@ export function startSettler(deps: VenueDeps): { stop: () => void } {
       notes.push(await send(action, m, budget));
       w.checkAtSec = nowSec + 3;
     }
+    if (vault && budget.sends > 0) notes.push(await vault.pass(budget).catch((error) => `vault crank pass failed: ${errorText(error).slice(0, 140)}`));
     for (const [k, w] of work) if (w.done) work.delete(k);
     const next = [...work.values()].map((w) => w.checkAtSec).filter((s) => s > nowSec);
     return {
-      why: `${work.size} Windows tracked · ${due.length} due · ${Object.entries(counts).map(([k, v]) => `${k} ${v}`).join(", ") || "nothing sent yet"}${vault ? "" : " · vault crankSettle: vault not deployed"}${notes.length ? ` | ${notes.join(" | ")}` : ""}${dryRun ? " · DRY RUN" : ""}`,
-      detail: { tracked: work.size, counts: { ...counts }, recent, optedOut: [...optedOut], vault: vault ? "tracked" : "not deployed" },
+      why: `${work.size} Windows tracked · ${due.length} due · ${Object.entries(counts).map(([k, v]) => `${k} ${v}`).join(", ") || "nothing sent yet"}${vault ? ` · vault cranked ${vault.counts.cranked}` : " · vault crankSettle: vault not deployed"}${notes.length ? ` | ${notes.join(" | ")}` : ""}${dryRun ? " · DRY RUN" : ""}`,
+      detail: { tracked: work.size, counts: { ...counts }, recent, optedOut: [...optedOut], vault: vault ? { counts: { ...vault.counts }, recent: vault.recent } : "not deployed" },
       nextDelayMs: budget.sends <= 0 ? 500 : next.length ? Math.max(1_000, Math.min(PASS_MS, (Math.min(...next) - nowSec) * 1000)) : PASS_MS,
     };
   };

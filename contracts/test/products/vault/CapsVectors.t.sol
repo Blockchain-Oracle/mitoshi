@@ -3,7 +3,8 @@ pragma solidity 0.8.30;
 
 // Ported from Masayume 68f7a09:contracts/test/CapsVectors.t.sol — the golden vectors are copied unchanged
 // (`packages/core/src/vault/caps.vectors.json`, same sha256) and now run against the real engine: before each
-// placement the seeder rests Masayume's book (YES at 0.60, NO at 0.40) on the side that order takes.
+// placement the seeder rests Masayume's book (YES at 0.60, NO at 0.40) on the side that order takes. Rows 11-12 add
+// the D-091 Window scope (`caps.market`: "this" = the order's Window, "other" = a second listed Window).
 
 import {IEventVault} from "../../../src/products/vault/IEventVault.sol";
 import {IEngineErrors} from "../../../src/engine/EngineErrors.sol";
@@ -38,7 +39,7 @@ contract CapsVectorsTest is VaultTestBase {
 
     function test_caps_vectors() public {
         uint256 count = _u(".count");
-        assertEq(count, 10);
+        assertEq(count, 12);
         for (uint256 i = 0; i < count; i++) {
             uint256 snap = vm.snapshotState();
             _runVector(string.concat(".vectors[", vm.toString(i), "]"));
@@ -46,12 +47,20 @@ contract CapsVectorsTest is VaultTestBase {
         }
     }
 
+    /// @dev D-091: absent = any Window (zero), "this" = the order's Window, "other" = a second listed Window.
+    function _scope(string memory v) internal returns (bytes32) {
+        string memory path = string.concat(v, ".caps.market");
+        if (!_has(path)) return bytes32(0);
+        return keccak256(bytes(_s(path))) == keccak256("this") ? market : list(START, LOCK, true);
+    }
+
     function _runVector(string memory v) internal {
-        IEventVault.Caps memory c = caps(
+        IEventVault.Caps memory c = capsIn(
             _u(string.concat(v, ".caps.maxStakePerTrade")),
             _u(string.concat(v, ".caps.maxDailySpend")),
             uint32(_u(string.concat(v, ".caps.maxOpenPositions"))),
-            uint64(_u(string.concat(v, ".caps.maxPriceRaw")))
+            uint64(_u(string.concat(v, ".caps.maxPriceRaw"))),
+            _scope(v)
         );
         bool expired = _b(string.concat(v, ".expired"));
         vm.prank(owner);
@@ -97,6 +106,7 @@ contract CapsVectorsTest is VaultTestBase {
         if (h == keccak256("OverPositionCap")) return IEventVault.OverPositionCap.selector;
         if (h == keccak256("GrantExpired")) return IEventVault.GrantExpired.selector;
         if (h == keccak256("GrantIsRevoked")) return IEventVault.GrantIsRevoked.selector;
+        if (h == keccak256("OutsideGrantMarket")) return IEventVault.OutsideGrantMarket.selector;
         // The engine's own error, same name as DreamDEX's (interface-checklist §2).
         if (h == keccak256("ImmediateOrCancelNoFill")) return IEngineErrors.ImmediateOrCancelNoFill.selector;
         revert(string.concat("unknown error name in vector: ", errorName));

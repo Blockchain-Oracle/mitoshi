@@ -9,7 +9,7 @@ describe("/api/index path table (C.4.5)", () => {
     for (const p of [["markets"], ["markets", M], ["fills"], ["tape"], ["prints", M], ["status"]]) expect(resolveIndexQuery(p, {}, 42431)?.scope).toBe("public");
     expect(resolveIndexQuery(["candles", M], { from: "0", to: "10" }, 42431)?.scope).toBe("public");
     expect(resolveIndexQuery(["prints", "TSLA"], { from: "0", to: "10" }, 42431)?.scope).toBe("public");
-    for (const r of ["fills", "positions", "actions", "history", "orders", "claims"]) expect(resolveIndexQuery(["wallet", A, r], {}, 42431)?.scope).toBe("wallet");
+    for (const r of ["fills", "positions", "actions", "history", "orders", "claims", "vault"]) expect(resolveIndexQuery(["wallet", A, r], {}, 42431)?.scope).toBe("wallet");
   });
 
   it("refuses malformed ids and names later areas as not deployed", () => {
@@ -17,7 +17,6 @@ describe("/api/index path table (C.4.5)", () => {
     expect(() => resolveIndexQuery(["wallet", "nope", "fills"], {}, 42431)).toThrow(BadRequest);
     expect(() => resolveIndexQuery(["candles", M], {}, 42431)).toThrow(BadRequest);
     expect(() => resolveIndexQuery(["stocks", "list"], {}, 42431)).toThrow(NotDeployed);
-    expect(() => resolveIndexQuery(["wallet", A, "vault"], {}, 42431)).toThrow(NotDeployed);
     expect(resolveIndexQuery(["nothing"], {}, 42431)).toBeNull();
   });
 });

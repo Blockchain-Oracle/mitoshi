@@ -16,7 +16,9 @@ type EventRow = { chain_id: number; tx_hash: string; log_index: number; block_nu
 
 /** Every projection a Market rebuild clears (idx_series and the engine-wide tables are not per-market). */
 export const MARKET_PROJECTIONS = ["idx_candles", "idx_positions", "idx_fills", "idx_orders", "idx_prints", "idx_redemptions", "idx_credits", "idx_markets"] as const;
-export const INDEX_TABLES = [...MARKET_PROJECTIONS, "idx_series", "idx_crank_opt_outs", "idx_events", "idx_cursor"] as const;
+export const INDEX_TABLES = [
+  ...MARKET_PROJECTIONS, "idx_series", "idx_crank_opt_outs", "idx_vault_accounts", "idx_vault_grants", "idx_vault_executions", "idx_vault_settlements", "idx_events", "idx_cursor",
+] as const;
 
 export const eventOfRow = (r: EventRow): IdxEvent => ({
   chainId: r.chain_id, txHash: r.tx_hash, logIndex: r.log_index, blockNumber: Number(r.block_number), blockTimeSec: Number(r.block_time_sec),

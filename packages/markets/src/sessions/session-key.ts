@@ -34,3 +34,98 @@ export function sessionKeyAccount(record: Pick<SessionKeyRecord, "keyPair">) {
 export function accessKeyAccount(record: Pick<SessionKeyRecord, "keyPair">, root: Address) {
   return Account.fromWebCryptoP256(record.keyPair, { access: root });
 }
+
+// ------------------------------------------------------------------ this browser's store (IndexedDB)
+// One key per (chain, owner), kept as a CryptoKey handle: it survives reloads and a killed tab, and clearing site data
+// deletes it — by design (the grant is then revoked or re-keyed from `/settings/account`). Structured clone keeps the
+// non-extractable private key usable without its bytes ever being readable (WebCrypto).
+
+const DB_NAME = "cwf-session-keys";
+const STORE = "keys";
+
+// The few IndexedDB shapes used here, declared locally: this module is type-checked by server-side packages too (no DOM lib).
+interface IdbRequest {
+  result: unknown;
+  error: unknown;
+  onsuccess: (() => void) | null;
+  onerror: (() => void) | null;
+}
+interface IdbStore {
+  get(key: string): IdbRequest;
+  put(value: unknown, key: string): IdbRequest;
+  delete(key: string): IdbRequest;
+}
+interface IdbTransaction {
+  objectStore(name: string): IdbStore;
+  error: unknown;
+  oncomplete: (() => void) | null;
+  onerror: (() => void) | null;
+  onabort: (() => void) | null;
+}
+interface IdbDatabase {
+  transaction(store: string, mode: "readonly" | "readwrite"): IdbTransaction;
+  createObjectStore(name: string): unknown;
+  close(): void;
+}
+interface IdbOpenRequest extends IdbRequest {
+  result: IdbDatabase;
+  onupgradeneeded: (() => void) | null;
+}
+const idb = () => (globalThis as { indexedDB?: { open(name: string, version: number): IdbOpenRequest } }).indexedDB;
+const failed = (e: unknown, what: string) => (e instanceof Error ? e : new Error(what));
+
+function openStore(): Promise<IdbDatabase> {
+  return new Promise((resolve, reject) => {
+    const factory = idb();
+    if (!factory) return reject(new Error("IndexedDB is unavailable in this browser"));
+    const open = factory.open(DB_NAME, 1);
+    open.onupgradeneeded = () => void open.result.createObjectStore(STORE);
+    open.onsuccess = () => resolve(open.result);
+    open.onerror = () => reject(failed(open.error, "IndexedDB open failed"));
+  });
+}
+
+async function withStore<T>(mode: "readonly" | "readwrite", act: (store: IdbStore) => IdbRequest): Promise<T> {
+  const db = await openStore();
+  try {
+    return await new Promise<T>((resolve, reject) => {
+      const tx = db.transaction(STORE, mode);
+      const req = act(tx.objectStore(STORE));
+      tx.oncomplete = () => resolve(req.result as T);
+      tx.onerror = () => reject(failed(tx.error, "IndexedDB transaction failed"));
+      tx.onabort = () => reject(failed(tx.error, "IndexedDB transaction aborted"));
+    });
+  } finally {
+    db.close();
+  }
+}
+
+const storeKey = (chainId: number, owner: Address) => `${chainId}.${owner.toLowerCase()}`;
+
+/** This browser's session key for `owner` on `chainId`, or null (none, another browser, cleared, or no IndexedDB). */
+export async function loadSessionKey(chainId: number, owner: Address): Promise<SessionKeyRecord | null> {
+  try {
+    const found = await withStore<SessionKeyRecord | undefined>("readonly", (s) => s.get(storeKey(chainId, owner)));
+    return found && found.owner.toLowerCase() === owner.toLowerCase() ? found : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Keeps the key; false when this browser cannot (private mode without IndexedDB) — the arm then refuses honestly. */
+export async function saveSessionKey(chainId: number, record: SessionKeyRecord): Promise<boolean> {
+  try {
+    await withStore("readwrite", (s) => s.put(record, storeKey(chainId, record.owner)));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function forgetSessionKey(chainId: number, owner: Address): Promise<void> {
+  try {
+    await withStore("readwrite", (s) => s.delete(storeKey(chainId, owner)));
+  } catch {
+    // nothing to forget where storage never worked
+  }
+}

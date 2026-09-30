@@ -8,7 +8,7 @@ import type { AgentSpec } from "./types";
 const ONE = 1_000_000n;
 const FEED = 100_000_000n;
 const spec: AgentSpec = { preset: "agent", persona: "Trade the trend, sit out chop.", posture: "balanced", cadences: [900, 3600] };
-const envelope = { maxStakePerTradeBase: 5n * ONE, maxDailySpendBase: 50n * ONE, maxOpenPositions: 2, maxPriceRaw: 0n };
+const envelope = { maxStakePerTradeBase: 5n * ONE, maxDailySpendBase: 50n * ONE, maxOpenPositions: 2, maxPriceRaw: 0n, market: null };
 const NOW_SEC = 1_788_400_000;
 
 const context = (over: Partial<AgentContext> = {}): AgentContext => ({

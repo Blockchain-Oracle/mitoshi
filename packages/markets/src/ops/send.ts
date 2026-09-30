@@ -7,6 +7,7 @@
  */
 import { BaseError, ContractFunctionRevertedError, decodeErrorResult, type Hex, type TransactionReceipt } from "viem";
 import { eventsEngineAbi } from "@cwf/clients/abis/EventsEngine";
+import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { EXPIRING_NONCE_MAX_SEC } from "@cwf/core";
 import type { Call } from "../tx/batch";
 import { sendBatch } from "../tx/send";
@@ -27,31 +28,35 @@ export class OpsSendError extends Error {
 /** Actor sends expire quickly: an absent tx is decided within a minute and the actor re-reads the chain. */
 export const OPS_VALID_FOR_SEC = 60;
 
-/** The engine error name inside a revert's data or message, or null. */
+/** The engine's errors, then the EventVault's (an actor that cranks the vault reads its refusals by name too, S7). */
+const ERROR_ABIS = [eventsEngineAbi, eventVaultAbi] as const;
+
+function decodeName(data: Hex): string | null {
+  for (const abi of ERROR_ABIS) {
+    try {
+      return decodeErrorResult({ abi, data }).errorName;
+    } catch {
+      /* not this contract's error */
+    }
+  }
+  return null;
+}
+
+/** The engine (or vault) error name inside a revert's data or message, or null. */
 export function engineErrorName(error: unknown): string | null {
   let e: unknown = error;
   for (let depth = 0; depth < 10 && e; depth++) {
     if (e instanceof ContractFunctionRevertedError && e.data?.errorName) return e.data.errorName;
     const data = (e as { data?: unknown }).data;
     if (typeof data === "string" && data.startsWith("0x") && data.length >= 10) {
-      try {
-        return decodeErrorResult({ abi: eventsEngineAbi, data: data as Hex }).errorName;
-      } catch {
-        /* not an engine error */
-      }
+      const name = decodeName(data as Hex);
+      if (name) return name;
     }
     e = (e as { cause?: unknown }).cause;
   }
   const text = error instanceof BaseError ? error.shortMessage + " " + error.details : String(error);
   const hex = /(0x[0-9a-fA-F]{8,})/.exec(text)?.[1];
-  if (hex) {
-    try {
-      return decodeErrorResult({ abi: eventsEngineAbi, data: hex as Hex }).errorName;
-    } catch {
-      /* not an engine error */
-    }
-  }
-  return null;
+  return hex ? decodeName(hex as Hex) : null;
 }
 
 /** The short message plus viem's details (the node's own words for an RPC error). */
