@@ -52,6 +52,8 @@ async function tap(t: TerminalSession, symbol: string, side: "up" | "down") {
   // A dearer book is a requote (D-208): "Tap again to take it" — once, as a person would.
   if ((await opened.count()) === 0 && /Price moved/.test(await refused.first().innerText().catch(() => ""))) {
     note({ step: "requote", symbol, side, body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
+    // The buttons may be between rounds by now (the last 30 s, the next opening print): wait, as a person would.
+    await waitEnterable(t, side, 300_000);
     await button.click();
     await expect(opened.first()).toBeVisible({ timeout: 90_000 }).catch(() => undefined);
   }

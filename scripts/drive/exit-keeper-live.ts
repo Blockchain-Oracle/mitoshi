@@ -10,7 +10,7 @@
  *   3. Down $1, then a trail: with `--restart`, a far stop is stored first and the run waits for ops to restart
  *      (`/health` shows a new start), then a newer trigger puts the stop 3 bps over the spot — it fires after the restart.
  *
- *   pnpm --filter @cwf/scripts exec tsx drive/exit-keeper-live.ts [--base https://testnet.mitoshi.xyz] [--ops https://ops.testnet.mitoshi.xyz] [--restart]
+ *   pnpm --filter @cwf/scripts exec tsx drive/exit-keeper-live.ts [--base https://testnet.mitoshi.xyz] [--ops https://ops.testnet.mitoshi.xyz] [--restart] [--lane crypto24]
  */
 import { encodeFunctionData, zeroHash, type Address, type Hex } from "viem";
 import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
@@ -28,6 +28,8 @@ const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`)
 const BASE = arg("base", "https://testnet.mitoshi.xyz");
 const OPS = arg("ops", "https://ops.testnet.mitoshi.xyz");
 const RESTART = process.argv.includes("--restart");
+/** `--lane crypto24`: a lively Window for the trail (BTC moves bps in seconds; a stock after hours may not move 0.1 %). */
+const LANE = arg("lane", "");
 const RPC = process.env.TEMPO_RPC_HTTP_URL ?? "https://rpc.moderato.tempo.xyz";
 const ONE = 1_000_000n;
 const out = (step: string, data: Record<string, unknown> = {}) => console.log(JSON.stringify({ step, ...data }, (_k, v) => (typeof v === "bigint" ? v.toString() : v)));
@@ -53,7 +55,7 @@ out("keeper", { keeper, vault: ev.vault, guard: ev.guard, why: beat.lastWhy });
 const need = RESTART ? 600 : 240;
 let target: Awaited<ReturnType<typeof liveWindows>>[number] | undefined;
 for (const t0 = Date.now(); !target && Date.now() - t0 < 6 * 60_000; ) {
-  target = (await liveWindows(ops, venue, nowSec())).filter((w) => w.market.lockAtSec - nowSec() > need && w.top.bidLots > 0n && w.top.askLots > 0n).sort((a, b) => b.market.lockAtSec - a.market.lockAtSec)[0];
+  target = (await liveWindows(ops, venue, nowSec())).filter((w) => (!LANE || w.series.lane === LANE) && w.market.lockAtSec - nowSec() > need && w.top.bidLots > 0n && w.top.askLots > 0n).sort((a, b) => b.market.lockAtSec - a.market.lockAtSec)[0];
   if (!target) await sleep(15_000);
 }
 if (!target) throw new Error(`no quoted Window with ${need}+ s to lock within 6 minutes`);
