@@ -47,6 +47,7 @@ import { setTradeSettings, useTradeSettingsState } from "./settings";
 import { Tutorial } from "./ui/Tutorial";
 import { ModeChips, ModePanel, type TerminalMode } from "./ui/ModePanel";
 import { useDrawnBand } from "@/features/range/band-store";
+import { TICKET_RAIL_MIN_WIDTH } from "@/features/markets/data/useSelection";
 import dynamic from "next/dynamic";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 
@@ -134,7 +135,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   const [mode, setMode] = useState<TerminalMode>("updown");
   const chooseMode = (m: TerminalMode) => {
     setMode(m);
-    if (m !== "updown" && !window.matchMedia("(min-width: 1024px)").matches) drawer.show(DRAWERS.mode);
+    if (m !== "updown" && !window.matchMedia(`(min-width: ${TICKET_RAIL_MIN_WIDTH}px)`).matches) drawer.show(DRAWERS.mode);
   };
   useAppUpdate();
   // First visit: the five-step tour, once the browser's settings have loaded with it unseen.
