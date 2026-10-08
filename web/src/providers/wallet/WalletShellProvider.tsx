@@ -27,7 +27,10 @@ export function hasStoredConnection(cookie: string): boolean {
   return /(?:^|;\s*)wagmi\.recentConnectorId=/.test(cookie);
 }
 
-const INTENT_EVENTS = ["pointerdown", "keydown", "touchstart", "focusin", "scroll"] as const;
+// Not `focusin`: a modal that focuses itself on load (the terminal's first-visit tour) is no visitor's intent, and it
+// pulled the ~1 MB runtime and its six wallet/Stripe frames into `/trade`'s first seconds (long tasks 1.3 s at 4× CPU,
+// S23 gate). A keyboard user's first Tab is a `keydown`; a Sign in tapped before the runtime arrives is queued.
+const INTENT_EVENTS = ["pointerdown", "keydown", "touchstart", "scroll"] as const;
 
 /** True once the runtime is wanted: a connection to restore, or the visitor's first interaction. */
 function useRuntimeWanted(): [boolean, () => void] {
