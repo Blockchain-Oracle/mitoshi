@@ -17,9 +17,12 @@ RV-55, RV-97, RV-98.
   trigger); watches the display feed and the book; sells through `placeFor(isBuy=false)` under the EXIT grant within
   the floor; pays its own gas (`sendOps`); publishes on `user:<addr>` ("Trailing stop hit · BTC · Locked +$x"); restart
   safe; non-critical heartbeat.
-- [ ] 24.4 The house's exit tail (D-194): `seed-maker/{quote,window}.ts` keep only the bid side from T−75 s to T−30 s,
-  short-TTL requotes, wider spread, inventory and spread caps, the house capital named; the lock−30 cap and the Regular
-  session-close pull stay; tests for both rules.
+- [ ] 24.4 The house's exit tail (D-194, D-204): `seed-maker/{quote,lanes,window}.ts` quote both sides from lock − 75,
+  half the lots at twice the half spread, place nothing new from lock − 45, let the pair lapse at lock − 30 (no cancel),
+  and never churn a pair already resting to lock − 30; pulls still cancel; the capital is the ops maker account under the
+  `MM_*` per-Window caps; the lock−30 cap and the Regular session-close pull stay. Tests: `quote.test.ts` (phases,
+  tail size and spread, minimum life, no churn). Live check: the terminal-trade CI driver closes inside the tail
+  (acceptance S23).
 - [ ] 24.5 Terminal: Trail/TP/SL switch to the keeper ("Runs with the app closed"); the EXIT grant's one passkey prompt
   in the Trail/TP/SL drawer ("Keep exits running with the app closed"); a row in `GrantsSection` with revoke.
 - **Gate:** on Moderato the keeper fires a trail with the tab closed, survives a restart, honours the proof floor (a

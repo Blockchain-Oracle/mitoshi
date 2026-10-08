@@ -9,7 +9,7 @@ import type { Address } from "viem";
 import { cancelAllCall, KIND, mergeSetCall, openOrdersOf, OpsSendError, ORDER_TYPE, placeOrderCall, positionsOf, sendOps, topOfBook, type MarketView, type OpsClient, type SeriesView, type Venue } from "@cwf/markets/ops";
 import type { SeedMakerEnv } from "./env";
 import type { LaneQuote } from "./lanes";
-import { needsRequote, quoteExpirySec, quotePair, sizeLots, type Placed } from "./quote";
+import { needsRequote, quoteExpirySec, quotePair, sizeLots, tailLots, type Placed } from "./quote";
 
 export interface WindowCtx {
   client: OpsClient;
@@ -29,7 +29,7 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
   if (!trading) return { state: "idle", placed: null, note: "not trading", txs };
   const fair = lane.phase === "quote" ? lane.fairTicks : null;
   const halfSpreadTicks = lane.halfSpreadTicks ?? ctx.env.halfSpreadTicks;
-  if (fair !== null && placed && !needsRequote({ placed, fairTicks: fair, nowSec: ctx.nowSec, requoteTicks: ctx.env.requoteTicks, halfSpreadTicks })) return { state: "resting", placed, note: `fair ${fair}, resting`, txs };
+  if (fair !== null && placed && !needsRequote({ placed, fairTicks: fair, nowSec: ctx.nowSec, requoteTicks: ctx.env.requoteTicks, halfSpreadTicks, lockAtSec: m.lockAtSec })) return { state: "resting", placed, note: `fair ${fair}, resting`, txs };
   if (!placed && lane.phase !== "quote") return { state: lane.phase === "stop" ? "stopped" : "pulled", placed: null, note: lane.why, txs };
   if (!placed && fair === null) return { state: "idle", placed: null, note: lane.why, txs };
   const send = async (what: string, calls: Parameters<typeof sendOps>[1]) => {
@@ -42,7 +42,8 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
     if (orders.length) await send(`cancelAll (${orders.length}) ${why}`, [cancelAllCall(ctx.venue.engine, m.marketId, 32, false)]);
   };
   if (lane.phase !== "quote") {
-    await cancel(lane.why);
+    // A stop near lock leaves what rests to expire at lock − 30 (no cancel fee); a pull cancels at once.
+    if (lane.phase === "pull") await cancel(lane.why);
     return { state: lane.phase === "stop" ? "stopped" : "pulled", placed: null, note: lane.why, txs };
   }
   if (fair === null) {
@@ -57,7 +58,7 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
   await cancel(placed ? `requote ${placed.fairTicks} → ${fair}` : "unknown resting orders");
   const top = await topOfBook(ctx.client, ctx.venue, m.marketId);
   const pair = quotePair({ fairTicks: fair, halfSpreadTicks, minTick: ctx.env.minTick, bestBidTicks: top.bidTicks || null, bestAskTicks: top.askTicks || null });
-  const lots = sizeLots({ wantLots: ctx.env.quoteLots, pair, cu: series.cashUnit, budget: lane.maxCashPerWindow, minLots: series.minLots });
+  const lots = sizeLots({ wantLots: lane.tail ? tailLots(ctx.env.quoteLots, series.minLots) : ctx.env.quoteLots, pair, cu: series.cashUnit, budget: lane.maxCashPerWindow, minLots: series.minLots });
   if (lots === 0n) return { state: "idle", placed: null, note: `fair ${fair}: no admissible size`, txs };
   const expireSec = quoteExpirySec(ctx.nowSec, m.lockAtSec, ctx.env.quoteTtlSec);
   let rested = false;

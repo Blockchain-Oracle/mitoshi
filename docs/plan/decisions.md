@@ -1702,6 +1702,22 @@ order Regular → 24/7 → Gap and shortest cadence first, with a Window open fo
 place, is listed in Everything for phones and is one tap from the terminal's markets drawer. **Supersedes** `useTicket`'s
 advance-in-the-buffer for the terminal only (the Markets ticket keeps it), and S22's four-place rail.
 
+### D-204 — the exit tail keeps both sides (S24.4, 2026-10-08)
+
+D-194's "bid (exit) side" is two orders on this engine, not one: an Up holder sells YES into the house's YES bid, and a
+Down holder sells NO, which on the YES book is a buy at the house's ask. A bid-only tail would leave every Down position
+without a buyer in the last minute. **So from lock − 75 the seed maker keeps both sides in an exit tail**, which:
+- quotes half the lots (at least the Series minimum) at twice the half spread (at least 30 ticks wider);
+- places nothing new from lock − 45, so every placement lives at least 15 s (the 2026-09-22 `OrderAlreadyExpired` fees);
+- lets the resting pair expire at lock − 30 rather than cancelling it;
+- never refreshes a pair that already rests to lock − 30.
+
+A pull (halt, stale spot, Regular close − 120) still cancels at once. The capital stays the ops maker account's pathUSD
+under the per-Window caps (`MM_MAX_CASH_PER_WINDOW` $50 Regular, `MM_ALLDAY_MAX_CASH_PER_WINDOW` $10 24/7, `MM_GAP_MAX_CASH`
+$25 Gap). An entrant in the tail pays the same wide spread as an exit, because one order can't tell the two apart.
+Brought forward from S24 because the terminal's first CI trade closed for $0.04 after lock − 75 (F-S23-04).
+**Refines** D-194's mechanism; its promise (CLOSE works to T−30 s) is unchanged.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

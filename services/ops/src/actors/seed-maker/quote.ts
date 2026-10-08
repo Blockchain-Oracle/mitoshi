@@ -66,10 +66,12 @@ export type Placed = { fairTicks: number; expireSec: number; halfSpreadTicks?: n
  * a resting pair narrower than the guard asks is the pair a taker would pick off), or the resting pair is within 20 s
  * of expiring.
  */
-export function needsRequote(i: { placed: Placed | null; fairTicks: number; nowSec: number; requoteTicks: number; halfSpreadTicks?: number }): boolean {
+export function needsRequote(i: { placed: Placed | null; fairTicks: number; nowSec: number; requoteTicks: number; halfSpreadTicks?: number; lockAtSec?: number }): boolean {
   if (!i.placed) return true;
   if (Math.abs(i.fairTicks - i.placed.fairTicks) >= i.requoteTicks) return true;
   if (i.halfSpreadTicks !== undefined && i.halfSpreadTicks > (i.placed.halfSpreadTicks ?? 0)) return true;
+  // A pair already resting to lock − 30 can't be refreshed past it: requoting would churn (fee, gap) for nothing.
+  if (i.lockAtSec !== undefined && i.placed.expireSec >= i.lockAtSec - 30) return false;
   return i.placed.expireSec - i.nowSec <= 20;
 }
 
@@ -77,7 +79,8 @@ export type MakerPhase = "quote" | "stop" | "pull";
 
 /**
  * `pull`: out of session, halted, stale spot, or within 120 s of the close: cancel everything.
- * `stop`: within `STOP_BEFORE_LOCK_SEC` of the Window's lock: cancel and quote no more. Otherwise `quote`.
+ * `stop`: within `STOP_BEFORE_LOCK_SEC` of the Window's lock: quote no more (what rests expires by lock − 30 on its own).
+ * Otherwise `quote` — from `TAIL_FROM_LOCK_SEC` the exit tail (`inExitTail`).
  */
 export function makerPhase(i: { nowSec: number; lockAtSec: number; inSession: boolean; closesAtSec: number | null; spotFresh: boolean }): MakerPhase {
   if (!i.inSession || !i.spotFresh) return "pull";
@@ -87,9 +90,19 @@ export function makerPhase(i: { nowSec: number; lockAtSec: number; inSession: bo
 }
 
 /**
- * A quote expires at lock − 30 (`quoteExpirySec`, D-011), so one placed at lock − 60 lives 30 s on paper and less on
- * chain: through the paced send lane after a boot, with 28 books re-quoting at once, the engine answered
- * `OrderAlreadyExpired` (6107) for the 5m Windows' last placements on 2026-09-22 — a fee paid to rest nothing. Stopping
- * at lock − 75 gives every quote at least 45 s to live; the last minute of a Window was never quoted anyway.
+ * A quote expires at lock − 30 (`quoteExpirySec`, D-011). Through the paced send lane after a boot, with 28 books
+ * re-quoting at once, the engine answered `OrderAlreadyExpired` (6107) for the 5m Windows' last placements on
+ * 2026-09-22 — a fee paid to rest nothing — so the full book stopped at lock − 75. D-194 (S24.4, brought forward by the
+ * terminal's first trades, F-S23-04): a position must still be sellable in the Window's last minute, so from
+ * lock − 75 the house keeps both sides in an **exit tail** — half the size at twice the spread, each placement living
+ * at least 15 s — and stops at lock − 45. Both orders stay: in this engine each one serves one side's exit (the YES bid
+ * takes an Up holder's sale, the NO bid a Down holder's).
  */
-export const STOP_BEFORE_LOCK_SEC = 75;
+export const TAIL_FROM_LOCK_SEC = 75;
+export const STOP_BEFORE_LOCK_SEC = 45;
+/** The tail's spread: twice the half spread, at least 30 ticks more. Its size: half the lots, at least the minimum. */
+export const tailHalfSpread = (half: number) => Math.max(half * 2, half + 30);
+export const tailLots = (lots: bigint, minLots: bigint) => (lots / 2n > minLots ? lots / 2n : minLots);
+
+/** Inside the exit tail: the last stretch before the stop, when the house quotes small and wide for the exits. */
+export const inExitTail = (nowSec: number, lockAtSec: number) => nowSec >= lockAtSec - TAIL_FROM_LOCK_SEC && nowSec < lockAtSec - STOP_BEFORE_LOCK_SEC;

@@ -13,13 +13,15 @@ import type { SpotFeed, SpotQuote } from "../../prices/spot";
 import type { SeedMakerEnv } from "./env";
 import { fairYesTicks, TRADING_YEAR_SEC } from "./fair";
 import { divergenceGuard } from "./guard";
-import { makerPhase, STOP_BEFORE_LOCK_SEC, type MakerPhase } from "./quote";
+import { inExitTail, makerPhase, STOP_BEFORE_LOCK_SEC, tailHalfSpread, type MakerPhase } from "./quote";
 
 export interface LaneQuote {
   phase: MakerPhase;
   fairTicks: number | null;
   maxCashPerWindow: bigint;
   halfSpreadTicks?: number;
+  /** The exit tail (D-194): half the size at twice the spread, both sides kept for the exits. */
+  tail?: boolean;
   why: string;
 }
 
@@ -99,7 +101,12 @@ function gap(i: LaneInput): LaneQuote {
 }
 
 export function laneQuote(i: LaneInput): LaneQuote {
-  if (i.lane === "gap") return gap(i);
-  if (i.lane === "stock24" || i.lane === "crypto24") return allDay(i);
-  return regular(i);
+  const q = i.lane === "gap" ? gap(i) : i.lane === "stock24" || i.lane === "crypto24" ? allDay(i) : regular(i);
+  return tailed(i, q);
+}
+
+/** In the Window's exit tail a quoting lane widens (twice the spread) and the window shrinks its size (`tailLots`). */
+function tailed(i: LaneInput, q: LaneQuote): LaneQuote {
+  if (q.phase !== "quote" || q.fairTicks === null || !inExitTail(i.nowSec, i.market.lockAtSec)) return q;
+  return { ...q, tail: true, halfSpreadTicks: tailHalfSpread(q.halfSpreadTicks ?? i.env.halfSpreadTicks), why: `${q.why} · exit tail` };
 }
