@@ -11,7 +11,8 @@
  *             "latest" payload per leg (the browser path is `web/e2e/parlay.ts`, sponsored through the relay)
  *   anyone    `resolveLeg` in close order once S3 settles each Window (D-108), then `claim` if every leg landed
  *
- *   PARLAY_DRIVE_DIR=<dir outside the repo> pnpm --dir scripts exec tsx drive/parlay-live.ts <maker|open|settle|refusals>
+ *   open-all  one leg pair, a ticket on every side pair the reserve accepts — one of them lands, so a claim follows
+ *   PARLAY_DRIVE_DIR=<dir outside the repo> pnpm --dir scripts exec tsx drive/parlay-live.ts <maker|open|open-all|settle|refusals>
  * Throwaway keys live in PARLAY_DRIVE_DIR (0600, never printed); every tx line is `cast receipt`-checked by `send`.
  */
 import { execFileSync } from "node:child_process";
@@ -75,7 +76,9 @@ const reserve = (fn: string, args: unknown[] = []) => client.readContract({ addr
 const vault = (fn: string, args: unknown[] = []) => client.readContract({ address: VAULT, abi: marketMakerVaultAbi, functionName: fn as never, args: args as never }) as Promise<any>;
 const reason = (e: unknown) => {
   const rev = e instanceof BaseError ? e.walk((x) => x instanceof ContractFunctionRevertedError) : null;
-  return rev instanceof ContractFunctionRevertedError ? `${rev.data?.errorName}(${(rev.data?.args ?? []).join(", ")})` : String(e).slice(0, 200);
+  if (!(rev instanceof ContractFunctionRevertedError)) return String(e).slice(0, 200);
+  // An error outside the ABI (a token precompile, the engine) still names its selector and raw data.
+  return rev.data?.errorName ? `${rev.data.errorName}(${(rev.data.args ?? []).join(", ")})` : `unknown ${rev.signature ?? ""} ${rev.raw ?? ""}`.trim();
 };
 
 interface Live { m: Hex; ticker: number; feed: string; lockAt: number; expiry: number; openE8: bigint }
@@ -220,6 +223,30 @@ async function openOnce() {
   log("ticket", { count, id: ids.at(-1), parlay: await reserve("parlayOf", [ids.at(-1)]), legs: await reserve("legsOf", [ids.at(-1)]) });
 }
 
+/**
+ * `open-all`: one leg pair, a ticket on every side pair the reserve accepts (the book at or above the model on both
+ * legs). Exactly one of the four combinations lands when neither leg voids, so the run always has a winner to claim.
+ */
+async function openAllSides() {
+  await setup();
+  const payout = 20n * ONE;
+  const picked = await pickLegs();
+  for (const sides of [[0, 0], [0, 1], [1, 0], [1, 1]]) {
+    const legs = picked.legs.map((l, k) => ({ ...l, outcomeIdx: sides[k]! }));
+    const pv = await client.readContract({ address: RESERVE, abi: READ_ABI, functionName: "previewOpen", args: [legs, payout] }).then((r) => r as unknown as [bigint, bigint, bigint[]], (e) => {
+      log("side pair refused by the reserve", { sides, reason: reason(e) });
+      return null;
+    });
+    if (!pv) continue;
+    const maxStake = pv[0] + pv[0] / 100n;
+    try {
+      ok(castBatch([approve(RESERVE, maxStake), { to: RESERVE, data: enc(parlayReserveAbi, "openParlay", [legs, payout, maxStake, picked.spots]) }], { signer: opener.signer, rpc: RPC }), "opener openParlay (side pair)", { sides, stake: pv[0], maxStake });
+    } catch (e) {
+      log("side pair not opened", { sides, why: String(e).slice(0, 200) });
+    }
+  }
+}
+
 async function settleAll(owner: Address) {
   const ids = (await reserve("parlaysOf", [owner, 0n, 50n])) as bigint[];
   for (const id of ids) {
@@ -255,6 +282,10 @@ async function refusals() {
   const thin = await client.readContract({ address: RESERVE, abi: READ_ABI, functionName: "previewOpen", args: [legs, 60n * ONE] }).then(() => "accepted", reason);
   log("thin book refused by name (payout 60 over 20 rested)", { reason: thin });
   const wrong = legs.map((l) => ({ ...l, outcomeIdx: 1 - l.outcomeIdx }));
+  // The reserve pulls the stake before it prices the legs, so without an allowance the simulation stops at the token's
+  // InsufficientAllowance and never reaches PD-2: approve first (self-paid), then ask.
+  await setup();
+  ok(castBatch([approve(RESERVE, 100n * ONE)], { signer: opener.signer, rpc: RPC }), "opener approve (so the PD-2 check is reached)", { amount: 100n * ONE });
   const pd2 = await client.simulateContract({ account: opener.address, address: RESERVE, abi: READ_ABI, functionName: "openParlay", args: [wrong, 20n * ONE, 100n * ONE, spots] }).then(() => "accepted", reason);
   log("the other sides, bounded by the model (PD-2) on the same spots", { reason: pd2 });
 }
@@ -262,6 +293,7 @@ async function refusals() {
 const mode = process.argv[2] ?? "maker";
 if (mode === "maker") await makerLoop();
 else if (mode === "open") await openOnce();
+else if (mode === "open-all") await openAllSides();
 else if (mode === "settle") await settleAll(getAddress(process.argv[3] ?? opener.address));
 else if (mode === "refusals") await refusals();
 else throw new Error(`unknown mode ${mode}`);
