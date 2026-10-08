@@ -1,6 +1,6 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-08 (revamp decided). **Never trust memory over this file.**
+Updated 2026-10-08 21:30Z (S24 exits; RedStone's gateway shutdown). **Never trust memory over this file.**
 
 ## Where we are
 
@@ -70,6 +70,19 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
   92cc15f, to re-measure);
 - Lighthouse with `/trade/BTC`, the §8 screenshots, and the owner's phone run.
 
+**S24 (2026-10-08, evening):** v2 is the Trading Balance on Moderato (24.1, 24.2; the Trading Balance driver passes on
+it end to end, run 37838428040). 24.3 `exit-keeper` and `/api/exits` are deployed and proven live
+(`scripts/drive/exit-keeper-live.ts`, `acceptance/S24.md`): a stranger's trigger refused, a sale one tick under the
+floor reverts, the owner's take-profit sold by the keeper with no tab (tx 0xe0e3…919b), an armed trail survives an ops
+restart. 24.5 (the terminal hands Trail/TP/SL to the keeper after one passkey confirmation) is built (1d6f7a0); its
+live check and the trail's sale wait on RedStone (below). Also fixed today: a requote now means a dearer book (D-208);
+the trigger signature is checked on the full Tempo chain (P-256 envelopes); ops runs both keepers (`OPS_ACTORS`).
+
+**RedStone is switching its public gateways off (D-210):** since 2026-10-08 they refuse requests in daily windows that
+grow until 2026-10-29, then stop. Inside a window, settlement prints, the house's quotes, halt-watch, Boost knock-outs
+and the exit keeper stall. The code now takes RedStone's authenticated gateways (`REDSTONE_GATEWAYS`, ops + web) the
+moment the owner has the key; the ops container checks `/livez`, so a RedStone outage no longer drops the ops API.
+
 ## Open integration items (from the wave-2/3 merges; owners pick these up)
 
 - S1/S16: the relay engine doesn't honour `themesPolicy.batches` (the one-tx key-authorization + follow is refused).
@@ -82,7 +95,8 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
 
 ## Waiting on the owner
 
-See `owner-actions.md` (open rows): Robinhood testnet faucet claims (X11) and test ETH for the S14c legs; passkey runs on
+See `owner-actions.md` (open rows). **First: RedStone's authenticated-gateway key (form in owner-actions, D-210) — the
+public gateways stop on 2026-10-29 and already refuse in daily windows.** Then: Robinhood testnet faucet claims (X11) and test ETH for the S14c legs; passkey runs on
 your own device (S1, S4 gate 2, S15, S16); the Cloudflare country header for the live geofence; the capped mainnet MPP
 wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §14c.13 A).
 
@@ -92,10 +106,13 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
    spanning a 04:00 ET; then the S4 Handoff re-runs on the deployed site (tap-latency, stream-ticket, `lighthouse.yml`).
 2. S10 remainder: `/api/prices/datastreams-report`, 10a.4 (a won ticket claimed, UX gate), the S10d browser gate, the
    stage gate.
-3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes). R.0, S22 and S23's boxes are done,
-   and S24.4 (the exit tail) is live. Next: the S23 gate (above), then **S24** 24.1 vault v2 with the EXIT grant →
-   24.2 migration → 24.3 `exit-keeper` → 24.5 the terminal's exits running with the app closed. S5's leaderboard data
-   comes before S23g's leaderboard.
+3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes). R.0, S22 and S23's boxes are done;
+   S24.1, 24.2 done, 24.3 deployed and proven live but for the trail's sale (RedStone window), 24.4 live, 24.5 built.
+   Next: with RedStone readable (or the key set), re-run `exit-keeper-live.ts --restart` (the trail's sale after a
+   restart) and tick 24.3; deploy 1d6f7a0's web if not yet, then the 24.5 live check (grant from the drawer, a trigger
+   written from the terminal, sold with the tab closed) and the S24 gate; 24.4's box after its live check; then the
+   S23 gate (above). The Trading Balance driver's Down tap took 22.8 s with the app's phases at 1.6 s — the next run's
+   `toastMs`/`rowMs` split says where. S5's leaderboard data comes before S23g's leaderboard.
 4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
    revamped UI.
