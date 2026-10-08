@@ -16,7 +16,7 @@ import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
 import { settle } from "./lib/settle";
-import { openTerminalSession, switchSymbol, waitEnterable, type TerminalSession, modal } from "./lib/terminal";
+import { tapPhases, openTerminalSession, switchSymbol, waitEnterable, type TerminalSession, modal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "https://testnet.mitoshi.xyz");
@@ -64,7 +64,7 @@ async function tap(t: TerminalSession, symbol: string, side: "up" | "down") {
     heldIn = await details.locator("dt", { hasText: "Held in" }).locator("xpath=following-sibling::dd").innerText().catch(() => null);
     await page.keyboard.press("Escape");
   }
-  note({ step: "tap", symbol, side, ok, ms: Date.now() - t0, prompts: t.assertions() - before, heldIn });
+  note({ step: "tap", symbol, side, ok, ms: Date.now() - t0, phases: await tapPhases(page), prompts: t.assertions() - before, heldIn });
   if (!ok) throw new Error(`${side} ${symbol}: ${await refused.first().innerText().catch(() => "not opened")}`);
   return row;
 }

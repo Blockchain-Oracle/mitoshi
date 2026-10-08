@@ -104,13 +104,25 @@ export async function waitEnterable(s: TerminalSession, side: "up" | "down" = "u
       chip: document.querySelector(".tm-window-state")?.textContent ?? null,
       note: document.querySelector(`#tm-note-${sd}`)?.textContent ?? null,
       sub: document.querySelector(`#tm-note-${sd}`)?.previousElementSibling?.querySelector(".tm-btn-sub")?.textContent ?? null,
-      flat: document.querySelector(".tm-buttons .tm-btn")?.textContent?.includes(sd.toUpperCase()) ?? false,
+      // No position on this Window: the buttons are UP / DOWN, not TRAIL / CLOSE.
+      flat: document.querySelector(".tm-buttons")?.textContent?.includes(sd.toUpperCase()) ?? false,
     }), side);
     if (state.flat && state.note === "" && state.sub) return;
     s.log({ step: "waiting", s: Math.round((Date.now() - start) / 1000), ...state });
     if (Date.now() - start > maxMs) throw new Error(`${side.toUpperCase()} never opened for entry: ${JSON.stringify(state)}`);
     await s.page.waitForTimeout(10_000);
   }
+}
+
+/** The last tap's phases from the app's own marks (`usePlaceBet`): pre-send checks, signing, and send → receipt, in ms. */
+export async function tapPhases(page: Page): Promise<Record<string, number> | null> {
+  return page.evaluate(() => {
+    const at = (n: string) => performance.getEntriesByName(n).at(-1)?.startTime ?? null;
+    const [start, sent, signed, done] = ["cwf:tap:start", "cwf:tap:sent", "cwf:tap:signed", "cwf:tap:done"].map(at);
+    if (start === null || done === null) return null;
+    const ms = (a: number | null, b: number | null) => (a === null || b === null ? -1 : Math.round(b - a));
+    return { checks: ms(start, sent), sign: ms(sent, signed), receipt: ms(signed ?? sent, done), total: ms(start, done) };
+  });
 }
 
 /** Switches the terminal to `symbol` in place, through the markets drawer (no navigation). */
