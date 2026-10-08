@@ -48,6 +48,12 @@ export const MARKETS = {
     successor: (cadence: string) => `That ${cadence} Window settled — moved you to its successor.`,
   },
   loadingWindows: "Loading live Windows",
+  list: {
+    eyebrow: "Markets",
+    title: "Every live Window",
+    body: "BTC, ETH, SOL and nine US stocks, in 5-minute to week-long Windows. Pick one to open it on the terminal — the live line, UP or DOWN in one tap, and every other way to call it.",
+    cta: "Open the terminal",
+  },
 } as const;
 
 export const HERO = {

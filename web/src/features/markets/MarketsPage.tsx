@@ -1,9 +1,7 @@
 "use client";
 /**
- * The /markets island: the screen once the late data layer exists (§3.1, D-071) — before that, the hero's exact box as
- * a named wait, so nothing shifts when it lands. Feature stylesheets load with the route, never globally.
+ * The /markets island: the list once the late data layer exists (§3.1, D-071) — before that, a list-shaped named wait. Feature stylesheets load with the route, never globally.
  */
-import type { MarketId } from "@cwf/core";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import { LoadingState } from "@/components/states";
@@ -14,9 +12,6 @@ const MarketsScreen = dynamic(() => import("./MarketsScreen").then((m) => m.Mark
 import "@/styles/markets-hero.css";
 import "@/styles/market-card.css";
 import "@/styles/word-board.css";
-import "@/styles/ticket.css";
-import "@/styles/ticket-composer.css";
-import "@/styles/ticket-composer-light.css";
 import "@/styles/share-card.css";
 import "@/styles/claim-winnings.css";
 import "@/styles/history.css";
@@ -24,24 +19,20 @@ import "./markets.css";
 
 function Placeholder() {
   return (
-    <section className="page-hero markets-hero">
+    <div className="markets-main">
       <div className="container">
-        <div className="hero-grid hero-grid-mini">
-          <div className="hero-chart mh-hero-empty">
-            <LoadingState shape="chart" label={MARKETS.loadingWindows} />
-          </div>
-        </div>
+        <LoadingState shape="plate" label={MARKETS.loadingWindows} />
       </div>
-    </section>
+    </div>
   );
 }
 
-export function MarketsPage({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
+export function MarketsPage() {
   const ready = useDataReady();
   if (!ready) return <Placeholder />;
   return (
     <Suspense fallback={<Placeholder />}>
-      <MarketsScreen routeMarketId={routeMarketId} />
+      <MarketsScreen />
     </Suspense>
   );
 }
