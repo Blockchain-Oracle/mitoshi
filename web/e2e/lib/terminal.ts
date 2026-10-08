@@ -8,6 +8,9 @@
 import { chromium, expect, type Browser, type BrowserContext, type Page } from "@playwright/test";
 import { settle } from "./settle";
 
+/** A modal or drawer on screen — not a toast (Base UI renders every toast with `role="dialog"`). */
+export const modal = (page: Page) => page.getByRole("dialog").filter({ hasNot: page.locator('[data-slot="toast-title"]') });
+
 export interface TerminalSession {
   browser: Browser;
   context: BrowserContext;
@@ -66,13 +69,13 @@ export async function signUpFromTour(s: TerminalSession, base: string, symbol: s
   const { page } = s;
   await page.goto(`${base}/trade/${symbol}`, { waitUntil: "load" });
   await settle(page);
-  const tour = page.getByRole("dialog");
+  const tour = modal(page);
   await expect(tour.getByText("Watch the market")).toBeVisible({ timeout: 120_000 });
   for (let i = 0; i < 4; i++) await tour.getByRole("button", { name: "Next" }).click();
   await tour.getByRole("button", { name: "Start trading" }).click();
   await page.getByLabel(/Name this passkey/).fill(`${name} ${Date.now()}`);
   await page.getByRole("button", { name: "Create my account" }).click();
-  const dialog = page.getByRole("dialog");
+  const dialog = modal(page);
   await expect(dialog.getByText(/You're funded/)).toBeVisible({ timeout: 120_000 });
   const beforeArm = s.assertions();
   await dialog.getByRole("button", { name: "Arm tap-trading" }).click();
@@ -85,7 +88,7 @@ export async function signUpFromTour(s: TerminalSession, base: string, symbol: s
 /** The stake at its minimum ($1), so a run spends little of the faucet's balance. */
 export async function stakeMin(page: Page): Promise<void> {
   await page.locator(".tm-stack").click();
-  await page.getByRole("dialog").getByRole("button", { name: "Min" }).click();
+  await modal(page).getByRole("button", { name: "Min" }).click();
   await page.keyboard.press("Escape");
   await expect(page.locator(".tm-stack-value").first()).toContainText("$1.00");
 }
@@ -114,7 +117,7 @@ export async function waitEnterable(s: TerminalSession, side: "up" | "down" = "u
 export async function switchSymbol(page: Page, symbol: string): Promise<void> {
   if (new URL(page.url()).pathname === `/trade/${symbol}`) return;
   await page.locator(".tm-asset").first().click();
-  const dialog = page.getByRole("dialog");
+  const dialog = modal(page);
   await dialog.getByRole("button", { name: new RegExp(`^${symbol} ·`) }).click();
   await page.waitForURL(new RegExp(`/trade/${symbol}(\\?|$)`));
   await expect(dialog).toBeHidden();
@@ -124,9 +127,10 @@ export async function switchSymbol(page: Page, symbol: string): Promise<void> {
 export async function openTerminal(page: Page, base: string, symbol: string): Promise<void> {
   await page.goto(`${base}/trade/${symbol}`, { waitUntil: "load" });
   await settle(page);
-  const tour = page.getByRole("dialog").filter({ hasText: "Watch the market" });
-  if (await tour.isVisible({ timeout: 8_000 }).catch(() => false)) {
+  // The tour opens after the splash (1–4 s): wait for it rather than look once.
+  const tour = modal(page).filter({ hasText: "Watch the market" });
+  if (await tour.waitFor({ state: "visible", timeout: 12_000 }).then(() => true, () => false)) {
     await tour.getByRole("button", { name: "Skip" }).click();
-    await expect(tour).toBeHidden({ timeout: 10_000 });
+    await expect(page.locator(".modal-root")).toHaveCount(0, { timeout: 10_000 });
   }
 }

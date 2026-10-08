@@ -13,6 +13,7 @@ import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, expect } from "@playwright/test";
 import { settle } from "./lib/settle";
+import { modal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "https://testnet.mitoshi.xyz");
@@ -45,11 +46,11 @@ for (const width of [390, 1440]) {
   try {
     await page.goto(`${base}/trade/BTC`, { waitUntil: "load" });
     await settle(page);
-    const tour = page.getByRole("dialog");
+    const tour = modal(page);
     await expect(tour.getByText("Watch the market")).toBeVisible({ timeout: 120_000 });
     for (let i = 0; i < 4; i++) await tour.getByRole("button", { name: "Next" }).click();
     await tour.getByRole("button", { name: "Start trading" }).click();
-    const dialog = page.getByRole("dialog");
+    const dialog = modal(page);
     await page.getByLabel(/Name this passkey/).fill(`e2e ${width}`);
     await page.getByRole("button", { name: "Create my account" }).click();
     await expect(dialog.getByText("Your account is ready")).toBeVisible({ timeout: 60_000 });
@@ -74,12 +75,12 @@ for (const width of [390, 1440]) {
     await page.reload({ waitUntil: "load" });
     await settle(page);
     await page.waitForTimeout(2_000);
-    if (await page.getByRole("dialog").getByText("Watch the market").isVisible().catch(() => false)) throw new Error("the tour came back after a reload");
+    if (await modal(page).getByText("Watch the market").isVisible().catch(() => false)) throw new Error("the tour came back after a reload");
 
     // Add money from Account: the same account today is told about the cooldown up front, with no button that would fail.
     await page.locator(".tm-equity:visible").first().click();
-    await page.getByRole("dialog").getByRole("button", { name: "Add money" }).click();
-    const funds = page.getByRole("dialog").filter({ hasText: "test dollars" }).last();
+    await modal(page).getByRole("button", { name: "Add money" }).click();
+    const funds = modal(page).filter({ hasText: "test dollars" }).last();
     await expect(funds.getByText("This account already got test dollars today.")).toBeVisible({ timeout: 30_000 });
     await expect(funds.getByRole("button", { name: "Get test dollars" })).toBeDisabled();
     await page.screenshot({ path: join(out, `addfunds-cooldown-${width}.png`) });

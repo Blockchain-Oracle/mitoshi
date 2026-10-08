@@ -12,7 +12,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect } from "@playwright/test";
-import { openTerminalSession, signUpFromTour, stakeMin, waitEnterable } from "./lib/terminal";
+import { openTerminalSession, signUpFromTour, stakeMin, waitEnterable, modal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "https://testnet.mitoshi.xyz");
@@ -34,7 +34,7 @@ try {
 
   // The Boost row: Off, 2×… up to the reserve's live maximum.
   await page.locator(".tm-stack").click();
-  const settings = page.getByRole("dialog");
+  const settings = modal(page);
   await expect(settings.getByText("Boost", { exact: true })).toBeVisible({ timeout: 30_000 });
   await settings.getByRole("button", { name: "2×", exact: true }).click();
   await expect(settings.getByText(/open a 2× Boost/)).toBeVisible();

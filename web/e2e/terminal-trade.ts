@@ -10,7 +10,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect } from "@playwright/test";
-import { openTerminalSession, signUpFromTour, stakeMin, waitEnterable } from "./lib/terminal";
+import { openTerminalSession, signUpFromTour, stakeMin, waitEnterable, modal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "https://testnet.mitoshi.xyz");
@@ -53,8 +53,8 @@ try {
 
   // TP/SL (RV-51, D-200) from the position's details: Tradash's tabs, linked inputs, caption and checks, on what Close pays.
   await row.locator(".tm-pos-open-btn").click();
-  await page.getByRole("dialog").getByRole("button", { name: "TP / SL" }).click();
-  const exits = page.getByRole("dialog").filter({ hasText: "Take profit" });
+  await modal(page).getByRole("button", { name: "TP / SL" }).click();
+  const exits = modal(page).filter({ hasText: "Take profit" });
   await expect(exits).toBeVisible();
   const tp = exits.getByRole("group", { name: "Take profit" });
   const sl = exits.getByRole("group", { name: "Stop loss" });
@@ -91,8 +91,8 @@ try {
 
   // The install drawer from Account (RV-91): the browser's own install state, `/download` one link away.
   await page.locator(".tm-equity:visible").first().click();
-  await page.getByRole("dialog").getByRole("button", { name: "Install app" }).click();
-  const install = page.getByRole("dialog").filter({ hasText: "Install Mitoshi" });
+  await modal(page).getByRole("button", { name: "Install app" }).click();
+  const install = modal(page).filter({ hasText: "Install Mitoshi" });
   await expect(install).toBeVisible();
   log({ step: "install", body: (await install.innerText()).split("\n").slice(0, 6) });
   log({ step: "toasts-seen", toasts: await toastsSeen() });

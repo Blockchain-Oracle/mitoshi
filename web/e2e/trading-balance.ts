@@ -16,7 +16,7 @@ import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page } from "@playwright/test";
 import { settle } from "./lib/settle";
-import { openTerminalSession, switchSymbol, waitEnterable, type TerminalSession } from "./lib/terminal";
+import { openTerminalSession, switchSymbol, waitEnterable, type TerminalSession, modal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "https://testnet.mitoshi.xyz");
@@ -53,7 +53,7 @@ async function tap(t: TerminalSession, symbol: string, side: "up" | "down") {
   if (ok) {
     await expect(row).toBeVisible({ timeout: 60_000 });
     await row.locator(".tm-pos-open-btn").click();
-    const details = page.getByRole("dialog");
+    const details = modal(page);
     heldIn = await details.locator("dt", { hasText: "Held in" }).locator("xpath=following-sibling::dd").innerText().catch(() => null);
     await page.keyboard.press("Escape");
   }
@@ -67,13 +67,13 @@ try {
   // 1. The tour → one ceremony → funded → the arm slot's Trading Balance at $1 taps → one assertion.
   await page.goto(`${base}/trade/BTC`, { waitUntil: "load" });
   await settle(page);
-  const tour = page.getByRole("dialog");
+  const tour = modal(page);
   await expect(tour.getByText("Watch the market")).toBeVisible({ timeout: 120_000 });
   for (let i = 0; i < 4; i++) await tour.getByRole("button", { name: "Next" }).click();
   await tour.getByRole("button", { name: "Start trading" }).click();
   await page.getByLabel(/Name this passkey/).fill(`s7 terminal ${width} ${Date.now()}`);
   await page.getByRole("button", { name: "Create my account" }).click();
-  const dialog = page.getByRole("dialog");
+  const dialog = modal(page);
   await expect(dialog.getByText(/You're funded/)).toBeVisible({ timeout: 120_000 });
   const afterSignUp = s.assertions();
   const choice = dialog.getByRole("radio", { name: "Trading Balance" });
@@ -89,7 +89,7 @@ try {
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden({ timeout: 10_000 });
   await page.locator(".tm-stack").click();
-  await page.getByRole("dialog").getByRole("button", { name: "Min" }).click();
+  await modal(page).getByRole("button", { name: "Min" }).click();
   await page.keyboard.press("Escape");
 
   // 2. Session-key taps from the Trading Balance: no prompt, sponsored, held in the vault.
@@ -111,7 +111,7 @@ try {
   // 4. Over the per-tap cap: the reason under the button (D-160), nothing sent, no prompt.
   await switchSymbol(page, "SOL");
   await page.locator(".tm-stack").click();
-  const settings = page.getByRole("dialog");
+  const settings = modal(page);
   await settings.getByLabel(/Size|Stake/).first().fill("1.50");
   await settings.getByLabel(/Size|Stake/).first().blur();
   await page.keyboard.press("Escape");
