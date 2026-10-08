@@ -42,6 +42,20 @@ export function quotePair(i: PairInput): QuotePair {
   return { bidTicks, askTicks };
 }
 
+/**
+ * The best bid and ask other than our own, from the top of book and our resting orders (YES ticks; a bid is a BUY_YES,
+ * an ask a BUY_NO at its YES price). A top level that is all ours is no level: we cancel it in the same transaction as
+ * the new pair. Another order behind ours is unseen here — the one-transaction requote then refuses and the window
+ * falls back to the book as it stands after the cancel.
+ */
+export function othersTop(top: { bidTicks: number; bidLots: bigint; askTicks: number; askLots: bigint }, own: readonly { isBid: boolean; ticks: number; lots: bigint }[]): { bidTicks: number | null; askTicks: number | null } {
+  const mine = (isBid: boolean, ticks: number) => own.reduce((sum, o) => (o.isBid === isBid && o.ticks === ticks ? sum + o.lots : sum), 0n);
+  return {
+    bidTicks: top.bidTicks && top.bidLots > mine(true, top.bidTicks) ? top.bidTicks : null,
+    askTicks: top.askTicks && top.askLots > mine(false, top.askTicks) ? top.askTicks : null,
+  };
+}
+
 /** Cash a resting BUY_YES at `bidTicks` escrows per lot (cash unit `cu`). */
 export const bidEscrowPerLot = (bidTicks: number, cu: bigint) => BigInt(bidTicks) * cu;
 /** Cash a resting BUY_NO at YES price `askTicks` escrows per lot: the NO price, `1000 − ask`. */

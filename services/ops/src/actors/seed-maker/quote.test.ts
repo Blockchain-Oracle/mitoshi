@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { inExitTail, makerPhase, needsRequote, quoteExpirySec, STOP_BEFORE_LOCK_SEC, TAIL_FROM_LOCK_SEC, tailHalfSpread, tailLots } from "./quote";
+import { inExitTail, makerPhase, needsRequote, othersTop, quoteExpirySec, STOP_BEFORE_LOCK_SEC, TAIL_FROM_LOCK_SEC, tailHalfSpread, tailLots } from "./quote";
 
 const LOCK = 1_000_000;
 const phase = (nowSec: number) => makerPhase({ nowSec, lockAtSec: LOCK, inSession: true, closesAtSec: null, spotFresh: true });
@@ -33,5 +33,13 @@ describe("the maker's last minute (D-194, S24.4)", () => {
     const early = { fairTicks: 500, expireSec: LOCK - 400, halfSpreadTicks: 30 };
     expect(needsRequote({ placed: early, fairTicks: 500, nowSec: LOCK - 410, requoteTicks: 10, halfSpreadTicks: 30, lockAtSec: LOCK })).toBe(true);
     expect(needsRequote({ placed: { ...early, expireSec: LOCK - 30 }, fairTicks: 500, nowSec: LOCK - 70, requoteTicks: 10, halfSpreadTicks: 60, lockAtSec: LOCK })).toBe(true);
+  });
+
+  it("prices a requote against everyone's best but ours: a top level that is all ours is no level", () => {
+    const top = { bidTicks: 470, bidLots: 5_000n, askTicks: 530, askLots: 6_000n };
+    const own = [{ isBid: true, ticks: 470, lots: 5_000n }, { isBid: false, ticks: 530, lots: 5_000n }];
+    expect(othersTop(top, own)).toEqual({ bidTicks: null, askTicks: 530 });
+    expect(othersTop(top, [])).toEqual({ bidTicks: 470, askTicks: 530 });
+    expect(othersTop({ bidTicks: 0, bidLots: 0n, askTicks: 0, askLots: 0n }, own)).toEqual({ bidTicks: null, askTicks: null });
   });
 });

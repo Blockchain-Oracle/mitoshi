@@ -21,10 +21,14 @@ RV-55, RV-97, RV-98.
   lock − 75. A pair already resting is kept. New placements are half the lots at twice the half spread. Nothing new is
   placed from lock − 45. The pair lapses at lock − 30 with no cancel, and a pair already resting to lock − 30 is never
   churned. Each Window is tended on the chain clock of its moment, and a placement with under 8 s to rest is skipped.
+  A requote is one transaction (cancel, merge, the new pair), so no side goes missing between cancel and placement. It
+  is priced against everyone's best but the maker's own (`othersTop`), and a batch that would revert falls back to one
+  call at a time.
   Pulls still cancel. A rate-limited raw send goes again with the same bytes (`tx/send.ts`). The capital is the ops
   maker account under the `MM_*` per-Window caps. The lock−30 cap and the Regular session-close pull stay.
-  Tests: `quote.test.ts` (phases, tail size and spread, minimum life, no churn); `window.test.ts` (a resting pair kept,
-  tail placements, full quotes before, stop vs pull, late placement skipped); `send-split.test.ts` (same-bytes retry,
+  Tests: `quote.test.ts` (phases, tail size and spread, minimum life, no churn, `othersTop`); `window.test.ts` (a
+  resting pair kept, tail placements, full quotes before, stop vs pull, late placement skipped, the one-transaction
+  requote and its fallback); `send-split.test.ts` (same-bytes retry,
   fail-fast). Live check: `scripts/drive/exit-tail-live.ts` shows both sides through a Window's tail, and the
   terminal-trade CI driver closes inside it (acceptance S23).
 - [ ] 24.5 Terminal: Trail/TP/SL switch to the keeper ("Runs with the app closed"); the EXIT grant's one passkey prompt
