@@ -34,7 +34,7 @@ const note = (o: Record<string, unknown>) => (steps.push(o), log(o));
 
 async function axe(p: Page, name: string, include: string) {
   const r = await new AxeBuilder({ page: p }).include(include).withTags(["wcag2a", "wcag2aa"]).analyze();
-  if (r.violations.length) note({ step: "axe", name, violations: r.violations.map((v) => v.id) });
+  if (r.violations.length) note({ step: "axe", name, violations: r.violations.map((v) => `${v.id}: ${v.nodes.slice(0, 3).map((n) => n.target.join(" ")).join(" | ")}`) });
 }
 
 /** One tap on `symbol`: opened with zero prompts, and held in the Trading Balance (its details say so). */
@@ -43,10 +43,17 @@ async function tap(t: TerminalSession, symbol: string, side: "up" | "down") {
   await waitEnterable(t, side, 300_000);
   const before = t.assertions();
   const t0 = Date.now();
-  await page.locator(".tm-buttons .tm-btn").filter({ hasText: side.toUpperCase() }).first().click();
+  const button = page.locator(".tm-buttons .tm-btn").filter({ hasText: side.toUpperCase() }).first();
+  await button.click();
   const opened = page.locator('[data-slot="toast-title"]').filter({ hasText: / opened$/ });
   const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /Price moved|Nothing filled|didn't go through|Waiting for the chain/ });
   await expect(opened.or(refused).first()).toBeVisible({ timeout: 90_000 });
+  // A dearer book is a requote (D-208): "Tap again to take it" — once, as a person would.
+  if ((await opened.count()) === 0 && /Price moved/.test(await refused.first().innerText().catch(() => ""))) {
+    note({ step: "requote", symbol, side, body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
+    await button.click();
+    await expect(opened.first()).toBeVisible({ timeout: 90_000 }).catch(() => undefined);
+  }
   const ok = (await opened.count()) > 0;
   const row = page.locator(".tm-side-list .tm-pos").filter({ hasText: `${side === "up" ? "Up" : "Down"} ${symbol}` }).first();
   let heldIn: string | null = null;

@@ -76,6 +76,32 @@ export function ownLimitTicksOf(quote: Pick<Quote, "side" | "limitPriceRaw">, gr
 }
 
 /**
+ * A fresh quote held to the one the user confirmed (D-208), or null when the book got dearer (a requote). The confirmed
+ * quote promised its contracts (the payout shown) and its escrow (the cap, `maxCostBase`). At a fixed stake a cheaper
+ * book buys more lots, and their escrow can round above the confirmed one, so escrow alone is no price signal: the
+ * book is dearer when the stake now buys fewer contracts or the protective limit is higher. Otherwise the order keeps
+ * the confirmed contracts at the fresh limit — escrow within the cap, fills at what the book asks now.
+ */
+export function holdToConfirmed(book: YesBook, grid: Grid, fresh: Quote, shown: Quote): Quote | null {
+  const limit = ownLimitTicksOf(fresh, grid);
+  if (fresh.contractsRaw < shown.contractsRaw || limit > ownLimitTicksOf(shown, grid)) return null;
+  const lots = shown.contractsRaw / grid.lotBase;
+  const walked = exitWalk(buyLevels(book, fresh.side), lots);
+  const avgPriceBps = bpsOfTicks((walked.proceeds + lots - 1n) / lots);
+  const maxCostBase = lots * BigInt(limit) * grid.cashUnit;
+  return {
+    ...fresh,
+    contractsRaw: shown.contractsRaw,
+    payoutIfRightBase: shown.contractsRaw,
+    expectedCostBase: walked.proceeds * grid.cashUnit,
+    maxCostBase,
+    avgPriceBps,
+    oddsCents: Math.round(avgPriceBps / 100),
+    fillableStakeBase: fresh.partial ? maxCostBase : fresh.stakeBase,
+  };
+}
+
+/**
  * Selling up to `heldLots` of `side` now (Agari `exitQuoteFromBook`, D-067): `lots = min(held, fillable)`, the limit is
  * the last level reached padded down by `max(⌊p × 3%⌋, 10)` ticks (floored at 1); `minProceeds` is what a fill at that
  * limit pays at least. Null when nothing fills or the size is below the Series minimum.

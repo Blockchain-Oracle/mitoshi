@@ -86,8 +86,8 @@ describe.skipIf(!url)("vault index projections (real Moderato logs)", () => {
     const twin = events.map((e) => ({ ...e, address: V2, txHash: `${e.txHash.slice(0, -4)}beef` }));
     const r = await w.writeWindow(twin, { chainId: 42431, address: V2, block: Number(fx.toBlock) });
     expect(r.inserted).toBe(twin.length);
-    const [{ n: accounts }] = await sql<{ n: number }[]>`select count(*)::int as n from idx_vault_accounts where vault = ${V2}`;
-    const [{ n: grants }] = await sql<{ n: number }[]>`select count(*)::int as n from idx_vault_grants where vault = ${V2}`;
+    const [{ n: accounts } = { n: -1 }] = await sql<{ n: number }[]>`select count(*)::int as n from idx_vault_accounts where vault = ${V2}`;
+    const [{ n: grants } = { n: -1 }] = await sql<{ n: number }[]>`select count(*)::int as n from idx_vault_grants where vault = ${V2}`;
     expect(accounts).toBe(before.accounts.length);
     expect(grants).toBe(before.grants.length);
     // v1's rows are untouched by v2's identical history.

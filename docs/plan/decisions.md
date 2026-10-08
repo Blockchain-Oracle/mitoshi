@@ -1770,6 +1770,16 @@ Moderato. Browser e2e drivers are not ported or extended as work of their own. *
 drivers rewritten (first-call, parlay, private, …)". The drivers already ported (terminal-trade, tap-latency,
 onboarding, trading-balance, boost, range) stay as the gate's live checks; the rest stay as they are.
 
+### D-208 — a requote means a dearer book, not a larger escrow (S23d, 2026-10-08)
+
+**A tap is a requote only when the book got dearer: the stake now buys fewer contracts, or the protective limit is
+higher in the side's own terms.** A cheaper or equal book keeps the confirmed contracts (the payout the button showed)
+at the fresh limit, so the escrow stays within the confirmed `maxCostBase` and the fills cost what the book asks now
+(`engine/quote.ts` `holdToConfirmed`, used by `freshQuote` for the wallet and Trading Balance lanes). The old rule
+compared escrows, and at a fixed stake a cheaper book buys more lots whose escrow can round above the confirmed one:
+the v2 Trading Balance check (CI run 37834989176) got "Price moved — the book moved to 60.1¢" on a button that said
+60.6¢. **Refines** the cap contract in `ports/submitter.ts` (the confirmed escrow is still never exceeded).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

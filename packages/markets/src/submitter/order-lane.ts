@@ -13,7 +13,7 @@ import { diagnoseWrite as diagnose, isAmbiguousSend } from "./diagnose-write";
 import { engineVenue, readBook, readPositions, TAKER_MIN_REST_SEC, type WindowFacts } from "../engine/lens";
 import { newClientId, ORDER_TYPE, walletOrderCalls } from "../engine/calls";
 import { decodeEngineEvents, ownExecution } from "../engine/decode";
-import { ownLimitTicksOf, quoteFromBook, type YesBook } from "../engine/quote";
+import { holdToConfirmed, ownLimitTicksOf, quoteFromBook, type YesBook } from "../engine/quote";
 import { randomU64 } from "../random";
 import { getPublicClient } from "../runtime/read-runtime";
 import { sendBatch, type PendingKeyAuthorization } from "../tx/send";
@@ -47,15 +47,20 @@ function summarize({ side, market, stakeBase }: OrderRequest): string {
   return `${side === "up" ? "Up" : "Down"} on ${market.asset} (${formatCadence(market.intervalSec)} Window), ${stakeBase} base staked`;
 }
 
-/** Fresh quote off the chain book; refuses the unfillable and the inadmissible, surfaces a dearer book as a requote. */
+/**
+ * Fresh quote off the chain book; refuses the unfillable and the inadmissible, surfaces a dearer book as a requote and
+ * holds a cheaper one to the confirmed contracts and cap (`holdToConfirmed`, D-208).
+ */
 export async function freshQuote(w: WindowFacts, req: OrderRequest, nowMs: number, book?: Promise<YesBook>): Promise<Quote> {
   if (belowMinStake(req.stakeBase, w.market.decimals)) throw new OrderRefusedError(diagnosis("below-min-quantity", `stake ${req.stakeBase} is below the minimum`));
-  const quote = quoteFromBook(await (book ?? readBook(w.marketId, TAKER_MIN_REST_SEC)), w.series, req.side, req.stakeBase, nowMs);
+  const levels = await (book ?? readBook(w.marketId, TAKER_MIN_REST_SEC));
+  const quote = quoteFromBook(levels, w.series, req.side, req.stakeBase, nowMs);
   if (!quote) throw new OrderRefusedError(diagnosis("no-liquidity", `nothing fillable for ${req.stakeBase} on the ${req.side} side`));
   const band = admissibilityBlocker(quote.avgPriceBps);
   if (band) throw new OrderRefusedError(diagnosis("outside-band", `${band}: the book quotes ${quote.avgPriceBps} bps`));
-  if (quote.maxCostBase > req.displayedQuote.maxCostBase) throw new RequoteError(quote);
-  return quote;
+  const held = holdToConfirmed(levels, w.series, quote, req.displayedQuote);
+  if (!held) throw new RequoteError(quote);
+  return held;
 }
 
 /** What the engine's `OrderExecuted` booked for this taker; null when nothing crossed (a PostOnly that rested). */

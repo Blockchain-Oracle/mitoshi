@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { depthFromBook, exitFromBook, ownLimitTicksOf, quoteFromBook, type Grid, type YesBook } from "./quote";
+import { depthFromBook, exitFromBook, holdToConfirmed, ownLimitTicksOf, quoteFromBook, type Grid, type YesBook } from "./quote";
 
 // The launch grid on Moderato (lens `seriesOf`): lot = tick = 1000, cashUnit 1, minLots 1000 (one contract).
 const GRID: Grid = { lotBase: 1000n, tickBase: 1000n, cashUnit: 1n, minLots: 1000n, decimals: 6 };
@@ -52,5 +52,37 @@ describe("quote kernels over lens levels", () => {
     expect(d.upAsks[0]).toEqual({ priceRaw: 450_000n, priceBps: 4_500, quantityRaw: 3_000_000n });
     expect(d.downAsks[0]!.priceBps).toBe(5_700);
     expect(d.downBids[0]!.priceBps).toBe(5_500);
+  });
+  it("a cheaper book keeps the confirmed contracts within the cap; a dearer one is a requote (D-208)", () => {
+    // Live, testnet 2026-10-08: a $1 Up shown at 60.6¢; at the tap the maker's ask is 60.1¢.
+    const shown = quoteFromBook({ bids: [], asks: [[606, 10_000n]] }, GRID, "up", 1_000_000n, 1)!;
+    expect(shown.contractsRaw).toBe(1_602n * 1000n);
+    expect(shown.maxCostBase).toBe(1_602n * 624n);
+    const cheaper: YesBook = { bids: [], asks: [[601, 10_000n]] };
+    const fresh = quoteFromBook(cheaper, GRID, "up", 1_000_000n, 2)!;
+    // More lots at a lower limit, yet their escrow rounds above the confirmed one: escrow is no price signal.
+    expect(fresh.maxCostBase).toBeGreaterThan(shown.maxCostBase);
+    const held = holdToConfirmed(cheaper, GRID, fresh, shown)!;
+    expect(held.contractsRaw).toBe(shown.contractsRaw);
+    expect(held.payoutIfRightBase).toBe(shown.contractsRaw);
+    expect(held.limitPriceRaw).toBe(619_000n);
+    expect(held.maxCostBase).toBe(1_602n * 619n);
+    expect(held.maxCostBase).toBeLessThanOrEqual(shown.maxCostBase);
+    expect(held.expectedCostBase).toBe(1_602n * 601n);
+    // The same book is the confirmed quote; a dearer one buys fewer contracts.
+    expect(holdToConfirmed({ bids: [], asks: [[606, 10_000n]] }, GRID, quoteFromBook({ bids: [], asks: [[606, 10_000n]] }, GRID, "up", 1_000_000n, 3)!, shown)).toMatchObject({ contractsRaw: shown.contractsRaw, maxCostBase: shown.maxCostBase });
+    const dearer: YesBook = { bids: [], asks: [[612, 10_000n]] };
+    expect(holdToConfirmed(dearer, GRID, quoteFromBook(dearer, GRID, "up", 1_000_000n, 4)!, shown)).toBeNull();
+  });
+
+  it("holds a Down quote in its own terms: a higher NO limit is a requote", () => {
+    // Down buys NO at 1000 − YES bid: the bid falling from 400 to 390 makes NO dearer (600 → 610).
+    const shown = quoteFromBook({ bids: [[400, 10_000n]], asks: [] }, GRID, "down", 1_000_000n, 1)!;
+    const dearer: YesBook = { bids: [[390, 10_000n]], asks: [] };
+    expect(holdToConfirmed(dearer, GRID, quoteFromBook(dearer, GRID, "down", 1_000_000n, 2)!, shown)).toBeNull();
+    const cheaper: YesBook = { bids: [[405, 10_000n]], asks: [] };
+    const held = holdToConfirmed(cheaper, GRID, quoteFromBook(cheaper, GRID, "down", 1_000_000n, 2)!, shown)!;
+    expect(held.contractsRaw).toBe(shown.contractsRaw);
+    expect(ownLimitTicksOf(held, GRID)).toBeLessThan(ownLimitTicksOf(shown, GRID));
   });
 });

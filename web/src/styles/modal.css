@@ -45,13 +45,12 @@
 .setup-cta:disabled { opacity: 0.5; cursor: not-allowed; }
 [data-theme="light"] .setup-cta { background: rgba(20, 18, 16, 0.06); border-color: rgba(20, 18, 16, 0.12); color: #141210; }
 /* the caps and the receipt sit behind a disclosure, so the first face is one sentence and one button */
-.modal-disclosure > summary { cursor: pointer; list-style: none; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: rgba(255, 255, 255, 0.45); display: flex; align-items: center; gap: 6px; }
+.modal-disclosure > summary { cursor: pointer; list-style: none; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--color-ink-secondary); display: flex; align-items: center; gap: 6px; }
 .modal-disclosure > summary::-webkit-details-marker { display: none; }
 .modal-disclosure > summary::before { content: "+"; font-size: 12px; line-height: 1; }
 .modal-disclosure[open] > summary::before { content: "−"; }
-.modal-disclosure > summary:hover { color: rgba(255, 255, 255, 0.75); }
+.modal-disclosure > summary:hover { color: var(--color-ink); }
 .modal-disclosure > *:not(summary) { margin-top: 12px; }
-[data-theme="light"] .modal-disclosure > summary { color: rgba(20, 18, 16, 0.6); }
 
 /* Base UI mounting (components/ui/modal.tsx): the scrim is its own fixed layer; enter/exit are opacity + scale. */
 .modal-scrim { position: fixed; z-index: 99; }

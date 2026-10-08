@@ -30,7 +30,7 @@ export interface OrderRequest {
   market: EventMarket;
   side: Side;
   stakeBase: bigint;
-  /** The quote the user confirmed; its `maxCostBase` is the cap — a fresh quote whose `maxCostBase` exceeds it is surfaced as a requote, never silently accepted. */
+  /** The quote the user confirmed: its contracts are the payout shown and its `maxCostBase` the cap. A dearer book (fewer contracts or a higher limit) is surfaced as a requote, never silently accepted; a cheaper one keeps the confirmed contracts within the cap (D-208). */
   displayedQuote: Quote;
   wallet: Address;
   /** Defaults to the wallet route. */
@@ -51,7 +51,7 @@ export type OrderOutcome =
   | { status: "confirmed"; booked: BookedOrder }
   /** The tx mined but crossed nothing: the book moved before the IOC landed; the stake was never taken. */
   | { status: "nothingFilled"; txHash: Hex }
-  /** The fresh quote's `maxCostBase` exceeds the confirmed one — the surface shows the new cost and asks again. */
+  /** The book got dearer than the confirmed quote (fewer contracts or a higher limit, D-208) — the surface shows the new price and asks again. */
   | { status: "requote"; quote: Quote }
   | { status: "refused"; diagnosis: Diagnosis }
   | { status: "reverted"; diagnosis: Diagnosis; txHash: Hex }
