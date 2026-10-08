@@ -1726,6 +1726,17 @@ $25 Gap). An entrant in the tail pays the same wide spread as an exit, because o
 Brought forward from S24 because the terminal's first CI trade closed for $0.04 after lock − 75 (F-S23-04).
 **Refines** D-194's mechanism; its promise (CLOSE works to T−30 s) is unchanged.
 
+### D-205 — a taker reads the book at rest 0 (S23d, 2026-10-08)
+
+**Every taker-facing book read — the stake quote, the exit, the sell lanes, the depth shown — passes `minRestSec = 0`**
+(`TAKER_MIN_REST_SEC`). The engine's matching takes any live, unexpired order however young: `MatchCore` writes
+`placedAt` and never reads it. A Series' `minRestSec` (20 s on Moderato) is the rested-depth guard for products that
+price on chain (Leverage, Parlay, Range: `engine-gas.md`), and they keep it. Read at 20 s, every maker requote was
+invisible to the exit for 20 s, so the position showed less than CLOSE pays, or nothing. In the exit tail (D-204),
+that was most of a placement's life. The IOC limit still bounds what a taker gets. This applies D-197's "read with
+`minRestSec = 0`" and extends it to the buy side for the same reason. The order lane's book read no longer waits on
+the Series facts.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

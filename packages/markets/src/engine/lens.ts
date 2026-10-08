@@ -206,7 +206,16 @@ const zipLevels = ([ticks, lots]: LevelsAnswer): BookLevel[] => ticks.map((t, i)
 const levelsCall = (lensAddress: Address, marketId: MarketId, isBid: boolean, n: number, minRestSec: number) =>
   ({ address: lensAddress, abi: engineLensAbi, functionName: "levels" as const, args: [marketId, isBid, BigInt(n), minRestSec, LENS_MAX_NODES] as const });
 
-/** YES-terms levels, takeable now (lens walk filter: live, unexpired, rested ≥ the Series' `minRestSec`). */
+/**
+ * The rest filter for a taker's read (a quote, an exit, the depth shown): 0. The engine's matching takes any live,
+ * unexpired order however young (`MatchCore` never reads `placedAt`); a Series' `minRestSec` guards only the products
+ * that price against rested depth on chain (Leverage, Parlay, Range — `docs/specs/engine-gas.md`). Read at the Series'
+ * 20 s, a maker's requote stayed invisible to the exit for 20 s and CLOSE showed less than it pays (D-197, D-205);
+ * the IOC limit bounds what a taker gets.
+ */
+export const TAKER_MIN_REST_SEC = 0;
+
+/** YES-terms levels (lens walk filter: live, unexpired, rested ≥ `minRestSec` — `TAKER_MIN_REST_SEC` for a taker). */
 export async function readBook(marketId: MarketId, minRestSec: number, n = BOOK_LEVELS): Promise<YesBook> {
   const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
   const [bids, asks] = (await client.multicall({

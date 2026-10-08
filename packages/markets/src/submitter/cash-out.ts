@@ -8,7 +8,7 @@
 import type { Account, Chain, Transport, WalletClient } from "viem";
 import { diagnosis, formatCadence, SIDE_TO_OUTCOME, type Address, type BookedSell, type CashOutOutcome, type CashOutRequest, type Diagnosis, type ExitQuote, type IntentJournal, type PhaseListener } from "@cwf/core";
 import { diagnoseWrite as diagnose, isAmbiguousSend } from "./diagnose-write";
-import { engineVenue, readBook, readPositions, type WindowFacts } from "../engine/lens";
+import { engineVenue, readBook, readPositions, TAKER_MIN_REST_SEC, type WindowFacts } from "../engine/lens";
 import { cashOutCall, newClientId } from "../engine/calls";
 import { decodeEngineEvents, ownExecution } from "../engine/decode";
 import { exitFromBook } from "../engine/quote";
@@ -47,7 +47,7 @@ async function gate(req: CashOutRequest): Promise<WindowFacts> {
 /** The fresh exit for up to `want` lots of the held side; null book → refused, not requoted. */
 async function freshExit(w: WindowFacts, req: CashOutRequest, heldLots: bigint, nowMs: number): Promise<ExitQuote> {
   const want = req.contractsRaw / w.series.lotBase < heldLots ? req.contractsRaw / w.series.lotBase : heldLots;
-  const exit = exitFromBook(await readBook(w.marketId, w.series.minRestSec), w.series, req.side, want, nowMs);
+  const exit = exitFromBook(await readBook(w.marketId, TAKER_MIN_REST_SEC), w.series, req.side, want, nowMs);
   if (!exit) throw new OrderRefusedError(diagnosis("no-liquidity", "No exit liquidity right now"));
   return exit;
 }

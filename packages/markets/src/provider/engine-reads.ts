@@ -11,7 +11,7 @@ import { notDeployed } from "../deployments";
 import { getLogClient, getPublicClient } from "../runtime/read-runtime";
 import { nowMs, nowSec } from "../runtime/clock";
 import { withReading } from "../runtime/reading";
-import { EngineNotDeployedError, engineVenue, latestWindowIds, readBook, readBookBatched, readSeries, readWindows, readWindowsSliced, type WindowFacts } from "../engine/lens";
+import { EngineNotDeployedError, engineVenue, latestWindowIds, readBook, readBookBatched, readSeries, readWindows, readWindowsSliced, TAKER_MIN_REST_SEC, type WindowFacts } from "../engine/lens";
 import { marketIdOf } from "../ops/venue";
 import { depthFromBook, exitFromBook, quoteFromBook } from "../engine/quote";
 import { indexLiveIds, indexSettledIds, IndexUnavailableError } from "./index-api";
@@ -137,7 +137,7 @@ export const getBookDepth = (target: BookTarget, depth = 10): Promise<Reading<Bo
   engineReading(`depth:${target.marketId}:${depth}`, async () => {
     const w = await windowFacts(target.marketId);
     // A display read: batched with the other cards' books and decoded in slices (D-184).
-    return depthFromBook(await readBookBatched(target.marketId, w.series.minRestSec, depth), w.series);
+    return depthFromBook(await readBookBatched(target.marketId, TAKER_MIN_REST_SEC, depth), w.series);
   });
 
 export const getBookParams = (seriesId: SeriesId): Promise<Reading<BookParams>> =>
@@ -150,7 +150,7 @@ export const getBookParams = (seriesId: SeriesId): Promise<Reading<BookParams>> 
 export const freshQuoteStake = (target: QuoteTarget, side: Side, stakeBase: bigint): Promise<Reading<Quote | null>> =>
   engineReading(`quote:${target.marketId}:${side}:${stakeBase}`, async () => {
     const w = await windowFacts(target.marketId);
-    return quoteFromBook(await readBook(target.marketId, w.series.minRestSec), w.series, side, stakeBase, nowMs());
+    return quoteFromBook(await readBook(target.marketId, TAKER_MIN_REST_SEC), w.series, side, stakeBase, nowMs());
   });
 
 /** The exit for a cash-out (D-067); a Window that is not trading has no exit, it pays at settlement. */
@@ -158,7 +158,7 @@ export const freshExitQuote = (target: BookTarget, side: Side, contractsRaw: big
   engineReading(`exit:${target.marketId}:${side}:${contractsRaw}`, async () => {
     const w = await windowFacts(target.marketId);
     if (w.status !== ONCHAIN_STATUS.Trading) throw new ReadingError(diagnosis("market-not-trading", EXIT_LOCKED));
-    return exitFromBook(await readBook(target.marketId, w.series.minRestSec), w.series, side, contractsRaw / w.series.lotBase, nowMs());
+    return exitFromBook(await readBook(target.marketId, TAKER_MIN_REST_SEC), w.series, side, contractsRaw / w.series.lotBase, nowMs());
   });
 
 export const getOpeningPrice = (marketId: MarketId): Promise<Reading<bigint | null>> =>

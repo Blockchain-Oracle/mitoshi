@@ -9,7 +9,7 @@ import { parseEventLogs, type Address, type Hex } from "viem";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { diagnosis, formatBaseUnits, formatCadence, type BookedSell, type CashOutOutcome, type CashOutRequest, type Diagnosis, type ExitQuote, type MarketId, type PhaseListener, type Side, type VaultGrant } from "@cwf/core";
 import { yesTicksOf } from "../engine/calls";
-import { readBook, type WindowFacts } from "../engine/lens";
+import { readBook, TAKER_MIN_REST_SEC, type WindowFacts } from "../engine/lens";
 import { exitFromBook } from "../engine/quote";
 import { isAmbiguousSend } from "../submitter/diagnose-write";
 import { ExitRequoteError, OrderRefusedError } from "../submitter/errors";
@@ -40,7 +40,7 @@ export function bookVaultSale(logs: Parameters<typeof parseEventLogs>[0]["logs"]
 async function freshVaultExit(w: WindowFacts, side: Side, wantRaw: bigint, heldRaw: bigint, nowMs: number): Promise<ExitQuote> {
   const lotBase = w.series.lotBase;
   const want = wantRaw < heldRaw ? wantRaw : heldRaw;
-  const exit = exitFromBook(await readBook(w.marketId, w.series.minRestSec), w.series, side, want / lotBase, nowMs);
+  const exit = exitFromBook(await readBook(w.marketId, TAKER_MIN_REST_SEC), w.series, side, want / lotBase, nowMs);
   if (!exit) throw new OrderRefusedError(diagnosis("no-liquidity", "No exit liquidity right now"));
   return exit;
 }

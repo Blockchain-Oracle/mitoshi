@@ -62,17 +62,20 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   between reads ("≈", never above the book's last read, `position-value.ts`); one-tap CLOSE with the close tolerance on
   the book's own floor, a requote inside it taken, outside it "Close for $X"; the Trading Balance's sell lane
   (`vault/sell.ts`, `placeFor`/`place` with `isBuy = false`; the session key signs when armed); Close all; Reduce
-  25/50/75/100 % and the Add modal; the locked state. A real UP → CLOSE on Moderato (acceptance S23). Still open: the
-  exit read at `minRestSec = 0`; parallel reads and `onSigned` in `cash-out.ts`; `useCashOut` losing its hold on
-  /portfolio; the Boost close via `LeverageReserve.close`; the settling, auto-paid and void states with the verdict
-  stamps (one settle-toast owner).
+  25/50/75/100 % and the Add modal; the locked state. A real UP → CLOSE on Moderato (acceptance S23).
+  Done since: one settle toast per Window (cb228c3): "Paying…" from the stamp, "Paid $X" when the payout lands, held
+  credit → Collect. Every taker read at rest 0 (D-205): the exit, the sell lanes, the stake quote and the depth. The
+  house keeps both sides to lock − 30 (S24.4, D-204). Still open: parallel reads and `onSigned` in `cash-out.ts`;
+  `useCashOut` losing its hold on /portfolio; the Boost close via `LeverageReserve.close`; the void state.
 - [ ] 23e Exits in the tab (D-200): Owarine `trailEligible`/`ratchet`/`trailHit` + break-even bisection; the TP/SL
   drawer; evaluation on committed ticks; the price stream kept open while armed; signer by position location; arming
   refused when the key expires first; "Only while Mitoshi is open".
   Progress (f96b86a): Trail — break-even on the fair model, arming past it by more than the distance, the ratchet and
   the hit on each row's own asset line, the one-tap Close on a hit, a 3 s retry floor; the stream held open with the
   tab hidden (`holdStreamAwake`); arming refused when the signing key expires before the Window; "Only while Mitoshi is
-  open". Still open: the TP/SL drawer.
+  open". TP/SL (873b847, 3408d5f): Tradash's drawer (ROI % · Change % · P&L tabs, a trigger price ≈ linked to each,
+  ROI presets, Clear, "Closes at ≈ $X for +$Y", its checks in exit-value terms, the trailing note), checked on each
+  row's live value and closed by the one-tap Close; drawn on the chart as "TP ≈" / "SL ≈".
 - [x] 23f Feedback in the terminal: `feedback/reactions.ts` (+ test), `useChartFeedback.ts`, the reaction overlay, chart
   controls (interval popover → candles, line ↔ candles, the music chip "♪ Track ›", recentre), tense music at ROI ≤ −5 %.
   Done (dddc79d): the reaction engine and its tests, the overlay on `m.*`, the three synthesised tracks with the tense
