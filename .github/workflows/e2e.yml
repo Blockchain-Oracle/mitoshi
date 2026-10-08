@@ -1,0 +1,42 @@
+name: e2e
+# Runs one browser driver from `web/e2e/` against a deployed build from a GitHub runner (S23): the owner's link is too
+# slow for page loads against testnet (F-S22-03), so stage gates that drive the deployed site run here. Screenshots and
+# the driver's log are uploaded as an artifact.
+#   gh workflow run e2e.yml -f url=https://testnet.mitoshi.xyz -f driver=terminal
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Base URL of the deployed build (no trailing slash)
+        required: true
+        default: https://testnet.mitoshi.xyz
+      driver:
+        description: Driver name in web/e2e (without .ts), e.g. terminal, shell-interactions, ux-gate
+        required: true
+        default: terminal
+
+jobs:
+  drive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter "@cwf/web..."
+      - run: pnpm --filter @cwf/web exec playwright install --with-deps chromium
+      - name: Drive
+        run: |
+          case "${{ inputs.driver }}" in *[!a-z0-9-]*) echo "::error::driver names are lower-case words"; exit 1;; esac
+          pnpm --filter @cwf/web exec tsx "e2e/${{ inputs.driver }}.ts" --base "${{ inputs.url }}" --out "$GITHUB_WORKSPACE/e2e-out" 2>&1 | tee "$GITHUB_WORKSPACE/e2e-out.log"
+          exit "${PIPESTATUS[0]}"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-${{ inputs.driver }}
+          path: |
+            e2e-out
+            e2e-out.log

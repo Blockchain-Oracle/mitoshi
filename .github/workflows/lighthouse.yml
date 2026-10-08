@@ -35,7 +35,7 @@ jobs:
       BASE: ${{ github.event.client_payload.url || inputs.url || 'http://localhost:3000' }}
       REF: ${{ (github.event_name == 'workflow_dispatch' && !inputs.url) && inputs.ref || '' }}
       BASE_REF: ${{ (github.event_name == 'workflow_dispatch' && !inputs.url && inputs.ref) && inputs.base_ref || '' }}
-      ROUTES: "/ /markets /markets/0x0000000000000000000000000000000000000000000000000000000000000001 /portfolio /proof/0x0000000000000000000000000000000000000000000000000000000000000001 /status"
+      ROUTES: "/ /markets /markets/0x0000000000000000000000000000000000000000000000000000000000000001 /portfolio /proof/0x0000000000000000000000000000000000000000000000000000000000000001 /status /trade/BTC"
     steps:
       - name: Mode
         run: |
