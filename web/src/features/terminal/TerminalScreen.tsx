@@ -4,11 +4,11 @@
 // right edge in the URL (D-190), the shell's rail beside it (D-192). One tree for every width; CSS places it.
 import type { TickerSymbol } from "@cwf/core";
 import { usePathname } from "next/navigation";
-import { useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { MotionScope } from "@/components/motion-scope";
 import MitoshiMark from "@/components/shell/MitoshiMark";
 import { EVERYTHING_DRAWER } from "@/components/shell/Rail";
-import { BRAND } from "@/lib/copy";
+import { BRAND, SHELL } from "@/lib/copy";
 import { closeDrawer, openDrawer, useDrawerParam } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { usePrivacy } from "@/lib/privacy";
@@ -16,16 +16,19 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { LiveChart, type ChartHandle } from "./chart/LiveChart";
 import { formatPrice, priceDecimals } from "./chart/engine";
 import { TERMINAL } from "./copy";
-import { money } from "./format";
+import { clockText, livePnlText, money } from "./format";
 import { replaceTradeParams } from "./useTerminalWindow";
 import { useTerminalState } from "./useTerminalState";
 import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } from "./ui/Chrome";
 import { MarketsDrawer } from "./ui/MarketsDrawer";
-import { PositionsList } from "./ui/PositionsPanel";
+import type { TerminalPosition } from "./terminal-positions";
+import { useTerminalClose } from "./useTerminalClose";
+import type { PositionValue } from "./usePositionValue";
+import { PositionsList, UnrealizedCard } from "./ui/PositionsPanel";
+import { TradeButtons, trailWords } from "./ui/TradeButtons";
 import { SettingsDrawer } from "./ui/SettingsDrawer";
 import { TerminalTrade } from "./ui/TerminalTrade";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
-import { trailWords } from "./ui/TradeButtons";
 
 export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions" } as const;
 
@@ -45,6 +48,49 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   const chartHandle = useRef<ChartHandle | null>(null);
   const market = s.market;
   const [pays, setPays] = useState("—");
+  const closer = useTerminalClose();
+  const [closingAll, setClosingAll] = useState(false);
+
+  // Each row reports what Close pays for it; the totals, the equity and the chart's PnL row read them (D-197).
+  const [values, setValues] = useState<ReadonlyMap<string, PositionValue>>(() => new Map());
+  const onValue = useCallback((id: string, v: PositionValue) => {
+    setValues((prev) => {
+      const o = prev.get(id);
+      if (o && o.valueBase === v.valueBase && o.pnlBase === v.pnlBase && o.locked === v.locked && o.approx === v.approx && o.exit === v.exit) return prev;
+      return new Map(prev).set(id, v);
+    });
+  }, []);
+  const onClose = useCallback((p: TerminalPosition, v: PositionValue) => void closer.close(p, v.exit), [closer]);
+  const totals = useMemo(() => {
+    let value = 0n;
+    let pnl = 0n;
+    let cost = 0n;
+    let priced = 0;
+    for (const p of s.positions) {
+      const v = values.get(p.id);
+      cost += p.costBase;
+      if (v?.valueBase == null || v.pnlBase === null) continue;
+      value += v.valueBase;
+      pnl += v.pnlBase;
+      priced += 1;
+    }
+    return { value, pnl: priced ? pnl : null, cost };
+  }, [s.positions, values]);
+  const closeAll = async () => {
+    setClosingAll(true);
+    try {
+      for (const p of s.positions) await closer.close(p, values.get(p.id)?.exit ?? null);
+    } finally {
+      setClosingAll(false);
+    }
+  };
+  const activeValue = s.active ? (values.get(s.active.id) ?? null) : null;
+  // The chart's pill carries the open position's PnL; the line turns the down colour while it is losing.
+  if (s.active) {
+    const base = s.overlay.current ?? { pnl: null, pnlText: "", entry: null, levels: [] };
+    const pnlBase = activeValue?.pnlBase ?? null;
+    s.overlay.current = { ...base, pnl: pnlBase === null ? null : Number(pnlBase) / 1e6, pnlText: pnlBase === null ? "" : masked ? SHELL.masked : livePnlText(pnlBase) };
+  }
 
   const pick = (next: TickerSymbol) => {
     // Replacing the drawer's entry closes it and lands on the new market; Back returns to the previous one.
@@ -54,7 +100,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
 
   const feed = TERMINAL.feed[s.spot.source ?? "redstone"];
   const priceText = s.spot.price === null ? "—" : `$${formatPrice(s.spot.price, priceDecimals(s.spot.price))}`;
-  const equity = s.cashBase === null ? null : Number(s.cashBase) / 1e6;
+  const equity = s.cashBase === null ? null : Number(s.cashBase + totals.value) / 1e6;
   const stakeText = `${money(s.stakeBase)}${s.capped ? " ·" : ""}`;
   const count = s.positions.length;
 
@@ -88,17 +134,32 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
             <EquityPill equity={equity} address={s.address} masked={masked} onOpen={() => (window.location.href = "/portfolio")} onSignIn={session.connect} />
           </div>
           <div className="tm-side-list">
-            <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} />
+            <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
+            <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onValue={onValue} />
           </div>
-          {count > 0 ? <ViewPositionPill count={count} roiPct={null} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
-          {market ? <TerminalTrade market={market} phase={s.phase} stakeBase={s.stakeBase} spot={s.spot.price} onPays={setPays} /> : null}
+          {count > 0 ? <ViewPositionPill count={count} roiPct={totals.pnl !== null && totals.cost > 0n ? Number((totals.pnl * 10_000n) / totals.cost) / 100 : null} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
+          {s.active ? (
+            <TradeButtons
+              mode="open"
+              trailActive={s.active.trailStop !== null}
+              trailEligible={false}
+              trailNote={TERMINAL.buttons.needMove(trailWords(s.settings.trailPct))}
+              onTrail={() => undefined}
+              onClose={() => void closer.close(s.active!, activeValue?.exit ?? null)}
+              busy={closer.busy === s.active.id ? "close" : null}
+              lockedText={activeValue?.locked ? TERMINAL.buttons.locked(clockText(s.active.expirySec)) : null}
+            />
+          ) : market ? (
+            <TerminalTrade market={market} phase={s.phase} stakeBase={s.stakeBase} spot={s.spot.price} onPays={setPays} />
+          ) : null}
         </aside>
       </div>
       <MarketsDrawer open={drawer.open === DRAWERS.markets} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} set={s.win.set} nowSec={s.nowSec} onPick={pick} />
       <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} />
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
-          <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} />
+          <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
+          <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onValue={onValue} />
         </SlideOverContent>
       </SlideOver>
     </MotionScope>

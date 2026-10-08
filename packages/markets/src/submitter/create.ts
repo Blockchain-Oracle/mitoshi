@@ -13,6 +13,7 @@ import type { IntentEncoder } from "./encoders";
 import { submitTx } from "./tx-lane";
 import { allowAllStopGate, noAttribution, submitOrder } from "./order-lane";
 import { submitCashOut } from "./cash-out";
+import { submitVaultSell } from "../vault/sell";
 import { submitVaultOrder } from "../vault/order";
 import { nowMs } from "../runtime/clock";
 import type { NoncePlan } from "../tx/nonce";
@@ -47,6 +48,7 @@ export function createSubmitter(deps: SubmitterDeps): MarketsSubmitter {
     ...(deps.nonce ? { nonce: deps.nonce } : {}),
     ...(deps.pendingKeyAuthorization ? { pendingKeyAuthorization: deps.pendingKeyAuthorization } : {}),
   };
+  const orderCtx = () => ({ ...lane, stopGate: deps.stopGate ?? allowAllStopGate, attribution: deps.attribution ?? noAttribution });
   return {
     journal,
     wallet: deps.wallet,
@@ -54,11 +56,12 @@ export function createSubmitter(deps: SubmitterDeps): MarketsSubmitter {
     submitTx: (intent, onPhase) =>
       run(() => submitTx({ ...lane, encoders: deps.encoders }, intent, onPhase)),
     submitOrder: (request, onPhase) => {
-      const ctx = { ...lane, stopGate: deps.stopGate ?? allowAllStopGate, attribution: deps.attribution ?? noAttribution };
+      const ctx = orderCtx();
       // AD-3's third dimension: a Trading Balance route rides the vault (S7); the wallet route the engine lane.
       const viaVault = request.route !== undefined && request.route.kind !== "wallet";
       return run(() => (viaVault ? submitVaultOrder(ctx, request, onPhase) : submitOrder(ctx, request, onPhase)));
     },
-    submitCashOut: (request, onPhase) => run(() => submitCashOut(lane, request, onPhase)),
+    // A Trading Balance position sells through the vault (S23d); a wallet position on the engine lane.
+    submitCashOut: (request, onPhase) => run(() => (request.route && request.route.kind !== "wallet" ? submitVaultSell(orderCtx(), request, onPhase) : submitCashOut(lane, request, onPhase))),
   };
 }

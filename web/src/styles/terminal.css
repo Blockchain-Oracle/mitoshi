@@ -136,3 +136,14 @@
 .tm-lead { display: flex; min-width: 0; align-items: center; gap: 8px; }
 .tm-end { justify-content: flex-end; }
 .tm-disc.tm-glass { width: 44px; height: 44px; padding: 10px; color: var(--color-accent); }
+.tm-pos { grid-template-columns: auto 1fr auto auto; }
+.tm-pos-pnl { display: block; font: 600 11px/1.3 var(--font-data); }
+.tm-pos-pnl.is-up, .tm-unrealized-figure.is-up { color: var(--chart-up); }
+.tm-pos-pnl.is-down, .tm-unrealized-figure.is-down { color: var(--chart-down); }
+.tm-pos-close { display: grid; min-width: 64px; height: 32px; place-items: center; padding: 0 10px; border-radius: var(--radius-full); background: color-mix(in oklab, var(--chart-down) 14%, var(--color-surface-1)); color: var(--chart-down); font: 700 11px/1 var(--font-body); letter-spacing: 0.08em; }
+.tm-pos-close:disabled { opacity: 0.4; }
+.tm-pos-close:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.tm-pos-close svg { width: 14px; height: 14px; }
+.tm-unrealized { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 12px; }
+.tm-unrealized .tm-choice { grid-row: span 2; }
+.tm-unrealized-figure { font: 700 18px/1.2 var(--font-data); font-variant-numeric: tabular-nums; }

@@ -41,7 +41,8 @@ export function routeTaps(walletKey: MarketsSubmitter | null, user: MarketsSubmi
     wallet: fallback.wallet,
     hasSigner: () => true,
     submitTx: (intent, onPhase) => fallback.submitTx(intent, onPhase),
-    submitCashOut: (request, onPhase) => fallback.submitCashOut(request, onPhase),
+    // A Trading Balance sale through the grant is the session key's (S23d): no prompt, sponsored, proceeds to the owner.
+    submitCashOut: (request, onPhase) => (request.route?.kind === "vault-grant" ? sessionKey.submitCashOut({ ...request, wallet: sessionKey.wallet }, onPhase) : fallback.submitCashOut(request, onPhase)),
     submitOrder: async (request, onPhase) => {
       if (request.route?.kind !== "vault-grant") return fallback.submitOrder(request, onPhase);
       const outcome = await sessionKey.submitOrder({ ...request, wallet: sessionKey.wallet }, onPhase);

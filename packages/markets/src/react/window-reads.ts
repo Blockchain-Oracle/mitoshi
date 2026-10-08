@@ -97,12 +97,12 @@ export function useStakeQuote(input: { market: Pick<EventMarket, "marketId" | "d
 }
 
 /** What selling `contractsRaw` of a held side pays right now (cash-out, D-067). */
-export function useExitQuote(input: { market: Pick<EventMarket, "marketId" | "decimals"> | null; side: Side | null; contractsRaw: bigint; enabled?: boolean }): Reading<ExitQuote | null> | null {
-  const { market, side, contractsRaw, enabled = true } = input;
+export function useExitQuote(input: { market: Pick<EventMarket, "marketId" | "decimals"> | null; side: Side | null; contractsRaw: bigint; enabled?: boolean; pollMs?: number }): Reading<ExitQuote | null> | null {
+  const { market, side, contractsRaw, enabled = true, pollMs = REQUOTE_MS } = input;
   const marketId = market?.marketId ?? null;
   return usePortReading([...keys.depth(marketId), "exit", side, contractsRaw.toString()], (p) => p.freshExitQuote({ marketId: marketId!, decimals: market!.decimals }, side!, contractsRaw), {
     enabled: enabled && marketId !== null && side !== null && contractsRaw > 0n,
-    pollMs: REQUOTE_MS,
+    pollMs,
   });
 }
 

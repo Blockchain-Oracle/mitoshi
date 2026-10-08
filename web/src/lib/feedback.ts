@@ -87,6 +87,14 @@ export function tradeFeedback(cue: import("./sound/trade").TradeCue, haptic: imp
   }).catch(() => undefined);
 }
 
+/** A close's sound by its outcome (win / loss) and the close haptic. */
+export function closeFeedback(pnl: number): void {
+  void loadFeedback().then((e) => {
+    e.sound.playCloseOutcome(pnl);
+    e.haptics.haptic("close");
+  }).catch(() => undefined);
+}
+
 /** The shell's tap: Tradash's `tap` cue and an 8 ms haptic, when the setting allows; silent until the engines load. */
 export function tapFeedback(): void {
   if (!engines) {

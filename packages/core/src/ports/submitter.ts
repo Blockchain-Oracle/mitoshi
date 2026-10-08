@@ -65,6 +65,12 @@ export interface CashOutRequest {
   /** The exit the user confirmed; its `minProceedsBase` is the floor. */
   displayedExit: ExitQuote;
   wallet: Address;
+  /**
+   * Where the position is held (S23d, D-197): the wallet (default, the engine lane) or the Trading Balance — `vault`
+   * (the owner signs `place`) or `vault-grant` (the session key signs `placeFor`, sponsored). Sale proceeds land in
+   * the owner's Trading Balance, never the actor's budget.
+   */
+  route?: OrderRoute;
 }
 
 /** What a sold side booked: contracts sold and the cash the fills paid (sent to the wallet with the same tx). */
