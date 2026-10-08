@@ -57,7 +57,7 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   next opens 4:05" shows beside the Window chip, and in place of it when no lane is live; tested for 5m/15m/60m and
   EDT/EST. Waits on its stage: the Sensei entry needs S13's Sensei (L-41). Until then the nav's Sensei item
   (`/markets?sensei=1`) opens nothing; S13 makes it the assistant drawer, from the terminal too.
-- [ ] 23d Live value + one-tap CLOSE (D-197): exit read with `minRestSec = 0`, the fair-value reprice and "≈";
+- [x] 23d Live value + one-tap CLOSE (D-197): exit read with `minRestSec = 0`, the fair-value reprice and "≈";
   `submitter/cash-out.ts` (parallel reads, `onSigned`, tolerance and auto-accepted requote, "Close for $X" toast);
   `portfolio/useCashOut.ts` loses the hold; `vault/order.ts` sell lane (`placeFor(isBuy=false)`); `tap-session.ts`
   routes closes by where the position lives; Close all; Add/Reduce modal; Boost close via `LeverageReserve.close`;
@@ -75,8 +75,10 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   mark less what it fronted (what Close pays the owner), repriced the same way. Their CLOSE goes through
   `LeverageReserve.close` on the passkey (D-136), with the mark less the tolerance as the floor and "Close for $X" past
   it. The knock-out line is drawn "KO ≈". Details show Close only, no Add. Trail and TP/SL refuse a Boost, since its
-  close asks for the passkey. Still open: the void state.
-- [ ] 23e Exits in the tab (D-200): Owarine `trailEligible`/`ratchet`/`trailHit` + break-even bisection; the TP/SL
+  close asks for the passkey. Settled and voided Windows: a row says "Settled — the settler pays it" or "Void — both
+  sides returned at half", and Close is off. A void's settle toast is two-phase like a win ("paying…" → "$X paid",
+  no win cue).
+- [x] 23e Exits in the tab (D-200): Owarine `trailEligible`/`ratchet`/`trailHit` + break-even bisection; the TP/SL
   drawer; evaluation on committed ticks; the price stream kept open while armed; signer by position location; arming
   refused when the key expires first; "Only while Mitoshi is open".
   Progress (f96b86a): Trail — break-even on the fair model, arming past it by more than the distance, the ratchet and

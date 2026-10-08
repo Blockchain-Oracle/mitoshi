@@ -37,6 +37,8 @@ export interface PositionValue {
   spotAt: (base: bigint) => number | null;
   /** A Boost's knock-out line in spot terms ("KO ≈"); null otherwise. */
   koSpot: number | null;
+  /** The Window has an answer: resolved (the settler pays the right side) or voided (both sides returned at half). */
+  settled: "resolved" | "voided" | null;
 }
 
 const none = () => null;
@@ -60,6 +62,7 @@ export function usePositionValue(p: TerminalPosition): PositionValue {
   const mark = boost && markReading?.ok ? markReading.value : null;
   const exit = !boost && reading && isOk(reading) ? reading.value : null;
   const nowSec = useClockValue((ms) => Math.floor(ms / 1000));
+  const settled = market && market.state !== "open" ? market.state : null;
   const locked = boost ? market !== null && nowSec >= market.lockAtSec : reading !== null && !isOk(reading) && reading.error.kind === "market-not-trading";
   // What the book pays for the whole holding (gross) and whether it fills; a Boost's owner gets it less what was fronted.
   const gross = boost ? (mark && mark.filledRaw > 0n ? { proceedsBase: mark.markBase, partial: mark.filledRaw < p.heldRaw } : null) : exit ? { proceedsBase: exit.proceedsBase, partial: exit.partial } : null;
@@ -70,7 +73,7 @@ export function usePositionValue(p: TerminalPosition): PositionValue {
   const read = boost ? mark : exit;
   if (read && read !== anchorSpot.current.read) anchorSpot.current = { read, spotE8: spot.priceE8 };
   return useMemo(() => {
-    if (!gross) return { exit: null, valueBase: null, pnlBase: null, roiBps: null, approx: false, locked, partial: false, spot: spot.price, breakEven: null, tpSpot: null, slSpot: null, valueAt: none, spotAt: none, koSpot: null };
+    if (!gross) return { exit: null, valueBase: null, pnlBase: null, roiBps: null, approx: false, locked, partial: false, spot: spot.price, breakEven: null, tpSpot: null, slSpot: null, valueAt: none, spotAt: none, koSpot: null, settled };
     const model = { anchor: { proceedsBase: gross.proceedsBase, spotE8: anchorSpot.current.spotE8 }, side: p.side, openE8, sigmaE8, tauSec: Math.max(0, p.expirySec - nowSec) };
     const v = liveValue({ ...model, spotE8: spot.priceE8 });
     // The owner's share: a Boost repays the reserve first. A partial exit values only what sells, so the cost is
@@ -89,6 +92,6 @@ export function usePositionValue(p: TerminalPosition): PositionValue {
       return g === null ? null : owned(g);
     };
     const ko = boost && mark && mark.lineBase > 0n ? spotForValueE8({ ...model, targetBase: mark.lineBase }) : null;
-    return { exit, valueBase, pnlBase, roiBps, approx: v.approx, locked, partial: gross.partial, spot: spot.price, breakEven: be === null ? null : Number(be) / 1e8, tpSpot: at(p.tpBase), slSpot: at(p.slBase), valueAt, spotAt: at, koSpot: ko === null ? null : Number(ko) / 1e8 };
-  }, [gross?.proceedsBase, gross?.partial, exit, mark, boost, fronted, spot.priceE8, spot.price, openE8, sigmaE8, nowSec, p.side, p.expirySec, p.heldRaw, p.costBase, p.tpBase, p.slBase, locked]);
+    return { exit, valueBase, pnlBase, roiBps, approx: v.approx, locked, partial: gross.partial, spot: spot.price, breakEven: be === null ? null : Number(be) / 1e8, tpSpot: at(p.tpBase), slSpot: at(p.slBase), valueAt, spotAt: at, koSpot: ko === null ? null : Number(ko) / 1e8, settled };
+  }, [gross?.proceedsBase, gross?.partial, exit, mark, boost, fronted, spot.priceE8, spot.price, openE8, sigmaE8, nowSec, p.side, p.expirySec, p.heldRaw, p.costBase, p.tpBase, p.slBase, locked, settled]);
 }

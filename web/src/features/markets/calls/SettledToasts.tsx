@@ -2,8 +2,9 @@
 /**
  * The app-wide "your Window settled" toast (D-048; ux-audit fix 2): wherever the user is in the app, a call of theirs
  * that settles says so — with its stamp's word — and the pinned card on /markets carries the rest. S23 (RV-16, D-202):
- * one toast per Window (`settle-<marketId>`), two-phase — a won Window shows "Paying…" from its stamp and the same toast
- * becomes "Paid $X" when the payout lands, with the win cue; a held payout says where to collect it. A lazy island in
+ * one toast per Window (`settle-<marketId>`), two-phase — a won or voided Window shows "Paying…" from its stamp and
+ * the same toast becomes "Paid $X" when the payout lands (the win cue on a win only); a held payout says where to
+ * collect it. A lazy island in
  * the app layout; it reads only the calls this device placed, and nothing when signed out.
  */
 import type { Address } from "@cwf/core";
@@ -54,10 +55,12 @@ function Watch({ wallet, call }: { wallet: Address; call: PlacedCall }) {
     const id = `settle-${call.marketId}`;
     const title = VERDICT_UI.settledToast(call.asset, formatCadence(call.intervalSec));
     const word = verdictStrings(outcome).line;
-    if (outcome === "win" && phase === "stamped") return void notify.item({ id, type: "loading", title, description: VERDICT_UI.paying(word) });
+    // A win pays in full and a void returns both sides at half: each says "paying…" then what it paid.
+    const pays = outcome === "win" || outcome === "void";
+    if (pays && phase === "stamped") return void notify.item({ id, type: "loading", title, description: VERDICT_UI.paying(word) });
     if (phase === "held") return void notify.item({ id, title, description: VERDICT_UI.held(word) });
-    if (outcome === "win" && phase === "paid") {
-      closeFeedback(1);
+    if (pays && phase === "paid") {
+      if (outcome === "win") closeFeedback(1);
       const paid = view?.paidBase != null ? `$${formatBaseUnits(view.paidBase, call.decimals, { minDp: 2, maxDp: 2 })}` : null;
       return void notify.item({ id, title, description: paid ? VERDICT_UI.paid(word, paid) : VERDICT_UI.settledToastBody(word) });
     }

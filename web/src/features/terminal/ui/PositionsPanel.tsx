@@ -38,7 +38,9 @@ function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }:
         </span>
       </span>
       <span className="tm-pos-figure">
-        {v.locked ? (
+        {v.settled ? (
+          <span className="tm-pos-meta">{v.settled === "voided" ? TERMINAL.positions.voided : TERMINAL.positions.resolved}</span>
+        ) : v.locked ? (
           <span className="tm-pos-meta">{TERMINAL.buttons.locked(clockText(p.expirySec))}</span>
         ) : v.valueBase === null ? (
           "—"
@@ -50,7 +52,7 @@ function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }:
           </>
         )}
       </span>
-      <button type="button" className="tm-pos-close" onClick={() => onClose(p, v)} disabled={busy || v.locked} aria-label={`${TERMINAL.buttons.close} ${sideWord(p.side)} ${p.asset}`}>
+      <button type="button" className="tm-pos-close" onClick={() => onClose(p, v)} disabled={busy || v.locked || v.settled !== null} aria-label={`${TERMINAL.buttons.close} ${sideWord(p.side)} ${p.asset}`}>
         {busy ? <LoaderCircle aria-hidden className="tm-spin" /> : TERMINAL.buttons.close}
       </button>
     </div>

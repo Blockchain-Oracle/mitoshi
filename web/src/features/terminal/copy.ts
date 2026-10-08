@@ -298,6 +298,8 @@ export const TERMINAL = {
   },
   positions: {
     boost: (x: number) => `Boost ${Number.isInteger(x) ? x : x.toFixed(1)}×`,
+    resolved: "Settled — the settler pays it",
+    voided: "Void — both sides returned at half",
     unrealized: "Unrealized PnL",
     title: "Positions",
     none: "No open positions",
