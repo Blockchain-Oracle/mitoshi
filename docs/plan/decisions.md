@@ -1289,6 +1289,22 @@ pinned head before diffing.
 
 **Why:** the gate's "recount == index" must run to the end against the live chain.
 
+### D-188 — `print_archive` stores JSON objects, not JSON strings (finding + decision, S3 fix 2, 2026-09-30)
+
+**Finding** (reading the archive for D-185): every one of the 1,310 `print_archive` rows (ops since 09-28, the laptop
+import 09-14 → 09-22) holds `summary` and `feeds` as a JSON *string*: the writers passed `${JSON.stringify(x)}::jsonb`
+and postgres.js serializes a jsonb parameter with `JSON.stringify` again (its type table: json/jsonb ← `JSON.stringify`;
+`sql.json(value)` is the documented form, Context7 `/porsager/postgres`). So `feeds -> 'BTC'` and `feeds ? 'BTC'` are
+NULL/false on every row and each reader silently finds nothing: the relay's archive proof for a Gap open past the
+gateway's 23 h (`archivedFeed`), the calendar's RedStone `NY_MARKET_NEXT_CHANGE_TIME` observations (ops logged "1
+RedStone observations": only the gateway's latest, not the archived day), `/prices/latest`'s fallback after a restart,
+and the web's archive route. **Decision:** the archive actor and `scripts/archive/import-agari.ts` pass
+`sql.json(value)`; migration `prints/0003_print_archive_objects.sql` unwraps the stored rows in place (idempotent;
+≈ 17 MB of `feeds`). Proven on a real Postgres with a real archived boundary (2026-09-30 04:00 ET): the old form stores
+a string, the migration unwraps it, and the relay's read, the web's key test and `/prices/latest` find the packages.
+
+**Why:** the archive is the evidence and the fallback source; a row nobody can read is not archived.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

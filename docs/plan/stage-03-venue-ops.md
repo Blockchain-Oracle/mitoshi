@@ -13,10 +13,10 @@
 - [x] S3.11 voided Windows fixed: Tempo HTTP transport without JSON-RPC batching + 8 KB Multicall3 chunks (D-130); a
   failed read or send is never a finished Window (D-131); roll rules unchanged (D-132); one paced RPC budget per URL,
   print path first (D-134); `scripts/drive/rpc-load.ts`.
-- [ ] S3 fix 2 (end-of-soak causes, D-185…D-187): the roller never lists a 24/7 stock Window on RedStone's 04:00 ET
+- [ ] S3 fix 2 (end-of-soak causes, D-185…D-188): the roller never lists a 24/7 stock Window on RedStone's 04:00 ET
   `---24_7` gap (D-185); halt-watch holds the board when it can't read RedStone and says so in health, and halt-replay
   replays the log in id order (D-186); `recount.ts` walks logs in windows the RPC accepts and counts every indexed source
-  (D-187).
+  (D-187); `print_archive` rows are JSON objects again (D-188).
 - **Gate:** 24 h unattended across a US session and a crypto overnight (open, print, settle, auto-pay); recount ==
   index; recorded halts replayed; Gap proven over the first Friday close → Monday open after the gate (dates recorded in acceptance).
   **Rows:** M-06, M-07, M-08, G-03 (ops), G-07, G-12, G-13, G-14, G-15, L-73, UX-03 (ops stream).
@@ -67,6 +67,10 @@
   09-30 10:01Z) when ops' own RedStone fetch failed under host load; now such a pass is `unread`, the board holds and
   `/health` says why (D-186). The gate's halt-replay MISMATCH was `/halts/log` sorting ids as text; in id order the log
   replays exactly.
+- **F-S3-14 (S3 fix 2, archive).** Every `print_archive` row stored its JSON as a string (postgres.js serialized
+  `JSON.stringify(x)::jsonb` twice), so the relay's archived Gap proof, the calendar's archived RedStone observations,
+  `/prices/latest`'s fallback and the web's archive route read nothing. Writers pass `sql.json`; migration
+  `prints/0003` unwraps the rows (D-188).
 
 ## Handoff
 
