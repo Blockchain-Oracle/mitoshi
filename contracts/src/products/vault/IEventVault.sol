@@ -8,11 +8,13 @@ pragma solidity 0.8.30;
 /// @title EventVault's public vocabulary — grant kinds, caps, records, events and errors.
 /// @notice One interface so the adapter, the tests and the contract read the same ABI.
 interface IEventVault {
-    /// @dev The three delegated powers (AD-5). Each owner holds at most one live grant per kind.
+    /// @dev The delegated powers (AD-5). Each owner holds at most one live grant per kind. `EXIT` (S24, D-193) is
+    ///      sell-only, carries no budget and sells only at or above the fair-value floor (`VaultExits`, v2).
     enum GrantKind {
         SESSION,
         EXECUTOR,
-        STRATEGY
+        STRATEGY,
+        EXIT
     }
 
     /// @dev Every cap is in collateral base units except `maxOpenPositions`. `maxPriceRaw` is the

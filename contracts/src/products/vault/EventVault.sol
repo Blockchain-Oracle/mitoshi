@@ -168,6 +168,7 @@ contract EventVault is VenueGateway, VaultTally, ReentrancyGuard {
         Grant storage g = _grantOf(grantId);
         if (g.actor != actor) revert NotGrantActor(grantId, actor);
         _requireLive(g, grantId);
+        _beforePlaceFor(g, grantId);
         bytes32 scope = g.caps.market;
         if (scope != bytes32(0) && scope != marketId) revert OutsideGrantMarket(grantId, marketId);
         address owner = g.owner;
@@ -260,11 +261,12 @@ contract EventVault is VenueGateway, VaultTally, ReentrancyGuard {
         if (have < worst) revert Insufficient(worst, have);
     }
 
-    function _grant(address owner, GrantKind kind, address actor, Caps calldata caps, uint64 expiresAtSec, uint256 budget)
+    function _grant(address owner, GrantKind kind, address actor, Caps memory caps, uint64 expiresAtSec, uint256 budget)
         internal
         returns (uint256 grantId)
     {
         if (actor == address(0)) revert ZeroActor();
+        _beforeGrant(kind, budget);
         if (expiresAtSec <= block.timestamp) revert BadExpiry(expiresAtSec);
         uint256 previous = activeGrantOf[owner][kind];
         if (previous != 0) _revoke(owner, previous);
@@ -290,6 +292,11 @@ contract EventVault is VenueGateway, VaultTally, ReentrancyGuard {
         activeGrantOf[owner][kind] = grantId;
         emit GrantCreated(grantId, owner, actor, kind, caps, expiresAtSec, budget);
     }
+
+    /// @dev Hooks for a vault that adds a grant kind with its own rules (v2's EXIT, `VaultExits`); none in v1.
+    function _beforeGrant(GrantKind kind, uint256 budget) internal view virtual {}
+
+    function _beforePlaceFor(Grant storage g, uint256 grantId) internal view virtual {}
 
     function _revoke(address owner, uint256 grantId) internal {
         Grant storage g = _grants[grantId - 1];
