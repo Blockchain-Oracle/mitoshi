@@ -61,17 +61,42 @@ async function keySlot(apiKey: string): Promise<void> {
   if (at > now) await new Promise((r) => setTimeout(r, at - now));
 }
 
+// A gateway that refuses (403 — RedStone's switch-off window, or its CDN blocking a host that kept asking — or 429) is
+// left alone for a minute, doubling to ten, in this process: every reader shares the module, so a refusal stops the
+// whole process asking instead of each actor retrying into a block (2026-10-08: the ops host stayed blocked by the
+// CDN after the public window ended). The first answer resets it.
+export const REDSTONE_COOLDOWN_MS = { first: 60_000, max: 600_000 } as const;
+const cooling = new Map<string, { untilMs: number; backoffMs: number; reason: string }>();
+
+/** Forgets every cooldown (tests). */
+export function resetRedstoneCooldowns(): void {
+  cooling.clear();
+}
+
 async function fetchFirst(gateways: readonly RedstoneGateway[], urlOf: (gateway: string) => string, timeoutMs: number): Promise<RedstoneResponse> {
   let last = "no gateway configured";
   for (const g of gateways) {
     const name = redstoneGatewayName(g);
+    const cool = cooling.get(g.url);
+    if (cool && Date.now() < cool.untilMs) {
+      last = `${cool.reason} from ${name}, resting ${Math.ceil((cool.untilMs - Date.now()) / 1000)} s`;
+      continue;
+    }
     try {
       if (g.apiKey) await keySlot(g.apiKey);
       const res = await fetch(urlOf(g.url), { signal: AbortSignal.timeout(timeoutMs), cache: "no-store", headers: g.apiKey ? { "x-api-key": g.apiKey } : {} });
       const text = await res.text();
-      if (res.ok && text.startsWith("{")) return { text, fetchedAtMs: Date.now(), gateway: new URL(g.url).origin };
-      const reason = /"error"\s*:\s*"([a-z_]+)"/.exec(text)?.[1];
-      last = `HTTP ${res.status}${reason ? ` ${reason}` : ""} from ${name}`;
+      if (res.ok && text.startsWith("{")) {
+        cooling.delete(g.url);
+        return { text, fetchedAtMs: Date.now(), gateway: new URL(g.url).origin };
+      }
+      const code = /"error"\s*:\s*"([a-z_]+)"/.exec(text)?.[1];
+      const reason = `HTTP ${res.status}${code ? ` ${code}` : /Request blocked/.test(text) ? " blocked by the CDN" : ""}`;
+      if (res.status === 403 || res.status === 429) {
+        const backoffMs = cool ? Math.min(REDSTONE_COOLDOWN_MS.max, cool.backoffMs * 2) : REDSTONE_COOLDOWN_MS.first;
+        cooling.set(g.url, { untilMs: Date.now() + backoffMs, backoffMs, reason });
+      }
+      last = `${reason} from ${name}`;
     } catch (error) {
       last = `${name}: ${error instanceof Error ? error.message : String(error)}`;
     }

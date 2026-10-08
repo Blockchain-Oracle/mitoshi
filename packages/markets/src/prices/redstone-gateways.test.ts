@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchRedstoneAt, fetchRedstoneLatest, PUBLIC_REDSTONE_GATEWAYS, redstoneGatewayName, redstoneGatewaysFromEnv, REDSTONE_KEY_INTERVAL_MS } from "./redstone-gateways";
+import { fetchRedstoneAt, fetchRedstoneLatest, PUBLIC_REDSTONE_GATEWAYS, REDSTONE_COOLDOWN_MS, redstoneGatewayName, redstoneGatewaysFromEnv, REDSTONE_KEY_INTERVAL_MS, resetRedstoneCooldowns } from "./redstone-gateways";
 
 const KEY = "rk_live_secret_value";
 const PAIRS = JSON.stringify([{ url: "https://gw-a.example/", apiKey: KEY }, { url: "https://gw-b.example", apiKey: "rk_two" }]);
@@ -7,6 +7,7 @@ const PAIRS = JSON.stringify([{ url: "https://gw-a.example/", apiKey: KEY }, { u
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
+  resetRedstoneCooldowns();
 });
 
 describe("RedStone gateways (D-210)", () => {
@@ -54,5 +55,26 @@ describe("RedStone gateways (D-210)", () => {
     expect(at.length - before).toBe(1);
     await fetchRedstoneLatest(shared, { shareMs: 0 });
     expect(at.length - before).toBe(2);
+  });
+
+  it("rests a refusing gateway — a minute, then doubling — and the first answer resets it", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    let calls = 0;
+    let answer = 403;
+    vi.stubGlobal("fetch", vi.fn(async () => (calls++, new Response(answer === 200 ? '{"BTC":[]}' : "<HTML><H1>403 ERROR</H1>Request blocked.</HTML>", { status: answer }))));
+    const one = [{ url: "https://gw-e.example", apiKey: null }];
+    await expect(fetchRedstoneAt(1, one)).rejects.toThrow(/HTTP 403 blocked by the CDN/);
+    await expect(fetchRedstoneAt(2, one)).rejects.toThrow(/resting 60 s/);
+    expect(calls).toBe(1);
+    vi.setSystemTime(Date.now() + REDSTONE_COOLDOWN_MS.first);
+    await expect(fetchRedstoneAt(3, one)).rejects.toThrow(/HTTP 403/);
+    await expect(fetchRedstoneAt(4, one)).rejects.toThrow(/resting 120 s/);
+    vi.setSystemTime(Date.now() + 2 * REDSTONE_COOLDOWN_MS.first);
+    answer = 200;
+    await expect(fetchRedstoneAt(5, one)).resolves.toMatchObject({ gateway: "https://gw-e.example" });
+    answer = 403;
+    await expect(fetchRedstoneAt(6, one)).rejects.toThrow(/HTTP 403/);
+    await expect(fetchRedstoneAt(7, one)).rejects.toThrow(/resting 60 s/);
+    expect(calls).toBe(4);
   });
 });

@@ -1807,7 +1807,10 @@ across the spot feed, the keepers, the calendar and the web proxy (`/api/prices/
 proxy); a key never reaches a log, `/health` or an error. The packages, signers and data service are unchanged.
 **Liveness vs readiness:** a RedStone window made the spot feed (critical) fail `/health`, Coolify's container check
 read the 503, marked ops unhealthy and the proxy dropped the whole API (stream, prices, `/session`). The container check
-moves to `/livez` (the process serves); `/health` stays the strict view for monitoring. Owner action: the key request.
+moves to `/livez` (the process serves); `/health` stays the strict view for monitoring. **After the window**, the ops
+host stayed refused by RedStone's CDN (CloudFront "Request blocked", while another host read the gateway again): a
+refusing gateway is now rested in-process — a minute, doubling to ten, reset by the first answer — so a refusal stops
+the whole process asking. Owner action: the key request.
 
 ## Open questions
 
