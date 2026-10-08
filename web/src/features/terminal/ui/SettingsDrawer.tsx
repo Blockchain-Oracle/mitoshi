@@ -11,7 +11,7 @@ import { money, USD_DECIMALS } from "../format";
 import { CLOSE_TOLERANCE_CHOICES_BPS, setTradeSettings, TRAIL_CHOICES, useTradeSettings } from "../settings";
 import { trailWords } from "./TradeButtons";
 
-export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase }: { open: boolean; onOpenChange: (open: boolean) => void; stakeBase: bigint; minBase: bigint; maxBase: bigint | null }) {
+export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase, capped }: { open: boolean; onOpenChange: (open: boolean) => void; stakeBase: bigint; minBase: bigint; maxBase: bigint | null; capped: keyof typeof TERMINAL.stack.cappedWhy | null }) {
   const settings = useTradeSettings();
   const [text, setText] = useState("");
   useEffect(() => {
@@ -57,6 +57,7 @@ export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase
               {TERMINAL.settings.sizeReset}
             </button>
           </div>
+          {capped ? <p className="tm-field-hint" role="status">{TERMINAL.stack.capped(money(stakeBase))} — {TERMINAL.stack.cappedWhy[capped]}</p> : null}
           <p className="tm-field-hint">{TERMINAL.settings.sizeHint}</p>
         </div>
         <div className="tm-field">

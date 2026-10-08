@@ -23,6 +23,8 @@ export interface TerminalWindow {
   lane: TerminalLane | null;
   /** The Window on screen: `?w=` (or its successor), else the lane's pick; null when the symbol lists none. */
   market: EventMarket | null;
+  /** `?w=` names a Window on another ticker (a `/markets/<id>` link): the screen moves there. */
+  linkedAsset: string | null;
   loading: boolean;
   failure: string | null;
 }
@@ -78,6 +80,7 @@ export function useTerminalWindow(asset: string): TerminalWindow {
     const market = linkedMarket ?? (lane ? pickWindow(laneMarkets(set, lane.key, asset), nowSec) : null);
     return {
       set, lanes, lane, market,
+      linkedAsset: linked.market && linked.market.asset !== asset ? linked.market.asset : null,
       loading: reading === null || linked.resolving,
       failure: reading && !reading.ok ? reading.error.technical : null,
     };

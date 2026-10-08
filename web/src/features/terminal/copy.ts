@@ -36,6 +36,7 @@ export const TERMINAL = {
     trailing: "TRAILING",
     close: "CLOSE",
     pays: (multiple: string) => `pays ${multiple}`,
+    max: (amount: string) => `max ${amount}`,
     needMove: (pct: string) => `Need +${pct}% past break-even`,
     tabOnly: "Only while Mitoshi is open",
     locked: (at: string) => `Locked — pays at ${at}`,
@@ -48,6 +49,7 @@ export const TERMINAL = {
     free: "Free",
     trailing: "Trailing",
     capped: (amount: string) => `Capped at ${amount}`,
+    cappedWhy: { balance: "what you can spend", key: "what one-tap may still spend today", budget: "your Trading Balance's room today" },
   },
   equity: {
     signIn: "Sign in",
@@ -67,6 +69,13 @@ export const TERMINAL = {
     unknownBody: "The order went out; nothing is re-sent. It shows here once the chain answers.",
     failed: "Order didn't go through",
     gettingPrice: "Getting a price…",
+  },
+  scheduled: {
+    note: (opens: string) => `Opens ${opens}. Your call rests at your price and fills when the Window opens.`,
+    scheduling: (side: string, symbol: string) => `Scheduling ${side} ${symbol}…`,
+  },
+  arm: {
+    lead: "Turn on one-tap: one passkey prompt now, then every tap signs itself.",
   },
   trail: {
     armed: (symbol: string) => `Trailing stop armed · ${symbol}`,

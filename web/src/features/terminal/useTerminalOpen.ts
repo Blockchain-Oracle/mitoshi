@@ -5,7 +5,7 @@
 import type { EventMarket, Quote, Side } from "@cwf/core";
 import { blockerLabel, diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/copy";
 import type { MarketPhase } from "@cwf/core/lifecycle";
-import { minStakeBase } from "@cwf/core/sizing";
+import { belowMinStake, minStakeBase } from "@cwf/core/sizing";
 import { useBalanceSheet, useSigner } from "@cwf/markets/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTopOfBook } from "@/features/markets/data/useTopOfBook";
@@ -25,6 +25,10 @@ import { centsOf, money, multipleOf, sideWord } from "./format";
 
 export interface SideView {
   quote: QuoteState;
+  /** What one tap stakes: the stake, or — the book thinner than it — what the book fills now (Tradash's cap). */
+  stakeBase: bigint;
+  /** The stake was capped to the book's depth. */
+  capped: boolean;
   route: TicketRoute;
   /** What a right call pays per dollar: the live quote's, else the top of the book's (signed out, or before a quote). */
   multiple: number | null;
@@ -53,9 +57,13 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
     const quote = side === "up" ? quoteUp : quoteDown;
     const route = side === "up" ? routeUp : routeDown;
     const spend = route.viaBalance ? route.availableBase : walletBase;
+    // A thin book caps the tap at what it fills now (the quote's own fillable stake), unless that is under the minimum.
+    const q = quote.quote;
+    const capped = q !== null && q.partial && !belowMinStake(q.fillableStakeBase, market.decimals);
+    const reading = capped && quote.reading?.ok ? { ...quote.reading, value: { ...q, partial: false } } : quote.reading;
     const blocker = deriveBlocker({
       connected: session.isConnected, connecting: session.isConnecting, rightChain: session.isRightChain, hasSigner, regionHeld, phase,
-      placing: bet.placing, side, availableBase: spend, stakeBase, decimals: market.decimals, quote: quote.reading, quoting: quote.pending, quoteStale: quote.stale,
+      placing: bet.placing, side, availableBase: spend, stakeBase, decimals: market.decimals, quote: reading, quoting: quote.pending, quoteStale: quote.stale,
     });
     const ctx: BlockerContext = {
       cadence: formatCadence(market.intervalSec),
@@ -67,11 +75,11 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
     const topCents = side === "up" ? top.upCents : top.downCents;
     const multiple = quote.quote ? 10_000 / quote.quote.avgPriceBps : topCents ? 100 / topCents : null;
     const blocked = blocker && blocker !== "quoting" && blocker !== "placing" ? blockerLabel(blocker, ctx) : route.fallback?.reason ?? null;
-    return { quote, route, multiple, blocked };
+    return { quote, route, multiple, blocked, stakeBase: capped ? q!.fillableStakeBase : stakeBase, capped };
   };
   const sides = { up: view("up"), down: view("down") };
-  const latest = useRef({ sides, spot, session, market, stakeBase });
-  latest.current = { sides, spot, session, market, stakeBase };
+  const latest = useRef({ sides, spot, session, market });
+  latest.current = { sides, spot, session, market };
 
   const { reset } = bet;
   useEffect(() => reset(), [market.marketId, stakeBase, reset]);
@@ -101,8 +109,9 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
   /** One tap: UP or DOWN at the stake, through the ticket's own lane; anything in the way is said, never sent. */
   const open = useCallback(
     (side: Side) => {
-      const { sides: v, session: sess, market: m, stakeBase: stake } = latest.current;
+      const { sides: v, session: sess, market: m } = latest.current;
       const s = v[side];
+      const stake = s.stakeBase;
       if (!sess.isConnected) {
         return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.signIn, description: TERMINAL.toast.signInBody, action: { label: CONNECT.connect, onClick: sess.connect } });
       }

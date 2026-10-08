@@ -14,11 +14,14 @@ import { closeDrawer, openDrawer, useDrawerParam } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { usePrivacy } from "@/lib/privacy";
 import { useWalletSession } from "@/lib/wallet-session";
+import { TapTradingChip, useSessionView } from "@/features/session";
+import { useTapArmed } from "@/providers/wallet/tap-session";
 import { LiveChart, type ChartHandle } from "./chart/LiveChart";
 import { formatPrice, priceDecimals } from "./chart/engine";
 import { TERMINAL } from "./copy";
 import { clockText, livePnlText, money } from "./format";
 import { replaceTradeParams } from "./useTerminalWindow";
+import { useMarketSession } from "./market-session";
 import { useTerminalState } from "./useTerminalState";
 import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } from "./ui/Chrome";
 import { MarketsDrawer } from "./ui/MarketsDrawer";
@@ -31,6 +34,7 @@ import { PositionsList, UnrealizedCard } from "./ui/PositionsPanel";
 import { TradeButtons, trailWords } from "./ui/TradeButtons";
 import { SettingsDrawer } from "./ui/SettingsDrawer";
 import { TerminalTrade } from "./ui/TerminalTrade";
+import { ScheduledTrade } from "./ui/ScheduledTrade";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 
 export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions" } as const;
@@ -48,6 +52,11 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   const session = useWalletSession();
   const masked = usePrivacy();
   const drawer = useDrawerParam();
+  const tapArmed = useTapArmed();
+  const nyse = useMarketSession();
+  const sessionView = useSessionView();
+  // Signed in but neither one-tap path on: every tap would prompt. The card says so and arms in one passkey prompt.
+  const needsArm = session.isConnected && !tapArmed && sessionView.status !== "armed";
   const chartHandle = useRef<ChartHandle | null>(null);
   const market = s.market;
   const [pays, setPays] = useState("—");
@@ -102,6 +111,11 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   const trailing = s.positions.some((p) => p.trailStop !== null);
   useEffect(() => (trailing ? holdStreamAwake() : undefined), [trailing]);
 
+  // A `/markets/<id>` link lands here with `?w=`: a Window on another ticker moves the screen there, in place.
+  useEffect(() => {
+    if (s.win.linkedAsset) window.history.replaceState(null, "", `/trade/${s.win.linkedAsset}${window.location.search}`);
+  }, [s.win.linkedAsset]);
+
   const pick = (next: TickerSymbol) => {
     // Replacing the drawer's entry closes it and lands on the new market; Back returns to the previous one.
     if (next !== symbol) window.history.replaceState(null, "", `/trade/${next}`);
@@ -111,7 +125,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   const feed = TERMINAL.feed[s.spot.source ?? "redstone"];
   const priceText = s.spot.price === null ? "—" : `$${formatPrice(s.spot.price, priceDecimals(s.spot.price))}`;
   const equity = s.cashBase === null ? null : Number(s.cashBase + totals.value) / 1e6;
-  const stakeText = `${money(s.stakeBase)}${s.capped ? " ·" : ""}`;
+  const stakeText = s.capped ? `${money(s.stakeBase)} max` : money(s.stakeBase);
   const count = s.positions.length;
 
   return (
@@ -132,7 +146,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
             {s.win.lanes.length ? (
               <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText} />
             ) : s.win.loading ? null : (
-              <span className="tm-glass tm-note">{s.ticker && !s.ticker.redstoneFeedId ? TERMINAL.noWindow.spcx : TERMINAL.noWindow.none}</span>
+              <span className="tm-glass tm-note">{noWindowNote(s.ticker, nyse)}</span>
             )}
           </div>
           <div className="tm-stack-slot">
@@ -148,6 +162,12 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
             <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onTrailHit={onTrailHit} onValue={onValue} />
           </div>
           {count > 0 ? <ViewPositionPill count={count} roiPct={totals.pnl !== null && totals.cost > 0n ? Number((totals.pnl * 10_000n) / totals.cost) / 100 : null} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
+          {needsArm ? (
+            <div className="tm-arm" role="note">
+              <span className="tm-field-hint">{TERMINAL.arm.lead}</span>
+              <TapTradingChip />
+            </div>
+          ) : null}
           {s.active ? (
             <TradeButtons
               mode="open"
@@ -159,13 +179,15 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
               busy={closer.busy === s.active.id ? "close" : null}
               lockedText={activeValue?.locked ? TERMINAL.buttons.locked(clockText(s.active.expirySec)) : null}
             />
+          ) : market && s.phase === "upcoming" ? (
+            <ScheduledTrade market={market} stakeBase={s.stakeBase} />
           ) : market ? (
             <TerminalTrade market={market} phase={s.phase} stakeBase={s.stakeBase} spot={s.spot.price} onPays={setPays} />
           ) : null}
         </aside>
       </div>
       <MarketsDrawer open={drawer.open === DRAWERS.markets} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} set={s.win.set} nowSec={s.nowSec} onPick={pick} />
-      <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} />
+      <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} capped={s.capped ? s.capReason : null} />
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
           <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
@@ -176,3 +198,10 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   );
 }
 
+/** Why a symbol lists no Window right now (the state table, stage-23 "Window rule"). */
+function noWindowNote(ticker: { redstoneFeedId: string | null; redstone24x7FeedId: string | null; kind: string } | null, nyse: { state: string | null; label: string | null }): string {
+  if (ticker && !ticker.redstoneFeedId) return TERMINAL.noWindow.spcx;
+  const regularHours = nyse.state === "regular" || nyse.state === "early-close";
+  if (ticker?.kind === "stock" && !ticker.redstone24x7FeedId && !regularHours && nyse.label) return TERMINAL.noWindow.regularOnly(nyse.label.replace(/^Opens /, ""));
+  return TERMINAL.noWindow.none;
+}

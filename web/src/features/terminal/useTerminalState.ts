@@ -4,12 +4,15 @@
 import { isTickerSymbol, TICKERS, type EventMarket } from "@cwf/core";
 import { noEntryCutoffSec } from "@cwf/core/lifecycle";
 import { minStakeBase } from "@cwf/core/sizing";
-import { useBalanceSheet, useSigner } from "@cwf/markets/react";
+import { useBalanceSheet, useKeyRemaining, useSigner } from "@cwf/markets/react";
 import { useEffect, useMemo, useRef } from "react";
 import { useSpot } from "@/features/markets/data/useChartSeries";
 import { useWindowPhase } from "@/features/markets/data/useWindowPhase";
 import { useSessionView } from "@/features/session";
 import { useNowMs } from "@/lib/clock";
+import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
+import { useTapArmed } from "@/providers/wallet/tap-session";
+import { readWalletKey } from "@/providers/wallet/wallet-key-store";
 import type { ChartLevel, ChartOverlay } from "./chart/LiveChart";
 import { TERMINAL } from "./copy";
 import { untilText, USD_DECIMALS } from "./format";
@@ -58,7 +61,15 @@ export function useTerminalState(symbol: string) {
   const walletBase = sheet?.ok ? sheet.value.spendableBase : null;
   const view = useSessionView();
   const balanceBase = view.status === "armed" ? view.availableBase : null;
-  const spendableBase = balanceBase ?? walletBase;
+  // The wallet's one-tap key signs within its daily limit: a stake over what it may still spend is capped before
+  // signing, not refused by the chain ("Over your tap-trading limit").
+  const tapArmed = useTapArmed();
+  const walletKey = tapArmed && address ? readWalletKey(TEMPO_CHAIN_ID, address) : null;
+  const keyLeft = useKeyRemaining(address, walletKey?.keyId ?? null);
+  const keyRemainingBase = keyLeft?.ok ? keyLeft.value.remaining : null;
+  const walletTapBase = walletBase !== null && keyRemainingBase !== null && keyRemainingBase < walletBase ? keyRemainingBase : walletBase;
+  const spendableBase = balanceBase ?? walletTapBase;
+  const capReason: "balance" | "key" | "budget" | null = balanceBase !== null ? "budget" : walletTapBase !== walletBase ? "key" : "balance";
   const minBase = minStakeBase(market?.decimals ?? USD_DECIMALS);
   const wanted = wantedStakeBase(settings, spendableBase, minBase);
   const capped = spendableBase !== null && spendableBase >= minBase && wanted > spendableBase;
@@ -95,7 +106,7 @@ export function useTerminalState(symbol: string) {
 
   return {
     nowSec, settings, name, ticker, win, market, phase, openingRaw, spot, signedE8, address,
-    walletBase, cashBase, spendableBase, minBase, stakeBase, capped, positions, active, overlay,
+    walletBase, cashBase, spendableBase, minBase, stakeBase, capped, capReason, positions, active, overlay,
     windowText: windowStateText(market, phase, nowSec),
   };
 }

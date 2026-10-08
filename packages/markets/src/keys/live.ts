@@ -45,3 +45,12 @@ export async function readKeyStates(client: PublicClient, account: Address, keys
     return { ...k, live, tokens };
   });
 }
+
+/**
+ * What one key may still spend of `token` this period, and when the period ends (S23c: the terminal caps a one-tap
+ * stake by it, so a tap over the key's daily limit is named before signing instead of refused by the chain).
+ */
+export async function readKeyRemaining(client: PublicClient, account: Address, keyId: Address, token: Address = TEMPO.pathUSD as Address): Promise<{ remaining: bigint; periodEndSec: bigint }> {
+  const [remaining, periodEndSec] = (await client.readContract({ address: TEMPO.accountKeychain as Address, abi: Abis.accountKeychain, functionName: "getRemainingLimitWithPeriod", args: [account, keyId, token] })) as readonly [bigint, bigint];
+  return { remaining, periodEndSec };
+}

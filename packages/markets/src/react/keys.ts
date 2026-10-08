@@ -22,6 +22,7 @@ export const keys = {
   history: (wallet: string | null) => [SCOPE, "history", wallet] as const,
   vault: (wallet: string | null) => [SCOPE, "vault", wallet] as const,
   balanceSheet: (wallet: string | null) => [SCOPE, "balanceSheet", wallet] as const,
+  keyRemaining: (wallet: string | null, keyId: string | null) => [SCOPE, "balanceSheet", wallet, "keyRemaining", keyId] as const,
   keychain: (wallet: string | null) => [SCOPE, "keychain", wallet] as const,
   relayStatus: () => [SCOPE, "relayStatus"] as const,
 };

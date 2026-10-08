@@ -5,12 +5,13 @@ import type { EventMarket } from "@cwf/core";
 import type { MarketPhase } from "@cwf/core/lifecycle";
 import { useEffect } from "react";
 import { TERMINAL } from "../copy";
-import { multipleOf } from "../format";
+import { money, multipleOf } from "../format";
 import { useTerminalOpen } from "../useTerminalOpen";
 import { TradeButtons } from "./TradeButtons";
 
 /** `multiple` is what a dollar pays (1000 ÷ ask ticks); `multipleOf` takes the ask, so it goes back through 1000 ÷. */
-const paysText = (multiple: number | null) => (multiple && Number.isFinite(multiple) ? TERMINAL.buttons.pays(multipleOf(1000 / multiple)) : null);
+const paysText = (multiple: number | null, cappedTo: string | null = null) =>
+  multiple && Number.isFinite(multiple) ? `${TERMINAL.buttons.pays(multipleOf(1000 / multiple))}${cappedTo ? ` · ${TERMINAL.buttons.max(cappedTo)}` : ""}` : null;
 
 export function TerminalTrade({ market, phase, stakeBase, spot, onPays }: { market: EventMarket; phase: MarketPhase | null; stakeBase: bigint; spot: number | null; onPays: (text: string) => void }) {
   const t = useTerminalOpen({ market, phase, stakeBase, spot });
@@ -22,8 +23,8 @@ export function TerminalTrade({ market, phase, stakeBase, spot, onPays }: { mark
       onUp={() => t.open("up")}
       onDown={() => t.open("down")}
       busy={t.busy}
-      upSub={paysText(t.sides.up.multiple)}
-      downSub={paysText(t.sides.down.multiple)}
+      upSub={paysText(t.sides.up.multiple, t.sides.up.capped ? money(t.sides.up.stakeBase) : null)}
+      downSub={paysText(t.sides.down.multiple, t.sides.down.capped ? money(t.sides.down.stakeBase) : null)}
       upNote={t.sides.up.blocked}
       downNote={t.sides.down.blocked}
     />
