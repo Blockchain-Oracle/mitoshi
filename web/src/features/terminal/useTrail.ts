@@ -23,19 +23,24 @@ import { trailWords } from "./ui/TradeButtons";
 const RETRY_MS = 3_000;
 
 /**
- * Whether the key that would sign an unattended Close lasts until the Window does: the Trading Balance's grant for a
- * vault position, the wallet's one-tap key for a wallet one.
+ * When the key that would sign an unattended Close expires: the Trading Balance's grant for a vault position, the
+ * wallet's one-tap key for a wallet one. A Boost's close is signed by the passkey (Q-032's default), so never.
  */
+function signerExpiryOf(p: TerminalPosition, view: ReturnType<typeof useSessionView>, address: string | null): number {
+  if (p.via === "boost") return 0;
+  if (p.via === "vault") return view.status === "armed" ? (view.grant?.expiresAtSec ?? 0) : 0;
+  return address ? (readWalletKey(TEMPO_CHAIN_ID, address as `0x${string}`)?.expirySec ?? 0) : 0;
+}
+
+/** What an exit that can't run unattended says: turn on one-tap, or — on a Boost — that its close asks for the passkey. */
+export const unattendedRefusal = (p: TerminalPosition) =>
+  p.via === "boost" ? { title: TERMINAL.trail.boostPasskey, description: TERMINAL.trail.boostPasskeyBody } : { title: TERMINAL.trail.needsKey, description: TERMINAL.trail.needsKeyBody };
+
+/** Whether the key that would sign an unattended Close lasts until the Window does. */
 export function useSignerLasts() {
   const { address } = useSigner();
   const view = useSessionView();
-  return useCallback(
-    (p: TerminalPosition) => {
-      const expiry = p.via === "vault" ? (view.status === "armed" ? (view.grant?.expiresAtSec ?? 0) : 0) : address ? (readWalletKey(TEMPO_CHAIN_ID, address)?.expirySec ?? 0) : 0;
-      return expiry >= p.expirySec;
-    },
-    [address, view],
-  );
+  return useCallback((p: TerminalPosition) => signerExpiryOf(p, view, address) >= p.expirySec, [address, view]);
 }
 
 /** Arms or removes the trail on a position (the TRAIL button). */
@@ -47,7 +52,7 @@ export function useTrailToggle() {
       tapFeedback();
       const id = `trail-${p.marketId}`;
       if (p.trailStop !== null) {
-        rememberEntry(p.marketId, p.side, p.entrySpot ?? 0, null);
+        rememberEntry(p.entryKey, p.side, p.entrySpot ?? 0, null);
         return void notify.item({ id, title: TERMINAL.trail.off(p.asset) });
       }
       const pct = tradeSettings().trailPct;
@@ -55,10 +60,9 @@ export function useTrailToggle() {
         return void notify.item({ id, type: "warning", title: TERMINAL.buttons.needMove(trailWords(pct)) });
       }
       // The Close a hit sends must sign without a prompt until the Window closes.
-      const signerExpiry = p.via === "vault" ? (view.status === "armed" ? (view.grant?.expiresAtSec ?? 0) : 0) : address ? (readWalletKey(TEMPO_CHAIN_ID, address)?.expirySec ?? 0) : 0;
-      if (signerExpiry < p.expirySec) return void notify.item({ id, type: "warning", title: TERMINAL.trail.needsKey, description: TERMINAL.trail.needsKeyBody });
+      if (signerExpiryOf(p, view, address) < p.expirySec) return void notify.item({ id, type: "warning", ...unattendedRefusal(p) });
       const stop = trailStart(p.side, v.spot, v.breakEven, pct);
-      rememberEntry(p.marketId, p.side, p.entrySpot ?? v.spot, stop);
+      rememberEntry(p.entryKey, p.side, p.entrySpot ?? v.spot, stop);
       notify.item({ id, title: TERMINAL.trail.armed(p.asset), description: TERMINAL.trail.armedBody(trailWords(pct)) });
     },
     [address, view],
@@ -95,6 +99,6 @@ export function useRowTrail(p: TerminalPosition, v: PositionValue, close: (p: Te
       return;
     }
     const next = ratchet(pos.side, pos.trailStop, val.spot, tradeSettings().trailPct);
-    if (next !== pos.trailStop) rememberEntry(pos.marketId, pos.side, pos.entrySpot ?? val.spot, next);
+    if (next !== pos.trailStop) rememberEntry(pos.entryKey, pos.side, pos.entrySpot ?? val.spot, next);
   }, [v.spot]);
 }

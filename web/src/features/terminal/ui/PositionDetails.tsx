@@ -45,7 +45,7 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
   const perContract = (base: bigint, contracts: bigint) => (contracts > 0n ? centsOf(Number((base * 1_000n) / contracts)) : "—");
   const rows: Array<[string, string]> = [
     [TERMINAL.details.window, market ? `${formatCadence(market.intervalSec)} · ${market.lane === "stock24" ? "24/7" : market.lane === "gap" ? "Gap" : market.lane === "crypto24" ? "Crypto" : "Regular"}` : formatCadence(p.intervalSec)],
-    [TERMINAL.details.via, p.via === "vault" ? TERMINAL.details.balance : TERMINAL.details.wallet],
+    [TERMINAL.details.via, p.via === "vault" ? TERMINAL.details.balance : p.via === "boost" ? TERMINAL.details.boost : TERMINAL.details.wallet],
     [TERMINAL.details.line, lineE8 === null ? TERMINAL.details.notYet : `$${formatPrice(Number(lineE8) / 1e8, priceDecimals(Number(lineE8) / 1e8))}`],
     [TERMINAL.details.entry, p.entrySpot ? `$${formatPrice(p.entrySpot, priceDecimals(p.entrySpot))}` : "—"],
     [TERMINAL.details.staked, hide(`${money(p.costBase)} · ${formatBaseUnits(p.heldRaw, p.decimals, { minDp: 0, maxDp: 2 })}`)],
@@ -66,7 +66,8 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
           <div className="tm-field">
             <span className="tm-field-head">{TERMINAL.details.reduce}</span>
             <div className="tm-choices">
-              {REDUCE.map((pct) => (
+              {/* A Boost sells whole (`LeverageReserve.close`): Close only. */}
+              {(p.boost ? [100n] : REDUCE).map((pct) => (
                 <button key={String(pct)} type="button" className="tm-choice" disabled={busy || value?.locked} onClick={() => (tapFeedback(), onReduce(p, (p.heldRaw * pct) / 100n))}>
                   {pct === 100n ? TERMINAL.buttons.close : `${pct}%`}
                 </button>
@@ -74,7 +75,7 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
             </div>
           </div>
           <div className="tm-choices">
-            <button type="button" className="tm-choice" disabled={value?.locked} onClick={() => (tapFeedback(), setAdding(true))}>{TERMINAL.details.add}</button>
+            {p.boost ? null : <button type="button" className="tm-choice" disabled={value?.locked} onClick={() => (tapFeedback(), setAdding(true))}>{TERMINAL.details.add}</button>}
             <button type="button" className="tm-choice" disabled={value?.locked} onClick={() => (tapFeedback(), onExits(p))}>{TERMINAL.exits.open}</button>
             <button type="button" className="tm-choice" onClick={() => (tapFeedback(), onShow(p))}>{TERMINAL.details.chart}</button>
             <Link href={`/proof/${p.marketId}`} className="tm-choice tm-link">{TERMINAL.details.proof}</Link>

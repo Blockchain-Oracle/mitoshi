@@ -150,6 +150,7 @@ export const TERMINAL = {
     via: "Held in",
     wallet: "Wallet",
     balance: "Trading Balance",
+    boost: "Boost (part fronted by the reserve)",
     proof: "Proof of the prints",
     chart: "Show on the chart",
     reduce: "Reduce",
@@ -275,6 +276,8 @@ export const TERMINAL = {
     hit: (symbol: string) => `Trailing stop hit · ${symbol}`,
     needsKey: "Turn on one-tap first",
     needsKeyBody: "A trail closes without asking, so it needs one-tap signing that lasts until this Window closes.",
+    boostPasskey: "A Boost closes with your passkey",
+    boostPasskeyBody: "Trail and TP/SL close without asking, so they can't run on a Boost — close it from its row.",
   },
   close: {
     closing: (symbol: string) => `Closing ${symbol}…`,
@@ -294,6 +297,7 @@ export const TERMINAL = {
     approx: "≈",
   },
   positions: {
+    boost: (x: number) => `Boost ${Number.isInteger(x) ? x : x.toFixed(1)}×`,
     unrealized: "Unrealized PnL",
     title: "Positions",
     none: "No open positions",

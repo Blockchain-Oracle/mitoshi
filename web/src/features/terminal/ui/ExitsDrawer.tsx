@@ -16,7 +16,7 @@ import { EXIT_MODES, exitCaption, exitError, modeText, priceText, targetFromMode
 import { money, sideWord } from "../format";
 import type { TerminalPosition } from "../terminal-positions";
 import type { PositionValue } from "../usePositionValue";
-import { useSignerLasts } from "../useTrail";
+import { unattendedRefusal, useSignerLasts } from "../useTrail";
 
 const PRESETS: Record<ExitKind, readonly number[]> = { tp: [25, 50, 100], sl: [-25, -50, -75] };
 const none = () => null;
@@ -75,8 +75,8 @@ function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionV
   const save = () => {
     tapFeedback();
     const id = `exits-${p.marketId}`;
-    if ((tp !== null || sl !== null) && !lasts(p)) return void notify.item({ id, type: "warning", title: TERMINAL.trail.needsKey, description: TERMINAL.trail.needsKeyBody });
-    setExits(p.marketId, p.side, { tpBase: tp, slBase: sl }, value?.spot ?? p.entrySpot ?? 0);
+    if ((tp !== null || sl !== null) && !lasts(p)) return void notify.item({ id, type: "warning", ...unattendedRefusal(p) });
+    setExits(p.entryKey, p.side, { tpBase: tp, slBase: sl }, value?.spot ?? p.entrySpot ?? 0);
     notify.item({ id, title: TERMINAL.exits.saved(p.asset), description: [tp !== null ? TERMINAL.exits.when(TERMINAL.exits.tp, `≥ ${money(tp)}`) : null, sl !== null ? TERMINAL.exits.when(TERMINAL.exits.sl, `≤ ${money(sl)}`) : null].filter(Boolean).join(" · ") || TERMINAL.exits.off });
     onDone();
   };

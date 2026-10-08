@@ -139,6 +139,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
       ...(be === null ? [] : [{ kind: "breakeven" as const, price: be, label: "B/E" }]),
       ...(tp === null ? [] : [{ kind: "tp" as const, price: tp, label: "TP ≈" }]),
       ...(sl === null ? [] : [{ kind: "sl" as const, price: sl, label: "SL ≈" }]),
+      ...(activeValue?.koSpot == null ? [] : [{ kind: "knockout" as const, price: activeValue.koSpot, label: "KO ≈" }]),
     ];
     s.overlay.current = { ...base, levels, pnl: pnlBase === null ? null : Number(pnlBase) / 1e6, pnlText: pnlBase === null ? "" : masked ? SHELL.masked : livePnlText(pnlBase) };
   }

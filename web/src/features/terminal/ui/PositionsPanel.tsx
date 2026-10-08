@@ -29,7 +29,9 @@ function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }:
       <span className={`tm-pos-side ${up ? "tm-up-soft" : "tm-down-soft"}`}><Dir aria-hidden strokeWidth={3} /></span>
       <span className="tm-pos-main">
         <button type="button" className="tm-pos-title tm-pos-open-btn" onClick={() => onOpen(p)} aria-haspopup="dialog">
-          {sideWord(p.side)} {p.asset}{p.trailStop !== null ? <span className="tm-pos-tag">{TERMINAL.buttons.trailing}</span> : null}
+          {sideWord(p.side)} {p.asset}
+          {p.boost ? <span className="tm-pos-tag">{TERMINAL.positions.boost(p.boost.leverageBps / 10_000)}</span> : null}
+          {p.trailStop !== null ? <span className="tm-pos-tag">{TERMINAL.buttons.trailing}</span> : null}
         </button>
         <span className="tm-pos-meta">
           {formatBaseUnits(p.heldRaw, p.decimals, { minDp: 0, maxDp: 2 })} · {TERMINAL.positions.staked} {masked ? SHELL.masked : money(p.costBase)} · {TERMINAL.positions.settles} {clockText(p.expirySec)}

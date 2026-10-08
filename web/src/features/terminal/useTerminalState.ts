@@ -76,7 +76,7 @@ export function useTerminalState(symbol: string) {
   const stakeBase = capped ? spendableBase! : wanted;
   const cashBase = walletBase === null && view.availableBase === null ? null : (walletBase ?? 0n) + (view.deployed ? (view.availableBase ?? 0n) : 0n);
 
-  const positions = useTerminalPositions(address);
+  const positions = useTerminalPositions(address, win.set);
   const active = positions.find((p) => p.marketId === market?.marketId) ?? null;
 
   // The chart's overlay: the Line, the newest signed value, and the Entry of a position on this Window. Written to a

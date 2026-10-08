@@ -71,7 +71,11 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   credit → Collect. Every taker read at rest 0 (D-205): the exit, the sell lanes, the stake quote and the depth. The
   house keeps both sides to lock − 30 (S24.4, D-204). Both sell lanes start their reads together and say "Closing…"
   at signing (05dfd6b). /portfolio's cash-out is one tap like CLOSE, on the same close tolerance, with "Close for $X"
-  past it (the hold is gone). Still open: the Boost close via `LeverageReserve.close`; the void state.
+  past it (the hold is gone). Boosts are terminal positions: listed with a "Boost 3×" tag and valued at the reserve's
+  mark less what it fronted (what Close pays the owner), repriced the same way. Their CLOSE goes through
+  `LeverageReserve.close` on the passkey (D-136), with the mark less the tolerance as the floor and "Close for $X" past
+  it. The knock-out line is drawn "KO ≈". Details show Close only, no Add. Trail and TP/SL refuse a Boost, since its
+  close asks for the passkey. Still open: the void state.
 - [ ] 23e Exits in the tab (D-200): Owarine `trailEligible`/`ratchet`/`trailHit` + break-even bisection; the TP/SL
   drawer; evaluation on committed ticks; the price stream kept open while armed; signer by position location; arming
   refused when the key expires first; "Only while Mitoshi is open".
