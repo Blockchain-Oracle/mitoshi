@@ -95,6 +95,10 @@
 .tm-btn-note { min-height: 14px; color: var(--color-ink-secondary); font: 500 11px/1.3 var(--font-body); text-align: center; }
 .tm-up-soft { background: color-mix(in oklab, var(--chart-up) 16%, var(--color-surface-1)); color: var(--chart-up); }
 .tm-down-soft { background: color-mix(in oklab, var(--chart-down) 14%, var(--color-surface-1)); color: var(--chart-down); }
+/* Light theme: the 18 px label (bold, just under "large" text) needs 4.5:1 on its own tint; the side colour gives 3.9
+   (DOWN) and 4.45 (UP), so it is deepened there (≈5.4 and ≈5.6), still red and green. */
+[data-theme="light"] .tm-up-soft { color: color-mix(in oklab, var(--chart-up) 85%, black); }
+[data-theme="light"] .tm-down-soft { color: color-mix(in oklab, var(--chart-down) 80%, black); }
 .tm-up-solid { background: var(--chart-up); color: var(--chart-ground); }
 .tm-down-solid { background: var(--chart-down); color: var(--chart-ground); }
 .tm-spin { animation: tm-spin 0.9s linear infinite; }
