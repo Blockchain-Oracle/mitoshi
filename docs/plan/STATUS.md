@@ -47,16 +47,28 @@ house keeps its exit side to T−30 s. Ledger: `revamp-parity.md` (RV rows; refe
 `canton-season3/context/13-revamp/tradash/`, Owarine `ecb7565b`, Baku/roy-chain `ede3ed38`). Stages: `stage-22-shell.md`,
 `stage-23-terminal.md`, `stage-24-exits.md`; notes added to S1, S4–S7, S10–S13, S20, S21, SM1, SM4.
 
-**Where it stands (2026-10-08, end of day):** S22 shell is built, gated and deployed (its Lighthouse TBT failures are on
-the Markets routes and moved to S23). S23 is deployed on testnet through 23j: the ops display feed (`ticks`, candles,
-day figures; the maker's divergence guard reworked after F-S23-01), the live line and chart, `/trade/[symbol]` with the
-Window rule, one-tap UP/DOWN, live value = what CLOSE pays, one-tap CLOSE (wallet and Trading Balance), Trail in the
-tab, reactions and music, the drawers (markets, account with Withdraw, position details, history, replay, settings),
-first run (tour → real sign-up, splash, update notice), the modes row, and `/markets` as the list. A real UP → CLOSE ran
-on Moderato from a GitHub runner (`acceptance/S23.md`; browser gates that drive testnet run there, F-S23-03). Open per
-box in `stage-23-terminal.md`, then the S23 gate (drivers rewritten for the terminal, long tasks, Lighthouse with
-`/trade/BTC`, §8 screenshots, the owner's phone run). S5 (share card, leaderboard data) and S13 (season league) feed
-23g when they land.
+**Where it stands (2026-10-08, 18:15Z):** S22 shell is deployed. S23 is deployed on testnet with every box but two
+ticked. 23c's Sensei entry waits on S13; 23g's share card, leaderboard and season league wait on S5 and S13. Since
+the morning:
+- TP/SL in Tradash's drawer (ROI % · Change % · P&L, on what Close pays) and one settle toast per Window (voids too).
+- Every taker read at rest 0 (D-205), and both sell lanes with parallel reads and "Closing…" at signing.
+- Boosts as terminal positions (closed through the reserve), and Boost chips that make UP/DOWN open a Boost.
+- Parlay as a terminal mode (UP/DOWN add the Window to `/parlay`'s slip, beside the chart).
+- The 04:00 ET gap note, wallet toasts, the install drawer, one-tap cash-out on /portfolio, settled and void row
+  states, and Surface → terminal.
+
+In ops (S24.4 brought forward):
+- The house keeps both sides to lock − 30 (D-204), with one-transaction requotes, a per-Window clock, and rate-limited
+  sends retried with the same bytes.
+- It centres on the display carried by its measured basis (D-206). That moved a fresh position's Close value from 22 %
+  to ~70 % of the stake near the line (F-S23-05 holds the rest: the base 3¢ half spread).
+
+Live on Moderato from a runner (`acceptance/S23.md`): sign-up → UP (0 prompts, ~2.2 s) → TP/SL → one-tap CLOSE (~2.3
+s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has left:
+- the ported live checks (onboarding, tap-latency, Trading Balance with the vault sell lane, Boost, Range);
+- long tasks on `/trade/BTC` (1.3 s at 4× CPU, traced to the wallet runtime loading on the tour's focus and fixed in
+  92cc15f, to re-measure);
+- Lighthouse with `/trade/BTC`, the §8 screenshots, and the owner's phone run.
 
 ## Open integration items (from the wave-2/3 merges; owners pick these up)
 
@@ -80,9 +92,10 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
    spanning a 04:00 ET; then the S4 Handoff re-runs on the deployed site (tap-latency, stream-ticket, `lighthouse.yml`).
 2. S10 remainder: `/api/prices/datastreams-report`, 10a.4 (a won ticket claimed, UX gate), the S10d browser gate, the
    stage gate.
-3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes): R.0 (decisions and docs) is done →
-   **S22 shell** → **S23 terminal** (23a display feed first, then 23b…23j) → **S24 exits** (`stage-2{2,3,4}-*.md`). S5's
-   leaderboard data comes before S23g's leaderboard and S6's session states before S23c's stock states.
+3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes). R.0, S22 and S23's boxes are done,
+   and S24.4 (the exit tail) is live. Next: the S23 gate (above), then **S24** 24.1 vault v2 with the EXIT grant →
+   24.2 migration → 24.3 `exit-keeper` → 24.5 the terminal's exits running with the app closed. S5's leaderboard data
+   comes before S23g's leaderboard.
 4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
    revamped UI.
