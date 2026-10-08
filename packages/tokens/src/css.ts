@@ -16,7 +16,17 @@ function themeVars(theme: ThemeName): Record<string, string> {
     "ms-hairline": s.hairline, "ms-border-strong": s["border-strong"],
     ...tradingTokens(theme),
     ...accentFill(theme),
+    ...shellTokens(theme),
   };
+}
+
+/**
+ * The shell's surfaces (D-189: roy-chain/Slush structure in Mitoshi's colours — no new hex). The stage's 2 px edge is
+ * Slush's ink outline in light (the light ink, `--white` there) and the strong hairline in dark, where a white outline
+ * would shout.
+ */
+export function shellTokens(theme: ThemeName): Record<string, string> {
+  return { "stage-edge": theme === "dark" ? tokens.surfaces.dark["border-strong"] : tokens.palette.light.white };
 }
 
 /**
@@ -61,6 +71,11 @@ const SEMANTIC = `@theme inline {
   --color-chart-line: var(--chart-line);
   --color-chart-grid: var(--chart-grid);
   --color-chart-text: var(--chart-text);
+  --color-canvas: var(--bg);
+  --color-rail: var(--ms-surface-2);
+  --color-rail-active: var(--ms-surface-3);
+  --color-stage: var(--gray-950);
+  --color-stage-edge: var(--stage-edge);
   --font-body: var(--font-inter), "Inter", system-ui, sans-serif;
   --font-data: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
   --font-stamp: var(--font-noto-serif-jp), "Noto Serif JP", serif;
@@ -97,7 +112,15 @@ function staticTheme(): string {
   const sp = tokens.spacing;
   lines.push(`  --spacing: ${sp.base};`);
   for (const [k, v] of Object.entries(sp)) if (k !== "base") lines.push(`  --spacing-${k}: ${v};`);
+  // The shell's geometry as spacing (w-rail, w-drawer, h-nav-item) and the drawer's easing as `ease-drawer` (D-189).
+  for (const [k, v] of Object.entries(tokens.layout)) if (!k.startsWith("$")) lines.push(`  --spacing-${k}: ${v};`);
+  lines.push(`  --ease-drawer: ${tokens.easing["ease-drawer"]};`);
   return `@theme {\n${lines.join("\n")}\n}`;
+}
+
+/** Motion durations the shell's CSS reads (`var(--duration-drawer-in)`); plain variables, no utilities. */
+function durations(): Record<string, string> {
+  return Object.fromEntries(Object.entries(tokens.duration).map(([k, v]) => [`duration-${k}`, v]));
 }
 
 export function renderTokensCss(): string {
@@ -109,6 +132,7 @@ export function renderTokensCss(): string {
     staticTheme(),
     "/* Raw aliases shadcn-shaped primitives reference inside color-mix(). */",
     block(":root", { foreground: "var(--white)", secondary: "var(--ms-surface-2)" }),
+    block(":root", durations()),
     "",
   ].join("\n\n");
 }

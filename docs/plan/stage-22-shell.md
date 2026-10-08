@@ -4,7 +4,7 @@ On `integration/t1` (D-201). Sources: Baku/roy-chain `ede3ed38` (`apps/web/src/c
 `components/ui/{dialog,drawer}.tsx`, `styles/tokens.css`), the Slush study (`docs/build/research/inspo/slush/`), Owarine
 `ecb7565b` (`web/src/lib/sound/*`, `web/src/lib/haptics.ts`). Ledger rows RV-01…RV-16 in `revamp-parity.md`.
 
-- [ ] 22.1 Tokens: a `layout` group in `packages/tokens/src/tokens.json` (rail 248 / compact 88, inset 16, nav-h 48,
+- [x] 22.1 Tokens: a `layout` group in `packages/tokens/src/tokens.json` (rail 248 / compact 88, inset 16, nav-h 48,
   nav gap 12, stage edge 2, drawer 384 / wide 560 / inset 16, dock height, modal max) emitted by `staticTheme`; radius
   is the existing `radius.xl` (24); rail, stage, drawer and scrim colours as `SEMANTIC` aliases of existing surfaces (no
   new keys in palette/surfaces/shared/type/radius — `tokens.test.ts` pins them to Masayume); motion durations (hover

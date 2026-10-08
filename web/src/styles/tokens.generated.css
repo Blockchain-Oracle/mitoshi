@@ -20,6 +20,7 @@
   --accent-fill: #E04D26;
   --accent-fill-pressed: #B83A1B;
   --on-accent: #141210;
+  --stage-edge: rgb(255 255 255 / 0.22);
 }
 
 [data-theme="light"] {
@@ -42,6 +43,7 @@
   --accent-fill: #B83214;
   --accent-fill-pressed: #211C16;
   --on-accent: #FBF7EE;
+  --stage-edge: #141210;
 }
 
 @theme inline {
@@ -74,6 +76,11 @@
   --color-chart-line: var(--chart-line);
   --color-chart-grid: var(--chart-grid);
   --color-chart-text: var(--chart-text);
+  --color-canvas: var(--bg);
+  --color-rail: var(--ms-surface-2);
+  --color-rail-active: var(--ms-surface-3);
+  --color-stage: var(--gray-950);
+  --color-stage-edge: var(--stage-edge);
   --font-body: var(--font-inter), "Inter", system-ui, sans-serif;
   --font-data: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
   --font-stamp: var(--font-noto-serif-jp), "Noto Serif JP", serif;
@@ -155,6 +162,21 @@
   --spacing-section: 64px;
   --spacing-section-desktop: 96px;
   --spacing-touch: 44px;
+  --spacing-rail: 248px;
+  --spacing-rail-compact: 88px;
+  --spacing-rail-inset: 16px;
+  --spacing-nav-item: 48px;
+  --spacing-nav-gap: 12px;
+  --spacing-stage-edge: 2px;
+  --spacing-stage-pad: 32px;
+  --spacing-topline: 64px;
+  --spacing-drawer: 384px;
+  --spacing-drawer-wide: 560px;
+  --spacing-drawer-inset: 16px;
+  --spacing-dock-item-w: 60px;
+  --spacing-dock-item-h: 56px;
+  --spacing-modal: 440px;
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* Raw aliases shadcn-shaped primitives reference inside color-mix(). */
@@ -162,5 +184,13 @@
 :root {
   --foreground: var(--white);
   --secondary: var(--ms-surface-2);
+}
+
+:root {
+  --duration-hover: 120ms;
+  --duration-state: 180ms;
+  --duration-pill: 280ms;
+  --duration-drawer-in: 380ms;
+  --duration-drawer-out: 240ms;
 }
 
