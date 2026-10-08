@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { keccak256 } from "viem";
+import { keccak256, LimitExceededRpcError } from "viem";
 
 // The split send is viem's own `sendTransactionSync` steps in the open (D-150): these stubs stand in for the RPC so the
 // test can see the ORDER of things — the hash reaches the surface before the one sync send, and nothing is sent twice.
 const calls: string[] = [];
 let feePayerSignature: unknown = { r: 1n, s: 2n, yParity: 0 };
+let limited = 0;
 vi.mock("viem/actions", async (orig) => ({
   ...(await orig<typeof import("viem/actions")>()),
   prepareTransactionRequest: vi.fn(async (_c: unknown, req: Record<string, unknown>) => {
@@ -13,15 +14,20 @@ vi.mock("viem/actions", async (orig) => ({
   }),
   sendRawTransactionSync: vi.fn(async (_c: unknown, { serializedTransaction }: { serializedTransaction: `0x${string}` }) => {
     calls.push(`send:${serializedTransaction}`);
+    if (limited > 0) {
+      limited--;
+      throw new LimitExceededRpcError(new Error("rate limited, try again in 4ms"));
+    }
     return { transactionHash: keccak256(serializedTransaction), status: "success", logs: [] };
   }),
+  getTransactionReceipt: vi.fn(async () => (calls.push("receipt?"), null)),
 }));
 vi.mock("viem/tempo", async (orig) => ({
   ...(await orig<typeof import("viem/tempo")>()),
   Transaction: { deserialize: () => ({ feePayerSignature }) },
 }));
 
-const { sendBatch } = await import("./send");
+const { sendBatch, RAW_SEND_RETRIES } = await import("./send");
 const { approveCall } = await import("./batch");
 const { tempoChain } = await import("../chains");
 
@@ -35,6 +41,7 @@ const request = { calls: [approveCall("0x20c000000000000000000000000000000000000
 describe("sendBatch with onSigned (confirmed-pending, D43/D-150)", () => {
   beforeEach(() => {
     calls.length = 0;
+    limited = 0;
     feePayerSignature = { r: 1n, s: 2n, yParity: 0 };
   });
 
@@ -60,4 +67,19 @@ describe("sendBatch with onSigned (confirmed-pending, D43/D-150)", () => {
     expect(c.sendTransactionSync).toHaveBeenCalledTimes(1);
     expect(calls).toEqual([]);
   });
+
+  it("sends the same signed bytes again while the gateway rate-limits, so a retry can never send twice (S24.4)", async () => {
+    limited = 2;
+    const sent = await sendBatch(client() as never, request, { onSigned: () => undefined });
+    expect(calls.filter((c) => c === "sign")).toHaveLength(1);
+    expect(calls.filter((c) => c.startsWith("send:"))).toEqual([`send:${SIGNED}`, `send:${SIGNED}`, `send:${SIGNED}`]);
+    expect(sent.hash).toBe(keccak256(SIGNED));
+  });
+
+  it("fails once the retries are spent, without waiting out the expiring window for a send never read", async () => {
+    limited = RAW_SEND_RETRIES + 1;
+    await expect(sendBatch(client() as never, request, { onSigned: () => undefined })).rejects.toThrow(/limit/i);
+    expect(calls.filter((c) => c.startsWith("send:"))).toHaveLength(RAW_SEND_RETRIES + 1);
+    expect(calls).not.toContain("receipt?");
+  }, 15_000);
 });

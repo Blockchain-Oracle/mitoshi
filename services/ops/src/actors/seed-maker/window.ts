@@ -9,7 +9,7 @@ import type { Address } from "viem";
 import { cancelAllCall, KIND, mergeSetCall, openOrdersOf, OpsSendError, ORDER_TYPE, placeOrderCall, positionsOf, sendOps, topOfBook, type MarketView, type OpsClient, type SeriesView, type Venue } from "@cwf/markets/ops";
 import type { SeedMakerEnv } from "./env";
 import type { LaneQuote } from "./lanes";
-import { needsRequote, quoteExpirySec, quotePair, sizeLots, tailLots, type Placed } from "./quote";
+import { MIN_ORDER_LIFE_SEC, needsRequote, quoteExpirySec, quotePair, sizeLots, tailHalfSpread, tailLots, type Placed } from "./quote";
 
 export interface WindowCtx {
   client: OpsClient;
@@ -17,6 +17,8 @@ export interface WindowCtx {
   env: SeedMakerEnv;
   dryRun: boolean;
   nowSec: number;
+  /** The chain clock now (a pass runs for tens of seconds: each placement checks it, and each send is stamped by it). */
+  clockSec?: () => number;
   log: (why: string) => void;
 }
 
@@ -32,9 +34,10 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
   if (fair !== null && placed && !needsRequote({ placed, fairTicks: fair, nowSec: ctx.nowSec, requoteTicks: ctx.env.requoteTicks, halfSpreadTicks, lockAtSec: m.lockAtSec })) return { state: "resting", placed, note: `fair ${fair}, resting`, txs };
   if (!placed && lane.phase !== "quote") return { state: lane.phase === "stop" ? "stopped" : "pulled", placed: null, note: lane.why, txs };
   if (!placed && fair === null) return { state: "idle", placed: null, note: lane.why, txs };
+  const clock = ctx.clockSec ?? (() => ctx.nowSec);
   const send = async (what: string, calls: Parameters<typeof sendOps>[1]) => {
     if (ctx.dryRun) return void ctx.log(`DRY ${what} ${label}`);
-    const sent = await sendOps(ctx.client, calls);
+    const sent = await sendOps(ctx.client, calls, ctx.clockSec ? { nowSec: ctx.clockSec() } : {});
     txs.push(sent.hash);
   };
   const [orders, [pos]] = await Promise.all([openOrdersOf(ctx.client, ctx.venue, m.marketId, me), positionsOf(ctx.client, ctx.venue, m.marketId, [me])]);
@@ -57,13 +60,21 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
   }
   await cancel(placed ? `requote ${placed.fairTicks} → ${fair}` : "unknown resting orders");
   const top = await topOfBook(ctx.client, ctx.venue, m.marketId);
-  const pair = quotePair({ fairTicks: fair, halfSpreadTicks, minTick: ctx.env.minTick, bestBidTicks: top.bidTicks || null, bestAskTicks: top.askTicks || null });
+  // The exit tail widens and shrinks only what it places: a pair already resting stays (requoting every Window that
+  // locks on the hour at the same second was a storm of sends, S24.4). The placed spread is what `needsRequote` compares.
+  const placeHalf = lane.tail ? tailHalfSpread(halfSpreadTicks) : halfSpreadTicks;
+  const pair = quotePair({ fairTicks: fair, halfSpreadTicks: placeHalf, minTick: ctx.env.minTick, bestBidTicks: top.bidTicks || null, bestAskTicks: top.askTicks || null });
   const lots = sizeLots({ wantLots: lane.tail ? tailLots(ctx.env.quoteLots, series.minLots) : ctx.env.quoteLots, pair, cu: series.cashUnit, budget: lane.maxCashPerWindow, minLots: series.minLots });
   if (lots === 0n) return { state: "idle", placed: null, note: `fair ${fair}: no admissible size`, txs };
-  const expireSec = quoteExpirySec(ctx.nowSec, m.lockAtSec, ctx.env.quoteTtlSec);
+  const expireSec = quoteExpirySec(clock(), m.lockAtSec, ctx.env.quoteTtlSec);
   let rested = false;
   for (const [side, ticks, kind] of [["bid", pair.bidTicks, KIND.buyYes], ["ask", pair.askTicks, KIND.buyNo]] as const) {
     if (ticks === null) continue;
+    // Too late to rest: the engine would refuse it (`OrderAlreadyExpired`) after the fee, or it would live seconds.
+    if (expireSec - clock() < MIN_ORDER_LIFE_SEC) {
+      ctx.log(`${side} ${ticks} ${label}: under ${MIN_ORDER_LIFE_SEC} s to expiry, skipped`);
+      continue;
+    }
     try {
       await send(`post ${side} ${lots} @ ${ticks} (fair ${fair}, exp ${expireSec})`, [placeOrderCall(ctx.venue.engine, { market: m.marketId, kind, orderType: ORDER_TYPE.postOnly, priceTicks: ticks, lots, expireTsSec: expireSec, clientId: BigInt(ctx.nowSec), useCredit: true })]);
       rested = true;
@@ -72,5 +83,5 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
       else throw error;
     }
   }
-  return { state: "quoting", placed: rested ? { fairTicks: fair, expireSec, halfSpreadTicks } : null, note: `fair ${fair} → ${pair.bidTicks ?? "-"} / ${pair.askTicks ?? "-"} × ${lots}`, txs };
+  return { state: "quoting", placed: rested ? { fairTicks: fair, expireSec, halfSpreadTicks: placeHalf } : null, note: `fair ${fair} → ${pair.bidTicks ?? "-"} / ${pair.askTicks ?? "-"} × ${lots}`, txs };
 }

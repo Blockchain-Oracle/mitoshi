@@ -50,6 +50,10 @@ export function startSeedMaker(deps: VenueDeps): { stop: () => void } {
       listedMs = Date.now();
     }
     const nowSec = await chainNowSec(client);
+    // The chain clock for the rest of the pass, read once: a pass of ~70 Windows runs for tens of seconds, and a
+    // Window tended late must see the time it is tended at (its phase, its order's expiry), not the pass's start.
+    const offsetMs = nowSec * 1000 - Date.now();
+    const clockSec = () => Math.floor((Date.now() + offsetMs) / 1000);
     const status = deps.sessions.status(nowSec);
     const halts = deps.halts.board();
     // Re-read each Series' newest two indices: the trading Window and, near a boundary, the one listed after it.
@@ -65,9 +69,10 @@ export function startSeedMaker(deps: VenueDeps): { stop: () => void } {
     for (let i = 0; i < jobs.length; i += CONCURRENCY) {
       await Promise.all(jobs.slice(i, i + CONCURRENCY).map(async ({ s, m }) => {
         const label = `${laneKey(s.symbol!, s.lane!, s.cadenceSec)} #${m.index}`;
-        const lane = laneQuote({ lane: s.lane!, symbol: s.symbol!, market: m, nowSec, status, spot: deps.spot, display: deps.display, halts, env });
+        const at = clockSec();
+        const lane = laneQuote({ lane: s.lane!, symbol: s.symbol!, market: m, nowSec: at, status, spot: deps.spot, display: deps.display, halts, env });
         try {
-          const r = await tendWindow({ client, venue, env, dryRun, nowSec, log: deps.log }, s, m, lane, placed.get(m.marketId) ?? null, label);
+          const r = await tendWindow({ client, venue, env, dryRun, nowSec: at, clockSec, log: deps.log }, s, m, lane, placed.get(m.marketId) ?? null, label);
           txCount += r.txs.length;
           if (r.txs.length) recent = [...r.txs.map((t) => `${label} ${t}`), ...recent].slice(0, 20);
           if (r.placed) placed.set(m.marketId, r.placed);

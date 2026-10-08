@@ -1707,10 +1707,18 @@ advance-in-the-buffer for the terminal only (the Markets ticket keeps it), and S
 D-194's "bid (exit) side" is two orders on this engine, not one: an Up holder sells YES into the house's YES bid, and a
 Down holder sells NO, which on the YES book is a buy at the house's ask. A bid-only tail would leave every Down position
 without a buyer in the last minute. **So from lock − 75 the seed maker keeps both sides in an exit tail**, which:
-- quotes half the lots (at least the Series minimum) at twice the half spread (at least 30 ticks wider);
-- places nothing new from lock − 45, so every placement lives at least 15 s (the 2026-09-22 `OrderAlreadyExpired` fees);
-- lets the resting pair expire at lock − 30 rather than cancelling it;
-- never refreshes a pair that already rests to lock − 30.
+- keeps a pair already resting, since it lives to lock − 30, and never refreshes one that rests that long;
+- places only what it must (nothing rests, the fair moved, the guard widened), at half the lots (at least the Series
+  minimum) and twice the half spread (at least 30 ticks wider);
+- places nothing new from lock − 45, and skips any placement the pass reaches with under 8 s left to rest;
+- lets the resting pair expire at lock − 30 rather than cancelling it.
+
+The first build widened every resting pair at lock − 75. On 2026-10-08 that was a send storm at 17:00 ET, when the 5m,
+15m and 60m Windows lock together: one pass took 92 s, and late placements paid fees for `OrderAlreadyExpired`. So the
+tail now widens only new placements, and each Window is tended on the chain clock of its own moment, not the pass's
+start. The same reading found a requote whose cancel landed while its placement was refused by the RPC gateway's rate
+limiter (−32005; viem never retries a raw send). That left the BTC 5m book empty, so the split send now resends the
+same signed bytes with backoff, which can never send twice (`tx/send.ts`, D-134).
 
 A pull (halt, stale spot, Regular close − 120) still cancels at once. The capital stays the ops maker account's pathUSD
 under the per-Window caps (`MM_MAX_CASH_PER_WINDOW` $50 Regular, `MM_ALLDAY_MAX_CASH_PER_WINDOW` $10 24/7, `MM_GAP_MAX_CASH`

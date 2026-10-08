@@ -94,12 +94,13 @@ export async function sendBatch<chain extends Chain>(
   // (F-S7-10, D-156 — capital intake could not be sent at all). Local accounts are unchanged.
   const signed = { ...parameters, ...(!request.sponsored && client.account.type === "json-rpc" ? { feePayer: false as const } : {}), account: client.account, chain: client.chain };
   try {
-    if (hooks.onSigned && client.account.type === "local") return { ...(await sendSplit(client, signed, hooks.onSigned)), fields };
+    if (hooks.onSigned && client.account.type === "local") return { ...(await sendSplit(client, signed, hooks.onSigned, fields.validBefore)), fields };
     const receipt = (await client.sendTransactionSync(signed as never)) as TransactionReceipt;
     return { receipt, hash: receipt.transactionHash, fields };
   } catch (error) {
     const raw = rawOfFailedSend(error);
-    if (!raw || fields.validBefore === undefined) throw error;
+    // A rate-limited send was refused unread: nothing can land, so waiting out its window would only stall the caller.
+    if (!raw || fields.validBefore === undefined || isRateLimited(error)) throw error;
     // The gateway answered the sync send with a 502 (it often does after accepting the tx, S4 X20): the signed bytes
     // name the transaction, and its expiring window bounds how long it can still land. Ask the chain, never resend.
     const receipt = await awaitByHash(client as unknown as WalletClient, keccak256(raw), fields.validBefore);
@@ -108,7 +109,7 @@ export async function sendBatch<chain extends Chain>(
   }
 }
 
-async function sendSplit<chain extends Chain>(client: WalletClient<Transport, chain, Account>, signed: Record<string, unknown>, onSigned: (hash: Hex | null) => void) {
+async function sendSplit<chain extends Chain>(client: WalletClient<Transport, chain, Account>, signed: Record<string, unknown>, onSigned: (hash: Hex | null) => void, validBefore?: number) {
   const account = client.account;
   const request = await prepareTransactionRequest(client, signed as never);
   const chain = client.chain;
@@ -120,8 +121,47 @@ async function sendSplit<chain extends Chain>(client: WalletClient<Transport, ch
   const { Transaction } = await import("viem/tempo");
   const tx = Transaction.deserialize(serializedTransaction as never) as { feePayerSignature?: unknown };
   onSigned(signed.feePayer === true && !tx.feePayerSignature ? null : keccak256(serializedTransaction));
-  const receipt = (await sendRawTransactionSync(client, { serializedTransaction } as never)) as TransactionReceipt;
+  const receipt = await sendRawRetrying(client as unknown as WalletClient, serializedTransaction as Hex, validBefore);
   return { receipt, hash: receipt.transactionHash };
+}
+
+/** Retries of a raw send the gateway rate-limited, backing off 200 ms × 2ⁿ (≈ 6 s in all). */
+export const RAW_SEND_RETRIES = 5;
+const RAW_SEND_BACKOFF_MS = 200;
+
+/** The gateway's rate limiter answered (JSON-RPC −32005 or HTTP 429, D-134): it refused the request before reading it. */
+export function isRateLimited(error: unknown): boolean {
+  let e: unknown = error;
+  for (let depth = 0; depth < 10 && e && typeof e === "object"; depth++) {
+    const x = e as { code?: unknown; status?: unknown; name?: unknown };
+    if (x.code === -32005 || x.status === 429 || x.name === "LimitExceededRpcError") return true;
+    e = (e as { cause?: unknown }).cause;
+  }
+  return false;
+}
+
+/**
+ * The one raw send, sent again with the SAME signed bytes while the gateway rate-limits it — viem never retries a raw
+ * send (`retryCount: 0`, viem 2.56.9). The same bytes are the same transaction, so a retry can never send twice; if a
+ * retry is refused for another reason (an earlier copy landed after all), the chain is asked by hash within the window.
+ * S24.4: one −32005 between a maker's cancel and its placement left a Window's book empty, and CLOSE paid nothing.
+ */
+async function sendRawRetrying(client: WalletClient, serializedTransaction: Hex, validBefore: number | undefined): Promise<TransactionReceipt> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return (await sendRawTransactionSync(client, { serializedTransaction } as never)) as TransactionReceipt;
+    } catch (error) {
+      if (isRateLimited(error) && attempt < RAW_SEND_RETRIES) {
+        await new Promise((r) => setTimeout(r, RAW_SEND_BACKOFF_MS * 2 ** attempt));
+        continue;
+      }
+      if (attempt > 0 && validBefore !== undefined && !isRateLimited(error)) {
+        const receipt = await awaitByHash(client, keccak256(serializedTransaction), validBefore);
+        if (receipt) return receipt;
+      }
+      throw error;
+    }
+  }
 }
 
 /** The expiring window closed with no receipt: the transaction can never land (L-08), so this is a definite failure. */

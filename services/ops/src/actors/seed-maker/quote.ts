@@ -100,6 +100,8 @@ export function makerPhase(i: { nowSec: number; lockAtSec: number; inSession: bo
  */
 export const TAIL_FROM_LOCK_SEC = 75;
 export const STOP_BEFORE_LOCK_SEC = 45;
+/** A placement that would rest less than this is skipped: a pass runs for tens of seconds after the clock it read. */
+export const MIN_ORDER_LIFE_SEC = 8;
 /** The tail's spread: twice the half spread, at least 30 ticks more. Its size: half the lots, at least the minimum. */
 export const tailHalfSpread = (half: number) => Math.max(half * 2, half + 30);
 export const tailLots = (lots: bigint, minLots: bigint) => (lots / 2n > minLots ? lots / 2n : minLots);

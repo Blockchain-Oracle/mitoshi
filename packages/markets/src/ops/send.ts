@@ -85,7 +85,8 @@ export async function sendOps(client: OpsClient, calls: readonly Call[], options
   const nowSec = options.nowSec ?? (await chainNowSec(client));
   let receipt: TransactionReceipt;
   try {
-    ({ receipt } = await sendBatch(client.wallet, { calls, sponsored: false, nonce: { kind: "expiring", validForSec: Math.min(OPS_VALID_FOR_SEC, EXPIRING_NONCE_MAX_SEC) }, nowSec }));
+    // The split send (a no-op hook): its raw send is retried with the same bytes while the gateway rate-limits (S24.4).
+    ({ receipt } = await sendBatch(client.wallet, { calls, sponsored: false, nonce: { kind: "expiring", validForSec: Math.min(OPS_VALID_FOR_SEC, EXPIRING_NONCE_MAX_SEC) }, nowSec }, { onSigned: () => undefined }));
   } catch (error) {
     const name = engineErrorName(error);
     throw new OpsSendError(`send failed${name ? `: ${name}` : `: ${short(error)}`}`, name);

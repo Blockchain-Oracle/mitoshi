@@ -17,12 +17,16 @@ RV-55, RV-97, RV-98.
   trigger); watches the display feed and the book; sells through `placeFor(isBuy=false)` under the EXIT grant within
   the floor; pays its own gas (`sendOps`); publishes on `user:<addr>` ("Trailing stop hit · BTC · Locked +$x"); restart
   safe; non-critical heartbeat.
-- [ ] 24.4 The house's exit tail (D-194, D-204): `seed-maker/{quote,lanes,window}.ts` quote both sides from lock − 75,
-  half the lots at twice the half spread, place nothing new from lock − 45, let the pair lapse at lock − 30 (no cancel),
-  and never churn a pair already resting to lock − 30; pulls still cancel; the capital is the ops maker account under the
-  `MM_*` per-Window caps; the lock−30 cap and the Regular session-close pull stay. Tests: `quote.test.ts` (phases,
-  tail size and spread, minimum life, no churn). Live check: the terminal-trade CI driver closes inside the tail
-  (acceptance S23).
+- [ ] 24.4 The house's exit tail (D-194, D-204): `seed-maker/{quote,lanes,window,index}.ts`. Both sides stay from
+  lock − 75. A pair already resting is kept. New placements are half the lots at twice the half spread. Nothing new is
+  placed from lock − 45. The pair lapses at lock − 30 with no cancel, and a pair already resting to lock − 30 is never
+  churned. Each Window is tended on the chain clock of its moment, and a placement with under 8 s to rest is skipped.
+  Pulls still cancel. A rate-limited raw send goes again with the same bytes (`tx/send.ts`). The capital is the ops
+  maker account under the `MM_*` per-Window caps. The lock−30 cap and the Regular session-close pull stay.
+  Tests: `quote.test.ts` (phases, tail size and spread, minimum life, no churn); `window.test.ts` (a resting pair kept,
+  tail placements, full quotes before, stop vs pull, late placement skipped); `send-split.test.ts` (same-bytes retry,
+  fail-fast). Live check: `scripts/drive/exit-tail-live.ts` shows both sides through a Window's tail, and the
+  terminal-trade CI driver closes inside it (acceptance S23).
 - [ ] 24.5 Terminal: Trail/TP/SL switch to the keeper ("Runs with the app closed"); the EXIT grant's one passkey prompt
   in the Trail/TP/SL drawer ("Keep exits running with the app closed"); a row in `GrantsSection` with revoke.
 - **Gate:** on Moderato the keeper fires a trail with the tab closed, survives a restart, honours the proof floor (a
