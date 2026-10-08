@@ -12,6 +12,27 @@ import type { Hex } from "viem";
 
 export const DATA_STREAMS_HOSTS = { mainnet: "https://api.dataengine.chain.link", testnet: "https://api.testnet-dataengine.chain.link" } as const;
 
+/**
+ * The streams a same-call price proof may name, per venue symbol (context/tempo/15 §2 table, from Chainlink's RDD
+ * `feeds-ethereum-mainnet-arbitrum-1.json`, `contractType: "verifier"`): equities on their RegularHours v11 stream,
+ * crypto on its v3 stream. A symbol missing here has no stream the venue accepts.
+ */
+export const DATA_STREAMS_FEEDS: Readonly<Record<string, Hex>> = {
+  TSLA: "0x000b2dbed1640ead18d37338b75e4755630a900649261baf4ed79d9a749be13d",
+  NVDA: "0x000b6aa036224454037bab103184565f6aa9ea589c3b349f6d8471ee753524b9",
+  AAPL: "0x000bbd87a23775b4c11092ae9a1fc7b3393636ae1dbb9f1ef460f845c0f4cff1",
+  MSFT: "0x000bc4bcae3f338a2496aeee763156b999465bda826a3ccc94987d32a98212ab",
+  META: "0x000bc63e601958daafb805b1eecc3972a0ad231e8c08c0432961b7b5c3251166",
+  GOOGL: "0x000b1a2aa24db17599e5003a09bcd5e2a15ef66f79c2dca4dde108ab923b1e97",
+  AMZN: "0x000bfb41659084e9ea0ea672b12b7878d88511dcac813d82435da65df946f65c",
+  PLTR: "0x000b0a2a7bd663521a7e191c71c9e120825c0419445ac614fb9dcd3eafeb6298",
+  AMD: "0x000b122bc7189267b8c0f0759c71895809633b1aaa0c71ffb31f81ddb5d56849",
+  SPCX: "0x000b4f3c6cbfd4f0ba9c635b5dd3b188338c98a3f6b595615ddfdb3a75dee647",
+  BTC: "0x00039d9e45394f473ab1f050a1b963e6b05351e52d71e507509ada0c95ed75b8",
+  ETH: "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9",
+  SOL: "0x0003b778d3f6b2ac4991302b89cb313f99a42467d6c9c5f96f57c29c0d2bc24f",
+};
+
 export interface DataStreamsEnv {
   host: string;
   apiKey: string;

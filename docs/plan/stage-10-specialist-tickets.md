@@ -14,7 +14,7 @@
 - [ ] 10d Private: `src/products/private/*`; Masayume's budget and lifecycle suites + D-117 + the three-counter
   invariant; private claims stored server-side per account (the reference's browser-only claims break in the app); desk
   service (P-256-safe committed secret, C.2.4).
-- [ ] 10e `/surface` (31861 table + 30538 sparklines); 10d desk from the 27122 swap-ticket layout; web tickets + relay policies per reserve; `/api/prices/{redstone-payload,datastreams-report}`.
+- [x] 10e `/surface` (31861 table + 30538 sparklines); 10d desk from the 27122 swap-ticket layout; web tickets + relay policies per reserve; `/api/prices/{redstone-payload,datastreams-report}`.
 - **Gate:** each product opens on Moderato against S8 maker depth using a real RedStone spot payload; thin books refused
   honestly; UX gate on every ticket. **Rows:** L-36, L-37, L-38, L-39, L-40, L-67.
 
@@ -90,3 +90,8 @@ Moderato deploys, relay policies, D-172…D-177) · `71fbdb3` trunk merge.
 - Local gate setup: containers `s10-pg` (:55441) and `s10-redis` (:56391), a gitignored `web/.env.local` (relay fee
   payer from `~/.config/cwf/testnet/relay-fee-payer.json`, `NEXT_PUBLIC_INDEX_URL` → a CORS pass-through to
   `testnet.mitoshi.xyz/api/index` on :3199), `next dev -p 3110`.
+- 2026-10-08 (trunk): `/api/prices/datastreams-report?symbol=&t=` — the Data Streams sibling of the RedStone payload
+  route: the venue's streams (equities RegularHours v11, crypto v3; `DATA_STREAMS_FEEDS`), latest or the report covering
+  `t`, HMAC on the server, `marketStatus` for v11; without credentials it answers 503 `datastreams-unconfigured` (Q-011),
+  never a made-up report. 10e complete; the register gained the 31861/30538 rows. Left for S10: 10a.4 (a won ticket
+  claimed, refusals recorded, UX gate at 320/390/768/1440 × both themes), the browser gates for 10b–10d, the stage gate.

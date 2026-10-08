@@ -21,3 +21,4 @@ export * from "../mpp";
 export * from "../indexer-api";
 export { cashOutPrivateBet, ClaimRefusedError, createDesk, DeskRefusal, deskHealth, openPrivateBet, windowFacts, type Desk, type DeskOpenInput, type WindowFacts } from "../private/desk";
 export { signPrivateClaim } from "../private/claim";
+export { DATA_STREAMS_FEEDS, dataStreamsEnv, fetchLatestReport, fetchReportAt, v11Summary, type DataStreamsReport } from "../prices/datastreams";
