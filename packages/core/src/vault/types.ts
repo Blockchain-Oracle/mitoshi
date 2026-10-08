@@ -43,6 +43,8 @@ export interface VaultGrant {
   caps: VaultCaps;
   /** What the actor may still spend; proceeds never return here. */
   budgetBase: bigint;
+  /** An EXIT grant's tolerance (v2, S24): it sells at no less than the fair value less this many bps. */
+  exitToleranceBps?: number;
 }
 
 export interface VaultAccount {

@@ -3,9 +3,14 @@
 // take-profit and a stop-loss on what Close pays, which the open tab closes the position at with the one-tap Close.
 // Tradash's grammar: the ROI % · Change % · P&L tabs; a card each with a trigger price linked to the tab's value and
 // Clear; the "Closes at … for …" caption; its validation (`sq`) in exit-value terms; the trailing-stop note. A trigger
-// price is a spot on the fair model ("≈"). The server-side keeper is S24 (D-193): until then they run only while
-// Mitoshi is open, and need a key that signs without a prompt until the Window closes.
+// price is a spot on the fair model ("≈"). A Trading Balance position can hand them to Mitoshi's exit keeper (S24.5,
+// D-193): one passkey confirmation grants EXIT, then every Set is signed by the session key and runs with the app
+// closed; otherwise they run only while Mitoshi is open, and need a key that signs without a prompt until the Window
+// closes.
+import { diagnosisCopy } from "@cwf/core/copy";
 import { useState } from "react";
+import { useTxLifecycle } from "@/components/tx/useTxLifecycle";
+import { useSessionActions, useSessionView } from "@/features/session";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { tapFeedback } from "@/lib/feedback";
 import { notify } from "@/lib/toast";
@@ -15,6 +20,8 @@ import { setExits } from "../entries";
 import { EXIT_MODES, exitCaption, exitError, modeText, priceText, targetFromMode, targetFromPrice, type ExitCtx, type ExitKind, type ExitMode } from "../exits-form";
 import { money, sideWord } from "../format";
 import type { TerminalPosition } from "../terminal-positions";
+import { EXIT_GRANT_SEC, EXIT_TOLERANCE_BPS, serverExitState, useExitKeeper, writeServerExit, type ServerExitState } from "../server-exits";
+import { tradeSettings } from "../settings";
 import type { PositionValue } from "../usePositionValue";
 import { unattendedRefusal, useSignerLasts } from "../useTrail";
 
@@ -64,19 +71,58 @@ function ExitCard({ kind, mode, base, onBase, ctx, asset }: { kind: ExitKind; mo
   );
 }
 
+const pctText = (bps: number) => `${(bps / 100).toFixed(bps % 100 === 0 ? 0 : 1)}%`;
+
+/** Where these exits run: with the app closed (the keeper), after one confirmation, or only in this tab. */
+function KeeperRow({ state, toleranceBps, onGrant, granting }: { state: ServerExitState; toleranceBps: number | undefined; onGrant: () => void; granting: boolean }) {
+  if (state === "unavailable") return <p className="tm-field-hint">{TERMINAL.keeper.tabOnly}</p>;
+  if (state === "live") return <p className="tm-field-hint" data-keeper="live">{TERMINAL.keeper.runs(pctText(toleranceBps ?? EXIT_TOLERANCE_BPS))}</p>;
+  return (
+    <div className="tm-card tm-exit-card" data-keeper="needs-grant">
+      <p className="tm-field-hint">{TERMINAL.keeper.turnOnBody(pctText(EXIT_TOLERANCE_BPS))}</p>
+      <button type="button" className="tm-choice" disabled={granting} onClick={onGrant}>{granting ? TERMINAL.keeper.turningOn : TERMINAL.keeper.turnOn}</button>
+    </div>
+  );
+}
+
 function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionValue | null; onDone: () => void }) {
   const lasts = useSignerLasts();
+  const view = useSessionView();
+  const actions = useSessionActions();
+  const keeper = useExitKeeper();
+  const tx = useTxLifecycle();
+  const [granting, setGranting] = useState(false);
+  const keeperState = serverExitState(p, view, keeper);
+  // The one passkey confirmation (root-signed, never sponsored): the keeper may sell at the floor until it expires.
+  const grant = async () => {
+    if (!keeper) return;
+    tapFeedback();
+    setGranting(true);
+    const outcome = await tx.run({ kind: "vault-grant-exit", actor: keeper, market: null, expiresAtSec: Math.floor(Date.now() / 1000) + EXIT_GRANT_SEC, toleranceBps: EXIT_TOLERANCE_BPS });
+    setGranting(false);
+    const id = `keeper-${p.marketId}`;
+    if (outcome?.status === "confirmed") {
+      await actions.refresh();
+      notify.item({ id, title: TERMINAL.keeper.on, description: TERMINAL.keeper.onBody });
+    } else if (outcome) notify.item({ id, type: "warning", title: TERMINAL.keeper.failed, description: "diagnosis" in outcome ? diagnosisCopy(outcome.diagnosis.kind).headline : undefined });
+  };
   const [mode, setMode] = useState<ExitMode>("roi");
   // Seeded once per opening (the drawer's content unmounts on close), so a positions refresh never resets an edit.
   const [tp, setTp] = useState(p.tpBase);
   const [sl, setSl] = useState(p.slBase);
   const ctx: ExitCtx = { costBase: p.costBase, maxBase: p.heldRaw, nowBase: value?.valueBase ?? null, refSpot: p.entrySpot ?? value?.spot ?? null, valueAt: value?.valueAt ?? none, spotAt: value?.spotAt ?? none };
   const blocked = exitError("tp", tp, false, ctx) !== null || exitError("sl", sl, false, ctx) !== null;
-  const save = () => {
+  const save = async () => {
     tapFeedback();
     const id = `exits-${p.marketId}`;
-    if ((tp !== null || sl !== null) && !lasts(p)) return void notify.item({ id, type: "warning", ...unattendedRefusal(p) });
+    // The keeper sells under the EXIT grant: only the tab's own Close needs a key that lasts the Window.
+    if ((tp !== null || sl !== null) && keeperState !== "live" && !lasts(p)) return void notify.item({ id, type: "warning", ...unattendedRefusal(p) });
     setExits(p.entryKey, p.side, { tpBase: tp, slBase: sl }, value?.spot ?? p.entrySpot ?? 0);
+    if (keeperState === "live") {
+      const trail = p.trailStop !== null;
+      const why = await writeServerExit(p, { takeProfitBase: tp, stopLossBase: sl, trailBps: trail ? Math.round(tradeSettings().trailPct * 10_000) : null, trailStopE8: trail ? BigInt(Math.round(p.trailStop! * 1e8)) : null }, view, actions.signExit);
+      if (why) notify.item({ id: `${id}-keeper`, type: "warning", title: TERMINAL.keeper.notStored(p.asset), description: TERMINAL.keeper.notStoredBody(why) });
+    }
     notify.item({ id, title: TERMINAL.exits.saved(p.asset), description: [tp !== null ? TERMINAL.exits.when(TERMINAL.exits.tp, `≥ ${money(tp)}`) : null, sl !== null ? TERMINAL.exits.when(TERMINAL.exits.sl, `≤ ${money(sl)}`) : null].filter(Boolean).join(" · ") || TERMINAL.exits.off });
     onDone();
   };
@@ -94,7 +140,8 @@ function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionV
       <ExitCard kind="tp" mode={mode} base={tp} onBase={setTp} ctx={ctx} asset={p.asset} />
       <ExitCard kind="sl" mode={mode} base={sl} onBase={setSl} ctx={ctx} asset={p.asset} />
       {p.trailStop !== null ? <p className="tm-field-hint">{TERMINAL.exits.trailing(usd(p.trailStop))}</p> : null}
-      <button type="button" className="tm-btn tm-btn-cta" disabled={blocked} onClick={save}>{TERMINAL.exits.save}</button>
+      <KeeperRow state={keeperState} toleranceBps={view.exitGrant?.exitToleranceBps} onGrant={() => void grant()} granting={granting} />
+      <button type="button" className="tm-btn tm-btn-cta" disabled={blocked} onClick={() => void save()}>{TERMINAL.exits.save}</button>
     </>
   );
 }

@@ -45,13 +45,21 @@ function LiveGrant({ grant, thisDevice, nowSec, onStop, stopping }: { grant: Vau
         </div>
         <span className="rounded-full border border-border-strong px-2 py-0.5 type-label-micro text-ink">{expired ? G.expired : G.active}</span>
       </div>
-      <dl className="grid grid-cols-1 gap-1 type-caption text-ink-secondary sm:grid-cols-2">
-        <div><dt className="inline">{G.scope}: </dt><dd className="inline text-ink">{G.scopeValue(usd(grant.caps.maxStakePerTradeBase), usd(grant.caps.maxDailySpendBase), grant.caps.maxOpenPositions)}</dd></div>
-        <div><dt className="inline">{G.left}: </dt><dd className="numbers inline text-ink">{G.leftValue(usd(leftNowBase(grant, nowSec)), usd(grant.budgetBase))}</dd></div>
-        <div><dt className="inline">{G.spentToday}: </dt><dd className="numbers inline text-ink">{usd(spentTodayBase(grant, nowSec))}</dd></div>
-        <div><dt className="inline">{G.expires}: </dt><dd className="inline text-ink">{whenText(BigInt(grant.expiresAtSec))}</dd></div>
-      </dl>
-      <p className="type-caption text-ink-secondary">{G.never}</p>
+      {grant.kind === "exit" ? (
+        // Sell-only, no budget (S24): its caps and spend would read as zeros, so the row says what it does instead.
+        <dl className="grid grid-cols-1 gap-1 type-caption text-ink-secondary">
+          <div><dt className="inline">{G.scope}: </dt><dd className="inline text-ink">{G.exitScope(grant.exitToleranceBps !== undefined ? `${(grant.exitToleranceBps / 100).toFixed(1)}%` : null, grant.caps.market ? shortHex(grant.caps.market) : null)}</dd></div>
+          <div><dt className="inline">{G.expires}: </dt><dd className="inline text-ink">{whenText(BigInt(grant.expiresAtSec))}</dd></div>
+        </dl>
+      ) : (
+        <dl className="grid grid-cols-1 gap-1 type-caption text-ink-secondary sm:grid-cols-2">
+          <div><dt className="inline">{G.scope}: </dt><dd className="inline text-ink">{G.scopeValue(usd(grant.caps.maxStakePerTradeBase), usd(grant.caps.maxDailySpendBase), grant.caps.maxOpenPositions)}</dd></div>
+          <div><dt className="inline">{G.left}: </dt><dd className="numbers inline text-ink">{G.leftValue(usd(leftNowBase(grant, nowSec)), usd(grant.budgetBase))}</dd></div>
+          <div><dt className="inline">{G.spentToday}: </dt><dd className="numbers inline text-ink">{usd(spentTodayBase(grant, nowSec))}</dd></div>
+          <div><dt className="inline">{G.expires}: </dt><dd className="inline text-ink">{whenText(BigInt(grant.expiresAtSec))}</dd></div>
+        </dl>
+      )}
+      <p className="type-caption text-ink-secondary">{grant.kind === "exit" ? G.exitNever : G.never}</p>
       {onStop ? (
         <button type="button" onClick={onStop} disabled={stopping} className="min-h-touch self-start rounded-md border border-border-strong px-4 type-body-strong text-ink disabled:opacity-50">
           {stopping ? G.stopping : G.stop}

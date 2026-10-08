@@ -7,7 +7,8 @@
  * runtime outside the app tree; every reader subscribes to exactly its slice (`useSyncExternalStore`). Light: no chain
  * code here; the runtime that fills it is a lazy island (§3.1).
  */
-import type { Address } from "@cwf/core";
+import type { Address, Hex } from "@cwf/core";
+import type { ExitTrigger } from "@cwf/core/exits";
 import type { MarketsSubmitter } from "@cwf/markets";
 import { useSyncExternalStore } from "react";
 import { OFF, type SessionView } from "./view";
@@ -22,6 +23,8 @@ export interface SessionActions {
   refresh(): Promise<void>;
   /** Books a confirmed tap into the view at once (optimistic "Spent today"); the next read confirms or corrects it. */
   bookTap(costBase: bigint): void;
+  /** The armed session key's signature on an exit trigger (S24.5, D-209) — no prompt; null when no key signs here. */
+  signExit(t: ExitTrigger): Promise<Hex | null>;
 }
 
 export const NO_ACTIONS: SessionActions = {
@@ -30,6 +33,7 @@ export const NO_ACTIONS: SessionActions = {
   forgetKey: async () => undefined,
   refresh: async () => undefined,
   bookTap: () => undefined,
+  signExit: async () => null,
 };
 
 interface SessionState {

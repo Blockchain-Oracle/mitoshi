@@ -11,8 +11,9 @@
  *   (they pay `msg.sender` only or move nobody's money);
  * - `moveToPrivate` is not sponsored (Q-021 default, Masayume's list).
  */
-import { encodeFunctionData, type Address, type Hex } from "viem";
+import { encodeFunctionData, zeroHash, type Address, type Hex } from "viem";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
+import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
 import { diagnosis, formatBaseUnits, GRANT_KIND_INDEX, USD_DECIMALS, type GrantTerms, type TxIntent, type VaultIntent } from "@cwf/core";
 import { approveCall, type Call } from "../tx/batch";
 import type { EncodeContext, EncodeResult } from "../submitter/encoders";
@@ -63,6 +64,8 @@ export function summarizeVault(intent: VaultIntent, decimals = USD_DECIMALS): st
       return `settle ${intent.marketId.slice(0, 10)} into the Trading Balance`;
     case "vault-sweep":
       return `sweep the vault's engine credit on ${intent.marketId.slice(0, 10)}`;
+    case "vault-grant-exit":
+      return `keep exits running with the app closed — sells at no less than ${(intent.toleranceBps / 100).toFixed(1)}% under fair value`;
   }
 }
 
@@ -93,6 +96,12 @@ function callsOf(vault: Address, collateral: Address, intent: VaultIntent): { ca
       return { calls: [crankSettleCall(vault, intent.owner, intent.marketId)], sponsored: true };
     case "vault-sweep":
       return { calls: [vaultCall(vault, "sweep", [intent.marketId])], sponsored: true };
+    case "vault-grant-exit":
+      // v2's own function (`VaultExits.grantExit`); never sponsored — the relay's v2 policy refuses it too.
+      return {
+        calls: [{ to: vault, data: encodeFunctionData({ abi: eventVaultV2Abi, functionName: "grantExit", args: [intent.actor, (intent.market ?? zeroHash) as Hex, BigInt(intent.expiresAtSec), intent.toleranceBps] }) }],
+        sponsored: false,
+      };
   }
 }
 
@@ -104,6 +113,7 @@ export function encodeVaultIntent(intent: TxIntent, ctx: EncodeContext): EncodeR
   // A withdraw or a revoke may name a previous Trading Balance to empty (S24.2); everything else goes to the current one.
   const deployment = vaultDeploymentAt(ctx.chainId, intent.kind === "vault-withdraw" || intent.kind === "vault-revoke" ? intent.vault : undefined);
   if (!deployment) return { ok: false, diagnosis: diagnosis("not-deployed", `EventVault is not deployed on chain ${ctx.chainId}`) };
+  if (intent.kind === "vault-grant-exit" && deployment.version !== 2) return { ok: false, diagnosis: diagnosis("not-deployed", "the EXIT grant needs the current Trading Balance (v2)") };
   if ("amountBase" in intent && intent.amountBase <= 0n) return { ok: false, diagnosis: diagnosis("below-min-quantity", "the amount must be above zero", { errorName: "ZeroAmount" }) };
   const { calls, sponsored } = callsOf(deployment.eventVault, deployment.collateral, intent);
   return { ok: true, value: { area: deployment.version === 2 ? "vault2" : "vault", calls, sponsored, summary: summarizeVault(intent) } };

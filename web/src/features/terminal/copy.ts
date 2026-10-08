@@ -248,7 +248,7 @@ export const TERMINAL = {
   exits: {
     title: (side: string, symbol: string) => `TP / SL · ${side} ${symbol}`,
     open: "TP / SL",
-    body: "Close automatically when what Close pays reaches a target — only while Mitoshi is open.",
+    body: "Close automatically when what Close pays reaches a target.",
     tp: "Take profit",
     sl: "Stop loss",
     off: "Off",
@@ -281,6 +281,23 @@ export const TERMINAL = {
     tpHit: (symbol: string) => `Take profit hit · ${symbol}`,
     slHit: (symbol: string) => `Stop loss hit · ${symbol}`,
     now: (amount: string) => `Close pays ${amount} now`,
+  },
+  /** Exits with the app closed (S24.5, D-193): the EXIT grant and Mitoshi's exit keeper. */
+  keeper: {
+    runs: (pct: string) => `Runs with the app closed — Mitoshi's exit keeper sells at no less than ${pct} under fair value.`,
+    tabOnly: "Runs only while Mitoshi is open.",
+    turnOn: "Keep exits running with the app closed",
+    turnOnBody: (pct: string) =>
+      `One passkey confirmation. Mitoshi's exit keeper may then sell your Trading Balance positions when a Trail, take-profit or stop-loss you set is reached — never below the fair value less ${pct}, never buy or withdraw. Stop it any time in Settings.`,
+    turningOn: "Confirm with your passkey…",
+    on: "Exits now run with the app closed",
+    onBody: "Set a Trail, take-profit or stop-loss and it runs without this tab.",
+    failed: "Exits still run only while Mitoshi is open",
+    noSession: "one-tap isn't armed on this device",
+    notStored: (symbol: string) => `Set on this device only · ${symbol}`,
+    notStoredBody: (why: string) => `The keeper didn't take it (${why}); it runs while Mitoshi is open.`,
+    sold: (paid: string, pnl: string | null) => `Sold for ${paid}${pnl ? ` · Locked ${pnl}` : ""} — with the app closed`,
+    armedBody: (pct: string) => `Closes if the price comes back ${pct}% — runs with the app closed`,
   },
   trail: {
     armed: (symbol: string) => `Trailing stop armed · ${symbol}`,

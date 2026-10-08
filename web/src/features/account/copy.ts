@@ -53,7 +53,7 @@ export const ACCOUNT_PAGE = {
     notDeployed: "The Trading Balance isn't on this network yet.",
     none: "No live grants. Nothing spends from your Trading Balance but you.",
     kind: { session: "Tap-trading key", executor: "Reply trading (X)", strategy: "Strategy agent", exit: "Exits with the app closed" } as const,
-    kindByIndex: ["Tap-trading key", "Reply trading (X)", "Strategy agent"] as readonly string[],
+    kindByIndex: ["Tap-trading key", "Reply trading (X)", "Strategy agent", "Exits with the app closed"] as readonly string[],
     thisDevice: "this device",
     key: "Key",
     active: "Active",
@@ -65,6 +65,10 @@ export const ACCOUNT_PAGE = {
     spentToday: "Spent today",
     expires: "Ends",
     never: "Never: withdraw, send money anywhere, or spend past these caps.",
+    /** The EXIT grant (S24, D-193): Mitoshi's exit keeper, sell-only, at the vault's fair-value floor. */
+    exitScope: (tolerancePct: string | null, market: string | null) =>
+      `sell your Trading Balance positions${market ? ` in ${market}` : ""} when your Trail, take-profit or stop-loss is hit — never below the fair value${tolerancePct ? ` less ${tolerancePct}` : ""}`,
+    exitNever: "Never: buy, withdraw, or send money anywhere. Sales pay your Trading Balance.",
     stop: "Stop",
     stopping: "Stopping…",
     stopAll: (n: number) => `Hold to stop all ${n}`,

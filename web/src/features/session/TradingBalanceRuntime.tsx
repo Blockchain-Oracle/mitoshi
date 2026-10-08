@@ -9,8 +9,9 @@
  * are reconciled once per key on load — by receipt, or after `validBefore` by the vault's own events — and announced;
  * nothing is re-sent (AD-3, L-08).
  */
-import type { Address, VaultSnapshot } from "@cwf/core";
-import { createLocalStorageJournal, forgetSessionKey, generateSessionKey, loadSessionKey, nowSec, recoverUnresolved, saveSessionKey, sessionKeySession, vaultReconciler, type MarketsSubmitter, type RecoveryResult, type SessionKeyRecord } from "@cwf/markets";
+import type { Address, Hex, VaultSnapshot } from "@cwf/core";
+import { exitTriggerTypedData, type ExitTrigger } from "@cwf/core/exits";
+import { createLocalStorageJournal, forgetSessionKey, generateSessionKey, loadSessionKey, nowSec, recoverUnresolved, saveSessionKey, sessionKeyAccount, sessionKeySession, vaultReconciler, type MarketsSubmitter, type RecoveryResult, type SessionKeyRecord } from "@cwf/markets";
 import { useVaultSnapshot } from "@cwf/markets/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { RECOVERY } from "@/features/recovery/copy";
@@ -27,6 +28,7 @@ export interface RuntimeState {
   ensureKey: () => Promise<Address | null>;
   freshKey: () => Promise<Address | null>;
   forgetKey: () => Promise<void>;
+  signExit: (t: ExitTrigger) => Promise<Hex | null>;
 }
 
 const recovered = new Set<string>();
@@ -89,13 +91,22 @@ export default function TradingBalanceRuntime({ owner, publish }: { owner: Addre
     setStored({ owner, record: fresh });
     return fresh.address;
   }, [owner]);
+  // An exit trigger (S24.5, D-209): the armed key signs it with no prompt — the same key that signs every tap.
+  const signExit = useCallback(
+    async (t: ExitTrigger): Promise<Hex | null> => {
+      if (!signs || !record) return null;
+      const account = sessionKeyAccount(record) as unknown as { signTypedData: (d: ReturnType<typeof exitTriggerTypedData>) => Promise<Hex> };
+      return account.signTypedData(exitTriggerTypedData(t));
+    },
+    [signs, record],
+  );
   const forgetKey = useCallback(async () => {
     await forgetSessionKey(TEMPO_CHAIN_ID, owner);
     setStored({ owner, record: null });
   }, [owner]);
 
   useEffect(() => {
-    publish({ snapshot, keyLoaded: keyLoaded || !deployed, keyAddress: record?.address ?? null, submitter: session?.submitter ?? null, ensureKey, freshKey, forgetKey });
-  }, [publish, snapshot, keyLoaded, deployed, record, session, ensureKey, freshKey, forgetKey]);
+    publish({ snapshot, keyLoaded: keyLoaded || !deployed, keyAddress: record?.address ?? null, submitter: session?.submitter ?? null, ensureKey, freshKey, forgetKey, signExit });
+  }, [publish, snapshot, keyLoaded, deployed, record, session, ensureKey, freshKey, forgetKey, signExit]);
   return null;
 }

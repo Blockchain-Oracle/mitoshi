@@ -20,7 +20,7 @@ import { deriveStatus, OFF, type SessionView } from "./view";
 
 const TradingBalanceRuntime = dynamic(() => import("./TradingBalanceRuntime"), { ssr: false });
 
-const IDLE: RuntimeState = { snapshot: undefined, keyLoaded: false, keyAddress: null, submitter: null, ensureKey: NO_ACTIONS.ensureKey, freshKey: NO_ACTIONS.freshKey, forgetKey: NO_ACTIONS.forgetKey };
+const IDLE: RuntimeState = { snapshot: undefined, keyLoaded: false, keyAddress: null, submitter: null, ensureKey: NO_ACTIONS.ensureKey, freshKey: NO_ACTIONS.freshKey, forgetKey: NO_ACTIONS.forgetKey, signExit: NO_ACTIONS.signExit };
 const MAX_TIMEOUT_MS = 2_147_000_000;
 
 export function TradingBalanceProvider({ children }: { children: ReactNode }) {
@@ -57,6 +57,7 @@ export function TradingBalanceProvider({ children }: { children: ReactNode }) {
       availableBase: snapshot ? snapshot.account.availableBase : null,
       deployed: snapshot !== null,
       vault: snapshot?.deployment.eventVault ?? null,
+      exitGrant: snapshot?.grants.exit ?? null,
     };
     // expiryFlip: the one time-driven re-derivation.
   }, [owner, passkey, runtime.snapshot, runtime.keyLoaded, runtime.keyAddress, expiryFlip]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -79,8 +80,8 @@ export function TradingBalanceProvider({ children }: { children: ReactNode }) {
     if (client && owner) await Promise.all([client.invalidateQueries({ queryKey: keys.vault(owner) }), client.invalidateQueries({ queryKey: keys.balanceSheet(owner) })]);
   }, [client, owner]);
   const actions = useMemo<SessionActions>(
-    () => ({ ensureKey: runtime.ensureKey, freshKey: runtime.freshKey, forgetKey: runtime.forgetKey, refresh, bookTap }),
-    [runtime.ensureKey, runtime.freshKey, runtime.forgetKey, refresh, bookTap],
+    () => ({ ensureKey: runtime.ensureKey, freshKey: runtime.freshKey, forgetKey: runtime.forgetKey, refresh, bookTap, signExit: runtime.signExit }),
+    [runtime.ensureKey, runtime.freshKey, runtime.forgetKey, refresh, bookTap, runtime.signExit],
   );
 
   const outerTap = useContext(TapSubmitterContext);

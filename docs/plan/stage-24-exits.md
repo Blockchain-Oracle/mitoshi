@@ -54,6 +54,13 @@ RV-55, RV-97, RV-98.
   terminal-trade CI driver closes inside it (acceptance S23).
 - [ ] 24.5 Terminal: Trail/TP/SL switch to the keeper ("Runs with the app closed"); the EXIT grant's one passkey prompt
   in the Trail/TP/SL drawer ("Keep exits running with the app closed"); a row in `GrantsSection` with revoke.
+  Built: the TP/SL drawer says where its exits run — "Runs with the app closed" (the keeper, at the grant's tolerance),
+  "Keep exits running with the app closed" (one passkey confirmation: `vault-grant-exit`, root-signed, never
+  sponsored; 15 %, 30 days) or "Runs only while Mitoshi is open"; Set and TRAIL write the position's whole trigger
+  (the session key signs, `signExit`, no prompt); the tab never fires a position the keeper runs; the keeper's `exit`
+  becomes the "… hit · BTC — Sold for $x · Locked +$y — with the app closed" toast; Grants lists the EXIT grant as
+  sell-only with its tolerance and Stop. The keeper's address comes from ops `/exits/keeper`. Test: where a position's
+  exits run (`server-exits.test.ts`). Live check: after the deploy and RedStone's key (D-210).
 - **Gate:** on Moderato the keeper fires a trail with the tab closed, survives a restart, honours the proof floor (a
   sell below it reverts), and is revoked from `/settings/account`; v1 balances withdraw and v1 positions crank; house
   bids visible until T−30 s and gone after; every tx in `acceptance/S24.md` after `cast receipt`. **Rows:** RV-51,

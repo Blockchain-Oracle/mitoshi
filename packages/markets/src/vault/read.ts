@@ -8,6 +8,7 @@
  */
 import { getAddress, keccak256, encodeAbiParameters, zeroHash, type Address, type Hex } from "viem";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
+import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
 import { grantKindOf, grantKindsOf, GRANT_KINDS, toMarketId, USD_DECIMALS, type GrantKind, type MarketId, type Reading, type VaultDeployment, type VaultGrant, type VaultHoldings, type VaultSnapshot } from "@cwf/core";
 import { deploymentOf } from "../deployments";
 import { getPublicClient } from "../runtime/read-runtime";
@@ -120,6 +121,11 @@ export async function readVaultSnapshot(wallet: Address, vault?: Address | null)
   live.forEach(({ kind, id }, i) => {
     grants[kind] = toVaultGrant(id, tuples[i]!);
   });
+  // v2's EXIT grant sells at the fair value less its own tolerance (S24): one more read, only when there is one.
+  if (grants.exit) {
+    const bps = (await client.readContract({ address: contract.address, abi: eventVaultV2Abi, functionName: "exitToleranceBps", args: [grants.exit.grantId] })) as number;
+    grants.exit = { ...grants.exit, exitToleranceBps: Number(bps) };
+  }
   const a = account as unknown as { available: bigint; privateAvailable: bigint; totalDeposited: bigint; totalWithdrawn: bigint };
   return {
     deployment,

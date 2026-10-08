@@ -19,6 +19,7 @@ import { untilText, USD_DECIMALS } from "./format";
 import { useCommittedSpot } from "./live";
 import { TRADE_COOKIE } from "./route";
 import { useTradeSettings, wantedStakeBase } from "./settings";
+import { useServerExitFeed } from "./server-exits";
 import { useTerminalPositions } from "./terminal-positions";
 import { useTerminalWindow } from "./useTerminalWindow";
 
@@ -78,6 +79,8 @@ export function useTerminalState(symbol: string) {
 
   const positions = useTerminalPositions(address, win.set);
   const active = positions.find((p) => p.marketId === market?.marketId) ?? null;
+  // What the exit keeper does with the app closed (S24.5): its sales as toasts, costed against the position held.
+  useServerExitFeed(view.owner, (marketId, side) => positions.find((p) => p.via === "vault" && p.marketId.toLowerCase() === marketId.toLowerCase() && p.side === side)?.costBase ?? null);
 
   // The chart's overlay: the Line, the newest signed value, and the Entry of a position on this Window. Written to a
   // ref the chart reads every frame (no re-render per tick).

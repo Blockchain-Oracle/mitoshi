@@ -6,7 +6,7 @@
 // when the key that would sign the Close expires before the Window does.
 import { useSigner } from "@cwf/markets/react";
 import { useCallback, useEffect, useRef } from "react";
-import { useSessionView } from "@/features/session";
+import { useSessionActions, useSessionView } from "@/features/session";
 import { tapFeedback } from "@/lib/feedback";
 import { notify } from "@/lib/toast";
 import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
@@ -16,6 +16,7 @@ import { rememberEntry } from "./entries";
 import type { ExitReason } from "@cwf/core/exits";
 import { exitHit, ratchet, trailEligible, trailHit, trailStart } from "./position-value";
 import { tradeSettings } from "./settings";
+import { keeperRuns, serverExitState, useExitKeeper, writeServerExit } from "./server-exits";
 import type { TerminalPosition } from "./terminal-positions";
 import type { PositionValue } from "./usePositionValue";
 import { trailWords } from "./ui/TradeButtons";
@@ -45,29 +46,39 @@ export function useSignerLasts() {
   return useCallback((p: TerminalPosition) => signerExpiryOf(p, view, address) >= p.expirySec, [address, view]);
 }
 
-/** Arms or removes the trail on a position (the TRAIL button). */
+/** Arms or removes the trail on a position (the TRAIL button); with the keeper running it (S24.5), it is written there too. */
 export function useTrailToggle() {
   const { address } = useSigner();
   const view = useSessionView();
+  const actions = useSessionActions();
+  const keeper = useExitKeeper();
   return useCallback(
     (p: TerminalPosition, v: PositionValue | null) => {
       tapFeedback();
       const id = `trail-${p.marketId}`;
+      const server = serverExitState(p, view, keeper) === "live";
+      // A trail written to the keeper carries the position's take-profit and stop-loss too (a write replaces the last).
+      const toKeeper = (trail: { bps: number; stop: number } | null) =>
+        void writeServerExit(p, { takeProfitBase: p.tpBase, stopLossBase: p.slBase, trailBps: trail?.bps ?? null, trailStopE8: trail ? BigInt(Math.round(trail.stop * 1e8)) : null }, view, actions.signExit).then(
+          (why) => why && notify.item({ id: `${id}-keeper`, type: "warning", title: TERMINAL.keeper.notStored(p.asset), description: TERMINAL.keeper.notStoredBody(why) }),
+        );
       if (p.trailStop !== null) {
         rememberEntry(p.entryKey, p.side, p.entrySpot ?? 0, null);
+        if (server) toKeeper(null);
         return void notify.item({ id, title: TERMINAL.trail.off(p.asset) });
       }
       const pct = tradeSettings().trailPct;
       if (!v || v.spot === null || v.breakEven === null || !trailEligible(p.side, v.spot, v.breakEven, pct)) {
         return void notify.item({ id, type: "warning", title: TERMINAL.buttons.needMove(trailWords(pct)) });
       }
-      // The Close a hit sends must sign without a prompt until the Window closes.
-      if (signerExpiryOf(p, view, address) < p.expirySec) return void notify.item({ id, type: "warning", ...unattendedRefusal(p) });
+      // The tab's Close a hit sends must sign without a prompt until the Window closes; the keeper's sale needs no key.
+      if (!server && signerExpiryOf(p, view, address) < p.expirySec) return void notify.item({ id, type: "warning", ...unattendedRefusal(p) });
       const stop = trailStart(p.side, v.spot, v.breakEven, pct);
       rememberEntry(p.entryKey, p.side, p.entrySpot ?? v.spot, stop);
-      notify.item({ id, title: TERMINAL.trail.armed(p.asset), description: TERMINAL.trail.armedBody(trailWords(pct)) });
+      if (server) toKeeper({ bps: Math.round(pct * 10_000), stop });
+      notify.item({ id, title: TERMINAL.trail.armed(p.asset), description: server ? TERMINAL.keeper.armedBody(trailWords(pct)) : TERMINAL.trail.armedBody(trailWords(pct)) });
     },
-    [address, view],
+    [address, view, actions, keeper],
   );
 }
 
@@ -83,7 +94,8 @@ export function useRowTrail(p: TerminalPosition, v: PositionValue, close: (p: Te
   latest.current = { p, v, close };
   useEffect(() => {
     const { p: pos, v: val, close: fire } = latest.current;
-    if (val.locked || val.valueBase === null) return;
+    // The keeper runs this one (S24.5): it sells with the app open or closed, so the tab doesn't race it.
+    if (val.locked || val.valueBase === null || keeperRuns(pos.marketId, pos.side)) return;
     const hit = exitHit(val.valueBase, pos.tpBase, pos.slBase);
     if (hit) {
       if (Date.now() - lastTry.current < RETRY_MS) return;
@@ -95,7 +107,7 @@ export function useRowTrail(p: TerminalPosition, v: PositionValue, close: (p: Te
     const { p: pos, v: val, close: fire } = latest.current;
     if (pos.trailStop === null || val.spot === null || val.locked) return;
     if (trailHit(pos.side, pos.trailStop, val.spot)) {
-      if (Date.now() - lastTry.current < RETRY_MS) return;
+      if (keeperRuns(pos.marketId, pos.side) || Date.now() - lastTry.current < RETRY_MS) return;
       lastTry.current = Date.now();
       void fire(pos, val, "trail");
       return;

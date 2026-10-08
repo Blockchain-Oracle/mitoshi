@@ -119,7 +119,13 @@ export type VaultIntent =
   | { kind: "vault-revoke"; grantId: bigint; vault?: Address }
   /** Permissionless: anyone may crank a settled Window into its owner's balance. */
   | { kind: "vault-crank-settle"; owner: Address; marketId: MarketId }
-  | { kind: "vault-sweep"; marketId: MarketId };
+  | { kind: "vault-sweep"; marketId: MarketId }
+  /**
+   * The EXIT grant (S24, D-193; v2 only): `actor` — the exit keeper — may sell this owner's positions (in `market`, or
+   * any Window for null) at no less than the fair value less `toleranceBps`, until `expiresAtSec`. Root-signed, never
+   * sponsored; replaces a live EXIT grant.
+   */
+  | { kind: "vault-grant-exit"; actor: Address; market: MarketId | null; expiresAtSec: number; toleranceBps: number };
 
 export type TxIntent =
   | { kind: "approve"; token: Address; spender: Address; amountBase: bigint }
