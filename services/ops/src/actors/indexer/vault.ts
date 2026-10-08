@@ -5,7 +5,7 @@
  * never replays them. Applied events go to the owner's `user:` topic (the web refreshes its Trading Balance).
  */
 import type { IndexWriter, IdxEvent } from "@cwf/db/idx";
-import { fetchVaultEvents, vaultVenueOf, type ChainEvent, type OpsClient } from "@cwf/markets/ops";
+import { fetchVaultEvents, vaultVenuesOf, type ChainEvent, type OpsClient, type VaultVenue } from "@cwf/markets/ops";
 import type { VenueDeps } from "../../runtime";
 import { grow, nextRange, shrink, topicsOf, type WindowState } from "./window";
 
@@ -17,9 +17,12 @@ export interface VaultFollower {
   pass(head: number): Promise<string>;
 }
 
-export function vaultFollower(deps: Pick<VenueDeps, "bus">, client: OpsClient, writer: IndexWriter): VaultFollower | null {
-  const venue = vaultVenueOf(client.chainId);
-  if (!venue) return null;
+/** One follower per Trading Balance on the chain (S24.2: v2, then v1), each with its own cursor. */
+export function vaultFollowers(deps: Pick<VenueDeps, "bus">, client: OpsClient, writer: IndexWriter): VaultFollower[] {
+  return vaultVenuesOf(client.chainId).map((venue) => vaultFollower(deps, client, writer, venue));
+}
+
+export function vaultFollower(deps: Pick<VenueDeps, "bus">, client: OpsClient, writer: IndexWriter, venue: VaultVenue): VaultFollower {
   const state: WindowState = { size: 100_000 };
   const stats: VaultFollower["stats"] = { windows: 0, inserted: 0, errors: 0, cursor: null };
   return {
@@ -28,7 +31,7 @@ export function vaultFollower(deps: Pick<VenueDeps, "bus">, client: OpsClient, w
       const cursor = (await writer.cursor(client.chainId, venue.vault)) ?? Number(venue.deployBlock) - 1;
       stats.cursor = cursor;
       const range = nextRange(cursor, head, state);
-      if (!range) return `vault caught up at ${cursor}`;
+      if (!range) return `vault ${venue.vault.slice(0, 8)} caught up at ${cursor}`;
       let events: ChainEvent[];
       try {
         events = await fetchVaultEvents(client, venue.vault, BigInt(range.from), BigInt(range.to));
@@ -43,7 +46,7 @@ export function vaultFollower(deps: Pick<VenueDeps, "bus">, client: OpsClient, w
       stats.inserted += result.inserted;
       stats.cursor = range.to;
       for (const e of result.newEvents) for (const topic of topicsOf(e)) deps.bus.publish(topic, e.name, { ...e.data, market: typeof e.data.marketId === "string" ? e.data.marketId : null, txHash: e.txHash, logIndex: e.logIndex, blockTimeSec: e.blockTimeSec });
-      return `vault ${range.live ? "live" : "backfill"} ${range.from}..${range.to} (+${result.inserted})`;
+      return `vault ${venue.vault.slice(0, 8)} ${range.live ? "live" : "backfill"} ${range.from}..${range.to} (+${result.inserted})`;
     },
   };
 }

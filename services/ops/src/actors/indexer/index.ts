@@ -13,7 +13,7 @@ import { indexWriter, indexReader, type IdxEvent } from "@cwf/db/idx";
 import { createOpsClient, fetchEngineEvents, headBlock, venueOf, type ChainEvent, type OpsClient, type Venue } from "@cwf/markets/ops";
 import { runActor, type PassResult, type VenueDeps } from "../../runtime";
 import { BACKFILL_MAX, grow, nextRange, shrink, topicsOf, type WindowState } from "./window";
-import { vaultFollower } from "./vault";
+import { vaultFollowers } from "./vault";
 
 const LIVE_MS = 1_000;
 // The pass's detail line carries the index's counts for /health and the soak. They are full-table counts (≈ 0.75 s of
@@ -38,15 +38,20 @@ export function startIndexer(deps: VenueDeps): { stop: () => void } {
     if (!lastStatus || now - lastStatus.atMs >= ms) lastStatus = { atMs: now, row: await reader.status() };
     return lastStatus.row;
   };
-  const vault = vaultFollower(deps, client, writer);
+  const vaults = vaultFollowers(deps, client, writer);
   const vaultPass = async (head: number): Promise<string> => {
-    if (!vault) return "vault not deployed";
-    try {
-      return await vault.pass(head);
-    } catch (error) {
-      return `vault window failed (${String(error).slice(0, 120)}); retried next pass`;
+    if (vaults.length === 0) return "vault not deployed";
+    const lines: string[] = [];
+    for (const v of vaults) {
+      try {
+        lines.push(await v.pass(head));
+      } catch (error) {
+        lines.push(`vault window failed (${String(error).slice(0, 120)}); retried next pass`);
+      }
     }
+    return lines.join(" · ");
   };
+  const vault = vaults.length ? { stats: vaults.map((v) => v.stats) } : null;
 
   /** A `seq` hole: re-read that Market's logs from its first known block (or the deploy block) and rebuild it. */
   const refetchMarket = async (market: string, toBlock: number) => {

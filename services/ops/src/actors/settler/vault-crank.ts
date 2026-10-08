@@ -11,7 +11,7 @@
  * the owner has no other way to be paid, so the crank runs as soon as the Window is terminal.
  */
 import type { Address, Hex } from "viem";
-import { ownersToCrank, OpsSendError, sendOps, vaultCrankSettleCall, vaultVenueOf, type OpsClient } from "@cwf/markets/ops";
+import { ownersToCrank, OpsSendError, sendOps, vaultCrankSettleCall, vaultVenuesOf, type OpsClient } from "@cwf/markets/ops";
 import { errorText, type VenueDeps } from "../../runtime";
 
 type Sql = NonNullable<VenueDeps["sql"]>;
@@ -28,23 +28,26 @@ export interface VaultCranker {
 }
 
 export function vaultCranker(client: OpsClient, sql: Sql, dryRun: boolean): VaultCranker | null {
-  const venue = vaultVenueOf(client.chainId);
-  if (!venue) return null;
+  // Every Trading Balance on the chain (S24.2): v1's owners keep being paid while they hold anything there.
+  const venues = new Map(vaultVenuesOf(client.chainId).map((v) => [v.vault.toLowerCase(), v]));
+  if (venues.size === 0) return null;
   const counts = { cranked: 0, failed: 0, benign: 0 };
   let recent: VaultCranker["recent"] = [];
   /** Pairs the chain said hold nothing (sold out before lock, or already cranked but not yet indexed). */
   const empty = new Set<string>();
 
+  /** Owners per (vault, Window) still unpaid, keyed `<vault>|<market>`. */
   const candidates = async (): Promise<Map<string, Address[]>> => {
-    const rows = await sql<{ market: string; owner: string }[]>`
-      select distinct e.market, e.owner from idx_vault_executions e
+    const rows = await sql<{ vault: string; market: string; owner: string }[]>`
+      select distinct e.vault, e.market, e.owner from idx_vault_executions e
       join idx_markets m on m.market = e.market and m.state <> 'open'
-      where not exists (select 1 from idx_vault_settlements s where s.owner = e.owner and s.market = e.market)
-      order by e.market, e.owner limit ${CANDIDATE_LIMIT}`;
+      where not exists (select 1 from idx_vault_settlements s where s.vault = e.vault and s.owner = e.owner and s.market = e.market)
+      order by e.vault, e.market, e.owner limit ${CANDIDATE_LIMIT}`;
     const byMarket = new Map<string, Address[]>();
     for (const r of rows) {
-      if (empty.has(`${r.market}:${r.owner}`)) continue;
-      byMarket.set(r.market, [...(byMarket.get(r.market) ?? []), r.owner as Address]);
+      const key = `${r.vault}|${r.market}`;
+      if (empty.has(`${key}:${r.owner}`) || !venues.has(r.vault)) continue;
+      byMarket.set(key, [...(byMarket.get(key) ?? []), r.owner as Address]);
     }
     return byMarket;
   };
@@ -58,10 +61,12 @@ export function vaultCranker(client: OpsClient, sql: Sql, dryRun: boolean): Vaul
       const work = await candidates();
       if (work.size === 0) return "vault: nothing to crank";
       const lines: string[] = [];
-      for (const [market, owners] of work) {
+      for (const [key, owners] of work) {
         if (budget.sends <= 0) break;
+        const [vaultKey, market] = key.split("|") as [string, string];
+        const venue = venues.get(vaultKey)!;
         const due = await ownersToCrank(client, venue, market as Hex, owners);
-        for (const o of owners) if (!due.includes(o)) empty.add(`${market}:${o}`);
+        for (const o of owners) if (!due.includes(o)) empty.add(`${key}:${o}`);
         for (const owner of due) {
           if (budget.sends <= 0) break;
           const tag = `crankSettle ${market.slice(0, 10)} ${owner.slice(0, 8)}`;
@@ -79,7 +84,7 @@ export function vaultCranker(client: OpsClient, sql: Sql, dryRun: boolean): Vaul
             const name = error instanceof OpsSendError ? error.errorName : null;
             if (name && BENIGN.has(name)) {
               counts.benign++;
-              empty.add(`${market}:${owner}`);
+              empty.add(`${key}:${owner}`);
               lines.push(`${tag} ${name}`);
             } else {
               counts.failed++;

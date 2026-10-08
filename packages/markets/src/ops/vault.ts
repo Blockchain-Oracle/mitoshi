@@ -7,6 +7,7 @@
  */
 import { decodeEventLog, encodeFunctionData, getAddress, type Address, type Hex, type Log } from "viem";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
+import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
 import { deploymentOf } from "../deployments";
 import { vaultOutcomeId } from "../vault/read";
 import type { Call } from "../tx/batch";
@@ -23,10 +24,17 @@ export function vaultVenueOf(chainId: number): VaultVenue | null {
   return v ? { vault: getAddress(v.address), deployBlock: BigInt(v.deployBlock ?? 0) } : null;
 }
 
+/** Every Trading Balance on the chain, the current one first (S24.2): v2 (`EventVaultV2`, the EXIT grant), then v1. */
+export function vaultVenuesOf(chainId: number): VaultVenue[] {
+  const v2 = deploymentOf("vault2", chainId)?.EventVaultV2;
+  return [...(v2 ? [{ vault: getAddress(v2.address), deployBlock: BigInt(v2.deployBlock ?? 0) }] : []), ...(vaultVenueOf(chainId) ? [vaultVenueOf(chainId)!] : [])];
+}
+
 /** One vault log as the index stores it; null for a log that is not a vault event. */
 export function decodeVaultLog(chainId: number, log: Log, blockTimeSec: number): ChainEvent | null {
   try {
-    const decoded = decodeEventLog({ abi: eventVaultAbi, data: log.data, topics: log.topics as [Hex, ...Hex[]] });
+    // v2's ABI is v1's plus `ExitGranted`: one decoder for both vaults.
+    const decoded = decodeEventLog({ abi: eventVaultV2Abi, data: log.data, topics: log.topics as [Hex, ...Hex[]] });
     return {
       chainId, address: log.address, txHash: log.transactionHash!, logIndex: Number(log.logIndex), blockNumber: Number(log.blockNumber), blockTimeSec,
       name: decoded.eventName as string, market: null, seq: null, data: jsonSafe(decoded.args ?? {}) as Record<string, unknown>,

@@ -78,4 +78,24 @@ describe.skipIf(!url)("vault index projections (real Moderato logs)", () => {
     await w.writeWindow(events.slice(10), { chainId: 42431, address: fx.vault, block: Number(fx.toBlock) });
     expect(await snapshot()).toEqual(before);
   });
+
+  it("keeps two vaults apart (index/0004, S24.2): the same grant ids and owners, each vault its own rows", async () => {
+    const w = indexWriter(sql);
+    const before = await snapshot();
+    const V2 = "0x6f05b0dcaa31c241a4f6e8ceb170090b41679e95";
+    const twin = events.map((e) => ({ ...e, address: V2, txHash: `${e.txHash.slice(0, -4)}beef` }));
+    const r = await w.writeWindow(twin, { chainId: 42431, address: V2, block: Number(fx.toBlock) });
+    expect(r.inserted).toBe(twin.length);
+    const [{ n: accounts }] = await sql<{ n: number }[]>`select count(*)::int as n from idx_vault_accounts where vault = ${V2}`;
+    const [{ n: grants }] = await sql<{ n: number }[]>`select count(*)::int as n from idx_vault_grants where vault = ${V2}`;
+    expect(accounts).toBe(before.accounts.length);
+    expect(grants).toBe(before.grants.length);
+    // v1's rows are untouched by v2's identical history.
+    const v1 = await sql`select owner, available_base::text from idx_vault_accounts where vault = ${fx.vault.toLowerCase()} order by owner`;
+    expect(v1.map((a) => [a.owner, a.available_base])).toEqual(before.accounts.map((a) => [a.owner, a.available_base]));
+    const owner = Object.keys(fx.chain.accounts)[0]!;
+    const [row] = (await indexReader(sql).vault(owner)) as [{ accounts: { vault: string }[]; grants: { vault: string }[] }];
+    expect(new Set(row.accounts.map((a) => a.vault))).toEqual(new Set([fx.vault.toLowerCase(), V2]));
+    expect(new Set(row.grants.map((g) => g.vault)).size).toBe(2);
+  });
 });
