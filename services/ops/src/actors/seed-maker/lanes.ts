@@ -67,7 +67,7 @@ function guarded(i: LaneInput, spot: SpotQuote, fairAt: (spotE8: bigint) => numb
     sigmaBps: i.env.sigmaBps(i.symbol), yearSec, fairTicks: q.fairTicks, fairAt, halfSpreadTicks: q.halfSpreadTicks ?? i.env.halfSpreadTicks,
   });
   if (g.action === "pull") return { phase: "pull", fairTicks: null, maxCashPerWindow: q.maxCashPerWindow, why: g.note };
-  return { ...q, halfSpreadTicks: g.halfSpreadTicks, why: g.note ? `${q.why} · ${g.note}` : q.why };
+  return { ...q, fairTicks: g.fairTicks, halfSpreadTicks: g.halfSpreadTicks, why: g.note ? `${q.why} · ${g.note}` : q.why };
 }
 
 function allDay(i: LaneInput): LaneQuote {

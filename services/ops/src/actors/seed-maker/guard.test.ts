@@ -21,21 +21,25 @@ const base = (displayE8: bigint | null, extra: Partial<GuardInput> = {}): GuardI
 
 describe("the seed maker's divergence guard", () => {
   it("changes nothing without a fresh fast display quote", () => {
-    expect(divergenceGuard(base(null))).toEqual({ action: "quote", halfSpreadTicks: 30, note: null });
+    expect(divergenceGuard(base(null))).toEqual({ action: "quote", fairTicks: fairAt(OPEN), halfSpreadTicks: 30, note: null });
     expect(divergenceGuard(base(25_050_000_000n, { nowMs: NOW_MS + DISPLAY_FRESH_MS + 1 }))).toMatchObject({ halfSpreadTicks: 30 });
     const redstone = base(25_050_000_000n);
     redstone.display = { ...redstone.display!, source: "redstone" };
     expect(divergenceGuard(redstone)).toMatchObject({ halfSpreadTicks: 30 });
   });
 
-  it("widens by the display price's shift of the fair, so a resting pair can't be picked off", () => {
+  it("spans both fairs: the bid a half spread under the lower, the ask a half spread over the higher", () => {
     const g = divergenceGuard(base(25_010_000_000n)); // +4 bps
-    const shift = fairAt(25_010_000_000n) - fairAt(OPEN);
-    expect(shift).toBeGreaterThan(0);
-    expect(g).toMatchObject({ action: "quote", halfSpreadTicks: 30 + shift });
+    const signed = fairAt(OPEN);
+    const display = fairAt(25_010_000_000n);
+    expect(display).toBeGreaterThan(signed);
+    if (g.action !== "quote") throw new Error("expected a quote");
+    expect(g.fairTicks - g.halfSpreadTicks).toBeLessThanOrEqual(signed - 30); // the bid: no higher than before
+    expect(g.fairTicks - g.halfSpreadTicks).toBeGreaterThanOrEqual(signed - 31); // …and no lower (the safe side stays)
+    expect(g.fairTicks + g.halfSpreadTicks).toBeGreaterThanOrEqual(display + 30); // the ask: clear of the display fair
+    expect(g.fairTicks + g.halfSpreadTicks).toBeLessThanOrEqual(display + 31);
     // The resting pair was placed at ±30: the wider ask forces a requote even though the signed fair didn't move.
-    expect(needsRequote({ placed: { fairTicks: fairAt(OPEN), expireSec: 9e9, halfSpreadTicks: 30 }, fairTicks: fairAt(OPEN), nowSec: 0, requoteTicks: 15, halfSpreadTicks: 30 + shift })).toBe(true);
-    expect(needsRequote({ placed: { fairTicks: fairAt(OPEN), expireSec: 9e9, halfSpreadTicks: 30 + shift }, fairTicks: fairAt(OPEN), nowSec: 0, requoteTicks: 15, halfSpreadTicks: 30 })).toBe(false);
+    expect(needsRequote({ placed: { fairTicks: signed, expireSec: 9e9, halfSpreadTicks: 30 }, fairTicks: g.fairTicks, nowSec: 0, requoteTicks: 1_000, halfSpreadTicks: g.halfSpreadTicks })).toBe(true);
   });
 
   it("pulls when the feeds disagree past the basis floor and 6σ of the lag", () => {
