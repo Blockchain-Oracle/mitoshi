@@ -48,9 +48,15 @@ if (!beat?.detail.keeper) throw new Error(`the exit keeper isn't running on ${OP
 const keeper = beat.detail.keeper;
 out("keeper", { keeper, vault: ev.vault, guard: ev.guard, why: beat.lastWhy });
 
-// A live crypto Window with time to run both checks, quoted by the house.
-const target = (await liveWindows(ops, venue, nowSec())).filter((w) => w.series.lane === "crypto24" && w.market.lockAtSec - nowSec() > 200 && w.top.bidLots > 0n && w.top.askLots > 0n).sort((a, b) => b.market.lockAtSec - a.market.lockAtSec)[0];
-if (!target) throw new Error("no quoted crypto Window with 200+ s to lock");
+// The quoted Window with the most time to lock (a restart needs minutes: a 15m or 60m Window when one is quoted), waiting
+// up to 6 minutes for one with enough.
+const need = RESTART ? 600 : 240;
+let target: Awaited<ReturnType<typeof liveWindows>>[number] | undefined;
+for (const t0 = Date.now(); !target && Date.now() - t0 < 6 * 60_000; ) {
+  target = (await liveWindows(ops, venue, nowSec())).filter((w) => w.market.lockAtSec - nowSec() > need && w.top.bidLots > 0n && w.top.askLots > 0n).sort((a, b) => b.market.lockAtSec - a.market.lockAtSec)[0];
+  if (!target) await sleep(15_000);
+}
+if (!target) throw new Error(`no quoted Window with ${need}+ s to lock within 6 minutes`);
 const marketId = target.market.marketId as MarketId;
 const reading = await provider.getMarket(marketId);
 if (!reading.ok || !reading.value) throw new Error("the Window did not read");

@@ -11,6 +11,7 @@ export * from "./logs";
 export * from "./vault";
 export * from "./exits";
 export * from "../prices/redstone";
+export * from "../prices/redstone-gateways";
 export * from "../prices/attested";
 export * from "../prices/datastreams";
 export { fundAddress, FaucetUnavailableError } from "../faucet/fund";

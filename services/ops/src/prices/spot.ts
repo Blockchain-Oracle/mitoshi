@@ -79,7 +79,7 @@ export function createSpotFeed(input: { sources: RedstoneSources; log: (why: str
   const poll = async () => {
     beat.passStartedMs = Date.now();
     try {
-      const { text } = await fetchRedstoneLatest(input.sources.gateways);
+      const { text } = await fetchRedstoneLatest(input.sources.gateways, { shareMs: 0 });
       let seen = 0;
       let newestSec = 0;
       for (const { symbol, feed } of feeds) {

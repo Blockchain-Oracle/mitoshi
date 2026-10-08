@@ -1,0 +1,102 @@
+/**
+ * Where RedStone's signed packages come from (D-210). RedStone is switching its public gateways off: since 2026-10-08
+ * they refuse requests in daily windows that grow until 2026-10-29, when they stop for good (`public_gateway_rejected`;
+ * "No API key works on these hosts"). The replacement is an authenticated gateway — a URL and an API key RedStone issues,
+ * two pairs for failover, sent as `x-api-key`, at most one request a second per key. Server-side only: a browser asks
+ * our own proxy (`/api/prices/redstone-payload`), never a gateway with a key.
+ *
+ * `REDSTONE_GATEWAYS` (a secret): JSON `[{"url":"…","apiKey":"…"}, …]`. Without it, `REDSTONE_GATEWAY_URLS` (comma
+ * separated, no key) or the public pair — which works only outside RedStone's rejection windows, until 2026-10-29.
+ * The packages, signers and data service are the same either way; only the transport changes.
+ */
+import { REDSTONE_GATEWAY, redstoneHistoricalUrl, redstoneLatestUrl } from "./redstone";
+
+export interface RedstoneGateway {
+  url: string;
+  /** Null for a public gateway. Never logged: name a gateway by `redstoneGatewayName`. */
+  apiKey: string | null;
+}
+
+export interface RedstoneResponse {
+  text: string;
+  fetchedAtMs: number;
+  /** The answering gateway's origin (safe to show). */
+  gateway: string;
+}
+
+export const PUBLIC_REDSTONE_GATEWAYS: readonly RedstoneGateway[] = [
+  { url: REDSTONE_GATEWAY, apiKey: null },
+  { url: "https://oracle-gateway-1.a.redstone.finance", apiKey: null },
+];
+/** RedStone's limit on its authenticated gateways: one request a second per API key. */
+export const REDSTONE_KEY_INTERVAL_MS = 1_000;
+
+const clean = (url: string) => url.trim().replace(/\/+$/, "");
+
+/** The configured gateways, authenticated first; throws on a malformed `REDSTONE_GATEWAYS` rather than run without it. */
+export function redstoneGatewaysFromEnv(env: Record<string, string | undefined> = process.env): RedstoneGateway[] {
+  const json = env.REDSTONE_GATEWAYS?.trim();
+  if (json) {
+    const parsed = JSON.parse(json) as unknown;
+    if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("REDSTONE_GATEWAYS must be a non-empty JSON array of {url, apiKey}");
+    return parsed.map((g, i) => {
+      const { url, apiKey } = (g ?? {}) as { url?: unknown; apiKey?: unknown };
+      if (typeof url !== "string" || !/^https:\/\//.test(url)) throw new Error(`REDSTONE_GATEWAYS[${i}].url must be an https URL`);
+      return { url: clean(url), apiKey: typeof apiKey === "string" && apiKey.trim() ? apiKey.trim() : null };
+    });
+  }
+  const urls = (env.REDSTONE_GATEWAY_URLS ?? "").split(",").map(clean).filter(Boolean);
+  return urls.length ? urls.map((url) => ({ url, apiKey: null })) : [...PUBLIC_REDSTONE_GATEWAYS];
+}
+
+/** A gateway as logs and `/health` may show it: its origin and whether it is keyed — never the key. */
+export const redstoneGatewayName = (g: RedstoneGateway) => `${new URL(g.url).origin}${g.apiKey ? " (key)" : ""}`;
+
+// One request a second per key, in this process: each keyed request takes the next free slot.
+const nextSlotMs = new Map<string, number>();
+async function keySlot(apiKey: string): Promise<void> {
+  const now = Date.now();
+  const at = Math.max(now, nextSlotMs.get(apiKey) ?? 0);
+  nextSlotMs.set(apiKey, at + REDSTONE_KEY_INTERVAL_MS);
+  if (at > now) await new Promise((r) => setTimeout(r, at - now));
+}
+
+async function fetchFirst(gateways: readonly RedstoneGateway[], urlOf: (gateway: string) => string, timeoutMs: number): Promise<RedstoneResponse> {
+  let last = "no gateway configured";
+  for (const g of gateways) {
+    const name = redstoneGatewayName(g);
+    try {
+      if (g.apiKey) await keySlot(g.apiKey);
+      const res = await fetch(urlOf(g.url), { signal: AbortSignal.timeout(timeoutMs), cache: "no-store", headers: g.apiKey ? { "x-api-key": g.apiKey } : {} });
+      const text = await res.text();
+      if (res.ok && text.startsWith("{")) return { text, fetchedAtMs: Date.now(), gateway: new URL(g.url).origin };
+      const reason = /"error"\s*:\s*"([a-z_]+)"/.exec(text)?.[1];
+      last = `HTTP ${res.status}${reason ? ` ${reason}` : ""} from ${name}`;
+    } catch (error) {
+      last = `${name}: ${error instanceof Error ? error.message : String(error)}`;
+    }
+  }
+  throw new Error(`RedStone gateways failed (${last})`);
+}
+
+/** Every feed's packages at `tSec` (≈ 1.9 MB: fetch a boundary once and cut feeds out of the text). */
+export const fetchRedstoneAt = (tSec: number, gateways: readonly RedstoneGateway[], timeoutMs = 20_000) => fetchFirst(gateways, (g) => redstoneHistoricalUrl(tSec, g), timeoutMs);
+
+// The newest packages, one fetch shared across callers for `shareMs` (the spot feed, the keepers, the calendar and the
+// proxy all want "now"; a keyed gateway allows one request a second).
+let shared: { atMs: number; key: string; response: Promise<RedstoneResponse> } | null = null;
+
+/** `shareMs: 0` always fetches (the spot feed, whose pass is the reading) and still leaves its answer for the others. */
+export function fetchRedstoneLatest(gateways: readonly RedstoneGateway[], options: { shareMs?: number; timeoutMs?: number } = {}): Promise<RedstoneResponse> {
+  const now = Date.now();
+  const key = gateways.map((g) => g.url).join(",");
+  const shareMs = options.shareMs ?? 1_000;
+  if (shareMs > 0 && shared && shared.key === key && now - shared.atMs < shareMs) return shared.response;
+  const response = fetchFirst(gateways, (g) => redstoneLatestUrl(g), options.timeoutMs ?? 20_000);
+  const entry = { atMs: now, key, response };
+  shared = entry;
+  response.catch(() => {
+    if (shared === entry) shared = null;
+  });
+  return response;
+}

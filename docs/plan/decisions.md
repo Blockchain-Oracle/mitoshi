@@ -1795,6 +1795,20 @@ rounded up onto the tick grid. A stolen session key could at worst set triggers 
 stated tolerance under fair value — which is the same bound the EXIT grant already accepts. Reads (`GET`) need the
 owner's server session. **Implements** D-193's "triggers written through `/api/exits`".
 
+### D-210 — RedStone through authenticated gateways; the container checks liveness, not readiness (2026-10-08)
+
+**RedStone's public gateways are being switched off** (their answer, `public_gateway_rejected`): since 2026-10-08 they
+refuse requests in scheduled windows that grow daily until 2026-10-29, when they stop; "No API key works on these
+hosts". The replacement is an authenticated gateway — a URL and an API key RedStone issues (two pairs, for failover),
+sent as `x-api-key`, at most one request a second per key; a browser must go through its own server's proxy. Every
+RedStone read now goes through one module (`@cwf/markets` `prices/redstone-gateways.ts`): `REDSTONE_GATEWAYS` (secret,
+ops and web) else the public pair; one request a second per key in a process; one "latest" answer shared for a second
+across the spot feed, the keepers, the calendar and the web proxy (`/api/prices/redstone-payload`, which already is that
+proxy); a key never reaches a log, `/health` or an error. The packages, signers and data service are unchanged.
+**Liveness vs readiness:** a RedStone window made the spot feed (critical) fail `/health`, Coolify's container check
+read the 503, marked ops unhealthy and the proxy dropped the whole API (stream, prices, `/session`). The container check
+moves to `/livez` (the process serves); `/health` stays the strict view for monitoring. Owner action: the key request.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

@@ -5,7 +5,7 @@
  * runs as its own actor (`archive`, S0) and the Gap's Friday open falls back to it past the gateway's history.
  */
 import { privateKeyToAccount } from "viem/accounts";
-import { chainNowSec, createOpsClient, feedIdToAscii, venueOf } from "@cwf/markets/ops";
+import { chainNowSec, createOpsClient, feedIdToAscii, redstoneGatewayName, venueOf } from "@cwf/markets/ops";
 import { runActor, roleKey, type VenueDeps } from "../../runtime";
 import { BoundaryCache } from "./boundary-cache";
 import { loadDataStreams } from "./proofs";
@@ -27,6 +27,6 @@ export function startPriceRelay(deps: VenueDeps): { stop: () => void } {
       cache: new BoundaryCache(deps.redstone, () => [...new Set(state.series.map((s) => feedIdToAscii(s.versions[0]?.primary.feedId ?? "0x")))]),
     },
   };
-  deps.log(`relay ${client.address ?? "(no key)"}; RedStone via ${deps.redstone.gateways.join(", ")}; Data Streams ${state.proofs.datastreams ? "on" : "off (no credentials, Q-011)"}; attested ${state.proofs.attested ? "on (demo data)" : "off"}`);
+  deps.log(`relay ${client.address ?? "(no key)"}; RedStone via ${deps.redstone.gateways.map(redstoneGatewayName).join(", ")}; Data Streams ${state.proofs.datastreams ? "on" : "off (no credentials, Q-011)"}; attested ${state.proofs.attested ? "on (demo data)" : "off"}`);
   return runActor({ name: "price-relay", log: deps.log, dryRun, everyMs: 3_000, pass: async () => relayPass(state, await chainNowSec(client)) });
 }

@@ -4,7 +4,7 @@ import { heartbeats } from "../runtime/heartbeat";
 import { createSpotFeed } from "./spot";
 
 const SIGNER = "0x8bb8f32df04c8b654987daaed53d6b6091e3b774";
-const sources = { gateways: ["https://gateway.example"], signers: new Set([SIGNER]), signerCount: 1, threshold: 1 };
+const sources = { gateways: [{ url: "https://gateway.example", apiKey: null }], signers: new Set([SIGNER]), signerCount: 1, threshold: 1 };
 const latest = (ageSec: number) => {
   const ts = (Math.floor(Date.now() / 1000) - ageSec) * 1000;
   return JSON.stringify({ BTC: [{ timestampMilliseconds: ts, signerAddress: SIGNER, dataPoints: [{ dataFeedId: "BTC", value: 65000.5 }] }] });

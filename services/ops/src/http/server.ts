@@ -16,6 +16,7 @@ import { errorText, type OpsEnv } from "../runtime/env";
 import type { HaltBoardStore } from "../runtime/halt-board";
 import type { SessionEvents } from "../runtime/session-events";
 import { healthBody, jsonText } from "./health";
+import { heartbeats } from "../runtime/heartbeat";
 import { historyBody, latestBody } from "./prices";
 import { sessionBody } from "./session";
 import { corsHeaders, serveStream, type Snapshot } from "./stream";
@@ -47,6 +48,10 @@ export function startHttp(input: HttpInputs): Promise<{ close(): Promise<void> }
     if (req.method === "OPTIONS") return void res.writeHead(204, cors).end();
     if (req.method !== "GET") return json(405, { error: "GET only" });
     switch (url.pathname) {
+      // Liveness for the container check (Coolify): the process serves. `/health` stays the strict readiness view — a
+      // RedStone outage fails it (critical actors), and as the container check that took the whole API off the proxy.
+      case "/livez":
+        return json(200, { ok: true, nowMs: Date.now() });
       case "/health": {
         const body = healthBody(input.env);
         return json(body.ok ? 200 : 503, { ...body, stream: input.bus.stats() });
@@ -95,6 +100,13 @@ export function startHttp(input: HttpInputs): Promise<{ close(): Promise<void> }
         const to = Number(url.searchParams.get("to") ?? Math.floor(Date.now() / 1000));
         if (!input.sql) return json(503, { error: "no database" });
         return void input.sql`select id::text, pass_sec::text, in_hours, observed, confirmed, fixture from halt_log where pass_sec between ${from} and ${to} order by halt_log.id limit 20000`.then((rows) => json(200, { rows }), fail);
+      }
+      case "/exits/keeper": {
+        // The address an owner's EXIT grant names (S24.5): the running exit keeper's role key, or null when none runs.
+        const beat = heartbeats().find((h) => h.actor === "exit-keeper");
+        const d = (beat?.detail ?? {}) as { keeper?: string; vault?: string | null };
+        const live = !!beat && !beat.dryRun && !!d.keeper && d.keeper !== "0x0000000000000000000000000000000000000000";
+        return json(200, { keeper: live ? d.keeper : null, vault: d.vault ?? null }, "public, max-age=30");
       }
       case "/v1/stream":
         return void serveStream(req, res, { bus: input.bus, snapshot: input.snapshot, secret: input.env.streamTicketSecret, cors }).catch((e) => input.log(`stream: ${errorText(e)}`));

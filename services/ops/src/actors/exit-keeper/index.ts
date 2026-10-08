@@ -183,7 +183,7 @@ export function startExitKeeper(deps: VenueDeps): { stop: () => void } {
       if (step.kind === "move") t.stopE8 = step.stopE8;
       else if (step.kind === "hit") {
         t.hit = true;
-        void fire(row, "trail").then((note) => note && deps.log(note));
+        void fire(row, "trail").then((note) => note && deps.log(note), (error: unknown) => deps.log(`#${row.id} trail: ${errorText(error).slice(0, 160)}`));
       }
     }
   });

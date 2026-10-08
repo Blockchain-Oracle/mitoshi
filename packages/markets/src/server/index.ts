@@ -23,3 +23,4 @@ export { cashOutPrivateBet, ClaimRefusedError, createDesk, DeskRefusal, deskHeal
 export { signPrivateClaim } from "../private/claim";
 export { exitSignatureCheck, verifyExitTrigger, type ExitVerdict, type ExitVerifyDeps } from "./exits";
 export { DATA_STREAMS_FEEDS, dataStreamsEnv, fetchLatestReport, fetchReportAt, v11Summary, type DataStreamsReport } from "../prices/datastreams";
+export { fetchRedstoneLatest, redstoneGatewaysFromEnv, redstoneGatewayName, type RedstoneGateway } from "../prices/redstone-gateways";

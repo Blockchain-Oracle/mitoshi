@@ -1,5 +1,6 @@
 import venueSpec from "@cwf/core/venue-spec.json";
-import { latestSpot, parseGatewayJson, redstoneLatestUrl, toHex } from "@cwf/core/prices/redstone";
+import { latestSpot, parseGatewayJson, toHex } from "@cwf/core/prices/redstone";
+import { fetchRedstoneLatest, redstoneGatewaysFromEnv } from "@cwf/markets/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
@@ -8,6 +9,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * feed has at least the venue's threshold of distinct configured signers (`verifySpot` needs one timestamp across the
  * packages; an unconfigured signer would be refused `UnknownRedStoneSigner`). Only the venue's own feeds; never cached
  * (the guard refuses a spot older than its `maxSpotAgeSec`); one gateway fetch is shared for 1.5 s across requests.
+ * This is the browser's proxy RedStone asks for (D-210): the server holds the authenticated gateway's key.
  *   GET /api/prices/redstone-payload?feed=BTC,ETH → { spots: [{ feed, payload, tSec, signers, medianE8 }] }
  */
 
@@ -19,19 +21,11 @@ const FETCH_TIMEOUT_MS = 8_000;
 const MAX_FEEDS = 4;
 const NO_STORE = { "cache-control": "no-store" };
 
-let shared: { atMs: number; text: Promise<string> } | null = null;
+let gateways: ReturnType<typeof redstoneGatewaysFromEnv> | null = null;
 
-function gatewayText(nowMs: number): Promise<string> {
-  if (shared && nowMs - shared.atMs < SHARE_MS) return shared.text;
-  const text = fetch(redstoneLatestUrl(), { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS), cache: "no-store" }).then((res) => {
-    if (!res.ok) throw new Error(`gateway ${res.status}`);
-    return res.text();
-  });
-  shared = { atMs: nowMs, text };
-  text.catch(() => {
-    if (shared?.text === text) shared = null;
-  });
-  return text;
+async function gatewayText(): Promise<string> {
+  gateways ??= redstoneGatewaysFromEnv();
+  return (await fetchRedstoneLatest(gateways, { shareMs: SHARE_MS, timeoutMs: FETCH_TIMEOUT_MS })).text;
 }
 
 export async function GET(request: NextRequest): Promise<Response> {
@@ -41,7 +35,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   if (unknown.length > 0) return NextResponse.json({ error: `not a venue feed: ${unknown.join(", ")}` }, { status: 400, headers: NO_STORE });
   let all;
   try {
-    all = parseGatewayJson(await gatewayText(Date.now()));
+    all = parseGatewayJson(await gatewayText());
   } catch {
     return NextResponse.json({ error: "price-source-down" }, { status: 503, headers: NO_STORE });
   }
