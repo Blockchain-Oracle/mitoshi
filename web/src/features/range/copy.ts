@@ -42,6 +42,7 @@ export const RANGE = {
     chance: "Chance it lands your side",
     pays: "Pays",
     stake: "You pay",
+    atMost: (max: string) => `at most ${max} if the book moves before it lands`,
     house: "Set aside by the reserve",
     total: "You win if it lands",
     setStake: "Set stake",

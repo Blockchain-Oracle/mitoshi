@@ -143,7 +143,7 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
         rows={[
           { label: RANGE.ticket.chance, value: insidePct !== null ? `${insidePct.toFixed(2)}%` : null, ...(q.basis ? { note: RANGE.ticket.basis(usdBand(q.basis.openingPrint), (Number(q.basis.centerQE6) / 10_000).toFixed(1)) } : {}) },
           { label: RANGE.ticket.pays, value: quote ? formatMultiplier(quote.multiplierMilli) : null },
-          { label: RANGE.ticket.stake, value: quote ? usd(quote.stakeBase) : null },
+          { label: RANGE.ticket.stake, value: quote ? usd(quote.stakeBase) : null, ...(quote ? { note: RANGE.ticket.atMost(usd(mulBpsCeil(quote.stakeBase, 10_000 + RANGE_STAKE_HEADROOM_BPS))) } : {}) },
           { label: RANGE.ticket.house, value: quote ? usd(quote.maxPayoutBase - quote.stakeBase) : null, tone: "muted" },
         ]}
         total={{ label: RANGE.ticket.total, value: quote ? usd(quote.maxPayoutBase) : null, tone: "profit" }}

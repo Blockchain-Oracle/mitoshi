@@ -17,7 +17,7 @@ import { BOOST } from "./copy";
 
 export const boostKeys = { all: ["cwf", "boost"] as const };
 
-export type BoostOutcome = { status: "confirmed"; txHash: Hex; positionId: bigint | null } | { status: "failed"; diagnosis: Diagnosis; txHash: Hex | null };
+export type BoostOutcome = { status: "confirmed"; txHash: Hex; booked: Awaited<ReturnType<typeof readBoostOpened>> } | { status: "failed"; diagnosis: Diagnosis; txHash: Hex | null };
 
 export function useBoostWrites(wallet: Address | null) {
   const submitter = useSubmitter();
@@ -48,7 +48,7 @@ export function useBoostWrites(wallet: Address | null) {
         if (result.status === "confirmed") {
           dispatch({ type: "receipt", txHash: result.txHash, status: "success" });
           const booked = await readBoostOpened(result.txHash).catch(() => null);
-          setOutcome({ status: "confirmed", txHash: result.txHash, positionId: booked?.positionId ?? null });
+          setOutcome({ status: "confirmed", txHash: result.txHash, booked });
         } else if (result.status === "unknown") {
           setOutcome({ status: "failed", diagnosis: result.diagnosis, txHash: result.txHash ?? null });
           dispatch({ type: "timeout", diagnosis: result.diagnosis });

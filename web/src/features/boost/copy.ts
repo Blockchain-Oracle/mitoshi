@@ -48,6 +48,7 @@ export const BOOST = {
   },
   outcome: {
     placed: (id: string, x: number, contracts: string, stake: string) => `Boost #${id} · ${x}× · ${contracts} contracts for ${stake}`,
+    placedUnread: "Boost placed. Its figures are on Portfolio once the receipt is read.",
     viewReceipt: "View the transaction",
     another: "Boost another",
   },

@@ -136,7 +136,7 @@ export function BoostTicketMode({ market, side: initialSide }: { market: EventMa
       {session.isConnected && !blocker && !busy ? <p className="text-center type-caption text-ink-secondary">{TX.noFees}</p> : null}
       {writes.outcome?.status === "confirmed" ? (
         <div role="status" className="flex flex-col gap-1 rounded-lg bg-cream p-3 text-cream-ink">
-          <p className="type-body-strong">{BOOST.outcome.placed(writes.outcome.positionId?.toString() ?? "", multiple, quote ? contracts(quote.quantityRaw) : "", quote ? usd(quote.stakeBase) : "")}</p>
+          {writes.outcome.booked ? <p className="type-body-strong">{BOOST.outcome.placed(writes.outcome.booked.positionId.toString(), writes.outcome.booked.leverageBps / 10_000, contracts(writes.outcome.booked.quantityRaw), usd(writes.outcome.booked.stakeBase))}</p> : <p className="type-body-strong">{BOOST.outcome.placedUnread}</p>}
           <a href={txUrl(writes.outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption underline">{BOOST.outcome.viewReceipt}</a>
         </div>
       ) : null}

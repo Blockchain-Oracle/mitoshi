@@ -43,6 +43,19 @@ async function hold(p: Page, btn: Locator) {
   await p.mouse.up();
 }
 
+/** /markets → the crypto 5m lane → a Window's side on its card (the ticket opens on it, the hero follows it). */
+async function openCrypto(side: "UP" | "DOWN"): Promise<boolean> {
+  await page.goto(`${base}/markets`, { waitUntil: "load" });
+  await settle(page);
+  const lane = page.getByRole("tab", { name: /^Crypto .*5m/ }).first();
+  if (!(await expect(lane).toBeVisible({ timeout: 60_000 }).then(() => true, () => false))) return false;
+  await lane.click();
+  const bet = page.getByRole("button", { name: new RegExp(`^Bet ${side} · (BTC|ETH|SOL) · \\d+¢`) }).first();
+  if (!(await expect(bet).toBeVisible({ timeout: 60_000 }).then(() => true, () => false))) return false;
+  await bet.click();
+  return true;
+}
+
 let failed = false;
 try {
   await page.goto(`${base}/markets`, { waitUntil: "load" });
@@ -55,14 +68,27 @@ try {
   note({ step: "signed-up", prompts: assertions });
   await page.keyboard.press("Escape");
 
+  // The Range mode's band on the hero chart (S10b, E.1): a crypto 5m Window picked from its lane becomes the hero, the
+  // ticket switches to Range, the chart draws the band's two dashed price lines (canvas-drawn: the screenshot is the
+  // evidence).
+  if (await openCrypto("UP")) {
+    await page.getByRole("button", { name: "Range", exact: true }).last().click();
+    const low = page.getByRole("slider", { name: /Band low/ }).last();
+    await expect(low).toBeVisible({ timeout: 90_000 }).catch(() => undefined);
+    await page.waitForTimeout(6_000);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: join(out, `hero-band-${width}.png`) });
+    note({ step: "hero-band", slider: await low.count(), value: await low.getAttribute("aria-valuetext").catch(() => null) });
+  } else note({ step: "hero-band", skipped: "no crypto Window priced" });
+
   let boostTx: string | null = null;
   const deadline = Date.now() + 10 * 60_000;
   while (!boostTx && Date.now() < deadline) {
-    await page.goto(`${base}/markets`, { waitUntil: "load" });
-    await settle(page);
-    const bet = page.getByRole("button", { name: /^Bet (UP|DOWN) · (BTC|ETH|SOL) ·/ }).first();
-    if (!(await expect(bet).toBeVisible({ timeout: 90_000 }).then(() => true, () => false))) continue;
-    await bet.click();
+    if (!(await openCrypto(Math.random() < 0.5 ? "UP" : "DOWN"))) {
+      note({ step: "no-crypto-window" });
+      await page.waitForTimeout(20_000);
+      continue;
+    }
     await page.getByRole("button", { name: "Boost", exact: true }).last().click();
     const cta = page.getByRole("button", { name: /^Hold to boost/ }).last();
     if (!(await expect(cta).toBeVisible({ timeout: 60_000 }).then(() => true, () => false))) {

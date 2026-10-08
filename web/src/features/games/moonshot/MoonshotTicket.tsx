@@ -84,7 +84,7 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
         rows={[
           { label: MOONSHOT.ticket.level, value: strike !== null ? target : null, ...(q ? { note: MOONSHOT.ticket.distance(((Math.abs(Number(strike! - q.openingPrint)) * 100) / Number(q.openingPrint)).toFixed(2), direction === "long") } : {}) },
           { label: MOONSHOT.ticket.pays, value: q ? formatMultiplier(q.quote.multiplierMilli) : null },
-          { label: MOONSHOT.ticket.youPay, value: q ? usd(q.quote.stakeBase) : null },
+          { label: MOONSHOT.ticket.youPay, value: q ? usd(q.quote.stakeBase) : null, ...(q ? { note: RANGE.ticket.atMost(usd(mulBpsCeil(q.quote.stakeBase, 10_000 + RANGE_STAKE_HEADROOM_BPS))) } : {}) },
           { label: RANGE.ticket.house, value: q ? usd(q.houseLockedBase) : null, tone: "muted" },
         ]}
         total={{ label: MOONSHOT.ticket.youWin, value: q ? usd(q.quote.maxPayoutBase) : null, tone: "profit" }}

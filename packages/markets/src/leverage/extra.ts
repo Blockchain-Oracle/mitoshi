@@ -27,10 +27,11 @@ export async function previewBoostFair(marketId: Hex, side: Side, spotE8: bigint
   }
 }
 
-export async function readBoostOpened(txHash: Hex): Promise<{ positionId: bigint } | null> {
+/** What the reserve booked, from the receipt's `Opened` — the figures the placed card states (never a later requote). */
+export async function readBoostOpened(txHash: Hex): Promise<{ positionId: bigint; leverageBps: number; quantityRaw: bigint; stakeBase: bigint; frontedBase: bigint } | null> {
   const receipt = await (await getPublicClient()).getTransactionReceipt({ hash: txHash });
   const opened = parseEventLogs({ abi: leverageReserveAbi, eventName: "Opened", logs: receipt.logs })[0];
-  return opened ? { positionId: opened.args.positionId } : null;
+  return opened ? { positionId: opened.args.positionId, leverageBps: Number(opened.args.leverageBps), quantityRaw: opened.args.quantityRaw, stakeBase: opened.args.stake, frontedBase: opened.args.fronted } : null;
 }
 
 export async function readBoostOwed(wallet: Address): Promise<Reading<bigint>> {
