@@ -758,6 +758,27 @@ export const indexerSources = {
         {"name":"Withdrawn","signature":"Withdrawn(address indexed owner, uint256 amount, uint256 available)","topic0":"0x92ccf450a286a957af52509bc1c9939d1a6a481783e142e41e2499f0bb66ebc6"},
       ],
     },
+    {
+      area: "vault2",
+      contract: "EventVaultV2",
+      address: "0x6f05b0dCaA31C241a4f6E8Ceb170090b41679e95",
+      deployBlock: 38745365,
+      events: [
+        {"name":"Credited","signature":"Credited(address indexed owner, address indexed from, uint256 amount, uint256 available)","topic0":"0xdd0ef63b44a932361273bab95d6e9bfcea5c7850c43844f540314e89899b970c"},
+        {"name":"Deposited","signature":"Deposited(address indexed owner, uint256 amount, uint256 available)","topic0":"0x73a19dd210f1a7f902193214c0ee91dd35ee5b4d920cba8d519eca65a7b488ca"},
+        {"name":"Executed","signature":"Executed(address indexed owner, bytes32 indexed marketId, uint256 indexed grantId, uint8 outcomeIdx, bool isBuy, uint256 cashDelta, uint256 tokenDelta, address actor, uint64 atSec)","topic0":"0x854b8efe386c13c7707a845df332703475ec4c5dc9bafa72607e8fadd004eebd"},
+        {"name":"ExitGranted","signature":"ExitGranted(uint256 indexed grantId, address indexed owner, address indexed actor, bytes32 market, uint64 expiresAtSec, uint16 toleranceBps)","topic0":"0x9045f7ca180a7e41283cfbe40d54ab5e1925e25fbe40fe0de3ddccbb330c980a"},
+        {"name":"GrantCreated","signature":"GrantCreated(uint256 indexed grantId, address indexed owner, address indexed actor, uint8 kind, tuple caps, uint64 expiresAtSec, uint256 budget)","topic0":"0x7248dc3e56669d4e763944313ae2eec3d786ac67ca0f412aca4c0401cc43c564"},
+        {"name":"GrantFunded","signature":"GrantFunded(uint256 indexed grantId, uint256 amount, uint256 budget)","topic0":"0x975ac4c76d992230c2154248c28e513ada95b63ad502a67ca69363133c58d95d"},
+        {"name":"GrantRevoked","signature":"GrantRevoked(uint256 indexed grantId, address indexed owner, uint256 returned)","topic0":"0xf61565123789fbfc4bbc33229e9247583374e202f7de355bee486b2efc925635"},
+        {"name":"PrivateCredited","signature":"PrivateCredited(address indexed owner, address indexed from, uint256 amount, uint256 privateAvailable)","topic0":"0x248c2e876cd9175472cfb8622817dc72b3c0b31e12171c8c9697be896795e8e7"},
+        {"name":"PrivateMoved","signature":"PrivateMoved(address indexed owner, uint256 amount, uint256 privateAvailable)","topic0":"0x1624e3e8b74f4ba80aee00bf999b007589e6456e1a60269d38592c50d44c6ffb"},
+        {"name":"PrivateWithdrawn","signature":"PrivateWithdrawn(address indexed owner, uint256 amount, uint256 privateAvailable)","topic0":"0xe936a6d53f37d977527f3f609f885f89d2ed0335c81b330af78b9450122a7631"},
+        {"name":"Settled","signature":"Settled(address indexed owner, bytes32 indexed marketId, uint256 payout, uint256 yesRedeemed, uint256 noRedeemed, address by, uint64 atSec)","topic0":"0xd0bd280ed06afe11bfa8137cee4edce17070f31991c9663ead278b238a673ec8"},
+        {"name":"Swept","signature":"Swept(uint256 amount)","topic0":"0x7f221332ee403570bf4d61630b58189ea566ff1635269001e9df6a890f413dd8"},
+        {"name":"Withdrawn","signature":"Withdrawn(address indexed owner, uint256 amount, uint256 available)","topic0":"0x92ccf450a286a957af52509bc1c9939d1a6a481783e142e41e2499f0bb66ebc6"},
+      ],
+    },
   ],
   "84532": [
     {

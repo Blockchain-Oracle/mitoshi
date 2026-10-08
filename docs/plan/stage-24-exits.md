@@ -4,11 +4,17 @@ On `integration/t1` (D-201). Contracts follow plan §4 (Foundry ≥ 1.8.3, `netw
 receive-policy pre-check on every payout, no `payable`, no CREATE in any flow an access key signs). Ledger rows RV-51,
 RV-55, RV-97, RV-98.
 
-- [ ] 24.1 EventVault v2: the EXIT grant kind (sell-only, no budget path, separate from EXECUTOR/STRATEGY) in a split
+- [x] 24.1 EventVault v2: the EXIT grant kind (sell-only, no budget path, separate from EXECUTOR/STRATEGY) in a split
   `contracts/src/products/vault/VaultExits.sol` (EventVault is 384 lines); each keeper sell carries a floor of
   `FairValueGuard.fairUpE6(m, RedStone proof)` less the stated tolerance (never `previewFairUpE6`); `OpenPrintMissing`
   and `SigmaNotSet` refuse; Foundry unit + invariant tests (`afterInvariant`), gas snapshot, `forge build --sizes` in
   both profiles; ops sets σ for every Series the terminal trades; deploy on Moderato; codegen.
+  Done (5ba0e86, and this commit): `VaultExits` + `EventVaultV2` (`grantExit`, `exitFor`, `exitFloorRaw`; no budget,
+  no `placeFor`), 7 tests incl. a fuzzed floor property, the full suite at 679; deployed on Moderato at
+  `0x6f05…9e95` (`vault2.json`, codegen); the guard holds σ for all 66 Series (`guard-spec.json`, Regular on the
+  trading year, 24/7 on the calendar year, the Gap's span carrying one session) and one spot feed per ticker
+  (`---24_7` where RedStone has it) via `script/SetGuardModels.s.sol` (`acceptance/S24.md`). A sale's limit sits on
+  the engine's tick grid, so the keeper rounds the floor up (24.3).
 - [ ] 24.2 v1 → v2 migration: withdraw-from-v1 in the account drawer; the settler's `crankSettle` covers v1 owners; the
   indexer reads both vaults (D-161); relay `vaultPolicy` for both; both addresses in codegen; S23d's sell lane works on
   v1 and v2; v2 becomes the default once v1 holds nothing new.

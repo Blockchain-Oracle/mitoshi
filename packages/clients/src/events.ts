@@ -284,6 +284,21 @@ export const events = {
     "Swept(uint256)",
     "Withdrawn(address,uint256,uint256)"
   ],
+  "EventVaultV2": [
+    "Credited(address,address,uint256,uint256)",
+    "Deposited(address,uint256,uint256)",
+    "Executed(address,bytes32,uint256,uint8,bool,uint256,uint256,address,uint64)",
+    "ExitGranted(uint256,address,address,bytes32,uint64,uint16)",
+    "GrantCreated(uint256,address,address,uint8,tuple,uint64,uint256)",
+    "GrantFunded(uint256,uint256,uint256)",
+    "GrantRevoked(uint256,address,uint256)",
+    "PrivateCredited(address,address,uint256,uint256)",
+    "PrivateMoved(address,uint256,uint256)",
+    "PrivateWithdrawn(address,uint256,uint256)",
+    "Settled(address,bytes32,uint256,uint256,uint256,address,uint64)",
+    "Swept(uint256)",
+    "Withdrawn(address,uint256,uint256)"
+  ],
   "LzPing": [
     "EnforcedOptionSet(tuple[])",
     "OwnershipTransferred(address,address)",

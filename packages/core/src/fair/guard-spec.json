@@ -1,11 +1,354 @@
 {
-  "_doc": "FairValueGuard parameters every deploy sets (A.5.4, PD-2). σ in annualized basis points on the Series' clock (calendar year for the 24/7 crypto lanes), the S3 house maker's defaults (services/ops seed-maker env.ts: BTC 5,000, ETH 6,500, SOL 8,000), so the bound and the maker quote one model; the script turns each into sigmaE8 = floor(sqrt(bps^2 * 1e8 / yearSec)) (fair.ts sigmaE8FromBps). Spot = the RedStone verifier's verifySpot on the Series' own RedStone feed. Keys match venue-spec.json series.",
+  "_doc": "FairValueGuard parameters every deploy sets (A.5.4, PD-2), for every Series on the venue (S24.1: the EXIT grant's floor, Boost, Parlay and Range all read it). \u03c3 in annualized basis points, the seed maker's own defaults (services/ops seed-maker env.ts: BTC 5,000, ETH 6,500, SOL 8,000, stocks 4,500) so the bound and the maker quote one model; turned into sigmaE8 = floor(sqrt(bps^2 * 1e8 / clockYear)) on the Series' clock: `trading` (Regular, inside one session) on tradingYearSec, `calendar` (the 24/7 lanes) on calendarYearSec, `gap` (the weekend Window) so its whole span carries one session's variance: bps^2 * 1e8 * sessionSec / (tradingYearSec * gapSpanSec). `spotFeeds`: the RedStone feed the guard verifies per ticker (one per ticker): the `---24_7` feed where the name has one \u2014 it publishes around the clock, so a Regular Window in session and a 24/7 one off-hours both read it \u2014 else the name's own feed (PLTR and AMD: RedStone publishes no `---24_7` for them, tickers.ts).",
   "maxSpotAgeSec": 120,
   "calendarYearSec": 31536000,
   "tradingYearSec": 5896800,
   "series": [
-    { "key": "BTC-5m", "sigmaBps": 5000, "clock": "calendar" },
-    { "key": "ETH-5m", "sigmaBps": 6500, "clock": "calendar" },
-    { "key": "SOL-5m", "sigmaBps": 8000, "clock": "calendar" }
-  ]
+    {
+      "key": "BTC-5m",
+      "sigmaBps": 5000,
+      "clock": "calendar"
+    },
+    {
+      "key": "ETH-5m",
+      "sigmaBps": 6500,
+      "clock": "calendar"
+    },
+    {
+      "key": "SOL-5m",
+      "sigmaBps": 8000,
+      "clock": "calendar"
+    },
+    {
+      "key": "TSLA-5m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "TSLA-15m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "TSLA-60m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "TSLA-gap",
+      "sigmaBps": 4500,
+      "clock": "gap"
+    },
+    {
+      "key": "TSLA-24-5m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "TSLA-24-15m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "TSLA-24-60m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "NVDA-5m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "NVDA-15m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "NVDA-60m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "NVDA-gap",
+      "sigmaBps": 4500,
+      "clock": "gap"
+    },
+    {
+      "key": "NVDA-24-5m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "NVDA-24-15m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "NVDA-24-60m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "AAPL-5m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "AAPL-15m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "AAPL-60m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "AAPL-gap",
+      "sigmaBps": 4500,
+      "clock": "gap"
+    },
+    {
+      "key": "AAPL-24-5m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "AAPL-24-15m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "AAPL-24-60m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "MSFT-5m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "MSFT-15m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "MSFT-60m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "MSFT-gap",
+      "sigmaBps": 4500,
+      "clock": "gap"
+    },
+    {
+      "key": "MSFT-24-5m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "MSFT-24-15m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "MSFT-24-60m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "META-5m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "META-15m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "META-60m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "META-gap",
+      "sigmaBps": 4500,
+      "clock": "gap"
+    },
+    {
+      "key": "META-24-5m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "META-24-15m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "META-24-60m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "GOOGL-5m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "GOOGL-15m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "GOOGL-60m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "GOOGL-gap",
+      "sigmaBps": 4500,
+      "clock": "gap"
+    },
+    {
+      "key": "GOOGL-24-5m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "GOOGL-24-15m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "GOOGL-24-60m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "AMZN-5m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "AMZN-15m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "AMZN-60m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "AMZN-gap",
+      "sigmaBps": 4500,
+      "clock": "gap"
+    },
+    {
+      "key": "AMZN-24-5m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "AMZN-24-15m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "AMZN-24-60m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "PLTR-5m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "PLTR-15m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "PLTR-60m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "PLTR-gap",
+      "sigmaBps": 4500,
+      "clock": "gap"
+    },
+    {
+      "key": "PLTR-24-5m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "PLTR-24-15m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "PLTR-24-60m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "AMD-5m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "AMD-15m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "AMD-60m",
+      "sigmaBps": 4500,
+      "clock": "trading"
+    },
+    {
+      "key": "AMD-gap",
+      "sigmaBps": 4500,
+      "clock": "gap"
+    },
+    {
+      "key": "AMD-24-5m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "AMD-24-15m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    },
+    {
+      "key": "AMD-24-60m",
+      "sigmaBps": 4500,
+      "clock": "calendar"
+    }
+  ],
+  "sessionSec": 23400,
+  "gapSpanSec": 235800,
+  "spotFeeds": {
+    "BTC": "BTC",
+    "ETH": "ETH",
+    "SOL": "SOL",
+    "TSLA": "TSLA---24_7",
+    "NVDA": "NVDA---24_7",
+    "AAPL": "AAPL---24_7",
+    "MSFT": "MSFT---24_7",
+    "META": "META---24_7",
+    "GOOGL": "GOOGL---24_7",
+    "AMZN": "AMZN---24_7",
+    "PLTR": "PLTR",
+    "AMD": "AMD"
+  }
 }

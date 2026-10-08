@@ -16,6 +16,7 @@
     "42431/themes",
     "42431/v4",
     "42431/vault",
+    "42431/vault2",
     "84532/lz",
     "84532/stocks"
   ],
@@ -28,6 +29,7 @@
     "DataStreamsPrintVerifier",
     "EngineLens",
     "EventVault",
+    "EventVaultV2",
     "EventsEngine",
     "FairValueGuard",
     "HopComposer",
