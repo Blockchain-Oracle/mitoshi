@@ -25,7 +25,7 @@ RV-55, RV-97, RV-98.
   Balance positions from both vaults are listed, each sold on its own vault (a v1 position is the owner's own sale;
   Trail/TP/SL refuse it). "Your previous Trading Balance" (Account, /portfolio) stops an old key and withdraws what v1
   holds. Both relay policies are in place (ba26081). `GrantKind` gains `exit` (the trust surface names it).
-- [ ] 24.3 The `exit-keeper` actor (`services/ops/src/actors/exit-keeper/`): trigger records written through
+- [x] 24.3 The `exit-keeper` actor (`services/ops/src/actors/exit-keeper/`): trigger records written through
   `web/src/app/api/exits/route.ts` into a `packages/db` migration (user signature, nonce, expiry, cancel, idempotency per
   trigger); watches the display feed and the book; sells through `exitFor` under the EXIT grant within the floor
   (`placeFor` refuses an EXIT grant); pays its own gas (`sendOps`); publishes on `user:<addr>` ("Trailing stop hit ·
@@ -38,6 +38,11 @@ RV-55, RV-97, RV-98.
   claim from its receipt after a restart. Tests: trigger shape and rules, the signature check, the store on real
   Postgres, the limit never under the floor on either side, the keeper's decisions. Waits on the live check (a trigger
   fired on Moderato with no tab open, a restart mid-sale, a sale below the floor refused) before the box is ticked.
+  Done (acceptance/S24.md): on Moderato the keeper sold a take-profit and a trail with no tab (BTC #2771, 0x6b8b…8d00,
+  0x2c91…2be2, self-paid), an armed trail survived an ops restart, a stranger's trigger was refused and a sale under the
+  floor reverted. Found on the way: the read chain can't verify P-256 (ae2aa40); the floor drifts with the block's clock
+  (the limit leads it, 42c498a); in a book wider than the tolerance the floor refuses (the drawer says the keeper waits);
+  RedStone's gateway shutdown (D-210).
 - [ ] 24.4 The house's exit tail (D-194, D-204): `seed-maker/{quote,lanes,window,index}.ts`. Both sides stay from
   lock − 75. A pair already resting is kept. New placements are half the lots at twice the half spread. Nothing new is
   placed from lock − 45. The pair lapses at lock − 30 with no cancel, and a pair already resting to lock − 30 is never
