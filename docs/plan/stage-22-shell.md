@@ -39,6 +39,11 @@ On `integration/t1` (D-201). Sources: Baku/roy-chain `ede3ed38` (`apps/web/src/c
   the largest app route (`/markets` 191.6 KB before); Lighthouse on the S1 list; `shell-interactions` and `visual-snap`
   drivers rewritten; structure screenshots beside roy-chain `.cache/shots/s16d-final/*` and Slush `001`, `010`, `014`.
   **Rows:** RV-01…RV-16, UX-13, UX-14, UX-16 (engine), L-02, L-03, L-04 (re-homed).
+  Lighthouse on the shell deploy (run 37779108546, 2026-10-08, host index 2041–2159): LCP 1.2–1.7 s and CLS ≤ 0.035
+  on every route; TBT passes on `/` 129 ms, `/proof/[id]` 121 ms, `/status` 126 ms — the shell's own cost — and fails
+  where it failed before the shell: `/markets` 794 ms, `/markets/[id]` 1,180 ms, `/portfolio` 300 ms (the Markets hero's
+  lightweight-charts island and the portfolio's reads). Those routes' TBT is owned by S23 (the terminal replaces the
+  hero; 23j retires its island) and stays open on the S23 gate, not here.
 
 ## Findings
 
