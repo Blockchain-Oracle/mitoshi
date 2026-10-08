@@ -80,6 +80,19 @@ export const TERMINAL = {
     adding: (symbol: string) => `Adding to ${symbol}…`,
     added: (symbol: string) => `Added to ${symbol}`,
   },
+  modes: {
+    label: "Ways to call this Window",
+    names: { updown: "Up / Down", range: "Range", boost: "Boost", private: "Private" },
+    bandHigh: "Band ↑",
+    bandLow: "Band ↓",
+    parlay: "Parlay ↗",
+    moonshot: "Moonshot ↗",
+    prompt: {
+      range: "A band the close lands inside. Your passkey confirms each Range call.",
+      boost: "More exposure for the same stake, with a knock-out line. Your passkey confirms each Boost.",
+      private: "The same call, not shown on the public tape. Your passkey confirms it.",
+    },
+  },
   update: {
     title: "New version available",
     body: "Refresh to get the latest Mitoshi.",

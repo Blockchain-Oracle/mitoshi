@@ -45,13 +45,15 @@ import { useReplayRecorder } from "./replay";
 import { useAppUpdate } from "./useAppUpdate";
 import { setTradeSettings, useTradeSettingsState } from "./settings";
 import { Tutorial } from "./ui/Tutorial";
+import { ModeChips, ModePanel, type TerminalMode } from "./ui/ModePanel";
+import { useDrawnBand } from "@/features/range/band-store";
 import dynamic from "next/dynamic";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 
 // The Markets hero's depth view, loaded when first shown (a lazy island).
 const HeroDepth = dynamic(() => import("@/features/markets/hero/HeroDepth"), { ssr: false });
 
-export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account", history: "trade-history", position: "trade-position" } as const;
+export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account", history: "trade-history", position: "trade-position", mode: "trade-mode" } as const;
 
 /** The symbol in the address: a market switch rewrites it in place (no remount), so the path is the source. */
 function useSymbol(initial: string): string {
@@ -128,6 +130,12 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
     s.overlay.current = { ...base, levels, pnl: pnlBase === null ? null : Number(pnlBase) / 1e6, pnlText: pnlBase === null ? "" : masked ? SHELL.masked : livePnlText(pnlBase) };
   }
   const [depth, setDepth] = useState(false);
+  // Up/Down is Tradash's one tap; the other modes host the ticket's own bodies (inline on desktop, a drawer on phones).
+  const [mode, setMode] = useState<TerminalMode>("updown");
+  const chooseMode = (m: TerminalMode) => {
+    setMode(m);
+    if (m !== "updown" && !window.matchMedia("(min-width: 1024px)").matches) drawer.show(DRAWERS.mode);
+  };
   useAppUpdate();
   // First visit: the five-step tour, once the browser's settings have loaded with it unseen.
   const settingsState = useTradeSettingsState();
@@ -140,6 +148,12 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   // Every open position's path is recorded for its replay; the Line is known for the Window on screen.
   const lineOnScreen = s.openingRaw === null ? null : Number(s.openingRaw) / 1e8;
   useReplayRecorder(s.positions, values, (id) => (id === market?.marketId ? lineOnScreen : null));
+  // A Range call being composed draws its band on the chart (the Range body publishes it, as for the Markets hero).
+  const band = useDrawnBand();
+  if (mode === "range" && band && market && band.marketId === market.marketId) {
+    const base = s.overlay.current ?? { pnl: null, pnlText: "", entry: null, levels: [] };
+    s.overlay.current = { ...base, levels: [...base.levels, { kind: "band", price: Number(band.highE8) / 1e8, label: TERMINAL.modes.bandHigh }, { kind: "band", price: Number(band.lowE8) / 1e8, label: TERMINAL.modes.bandLow }] };
+  }
   // An armed trail keeps hearing its price with the tab in the background (it still needs Mitoshi open).
   const trailing = s.positions.some((p) => p.trailStop !== null);
   useEffect(() => (trailing ? holdStreamAwake() : undefined), [trailing]);
@@ -217,7 +231,10 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
               <TapTradingChip />
             </div>
           ) : null}
-          {s.active ? (
+          {market ? <ModeChips mode={mode} onMode={chooseMode} /> : null}
+          {mode !== "updown" && market ? (
+            <div className="tm-desk"><ModePanel mode={mode} market={market} side={null} /></div>
+          ) : s.active ? (
             <TradeButtons
               mode="open"
               trailActive={s.active.trailStop !== null}
@@ -264,6 +281,13 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
         spendableBase={s.spendableBase}
         busy={detail !== null && closer.busy === detail.id}
       />
+      {mode !== "updown" && market ? (
+        <SlideOver open={drawer.open === DRAWERS.mode} onOpenChange={(o) => { if (!o) { drawer.close(); setMode("updown"); } }}>
+          <SlideOverContent title={TERMINAL.modes.names[mode]}>
+            <ModePanel mode={mode} market={market} side={null} />
+          </SlideOverContent>
+        </SlideOver>
+      ) : null}
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
           <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />

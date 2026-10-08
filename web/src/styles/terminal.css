@@ -293,3 +293,8 @@
 .tm-splash-line { width: 160px; height: 44px; overflow: visible; color: var(--color-accent); }
 .tm-splash-line path { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: tm-draw 1.8s ease-in-out infinite; }
 .terminal-surface { position: relative; }
+.tm-modes { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.tm-modes .tm-choice { flex: none; height: 32px; font-size: 12px; }
+.tm-modes .tm-choice[aria-selected="true"] { background: var(--color-ink); color: var(--color-stage); }
+.tm-mode-panel { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; }
+@media (min-width: 1024px) { .tm-mode-panel { max-height: 60dvh; } }

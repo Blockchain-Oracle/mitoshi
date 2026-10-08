@@ -9,9 +9,10 @@ export type ChartTheme = Record<"up" | "down" | "ink" | "inverse" | "helper" | "
 /**
  * `entry`: the spot when the call was made; `line`: the Window's opening print (what Up must close at or above);
  * `breakeven`: the spot where Close pays the cost back; `tp`/`sl`/`trail`: the exits; `knockout`: a Boost position's
- * knock-out spot; `signed`: the newest signed (RedStone) value — what the Window will actually settle on.
+ * knock-out spot; `signed`: the newest signed (RedStone) value — what the Window will actually settle on; `band`: a
+ * Range call's two edges while one is being composed.
  */
-export type LevelKind = "entry" | "line" | "breakeven" | "tp" | "sl" | "trail" | "knockout" | "signed";
+export type LevelKind = "entry" | "line" | "breakeven" | "tp" | "sl" | "trail" | "knockout" | "signed" | "band";
 
 export interface ChartLevel {
   kind: LevelKind;
@@ -60,6 +61,7 @@ export const LEVEL_STYLE: Record<LevelKind, { dash: number[]; width: number; alp
   trail: { dash: [6, 3], width: 1.5, alpha: 1, strong: true },
   knockout: { dash: [2, 2], width: 1.5, alpha: 0.9, strong: true },
   signed: { dash: [1, 2], width: 1, alpha: 0.6 },
+  band: { dash: [5, 3], width: 1.5, alpha: 0.9, strong: true },
 };
 
 /** A level's colour (DESIGN.md chart token map). */
@@ -76,6 +78,7 @@ export function levelColour(kind: LevelKind, theme: ChartTheme, tone: string): s
     case "trail":
       return tone;
     case "signed":
+    case "band":
       return theme.signed;
     default:
       return theme.ink;

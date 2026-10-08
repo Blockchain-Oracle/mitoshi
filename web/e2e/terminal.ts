@@ -81,6 +81,18 @@ for (const theme of ["dark", "light"] as const) {
       await expect(page).toHaveTitle(/Ether \(ETH\)/);
       if (navs.some((u) => !u.includes("/trade/"))) throw new Error(`navigated away: ${navs.join(", ")}`);
     });
+    if (label === "desk") {
+      await check(`${tag}: Range hosts the ticket's band call for this Window, and Up / Down comes back`, async () => {
+        await page.getByRole("tab", { name: "Range" }).click();
+        const panel = page.getByRole("region", { name: "Range" });
+        await expect(panel).toBeVisible();
+        await page.waitForTimeout(1_500);
+        await page.screenshot({ path: join(out, `mode-range-${theme}.png`) });
+        await axeOn(page, ".tm-mode-panel");
+        await page.getByRole("tab", { name: "Up / Down" }).click();
+        await expect(page.getByRole("button", { name: /UP/ })).toBeVisible();
+      });
+    }
     await check(`${tag}: the settings drawer sets the size`, async () => {
       await page.locator(".tm-stack").click();
       const dialog = page.getByRole("dialog");
