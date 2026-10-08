@@ -32,9 +32,19 @@ describe("readWindowsShared (D-152)", () => {
 
   it("joins a read already in flight instead of sending another", async () => {
     const lanes = readWindowsShared([id(4), id(5)], () => clock);
+    await new Promise((r) => setTimeout(r, 1)); // the lane list's read has gone out
     const card = readWindowsShared([id(5), id(6)], () => clock);
     await Promise.all([lanes, card]);
     expect(calls).toEqual([[id(4), id(5)], [id(6)]]);
+  });
+
+  it("asks once for everything asked in the same pass (D-184)", async () => {
+    const lanes = readWindowsShared([id(8), id(9)], () => clock);
+    const cards = [readWindowsShared([id(9), id(10)], () => clock), readWindowsShared([id(11)], () => clock)];
+    const [all, ...each] = await Promise.all([lanes, ...cards]);
+    expect(calls).toEqual([[id(8), id(9), id(10), id(11)]]);
+    expect([...all.keys()]).toEqual([id(8), id(9)]);
+    expect(each.map((m) => [...m.keys()])).toEqual([[id(9), id(10)], [id(11)]]);
   });
 
   it("reads again once the answer is older than the window", async () => {

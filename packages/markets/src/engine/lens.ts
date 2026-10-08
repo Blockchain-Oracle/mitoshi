@@ -4,11 +4,12 @@
  * provider and the order lane read one generation of a Window. Series facts never change once registered, so they are
  * cached for the process (persisted-read allowlist, C.2.2 `getBookParams`).
  */
-import { getAddress, type Address, type Hex } from "viem";
+import { getAddress, type Abi, type Address, type Hex } from "viem";
 import { Abis, Addresses } from "viem/tempo";
 import { engineLensAbi } from "@cwf/clients/abis/EngineLens";
 import { plainQuestion } from "@cwf/core/copy";
 import { printSourceOf, tickerById, toMarketId, USD_DECIMALS, type EventMarket, type MarketId, type MarketState, type OnchainSnapshot, type OutcomeIdx, type PrintView, type BookLevel } from "@cwf/core";
+import { multicallSliced, type SlicedClient } from "../runtime/multicall-sliced";
 import { getPublicClient } from "../runtime/read-runtime";
 import { laneBasisOf, marketIdOf, unpackPrint, venueOf, type Venue } from "../ops/venue";
 import type { Grid, YesBook } from "./quote";
@@ -91,16 +92,33 @@ function winnerOf(state: MarketState, payoutYes: number, payoutNo: number): Outc
   return payoutYes > payoutNo ? 0 : payoutNo > payoutYes ? 1 : null;
 }
 
-/** Windows by id, head-fresh; an unknown id is absent from the map. */
+/** Windows by id, head-fresh; an unknown id is absent from the map. Batched with concurrent reads (viem's scheduler). */
 export async function readWindows(ids: readonly MarketId[]): Promise<Map<MarketId, WindowFacts>> {
-  const out = new Map<MarketId, WindowFacts>();
-  if (ids.length === 0) return out;
+  if (ids.length === 0) return new Map();
   const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
   const lens = { address: venue.lens, abi: engineLensAbi } as const;
   const res = await client.multicall({
     contracts: ids.flatMap((id) => [{ ...lens, functionName: "marketOf" as const, args: [id] as const }, { ...lens, functionName: "marketRef" as const, args: [id] as const }]),
     allowFailure: true,
   });
+  return windowsFrom(ids, res);
+}
+
+/**
+ * `readWindows` for a display list (the lane list, a batch of cards): the same two lens reads per Window in its own
+ * aggregate3, decoded in slices that yield to the main thread (D-184) — the lane list's decode was one long task on a
+ * cold page. Not for the order lane's gate, which rides the tap's one batched round (D-142/D-150).
+ */
+export async function readWindowsSliced(ids: readonly MarketId[]): Promise<Map<MarketId, WindowFacts>> {
+  if (ids.length === 0) return new Map();
+  const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
+  const lens = { address: venue.lens, abi: engineLensAbi as Abi } as const;
+  const res = await multicallSliced(client as unknown as SlicedClient, ids.flatMap((id) => [{ ...lens, functionName: "marketOf", args: [id] }, { ...lens, functionName: "marketRef", args: [id] }]));
+  return windowsFrom(ids, res);
+}
+
+async function windowsFrom(ids: readonly MarketId[], res: readonly { status: string; result?: unknown }[]): Promise<Map<MarketId, WindowFacts>> {
+  const out = new Map<MarketId, WindowFacts>();
   const refs = ids.map((_, i) => res[2 * i + 1]);
   const series = await readSeries(refs.flatMap((r) => (r?.status === "success" ? [(r.result as unknown as Raw).seriesId as Hex] : [])));
   ids.forEach((id, i) => {
@@ -183,16 +201,53 @@ export async function latestWindowIds(lookback = 2): Promise<MarketId[]> {
   });
 }
 
+type LevelsAnswer = readonly [readonly number[], readonly bigint[]];
+const zipLevels = ([ticks, lots]: LevelsAnswer): BookLevel[] => ticks.map((t, i) => [Number(t), BigInt(lots[i]!)] as const).filter(([, q]) => q > 0n);
+const levelsCall = (lensAddress: Address, marketId: MarketId, isBid: boolean, n: number, minRestSec: number) =>
+  ({ address: lensAddress, abi: engineLensAbi, functionName: "levels" as const, args: [marketId, isBid, BigInt(n), minRestSec, LENS_MAX_NODES] as const });
+
 /** YES-terms levels, takeable now (lens walk filter: live, unexpired, rested ≥ the Series' `minRestSec`). */
 export async function readBook(marketId: MarketId, minRestSec: number, n = BOOK_LEVELS): Promise<YesBook> {
   const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
-  const lens = { address: venue.lens, abi: engineLensAbi } as const;
   const [bids, asks] = (await client.multicall({
-    contracts: [true, false].map((isBid) => ({ ...lens, functionName: "levels" as const, args: [marketId, isBid, BigInt(n), minRestSec, LENS_MAX_NODES] as const })),
+    contracts: [true, false].map((isBid) => levelsCall(venue.lens, marketId, isBid, n, minRestSec)),
     allowFailure: false,
-  })) as unknown as [readonly [readonly number[], readonly bigint[]], readonly [readonly number[], readonly bigint[]]];
-  const zip = ([ticks, lots]: readonly [readonly number[], readonly bigint[]]): BookLevel[] => ticks.map((t, i) => [Number(t), BigInt(lots[i]!)] as const).filter(([, q]) => q > 0n);
-  return { bids: zip(bids), asks: zip(asks) };
+  })) as unknown as [LevelsAnswer, LevelsAnswer];
+  return { bids: zipLevels(bids), asks: zipLevels(asks) };
+}
+
+const bookQueue: { marketId: MarketId; minRestSec: number; n: number; resolve: (b: YesBook) => void; reject: (e: unknown) => void }[] = [];
+let bookFlush: ReturnType<typeof setTimeout> | null = null;
+
+/**
+ * `readBook` for display (the lane page, the word board): the books asked for in one macrotask go out as one
+ * aggregate3 whose decode yields between slices (D-184) — ~60 cards' books resolving at once were one blocking decode.
+ * The same lens call per side as `readBook`; the ticket's quotes keep `readBook` (fresh, the tap's own round).
+ */
+export function readBookBatched(marketId: MarketId, minRestSec: number, n = BOOK_LEVELS): Promise<YesBook> {
+  return new Promise((resolve, reject) => {
+    bookQueue.push({ marketId, minRestSec, n, resolve, reject });
+    bookFlush ??= setTimeout(() => void flushBooks(), 0);
+  });
+}
+
+async function flushBooks(): Promise<void> {
+  bookFlush = null;
+  const batch = bookQueue.splice(0);
+  try {
+    const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
+    const calls = batch.flatMap((b) => [true, false].map((isBid) => ({ ...levelsCall(venue.lens, b.marketId, isBid, b.n, b.minRestSec), abi: engineLensAbi as Abi })));
+    const res = await multicallSliced(client as unknown as SlicedClient, calls);
+    batch.forEach((b, i) => {
+      const bids = res[2 * i]!;
+      const asks = res[2 * i + 1]!;
+      if (bids.status !== "success") return b.reject(bids.error);
+      if (asks.status !== "success") return b.reject(asks.error);
+      b.resolve({ bids: zipLevels(bids.result as LevelsAnswer), asks: zipLevels(asks.result as LevelsAnswer) });
+    });
+  } catch (error) {
+    for (const b of batch) b.reject(error);
+  }
 }
 
 export interface EnginePosition {

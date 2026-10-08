@@ -11,7 +11,7 @@ import { notDeployed } from "../deployments";
 import { getLogClient, getPublicClient } from "../runtime/read-runtime";
 import { nowMs, nowSec } from "../runtime/clock";
 import { withReading } from "../runtime/reading";
-import { EngineNotDeployedError, engineVenue, latestWindowIds, readBook, readSeries, readWindows, type WindowFacts } from "../engine/lens";
+import { EngineNotDeployedError, engineVenue, latestWindowIds, readBook, readBookBatched, readSeries, readWindows, readWindowsSliced, type WindowFacts } from "../engine/lens";
 import { marketIdOf } from "../ops/venue";
 import { depthFromBook, exitFromBook, quoteFromBook } from "../engine/quote";
 import { indexLiveIds, indexSettledIds, IndexUnavailableError } from "./index-api";
@@ -48,39 +48,61 @@ async function discover(fromIndex: () => Promise<MarketId[]>, lookback: number):
  * never uses this: it reads the Window itself at submit (canon #1).
  */
 export const SHARED_READ_MS = 1_000;
+/** A read of this many Windows or more decodes in slices (the lane list, a batch of cards, D-184). */
+export const SLICED_READ_MIN = 8;
 const recent = new Map<MarketId, { atMs: number; facts: WindowFacts | null }>();
 const inflight = new Map<MarketId, Promise<WindowFacts | null>>();
+const queued = new Map<MarketId, { resolve: (facts: WindowFacts | null) => void; reject: (error: unknown) => void }>();
+let flushScheduled = false;
 
 export async function readWindowsShared(ids: readonly MarketId[], nowMsFn: () => number = Date.now): Promise<Map<MarketId, WindowFacts>> {
   const now = nowMsFn();
   const waits: [MarketId, Promise<WindowFacts | null>][] = [];
-  const want: MarketId[] = [];
   for (const id of ids) {
     const hit = recent.get(id);
     const flying = inflight.get(id);
     if (hit && now - hit.atMs <= SHARED_READ_MS) waits.push([id, Promise.resolve(hit.facts)]);
     else if (flying) waits.push([id, flying]);
-    else want.push(id);
-  }
-  if (want.length > 0) {
-    // One read for everything not answered or in flight; each id's promise settles with it.
-    const read = readWindows(want).then((m) => {
-      const at = nowMsFn();
-      for (const id of want) recent.set(id, { atMs: at, facts: m.get(id) ?? null });
-      if (recent.size > 2_000) for (const [id, v] of recent) if (at - v.atMs > SHARED_READ_MS) recent.delete(id);
-      return m;
-    });
-    const settle = read.finally(() => want.forEach((id) => inflight.delete(id)));
-    settle.catch(() => undefined);
-    for (const id of want) {
-      const one = read.then((m) => m.get(id) ?? null);
+    else {
+      // Queued for this macrotask's one read (D-184): a lane list and ~60 cards asking in the same pass share it.
+      const one = new Promise<WindowFacts | null>((resolve, reject) => queued.set(id, { resolve, reject }));
+      one.catch(() => undefined);
       inflight.set(id, one);
       waits.push([id, one]);
     }
   }
+  if (queued.size > 0 && !flushScheduled) {
+    flushScheduled = true;
+    setTimeout(() => flushShared(nowMsFn), 0);
+  }
   const out = new Map<MarketId, WindowFacts>();
   for (const [id, facts] of await Promise.all(waits.map(async ([id, p]) => [id, await p] as const))) if (facts) out.set(id, facts);
   return out;
+}
+
+/** One read for everything queued; each id's promise settles with it. */
+function flushShared(nowMsFn: () => number): void {
+  flushScheduled = false;
+  const batch = new Map(queued);
+  queued.clear();
+  const want = [...batch.keys()];
+  const read = want.length >= SLICED_READ_MIN ? readWindowsSliced(want) : readWindows(want);
+  read
+    .then(
+      (m) => {
+        const at = nowMsFn();
+        for (const id of want) {
+          const facts = m.get(id) ?? null;
+          recent.set(id, { atMs: at, facts });
+          batch.get(id)!.resolve(facts);
+        }
+        if (recent.size > 2_000) for (const [id, v] of recent) if (at - v.atMs > SHARED_READ_MS) recent.delete(id);
+      },
+      (error) => {
+        for (const q of batch.values()) q.reject(error);
+      },
+    )
+    .finally(() => want.forEach((id) => inflight.delete(id)));
 }
 
 export async function windowFacts(marketId: MarketId): Promise<WindowFacts> {
@@ -114,7 +136,8 @@ export const getOnchain = (marketId: MarketId): Promise<Reading<OnchainSnapshot>
 export const getBookDepth = (target: BookTarget, depth = 10): Promise<Reading<BookDepth>> =>
   engineReading(`depth:${target.marketId}:${depth}`, async () => {
     const w = await windowFacts(target.marketId);
-    return depthFromBook(await readBook(target.marketId, w.series.minRestSec, depth), w.series);
+    // A display read: batched with the other cards' books and decoded in slices (D-184).
+    return depthFromBook(await readBookBatched(target.marketId, w.series.minRestSec, depth), w.series);
   });
 
 export const getBookParams = (seriesId: SeriesId): Promise<Reading<BookParams>> =>
