@@ -1737,6 +1737,30 @@ that was most of a placement's life. The IOC limit still bounds what a taker get
 `minRestSec = 0`" and extends it to the buy side for the same reason. The order lane's book read no longer waits on
 the Series facts.
 
+### D-206 — the house centres on the display carried by its measured basis (S23, S24.4, 2026-10-08)
+
+**Finding:** I compared 26 minutes of RedStone's signed values on Moderato with the display feed at the same second
+(`/prices/history` against `/prices/recent`, ~130 prints a feed, 2026-10-08 17:27–17:53Z):
+
+| feed | basis | residual p50 / p90 | the signed value's 10 s move, p50 / p90 |
+|---|---|---|---|
+| BTC | 0.68 ± 1.85 bps | 1.25 / 3.04 | 2.09 / 5.26 |
+| ETH | 0.40 ± 1.90 bps | 1.29 / 3.18 | 2.67 / 6.02 |
+| SOL | 0.64 ± 2.81 bps | 2.00 / 4.36 | 4.69 / 12.19 |
+| TSLA | 0.30 ± 0.72 bps | 0.30 / 1.15 | 1.23 / 4.30 |
+| NVDA | 0.33 ± 0.87 bps | 0.49 / 1.41 | 3.26 / 7.36 |
+
+The guard's envelope (D-196, F-S23-01) keeps the pair uncrossable at both the signed fair and the display fair. That
+means paying for the signed value's staleness. Near the line on a 5m Window, where 1 bp is ~30–37 ticks, it left 28¢
+spreads: the terminal's trade bought at 36¢ and could sell at 8¢ (acceptance S23, run 37815563808).
+
+**Decision:** once a signed feed has a measured basis (≥ 12 prints), the seed maker centres on
+`display × e^basis`, the best estimate of what that feed reads now. It widens the normal half spread only by what the
+estimate can be off by: the display quote's own age (σ√age) plus the basis's standard error, never under 0.5 bp. The
+pull rule still comes first (feeds disagreeing past 6σ√lag and 25 bps means one is wrong), and the envelope stays the
+rule until a feed has its basis. Settlement is unchanged: Windows settle on RedStone's signed prints only.
+**Supersedes** D-196's "the display price is a risk signal only" for the maker's centre.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

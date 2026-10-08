@@ -12,6 +12,7 @@ import type { DisplayFeed } from "../../display/types";
 import type { SpotFeed, SpotQuote } from "../../prices/spot";
 import type { SeedMakerEnv } from "./env";
 import { fairYesTicks, TRADING_YEAR_SEC } from "./fair";
+import type { BasisTracker } from "./basis";
 import { divergenceGuard } from "./guard";
 import { inExitTail, makerPhase, STOP_BEFORE_LOCK_SEC, type MakerPhase } from "./quote";
 
@@ -32,8 +33,10 @@ export interface LaneInput {
   nowSec: number;
   status: SessionStatus | null;
   spot: SpotFeed | null;
-  /** The chart line's feed: a risk signal only (`guard.ts`); null leaves the quote as the signed spot gives it. */
+  /** The chart line's feed (`guard.ts`); null leaves the quote as the signed spot gives it. */
   display?: DisplayFeed | null;
+  /** The display's basis to each signed feed (D-206): with it, quotes centre on the display carried by its basis. */
+  basis?: BasisTracker | null;
   /** Wall time, for the display quote's age. */
   nowMs?: number;
   halts: HaltBoard;
@@ -64,8 +67,9 @@ function regular(i: LaneInput): LaneQuote {
 /** Applies the divergence guard to a quoting lane: widen by the display's shift of the fair, or pull. */
 function guarded(i: LaneInput, spot: SpotQuote, fairAt: (spotE8: bigint) => number, yearSec: number, q: LaneQuote): LaneQuote {
   if (q.fairTicks === null || !i.display) return q;
+  const basis = i.basis?.observe(spot.symbol, i.symbol, spot.priceE8, spot.publishTimeSec) ?? null;
   const g = divergenceGuard({
-    signedE8: spot.priceE8, signedAtSec: spot.publishTimeSec, display: i.display.latest(i.symbol), nowMs: i.nowMs ?? Date.now(),
+    signedE8: spot.priceE8, signedAtSec: spot.publishTimeSec, display: i.display.latest(i.symbol), nowMs: i.nowMs ?? Date.now(), basis,
     sigmaBps: i.env.sigmaBps(i.symbol), yearSec, fairTicks: q.fairTicks, fairAt, halfSpreadTicks: q.halfSpreadTicks ?? i.env.halfSpreadTicks,
   });
   if (g.action === "pull") return { phase: "pull", fairTicks: null, maxCashPerWindow: q.maxCashPerWindow, why: g.note };

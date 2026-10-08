@@ -49,4 +49,22 @@ describe("the seed maker's divergence guard", () => {
     // 20 bps is inside the basis floor: widen, don't pull.
     expect(divergenceGuard(base(25_050_000_000n)).action).toBe("quote");
   });
+
+  it("centres on the display carried by its measured basis, and widens only by what that estimate can be off by (D-206)", () => {
+    const basis = { meanBps: 1, seBps: 0.2, samples: 60 };
+    const display = 25_010_000_000n; // +4 bps over a signed value 8 s old
+    const g = divergenceGuard(base(display, { basis }));
+    if (g.action !== "quote") throw new Error("expected a quote");
+    const estimate = BigInt(Math.round(Number(display) * Math.exp(1 / 10_000)));
+    expect(g.fairTicks).toBe(fairAt(estimate));
+    const envelope = divergenceGuard(base(display));
+    if (envelope.action !== "quote") throw new Error("expected a quote");
+    expect(g.halfSpreadTicks).toBeGreaterThanOrEqual(30);
+    expect(g.halfSpreadTicks).toBeLessThan(envelope.halfSpreadTicks);
+    expect(g.note).toMatch(/alpaca \+1\.0 bps basis/);
+  });
+
+  it("still pulls on feeds that disagree, basis or not", () => {
+    expect(divergenceGuard(base(25_250_000_000n, { basis: { meanBps: 0.5, seBps: 0.1, samples: 60 } })).action).toBe("pull");
+  });
 });

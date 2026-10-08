@@ -10,10 +10,18 @@
  *   `BASIS_FLOOR_BPS`, the ordinary IEX-vs-consolidated or one-venue-vs-median basis) pulls the Window: one of the two
  *   feeds is wrong, and nothing is quoted until they agree.
  * A display quote older than `DISPLAY_FRESH_MS`, missing, or itself RedStone's (the feed's fallback) changes nothing. Floats only inside; integers out. Pure.
+ *
+ * D-206 (2026-10-08): once the display's basis to the signed feed is measured (`basis.ts`), the pair is centred on the
+ * display price carried by that basis — the best estimate of what the signed feed reads now — and widened only by what
+ * that estimate can be off by: the display quote's own age (σ√age) and the basis' standard error, never under half a
+ * bp. The envelope above stays the rule until a feed has its basis, and the pull rule always comes first.
  */
 import type { DisplayQuote } from "../../display/types";
+import type { BasisEstimate } from "./basis";
 
 export const DISPLAY_FRESH_MS = 5_000;
+/** The least the display-centred estimate is taken to be off by, bps. */
+export const MIN_ESTIMATE_BPS = 0.5;
 export const K_PULL = 6;
 export const BASIS_FLOOR_BPS = 25;
 /** The signed value's age is floored at one RedStone poll. */
@@ -32,7 +40,11 @@ export interface GuardInput {
   fairTicks: number;
   fairAt: (spotE8: bigint) => number;
   halfSpreadTicks: number;
+  /** The display's measured basis to this signed feed (D-206); null keeps the envelope. */
+  basis?: BasisEstimate | null;
 }
+
+const scaled = (e8: bigint, logBps: number) => BigInt(Math.round(Number(e8) * Math.exp(logBps / 10_000)));
 
 export type Guard = { action: "quote"; fairTicks: number; halfSpreadTicks: number; note: string | null } | { action: "pull"; note: string };
 
@@ -45,6 +57,16 @@ export function divergenceGuard(i: GuardInput): Guard {
   const gapBps = Math.round(gap * 10_000);
   if (gapBps > BASIS_FLOOR_BPS && gap > K_PULL * expected) {
     return { action: "pull", note: `display ${i.display.source} ${gapBps} bps off the signed value (> ${K_PULL}σ over ${Math.round(lagSec)} s)` };
+  }
+  if (i.basis) {
+    const ageSec = Math.max(0, (i.nowMs - i.display.atMs) / 1000);
+    const offBps = Math.max(MIN_ESTIMATE_BPS, i.basis.seBps + i.sigmaBps * Math.sqrt(ageSec / i.yearSec));
+    const estimate = scaled(i.display.priceE8, i.basis.meanBps);
+    const centre = i.fairAt(estimate);
+    const hi = i.fairAt(scaled(estimate, offBps));
+    const lo = i.fairAt(scaled(estimate, -offBps));
+    const half = i.halfSpreadTicks + Math.max(Math.abs(hi - centre), Math.abs(centre - lo));
+    return { action: "quote", fairTicks: centre, halfSpreadTicks: half, note: `${i.display.source} ${i.basis.meanBps >= 0 ? "+" : ""}${i.basis.meanBps.toFixed(1)} bps basis ±${offBps.toFixed(1)}` };
   }
   const displayFair = i.fairAt(i.display.priceE8);
   if (displayFair === i.fairTicks) return { action: "quote", fairTicks: i.fairTicks, halfSpreadTicks: i.halfSpreadTicks, note: null };

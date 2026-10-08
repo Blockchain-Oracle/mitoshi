@@ -10,6 +10,7 @@ import { TEMPO } from "@cwf/clients";
 import { chainNowSec, createOpsClient, fetchMarkets, listSeries, marketIdOf, sendOps, venueOf, type SeriesView } from "@cwf/markets/ops";
 import { laneKey } from "@cwf/core";
 import { errorText, runActor, roleKey, type VenueDeps } from "../../runtime";
+import { createBasisTracker } from "./basis";
 import { readSeedMakerEnv } from "./env";
 import { laneQuote } from "./lanes";
 import type { Placed } from "./quote";
@@ -31,6 +32,7 @@ export function startSeedMaker(deps: VenueDeps): { stop: () => void } {
   let series: SeriesView[] = [];
   let listedMs = 0;
   const placed = new Map<string, Placed>();
+  const basis = deps.display ? createBasisTracker(deps.display) : null;
   let txCount = 0;
   let recent: string[] = [];
 
@@ -70,7 +72,7 @@ export function startSeedMaker(deps: VenueDeps): { stop: () => void } {
       await Promise.all(jobs.slice(i, i + CONCURRENCY).map(async ({ s, m }) => {
         const label = `${laneKey(s.symbol!, s.lane!, s.cadenceSec)} #${m.index}`;
         const at = clockSec();
-        const lane = laneQuote({ lane: s.lane!, symbol: s.symbol!, market: m, nowSec: at, status, spot: deps.spot, display: deps.display, halts, env });
+        const lane = laneQuote({ lane: s.lane!, symbol: s.symbol!, market: m, nowSec: at, status, spot: deps.spot, display: deps.display, basis, halts, env });
         try {
           const r = await tendWindow({ client, venue, env, dryRun, nowSec: at, clockSec, log: deps.log }, s, m, lane, placed.get(m.marketId) ?? null, label);
           txCount += r.txs.length;
@@ -93,5 +95,6 @@ export function startSeedMaker(deps: VenueDeps): { stop: () => void } {
     };
   };
   deps.log(`seed maker ${client.address ?? "(no key)"}: ${env.quoteLots} lots, ±${env.halfSpreadTicks} ticks, caps ${env.maxCashPerWindow}/${env.gapMaxCash}/${env.allDayMaxCash} base`);
-  return runActor({ name: "seed-maker", log: deps.log, dryRun, everyMs: env.refreshMs, pass });
+  const actor = runActor({ name: "seed-maker", log: deps.log, dryRun, everyMs: env.refreshMs, pass });
+  return { stop: () => (basis?.stop(), actor.stop()) };
 }
