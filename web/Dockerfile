@@ -28,9 +28,11 @@ RUN --mount=type=cache,id=mitoshi-pnpm-store,target=/pnpm/store \
 
 COPY . .
 
-# NEXT_PUBLIC_* values are inlined at build; Coolify passes build-time variables as ARGs before this line.
+# NEXT_PUBLIC_* values are inlined at build; Coolify passes build-time variables as ARGs before this line. One build id
+# for the whole build (every Next worker sees the same value): `/api/version` and the page bundle carry it, so a page
+# from an older deploy offers Refresh (S23h).
 RUN --mount=type=cache,id=mitoshi-next-cache,target=/app/web/.next/cache \
-    pnpm --filter @cwf/web build
+    NEXT_PUBLIC_BUILD_ID="${NEXT_PUBLIC_BUILD_ID:-$(date -u +%Y%m%d%H%M%S)}" pnpm --filter @cwf/web build
 
 ENV NODE_ENV=production \
     PORT=3000 \

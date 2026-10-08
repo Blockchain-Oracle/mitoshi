@@ -33,7 +33,7 @@ export function SessionBanners() {
   }
   if (!session.isConnected && !dismissed) {
     return (
-      <div className={restoring ? "shell-banner invisible" : "shell-banner"} role={restoring ? undefined : "status"} aria-hidden={restoring || undefined}>
+      <div className={restoring ? "shell-banner invisible" : "shell-banner"} data-kind="signed-out" role={restoring ? undefined : "status"} aria-hidden={restoring || undefined}>
         <span>{SESSION_BANNER.signedOut}</span>
         <span className="flex gap-2">
           <button type="button" onClick={session.connect}>{SESSION_BANNER.signIn}</button>

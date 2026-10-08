@@ -80,6 +80,28 @@ export const TERMINAL = {
     adding: (symbol: string) => `Adding to ${symbol}…`,
     added: (symbol: string) => `Added to ${symbol}`,
   },
+  update: {
+    title: "New version available",
+    body: "Refresh to get the latest Mitoshi.",
+    refresh: "Refresh",
+  },
+  tour: {
+    label: "How the terminal works",
+    skip: "Skip",
+    back: "Back",
+    next: "Next",
+    step: (n: number) => `Step ${n}`,
+    start: "Start trading",
+    later: "Look around first",
+    network: "This is Tempo testnet: testnet dollars from the faucet, no real money.",
+    steps: [
+      { title: "Watch the market", body: "A live price line is the whole workspace — Coinbase and exchange trades, with RedStone's signed value marked beside it. No forms, no clutter." },
+      { title: "Tap UP or DOWN", body: "Think it closes above the line? Tap UP. Below? Tap DOWN. One tap buys the call on this Window — no prompt once one-tap is on." },
+      { title: "Watch what it's worth", body: "The pill shows what Close would pay you right now, live on the line — up colour while you're ahead, down while you're behind." },
+      { title: "Trail to lock profit", body: "Once you're past break-even, tap Trail. It follows the price your way and closes if it comes back — while Mitoshi is open." },
+      { title: "Close to bank it", body: "Tap Close any time to take the profit or cut the loss. Hold to the close and the Window settles on the signed print." },
+    ],
+  },
   replay: {
     title: (side: string, symbol: string) => `Replay · ${side} ${symbol}`,
     realized: "Realized",

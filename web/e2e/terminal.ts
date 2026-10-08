@@ -1,5 +1,5 @@
 /**
- * The terminal (S23, D-192): `/trade` resolves to a symbol, the line follows live ticks (the price moves and names its
+ * The terminal (S23, D-192): the first visit's tour (Skip closes it), `/trade` resolves to a symbol, the line follows live ticks (the price moves and names its
  * feed), the Window chip says how long the Window trades, the stack and the buttons read, the markets drawer switches
  * symbol in place (no reload), the settings drawer sets the size, axe on both drawers; screenshots at 1440 and 390 in
  * both themes.
@@ -38,6 +38,14 @@ for (const theme of ["dark", "light"] as const) {
     await settle(page);
     const tag = `${theme}/${label}`;
 
+    await check(`${tag}: the first visit opens the five-step tour; Skip closes it for good`, async () => {
+      const tour = page.getByRole("dialog");
+      await expect(tour.getByText("Watch the market")).toBeVisible({ timeout: 60_000 });
+      await page.screenshot({ path: join(out, `tour-${theme}-${label}.png`) });
+      await axeOn(page);
+      await tour.getByRole("button", { name: "Skip" }).click();
+      await expect(tour).toBeHidden();
+    });
     await check(`${tag}: /trade lands on a symbol and titles the tab`, async () => {
       await page.waitForURL(/\/trade\/[A-Z]{2,6}$/);
       await expect(page).toHaveTitle(/\(([A-Z]{2,6})\) \| Mitoshi/);

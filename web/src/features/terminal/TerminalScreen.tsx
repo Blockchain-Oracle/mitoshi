@@ -42,6 +42,9 @@ import { PositionDetails } from "./ui/PositionDetails";
 import { ReactionOverlay } from "./ui/ReactionOverlay";
 import { useChartFeedback } from "./useChartFeedback";
 import { useReplayRecorder } from "./replay";
+import { useAppUpdate } from "./useAppUpdate";
+import { setTradeSettings, useTradeSettingsState } from "./settings";
+import { Tutorial } from "./ui/Tutorial";
 import dynamic from "next/dynamic";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 
@@ -125,6 +128,14 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
     s.overlay.current = { ...base, levels, pnl: pnlBase === null ? null : Number(pnlBase) / 1e6, pnlText: pnlBase === null ? "" : masked ? SHELL.masked : livePnlText(pnlBase) };
   }
   const [depth, setDepth] = useState(false);
+  useAppUpdate();
+  // First visit: the five-step tour, once the browser's settings have loaded with it unseen.
+  const settingsState = useTradeSettingsState();
+  const tourOpen = settingsState !== null && !settingsState.tutorialSeen;
+  const endTour = (choice: "start" | "later" | "skip") => {
+    setTradeSettings({ tutorialSeen: true });
+    if (choice === "start" && !session.isConnected) session.connect();
+  };
   const fb = useChartFeedback({ symbol, spot: s.spot.price, active: s.active, value: activeValue, linePrice: s.openingRaw === null ? null : Number(s.openingRaw) / 1e8 });
   // Every open position's path is recorded for its replay; the Line is known for the Window on screen.
   const lineOnScreen = s.openingRaw === null ? null : Number(s.openingRaw) / 1e8;
@@ -224,6 +235,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
           ) : null}
         </aside>
       </div>
+      <Tutorial open={tourOpen} onDone={endTour} />
       <MarketsDrawer open={drawer.open === DRAWERS.markets} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} set={s.win.set} nowSec={s.nowSec} onPick={pick} />
       <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} capped={s.capped ? s.capReason : null} />
       {s.address ? (

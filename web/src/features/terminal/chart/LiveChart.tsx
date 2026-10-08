@@ -8,6 +8,7 @@ import { useEffect, useRef, type RefObject } from "react";
 import { ensureLiveTicks } from "@/features/prices/stream-config";
 import { webEnv } from "@/lib/env";
 import { haptic } from "@/lib/haptics";
+import { whenSplashDone } from "@/lib/splash";
 import { CandleView } from "./candle-view";
 import type { CandleInterval } from "./candles";
 import { ChartEngine, type ChartOverlay, type ChartTheme, type FrameInfo } from "./chart-engine";
@@ -99,7 +100,10 @@ export function LiveChart({ symbol, overlay, onFrame, view = "line", interval = 
       raf = requestAnimationFrame(loop);
     };
     resize();
-    const cancelStart = afterFirstPaint(() => (raf = requestAnimationFrame(loop)));
+    // Tradash starts the loop once the splash has gone (SPEC-chart §1), after a first paint; the price keeps arriving.
+    let cancelPaint = () => undefined as void;
+    const cancelSplash = whenSplashDone(() => (cancelPaint = afterFirstPaint(() => (raf = requestAnimationFrame(loop)))));
+    const cancelStart = () => (cancelSplash(), cancelPaint());
     const ro = new ResizeObserver(resize);
     ro.observe(box);
     const mo = new MutationObserver(() => {

@@ -1,6 +1,6 @@
 /**
  * A real trade on the terminal (S23c–d, D-197), on Moderato: a fresh passkey (Chrome virtual authenticator) signs up
- * from the terminal's own Sign in, takes the faucet, arms the wallet key, taps UP on `/trade/BTC` (no prompt), sees
+ * from the first visit's tour ("Start trading", D-191), takes the faucet, arms the wallet key, taps UP on `/trade/BTC` (no prompt), sees
  * the position with what Close pays, and closes it in one tap (a requote outside the tolerance is taken from the
  * toast's "Close for $X"). Every transaction hash the relay sends is printed for `cast receipt`.
  *
@@ -44,8 +44,12 @@ let failed = false;
 try {
   await page.goto(`${base}/trade/${symbol}`, { waitUntil: "load" });
   await settle(page);
-  // Sign up from the terminal's own equity pill.
-  await page.locator(".tm-equity:visible").first().click();
+  // The first visit's tour, all five steps, ends in "Start trading": the real sign-up (D-191).
+  const tour = page.getByRole("dialog");
+  await expect(tour.getByText("Watch the market")).toBeVisible({ timeout: 120_000 });
+  for (let i = 0; i < 4; i++) await tour.getByRole("button", { name: "Next" }).click();
+  await tour.getByRole("button", { name: "Start trading" }).click();
+  log({ step: "tour", ok: true });
   await page.getByLabel(/Name this passkey/).fill(`terminal ${Date.now()}`);
   await page.getByRole("button", { name: "Create my account" }).click();
   const dialog = page.getByRole("dialog");
