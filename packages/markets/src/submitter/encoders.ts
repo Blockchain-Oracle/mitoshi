@@ -19,7 +19,7 @@ import { encodeVaultIntent } from "../vault/calls";
 /** The relay sponsors at most 8 calls per transaction (C.3.3). */
 export const MAX_REVOKE = 8;
 
-export type RelayArea = "wallet" | "noop" | "keys" | "engine" | "vault" | "parlay" | "range" | "maker" | "leverage" | "private" | "arena" | "strategies" | "stocks" | "themes" | "launch" | "bridge" | "agents";
+export type RelayArea = "wallet" | "noop" | "keys" | "engine" | "vault" | "vault2" | "parlay" | "range" | "maker" | "leverage" | "private" | "arena" | "strategies" | "stocks" | "themes" | "launch" | "bridge" | "agents";
 
 export interface EncodedIntent {
   area: RelayArea;

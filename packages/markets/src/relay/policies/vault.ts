@@ -32,7 +32,8 @@ const targets: readonly Address[] = Object.values(byChain).flatMap((areas) => (a
 const LIVE_MEMO_MS = 15_000;
 const liveMemo = new Map<string, number>();
 
-/** `placeFor(grantId, …)` is sponsored only for the grant's own actor while the grant is live; every other call passes. */
+/** `placeFor(grantId, …)` is sponsored only for the grant's own actor while the grant is live; every other call passes.
+ *  v1 and v2 share `grantOf` / `isGrantLive`, so v2's policy (`vault2.ts`) uses the same check. */
 export const vaultSender: AsyncSenderCheck = async ({ from, call, functionName, args, read }) => {
   if (functionName !== "placeFor") return true;
   if (!read || !call.to) return false;
