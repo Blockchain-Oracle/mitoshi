@@ -2,7 +2,7 @@
 // (stage-23 "Window rule"): crypto 5m, Regular in NYSE hours, 24/7 off-hours, the weekend Gap, prelisted Windows.
 import type { EventMarket, LaneBasis, LaneSet } from "@cwf/core";
 import { describe, expect, it } from "vitest";
-import { defaultLane, lanesFor, pickWindow } from "./pick-window";
+import { defaultLane, gap0400NextOpen, lanesFor, pickWindow } from "./pick-window";
 
 let n = 0;
 const w = (asset: string, lane: LaneBasis, intervalSec: number, start: number, extra: Partial<EventMarket> = {}): EventMarket =>
@@ -56,5 +56,23 @@ describe("the terminal's Window rule", () => {
     const set = laneSet([w("TSLA", "regular", 300, T - 10)]);
     expect(defaultLane(set, "SPCX", T, null)).toBeNull();
     expect(defaultLane(set, "TSLA", T, "stock24:300")?.basis).toBe("regular");
+  });
+});
+
+describe("RedStone's 04:00 ET gap on a 24/7 stock lane (D-185)", () => {
+  // 2026-10-08 is EDT: 04:00 ET is 08:00Z.
+  const at = (iso: string) => Date.parse(iso) / 1000;
+  it("names the next listed slot for each cadence while the gap's slots are empty", () => {
+    expect(gap0400NextOpen("stock24", 300, at("2026-10-08T07:57:00Z"))).toBe(at("2026-10-08T08:05:00Z"));
+    expect(gap0400NextOpen("stock24", 300, at("2026-10-08T08:02:00Z"))).toBe(at("2026-10-08T08:05:00Z"));
+    expect(gap0400NextOpen("stock24", 900, at("2026-10-08T07:50:00Z"))).toBe(at("2026-10-08T08:15:00Z"));
+    expect(gap0400NextOpen("stock24", 3_600, at("2026-10-08T07:10:00Z"))).toBe(at("2026-10-08T09:00:00Z"));
+  });
+  it("is null outside the gap, on other lanes, and under EST at 08:00Z", () => {
+    expect(gap0400NextOpen("stock24", 300, at("2026-10-08T08:06:00Z"))).toBeNull();
+    expect(gap0400NextOpen("crypto24", 300, at("2026-10-08T07:57:00Z"))).toBeNull();
+    expect(gap0400NextOpen("regular", 300, at("2026-10-08T07:57:00Z"))).toBeNull();
+    expect(gap0400NextOpen("stock24", 300, at("2026-12-08T07:57:00Z"))).toBeNull();
+    expect(gap0400NextOpen("stock24", 300, at("2026-12-08T08:57:00Z"))).toBe(at("2026-12-08T09:05:00Z"));
   });
 });

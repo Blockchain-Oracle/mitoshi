@@ -52,7 +52,11 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   daily limit (`useKeyRemaining`), the Trading Balance's room and the book (a thin book caps the tap, "max $X"); the arm
   card; scheduled calls on a prelisted Window; SPCX and PLTR/AMD notes (the next Regular open from ops' `session`
   topic); `/markets/[id]` → `/trade?w=` (the screen moves to the Window's ticker, successor note kept); `/markets` rows →
-  the terminal (23j); the rail's Trade sub-list (23g). Still open: the Sensei entry; the 04:00 ET gap note (D-185).
+  the terminal (23j); the rail's Trade sub-list (23g). The 04:00 ET gap note (D-185): `gap0400NextOpen` applies the
+  roller's rule (`isRedStone24x7Gap`) to the 24/7 lane on screen. "No 24/7 Window across RedStone's 04:00 ET gap —
+  next opens 4:05" shows beside the Window chip, and in place of it when no lane is live; tested for 5m/15m/60m and
+  EDT/EST. Waits on its stage: the Sensei entry needs S13's Sensei (L-41). Until then the nav's Sensei item
+  (`/markets?sensei=1`) opens nothing; S13 makes it the assistant drawer, from the terminal too.
 - [ ] 23d Live value + one-tap CLOSE (D-197): exit read with `minRestSec = 0`, the fair-value reprice and "≈";
   `submitter/cash-out.ts` (parallel reads, `onSigned`, tolerance and auto-accepted requote, "Close for $X" toast);
   `portfolio/useCashOut.ts` loses the hold; `vault/order.ts` sell lane (`placeFor(isBuy=false)`); `tap-session.ts`

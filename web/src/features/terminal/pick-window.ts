@@ -1,7 +1,7 @@
 // Ported from Owarine ecb7565b:web/src/features/terminal/useTerminalWindow.ts (`pickWindow`, `lanesFor`) — Mitoshi's
 // lanes are (basis, cadence) pairs (`groupIntoLanes`), Windows run back to back on a lane, and readiness comes from the
 // Window's own phase rather than a ladder's "quoting" flag. Pure.
-import { laneLabel, type EventMarket, type LaneBasis, type LaneSet } from "@cwf/core";
+import { isRedStone24x7Gap, laneLabel, type EventMarket, type LaneBasis, type LaneSet } from "@cwf/core";
 import { noEntryCutoffSec } from "@cwf/core/lifecycle";
 import { laneTabKey, type LaneTabKey } from "@/features/markets/data/lane-view";
 
@@ -58,4 +58,18 @@ export function defaultLane(set: LaneSet | null, asset: string, nowSec: number, 
   const askedLane = asked ? lanes.find((l) => l.key === asked) : undefined;
   if (askedLane) return askedLane;
   return lanes.find((l) => laneMarkets(set, l.key, asset).some((m) => enterable(m, nowSec))) ?? lanes[0] ?? null;
+}
+
+/**
+ * RedStone's 04:00 ET `---24_7` gap on a 24/7 stock lane (D-185): the roller lists no Window that opens or closes at
+ * 04:00:00 ET, so the slot holding `nowSec` is empty. The next slot that does list, so the terminal can say why the
+ * lane sits idle and when it resumes; null outside the gap or on any other lane.
+ */
+export function gap0400NextOpen(basis: LaneBasis, intervalSec: number, nowSec: number): number | null {
+  if (basis !== "stock24" || intervalSec <= 0) return null;
+  const listed = (start: number) => !isRedStone24x7Gap(start) && !isRedStone24x7Gap(start + intervalSec);
+  const start = nowSec - (nowSec % intervalSec);
+  if (listed(start)) return null;
+  for (let next = start + intervalSec; next <= start + 3 * intervalSec; next += intervalSec) if (listed(next)) return next;
+  return null;
 }

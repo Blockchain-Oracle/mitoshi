@@ -21,6 +21,7 @@ import { LiveChart, type ChartHandle } from "./chart/LiveChart";
 import { formatPrice, priceDecimals } from "./chart/engine";
 import { TERMINAL } from "./copy";
 import { clockText, livePnlText, money } from "./format";
+import { gap0400NextOpen } from "./pick-window";
 import { replaceTradeParams } from "./useTerminalWindow";
 import { useMarketSession } from "./market-session";
 import { useTerminalState } from "./useTerminalState";
@@ -72,6 +73,8 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   const drawer = useDrawerParam();
   const tapArmed = useTapArmed();
   const nyse = useMarketSession();
+  // The 24/7 lane on screen sits idle across RedStone's 04:00 ET gap (D-185): say why and when it resumes.
+  const laneGapNext = s.win.lane ? gap0400NextOpen(s.win.lane.basis, s.win.lane.intervalSec, s.nowSec) : null;
   const sessionView = useSessionView();
   // Signed in but neither one-tap path on: every tap would prompt. The card says so and arms in one passkey prompt.
   const needsArm = session.isConnected && !tapArmed && sessionView.status !== "armed";
@@ -218,8 +221,9 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
             {s.win.lanes.length ? (
               <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText} />
             ) : s.win.loading ? null : (
-              <span className="tm-glass tm-note">{noWindowNote(s.ticker, nyse)}</span>
+              <span className="tm-glass tm-note">{noWindowNote(s.ticker, nyse, s.nowSec)}</span>
             )}
+            {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
           </div>
           <div className="tm-stack-slot">
             <SettingsStack asset={symbol} size={stakeText} pays={market ? pays : "—"} trailing={`${trailWords(s.settings.trailPct)}%`} onOpen={() => drawer.show(DRAWERS.settings)} />
@@ -315,9 +319,11 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
 }
 
 /** Why a symbol lists no Window right now (the state table, stage-23 "Window rule"). */
-function noWindowNote(ticker: { redstoneFeedId: string | null; redstone24x7FeedId: string | null; kind: string } | null, nyse: { state: string | null; label: string | null }): string {
+function noWindowNote(ticker: { redstoneFeedId: string | null; redstone24x7FeedId: string | null; kind: string } | null, nyse: { state: string | null; label: string | null }, nowSec: number): string {
   if (ticker && !ticker.redstoneFeedId) return TERMINAL.noWindow.spcx;
   const regularHours = nyse.state === "regular" || nyse.state === "early-close";
+  const gapNext = ticker?.kind === "stock" && ticker.redstone24x7FeedId && !regularHours ? gap0400NextOpen("stock24", 300, nowSec) : null;
+  if (gapNext !== null) return TERMINAL.noWindow.gap0400(clockText(gapNext));
   if (ticker?.kind === "stock" && !ticker.redstone24x7FeedId && !regularHours && nyse.label) return TERMINAL.noWindow.regularOnly(nyse.label.replace(/^Opens /, ""));
   return TERMINAL.noWindow.none;
 }

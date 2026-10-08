@@ -26,7 +26,7 @@ export const TERMINAL = {
   noWindow: {
     spcx: "No Windows — no signed price source",
     regularOnly: (open: string) => `No 24/7 lane — next Regular opens ${open}`,
-    gap0400: "No 24/7 Window across RedStone's 04:00 gap — next opens 04:05",
+    gap0400: (next: string) => `No 24/7 Window across RedStone's 04:00 ET gap — next opens ${next}`,
     none: "No Window right now — the next one opens soon",
   },
   buttons: {
