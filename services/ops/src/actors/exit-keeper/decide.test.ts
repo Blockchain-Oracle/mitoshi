@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { judge, retryDelayMs, trailStep, type Armed } from "./decide";
+import { judge, leadTicks, retryDelayMs, trailStep, type Armed } from "./decide";
 
 const E8 = 100_000_000n;
 const UP: Armed = { side: "up", takeProfitBase: 1_500_000n, stopLossBase: 400_000n, trailBps: 50 };
@@ -33,5 +33,12 @@ describe("the exit keeper", () => {
     expect(retryDelayMs(0)).toBe(2_000);
     expect(retryDelayMs(3)).toBe(6_000);
     expect(retryDelayMs(50)).toBe(20_000);
+  });
+
+  it("leads the floor by the clock's drift: 3 ticks, or 1.5 % of a dear side, never past 99.9 ¢", () => {
+    expect(leadTicks(100)).toBe(3);
+    expect(leadTicks(463)).toBe(7);
+    expect(leadTicks(900)).toBe(14);
+    expect(leadTicks(995)).toBe(4);
   });
 });

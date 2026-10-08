@@ -20,7 +20,7 @@ import {
 import { errorText, roleKey, runActor, type VenueDeps } from "../../runtime";
 import { fetchRedstoneLatest } from "../../prices/redstone-gateway";
 import { spotProofOf } from "../../prices/spot-proof";
-import { judge, retryDelayMs, trailStep } from "./decide";
+import { judge, leadTicks, retryDelayMs, trailStep } from "./decide";
 
 const DEFAULT_REFRESH_MS = 2_000;
 const NS = 1_000_000_000n;
@@ -112,8 +112,10 @@ export function startExitKeeper(deps: VenueDeps): { stop: () => void } {
       } catch (error) {
         return await release(`no floor: ${engineErrorName(error) ?? errorText(error).slice(0, 120)}`);
       }
-      const own = exitLimitOwnTicks(floorRaw, w.grid.tickBase);
-      if (own === null) return await release("the floor is the whole payout");
+      const floorTicks = exitLimitOwnTicks(floorRaw, w.grid.tickBase);
+      if (floorTicks === null) return await release("the floor is the whole payout");
+      // The floor moves with the block's clock: the limit leads it so the sale still clears it when included.
+      const own = floorTicks + leadTicks(floorTicks);
       if (!read!.book || lotsAtOrAbove(read!.book, row.side, own) === 0n) return await release(`no bid at or above the floor (${(own / 10).toFixed(1)}¢)`);
       const expireNs = BigInt(Math.min(nowSec + 60, w.lockAtSec)) * NS;
       const call = exitForCall(ev.vault, { grantId: grant.grantId, marketId: market, side: row.side, ownTicks: own, tickBase: w.grid.tickBase, quantityRaw: lots * w.grid.lotBase, expireNs, proof: proof.payload });

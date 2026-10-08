@@ -53,3 +53,12 @@ export function judge(a: Armed, read: PassRead, nowSec: number, trailIsHit: bool
 
 /** A sale that didn't land waits a little longer each time (the floor may sit above the bids for a while). */
 export const retryDelayMs = (attempts: number): number => Math.min(20_000, 2_000 * Math.max(1, attempts));
+
+/**
+ * Ticks the sale's limit leads the floor read by: the guard prices on `block.timestamp` (τ to the close), so the floor
+ * of a side worth more than half rises between the keeper's read and the block that includes the sale — a limit at the
+ * read floor came back `BelowFairFloor` three times on Moderato (2026-10-08). max(3 ticks, 1.5 %), never past 999.
+ */
+export function leadTicks(ownTicks: number): number {
+  return Math.min(999 - ownTicks, Math.max(3, Math.ceil(ownTicks * 0.015)));
+}

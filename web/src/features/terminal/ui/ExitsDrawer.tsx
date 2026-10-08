@@ -20,7 +20,7 @@ import { setExits } from "../entries";
 import { EXIT_MODES, exitCaption, exitError, modeText, priceText, targetFromMode, targetFromPrice, type ExitCtx, type ExitKind, type ExitMode } from "../exits-form";
 import { money, sideWord } from "../format";
 import type { TerminalPosition } from "../terminal-positions";
-import { EXIT_GRANT_SEC, EXIT_TOLERANCE_BPS, serverExitState, useExitKeeper, writeServerExit, type ServerExitState } from "../server-exits";
+import { EXIT_GRANT_SEC, EXIT_TOLERANCE_BPS, serverExitState, useExitKeeper, useServerExit, writeServerExit, type ServerExitState } from "../server-exits";
 import { tradeSettings } from "../settings";
 import type { PositionValue } from "../usePositionValue";
 import { unattendedRefusal, useSignerLasts } from "../useTrail";
@@ -74,9 +74,15 @@ function ExitCard({ kind, mode, base, onBase, ctx, asset }: { kind: ExitKind; mo
 const pctText = (bps: number) => `${(bps / 100).toFixed(bps % 100 === 0 ? 0 : 1)}%`;
 
 /** Where these exits run: with the app closed (the keeper), after one confirmation, or only in this tab. */
-function KeeperRow({ state, toleranceBps, onGrant, granting }: { state: ServerExitState; toleranceBps: number | undefined; onGrant: () => void; granting: boolean }) {
+function KeeperRow({ state, toleranceBps, waiting, onGrant, granting }: { state: ServerExitState; toleranceBps: number | undefined; waiting: string | null; onGrant: () => void; granting: boolean }) {
   if (state === "unavailable") return <p className="tm-field-hint">{TERMINAL.keeper.tabOnly}</p>;
-  if (state === "live") return <p className="tm-field-hint" data-keeper="live">{TERMINAL.keeper.runs(pctText(toleranceBps ?? EXIT_TOLERANCE_BPS))}</p>;
+  if (state === "live")
+    return (
+      <>
+        <p className="tm-field-hint" data-keeper="live">{TERMINAL.keeper.runs(pctText(toleranceBps ?? EXIT_TOLERANCE_BPS))}</p>
+        {waiting ? <p className="tm-field-hint" role="status">{TERMINAL.keeper.waiting(waiting)}</p> : null}
+      </>
+    );
   return (
     <div className="tm-card tm-exit-card" data-keeper="needs-grant">
       <p className="tm-field-hint">{TERMINAL.keeper.turnOnBody(pctText(EXIT_TOLERANCE_BPS))}</p>
@@ -93,6 +99,7 @@ function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionV
   const tx = useTxLifecycle();
   const [granting, setGranting] = useState(false);
   const keeperState = serverExitState(p, view, keeper);
+  const held = useServerExit(p.marketId, p.side);
   // The one passkey confirmation (root-signed, never sponsored): the keeper may sell at the floor until it expires.
   const grant = async () => {
     if (!keeper) return;
@@ -140,7 +147,7 @@ function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionV
       <ExitCard kind="tp" mode={mode} base={tp} onBase={setTp} ctx={ctx} asset={p.asset} />
       <ExitCard kind="sl" mode={mode} base={sl} onBase={setSl} ctx={ctx} asset={p.asset} />
       {p.trailStop !== null ? <p className="tm-field-hint">{TERMINAL.exits.trailing(usd(p.trailStop))}</p> : null}
-      <KeeperRow state={keeperState} toleranceBps={view.exitGrant?.exitToleranceBps} onGrant={() => void grant()} granting={granting} />
+      <KeeperRow state={keeperState} toleranceBps={view.exitGrant?.exitToleranceBps} waiting={held?.status === "armed" ? held.lastError : null} onGrant={() => void grant()} granting={granting} />
       <button type="button" className="tm-btn tm-btn-cta" disabled={blocked} onClick={() => void save()}>{TERMINAL.exits.save}</button>
     </>
   );

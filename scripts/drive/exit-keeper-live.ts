@@ -8,7 +8,7 @@
  *   2. Up $1, then a take-profit any value meets: the keeper sells it — the position goes to 0 and the vault's
  *      `Executed` names the keeper.
  *   3. Down $1, then a trail: with `--restart`, a far stop is stored first and the run waits for ops to restart
- *      (`/health` shows a new start), then a newer trigger puts the stop 3 bps over the spot — it fires after the restart.
+ *      (`/health` shows a new start), then a newer trigger puts the stop behind the spot — the keeper's next tick sells.
  *
  *   pnpm --filter @cwf/scripts exec tsx drive/exit-keeper-live.ts [--base https://testnet.mitoshi.xyz] [--ops https://ops.testnet.mitoshi.xyz] [--restart] [--lane crypto24]
  */
@@ -158,7 +158,10 @@ if (RESTART) {
 }
 const now = await latestSpot(feed);
 from = await reader.getBlockNumber();
-const near = await post(trigger("down", { trailBps: 10, trailStopE8: (now.medianE8 * 10_003n) / 10_000n }));
+// The stop already behind the spot (a Down trail hits when the spot is at or over it): the keeper's next display tick
+// sells. Whether a stop is hit is the rule's unit test; this is the trail's sale, end to end. (A stop 3 bps above the
+// RedStone median waited out a falling BTC whose display sat ~2 bps under the median, 2026-10-08.)
+const near = await post(trigger("down", { trailBps: 10, trailStopE8: (now.medianE8 * 9_990n) / 10_000n }));
 out("trail-posted", { status: near.status, exit: near.body.exit ?? near.body.error, spotE8: now.medianE8 });
 if (near.status !== 200) throw new Error(`the owner's own trail was refused: ${String(near.body.error)}`);
 out("trail-sold", { sale: await soldByKeeper("down", from, Math.max(30_000, (target.market.lockAtSec - nowSec() - 5) * 1000)) });
