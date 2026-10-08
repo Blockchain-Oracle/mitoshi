@@ -33,7 +33,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
           {/* Add money (`openFunds()` from anywhere) and the first-credit welcome, both lazy. */}
           <FundsHost />
           {children}
-          <ToastHost limit={1} />
+          <ToastHost limit={3} />
           <WhenDataReady>
             <PriceCache />
             <SettledToasts />

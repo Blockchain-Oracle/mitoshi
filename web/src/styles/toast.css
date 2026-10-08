@@ -42,3 +42,6 @@
 .toast-plate[data-type="warning"] {
   border-color: color-mix(in srgb, var(--color-warning) 20%, transparent);
 }
+
+/* S22 (RV-16): the stack sits top-centre, under the notch. */
+.toast-viewport-top { top: calc(env(safe-area-inset-top, 0px) + 12px); }

@@ -9,7 +9,7 @@ On `integration/t1` (D-201). Sources: Baku/roy-chain `ede3ed38` (`apps/web/src/c
   is the existing `radius.xl` (24); rail, stage, drawer and scrim colours as `SEMANTIC` aliases of existing surfaces (no
   new keys in palette/surfaces/shared/type/radius — `tokens.test.ts` pins them to Masayume); motion durations (hover
   120, drawer 380 in / 240 out). `pnpm --filter @cwf/tokens gen`, `pnpm tokens:check`.
-- [ ] 22.2 Rail, top line, stage, dock: port roy-chain `app-shell.tsx`, `rail.client.tsx`, `mobile-dock.client.tsx`,
+- [x] 22.2 Rail, top line, stage, dock: port roy-chain `app-shell.tsx`, `rail.client.tsx`, `mobile-dock.client.tsx`,
   `top-line.tsx`, `help-menu.client.tsx` into `web/src/components/shell/` — lucide icons, `layout` tokens, the active
   pill moved by a CSS transform (no motion in the shell's first-load JS), pathname read inside Suspense (S1 F-S1 finding),
   keys 1–6, the Testnet pill, compaction at height ≤ 880, the account menu and the money pill with the privacy eye at
@@ -21,17 +21,18 @@ On `integration/t1` (D-201). Sources: Baku/roy-chain `ede3ed38` (`apps/web/src/c
   focus returns); the Everything drawer (the More panel's groups + search); the shortcuts modal; toasts top-centre,
   `ToastHost limit` 3, same-id replace, loading persistent, confetti on wins; one owner for settle toasts
   (`settle-<id>`, "paying…" → "paid", `SettledToasts` merged).
-- [ ] 22.4 Retire the header, `LiveMarquee`, footer, `MobileBottomNav` and `MorePanel` from `(app)`/`(island)`;
+- [x] 22.4 Retire the header, `LiveMarquee`, footer, `MobileBottomNav` and `MorePanel` from `(app)`/`(island)`;
   `IslandChrome` → the dock; `(site)` keeps a slim public header + footer and "Open the app" → `/trade`; the parlay
   `SlipDock` and the ticket slide-over sit above the dock.
 - [ ] 22.5 Live pages in the stage grammar (page header display · body-lg · source line; filter pills; card grids;
   shape skeletons; empty/error 19745): `/markets`, `/portfolio`, `/settings/account`, `PendingRoute`; then `/parlay`,
   `/surface`, `/games/range`, `/games/moonshot` and the private desk after the S10 browser gate.
-- [ ] 22.6 Feedback engine: port Owarine `lib/sound/trade.ts` (the six synthesised cues and the synth combo/surge/slump/
-  adverse voices only — the UGLYCASH flow clips are not ported, so no audio files ship), `lib/sound/music.ts`,
-  `lib/haptics.ts`; keys `cwf.feedback.v1`; imported on the first gesture; "Sound & Vibration" in `/settings/account`;
-  tap cue + 8 ms haptic on rail, dock, drawers and chips.
-- [ ] 22.7 Register rows in `docs/design/components.md` (rail ← 21517 via Baku, dock ← 15742 via Baku, drawer 31360
+- [x] 22.6 Feedback engine: port Owarine `lib/sound/trade.ts` (the six synthesised cues and the synth combo/surge/slump/
+  adverse voices only — the UGLYCASH flow clips are not ported, so no audio files ship) and `lib/haptics.ts`; one
+  setting `cwf.feedback.v1` (`lib/feedback.ts`); engines loaded on idle; "Sound & Vibration" in `/settings/account`;
+  tap cue + 8 ms haptic on rail, dock and the Everything links. (`lib/sound/music.ts` arrives with its first user, the
+  terminal's music chip, in S23f.)
+- [x] 22.7 Register rows in `docs/design/components.md` (rail ← 21517 via Baku, dock ← 15742 via Baku, drawer 31360
   restyled, dialog 31359, toast 24297, Everything, shortcuts modal, feedback engine).
 - **Gate:** UX gate at 320/390/768/1023/1024/1279/1280/1440 × both themes (`web/e2e/ux-gate.ts --widths`); axe on every
   drawer and modal; Back closes `?d=` and restores focus; `21st review`; `pnpm perf:budgets` with the shell's delta on

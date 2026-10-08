@@ -6,6 +6,8 @@
  * to restore, and otherwise on the visitor's first interaction (D-152): a signed-out visitor who only reads never pays
  * for evaluating it (it was ~0.65 s of main-thread blocking at 4× CPU on /markets). Until it arrives the shell reads
  * signed out (as the server rendered it); a "Sign in" tapped in that window is queued and opens as soon as it loads.
+ * S22: the tap is answered at once — a small "Getting sign-in ready…" status shows until the runtime opens the modal
+ * (2026-10-08: on a slow link the ~1 MB runtime took 8–25 s, and the tap looked dead).
  */
 import { SubmitterSessionValue } from "@cwf/markets/react";
 import type { SubmitterSession } from "@cwf/markets";
@@ -15,6 +17,7 @@ import { webEnv } from "@/lib/env";
 import type { PendingOpen, WalletRuntimeProps } from "./WalletRuntime";
 import { TapSubmitterContext } from "./tap-session";
 import { SIGNED_OUT, WalletShellContext, type WalletShell } from "./wallet-shell-context";
+import { SHELL } from "@/lib/copy";
 import { useDataReady } from "../data/context";
 
 const WalletRuntime = dynamic<WalletRuntimeProps>(() => import("./WalletRuntime"), { ssr: false });
@@ -43,6 +46,7 @@ function useRuntimeWanted(): [boolean, () => void] {
 
 export function WalletShellProvider({ children }: { children: ReactNode }) {
   const pending = useRef<PendingOpen>(null);
+  const [queued, setQueued] = useState(false);
   const [runtimeShell, setRuntimeShell] = useState<WalletShell | null>(null);
   const [session, setSession] = useState<SubmitterSession | null>(null);
   const [tap, setTap] = useState<SubmitterSession | null>(null);
@@ -56,10 +60,12 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
       network: webEnv.markets.network,
       openPicker: (mode = "tempo") => {
         pending.current = { kind: "picker", mode };
+        setQueued(true);
         want();
       },
       openAccount: () => {
         pending.current = { kind: "account" };
+        setQueued(true);
         want();
       },
       disconnect: async () => undefined,
@@ -74,6 +80,7 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
   const takePending = useCallback(() => {
     const p = pending.current;
     pending.current = null;
+    setQueued(false);
     return p;
   }, []);
 
@@ -83,6 +90,12 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
         <TapSubmitterContext.Provider value={tap?.submitter ?? null}>{children}</TapSubmitterContext.Provider>
       </SubmitterSessionValue>
       {dataReady && wanted ? <WalletRuntime publish={setRuntimeShell} publishSession={setSession} publishTap={setTap} takePending={takePending} /> : null}
+      {queued && !runtimeShell ? (
+        <p className="sign-in-pending" role="status">
+          <span aria-hidden className="sign-in-pending-dot" />
+          {SHELL.signInPending}
+        </p>
+      ) : null}
     </WalletShellContext.Provider>
   );
 }

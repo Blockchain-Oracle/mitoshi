@@ -1,6 +1,8 @@
 // Ported from Masayume 68f7a09:web/src/components/shell/header/nav-items.ts — the one nav registry and its
 // route-coverage contract (fidelity list 14), with Stocks, Themes, Bridge, Reserves, Launch and Account added (L-02)
 // and discovery consolidated (ux-audit fix 14): rankings merge into "Records", personal history into "History".
+// S22 (D-189): the rail's places and the phone dock (Baku/roy-chain's Slush-measured shell) replace the header nav and
+// the pill nav; everything else lives in the Everything drawer (the former More panel), one home per destination.
 import {
   Activity, ArrowLeftRight, BarChart3, Bell, BookOpen, Bot, Building2, ChartCandlestick, ChartLine, ChartNoAxesCombined,
   CircleHelp, Clapperboard, Coins, Dices, Download, GalleryVerticalEnd, Gamepad2, Goal, Handshake, History, KeyRound,
@@ -17,7 +19,7 @@ export type NavItem = {
   icon: LucideIcon;
   external?: boolean;
   beta?: boolean;
-  /** Extra words the More panel's search matches (ux-audit fix 14). */
+  /** Extra words the Everything search matches (ux-audit fix 14). */
   keywords?: string;
   match?: { paths: readonly string[]; exact?: boolean };
 };
@@ -115,22 +117,14 @@ export const HISTORY_SECTION: NavSection = { id: "history", name: "History", des
 
 export const ACCOUNT_SECTION: NavSection = { id: "account", name: "Account", description: "Keys, alerts and recovery", items: [NAV_ITEMS.account, NAV_ITEMS.notifications, NAV_ITEMS.xRecovery] };
 
-export type DesktopNavEntry = { kind: "link"; item: NavItem } | { kind: "group"; group: NavGroup };
+/** The rail's places, in key order (1–4; 5 opens Everything). Both pillars, play, and your money (S22, D-189). */
+export const RAIL_NAV: readonly NavItem[] = [NAV_ITEMS.markets, NAV_ITEMS.stocks, NAV_ITEMS.games, NAV_ITEMS.portfolio];
 
-export const DESKTOP_NAV: readonly DesktopNavEntry[] = [
-  { kind: "link", item: NAV_ITEMS.markets },
-  { kind: "group", group: STOCKS_GROUP },
-  { kind: "link", item: NAV_ITEMS.reels },
-  { kind: "group", group: GAMES_GROUP },
-  { kind: "group", group: BUILD_GROUP },
-  { kind: "group", group: EXPLORE_GROUP },
-  { kind: "link", item: NAV_ITEMS.portfolio },
-];
+/** The phone dock: the same places, then Everything. */
+export const DOCK_NAV: readonly NavItem[] = RAIL_NAV;
 
-/** The phone's four fast paths: both pillars, play, and your money. Everything else is one tap into More. */
-export const MOBILE_NAV: readonly NavItem[] = [NAV_ITEMS.markets, NAV_ITEMS.stocks, NAV_ITEMS.games, NAV_ITEMS.portfolio];
-
-export const MOBILE_DRAWER_SECTIONS: readonly NavSection[] = [
+/** Everything else, one home each — the right-edge Everything drawer (the former More panel) and ⌘K. */
+export const EVERYTHING_SECTIONS: readonly NavSection[] = [
   { id: "more-trade", name: "Trade", description: "Markets and more ways to call", items: [NAV_ITEMS.reels, ...EXPLORE_GROUP.sections[0]!.items] },
   { id: "more-stocks", name: "Stocks", description: "Follow, move, verify", items: [NAV_ITEMS.themes, NAV_ITEMS.bridge, NAV_ITEMS.reserves] },
   ...GAMES_GROUP.sections,
@@ -140,7 +134,7 @@ export const MOBILE_DRAWER_SECTIONS: readonly NavSection[] = [
   EXPLORE_GROUP.sections[2]!,
   ACCOUNT_SECTION,
 ];
-export const MOBILE_OVERFLOW: readonly NavItem[] = MOBILE_DRAWER_SECTIONS.flatMap((section) => section.items);
+export const EVERYTHING_ITEMS: readonly NavItem[] = EVERYTHING_SECTIONS.flatMap((section) => section.items);
 
 /** Every real, user-facing page that must retain an explicit navigation home (the route-coverage contract). */
 export const NAVIGABLE_ROUTE_PATHS = [
@@ -151,9 +145,6 @@ export const NAVIGABLE_ROUTE_PATHS = [
   "/surface", "/themes", "/trade-from-x",
 ] as const;
 
-/** The X-trade island keeps its own visual chrome but reads routes from this same registry. */
-export const ISLAND_NAV: readonly NavItem[] = [NAV_ITEMS.markets, NAV_ITEMS.stocks, NAV_ITEMS.games, NAV_ITEMS.strategies, NAV_ITEMS.leaderboard, NAV_ITEMS.portfolio];
-
 export function isActiveNavItem(pathname: string | null, item: NavItem): boolean {
   if (!pathname || item.external) return false;
   const fallbackPath = item.href.split("?")[0] ?? item.href;
@@ -161,17 +152,13 @@ export function isActiveNavItem(pathname: string | null, item: NavItem): boolean
   return match.paths.some((path) => pathname === path || (!match.exact && pathname.startsWith(`${path}/`)));
 }
 
-export function isActiveNavGroup(pathname: string | null, group: NavGroup): boolean {
-  return group.sections.some((section) => section.items.some((i) => isActiveNavItem(pathname, i)));
-}
-
-/** The top-level routes: below these, the header shows a back chevron (ux-audit fix 5). */
+/** The top-level routes: below these, the top line shows a back chevron (ux-audit fix 5). */
 export function isTopLevel(pathname: string | null): boolean {
   if (!pathname || pathname === "/") return true;
   return pathname.split("/").filter(Boolean).length <= 1;
 }
 
-/** Filter for the More panel's search row: name, description and keywords, case-insensitive. */
+/** Filter for the Everything drawer's search row and ⌘K: name, description and keywords, case-insensitive. */
 export function searchNav(items: readonly NavItem[], query: string): NavItem[] {
   const q = query.trim().toLowerCase();
   if (!q) return [...items];

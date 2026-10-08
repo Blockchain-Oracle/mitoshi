@@ -13,6 +13,7 @@ import { shortAddress } from "@/providers/wallet/format";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { ACCOUNT_PAGE } from "./copy";
 import { useDataReady } from "@/providers/data/context";
+import { FeedbackSection } from "./FeedbackSection";
 import dynamic from "next/dynamic";
 
 const P = ACCOUNT_PAGE;
@@ -92,6 +93,8 @@ export function AccountSettings() {
           </section>
         </>
       )}
+
+      <FeedbackSection className={card} />
 
       <section aria-labelledby="region-title" className={card}>
         <h2 id="region-title" className="type-title text-ink">{P.region.title}</h2>

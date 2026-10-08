@@ -1,26 +1,30 @@
 "use client";
-// The phone More panel, split out of MobileBottomNav as a lazy island (§3.1): the right-edge slide-over (owner rule;
-// From 21st.dev 31360 via `ui/drawer.tsx`) with a search row at the top (ux-audit fix 14), and the external Docs link
-// routed through `open-external` so it never navigates the app's web view away.
+// The Everything drawer (S22, D-189/D-190): every destination that isn't a rail place, one home each, with the search
+// row at the top (ux-audit fix 14) — the former phone More panel (Masayume 68f7a09 MobileBottomNav's sheet, From
+// 21st.dev 31360 via `ui/drawer.tsx`), now the floating right drawer at every width and opened from the rail, the dock,
+// key 5 and the `?d=everything` URL. The external Docs link goes through `open-external` so the app's web view never
+// navigates away; a link drops the URL param first so Back from the new page doesn't reopen the drawer.
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { SHELL } from "@/lib/copy";
+import { dropDrawerParam } from "@/lib/drawer-param";
+import { tapFeedback } from "@/lib/feedback";
 import { externalClick } from "@/lib/open-external";
-import { isActiveNavItem, MOBILE_DRAWER_SECTIONS, searchNav } from "./nav-items";
+import { EVERYTHING_SECTIONS, isActiveNavItem, searchNav } from "./header/nav-items";
 
-export interface MorePanelProps {
+export interface EverythingDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pathname: string | null;
 }
 
-export function MorePanel({ open, onOpenChange, pathname }: MorePanelProps) {
+export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDrawerProps) {
   const [query, setQuery] = useState("");
-  useEffect(() => setQuery(""), [pathname]);
+  useEffect(() => setQuery(""), [pathname, open]);
   const sections = useMemo(
-    () => MOBILE_DRAWER_SECTIONS.map((s) => ({ ...s, items: searchNav(s.items, query) })).filter((s) => s.items.length > 0),
+    () => EVERYTHING_SECTIONS.map((s) => ({ ...s, items: searchNav(s.items, query) })).filter((s) => s.items.length > 0),
     [query],
   );
 
@@ -37,9 +41,9 @@ export function MorePanel({ open, onOpenChange, pathname }: MorePanelProps) {
         <nav className="mobile-nav-groups" aria-label={SHELL.allDestinations}>
           {sections.length === 0 ? <p className="more-empty" role="status">{SHELL.searchEmpty(query)}</p> : null}
           {sections.map((section) => (
-            <section className="mobile-nav-group" key={section.id} aria-labelledby={`mobile-nav-${section.id}`}>
+            <section className="mobile-nav-group" key={section.id} aria-labelledby={`everything-${section.id}`}>
               <div className="mobile-nav-group-title">
-                <h2 id={`mobile-nav-${section.id}`}>{section.name}</h2>
+                <h2 id={`everything-${section.id}`}>{section.name}</h2>
                 <span>{section.description}</span>
               </div>
               <div className="mobile-nav-links">
@@ -58,7 +62,16 @@ export function MorePanel({ open, onOpenChange, pathname }: MorePanelProps) {
                   return item.external ? (
                     <a key={item.id} href={item.href} target="_blank" rel="noopener noreferrer" className="mobile-nav-link" onClick={externalClick}>{body}</a>
                   ) : (
-                    <Link key={item.id} href={item.href} className={`mobile-nav-link ${active ? "active" : ""}`} aria-current={active ? "page" : undefined} onClick={() => onOpenChange(false)}>
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className={`mobile-nav-link ${active ? "active" : ""}`}
+                      aria-current={active ? "page" : undefined}
+                      onClick={() => {
+                        tapFeedback();
+                        dropDrawerParam();
+                      }}
+                    >
                       {body}
                     </Link>
                   );

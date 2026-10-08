@@ -9,14 +9,14 @@ import { Dialog } from "@base-ui/react/dialog";
 import { CornerDownLeft, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { MOBILE_DRAWER_SECTIONS, MOBILE_NAV, searchNav, type NavItem } from "@/components/shell/header/nav-items";
+import { EVERYTHING_SECTIONS, RAIL_NAV, searchNav, type NavItem } from "@/components/shell/header/nav-items";
 import { SHELL } from "@/lib/copy";
 import { openExternal } from "@/lib/open-external";
 import "@/styles/command.css";
 
 const GROUPS: { heading: string; items: readonly NavItem[] }[] = [
-  { heading: "Go to", items: MOBILE_NAV },
-  ...MOBILE_DRAWER_SECTIONS.map((s) => ({ heading: s.name, items: s.items })),
+  { heading: "Go to", items: RAIL_NAV },
+  ...EVERYTHING_SECTIONS.map((s) => ({ heading: s.name, items: s.items })),
 ];
 
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {

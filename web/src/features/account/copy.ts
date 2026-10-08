@@ -79,6 +79,16 @@ export const ACCOUNT_PAGE = {
     none: "None linked",
     link: "Link a wallet",
   },
+  feedback: {
+    title: "Sound & Vibration",
+    body: "How Mitoshi answers your taps on this device. Nothing here is sent anywhere.",
+    rows: [
+      { key: "sound", label: "Sound effects", hint: "A click on taps; a rising note when a trade opens, a chord when it wins." },
+      { key: "haptics", label: "Haptics", hint: "A short buzz on taps and trades, where the phone supports it." },
+      { key: "reactions", label: "Trade reactions", hint: "Callouts on the chart as your position moves." },
+      { key: "music", label: "Music", hint: "A looping track on the trading screen. Off until you turn it on." },
+    ],
+  },
   region: {
     title: "Your region",
     open: "Everything is open in your region.",

@@ -51,6 +51,27 @@ export const SHELL = {
   themeToDark: "Switch to dark theme",
   themeToLight: "Switch to light theme",
   close: "Close",
+  // The rail, top line and dock (S22, D-189).
+  railLabel: "Mitoshi",
+  railNav: "Places",
+  everything: "Everything",
+  everythingHint: "Every destination, searchable",
+  testnet: "Testnet",
+  testnetTitle: "You're on Tempo's Moderato testnet: test dollars, real trades, nothing of value.",
+  keyHint: (key: string) => `Press ${key}`,
+  shortcuts: "Keyboard shortcuts",
+  shortcutsOpen: "Show keyboard shortcuts",
+  shortcutsBody: "Everything in Mitoshi works from the keyboard. No shortcut ever places, closes or moves money.",
+  shortcutRows: [
+    ["1 – 5", "Markets, Stocks, Games, Portfolio, Everything"],
+    ["⌘ K  or  /", "Search every destination"],
+    ["?", "This list"],
+    ["Esc", "Close the open drawer or dialog"],
+  ] as readonly (readonly [string, string])[],
+  privacyHide: "Hide balances",
+  privacyShow: "Show balances",
+  masked: "••••",
+  signInPending: "Getting sign-in ready…",
 } as const;
 
 /** `?note=` lines a redirect carries (routing law: nothing 404s silently; a moved route says so). */

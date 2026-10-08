@@ -1,5 +1,7 @@
 "use client";
 // Ported from Masayume 68f7a09:web/src/components/ui/toast.tsx
+// S22 (D-190; revamp-parity RV-16): Tradash's toast grammar — top-centre at every width, a stack of three that peeks
+// downward, in from above, swiped up (or ✕) to dismiss; the same id replaces a toast in place (Base UI `update`).
 
 import * as React from "react"
 import { Toast as ToastPrimitive } from "@base-ui/react/toast"
@@ -23,7 +25,7 @@ function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
     <ToastPrimitive.Viewport
       data-slot="toast-viewport"
       className={cn(
-        "pointer-events-none fixed inset-x-4 bottom-(--toast-offset) z-50 mx-auto w-auto max-w-sm outline-none sm:right-4 sm:left-auto sm:mx-0 sm:w-full",
+        "toast-viewport-top pointer-events-none fixed inset-x-4 z-50 mx-auto w-auto max-w-sm outline-none",
         className
       )}
       {...props}
@@ -40,16 +42,15 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
         // Ported surface: rounded-xl, bg-neutral-900/90 + backdrop-blur-xl, type-tinted
         // border (styles/toast.css). The neutral-900 utility is the reference's own, so
         // yosuku/part-14.css remaps it on cream without a second light-mode rule here.
-        "toast-plate group/toast pointer-events-auto absolute right-0 bottom-0 z-[calc(1000-var(--toast-index))] w-full origin-bottom rounded-xl border border-border-strong bg-neutral-900/90 text-popover-foreground backdrop-blur-xl will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
-        "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)*-1+calc(var(--toast-index)*var(--gap)*-1)+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
-        "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)-(var(--toast-index)*var(--peek))-(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_var(--ease-bounce),opacity_500ms,height_150ms]",
-        "after:absolute after:top-full after:left-0 after:h-[calc(var(--gap)+var(--spacing)/4)] after:w-full after:content-['']",
+        "toast-plate group/toast pointer-events-auto absolute inset-x-0 top-0 z-[calc(1000-var(--toast-index))] w-full origin-top rounded-xl border border-border-strong bg-neutral-900/90 text-popover-foreground backdrop-blur-xl will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+        "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)+calc(var(--toast-index)*var(--gap))+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
+        "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)+(var(--toast-index)*var(--peek))+(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_var(--ease-bounce),opacity_500ms,height_150ms]",
+        "after:absolute after:bottom-full after:left-0 after:h-[calc(var(--gap)+var(--spacing)/4)] after:w-full after:content-['']",
         "data-expanded:h-(--toast-height) data-expanded:[transform:translateX(var(--toast-swipe-movement-x))_translateY(var(--offset-y))]",
-        // The reference enters and leaves to the RIGHT (`x: 80`, spring), not upward from
-        // the bottom. `--ease-bounce` is Yosuku's own overshooting curve, which is what its
-        // `damping: 22 / stiffness: 300` spring reads as.
-        "data-limited:opacity-0 data-starting-style:[transform:translateX(120%)]",
-        "[&[data-ending-style]:not([data-limited]):not([data-swipe-direction])]:[transform:translateX(120%)]",
+        // Tradash's toasts spring in from above (y −60, damping 30 / stiffness 300); `--ease-bounce` is Yosuku's own
+        // overshooting curve, which is what that spring reads as.
+        "data-limited:opacity-0 data-starting-style:[transform:translateY(-150%)]",
+        "[&[data-ending-style]:not([data-limited]):not([data-swipe-direction])]:[transform:translateY(-150%)] [&[data-ending-style]:not([data-limited]):not([data-swipe-direction])]:opacity-0",
         "data-ending-style:data-[swipe-direction=down]:[transform:translateY(calc(var(--toast-swipe-movement-y)+150%))]",
         "data-ending-style:data-[swipe-direction=left]:[transform:translateX(calc(var(--toast-swipe-movement-x)-150%))_translateY(var(--offset-y))]",
         "data-ending-style:data-[swipe-direction=right]:[transform:translateX(calc(var(--toast-swipe-movement-x)+150%))_translateY(var(--offset-y))]",
@@ -203,7 +204,7 @@ const subscribeSm = (onChange: () => void) => {
 function ToastList() {
   const { toasts } = ToastPrimitive.useToastManager()
   const wide = React.useSyncExternalStore(subscribeSm, () => window.matchMedia(SM_QUERY).matches, () => false)
-  const swipeDirection: ("down" | "right")[] = wide ? ["right", "down"] : ["down"]
+  const swipeDirection: ("up" | "right")[] = wide ? ["up", "right"] : ["up"]
 
   return toasts.map((toastItem) => (
     <Toast key={toastItem.id} toast={toastItem} swipeDirection={swipeDirection}>

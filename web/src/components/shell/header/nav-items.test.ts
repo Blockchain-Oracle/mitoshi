@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { PENDING } from "../../../lib/capabilities";
 import { DOCS_URL } from "../../../lib/docs-url";
-import { DESKTOP_NAV, isActiveNavItem, isTopLevel, MOBILE_DRAWER_SECTIONS, MOBILE_NAV, NAVIGABLE_ROUTE_PATHS, NAV_ITEMS, searchNav, type NavItem } from "./nav-items";
+import { DOCK_NAV, EVERYTHING_SECTIONS, isActiveNavItem, isTopLevel, NAVIGABLE_ROUTE_PATHS, NAV_ITEMS, RAIL_NAV, searchNav, type NavItem } from "./nav-items";
 
 const APP_DIR = fileURLToPath(new URL("../../../app", import.meta.url));
 
@@ -29,18 +29,19 @@ function pageRoutes(dir = APP_DIR): string[] {
 const OFF_NAV = new Set(["/", "/privacy", "/terms", "/contact", "/native-auth"]);
 
 describe("navigation registry", () => {
-  it("keeps the desktop and phone fast paths compact, both pillars first-class", () => {
-    expect(DESKTOP_NAV.map((e) => (e.kind === "link" ? e.item.name : e.group.name))).toEqual(["Markets", "Stocks", "Reels", "Games", "Build", "Explore", "Portfolio"]);
-    expect(MOBILE_NAV.map((i) => i.name)).toEqual(["Markets", "Stocks", "Games", "Portfolio"]);
+  it("keeps the rail's places and the phone dock compact, both pillars first-class (S22, D-189)", () => {
+    expect(RAIL_NAV.map((i) => i.name)).toEqual(["Markets", "Stocks", "Games", "Portfolio"]);
+    expect(DOCK_NAV.map((i) => i.name)).toEqual(["Markets", "Stocks", "Games", "Portfolio"]);
   });
 
-  it("gives every More-panel destination exactly one home", () => {
-    const ids = MOBILE_DRAWER_SECTIONS.flatMap((s) => s.items.map((i) => i.id));
+  it("gives every Everything destination exactly one home, none of them a rail place", () => {
+    const ids = EVERYTHING_SECTIONS.flatMap((s) => s.items.map((i) => i.id));
     expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.filter((id) => RAIL_NAV.some((p) => p.id === id))).toEqual([]);
   });
 
   it("gives every navigable route a nav home", () => {
-    const homes = [...MOBILE_NAV, ...MOBILE_DRAWER_SECTIONS.flatMap((s) => s.items)].map((i) => i.href.split("?")[0]);
+    const homes = [...RAIL_NAV, ...EVERYTHING_SECTIONS.flatMap((s) => s.items)].map((i) => i.href.split("?")[0]);
     expect(NAVIGABLE_ROUTE_PATHS.filter((p) => !homes.includes(p))).toEqual([]);
   });
 
@@ -60,8 +61,8 @@ describe("navigation registry", () => {
     expect(items.filter((i) => !i.external).every((i) => i.href.startsWith("/"))).toBe(true);
   });
 
-  it("searches the More panel by name, description and keywords", () => {
-    expect(searchNav(MOBILE_DRAWER_SECTIONS.flatMap((s) => s.items), "revoke").map((i) => i.id)).toEqual(["account"]);
+  it("searches Everything by name, description and keywords", () => {
+    expect(searchNav(EVERYTHING_SECTIONS.flatMap((s) => s.items), "revoke").map((i) => i.id)).toEqual(["account"]);
     expect(searchNav([NAV_ITEMS.bridge], "robinhood")).toHaveLength(1);
     expect(searchNav([NAV_ITEMS.bridge], "zzz")).toHaveLength(0);
   });

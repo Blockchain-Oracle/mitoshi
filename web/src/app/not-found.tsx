@@ -3,13 +3,13 @@
 import { headers } from "next/headers";
 import { Suspense } from "react";
 import { NotFound } from "@/components/states/NotFound";
-import { MOBILE_OVERFLOW, MOBILE_NAV } from "@/components/shell/header/nav-items";
+import { EVERYTHING_ITEMS, RAIL_NAV } from "@/components/shell/header/nav-items";
 
 async function Suggested() {
   const h = await headers();
   const path = h.get("x-cwf-path");
   const first = path?.split("/").filter(Boolean)[0]?.toLowerCase() ?? "";
-  const hit = first ? [...MOBILE_NAV, ...MOBILE_OVERFLOW].find((i) => !i.external && i.href.split("/")[1]?.startsWith(first.slice(0, 4))) : undefined;
+  const hit = first ? [...RAIL_NAV, ...EVERYTHING_ITEMS].find((i) => !i.external && i.href.split("/")[1]?.startsWith(first.slice(0, 4))) : undefined;
   return <NotFound requestedPath={path} suggestion={hit ? { label: hit.href, href: hit.href } : null} />;
 }
 

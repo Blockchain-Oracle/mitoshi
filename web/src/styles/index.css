@@ -9,6 +9,7 @@
 @import "./base.css";
 @import "./shell.css";
 @import "./navigation.css";
+@import "./app-shell.css";
 @import "./drawer.css";
 @import "./toast.css";
 @import "./modal.css";
