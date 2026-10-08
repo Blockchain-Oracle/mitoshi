@@ -70,6 +70,18 @@ export const TERMINAL = {
     failed: "Order didn't go through",
     gettingPrice: "Getting a price…",
   },
+  controls: {
+    interval: (i: string) => `Candle interval: ${i}`,
+    intervals: "Candle intervals",
+    minutes: "Minutes",
+    hours: "Hours & days",
+    toLine: "Switch to the line",
+    toCandles: "Switch to candles",
+    depth: "Order book depth",
+    musicOn: "Turn music on",
+    musicOff: "Turn music off",
+    recentre: "Recentre",
+  },
   scheduled: {
     note: (opens: string) => `Opens ${opens}. Your call rests at your price and fills when the Window opens.`,
     scheduling: (side: string, symbol: string) => `Scheduling ${side} ${symbol}…`,

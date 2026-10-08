@@ -35,7 +35,14 @@ import { TradeButtons, trailWords } from "./ui/TradeButtons";
 import { SettingsDrawer } from "./ui/SettingsDrawer";
 import { TerminalTrade } from "./ui/TerminalTrade";
 import { ScheduledTrade } from "./ui/ScheduledTrade";
+import { ChartControls } from "./ui/ChartControls";
+import { ReactionOverlay } from "./ui/ReactionOverlay";
+import { useChartFeedback } from "./useChartFeedback";
+import dynamic from "next/dynamic";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
+
+// The Markets hero's depth view, loaded when first shown (a lazy island).
+const HeroDepth = dynamic(() => import("@/features/markets/hero/HeroDepth"), { ssr: false });
 
 export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions" } as const;
 
@@ -107,6 +114,8 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
     const levels = be === null ? base.levels : [...base.levels, { kind: "breakeven" as const, price: be, label: "B/E" }];
     s.overlay.current = { ...base, levels, pnl: pnlBase === null ? null : Number(pnlBase) / 1e6, pnlText: pnlBase === null ? "" : masked ? SHELL.masked : livePnlText(pnlBase) };
   }
+  const [depth, setDepth] = useState(false);
+  const fb = useChartFeedback({ symbol, spot: s.spot.price, active: s.active, value: activeValue, linePrice: s.openingRaw === null ? null : Number(s.openingRaw) / 1e8 });
   // An armed trail keeps hearing its price with the tab in the background (it still needs Mitoshi open).
   const trailing = s.positions.some((p) => p.trailStop !== null);
   useEffect(() => (trailing ? holdStreamAwake() : undefined), [trailing]);
@@ -132,7 +141,16 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
     <MotionScope>
       <div className="tm-screen">
         <section className="tm-stage" aria-label={TERMINAL.chartLabel(s.name, priceText)}>
-          <LiveChart symbol={symbol} overlay={s.overlay} view={s.settings.chartView} interval={s.settings.chartInterval} handle={chartHandle} label={TERMINAL.chartLabel(s.name, priceText)} />
+          <LiveChart symbol={symbol} overlay={s.overlay} onFrame={fb.onFrame} view={s.settings.chartView} interval={s.settings.chartInterval} handle={chartHandle} label={TERMINAL.chartLabel(s.name, priceText)} />
+          <ReactionOverlay handle={fb.overlayHandle} />
+          {depth && market ? (
+            <div className="tm-glass tm-depth">
+              <HeroDepth market={market} />
+            </div>
+          ) : null}
+          <div className="tm-controls-slot">
+            <ChartControls handle={chartHandle} depthOn={depth} onDepth={setDepth} />
+          </div>
           <div className="tm-top">
             <div className="tm-top-row">
               <span className="tm-lead">

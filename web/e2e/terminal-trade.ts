@@ -65,8 +65,19 @@ try {
   // UP, one tap, once the button says what it pays (a quote on the live book) and nothing blocks it. A Window spends its
   // first 30–60 s waiting for the opening print and its last 30 s closed to entries: wait through both.
   const up = page.locator(".tm-btn").filter({ hasText: "UP" }).first();
-  await expect(page.locator("#tm-note-up")).toHaveText("", { timeout: 360_000 });
-  await expect(up.locator(".tm-btn-sub")).toContainText(/pays/, { timeout: 60_000 });
+  const waitStart = Date.now();
+  for (;;) {
+    const state = await page.evaluate(() => ({
+      chip: document.querySelector(".tm-window-state")?.textContent ?? null,
+      note: document.querySelector("#tm-note-up")?.textContent ?? null,
+      sub: document.querySelector(".tm-btn-sub")?.textContent ?? null,
+    }));
+    log({ step: "waiting", s: Math.round((Date.now() - waitStart) / 1000), ...state });
+    if (state.note === "" && state.sub) break;
+    if (Date.now() - waitStart > 420_000) throw new Error(`UP never opened for entry: ${JSON.stringify(state)}`);
+    await page.waitForTimeout(10_000);
+  }
+  await expect(up.locator(".tm-btn-sub")).toContainText(/pays/, { timeout: 30_000 });
   const before = assertions;
   const t0 = Date.now();
   await up.click();
