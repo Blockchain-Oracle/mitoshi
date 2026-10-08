@@ -9,8 +9,8 @@
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { chromium, expect } from "@playwright/test";
-import { settle } from "./lib/settle";
+import { expect } from "@playwright/test";
+import { openTerminalSession, signUpFromTour, stakeMin, waitEnterable } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "https://testnet.mitoshi.xyz");
@@ -18,90 +18,27 @@ const out = arg("out", "terminal-trade-out");
 const symbol = arg("symbol", "BTC");
 mkdirSync(out, { recursive: true });
 
-const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-context.setDefaultTimeout(90_000);
-const page = await context.newPage();
-// Keep every toast title as it appears: a MutationObserver over the toast layer, installed before any script runs.
-await page.addInitScript(() => {
-  const w = window as unknown as { __toasts: string[] };
-  w.__toasts = [];
-  new MutationObserver((records) => {
-    for (const r of records) for (const n of r.addedNodes) {
-      const el = n instanceof Element ? (n.matches('[data-slot="toast-title"]') ? [n] : [...n.querySelectorAll('[data-slot="toast-title"]')]) : [];
-      for (const t of el) if (t.textContent && w.__toasts.at(-1) !== t.textContent) w.__toasts.push(t.textContent);
-    }
-  }).observe(document, { childList: true, subtree: true });
-});
-const cdp = await context.newCDPSession(page);
-await cdp.send("WebAuthn.enable");
-await cdp.send("WebAuthn.addVirtualAuthenticator", {
-  options: { protocol: "ctap2", transport: "internal", hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true },
-});
-let assertions = 0;
-cdp.on("WebAuthn.credentialAsserted", () => { assertions += 1; });
-const txs: string[] = [];
-page.on("response", async (r) => {
-  if (r.request().method() !== "POST") return;
-  const body = r.request().postData() ?? "";
-  if (!body.includes("eth_sendRawTransaction")) return;
-  const text = await r.text().catch(() => "");
-  const m = /"transactionHash"\s*:\s*"(0x[0-9a-f]{64})"/.exec(text) ?? /"result"\s*:\s*"(0x[0-9a-f]{64})"/.exec(text);
-  if (m) { txs.push(m[1]!); console.log(JSON.stringify({ step: "tx", hash: m[1] })); }
-});
+const session = await openTerminalSession();
+const { page, txs, toastsSeen, log } = session;
 const toastTitles = () => page.locator('[data-slot="toast-title"]').allInnerTexts();
-/** Every toast title that appeared, in order (a toast may expire before a step logs, as "Wallet connected" does). */
-const toastsSeen = () => page.evaluate(() => (window as unknown as { __toasts?: string[] }).__toasts ?? []);
-const log = (o: Record<string, unknown>) => console.log(JSON.stringify(o));
 
 let failed = false;
 try {
-  await page.goto(`${base}/trade/${symbol}`, { waitUntil: "load" });
-  await settle(page);
-  // The first visit's tour, all five steps, ends in "Start trading": the real sign-up (D-191).
-  const tour = page.getByRole("dialog");
-  await expect(tour.getByText("Watch the market")).toBeVisible({ timeout: 120_000 });
-  for (let i = 0; i < 4; i++) await tour.getByRole("button", { name: "Next" }).click();
-  await tour.getByRole("button", { name: "Start trading" }).click();
-  log({ step: "tour", ok: true });
-  await page.getByLabel(/Name this passkey/).fill(`terminal ${Date.now()}`);
-  await page.getByRole("button", { name: "Create my account" }).click();
-  const dialog = page.getByRole("dialog");
-  await expect(dialog.getByText(/You're funded/)).toBeVisible({ timeout: 120_000 });
-  await dialog.getByRole("button", { name: "Arm tap-trading" }).click();
-  await expect(dialog.getByText("Tap-trading is on.")).toBeVisible({ timeout: 60_000 });
-  await page.keyboard.press("Escape");
-  await expect(dialog).toBeHidden({ timeout: 10_000 });
-  log({ step: "signed-up", prompts: assertions, toasts: await toastsSeen() });
-
+  await signUpFromTour(session, base, symbol, "terminal");
   // A $1 stake keeps each run small (the faucet's balance would default the size to 5 % of $1M).
-  await page.locator(".tm-stack").click();
-  await page.getByRole("dialog").getByRole("button", { name: "Min" }).click();
-  await page.keyboard.press("Escape");
-  await expect(page.locator(".tm-stack-value").first()).toContainText("$1.00");
+  await stakeMin(page);
 
   // UP, one tap, once the button says what it pays (a quote on the live book) and nothing blocks it. A Window spends its
   // first 30–60 s waiting for the opening print and its last 30 s closed to entries: wait through both.
   const up = page.locator(".tm-btn").filter({ hasText: "UP" }).first();
-  const waitStart = Date.now();
-  for (;;) {
-    const state = await page.evaluate(() => ({
-      chip: document.querySelector(".tm-window-state")?.textContent ?? null,
-      note: document.querySelector("#tm-note-up")?.textContent ?? null,
-      sub: document.querySelector(".tm-btn-sub")?.textContent ?? null,
-    }));
-    log({ step: "waiting", s: Math.round((Date.now() - waitStart) / 1000), ...state });
-    if (state.note === "" && state.sub) break;
-    if (Date.now() - waitStart > 420_000) throw new Error(`UP never opened for entry: ${JSON.stringify(state)}`);
-    await page.waitForTimeout(10_000);
-  }
+  await waitEnterable(session, "up");
   await expect(up.locator(".tm-btn-sub")).toContainText(/pays/, { timeout: 30_000 });
-  const before = assertions;
+  const before = session.assertions();
   const t0 = Date.now();
   await up.click();
   await expect.poll(toastTitles, { timeout: 90_000 }).toContainEqual(expect.stringMatching(new RegExp(`Up ${symbol} opened|Price moved|Nothing filled|didn't go through|Waiting for the chain`)));
   const opened = (await toastTitles()).some((t) => t.includes("opened"));
-  log({ step: "open", ok: opened, ms: Date.now() - t0, prompts: assertions - before, toasts: await toastTitles() });
+  log({ step: "open", ok: opened, ms: Date.now() - t0, prompts: session.assertions() - before, toasts: await toastTitles() });
   if (!opened) throw new Error("UP did not open");
   await page.screenshot({ path: join(out, "opened.png") });
 
@@ -166,6 +103,6 @@ try {
   await page.screenshot({ path: join(out, "error.png") }).catch(() => undefined);
 } finally {
   writeFileSync(join(out, "txs.json"), JSON.stringify(txs, null, 2));
-  await browser.close();
+  await session.browser.close();
 }
 process.exitCode = failed ? 1 : 0;

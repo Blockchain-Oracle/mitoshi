@@ -1,72 +1,57 @@
 /**
- * Tap → Call card latency, phase by phase (plan §2.4 "Call card ≤ 1 s p50"; D-143, D-150). A fresh passkey (Chrome
- * virtual authenticator) signs up on the target site, arms the wallet key (one more assertion), then places `--taps`
- * $1 calls on the Crypto 5m lane with zero prompts. For every tap it reads the page's own clock (performance marks,
- * converted to epoch ms) and the browser's network timings (Playwright `request.timing()`, epoch ms) and splits the
- * time into:
+ * Tap latency on the terminal, open and close (plan §2.4 "≤ 1 s p50"; D-143, D-150; S23 gate). A fresh passkey signs up
+ * from the tour (D-191) and arms one-tap, then runs `--taps` cycles on BTC, ETH and SOL 5m at $1: UP or DOWN, then
+ * CLOSE on the position it opened, both with zero prompts. For the open, the app's own marks (`cwf:tap:*` from
+ * `usePlaceBet`) and the network timings split the time as before:
  *
- *   press → handler     pointerdown on the CTA → `cwf:tap:start` (React + the lifecycle dispatch)
- *   pre-send            `cwf:tap:start` → `cwf:tap:sent` (status gate, fresh quote, account reads; the RPC reads listed)
- *   fill                the relay's `eth_fillTransaction` (gas + fee fields; the relay runs its policy `validate`)
- *   sign                fill answered → the co-sign request leaves (the wallet key's WebCrypto P-256 signature)
- *   co-sign             the relay's `eth_signRawTransaction` (`validate` again + the fee payer's signature)
- *   send → receipt      `eth_sendRawTransactionSync` to the RPC (inclusion ~0.5 s + the gateway)
- *   → card              pointerdown → the Call card in the DOM (`.call-card`, pending or confirmed)
- *   → confirmed         pointerdown → the card carries the receipt (`data-call-state="confirmed"`, or any card on
- *                       builds from before the optimistic card)
+ *   press → handler   pointerdown on UP/DOWN → `cwf:tap:start`
+ *   pre-send          → `cwf:tap:sent` (status gate, fresh quote, account reads)
+ *   fill / sign / co-sign / send → receipt   the relay's and the RPC's own calls
+ *   → card            pointerdown → the position's row on the terminal (`.tm-pos`)
+ *   → confirmed       pointerdown → the "… opened" toast (the receipt read)
  *
- * Liquidity: the testnet seed maker's books are thin (F-S4-16); run `scripts/drive/gate-maker.ts` alongside (real
- * PostOnly orders). Every tx hash is printed for `cast receipt`.
+ * and for the close: pointerdown on CLOSE → "Closing …" (the lane's `onSigned`, D-150) → "Closed …" (the receipt), with
+ * the relay and RPC calls in between. Every tx hash is printed for `cast receipt`.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/tap-latency.ts --base https://testnet.mitoshi.xyz --taps 12 --out <dir>
+ *   pnpm --filter @cwf/web exec tsx e2e/tap-latency.ts --base https://testnet.mitoshi.xyz --taps 6 --out <dir>
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { chromium, expect, type Page, type Request } from "@playwright/test";
-import { settle } from "./lib/settle";
+import { expect, type Page, type Request } from "@playwright/test";
+import { openTerminalSession, signUpFromTour, stakeMin, switchSymbol, waitEnterable } from "./lib/terminal";
 import { phasesOf, summarize, type NetCall, type TapMarks } from "./lib/tap-phases";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "https://testnet.mitoshi.xyz");
 const out = arg("out", "tap-latency-out");
-const taps = Number(arg("taps", "12"));
-const width = Number(arg("width", "390"));
+const taps = Number(arg("taps", "6"));
+const width = Number(arg("width", "1440"));
 mkdirSync(out, { recursive: true });
 
-const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: { width, height: width < 768 ? 844 : 900 }, hasTouch: width < 768 });
-// The sign-in modal waits for the wallet runtime (~1 MB) that loads on the first tap; a slow link needs the time.
-context.setDefaultTimeout(90_000);
-// Page-side marks on the same clock as the app's own `cwf:tap:*` marks: the press, the card, the confirmed card.
-// A string, not a function: tsx's `__name` helper does not exist in the page.
-await context.addInitScript(`(() => {
+const s = await openTerminalSession({ width });
+const { page, log } = s;
+// Page-side marks on the app's clock: the presses, the position row, and each toast's first appearance.
+await page.addInitScript(`(() => {
   const mark = (n) => { try { performance.mark(n); } catch {} };
   document.addEventListener("pointerdown", (e) => {
-    const b = e.target && e.target.closest ? e.target.closest("button") : null;
-    if (b && /^Buy (UP|DOWN) for \\$/.test((b.textContent || "").trim())) mark("e2e:press");
+    const b = e.target && e.target.closest ? e.target.closest(".tm-buttons .tm-btn") : null;
+    const t = b ? (b.textContent || "").trim() : "";
+    if (/^(UP|DOWN)/.test(t)) mark("e2e:press");
+    else if (/^CLOSE/.test(t)) mark("e2e:close-press");
   }, true);
-  let seenCard = false, seenConfirmed = false;
+  const seen = new Set();
   new MutationObserver(() => {
-    const card = document.querySelector('[aria-label="Your call"] .call-card');
-    if (!card) { seenCard = false; seenConfirmed = false; return; }
-    if (!seenCard) { seenCard = true; mark("e2e:card"); }
-    const state = card.getAttribute("data-call-state");
-    if (!seenConfirmed && (state === null || state === "confirmed")) { seenConfirmed = true; mark("e2e:confirmed"); }
-  }).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ["data-call-state"] });
+    if (!seen.has("card") && document.querySelector(".tm-side-list .tm-pos")) { seen.add("card"); mark("e2e:card"); }
+    for (const el of document.querySelectorAll('[data-slot="toast-title"]')) {
+      const t = el.textContent || "";
+      const key = / opened$/.test(t) ? "confirmed" : /^Closing /.test(t) ? "closing" : /^Closed /.test(t) ? "closed" : null;
+      if (key && !seen.has(key)) { seen.add(key); mark("e2e:" + key); }
+    }
+  }).observe(document, { subtree: true, childList: true, characterData: true });
+  window.__resetMarks = () => { seen.clear(); performance.clearMarks(); };
 })()`);
-const page = await context.newPage();
-const cdp = await context.newCDPSession(page);
-await cdp.send("WebAuthn.enable");
-await cdp.send("WebAuthn.addVirtualAuthenticator", {
-  options: { protocol: "ctap2", transport: "internal", hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true },
-});
-let assertions = 0;
-cdp.on("WebAuthn.credentialAsserted", () => { assertions += 1; });
 
 const net: NetCall[] = [];
-// The wallet's own engine events pushed over the RPC WebSocket (the D-151 chain-log path when no stream ticket).
-let pushedLogs = 0;
-page.on("websocket", (ws) => ws.on("framereceived", (f) => { if (String(f.payload).includes("eth_subscription")) pushedLogs += 1; }));
 function rpcMethod(r: Request): string {
   try {
     const body = JSON.parse(r.postData() ?? "null") as { method?: string } | { method?: string }[] | null;
@@ -76,102 +61,83 @@ function rpcMethod(r: Request): string {
 page.on("requestfinished", (r) => {
   const t = r.timing();
   if (t.startTime <= 0) return;
-  const host = new URL(r.url()).host;
-  const path = new URL(r.url()).pathname;
-  const where = path.startsWith("/api/relay") ? "relay" : /rpc/.test(host) ? "rpc" : `${host}${path}`.slice(0, 60);
-  net.push({ where, method: r.method() === "POST" ? rpcMethod(r) : `GET ${path.slice(0, 40)}`, startMs: t.startTime, endMs: t.startTime + Math.max(t.responseEnd, 0) });
+  const u = new URL(r.url());
+  const where = u.pathname.startsWith("/api/relay") ? "relay" : /rpc/.test(u.host) ? "rpc" : `${u.host}${u.pathname}`.slice(0, 60);
+  net.push({ where, method: r.method() === "POST" ? rpcMethod(r) : `GET ${u.pathname.slice(0, 40)}`, startMs: t.startTime, endMs: t.startTime + Math.max(t.responseEnd, 0) });
 });
 
-async function marksOf(p: Page): Promise<TapMarks> {
-  return p.evaluate(`(() => {
-    const at = (n) => { const m = performance.getEntriesByName(n).at(-1); return m ? performance.timeOrigin + m.startTime : null; };
-    return { press: at("e2e:press"), start: at("cwf:tap:start"), sent: at("cwf:tap:sent"), signed: at("cwf:tap:signed"), done: at("cwf:tap:done"), card: at("e2e:card"), confirmed: at("e2e:confirmed") };
-  })()`) as Promise<TapMarks>;
-}
+const at = (p: Page, names: string[]) =>
+  p.evaluate((ns) => Object.fromEntries(ns.map((n) => { const m = performance.getEntriesByName(n).at(-1); return [n, m ? performance.timeOrigin + m.startTime : null]; })), names) as Promise<Record<string, number | null>>;
 
-async function closeTicket(p: Page) {
-  if (width >= 1024) return;
-  const dialog = p.getByRole("dialog");
-  if (!(await dialog.count())) return;
-  await p.keyboard.press("Escape");
-  await expect(dialog).toBeHidden({ timeout: 5_000 }).catch(() => undefined);
-}
-
-const results: Record<string, unknown>[] = [];
-async function tap(asset: string, side: "UP" | "DOWN"): Promise<boolean> {
-  await page.getByRole("tab", { name: /^Crypto 5m/ }).first().click();
-  const ticker = page.getByRole("radio", { name: asset, exact: true });
-  if (await ticker.count()) await ticker.first().click();
-  const bet = page.getByRole("button", { name: new RegExp(`^Bet ${side} · ${asset} ·`) }).first();
-  await expect(bet).toBeVisible({ timeout: 120_000 });
-  await bet.click();
-  const ticket = page.getByRole("region", { name: "Your call", exact: true }).last();
-  await expect(ticket).toBeVisible({ timeout: 20_000 });
-  await ticket.getByLabel("Bet amount in dollars").fill("1");
-  const cta = ticket.getByRole("button", { name: new RegExp(`^Buy ${side} for \\$`) });
-  if (!(await expect(cta).toBeEnabled({ timeout: 75_000 }).then(() => true, () => false))) {
-    console.log(JSON.stringify({ step: "no-liquidity", asset, side }));
-    await closeTicket(page);
+const opens: Record<string, unknown>[] = [];
+const closes: { closeMs: number; closingMs: number | null; calls: string[] }[] = [];
+async function cycle(asset: string, side: "up" | "down"): Promise<boolean> {
+  await switchSymbol(page, asset);
+  await waitEnterable(s, side, 300_000);
+  await page.evaluate(() => (window as unknown as { __resetMarks: () => void }).__resetMarks());
+  const before = s.assertions();
+  const netFrom = net.length;
+  await page.locator(".tm-buttons .tm-btn").filter({ hasText: side.toUpperCase() }).first().click();
+  const opened = page.locator('[data-slot="toast-title"]').filter({ hasText: / opened$/ });
+  const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /Price moved|Nothing filled|Order didn't go through|Waiting for the chain/ });
+  await expect(opened.or(refused).first()).toBeVisible({ timeout: 90_000 });
+  if (!(await opened.count())) {
+    log({ step: "not-opened", asset, side, toast: await refused.first().innerText().catch(() => "") });
     return false;
   }
-  await page.evaluate(() => performance.clearMarks());
-  const before = assertions;
-  const netFrom = net.length;
-  await cta.click();
-  const card = ticket.locator(".call-card");
-  const failed = ticket.getByRole("status").filter({ hasText: /Nothing filled|book moved|Waiting for the chain/ }).or(ticket.getByRole("alert"));
-  await expect(card.or(failed).first()).toBeVisible({ timeout: 90_000 });
-  // Wait for the receipt too (the confirmed card, or the rollback).
-  await expect(ticket.locator('.call-card:not([data-call-state="pending"])').or(failed).first()).toBeVisible({ timeout: 90_000 }).catch(() => undefined);
-  await page.waitForTimeout(300);
-  const marks = await marksOf(page);
-  const ok = await ticket.locator(".call-card").isVisible();
-  const tx = ok ? await ticket.getByRole("link", { name: /verify on the Tempo explorer/ }).getAttribute("href").catch(() => null) : null;
-  const phases = phasesOf(marks, net.slice(netFrom));
-  const row = { step: ok ? "call" : "not-placed", asset, side, prompts: assertions - before, tx, ...phases, text: ok ? undefined : (await failed.first().innerText().catch(() => "")).slice(0, 120) };
-  results.push(row);
-  console.log(JSON.stringify(row));
-  if (ok) await ticket.getByRole("button", { name: "Place another" }).click().catch(() => undefined);
-  await closeTicket(page);
-  return ok;
+  await expect(page.locator(".tm-side-list .tm-pos").first()).toBeVisible({ timeout: 60_000 });
+  const m = await at(page, ["e2e:press", "cwf:tap:start", "cwf:tap:sent", "cwf:tap:signed", "cwf:tap:done", "e2e:card", "e2e:confirmed"]);
+  const marks: TapMarks = { press: m["e2e:press"] ?? null, start: m["cwf:tap:start"] ?? null, sent: m["cwf:tap:sent"] ?? null, signed: m["cwf:tap:signed"] ?? null, done: m["cwf:tap:done"] ?? null, card: m["e2e:card"] ?? null, confirmed: m["e2e:confirmed"] ?? null };
+  const row = { step: "open", asset, side, prompts: s.assertions() - before, ...phasesOf(marks, net.slice(netFrom)) };
+  opens.push(row);
+  log(row);
+
+  // CLOSE on the position just opened (the buttons morph to TRAIL / CLOSE on its Window).
+  const close = page.locator(".tm-buttons .tm-btn").filter({ hasText: "CLOSE" });
+  await expect(close).toBeVisible({ timeout: 30_000 });
+  const closeFrom = net.length;
+  const closeBefore = s.assertions();
+  await close.click();
+  const closed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Closed |^Reduced / });
+  const notClosed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Price moved|No bids|Close didn't go through|Nothing sold/ });
+  await expect(closed.or(notClosed).first()).toBeVisible({ timeout: 90_000 });
+  const c = await at(page, ["e2e:close-press", "e2e:closing", "e2e:closed"]);
+  if (!(await closed.count()) || !c["e2e:close-press"] || !c["e2e:closed"]) {
+    log({ step: "not-closed", asset, side, toast: await notClosed.first().innerText().catch(() => "") });
+    return true;
+  }
+  const calls = net.slice(closeFrom).filter((x) => x.where === "relay" || x.where === "rpc").map((x) => `${x.where}:${x.method}:${Math.round(x.endMs - x.startMs)}ms`);
+  const closeRow = { closeMs: Math.round(c["e2e:closed"]! - c["e2e:close-press"]!), closingMs: c["e2e:closing"] ? Math.round(c["e2e:closing"]! - c["e2e:close-press"]!) : null, calls };
+  closes.push(closeRow);
+  log({ step: "close", asset, side, prompts: s.assertions() - closeBefore, ...closeRow });
+  await expect(page.locator(".tm-buttons .tm-btn").filter({ hasText: side.toUpperCase() }).first()).toBeVisible({ timeout: 60_000 }).catch(() => undefined);
+  return true;
 }
 
-let failedRun = false;
+const pct = (xs: number[], p: number) => (xs.length ? [...xs].sort((a, b) => a - b)[Math.min(xs.length - 1, Math.floor(p * xs.length))]! : null);
+let failed = false;
 try {
-  await page.goto(`${base}/markets`, { waitUntil: "load" });
-  await settle(page);
-  await page.getByRole("button", { name: "Sign in", exact: true }).first().click();
-  await page.getByLabel(/Name this passkey/).fill(`tap latency ${Date.now()}`);
-  await page.getByRole("button", { name: "Create my account" }).click();
-  const dialog = page.getByRole("dialog");
-  await expect(dialog.getByText(/You're funded/)).toBeVisible({ timeout: 90_000 });
-  const signUp = assertions;
-  await dialog.getByRole("button", { name: "Arm tap-trading" }).click();
-  await expect(dialog.getByText("Tap-trading is on.")).toBeVisible({ timeout: 30_000 });
-  console.log(JSON.stringify({ step: "armed", signUpAssertions: signUp, armAssertions: assertions - signUp }));
-  await dialog.getByRole("button", { name: "Go to Markets" }).click();
-  await expect(dialog).toBeHidden();
-
-  const plan: [string, "UP" | "DOWN"][] = [["BTC", "UP"], ["ETH", "DOWN"], ["SOL", "UP"], ["BTC", "DOWN"], ["ETH", "UP"], ["SOL", "DOWN"]];
-  let placed = 0;
-  for (let i = 0; placed < taps && i < taps * 3; i++) {
+  await signUpFromTour(s, base, "BTC", "tap latency");
+  await stakeMin(page);
+  const plan: [string, "up" | "down"][] = [["BTC", "up"], ["ETH", "down"], ["SOL", "up"], ["BTC", "down"], ["ETH", "up"], ["SOL", "down"]];
+  let done = 0;
+  for (let i = 0; done < taps && i < taps * 3; i++) {
     const [asset, side] = plan[i % plan.length]!;
-    const ok = await tap(asset, side).catch(async (e: Error) => {
-      console.log(JSON.stringify({ step: "error", asset, side, why: e.message.split("\n").slice(0, 3).join(" | ") }));
+    const ok = await cycle(asset, side).catch(async (e: Error) => {
+      log({ step: "error", asset, side, why: e.message.split("\n").slice(0, 3).join(" | ") });
       await page.screenshot({ path: join(out, `error-${i}.png`) }).catch(() => undefined);
-      await closeTicket(page);
       return false;
     });
-    if (ok) placed += 1;
+    if (ok) done += 1;
   }
-  const summary = summarize(results.filter((r) => r.step === "call") as never);
-  console.log(JSON.stringify({ step: "summary", base, taps: placed, pushedLogs, ...summary }));
-  results.push({ step: "summary", base, ...summary });
+  const closeMs = closes.map((c) => c.closeMs);
+  const closingMs = closes.flatMap((c) => (c.closingMs === null ? [] : [c.closingMs]));
+  log({ step: "summary", base, opens: opens.length, closes: closes.length, open: summarize(opens as never), close: { p50: pct(closeMs, 0.5), p90: pct(closeMs, 0.9), closingP50: pct(closingMs, 0.5) } });
 } catch (error) {
-  failedRun = true;
+  failed = true;
   await page.screenshot({ path: join(out, "fail.png") }).catch(() => undefined);
-  console.log(JSON.stringify({ step: "FAIL", message: (error as Error).message.split("\n").slice(0, 4).join(" | ") }));
+  log({ step: "FAIL", message: (error as Error).message.split("\n").slice(0, 4).join(" | ") });
 }
-writeFileSync(join(out, `tap-latency-${Date.now()}.json`), JSON.stringify({ base, results, net }, null, 2));
-await browser.close();
-if (failedRun) process.exit(1);
+writeFileSync(join(out, `tap-latency-${Date.now()}.json`), JSON.stringify({ base, opens, closes, txs: s.txs, net }, null, 2));
+await s.browser.close();
+process.exitCode = failed ? 1 : 0;
