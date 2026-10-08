@@ -16,7 +16,7 @@ import { useRowTrail } from "../useTrail";
 const noTrail = () => undefined;
 const roiText = (bps: number | null) => (bps === null ? "" : ` (${bps >= 0 ? "+" : "−"}${(Math.abs(bps) / 100).toFixed(1)}%)`);
 
-function PositionRow({ p, current, busy, onClose, onTrailHit, onValue }: { p: TerminalPosition; current: boolean; busy: boolean; onClose: (p: TerminalPosition, v: PositionValue) => void; onTrailHit: (p: TerminalPosition, v: PositionValue, why: "trail") => void; onValue: (id: string, v: PositionValue) => void }) {
+function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }: { p: TerminalPosition; current: boolean; busy: boolean; onClose: (p: TerminalPosition, v: PositionValue) => void; onOpen: (p: TerminalPosition) => void; onTrailHit: (p: TerminalPosition, v: PositionValue, why: "trail") => void; onValue: (id: string, v: PositionValue) => void }) {
   const masked = usePrivacy();
   const v = usePositionValue(p);
   useEffect(() => onValue(p.id, v), [p.id, v, onValue]);
@@ -28,7 +28,9 @@ function PositionRow({ p, current, busy, onClose, onTrailHit, onValue }: { p: Te
     <div role="listitem" className="tm-pos" aria-current={current ? "true" : undefined}>
       <span className={`tm-pos-side ${up ? "tm-up-soft" : "tm-down-soft"}`}><Dir aria-hidden strokeWidth={3} /></span>
       <span className="tm-pos-main">
-        <span className="tm-pos-title">{sideWord(p.side)} {p.asset}</span>
+        <button type="button" className="tm-pos-title tm-pos-open-btn" onClick={() => onOpen(p)} aria-haspopup="dialog">
+          {sideWord(p.side)} {p.asset}{p.trailStop !== null ? <span className="tm-pos-tag">{TERMINAL.buttons.trailing}</span> : null}
+        </button>
         <span className="tm-pos-meta">
           {formatBaseUnits(p.heldRaw, p.decimals, { minDp: 0, maxDp: 2 })} · {TERMINAL.positions.staked} {masked ? SHELL.masked : money(p.costBase)} · {TERMINAL.positions.settles} {clockText(p.expirySec)}
         </span>
@@ -53,11 +55,12 @@ function PositionRow({ p, current, busy, onClose, onTrailHit, onValue }: { p: Te
   );
 }
 
-export function PositionsList({ positions, activeMarketId, busyId, onClose, onTrailHit, onValue }: {
+export function PositionsList({ positions, activeMarketId, busyId, onClose, onOpen, onTrailHit, onValue }: {
   positions: readonly TerminalPosition[];
   activeMarketId: string | null;
   busyId: string | null;
   onClose: (p: TerminalPosition, v: PositionValue) => void;
+  onOpen: (p: TerminalPosition) => void;
   /** Wired on one list only (the always-mounted one), so a hit closes once. */
   onTrailHit: ((p: TerminalPosition, v: PositionValue, why: "trail") => void) | null;
   onValue: (id: string, v: PositionValue) => void;
@@ -66,7 +69,7 @@ export function PositionsList({ positions, activeMarketId, busyId, onClose, onTr
   return (
     <div className="tm-card" aria-label={TERMINAL.positions.title} role="list">
       {positions.map((p) => (
-        <PositionRow key={p.id} p={p} current={p.marketId === activeMarketId} busy={busyId === p.id} onClose={onClose} onTrailHit={onTrailHit ?? noTrail} onValue={onValue} />
+        <PositionRow key={p.id} p={p} current={p.marketId === activeMarketId} busy={busyId === p.id} onClose={onClose} onOpen={onOpen} onTrailHit={onTrailHit ?? noTrail} onValue={onValue} />
       ))}
     </div>
   );

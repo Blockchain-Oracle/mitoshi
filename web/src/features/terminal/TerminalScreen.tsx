@@ -37,6 +37,7 @@ import { TerminalTrade } from "./ui/TerminalTrade";
 import { ScheduledTrade } from "./ui/ScheduledTrade";
 import { ChartControls } from "./ui/ChartControls";
 import { AccountDrawer } from "./ui/AccountDrawer";
+import { PositionDetails } from "./ui/PositionDetails";
 import { ReactionOverlay } from "./ui/ReactionOverlay";
 import { useChartFeedback } from "./useChartFeedback";
 import dynamic from "next/dynamic";
@@ -45,7 +46,7 @@ import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 // The Markets hero's depth view, loaded when first shown (a lazy island).
 const HeroDepth = dynamic(() => import("@/features/markets/hero/HeroDepth"), { ssr: false });
 
-export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account" } as const;
+export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account", position: "trade-position" } as const;
 
 /** The symbol in the address: a market switch rewrites it in place (no remount), so the path is the source. */
 function useSymbol(initial: string): string {
@@ -83,6 +84,12 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   const onClose = useCallback((p: TerminalPosition, v: PositionValue) => void closer.close(p, v.exit), [closer]);
   const onTrailHit = useCallback((p: TerminalPosition, v: PositionValue) => closer.close(p, v.exit, undefined, "trail"), [closer]);
   const toggleTrail = useTrailToggle();
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const onOpenPosition = useCallback((p: TerminalPosition) => {
+    setDetailId(p.id);
+    drawer.show(DRAWERS.position);
+  }, [drawer]);
+  const detail = s.positions.find((p) => p.id === detailId) ?? null;
   const totals = useMemo(() => {
     let value = 0n;
     let pnl = 0n;
@@ -178,7 +185,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
           </div>
           <div className="tm-side-list">
             <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
-            <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onTrailHit={onTrailHit} onValue={onValue} />
+            <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={onTrailHit} onValue={onValue} />
           </div>
           {count > 0 ? <ViewPositionPill count={count} roiPct={totals.pnl !== null && totals.cost > 0n ? Number((totals.pnl * 10_000n) / totals.cost) / 100 : null} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
           {needsArm ? (
@@ -222,10 +229,20 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
           }}
         />
       ) : null}
+      <PositionDetails
+        p={detail}
+        value={detail ? (values.get(detail.id) ?? null) : null}
+        open={drawer.open === DRAWERS.position && detail !== null}
+        onOpenChange={(o) => !o && drawer.close()}
+        onReduce={(p, sellRaw) => void closer.close(p, null, undefined, "close", sellRaw)}
+        onShow={(p) => window.history.replaceState(null, "", `/trade/${p.asset}?w=${p.marketId}`)}
+        spendableBase={s.spendableBase}
+        busy={detail !== null && closer.busy === detail.id}
+      />
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
           <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
-          <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onTrailHit={null} onValue={onValue} />
+          <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={null} onValue={onValue} />
         </SlideOverContent>
       </SlideOver>
     </MotionScope>

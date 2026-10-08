@@ -66,7 +66,7 @@ function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
             <SectionHead number={SECTIONS.lanes.index} title={SECTIONS.lanes.title} live />
             <CadenceLanes state={lanes} selectedMarketId={selection.marketId} onSelect={select} />
           </section>
-          <section className="markets-section flex flex-col gap-4" aria-label={SECTIONS.words.title}>
+          <section id="words" className="markets-section flex flex-col gap-4 scroll-mt-4" aria-label={SECTIONS.words.title}>
             <SectionHead number={SECTIONS.words.index} title={SECTIONS.words.title} desc={SECTIONS.words.desc} />
             <WordMarketBoard laneSet={lanes.laneSet} onSelect={select} />
           </section>

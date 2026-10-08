@@ -34,7 +34,7 @@ export function useTerminalClose() {
   latest.current = { submitter, port, address, session, view };
 
   const close = useCallback(
-    async (p: TerminalPosition, shown: ExitQuote | null, accept?: ExitQuote, why: "close" | "trail" = "close"): Promise<void> => {
+    async (p: TerminalPosition, shown: ExitQuote | null, accept?: ExitQuote, why: "close" | "trail" = "close", sellRaw?: bigint): Promise<void> => {
       const { submitter: sub, port: prt, address: wallet, session: sess, view: v } = latest.current;
       if (inFlight.current) return;
       const id = `close-${p.marketId}`;
@@ -42,9 +42,11 @@ export function useTerminalClose() {
       inFlight.current = true;
       setBusy(p.id);
       try {
-        let exit = accept ?? shown;
+        // Reduce sells part: its own exit read for that size (the row's read is for the whole position).
+        const partial = sellRaw !== undefined && sellRaw < p.heldRaw;
+        let exit = accept ?? (partial ? null : shown);
         if (!exit) {
-          const fresh = await prt.freshExitQuote({ marketId: p.marketId, decimals: p.decimals }, p.side, p.heldRaw);
+          const fresh = await prt.freshExitQuote({ marketId: p.marketId, decimals: p.decimals }, p.side, partial ? sellRaw! : p.heldRaw);
           if (!isOk(fresh)) return void notify.item({ id, type: "warning", title: fresh.error.kind === "market-not-trading" ? TERMINAL.buttons.locked(clockText(p.expirySec)) : diagnosisCopy(fresh.error.kind).headline });
           exit = fresh.value;
         }
@@ -69,7 +71,7 @@ export function useTerminalClose() {
           }
           case "requote": {
             const next = outcome.exit;
-            return void notify.item({ id, type: "warning", title: TERMINAL.toast.priceMoved, description: TERMINAL.close.requote(money(next.minProceedsBase)), timeout: 8_000, action: { label: TERMINAL.close.closeFor(money(next.minProceedsBase)), onClick: () => void close(p, next, next, why) } });
+            return void notify.item({ id, type: "warning", title: TERMINAL.toast.priceMoved, description: TERMINAL.close.requote(money(next.minProceedsBase)), timeout: 8_000, action: { label: TERMINAL.close.closeFor(money(next.minProceedsBase)), onClick: () => void close(p, next, next, why, sellRaw) } });
           }
           case "nothingFilled":
             return void notify.item({ id, title: TERMINAL.close.nothingSold, description: TERMINAL.close.nothingSoldBody });
