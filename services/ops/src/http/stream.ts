@@ -2,7 +2,8 @@
  * `GET /v1/stream?topics=…` (D-049; plan S3 "spot/stream"): one multiplexed SSE per client on `stream.<domain>`.
  * Public topics are open; `user:<address>` needs a 60 s HMAC ticket (`?ticket=`, EventSource can't send headers)
  * minted by the web from a session. Exact-origin CORS without credentials; `: ping` every 15 s; `Last-Event-ID`
- * (header or `?lastEventId=`) replays from the bus ring, else each topic's snapshot is sent first.
+ * (header or `?lastEventId=`) replays from the bus ring, else each topic's snapshot is sent first; an ephemeral topic
+ * (`ticks`) always opens on its snapshot, since its events never enter the ring.
  */
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { verifyStreamTicket } from "@cwf/markets/stream-ticket";
@@ -10,8 +11,11 @@ import type { Bus, BusEvent } from "../runtime/bus";
 
 export const PING_MS = 15_000;
 const MAX_TOPICS = 32;
-/** Public topic names; `market:<0x…32 bytes>` and `symbol:<TICKER>` are parameterised. */
-const PUBLIC = new Set(["prices", "markets", "fills", "prints", "verdicts", "halts", "session", "activity", "rooms", "takes"]);
+/** Public topic names (`ticks`: the display feed, S23a, never replayed); `market:<0x…32 bytes>` and `symbol:<TICKER>` are parameterised. */
+const PUBLIC = new Set(["prices", "ticks", "markets", "fills", "prints", "verdicts", "halts", "session", "activity", "rooms", "takes"]);
+
+/** Topics published with `bus.emit` (never in the replay ring): a replaying client still gets their snapshot. */
+const EPHEMERAL = new Set(["ticks"]);
 
 export type Snapshot = (topic: string) => Promise<Array<{ event: string; data: unknown }>>;
 
@@ -66,7 +70,10 @@ export async function serveStream(req: IncomingMessage, res: ServerResponse, inp
     else pending.push(e);
   });
   if (replay) for (const e of replay) res.write(frame(e));
-  else for (const topic of grant.topics) for (const s of await input.snapshot(topic).catch(() => [])) res.write(frame({ topic, ...s }));
+  for (const topic of grant.topics) {
+    if (replay && !EPHEMERAL.has(topic)) continue;
+    for (const s of await input.snapshot(topic).catch(() => [])) res.write(frame({ topic, ...s }));
+  }
   for (const e of pending) res.write(frame(e));
   live = true;
   const ping = setInterval(() => res.write(": ping\n\n"), PING_MS);

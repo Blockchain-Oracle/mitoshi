@@ -5,7 +5,7 @@
  * client asking for an id from before it gets the snapshot instead of a replay.
  */
 export interface BusEvent {
-  /** `<epoch>-<n>`: the epoch changes per process, so a stale id is recognised as such. */
+  /** `<epoch>-<n>`: the epoch changes per process, so a stale id is recognised as such; "" for an ephemeral `emit`. */
   id: string;
   topic: string;
   event: string;
@@ -14,6 +14,11 @@ export interface BusEvent {
 
 export interface Bus {
   publish(topic: string, event: string, data: unknown): BusEvent;
+  /**
+   * Delivers to live listeners only: no id, no ring (S23a). For high-rate display data (`ticks`) a reconnecting client
+   * catches up from the topic's snapshot, so it must not push older events out of the replay ring.
+   */
+  emit(topic: string, event: string, data: unknown): void;
   /** Events after `lastId` on `topics` still held in the ring; null when `lastId` is unknown (too old or another epoch). */
   since(lastId: string, topics: (topic: string) => boolean): BusEvent[] | null;
   subscribe(listener: (e: BusEvent) => void): () => void;
@@ -37,6 +42,16 @@ export function createBus(capacity = 5_000, epoch = Date.now().toString(36)): Bu
         }
       }
       return e;
+    },
+    emit(topic, event, data) {
+      const e: BusEvent = { id: "", topic, event, data };
+      for (const l of listeners) {
+        try {
+          l(e);
+        } catch {
+          /* a broken listener never stops the bus */
+        }
+      }
     },
     since(lastId, topics) {
       const [ep, raw] = lastId.split("-");

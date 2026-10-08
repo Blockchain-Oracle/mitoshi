@@ -8,9 +8,11 @@
  */
 import { haltAssetOf, haltOf, type HaltBoard, type LaneBasis, type SessionStatus, type TickerSymbol } from "@cwf/core";
 import type { MarketView } from "@cwf/markets/ops";
-import type { SpotFeed } from "../../prices/spot";
+import type { DisplayFeed } from "../../display/types";
+import type { SpotFeed, SpotQuote } from "../../prices/spot";
 import type { SeedMakerEnv } from "./env";
 import { fairYesTicks, TRADING_YEAR_SEC } from "./fair";
+import { divergenceGuard } from "./guard";
 import { makerPhase, STOP_BEFORE_LOCK_SEC, type MakerPhase } from "./quote";
 
 export interface LaneQuote {
@@ -28,6 +30,10 @@ export interface LaneInput {
   nowSec: number;
   status: SessionStatus | null;
   spot: SpotFeed | null;
+  /** The chart line's feed: a risk signal only (`guard.ts`); null leaves the quote as the signed spot gives it. */
+  display?: DisplayFeed | null;
+  /** Wall time, for the display quote's age. */
+  nowMs?: number;
   halts: HaltBoard;
   env: SeedMakerEnv;
 }
@@ -49,8 +55,19 @@ function regular(i: LaneInput): LaneQuote {
   const phase = makerPhase({ nowSec: i.nowSec, lockAtSec: i.market.lockAtSec, inSession, closesAtSec: i.status?.closesAtSec ?? null, spotFresh: spot !== null });
   if (phase !== "quote") return { phase, fairTicks: null, maxCashPerWindow: cap, why: halted ? `halted (${halted.reason})` : !spot ? `${i.symbol} spot stale` : phase };
   if (i.market.prints.open.source === 0) return { phase, fairTicks: null, maxCashPerWindow: cap, why: "waiting for the open print" };
-  const fairTicks = fairYesTicks({ spotE8: spot!.priceE8, openE8: i.market.prints.open.priceE8, secondsLeft: i.market.expirySec - i.nowSec, sigmaBps: i.env.sigmaBps(i.symbol), minTick: i.env.minTick });
-  return { phase, fairTicks, maxCashPerWindow: cap, why: `${i.symbol} ${spot!.priceE8} vs open ${i.market.prints.open.priceE8}` };
+  const fairAt = (spotE8: bigint) => fairYesTicks({ spotE8, openE8: i.market.prints.open.priceE8, secondsLeft: i.market.expirySec - i.nowSec, sigmaBps: i.env.sigmaBps(i.symbol), minTick: i.env.minTick });
+  return guarded(i, spot!, fairAt, TRADING_YEAR_SEC, { phase, fairTicks: fairAt(spot!.priceE8), maxCashPerWindow: cap, why: `${i.symbol} ${spot!.priceE8} vs open ${i.market.prints.open.priceE8}` });
+}
+
+/** Applies the divergence guard to a quoting lane: widen by the display's shift of the fair, or pull. */
+function guarded(i: LaneInput, spot: SpotQuote, fairAt: (spotE8: bigint) => number, yearSec: number, q: LaneQuote): LaneQuote {
+  if (q.fairTicks === null || !i.display) return q;
+  const g = divergenceGuard({
+    signedE8: spot.priceE8, signedAtSec: spot.publishTimeSec, display: i.display.latest(i.symbol), nowMs: i.nowMs ?? Date.now(),
+    sigmaBps: i.env.sigmaBps(i.symbol), yearSec, fairTicks: q.fairTicks, fairAt, halfSpreadTicks: q.halfSpreadTicks ?? i.env.halfSpreadTicks,
+  });
+  if (g.action === "pull") return { phase: "pull", fairTicks: null, maxCashPerWindow: q.maxCashPerWindow, why: g.note };
+  return { ...q, halfSpreadTicks: g.halfSpreadTicks, why: g.note ? `${q.why} · ${g.note}` : q.why };
 }
 
 function allDay(i: LaneInput): LaneQuote {
@@ -62,8 +79,8 @@ function allDay(i: LaneInput): LaneQuote {
   const spot = i.spot?.latest(feed, i.env.spotMaxAgeSec) ?? null;
   if (!spot) return { phase: "pull", fairTicks: null, maxCashPerWindow: cap, why: `${feed} spot stale` };
   if (i.market.prints.open.source === 0) return { phase: "quote", fairTicks: null, maxCashPerWindow: cap, why: "waiting for the open print" };
-  const fairTicks = fairYesTicks({ spotE8: spot.priceE8, openE8: i.market.prints.open.priceE8, secondsLeft: tradingSecondsOf(i.market.expirySec - i.nowSec), sigmaBps: i.env.sigmaBps(i.symbol), minTick: i.env.minTick });
-  return { phase: "quote", fairTicks, maxCashPerWindow: cap, why: `${feed} ${spot.priceE8} vs open ${i.market.prints.open.priceE8}` };
+  const fairAt = (spotE8: bigint) => fairYesTicks({ spotE8, openE8: i.market.prints.open.priceE8, secondsLeft: tradingSecondsOf(i.market.expirySec - i.nowSec), sigmaBps: i.env.sigmaBps(i.symbol), minTick: i.env.minTick });
+  return guarded(i, spot, fairAt, CALENDAR_YEAR_SEC, { phase: "quote", fairTicks: fairAt(spot.priceE8), maxCashPerWindow: cap, why: `${feed} ${spot.priceE8} vs open ${i.market.prints.open.priceE8}` });
 }
 
 function gap(i: LaneInput): LaneQuote {

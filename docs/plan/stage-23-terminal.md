@@ -4,19 +4,25 @@ On `integration/t1` (D-201). Sources: the Tradash spec
 (`canton-season3/context/13-revamp/tradash/SPEC-{chart,flow}.md`), Owarine `ecb7565b` (`web/src/features/terminal/**`,
 `services/ops/src/prices/*`, `services/ops/src/http/coalesce.ts`). Ledger rows RV-20…RV-96 in `revamp-parity.md`.
 
-- [ ] 23a Display feed (ops): port Owarine `prices/{crypto-spot,crypto-rest,candles,chart-candles,alpaca-bars,day-stats,
-  recent-ring}.ts` + `http/coalesce.ts` (drop the `bybit` imports; `@cwf/core` registry with SOL; a `DisplayQuote`
-  type; `decimalToE8` wrapped for floats); new `alpaca-trades.ts` (latest trades every 1–2 s in NYSE regular hours,
-  `data.alpaca.markets/v2`); a `DisplayFeed` never joined into `SpotFeed`; one global coalescer (≤ 8 Hz/symbol); the
-  `ticks` topic published ephemerally (`runtime/bus.ts` publish that skips the replay ring; `http/stream.ts` allow-list
-  and `grantTopics`; snapshot in `main.ts`); `/prices/candles`, `/prices/day`, `/prices/recent` in `http/server.ts`; a
-  non-critical heartbeat; the seed maker's divergence guard (display feed as a risk signal only); copy fixes
-  (`features/markets/copy/markets.ts:70`, `useChartSeries`). Tests ported (`coalesce`, `crypto-spot`, `crypto-rest`,
-  `chart-candles`, `alpaca-bars`, `recent-ring`). Deploy ops.
+- [ ] 23a Display feed (ops): ported Owarine `prices/{crypto-spot,crypto-rest,chart-candles,alpaca-bars,day-stats,
+  recent-ring}.ts` + `http/coalesce.ts` into `services/ops/src/display/` (no Bybit; `@cwf/core` registry with SOL on all
+  five venues; `DisplayQuote` with `atMs`; `displayE8` truncating floats); new `alpaca-trades.ts` (IEX latest trades
+  every 1.5 s, 04:00–20:00 ET only, `data.alpaca.markets/v2`); `feed.ts` — fast source first, RedStone after 15 s quiet,
+  a stock's `-24` key outside regular hours; never joined into `SpotFeed`. Added beyond the box: Bitstamp OHLC and
+  ticker behind Coinbase (Coinbase and Kraken time out from some networks, measured 2026-10-08) and the signed
+  `price_ticks` archive behind both (`archive.ts`), the source named on every candle and day row. One global coalescer
+  (125 ms/ticker) → the `ticks` topic via `bus.emit` (no ring, no id); a resuming stream still opens on the `ticks`
+  snapshot; `/prices/{recent,candles,day}`; non-critical heartbeats `display-crypto`/`display-stocks` (`/health` ignores
+  them); seed-maker divergence guard (`guard.ts`: widen by the display's shift of the fair, requote when the spread must
+  widen, pull past 25 bps and 6σ of the lag). `DISPLAY_FEED=0` turns it off. Tests: coalesce, crypto-spot, crypto-rest,
+  candles/bars/ring/trades, feed, guard, stream (+27). The `markets.ts:70` "the chart follows the same feed" copy stays
+  true until 23b moves the chart to `ticks` — fixed there. Deploy ops.
 - [ ] 23b LiveStore + chart: `packages/markets/src/runtime/live-ticks.ts` (`subscribeTopic("ticks")`, per-symbol rings
   seeded from `/prices/recent`, `useCommittedSpot` ≤ 5 Hz with a trailing flush, stale flag; the RedStone `prices` topic
   until `ticks` is deployed); port `web/src/features/terminal/chart/*` + `engine.test.ts` (tokens per DESIGN.md's chart
-  map; levels Entry · Line · B/E · TP · SL · Trail · knock-out · signed tick; theme re-read; loop after first paint).
+  map; levels Entry · Line · B/E · TP · SL · Trail · knock-out · signed tick; theme re-read; loop after first paint);
+  the copy that becomes false when the chart leaves RedStone (`features/markets/copy/markets.ts:70` "the chart follows
+  the same feed", the `useChartSeries` docstring).
 - [ ] 23c Screen: `web/src/app/(app)/(terminal)/trade/[symbol]/page.tsx` + `/trade` (`cwf.trade` cookie); port
   `TerminalScreen` split into `TerminalScreen` + `useTerminalState` + `TerminalDesktop`/`TerminalPhone`,
   `useTerminalTrade.ts`, `terminal-positions.ts`, `useTerminalWindow.ts` (+ `pick-window.test.ts`), `persist.ts`,

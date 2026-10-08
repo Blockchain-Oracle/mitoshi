@@ -1,8 +1,9 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { describe, expect, it } from "vitest";
 import { mintStreamTicket } from "@cwf/markets/stream-ticket";
 import { createBus } from "../runtime/bus";
 import { readOpsEnv } from "../runtime/env";
-import { corsHeaders, grantTopics } from "./stream";
+import { corsHeaders, grantTopics, serveStream } from "./stream";
 
 const A = "0x160a25fFFA76652Ba236CE97395B4d6C51bC3FC0";
 
@@ -48,5 +49,39 @@ describe("bus resume (Last-Event-ID)", () => {
     for (const origin of testnet) expect(corsHeaders(origin, testnet)["access-control-allow-origin"]).toBe(origin);
     expect(readOpsEnv({ NETWORK: "mainnet" }).corsOrigins).toEqual(["https://mitoshi.xyz", "https://www.mitoshi.xyz"]);
     expect(readOpsEnv({ NETWORK: "testnet", OPS_CORS_ORIGINS: "https://a.example, https://b.example" }).corsOrigins).toEqual(["https://a.example", "https://b.example"]);
+  });
+});
+
+describe("the ephemeral ticks topic (S23a)", () => {
+  /** A request/response pair that records what the stream writes. */
+  const pair = (url: string, lastEventId?: string) => {
+    const out: string[] = [];
+    let onClose = () => undefined as void;
+    const req = { url, headers: lastEventId ? { "last-event-id": lastEventId } : {}, on: (_: string, fn: () => void) => void (onClose = fn) } as unknown as IncomingMessage;
+    const res = { writeHead: () => res, write: (c: string) => (out.push(c), true), end: () => undefined } as unknown as ServerResponse;
+    return { req, res, out, close: () => onClose() };
+  };
+
+  it("is granted without a ticket, never enters the replay ring, and opens on its snapshot even when resuming", async () => {
+    expect(grantTopics("ticks,prices", null, null, 0)).toEqual({ topics: ["ticks", "prices"], error: null });
+    const bus = createBus(10, "e1");
+    const first = bus.publish("prices", "price", 1);
+    bus.emit("ticks", "tick", { symbol: "BTC", priceE8: "6200000000000" });
+    bus.publish("prices", "price", 2);
+    expect(bus.since(first.id, () => true)!.map((e) => e.topic)).toEqual(["prices"]);
+
+    const snapshot = async (topic: string) => (topic === "ticks" ? [{ event: "tick", data: { symbol: "BTC", priceE8: "6200100000000" } }] : [{ event: "price", data: "snap" }]);
+    const resumed = pair("/v1/stream?topics=ticks,prices", first.id);
+    await serveStream(resumed.req, resumed.res, { bus, snapshot, secret: null, cors: {} });
+    const text = resumed.out.join("");
+    expect(text).toContain('"data":2'); // replayed from the ring
+    expect(text).toContain("6200100000000"); // the ticks snapshot, though resuming
+    expect(text).not.toContain('"snap"'); // a ring topic is not re-snapshotted on resume
+
+    bus.emit("ticks", "tick", { symbol: "ETH", priceE8: "250000000000" });
+    const live = resumed.out.at(-1)!;
+    expect(live).toContain("250000000000");
+    expect(live.startsWith("id:")).toBe(false); // no id: the client's Last-Event-ID stays on the ring
+    resumed.close();
   });
 });

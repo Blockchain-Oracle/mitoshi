@@ -59,12 +59,17 @@ export function sizeLots(i: { wantLots: bigint; pair: QuotePair; cu: bigint; bud
 /** A quote lives `ttl` seconds but never past 30 s before lock (entry closes there, D-011). */
 export const quoteExpirySec = (nowSec: number, lockAtSec: number, ttlSec: number) => Math.min(nowSec + ttlSec, lockAtSec - 30);
 
-export type Placed = { fairTicks: number; expireSec: number };
+export type Placed = { fairTicks: number; expireSec: number; halfSpreadTicks?: number };
 
-/** Requote when nothing rests, the fair moved `requoteTicks` or more, or the resting pair is within 20 s of expiring. */
-export function needsRequote(i: { placed: Placed | null; fairTicks: number; nowSec: number; requoteTicks: number }): boolean {
+/**
+ * Requote when nothing rests, the fair moved `requoteTicks` or more, the half spread must widen (the divergence guard:
+ * a resting pair narrower than the guard asks is the pair a taker would pick off), or the resting pair is within 20 s
+ * of expiring.
+ */
+export function needsRequote(i: { placed: Placed | null; fairTicks: number; nowSec: number; requoteTicks: number; halfSpreadTicks?: number }): boolean {
   if (!i.placed) return true;
   if (Math.abs(i.fairTicks - i.placed.fairTicks) >= i.requoteTicks) return true;
+  if (i.halfSpreadTicks !== undefined && i.halfSpreadTicks > (i.placed.halfSpreadTicks ?? 0)) return true;
   return i.placed.expireSec - i.nowSec <= 20;
 }
 

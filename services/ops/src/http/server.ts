@@ -1,13 +1,15 @@
 /**
- * The one HTTP server on 8080 (plan C.5.1, D-032): `/health`, `/session`, `/prices/{latest,history}` and the D-049
+ * The one HTTP server on 8080 (plan C.5.1, D-032): `/health`, `/session`, `/prices/{latest,history}`, the display feed's
+ * `/prices/{recent,candles,day}` (S23a, D-196: the chart's line, never a settling value) and the D-049
  * stream `/v1/stream` (served as `stream.<domain>`), GET only. Price and stream routes answer exact-origin CORS without
  * credentials. Ported in shape from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:services/ops/src/http/server.ts.
  */
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { Sql } from "@cwf/db";
 import { indexReader } from "@cwf/db/idx";
-import { NETWORKS } from "@cwf/core";
+import { isTickerSymbol, NETWORKS } from "@cwf/core";
 import type { SessionService } from "../calendar/session-service";
+import type { DisplayRuntime } from "../display/runtime";
 import type { SpotFeed } from "../prices/spot";
 import type { Bus } from "../runtime/bus";
 import { errorText, type OpsEnv } from "../runtime/env";
@@ -22,6 +24,8 @@ export interface HttpInputs {
   env: OpsEnv;
   sql: Sql | null;
   spot: SpotFeed | null;
+  /** The chart line's feed (S23a); null when this process runs none. */
+  display: DisplayRuntime | null;
   sessions: SessionService | null;
   halts: HaltBoardStore | null;
   events: SessionEvents | null;
@@ -59,6 +63,22 @@ export function startHttp(input: HttpInputs): Promise<{ close(): Promise<void> }
         if (!input.sql) return json(503, { error: "no database" });
         return void historyBody(input.sql, symbol, from, to).then((rows) => json(200, { rows }, "public, max-age=10"), fail);
       }
+      case "/prices/recent": {
+        // The display line's last half hour, one sample a second, to seed a chart before the first `ticks` frame.
+        const symbol = url.searchParams.get("symbol") ?? "";
+        if (!isTickerSymbol(symbol)) return json(400, { error: "symbol=<ticker> required" });
+        if (!input.display) return json(503, { error: "no display feed in this process" });
+        return json(200, { symbol, points: input.display.recent.points(symbol) }, "public, max-age=1");
+      }
+      case "/prices/candles": {
+        if (!input.display) return json(503, { error: "no display feed in this process" });
+        const count = url.searchParams.get("count");
+        const end = url.searchParams.get("endMs");
+        return void input.display.candles({ symbol: url.searchParams.get("symbol") ?? "", interval: url.searchParams.get("interval") ?? "1m", ...(count ? { count: Number(count) } : {}), ...(end ? { endMs: Number(end) } : {}) }).then((r) => json(r.status, r.body, r.status === 200 ? "public, max-age=10" : "no-store"), fail);
+      }
+      case "/prices/day":
+        if (!input.display) return json(503, { error: "no display feed in this process" });
+        return void input.display.day().then((b) => json(200, b, "public, max-age=30"), fail);
       case "/index/recount": {
         // Public chain data only: what the index holds at or below a block, for `scripts/drive/recount.ts`.
         const through = Number(url.searchParams.get("through"));
@@ -86,7 +106,7 @@ export function startHttp(input: HttpInputs): Promise<{ close(): Promise<void> }
   return new Promise((resolve, reject) => {
     server.once("error", reject);
     server.listen(input.env.httpPort, () => {
-      input.log(`http on :${input.env.httpPort} (/health, /session, /prices/latest, /prices/history, /v1/stream)`);
+      input.log(`http on :${input.env.httpPort} (/health, /session, /prices/{latest,history,recent,candles,day}, /v1/stream)`);
       resolve({ close: () => new Promise((done) => server.close(() => done())) });
     });
   });

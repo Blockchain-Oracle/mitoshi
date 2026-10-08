@@ -28,7 +28,8 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
   const trading = m.state === 0 && m.tradingStartSec <= ctx.nowSec && ctx.nowSec < m.lockAtSec;
   if (!trading) return { state: "idle", placed: null, note: "not trading", txs };
   const fair = lane.phase === "quote" ? lane.fairTicks : null;
-  if (fair !== null && placed && !needsRequote({ placed, fairTicks: fair, nowSec: ctx.nowSec, requoteTicks: ctx.env.requoteTicks })) return { state: "resting", placed, note: `fair ${fair}, resting`, txs };
+  const halfSpreadTicks = lane.halfSpreadTicks ?? ctx.env.halfSpreadTicks;
+  if (fair !== null && placed && !needsRequote({ placed, fairTicks: fair, nowSec: ctx.nowSec, requoteTicks: ctx.env.requoteTicks, halfSpreadTicks })) return { state: "resting", placed, note: `fair ${fair}, resting`, txs };
   if (!placed && lane.phase !== "quote") return { state: lane.phase === "stop" ? "stopped" : "pulled", placed: null, note: lane.why, txs };
   if (!placed && fair === null) return { state: "idle", placed: null, note: lane.why, txs };
   const send = async (what: string, calls: Parameters<typeof sendOps>[1]) => {
@@ -55,7 +56,7 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
   }
   await cancel(placed ? `requote ${placed.fairTicks} → ${fair}` : "unknown resting orders");
   const top = await topOfBook(ctx.client, ctx.venue, m.marketId);
-  const pair = quotePair({ fairTicks: fair, halfSpreadTicks: lane.halfSpreadTicks ?? ctx.env.halfSpreadTicks, minTick: ctx.env.minTick, bestBidTicks: top.bidTicks || null, bestAskTicks: top.askTicks || null });
+  const pair = quotePair({ fairTicks: fair, halfSpreadTicks, minTick: ctx.env.minTick, bestBidTicks: top.bidTicks || null, bestAskTicks: top.askTicks || null });
   const lots = sizeLots({ wantLots: ctx.env.quoteLots, pair, cu: series.cashUnit, budget: lane.maxCashPerWindow, minLots: series.minLots });
   if (lots === 0n) return { state: "idle", placed: null, note: `fair ${fair}: no admissible size`, txs };
   const expireSec = quoteExpirySec(ctx.nowSec, m.lockAtSec, ctx.env.quoteTtlSec);
@@ -70,5 +71,5 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
       else throw error;
     }
   }
-  return { state: "quoting", placed: rested ? { fairTicks: fair, expireSec } : null, note: `fair ${fair} → ${pair.bidTicks ?? "-"} / ${pair.askTicks ?? "-"} × ${lots}`, txs };
+  return { state: "quoting", placed: rested ? { fairTicks: fair, expireSec, halfSpreadTicks } : null, note: `fair ${fair} → ${pair.bidTicks ?? "-"} / ${pair.askTicks ?? "-"} × ${lots}`, txs };
 }

@@ -65,7 +65,7 @@ export function startSeedMaker(deps: VenueDeps): { stop: () => void } {
     for (let i = 0; i < jobs.length; i += CONCURRENCY) {
       await Promise.all(jobs.slice(i, i + CONCURRENCY).map(async ({ s, m }) => {
         const label = `${laneKey(s.symbol!, s.lane!, s.cadenceSec)} #${m.index}`;
-        const lane = laneQuote({ lane: s.lane!, symbol: s.symbol!, market: m, nowSec, status, spot: deps.spot, halts, env });
+        const lane = laneQuote({ lane: s.lane!, symbol: s.symbol!, market: m, nowSec, status, spot: deps.spot, display: deps.display, halts, env });
         try {
           const r = await tendWindow({ client, venue, env, dryRun, nowSec, log: deps.log }, s, m, lane, placed.get(m.marketId) ?? null, label);
           txCount += r.txs.length;

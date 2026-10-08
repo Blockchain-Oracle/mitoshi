@@ -1,0 +1,48 @@
+import { describe, expect, it } from "vitest";
+import { fairYesTicks, TRADING_YEAR_SEC } from "./fair";
+import { divergenceGuard, DISPLAY_FRESH_MS, type GuardInput } from "./guard";
+import { needsRequote } from "./quote";
+
+const NOW_MS = 1_800_000_000_000;
+const OPEN = 25_000_000_000n; // $250.00
+const fairAt = (spotE8: bigint) => fairYesTicks({ spotE8, openE8: OPEN, secondsLeft: 600, sigmaBps: 4_500, minTick: 10 });
+const base = (displayE8: bigint | null, extra: Partial<GuardInput> = {}): GuardInput => ({
+  signedE8: OPEN,
+  signedAtSec: NOW_MS / 1000 - 8,
+  display: displayE8 === null ? null : { symbol: "TSLA", priceE8: displayE8, atMs: NOW_MS - 500, source: "alpaca" },
+  nowMs: NOW_MS,
+  sigmaBps: 4_500,
+  yearSec: TRADING_YEAR_SEC,
+  fairTicks: fairAt(OPEN),
+  fairAt,
+  halfSpreadTicks: 30,
+  ...extra,
+});
+
+describe("the seed maker's divergence guard", () => {
+  it("changes nothing without a fresh fast display quote", () => {
+    expect(divergenceGuard(base(null))).toEqual({ action: "quote", halfSpreadTicks: 30, note: null });
+    expect(divergenceGuard(base(25_050_000_000n, { nowMs: NOW_MS + DISPLAY_FRESH_MS + 1 }))).toMatchObject({ halfSpreadTicks: 30 });
+    const redstone = base(25_050_000_000n);
+    redstone.display = { ...redstone.display!, source: "redstone" };
+    expect(divergenceGuard(redstone)).toMatchObject({ halfSpreadTicks: 30 });
+  });
+
+  it("widens by the display price's shift of the fair, so a resting pair can't be picked off", () => {
+    const g = divergenceGuard(base(25_010_000_000n)); // +4 bps
+    const shift = fairAt(25_010_000_000n) - fairAt(OPEN);
+    expect(shift).toBeGreaterThan(0);
+    expect(g).toMatchObject({ action: "quote", halfSpreadTicks: 30 + shift });
+    // The resting pair was placed at ±30: the wider ask forces a requote even though the signed fair didn't move.
+    expect(needsRequote({ placed: { fairTicks: fairAt(OPEN), expireSec: 9e9, halfSpreadTicks: 30 }, fairTicks: fairAt(OPEN), nowSec: 0, requoteTicks: 15, halfSpreadTicks: 30 + shift })).toBe(true);
+    expect(needsRequote({ placed: { fairTicks: fairAt(OPEN), expireSec: 9e9, halfSpreadTicks: 30 + shift }, fairTicks: fairAt(OPEN), nowSec: 0, requoteTicks: 15, halfSpreadTicks: 30 })).toBe(false);
+  });
+
+  it("pulls when the feeds disagree past the basis floor and 6σ of the lag", () => {
+    const g = divergenceGuard(base(25_250_000_000n)); // +100 bps in ~10 s
+    expect(g.action).toBe("pull");
+    expect(g.note).toMatch(/alpaca 100 bps off the signed value/);
+    // 20 bps is inside the basis floor: widen, don't pull.
+    expect(divergenceGuard(base(25_050_000_000n)).action).toBe("quote");
+  });
+});

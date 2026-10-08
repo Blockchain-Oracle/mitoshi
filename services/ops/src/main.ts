@@ -6,6 +6,7 @@
  */
 import { createSql, runMigrations, type Sql } from "@cwf/db";
 import { createSessionService } from "./calendar/session-service";
+import { startDisplay, type DisplayRuntime } from "./display/runtime";
 import { startHttp } from "./http/server";
 import { sessionBody } from "./http/session";
 import { createSpotFeed, SPOT_EVERY_MS, type SpotFeedHandle } from "./prices/spot";
@@ -50,9 +51,11 @@ async function boot(): Promise<void> {
     spot.start();
     followTicks(spot, bus, sql, log("spot-feed"));
   }
+  // The chart line (S23a, D-196): Coinbase / Alpaca / RedStone on the ephemeral `ticks` topic; never the settlement spot.
+  const display: DisplayRuntime | null = needsSpot && process.env.DISPLAY_FEED !== "0" ? startDisplay({ spot, sessions, bus, sql, log: log("display") }) : null;
   // `OPS_DRY_ACTORS` keeps named actors dry while DRY_RUN=0 (the one-at-a-time roll-out out of dry run).
   const dryActors = new Set((process.env.OPS_DRY_ACTORS ?? "").split(",").map((s) => s.trim()).filter(Boolean));
-  const deps = (actor: string): VenueDeps => ({ env: { ...env, dryRun: env.dryRun || dryActors.has(actor) }, log: log(actor), sessions, spot, halts, events, bus, sql, redstone });
+  const deps = (actor: string): VenueDeps => ({ env: { ...env, dryRun: env.dryRun || dryActors.has(actor) }, log: log(actor), sessions, spot, display: display?.feed ?? null, halts, events, bus, sql, redstone });
   for (const name of wanted) {
     try {
       await ACTORS[name]!.start(deps(name));
@@ -61,8 +64,9 @@ async function boot(): Promise<void> {
     }
   }
   await startHttp({
-    env, sql, spot, sessions, halts, events, bus, redstoneSigners: redstone.signers, log: log("http"),
+    env, sql, spot, display, sessions, halts, events, bus, redstoneSigners: redstone.signers, log: log("http"),
     snapshot: async (topic) => {
+      if (topic === "ticks") return display?.snapshot() ?? [];
       if (topic === "prices") return spot ? spot.symbols().flatMap((s) => (spot!.newest(s) ? [{ event: "price", data: wireTick(spot!.newest(s)!) }] : [])) : [];
       if (topic === "halts") return [{ event: "halts", data: halts.board() }];
       if (topic === "session") return [{ event: "session", data: sessionBody({ sessions, halts, events }) }];
