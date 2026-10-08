@@ -116,13 +116,14 @@ export async function waitEnterable(s: TerminalSession, side: "up" | "down" = "u
 
 /** The last tap's phases from the app's own marks (`usePlaceBet`): pre-send checks, signing, and send → receipt, in ms. */
 export async function tapPhases(page: Page): Promise<Record<string, number> | null> {
-  return page.evaluate(() => {
-    const at = (n: string) => performance.getEntriesByName(n).at(-1)?.startTime ?? null;
-    const [start, sent, signed, done] = ["cwf:tap:start", "cwf:tap:sent", "cwf:tap:signed", "cwf:tap:done"].map(at);
+  // A string, not a closure: tsx's esbuild wraps named inner functions in `__name`, which the page doesn't have.
+  return page.evaluate(`(() => {
+    const at = (n) => performance.getEntriesByName(n).at(-1)?.startTime ?? null;
+    const start = at("cwf:tap:start"), sent = at("cwf:tap:sent"), signed = at("cwf:tap:signed"), done = at("cwf:tap:done");
     if (start === null || done === null) return null;
-    const ms = (a: number | null, b: number | null) => (a === null || b === null ? -1 : Math.round(b - a));
+    const ms = (a, b) => (a === null || b === null ? -1 : Math.round(b - a));
     return { checks: ms(start, sent), sign: ms(sent, signed), receipt: ms(signed ?? sent, done), total: ms(start, done) };
-  });
+  })()`);
 }
 
 /** Switches the terminal to `symbol` in place, through the markets drawer (no navigation). */
