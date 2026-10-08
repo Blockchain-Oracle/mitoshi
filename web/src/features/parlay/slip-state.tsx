@@ -50,8 +50,9 @@ export function useSlip(): SlipValue {
   return v;
 }
 
-export function SlipProvider({ windows, maxLegs, children }: { windows: readonly LegWindow[]; maxLegs: number; children: ReactNode }) {
-  const [legs, setLegs] = useState<DraftLeg[]>([]);
+export function SlipProvider({ windows, maxLegs, initialLegs, onLegsChange, children }: { windows: readonly LegWindow[]; maxLegs: number; /** A slip the host kept across an unmount (the terminal's Parlay mode). */ initialLegs?: readonly DraftLeg[]; onLegsChange?: (legs: DraftLeg[]) => void; children: ReactNode }) {
+  const [legs, setLegs] = useState<DraftLeg[]>(() => [...(initialLegs ?? [])]);
+  useEffect(() => onLegsChange?.(legs), [legs, onLegsChange]);
   const [mode, setMode] = useState<SolveMode>("fixStake");
   const [amountText, setAmountText] = useState("5");
   const cap = Math.min(maxLegs, PARLAY_MAX_LEGS);
