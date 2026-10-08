@@ -47,6 +47,27 @@ describe("the display feed", () => {
     expect(seen.map((q) => q.source)).toEqual(["coinbase", "redstone"]);
   });
 
+  it("keeps RedStone when the fast source's last trade is old (IEX before the open)", () => {
+    const now = 10_000_000;
+    let clock = now;
+    const stocks = fakeFast();
+    const spot = fakeSpot();
+    const feed = createDisplayFeed({ crypto: fakeFast(), stocks, spot, sessionState: () => "pre", nowMs: () => clock });
+    feed.start();
+    spot.push(signed("TSLA-24", 25_000n, now / 1000 - 3));
+    stocks.push(fast("TSLA", 24_900n, now - 120_000, "alpaca"));
+    spot.push(signed("TSLA-24", 25_010n, now / 1000));
+    expect(feed.latest("TSLA")).toMatchObject({ priceE8: 25_010n, source: "redstone" });
+    // The line only moves forward in time: the first fresh trade newer than RedStone's stamp takes it over.
+    stocks.push(fast("TSLA", 25_015n, now - 500, "alpaca"));
+    expect(feed.latest("TSLA")?.source).toBe("redstone");
+    clock += 1_000;
+    stocks.push(fast("TSLA", 25_020n, clock - 200, "alpaca"));
+    expect(feed.latest("TSLA")).toMatchObject({ priceE8: 25_020n, source: "alpaca" });
+    spot.push(signed("TSLA-24", 25_030n, clock / 1000));
+    expect(feed.latest("TSLA")?.priceE8).toBe(25_020n); // a speaking fast source mutes RedStone
+  });
+
   it("seeds every ticker from the newest signed values and never moves backwards in time", () => {
     const spot = fakeSpot([signed("ETH", 2_500n, 100)]);
     const crypto = fakeFast();

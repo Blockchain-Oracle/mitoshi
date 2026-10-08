@@ -43,6 +43,9 @@ export function createDisplayFeed(input: {
     for (const l of listeners) l(q);
   };
   const fast = (q: DisplayQuote) => {
+    // A thin session's last trade can be minutes old (IEX before the open): it neither takes the line nor mutes
+    // RedStone, whose value is newer. Only a trade from the last `FAST_STALE_MS` counts as the fast source speaking.
+    if (now() - q.atMs > FAST_STALE_MS) return;
     fastMs.set(q.symbol, now());
     publish(q);
   };
