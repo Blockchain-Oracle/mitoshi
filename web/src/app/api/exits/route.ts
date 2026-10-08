@@ -5,9 +5,9 @@
 import { connection } from "next/server";
 import { NETWORKS } from "@cwf/core";
 import { exitTriggerFromWire, exitTriggerRequestSchema } from "@cwf/core/exits";
-import { getPublicClient, readVaultGrant } from "@cwf/markets";
+import { readVaultGrant } from "@cwf/markets";
 import { exitSignatureCheck, verifyExitTrigger } from "@cwf/markets/server";
-import type { Hex, PublicClient } from "viem";
+import { http, type Hex } from "viem";
 import { ceremonyLimiter } from "@/server/auth";
 import { MissingConfigError, serverEnv, unavailable } from "@/server/env";
 import { exitTriggers, publicExitRow } from "@/server/exits";
@@ -23,8 +23,8 @@ export async function POST(req: Request): Promise<Response> {
     const parsed = exitTriggerRequestSchema.safeParse(await req.json().catch(() => null));
     if (!parsed.success) return Response.json({ error: "malformed exit trigger" }, { status: 400, headers: noStore });
     const trigger = exitTriggerFromWire(parsed.data.trigger);
-    const client = (await getPublicClient()) as unknown as PublicClient;
-    const verdict = await verifyExitTrigger(trigger, parsed.data.signature as Hex, { chainId: NETWORKS[serverEnv().network], nowMs: Date.now(), readGrant: readVaultGrant, verify: exitSignatureCheck(client) });
+    const env = serverEnv();
+    const verdict = await verifyExitTrigger(trigger, parsed.data.signature as Hex, { chainId: NETWORKS[env.network], nowMs: Date.now(), readGrant: readVaultGrant, verify: exitSignatureCheck({ network: env.network, transport: http(env.rpcHttpUrl) }) });
     if (!verdict.ok) return Response.json({ error: verdict.error }, { status: verdict.status, headers: noStore });
     const written = await exitTriggers().write({ trigger, signer: verdict.signer, signature: parsed.data.signature, nowMs: Date.now() });
     if ("conflict" in written) return Response.json({ error: CONFLICT[written.conflict], conflict: written.conflict }, { status: 409, headers: noStore });

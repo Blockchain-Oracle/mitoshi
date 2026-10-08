@@ -1,9 +1,10 @@
-import { createPublicClient, custom, type PublicClient } from "viem";
+import { createPublicClient, custom } from "viem";
+import { verifyHash } from "viem/actions";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { describe, expect, it } from "vitest";
 import type { VaultGrant } from "@cwf/core";
 import { exitTriggerTypedData, type ExitTrigger } from "@cwf/core/exits";
-import { tempoChain } from "../chains";
+import { tempoReadChain } from "../read-chain";
 import { generateSessionKey, sessionKeyAccount } from "../sessions";
 import { legacyVaultDeploymentOf, vaultDeploymentOf } from "../vault/read";
 import { exitSignatureCheck, verifyExitTrigger } from "./exits";
@@ -16,7 +17,7 @@ const owner = privateKeyToAccount(generatePrivateKey()).address;
 const record = await generateSessionKey(owner);
 const key = sessionKeyAccount(record) as unknown as { address: `0x${string}`; signTypedData: (d: ReturnType<typeof exitTriggerTypedData>) => Promise<`0x${string}`> };
 // Offline: `verifyHash` asks the chain only whether the signer has code (an EOA key has none).
-const client = createPublicClient({ chain: tempoChain("testnet"), transport: custom({ request: async ({ method }) => { if (method === "eth_getCode") return "0x"; throw new Error(`offline: ${method}`); } }) }) as unknown as PublicClient;
+const transport = custom({ request: async ({ method }) => { if (method === "eth_getCode") return "0x"; throw new Error(`offline: ${method}`); } });
 
 const T: ExitTrigger = {
   owner, vault: v2.eventVault, chainId: CHAIN, market: `0x${"ab".repeat(32)}`, side: "up", grantId: 7n,
@@ -28,7 +29,7 @@ const grant = (over: Partial<VaultGrant> = {}): VaultGrant => ({
   caps: { maxStakePerTradeBase: 1_000_000n, maxDailySpendBase: 10_000_000n, maxOpenPositions: 10, maxPriceRaw: 0n, market: null }, budgetBase: 10_000_000n, ...over,
 });
 
-const deps = (g: VaultGrant | null) => ({ chainId: CHAIN, nowMs: NOW, readGrant: async () => g, verify: exitSignatureCheck(client) });
+const deps = (g: VaultGrant | null) => ({ chainId: CHAIN, nowMs: NOW, readGrant: async () => g, verify: exitSignatureCheck({ network: "testnet", transport }) });
 const sign = (t: ExitTrigger) => key.signTypedData(exitTriggerTypedData(t));
 
 describe("verifyExitTrigger", () => {
@@ -51,5 +52,14 @@ describe("verifyExitTrigger", () => {
       expect(await verifyExitTrigger(onV1, await sign(onV1), deps(grant()))).toMatchObject({ ok: false, status: 400, error: /current Trading Balance/ });
     }
     expect(await verifyExitTrigger(T, "0x1234", deps(grant()))).toMatchObject({ ok: false, status: 403 });
+  });
+
+  it("needs the full Tempo chain: the read runtime's plain chain can't read a P-256 envelope", async () => {
+    // Why `exitSignatureCheck` builds its own client: on `tempoReadChain` the genuine key's signature fails.
+    const { hashTypedData } = await import("viem");
+    const hash = hashTypedData(exitTriggerTypedData(T));
+    const plain = createPublicClient({ chain: tempoReadChain("testnet"), transport });
+    expect(await verifyHash(plain, { address: record.address, hash, signature: await sign(T) }).catch(() => false)).toBe(false);
+    expect(await exitSignatureCheck({ network: "testnet", transport })(record.address, hash, await sign(T))).toBe(true);
   });
 });
