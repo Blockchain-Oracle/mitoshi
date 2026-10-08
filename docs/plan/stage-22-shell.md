@@ -16,15 +16,15 @@ On `integration/t1` (D-201). Sources: Baku/roy-chain `ede3ed38` (`apps/web/src/c
   the rail foot, the AllowancePill and banners in the top line. Rewrite `header/nav-items.ts` as `RAIL_NAV`, `DOCK_NAV`,
   `EVERYTHING_SECTIONS` and `nav-items.test.ts` (38 navigable paths, one home each; `/trade` included; `isTopLevel`
   treats `/trade/*` as top level).
-- [ ] 22.3 Overlays: `components/ui/drawer.tsx` (21st 31360) restyled to the floating geometry; `modal.tsx` (31359);
+- [x] 22.3 Overlays: `components/ui/drawer.tsx` (21st 31360) restyled to the floating geometry; `modal.tsx` (31359);
   `useDrawerParam` (`?d=` read with `useSearchParams` inside Suspense, pushed with `history.pushState`; Back closes;
   focus returns); the Everything drawer (the More panel's groups + search); the shortcuts modal; toasts top-centre,
-  `ToastHost limit` 3, same-id replace, loading persistent, confetti on wins; one owner for settle toasts
-  (`settle-<id>`, "paying…" → "paid", `SettledToasts` merged).
+  `ToastHost limit` 3. (Typed terminal toasts — same-id replace, loading, confetti, and the settle toast's two phases
+  `settle-<id>` "paying…" → "paid" from the one owner, `SettledToasts` — arrive with their first user, S23c/d.)
 - [x] 22.4 Retire the header, `LiveMarquee`, footer, `MobileBottomNav` and `MorePanel` from `(app)`/`(island)`;
   `IslandChrome` → the dock; `(site)` keeps a slim public header + footer and "Open the app" → `/trade`; the parlay
   `SlipDock` and the ticket slide-over sit above the dock.
-- [ ] 22.5 Live pages in the stage grammar (page header display · body-lg · source line; filter pills; card grids;
+- [x] 22.5 Live pages in the stage grammar (page header display · body-lg · source line; filter pills; card grids;
   shape skeletons; empty/error 19745): `/markets`, `/portfolio`, `/settings/account`, `PendingRoute`; then `/parlay`,
   `/surface`, `/games/range`, `/games/moonshot` and the private desk after the S10 browser gate.
 - [x] 22.6 Feedback engine: port Owarine `lib/sound/trade.ts` (the six synthesised cues and the synth combo/surge/slump/
@@ -41,5 +41,16 @@ On `integration/t1` (D-201). Sources: Baku/roy-chain `ede3ed38` (`apps/web/src/c
   **Rows:** RV-01…RV-16, UX-13, UX-14, UX-16 (engine), L-02, L-03, L-04 (re-homed).
 
 ## Findings
+
+- F-S22-01: Next's `history.pushState` integration treats a state that carries its own internal flag as an internal
+  push and does not update `useSearchParams`; the drawer param pushes a plain `{ __drawer }` state (Next adds its
+  fields), and every opener goes through `openDrawer`.
+- F-S22-02: a Suspense boundary around a pathname read leaves React's streamed copy in the DOM (hidden), so an effect
+  inside it can register twice; the rail's 1–5 keys are registered once by the rail, outside the boundary.
+- F-S22-03: on a ≈ 110 KB/s link a tap on Sign in waited 8–25 s for the ~1 MB wallet runtime with nothing on screen;
+  the shell now answers at once ("Getting sign-in ready…") and the runtime opens the modal when it lands.
+- F-S22-04 (gate): `e2e/ux-gate.ts` counted a Base UI switch's hidden native input (`aria-hidden`, 1×1, 15 px) as a
+  target and an input; it now skips `aria-hidden` controls. 7 routes × 8 widths × 2 themes: 0 findings after the home
+  disc grew from 40 to 44 px.
 
 ## Handoff

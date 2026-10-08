@@ -21,7 +21,7 @@
 @media (min-width: 1280px) { .rail-brand { align-items: flex-start; gap: 10px; padding-left: 4px; } }
 .rail-mark { display: flex; align-items: center; gap: 10px; border-radius: var(--radius-xl); color: var(--color-ink); }
 .rail-mark:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-accent); }
-.rail-disc, .topline-mark { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--radius-full); background: var(--color-stage); color: var(--color-ink); }
+.rail-disc, .topline-mark { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--radius-full); background: var(--color-stage); color: var(--color-ink); }
 .rail-disc svg, .topline-mark svg { width: 18px; height: 22px; }
 .rail-word { display: none; font: 700 17px/1 var(--font-heading); letter-spacing: 0.12em; }
 @media (min-width: 1280px) { .rail-word { display: inline; } }

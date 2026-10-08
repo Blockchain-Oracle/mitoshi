@@ -40,10 +40,11 @@ async function measure(page: Page) {
       const style = getComputedStyle(el);
       if (r.width === 0 || r.height === 0 || style.visibility === "hidden") continue;
       if (el.closest("[data-inline-link], p")) continue; // inline text links follow WCAG 2.5.8's inline exception
+      if (el.closest('[aria-hidden="true"]')) continue; // e.g. a Base UI switch's hidden native input: the switch is the target
       if (r.height < 44 && r.width < 44) small.push(`${el.tagName.toLowerCase()} "${(el.getAttribute("aria-label") ?? el.textContent ?? "").trim().slice(0, 30)}" ${Math.round(r.width)}×${Math.round(r.height)}`);
     }
     const inputs = Array.from(document.querySelectorAll<HTMLElement>("input, textarea, select"))
-      .filter((el) => parseFloat(getComputedStyle(el).fontSize) < 16)
+      .filter((el) => !el.closest('[aria-hidden="true"]') && parseFloat(getComputedStyle(el).fontSize) < 16)
       .map((el) => `${el.tagName.toLowerCase()}#${el.id} ${getComputedStyle(el).fontSize}`);
     return { overflow, small, inputs };
   });

@@ -1,6 +1,7 @@
 /**
  * Visual A/B support (diagnosis, e.g. the Yosuku purge, D-071): screenshots a fixed set of routes and open overlays
- * at 390 and 1440 in both themes into --out, named stably, so two builds can be compared pixel for pixel.
+ * (the Everything drawer, the sign-in modal) at 390 and 1440 in both themes into --out, named stably, so two builds
+ * can be compared pixel for pixel.
  *
  *   pnpm --filter @cwf/web exec tsx e2e/visual-snap.ts --base http://localhost:3102 --out <dir>
  */
@@ -30,8 +31,9 @@ for (const theme of ["dark", "light"] as const) {
     await page.goto(`${base}/markets`, { waitUntil: "load" });
     await settle(page);
     await page.waitForTimeout(600);
+    // The Everything drawer: the dock's button on phones, the rail's on wide screens (S22).
     if (width === 390) await page.getByRole("button", { name: /Everything in Mitoshi/ }).click();
-    else await page.getByRole("button", { name: "Explore" }).click();
+    else await page.getByRole("navigation", { name: "Places" }).getByRole("button", { name: /Everything/ }).click();
     await page.waitForTimeout(700);
     await page.screenshot({ path: join(out, `${theme}-${width}-menu.png`), animations: "disabled" });
     await page.keyboard.press("Escape");
