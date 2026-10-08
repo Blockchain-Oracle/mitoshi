@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import venueSpec from "@cwf/core/venue-spec.json" with { type: "json" };
 import { decidePosition, type BookMark } from "./decide";
-import { spotProofOf } from "./spot-proof";
+import { spotProofOf } from "../../prices/spot-proof";
 
 const P = { positionId: 7n, marketId: "0xabc" as const, quantityRaw: 32_000_000n };
 const healthy: BookMark = { markRaw: 18_559_999n, filledRaw: 32_000_000n, lineRaw: 12_000_000n, knockable: false };

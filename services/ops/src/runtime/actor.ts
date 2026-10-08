@@ -18,6 +18,8 @@ export interface ActorSpec {
   dryRun: boolean;
   everyMs: number;
   pass: (beat: Heartbeat) => Promise<PassResult>;
+  /** False: a stale or failing pass shows on `/health` without failing it (default true). */
+  critical?: boolean;
 }
 
 const REPEAT_LOG_MS = 60_000;
@@ -27,7 +29,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** Runs `spec.pass` until `stop()`. Never throws. */
 export function runActor(spec: ActorSpec): { stop: () => void; beat: Heartbeat } {
-  const beat = registerHeartbeat(spec.name, spec.dryRun, spec.everyMs);
+  const beat = registerHeartbeat(spec.name, spec.dryRun, spec.everyMs, spec.critical ?? true);
   let stopped = false;
   let lastLogged = { why: "", atMs: 0 };
   const say = (why: string) => {

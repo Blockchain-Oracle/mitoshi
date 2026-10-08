@@ -11,6 +11,7 @@ import { startPriceRelay } from "./actors/price-relay";
 import { startSettler } from "./actors/settler";
 import { startSeedMaker } from "./actors/seed-maker";
 import { startLeverageKeeper } from "./actors/leverage-keeper";
+import { startExitKeeper } from "./actors/exit-keeper";
 import { startHaltWatch } from "./actors/halt-watch";
 import { startEarnings } from "./calendar/earnings";
 import { startCalendar } from "./calendar";
@@ -49,6 +50,9 @@ export const ACTORS: Record<string, ActorEntry> = {
   "funds-watch": { start: (d) => startFundsWatch(d) },
   // S10c: settles and knocks out Boost positions (both permissionless, both pay the owner); `keeper` role key.
   "leverage-keeper": { start: (d) => startLeverageKeeper(d) },
+  // S24.3: Trail / take-profit / stop-loss with the app closed — sells through the owners' EXIT grants at the vault's
+  // fair-value floor; `keeper` role key; trails step on the display feed (so it asks for the spot/display runtime).
+  "exit-keeper": { start: (d) => startExitKeeper(d), spot: true },
   // S3.5: the hourly Tempo Indexer API / tidx recount. Reads only on an API key or self-hosted tidx (idles with the
   // reason until one is configured); a paid MPP route honours DRY_RUN inside the pass. Needs DATABASE_URL.
   "indexer-recount": {
@@ -74,4 +78,4 @@ export const ACTORS: Record<string, ActorEntry> = {
   "reference-writer": { start: (d) => runActor({ name: "reference-writer", log: d.log, dryRun: d.env.dryRun, everyMs: REFERENCE_WRITER_EVERY_MS, pass: referenceWriterPass(d.env) }) },
 };
 
-export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper"] as const;
+export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "exit-keeper"] as const;

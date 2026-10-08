@@ -16,7 +16,7 @@ import { createOpsClient, feedIdToAscii, OpsSendError, sendOps, venueOf } from "
 import { errorText, roleKey, runActor, type VenueDeps } from "../../runtime";
 import { fetchRedstoneLatest } from "../../prices/redstone-gateway";
 import { decidePosition, type BookMark, type FairMark } from "./decide";
-import { spotProofOf, type SpotProof } from "./spot-proof";
+import { spotProofOf, type SpotProof } from "../../prices/spot-proof";
 
 const DEFAULT_REFRESH_MS = 20_000;
 /** "Someone got there first" or "not any more": look again next pass rather than count a failure. */

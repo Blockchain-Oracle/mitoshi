@@ -1780,6 +1780,19 @@ compared escrows, and at a fixed stake a cheaper book buys more lots whose escro
 the v2 Trading Balance check (CI run 37834989176) got "Price moved — the book moved to 60.1¢" on a button that said
 60.6¢. **Refines** the cap contract in `ports/submitter.ts` (the confirmed escrow is still never exceeded).
 
+### D-209 — an exit trigger is the owner's session key's signature; the keeper only decides when (S24.3, 2026-10-08)
+
+**A Trail / TP / SL that runs with the app closed is stored only as an EIP-712 message signed by the actor of the
+owner's live SESSION grant on the current Trading Balance** (`@cwf/core/exits`, domain = chain + `EventVaultV2`), so a
+trigger needs no extra prompt (the session key already signs every tap) and each sale is traceable to the owner's own
+key. `/api/exits` checks the signature against the grant on chain (owner, actor, kind, not revoked, not expired) and
+stores one trigger per position (vault, owner, Window, side) — a larger nonce replaces it, an empty one cancels, nothing
+replaces it while the keeper is selling. The keeper moves a trail's stop only in the position's favour and sells only
+through the owner's EXIT grant with `exitFor` (never `placeFor`, which the EXIT grant refuses), at the vault's floor
+rounded up onto the tick grid. A stolen session key could at worst set triggers that sell at the floor — the owner's
+stated tolerance under fair value — which is the same bound the EXIT grant already accepts. Reads (`GET`) need the
+owner's server session. **Implements** D-193's "triggers written through `/api/exits`".
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

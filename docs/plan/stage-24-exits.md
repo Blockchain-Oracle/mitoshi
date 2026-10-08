@@ -27,9 +27,17 @@ RV-55, RV-97, RV-98.
   holds. Both relay policies are in place (ba26081). `GrantKind` gains `exit` (the trust surface names it).
 - [ ] 24.3 The `exit-keeper` actor (`services/ops/src/actors/exit-keeper/`): trigger records written through
   `web/src/app/api/exits/route.ts` into a `packages/db` migration (user signature, nonce, expiry, cancel, idempotency per
-  trigger); watches the display feed and the book; sells through `placeFor(isBuy=false)` under the EXIT grant within
-  the floor; pays its own gas (`sendOps`); publishes on `user:<addr>` ("Trailing stop hit · BTC · Locked +$x"); restart
-  safe; non-critical heartbeat.
+  trigger); watches the display feed and the book; sells through `exitFor` under the EXIT grant within the floor
+  (`placeFor` refuses an EXIT grant); pays its own gas (`sendOps`); publishes on `user:<addr>` ("Trailing stop hit ·
+  BTC · Locked +$x"); restart safe; non-critical heartbeat.
+  Built (D-209): the trigger and the exit rules in `@cwf/core/exits` (the tab's rules moved there — one copy);
+  `exits/0001` (one row per position, nonce compare-and-set, claim before send, the hash stored once signed);
+  `/api/exits` (POST verified by `verifyExitTrigger`, GET the owner's own); `@cwf/markets/ops` exits reads (holdings,
+  Window, book, EXIT grant, `exitFloorRaw`, the floor rounded up onto the grid, `exitFor`, the booked sale); the actor
+  steps trails on every display tick, reads what Close pays for TP/SL, backs a failed sale off, and settles a leftover
+  claim from its receipt after a restart. Tests: trigger shape and rules, the signature check, the store on real
+  Postgres, the limit never under the floor on either side, the keeper's decisions. Waits on the live check (a trigger
+  fired on Moderato with no tab open, a restart mid-sale, a sale below the floor refused) before the box is ticked.
 - [ ] 24.4 The house's exit tail (D-194, D-204): `seed-maker/{quote,lanes,window,index}.ts`. Both sides stay from
   lock − 75. A pair already resting is kept. New placements are half the lots at twice the half spread. Nothing new is
   placed from lock − 45. The pair lapses at lock − 30 with no cancel, and a pair already resting to lock − 30 is never

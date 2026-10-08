@@ -201,9 +201,10 @@ export async function latestWindowIds(lookback = 2): Promise<MarketId[]> {
   });
 }
 
-type LevelsAnswer = readonly [readonly number[], readonly bigint[]];
-const zipLevels = ([ticks, lots]: LevelsAnswer): BookLevel[] => ticks.map((t, i) => [Number(t), BigInt(lots[i]!)] as const).filter(([, q]) => q > 0n);
-const levelsCall = (lensAddress: Address, marketId: MarketId, isBid: boolean, n: number, minRestSec: number) =>
+export type LevelsAnswer = readonly [readonly number[], readonly bigint[]];
+export const zipLevels = ([ticks, lots]: LevelsAnswer): BookLevel[] => ticks.map((t, i) => [Number(t), BigInt(lots[i]!)] as const).filter(([, q]) => q > 0n);
+/** The lens `levels` read for one side (shared with ops' reads through their own client). */
+export const levelsCall = (lensAddress: Address, marketId: MarketId, isBid: boolean, n: number, minRestSec: number) =>
   ({ address: lensAddress, abi: engineLensAbi, functionName: "levels" as const, args: [marketId, isBid, BigInt(n), minRestSec, LENS_MAX_NODES] as const });
 
 /**

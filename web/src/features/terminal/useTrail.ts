@@ -13,6 +13,7 @@ import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
 import { readWalletKey } from "@/providers/wallet/wallet-key-store";
 import { TERMINAL } from "./copy";
 import { rememberEntry } from "./entries";
+import type { ExitReason } from "@cwf/core/exits";
 import { exitHit, ratchet, trailEligible, trailHit, trailStart } from "./position-value";
 import { tradeSettings } from "./settings";
 import type { TerminalPosition } from "./terminal-positions";
@@ -70,7 +71,7 @@ export function useTrailToggle() {
   );
 }
 
-export type ExitReason = "trail" | "tp" | "sl";
+export type { ExitReason } from "@cwf/core/exits";
 
 /**
  * One row's exits in the tab: the take-profit and stop-loss on what Close pays (D-197) and the trail on its asset's

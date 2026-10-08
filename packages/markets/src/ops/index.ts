@@ -9,6 +9,7 @@ export * from "./calls";
 export * from "./send";
 export * from "./logs";
 export * from "./vault";
+export * from "./exits";
 export * from "../prices/redstone";
 export * from "../prices/attested";
 export * from "../prices/datastreams";
