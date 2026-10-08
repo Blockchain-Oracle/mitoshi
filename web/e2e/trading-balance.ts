@@ -65,6 +65,7 @@ async function tap(t: TerminalSession, symbol: string, side: "up" | "down") {
   if (ok) {
     await expect(row).toBeVisible({ timeout: 60_000 });
     rowMs = Date.now() - t0;
+    await page.locator(".tm-side").first().screenshot({ path: join(out, `positions-${symbol}-${width}.png`) }).catch(() => undefined);
     const c0 = Date.now();
     await row.locator(".tm-pos-open-btn").click();
     clickMs = Date.now() - c0;
