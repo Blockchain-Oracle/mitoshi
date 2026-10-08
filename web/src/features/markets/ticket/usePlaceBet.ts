@@ -78,7 +78,7 @@ export function usePlaceBet(wallet: Address | null, { quiet = false }: { quiet?:
             void invalidateAfterWrite(queryClient, { wallet, marketId: request.market.marketId });
             break;
           case "requote":
-            dispatch({ type: "reset" });
+            dispatch({ type: "requoted" });
             break;
           case "reverted":
             announce(TICKET.rolledBack);

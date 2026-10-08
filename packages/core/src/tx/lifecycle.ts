@@ -44,6 +44,11 @@ export type TxEvent =
   | { type: "timeout"; diagnosis: Diagnosis }
   /** Reconciliation's answer for an `unknown` write. */
   | { type: "reconciled"; verdict: "confirmed" | "reverted" | "absent"; txHash?: Hex }
+  /**
+   * The lane re-priced before anything was signed (a dearer book, D-208): the tap ends and the surface shows the new
+   * price. Not `reset`, which a busy state absorbs — a requote after `confirm` left the buttons busy for good.
+   */
+  | { type: "requoted" }
   | { type: "reset" };
 
 export const TX_IDLE: TxState = { kind: "idle" };
@@ -111,6 +116,8 @@ export function reduceTx(state: TxState, event: TxEvent): TxState {
         moneyMoved: "no",
         txHash: event.txHash ?? state.txHash,
       };
+    case "requoted":
+      return state.kind === "signing" ? TX_IDLE : state;
     case "reset":
       return busy(state) ? state : TX_IDLE;
   }

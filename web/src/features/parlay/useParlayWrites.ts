@@ -66,7 +66,7 @@ export function useParlayWrites(wallet: Address | null) {
         }
         if (fresh.value.stakeBase > req.maxStakeBase) {
           setOutcome({ status: "requote", stakeBase: fresh.value.stakeBase });
-          dispatch({ type: "reset" });
+          dispatch({ type: "requoted" });
           return;
         }
         const nowSec = Math.floor(Date.now() / 1000);

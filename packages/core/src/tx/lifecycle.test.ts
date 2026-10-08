@@ -72,4 +72,13 @@ describe("TxLifecycle (D-052)", () => {
     expect(confirmTierFor({ signer: "passkey", withinCaps: true, irreversible: false })).toBe("passkey");
     expect(confirmTierFor({ signer: "passkey", withinCaps: true, irreversible: true })).toBe("typed");
   });
+
+  it("ends a tap the lane re-priced before signing — a reset alone would leave it busy", () => {
+    const signing = run([{ type: "confirm", nowMs: 0 }]);
+    expect(signing).toEqual({ kind: "signing" });
+    expect(reduceTx(signing, { type: "reset" })).toEqual({ kind: "signing" });
+    expect(reduceTx(signing, { type: "requoted" })).toEqual(TX_IDLE);
+    const submitted = run([{ type: "confirm", nowMs: 0 }, { type: "submitted", txHash: HASH, validBeforeSec: null }]);
+    expect(reduceTx(submitted, { type: "requoted" })).toBe(submitted);
+  });
 });

@@ -51,7 +51,7 @@ export function useRangeWrites(wallet: Address | null) {
         }
         if (fresh.value.stakeBase > req.maxStakeBase) {
           setOutcome({ status: "requote", stakeBase: fresh.value.stakeBase });
-          dispatch({ type: "reset" });
+          dispatch({ type: "requoted" });
           return;
         }
         setFetchingSpot(true);
