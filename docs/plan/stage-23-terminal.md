@@ -114,8 +114,10 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   re-wired to Mitoshi's parlay contracts; slip in the right column), Private toggle; the passkey prompt named (Q-032).
   Progress (d7bfd4d): the mode row hosts the ticket's Range (its band drawn on the chart), Boost and Private bodies for
   the Window on screen (a drawer on phones), naming the passkey prompt (Q-032's default); Parlay and Moonshot open their
-  screens. Still open: Boost chips in the settings stack and the parlay slip in the right column (Owarine `parlay/*` on
-  Mitoshi's contracts).
+  screens. Boost chips (RV-41, b97b051): the settings drawer's Boost row (Off, 2×… up to the reserve's live maximum)
+  makes UP/DOWN open a Boost on the Window through the ticket's own terms (`useBoostTicket`) and write lane: one
+  passkey prompt, refusals named under each button, "Boost 2×" in the stack. Still open: the parlay slip in the right
+  column (Owarine `parlay/*` on Mitoshi's contracts).
 - [x] 23j `/markets` as the list (lanes, "Your calls", word board, Surface link → terminal); the hero chart and its
   lightweight-charts island retire once unused.
   Done (85814ce): the list with "Open the terminal", rows and board words → `/trade/<SYM>?w=<id>`, old `?m=` links too;
