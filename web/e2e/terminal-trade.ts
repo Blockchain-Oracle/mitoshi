@@ -45,7 +45,7 @@ try {
   await page.goto(`${base}/trade/${symbol}`, { waitUntil: "load" });
   await settle(page);
   // Sign up from the terminal's own equity pill.
-  await page.locator(".tm-equity").first().click();
+  await page.locator(".tm-equity:visible").first().click();
   await page.getByLabel(/Name this passkey/).fill(`terminal ${Date.now()}`);
   await page.getByRole("button", { name: "Create my account" }).click();
   const dialog = page.getByRole("dialog");
