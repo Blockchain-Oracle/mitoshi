@@ -5,7 +5,11 @@
  * both, and the balance poll is the fallback for a tab whose stream is down.
  */
 import type { Address, MarketId, Reading, VaultBet, VaultHoldings, VaultSnapshot } from "@cwf/core";
+import { getPublicClient } from "../runtime/read-runtime";
+import { withReading } from "../runtime/reading";
+import { legacyVaultDeploymentOf, readVaultSnapshot } from "../vault/read";
 import { keys } from "./keys";
+import { useReadingQuery } from "./useReadingQuery";
 import { usePortReading } from "./window-reads";
 
 const VAULT_POLL_MS = 15_000;
@@ -26,4 +30,21 @@ export function useVaultHoldings(wallet: Address | null, marketId: MarketId | nu
 /** The owner's recent Windows traded through the Trading Balance (newest first), for Portfolio's vault rows. */
 export function useVaultBets(wallet: Address | null, enabled = true): Reading<VaultBet[]> | null {
   return usePortReading([...keys.vault(wallet), "bets"], (p) => p.listVaultBets(wallet!), { enabled: enabled && wallet !== null, pollMs: VAULT_POLL_MS });
+}
+
+/**
+ * A previous Trading Balance (v1 once v2 is deployed, S24.2): its account and live grants, so the owner can withdraw
+ * what it still holds and stop an old key. `null` value = no previous vault on this network.
+ */
+export function useLegacyVaultSnapshot(wallet: Address | null): Reading<VaultSnapshot | null> | null {
+  return useReadingQuery(
+    [...keys.vault(wallet), "legacy"],
+    () =>
+      withReading(`legacyVault:${wallet?.toLowerCase()}`, async () => {
+        const client = await getPublicClient();
+        const legacy = legacyVaultDeploymentOf(client.chain.id);
+        return legacy ? readVaultSnapshot(wallet!, legacy.eventVault) : null;
+      }),
+    { enabled: wallet !== null, pollMs: VAULT_POLL_MS },
+  );
 }

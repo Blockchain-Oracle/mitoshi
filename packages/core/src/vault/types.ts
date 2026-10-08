@@ -4,9 +4,12 @@ import type { MarketId } from "../types/market";
 import type { Address } from "../types/primitives";
 
 /** The three delegated powers (AD-5), in the contract's enum order. */
-export type GrantKind = "session" | "executor" | "strategy";
-export const GRANT_KINDS: readonly GrantKind[] = ["session", "executor", "strategy"];
-export const GRANT_KIND_INDEX: Record<GrantKind, 0 | 1 | 2> = { session: 0, executor: 1, strategy: 2 };
+/** `exit` (S24, D-193) is v2's sell-only grant for the exit keeper: no budget, sells only at the fair-value floor. */
+export type GrantKind = "session" | "executor" | "strategy" | "exit";
+export const GRANT_KINDS: readonly GrantKind[] = ["session", "executor", "strategy", "exit"];
+export const GRANT_KIND_INDEX: Record<GrantKind, 0 | 1 | 2 | 3> = { session: 0, executor: 1, strategy: 2, exit: 3 };
+/** The kinds a vault version knows (v1's enum stops at `strategy`; asking it for `exit` reverts). */
+export const grantKindsOf = (version: 1 | 2): readonly GrantKind[] => (version === 2 ? GRANT_KINDS : GRANT_KINDS.slice(0, 3));
 
 export function grantKindOf(index: number): GrantKind {
   const kind = GRANT_KINDS[index];
@@ -56,6 +59,8 @@ export interface VaultDeployment {
   collateral: Address;
   /** The block the vault was deployed in: where its event history starts. */
   fromBlock: bigint;
+  /** 2: `EventVaultV2` (the EXIT grant, S24) — the current one where deployed; 1: the first, kept for what it still holds. */
+  version: 1 | 2;
 }
 
 /** One reading of everything the Trading Balance surfaces show for a wallet. */
@@ -78,6 +83,8 @@ export interface VaultHoldings {
 
 /** One Window the owner traded through the vault (S7): holdings now, the vault's own tally, and the Window. */
 export interface VaultBet {
+  /** The Trading Balance that holds it (S24.2: v1 positions stay in v1 until sold or settled). */
+  vault: Address;
   marketId: MarketId;
   asset: string;
   intervalSec: number;

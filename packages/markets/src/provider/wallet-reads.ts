@@ -7,6 +7,7 @@
 import { erc20Abi, getAbiItem, getAddress, type Address } from "viem";
 import { eventsEngineAbi } from "@cwf/clients/abis/EventsEngine";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
+import { vaultDeploymentOf } from "../vault/read";
 import { buildLedgers, ledgerHasActivity, oneUnit, roundSettledAtMs, settleRound, USD_DECIMALS, type BalanceSheet, type ClaimableRow, type Holdings, type LedgerFill, type LedgerSide, type MarketId, type OnchainSnapshot, type OpenPosition, type Reading, type RoundMarket, type SettledRound, type WalletHistory } from "@cwf/core";
 import { deploymentOf } from "../deployments";
 import { getLogClient, getPublicClient } from "../runtime/read-runtime";
@@ -149,11 +150,12 @@ export const listWalletHistory = (wallet: Address): Promise<Reading<WalletHistor
 export const getBalanceSheet = (wallet: Address): Promise<Reading<BalanceSheet>> =>
   engineReading(`balance:${lower(wallet)}`, async () => {
     const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
-    const vault = deploymentOf("vault", client.chain.id)?.EventVault?.address ?? null;
+    // The current Trading Balance (v2 once deployed, S24.2); a previous one's leftover shows on its own card.
+    const vault = vaultDeploymentOf(client.chain.id)?.eventVault ?? null;
     const [spendableBase, ids, vaultAccount] = await Promise.all([
       client.readContract({ address: venue.collateral, abi: erc20Abi, functionName: "balanceOf", args: [wallet] }),
       walletMarketIds(wallet, true),
-      vault ? client.readContract({ address: getAddress(vault), abi: eventVaultAbi, functionName: "accountOf", args: [wallet] }) : Promise.resolve(null),
+      vault ? client.readContract({ address: vault, abi: eventVaultAbi, functionName: "accountOf", args: [wallet] }) : Promise.resolve(null),
     ]);
     const positions = await readPositions(wallet, ids);
     const engineCreditByMarket = positions.filter((p) => p.credit > 0n).map((p) => ({ marketId: p.marketId, amountBase: p.credit }));

@@ -20,6 +20,7 @@ import { useRootSubmitter, useSessionActions, useSessionView } from "@/features/
 import { useNowMs } from "@/lib/clock";
 import { notify } from "@/lib/toast";
 import { AmountField, amountProblem } from "./AmountField";
+import { LegacyBalance } from "./LegacyBalance";
 import { VAULT } from "./copy";
 import { VaultBetRows } from "./VaultBetRows";
 
@@ -75,6 +76,7 @@ export function TradingBalancePanel() {
 
   return (
     <section aria-labelledby="tb-title" className="pool-rows flex flex-col gap-4">
+      <LegacyBalance owner={view.owner} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <h2 id="tb-title" className="pool-label">{VAULT.row.label}</h2>

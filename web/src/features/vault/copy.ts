@@ -34,4 +34,13 @@ export const VAULT = {
   },
   toasts: { deposited: "Added to your Trading Balance.", withdrawn: "Withdrawn to your account." },
   settledNote: "Settled Windows are paid into your Trading Balance on their own — no prompt, no claim.",
+  legacy: {
+    title: "Your previous Trading Balance",
+    body: (held: string) => `Mitoshi moved to a new Trading Balance, one that can run your exits with the app closed. The previous one still holds ${held}: withdraw it to your account, then add it here when you like.`,
+    key: (budget: string) => `An old tap-trading key there still holds ${budget}. Stop it to move that back first.`,
+    stop: "Stop the old key",
+    withdraw: (amount: string) => `Withdraw ${amount}`,
+    stopped: "Old key stopped — its budget is back in the previous balance.",
+    withdrawn: "Withdrawn from the previous Trading Balance to your account.",
+  },
 } as const;

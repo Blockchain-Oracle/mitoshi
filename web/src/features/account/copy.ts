@@ -52,7 +52,7 @@ export const ACCOUNT_PAGE = {
     unavailable: "Couldn't read your Trading Balance right now. Nothing changed; try again.",
     notDeployed: "The Trading Balance isn't on this network yet.",
     none: "No live grants. Nothing spends from your Trading Balance but you.",
-    kind: { session: "Tap-trading key", executor: "Reply trading (X)", strategy: "Strategy agent" } as const,
+    kind: { session: "Tap-trading key", executor: "Reply trading (X)", strategy: "Strategy agent", exit: "Exits with the app closed" } as const,
     kindByIndex: ["Tap-trading key", "Reply trading (X)", "Strategy agent"] as readonly string[],
     thisDevice: "this device",
     key: "Key",

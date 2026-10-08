@@ -23,7 +23,8 @@ export type PhaseListener = (phase: WritePhase, detail?: { txHash?: Hex }) => vo
  * intent goes through the EventVault — from the owner's Trading Balance, or from a grant's
  * budget by the grant's actor. One interface, neither route implemented twice.
  */
-export type OrderRoute = { kind: "wallet" } | { kind: "vault" } | { kind: "vault-grant"; grantId: bigint };
+/** `vault` names the Trading Balance when it isn't the current one (S24.2: a v1 position sells on v1). */
+export type OrderRoute = { kind: "wallet" } | { kind: "vault"; vault?: Address } | { kind: "vault-grant"; grantId: bigint; vault?: Address };
 
 export interface OrderRequest {
   market: EventMarket;
@@ -104,7 +105,8 @@ export interface GrantTerms {
 /** EventVault writes: every one journals, simulates, sends and books through the same lane as a redeem. */
 export type VaultIntent =
   | { kind: "vault-deposit"; amountBase: bigint }
-  | { kind: "vault-withdraw"; amountBase: bigint }
+  /** `vault`: a previous Trading Balance to empty (S24.2); the current one otherwise. */
+  | { kind: "vault-withdraw"; amountBase: bigint; vault?: Address }
   | { kind: "vault-move-private"; amountBase: bigint }
   | { kind: "vault-withdraw-private"; amountBase: bigint }
   | { kind: "vault-grant"; terms: GrantTerms }
@@ -113,7 +115,8 @@ export type VaultIntent =
   | { kind: "vault-fund-grant"; grantId: bigint; amountBase: bigint }
   /** Deposit from the wallet straight into a live grant's budget in one transaction ("Add to budget", S7). */
   | { kind: "vault-deposit-and-fund"; grantId: bigint; amountBase: bigint }
-  | { kind: "vault-revoke"; grantId: bigint }
+  /** `vault`: a grant on a previous Trading Balance (S24.2); the current one otherwise. */
+  | { kind: "vault-revoke"; grantId: bigint; vault?: Address }
   /** Permissionless: anyone may crank a settled Window into its owner's balance. */
   | { kind: "vault-crank-settle"; owner: Address; marketId: MarketId }
   | { kind: "vault-sweep"; marketId: MarketId };

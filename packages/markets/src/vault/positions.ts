@@ -10,28 +10,32 @@
  */
 import { getAbiItem, type Address } from "viem";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
-import { deriveVerdict, toMarketId, type MarketId, type PinnedVerdictView, type VaultBet } from "@cwf/core";
+import { deriveVerdict, toMarketId, type MarketId, type PinnedVerdictView, type VaultBet, type VaultDeployment } from "@cwf/core";
 import { readWindows, type WindowFacts } from "../engine/lens";
 import { getLogClient, getPublicClient } from "../runtime/read-runtime";
 import { nowSec } from "../runtime/clock";
 import { LOG_WINDOW, DEFAULT_LOOKBACK_BLOCKS } from "../provider/chain-logs";
 import { withReading } from "../runtime/reading";
-import { vaultDeploymentOf, vaultOutcomeId } from "./read";
+import { vaultDeploymentsOf, vaultOutcomeId } from "./read";
 
 type Tally = readonly [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, number];
 
 const tallyOf = (t: Tally) => ({ costBase: t[0], proceedsBase: t[1], payoutBase: t[2], boughtUp: t[3], boughtDown: t[4], soldUp: t[5], soldDown: t[6], firstAtSec: Number(t[7]), lastAtSec: Number(t[8]), settledAtSec: Number(t[9]), fills: t[10] });
 
-async function vaultCtx() {
+/** Every Trading Balance on the chain (S24.2: v2, then v1 for what it still holds), each with its contract. */
+async function vaultCtxs() {
   const client = await getPublicClient();
-  const d = vaultDeploymentOf(client.chain.id);
-  return { client, d, contract: d ? ({ address: d.eventVault, abi: eventVaultAbi } as const) : null };
+  return { client, all: vaultDeploymentsOf(client.chain.id).map((d) => ({ d, contract: { address: d.eventVault, abi: eventVaultAbi } as const })) };
 }
 
-/** The owner's `recent` latest vault Windows (newest first), with holdings, tally and Window facts. */
+/** The owner's `recent` latest vault Windows across every Trading Balance (newest first), each naming its vault. */
 export async function listVaultBets(owner: Address, recent = 24): Promise<VaultBet[]> {
-  const { client, contract } = await vaultCtx();
-  if (!contract) return [];
+  const { client, all } = await vaultCtxs();
+  const lists = await Promise.all(all.map(({ contract }) => listBetsIn(client, contract, owner, recent)));
+  return lists.flat().sort((a, b) => b.lastAtSec - a.lastAtSec);
+}
+
+async function listBetsIn(client: Awaited<ReturnType<typeof getPublicClient>>, contract: { address: Address; abi: typeof eventVaultAbi }, owner: Address, recent: number): Promise<VaultBet[]> {
   const count = (await client.readContract({ ...contract, functionName: "marketCountOf", args: [owner] })) as bigint;
   if (count === 0n) return [];
   const offset = count > BigInt(recent) ? count - BigInt(recent) : 0n;
@@ -48,6 +52,7 @@ export async function listVaultBets(owner: Address, recent = 24): Promise<VaultB
     if (!w) return;
     const t = tallyOf(rows[3 * i] as Tally);
     out.push({
+      vault: contract.address,
       marketId: id, asset: w.market.asset, intervalSec: w.market.intervalSec, expirySec: w.market.expirySec, lockAtSec: w.market.lockAtSec, decimals: w.market.decimals,
       state: w.snapshot.state, upRaw: rows[3 * i + 1] as bigint, downRaw: rows[3 * i + 2] as bigint, costBase: t.costBase, proceedsBase: t.proceedsBase,
       payoutBase: t.payoutBase, settledAtSec: t.settledAtSec, lastAtSec: t.lastAtSec,
@@ -58,10 +63,9 @@ export async function listVaultBets(owner: Address, recent = 24): Promise<VaultB
 
 const SETTLED = getAbiItem({ abi: eventVaultAbi, name: "Settled" });
 
-/** The crank that paid this owner's Window, if any (owner and Window are indexed): its transaction and who sent it. */
-async function settledEvent(owner: Address, marketId: MarketId): Promise<{ txHash: `0x${string}`; by: Address; payout: bigint } | null> {
-  const [client, { d }] = await Promise.all([getLogClient(), vaultCtx()]);
-  if (!d) return null;
+/** The crank that paid this owner's Window on vault `d`, if any (owner and Window are indexed): its transaction and who sent it. */
+async function settledEvent(owner: Address, marketId: MarketId, d: VaultDeployment): Promise<{ txHash: `0x${string}`; by: Address; payout: bigint } | null> {
+  const client = await getLogClient();
   const head = await client.getBlockNumber();
   const floor = head > DEFAULT_LOOKBACK_BLOCKS ? head - DEFAULT_LOOKBACK_BLOCKS : 0n;
   // Newest first: a crank lands minutes after the close, so the latest window almost always has it.
@@ -80,12 +84,16 @@ async function settledEvent(owner: Address, marketId: MarketId): Promise<{ txHas
 
 /** The vault call's pinned verdict, or null when the owner never traded this Window through the vault. */
 export async function readVaultVerdict(owner: Address, marketId: MarketId): Promise<PinnedVerdictView | null> {
-  const { client, contract } = await vaultCtx();
-  if (!contract) return null;
-  const [raw, windows] = await Promise.all([client.readContract({ ...contract, functionName: "tallyOf", args: [owner, marketId] }) as Promise<Tally>, readWindows([marketId])]);
-  const t = tallyOf(raw);
+  const { client, all } = await vaultCtxs();
+  if (all.length === 0) return null;
+  // The Window was traded through one vault (the current one, or v1 before the move): the first with fills on it.
+  const [raws, windows] = await Promise.all([Promise.all(all.map(({ contract }) => client.readContract({ ...contract, functionName: "tallyOf", args: [owner, marketId] }) as Promise<Tally>)), readWindows([marketId])]);
+  const at = raws.findIndex((r) => tallyOf(r).fills > 0);
+  if (at < 0) return null;
+  const t = tallyOf(raws[at]!);
+  const d = all[at]!.d;
   const w: WindowFacts | undefined = windows.get(marketId);
-  if (t.fills === 0 || !w) return null;
+  if (!w) return null;
   const holdings = { upRaw: t.boughtUp - t.soldUp, downRaw: t.boughtDown - t.soldDown };
   if (holdings.upRaw + holdings.downRaw === 0n && t.settledAtSec === 0) return null; // sold out before the close
   const base = { verdict: null, paidBy: null, paidBase: null, txHash: null, into: "trading-balance" as const };
@@ -95,7 +103,7 @@ export async function readVaultVerdict(owner: Address, marketId: MarketId): Prom
   });
   if (t.settledAtSec === 0) return { ...base, phase: "stamped", verdict };
   if (verdict?.outcome === "loss") return { ...base, phase: "stamped", verdict };
-  const settled = await settledEvent(owner, marketId);
+  const settled = await settledEvent(owner, marketId, d);
   return { ...base, phase: "paid", verdict, paidBy: settled && settled.by.toLowerCase() === owner.toLowerCase() ? "self" : "auto", paidBase: t.payoutBase, txHash: settled?.txHash ?? null };
 }
 

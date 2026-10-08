@@ -12,7 +12,7 @@ const grant = (over: Partial<VaultGrant> = {}): VaultGrant => ({
   grantId: 7n, owner: OWNER, actor: KEY, kind: "session", revoked: false, expiresAtSec: NOW + 3600, spentDay: utcDayOf(NOW), spentTodayBase: 0n, openPositions: 0,
   caps: { maxStakePerTradeBase: 5_000_000n, maxDailySpendBase: 25_000_000n, maxOpenPositions: 4, maxPriceRaw: 950_000n, market: null }, budgetBase: 25_000_000n, ...over,
 });
-const snapshot = (g: VaultGrant | null): VaultSnapshot => ({ deployment: { chainId: 42431, eventVault: OWNER, collateral: OWNER, fromBlock: 0n }, account: { availableBase: 0n, privateAvailableBase: 0n, totalDepositedBase: 0n, totalWithdrawnBase: 0n }, grants: { session: g, executor: null, strategy: null }, decimals: 6 });
+const snapshot = (g: VaultGrant | null): VaultSnapshot => ({ deployment: { chainId: 42431, eventVault: OWNER, collateral: OWNER, fromBlock: 0n, version: 2 }, account: { availableBase: 0n, privateAvailableBase: 0n, totalDepositedBase: 0n, totalWithdrawnBase: 0n }, grants: { session: g, executor: null, strategy: null, exit: null }, decimals: 6 });
 const status = (over: Partial<Parameters<typeof deriveStatus>[0]>) => deriveStatus({ owner: OWNER, passkey: true, snapshot: snapshot(grant()), keyLoaded: true, keyAddress: KEY, nowSec: NOW, ...over });
 
 describe("tap-trading status (one place, facts only)", () => {

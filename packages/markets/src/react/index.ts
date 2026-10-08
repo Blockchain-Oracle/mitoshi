@@ -8,5 +8,5 @@ export { SubmitterSessionValue, useSigner, useSubmitter, useUserSession, type Si
 export { isInfrastructureFailure, readingOf, readingQueryOptions, useReadingQuery, type PollInterval, type ReadingQueryOptions } from "./useReadingQuery";
 export { usePrice, usePriceStream, useStreamTopic } from "./stream";
 export { useClaimables, useLiveMarketData, usePinnedVerdict } from "./live-data";
-export { useVaultBets, useVaultHoldings, useVaultSnapshot } from "./vault-reads";
+export { useLegacyVaultSnapshot, useVaultBets, useVaultHoldings, useVaultSnapshot } from "./vault-reads";
 export { bookDepthQuery, useAssetPrice, useBookDepth, useBookDepths, useExitQuote, useHoldings, useLanes, useMarket, useNextWindow, useOnchain, useOpenOrders, useOpeningPrice, usePortReading, usePositions, usePriceHistory, useResolution, useSeriesGrid, useStakeQuote, useWalletHistory, type RestingOrderView } from "./window-reads";

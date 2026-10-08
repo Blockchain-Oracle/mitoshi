@@ -34,6 +34,8 @@ export interface TerminalPosition {
   tpBase: bigint | null;
   slBase: bigint | null;
   openedAtMs: number;
+  /** A Trading Balance position: the vault holding it (v1 positions stay on v1 until sold or settled, S24.2). */
+  vault?: Address;
   /** A Boost: its id, the reserve's claim repaid first out of a sale, and the multiple. */
   boost?: { positionId: bigint; frontedBase: bigint; leverageBps: number };
 }
@@ -62,7 +64,7 @@ export function useTerminalPositions(address: Address | null, set: LaneSet | nul
       const side: Side = b.upRaw >= b.downRaw ? "up" : "down";
       const e = entryOf(entries, b.marketId, side);
       out.push({
-        id: `v:${b.marketId}`, via: "vault", entryKey: b.marketId, marketId: b.marketId, asset: b.asset, intervalSec: b.intervalSec, expirySec: b.expirySec, side,
+        id: `v:${b.vault}:${b.marketId}`, via: "vault", vault: b.vault, entryKey: b.marketId, marketId: b.marketId, asset: b.asset, intervalSec: b.intervalSec, expirySec: b.expirySec, side,
         heldRaw: side === "up" ? b.upRaw : b.downRaw, costBase: b.costBase - b.proceedsBase > 0n ? b.costBase - b.proceedsBase : 0n, decimals: b.decimals,
         entrySpot: e?.spot || null, trailStop: e?.trailStop ?? null, openedAtMs: e?.atMs ?? 0, tpBase: e?.tpBase ? BigInt(e.tpBase) : null, slBase: e?.slBase ? BigInt(e.slBase) : null,
       });

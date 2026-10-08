@@ -15,9 +15,16 @@ RV-55, RV-97, RV-98.
   trading year, 24/7 on the calendar year, the Gap's span carrying one session) and one spot feed per ticker
   (`---24_7` where RedStone has it) via `script/SetGuardModels.s.sol` (`acceptance/S24.md`). A sale's limit sits on
   the engine's tick grid, so the keeper rounds the floor up (24.3).
-- [ ] 24.2 v1 → v2 migration: withdraw-from-v1 in the account drawer; the settler's `crankSettle` covers v1 owners; the
+- [x] 24.2 v1 → v2 migration: withdraw-from-v1 in the account drawer; the settler's `crankSettle` covers v1 owners; the
   indexer reads both vaults (D-161); relay `vaultPolicy` for both; both addresses in codegen; S23d's sell lane works on
   v1 and v2; v2 becomes the default once v1 holds nothing new.
+  Done (450be0a and this commit): the vault projections are keyed by vault (index/0004, rebuilt from both deploy
+  blocks), the indexer follows v2 and v1 with a cursor each, and the settler cranks each owner's Window on the vault
+  that booked it. Proven on real Moderato logs, including v2's identical history kept apart. The app's current vault
+  is v2 (`vaultDeploymentOf`): new deposits, grants and trades go there; the balance sheet reads it; Trading
+  Balance positions from both vaults are listed, each sold on its own vault (a v1 position is the owner's own sale;
+  Trail/TP/SL refuse it). "Your previous Trading Balance" (Account, /portfolio) stops an old key and withdraws what v1
+  holds. Both relay policies are in place (ba26081). `GrantKind` gains `exit` (the trust surface names it).
 - [ ] 24.3 The `exit-keeper` actor (`services/ops/src/actors/exit-keeper/`): trigger records written through
   `web/src/app/api/exits/route.ts` into a `packages/db` migration (user signature, nonce, expiry, cancel, idempotency per
   trigger); watches the display feed and the book; sells through `placeFor(isBuy=false)` under the EXIT grant within

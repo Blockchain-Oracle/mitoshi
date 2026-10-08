@@ -20,7 +20,7 @@ import { sendBatch } from "../tx/send";
 import { nonceFields, nonceKindOf, validBeforeOf, type NoncePlan } from "../tx/nonce";
 import { placeCall, placeForCall } from "./calls";
 import { diagnoseVault } from "./errors";
-import { readVaultGrant, readVaultHoldings, vaultDeploymentOf } from "./read";
+import { readVaultGrant, readVaultHoldings, vaultDeploymentAt } from "./read";
 
 const NS_PER_SEC = 1_000_000_000n;
 const PRICE_MOVED = "ImmediateOrCancelNoFill";
@@ -53,7 +53,8 @@ const freshVaultExit = async (w: WindowFacts, side: Side, wantRaw: bigint, heldR
 export async function submitVaultSell(ctx: OrderLaneContext, req: CashOutRequest, onPhase?: PhaseListener): Promise<CashOutOutcome> {
   const route = req.route;
   if (!route || route.kind === "wallet") return refused(diagnosis("contract-revert", "not a Trading Balance sale"));
-  const deployment = vaultDeploymentOf(ctx.client.chain.id);
+  // The position sells on the vault that holds it (a v1 position on v1, S24.2).
+  const deployment = vaultDeploymentAt(ctx.client.chain.id, route.vault);
   if (!deployment) return refused(diagnosis("not-deployed", `EventVault is not deployed on chain ${ctx.client.chain.id}`));
   const vault = deployment.eventVault;
   const marketId = req.market.marketId;
@@ -63,8 +64,8 @@ export async function submitVaultSell(ctx: OrderLaneContext, req: CashOutRequest
   try {
     // The grant, the holdings (behind the grant: its owner's), the book and the Window read together — one round before
     // signing, two for a delegated sale (D-142, D-205).
-    const grantRead: Promise<VaultGrant | null> = route.kind === "vault-grant" ? readVaultGrant(route.grantId) : Promise.resolve(null);
-    const holdingsRead = grantRead.then((g) => readVaultHoldings(route.kind === "vault-grant" ? (g?.owner ?? ctx.wallet) : ctx.wallet, marketId));
+    const grantRead: Promise<VaultGrant | null> = route.kind === "vault-grant" ? readVaultGrant(route.grantId, vault) : Promise.resolve(null);
+    const holdingsRead = grantRead.then((g) => readVaultHoldings(route.kind === "vault-grant" ? (g?.owner ?? ctx.wallet) : ctx.wallet, marketId, vault));
     const bookRead = readBook(marketId, TAKER_MIN_REST_SEC);
     for (const read of [grantRead, holdingsRead, bookRead] as Promise<unknown>[]) read.catch(() => undefined);
     w = await statusGate(marketId);

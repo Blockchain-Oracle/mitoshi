@@ -16,9 +16,11 @@ export interface SessionView {
   /** The Trading Balance's free amount (not in any grant). */
   availableBase: bigint | null;
   deployed: boolean;
+  /** The current Trading Balance this view reads (v2 once deployed, S24.2): a position held elsewhere sells on its own vault. */
+  vault: Address | null;
 }
 
-export const OFF: SessionView = { status: "no-wallet", owner: null, keyAddress: null, grant: null, availableBase: null, deployed: false };
+export const OFF: SessionView = { status: "no-wallet", owner: null, keyAddress: null, grant: null, availableBase: null, deployed: false, vault: null };
 
 export function isGrantLive(grant: VaultGrant | null, nowSec: number): grant is VaultGrant {
   return grant !== null && !grant.revoked && grant.expiresAtSec >= nowSec;

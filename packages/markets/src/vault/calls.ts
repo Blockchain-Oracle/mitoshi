@@ -16,7 +16,7 @@ import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { diagnosis, formatBaseUnits, GRANT_KIND_INDEX, USD_DECIMALS, type GrantTerms, type TxIntent, type VaultIntent } from "@cwf/core";
 import { approveCall, type Call } from "../tx/batch";
 import type { EncodeContext, EncodeResult } from "../submitter/encoders";
-import { capsTuple, vaultDeploymentOf } from "./read";
+import { capsTuple, vaultDeploymentAt } from "./read";
 
 const vaultCall = (vault: Address, functionName: string, args: readonly unknown[]): Call => ({
   to: vault,
@@ -101,9 +101,10 @@ const isVault = (intent: TxIntent): intent is VaultIntent => intent.kind.startsW
 /** The vault's encoder for the tx lane (`submitter/encoders.ts`): claims every `vault-*` intent. */
 export function encodeVaultIntent(intent: TxIntent, ctx: EncodeContext): EncodeResult | null {
   if (!isVault(intent)) return null;
-  const deployment = vaultDeploymentOf(ctx.chainId);
+  // A withdraw or a revoke may name a previous Trading Balance to empty (S24.2); everything else goes to the current one.
+  const deployment = vaultDeploymentAt(ctx.chainId, intent.kind === "vault-withdraw" || intent.kind === "vault-revoke" ? intent.vault : undefined);
   if (!deployment) return { ok: false, diagnosis: diagnosis("not-deployed", `EventVault is not deployed on chain ${ctx.chainId}`) };
   if ("amountBase" in intent && intent.amountBase <= 0n) return { ok: false, diagnosis: diagnosis("below-min-quantity", "the amount must be above zero", { errorName: "ZeroAmount" }) };
   const { calls, sponsored } = callsOf(deployment.eventVault, deployment.collateral, intent);
-  return { ok: true, value: { area: "vault", calls, sponsored, summary: summarizeVault(intent) } };
+  return { ok: true, value: { area: deployment.version === 2 ? "vault2" : "vault", calls, sponsored, summary: summarizeVault(intent) } };
 }

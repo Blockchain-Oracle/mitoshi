@@ -112,7 +112,10 @@ export function useTerminalClose() {
         notify.item({ id, type: "loading", title: TERMINAL.close.closing(p.asset) });
         const market = await prt.getMarket(p.marketId);
         if (!isOk(market) || !market.value) return void notify.item({ id, type: "warning", title: TERMINAL.toast.failed, ...(isOk(market) ? {} : { description: diagnosisCopy(market.error.kind).headline }) });
-        const route: OrderRoute | undefined = p.via === "vault" ? (v.status === "armed" && v.grant ? { kind: "vault-grant", grantId: v.grant.grantId } : { kind: "vault" }) : undefined;
+        // A Trading Balance position sells on its own vault: the session key's grant lives on the current one, so a
+        // position left on v1 is the owner's own sale there (S24.2).
+        const onCurrent = !p.vault || !v.vault || p.vault.toLowerCase() === v.vault.toLowerCase();
+        const route: OrderRoute | undefined = p.via === "vault" ? (onCurrent && v.status === "armed" && v.grant ? { kind: "vault-grant", grantId: v.grant.grantId } : { kind: "vault", ...(p.vault ? { vault: p.vault } : {}) }) : undefined;
         const outcome = await sub.submitCashOut({ market: market.value, side: p.side, contractsRaw: exit.contractsRaw, displayedExit: displayed, wallet, ...(route ? { route } : {}) });
         switch (outcome.status) {
           case "confirmed": {

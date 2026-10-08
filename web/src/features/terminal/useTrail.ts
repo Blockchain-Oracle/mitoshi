@@ -28,7 +28,8 @@ const RETRY_MS = 3_000;
  */
 function signerExpiryOf(p: TerminalPosition, view: ReturnType<typeof useSessionView>, address: string | null): number {
   if (p.via === "boost") return 0;
-  if (p.via === "vault") return view.status === "armed" ? (view.grant?.expiresAtSec ?? 0) : 0;
+  // The session grant lives on the current vault: a position left on v1 has no unattended signer (S24.2).
+  if (p.via === "vault") return view.status === "armed" && (!p.vault || !view.vault || p.vault.toLowerCase() === view.vault.toLowerCase()) ? (view.grant?.expiresAtSec ?? 0) : 0;
   return address ? (readWalletKey(TEMPO_CHAIN_ID, address as `0x${string}`)?.expirySec ?? 0) : 0;
 }
 

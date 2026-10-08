@@ -5,6 +5,7 @@ import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { toMarketId, type TxIntent, type VaultGrant } from "@cwf/core";
 import { OrderRefusedError } from "../submitter/errors";
 import { encodeVaultIntent } from "./calls";
+import { legacyVaultDeploymentOf, vaultDeploymentAt } from "./read";
 import { assertGrantCovers } from "./order";
 import { vaultDeploymentOf, vaultOutcomeId } from "./read";
 
@@ -23,9 +24,16 @@ const encode = (intent: TxIntent) => {
 const fn = (data: `0x${string}`) => decodeFunctionData({ abi: eventVaultAbi, data }).functionName;
 
 describe("vault intents → calls (C.2.3 vault rows)", () => {
-  it("targets the deployed Moderato vault with pathUSD as its collateral", () => {
-    expect(vault.eventVault).toBe(getAddress("0x5E38dc8b7402FFB608134872a64663e5D75235b8"));
-    expect(vault.fromBlock).toBe(37_385_655n);
+  it("targets the current Moderato vault (v2, S24.1) with pathUSD as its collateral; v1 stays as the one to empty", () => {
+    expect(vault.eventVault).toBe(getAddress("0x6f05b0dcaa31c241a4f6e8ceb170090b41679e95"));
+    expect(vault.version).toBe(2);
+    const legacy = legacyVaultDeploymentOf(42431)!;
+    expect(legacy.eventVault).toBe(getAddress("0x5E38dc8b7402FFB608134872a64663e5D75235b8"));
+    expect([legacy.version, legacy.fromBlock]).toEqual([1, 37_385_655n]);
+    expect(vaultDeploymentAt(42431, legacy.eventVault)?.version).toBe(1);
+    // A withdraw may empty v1; every other intent goes to v2.
+    const out = encodeVaultIntent({ kind: "vault-withdraw", amountBase: 1n, vault: legacy.eventVault }, { chainId: 42431 } as never);
+    expect(out?.ok && [out.value.calls[0]!.to, out.value.area]).toEqual([legacy.eventVault, "vault"]);
   });
 
   it("capital intake and delegation setup are root-signed and never sponsored; intake carries its exact approve", () => {
@@ -61,7 +69,7 @@ describe("vault intents → calls (C.2.3 vault rows)", () => {
     ];
     for (const [intent, name] of cases) {
       const e = encode(intent);
-      expect([e.sponsored, e.calls.length, fn(e.calls[0]!.data), e.area]).toEqual([true, 1, name, "vault"]);
+      expect([e.sponsored, e.calls.length, fn(e.calls[0]!.data), e.area]).toEqual([true, 1, name, "vault2"]);
     }
   });
 

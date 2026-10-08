@@ -56,6 +56,7 @@ export function TradingBalanceProvider({ children }: { children: ReactNode }) {
       grant: snapshot?.grants.session ?? null,
       availableBase: snapshot ? snapshot.account.availableBase : null,
       deployed: snapshot !== null,
+      vault: snapshot?.deployment.eventVault ?? null,
     };
     // expiryFlip: the one time-driven re-derivation.
   }, [owner, passkey, runtime.snapshot, runtime.keyLoaded, runtime.keyAddress, expiryFlip]); // eslint-disable-line react-hooks/exhaustive-deps

@@ -31,6 +31,8 @@ import type { Episode } from "../replay";
 import { SendPanel } from "./SendPanel";
 
 const TradingBalancePanel = dynamic(() => import("@/features/vault/TradingBalancePanel").then((m) => m.TradingBalancePanel), { ssr: false });
+// What a previous Trading Balance still holds (S24.2), self-hiding when it holds nothing.
+const LegacyBalance = dynamic(() => import("@/features/vault/LegacyBalance").then((m) => m.LegacyBalance), { ssr: false });
 
 export type AccountView = "menu" | "send" | "balance" | "history";
 
@@ -106,6 +108,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
                   <span className="tm-pos-meta">{TERMINAL.account.testnet}</span>
                 </span>
               </div>
+              <LegacyBalance owner={wallet} />
               <div className="tm-card tm-balance">
                 <span className="tm-card-title">{TERMINAL.account.equity}</span>
                 <span className="tm-balance-figure">{hide(equityBase)}</span>
