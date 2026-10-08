@@ -27,6 +27,9 @@ export const VERDICT_UI = {
   noPosition: { why: "You held nothing in this Window — nothing to stamp." },
   settledToast: (asset: string, cadence: string) => `Your ${asset} ${cadence} Window settled`,
   settledToastBody: (word: string) => `${word} — open it to see the stamp.`,
+  paying: (word: string) => `${word} — paying…`,
+  paid: (word: string, amount: string) => `${word} — ${amount} paid`,
+  held: (word: string) => `${word} — held for you; collect it in Account.`,
   claim: {
     notThisTime: "Not this time",
     lossBody: "The Window closed on the other side of your line.",
