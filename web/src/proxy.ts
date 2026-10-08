@@ -5,6 +5,7 @@
 // frame. Nothing here redirects or blocks a page: reading is open everywhere.
 import { NextResponse, type NextRequest } from "next/server";
 import { COUNTRY_HEADERS, encodePosture, GEOFENCE_PILLARS, postureOf, REGION_COOKIE, REGION_HEADER } from "@cwf/core";
+import { TRADE_COOKIE, tradeRedirect } from "./features/terminal/route";
 
 const COOKIE_MAX_AGE_SEC = 60 * 60 * 24;
 
@@ -12,6 +13,13 @@ export function proxy(request: NextRequest): NextResponse {
   // /dev fixtures are internal: 404 in production unless explicitly enabled (the layout also calls notFound()).
   if (request.nextUrl.pathname.startsWith("/dev") && process.env.NODE_ENV === "production" && process.env.DEV_FIXTURES !== "1") {
     return new NextResponse(null, { status: 404 });
+  }
+  // The terminal's address (D-192): `/trade` → the last symbol traded here; `/trade/btc` → `/trade/BTC`.
+  const trade = tradeRedirect(request.nextUrl.pathname, request.cookies.get(TRADE_COOKIE)?.value);
+  if (trade) {
+    const url = request.nextUrl.clone();
+    url.pathname = trade;
+    return NextResponse.redirect(url, 307);
   }
   const country = process.env.CWF_REGION_OVERRIDE || COUNTRY_HEADERS.map((h) => request.headers.get(h)).find(Boolean) || null;
   const posture = postureOf(country);

@@ -63,7 +63,7 @@ export const SHELL = {
   shortcutsOpen: "Show keyboard shortcuts",
   shortcutsBody: "Everything in Mitoshi works from the keyboard. No shortcut ever places, closes or moves money.",
   shortcutRows: [
-    ["1 – 5", "Markets, Stocks, Games, Portfolio, Everything"],
+    ["1 – 6", "Trade, Markets, Stocks, Games, Portfolio, Everything"],
     ["⌘ K  or  /", "Search every destination"],
     ["?", "This list"],
     ["Esc", "Close the open drawer or dialog"],

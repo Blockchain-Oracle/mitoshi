@@ -130,15 +130,18 @@ async function seed(symbol: string, fetcher: typeof fetch): Promise<void> {
   }
 }
 
-/** Listens to one symbol's line; the `ticks` topic opens with the first listener and closes a moment after the last. */
-export function subscribeLiveTick(symbol: string, listener: () => void, fetcher: typeof fetch = fetch): () => void {
+/**
+ * Listens to one symbol's line; the `ticks` topic opens with the first listener and closes a moment after the last.
+ * `seed: false` skips the half-hour back-fill (a list of prices needs the newest tick, not the chart's past).
+ */
+export function subscribeLiveTick(symbol: string, listener: () => void, { seed: seedRing = true, fetcher = fetch }: { seed?: boolean; fetcher?: typeof fetch } = {}): () => void {
   let set = listeners.get(symbol);
   if (!set) listeners.set(symbol, (set = new Set()));
   set.add(listener);
   if (lingerTimer) clearTimeout(lingerTimer);
   lingerTimer = null;
   offTopic ??= subscribeTopic(TICKS_TOPIC, onBatch);
-  void seed(symbol, fetcher);
+  if (seedRing) void seed(symbol, fetcher);
   return () => {
     set!.delete(listener);
     if (set!.size === 0) listeners.delete(symbol);

@@ -20,7 +20,7 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   with `display-crypto` "socket 3/3" and `display-stocks` "pre: 10 ticker(s) on IEX"; `ticks` 38 frames in 4 s;
   `/prices/candles` answers `coinbase` (ETH) and `alpaca` (TSLA); `/prices/day` names `coinbase`/`alpaca` rows. Seen
   live and fixed: a minutes-old pre-market IEX trade had muted RedStone and frozen the stock line.
-- [ ] 23b LiveStore + chart: `packages/markets/src/runtime/live-ticks.ts` (`subscribeTopic("ticks")`, per-symbol rings
+- [x] 23b LiveStore + chart: `packages/markets/src/runtime/live-ticks.ts` (`subscribeTopic("ticks")`, per-symbol rings
   seeded from `/prices/recent`, `useCommittedSpot` ≤ 5 Hz with a trailing flush, stale flag; the RedStone `prices` topic
   until `ticks` is deployed); port `web/src/features/terminal/chart/*` + `engine.test.ts` (tokens per DESIGN.md's chart
   map; levels Entry · Line · B/E · TP · SL · Trail · knock-out · signed tick; theme re-read; loop after first paint);
@@ -36,6 +36,18 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   prelisted Windows with scheduled calls; before the opening print); stake caps pre-checked before signing (D-160
   words); the geofence matrix; the "Turn on one-tap" card; the depth toggle; `/markets/[id]` → server redirect to
   `/trade/<SYM>?w=<id>` keeping "settled → successor"; `/markets` rows open the terminal; the Sensei entry.
+  Progress 2026-10-08 (D-202, D-203): the route group and `/trade` → `cwf.trade` cookie else BTC in the proxy, `/trade/btc`
+  → `/trade/BTC`; `/trade/[symbol]` prerendered for 13 tickers (197.8 KB first load); Trade first in the rail (keys
+  1–6) and the dock, nav coverage 38 paths; `pick-window.ts` + test (state table: crypto 5m, Regular in RTH, 24/7
+  off-hours, Gap, prelisted, the last 30 s); `useTerminalWindow` (`?lane=`, `?w=` with successor and gone notes);
+  chrome (asset chip with the feed named, Window chip, equity pill, the dragged settings stack, view-position pill);
+  UP/DOWN through the ticket's own lane (`useQuote` ×2, `useTicketRoute` ×2, `deriveBlocker` words under each button,
+  `usePlaceBet({ quiet })`, one id-replaced toast, the open cue, the Entry line remembered); positions from the wallet
+  and the Trading Balance; markets and settings drawers in the URL; the shell drops its top line, footer, dock and
+  browsing nudge on `/trade`. `e2e/terminal.ts` 24/24 at 1440/390 × both themes (live line moves, in-place market
+  switch, axe on both drawers). Still in 23c: the rail's Trade sub-list, the arm card, the wallet key's daily limit in
+  the stake cap, scheduled calls on a prelisted `?w=`, the depth toggle, PLTR/AMD and 04:00 notes, `/markets/[id]` →
+  `/trade/<SYM>?w=<id>`, `/markets` rows → the terminal, the Sensei entry.
 - [ ] 23d Live value + one-tap CLOSE (D-197): exit read with `minRestSec = 0`, the fair-value reprice and "≈";
   `submitter/cash-out.ts` (parallel reads, `onSigned`, tolerance and auto-accepted requote, "Close for $X" toast);
   `portfolio/useCashOut.ts` loses the hold; `vault/order.ts` sell lane (`placeFor(isBuy=false)`); `tap-session.ts`

@@ -29,8 +29,11 @@ function read(symbol: string): CommittedSpot {
   return { price: Number(tick.priceE8) / 1e8, priceE8: tick.priceE8, atMs: tick.atMs, source: tick.source, stale: tickStale(symbol, Date.now()) };
 }
 
-/** The symbol's display spot, committed at most every 200 ms (leading edge, plus the last tick after a quiet gap). */
-export function useCommittedSpot(symbol: string | null): CommittedSpot {
+/**
+ * The symbol's display spot, committed at most every 200 ms (leading edge, plus the last tick after a quiet gap).
+ * `seed: false` for a list row: the newest tick only, no half-hour back-fill.
+ */
+export function useCommittedSpot(symbol: string | null, { seed = true }: { seed?: boolean } = {}): CommittedSpot {
   const [spot, setSpot] = useState<CommittedSpot>(EMPTY);
   useEffect(() => {
     if (!symbol) return setSpot(EMPTY);
@@ -42,11 +45,15 @@ export function useCommittedSpot(symbol: string | null): CommittedSpot {
       const next = read(symbol);
       setSpot((prev) => (prev.priceE8 === next.priceE8 && prev.atMs === next.atMs && prev.stale === next.stale ? prev : next));
     };
-    const off = subscribeLiveTick(symbol, () => {
-      const wait = last + COMMIT_MS - performance.now();
-      if (wait <= 0) commit();
-      else trailing ??= setTimeout(() => ((trailing = null), commit()), wait);
-    });
+    const off = subscribeLiveTick(
+      symbol,
+      () => {
+        const wait = last + COMMIT_MS - performance.now();
+        if (wait <= 0) commit();
+        else trailing ??= setTimeout(() => ((trailing = null), commit()), wait);
+      },
+      { seed },
+    );
     const staleCheck = setInterval(commit, STALE_CHECK_MS);
     commit();
     return () => {
@@ -54,6 +61,6 @@ export function useCommittedSpot(symbol: string | null): CommittedSpot {
       clearInterval(staleCheck);
       if (trailing) clearTimeout(trailing);
     };
-  }, [symbol]);
+  }, [symbol, seed]);
   return spot;
 }

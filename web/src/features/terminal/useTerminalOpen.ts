@@ -1,0 +1,121 @@
+"use client";
+// Ported in shape from Owarine ecb7565b:web/src/features/terminal/useTerminalTrade.ts (`open`) — on Mitoshi's ticket
+// machinery, unchanged: `useQuote` per side, `useTicketRoute` (the Trading Balance's session key when armed and its caps
+// cover the call, D-160 words when they don't), `deriveBlocker`, and `usePlaceBet` through `useTapSubmitter`. No demo.
+import type { EventMarket, Quote, Side } from "@cwf/core";
+import { blockerLabel, diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/copy";
+import type { MarketPhase } from "@cwf/core/lifecycle";
+import { minStakeBase } from "@cwf/core/sizing";
+import { useBalanceSheet, useSigner } from "@cwf/markets/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTopOfBook } from "@/features/markets/data/useTopOfBook";
+import { deriveBlocker } from "@/features/markets/ticket/ticket-guards";
+import { usePlaceBet } from "@/features/markets/ticket/usePlaceBet";
+import { useQuote, type QuoteState } from "@/features/markets/ticket/useQuote";
+import { useTicketRoute, type TicketRoute } from "@/features/session";
+import { useNowMs } from "@/lib/clock";
+import { CONNECT } from "@/lib/copy";
+import { tradeFeedback } from "@/lib/feedback";
+import { readRegionPosture } from "@/lib/region-mark";
+import { notify } from "@/lib/toast";
+import { useWalletSession } from "@/lib/wallet-session";
+import { TERMINAL } from "./copy";
+import { rememberEntry } from "./entries";
+import { centsOf, money, multipleOf, sideWord } from "./format";
+
+export interface SideView {
+  quote: QuoteState;
+  route: TicketRoute;
+  /** What a right call pays per dollar: the live quote's, else the top of the book's (signed out, or before a quote). */
+  multiple: number | null;
+  /** The first reason this side can't be tapped, in the CTA's words (null: tap away). */
+  blocked: string | null;
+}
+
+const ENTRY_TOAST = "terminal-open";
+
+export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: EventMarket; phase: MarketPhase | null; stakeBase: bigint; spot: number | null }) {
+  const nowMs = useNowMs();
+  const session = useWalletSession();
+  const { address, hasSigner } = useSigner();
+  const sheet = useBalanceSheet(address);
+  const walletBase = sheet?.ok ? sheet.value.spendableBase : null;
+  const enabled = hasSigner && phase === "trading";
+  const quoteUp = useQuote({ market, side: "up", stakeBase, nowMs, enabled });
+  const quoteDown = useQuote({ market, side: "down", stakeBase, nowMs, enabled });
+  const routeUp = useTicketRoute({ market, side: "up", stakeBase, quote: quoteUp.quote, listed: false });
+  const routeDown = useTicketRoute({ market, side: "down", stakeBase, quote: quoteDown.quote, listed: false });
+  const top = useTopOfBook(market);
+  const bet = usePlaceBet(address, { quiet: true });
+  const regionHeld = readRegionPosture().markets === "restricted";
+
+  const view = (side: Side): SideView => {
+    const quote = side === "up" ? quoteUp : quoteDown;
+    const route = side === "up" ? routeUp : routeDown;
+    const spend = route.viaBalance ? route.availableBase : walletBase;
+    const blocker = deriveBlocker({
+      connected: session.isConnected, connecting: session.isConnecting, rightChain: session.isRightChain, hasSigner, regionHeld, phase,
+      placing: bet.placing, side, availableBase: spend, stakeBase, decimals: market.decimals, quote: quote.reading, quoting: quote.pending, quoteStale: quote.stale,
+    });
+    const ctx: BlockerContext = {
+      cadence: formatCadence(market.intervalSec),
+      minStakeText: money(minStakeBase(market.decimals)),
+      ...(spend !== null ? { spendableText: money(spend) } : {}),
+      ...(quote.quote ? { quotedCents: quote.quote.oddsCents } : {}),
+      ...(quote.quote?.partial ? { fillableStakeText: money(quote.quote.fillableStakeBase) } : {}),
+    };
+    const topCents = side === "up" ? top.upCents : top.downCents;
+    const multiple = quote.quote ? 10_000 / quote.quote.avgPriceBps : topCents ? 100 / topCents : null;
+    const blocked = blocker && blocker !== "quoting" && blocker !== "placing" ? blockerLabel(blocker, ctx) : route.fallback?.reason ?? null;
+    return { quote, route, multiple, blocked };
+  };
+  const sides = { up: view("up"), down: view("down") };
+  const latest = useRef({ sides, spot, session, market, stakeBase });
+  latest.current = { sides, spot, session, market, stakeBase };
+
+  const { reset } = bet;
+  useEffect(() => reset(), [market.marketId, stakeBase, reset]);
+
+  // The outcome of the last tap, said once: opened (with the cue and the entry line), moved, nothing filled, unknown.
+  const outcome = bet.state.outcome;
+  const tapped = useRef<{ side: Side; quote: Quote } | null>(null);
+  const [lastSide, setLastSide] = useState<Side | null>(null);
+  useEffect(() => {
+    const t = tapped.current;
+    if (!outcome || !t) return;
+    tapped.current = null;
+    const { market: m, spot: s } = latest.current;
+    const words = sideWord(t.side);
+    if (outcome.status === "confirmed") {
+      const b = outcome.booked;
+      if (s !== null) rememberEntry(m.marketId, t.side, s);
+      tradeFeedback("open", "open");
+      return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.opened(words, m.asset), description: TERMINAL.toast.openedBody(multipleOf(b.avgPriceBps / 10), money(b.costBase)) });
+    }
+    if (outcome.status === "requote") return void notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.priceMoved, description: TERMINAL.toast.priceMovedBody(centsOf(outcome.quote.avgPriceBps / 10)) });
+    if (outcome.status === "nothingFilled") return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.nothingFilled, description: TERMINAL.toast.nothingFilledBody });
+    if (outcome.status === "unknown") return void notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.unknown, description: TERMINAL.toast.unknownBody });
+    notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.failed, ...("diagnosis" in outcome ? { description: diagnosisCopy(outcome.diagnosis.kind).headline } : {}) });
+  }, [outcome]);
+
+  /** One tap: UP or DOWN at the stake, through the ticket's own lane; anything in the way is said, never sent. */
+  const open = useCallback(
+    (side: Side) => {
+      const { sides: v, session: sess, market: m, stakeBase: stake } = latest.current;
+      const s = v[side];
+      if (!sess.isConnected) {
+        return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.signIn, description: TERMINAL.toast.signInBody, action: { label: CONNECT.connect, onClick: sess.connect } });
+      }
+      if (s.blocked) return void notify.item({ id: ENTRY_TOAST, type: "warning", title: s.blocked });
+      if (!s.quote.quote) return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.gettingPrice, timeout: 2_000 });
+      tapped.current = { side, quote: s.quote.quote };
+      setLastSide(side);
+      notify.item({ id: ENTRY_TOAST, type: "loading", title: TERMINAL.toast.opening(sideWord(side), m.asset) });
+      void bet.place({ market: m, side, stakeBase: stake, displayedQuote: s.quote.quote, route: s.route.route });
+    },
+    [bet],
+  );
+
+  return { sides, open, busy: bet.placing ? lastSide : null };
+}
+

@@ -30,14 +30,15 @@ const OFF_NAV = new Set(["/", "/privacy", "/terms", "/contact", "/native-auth"])
 
 describe("navigation registry", () => {
   it("keeps the rail's places and the phone dock compact, both pillars first-class (S22, D-189)", () => {
-    expect(RAIL_NAV.map((i) => i.name)).toEqual(["Markets", "Stocks", "Games", "Portfolio"]);
-    expect(DOCK_NAV.map((i) => i.name)).toEqual(["Markets", "Stocks", "Games", "Portfolio"]);
+    expect(RAIL_NAV.map((i) => i.name)).toEqual(["Trade", "Markets", "Stocks", "Games", "Portfolio"]);
+    expect(DOCK_NAV.map((i) => i.name)).toEqual(["Trade", "Stocks", "Games", "Portfolio"]);
   });
 
-  it("gives every Everything destination exactly one home, none of them a rail place", () => {
+  it("gives every Everything destination exactly one home; the only rail place in it is the one the dock leaves out", () => {
     const ids = EVERYTHING_SECTIONS.flatMap((s) => s.items.map((i) => i.id));
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids.filter((id) => RAIL_NAV.some((p) => p.id === id))).toEqual([]);
+    expect(ids.filter((id) => DOCK_NAV.some((p) => p.id === id))).toEqual([]);
+    expect(ids.filter((id) => RAIL_NAV.some((p) => p.id === id))).toEqual(["markets"]);
   });
 
   it("gives every navigable route a nav home", () => {
@@ -49,6 +50,8 @@ describe("navigation registry", () => {
     expect(isActiveNavItem("/games/range", NAV_ITEMS.games)).toBe(true);
     expect(isActiveNavItem("/games/range", NAV_ITEMS.gamesHub)).toBe(false);
     expect(isActiveNavItem("/markets/0xabc", NAV_ITEMS.markets)).toBe(true);
+    expect(isActiveNavItem("/trade/BTC", NAV_ITEMS.trade)).toBe(true);
+    expect(isActiveNavItem("/trade-from-x", NAV_ITEMS.trade)).toBe(false);
     expect(isActiveNavItem("/portfolio/edge", NAV_ITEMS.portfolio)).toBe(false);
     expect(isTopLevel("/markets")).toBe(true);
     expect(isTopLevel("/games/duel")).toBe(false);

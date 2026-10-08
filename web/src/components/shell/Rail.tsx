@@ -28,7 +28,7 @@ export function shortcutBlocked(event: KeyboardEvent): boolean {
   return document.querySelector('[role="dialog"][aria-modal="true"], [role="dialog"][data-open]') !== null;
 }
 
-/** 1–4 jump between the places, 5 opens Everything (the keyboard map in the `?` dialog). Mounted once, by the rail. */
+/** 1–5 jump between the places, 6 opens Everything (the keyboard map in the `?` dialog). Mounted once, by the rail. */
 function usePlaceKeys(): void {
   const router = useRouter();
   useEffect(() => {

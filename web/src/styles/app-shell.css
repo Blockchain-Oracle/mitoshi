@@ -177,3 +177,18 @@ span.top-money, span.top-account { display: contents; }
 .shortcut-row kbd { padding: 2px 8px; border-radius: var(--radius-sm); background: var(--color-surface-2); font: 600 13px/1.4 var(--font-data); white-space: pre; }
 
 @media (prefers-reduced-motion: reduce) { .rail-pill, .dock-pill, .rail-item { transition: none; } }
+
+/* ── the terminal (S23, D-192): the screen is the workspace — no top line, footer or dock; the stage holds it edge to
+ * edge (inset on the rail's side as every page, full-bleed on phones). `:has()` reads the route group's wrapper, so
+ * the shell needs no pathname read. ─────────────────────────────────────────────────────────────────────────────── */
+.app-column:has(.terminal-surface) { padding: 0; }
+.app-column:has(.terminal-surface) > .app-topline, .app-column:has(.terminal-surface) > .footer, .app-shell:has(.terminal-surface) .app-dock { display: none; }
+/* The browsing nudge repeats the terminal's own Sign in (its equity pill); session banners (wrong network…) stay. */
+.app-column:has(.terminal-surface) .appstrip { display: none; }
+.app-stage:has(> .terminal-surface) { display: flex; height: 100dvh; padding: 0; overflow: hidden; border: 0; border-radius: 0; }
+@media (min-width: 768px) {
+  .app-column:has(.terminal-surface) { padding: var(--spacing-rail-inset) var(--spacing-rail-inset) var(--spacing-rail-inset) calc(var(--spacing-rail-compact) + var(--spacing-rail-inset) * 2); }
+  .app-stage:has(> .terminal-surface) { height: calc(100dvh - var(--spacing-rail-inset) * 2); border: var(--spacing-stage-edge) solid var(--color-stage-edge); border-radius: var(--radius-xl); }
+}
+@media (min-width: 1280px) { .app-column:has(.terminal-surface) { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
+.terminal-surface { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; }

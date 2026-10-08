@@ -1680,9 +1680,27 @@ and P&L modes are defined on exit value (what CLOSE pays); the Change % mode con
 
 **Work runs sequentially on `integration/t1`; no git worktrees, no parallel stage or slice branches, no lanes.** The
 owner stopped a four-worktree wave ("it is slower; don't spin up work trees") and clears the session between stages
-himself. **Supersedes** `fragments.md`'s worktrees in `../cwf-wt/<name>` and `stage/…`/`slice/…` branches, plan §4's
+themselves. **Supersedes** `fragments.md`'s worktrees in `../cwf-wt/<name>` and `stage/…`/`slice/…` branches, plan §4's
 branch naming and §7's "≤ 4 agents per wave" for the stages still to run, and the revamp's "wave R": S22, S23 and S24
 run one after another on the trunk (order in STATUS).
+
+### D-202 — the terminal's toasts keep the colour law (S23, 2026-10-08)
+
+**Toasts take Tradash's mechanics, not its green and red.** `lib/toast` gains an `id` (the same id replaces a toast in
+place: "Opening Up BTC…" becomes "Up BTC opened"), a `loading` state kept until replaced, a timeout and one action
+(Sign in, Close for $X, Add $25). Colour stays neutral for records and warning for degraded truth (the S1 law); a
+win's colour lives on the chart and in the confetti, never on the toast plate. **Supersedes** RV-16's "success /
+error / info" toast types (the durations and placement stand).
+
+### D-203 — the terminal's Window rule and the dock (S23, 2026-10-08)
+
+**The terminal stays on a Window through its last 30 s** ("closes 0:25", buttons blocked with the no-entry reason)
+instead of moving into the next Window's scheduled call: one tap means a fill, and a resting order at a cents price is
+a different act the user chooses (`?w=` on a prelisted Window, D-088). A symbol opens on the first lane, in offer
+order Regular → 24/7 → Gap and shortest cadence first, with a Window open for entry now; `?lane=` pins one.
+**The phone dock is Trade · Stocks · Games · Portfolio · More** (five slots fit 320 px); Markets, the rail's second
+place, is listed in Everything for phones and is one tap from the terminal's markets drawer. **Supersedes** `useTicket`'s
+advance-in-the-buffer for the terminal only (the Markets ticket keeps it), and S22's four-place rail.
 
 ## Open questions
 

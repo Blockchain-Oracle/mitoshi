@@ -79,6 +79,14 @@ export function useFeedback(): FeedbackSettings {
   return useSyncExternalStore(subscribe, read, () => FEEDBACK_DEFAULTS);
 }
 
+/** A trade's sound and haptic together (the terminal's open, close, win); loads the engines first if they aren't yet. */
+export function tradeFeedback(cue: import("./sound/trade").TradeCue, haptic: import("./haptics").HapticKind): void {
+  void loadFeedback().then((e) => {
+    e.sound.playTrade(cue);
+    e.haptics.haptic(haptic);
+  }).catch(() => undefined);
+}
+
 /** The shell's tap: Tradash's `tap` cue and an 8 ms haptic, when the setting allows; silent until the engines load. */
 export function tapFeedback(): void {
   if (!engines) {

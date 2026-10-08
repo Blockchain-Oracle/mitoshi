@@ -31,7 +31,8 @@ function txHashOf(outcome: OrderOutcome): Hex | null {
   return "txHash" in outcome ? (outcome.txHash ?? null) : null;
 }
 
-export function usePlaceBet(wallet: Address | null) {
+/** `quiet`: the caller words its own toast (the terminal's "Up BTC opened"); the screen-reader line still goes out. */
+export function usePlaceBet(wallet: Address | null, { quiet = false }: { quiet?: boolean } = {}) {
   const submitter = useTapSubmitter();
   const queryClient = useQueryClient();
   const [tx, dispatch] = useReducer(reduceTx, TX_IDLE);
@@ -97,7 +98,7 @@ export function usePlaceBet(wallet: Address | null) {
           rememberStake(wallet, request.stakeBase);
           recordCall(wallet, { marketId: m.marketId, asset: m.asset, lane: m.lane, intervalSec: m.intervalSec, tradingStartSec: m.tradingStartSec, expirySec: m.expirySec, decimals: m.decimals, side: booked.side, contractsRaw: booked.contractsRaw, costBase: booked.costBase, txHash: booked.txHash, placedAtMs: Date.now() });
           const line = TICKET.booked(formatBaseUnits(booked.contractsRaw, m.decimals, { minDp: 0 }), SIDE_WORD[booked.side], booked.avgPriceBps);
-          notify.neutral(line);
+          if (!quiet) notify.neutral(line);
           announce(line);
         } else if (result.status === "nothingFilled" && options.resting) {
           // A pre-open call rests at its limit (D-088): nothing crossed yet by design, so it pins as scheduled.
@@ -113,7 +114,7 @@ export function usePlaceBet(wallet: Address | null) {
         inFlight.current = false;
       }
     },
-    [queryClient, submitter, wallet],
+    [queryClient, submitter, wallet, quiet],
   );
 
   const reset = useCallback(() => {

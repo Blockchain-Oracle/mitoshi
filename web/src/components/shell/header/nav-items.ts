@@ -4,7 +4,7 @@
 // S22 (D-189): the rail's places and the phone dock (Baku/roy-chain's Slush-measured shell) replace the header nav and
 // the pill nav; everything else lives in the Everything drawer (the former More panel), one home per destination.
 import {
-  Activity, ArrowLeftRight, BarChart3, Bell, BookOpen, Bot, Building2, ChartCandlestick, ChartLine, ChartNoAxesCombined,
+  Activity, ArrowLeftRight, BarChart3, Bell, BookOpen, Bot, Building2, CandlestickChart, ChartCandlestick, ChartLine, ChartNoAxesCombined,
   CircleHelp, Clapperboard, Coins, Dices, Download, GalleryVerticalEnd, Gamepad2, Goal, Handshake, History, KeyRound,
   Layers3, MessageSquare, Mountain, Newspaper, Palette, Presentation, Rocket, ScanSearch, Settings, ShieldCheck, Trophy,
   WalletCards, X as XLogo, type LucideIcon,
@@ -31,6 +31,7 @@ export type NavGroup = { id: "stocks" | "games" | "build" | "explore"; name: str
 const item = (i: NavItem) => i;
 
 export const NAV_ITEMS = {
+  trade: item({ id: "trade", name: "Trade", href: "/trade", description: "One screen: a live line, UP or DOWN, one tap.", icon: CandlestickChart, keywords: "terminal chart up down tap btc", match: { paths: ["/trade"] } }),
   markets: item({ id: "markets", name: "Markets", href: "/markets", description: "Call where a price closes.", icon: ChartLine, keywords: "windows up down calls crypto", match: { paths: ["/markets"] } }),
   stocks: item({ id: "stocks", name: "Stocks", href: "/stocks", description: "Buy and sell tokenized stocks on Tempo.", icon: Building2, keywords: "equities shares tsla nvda", match: { paths: ["/stocks"] } }),
   themes: item({ id: "themes", name: "Themes", href: "/themes", description: "Follow a basket an agent rebalances for you.", icon: Palette, keywords: "baskets follow" }),
@@ -117,15 +118,24 @@ export const HISTORY_SECTION: NavSection = { id: "history", name: "History", des
 
 export const ACCOUNT_SECTION: NavSection = { id: "account", name: "Account", description: "Keys, alerts and recovery", items: [NAV_ITEMS.account, NAV_ITEMS.notifications, NAV_ITEMS.xRecovery] };
 
-/** The rail's places, in key order (1–4; 5 opens Everything). Both pillars, play, and your money (S22, D-189). */
-export const RAIL_NAV: readonly NavItem[] = [NAV_ITEMS.markets, NAV_ITEMS.stocks, NAV_ITEMS.games, NAV_ITEMS.portfolio];
+/**
+ * The rail's places, in key order (1–5; 6 opens Everything): the terminal first (S23, D-192), both pillars, play, and
+ * your money (S22, D-189).
+ */
+export const RAIL_NAV: readonly NavItem[] = [NAV_ITEMS.trade, NAV_ITEMS.markets, NAV_ITEMS.stocks, NAV_ITEMS.games, NAV_ITEMS.portfolio];
 
-/** The phone dock: the same places, then Everything. */
-export const DOCK_NAV: readonly NavItem[] = RAIL_NAV;
+/**
+ * The phone dock: four places, then Everything (five slots fit 320 px). Markets — the full list of Windows — is the
+ * place the dock leaves out: on a phone it is one tap from the terminal's markets drawer and listed in Everything.
+ */
+export const DOCK_NAV: readonly NavItem[] = [NAV_ITEMS.trade, NAV_ITEMS.stocks, NAV_ITEMS.games, NAV_ITEMS.portfolio];
+
+/** Rail places the dock leaves out: Everything lists them too, so a phone reaches them (shown at every width). */
+export const DOCK_OMITTED: readonly NavItem[] = RAIL_NAV.filter((p) => !DOCK_NAV.includes(p));
 
 /** Everything else, one home each — the right-edge Everything drawer (the former More panel) and ⌘K. */
 export const EVERYTHING_SECTIONS: readonly NavSection[] = [
-  { id: "more-trade", name: "Trade", description: "Markets and more ways to call", items: [NAV_ITEMS.reels, ...EXPLORE_GROUP.sections[0]!.items] },
+  { id: "more-trade", name: "Trade", description: "Markets and more ways to call", items: [...DOCK_OMITTED, NAV_ITEMS.reels, ...EXPLORE_GROUP.sections[0]!.items] },
   { id: "more-stocks", name: "Stocks", description: "Follow, move, verify", items: [NAV_ITEMS.themes, NAV_ITEMS.bridge, NAV_ITEMS.reserves] },
   ...GAMES_GROUP.sections,
   ...BUILD_GROUP.sections,
@@ -142,7 +152,7 @@ export const NAVIGABLE_ROUTE_PATHS = [
   "/games/history", "/games/line-rider", "/games/lucky", "/games/moonshot", "/games/practice", "/games/range", "/games/rank",
   "/how-it-works", "/launch", "/leaderboard", "/markets", "/news", "/parlay", "/pitch", "/portfolio", "/portfolio/edge",
   "/reels", "/reserves", "/settings/account", "/settings/notifications", "/stats", "/status", "/stocks", "/strategies",
-  "/surface", "/themes", "/trade-from-x",
+  "/surface", "/themes", "/trade", "/trade-from-x",
 ] as const;
 
 export function isActiveNavItem(pathname: string | null, item: NavItem): boolean {

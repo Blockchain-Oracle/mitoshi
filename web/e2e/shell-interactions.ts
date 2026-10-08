@@ -1,7 +1,7 @@
 /**
  * Shell interactions the UX gate can't see statically (S22, D-189/D-190): the Everything drawer (floating on the right,
  * URL state `?d=everything`, search row, focus, Escape and Back close it), the phone dock, the centred sign-in modal,
- * the back chevron, the command palette (⌘K, Enter navigates), the rail's keys (1–5) and the `?` keyboard map, and the
+ * the back chevron, the command palette (⌘K, Enter navigates), the rail's keys (1–6) and the `?` keyboard map, and the
  * 88 px rail between 768 and 1279. Screenshots + axe on the open overlays, both themes.
  *
  *   pnpm --filter @cwf/web exec tsx e2e/shell-interactions.ts --base http://localhost:3110 --out <dir>
@@ -35,11 +35,15 @@ for (const theme of ["dark", "light"]) {
   await settle(page);
 
   await check(`${theme}: the dock fits 390 px and marks the current place`, async () => {
+    await page.goto(`${base}/stocks`, { waitUntil: "load" });
     const dock = page.getByRole("navigation", { name: /Mobile primary navigation/ });
     await expect(dock).toBeVisible();
     const box = (await dock.locator("ul").boundingBox())!;
     if (box.x < 0 || box.x + box.width > 390) throw new Error(`dock overflows (x=${box.x}, w=${box.width})`);
-    await expect(dock.getByRole("link", { name: "Markets" })).toHaveAttribute("aria-current", "page");
+    await expect(dock.getByRole("link", { name: "Stocks" })).toHaveAttribute("aria-current", "page");
+    await expect(dock.getByRole("link", { name: "Trade" })).toBeVisible();
+    await page.goto(`${base}/markets`, { waitUntil: "load" });
+    await settle(page);
   });
   await check(`${theme}: Everything opens from the right, floating, in the URL, with search`, async () => {
     await page.getByRole("button", { name: /Everything in Mitoshi/ }).click();
@@ -90,14 +94,14 @@ for (const theme of ["dark", "light"]) {
   const dp = await desk.newPage();
   await dp.goto(`${base}/markets`, { waitUntil: "load" });
   await settle(dp);
-  await check(`${theme}: the rail's keys move between places and 5 opens Everything`, async () => {
+  await check(`${theme}: the rail's keys move between places and 6 opens Everything`, async () => {
     const rail = dp.getByRole("navigation", { name: "Places" });
     await expect(rail.getByRole("link", { name: /Markets/ })).toHaveAttribute("aria-current", "page");
     await dp.locator("body").click({ position: { x: 700, y: 880 } });
-    await dp.keyboard.press("2");
+    await dp.keyboard.press("3");
     await dp.waitForURL(`${base}/stocks`);
     await expect(rail.getByRole("link", { name: /Stocks/ })).toHaveAttribute("aria-current", "page");
-    await dp.keyboard.press("5");
+    await dp.keyboard.press("6");
     await expect(dp.getByRole("dialog")).toBeVisible();
     await dp.screenshot({ path: join(out, `rail-everything-${theme}.png`) });
     await dp.keyboard.press("Escape");
