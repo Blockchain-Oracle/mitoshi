@@ -1,8 +1,24 @@
 // Replaces Agari 03b30ab:packages/core/src/market/pyth-schedule.ts: on Tempo the second calendar is RedStone's signed
 // `NY_MARKET_NEXT_CHANGE_TIME` datapoint (context 15 §2.4; plan S1 1a "calendar = RedStone ∩ Alpaca"). The agreement
 // rule is Agari's: a disputed date becomes unknown, so the roller lists nothing on it.
-import { sessionOnDate, type SessionCalendar, type TradingSession } from "./calendar";
-import { addDays, datesBetween, etDateOf } from "./et-time";
+import { PRE_MARKET_OPEN_MINUTES, sessionOnDate, type SessionCalendar, type TradingSession } from "./calendar";
+import { addDays, datesBetween, etDateOf, etWallToUtcSec, SEC_PER_HOUR } from "./et-time";
+
+/**
+ * RedStone publishes no `<T>---24_7` package (nor `---PRE_AFTER`) stamped exactly 04:00:00 ET, the overnight →
+ * pre-market switch: 0 signers for all seven 24/7 names on 2026-09-28, 09-29 and 09-30, while 03:59:50 and 04:00:10
+ * carry 5/5 and the plain, `---EXTENDED` and crypto feeds are complete at that instant (D-185). The engine admits only
+ * packages stamped exactly T, so no print can ever be recorded there. Stated in ET wall time like every session rule:
+ * 08:00Z under EDT, 09:00Z under EST.
+ */
+export const REDSTONE_24_7_GAP_MINUTES = PRE_MARKET_OPEN_MINUTES;
+
+/** Whether `tSec` is RedStone's daily `---24_7` gap instant (04:00:00 ET that day). */
+export function isRedStone24x7Gap(tSec: number): boolean {
+  // ET is a whole number of hours from UTC, so 04:00:00 ET is always on the hour: skip the Intl read otherwise.
+  if (tSec % SEC_PER_HOUR !== 0) return false;
+  return etWallToUtcSec(etDateOf(tSec), REDSTONE_24_7_GAP_MINUTES) === tSec;
+}
 
 /**
  * One signed observation of RedStone's `NY_MARKET_NEXT_CHANGE_TIME`: at `observedSec`, the next NYSE regular-hours

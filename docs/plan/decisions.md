@@ -1228,6 +1228,83 @@ RPC endpoint off the users' IPs moves the limit away (D-139).
 
 **Why:** the failure card must say what happened and that no money moved.
 
+### D-185 — 24/7 stock Windows never open or close on RedStone's 04:00 ET `---24_7` gap (finding + decision, S3 fix 2, 2026-09-30)
+
+**Finding** (`print_archive`, every 5-minute boundary 2026-09-28 00:30 → 09-30 09:45 ET present; RedStone gateway
+`historical` probed 2026-09-30 13:49Z): RedStone publishes no `<T>---24_7` package, and no `---PRE_AFTER`, stamped
+exactly 04:00:00 ET, the overnight → pre-market switch: 0 signers for all seven 24/7 names (TSLA, NVDA, AAPL, MSFT,
+META, GOOGL, AMZN) on 09-28, 09-29 and 09-30 at 08:00:00Z, while 03:59:50 and 04:00:10 carry 5/5 and the plain,
+`---EXTENDED` and BTC/ETH/SOL feeds are complete at that instant. The engine's verifier admits only packages stamped
+exactly T (`RedStoneTimestampMismatch`), so a Window whose open or close T is 04:00 ET can never print: at 2026-09-30
+08:00Z the soak voided 42 (7 names × 3 cadences × the Window ending there and the one starting there). No other
+archived boundary on a feed a lane depends on is short: 09:30, 16:00 and 20:00 ET carry 5/5 on `---24_7` (gateway,
+09-29/30), crypto has none, and the plain feeds' only short boundaries are 09:30:00 ET on 09-15 (AMZN, MSFT: 2 signers)
+and 09-16 (GOOGL: 2) in the laptop archive (regular hours only, each fetched once; 09:30:10 was 5/5) — sporadic, none
+in the three ops-archived sessions, so the SessionOpen Windows stay listed (a miss there voids with funds returned).
+**Decision:** the roller never lists a 24/7 stock Window printed by RedStone whose open or close T is 04:00:00 ET
+(`isRedStone24x7Gap` in core, ET wall time from `et-time.ts` like the calendar: 08:00Z under EDT, 09:00Z under EST).
+03:55–04:00 and 04:00–04:05 (5m), 03:45–04:00 and 04:00–04:15 (15m), 03:00–04:00 and 04:00–05:00 (60m) ET are not
+listed; the grid does not shift (every Window stays aligned to its cadence, as the engine checks). The next Window
+(04:05, 04:15, 05:00 ET) lists when the first skipped one would have (the lead before 03:55, 03:45, 03:00 ET), so the
+lane shows it with the existing "OPENS <time>" line instead of sitting empty. Crypto, Data Streams versions and the
+Regular and Gap lanes are unaffected. The rule applies every day: the archive holds no weekend of `---24_7` yet; if Sat
+and Sun 04:00 ET prove complete (archive, 2026-10-03/04), it narrows to session days.
+
+**Why:** no lane is removed; only the Windows RedStone cannot print are.
+
+### D-186 — a pass that can't read RedStone is a fetch failure in health, never a halt; halt-replay replays in write order (finding + decision, S3 fix 2, 2026-09-30)
+
+**Finding:** halt-watch confirmed every RedStone-sourced asset `redstone-stale` at once — the 19 watched in hours on
+2026-09-29 14:45:46–14:48:08Z, the 10 always-on ones on 09-30 10:00:46–10:04:11Z — while RedStone was current (the
+archive holds 5/5 at those boundaries): the ops box's own `latest` fetch was failing under host load (agari-box OOM,
+`context/ops/agari-box-oom-*`), so every feed's newest package aged past 60 s together, and users would have seen
+"Signed price stale" for ≈ 3 min. The gate's `halt-replay --from 1790665440` MISMATCH was a second defect: `/halts/log`
+selected `id::text` and ordered `by id`, which Postgres resolves to the text output column (1, 10 … 19, 2, 20 …), so
+rows 40, 50 … 80 were replayed after rows 4 … 8. In id order the recorded log replays exactly (82 passes, OK).
+**Decision:** (1) the spot feed counts a read only when RedStone answers with our feeds and a package younger than 60 s;
+a failed or all-stale answer is a spot-feed failure (heartbeat, `/health` failing after 3 in a row) and leaves
+`lastReadSec()` unchanged. (2) halt-watch observes a RedStone-sourced asset `unread` when its view is older than 30 s
+(three spot reads) or when every watched RedStone feed (≥ 2) is stale at once; an unread pass moves neither a confirmed
+reason nor a pending streak (Alpaca's exchange halt still applies), is logged to `halt_log` for replay, and `/health`
+shows it (`halt-watch` detail `redstone`: readable, why, last read age, since, passes). One feed stalling while others
+are current still halts after two passes. A RedStone-wide stop also reads as unread: the roller keeps listing and a
+Window that can't print voids with funds returned; no label claims a stale market we did not observe. (3) `/halts/log`
+orders by the numeric id and `halt-replay` sorts rows numerically. What it compares: each recorded pass's observed
+reasons fed back through `stepHalts` must give the recorded board, so it proves the board follows the rules from what
+halt-watch saw; it does not re-read RedStone, and it flags the pre-fix all-at-once passes.
+
+**Why:** a label must describe the market, not our own fetch.
+
+### D-187 — recount walks logs in windows the RPC accepts and counts every source the index holds (finding + decision, S3 fix 2, 2026-09-30)
+
+**Finding:** the end-of-soak `recount.ts` died on its fixed 50,000-block `eth_getLogs` windows: Moderato refuses a
+window holding more than 20,000 logs with `-32602 "query exceeds max results 20000, retry with the range A-B"`, B being
+the last block that fits (probed 2026-09-30). Since S7's deploy (ops 13:48Z) the index also holds the EventVault's logs
+in `idx_events` (D-161), which the engine-only recount would count as a mismatch, and it waited for any cursor, not
+every one. **Decision:** `walkLogWindows` (`@cwf/markets/ops`) covers a range exactly once, in order: a refused window
+is retried with the range the RPC names (else halved, down to 100 blocks), and every answered window doubles the next up
+to 100,000 — the ops indexer's rule plus the RPC's hint. `recount.ts` walks the engine and the vault through
+`tempoHttp` (D-130), counts the vault's decodable events by name, and waits until every source's cursor has reached its
+pinned head before diffing.
+
+**Why:** the gate's "recount == index" must run to the end against the live chain.
+
+### D-188 — `print_archive` stores JSON objects, not JSON strings (finding + decision, S3 fix 2, 2026-09-30)
+
+**Finding** (reading the archive for D-185): every one of the 1,310 `print_archive` rows (ops since 09-28, the laptop
+import 09-14 → 09-22) holds `summary` and `feeds` as a JSON *string*: the writers passed `${JSON.stringify(x)}::jsonb`
+and postgres.js serializes a jsonb parameter with `JSON.stringify` again (its type table: json/jsonb ← `JSON.stringify`;
+`sql.json(value)` is the documented form, Context7 `/porsager/postgres`). So `feeds -> 'BTC'` and `feeds ? 'BTC'` are
+NULL/false on every row and each reader silently finds nothing: the relay's archive proof for a Gap open past the
+gateway's 23 h (`archivedFeed`), the calendar's RedStone `NY_MARKET_NEXT_CHANGE_TIME` observations (ops logged "1
+RedStone observations": only the gateway's latest, not the archived day), `/prices/latest`'s fallback after a restart,
+and the web's archive route. **Decision:** the archive actor and `scripts/archive/import-agari.ts` pass
+`sql.json(value)`; migration `prints/0003_print_archive_objects.sql` unwraps the stored rows in place (idempotent;
+≈ 17 MB of `feeds`). Proven on a real Postgres with a real archived boundary (2026-09-30 04:00 ET): the old form stores
+a string, the migration unwraps it, and the relay's read, the web's key test and `/prices/latest` find the packages.
+
+**Why:** the archive is the evidence and the fallback source; a row nobody can read is not archived.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

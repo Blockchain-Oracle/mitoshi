@@ -4,6 +4,8 @@ import type { PassResult } from "../../runtime";
 import { boundaries, fetchSnapshot, FETCH_DELAY_SEC, RETENTION_SEC } from "./redstone";
 
 export const ARCHIVE_EVERY_MS = 20_000;
+/** The JSON value as stored (a missing value in an array becomes null, as `JSON.stringify` writes it). */
+export const asJson = (value: unknown) => JSON.parse(JSON.stringify(value)) as Parameters<Sql["json"]>[0];
 const MAX_PER_PASS = 60;
 
 export function archivePass(sql: Sql): () => Promise<PassResult> {
@@ -18,8 +20,9 @@ export function archivePass(sql: Sql): () => Promise<PassResult> {
     for (const tSec of due) {
       const snap = await fetchSnapshot(tSec);
       if (!snap) break;
+      // `sql.json`: a `JSON.stringify(x)::jsonb` parameter is serialized again by postgres.js and stored as a JSON string (D-188).
       await sql`insert into print_archive (source, t_sec, complete, summary, feeds)
-                values ('redstone', ${snap.tSec}, ${snap.complete}, ${JSON.stringify(snap.summary)}::jsonb, ${JSON.stringify(snap.feeds)}::jsonb)
+                values ('redstone', ${snap.tSec}, ${snap.complete}, ${sql.json(asJson(snap.summary))}, ${sql.json(asJson(snap.feeds))})
                 on conflict (source, t_sec) do nothing`;
       saved++;
       if (!snap.complete) incomplete++;

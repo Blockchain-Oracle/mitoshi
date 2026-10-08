@@ -21,7 +21,7 @@ try {
       const line = JSON.parse(raw) as Line;
       seen++;
       const rows = await sql`insert into print_archive (source, t_sec, fetched_at, complete, summary, feeds, origin)
-        values ('redstone', ${line.T}, ${new Date(line.fetchedAtMs)}, ${line.complete}, ${JSON.stringify(line.summary)}::jsonb, ${JSON.stringify(line.feeds)}::jsonb, 'agari-laptop')
+        values ('redstone', ${line.T}, ${new Date(line.fetchedAtMs)}, ${line.complete}, ${sql.json(JSON.parse(JSON.stringify(line.summary)))}, ${sql.json(JSON.parse(JSON.stringify(line.feeds)))}, 'agari-laptop')
         on conflict (source, t_sec) do nothing returning t_sec`;
       inserted += rows.length;
     }

@@ -11,7 +11,7 @@ import { HALT_ASSETS, haltAssetOf, haltLabel, STOCK_SYMBOLS, TICKERS, type HaltA
 import { createOpsClient, listSeries, venueOf } from "@cwf/markets/ops";
 import { fetchAlpacaTradable } from "../../calendar/alpaca";
 import { runActor, type PassResult, type VenueDeps } from "../../runtime";
-import { emptyHaltState, nonNull, observeHalts, stepHalts, type Observations } from "./decide";
+import { emptyHaltState, nonNull, observeHalts, redstoneUnreadable, stepHalts, type Observations } from "./decide";
 
 const PASS_MS = 5_000;
 const BOOT_GRACE_SEC = 20;
@@ -52,6 +52,8 @@ export function startHaltWatch(deps: VenueDeps): { stop: () => void } {
   let exchangeReadMs = 0;
   let last = "";
   let lastObserved = false;
+  /** Passes in a row that could not read RedStone, and since when (a fetch failure: health, never a halt; D-186). */
+  const unread = { passes: 0, sinceSec: null as number | null, total: 0 };
   if (fixture) deps.log(`FIXTURE ${fixture.name}: injected observations replace live ones for the assets it names`);
 
   /** Each asset's primary source now, from the Series' policy versions on chain (one per asset: the widest lane's). */
@@ -92,8 +94,14 @@ export function startHaltWatch(deps: VenueDeps): { stop: () => void } {
       const q = deps.spot?.newest(asset);
       if (q) redstone[asset] = { packageSec: q.publishTimeSec, signers: q.signers };
     }
-    const observations: Observations = { nowSec, inRegularHours: inHours && nowSec - startedSec >= BOOT_GRACE_SEC, primary, redstone, datastreams: {}, exchange: { ...exchange } };
+    const observations: Observations = { nowSec, inRegularHours: inHours && nowSec - startedSec >= BOOT_GRACE_SEC, primary, redstone, datastreams: {}, exchange: { ...exchange }, redstoneReadSec: deps.spot?.lastReadSec() ?? null };
     if (fixture) applyFixture(observations, fixture);
+    const unreadable = redstoneUnreadable(observations);
+    if (unreadable) {
+      unread.passes++;
+      unread.total++;
+      unread.sinceSec ??= nowSec;
+    } else Object.assign(unread, { passes: 0, sinceSec: null });
     // Until the spot feed's first reads land every source would look stale: observe nothing during the boot grace.
     const booting = nowSec - startedSec < BOOT_GRACE_SEC && !fixture;
     const observed = booting ? observeHalts({ ...observations, primary: {} }) : observeHalts(observations);
@@ -116,9 +124,15 @@ export function startHaltWatch(deps: VenueDeps): { stop: () => void } {
     lastObserved = observedAny;
     const board = deps.halts.board();
     const halted = Object.entries(board).map(([a, e]) => `${a} ${e!.reason}`);
+    const readAge = observations.redstoneReadSec == null ? null : nowSec - observations.redstoneReadSec;
+    const unreadNote = unreadable ? [`RedStone unreadable (${unreadable === "fetch-failed" ? `our fetch failing, last read ${readAge ?? "never"} s ago` : "every feed stale at once"}) for ${nowSec - unread.sinceSec!} s: halts held`] : [];
     return {
-      why: [halted.length ? `halted: ${halted.join(", ")}` : "no halts", observations.inRegularHours ? "session assets watched" : `session assets idle (${status?.state ?? "no calendar"})`, ...(fixture ? [`FIXTURE ${fixture.name}`] : []), ...(calendarNote === "calendar fresh" ? [] : [calendarNote]), ...problems].join(" · "),
-      detail: { halts: board, labels: Object.fromEntries(Object.entries(board).map(([a, e]) => [a, haltLabel(e!.reason)])), observed: obs, redstoneAgeSec: Object.fromEntries(Object.entries(redstone).map(([a, r]) => [a, nowSec - r!.packageSec])), exchange, fixture: fixture?.name ?? null },
+      why: [halted.length ? `halted: ${halted.join(", ")}` : "no halts", ...unreadNote, observations.inRegularHours ? "session assets watched" : `session assets idle (${status?.state ?? "no calendar"})`, ...(fixture ? [`FIXTURE ${fixture.name}`] : []), ...(calendarNote === "calendar fresh" ? [] : [calendarNote]), ...problems].join(" · "),
+      detail: {
+        halts: board, labels: Object.fromEntries(Object.entries(board).map(([a, e]) => [a, haltLabel(e!.reason)])), observed: obs,
+        redstone: { readable: unreadable === null, unreadable, lastReadAgeSec: readAge, unreadSinceSec: unread.sinceSec, unreadPasses: unread.passes, unreadPassesTotal: unread.total },
+        redstoneAgeSec: Object.fromEntries(Object.entries(redstone).map(([a, r]) => [a, nowSec - r!.packageSec])), exchange, fixture: fixture?.name ?? null,
+      },
     };
   };
   return runActor({ name: "halt-watch", log: deps.log, dryRun: false, everyMs: PASS_MS, pass });
