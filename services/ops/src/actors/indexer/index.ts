@@ -16,6 +16,10 @@ import { BACKFILL_MAX, grow, nextRange, shrink, topicsOf, type WindowState } fro
 import { vaultFollower } from "./vault";
 
 const LIVE_MS = 1_000;
+// The pass's detail line carries the index's counts for /health and the soak. They are full-table counts (≈ 0.75 s of
+// Postgres CPU on 1.3 M events), so a live pass every second re-reads them at most once a minute (2026-10-08: reading
+// them every pass kept the testnet database near a full core and slowed every page served from the same box).
+const STATUS_EVERY_MS = 60_000;
 
 const toIdx = (e: ChainEvent): IdxEvent => ({ ...e, address: e.address.toLowerCase(), market: e.market?.toLowerCase() ?? null });
 
@@ -28,6 +32,12 @@ export function startIndexer(deps: VenueDeps): { stop: () => void } {
   const reader = indexReader(deps.sql);
   const state: WindowState = { size: 100_000 };
   const stats = { windows: 0, inserted: 0, rebuilt: 0, gapsRefetched: 0, errors: 0, lagBlocks: 0 };
+  let lastStatus: { atMs: number; row: Awaited<ReturnType<typeof reader.status>> } | null = null;
+  const statusAtMostEvery = async (ms: number) => {
+    const now = Date.now();
+    if (!lastStatus || now - lastStatus.atMs >= ms) lastStatus = { atMs: now, row: await reader.status() };
+    return lastStatus.row;
+  };
   const vault = vaultFollower(deps, client, writer);
   const vaultPass = async (head: number): Promise<string> => {
     if (!vault) return "vault not deployed";
@@ -82,7 +92,7 @@ export function startIndexer(deps: VenueDeps): { stop: () => void } {
     for (const e of result.newEvents) for (const topic of topicsOf(e)) deps.bus.publish(topic, e.name, { ...e.data, market: e.market, txHash: e.txHash, logIndex: e.logIndex, blockTimeSec: e.blockTimeSec });
     const gaps = result.markets.length ? await writer.gaps(result.markets) : [];
     for (const g of gaps) await refetchMarket(g.market, range.to);
-    const status = range.live ? await reader.status() : null;
+    const status = range.live ? await statusAtMostEvery(STATUS_EVERY_MS) : null;
     return {
       why: `${range.live ? "live" : "backfill"} ${range.from}..${range.to} (+${result.inserted} events${result.rebuilt.length ? `, rebuilt ${result.rebuilt.length}` : ""}${gaps.length ? `, ${gaps.length} gap(s) refetched` : ""}) · ${head - range.to} behind · ${vaultLine}`,
       detail: { ...stats, vault: vault?.stats ?? null, cursor: range.to, head, events: status?.events ?? null, fills: status?.fills ?? null, windowsOpened: status?.windows_opened ?? null, windowsResolved: status?.windows_resolved ?? null },
