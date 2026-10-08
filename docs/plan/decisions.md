@@ -1284,6 +1284,27 @@ supplier's capital pays its own way in, as in the maker vault (D-118).
   is listed apart, disabled, with the reason ("no fair-value model yet") — never offered and then refused.
 
 **Why:** E.4 names the composition; the signing and proof choices follow from D-136 and PD-2.
+### D-171 — private bets: keys from a committed browser secret, the desk service self-pays, claims kept per account (decision, S10d, 2026-09-30)
+
+- **Keys (C.2.4, L-39):** Masayume seeded a slot's three keys (slot id, charge key, credit key) with the owner's
+  authorisation signature — reproducible only because secp256k1 signing is deterministic. A passkey's P-256/WebAuthn
+  signature is randomised, so a retry would open a second slot. The browser draws a 32-byte secret; the signed text
+  names `Keys: keccak256(secret)`; the open request carries the secret; the route checks the commitment and the
+  signature (viem's Tempo `verifyHash`: P-256, WebAuthn, keychain, secp256k1) against the text it rebuilds from the
+  chain's own Window, then the desk derives the keys from the secret. Same secret, same slot: nothing charges twice.
+- **Desk service (C.3.8):** server-only (`@cwf/markets/server`), the testnet `desk` role key (`DESK_PRIVATE_KEY`),
+  self-paid Tempo transactions through `sendOps` (never the relay, D-177). Every step is simulated as the desk first
+  (a refusal comes back by the contract's name, nothing paid) and skipped when the chain shows it landed; one request
+  per slot at a time. A refused mint sweeps the slot and credits the stake straight back.
+- **Claims per account:** `private_claims` (Postgres) keeps each claim under its owner — the reference kept them only
+  in the browser, which loses money on a new device and has no place in the app. The row holds the signed request
+  (with the secret) only while the desk has not answered definitively, so a lost reply is resumed from the server and
+  never re-signed; it is cleared once the bet opened or was refused. The list is served only to the owner's own
+  session. The desk operator can therefore join a slot to its owner — the chain cannot; copy says "harder to link
+  back to you", never "anonymous".
+
+**Why:** A.4.4 on passkeys, with the reference's lost-reply safety and without its browser-only claims.
+
 ### D-172 — the range reserve's Tempo seam: engine prints in cents, a ticker per asset, a 2σ drift bound on a same-call spot (decision, S10b, 2026-09-30)
 
 Masayume's `RangeReserve` ports with `RangeMath`, its vectors and its launch parameters unchanged (12 % margin, 60 %

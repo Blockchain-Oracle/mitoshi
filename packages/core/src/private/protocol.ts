@@ -2,6 +2,8 @@
 import { z } from "zod";
 import type { Side } from "../types/market";
 import { addressSchema, bytes32Schema } from "../schemas/primitives";
+import { formatCadence } from "../copy/between-rounds";
+import { formatBaseUnits } from "../units/format";
 
 /** A signed authorisation is only good for a few minutes, so a captured one cannot be replayed later. */
 export const PRIVATE_AUTH_TTL_MS = 5 * 60_000;
@@ -48,6 +50,34 @@ export function privateOpenMessage(input: PrivateOpenMessageInput): string {
     "",
     `Signing lets the desk place this one bet from your private balance. It moves no funds by itself and costs nothing. ${PRIVATE_HONESTY}`,
   ].join("\n");
+}
+
+/** The collateral the stake is named in on the signed text (the TIP-20's own symbol). */
+export const PRIVATE_STAKE_SYMBOL = "pathUSD";
+
+export interface PrivateOpenFacts {
+  owner: string;
+  contract: string;
+  chainId: number;
+  marketId: string;
+  asset: string;
+  intervalSec: number;
+  expirySec: number;
+  side: Side;
+  stakeBase: bigint;
+  issuedAtMs: number;
+  commitment: string;
+}
+
+/** The one builder the browser and the route share, so the text the passkey signs and the text the route checks are the same bytes. */
+export function privateOpenText(f: PrivateOpenFacts): string {
+  return privateOpenMessage({
+    ...f,
+    cadenceText: formatCadence(f.intervalSec),
+    // Exact to the base unit, so the prompt and the charge can never differ by what a rounding hid.
+    stakeText: formatBaseUnits(f.stakeBase, 6, { maxDp: 6, minDp: 0, group: false }),
+    symbol: PRIVATE_STAKE_SYMBOL,
+  });
 }
 
 export function privateAuthFresh(issuedAtMs: number, nowMs: number): boolean {

@@ -26,7 +26,7 @@ import { CALL, TICKET } from "../copy";
 import { CallCard } from "../calls/CallCard";
 import { ToWin } from "@/components/ui/prediction-ticket";
 import { useTopOfBook } from "../data/useTopOfBook";
-import { AmountBlock, BetModes, SideSegments, type BetMode } from "./ComposeBlocks";
+import { AmountBlock, BetModes, RouteToggle, SideSegments, type BetMode } from "./ComposeBlocks";
 import "@/styles/prediction-ticket.css";
 import { DEFAULT_PRICE_CENTS, PriceControl } from "./PriceControl";
 import { AccountGate, OutcomeNote, ReadoutStrip, TicketCta, type ReadoutCells } from "./StatusBlocks";
@@ -36,6 +36,7 @@ import { useQuote } from "./useQuote";
 import { useTicket } from "./useTicket";
 
 /** The Range mode body loads on first use (a lazy island, plan 3.1): the band slider, its quote and its lane. */
+const PrivateTicketMode = dynamic(() => import("@/features/private/PrivateTicketMode").then((m) => m.PrivateTicketMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
 const BoostTicketMode = dynamic(() => import("@/features/boost/BoostTicketMode").then((m) => m.BoostTicketMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
 const RangeTicketMode = dynamic(() => import("@/features/range/RangeTicketMode").then((m) => m.RangeTicketMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
 
@@ -138,6 +139,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
 
   const another = () => bet.reset();
   const [betMode, setBetMode] = useState<BetMode>("direction");
+  const [route, setRoute] = useState<"public" | "private">("public");
 
   return (
     <section aria-label={TICKET.title} className="tk-ticket flex flex-col gap-3">
@@ -160,7 +162,8 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
       ) : (
         <>
           <BetModes mode={betMode} onMode={setBetMode} />
-          {betMode === "range" ? <RangeTicketMode market={market} /> : betMode === "boost" ? <BoostTicketMode market={market} side={side} /> : <>
+          {betMode === "direction" ? <RouteToggle route={route} onRoute={setRoute} /> : null}
+          {betMode === "range" ? <RangeTicketMode market={market} /> : betMode === "boost" ? <BoostTicketMode market={market} side={side} /> : route === "private" ? <PrivateTicketMode market={market} side={side} /> : <>
           <SideSegments side={side} onSelect={t.selectSide} prices={{ up: priceText(top.upCents), down: priceText(top.downCents) }} />
           {listed ? <PriceControl priceCents={priceCents} onChange={setPriceCents} side={side} /> : null}
           <AmountBlock value={t.stakeText} onChange={t.setStakeText} stakeBase={stakeBase} onStakeBase={t.setStakeBase} balanceBase={spendBase} decimals={decimals} belowMin={stakeBase > 0n && belowMinStake(stakeBase, decimals)} remembered={t.remembered} costBase={displayed?.expectedCostBase ?? null} />

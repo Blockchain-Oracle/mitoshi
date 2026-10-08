@@ -25,6 +25,8 @@ import dynamic from "next/dynamic";
 
 // Boosts (S10c) load as their own island: the leverage reads and lane stay out of the Portfolio's first load.
 const BoostPositions = dynamic(() => import("@/features/boost/BoostPositions").then((m) => m.BoostPositions), { ssr: false });
+// The private desk (S10d): its balance moves, the desk's cells and the account's private bets — its own island too.
+const PrivateDesk = dynamic(() => import("@/features/private/PrivateDesk").then((m) => m.PrivateDesk), { ssr: false });
 
 const CONNECTION = new Set(["rpc-down", "indexer-down", "send-unknown", "unknown"]);
 
@@ -97,6 +99,7 @@ function Screen() {
       <Link href="/portfolio/edge" className="min-h-touch self-start py-2 type-caption text-accent">{PORTFOLIO.traderEdge}</Link>
       <BetsPanel wallet={wallet} positions={positions} history={history} index="01" retry={retry} />
       <BoostPositions wallet={wallet} index="02" />
+      <PrivateDesk wallet={wallet} index="03" />
       <RecordChart history={history} onRetry={() => void queryClient.invalidateQueries({ queryKey: keys.history(wallet) })} />
     </div>
   );

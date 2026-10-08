@@ -14,7 +14,7 @@ import { privateDeskAbi } from "@cwf/clients/abis/PrivateDesk";
 import { engineLensAbi } from "@cwf/clients/abis/EngineLens";
 import { createOpsClient, type OpsClient } from "../ops/client";
 import { sendOps } from "../ops/send";
-import { venueOf } from "../ops/venue";
+import { fetchMarkets, fetchSeries, venueOf } from "../ops/venue";
 import { claimDomain, signPrivateClaim, verifyPrivateClaim } from "./claim";
 import { privateDeskOf } from "./deployment";
 import { diagnosePrivate } from "./errors";
@@ -46,6 +46,26 @@ async function withSlotLock<T>(desk: Desk, slotId: string, run: () => Promise<T>
   } finally {
     if (desk.locks.get(slotId) === next) desk.locks.delete(slotId);
   }
+}
+
+export interface WindowFacts {
+  marketId: MarketId;
+  asset: string;
+  intervalSec: number;
+  expirySec: number;
+  lockAtSec: number;
+}
+
+/** The chain's own Window — what the route rebuilds the signed text from, never the caller's strings. Null: unknown id. */
+export async function windowFacts(desk: Desk, marketId: MarketId): Promise<WindowFacts | null> {
+  const venue = venueOf(desk.chainId);
+  if (!venue) throw new Error("no venue on this chain");
+  const [m] = await fetchMarkets(desk.ops, venue, [marketId as Hex]);
+  if (!m) return null;
+  const seriesId = (await desk.ops.public.readContract({ address: venue.lens, abi: engineLensAbi, functionName: "seriesIdAt", args: [m.seriesIdx] })) as Hex;
+  const [s] = await fetchSeries(desk.ops, venue, [seriesId]);
+  if (!s) return null;
+  return { marketId, asset: s.symbol ?? `#${s.ticker}`, intervalSec: s.cadenceSec, expirySec: m.expirySec, lockAtSec: m.lockAtSec };
 }
 
 /** A named refusal from the desk contract, caught in simulation before anything is paid for. */

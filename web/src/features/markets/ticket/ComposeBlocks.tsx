@@ -28,6 +28,17 @@ export function BetModes({ mode, onMode }: { mode: BetMode; onMode: (mode: BetMo
   );
 }
 
+/** The reference's Public/Private control (Masayume `Ticket624Drawer.tsx` L1175–1247), on Up/Down only: Private places the
+ *  same bet at 1× through the desk from the private balance (S10d, D-171). */
+export function RouteToggle({ route, onRoute }: { route: "public" | "private"; onRoute: (route: "public" | "private") => void }) {
+  return (
+    <div className="tk-modes tk-route" role="group" aria-label={TICKET_PENDING.routeLabel}>
+      <button type="button" className="tk-mode min-h-touch" aria-pressed={route === "public"} onClick={() => onRoute("public")}>{TICKET_PENDING.routePublic}</button>
+      <button type="button" className="tk-mode tk-mode--private min-h-touch" aria-pressed={route === "private"} onClick={() => onRoute("private")}>{TICKET_PENDING.routePrivate}</button>
+    </div>
+  );
+}
+
 /** The side, as 16240's outcome pills: each side with its own live price (the two never add to $1, and say so nowhere). */
 export function SideSegments({ side, onSelect, prices }: { side: Side | null; onSelect: (side: Side) => void; prices: Record<Side, string> }) {
   return <OutcomePills label={TICKET.sideLabel} value={side} onChange={onSelect} outcomes={SIDES.map((s) => ({ id: s, label: SIDE_WORD[s], price: prices[s] }))} />;
