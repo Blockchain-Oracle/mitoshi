@@ -10,9 +10,11 @@ import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
 import { TERMINAL } from "../copy";
 import { clockText, money } from "../format";
+import { episodeFor, replayable, useEpisodes, type Episode } from "../replay";
 
-export function HistoryView({ wallet }: { wallet: Address }) {
+export function HistoryView({ wallet, onReplay }: { wallet: Address; onReplay: (episode: Episode, finalPnl: number) => void }) {
   const masked = usePrivacy();
+  const episodes = useEpisodes();
   const reading = useWalletHistory(wallet);
   if (!reading) return <p className="tm-empty">…</p>;
   if (!reading.ok) return <p className="tm-empty">{reading.error.technical}</p>;
@@ -45,7 +47,12 @@ export function HistoryView({ wallet }: { wallet: Address }) {
                 <span className="tm-pos-meta">{formatCadence(r.intervalSec)} · {TERMINAL.positions.staked} {hide(money(r.stakeBase))} · {clockText(r.expirySec)}</span>
               </span>
               <span className={`tm-pos-figure ${r.pnlBase >= 0n ? "is-up" : "is-down"}`}>{hide(money(r.pnlBase, true))}</span>
-              <span />
+              {(() => {
+                const e = episodeFor(episodes, r.marketId);
+                return e && replayable(e) ? (
+                  <button type="button" className="tm-choice" onClick={() => onReplay(e, Number(r.pnlBase) / 10 ** r.decimals)}>{TERMINAL.replay.open}</button>
+                ) : <span />;
+              })()}
             </div>
           );
         })}

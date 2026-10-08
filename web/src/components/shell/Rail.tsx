@@ -6,7 +6,7 @@
 // roy-chain's `layoutId` spring from 21st.dev 21517 (unlumen/animated-sidebar); the mode switch is gone (Mitoshi has
 // one network per deployment — the Testnet pill says which); places come from the nav registry and the fifth key opens
 // the Everything drawer. The path is read inside Suspense (cacheComponents keeps the static shell).
-import { LayoutGrid } from "lucide-react";
+import { History, LayoutGrid, LineChart, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, type CSSProperties, type ReactNode } from "react";
@@ -71,7 +71,7 @@ function RailNav({ pathname }: { pathname: string | null }) {
             <kbd aria-hidden className="rail-key">{i + 1}</kbd>
           </Link>
         );
-      })}
+      }).flatMap((link, i) => (RAIL_NAV[i]!.id === "trade" && i === active ? [link, <TradeSubList key="trade-sub" />] : [link]))}
       <button
         type="button"
         className="rail-item"
@@ -87,6 +87,26 @@ function RailNav({ pathname }: { pathname: string | null }) {
         <kbd aria-hidden className="rail-key">{EVERYTHING_KEY}</kbd>
       </button>
     </nav>
+  );
+}
+
+/** On the terminal, the Trade place opens its own drawers (Tradash's nav column: Markets · History · Settings). */
+const TRADE_SUB = [
+  { drawer: "trade-markets", label: SHELL.tradeSub.markets, icon: LineChart },
+  { drawer: "trade-history", label: SHELL.tradeSub.history, icon: History },
+  { drawer: "trade-settings", label: SHELL.tradeSub.settings, icon: SlidersHorizontal },
+] as const;
+
+function TradeSubList() {
+  return (
+    <div className="rail-sub" role="group" aria-label={SHELL.tradeSub.label}>
+      {TRADE_SUB.map(({ drawer, label, icon: Icon }) => (
+        <button key={drawer} type="button" className="rail-sub-item" title={label} onClick={() => (tapFeedback(), openDrawer(drawer))}>
+          <Icon aria-hidden className="rail-sub-icon" />
+          <span className="rail-label">{label}</span>
+        </button>
+      ))}
+    </div>
   );
 }
 

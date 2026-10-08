@@ -68,6 +68,7 @@ export const SHELL = {
     ["?", "This list"],
     ["Esc", "Close the open drawer or dialog"],
   ] as readonly (readonly [string, string])[],
+  tradeSub: { label: "Trade", markets: "Markets", history: "History & stats", settings: "Trade settings" },
   privacyHide: "Hide balances",
   privacyShow: "Show balances",
   masked: "••••",

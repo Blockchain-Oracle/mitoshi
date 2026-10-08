@@ -9,7 +9,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MotionScope } from "@/components/motion-scope";
 import MitoshiMark from "@/components/shell/MitoshiMark";
 import { EVERYTHING_DRAWER } from "@/components/shell/Rail";
-import { BRAND, SHELL } from "@/lib/copy";
+import { BRAND, CONNECT, SHELL } from "@/lib/copy";
+import { notify } from "@/lib/toast";
 import { closeDrawer, openDrawer, useDrawerParam } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { usePrivacy } from "@/lib/privacy";
@@ -40,13 +41,14 @@ import { AccountDrawer } from "./ui/AccountDrawer";
 import { PositionDetails } from "./ui/PositionDetails";
 import { ReactionOverlay } from "./ui/ReactionOverlay";
 import { useChartFeedback } from "./useChartFeedback";
+import { useReplayRecorder } from "./replay";
 import dynamic from "next/dynamic";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 
 // The Markets hero's depth view, loaded when first shown (a lazy island).
 const HeroDepth = dynamic(() => import("@/features/markets/hero/HeroDepth"), { ssr: false });
 
-export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account", position: "trade-position" } as const;
+export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account", history: "trade-history", position: "trade-position" } as const;
 
 /** The symbol in the address: a market switch rewrites it in place (no remount), so the path is the source. */
 function useSymbol(initial: string): string {
@@ -124,6 +126,9 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   }
   const [depth, setDepth] = useState(false);
   const fb = useChartFeedback({ symbol, spot: s.spot.price, active: s.active, value: activeValue, linePrice: s.openingRaw === null ? null : Number(s.openingRaw) / 1e8 });
+  // Every open position's path is recorded for its replay; the Line is known for the Window on screen.
+  const lineOnScreen = s.openingRaw === null ? null : Number(s.openingRaw) / 1e8;
+  useReplayRecorder(s.positions, values, (id) => (id === market?.marketId ? lineOnScreen : null));
   // An armed trail keeps hearing its price with the tab in the background (it still needs Mitoshi open).
   const trailing = s.positions.some((p) => p.trailStop !== null);
   useEffect(() => (trailing ? holdStreamAwake() : undefined), [trailing]);
@@ -132,6 +137,13 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   useEffect(() => {
     if (s.win.linkedAsset) window.history.replaceState(null, "", `/trade/${s.win.linkedAsset}${window.location.search}`);
   }, [s.win.linkedAsset]);
+
+  // The account and history drawers need an account: signed out, the link says so instead of opening an empty drawer.
+  useEffect(() => {
+    if (s.address || (drawer.open !== DRAWERS.account && drawer.open !== DRAWERS.history)) return;
+    closeDrawer();
+    notify.item({ id: "terminal-signin", title: TERMINAL.toast.signIn, description: TERMINAL.toast.signInBody, action: { label: CONNECT.connect, onClick: session.connect } });
+  }, [drawer.open, s.address, session.connect]);
 
   const pick = (next: TickerSymbol) => {
     // Replacing the drawer's entry closes it and lands on the new market; Back returns to the previous one.
@@ -216,7 +228,8 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
       <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} capped={s.capped ? s.capReason : null} />
       {s.address ? (
         <AccountDrawer
-          open={drawer.open === DRAWERS.account}
+          open={drawer.open === DRAWERS.account || drawer.open === DRAWERS.history}
+          initialView={drawer.open === DRAWERS.history ? "history" : "menu"}
           onOpenChange={(o) => !o && drawer.close()}
           wallet={s.address}
           equityBase={s.cashBase === null ? null : s.cashBase + totals.value}

@@ -25,6 +25,8 @@ import { useTapArmed } from "@/providers/wallet/tap-session";
 import { TERMINAL } from "../copy";
 import { money } from "../format";
 import { HistoryView } from "./HistoryView";
+import { ReplayDrawer } from "./ReplayDrawer";
+import type { Episode } from "../replay";
 import { SendPanel } from "./SendPanel";
 
 const TradingBalancePanel = dynamic(() => import("@/features/vault/TradingBalancePanel").then((m) => m.TradingBalancePanel), { ssr: false });
@@ -67,6 +69,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
 }) {
   const [view, setView] = useState<AccountView>(initialView);
   const [confirmOut, setConfirmOut] = useState(false);
+  const [replay, setReplay] = useState<{ episode: Episode; finalPnl: number } | null>(null);
   const masked = usePrivacy();
   const session = useWalletSession();
   const sessionView = useSessionView();
@@ -91,7 +94,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
           ) : null}
           {view === "send" ? <SendPanel wallet={wallet} balanceBase={walletBase} onDone={() => setView("menu")} /> : null}
           {view === "balance" ? <TradingBalancePanel /> : null}
-          {view === "history" ? <HistoryView wallet={wallet} /> : null}
+          {view === "history" ? <HistoryView wallet={wallet} onReplay={(episode, finalPnl) => setReplay({ episode, finalPnl })} /> : null}
           {view === "menu" ? (
             <div className="tm-account">
               <div className="tm-profile">
@@ -135,6 +138,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
           ) : null}
         </SlideOverContent>
       </SlideOver>
+      <ReplayDrawer open={replay !== null} onOpenChange={(o) => !o && setReplay(null)} episode={replay?.episode ?? null} finalPnl={replay?.finalPnl ?? null} />
       <Modal
         open={confirmOut}
         onOpenChange={setConfirmOut}
