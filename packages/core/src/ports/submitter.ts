@@ -120,6 +120,11 @@ export type VaultIntent =
 
 export type TxIntent =
   | { kind: "approve"; token: Address; spender: Address; amountBase: bigint }
+  /**
+   * Send a TIP-20 balance from the wallet to another address (S23g: the account drawer's Withdraw). Never sponsored —
+   * the sender pays the fee in the token — and never through a one-tap key: money leaving the account always asks.
+   */
+  | { kind: "transfer"; token: Address; to: Address; amountBase: bigint }
   /** Redeem every settled lot the wallet holds on the market (engine `redeem(marketId)`; drains own orders first, T-deviation). */
   | { kind: "redeem"; marketId: MarketId }
   /** Redeem part of one side (engine `redeemPartial`). */

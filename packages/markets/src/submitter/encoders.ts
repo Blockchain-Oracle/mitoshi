@@ -3,7 +3,7 @@
  * answer a typed "not deployed" refusal. S1 ships the two area-free encoders: revoking an access key (the trust
  * surface) and the relay's no-op proof call. S4 adds the engine (`engine-encoders.ts`), S7 the vault, and so on.
  */
-import { encodeFunctionData, multicall3Abi, type Address } from "viem";
+import { encodeFunctionData, erc20Abi, isAddress, multicall3Abi, type Address } from "viem";
 import { Abis } from "viem/tempo";
 import { diagnosis, type Diagnosis, type TxIntent } from "@cwf/core";
 import { TEMPO, UTILITIES } from "@cwf/clients";
@@ -19,7 +19,7 @@ import { encodeVaultIntent } from "../vault/calls";
 /** The relay sponsors at most 8 calls per transaction (C.3.3). */
 export const MAX_REVOKE = 8;
 
-export type RelayArea = "noop" | "keys" | "engine" | "vault" | "parlay" | "range" | "maker" | "leverage" | "private" | "arena" | "strategies" | "stocks" | "themes" | "launch" | "bridge" | "agents";
+export type RelayArea = "wallet" | "noop" | "keys" | "engine" | "vault" | "parlay" | "range" | "maker" | "leverage" | "private" | "arena" | "strategies" | "stocks" | "themes" | "launch" | "bridge" | "agents";
 
 export interface EncodedIntent {
   area: RelayArea;
@@ -57,7 +57,17 @@ function encodeNoop(intent: TxIntent): EncodeResult | null {
   return { ok: true, value: { area: "noop", calls: [{ to: UTILITIES.multicall3, data }], sponsored: true, summary: "sponsored no-op" } };
 }
 
-export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeNoop, encodeEngineIntent, encodeVaultIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent, encodePrivateIntent];
+/** A TIP-20 `transfer(to, amount)` from the wallet: never sponsored (the sender pays the fee); never to itself or zero. */
+export function encodeTransfer(intent: TxIntent, ctx: EncodeContext): EncodeResult | null {
+  if (intent.kind !== "transfer") return null;
+  if (!isAddress(intent.to) || /^0x0{40}$/i.test(intent.to)) return { ok: false, diagnosis: diagnosis("contract-revert", `not a valid destination: ${intent.to}`) };
+  if (intent.to.toLowerCase() === ctx.wallet.toLowerCase()) return { ok: false, diagnosis: diagnosis("contract-revert", "the destination is this account") };
+  if (intent.amountBase <= 0n) return { ok: false, diagnosis: diagnosis("below-min-quantity", "nothing to send") };
+  const data = encodeFunctionData({ abi: erc20Abi, functionName: "transfer", args: [intent.to, intent.amountBase] });
+  return { ok: true, value: { area: "wallet", calls: [{ to: intent.token, data }], sponsored: false, summary: `send ${intent.amountBase} of ${intent.token} to ${intent.to}` } };
+}
+
+export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeNoop, encodeTransfer, encodeEngineIntent, encodeVaultIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent, encodePrivateIntent];
 
 /** The first encoder that claims the intent; an unclaimed intent's area is not deployed on this chain yet. */
 export async function encodeIntent(intent: TxIntent, ctx: EncodeContext, encoders: readonly IntentEncoder[] = DEFAULT_ENCODERS): Promise<EncodeResult> {

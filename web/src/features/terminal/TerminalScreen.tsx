@@ -36,6 +36,7 @@ import { SettingsDrawer } from "./ui/SettingsDrawer";
 import { TerminalTrade } from "./ui/TerminalTrade";
 import { ScheduledTrade } from "./ui/ScheduledTrade";
 import { ChartControls } from "./ui/ChartControls";
+import { AccountDrawer } from "./ui/AccountDrawer";
 import { ReactionOverlay } from "./ui/ReactionOverlay";
 import { useChartFeedback } from "./useChartFeedback";
 import dynamic from "next/dynamic";
@@ -44,7 +45,7 @@ import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 // The Markets hero's depth view, loaded when first shown (a lazy island).
 const HeroDepth = dynamic(() => import("@/features/markets/hero/HeroDepth"), { ssr: false });
 
-export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions" } as const;
+export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account" } as const;
 
 /** The symbol in the address: a market switch rewrites it in place (no remount), so the path is the source. */
 function useSymbol(initial: string): string {
@@ -159,7 +160,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
                 </button>
                 <AssetChip asset={symbol} name={s.name} price={s.spot.price} feed={feed} stale={s.spot.stale} onOpen={() => drawer.show(DRAWERS.markets)} />
               </span>
-              <EquityPill className="tm-phone" equity={equity} address={s.address} masked={masked} onOpen={() => (window.location.href = "/portfolio")} onSignIn={session.connect} />
+              <EquityPill className="tm-phone" equity={equity} address={s.address} masked={masked} onOpen={() => drawer.show(DRAWERS.account)} onSignIn={session.connect} />
             </div>
             {s.win.lanes.length ? (
               <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText} />
@@ -173,7 +174,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
         </section>
         <aside className="tm-side" aria-label={TERMINAL.positions.title}>
           <div className="tm-desk tm-end">
-            <EquityPill equity={equity} address={s.address} masked={masked} onOpen={() => (window.location.href = "/portfolio")} onSignIn={session.connect} />
+            <EquityPill equity={equity} address={s.address} masked={masked} onOpen={() => drawer.show(DRAWERS.account)} onSignIn={session.connect} />
           </div>
           <div className="tm-side-list">
             <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
@@ -206,6 +207,21 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
       </div>
       <MarketsDrawer open={drawer.open === DRAWERS.markets} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} set={s.win.set} nowSec={s.nowSec} onPick={pick} />
       <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} capped={s.capped ? s.capReason : null} />
+      {s.address ? (
+        <AccountDrawer
+          open={drawer.open === DRAWERS.account}
+          onOpenChange={(o) => !o && drawer.close()}
+          wallet={s.address}
+          equityBase={s.cashBase === null ? null : s.cashBase + totals.value}
+          walletBase={s.walletBase}
+          onSettings={() => {
+            // The account drawer's entry becomes the settings drawer's: Back still closes it.
+            const url = new URL(window.location.href);
+            url.searchParams.set("d", DRAWERS.settings);
+            window.history.replaceState({ __drawer: DRAWERS.settings }, "", url);
+          }}
+        />
+      ) : null}
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
           <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />

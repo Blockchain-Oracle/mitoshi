@@ -20,3 +20,19 @@ describe("key-revoke encoder (D-053)", () => {
     expect((await encodeIntent({ kind: "key-revoke", keyIds: Array.from({ length: MAX_REVOKE + 1 }, (_, i) => key(i + 1)) }, ctx)).ok).toBe(false);
   });
 });
+
+describe("the wallet's transfer (S23g Withdraw)", () => {
+  const me = "0x00000000000000000000000000000000000000aa" as const;
+  const token = "0x20c0000000000000000000000000000000000000" as const;
+  it("encodes one unsponsored TIP-20 transfer", async () => {
+    const r = await encodeIntent({ kind: "transfer", token, to: "0x00000000000000000000000000000000000000bb", amountBase: 5_000_000n }, { chainId: 42431, wallet: me });
+    expect(r.ok && r.value.sponsored).toBe(false);
+    expect(r.ok && r.value.calls).toHaveLength(1);
+    expect(r.ok && r.value.calls[0]!.to).toBe(token);
+  });
+  it("refuses itself, zero, a bad address and nothing to send", async () => {
+    for (const [to, amountBase] of [[me, 1n], ["0x0000000000000000000000000000000000000000", 1n], ["0x12", 1n], ["0x00000000000000000000000000000000000000bb", 0n]] as const) {
+      expect((await encodeIntent({ kind: "transfer", token, to: to as `0x${string}`, amountBase }, { chainId: 42431, wallet: me })).ok).toBe(false);
+    }
+  });
+});
