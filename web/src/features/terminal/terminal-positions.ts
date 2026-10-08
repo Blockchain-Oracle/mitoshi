@@ -7,6 +7,7 @@ import { listLeveragePositionsOf } from "@cwf/markets/leverage";
 import { usePositions, useReadingQuery, useVaultBets } from "@cwf/markets/react";
 import { useMemo } from "react";
 import { entryOf, useEntries } from "./entries";
+import { useFreshFills, withFreshFills } from "./fresh-fills";
 
 /** The Boost reads' cache keys: shared with `/portfolio`'s Boost list, so a close here refreshes both. */
 export const BOOST_KEYS = ["cwf", "boost"] as const;
@@ -42,6 +43,7 @@ export function useTerminalPositions(address: Address | null, set: LaneSet | nul
   const vault = useVaultBets(address);
   const boosts = useReadingQuery([...BOOST_KEYS, "positions", address ?? ""], () => listLeveragePositionsOf(address!), { enabled: address !== null, pollMs: 10_000 });
   const entries = useEntries();
+  const fresh = useFreshFills();
   return useMemo(() => {
     const out: TerminalPosition[] = [];
     const nowSec = Math.floor(Date.now() / 1000);
@@ -78,6 +80,6 @@ export function useTerminalPositions(address: Address | null, set: LaneSet | nul
         tpBase: e?.tpBase ? BigInt(e.tpBase) : null, slBase: e?.slBase ? BigInt(e.slBase) : null, boost: { positionId: b.positionId, frontedBase: b.frontedBase, leverageBps: b.leverageBps },
       });
     }
-    return out.sort((a, b) => a.expirySec - b.expirySec);
-  }, [wallet, vault, boosts, entries, set]);
+    return withFreshFills(out, fresh, (id) => markets.get(id.toLowerCase()) ?? null, Date.now());
+  }, [wallet, vault, boosts, entries, set, fresh]);
 }

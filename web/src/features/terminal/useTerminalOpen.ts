@@ -21,6 +21,7 @@ import { notify } from "@/lib/toast";
 import { useWalletSession } from "@/lib/wallet-session";
 import { TERMINAL } from "./copy";
 import { rememberEntry } from "./entries";
+import { rememberFill } from "./fresh-fills";
 import { centsOf, money, multipleOf, sideWord } from "./format";
 
 export interface SideView {
@@ -86,7 +87,7 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
 
   // The outcome of the last tap, said once: opened (with the cue and the entry line), moved, nothing filled, unknown.
   const outcome = bet.state.outcome;
-  const tapped = useRef<{ side: Side; quote: Quote } | null>(null);
+  const tapped = useRef<{ side: Side; quote: Quote; via: "wallet" | "vault" } | null>(null);
   const [lastSide, setLastSide] = useState<Side | null>(null);
   useEffect(() => {
     const t = tapped.current;
@@ -97,6 +98,8 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
     if (outcome.status === "confirmed") {
       const b = outcome.booked;
       if (s !== null) rememberEntry(m.marketId, t.side, s);
+      // Shown at once from the receipt's own figures, until the positions read has it (`fresh-fills.ts`).
+      rememberFill({ marketId: b.marketId, side: b.side, via: t.via, contractsRaw: b.contractsRaw, costBase: b.costBase, atMs: Date.now() });
       tradeFeedback("open", "open");
       return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.opened(words, m.asset), description: TERMINAL.toast.openedBody(multipleOf(b.avgPriceBps / 10), money(b.costBase)) });
     }
@@ -117,7 +120,8 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
       }
       if (s.blocked) return void notify.item({ id: ENTRY_TOAST, type: "warning", title: s.blocked });
       if (!s.quote.quote) return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.gettingPrice, timeout: 2_000 });
-      tapped.current = { side, quote: s.quote.quote };
+      const r = s.route.route;
+      tapped.current = { side, quote: s.quote.quote, via: r && r.kind !== "wallet" ? "vault" : "wallet" };
       setLastSide(side);
       notify.item({ id: ENTRY_TOAST, type: "loading", title: TERMINAL.toast.opening(sideWord(side), m.asset) });
       void bet.place({ market: m, side, stakeBase: stake, displayedQuote: s.quote.quote, route: s.route.route });
