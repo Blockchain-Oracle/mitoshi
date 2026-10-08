@@ -24,6 +24,8 @@ const check = (ok: boolean, what: string, detail: unknown = "") => {
 const ticket = (p: Page) => p.evaluate(`fetch("/api/stream/ticket", { method: "POST", credentials: "same-origin" }).then(async (r) => ({ status: r.status, body: r.ok ? await r.json() : null }))`) as Promise<{ status: number; body: { topic: string } | null }>;
 
 const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+// The sign-in modal waits for the wallet runtime (~1 MB) that loads on the first tap; a slow link needs the time.
+context.setDefaultTimeout(90_000);
 const page = await context.newPage();
 const cdp = await context.newCDPSession(page);
 await cdp.send("WebAuthn.enable");
@@ -60,6 +62,8 @@ try {
   // Signing in again with the same passkey (login ceremony) restores the ticket.
   const { credentials } = await cdp.send("WebAuthn.getCredentials", { authenticatorId });
   const ctx2 = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+  // The sign-in modal waits for the wallet runtime (~1 MB) that loads on the first tap; a slow link needs the time.
+  ctx2.setDefaultTimeout(90_000);
   const p2 = await ctx2.newPage();
   const cdp2 = await ctx2.newCDPSession(p2);
   await cdp2.send("WebAuthn.enable");
@@ -68,7 +72,10 @@ try {
   await p2.goto(`${base}/markets`, { waitUntil: "load" });
   await p2.getByRole("button", { name: "Sign in", exact: true }).first().click();
   await p2.getByRole("dialog").getByRole("button", { name: /already have one/ }).click();
-  await expect(p2.getByRole("button", { name: "Sign in", exact: true })).toHaveCount(0, { timeout: 30_000 });
+  // Signed in = the modal closed and the money pill is on screen. ("Sign in" gone is not enough: while the modal is open
+  // the page behind it is inert, so the header's button already reads as absent before the login ceremony has run.)
+  await expect(p2.getByRole("dialog")).toHaveCount(0, { timeout: 90_000 });
+  await expect(p2.getByRole("button", { name: /Add money/ }).first()).toBeVisible({ timeout: 90_000 });
   const back = await ticket(p2);
   check(back.status === 200 && back.body?.topic === `user:${wallet}`, "ticket after login", back.status);
 } catch (error) {

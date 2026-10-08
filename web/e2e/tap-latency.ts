@@ -35,6 +35,8 @@ mkdirSync(out, { recursive: true });
 
 const browser = await chromium.launch();
 const context = await browser.newContext({ viewport: { width, height: width < 768 ? 844 : 900 }, hasTouch: width < 768 });
+// The sign-in modal waits for the wallet runtime (~1 MB) that loads on the first tap; a slow link needs the time.
+context.setDefaultTimeout(90_000);
 // Page-side marks on the same clock as the app's own `cwf:tap:*` marks: the press, the card, the confirmed card.
 // A string, not a function: tsx's `__name` helper does not exist in the page.
 await context.addInitScript(`(() => {
