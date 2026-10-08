@@ -11,7 +11,7 @@ import { diagnoseWrite as diagnose, isAmbiguousSend } from "./diagnose-write";
 import { engineVenue, readBook, readPositions, TAKER_MIN_REST_SEC, type WindowFacts } from "../engine/lens";
 import { cashOutCall, newClientId } from "../engine/calls";
 import { decodeEngineEvents, ownExecution } from "../engine/decode";
-import { exitFromBook } from "../engine/quote";
+import { exitFromBook, type YesBook } from "../engine/quote";
 import { randomU64 } from "../random";
 import { sendBatch, type PendingKeyAuthorization } from "../tx/send";
 import { nonceFields, nonceKindOf, validBeforeOf, type NoncePlan } from "../tx/nonce";
@@ -44,13 +44,15 @@ async function gate(req: CashOutRequest): Promise<WindowFacts> {
   }
 }
 
-/** The fresh exit for up to `want` lots of the held side; null book → refused, not requoted. */
-async function freshExit(w: WindowFacts, req: CashOutRequest, heldLots: bigint, nowMs: number): Promise<ExitQuote> {
+/** The exit for up to `want` lots of the held side on `book`; an empty walk → refused, not requoted. */
+function exitOn(book: YesBook, w: WindowFacts, req: CashOutRequest, heldLots: bigint, nowMs: number): ExitQuote {
   const want = req.contractsRaw / w.series.lotBase < heldLots ? req.contractsRaw / w.series.lotBase : heldLots;
-  const exit = exitFromBook(await readBook(w.marketId, TAKER_MIN_REST_SEC), w.series, req.side, want, nowMs);
+  const exit = exitFromBook(book, w.series, req.side, want, nowMs);
   if (!exit) throw new OrderRefusedError(diagnosis("no-liquidity", "No exit liquidity right now"));
   return exit;
 }
+
+const freshExit = async (w: WindowFacts, req: CashOutRequest, heldLots: bigint, nowMs: number) => exitOn(await readBook(w.marketId, TAKER_MIN_REST_SEC), w, req, heldLots, nowMs);
 
 export function bookSell(result: { filledLots: bigint; cashReceived: bigint; fills: number }, req: Pick<CashOutRequest, "side" | "market">, lotBase: bigint, txHash: `0x${string}`): BookedSell | null {
   if (result.filledLots === 0n) return null;
@@ -64,15 +66,21 @@ export async function submitCashOut(ctx: CashOutContext, req: CashOutRequest, on
   let w: WindowFacts | null = null;
   let held = 0n;
   try {
+    // Every pre-send read starts at once — the status gate, the position, the book (a taker's read needs no Series
+    // fact, D-205) and the venue — one round trip before signing, not three (D-142, D-150).
+    const positionRead = readPositions(ctx.wallet, [req.market.marketId]);
+    const bookRead = readBook(req.market.marketId, TAKER_MIN_REST_SEC);
+    const venueRead = engineVenue();
+    for (const read of [positionRead, bookRead, venueRead] as Promise<unknown>[]) read.catch(() => undefined);
     w = await gate(req);
-    const [position] = await readPositions(ctx.wallet, [w.marketId]);
+    const [position] = await positionRead;
     held = position ? (SIDE_TO_OUTCOME[req.side] === 0 ? position.yesFree : position.noFree) : 0n;
     if (held === 0n) throw new OrderRefusedError(diagnosis("contract-revert", `nothing held on the ${req.side} side to cash out`, { errorName: "InsufficientOutcome" }));
-    const exit = await freshExit(w, req, held, ctx.nowMs());
+    const exit = exitOn(await bookRead, w, req, held, ctx.nowMs());
     if (exit.minProceedsBase < req.displayedExit.minProceedsBase) throw new ExitRequoteError(exit);
     const nowSec = ctx.nowSec();
     const expireTsSec = takerExpirySec(nowSec, { lockAtSec: w.snapshot.lockAtSec, intervalSec: w.market.intervalSec });
-    const venue = await engineVenue();
+    const venue = await venueRead;
     const clientId = newClientId(randomU64);
     const lots = exit.contractsRaw / w.series.lotBase;
     const call = cashOutCall(venue.engine, { marketId: w.marketId, side: req.side, ownLimitTicks: exit.limitPriceTicks, lots, expireTsSec, clientId });
@@ -84,7 +92,9 @@ export async function submitCashOut(ctx: CashOutContext, req: CashOutRequest, on
     });
     onPhase?.("submitted");
     try {
-      const { receipt, hash } = await sendBatch(ctx.client, { calls: [call], sponsored: ctx.canSponsor, nonce: plan, nowSec, keyAuthorization: ctx.pendingKeyAuthorization?.current ?? undefined });
+      // The hash at signing moves the surface to "Closing…" before the sync send returns (D-150), as the order lane.
+      const onSigned = (hash: `0x${string}` | null) => onPhase?.("confirming", hash ? { txHash: hash } : undefined);
+      const { receipt, hash } = await sendBatch(ctx.client, { calls: [call], sponsored: ctx.canSponsor, nonce: plan, nowSec, keyAuthorization: ctx.pendingKeyAuthorization?.current ?? undefined }, { onSigned });
       if (ctx.pendingKeyAuthorization) ctx.pendingKeyAuthorization.current = null;
       await ctx.journal.markSent(record.id, hash);
       if (receipt.status !== "success") {

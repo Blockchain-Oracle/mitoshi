@@ -10,7 +10,7 @@ import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { diagnosis, formatBaseUnits, formatCadence, type BookedSell, type CashOutOutcome, type CashOutRequest, type Diagnosis, type ExitQuote, type MarketId, type PhaseListener, type Side, type VaultGrant } from "@cwf/core";
 import { yesTicksOf } from "../engine/calls";
 import { readBook, TAKER_MIN_REST_SEC, type WindowFacts } from "../engine/lens";
-import { exitFromBook } from "../engine/quote";
+import { exitFromBook, type YesBook } from "../engine/quote";
 import { isAmbiguousSend } from "../submitter/diagnose-write";
 import { ExitRequoteError, OrderRefusedError } from "../submitter/errors";
 import { takerExpirySec } from "../submitter/expiry";
@@ -36,14 +36,15 @@ export function bookVaultSale(logs: Parameters<typeof parseEventLogs>[0]["logs"]
   return { marketId, side, contractsRaw: tokenDelta, proceedsBase: cashDelta, avgPriceBps: Number((cashDelta * 10_000n) / tokenDelta), txHash, fillCount: 1 };
 }
 
-/** The fresh exit for what the vault holds on the side (at most the asked contracts). */
-async function freshVaultExit(w: WindowFacts, side: Side, wantRaw: bigint, heldRaw: bigint, nowMs: number): Promise<ExitQuote> {
-  const lotBase = w.series.lotBase;
+/** The exit on `book` for what the vault holds on the side (at most the asked contracts). */
+function vaultExitOn(book: YesBook, w: WindowFacts, side: Side, wantRaw: bigint, heldRaw: bigint, nowMs: number): ExitQuote {
   const want = wantRaw < heldRaw ? wantRaw : heldRaw;
-  const exit = exitFromBook(await readBook(w.marketId, TAKER_MIN_REST_SEC), w.series, side, want / lotBase, nowMs);
+  const exit = exitFromBook(book, w.series, side, want / w.series.lotBase, nowMs);
   if (!exit) throw new OrderRefusedError(diagnosis("no-liquidity", "No exit liquidity right now"));
   return exit;
 }
+
+const freshVaultExit = async (w: WindowFacts, side: Side, wantRaw: bigint, heldRaw: bigint, nowMs: number) => vaultExitOn(await readBook(w.marketId, TAKER_MIN_REST_SEC), w, side, wantRaw, heldRaw, nowMs);
 
 /**
  * Sells a Trading Balance position. `ctx.wallet` is the signer: the owner for `vault`, the grant's actor (the session
@@ -60,9 +61,12 @@ export async function submitVaultSell(ctx: OrderLaneContext, req: CashOutRequest
   let owner: Address = ctx.wallet;
   let heldRaw = 0n;
   try {
-    // The grant and the Window read together: one round before the book (D-142).
+    // The grant, the holdings (behind the grant: its owner's), the book and the Window read together — one round before
+    // signing, two for a delegated sale (D-142, D-205).
     const grantRead: Promise<VaultGrant | null> = route.kind === "vault-grant" ? readVaultGrant(route.grantId) : Promise.resolve(null);
-    grantRead.catch(() => undefined);
+    const holdingsRead = grantRead.then((g) => readVaultHoldings(route.kind === "vault-grant" ? (g?.owner ?? ctx.wallet) : ctx.wallet, marketId));
+    const bookRead = readBook(marketId, TAKER_MIN_REST_SEC);
+    for (const read of [grantRead, holdingsRead, bookRead] as Promise<unknown>[]) read.catch(() => undefined);
     w = await statusGate(marketId);
     const grant = await grantRead;
     const grantId = route.kind === "vault-grant" ? route.grantId : 0n;
@@ -71,10 +75,10 @@ export async function submitVaultSell(ctx: OrderLaneContext, req: CashOutRequest
       if (grant.actor.toLowerCase() !== ctx.wallet.toLowerCase()) throw new OrderRefusedError(diagnosis("grant-refused", `${ctx.wallet} is not the actor of grant #${grantId}`, { errorName: "NotGrantActor" }));
       owner = grant.owner;
     }
-    const holdings = await readVaultHoldings(owner, marketId);
+    const holdings = await holdingsRead;
     heldRaw = req.side === "up" ? holdings.upRaw : holdings.downRaw;
     if (heldRaw === 0n) throw new OrderRefusedError(diagnosis("contract-revert", `the Trading Balance holds nothing on the ${req.side} side`, { errorName: "Insufficient" }));
-    const exit = await freshVaultExit(w, req.side, req.contractsRaw, heldRaw, ctx.nowMs());
+    const exit = vaultExitOn(await bookRead, w, req.side, req.contractsRaw, heldRaw, ctx.nowMs());
     if (exit.minProceedsBase < req.displayedExit.minProceedsBase) throw new ExitRequoteError(exit);
     const nowSec = ctx.nowSec();
     const expireNs = BigInt(takerExpirySec(nowSec, { lockAtSec: w.snapshot.lockAtSec, intervalSec: w.market.intervalSec })) * NS_PER_SEC;
