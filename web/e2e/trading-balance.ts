@@ -104,7 +104,29 @@ try {
 
   // 2. Session-key taps from the Trading Balance: no prompt, sponsored, held in the vault.
   await tap(s, "BTC", "up");
-  await tap(s, "ETH", "down");
+  const ethRow = await tap(s, "ETH", "down");
+
+  // 2b. Exits with the app closed (S24.5): from the position's TP/SL drawer, one passkey confirmation grants EXIT, a
+  // take-profit is handed to the keeper (the session key signs it, no prompt) and the server holds it armed.
+  await ethRow.locator(".tm-pos-open-btn").click();
+  await modal(page).getByRole("button", { name: "TP / SL", exact: true }).click();
+  const exits = modal(page);
+  const turnOn = exits.getByRole("button", { name: "Keep exits running with the app closed" });
+  await expect(turnOn).toBeVisible({ timeout: 30_000 });
+  const beforeGrant = s.assertions();
+  await turnOn.click();
+  await expect(exits.getByText(/^Runs with the app closed/)).toBeVisible({ timeout: 120_000 });
+  const grantPrompts = s.assertions() - beforeGrant;
+  await page.screenshot({ path: join(out, `keeper-on-${width}.png`) });
+  await axe(page, "keeper", '[role="dialog"]');
+  await exits.getByRole("button", { name: "+25%", exact: true }).click();
+  const beforeSet = s.assertions();
+  await exits.getByRole("button", { name: "Set", exact: true }).click();
+  await expect(page.locator('[data-slot="toast-title"]').filter({ hasText: /^TP\/SL updated/ })).toBeVisible({ timeout: 30_000 });
+  const held = (await page.evaluate(`fetch("/api/exits").then((r) => r.status === 200 ? r.json() : { status: r.status })`)) as { exits?: Array<{ market: string; side: string; status: string; takeProfitBase: string | null }>; status?: number };
+  const armed = held.exits?.find((e) => e.status === "armed" && e.side === "down") ?? null;
+  note({ step: "keeper-armed", grantPrompts, setPrompts: s.assertions() - beforeSet, armed, read: held.status ?? 200 });
+  if (!armed) throw new Error(`the keeper holds no armed exit: ${JSON.stringify(held).slice(0, 200)}`);
 
   // 3. CLOSE through the vault's sell lane: the session key signs `placeFor`, no prompt.
   const close = page.locator(".tm-buttons .tm-btn").filter({ hasText: "CLOSE" });
