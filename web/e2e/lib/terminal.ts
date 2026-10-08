@@ -119,3 +119,14 @@ export async function switchSymbol(page: Page, symbol: string): Promise<void> {
   await page.waitForURL(new RegExp(`/trade/${symbol}(\\?|$)`));
   await expect(dialog).toBeHidden();
 }
+
+/** Opens the terminal on `symbol` for an account that signed up elsewhere: the first visit's tour is skipped. */
+export async function openTerminal(page: Page, base: string, symbol: string): Promise<void> {
+  await page.goto(`${base}/trade/${symbol}`, { waitUntil: "load" });
+  await settle(page);
+  const tour = page.getByRole("dialog").filter({ hasText: "Watch the market" });
+  if (await tour.isVisible({ timeout: 8_000 }).catch(() => false)) {
+    await tour.getByRole("button", { name: "Skip" }).click();
+    await expect(tour).toBeHidden({ timeout: 10_000 });
+  }
+}

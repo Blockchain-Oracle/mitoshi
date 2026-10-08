@@ -126,8 +126,9 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   Done (85814ce): the list with "Open the terminal", rows and board words → `/trade/<SYM>?w=<id>`, old `?m=` links too;
   the hero, the ticket composer and dock, and `lightweight-charts` removed. Surface's "Trade this Window" links straight
   to `/trade/<SYM>?w=<id>` (`terminalHref` moved to `features/terminal/route.ts`, shared with `/markets`).
-- **Gate:** e2e drivers rewritten (`tap-latency` incl. close, `first-call`, `onboarding`, `trading-balance`, `boost`,
-  `parlay`, `range`, `private`); `long-tasks.ts` on `/trade/BTC` at 4× CPU; Lighthouse adds `/trade/BTC` to
+- **Gate (D-207: the product working, checked live where it matters; no driver rewrites as work of their own):** the
+  live flows below on Moderato (the drivers already ported run them: `terminal-trade`, `tap-latency`, `onboarding`,
+  `trading-balance`, `boost`, `range`); `long-tasks.ts` on `/trade/BTC` at 4× CPU; Lighthouse adds `/trade/BTC` to
   `.github/workflows/lighthouse.yml` (ROUTES, trace-tasks, lh-shifts) and updates the redirected `/markets/[id]` entry;
   lab TBT ≤ 200 ms, frame work ≤ 2 ms; budgets ≤ 250 KB; screenshots of every §8 state (`revamp-parity.md`) and beside
   Tradash live and Owarine's captures at 1440/390; on Moderato: tutorial → sign-up → UP → PnL moves with Coinbase and

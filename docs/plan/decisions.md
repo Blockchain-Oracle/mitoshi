@@ -1761,6 +1761,15 @@ pull rule still comes first (feeds disagreeing past 6σ√lag and 25 bps means o
 rule until a feed has its basis. Settlement is unchanged: Windows settle on RedStone's signed prints only.
 **Supersedes** D-196's "the display price is a risk signal only" for the maker's centre.
 
+### D-207 — owner answer (2026-10-08): no UI test suites; tests only to be confident
+
+"Tests are not part of the deliverables… I don't expect you to be writing tests for UI… only for some, just to check
+how it works." **Tests are written where they give confidence that functionality works** (logic, money paths,
+contracts, encoders, a maker's pricing rule), next to that logic. A real flow is confirmed with one live check on
+Moderato. Browser e2e drivers are not ported or extended as work of their own. **Supersedes** the S23 gate's "e2e
+drivers rewritten (first-call, parlay, private, …)". The drivers already ported (terminal-trade, tap-latency,
+onboarding, trading-balance, boost, range) stay as the gate's live checks; the rest stay as they are.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

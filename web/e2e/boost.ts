@@ -1,153 +1,84 @@
 /**
- * S10c gate: Boost end to end in a browser against real Moderato, with a Chrome virtual authenticator.
- * One ceremony signs up (faucet-funded); /markets: a crypto 5m Window, the ticket's Boost mode, 2× on the 29217 slider,
- * the reserve's own sizing over the S8 maker vault's rested depth, "Hold to boost" (one passkey prompt, sponsored —
- * `[approve(reserve, stake), open(…, spotProof)]` with the signed RedStone payload), the receipt; then the boost on
- * /portfolio settles after the Window answers (or is cashed out). Prints every tx for `cast receipt`.
- * Run `scripts/drive/parlay-live.ts maker` beside it (the depth and the house supply).
+ * S10c gate, re-run on the terminal (S23i, RV-41/RV-59): Boost end to end on real Moderato with a Chrome virtual
+ * authenticator. The tour's sign-up (one ceremony, the faucet, one-tap armed); the settings drawer's Boost row at 2×
+ * (axe on it); UP then reads "2× Boost · passkey" and opens a Boost on BTC 5m — the reserve's own sizing, a fresh signed
+ * RedStone spot, ONE passkey prompt (`[approve(reserve, stake), open(…, spotProof)]`, sponsored); the Boost lists as a
+ * position tagged "Boost 2×", valued at what its Close pays the owner; CLOSE sells it through `LeverageReserve.close`
+ * (ONE passkey prompt). Prints every tx for `cast receipt`.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/boost.ts --base http://localhost:3110 --out <dir> [--width 390|1440]
+ *   pnpm --filter @cwf/web exec tsx e2e/boost.ts --base https://testnet.mitoshi.xyz --out <dir>
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
-import { chromium, expect, type Locator, type Page } from "@playwright/test";
-import { settle } from "./lib/settle";
+import { expect } from "@playwright/test";
+import { openTerminalSession, signUpFromTour, stakeMin, waitEnterable } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "http://localhost:3110");
+const base = arg("base", "https://testnet.mitoshi.xyz");
 const out = arg("out", "boost-out");
-const width = Number(arg("width", "390"));
-const settleWaitMin = Number(arg("settle-min", "12"));
+const width = Number(arg("width", "1440"));
 mkdirSync(out, { recursive: true });
-const log: Record<string, unknown>[] = [];
-const note = (e: Record<string, unknown>) => { log.push({ atMs: Date.now(), ...e }); console.log(JSON.stringify(e)); };
 
-const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: { width, height: width < 768 ? 844 : 900 }, hasTouch: width < 768 });
-const page = await context.newPage();
+const s = await openTerminalSession({ width });
+const { page, log } = s;
 const errors: string[] = [];
-page.on("console", (m) => m.type() === "error" && !/api\/stream|status of (503|429)/.test(m.text()) && errors.push(m.text().slice(0, 240)));
-const cdp = await context.newCDPSession(page);
-await cdp.send("WebAuthn.enable");
-await cdp.send("WebAuthn.addVirtualAuthenticator", { options: { protocol: "ctap2", transport: "internal", hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true } });
-let assertions = 0;
-cdp.on("WebAuthn.credentialAsserted", () => { assertions += 1; });
-
-async function hold(p: Page, btn: Locator) {
-  await btn.scrollIntoViewIfNeeded();
-  const box = (await btn.boundingBox())!;
-  await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await p.mouse.down();
-  await p.waitForTimeout(2_300);
-  await p.mouse.up();
-}
-
-/** /markets → the crypto 5m lane → a Window's side on its card (the ticket opens on it, the hero follows it). */
-async function openCrypto(side: "UP" | "DOWN"): Promise<boolean> {
-  await page.goto(`${base}/markets`, { waitUntil: "load" });
-  await settle(page);
-  const lane = page.getByRole("tab", { name: /^Crypto .*5m/ }).first();
-  if (!(await expect(lane).toBeVisible({ timeout: 60_000 }).then(() => true, () => false))) return false;
-  await lane.click();
-  const bet = page.getByRole("button", { name: new RegExp(`^Bet ${side} · (BTC|ETH|SOL) · \\d+¢`) }).first();
-  if (!(await expect(bet).toBeVisible({ timeout: 60_000 }).then(() => true, () => false))) return false;
-  await bet.click();
-  return true;
-}
+page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+const steps: Record<string, unknown>[] = [];
+const note = (o: Record<string, unknown>) => (steps.push(o), log(o));
 
 let failed = false;
 try {
-  await page.goto(`${base}/markets`, { waitUntil: "load" });
-  await settle(page);
-  await page.getByRole("button", { name: "Sign in", exact: true }).first().click();
-  await page.getByLabel(/Name this passkey/).fill(`s10 boost ${width}`);
-  await page.getByRole("button", { name: "Create my account" }).click();
-  const dialog = page.getByRole("dialog");
-  await expect(dialog.getByText(/You're funded/)).toBeVisible({ timeout: 120_000 });
-  note({ step: "signed-up", prompts: assertions });
+  await signUpFromTour(s, base, "BTC", "boost");
+  await stakeMin(page);
+
+  // The Boost row: Off, 2×… up to the reserve's live maximum.
+  await page.locator(".tm-stack").click();
+  const settings = page.getByRole("dialog");
+  await expect(settings.getByText("Boost", { exact: true })).toBeVisible({ timeout: 30_000 });
+  await settings.getByRole("button", { name: "2×", exact: true }).click();
+  await expect(settings.getByText(/open a 2× Boost/)).toBeVisible();
+  await page.screenshot({ path: join(out, `boost-setting-${width}.png`) });
+  const axe = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(["wcag2a", "wcag2aa"]).analyze();
+  note({ step: "boost-setting", axe: axe.violations.map((v) => `${v.id}:${v.nodes.length}`) });
   await page.keyboard.press("Escape");
+  await expect(page.locator(".tm-stack")).toContainText("Boost 2×");
 
-  // The Range mode's band on the hero chart (S10b, E.1): a crypto 5m Window picked from its lane becomes the hero, the
-  // ticket switches to Range, the chart draws the band's two dashed price lines (canvas-drawn: the screenshot is the
-  // evidence).
-  if (await openCrypto("UP")) {
-    await page.getByRole("button", { name: "Range", exact: true }).last().click();
-    const low = page.getByRole("slider", { name: /Band low/ }).last();
-    await expect(low).toBeVisible({ timeout: 90_000 }).catch(() => undefined);
-    await page.waitForTimeout(6_000);
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await page.screenshot({ path: join(out, `hero-band-${width}.png`) });
-    note({ step: "hero-band", slider: await low.count(), value: await low.getAttribute("aria-valuetext").catch(() => null) });
-  } else note({ step: "hero-band", skipped: "no crypto Window priced" });
+  // UP opens a 2× Boost: one passkey prompt.
+  await expect(page.locator(".tm-buttons .tm-btn").filter({ hasText: "UP" }).first()).toContainText("2× Boost · passkey", { timeout: 30_000 });
+  await waitEnterable(s, "up", 360_000);
+  const before = s.assertions();
+  const t0 = Date.now();
+  await page.locator(".tm-buttons .tm-btn").filter({ hasText: "UP" }).first().click();
+  const boosted = page.locator('[data-slot="toast-title"]').filter({ hasText: /boosted 2×/ });
+  const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /didn't go through|Boost|Top up/ });
+  await expect(boosted.or(refused).first()).toBeVisible({ timeout: 120_000 });
+  const ok = (await boosted.count()) > 0;
+  note({ step: "boost-open", ok, ms: Date.now() - t0, prompts: s.assertions() - before, toast: await boosted.or(refused).first().innerText(), body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
+  if (!ok) throw new Error("the Boost did not open");
 
-  let boostTx: string | null = null;
-  const deadline = Date.now() + 10 * 60_000;
-  while (!boostTx && Date.now() < deadline) {
-    if (!(await openCrypto(Math.random() < 0.5 ? "UP" : "DOWN"))) {
-      note({ step: "no-crypto-window" });
-      await page.waitForTimeout(20_000);
-      continue;
-    }
-    await page.getByRole("button", { name: "Boost", exact: true }).last().click();
-    const cta = page.getByRole("button", { name: /^Hold to boost/ }).last();
-    if (!(await expect(cta).toBeVisible({ timeout: 60_000 }).then(() => true, () => false))) {
-      const blocked = await page.locator("button[disabled]").filter({ hasText: /boost|book|reserve|model|void|Sizing|lock|decided|healthy/i }).last().innerText().catch(() => "?");
-      note({ step: "boost-not-priceable", cta: blocked });
-      await page.screenshot({ path: join(out, `boost-blocked-${width}-${Date.now()}.png`), fullPage: true });
-      await page.waitForTimeout(20_000);
-      continue;
-    }
-    const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
-    note({ step: "axe-boost", violations: axe.violations.map((v) => `${v.id}:${v.nodes.length}`) });
-    await page.screenshot({ path: join(out, `boost-priced-${width}.png`), fullPage: true });
-    const before = assertions;
-    const t0 = Date.now();
-    await hold(page, cta);
-    const receipt = page.getByRole("link", { name: /View the transaction/ }).last();
-    const failure = page.getByRole("alert").filter({ hasText: /Nothing was taken|moved|Money|Try again|checking/ }).last();
-    await expect(receipt.or(failure)).toBeVisible({ timeout: 120_000 });
-    if (await receipt.isVisible()) {
-      boostTx = await receipt.getAttribute("href");
-      note({ step: "boost-placed", ms: Date.now() - t0, prompts: assertions - before, tx: boostTx, text: (await page.getByRole("status").filter({ hasText: /Boost #/ }).first().innerText().catch(() => "")).slice(0, 200) });
-      await page.screenshot({ path: join(out, `boost-placed-${width}.png`), fullPage: true });
-    } else {
-      await failure.getByText(/Technical details/i).first().click().catch(() => undefined);
-      note({ step: "boost-failed", text: (await failure.innerText()).slice(0, 700) });
-    }
-  }
-  if (!boostTx) throw new Error("no boost placed within 10 minutes");
+  // The Boost as a terminal position: tagged, valued at what its Close pays the owner.
+  const row = page.locator(".tm-side-list .tm-pos").filter({ hasText: "Boost 2×" }).first();
+  await expect(row).toBeVisible({ timeout: 60_000 });
+  await expect(row.locator(".tm-pos-figure")).toContainText("$", { timeout: 60_000 });
+  note({ step: "boost-row", figure: await row.locator(".tm-pos-figure").innerText() });
+  await page.screenshot({ path: join(out, `boost-row-${width}.png`) });
 
-  const end = Date.now() + settleWaitMin * 60_000;
-  while (Date.now() < end) {
-    await page.goto(`${base}/portfolio`, { waitUntil: "load" });
-    await settle(page);
-    await page.waitForTimeout(12_000);
-    const card = page.getByRole("article", { name: /boosted #/ }).first();
-    const text = await card.innerText().catch(() => "");
-    const settleBtn = card.getByRole("button", { name: /^Settle$/ });
-    if (await settleBtn.isVisible().catch(() => false)) {
-      const before = assertions;
-      await settleBtn.click();
-      await page.waitForTimeout(15_000);
-      note({ step: "boost-settled", prompts: assertions - before });
-      continue;
-    }
-    if (/Settled|Knocked out|Cashed out/i.test(text)) {
-      note({ step: "boost-final", text: text.replace(/\n/g, " · ").slice(0, 300) });
-      break;
-    }
-    note({ step: "waiting", text: text.replace(/\n/g, " · ").slice(0, 160) });
-    await page.waitForTimeout(30_000);
-  }
-  await page.screenshot({ path: join(out, `portfolio-boost-${width}.png`), fullPage: true });
+  // CLOSE through the reserve: one passkey prompt.
+  const b = s.assertions();
+  const c0 = Date.now();
+  await row.locator(".tm-pos-close").click();
+  const closed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Closed / });
+  const notClosed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Price moved|No bids|Close didn't go through/ });
+  await expect(closed.or(notClosed).first()).toBeVisible({ timeout: 120_000 });
+  note({ step: "boost-close", ok: (await closed.count()) > 0, ms: Date.now() - c0, prompts: s.assertions() - b, toast: await closed.or(notClosed).first().innerText(), body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
+  await page.screenshot({ path: join(out, `boost-closed-${width}.png`) });
+  if (errors.length) note({ step: "console-errors", errors: errors.slice(0, 8) });
 } catch (error) {
   failed = true;
-  note({ step: "error", message: String(error).slice(0, 400) });
-  await page.screenshot({ path: join(out, `error-${width}.png`), fullPage: true }).catch(() => undefined);
-} finally {
-  note({ step: "done", consoleErrors: errors.slice(0, 10), assertions });
-  writeFileSync(join(out, `boost-${width}.json`), JSON.stringify(log, null, 2));
-  await browser.close();
+  await page.screenshot({ path: join(out, `fail-${width}.png`) }).catch(() => undefined);
+  note({ step: "FAIL", message: (error as Error).message.split("\n").slice(0, 4).join(" | ") });
 }
-if (failed) process.exit(1);
+writeFileSync(join(out, `boost-${Date.now()}.json`), JSON.stringify({ base, width, steps, txs: s.txs }, null, 2));
+await s.browser.close();
+process.exitCode = failed ? 1 : 0;

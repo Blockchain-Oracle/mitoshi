@@ -3,7 +3,7 @@
  * One ceremony signs up (faucet-funded); /games/range: a band on a crypto 5m Window priced by the chain over the S8
  * maker vault's rested depth, "Hold to place" (one passkey prompt, sponsored — `[approve(reserve), openRange(…,
  * spotProof)]` with the signed RedStone payload from `/api/prices/redstone-payload`), the receipt; /games/moonshot: a
- * long ×2 fired the same way; the Range mode in the /markets ticket with the band drawn on the hero chart; then the
+ * long ×2 fired the same way; the terminal's Range mode with its band drawn on the chart (S23i); then the
  * rounds settle (anyone, once the engine answers) and a won round is claimed. Prints every tx for `cast receipt`.
  * Run `scripts/drive/parlay-live.ts maker` beside it (the depth and the house supply).
  *
@@ -14,9 +14,10 @@ import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium, expect, type Locator, type Page } from "@playwright/test";
 import { settle } from "./lib/settle";
+import { openTerminal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "http://localhost:3110");
+const base = arg("base", "https://testnet.mitoshi.xyz");
 const out = arg("out", "range-out");
 const width = Number(arg("width", "390"));
 const settleWaitMin = Number(arg("settle-min", "12"));
@@ -94,14 +95,16 @@ try {
   const rangeTx = await placeOn("/games/range", "range", /^Hold to place/);
   const moonTx = await placeOn("/games/moonshot", "moonshot", /^Hold to fire/);
 
-  // The markets ticket's Range mode: the band on the hero chart.
-  await page.goto(`${base}/markets`, { waitUntil: "load" });
-  await settle(page);
-  await page.getByRole("button", { name: /^Bet UP · (BTC|ETH|SOL) ·/ }).first().click().catch(() => undefined);
-  await page.getByRole("button", { name: "Range", exact: true }).first().click().catch(() => undefined);
-  await page.waitForTimeout(20_000);
-  await page.screenshot({ path: join(out, `markets-range-mode-${width}.png`), fullPage: true });
-  note({ step: "markets-range-mode", bandLines: await page.getByText(/band (low|high)/).count() });
+  // The terminal's Range mode (S23i): the ticket's own band call for the Window on screen, its band drawn on the chart
+  // ("Band ↑" / "Band ↓" — canvas, so the screenshot shows it and the panel's figures are recorded).
+  await openTerminal(page, base, "BTC");
+  await page.getByRole("tab", { name: "Range" }).click();
+  const panel = page.getByRole("region", { name: "Range" });
+  await expect(panel).toBeVisible({ timeout: 30_000 });
+  await page.waitForTimeout(15_000);
+  await page.screenshot({ path: join(out, `terminal-range-mode-${width}.png`) });
+  const panelAxe = await new AxeBuilder({ page }).include(".tm-mode-panel").withTags(["wcag2a", "wcag2aa"]).analyze();
+  note({ step: "terminal-range-mode", band: (await panel.innerText()).split("\n").filter((l) => /\$|band|Band/.test(l)).slice(0, 4), axe: panelAxe.violations.map((v) => `${v.id}:${v.nodes.length}`) });
 
   // Settlement: Settle on each answered round, then Claim a won one.
   const end = Date.now() + settleWaitMin * 60_000;
