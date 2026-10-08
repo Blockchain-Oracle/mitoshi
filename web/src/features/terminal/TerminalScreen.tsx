@@ -30,6 +30,7 @@ import { MarketsDrawer } from "./ui/MarketsDrawer";
 import type { TerminalPosition } from "./terminal-positions";
 import { useTerminalClose } from "./useTerminalClose";
 import { useTrailToggle } from "./useTrail";
+import { useWalletToasts } from "./useWalletToasts";
 import { trailEligible } from "./position-value";
 import type { PositionValue } from "./usePositionValue";
 import { PositionsList, UnrealizedCard } from "./ui/PositionsPanel";
@@ -149,6 +150,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
     if (m !== "updown" && !window.matchMedia(`(min-width: ${TICKET_RAIL_MIN_WIDTH}px)`).matches) drawer.show(DRAWERS.mode);
   };
   useAppUpdate();
+  useWalletToasts();
   // First visit: the five-step tour, once the browser's settings have loaded with it unseen.
   const settingsState = useTradeSettingsState();
   const tourOpen = settingsState !== null && !settingsState.tutorialSeen;

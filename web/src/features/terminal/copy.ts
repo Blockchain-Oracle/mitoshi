@@ -93,6 +93,15 @@ export const TERMINAL = {
       private: "The same call, not shown on the public tape. Your passkey confirms it.",
     },
   },
+  install: {
+    title: "Install Mitoshi",
+    body: "Keep the terminal on your home screen: it opens full screen, and your passkey signs in as it does here.",
+    more: "More about the app",
+  },
+  wallet: {
+    connected: "Wallet connected",
+    disconnected: "Wallet disconnected",
+  },
   update: {
     title: "New version available",
     body: "Refresh to get the latest Mitoshi.",

@@ -94,13 +94,15 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   passkey signs —, the Trading Balance panel, Activity, Collect, the one-tap card, Sign out confirm), position details
   (Reduce, Add, proof link, show on chart), open positions (phone), trade history + stats, replay, settings (size,
   trailing, close tolerance), the rail's Trade sub-list. Waits on its stages: the share modal and leaderboard on S5's
-  card and data, the season league on S13. Still open here: the install drawer (links to /download today) and the
-  "Wallet connected / disconnected" toasts.
-- [ ] 23h First run: the 5-step tutorial (`Tutorial.tsx`, `tour-copy.ts`) ending in "Start trading" → `SignInModal` /
+  card and data, the season league on S13. Since then: "Wallet connected" / "Wallet disconnected" (RV-92,
+  `useWalletToasts`), silent while a remembered session restores, and tested. The install drawer from Account
+  (RV-91) runs on `features/install`'s store: one-tap install where the browser offers it, Safari steps on iOS,
+  "Installed" when it is, `/download` one link away.
+- [x] 23h First run: the 5-step tutorial (`Tutorial.tsx`, `tour-copy.ts`) ending in "Start trading" → `SignInModal` /
   `Onboarding` → faucet → arm → the terminal (D-191); the splash; `useAppUpdate.ts` + `/api/version`; the install drawer.
   Progress (7c1c6bd): the five-step tour as a large centred modal ending in "Start trading" (the real sign-up, D-191),
   the splash on the terminal's first load per tab (the chart's loop waits for it), `/api/version` + one build id per
-  image + the persistent Refresh toast. Still open: the install drawer.
+  image + the persistent Refresh toast. The install drawer (see 23g).
 - [ ] 23i Modes: Range (band on the chart), Boost (chips in the settings stack), Moonshot, Parlay (Owarine `parlay/*`
   re-wired to Mitoshi's parlay contracts; slip in the right column), Private toggle; the passkey prompt named (Q-032).
   Progress (d7bfd4d): the mode row hosts the ticket's Range (its band drawn on the chart), Boost and Private bodies for

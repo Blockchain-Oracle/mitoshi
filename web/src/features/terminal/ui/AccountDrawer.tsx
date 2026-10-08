@@ -25,6 +25,7 @@ import { useTapArmed } from "@/providers/wallet/tap-session";
 import { TERMINAL } from "../copy";
 import { money } from "../format";
 import { HistoryView } from "./HistoryView";
+import { InstallDrawer } from "./InstallDrawer";
 import { ReplayDrawer } from "./ReplayDrawer";
 import type { Episode } from "../replay";
 import { SendPanel } from "./SendPanel";
@@ -69,6 +70,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
 }) {
   const [view, setView] = useState<AccountView>(initialView);
   const [confirmOut, setConfirmOut] = useState(false);
+  const [install, setInstall] = useState(false);
   const [replay, setReplay] = useState<{ episode: Episode; finalPnl: number } | null>(null);
   const masked = usePrivacy();
   const session = useWalletSession();
@@ -130,7 +132,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
               <Group title={TERMINAL.account.app}>
                 <Item icon={Settings} label={TERMINAL.account.soundVibration} href="/settings/account" />
                 <Item icon={CircleHelp} label={TERMINAL.account.howItWorks} href="/how-it-works" />
-                <Item icon={Download} label={TERMINAL.account.install} href="/download" />
+                <Item icon={Download} label={TERMINAL.account.install} onClick={() => setInstall(true)} />
                 <Item icon={MessageSquare} label={TERMINAL.account.feedback} href="/contact" />
               </Group>
               <button type="button" className="tm-signout" onClick={() => (tapFeedback(), setConfirmOut(true))}>{TERMINAL.account.signOut}</button>
@@ -138,6 +140,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
           ) : null}
         </SlideOverContent>
       </SlideOver>
+      <InstallDrawer open={install} onOpenChange={setInstall} />
       <ReplayDrawer open={replay !== null} onOpenChange={(o) => !o && setReplay(null)} episode={replay?.episode ?? null} finalPnl={replay?.finalPnl ?? null} />
       <Modal
         open={confirmOut}

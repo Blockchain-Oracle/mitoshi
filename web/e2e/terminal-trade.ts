@@ -59,7 +59,7 @@ try {
   await expect(dialog.getByText("Tap-trading is on.")).toBeVisible({ timeout: 60_000 });
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden({ timeout: 10_000 });
-  log({ step: "signed-up", prompts: assertions });
+  log({ step: "signed-up", prompts: assertions, toasts: await toastTitles() });
 
   // A $1 stake keeps each run small (the faucet's balance would default the size to 5 % of $1M).
   await page.locator(".tm-stack").click();
@@ -138,6 +138,14 @@ try {
   await page.screenshot({ path: join(out, "closed.png") });
   if (!closed) throw new Error("CLOSE did not close");
   await expect(row).toBeHidden({ timeout: 60_000 }).catch(() => log({ step: "row-still-listed (index lag)" }));
+
+  // The install drawer from Account (RV-91): the browser's own install state, `/download` one link away.
+  await page.locator(".tm-equity:visible").first().click();
+  await page.getByRole("dialog").getByRole("button", { name: "Install app" }).click();
+  const install = page.getByRole("dialog").filter({ hasText: "Install Mitoshi" });
+  await expect(install).toBeVisible();
+  log({ step: "install", body: (await install.innerText()).split("\n").slice(0, 6) });
+  await page.screenshot({ path: join(out, "install.png") });
 } catch (e) {
   failed = true;
   log({ step: "error", message: (e as Error).message.split("\n")[0] });
