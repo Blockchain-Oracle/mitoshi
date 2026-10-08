@@ -2,6 +2,8 @@
 import { z } from "zod";
 import type { Side } from "../types/market";
 import { addressSchema, bytes32Schema } from "../schemas/primitives";
+import { formatCadence } from "../copy/between-rounds";
+import { formatBaseUnits } from "../units/format";
 
 /** A signed authorisation is only good for a few minutes, so a captured one cannot be replayed later. */
 export const PRIVATE_AUTH_TTL_MS = 5 * 60_000;
@@ -23,17 +25,19 @@ export interface PrivateOpenMessageInput {
   stakeText: string;
   symbol: string;
   issuedAtMs: number;
+  /** `keccak256(secret)`: the browser's 32-byte secret the bet's keys derive from (C.2.4 — P-256 signatures are randomised). */
+  commitment: string;
 }
 
 /**
  * The exact text the wallet signs to authorise one private bet — the reference's `openAuthMessage`,
  * built to be READ, not just verified: the prompt names the actual bet ("UP, 10.00 pathUSD on BTC 5m")
  * rather than a hash. The browser and the desk build it from the same fields; any drift refuses loudly.
- * The signature is also the desk's secret seed for the bet's three keys, so it never leaves the two of them.
+ * The committed secret (not the signature — P-256 signatures are randomised) seeds the bet's three keys.
  */
 export function privateOpenMessage(input: PrivateOpenMessageInput): string {
   return [
-    "Masayume — private bet",
+    "Mitoshi — private bet",
     "",
     `Side: ${input.side.toUpperCase()}`,
     `Stake: ${input.stakeText} ${input.symbol}`,
@@ -41,10 +45,39 @@ export function privateOpenMessage(input: PrivateOpenMessageInput): string {
     `Market: ${input.marketId}`,
     `Desk: ${input.contract.toLowerCase()} on chain ${input.chainId}`,
     `Wallet: ${input.owner.toLowerCase()}`,
+    `Keys: ${input.commitment.toLowerCase()}`,
     `Issued: ${new Date(input.issuedAtMs).toISOString()}`,
     "",
     `Signing lets the desk place this one bet from your private balance. It moves no funds by itself and costs nothing. ${PRIVATE_HONESTY}`,
   ].join("\n");
+}
+
+/** The collateral the stake is named in on the signed text (the TIP-20's own symbol). */
+export const PRIVATE_STAKE_SYMBOL = "pathUSD";
+
+export interface PrivateOpenFacts {
+  owner: string;
+  contract: string;
+  chainId: number;
+  marketId: string;
+  asset: string;
+  intervalSec: number;
+  expirySec: number;
+  side: Side;
+  stakeBase: bigint;
+  issuedAtMs: number;
+  commitment: string;
+}
+
+/** The one builder the browser and the route share, so the text the passkey signs and the text the route checks are the same bytes. */
+export function privateOpenText(f: PrivateOpenFacts): string {
+  return privateOpenMessage({
+    ...f,
+    cadenceText: formatCadence(f.intervalSec),
+    // Exact to the base unit, so the prompt and the charge can never differ by what a rounding hid.
+    stakeText: formatBaseUnits(f.stakeBase, 6, { maxDp: 6, minDp: 0, group: false }),
+    symbol: PRIVATE_STAKE_SYMBOL,
+  });
 }
 
 export function privateAuthFresh(issuedAtMs: number, nowMs: number): boolean {
@@ -79,6 +112,8 @@ export const privateOpenRequestSchema = z.object({
   minQuantityRaw: decimalString,
   issuedAtMs: z.number().int().positive(),
   signature: signatureSchema,
+  /** The 32-byte secret the signed text commits to (`Keys: keccak256(secret)`); the desk derives the slot's keys from it. */
+  secret: bytes32Schema,
 });
 export type PrivateOpenRequest = z.infer<typeof privateOpenRequestSchema>;
 
@@ -113,5 +148,5 @@ export const privateTicketSchema = z.object({
 });
 
 /** The backup file: plain JSON on purpose — it has to survive a lost laptop, a new device, and this app going away. */
-export const PRIVATE_BACKUP_KIND = "masayume.private.claims";
+export const PRIVATE_BACKUP_KIND = "mitoshi.private.claims";
 export const PRIVATE_BACKUP_VERSION = 1;

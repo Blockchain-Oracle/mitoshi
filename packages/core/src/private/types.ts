@@ -103,7 +103,7 @@ export const PRIVATE_CLAIM_TYPES = {
     { name: "issuedAtMs", type: "uint64" },
   ],
 } as const;
-export const PRIVATE_CLAIM_DOMAIN_NAME = "Masayume Private Desk";
+export const PRIVATE_CLAIM_DOMAIN_NAME = "Mitoshi Private Desk";
 export const PRIVATE_CLAIM_DOMAIN_VERSION = "1";
 
 export type PrivateTicketStatus = "open" | "settled" | "credited";

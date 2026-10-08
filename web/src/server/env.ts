@@ -14,6 +14,8 @@ export interface ServerEnv {
   redisUrl: string | null;
   databaseUrl: string | null;
   feePayerKey: `0x${string}` | null;
+  /** The private desk's key (the `desk` role, D-171): signs claims and pays the desk's own sends. */
+  deskKey: `0x${string}` | null;
   socialSecret: string | null;
   /** Shared with the ops app: HMAC for 60 s per-user stream tickets (D-049). */
   streamTicketSecret: string | null;
@@ -27,6 +29,7 @@ export function serverEnv(): ServerEnv {
   const network = networkFrom(process.env.NETWORK);
   const appOrigin = process.env.APP_ORIGIN || "http://localhost:3000";
   const key = process.env.RELAY_FEE_PAYER_PRIVATE_KEY;
+  const desk = process.env.DESK_PRIVATE_KEY;
   cached = {
     network,
     appOrigin,
@@ -35,6 +38,7 @@ export function serverEnv(): ServerEnv {
     redisUrl: process.env.REDIS_URL || null,
     databaseUrl: process.env.DATABASE_URL || null,
     feePayerKey: key && /^0x[0-9a-fA-F]{64}$/.test(key) ? (key as `0x${string}`) : null,
+    deskKey: desk && /^0x[0-9a-fA-F]{64}$/.test(desk) ? (desk as `0x${string}`) : null,
     socialSecret: process.env.SOCIAL_SESSION_SECRET || null,
     streamTicketSecret: process.env.STREAM_TICKET_SECRET || null,
     regionOverride: process.env.CWF_REGION_OVERRIDE || null,

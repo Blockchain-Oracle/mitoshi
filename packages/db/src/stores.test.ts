@@ -7,13 +7,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createPgFaucetStore, createPgKeychainStore, createPgLedger, createPgVitalsStore, createSql, runMigrations, type Sql } from "./index";
+import { createPgFaucetStore, createPgKeychainStore, createPgLedger, createPgPrivateClaimsStore, createPgVitalsStore, createSql, runMigrations, type Sql } from "./index";
 
 const BIN = "/opt/homebrew/opt/postgresql@16/bin";
 const hasPg = spawnSync(`${BIN}/initdb`, ["--version"]).status === 0;
 const PORT = 55_437;
 
-describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain, vitals)", () => {
+describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain, vitals, private claims)", () => {
   let dir: string;
   let server: ChildProcess;
   let sql: Sql;
@@ -85,5 +85,21 @@ describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain, vitals
     const [row] = await store.summary(50, "testnet");
     expect(row).toMatchObject({ route: "/markets", metric: "LCP", samples: 4, goodShare: 0.5 });
     expect(row!.p75).toBeCloseTo(3_250);
+  });
+  it("keeps private claims per owner: a resend never replaces the pending row, the request is cleared once answered", async () => {
+    const store = createPgPrivateClaimsStore(sql);
+    const owner = "0x00000000000000000000000000000000000000C1";
+    const slot = `0x${"ab".repeat(32)}`;
+    await store.savePending({ slotId: slot, owner, chainId: 42431, request: { stakeBase: "5000000", secret: "0x01" }, nowMs: 100 });
+    await store.savePending({ slotId: slot, owner, chainId: 42431, request: { stakeBase: "9" }, nowMs: 200 });
+    expect((await store.get(slot.toUpperCase().replace("0X", "0x")))?.request).toEqual({ stakeBase: "5000000", secret: "0x01" });
+    await store.markUnknown(slot, { status: "unknown", reason: "rpc" }, 300);
+    expect(await store.get(slot)).toMatchObject({ status: "pending", result: { reason: "rpc" } });
+    const ticket = { claim: { owner, slotId: slot, creditKey: slot, marketId: slot, outcomeIdx: 0, stakeBase: "5000000", issuedAtMs: 1 }, signature: "0x00", status: "open" } as never;
+    await store.markOpened(slot, ticket, 400);
+    await store.markRefused(slot, { status: "refused" }, 500);
+    expect(await store.get(slot)).toMatchObject({ status: "open", request: null, updatedAtMs: 400 });
+    await store.savePending({ slotId: `0x${"cd".repeat(32)}`, owner: "0x00000000000000000000000000000000000000d2", chainId: 42431, request: {}, nowMs: 600 });
+    expect((await store.listByOwner(owner.toLowerCase())).map((r) => r.slotId)).toEqual([slot]);
   });
 });

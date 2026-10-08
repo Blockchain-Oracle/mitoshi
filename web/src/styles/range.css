@@ -1,0 +1,35 @@
+/* Range + Moonshot — the band slider (21st 31347 over 32784, `components/ui/band-slider.tsx`) and the ticket's receipt
+ * lines. 31347's injected thumb/bubble rules live here (no <style> injection): the bubble only while dragging or
+ * keyboard-focused, the press ring, no motion under reduced motion. The thumb is 24 px with a 44 px hit area (§2.5). */
+.band-slider { display: flex; flex-direction: column; gap: 6px; }
+.band-bars { width: 100%; height: 88px; display: block; }
+.band-ink-in { fill: var(--vermilion); }
+.band-ink-out { fill: var(--gray-500); }
+.band-marker { stroke: var(--white); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.band-root { position: relative; width: 100%; padding: 10px 0; touch-action: none; user-select: none; }
+.band-control { position: relative; display: flex; align-items: center; width: 100%; height: 44px; }
+.band-track { position: relative; width: 100%; height: 8px; border-radius: 9999px; background: var(--ms-surface-3); }
+.band-indicator { position: absolute; height: 100%; border-radius: 9999px; background: var(--vermilion); }
+.band-thumb {
+  position: relative; width: 24px; height: 24px; border-radius: 9999px; background: var(--white); border: 2px solid var(--bg);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.35); cursor: grab; outline: none;
+  transition: scale 140ms var(--easeOut), box-shadow 140ms var(--easeOut);
+}
+.band-thumb::before { content: ""; position: absolute; inset: -10px; border-radius: 9999px; }
+.band-thumb:has(:focus-visible) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--vermilion) 60%, transparent); }
+.band-thumb:active, .band-thumb[data-dragging] { scale: 0.92; cursor: grabbing; box-shadow: 0 0 0 4px color-mix(in srgb, var(--white) 28%, transparent), 0 2px 10px rgb(0 0 0 / 0.4); }
+.band-bubble {
+  position: absolute; left: 50%; top: 0; translate: -50% 0; padding: 2px 8px; border-radius: 8px; border: 1px solid var(--ms-hairline);
+  background: var(--ms-surface-3); color: var(--white); font-size: 12px; white-space: nowrap; pointer-events: none; opacity: 0;
+  transform: translateY(calc(-100% - 6px)) scale(0.94); transition: opacity 140ms var(--easeOut), transform 140ms var(--easeOut);
+}
+.band-thumb[data-dragging] .band-bubble, .band-thumb:has(:focus-visible) .band-bubble { opacity: 1; transform: translateY(calc(-100% - 10px)) scale(1); }
+.band-axis { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--gray-400); }
+.band-axis-marker { color: var(--white); }
+@media (prefers-reduced-motion: reduce) { .band-thumb, .band-bubble { transition-duration: 0ms; } .band-thumb:active, .band-thumb[data-dragging] { scale: 1; } }
+
+.rg-receipt { display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 12px; background: var(--color-cream); }
+.rg-receipt p, .rg-receipt a, .rg-receipt button { color: var(--color-cream-ink); }
+.rg-note { font-size: 12px; color: var(--gray-400); }
+.rg-note--warn { color: var(--white); border-left: 2px solid var(--color-warning); padding-left: 8px; }
+.rg-foot { font-size: 12px; line-height: 1.5; color: var(--gray-400); }

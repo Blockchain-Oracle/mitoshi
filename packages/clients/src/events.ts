@@ -103,6 +103,18 @@ export const events = {
     "PoolCorrected(address,uint8,uint256,uint256,uint256)",
     "TierSkipped(address,uint8,bytes)"
   ],
+  "LeverageReserve": [
+    "AdminChanged(address)",
+    "Exited(uint256,address,uint8,uint256,uint256,uint256,uint256,address)",
+    "Opened(uint256,address,bytes32,uint8,uint32,uint256,uint256,uint256,uint256,uint256)",
+    "OwedClaimed(address,uint256)",
+    "ParamsUpdated(tuple)",
+    "PausedSet(bool)",
+    "PayoutHeld(address,uint256,uint256)",
+    "Supplied(address,uint256,uint256,uint256)",
+    "SupplyRedeemed(address,uint256,uint256,uint256)",
+    "Swept(uint256)"
+  ],
   "LzPingTempo": [
     "EnforcedOptionSet(tuple[])",
     "OwnershipTransferred(address,address)",
@@ -122,6 +134,54 @@ export const events = {
     "SupplyRedeemed(address,uint256,uint256,uint256)",
     "Swept(uint256)",
     "WindowSettled(bytes32,uint256,uint256,uint256,int256,address)"
+  ],
+  "ParlayReserve": [
+    "AdminChanged(address)",
+    "ExpiryReleased(uint256,uint64,uint256)",
+    "LegPriced(uint256,uint8,bytes32,uint8,uint256,uint64)",
+    "LegResolved(uint256,uint8,bytes32,uint8,address)",
+    "OwedClaimed(address,uint256)",
+    "ParamsUpdated(tuple)",
+    "ParlayClaimed(uint256,address,uint256,address)",
+    "ParlayLost(uint256,address,uint256,uint8)",
+    "ParlayOpened(uint256,address,uint8,uint256,uint256,uint256,uint64)",
+    "ParlayVoided(uint256,address,uint256,uint8)",
+    "ParlayWon(uint256,address,uint256)",
+    "PausedSet(bool)",
+    "PayoutHeld(address,uint256,uint256)",
+    "Supplied(address,uint256,uint256,uint256)",
+    "SupplyRedeemed(address,uint256,uint256,uint256)"
+  ],
+  "PrivateDesk": [
+    "AdminChanged(address)",
+    "Allowed(address,uint256)",
+    "Charged(address,bytes32,uint256)",
+    "Credited(address,bytes32,uint256)",
+    "Deposited(address,uint256,uint256)",
+    "DeskChanged(address)",
+    "ParamsUpdated(tuple)",
+    "PausedSet(bool)",
+    "SlotFunded(bytes32,uint256)",
+    "SlotMinted(bytes32,bytes32,uint8,uint256,uint256)",
+    "SlotSettled(bytes32,bytes32,uint256,address)",
+    "SlotSwept(bytes32,uint256)",
+    "Swept(uint256)",
+    "Withdrawn(address,uint256,uint256)"
+  ],
+  "RangeReserve": [
+    "AdminChanged(address)",
+    "AssetTickerSet(string,uint16)",
+    "OwedClaimed(address,uint256)",
+    "ParamsUpdated(tuple)",
+    "PausedSet(bool)",
+    "PayoutHeld(address,uint256,uint256)",
+    "RangeBasis(uint256,int256,uint256,uint64,uint32,int64,int32)",
+    "RangeClaimed(uint256,address,uint256,address)",
+    "RangeOpened(uint256,address,bytes32,uint8,int256,int256,uint256,uint256,uint256,uint64)",
+    "RangeSettled(uint256,address,uint8,int256,address)",
+    "Supplied(address,uint256,uint256,uint256)",
+    "SupplyRedeemed(address,uint256,uint256,uint256)",
+    "VolatilitySet(string,uint64)"
   ],
   "TIP20MintBurnAdapter": [
     "CreditDeferred(address,uint32,uint256,uint8)",

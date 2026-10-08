@@ -310,6 +310,42 @@ export const deployments = {
       "external": {},
       "commit": "321c441"
     },
+    "leverage": {
+      "contracts": {
+        "LeverageReserve": {
+          "address": "0x1c623E5539351C01FB193f962C7502cCcFd9206D",
+          "artifact": "LeverageReserve.sol:LeverageReserve",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xb826de3d5cf2bdf1348d85dc6221d0a4f989400832ad705cf08d23f088a31bc0",
+          "deployBlock": 37533859,
+          "history": []
+        }
+      },
+      "roles": {
+        "ADMIN": "0x5DFC4211902A8EE7932286861e2D8C66841441E8"
+      },
+      "params": {
+        "collateral": "0x20C0000000000000000000000000000000000000",
+        "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+        "fairSlackRaw": 50000,
+        "guard": "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1",
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+        "maintenanceBps": 12000,
+        "maxEntryPriceRaw": 950000,
+        "maxExposureBps": 6000,
+        "maxFrontedPerPosition": 200000000,
+        "maxLeverageBps": 30000,
+        "maxOpenPositions": 64,
+        "maxWindowFronted": 500000000,
+        "minEntryPriceRaw": 50000,
+        "minRestSec": 20,
+        "minTimeLeftSec": 90,
+        "premiumBps": 800
+      },
+      "external": {},
+      "commit": "69e757e"
+    },
     "lz": {
       "contracts": {
         "LzPing": {
@@ -362,12 +398,118 @@ export const deployments = {
       "external": {},
       "commit": "1ae4a69"
     },
+    "parlay": {
+      "contracts": {
+        "ParlayReserve": {
+          "address": "0x57baD0Beb33C8f8557Dc7430F90Ba166587f3939",
+          "artifact": "ParlayReserve.sol:ParlayReserve",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x60cf7008becd9e256fc1f99566edca9d17bf4f4376a1add14bf82de075050b35",
+          "deployBlock": 37530275,
+          "history": []
+        }
+      },
+      "roles": {
+        "ADMIN": "0x5DFC4211902A8EE7932286861e2D8C66841441E8"
+      },
+      "params": {
+        "collateral": "0x20C0000000000000000000000000000000000000",
+        "correlationBps": 4000,
+        "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+        "fairSlackRaw": 50000,
+        "guard": "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1",
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+        "marginBps": 1200,
+        "maxExpiryLocked": 1000000000,
+        "maxExposureBps": 6000,
+        "maxLegs": 3,
+        "maxPayoutCap": 500000000,
+        "minCombinedProbRaw": 20000,
+        "minRestSec": 20,
+        "priceDepthRaw": 20000000
+      },
+      "external": {},
+      "commit": "b721516"
+    },
     "pools": {
       "contracts": {},
       "roles": {},
       "params": {},
       "external": {},
       "commit": "f98d630"
+    },
+    "private": {
+      "contracts": {
+        "PrivateDesk": {
+          "address": "0x0c894dB5057E18F5C9E09C72faAc0b6098613CD8",
+          "artifact": "PrivateDesk.sol:PrivateDesk",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x5336d5b69d5b5f79c1cb6a5964d23b286fac523613577ed27b70f796615004ca",
+          "deployBlock": 37534921,
+          "history": []
+        }
+      },
+      "roles": {
+        "ADMIN": "0x5DFC4211902A8EE7932286861e2D8C66841441E8",
+        "DESK": "0x9540cDCD69636229Be905225979a7e5BAA044cb9"
+      },
+      "params": {
+        "collateral": "0x20C0000000000000000000000000000000000000",
+        "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+        "maxStake": 25000000,
+        "minStake": 1000000,
+        "minTimeLeftSec": 60
+      },
+      "external": {},
+      "commit": "8b7b457"
+    },
+    "range": {
+      "contracts": {
+        "RangeReserve": {
+          "address": "0xf19342733Bb451503f3806b0d44CC58A3D345052",
+          "artifact": "RangeReserve.sol:RangeReserve",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0xc98f25d91fb31cce83f846d0acf00e1197ec5947566cf725e3b4d8afd81bcccc",
+          "deployBlock": 37532233,
+          "history": []
+        }
+      },
+      "roles": {
+        "ADMIN": "0x5DFC4211902A8EE7932286861e2D8C66841441E8"
+      },
+      "params": {
+        "centerDepthRaw": 20000000,
+        "collateral": "0x20C0000000000000000000000000000000000000",
+        "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+        "guard": "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1",
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+        "marginBps": 1200,
+        "maxCenterQE6": 970000,
+        "maxDriftE4": 20000,
+        "maxExpiryLocked": 1000000000,
+        "maxExposureBps": 6000,
+        "maxHorizonSec": 172800,
+        "maxPayoutCap": 500000000,
+        "maxProbRaw": 970000,
+        "maxSpreadRaw": 200000,
+        "minCenterQE6": 30000,
+        "minProbRaw": 20000,
+        "minRestSec": 20,
+        "minTimeLeftSec": 60,
+        "sigmaE8.BTC": 6200,
+        "sigmaE8.ETH": 7800,
+        "sigmaE8.SOL": 14245,
+        "staleAfterSec": 21600,
+        "ticker.BTC": 101,
+        "ticker.ETH": 102,
+        "ticker.SOL": 103
+      },
+      "external": {},
+      "commit": "e16cdfa"
     },
     "stocks": {
       "contracts": {

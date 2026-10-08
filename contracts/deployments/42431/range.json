@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "chainId": 42431,
+  "area": "range",
+  "commit": "e16cdfa",
+  "deployedAtUtc": "2026-09-30T08:02:32.696Z",
+  "deployer": "0x5DFC4211902A8EE7932286861e2D8C66841441E8",
+  "contracts": {
+    "RangeReserve": {
+      "address": "0xf19342733Bb451503f3806b0d44CC58A3D345052",
+      "artifact": "RangeReserve.sol:RangeReserve",
+      "profile": "default",
+      "proxy": false,
+      "txHash": "0xc98f25d91fb31cce83f846d0acf00e1197ec5947566cf725e3b4d8afd81bcccc",
+      "deployBlock": 37532233,
+      "history": []
+    }
+  },
+  "roles": {
+    "ADMIN": "0x5DFC4211902A8EE7932286861e2D8C66841441E8"
+  },
+  "params": {
+    "centerDepthRaw": 20000000,
+    "collateral": "0x20C0000000000000000000000000000000000000",
+    "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
+    "guard": "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1",
+    "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+    "marginBps": 1200,
+    "maxCenterQE6": 970000,
+    "maxDriftE4": 20000,
+    "maxExpiryLocked": 1000000000,
+    "maxExposureBps": 6000,
+    "maxHorizonSec": 172800,
+    "maxPayoutCap": 500000000,
+    "maxProbRaw": 970000,
+    "maxSpreadRaw": 200000,
+    "minCenterQE6": 30000,
+    "minProbRaw": 20000,
+    "minRestSec": 20,
+    "minTimeLeftSec": 60,
+    "sigmaE8.BTC": 6200,
+    "sigmaE8.ETH": 7800,
+    "sigmaE8.SOL": 14245,
+    "staleAfterSec": 21600,
+    "ticker.BTC": 101,
+    "ticker.ETH": 102,
+    "ticker.SOL": 103
+  },
+  "external": {}
+}

@@ -1,0 +1,4 @@
+/* /surface (S10e): the 31861 table and 30538 sparklines ride semantic tokens; this file only holds the table's own
+   mobile rule — the table scrolls inside its frame, never the page. */
+.sf [data-slot="table"] { -webkit-overflow-scrolling: touch; }
+.sf .sparkline { min-width: 120px; }

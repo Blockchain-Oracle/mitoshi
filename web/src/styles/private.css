@@ -1,0 +1,17 @@
+/* Private — the ticket's Private mode and the Portfolio desk (S10d): semantic tokens only, so both themes hold AA. */
+.pv-box { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--color-border-strong); background: var(--color-surface-1); }
+.pv-box-action { min-height: 44px; padding: 0 14px; border-radius: 8px; font-weight: 600; color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-accent); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.pv-box-action:disabled { color: var(--color-ink-secondary); text-decoration-color: var(--color-hairline); cursor: not-allowed; }
+.pv-note { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--color-ink); }
+.pv-note--warn { border-left: 2px solid var(--color-warning); padding-left: 10px; }
+.pv-note summary { cursor: pointer; color: var(--color-ink-secondary); display: flex; align-items: center; }
+.pv-desk { display: flex; flex-direction: column; gap: 16px; }
+.pv-cells { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.pv-cell-label { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-ink-secondary); }
+.pv-cell-value { font-family: var(--font-mono); font-size: 15px; color: var(--color-ink); }
+.pv-claims { display: flex; flex-direction: column; gap: 10px; }
+.pv-claim { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--color-hairline); background: var(--color-surface-1); }
+.pv-claim-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.pv-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--color-ink); }
+.pv-badge svg { color: var(--color-accent); }
+.pv-badge--bad svg { color: var(--color-warning); }

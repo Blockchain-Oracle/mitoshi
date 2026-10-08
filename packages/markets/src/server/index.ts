@@ -19,3 +19,5 @@ export { normalizeKeyAuthorization } from "../relay/key-auth";
 export type { PolicyVerdict, RefusalCode, RelayCall, RelayContext, RelayPolicy, RelayRequest } from "../relay/types";
 export * from "../mpp";
 export * from "../indexer-api";
+export { cashOutPrivateBet, ClaimRefusedError, createDesk, DeskRefusal, deskHealth, openPrivateBet, windowFacts, type Desk, type DeskOpenInput, type WindowFacts } from "../private/desk";
+export { signPrivateClaim } from "../private/claim";

@@ -3,6 +3,7 @@
 | Name | Where | Used by |
 |---|---|---|
 | `RELAY_FEE_PAYER_PRIVATE_KEY` | Coolify web app (per network) | `/api/relay` fee payer |
+| `DESK_PRIVATE_KEY` (the `desk` role; testnet `~/.config/cwf/testnet/desk.json`) | Coolify web app (per network) | `/api/private/*` desk service: signs claims, pays its own sends (D-171) |
 | `<ROLE>_PRIVATE_KEY` (roller, price-relay, settler, seed-maker, earn-quoter, keeper, x-relay, desk, stock-sync, ops-fee-payer) | Coolify ops app env (per network); locally `~/.config/cwf/<network>/<role>.json` | ops actors |
 | `DEPLOYER` key | local `~/.config/cwf/<network>/deployer.json`; mainnet via the owner's hardware wallet / Safe | forge scripts |
 | `MPP_PAYER_PRIVATE_KEY`, `MPP_ROOT_ADDRESS` | Coolify ops (testnet: roles `mpp-payer`/`mpp-root` in `~/.config/cwf/testnet/`; mainnet after Q-020) | MPP payer (TIP-1011 access key on the root), brain `via: 'mpp'`, paid data |
