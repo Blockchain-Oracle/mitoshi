@@ -1,10 +1,13 @@
 "use client";
 // Ported in shape from Owarine ecb7565b:web/src/features/terminal/ui/sheets/SettingsSheet.tsx — a right-edge drawer
-// (D-190) instead of a bottom sheet, with Mitoshi's rows: Size in dollars (integer base units), the trailing distance
-// and the Close tolerance (D-197). Sound & Vibration stays in /settings/account (one app-wide setting).
+// (D-190) instead of a bottom sheet, with Mitoshi's rows: Size in dollars (integer base units), Boost (Tradash's
+// leverage, RV-41), the trailing distance and the Close tolerance (D-197). Sound & Vibration stays in /settings/account (one app-wide setting).
 import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
+import { getLeverageReserveState } from "@cwf/markets/leverage";
+import { useReadingQuery } from "@cwf/markets/react";
 import { useEffect, useState } from "react";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
+import { boostKeys } from "@/features/boost/useBoostWrites";
 import { tapFeedback } from "@/lib/feedback";
 import { TERMINAL } from "../copy";
 import { money, USD_DECIMALS } from "../format";
@@ -60,6 +63,7 @@ export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase
           {capped ? <p className="tm-field-hint" role="status">{TERMINAL.stack.capped(money(stakeBase))} — {TERMINAL.stack.cappedWhy[capped]}</p> : null}
           <p className="tm-field-hint">{TERMINAL.settings.sizeHint}</p>
         </div>
+        <BoostField boostX={settings.boostX} />
         <div className="tm-field">
           <span className="tm-field-head">{TERMINAL.settings.trailing}</span>
           <div className="tm-choices">
@@ -84,5 +88,30 @@ export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase
         </div>
       </SlideOverContent>
     </SlideOver>
+  );
+}
+
+/**
+ * Boost (RV-41: Tradash's leverage, as Mitoshi's): Off or a multiple up to the reserve's own maximum, read live; the
+ * knock-out and the passkey prompt said where it is chosen (Q-032's default). Hidden where no reserve is deployed.
+ */
+function BoostField({ boostX }: { boostX: number }) {
+  const reserve = useReadingQuery([...boostKeys.all, "reserve"], getLeverageReserveState, { pollMs: 30_000 });
+  const state = reserve?.ok ? reserve.value : null;
+  if (!state) return null;
+  const max = Math.max(1, Math.floor(state.params.maxLeverageBps / 10_000));
+  const choices = Array.from({ length: max }, (_, k) => k + 1);
+  return (
+    <div className="tm-field">
+      <span className="tm-field-head">{TERMINAL.settings.boost}</span>
+      <div className="tm-choices">
+        {choices.map((x) => (
+          <button key={x} type="button" className="tm-choice" aria-pressed={Math.min(boostX, max) === x} onClick={() => (tapFeedback(), setTradeSettings({ boostX: x }))}>
+            {x === 1 ? TERMINAL.settings.boostOff : `${x}×`}
+          </button>
+        ))}
+      </div>
+      <p className="tm-field-hint">{boostX > 1 ? TERMINAL.settings.boostOn(Math.min(boostX, max)) : TERMINAL.settings.boostHint}</p>
+    </div>
   );
 }

@@ -23,6 +23,8 @@ export interface TradeSettings {
   /** Tradash's chart view and candle interval (picking an interval switches to candles). */
   chartView: "line" | "candles";
   chartInterval: CandleInterval;
+  /** Tradash's leverage as Mitoshi's Boost (RV-41): the multiple UP/DOWN open at; 1 is a plain call. */
+  boostX: number;
 }
 
 export type MusicTrack = "arcade" | "rush" | "night";
@@ -35,7 +37,7 @@ export const CLOSE_TOLERANCE_CHOICES_BPS = [50, 100, 200, 500] as const;
 export const DEFAULT_SIZE_SHARE_BPS = 500n;
 
 const KEY = "cwf.trade.settings.v1";
-const DEFAULTS: TradeSettings = { sizeBase: null, trailPct: 0.001, closeToleranceBps: 100, musicTrack: "arcade", tutorialSeen: false, favourites: [], chartView: "line", chartInterval: "1m" };
+const DEFAULTS: TradeSettings = { sizeBase: null, trailPct: 0.001, closeToleranceBps: 100, musicTrack: "arcade", tutorialSeen: false, favourites: [], chartView: "line", chartInterval: "1m", boostX: 1 };
 
 const listeners = new Set<() => void>();
 let current: TradeSettings = DEFAULTS;
@@ -57,6 +59,7 @@ function read(): TradeSettings {
       favourites: Array.isArray(p.favourites) ? p.favourites.filter((s): s is string => typeof s === "string").slice(0, 100) : [],
       chartView: p.chartView === "candles" ? "candles" : "line",
       chartInterval: CANDLE_INTERVALS.includes(p.chartInterval as CandleInterval) ? (p.chartInterval as CandleInterval) : "1m",
+      boostX: num(p.boostX, 1, 10) && Number.isInteger(p.boostX) ? p.boostX : 1,
     };
   } catch {
     return DEFAULTS;

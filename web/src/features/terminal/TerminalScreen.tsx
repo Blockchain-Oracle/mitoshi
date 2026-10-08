@@ -229,7 +229,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
             {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
           </div>
           <div className="tm-stack-slot">
-            <SettingsStack asset={symbol} size={stakeText} pays={market ? pays : "—"} trailing={`${trailWords(s.settings.trailPct)}%`} onOpen={() => drawer.show(DRAWERS.settings)} />
+            <SettingsStack asset={symbol} size={stakeText} pays={s.settings.boostX > 1 ? TERMINAL.positions.boost(s.settings.boostX) : market ? pays : "—"} trailing={`${trailWords(s.settings.trailPct)}%`} onOpen={() => drawer.show(DRAWERS.settings)} />
           </div>
         </section>
         <aside className="tm-side" aria-label={TERMINAL.positions.title}>
@@ -264,7 +264,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
           ) : market && s.phase === "upcoming" ? (
             <ScheduledTrade market={market} stakeBase={s.stakeBase} />
           ) : market ? (
-            <TerminalTrade market={market} phase={s.phase} stakeBase={s.stakeBase} spot={s.spot.price} onPays={setPays} />
+            <TerminalTrade market={market} phase={s.phase} stakeBase={s.stakeBase} spot={s.spot.price} boostX={s.settings.boostX} onPays={setPays} />
           ) : null}
         </aside>
       </div>

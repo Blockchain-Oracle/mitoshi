@@ -6,6 +6,7 @@ import type { MarketPhase } from "@cwf/core/lifecycle";
 import { useEffect } from "react";
 import { TERMINAL } from "../copy";
 import { money, multipleOf } from "../format";
+import { useTerminalBoost } from "../useTerminalBoost";
 import { useTerminalOpen } from "../useTerminalOpen";
 import { TradeButtons } from "./TradeButtons";
 
@@ -13,10 +14,17 @@ import { TradeButtons } from "./TradeButtons";
 const paysText = (multiple: number | null, cappedTo: string | null = null) =>
   multiple && Number.isFinite(multiple) ? `${TERMINAL.buttons.pays(multipleOf(1000 / multiple))}${cappedTo ? ` · ${TERMINAL.buttons.max(cappedTo)}` : ""}` : null;
 
-export function TerminalTrade({ market, phase, stakeBase, spot, onPays }: { market: EventMarket; phase: MarketPhase | null; stakeBase: bigint; spot: number | null; onPays: (text: string) => void }) {
+export function TerminalTrade({ market, phase, stakeBase, spot, boostX, onPays }: { market: EventMarket; phase: MarketPhase | null; stakeBase: bigint; spot: number | null; boostX: number; onPays: (text: string) => void }) {
   const t = useTerminalOpen({ market, phase, stakeBase, spot });
+  // A Boost set in the stack (RV-41): UP/DOWN open it, with its own refusals under each button.
+  const b = useTerminalBoost({ market, stakeBase, multiple: boostX, enabled: phase === "trading" });
   const pair = paysPair(t.sides.up.multiple, t.sides.down.multiple);
   useEffect(() => onPays(pair), [pair, onPays]);
+  if (b.on) {
+    return (
+      <TradeButtons mode="flat" onUp={() => b.open("up")} onDown={() => b.open("down")} busy={b.busy} upSub={TERMINAL.boost.sub(boostX)} downSub={TERMINAL.boost.sub(boostX)} upNote={b.blocked.up} downNote={b.blocked.down} />
+    );
+  }
   return (
     <TradeButtons
       mode="flat"

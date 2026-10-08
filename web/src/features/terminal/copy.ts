@@ -55,6 +55,12 @@ export const TERMINAL = {
     signIn: "Sign in",
     account: "Account",
   },
+  boost: {
+    sub: (x: number) => `${x}× Boost · passkey`,
+    opening: (side: string, symbol: string, x: number) => `Opening ${side} ${symbol} ${x}×…`,
+    opened: (side: string, symbol: string, x: number) => `${side} ${symbol} boosted ${x}×`,
+    openedBody: (staked: string) => `${staked} staked · the reserve fronts the rest`,
+  },
   toast: {
     signIn: "Sign in to trade",
     signInBody: "A passkey account on Tempo testnet — free, funded with testnet dollars.",
@@ -322,6 +328,10 @@ export const TERMINAL = {
     noMatch: "No market matches.",
   },
   settings: {
+    boost: "Boost",
+    boostOff: "Off",
+    boostHint: "UP and DOWN buy plain contracts. Boost has the reserve front part of a bigger position.",
+    boostOn: (x: number) => `UP and DOWN open a ${x}× Boost: it can knock out before expiry, and each one asks for your passkey.`,
     title: "Trade settings",
     size: "Size",
     sizeHint: "What one tap stakes. Untouched, it follows 5 % of what you can spend.",
