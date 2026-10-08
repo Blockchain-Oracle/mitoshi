@@ -107,10 +107,11 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   the Window on screen (a drawer on phones), naming the passkey prompt (Q-032's default); Parlay and Moonshot open their
   screens. Still open: Boost chips in the settings stack and the parlay slip in the right column (Owarine `parlay/*` on
   Mitoshi's contracts).
-- [ ] 23j `/markets` as the list (lanes, "Your calls", word board, Surface link → terminal); the hero chart and its
+- [x] 23j `/markets` as the list (lanes, "Your calls", word board, Surface link → terminal); the hero chart and its
   lightweight-charts island retire once unused.
   Done (85814ce): the list with "Open the terminal", rows and board words → `/trade/<SYM>?w=<id>`, old `?m=` links too;
-  the hero, the ticket composer and dock, and `lightweight-charts` removed. The Surface link → terminal stays open.
+  the hero, the ticket composer and dock, and `lightweight-charts` removed. Surface's "Trade this Window" links straight
+  to `/trade/<SYM>?w=<id>` (`terminalHref` moved to `features/terminal/route.ts`, shared with `/markets`).
 - **Gate:** e2e drivers rewritten (`tap-latency` incl. close, `first-call`, `onboarding`, `trading-balance`, `boost`,
   `parlay`, `range`, `private`); `long-tasks.ts` on `/trade/BTC` at 4× CPU; Lighthouse adds `/trade/BTC` to
   `.github/workflows/lighthouse.yml` (ROUTES, trace-tasks, lh-shifts) and updates the redirected `/markets/[id]` entry;

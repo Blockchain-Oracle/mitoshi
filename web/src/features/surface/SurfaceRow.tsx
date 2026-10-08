@@ -9,6 +9,7 @@ import type { EventMarket } from "@cwf/core";
 import { formatBaseUnits } from "@cwf/core/units";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { terminalHref } from "@/features/terminal/route";
 import { useEffect } from "react";
 import { Countdown } from "@/components/data/Countdown";
 import { LoadingState } from "@/components/states";
@@ -63,7 +64,7 @@ export function SurfaceRow({ w, modelled, nowMs, expanded, onToggle, onFigures }
           <p className="type-caption text-ink-secondary">{SURFACE.detail.depth}</p>
           <div className="h-55"><HeroDepth market={m} /></div>
           <p className="type-caption text-ink">{fairC !== null ? SURFACE.detail.model(`${fairC.toFixed(1)}¢`) : modelled ? SURFACE.hydrating : SURFACE.detail.noModel}</p>
-          <Link href={`/markets/${m.marketId}`} className="min-h-touch self-start py-2 type-body-strong text-ink underline decoration-accent decoration-2 underline-offset-4">{SURFACE.detail.open}</Link>
+          <Link href={terminalHref(m.asset, m.marketId)} className="min-h-touch self-start py-2 type-body-strong text-ink underline decoration-accent decoration-2 underline-offset-4">{SURFACE.detail.open}</Link>
         </div>
       </TableExpandableContent>
     </>

@@ -20,7 +20,7 @@ export const SURFACE = {
   pathLabel: (asset: string) => `${asset} since the Window opened`,
   detail: {
     depth: "Depth — UP bids below the mid, UP asks above, cumulative contracts",
-    open: "Open this Window's ticket",
+    open: "Trade this Window",
     model: (pct: string) => `The model gives UP ${pct} at the latest signed spot.`,
     noModel: "No fair-value model on this Series yet — the reserves (Parlay, Range, Boost) price only the modelled Windows.",
   },

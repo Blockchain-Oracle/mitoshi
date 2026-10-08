@@ -20,6 +20,7 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { MARKETS, SECTIONS } from "./copy";
 import { YourCalls } from "./calls/YourCalls";
 import { MarketsAllowance } from "@/features/session/MarketsAllowance";
+import { terminalHref } from "@/features/terminal/route";
 import { tickerMarkets } from "./data/lane-view";
 import { useLanesState } from "./data/useLanesState";
 import { findMarket } from "./data/useSelection";
@@ -34,9 +35,6 @@ export function MarketsScreen() {
     </MotionScope>
   );
 }
-
-/** The terminal on one Window. */
-export const terminalHref = (asset: string, marketId: MarketId) => `/trade/${asset}?w=${marketId}`;
 
 function Screen() {
   const router = useRouter();

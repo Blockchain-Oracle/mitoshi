@@ -19,3 +19,6 @@ export function tradeRedirect(pathname: string, remembered: string | undefined):
   const upper = m[1]!.toUpperCase();
   return m[1] !== upper && isTickerSymbol(upper) ? `/trade/${upper}` : null;
 }
+
+/** The terminal on one Window: every list (Markets, the word board, Surface) links straight here, no redirect hop. */
+export const terminalHref = (asset: string, marketId: string) => `/trade/${asset}?w=${marketId}`;
