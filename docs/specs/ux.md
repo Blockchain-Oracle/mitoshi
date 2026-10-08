@@ -32,6 +32,24 @@
 | Shared primitives | 23529 copy-button · 23574 value-flash · 23569 task-steps · 19949 pending | used across surfaces |
 | Landing | 23414 slot-headline (layout only) · 27082 hirael/feature-10 · 26891 how-it-works-09 · 29870 stats-05 · 28155 cta-section-1 · 18216 logo-clouds | both pillars equal |
 
+### E.1r Revamp sources (2026-10-08; D-189…D-200, ledger `docs/plan/revamp-parity.md`)
+
+These rows replace the E.1 rows they name. Ports from the owner's reference products are the starting source (D-198);
+the 21st ids they already carry are kept for the register.
+
+| Surface | Start from | Replaces in E.1 | Notes |
+|---|---|---|---|
+| Rail, top line, stage | Baku/roy-chain `ede3ed38` `components/shell/{app-shell,rail.client,top-line}.tsx` (rail ← 21st 21517 unlumen/animated-sidebar, indicator only) | Header, account pill; Pill nav | lucide icons; CSS-transform pill; `layout` tokens |
+| Phone dock | roy-chain `mobile-dock.client.tsx` (← 21st 15742, glass removed) | Pill nav | hidden on `/trade` |
+| Everything drawer | Mitoshi `MorePanel` groups in 31360 wensity/drawer | More panel | floating geometry; search row kept |
+| Drawers (all) | 31360 wensity/drawer restyled to roy-chain/Slush floating geometry | — | `?d=` URL state; swipe right |
+| Shortcuts modal | roy-chain `help-menu.client.tsx` in 31359 wensity/dialog | — | keyboard map; no money hotkeys |
+| Toasts | 24297 cnippet-dev/toast with Tradash's grammar | Command palette, toasts | top-centre, max 3, same id replaces |
+| Terminal screen, trade buttons, positions, chrome | Owarine `ecb7565b` `web/src/features/terminal/**` | **Up/Down ticket** on `/trade` (16240 stays on `/markets`' slide-over until it retires) | re-wired to Mitoshi's tap path |
+| Terminal chart | Owarine `features/terminal/chart/*` (canvas) | Charts (lightweight-charts) on `/trade` | D-199; `--chart-*` tokens |
+| Sounds, music, haptics, reactions | Owarine `lib/sound/{trade,music}.ts`, `lib/haptics.ts`, `features/terminal/feedback/reactions.ts` | — | synthesised; no files |
+| Markets picker, account, history, replay, share, leaderboard, tutorial, install, update | Owarine `features/terminal/ui/sheets/*` (as drawers), `replay.ts`, `share-png.ts`, `Tutorial.tsx`, `useAppUpdate.ts` | Leaderboard (13063/13057 stay for `/leaderboard`) | QR from the existing `qrcode-generator` |
+
 ### E.2 Revamp recipe
 D35, step by step (Radix-built picks convert with the Radix→Base mapping: `asChild`→`render`,
 `Portal>Positioner>Popup`, `data-[state=open]`→`data-open`, `animate-in/out`→`data-starting/ending-style`,
@@ -86,7 +104,9 @@ position. Account: D44. Concepts behind "How this works" (§2.1.4).
 | S13 | one app session; SSE rooms/takes; optimistic posting with retry; reactions; composer bound to the card; streamed Sensei |
 | SM1 | 11 px labels, search row, distinct focus ring; right-edge panel, centred modals |
 | S5 | merged rankings/history (fix 14); no operator copy on `/status` |
-| S11 | shared header restored; X errors in human copy |
+| S11 | shared header restored (since D-189: the shell's top line and rail); X errors in human copy |
+| S22 | the roy-chain/Slush shell: rail, top line, stage, dock, Everything drawer, floating drawers with URL state, keyboard map, privacy eye, Sound & Vibration |
+| S23 | the terminal: Window rule, stake caps pre-checked, one-tap CLOSE with tolerance, live value "≈", exits in the tab, every Tradash §8 state with Mitoshi copy |
 | S14–S17 | the E.3 items; first-use explainers |
 | All | raw technical errors mapped to human copy (also a §2.5 gate check) |
 
@@ -113,4 +133,5 @@ absorbed double taps; ticket → Call card → stamp → cream receipt; "Returne
 recovery toasts, cross-tab key lock, saved copy-setup progress; the arm screen grammar; duel named waits and prompt-free
 room entry (position checked before a signature); Agari's copy form and desk; shared loading/empty/error components;
 two-colour toasts; "Don't trust it. Click it."; deep links to the next live Window; the nav registry and its
-route-coverage test; the games' canvas loop and reduced-motion handling; right-edge ticket slide-over and centred modals.
+route-coverage test; the games' canvas loop and reduced-motion handling; right-edge ticket slide-over and centred modals
+(on `/trade` the terminal's right column replaces the ticket slide-over — D-192; overlays stay right-edge and centred — D-190).

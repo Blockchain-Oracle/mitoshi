@@ -1,5 +1,7 @@
 # S11 — Trade from X (after S7)
 
+> **Revamp (2026-10-08, D-189…D-200):** "the shared header restored" now means the S22 shell (top line and rail) on `/trade-from-x`.
+
 - [ ] x-relay (EXECUTOR grant, dry-run added); `/api/x/*` with the verifier; `/trade-from-x`, `/claim`; stock cashtags;
   `/go/t/[symbol]/[cadence]`, `/go/w/[marketId]` share-to-sign links (A-3e default); in the app the X OAuth step runs in
   the system auth session through SM2's `/native-auth` handoff (`state` bound server-side to the web session). UX: the

@@ -1575,6 +1575,107 @@ a string, the migration unwraps it, and the relay's read, the web's key test and
 
 **Why:** the archive is the evidence and the fallback source; a row nobody can read is not archived.
 
+### D-189 — owner answer (2026-10-08): the revamp's look
+
+**Mitoshi keeps its palette, fonts and 見通し identity; the shell's structure follows roy-chain/Slush and the Markets
+screen follows tradash.xyz's behaviour.** The owner asked (2026-10-08) to "redo markets in the direction of the
+tradash thing" (the one-screen trading terminal Owarine is migrating to, sounds included) and to take roy-chain's
+sidebar, modals and screens (modelled on the Slush wallet). Asked which look the revamp keeps, he chose Mitoshi's
+colours: Tradash supplies behaviour, motion, sound and copy pattern; roy-chain/Slush supplies structure (rail, stage,
+drawers, centred modals). **Supersedes** D-009's "nav, layout" for the app shell and the Markets screen (colours and type
+stay), D-036's "native tab bar reproduces Masayume's floating pill nav" (the app's tab bar mirrors the new dock), and
+plan §2.1.5 "no tutorial wall" for the terminal (D-191). References, authority order, provenance and the parity ledger:
+`docs/plan/revamp-parity.md`; stages S22 (shell), S23 (terminal), S24 (exits).
+
+### D-190 — owner answer (2026-10-08): overlays stay right-edge and centred
+
+**The owner overlay rule stands:** every Tradash bottom sheet becomes a roy-chain/Slush floating right drawer (inset 16,
+width 384 / wide 560, radius 24, 2 px edge, no blur; full width minus the inset on phones), and small choices (Add/Reduce,
+share, sign-out confirm, provider info) are centred modals. Drawers carry their state in the URL (`?d=`) so Back closes
+them. D-056's right-edge More panel stays as the "Everything" drawer.
+
+### D-191 — owner answer (2026-10-08): no simulated balance
+
+**Tradash's demo mode ($10,000 simulated, "Reset demo balance", "Try Demo / Try Live") is excluded by the owner.** The
+5-step tour ends in "Start trading": one passkey, the faucet-funded Moderato account (labelled testnet), the one-tap arm,
+back on the terminal. Every trade in the terminal is real on Moderato. **Supersedes** D-046's "the 5-step tutorial folds
+into contextual first-use explainers" for the terminal (the explainers stay everywhere else).
+
+### D-192 — owner answer (2026-10-08): the terminal's route
+
+**The terminal is `/trade/[symbol]`, the trading home.** `/markets` stays the full list (lanes, "Your calls", the word
+board, Surface) and every row opens the terminal; `/markets/[id]` becomes a server redirect to `/trade/<SYM>?w=<id>`,
+keeping "settled → successor" with its note (L-21). Universal links (D-041) add `/trade/*`.
+
+### D-193 — owner answer (2026-10-08): exits that run with the app closed
+
+**Trading Balance v2 adds a sell-only EXIT grant with an on-chain floor; an ops `exit-keeper` runs Trail, TP and SL with
+the app closed.** Trust model: the keeper decides *when* to sell (on the display feed, D-196); the contract decides the
+*lowest price* — each keeper sell carries a floor of `fairUpE6(m, RedStone proof)` less a stated tolerance
+(`previewFairUpE6` is "never a bound", `FairValueGuard.sol:81`); `OpenPrintMissing`/`SigmaNotSet` refuse the sell and
+ops sets σ for every Series the terminal trades. The EXIT grant has no budget path (sell-only by construction), lives in
+a split `VaultExits.sol` (EventVault is 384 lines), is granted with one root passkey prompt and listed/revocable in
+`/settings/account`. A contract stage under the money gate (S24) with a fresh Moderato deploy and a v1 → v2 migration
+(withdraw from v1, settle v1 positions, index both vaults). Until S24 lands, exits run in the tab (D-200).
+
+### D-194 — owner answer (2026-10-08): the house keeps its exit side to T−30 s
+
+**The seed maker keeps only its bid (exit) side from T−75 s to T−30 s**, at a wider spread, with short-TTL requotes and
+inventory/spread caps, so CLOSE works almost to lock (today every quote is pulled 75 s before lock). The lock−30 cap
+(`seed-maker/quote.ts:60`) and the Regular session-close pull stay. S24.4.
+
+### D-195 — owner answer (2026-10-08): Aura becomes a season league
+
+**Tradash's "Bulk Aura" (the exchange's points programme) becomes a Mitoshi season league** in S13: weekly points from
+real trades and streaks, shown in the terminal's account drawer.
+
+### D-196 — the chart's line follows a display feed; settlement never does (decision, revamp, 2026-10-08)
+
+The terminal's line moves on every trade, so it needs more than RedStone's 10 s grid. An ops `DisplayFeed` — Coinbase
+Exchange WebSocket `ticker` for BTC/ETH/SOL (after 5 s quiet: Owarine's 5-venue REST median; then RedStone, labelled),
+Alpaca latest trades for stocks in NYSE regular hours (off-hours: RedStone `<T>---24_7` at 10 s, labelled "updates every
+10 s") — is coalesced globally to ≤ 8 Hz per symbol and published on **one `ticks` topic** *ephemerally* (outside the
+5,000-event replay ring), so a market switch never changes the SSE topic set. It is **never joined into `SpotFeed`**:
+the seed maker, halt-watch, `price_ticks`, `/prices/latest` and settlement stay RedStone. The seed maker reads the
+display feed only as a risk signal and widens or pulls quotes when display and signed prices diverge beyond k·σ√Δt. The
+chart marks the latest signed value of the Window's basis feed, and the copy that said "the chart follows the same feed"
+changes. **Supersedes** D-049's "charts updated with `series.update()`" and its "setQueryData" for display ticks (they
+go to an external ring store, not the query cache).
+
+### D-197 — the PnL on the line is what CLOSE pays; CLOSE is one tap (decision, revamp, 2026-10-08)
+
+**Live value** = `exitFromBook().proceedsBase` (read with `minRestSec = 0`; the IOC limit protects the user) on book
+events and every 5 s, repriced between reads by Δ`fairProbUpE6` on the display spot and capped at the book walk; shown
+"≈" while repriced. `markValueBase` (last trade) is no longer shown as PnL. **CLOSE** is one tap with no hold: the floor
+is the last book `ExitQuote.minProceedsBase` less the user's close tolerance (never the reprice); a requote inside the
+tolerance is accepted automatically, outside it a toast offers "Close for $X"; reads run in one parallel round and
+`onSigned` shows "Closing…". Vault positions get the missing sell lane (`placeFor(isBuy=false)`). **Supersedes** the
+Portfolio cash-out's hold-to-confirm (S4 `BetRow`) on the terminal and on Portfolio.
+
+### D-198 — ports from the owner's reference products count as the component source (decision, revamp, 2026-10-08)
+
+A surface ported from Owarine (`ecb7565b`) or Baku/roy-chain (`ede3ed38`) — the owner's own MIT repos that already hold
+the reference behaviour — starts from that port, not a fresh 21st pick; the 21st search still runs for any surface with
+no reference source, and every adoption gets a `components.md` row and a trailer (`Ported from Owarine ecb7565b:<path>`
+/ `Ported from Baku (roy-chain) ede3ed38:<path>`). Ports keep D-044's rules: Base UI only, lucide icons (roy-chain's
+Phosphor icons are replaced), `m.*` under `LazyMotion`, tokens only. **Carve-out of** D-044's "every UI step names its
+21st starting component".
+
+### D-199 — a canvas chart engine on `/trade` (decision, revamp, 2026-10-08)
+
+The terminal draws with Owarine's two-canvas engine (600-sample ring on a fixed 60 Hz clock, dt-corrected easing,
+Catmull-Rom, rolling-digit pill, DotGrid, candles with gestures) rather than lightweight-charts; colours and fonts come
+from CSS variables re-read on theme change. lightweight-charts stays only where a screen still uses it and leaves when
+the last one moves.
+
+### D-200 — exits in the tab; TP/SL defined on exit value (decision, revamp, 2026-10-08)
+
+Until S24's keeper is live, Trail, TP and SL are evaluated on committed ticks (not animation frames), the price stream
+stays open while an exit is armed even with the tab hidden, the signer is the wallet key for wallet positions and the
+session key for vault positions, arming is refused when the key expires before the Window, and the label says "Only
+while Mitoshi is open". Trail is on spot with the break-even spot as its reference (Tradash's rule); TP and SL in ROI %
+and P&L modes are defined on exit value (what CLOSE pays); the Change % mode converts to spot and is labelled "≈".
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
@@ -1612,3 +1713,4 @@ Defaults apply until answered; none is a scope cut.
 | Q-029 | Convert the Apple account to an organization (legal entity + D-U-N-S, ~2–3 weeks) for a later public or unlisted listing and the mainnet build | Stay individual; TestFlight only | after S21 |
 | Q-030 | Ask Colosseum whether judges install apps and whether judge emails can be shared for internal TestFlight | Ask now (agent drafts); public link + internal path both kept ready | SM5 |
 | Q-031 | Wallet-mode access key defaults (D38): daily limit and expiry | Masayume's session defaults: $25/day, 24 h, renewable in one tap | S4 |
+| Q-032 | Should arming one-tap add the Boost, Range and Parlay selectors to the wallet key (its scope is the engine only, D-138) | Those modes name the passkey prompt on the CTA | S23i |

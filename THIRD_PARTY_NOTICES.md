@@ -10,6 +10,21 @@ dependency licenses remain applicable.
   to Tempo. Ported files carry `Ported from Masayume 68f7a09:<path>`.
 - **Agari** (`agari-wt/w1`): the events-engine semantics (reimplemented in Solidity), ops runtime, wallet modal
   replica and venue features. Ported files carry `Agari <sha>:<path>` with the commit actually read.
+- **Owarine** (`owarine`, MIT, © 2026 Abubakr Jimoh), pinned commit `ecb7565b`: the Tradash-behaviour trading terminal
+  (canvas chart engine, synthesised trade cues and music, haptics, reactions, terminal screens) and the display price
+  feed (exchange spot, candles, day stats, coalescer), ported for the 2026-10-08 revamp (D-198). Ported files carry
+  `Ported from Owarine ecb7565b:<path>`. Owarine's own notices (Agari lineage, Fluent Emoji MIT, Kenney CC0 flow clips)
+  apply to the files they cover; no Kenney audio is ported.
+- **Baku** (`roy-chain`, MIT, © 2026 Abubakr Jimoh), pinned commit `ede3ed38`: the app shell (rail, top line, stage,
+  phone dock, drawer geometry, keyboard map) measured from the Slush wallet's structure, ported for the revamp
+  (D-198). Ported files carry `Ported from Baku (roy-chain) ede3ed38:<path>`; Baku's rail credits 21st.dev 21517
+  (unlumen/animated-sidebar), registered in `docs/design/components.md`.
+
+## Tradash (behaviour reference only)
+
+The terminal's behaviour, motion and sound follow tradash.xyz as observed live and in its shipped bundle (7–8 Oct
+2026). Tradash publishes no source and no licence, so nothing of theirs — code, CSS, images or audio — is copied:
+constants and algorithms are re-implemented, and the six trade cues are synthesised to measured pitch contours.
 
 ## Yosuku product and presentation (inherited through Masayume)
 

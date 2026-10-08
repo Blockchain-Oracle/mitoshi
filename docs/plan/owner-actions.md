@@ -20,3 +20,5 @@
 | S14c | Test ETH: deployer `0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e` ~0.05 on Robinhood testnet (46630) and ~0.05 on Base Sepolia (84532); stock-sync `0x51476Dd5CaEb8BEE9585050A9152dea729fC8610` ~0.02 on Robinhood testnet | Open |
 | SM2 | APNs auth key `.p8`; Firebase project + FCM service account + `google-services.json`; Reown (WalletConnect) project ID; an Android phone | Open |
 | SM5 | App Privacy, age-rating and export-compliance answers approved; ask Colosseum whether judges install apps (Q-030) | Open |
+| S23a | A dedicated Alpaca market-data key for Mitoshi ops (today's `ALPACA_*` is shared with Agari, and the free plan allows one data WebSocket per key); until then stock display ticks use REST polling | Open |
+| S23 gate | The terminal run on your own phone: tutorial → sign-up → UP → PnL on the line → Trail → CLOSE → settle | Open |

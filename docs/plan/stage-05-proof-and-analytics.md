@@ -1,5 +1,7 @@
 # S5 — Proof and analytics (after S4, S3.5)
 
+> **Revamp (2026-10-08, D-189…D-200):** the leaderboard data and proof links also feed the terminal's leaderboard drawer and position details (S23g); S5's data lands before S23's gate.
+
 - [ ] `/stats`, `/status` framework (C.6 probes; S14/S15 add LayerZero and v4 probes), leaderboard, `/portfolio/edge`,
   reputation/badges/CSV; **S5 owns the shared profile, share-card and OG components**; `/proof/[market]` with browser
   `eth_call` reverify; `/news` + Finnhub. UX: profile 781 + 29440 (shared with S13); share entry 10388

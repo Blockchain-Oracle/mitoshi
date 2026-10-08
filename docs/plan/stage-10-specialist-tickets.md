@@ -1,5 +1,7 @@
 # S10 — Specialist tickets (10.0/10a–c after S4 + S8 depth; 10d after S7; separate worktrees; A.4.3–A.4.7, A.5.4)
 
+> **Revamp (2026-10-08, D-189…D-200):** Range's band is drawn on the terminal chart; Boost, Moonshot, Parlay and Private also run as terminal modes (S23i) while their routes stay.
+
 - [x] 10.0 `src/fair/{FairValue,FairValueGuard}.sol` + `packages/core/src/fair/fair.vectors.json` (from Agari
   `seat/fair.ts`) + tests.
 - [ ] 10a Parlay: `src/products/parlay/*`; Masayume's lifecycle, pricing and vector suites + D-108, L-38, D-109, PD-2 tests;

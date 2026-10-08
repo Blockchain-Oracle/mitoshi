@@ -60,25 +60,30 @@ splash (`preventAutoHideAsync` at module scope) hides on the web `ready` message
 Android; iOS `onContentProcessDidTerminate` → reload the current path, Android `onRenderProcessGone` → remount at the
 last path; `onShouldStartLoadWithRequest`: our origin stays, `wc:` and wallet schemes → `Linking.openURL`,
 other https → SFSafariViewController / Custom Tabs; `setSupportMultipleWindows={false}`; `webviewDebuggingEnabled` only in
-`development`. The native **PillTabBar** reproduces `MobileBottomNav` (4 destinations + More) with the same copy and
-lucide icons; the More panel lists every destination ("Everything in …"); active tab follows `route-changed`; tap →
-`navigate`; re-tap → `scroll-top`. **MorePanel** slides in from the right edge (owner rule: no bottom sheets), with a
-search row. Native offline screen with retry; status bar follows the web theme.
+`development`. The native **dock** reproduces the web's phone dock (S22, D-189: Trade · Stocks · Games · Portfolio ·
+Everything; floating capsule, 22 px lucide icons, 12 px labels) — superseding the earlier PillTabBar copy of
+`MobileBottomNav`; the dock hides on `/trade` like the web's (the terminal is full-bleed and its 見 disc opens
+Everything); active tab follows `route-changed`; tap → `navigate`; re-tap → `scroll-top`. **Everything** (the former
+MorePanel) slides in from the right edge (owner rule: no bottom sheets, D-190), with a search row and every
+destination. Native offline screen with retry; status bar follows the web theme.
 
 Web side: `proxy.ts` sets cookie `cwf.shell=<platform>` when the user agent carries `CWFShell/` (or `?shell=`), so the
 server layout renders shell mode without a flash; `ShellProvider` hides the header nav, `MobileBottomNav`, install
-prompt and AppStrip, reads `--shell-bottom-inset`, and swaps adapters: `navigator.vibrate` → `haptic`, share →
+prompt and AppStrip (since D-189: the web rail, top line and dock), reads `--shell-bottom-inset`, and swaps adapters:
+`navigator.vibrate` and the terminal's haptic patterns → `haptic`, share →
 native sheet, `Notification` → push, `window.open` → `open-external`, OAuth → `open-auth-session`.
 
 ### D.3 Bridge protocol v1 (`packages/core/src/shell/protocol.ts`, zod, shared by both sides)
 
 Envelope `{ v: 1, id, type, payload }`; native accepts only messages whose `nativeEvent.url` origin is ours; size cap
 64 KB; unknown types ignored; replies echo `id`.
-- web → native: `ready {path}`, `route-changed {path, title, tab}`, `haptic {kind: select|success|warning|error|impact}` (Android maps to
-  `performAndroidHapticsAsync` Confirm/Reject/Segment_Tick),
+- web → native: `ready {path}`, `route-changed {path, title, tab}`, `haptic {kind: select|success|warning|error|impact|
+  tick|open|close|move|surge|mega|slump|warn}` (the terminal kinds follow Tradash's pattern table, `revamp-parity.md`
+  RV-73; Android maps to `performAndroidHapticsAsync` Confirm/Reject/Segment_Tick),
   `share {url, text, image?}`, `open-external {url}`, `open-auth-session {url, callbackScheme}`, `push-permission
   {reason}`, `badge {count}`, `theme {mode}`, `rpc {method, params}` (SM3).
-- native → web: `navigate {path}`, `scroll-top`, `app-state {active|background}`, `push-token {token, platform,
+- native → web: `navigate {path}`, `scroll-top`, `app-state {active|background}` (background stops the terminal's music
+  and keeps an armed exit's price stream per D-200), `push-token {token, platform,
   environment}`, `push-opened {path, data}`, `auth-session-result {url | cancelled}`, `insets {bottom}`, `rpc-result
   {id, result | error}`, `provider-event {event, data}` (SM3).
 
@@ -88,7 +93,7 @@ AASA (served as `application/json` at `https://<domain>/.well-known/apple-app-si
 `testnet.<domain>`, HTTPS, **no redirects** — apex must not redirect to `www`):
 ```json
 { "applinks": { "details": [ { "appIDs": ["<TEAM>.<bundle>.testnet"],
-    "components": [ {"/": "/go/*"}, {"/": "/markets/*"}, {"/": "/stocks/*"}, {"/": "/themes/*"}, {"/": "/launch/*"},
+    "components": [ {"/": "/go/*"}, {"/": "/trade/*"}, {"/": "/markets/*"}, {"/": "/stocks/*"}, {"/": "/themes/*"}, {"/": "/launch/*"},
                     {"/": "/games/duel/*"}, {"/": "/u/*"}, {"/": "/native-auth*"} ] } ] },
   "webcredentials": { "apps": ["<TEAM>.<bundle>.testnet"] } }
 ```

@@ -1,5 +1,7 @@
 # SM1 — Mobile shell, passkeys in the app, delivery pipeline (after S1's gate + the domain; App. D)
 
+> **Revamp (2026-10-08, D-189…D-200):** the native tab bar mirrors S22's phone dock and the right-edge panel is the Everything drawer (`docs/specs/mobile.md` D.2, D-189).
+
 - [ ] SM1.1 Spike X19 + monorepo: `mobile/` Expo SDK 57 app (default template stripped), in the pnpm workspace with
   isolated installs (supported since SDK 54; fallback D.1); EAS project; dev build on the owner's iPhone and an Android
   phone (`eas device:create` first — the individual account can't auto-register devices); App Store Connect record for

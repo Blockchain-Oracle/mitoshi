@@ -1,5 +1,7 @@
 # S13 — Social and assistant (after S4, S3.5)
 
+> **Revamp (2026-10-08, D-189…D-200):** adds the season league (D-195, Tradash's Aura) shown in the terminal's account drawer, profile editing for the drawer's profile header, and the activity badge on the rail.
+
 - [ ] Sensei (brain + optional MPP, streamed tokens; stock holdings line lands in S15e), Room + ticker rooms (position
   gate), takes + cashtags, alerts (basis + staleness gate; delivered by push in the app), reels, `/u/[address]`,
   `/api/social/*`, `/activity` + LifecycleWatcher (filed under Portfolio as the notification centre with a header

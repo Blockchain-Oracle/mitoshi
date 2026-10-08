@@ -1,5 +1,7 @@
 # S6 — Stock sessions and lanes (after S4)
 
+> **Revamp (2026-10-08, D-189…D-200):** the marquee session cell is re-homed to the terminal's Window chip (the marquee retires, D-189); S6's session states feed S23c's Window rule.
+
 - [ ] ops `/session` → `features/markets/session` (Agari); halts board; session words; `/api/earnings`; corporate skips;
   marquee session cell + crowd sentiment; Gap on Data Streams (mainnet config) with RedStone archive fallback; G-04
   provider 24/7 lanes labelled; G-05 pre-IPO and NFLX paused honestly on Moderato (Q-007, Q-011). UX: every state

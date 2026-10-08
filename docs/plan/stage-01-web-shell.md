@@ -1,5 +1,7 @@
 # S1 — Web shell, accounts, relay, geofence (wave 1)
 
+> **Revamp (2026-10-08, D-189…D-200):** the header, marquee, footer, pill nav and More panel built here are replaced by S22's rail/top line/stage/dock and the Everything drawer (D-189); the open perf box adds `/trade/BTC` to the Lighthouse list.
+
 - [x] 1a core: port Masayume `packages/core/src/**` minus Somnia modules (C.2.1 list); add Agari
   `packages/core/src/{market,orders,reserves,auth,types/session-lanes}`; types per C.2.1 (drop poolAddress/nonce/token
   ids/venueId; `MarketStatus` clock-derived); calendar = RedStone `NY_MARKET_NEXT_CHANGE_TIME` ∩ Alpaca; tickers 9 names +

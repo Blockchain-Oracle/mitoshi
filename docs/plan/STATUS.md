@@ -1,6 +1,6 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-08. **Never trust memory over this file.**
+Updated 2026-10-08 (revamp decided). **Never trust memory over this file.**
 
 ## Where we are
 
@@ -35,6 +35,17 @@ Updated 2026-10-08. **Never trust memory over this file.**
   Checked 2026-10-08 07:22Z: web 200; ops `/health` ok on `fffc58f` (restarted 2026-10-07 04:53Z), all 14 actors ok, RPC
   limiter active. The apex `mitoshi.xyz` serves nothing yet (mainnet is S19). The trunk is ahead of both deploys.
 
+## The revamp (decided 2026-10-08, D-189…D-200)
+
+The owner redirected the UI: **Markets become a Tradash-style terminal at `/trade/[symbol]`** (one screen, canvas line
+chart moving on every trade, UP/DOWN ↔ TRAIL/CLOSE, PnL on the line = what CLOSE pays, synthesised sounds, haptics,
+reactions, music) and **the app shell follows roy-chain/Slush** (rail, top line, bordered stage, phone dock, floating
+right drawers, centred modals) — in Mitoshi's own colours and type, with no simulated balance and the no-bottom-sheet
+rule kept. Exits that run with the app closed come from Trading Balance v2's EXIT grant + an ops keeper (S24); the
+house keeps its exit side to T−30 s. Ledger: `revamp-parity.md` (RV rows; references pinned: Tradash spec in
+`canton-season3/context/13-revamp/tradash/`, Owarine `ecb7565b`, Baku/roy-chain `ede3ed38`). Stages: `stage-22-shell.md`,
+`stage-23-terminal.md`, `stage-24-exits.md`; notes added to S1, S4–S7, S10–S13, S20, S21, SM1, SM4.
+
 ## Open integration items (from the wave-2/3 merges; owners pick these up)
 
 - S1/S16: the relay engine doesn't honour `themesPolicy.batches` (the one-tx key-authorization + follow is refused).
@@ -57,5 +68,9 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
    spanning a 04:00 ET; then the S4 Handoff re-runs on the deployed site (tap-latency, stream-ticket, `lighthouse.yml`).
 2. S10 remainder: `/api/prices/datastreams-report`, 10a.4 (a won ticket claimed, UX gate), the S10d browser gate, the
    stage gate.
-3. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
-   with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, not after.
+3. The revamp: R.0 (decisions and docs) is done; **wave R** runs S22 shell · S23a display feed (ops) · S23b chart +
+   LiveStore · S24.1 vault v2 in parallel, then S23c–j and S24.2–5 (`stage-2{2,3,4}-*.md`). S5's leaderboard data comes
+   before S23g's leaderboard and S6's session states before S23c's stock states.
+4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
+   with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
+   revamped UI.

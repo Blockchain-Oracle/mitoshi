@@ -1,5 +1,7 @@
 # SM4 — Native hot paths and system surfaces (after SM3 + S4 + S7; stock/theme/launch/bridge rows after S15/S16/S17/S14)
 
+> **Revamp (2026-10-08, D-189…D-200):** the native call flow follows the S23 terminal (UP/DOWN ↔ TRAIL/CLOSE, live value, the haptic kinds in D.3).
+
 - [ ] SM4.1 Native `settings.tsx` (app lock, push permission, build/variant, "Account settings" → web
   `/settings/account`) per D.10; the native screen register entries (`native-of: <web id>`).
 - [ ] SM4.2 Native call flow: hero (price chart as one Expo DOM-component island reusing the web chart code; static

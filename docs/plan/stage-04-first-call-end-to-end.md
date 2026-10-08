@@ -1,5 +1,7 @@
 # S4 — First call end to end (M1)
 
+> **Revamp (2026-10-08, D-189…D-200):** the trading home moves to the S23 terminal at `/trade/[symbol]` (D-192); `/markets` becomes the list; the hero chart (lightweight-charts) retires once unused (D-199); the Portfolio cash-out loses its hold (D-197).
+
 - [x] Provider methods (C.2.2) and the order lane (C.2.3); `relay/policies/engine.ts` + `scripts/drive/relay-engine.ts`.
 - [x] Spike X20; fill the D37 arm slot with the D38 wallet access key (scopes from `deployments/42431/engine.json`;
   Q-031 defaults); the key listed and revocable in `/settings/account`.

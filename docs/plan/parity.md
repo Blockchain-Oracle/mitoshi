@@ -482,3 +482,11 @@ Consolidated with the open list in `../STATUS.md`. None of these is a scope cut;
 | UX-10 | Performance budgets met on the named routes (§3.1) | S1, S4, S15, S21 |
 | UX-11 | Phone ergonomics (targets, inputs, safe areas, sticky CTAs) | S1 onward |
 | UX-12 | Every adopted 21st component registered and reviewed | every UI stage |
+| UX-13 | Shell: roy-chain/Slush rail, top line, stage, dock, Everything drawer, keyboard map, privacy eye (D-189; `revamp-parity.md` RV-01…RV-12) | S22 |
+| UX-14 | Overlays: floating right drawers with URL state, centred modals, Tradash toast grammar (D-190; RV-13…RV-16) | S22 |
+| UX-15 | The terminal `/trade/[symbol]`: layout, canvas chart, Window rule, one-tap loop (D-192, D-199; RV-20…RV-60) | S23 |
+| UX-16 | Feedback: synthesised cues, combo/surge/slump, haptics, reactions, music, Sound & Vibration (RV-12, RV-70…RV-75) | S22, S23 |
+| UX-17 | Display feed separate from settlement; `ticks` topic; maker divergence guard (D-196; RV-95) | S23 |
+| UX-18 | Live value = what CLOSE pays; one-tap CLOSE; vault sell lane (D-197; RV-52, RV-96) | S23 |
+| UX-19 | Exits: in the tab (D-200), then the EXIT grant + keeper (D-193); house exit tail (D-194) (RV-51, RV-55, RV-97, RV-98) | S23, S24 |
+| UX-20 | Terminal drawers and first run: markets, account, history, replay, share, leaderboard, season league, tutorial → sign-up, splash, install, update (D-191, D-195; RV-80…RV-93) | S23, S5, S13 |

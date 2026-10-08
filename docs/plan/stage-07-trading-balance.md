@@ -1,5 +1,7 @@
 # S7 — Trading Balance: EventVault + tap trading (after S4; contracts A.4.1, web C)
 
+> **Revamp (2026-10-08, D-189…D-200):** the AllowancePill moves from the desktop header to the shell's top line (S22); vault positions get a sell lane (S23d, D-197) and Trading Balance v2 adds the EXIT grant (S24, D-193).
+
 - [x] Contracts: `src/products/shared/{EngineSeam,Payouts}.sol`; `src/products/vault/{IEventVault,VenueGateway,
   EventVault,VaultTally}.sol` (forwarder removed; D-062; D-091 `Caps.market`; P12 on withdraw; crank opt-out;
   `sweep(bytes32)`); tests that prove it: Masayume's `EventVault.funding`, `.trading`, `CapsVectors`, plus

@@ -1,5 +1,7 @@
 # S20 — Public story and submission (final after S19)
 
+> **Revamp (2026-10-08, D-189…D-200):** the landing takes Tradash's grammar (one line, one button, a phone running the terminal engine, lazily below the fold within the `(site)` budget); captures and videos are shot after S23's gate on the revamped UI.
+
 - [ ] Landing (both pillars equal; Agari landing), how it works, pitch, demo, docs site (shipped surfaces only),
   download (PWA + TestFlight public link + internal invite path + APK, from SM5), the app in the demo video; two videos
   (2–3 min pitch, ≤ 3 min demo), GTM/demand text, disclosure. Weekly update videos run every week from now (owner

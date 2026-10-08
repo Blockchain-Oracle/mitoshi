@@ -1,5 +1,7 @@
 # S12 — Games (after S4; 12a's result card after S5) — 12a ∥ 12b
 
+> **Revamp (2026-10-08, D-189…D-200):** games share the S22 feedback engine (one AudioContext, the Sound & Vibration setting, the haptics table).
+
 - [ ] 12a hub, Practice, Lucky (crypto + stocks policy), Line Rider, Candle Hop on ops prices; achievements/profile/
   friends (Agari); result card (S5 components). Perf/UX: one `next/dynamic` chunk per game (today every game route
   loads ~938 KB gz); audio on first play, music off by default in the app; haptics through the shell bridge. 21st
