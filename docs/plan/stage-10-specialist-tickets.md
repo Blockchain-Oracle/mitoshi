@@ -64,7 +64,9 @@
 
 ## Handoff
 
-Branch `stage/S10-tickets` (merged with trunk 58d1277 at 71fbdb3). Commits: `b721516` 10a.1 parlay contracts + suites ·
+**Merged into `integration/t1` at `3e917a4` (2026-10-08); the branch and its worktree are gone.** Since this handoff:
+`9866e14` 10c.3 Boost placed card + Range/Moonshot "at most" + browser rows · `6547f69` 10d.4 private web (D-171) ·
+`e71267a` 10e `/surface` (in progress) · `2b5b053` the trunk's gate fixes. History: branch `stage/S10-tickets` (merged with trunk 58d1277 at 71fbdb3). Commits: `b721516` 10a.1 parlay contracts + suites ·
 `9a26db6` 10a.2 ParlayReserve live + `deployer-tickets` + parlay relay policy (D-166) · `e226eb2` 10a.3 `/parlay` slip,
 `packages/markets/src/parlay`, `/api/prices/redstone-payload` (D-167) · `570e148` drive fix · `f2bc39e` merge of
 `slice/S10bcd-contracts` (10b.1–2 range, 10c.1–2 leverage + leverage-keeper, 10d.1–2 private: contracts, suites,
