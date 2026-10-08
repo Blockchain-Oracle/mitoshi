@@ -22,6 +22,17 @@ const browser = await chromium.launch();
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 context.setDefaultTimeout(90_000);
 const page = await context.newPage();
+// Keep every toast title as it appears: a MutationObserver over the toast layer, installed before any script runs.
+await page.addInitScript(() => {
+  const w = window as unknown as { __toasts: string[] };
+  w.__toasts = [];
+  new MutationObserver((records) => {
+    for (const r of records) for (const n of r.addedNodes) {
+      const el = n instanceof Element ? (n.matches('[data-slot="toast-title"]') ? [n] : [...n.querySelectorAll('[data-slot="toast-title"]')]) : [];
+      for (const t of el) if (t.textContent && w.__toasts.at(-1) !== t.textContent) w.__toasts.push(t.textContent);
+    }
+  }).observe(document, { childList: true, subtree: true });
+});
 const cdp = await context.newCDPSession(page);
 await cdp.send("WebAuthn.enable");
 await cdp.send("WebAuthn.addVirtualAuthenticator", {
@@ -39,6 +50,8 @@ page.on("response", async (r) => {
   if (m) { txs.push(m[1]!); console.log(JSON.stringify({ step: "tx", hash: m[1] })); }
 });
 const toastTitles = () => page.locator('[data-slot="toast-title"]').allInnerTexts();
+/** Every toast title that appeared, in order (a toast may expire before a step logs, as "Wallet connected" does). */
+const toastsSeen = () => page.evaluate(() => (window as unknown as { __toasts?: string[] }).__toasts ?? []);
 const log = (o: Record<string, unknown>) => console.log(JSON.stringify(o));
 
 let failed = false;
@@ -59,7 +72,7 @@ try {
   await expect(dialog.getByText("Tap-trading is on.")).toBeVisible({ timeout: 60_000 });
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden({ timeout: 10_000 });
-  log({ step: "signed-up", prompts: assertions, toasts: await toastTitles() });
+  log({ step: "signed-up", prompts: assertions, toasts: await toastsSeen() });
 
   // A $1 stake keeps each run small (the faucet's balance would default the size to 5 % of $1M).
   await page.locator(".tm-stack").click();
@@ -145,6 +158,7 @@ try {
   const install = page.getByRole("dialog").filter({ hasText: "Install Mitoshi" });
   await expect(install).toBeVisible();
   log({ step: "install", body: (await install.innerText()).split("\n").slice(0, 6) });
+  log({ step: "toasts-seen", toasts: await toastsSeen() });
   await page.screenshot({ path: join(out, "install.png") });
 } catch (e) {
   failed = true;
