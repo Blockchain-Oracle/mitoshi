@@ -48,26 +48,62 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   switch, axe on both drawers). Still in 23c: the rail's Trade sub-list, the arm card, the wallet key's daily limit in
   the stake cap, scheduled calls on a prelisted `?w=`, the depth toggle, PLTR/AMD and 04:00 notes, `/markets/[id]` →
   `/trade/<SYM>?w=<id>`, `/markets` rows → the terminal, the Sensei entry.
+  Done 2026-10-08 (e9021b7, 91329f0 and the 23j redirect): stake capped before signing by the wallet key's remaining
+  daily limit (`useKeyRemaining`), the Trading Balance's room and the book (a thin book caps the tap, "max $X"); the arm
+  card; scheduled calls on a prelisted Window; SPCX and PLTR/AMD notes (the next Regular open from ops' `session`
+  topic); `/markets/[id]` → `/trade?w=` (the screen moves to the Window's ticker, successor note kept); `/markets` rows →
+  the terminal (23j); the rail's Trade sub-list (23g). Still open: the Sensei entry; the 04:00 ET gap note (D-185).
 - [ ] 23d Live value + one-tap CLOSE (D-197): exit read with `minRestSec = 0`, the fair-value reprice and "≈";
   `submitter/cash-out.ts` (parallel reads, `onSigned`, tolerance and auto-accepted requote, "Close for $X" toast);
   `portfolio/useCashOut.ts` loses the hold; `vault/order.ts` sell lane (`placeFor(isBuy=false)`); `tap-session.ts`
   routes closes by where the position lives; Close all; Add/Reduce modal; Boost close via `LeverageReserve.close`;
   locked, settling, auto-paid and void states with the verdict stamps.
+  Progress (1769301, de1efd0): the value is the exit walked on the live book every 5 s, repriced on the display spot
+  between reads ("≈", never above the book's last read, `position-value.ts`); one-tap CLOSE with the close tolerance on
+  the book's own floor, a requote inside it taken, outside it "Close for $X"; the Trading Balance's sell lane
+  (`vault/sell.ts`, `placeFor`/`place` with `isBuy = false`; the session key signs when armed); Close all; Reduce
+  25/50/75/100 % and the Add modal; the locked state. A real UP → CLOSE on Moderato (acceptance S23). Still open: the
+  exit read at `minRestSec = 0`; parallel reads and `onSigned` in `cash-out.ts`; `useCashOut` losing its hold on
+  /portfolio; the Boost close via `LeverageReserve.close`; the settling, auto-paid and void states with the verdict
+  stamps (one settle-toast owner).
 - [ ] 23e Exits in the tab (D-200): Owarine `trailEligible`/`ratchet`/`trailHit` + break-even bisection; the TP/SL
   drawer; evaluation on committed ticks; the price stream kept open while armed; signer by position location; arming
   refused when the key expires first; "Only while Mitoshi is open".
-- [ ] 23f Feedback in the terminal: `feedback/reactions.ts` (+ test), `useChartFeedback.ts`, the reaction overlay, chart
+  Progress (f96b86a): Trail — break-even on the fair model, arming past it by more than the distance, the ratchet and
+  the hit on each row's own asset line, the one-tap Close on a hit, a 3 s retry floor; the stream held open with the
+  tab hidden (`holdStreamAwake`); arming refused when the signing key expires before the Window; "Only while Mitoshi is
+  open". Still open: the TP/SL drawer.
+- [x] 23f Feedback in the terminal: `feedback/reactions.ts` (+ test), `useChartFeedback.ts`, the reaction overlay, chart
   controls (interval popover → candles, line ↔ candles, the music chip "♪ Track ›", recentre), tense music at ROI ≤ −5 %.
+  Done (dddc79d): the reaction engine and its tests, the overlay on `m.*`, the three synthesised tracks with the tense
+  low-pass, the chart controls (interval popover, line ↔ candles, depth toggle from the Markets hero, music chip,
+  recentre).
 - [ ] 23g Drawers: markets picker, account (incl. Collect and "Turn on one-tap"), position details, open positions
   (phone), trade history + stats, replay (`replay.ts`), share modal (`share-png.ts` re-branded; QR from the existing
   `qrcode-generator`, imported on tap), leaderboard (after S5's data), season league (after S13), settings (feedback,
   close tolerance, trail default, theme), how it works, install, sign-out confirm; "Wallet connected/disconnected".
+  Progress (d34a8a0, de1efd0, c034561): markets picker (search, Favourites · All · Hot · Crypto · Stocks · 24/7, stars,
+  day change from `/prices/day`), account (equity, tiles, Add money, Withdraw — a new unsponsored `transfer` intent the
+  passkey signs —, the Trading Balance panel, Activity, Collect, the one-tap card, Sign out confirm), position details
+  (Reduce, Add, proof link, show on chart), open positions (phone), trade history + stats, replay, settings (size,
+  trailing, close tolerance), the rail's Trade sub-list. Waits on its stages: the share modal and leaderboard on S5's
+  card and data, the season league on S13. Still open here: the install drawer (links to /download today) and the
+  "Wallet connected / disconnected" toasts.
 - [ ] 23h First run: the 5-step tutorial (`Tutorial.tsx`, `tour-copy.ts`) ending in "Start trading" → `SignInModal` /
   `Onboarding` → faucet → arm → the terminal (D-191); the splash; `useAppUpdate.ts` + `/api/version`; the install drawer.
+  Progress (7c1c6bd): the five-step tour as a large centred modal ending in "Start trading" (the real sign-up, D-191),
+  the splash on the terminal's first load per tab (the chart's loop waits for it), `/api/version` + one build id per
+  image + the persistent Refresh toast. Still open: the install drawer.
 - [ ] 23i Modes: Range (band on the chart), Boost (chips in the settings stack), Moonshot, Parlay (Owarine `parlay/*`
   re-wired to Mitoshi's parlay contracts; slip in the right column), Private toggle; the passkey prompt named (Q-032).
+  Progress (d7bfd4d): the mode row hosts the ticket's Range (its band drawn on the chart), Boost and Private bodies for
+  the Window on screen (a drawer on phones), naming the passkey prompt (Q-032's default); Parlay and Moonshot open their
+  screens. Still open: Boost chips in the settings stack and the parlay slip in the right column (Owarine `parlay/*` on
+  Mitoshi's contracts).
 - [ ] 23j `/markets` as the list (lanes, "Your calls", word board, Surface link → terminal); the hero chart and its
   lightweight-charts island retire once unused.
+  Done (85814ce): the list with "Open the terminal", rows and board words → `/trade/<SYM>?w=<id>`, old `?m=` links too;
+  the hero, the ticket composer and dock, and `lightweight-charts` removed. The Surface link → terminal stays open.
 - **Gate:** e2e drivers rewritten (`tap-latency` incl. close, `first-call`, `onboarding`, `trading-balance`, `boost`,
   `parlay`, `range`, `private`); `long-tasks.ts` on `/trade/BTC` at 4× CPU; Lighthouse adds `/trade/BTC` to
   `.github/workflows/lighthouse.yml` (ROUTES, trace-tasks, lh-shifts) and updates the redirected `/markets/[id]` entry;

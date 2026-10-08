@@ -47,6 +47,17 @@ house keeps its exit side to T−30 s. Ledger: `revamp-parity.md` (RV rows; refe
 `canton-season3/context/13-revamp/tradash/`, Owarine `ecb7565b`, Baku/roy-chain `ede3ed38`). Stages: `stage-22-shell.md`,
 `stage-23-terminal.md`, `stage-24-exits.md`; notes added to S1, S4–S7, S10–S13, S20, S21, SM1, SM4.
 
+**Where it stands (2026-10-08, end of day):** S22 shell is built, gated and deployed (its Lighthouse TBT failures are on
+the Markets routes and moved to S23). S23 is deployed on testnet through 23j: the ops display feed (`ticks`, candles,
+day figures; the maker's divergence guard reworked after F-S23-01), the live line and chart, `/trade/[symbol]` with the
+Window rule, one-tap UP/DOWN, live value = what CLOSE pays, one-tap CLOSE (wallet and Trading Balance), Trail in the
+tab, reactions and music, the drawers (markets, account with Withdraw, position details, history, replay, settings),
+first run (tour → real sign-up, splash, update notice), the modes row, and `/markets` as the list. A real UP → CLOSE ran
+on Moderato from a GitHub runner (`acceptance/S23.md`; browser gates that drive testnet run there, F-S23-03). Open per
+box in `stage-23-terminal.md`, then the S23 gate (drivers rewritten for the terminal, long tasks, Lighthouse with
+`/trade/BTC`, §8 screenshots, the owner's phone run). S5 (share card, leaderboard data) and S13 (season league) feed
+23g when they land.
+
 ## Open integration items (from the wave-2/3 merges; owners pick these up)
 
 - S1/S16: the relay engine doesn't honour `themesPolicy.batches` (the one-tx key-authorization + follow is refused).
