@@ -41,3 +41,6 @@ mobile/.expo/
 next-env.d.ts
 contracts/deployments/**/*.pending.json
 .lighthouseci/
+
+# Local Redis snapshots (redis-server started from the repo root)
+dump.rdb
