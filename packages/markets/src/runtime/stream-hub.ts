@@ -4,7 +4,7 @@
  * `@cwf/markets/stream` so the shell's ticker can use it on site pages too. `configureStream` is called once with the
  * ops stream URL (null keeps everything idle: nothing connects and subscribers simply never hear anything).
  */
-import { createStreamClient, type StreamClient, type StreamEvent, type StreamState } from "./stream";
+import { createStreamClient, documentVisibility, type StreamClient, type StreamEvent, type StreamState, type StreamVisibility } from "./stream";
 
 export type { StreamEvent, StreamState } from "./stream";
 
@@ -25,10 +25,47 @@ export function configureStream(next: { url: string | null; ticket?: () => Promi
   config = next;
 }
 
+/**
+ * Holds that keep the stream open while the page is hidden (S23e): an armed trail must keep hearing its price with the
+ * tab in the background. Without a hold the stream pauses on a hidden page as before (AD-6).
+ */
+let awakeHolds = 0;
+const awakeListeners = new Set<() => void>();
+
+function heldVisibility(): StreamVisibility | null {
+  const doc = documentVisibility();
+  if (!doc) return null;
+  return {
+    hidden: () => awakeHolds === 0 && doc.hidden(),
+    subscribe: (onChange) => {
+      awakeListeners.add(onChange);
+      const off = doc.subscribe(onChange);
+      return () => {
+        awakeListeners.delete(onChange);
+        off();
+      };
+    },
+  };
+}
+
+/** Keep the stream open while the page is hidden until the returned release runs. */
+export function holdStreamAwake(): () => void {
+  awakeHolds += 1;
+  awakeListeners.forEach((l) => l());
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    awakeHolds -= 1;
+    awakeListeners.forEach((l) => l());
+  };
+}
+
 function hub(): StreamClient | null {
   if (!config.url) return null;
   client ??= createStreamClient({
     url: config.url,
+    visibility: heldVisibility(),
     ...(config.ticket ? { ticket: config.ticket } : {}),
     onBatch: (events) => {
       const byTopic = new Map<string, StreamEvent[]>();

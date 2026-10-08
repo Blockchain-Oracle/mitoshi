@@ -68,9 +68,18 @@ export const TERMINAL = {
     failed: "Order didn't go through",
     gettingPrice: "Getting a price…",
   },
+  trail: {
+    armed: (symbol: string) => `Trailing stop armed · ${symbol}`,
+    armedBody: (pct: string) => `Closes if the price comes back ${pct}% — only while Mitoshi is open`,
+    off: (symbol: string) => `Trailing stop off · ${symbol}`,
+    hit: (symbol: string) => `Trailing stop hit · ${symbol}`,
+    needsKey: "Turn on one-tap first",
+    needsKeyBody: "A trail closes without asking, so it needs one-tap signing that lasts until this Window closes.",
+  },
   close: {
     closing: (symbol: string) => `Closing ${symbol}…`,
     closed: (symbol: string) => `Closed ${symbol}`,
+    lockedIn: (pnl: string) => `Locked ${pnl}`,
     reduced: (symbol: string) => `Reduced ${symbol}`,
     realized: (pnl: string, paid: string) => `Realized ${pnl} · ${paid} paid`,
     requote: (floor: string) => `Close now pays at least ${floor}, below your tolerance.`,

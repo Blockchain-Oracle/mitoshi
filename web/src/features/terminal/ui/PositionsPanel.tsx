@@ -11,13 +11,16 @@ import { TERMINAL } from "../copy";
 import { clockText, livePnlText, money, sideWord } from "../format";
 import type { TerminalPosition } from "../terminal-positions";
 import { usePositionValue, type PositionValue } from "../usePositionValue";
+import { useRowTrail } from "../useTrail";
 
+const noTrail = () => undefined;
 const roiText = (bps: number | null) => (bps === null ? "" : ` (${bps >= 0 ? "+" : "−"}${(Math.abs(bps) / 100).toFixed(1)}%)`);
 
-function PositionRow({ p, current, busy, onClose, onValue }: { p: TerminalPosition; current: boolean; busy: boolean; onClose: (p: TerminalPosition, v: PositionValue) => void; onValue: (id: string, v: PositionValue) => void }) {
+function PositionRow({ p, current, busy, onClose, onTrailHit, onValue }: { p: TerminalPosition; current: boolean; busy: boolean; onClose: (p: TerminalPosition, v: PositionValue) => void; onTrailHit: (p: TerminalPosition, v: PositionValue, why: "trail") => void; onValue: (id: string, v: PositionValue) => void }) {
   const masked = usePrivacy();
   const v = usePositionValue(p);
   useEffect(() => onValue(p.id, v), [p.id, v, onValue]);
+  useRowTrail(p, v, onTrailHit);
   const up = p.side === "up";
   const Dir = up ? ArrowUp : ArrowDown;
   const gain = (v.pnlBase ?? 0n) >= 0n;
@@ -50,18 +53,20 @@ function PositionRow({ p, current, busy, onClose, onValue }: { p: TerminalPositi
   );
 }
 
-export function PositionsList({ positions, activeMarketId, busyId, onClose, onValue }: {
+export function PositionsList({ positions, activeMarketId, busyId, onClose, onTrailHit, onValue }: {
   positions: readonly TerminalPosition[];
   activeMarketId: string | null;
   busyId: string | null;
   onClose: (p: TerminalPosition, v: PositionValue) => void;
+  /** Wired on one list only (the always-mounted one), so a hit closes once. */
+  onTrailHit: ((p: TerminalPosition, v: PositionValue, why: "trail") => void) | null;
   onValue: (id: string, v: PositionValue) => void;
 }) {
   if (positions.length === 0) return <p className="tm-empty">{TERMINAL.positions.none}</p>;
   return (
     <div className="tm-card" aria-label={TERMINAL.positions.title} role="list">
       {positions.map((p) => (
-        <PositionRow key={p.id} p={p} current={p.marketId === activeMarketId} busy={busyId === p.id} onClose={onClose} onValue={onValue} />
+        <PositionRow key={p.id} p={p} current={p.marketId === activeMarketId} busy={busyId === p.id} onClose={onClose} onTrailHit={onTrailHit ?? noTrail} onValue={onValue} />
       ))}
     </div>
   );

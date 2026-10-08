@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef } from "react";
 import { useClockValue } from "@/lib/clock";
 import { useCommittedSpot } from "./live";
-import { liveValue, pnlOf } from "./position-value";
+import { breakEvenSpotE8, liveValue, pnlOf } from "./position-value";
 import type { TerminalPosition } from "./terminal-positions";
 
 export const EXIT_READ_MS = 5_000;
@@ -24,6 +24,9 @@ export interface PositionValue {
   locked: boolean;
   /** Close can sell only part (the book is thin): the value is what that part pays. */
   partial: boolean;
+  /** The display spot of the position's asset, and the spot where Close pays the cost back (Trail's reference). */
+  spot: number | null;
+  breakEven: number | null;
 }
 
 export function usePositionValue(p: TerminalPosition): PositionValue {
@@ -47,11 +50,12 @@ export function usePositionValue(p: TerminalPosition): PositionValue {
   if (exit && exit.quotedAtMs !== anchorSpot.current.at) anchorSpot.current = { at: exit.quotedAtMs, spotE8: spot.priceE8 };
   const nowSec = useClockValue((ms) => Math.floor(ms / 1000));
   return useMemo(() => {
-    if (!exit) return { exit: null, valueBase: null, pnlBase: null, roiBps: null, approx: false, locked, partial: false };
+    if (!exit) return { exit: null, valueBase: null, pnlBase: null, roiBps: null, approx: false, locked, partial: false, spot: spot.price, breakEven: null };
     const v = liveValue({ anchor: { proceedsBase: exit.proceedsBase, spotE8: anchorSpot.current.spotE8 }, side: p.side, spotE8: spot.priceE8, openE8, sigmaE8, tauSec: Math.max(0, p.expirySec - nowSec) });
     // A partial exit values only what sells: cost is taken pro rata so PnL compares like with like.
     const costShare = exit.partial && p.heldRaw > 0n ? (p.costBase * exit.contractsRaw) / p.heldRaw : p.costBase;
     const { pnlBase, roiBps } = pnlOf(v.valueBase, costShare);
-    return { exit, valueBase: v.valueBase, pnlBase, roiBps, approx: v.approx, locked, partial: exit.partial };
-  }, [exit, spot.priceE8, openE8, sigmaE8, nowSec, p.side, p.expirySec, p.heldRaw, p.costBase, locked]);
+    const be = breakEvenSpotE8({ anchor: { proceedsBase: exit.proceedsBase, spotE8: anchorSpot.current.spotE8 }, costBase: costShare, side: p.side, openE8, sigmaE8, tauSec: Math.max(0, p.expirySec - nowSec) });
+    return { exit, valueBase: v.valueBase, pnlBase, roiBps, approx: v.approx, locked, partial: exit.partial, spot: spot.price, breakEven: be === null ? null : Number(be) / 1e8 };
+  }, [exit, spot.priceE8, spot.price, openE8, sigmaE8, nowSec, p.side, p.expirySec, p.heldRaw, p.costBase, locked]);
 }

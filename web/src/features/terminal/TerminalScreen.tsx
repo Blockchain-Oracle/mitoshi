@@ -4,7 +4,8 @@
 // right edge in the URL (D-190), the shell's rail beside it (D-192). One tree for every width; CSS places it.
 import type { TickerSymbol } from "@cwf/core";
 import { usePathname } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { holdStreamAwake } from "@cwf/markets/stream";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MotionScope } from "@/components/motion-scope";
 import MitoshiMark from "@/components/shell/MitoshiMark";
 import { EVERYTHING_DRAWER } from "@/components/shell/Rail";
@@ -23,6 +24,8 @@ import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } fr
 import { MarketsDrawer } from "./ui/MarketsDrawer";
 import type { TerminalPosition } from "./terminal-positions";
 import { useTerminalClose } from "./useTerminalClose";
+import { useTrailToggle } from "./useTrail";
+import { trailEligible } from "./position-value";
 import type { PositionValue } from "./usePositionValue";
 import { PositionsList, UnrealizedCard } from "./ui/PositionsPanel";
 import { TradeButtons, trailWords } from "./ui/TradeButtons";
@@ -61,6 +64,8 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
     });
   }, []);
   const onClose = useCallback((p: TerminalPosition, v: PositionValue) => void closer.close(p, v.exit), [closer]);
+  const onTrailHit = useCallback((p: TerminalPosition, v: PositionValue) => closer.close(p, v.exit, undefined, "trail"), [closer]);
+  const toggleTrail = useTrailToggle();
   const totals = useMemo(() => {
     let value = 0n;
     let pnl = 0n;
@@ -89,8 +94,13 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   if (s.active) {
     const base = s.overlay.current ?? { pnl: null, pnlText: "", entry: null, levels: [] };
     const pnlBase = activeValue?.pnlBase ?? null;
-    s.overlay.current = { ...base, pnl: pnlBase === null ? null : Number(pnlBase) / 1e6, pnlText: pnlBase === null ? "" : masked ? SHELL.masked : livePnlText(pnlBase) };
+    const be = activeValue?.breakEven ?? null;
+    const levels = be === null ? base.levels : [...base.levels, { kind: "breakeven" as const, price: be, label: "B/E" }];
+    s.overlay.current = { ...base, levels, pnl: pnlBase === null ? null : Number(pnlBase) / 1e6, pnlText: pnlBase === null ? "" : masked ? SHELL.masked : livePnlText(pnlBase) };
   }
+  // An armed trail keeps hearing its price with the tab in the background (it still needs Mitoshi open).
+  const trailing = s.positions.some((p) => p.trailStop !== null);
+  useEffect(() => (trailing ? holdStreamAwake() : undefined), [trailing]);
 
   const pick = (next: TickerSymbol) => {
     // Replacing the drawer's entry closes it and lands on the new market; Back returns to the previous one.
@@ -135,16 +145,16 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
           </div>
           <div className="tm-side-list">
             <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
-            <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onValue={onValue} />
+            <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onTrailHit={onTrailHit} onValue={onValue} />
           </div>
           {count > 0 ? <ViewPositionPill count={count} roiPct={totals.pnl !== null && totals.cost > 0n ? Number((totals.pnl * 10_000n) / totals.cost) / 100 : null} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
           {s.active ? (
             <TradeButtons
               mode="open"
               trailActive={s.active.trailStop !== null}
-              trailEligible={false}
-              trailNote={TERMINAL.buttons.needMove(trailWords(s.settings.trailPct))}
-              onTrail={() => undefined}
+              trailEligible={trailEligible(s.active.side, activeValue?.spot ?? null, activeValue?.breakEven ?? null, s.settings.trailPct)}
+              trailNote={s.active.trailStop !== null ? TERMINAL.buttons.tabOnly : trailEligible(s.active.side, activeValue?.spot ?? null, activeValue?.breakEven ?? null, s.settings.trailPct) ? null : TERMINAL.buttons.needMove(trailWords(s.settings.trailPct))}
+              onTrail={() => toggleTrail(s.active!, activeValue)}
               onClose={() => void closer.close(s.active!, activeValue?.exit ?? null)}
               busy={closer.busy === s.active.id ? "close" : null}
               lockedText={activeValue?.locked ? TERMINAL.buttons.locked(clockText(s.active.expirySec)) : null}
@@ -159,7 +169,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
           <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
-          <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onValue={onValue} />
+          <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onTrailHit={null} onValue={onValue} />
         </SlideOverContent>
       </SlideOver>
     </MotionScope>

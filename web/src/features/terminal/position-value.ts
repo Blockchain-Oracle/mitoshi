@@ -57,3 +57,47 @@ export function closeFloorBase(minProceedsBase: bigint, toleranceBps: number): b
   const bps = BigInt(Math.max(0, Math.min(10_000, Math.round(toleranceBps))));
   return (minProceedsBase * (10_000n - bps)) / 10_000n;
 }
+
+/**
+ * The spot at which Close would pay the position's cost back (its break-even), on the same model as the reprice:
+ * `value(spot) = anchor × p(spot) ÷ p(anchor spot)`, solved for `value = cost` by bisection within ±10 % of the
+ * anchor spot (26 halvings: well under a cent). Null without the model's inputs or when no spot in range breaks even.
+ */
+export function breakEvenSpotE8(i: { anchor: ValueAnchor; costBase: bigint; side: Side; openE8: bigint | null; sigmaE8: bigint | null; tauSec: number }): bigint | null {
+  const { anchor } = i;
+  if (anchor.spotE8 === null || i.openE8 === null || !i.sigmaE8 || anchor.proceedsBase <= 0n || i.costBase <= 0n) return null;
+  const outcome = i.side === "up" ? 0 : 1;
+  const prob = (spotE8: bigint) => fairSideProbE6(fairProbUpE6(spotE8, i.openE8!, i.sigmaE8!, i.tauSec), outcome);
+  try {
+    const at = prob(anchor.spotE8);
+    if (at <= 0n) return null;
+    const value = (spotE8: bigint) => (anchor.proceedsBase * prob(spotE8)) / at;
+    let lo = (anchor.spotE8 * 90n) / 100n;
+    let hi = (anchor.spotE8 * 110n) / 100n;
+    // Value rises with the spot for Up and falls for Down: orient so f(lo) < 0 < f(hi).
+    const f = (s: bigint) => (i.side === "up" ? value(s) - i.costBase : i.costBase - value(s));
+    if (f(lo) > 0n || f(hi) < 0n) return null;
+    for (let k = 0; k < 26; k++) {
+      const mid = (lo + hi) / 2n;
+      if (f(mid) < 0n) lo = mid;
+      else hi = mid;
+    }
+    return hi;
+  } catch {
+    return null;
+  }
+}
+
+/** Whether Trail may arm: the spot has moved more than `pct` past `ref` in the position's favour. */
+export function trailEligible(side: Side, spot: number | null, ref: number | null, pct: number): boolean {
+  if (spot === null || ref === null || !(ref > 0)) return false;
+  return (side === "up" ? spot / ref - 1 : 1 - spot / ref) > pct;
+}
+
+/** The first stop when Trail arms: `pct` behind the spot, never past break-even. */
+export const trailStart = (side: Side, spot: number, ref: number, pct: number): number => (side === "up" ? Math.max(spot * (1 - pct), ref) : Math.min(spot * (1 + pct), ref));
+
+/** The next trail stop: it only ever moves in the position's favour. */
+export const ratchet = (side: Side, stop: number, spot: number, pct: number): number => (side === "up" ? Math.max(stop, spot * (1 - pct)) : Math.min(stop, spot * (1 + pct)));
+
+export const trailHit = (side: Side, stop: number, spot: number): boolean => (side === "up" ? spot <= stop : spot >= stop);

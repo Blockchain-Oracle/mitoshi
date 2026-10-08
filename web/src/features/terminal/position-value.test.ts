@@ -1,6 +1,6 @@
 import { sigmaE8FromBps, CALENDAR_YEAR_SEC } from "@cwf/core";
 import { describe, expect, it } from "vitest";
-import { closeFloorBase, liveValue, pnlOf } from "./position-value";
+import { breakEvenSpotE8, closeFloorBase, liveValue, pnlOf, ratchet, trailEligible, trailHit, trailStart } from "./position-value";
 
 const OPEN = 62_000n * 100_000_000n;
 const SIGMA = sigmaE8FromBps(5_000, CALENDAR_YEAR_SEC);
@@ -30,5 +30,32 @@ describe("a position's live value (D-197)", () => {
     expect(pnlOf(4_000_000n, 0n).roiBps).toBeNull();
     expect(closeFloorBase(5_000_000n, 100)).toBe(4_950_000n);
     expect(closeFloorBase(5_000_000n, 0)).toBe(5_000_000n);
+  });
+});
+
+describe("break-even and Trail (23e)", () => {
+  it("finds the spot where Close pays the cost back, on the right side of the anchor", () => {
+    // Bought for $5.40, Close pays $5.20 at the open: Up breaks even a little above the line, Down a little below.
+    const up = breakEvenSpotE8({ anchor, costBase: 5_400_000n, side: "up", openE8: OPEN, sigmaE8: SIGMA, tauSec: 200 })!;
+    expect(up > OPEN).toBe(true);
+    const v = liveValue({ anchor, side: "up", spotE8: up, openE8: OPEN, sigmaE8: SIGMA, tauSec: 200 });
+    expect(v.valueBase).toBe(5_200_000n); // the shown value never rises above the read…
+    const down = breakEvenSpotE8({ anchor, costBase: 5_400_000n, side: "down", openE8: OPEN, sigmaE8: SIGMA, tauSec: 200 })!;
+    expect(down < OPEN).toBe(true);
+    expect(breakEvenSpotE8({ anchor, costBase: 5_400_000n, side: "up", openE8: OPEN, sigmaE8: null, tauSec: 200 })).toBeNull();
+  });
+
+  it("arms only past break-even by more than the distance, ratchets one way, and hits on the way back", () => {
+    expect(trailEligible("up", 100.2, 100, 0.001)).toBe(true);
+    expect(trailEligible("up", 100.05, 100, 0.001)).toBe(false);
+    expect(trailEligible("down", 99.8, 100, 0.001)).toBe(true);
+    expect(trailStart("up", 100.2, 100, 0.001)).toBeCloseTo(100.0998);
+    expect(trailStart("up", 100.05, 100, 0.001)).toBe(100);
+    expect(ratchet("up", 100.1, 100.5, 0.001)).toBeCloseTo(100.3995);
+    expect(ratchet("up", 100.3, 100.2, 0.001)).toBe(100.3);
+    expect(ratchet("down", 99.9, 99.5, 0.001)).toBeCloseTo(99.5995);
+    expect(trailHit("up", 100.3, 100.29)).toBe(true);
+    expect(trailHit("down", 99.6, 99.61)).toBe(true);
+    expect(trailHit("up", 100.3, 100.31)).toBe(false);
   });
 });

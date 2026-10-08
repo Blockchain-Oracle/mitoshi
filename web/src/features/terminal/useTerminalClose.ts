@@ -34,7 +34,7 @@ export function useTerminalClose() {
   latest.current = { submitter, port, address, session, view };
 
   const close = useCallback(
-    async (p: TerminalPosition, shown: ExitQuote | null, accept?: ExitQuote): Promise<void> => {
+    async (p: TerminalPosition, shown: ExitQuote | null, accept?: ExitQuote, why: "close" | "trail" = "close"): Promise<void> => {
       const { submitter: sub, port: prt, address: wallet, session: sess, view: v } = latest.current;
       if (inFlight.current) return;
       const id = `close-${p.marketId}`;
@@ -64,11 +64,12 @@ export function useTerminalClose() {
             closeFeedback(Number(pnl));
             if (!partial) forgetEntry(p.marketId, p.side);
             void invalidateAfterWrite(queryClient, { wallet, marketId: p.marketId });
-            return void notify.item({ id, title: partial ? TERMINAL.close.reduced(p.asset) : TERMINAL.close.closed(p.asset), description: TERMINAL.close.realized(money(pnl, true), money(outcome.booked.proceedsBase)) });
+            const title = partial ? TERMINAL.close.reduced(p.asset) : why === "trail" ? TERMINAL.trail.hit(p.asset) : TERMINAL.close.closed(p.asset);
+            return void notify.item({ id, title, description: why === "trail" && !partial ? TERMINAL.close.lockedIn(money(pnl, true)) : TERMINAL.close.realized(money(pnl, true), money(outcome.booked.proceedsBase)) });
           }
           case "requote": {
             const next = outcome.exit;
-            return void notify.item({ id, type: "warning", title: TERMINAL.toast.priceMoved, description: TERMINAL.close.requote(money(next.minProceedsBase)), timeout: 8_000, action: { label: TERMINAL.close.closeFor(money(next.minProceedsBase)), onClick: () => void close(p, next, next) } });
+            return void notify.item({ id, type: "warning", title: TERMINAL.toast.priceMoved, description: TERMINAL.close.requote(money(next.minProceedsBase)), timeout: 8_000, action: { label: TERMINAL.close.closeFor(money(next.minProceedsBase)), onClick: () => void close(p, next, next, why) } });
           }
           case "nothingFilled":
             return void notify.item({ id, title: TERMINAL.close.nothingSold, description: TERMINAL.close.nothingSoldBody });
