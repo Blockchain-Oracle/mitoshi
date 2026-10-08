@@ -48,6 +48,7 @@ async function tap(t: TerminalSession, symbol: string, side: "up" | "down") {
   const opened = page.locator('[data-slot="toast-title"]').filter({ hasText: / opened$/ });
   const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /Price moved|Nothing filled|didn't go through|Waiting for the chain/ });
   await expect(opened.or(refused).first()).toBeVisible({ timeout: 90_000 });
+  const toastMs = Date.now() - t0;
   // A dearer book is a requote (D-208): "Tap again to take it" — once, as a person would.
   if ((await opened.count()) === 0 && /Price moved/.test(await refused.first().innerText().catch(() => ""))) {
     note({ step: "requote", symbol, side, body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
@@ -57,14 +58,16 @@ async function tap(t: TerminalSession, symbol: string, side: "up" | "down") {
   const ok = (await opened.count()) > 0;
   const row = page.locator(".tm-side-list .tm-pos").filter({ hasText: `${side === "up" ? "Up" : "Down"} ${symbol}` }).first();
   let heldIn: string | null = null;
+  let rowMs = -1;
   if (ok) {
     await expect(row).toBeVisible({ timeout: 60_000 });
+    rowMs = Date.now() - t0;
     await row.locator(".tm-pos-open-btn").click();
     const details = modal(page);
     heldIn = await details.locator("dt", { hasText: "Held in" }).locator("xpath=following-sibling::dd").innerText().catch(() => null);
     await page.keyboard.press("Escape");
   }
-  note({ step: "tap", symbol, side, ok, ms: Date.now() - t0, phases: await tapPhases(page), prompts: t.assertions() - before, heldIn });
+  note({ step: "tap", symbol, side, ok, ms: Date.now() - t0, toastMs, rowMs, phases: await tapPhases(page), prompts: t.assertions() - before, heldIn });
   if (!ok) throw new Error(`${side} ${symbol}: ${await refused.first().innerText().catch(() => "not opened")}`);
   return row;
 }

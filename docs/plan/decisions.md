@@ -1785,7 +1785,9 @@ the v2 Trading Balance check (CI run 37834989176) got "Price moved — the book 
 **A Trail / TP / SL that runs with the app closed is stored only as an EIP-712 message signed by the actor of the
 owner's live SESSION grant on the current Trading Balance** (`@cwf/core/exits`, domain = chain + `EventVaultV2`), so a
 trigger needs no extra prompt (the session key already signs every tap) and each sale is traceable to the owner's own
-key. `/api/exits` checks the signature against the grant on chain (owner, actor, kind, not revoked, not expired) and
+key. `/api/exits` reads the grant on chain (owner, kind, not revoked, not expired) and checks the signature against its
+actor with Tempo's `verifyHash` — the session key is the browser's WebCrypto P-256 key, so its signature is a Tempo
+envelope that ecrecover can't read — and
 stores one trigger per position (vault, owner, Window, side) — a larger nonce replaces it, an empty one cancels, nothing
 replaces it while the keeper is selling. The keeper moves a trail's stop only in the position's favour and sells only
 through the owner's EXIT grant with `exitFor` (never `placeFor`, which the EXIT grant refuses), at the vault's floor
