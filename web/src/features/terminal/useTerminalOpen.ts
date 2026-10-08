@@ -38,6 +38,8 @@ export interface SideView {
 }
 
 const ENTRY_TOAST = "terminal-open";
+/** How long "Tap again to take it" holds the requoted price. */
+const REQUOTE_HOLD_MS = 15_000;
 
 export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: EventMarket; phase: MarketPhase | null; stakeBase: bigint; spot: number | null }) {
   const nowMs = useNowMs();
@@ -119,12 +121,16 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
         return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.signIn, description: TERMINAL.toast.signInBody, action: { label: CONNECT.connect, onClick: sess.connect } });
       }
       if (s.blocked) return void notify.item({ id: ENTRY_TOAST, type: "warning", title: s.blocked });
-      if (!s.quote.quote) return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.gettingPrice, timeout: 2_000 });
+      // "Tap again to take it": the tap right after a requote takes the price the requote showed (D-208), not the
+      // button's quote, which may not have re-read the book yet.
+      const again = bet.requoted && bet.requoted.side === side && bet.requoted.stakeBase === stake && Date.now() - bet.requoted.quotedAtMs < REQUOTE_HOLD_MS ? bet.requoted : null;
+      const quote = again ?? s.quote.quote;
+      if (!quote) return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.gettingPrice, timeout: 2_000 });
       const r = s.route.route;
-      tapped.current = { side, quote: s.quote.quote, via: r && r.kind !== "wallet" ? "vault" : "wallet" };
+      tapped.current = { side, quote, via: r && r.kind !== "wallet" ? "vault" : "wallet" };
       setLastSide(side);
       notify.item({ id: ENTRY_TOAST, type: "loading", title: TERMINAL.toast.opening(sideWord(side), m.asset) });
-      void bet.place({ market: m, side, stakeBase: stake, displayedQuote: s.quote.quote, route: s.route.route });
+      void bet.place({ market: m, side, stakeBase: stake, displayedQuote: quote, route: s.route.route });
     },
     [bet],
   );
