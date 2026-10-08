@@ -55,6 +55,13 @@ export const TERMINAL = {
     signIn: "Sign in",
     account: "Account",
   },
+  parlay: {
+    add: "add to parlay",
+    inSlip: "in parlay ✓",
+    closing: "This Window closes too soon for a parlay — add the next one when it opens",
+    unpriced: (symbol: string) => `${symbol}'s Window can't be priced into a parlay yet`,
+    full: (n: number) => `A parlay holds ${n} legs — remove one to add this`,
+  },
   boost: {
     sub: (x: number) => `${x}× Boost · passkey`,
     opening: (side: string, symbol: string, x: number) => `Opening ${side} ${symbol} ${x}×…`,
@@ -88,12 +95,12 @@ export const TERMINAL = {
   },
   modes: {
     label: "Ways to call this Window",
-    names: { updown: "Up / Down", range: "Range", boost: "Boost", private: "Private" },
+    names: { updown: "Up / Down", range: "Range", boost: "Boost", private: "Private", parlay: "Parlay" },
     bandHigh: "Band ↑",
     bandLow: "Band ↓",
-    parlay: "Parlay ↗",
     moonshot: "Moonshot ↗",
     prompt: {
+      parlay: "Up to the reserve's leg limit, one Window each: UP or DOWN adds this Window, the markets drawer the next. Your passkey confirms the ticket.",
       range: "A band the close lands inside. Your passkey confirms each Range call.",
       boost: "More exposure for the same stake, with a knock-out line. Your passkey confirms each Boost.",
       private: "The same call, not shown on the public tape. Your passkey confirms it.",

@@ -10,7 +10,7 @@ import { TERMINAL } from "../copy";
  * tap says why in a toast — but reads dimmed with the reason beneath.
  */
 export type TradeButtonsProps =
-  | { mode: "flat"; onUp: () => void; onDown: () => void; busy: "up" | "down" | null; upSub: string | null; downSub: string | null; upNote: string | null; downNote: string | null; disabled?: boolean }
+  | { mode: "flat"; onUp: () => void; onDown: () => void; busy: "up" | "down" | null; upSub: string | null; downSub: string | null; upNote: string | null; downNote: string | null; disabled?: boolean; /** The side already chosen (Parlay mode: this Window's leg). */ picked?: "up" | "down" | null }
   | { mode: "open"; trailActive: boolean; trailEligible: boolean; trailNote: string | null; onTrail: () => void; onClose: () => void; busy: "close" | "trail" | null; lockedText: string | null };
 
 const spin = <LoaderCircle aria-hidden className="tm-spin" />;
@@ -27,7 +27,8 @@ export function TradeButtons(props: TradeButtonsProps) {
             <div key={side} className="tm-btn-col">
               <button
                 type="button"
-                className={`tm-btn ${up ? "tm-up-soft" : "tm-down-soft"}`}
+                className={`tm-btn ${props.picked === side ? (up ? "tm-up-solid" : "tm-down-solid") : up ? "tm-up-soft" : "tm-down-soft"}`}
+                aria-pressed={props.picked != null ? props.picked === side : undefined}
                 onClick={up ? props.onUp : props.onDown}
                 disabled={props.disabled || props.busy !== null}
                 aria-disabled={note ? true : undefined}

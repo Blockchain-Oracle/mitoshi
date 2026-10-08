@@ -92,6 +92,22 @@ for (const theme of ["dark", "light"] as const) {
         await page.getByRole("tab", { name: "Up / Down" }).click();
         await expect(page.getByRole("button", { name: /UP/ })).toBeVisible();
       });
+      await check(`${tag}: Parlay takes this Window as a leg from UP, and the slip beside the chart shows it`, async () => {
+        await page.getByRole("tab", { name: "Parlay" }).click();
+        const panel = page.getByRole("region", { name: "Parlay" });
+        await expect(panel).toBeVisible();
+        const up = panel.getByRole("button", { name: /UP/ });
+        await expect(up).toContainText("add to parlay", { timeout: 30_000 });
+        await up.click();
+        await expect(up).toHaveAttribute("aria-pressed", "true", { timeout: 10_000 });
+        await expect(up).toContainText("in parlay");
+        await page.waitForTimeout(1_500);
+        await page.screenshot({ path: join(out, `mode-parlay-${theme}.png`) });
+        await axeOn(page, ".tm-mode-panel");
+        await up.click();
+        await expect(up).toContainText("add to parlay");
+        await page.getByRole("tab", { name: "Up / Down" }).click();
+      });
     }
     await check(`${tag}: the settings drawer sets the size`, async () => {
       await page.locator(".tm-stack").click();
