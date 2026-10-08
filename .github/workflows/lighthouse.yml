@@ -1,39 +1,153 @@
 name: lighthouse
-# Lab performance gate (plan §3.1, D-042/D-071) against a deployed testnet build: Lighthouse CI, mobile 390 px, 4x CPU,
-# simulated 4G, 3 runs, median run; LCP <= 2.5 s, CLS <= 0.05, TBT <= 200 ms. Hosting is Coolify (D-061): the deploy
-# step (Coolify CLI) fires `repository_dispatch` type `coolify-deployment-success` with `client_payload.url`; it
-# also runs by hand with a URL. Each later stage appends its routes to ROUTES.
+# Lab performance gate (plan §3.1, D-042/D-071): Lighthouse CI, mobile 390 px, 4x CPU, simulated 4G, 3 runs, median
+# run; LCP <= 2.5 s, CLS <= 0.05, TBT <= 200 ms. Two modes, one config (`lighthouserc.json`):
+# - deployed: against a deployed testnet build. Hosting is Coolify (D-061): the deploy step (Coolify CLI) fires
+#   `repository_dispatch` type `coolify-deployment-success` with `client_payload.url`; it also runs by hand with `url`.
+# - branch (D-180): `ref` is built on this runner with production's public config and served by `next start` behind
+#   `scripts/perf/lighthouse-serve.mjs` (one origin; `/api/index/*` is the live testnet index), so a branch is
+#   measured before it is deployed. GitHub's runners differ in speed by ~40 % (the summary prints Lighthouse's host
+#   benchmark), so `base_ref` measures a second build on the same runner first — a same-host before/after:
+#     gh workflow run lighthouse.yml --ref <branch carrying this file> -f ref=<branch|sha> [-f base_ref=<sha>] [-f shifts=true]
+# Each later stage appends its routes to ROUTES.
 on:
   repository_dispatch:
     types: [coolify-deployment-success]
   workflow_dispatch:
     inputs:
       url:
-        description: Base URL of the deployed build (no trailing slash)
-        required: true
+        description: Base URL of the deployed build (no trailing slash); leave empty to measure `ref` instead
+        required: false
+      ref:
+        description: Branch, tag or SHA to build and serve on the runner (used when `url` is empty)
+        required: false
+      base_ref:
+        description: Optional second ref measured first on the same runner (before/after on one host; not asserted)
+        required: false
+      shifts:
+        description: "true: also trace Lighthouse's own runs for layout shifts (diagnosis, ~8 min)"
+        required: false
 
 jobs:
   lighthouse:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 90
     env:
-      BASE: ${{ github.event.client_payload.url || inputs.url }}
+      BASE: ${{ github.event.client_payload.url || inputs.url || 'http://localhost:3000' }}
+      REF: ${{ (github.event_name == 'workflow_dispatch' && !inputs.url) && inputs.ref || '' }}
+      BASE_REF: ${{ (github.event_name == 'workflow_dispatch' && !inputs.url && inputs.ref) && inputs.base_ref || '' }}
       ROUTES: "/ /markets /markets/0x0000000000000000000000000000000000000000000000000000000000000001 /portfolio /proof/0x0000000000000000000000000000000000000000000000000000000000000001 /status"
     steps:
+      - name: Mode
+        run: |
+          if [ -z "${{ github.event.client_payload.url || inputs.url || inputs.ref }}" ]; then
+            echo "::error::give either url (a deployed build) or ref (a branch to build here)"; exit 1
+          fi
+          echo "Measuring ${REF:+ref $REF served at }$BASE${BASE_REF:+ (same-host base: $BASE_REF)}" | tee -a "$GITHUB_STEP_SUMMARY"
+          # The sans faces Chrome can match with local() here (the metric-matched fallbacks, D-182).
+          echo "Local sans faces: $(fc-list : family | grep -iE 'arial|liberation sans|arimo|roboto|dejavu sans' | sort -u | paste -sd ';' -)" | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-      - name: Lighthouse CI
+
+      # Branch mode: build `ref` (and `base_ref`) with production's public values (no secrets; the testnet web's inlined
+      # config) and serve each as production does. The page is http://localhost:3000, an origin the ops/stream CORS list
+      # allows; `next start` listens on 3001 behind the one-origin proxy.
+      - name: Check out ref
+        if: env.REF != ''
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.REF }}
+          path: target
+          submodules: false
+      - name: Check out base_ref
+        if: env.BASE_REF != ''
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.BASE_REF }}
+          path: base-target
+          submodules: false
+      - uses: pnpm/action-setup@v4
+        if: env.REF != ''
+        with:
+          package_json_file: target/package.json
+      - name: Build
+        if: env.REF != ''
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+          NEXT_TELEMETRY_DISABLED: "1"
+          NEXT_PUBLIC_NETWORK: testnet
+          NEXT_PUBLIC_APP_ORIGIN: http://localhost:3000
+          NEXT_PUBLIC_OPS_URL: https://ops.testnet.mitoshi.xyz
+          NEXT_PUBLIC_STREAM_URL: https://stream.testnet.mitoshi.xyz
+        run: |
+          set -eu
+          for dir in target ${BASE_REF:+base-target}; do
+            (
+              cd "$dir"
+              pnpm install --frozen-lockfile --filter "@cwf/web..."
+              # next/font fetches the Google faces at build time; one retry covers a transient fetch failure.
+              pnpm --filter @cwf/web build || { echo "::warning::build failed once; retrying"; pnpm --filter @cwf/web build; }
+              git log -1 --format="Built $dir: %h %s" | tee -a "$GITHUB_STEP_SUMMARY"
+            )
+          done
+          PORT=3000 APP_UPSTREAM=http://127.0.0.1:3001 INDEX_UPSTREAM=https://testnet.mitoshi.xyz \
+            nohup node scripts/perf/lighthouse-serve.mjs > "$RUNNER_TEMP/serve.log" 2>&1 &
+
+      - name: Lighthouse CI collect (same-host base)
+        if: env.BASE_REF != ''
+        run: |
+          set -eu
+          scripts/perf/lighthouse-next.sh base-target/web "$RUNNER_TEMP/next-base.log"
+          mkdir -p lh-base && cp lighthouserc.json lh-base/
+          urls=""
+          for r in $ROUTES; do urls="$urls --url=${BASE%/}$r"; done
+          (cd lh-base && npx -y @lhci/cli@0.15.1 collect --config=lighthouserc.json $urls && npx -y @lhci/cli@0.15.1 upload --config=lighthouserc.json)
+          node scripts/perf/lighthouse-summary.mjs lh-base/.lighthouseci "Base $BASE_REF (same runner)"
+      - name: Serve ref
+        if: env.REF != ''
+        run: scripts/perf/lighthouse-next.sh target/web "$RUNNER_TEMP/next.log"
+
+      - name: Lighthouse CI collect
+        id: collect
         run: |
           set -eu
           urls=""
           for r in $ROUTES; do urls="$urls --url=${BASE%/}$r"; done
           npx -y @lhci/cli@0.15.1 collect --config=lighthouserc.json $urls
-          npx -y @lhci/cli@0.15.1 assert --config=lighthouserc.json
+      - name: Lighthouse reports
+        if: always()
+        run: |
           npx -y @lhci/cli@0.15.1 upload --config=lighthouserc.json
+          node scripts/perf/lighthouse-summary.mjs .lighthouseci ${REF:+"Ref $REF"}
+      - name: Lighthouse CI assert
+        if: always() && steps.collect.outcome == 'success'
+        run: npx -y @lhci/cli@0.15.1 assert --config=lighthouserc.json
+      # Diagnosis only (after the gate, never part of it): each route's main-thread tasks over 50 ms at 4x CPU on this
+      # host with what ran inside them, and each route's layout shifts over unthrottled loads, into the job summary.
+      - name: Main-thread tasks
+        if: always() && env.REF != ''
+        continue-on-error: true
+        run: WEB_DIR=target/web node scripts/perf/trace-tasks.mjs http://localhost:3000 / /markets /markets/0x0000000000000000000000000000000000000000000000000000000000000001 /portfolio --seconds 20 --shifts 3 --chrome
+      - name: Lighthouse trace layout shifts
+        if: always() && env.REF != '' && inputs.shifts == 'true'
+        continue-on-error: true
+        run: node scripts/perf/lh-shifts.mjs http://localhost:3000/markets http://localhost:3000/markets/0x0000000000000000000000000000000000000000000000000000000000000001 --runs 4
+      - name: Server logs
+        if: always() && env.REF != ''
+        run: tail -n 40 "$RUNNER_TEMP/next.log" "$RUNNER_TEMP/serve.log" || true
+      # `.lighthouseci` is a dot-directory: upload-artifact v4 skips hidden files unless told (the empty-artifact warning).
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: lighthouse-reports
           path: .lighthouseci
+          include-hidden-files: true
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always() && env.BASE_REF != ''
+        with:
+          name: lighthouse-reports-base
+          path: lh-base/.lighthouseci
+          include-hidden-files: true
+          if-no-files-found: warn

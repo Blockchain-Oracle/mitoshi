@@ -12,6 +12,8 @@ export function formatClock(remainingSec: number): string {
   return hours > 0 ? `${hours}:${pad2(minutes)}:${pad2(seconds)}` : `${minutes}:${pad2(seconds)}`;
 }
 
+let wallClock: Intl.DateTimeFormat | undefined;
+
 /**
  * Wall-clock `h:mm` for "closes at 3:45" — the word board's own idiom, where a
  * scheduled time reads more naturally than a countdown.
@@ -21,7 +23,10 @@ export function formatClock(remainingSec: number): string {
  * server never renders a time the client would disagree with.
  */
 export function formatWallClock(ms: number): string {
-  return new Date(ms).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  // One formatter for every call: `toLocaleTimeString(locale, options)` builds a new Intl.DateTimeFormat each time, the
+  // costliest line of a board re-render (D-181). Same locale, same options, same output.
+  wallClock ??= new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" });
+  return wallClock.format(ms);
 }
 
 export function shortHex(hex: string, lead = 6, tail = 4): string {

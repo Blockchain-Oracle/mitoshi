@@ -8,7 +8,7 @@ import type { Lane, LaneSet, Reading } from "@cwf/core";
 import { isOk } from "@cwf/core";
 import { keys, useLanes } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useDeferredValue } from "react";
 import { usePersistedState } from "@/lib/persisted";
 import { laneKeyOf, laneTabParts, parseLaneTabKey, type LaneTabKey } from "./lane-view";
 
@@ -33,7 +33,9 @@ export interface LanesState {
 }
 
 export function useLanesState(): LanesState {
-  const reading = useLanes();
+  // Deferred (D-184): a new lane list re-renders the page in the background, time-sliced — the hero, ~8 lane cards and
+  // ~50 word-board cards at once was the page's longest task (~250 ms at 4× CPU) on arrival and on every refetch.
+  const reading = useDeferredValue(useLanes());
   const laneSet = reading && isOk(reading) ? reading.value : null;
   const [pinned, pin] = usePersistedState<LaneTabKey | typeof NONE>(LANE_KEY, NONE, laneCodec);
   const [tickerRaw, setTicker] = usePersistedState<string>(TICKER_KEY, NONE, tickerCodec);

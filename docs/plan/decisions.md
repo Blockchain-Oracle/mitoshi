@@ -1227,6 +1227,90 @@ too many requests from this connection right now. Nothing was sent — try again
 RPC endpoint off the users' IPs moves the limit away (D-139).
 
 **Why:** the failure card must say what happened and that no money moved.
+### D-180 — a branch is measured on the lab gate's host before it is deployed (decision, S4-perf, 2026-09-30)
+
+`lighthouse.yml` gains a `workflow_dispatch` `ref` mode beside the deployed-URL mode (`repository_dispatch` and `url`
+unchanged): the runner builds `ref` with the testnet web's public build values (`NEXT_PUBLIC_NETWORK=testnet`, the ops
+and stream URLs, `NEXT_PUBLIC_APP_ORIGIN=http://localhost:3000`; no secret) and serves it with `next start` behind
+`scripts/perf/lighthouse-serve.mjs`: one origin, `http://localhost:3000`, where `/api/index/*` is the live testnet index
+(public GETs, no cookie forwarded) and everything else is the branch. The same `lighthouserc.json` collects and asserts;
+`scripts/perf/lighthouse-summary.mjs` writes the median run's LCP/CLS/TBT/script per route, its shifting elements,
+longest tasks and costliest scripts to the job summary; the `.lighthouseci` artifact uploads (a dot-directory, which
+`upload-artifact` v4 skips unless `include-hidden-files`, the empty-artifact warning) before the assert can fail.
+
+**Why the proxy, not `NEXT_PUBLIC_INDEX_URL=https://testnet.mitoshi.xyz/api/index`:** the deployed index answers with no
+CORS headers, and an allowance would only exist after a deploy, so every pre-deploy run would take the chain fallback
+path production never runs, and a second origin changes the page's connection graph. Production reads the index
+same-origin (`NEXT_PUBLIC_INDEX_URL` unset); the proxy reproduces that with no change to the deployed server. The ops
+and stream CORS lists already allow `http://localhost:3000`.
+
+### D-181 — a list re-renders when what it shows changes, not on every clock tick (finding + decision, S4-perf, 2026-09-30)
+
+**Finding:** Lighthouse never sees the app pages go network-quiet (the price stream stays open), so every run lasts
+its 45 s limit and simulated TTI lands after the last long task — TBT counts the page's steady state, not just its
+load. On /markets that steady state is the clock: the word board read `useNowMs()` and handed `nowMs` to every
+WordCard (~60), so each second re-rendered the whole board, each card formatting its close time through
+`toLocaleTimeString` (a new Intl.DateTimeFormat per call); the eight lane cards did the same for their phase. A 4×
+CPU profile shows a 50–145 ms task every second, WordCard and `formatWallClock` on top.
+**Decision:** `useClockValue(derive)` (lib/clock) subscribes to the shared clock but re-renders its reader only when
+the derived primitive changes: the board derives the minute it already grouped on, a lane card its Window's phase.
+Countdowns tick as their own leaves, as they already subscribed. `formatWallClock` keeps one formatter (same locale,
+options and output; `display.test.ts`). Nothing shown changes: the same countdowns, groups and phases, each second.
+
+**Why:** the clock ticks for the numbers that move, not for the sixty cards around them.
+
+### D-182 — metric-matched fallbacks exist on every platform (finding + decision, S4-perf, 2026-09-30)
+
+**Finding** (`lighthouse.yml` branch mode on trunk, run 36689048574): `/` CLS 0.085 is one shift of the pillars
+(`section.grid`), caused by "Web font loaded" — Inter and JetBrains Mono, the second font stage — not Sora (D-152's
+reserve holds). next/font writes each fallback face as `src: local(Arial)`; the lab's Linux host (like Android and
+ChromeOS) has no Arial, so "Inter Fallback" has no face, text renders in the platform sans at its own metrics and
+re-wraps when Inter arrives. On macOS the same page measures no height change at any width (Arial exists).
+**Decision:** `styles/font-fallbacks.css` repeats next/font's fallback rules for Sora and Inter with next/font's own
+overrides and `src` Arial first, then Arial's metric twins (Liberation Sans, Arimo) and Roboto (latin average width
+within 0.2 % of Arial) — a superset of next/font's rule, so nothing changes where Arial exists. JetBrains Mono (the
+figures) falls back to a monospace face instead of next/font's Arial — Menlo, DejaVu Sans Mono, Liberation Mono,
+Cousine, Droid Sans Mono, Courier New all advance 0.600–0.602 em like it — at 100 % with its own ascent and descent.
+`font-fallbacks.test.ts` holds the sans overrides equal to next/font's computation and the mono ones to JetBrains
+Mono's metrics. The workflow lists the runner's local sans faces (DejaVu, Liberation; no Arial) in the job summary.
+Runner (run 36706089863, fonts only): `/` CLS 0.085 → 0.000.
+
+**Why:** a fallback that only exists on Apple and Windows machines is not a fallback for most phones.
+
+### D-183 — what is off screen or not yet used costs the main thread nothing (decision, S4-perf, 2026-09-30)
+
+**Finding** (4× CPU traces, local and on the lab host): after D-181 the /markets steady state is still the rendering
+pipeline — each second ~70 countdowns change text and the browser re-lays out ~230 of ~2,600 layout objects and
+repaints (50–100 ms tasks at 4×), and the first data render lays out ~2,500 objects at once; ~50 of the 58 cards are
+screens below the fold on a phone. MotionScope's lazy `import("motion/react")` pulled the whole motion entry.
+**Decision:** word-board and lane cards take `content-visibility: auto` with their measured heights as
+`contain-intrinsic-size: auto …` (224/269 px, 342/475 px): off screen a card keeps its place and skips style, layout
+and paint, stays in the DOM, the accessibility tree and find-in-page, and renders as it nears the viewport; its
+countdown and price keep updating the DOM. MotionScope loads `domAnimation` from a module of its own
+(`components/motion-features.ts`, motion docs "Reduce bundle size"), so the lazy chunk is the feature package.
+
+**Why:** the lab counts every long task for the page's whole life; cards nobody can see should not be drawn every
+second.
+
+### D-184 — a list renders its data in the background, from one subscription (finding + decision, S4-perf, 2026-09-30)
+
+**Finding** (4× CPU trace on the lab host, after D-181/D-183): /markets' longest task is the lane list's arrival — one
+~250 ms synchronous render of the hero, the lane page and ~50 word-board cards (TanStack's store updates render
+synchronously), repeated on every lanes refetch (poll or stream event); and each card subscribed to its own book, so a
+batch of book answers re-rendered every card in one blocking pass.
+**Decision:** `useLanesState` reads the lane list through `useDeferredValue` (React 19): the page first re-renders
+with the previous list (children bail out), then renders the new one in the background, time-sliced and
+interruptible — the same content, drawn in pieces. The lane page and the word board read their Windows' books through
+one `useQueries` subscription each (`useBookDepths` / `useTopsOfBook`): every Window keeps its own depth query — the
+same key, read, poll and stream invalidation as a card's `useBookDepth` (`bookDepthQuery`; `book-depths.test.ts` shows
+one fetch answers both with the same value) — and the list takes the answers at once, deferred, handing each card its
+top as plain values so only cards whose numbers moved re-render. Real books on Moderato (the gate maker's quotes, this
+build vs the deployed trunk at the same moment): 50 of 51 word cards equal, the one difference a poll caught between
+answers, once in each direction.
+The signed-out Portfolio is the connect card alone: the signed-in ledger (Trading Balance controls, tx components,
+charts) is its own island chosen by `PortfolioPage` (D-183), one chunk hop as before for a signed-in visitor.
+
+**Why:** the lab counts the page's long tasks; the same pixels arrive in slices instead of one blocking pass.
 
 ### D-185 — 24/7 stock Windows never open or close on RedStone's 04:00 ET `---24_7` gap (finding + decision, S3 fix 2, 2026-09-30)
 

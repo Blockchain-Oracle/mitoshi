@@ -11,12 +11,12 @@ import { MARKETS_POLL_MS, ONCHAIN_POLL_MS, OPENING_PRINT_POLL_MS, PRICE_POLL_MS,
 import { isOk, ok, stale } from "@cwf/core";
 import type { Address, AssetPrice, BookDepth, EventMarket, ExitQuote, Holdings, LaneSet, MarketId, MarketsProvider, OnchainSnapshot, OpenPosition, PricePoint, Quote, Reading, Resolution, Side } from "@cwf/core";
 import type { WalletHistory } from "@cwf/core";
-import type { QueryKey } from "@tanstack/react-query";
+import { useQueries, type QueryKey } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useMarketsPort } from "./contexts";
 import { keys } from "./keys";
 import { usePrice } from "./stream";
-import { useReadingQuery, type PollInterval } from "./useReadingQuery";
+import { readingOf, readingQueryOptions, useReadingQuery, type PollInterval } from "./useReadingQuery";
 
 /** A port read that waits for the port; `enabled` and the poll are the caller's. */
 export function usePortReading<T>(queryKey: QueryKey, read: (port: MarketsProvider) => Promise<Reading<T>>, options: { enabled?: boolean; pollMs?: PollInterval<T>; staleTimeMs?: number } = {}): Reading<T> | null {
@@ -66,6 +66,24 @@ export function useBookDepth(market: Pick<EventMarket, "marketId" | "decimals"> 
   // One depth read per Window, shared by every card that shows it; a list of many Windows polls slower (the public
   // RPC's per-IP budget, D-134) and leans on the stream's `market:<id>`/`fills` invalidations instead.
   return usePortReading(keys.depth(marketId), (p) => p.getBookDepth({ marketId: marketId!, decimals: market!.decimals }, depth), { enabled: marketId !== null, pollMs });
+}
+
+/** `useBookDepth`'s query for one Window — the same key, read and poll — for subscribing to many at once. */
+export function bookDepthQuery(port: MarketsProvider | null, market: Pick<EventMarket, "marketId" | "decimals">, options: { depth?: number; pollMs?: number } = {}) {
+  const { depth = 10, pollMs = ONCHAIN_POLL_MS } = options;
+  return readingQueryOptions(keys.depth(market.marketId), () => port!.getBookDepth({ marketId: market.marketId, decimals: market.decimals }, depth), { enabled: port !== null, pollMs });
+}
+
+const readingsOf = (results: readonly { data: Reading<BookDepth> | undefined; isError: boolean; error: unknown }[]) => results.map((r) => readingOf(r));
+
+/**
+ * The books of a list of Windows through ONE subscription (D-184): each Window keeps its own depth query (the same
+ * key, read and stream invalidation as `useBookDepth`), but the list re-renders once per batch of answers instead of
+ * every card on its own. Readings in `markets` order; the array keeps its identity while no book changed.
+ */
+export function useBookDepths(markets: readonly Pick<EventMarket, "marketId" | "decimals">[], options: { depth?: number; pollMs?: number } = {}): readonly (Reading<BookDepth> | null)[] {
+  const port = useMarketsPort();
+  return useQueries({ queries: markets.map((m) => bookDepthQuery(port, m, options)), combine: readingsOf });
 }
 
 /** The composing ticket's quote, walked fresh off the chain book; re-walked on every book event and every REQUOTE_MS. */

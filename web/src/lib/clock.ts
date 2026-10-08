@@ -60,6 +60,15 @@ export function useNowMs(): number {
   return useSyncExternalStore(subscribe, () => now, () => 0);
 }
 
+/**
+ * A value derived from the clock (a Window's phase, the minute a board groups on): the reader re-renders when the
+ * derived value changes, not on every tick (D-181) — `useSyncExternalStore` compares snapshots with `Object.is`, so
+ * `derive` must return a primitive. It sees 0 before the first client tick, as `useNowMs` readers do.
+ */
+export function useClockValue<T extends string | number | boolean | null>(derive: (nowMs: number) => T): T {
+  return useSyncExternalStore(subscribe, () => derive(now), () => derive(0));
+}
+
 /** Chain-corrected now for an event handler or a one-off decision (not for rendering — render with `useNowMs`). */
 export function nowMs(): number {
   return Date.now() + offsetMs;

@@ -6,6 +6,7 @@
  */
 import type { MarketId, Side } from "@cwf/core";
 import { betweenRoundsLine } from "@cwf/core/copy";
+import { useDeferredValue } from "react";
 import { EmptyState, ReadingBoundary } from "@/components/states";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNowMs } from "@/lib/clock";
@@ -14,10 +15,13 @@ import { cn } from "@/lib/utils";
 import { MARKETS } from "../copy";
 import { laneKeyOf, laneTabLabel, laneTabParts, laneTickers, tickerMarkets, type LaneTabKey } from "../data/lane-view";
 import type { LanesState } from "../data/useLanesState";
+import { useTopsOfBook } from "../data/useTopOfBook";
 import { Pager } from "../Pager";
 import { MarketCard } from "./MarketCard";
 
 const PAGE_SIZE = 8;
+/** A card in a long list polls its book slowly; the stream refreshes it on every book event. */
+const CARD_BOOK_POLL_MS = 15_000;
 
 interface CadenceLanesProps {
   state: LanesState;
@@ -34,6 +38,9 @@ export function CadenceLanes({ state, selectedMarketId, onSelect }: CadenceLanes
   const lane = state.activeLane;
   const markets = lane ? tickerMarkets(lane, state.ticker) : [];
   const pager = usePager(markets, PAGE_SIZE);
+  // The page's books through one subscription, rendered in the background (D-184).
+  const tops = useDeferredValue(useTopsOfBook(pager.slice, CARD_BOOK_POLL_MS));
+  const topById = new Map(pager.slice.map((m, i) => [m.marketId, tops[i]] as const));
   const tickers = lane ? laneTickers(lane) : [];
   return (
     <ReadingBoundary reading={state.reading} shape="row" retry={state.retry} isEmpty={(set) => set.lanes.length === 0 && !state.pinnedMissing} empty={MARKETS.noLiveWindows}>
@@ -76,7 +83,7 @@ export function CadenceLanes({ state, selectedMarketId, onSelect }: CadenceLanes
               <>
                 <div className="markets-grid markets-grid-live">
                   {pager.slice.map((m) => (
-                    <MarketCard key={m.marketId} market={m} selected={m.marketId === selectedMarketId} onSelect={onSelect} />
+                    <MarketCard key={m.marketId} market={m} selected={m.marketId === selectedMarketId} onSelect={onSelect} upCents={topById.get(m.marketId)?.upCents ?? null} downCents={topById.get(m.marketId)?.downCents ?? null} hydrating={topById.get(m.marketId)?.hydrating ?? true} />
                   ))}
                 </div>
                 <Pager pager={pager} />

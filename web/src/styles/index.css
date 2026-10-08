@@ -15,4 +15,5 @@
 @import "./icons.css";
 @import "./error.css";
 @import "./shell-fixes.css";
+@import "./font-fallbacks.css";
 @import "./fonts-stage.css";

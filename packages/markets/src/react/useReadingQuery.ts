@@ -2,7 +2,7 @@
 // first-ever infrastructure failure rejects (so TanStack retries it); a domain failure (revert, not deployed) resolves
 // as the error arm, because it is an answer, not an outage. A failed refresh keeps the last-good value, stale.
 import { err, type DiagnosisKind, type Reading } from "@cwf/core";
-import { useQuery, type QueryKey } from "@tanstack/react-query";
+import { queryOptions, useQuery, type QueryKey } from "@tanstack/react-query";
 import { diagnose } from "../errors/error-map";
 import { ReadingError } from "../errors/reading-error";
 
@@ -22,12 +22,12 @@ export interface ReadingQueryOptions<T> {
   staleTimeMs?: number;
 }
 
-/** Returns null only before any result exists. */
-export function useReadingQuery<T>(queryKey: QueryKey, read: () => Promise<Reading<T>>, options: ReadingQueryOptions<T> = {}): Reading<T> | null {
+/** The query a port read runs as (key, fetch, retry, poll, freshness) — `useReadingQuery`'s, reusable by `useQueries`. */
+export function readingQueryOptions<T>(queryKey: QueryKey, read: () => Promise<Reading<T>>, options: ReadingQueryOptions<T> = {}) {
   const { pollMs, enabled = true, staleTimeMs } = options;
-  const query = useQuery({
+  return queryOptions({
     queryKey,
-    queryFn: async () => {
+    queryFn: async (): Promise<Reading<T>> => {
       const reading = await read().catch((error) => err(diagnose(error)));
       if (!reading.ok && isInfrastructureFailure(reading.error)) throw new ReadingError(reading.error);
       return reading;
@@ -39,8 +39,17 @@ export function useReadingQuery<T>(queryKey: QueryKey, read: () => Promise<Readi
     refetchOnWindowFocus: true,
     staleTime: staleTimeMs ?? (typeof pollMs === "number" ? pollMs : DEFAULT_STALE_MS),
   });
+}
+
+/** A query's state as a Reading: the value, the failure, or null before any result exists. */
+export function readingOf<T>(query: { data: Reading<T> | undefined; isError: boolean; error: unknown }): Reading<T> | null {
   const data = query.data ?? null;
   if (data) return data;
   if (query.isError) return err(diagnose(query.error));
   return null;
+}
+
+/** Returns null only before any result exists. */
+export function useReadingQuery<T>(queryKey: QueryKey, read: () => Promise<Reading<T>>, options: ReadingQueryOptions<T> = {}): Reading<T> | null {
+  return readingOf(useQuery(readingQueryOptions(queryKey, read, options)));
 }

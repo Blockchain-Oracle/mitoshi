@@ -10,7 +10,7 @@
 import { LazyMotion, MotionConfig } from "motion/react";
 import type { ReactNode } from "react";
 
-const loadDomAnimation = () => import("motion/react").then((mod) => mod.domAnimation);
+const loadDomAnimation = () => import("./motion-features").then((mod) => mod.default);
 
 export function MotionScope({ children }: { children: ReactNode }) {
   return (
