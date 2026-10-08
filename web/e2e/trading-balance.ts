@@ -61,15 +61,18 @@ async function tap(t: TerminalSession, symbol: string, side: "up" | "down") {
   const row = page.locator(".tm-side-list .tm-pos").filter({ hasText: `${side === "up" ? "Up" : "Down"} ${symbol}` }).first();
   let heldIn: string | null = null;
   let rowMs = -1;
+  let clickMs = -1;
   if (ok) {
     await expect(row).toBeVisible({ timeout: 60_000 });
     rowMs = Date.now() - t0;
+    const c0 = Date.now();
     await row.locator(".tm-pos-open-btn").click();
+    clickMs = Date.now() - c0;
     const details = modal(page);
     heldIn = await details.locator("dt", { hasText: "Held in" }).locator("xpath=following-sibling::dd").innerText().catch(() => null);
     await page.keyboard.press("Escape");
   }
-  note({ step: "tap", symbol, side, ok, ms: Date.now() - t0, toastMs, rowMs, phases: await tapPhases(page), prompts: t.assertions() - before, heldIn });
+  note({ step: "tap", symbol, side, ok, ms: Date.now() - t0, toastMs, rowMs, clickMs, phases: await tapPhases(page), prompts: t.assertions() - before, heldIn });
   if (!ok) throw new Error(`${side} ${symbol}: ${await refused.first().innerText().catch(() => "not opened")}`);
   return row;
 }
@@ -190,7 +193,7 @@ try {
 } catch (error) {
   failed = true;
   await page.screenshot({ path: join(out, `fail-${width}.png`) }).catch(() => undefined);
-  note({ step: "FAIL", message: (error as Error).message.split("\n").slice(0, 4).join(" | ") });
+  note({ step: "FAIL", message: (error as Error).message.split("\n").slice(0, 14).join(" | ") });
 }
 writeFileSync(join(out, `trading-balance-${Date.now()}.json`), JSON.stringify({ base, width, steps, txs: s.txs }, null, 2));
 await s.browser.close();
