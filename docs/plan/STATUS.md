@@ -5,7 +5,8 @@ Updated 2026-10-08 (revamp decided). **Never trust memory over this file.**
 ## Where we are
 
 - Product: **Mitoshi 見通し** (`mitoshi.xyz`, D-060). Hosting: owner's Coolify (D-061, `infra/coolify.md`).
-- Repo: private `Blockchain-Oracle/mitoshi`; **one branch, `integration/t1`** (default, Coolify's source). On 2026-10-08
+- Repo: private `Blockchain-Oracle/mitoshi`; **one branch, `integration/t1`** (default, Coolify's source); since D-201
+  every stage runs on it directly — no worktrees, no stage branches. On 2026-10-08
   the last open stage branches (S3-fix2, S4-perf, S10 with its `slice/S10bcd-contracts`) were merged, every stage branch
   was deleted locally and on GitHub, and the `../cwf-wt/*` worktrees were removed; each stage's history stays in the
   trunk under its `merge(S…)` commit. New stages branch from the trunk per `fragments.md`.
@@ -68,9 +69,9 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
    spanning a 04:00 ET; then the S4 Handoff re-runs on the deployed site (tap-latency, stream-ticket, `lighthouse.yml`).
 2. S10 remainder: `/api/prices/datastreams-report`, 10a.4 (a won ticket claimed, UX gate), the S10d browser gate, the
    stage gate.
-3. The revamp: R.0 (decisions and docs) is done; **wave R** runs S22 shell · S23a display feed (ops) · S23b chart +
-   LiveStore · S24.1 vault v2 in parallel, then S23c–j and S24.2–5 (`stage-2{2,3,4}-*.md`). S5's leaderboard data comes
-   before S23g's leaderboard and S6's session states before S23c's stock states.
+3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes): R.0 (decisions and docs) is done →
+   **S22 shell** → **S23 terminal** (23a display feed first, then 23b…23j) → **S24 exits** (`stage-2{2,3,4}-*.md`). S5's
+   leaderboard data comes before S23g's leaderboard and S6's session states before S23c's stock states.
 4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
    revamped UI.

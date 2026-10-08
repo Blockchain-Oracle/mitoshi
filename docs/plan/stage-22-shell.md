@@ -1,6 +1,6 @@
-# S22 — The shell: roy-chain/Slush structure, Mitoshi identity (after R.0; wave R; D-189, D-190, D-198)
+# S22 — The shell: roy-chain/Slush structure, Mitoshi identity (after R.0; D-189, D-190, D-198)
 
-Branch `stage/S22-shell`. Sources: Baku/roy-chain `ede3ed38` (`apps/web/src/components/shell/*`, `constants/nav.ts`,
+On `integration/t1` (D-201). Sources: Baku/roy-chain `ede3ed38` (`apps/web/src/components/shell/*`, `constants/nav.ts`,
 `components/ui/{dialog,drawer}.tsx`, `styles/tokens.css`), the Slush study (`docs/build/research/inspo/slush/`), Owarine
 `ecb7565b` (`web/src/lib/sound/*`, `web/src/lib/haptics.ts`). Ledger rows RV-01…RV-16 in `revamp-parity.md`.
 

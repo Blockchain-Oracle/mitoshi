@@ -1676,6 +1676,14 @@ session key for vault positions, arming is refused when the key expires before t
 while Mitoshi is open". Trail is on spot with the break-even spot as its reference (Tradash's rule); TP and SL in ROI %
 and P&L modes are defined on exit value (what CLOSE pays); the Change % mode converts to spot and is labelled "≈".
 
+### D-201 — owner answer (2026-10-08): one branch, no worktrees
+
+**Work runs sequentially on `integration/t1`; no git worktrees, no parallel stage or slice branches, no lanes.** The
+owner stopped a four-worktree wave ("it is slower; don't spin up work trees") and clears the session between stages
+himself. **Supersedes** `fragments.md`'s worktrees in `../cwf-wt/<name>` and `stage/…`/`slice/…` branches, plan §4's
+branch naming and §7's "≤ 4 agents per wave" for the stages still to run, and the revamp's "wave R": S22, S23 and S24
+run one after another on the trunk (order in STATUS).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

@@ -13,4 +13,6 @@ Parallel agents never edit the same file. Each area owns its fragment:
 
 `packages/clients` is generated from the deployment fragments (`pnpm codegen`); never edit it by hand. Dependencies are
 installed in S0 so later stages don't touch lockfiles concurrently; one integrator merges stage branches into
-`integration/t1`. Worktrees live in `../cwf-wt/<name>`; branches `stage/S<n>-<slug>`, lanes `slice/S<n><x>-<slug>`.
+`integration/t1`. **Since D-201 (2026-10-08) every stage runs sequentially on `integration/t1` itself: no worktrees, no
+stage or slice branches, no parallel lanes.** (Earlier stages used `../cwf-wt/<name>` worktrees and `stage/S<n>-<slug>`
+branches; their history is in the trunk under each `merge(S…)` commit.)

@@ -1,6 +1,6 @@
-# S23 — The terminal: Tradash's behaviour on Mitoshi's markets (after R.0; 23a/23b in wave R; D-192, D-196, D-197, D-199, D-200)
+# S23 — The terminal: Tradash's behaviour on Mitoshi's markets (after S22; D-192, D-196, D-197, D-199, D-200)
 
-Branches `stage/S23-terminal` and `slice/S23a-feed` (ops). Sources: the Tradash spec
+On `integration/t1` (D-201). Sources: the Tradash spec
 (`canton-season3/context/13-revamp/tradash/SPEC-{chart,flow}.md`), Owarine `ecb7565b` (`web/src/features/terminal/**`,
 `services/ops/src/prices/*`, `services/ops/src/http/coalesce.ts`). Ledger rows RV-20…RV-96 in `revamp-parity.md`.
 

@@ -1,6 +1,6 @@
-# S24 — Exits with the app closed and the house's last minute (24.1 in wave R; money gate; D-193, D-194, D-200)
+# S24 — Exits with the app closed and the house's last minute (after S23; money gate; D-193, D-194, D-200)
 
-Branch `stage/S24-exits`. Contracts follow plan §4 (Foundry ≥ 1.8.3, `network = "tempo"`, pay `msg.sender` only,
+On `integration/t1` (D-201). Contracts follow plan §4 (Foundry ≥ 1.8.3, `network = "tempo"`, pay `msg.sender` only,
 receive-policy pre-check on every payout, no `payable`, no CREATE in any flow an access key signs). Ledger rows RV-51,
 RV-55, RV-97, RV-98.
 
