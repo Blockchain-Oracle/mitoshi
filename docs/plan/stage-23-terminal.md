@@ -69,8 +69,9 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   25/50/75/100 % and the Add modal; the locked state. A real UP → CLOSE on Moderato (acceptance S23).
   Done since: one settle toast per Window (cb228c3): "Paying…" from the stamp, "Paid $X" when the payout lands, held
   credit → Collect. Every taker read at rest 0 (D-205): the exit, the sell lanes, the stake quote and the depth. The
-  house keeps both sides to lock − 30 (S24.4, D-204). Still open: parallel reads and `onSigned` in `cash-out.ts`;
-  `useCashOut` losing its hold on /portfolio; the Boost close via `LeverageReserve.close`; the void state.
+  house keeps both sides to lock − 30 (S24.4, D-204). Both sell lanes start their reads together and say "Closing…"
+  at signing (05dfd6b). /portfolio's cash-out is one tap like CLOSE, on the same close tolerance, with "Close for $X"
+  past it (the hold is gone). Still open: the Boost close via `LeverageReserve.close`; the void state.
 - [ ] 23e Exits in the tab (D-200): Owarine `trailEligible`/`ratchet`/`trailHit` + break-even bisection; the TP/SL
   drawer; evaluation on committed ticks; the price stream kept open while armed; signer by position location; arming
   refused when the key expires first; "Only while Mitoshi is open".

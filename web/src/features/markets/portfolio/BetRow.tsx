@@ -10,7 +10,6 @@ import { countdown } from "@cwf/core/lifecycle";
 import { marketDeepLink } from "@cwf/core/urls";
 import Link from "next/link";
 import { Countdown, Money } from "@/components/data";
-import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { useNowMs } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { CASH_OUT, PORTFOLIO } from "../copy";
@@ -25,25 +24,18 @@ export function heldSide(upRaw: bigint, downRaw: bigint): Side | null {
 }
 
 /**
- * Cash-out as a hold (21st.dev 23527 hold-to-confirm, S1's `ui/hold-to-confirm`): a tap reads the exit, then the hold
- * names the floor it will accept — selling a position is not a thing to do by a stray tap. Escape or a release cancels.
+ * Cash-out in one tap, as the terminal's CLOSE (D-197): the tap reads the exit and sells at its floor less the close
+ * tolerance; a requote past the tolerance becomes "Close for $X" at the fresh floor.
  */
 function CashOut({ position, side, wallet }: { position: OpenPosition; side: Side; wallet: Address }) {
   const held = side === "up" ? position.balanceUpRaw : position.balanceDownRaw;
-  const { canSign, busy, note, exit, prepare, cashOut, cancel, money } = useCashOut({ marketId: position.marketId, side, heldRaw: held, decimals: position.decimals }, wallet);
+  const { canSign, busy, note, retry, close, money } = useCashOut({ marketId: position.marketId, side, heldRaw: held, decimals: position.decimals }, wallet);
   if (!canSign) return null;
   return (
     <>
-      {exit ? (
-        <span className="flex basis-full flex-wrap items-center justify-end gap-2" onKeyDown={(e) => e.key === "Escape" && cancel()}>
-          <HoldToConfirm onConfirm={() => void cashOut()} confirmLabel={CASH_OUT.cashingOut} disabled={busy}>{CASH_OUT.holdToCashOut(money(exit.minProceedsBase))}</HoldToConfirm>
-          <button type="button" className="min-h-touch px-2 type-caption text-ink-secondary underline" onClick={cancel}>{CASH_OUT.keep}</button>
-        </span>
-      ) : (
-        <button type="button" className="min-h-touch type-caption text-accent underline" disabled={busy} aria-busy={busy} onClick={() => void prepare()}>
-          {busy ? CASH_OUT.quoting : CASH_OUT.cashOut}
-        </button>
-      )}
+      <button type="button" className="min-h-touch type-caption text-accent underline" disabled={busy} aria-busy={busy} onClick={() => void close(retry ?? undefined)}>
+        {busy ? CASH_OUT.cashingOut : retry ? CASH_OUT.closeFor(money(retry.minProceedsBase)) : CASH_OUT.cashOut}
+      </button>
       {note && <span className="basis-full type-caption text-warning sm:text-right" role="status">{note}</span>}
     </>
   );

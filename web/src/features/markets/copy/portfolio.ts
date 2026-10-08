@@ -72,14 +72,12 @@ export const PLATE = {
 
 export const CASH_OUT = {
   cashOut: "Cash out",
-  holdToCashOut: (amount: string) => `Hold to cash out for at least ${amount}`,
+  closeFor: (amount: string) => `Close for ${amount}`,
   cashingOut: "Cashing out…",
-  quoting: "Reading the exit…",
-  keep: "Keep it",
   noLiquidity: "No exit liquidity right now",
   locked: "No exit liquidity: this Window has locked, it pays at settlement",
   nothingSold: "Nothing sold: the book moved before the sell landed. Your position is unchanged.",
-  requote: (floor: string) => `The book moved: the exit now pays at least ${floor}. Hold again to take it.`,
+  requote: (floor: string) => `The book moved past your close tolerance: the exit now pays at least ${floor}.`,
   pending: "Waiting for the chain to answer — the sell is journaled, nothing is re-sent.",
   done: "Cashed out",
   doneBody: (proceeds: string) => `${proceeds} is back in your account.`,
