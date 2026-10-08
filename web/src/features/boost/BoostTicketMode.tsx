@@ -7,15 +7,9 @@
  * live spot (PD-2), D-116's void bound per multiple, D-114's healthy-at-birth, the reserve's caps. A lazy island.
  */
 import { USD_DECIMALS, type EventMarket, type Side } from "@cwf/core";
-import { REQUOTE_MS } from "@cwf/core/constants";
 import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
-import { getLeverageReserveState, previewBoostFair, sizeLeverageForStake } from "@cwf/markets/leverage";
-import { readFairModels } from "@cwf/markets/parlay";
-import { useAssetPrice, useBalanceSheet, useReadingQuery } from "@cwf/markets/react";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import type { Hex } from "viem";
 import { EmptyState, LoadingState } from "@/components/states";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
@@ -23,80 +17,31 @@ import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { LeverageSlider } from "@/components/ui/leverage-slider";
 import { OrderSummary } from "@/components/ui/order-summary";
 import { AmountField, OutcomePills, QuickAdds } from "@/components/ui/prediction-ticket";
-import { useNowMs } from "@/lib/clock";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
-import { useDebounced } from "../markets/ticket/useDebounced";
-import { feedKeyOf } from "../markets/units";
 import { formatCents, usd } from "../parlay/format";
 import { BOOST } from "./copy";
-import { boostKeys, useBoostWrites } from "./useBoostWrites";
+import { useBoostTicket } from "./useBoostTicket";
+import { useBoostWrites } from "./useBoostWrites";
 import "@/styles/boost.css";
 
 const ADDS = [1, 5, 20] as const;
-const PAYOUT_DENOMINATOR = 10_000_000n;
-const PAYOUT_VOID = 5_000_000n;
 
 export function BoostTicketMode({ market, side: initialSide }: { market: EventMarket; side: Side | null }) {
-  const nowMs = useNowMs();
   const session = useWalletSession();
-  const sheet = useBalanceSheet(session.address);
   const writes = useBoostWrites(session.address);
-  const reserve = useReadingQuery([...boostKeys.all, "reserve"], getLeverageReserveState, { pollMs: 15_000 });
-  const models = useQuery({ queryKey: [...boostKeys.all, "model", market.seriesId], queryFn: () => readFairModels([market.seriesId as Hex]), staleTime: 60_000 });
   const [side, setSide] = useState<Side | null>(initialSide);
   const [multiple, setMultiple] = useState(2);
   const [amountText, setAmountText] = useState("2");
   const stakeBase = parseDecimalToBaseUnits(amountText || "0", USD_DECIMALS) ?? 0n;
-  const state = reserve?.ok ? reserve.value : null;
-  const model = models.data?.get(market.seriesId.toLowerCase()) ?? null;
-  const priceable = model !== null && model.sigmaE8 > 0n && model.feed !== null;
-  const bps = multiple * 10_000;
-  const signature = `${market.marketId}:${side}:${stakeBase}:${bps}`;
-  const debounced = useDebounced(signature, 400);
-  const askable = state !== null && priceable && side !== null && stakeBase > 0n && multiple > 1 && !state.paused;
-  const quoteReading = useReadingQuery([...boostKeys.all, "quote", debounced], () => sizeLeverageForStake(market.marketId, side!, stakeBase, bps, state!.params.maintenanceBps), { enabled: askable && debounced === signature, pollMs: REQUOTE_MS });
-  const quote = askable && quoteReading?.ok ? quoteReading.value : null;
-  const error = askable && quoteReading && !quoteReading.ok ? quoteReading.error : null;
-  const price = useAssetPrice(feedKeyOf(market), nowMs);
-  const spotE8 = price?.ok && price.value ? price.value.priceRaw : null;
-  const fair = useQuery({ queryKey: [...boostKeys.all, "fair", market.marketId, side ?? "", spotE8?.toString() ?? ""], queryFn: () => previewBoostFair(market.marketId as Hex, side!, spotE8!), enabled: side !== null && spotE8 !== null && priceable, staleTime: 10_000 });
-  const spendable = sheet?.ok ? sheet.value.spendableBase : null;
+  const t = useBoostTicket({ market, side, stakeBase, multiple });
+  const { quote, blocker, maxMultiple, voidShort, fair } = t;
 
-  if (reserve === null || models.isPending) return <LoadingState shape="ticket" />;
-  if (!state) return <EmptyState why={BOOST.cta.unavailable} />;
-  const maxMultiple = Math.max(1, Math.floor(state.params.maxLeverageBps / 10_000));
-  // D-116 on the quoted terms: a void pays half a contract; the front must fit inside it.
-  const voidShort = quote !== null && quote.frontedBase * PAYOUT_DENOMINATOR > quote.quantityRaw * PAYOUT_VOID;
-  const aboveFair = quote !== null && fair.data != null && quote.priceRaw > fair.data + state.params.fairSlackRaw;
-  const blocker = ((): string | null => {
-    if (!session.isConnected) return BOOST.cta.signIn;
-    if (state.paused) return BOOST.cta.paused;
-    if (!priceable) return BOOST.cta.noModel;
-    if (side === null) return BOOST.cta.pickSide;
-    if (stakeBase === 0n) return BOOST.cta.enterAmount;
-    if (multiple === 1) return BOOST.cta.one;
-    if (error) {
-      const n = error.errorName;
-      if (n === "ThinBook") return BOOST.cta.thin;
-      if (n === "UnhealthyAtEntry") return BOOST.cta.unhealthy;
-      if (n === "VoidWouldShort") return BOOST.cta.voidShort;
-      if (n === "AboveFairValue") return BOOST.cta.aboveFair;
-      if (n === "OutsideBand") return BOOST.cta.outsideBand;
-      if (n === "TooLate") return BOOST.cta.tooLate;
-      if (error.kind === "reserve-cap") return BOOST.cta.reserveCap;
-      return BOOST.cta.unavailable;
-    }
-    if (!quote) return BOOST.cta.pricing;
-    if (voidShort) return BOOST.cta.voidShort;
-    if (aboveFair) return BOOST.cta.aboveFair;
-    if (spendable !== null && spendable < quote.stakeBase) return BOOST.cta.topUp;
-    return null;
-  })();
+  if (t.loading) return <LoadingState shape="ticket" />;
+  if (!t.state) return <EmptyState why={BOOST.cta.unavailable} />;
   const busy = writes.tx.kind === "signing" || writes.tx.kind === "submitted" || writes.tx.kind === "unknown";
   const place = () => {
-    if (!quote || !side || !model?.feed || blocker) return;
-    void writes.open({ marketId: market.marketId, side, stakeBase: quote.stakeBase, leverageBps: bps, minQuantityRaw: (quote.quantityRaw * 99n) / 100n, feed: model.feed });
+    if (t.openArgs) void writes.open(t.openArgs);
   };
   const contracts = (raw: bigint) => formatBaseUnits(raw, USD_DECIMALS, { minDp: 0, maxDp: 2 });
 
@@ -114,7 +59,7 @@ export function BoostTicketMode({ market, side: initialSide }: { market: EventMa
         title={BOOST.summary}
         rows={[
           { label: BOOST.rows.exposure, value: quote ? BOOST.rows.contracts(contracts(quote.quantityRaw)) : null },
-          { label: BOOST.rows.price, value: quote ? formatCents(quote.priceRaw) : null, ...(fair.data != null ? { note: BOOST.rows.model(formatCents(fair.data)) } : {}) },
+          { label: BOOST.rows.price, value: quote ? formatCents(quote.priceRaw) : null, ...(fair !== null ? { note: BOOST.rows.model(formatCents(fair)) } : {}) },
           { label: BOOST.rows.fronted, value: quote ? usd(quote.frontedBase) : null, tone: "muted" },
           { label: BOOST.rows.premium, value: quote ? usd(quote.premiumBase) : null, tone: "muted" },
           { label: BOOST.rows.line, value: quote ? usd(quote.lineBase) : null },
