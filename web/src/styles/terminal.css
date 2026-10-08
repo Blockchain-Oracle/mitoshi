@@ -122,6 +122,12 @@
 .tm-field:first-child { border-top: 0; padding-top: 0; }
 .tm-field-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font: 600 14px/1.2 var(--font-body); }
 .tm-field-hint { color: var(--color-ink-secondary); font: 400 12px/1.4 var(--font-body); }
+.tm-field-error { color: var(--color-warning); font: 600 12px/1.4 var(--font-body); }
+.tm-exit-card { display: flex; flex-direction: column; gap: 10px; }
+.tm-exit-card[data-kind="tp"] { border-inline-start: 3px solid var(--chart-up); }
+.tm-exit-card[data-kind="sl"] { border-inline-start: 3px solid var(--chart-down); }
+.tm-exit-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tm-exit-input { display: flex; flex-direction: column; gap: 4px; min-width: 0; color: var(--color-ink-secondary); font: 600 11px/1.2 var(--font-body); }
 .tm-choices { display: flex; flex-wrap: wrap; gap: 6px; }
 .tm-choice { min-width: 56px; height: 36px; padding: 0 12px; border-radius: var(--radius-full); background: var(--color-surface-2); font: 600 13px/1 var(--font-data); }
 .tm-choice[aria-pressed="true"] { background: var(--color-ink); color: var(--color-stage); }

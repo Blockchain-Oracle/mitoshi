@@ -1,7 +1,8 @@
 /**
  * A real trade on the terminal (S23c–d, D-197), on Moderato: a fresh passkey (Chrome virtual authenticator) signs up
  * from the first visit's tour ("Start trading", D-191), takes the faucet, arms the wallet key, taps UP on `/trade/BTC` (no prompt), sees
- * the position with what Close pays, and closes it in one tap (a requote outside the tolerance is taken from the
+ * the position with what Close pays, sets a take-profit and stop-loss in the TP/SL drawer (ROI preset, Change % view,
+ * a refused P&L stop, a valid one), and closes it in one tap (a requote outside the tolerance is taken from the
  * toast's "Close for $X"). Every transaction hash the relay sends is printed for `cast receipt`.
  *
  *   pnpm --filter @cwf/web exec tsx e2e/terminal-trade.ts --base https://testnet.mitoshi.xyz --out <dir>
@@ -100,6 +101,26 @@ try {
   await expect(close).toBeVisible();
   await page.screenshot({ path: join(out, "valued.png") });
 
+  // TP/SL (RV-51, D-200) from the position's details: Tradash's tabs, linked inputs, caption and checks, on what Close pays.
+  await row.locator(".tm-pos-open-btn").click();
+  await page.getByRole("dialog").getByRole("button", { name: "TP / SL" }).click();
+  const exits = page.getByRole("dialog").filter({ hasText: "Take profit" });
+  await expect(exits).toBeVisible();
+  const tp = exits.getByRole("group", { name: "Take profit" });
+  const sl = exits.getByRole("group", { name: "Stop loss" });
+  await tp.getByRole("button", { name: "+50%" }).click();
+  const tpCaption = await tp.locator("p").innerText();
+  await exits.getByRole("tab", { name: "Change %" }).click();
+  const tpChange = await tp.getByLabel("Change %").inputValue();
+  await exits.getByRole("tab", { name: "P&L" }).click();
+  await sl.getByLabel("P&L").fill("5");
+  const slError = await sl.getByRole("alert").innerText();
+  await sl.getByLabel("P&L").fill("-0.5");
+  const slCaption = await sl.locator("p").innerText();
+  await page.screenshot({ path: join(out, "exits.png") });
+  await exits.getByRole("button", { name: "Set" }).click();
+  log({ step: "exits", tpCaption, tpChange, slError, slCaption, toasts: await toastTitles() });
+
   // CLOSE, one tap; a requote outside the tolerance offers "Close for $X".
   const t1 = Date.now();
   await close.click();
@@ -111,7 +132,8 @@ try {
     await expect.poll(toastTitles, { timeout: 90_000 }).toContainEqual(expect.stringMatching(new RegExp(`Closed ${symbol}|Reduced ${symbol}`)));
     titles = await toastTitles();
   }
-  const closed = titles.some((t) => t.startsWith("Closed") || t.startsWith("Reduced"));
+  // A stop-loss set above may fire first: its own close is the same one-tap Close.
+  const closed = titles.some((t) => t.startsWith("Closed") || t.startsWith("Reduced") || / hit · /.test(t));
   log({ step: "close", ok: closed, ms: Date.now() - t1, toasts: titles, body: await page.locator('[data-slot="toast-description"]').allInnerTexts() });
   await page.screenshot({ path: join(out, "closed.png") });
   if (!closed) throw new Error("CLOSE did not close");

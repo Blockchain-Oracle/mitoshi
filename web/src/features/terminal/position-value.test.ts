@@ -1,6 +1,6 @@
 import { sigmaE8FromBps, CALENDAR_YEAR_SEC } from "@cwf/core";
 import { describe, expect, it } from "vitest";
-import { breakEvenSpotE8, closeFloorBase, exitHit, liveValue, pnlOf, ratchet, spotForValueE8, trailEligible, trailHit, trailStart } from "./position-value";
+import { breakEvenSpotE8, closeFloorBase, exitHit, liveValue, pnlOf, ratchet, spotForValueE8, trailEligible, trailHit, trailStart, valueAtSpotBase } from "./position-value";
 
 const OPEN = 62_000n * 100_000_000n;
 const SIGMA = sigmaE8FromBps(5_000, CALENDAR_YEAR_SEC);
@@ -72,5 +72,21 @@ describe("take-profit and stop-loss on what Close pays (23e)", () => {
     const sl = spotForValueE8({ anchor, targetBase: 4_000_000n, side: "up", openE8: OPEN, sigmaE8: SIGMA, tauSec: 200 })!;
     expect(tp > OPEN).toBe(true);
     expect(sl < OPEN).toBe(true);
+  });
+});
+
+describe("a trigger price's value (the TP/SL drawer)", () => {
+  const model = { anchor, side: "up" as const, openE8: OPEN, sigmaE8: SIGMA, tauSec: 200 };
+  it("is the anchor at the anchor spot, rises with the spot for Up, and inverts spotForValueE8", () => {
+    expect(valueAtSpotBase(model, OPEN)).toBe(5_200_000n);
+    expect(valueAtSpotBase(model, OPEN + 2_000_000_000n)!).toBeGreaterThan(5_200_000n);
+    expect(valueAtSpotBase({ ...model, side: "down" }, OPEN + 2_000_000_000n)!).toBeLessThan(5_200_000n);
+    const spot = spotForValueE8({ ...model, targetBase: 6_000_000n })!;
+    const back = valueAtSpotBase(model, spot)!;
+    expect(back >= 5_999_000n && back <= 6_001_000n).toBe(true);
+  });
+  it("is null without the model's inputs", () => {
+    expect(valueAtSpotBase({ ...model, sigmaE8: null }, OPEN)).toBeNull();
+    expect(valueAtSpotBase(model, 0n)).toBeNull();
   });
 });

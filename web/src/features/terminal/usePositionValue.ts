@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useRef } from "react";
 import { useClockValue } from "@/lib/clock";
 import { useCommittedSpot } from "./live";
-import { breakEvenSpotE8, liveValue, pnlOf, spotForValueE8 } from "./position-value";
+import { breakEvenSpotE8, liveValue, pnlOf, spotForValueE8, valueAtSpotBase } from "./position-value";
 import type { TerminalPosition } from "./terminal-positions";
 
 export const EXIT_READ_MS = 5_000;
@@ -30,7 +30,13 @@ export interface PositionValue {
   /** Where the take-profit and stop-loss sit in spot terms on the same model ("≈" on the chart). */
   tpSpot: number | null;
   slSpot: number | null;
+  /** The model both ways (the TP/SL drawer's linked inputs): what Close pays at a spot, and the spot where it pays a value. */
+  valueAt: (spot: number) => bigint | null;
+  spotAt: (base: bigint) => number | null;
 }
+
+const none = () => null;
+const toE8 = (spot: number) => BigInt(Math.round(spot * 1e8));
 
 export function usePositionValue(p: TerminalPosition): PositionValue {
   const marketReading = useMarket(p.marketId);
@@ -53,7 +59,7 @@ export function usePositionValue(p: TerminalPosition): PositionValue {
   if (exit && exit.quotedAtMs !== anchorSpot.current.at) anchorSpot.current = { at: exit.quotedAtMs, spotE8: spot.priceE8 };
   const nowSec = useClockValue((ms) => Math.floor(ms / 1000));
   return useMemo(() => {
-    if (!exit) return { exit: null, valueBase: null, pnlBase: null, roiBps: null, approx: false, locked, partial: false, spot: spot.price, breakEven: null, tpSpot: null, slSpot: null };
+    if (!exit) return { exit: null, valueBase: null, pnlBase: null, roiBps: null, approx: false, locked, partial: false, spot: spot.price, breakEven: null, tpSpot: null, slSpot: null, valueAt: none, spotAt: none };
     const v = liveValue({ anchor: { proceedsBase: exit.proceedsBase, spotE8: anchorSpot.current.spotE8 }, side: p.side, spotE8: spot.priceE8, openE8, sigmaE8, tauSec: Math.max(0, p.expirySec - nowSec) });
     // A partial exit values only what sells: cost is taken pro rata so PnL compares like with like.
     const costShare = exit.partial && p.heldRaw > 0n ? (p.costBase * exit.contractsRaw) / p.heldRaw : p.costBase;
@@ -64,6 +70,7 @@ export function usePositionValue(p: TerminalPosition): PositionValue {
       const s = target === null ? null : spotForValueE8({ ...model, targetBase: target });
       return s === null ? null : Number(s) / 1e8;
     };
-    return { exit, valueBase: v.valueBase, pnlBase, roiBps, approx: v.approx, locked, partial: exit.partial, spot: spot.price, breakEven: be === null ? null : Number(be) / 1e8, tpSpot: at(p.tpBase), slSpot: at(p.slBase) };
+    const valueAt = (s: number) => (Number.isFinite(s) && s > 0 ? valueAtSpotBase(model, toE8(s)) : null);
+    return { exit, valueBase: v.valueBase, pnlBase, roiBps, approx: v.approx, locked, partial: exit.partial, spot: spot.price, breakEven: be === null ? null : Number(be) / 1e8, tpSpot: at(p.tpBase), slSpot: at(p.slBase), valueAt, spotAt: at };
   }, [exit, spot.priceE8, spot.price, openE8, sigmaE8, nowSec, p.side, p.expirySec, p.heldRaw, p.costBase, p.tpBase, p.slBase, locked]);
 }

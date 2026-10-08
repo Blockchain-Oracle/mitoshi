@@ -1,68 +1,110 @@
 "use client";
-// Tradash's TP/SL sheet (RV-51/23e) as a right-edge drawer (D-190), on Mitoshi's definition (D-197, D-200): a
-// take-profit and a stop-loss on what Close pays — set as ROI on the stake or in dollars — that the open tab closes the
-// position at with the one-tap Close; drawn on the chart in spot terms ("≈"). The server-side keeper is S24 (D-193):
-// until then they run only while Mitoshi is open, and need a key that signs without a prompt until the Window closes.
-import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
-import { useEffect, useState } from "react";
+// Tradash's TP/SL sheet (`sV`, RV-51/23e) as a right-edge drawer (D-190), on Mitoshi's definition (D-197, D-200): a
+// take-profit and a stop-loss on what Close pays, which the open tab closes the position at with the one-tap Close.
+// Tradash's grammar: the ROI % · Change % · P&L tabs; a card each with a trigger price linked to the tab's value and
+// Clear; the "Closes at … for …" caption; its validation (`sq`) in exit-value terms; the trailing-stop note. A trigger
+// price is a spot on the fair model ("≈"). The server-side keeper is S24 (D-193): until then they run only while
+// Mitoshi is open, and need a key that signs without a prompt until the Window closes.
+import { useState } from "react";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { tapFeedback } from "@/lib/feedback";
 import { notify } from "@/lib/toast";
+import { formatUsd, priceDecimals } from "../chart/engine";
 import { TERMINAL } from "../copy";
 import { setExits } from "../entries";
-import { money, sideWord, USD_DECIMALS } from "../format";
+import { EXIT_MODES, exitCaption, exitError, modeText, priceText, targetFromMode, targetFromPrice, type ExitCtx, type ExitKind, type ExitMode } from "../exits-form";
+import { money, sideWord } from "../format";
 import type { TerminalPosition } from "../terminal-positions";
 import type { PositionValue } from "../usePositionValue";
 import { useSignerLasts } from "../useTrail";
 
-const TP_ROI = [25, 50, 100] as const;
-const SL_ROI = [-25, -50, -75] as const;
+const PRESETS: Record<ExitKind, readonly number[]> = { tp: [25, 50, 100], sl: [-25, -50, -75] };
+const none = () => null;
+const usd = (spot: number) => formatUsd(spot, priceDecimals(spot));
 
-const target = (cost: bigint, pct: number) => (cost * BigInt(100 + pct)) / 100n;
-const text = (base: bigint | null) => (base === null ? "" : formatBaseUnits(base, USD_DECIMALS, { group: false, minDp: 2, maxDp: 2 }));
+type Edit = { field: "price" | "mode"; text: string } | null;
 
-function Row({ label, roi, cost, value, onChange }: { label: string; roi: readonly number[]; cost: bigint; value: bigint | null; onChange: (b: bigint | null) => void }) {
-  const [typed, setTyped] = useState(text(value));
-  useEffect(() => setTyped(text(value)), [value]);
+function ExitCard({ kind, mode, base, onBase, ctx, asset }: { kind: ExitKind; mode: ExitMode; base: bigint | null; onBase: (b: bigint | null) => void; ctx: ExitCtx; asset: string }) {
+  // The field being typed in keeps its text; the other follows the target live.
+  const [edit, setEdit] = useState<Edit>(null);
+  const typed = edit !== null && edit.text.trim() !== "";
+  const error = exitError(kind, base, typed, ctx);
+  const label = kind === "tp" ? TERMINAL.exits.tp : TERMINAL.exits.sl;
+  const type = (field: "price" | "mode", text: string) => {
+    setEdit({ field, text });
+    onBase(field === "price" ? targetFromPrice(text, ctx) : targetFromMode(mode, text, ctx));
+  };
+  const pick = (b: bigint | null) => (tapFeedback(), setEdit(null), onBase(b));
   return (
-    <div className="tm-field">
-      <span className="tm-field-head">{label}{value !== null ? <span className="tm-stack-value">{money(value)}</span> : null}</span>
-      <div className="tm-choices">
-        {roi.map((pct) => (
-          <button key={pct} type="button" className="tm-choice" aria-pressed={value === target(cost, pct)} onClick={() => (tapFeedback(), onChange(target(cost, pct)))}>{TERMINAL.exits.roi(pct)}</button>
-        ))}
-        <button type="button" className="tm-choice" aria-pressed={value === null} onClick={() => (tapFeedback(), onChange(null))}>{TERMINAL.exits.off}</button>
+    <div className="tm-card tm-exit-card" role="group" aria-label={label} data-kind={kind}>
+      <div className="tm-field-head">
+        <span>{label}</span>
+        <button type="button" className="tm-choice" disabled={base === null && !typed} onClick={() => pick(null)}>{TERMINAL.exits.clear}</button>
       </div>
-      <input className="tm-input" inputMode="decimal" aria-label={label} value={typed} placeholder="0.00" onChange={(e) => setTyped(e.target.value)} onBlur={() => onChange(typed.trim() ? (parseDecimalToBaseUnits(typed, USD_DECIMALS) ?? null) : null)} />
+      <div className="tm-exit-inputs">
+        <label className="tm-exit-input">
+          <span>{TERMINAL.exits.trigger(asset)}</span>
+          <input className="tm-input" inputMode="decimal" placeholder="—" value={edit?.field === "price" ? edit.text : priceText(base, ctx)} onChange={(e) => type("price", e.target.value)} onBlur={() => base !== null && setEdit(null)} />
+        </label>
+        <label className="tm-exit-input">
+          <span>{TERMINAL.exits.modes[mode]}</span>
+          <input className="tm-input" inputMode="decimal" placeholder={kind === "tp" ? "0" : "-0"} value={edit?.field === "mode" ? edit.text : modeText(mode, base, ctx)} onChange={(e) => type("mode", e.target.value)} onBlur={() => base !== null && setEdit(null)} />
+        </label>
+      </div>
+      {mode === "roi" ? (
+        <div className="tm-choices">
+          {PRESETS[kind].map((pct) => {
+            const b = targetFromMode("roi", String(pct), ctx);
+            return <button key={pct} type="button" className="tm-choice" aria-pressed={b !== null && base === b} onClick={() => pick(b)}>{TERMINAL.exits.roi(pct)}</button>;
+          })}
+        </div>
+      ) : null}
+      <p className={error ? "tm-field-error" : "tm-field-hint"} role={error ? "alert" : undefined}>{error ?? exitCaption(kind, base, ctx)}</p>
     </div>
   );
 }
 
-export function ExitsDrawer({ p, value, open, onOpenChange }: { p: TerminalPosition | null; value: PositionValue | null; open: boolean; onOpenChange: (o: boolean) => void }) {
+function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionValue | null; onDone: () => void }) {
   const lasts = useSignerLasts();
-  const [tp, setTp] = useState<bigint | null>(null);
-  const [sl, setSl] = useState<bigint | null>(null);
-  useEffect(() => {
-    if (!open || !p) return;
-    setTp(p.tpBase);
-    setSl(p.slBase);
-  }, [open, p]);
-  if (!p) return null;
+  const [mode, setMode] = useState<ExitMode>("roi");
+  // Seeded once per opening (the drawer's content unmounts on close), so a positions refresh never resets an edit.
+  const [tp, setTp] = useState(p.tpBase);
+  const [sl, setSl] = useState(p.slBase);
+  const ctx: ExitCtx = { costBase: p.costBase, maxBase: p.heldRaw, nowBase: value?.valueBase ?? null, refSpot: p.entrySpot ?? value?.spot ?? null, valueAt: value?.valueAt ?? none, spotAt: value?.spotAt ?? none };
+  const blocked = exitError("tp", tp, false, ctx) !== null || exitError("sl", sl, false, ctx) !== null;
   const save = () => {
     tapFeedback();
     const id = `exits-${p.marketId}`;
     if ((tp !== null || sl !== null) && !lasts(p)) return void notify.item({ id, type: "warning", title: TERMINAL.trail.needsKey, description: TERMINAL.trail.needsKeyBody });
     setExits(p.marketId, p.side, { tpBase: tp, slBase: sl }, value?.spot ?? p.entrySpot ?? 0);
     notify.item({ id, title: TERMINAL.exits.saved(p.asset), description: [tp !== null ? TERMINAL.exits.when(TERMINAL.exits.tp, `≥ ${money(tp)}`) : null, sl !== null ? TERMINAL.exits.when(TERMINAL.exits.sl, `≤ ${money(sl)}`) : null].filter(Boolean).join(" · ") || TERMINAL.exits.off });
-    onOpenChange(false);
+    onDone();
   };
+  const hint = TERMINAL.exits.modeHints;
+  return (
+    <>
+      <p className="tm-field-hint">{TERMINAL.exits.head(sideWord(p.side), p.asset, money(p.costBase), p.entrySpot ? usd(p.entrySpot) : null)}</p>
+      {value?.valueBase != null ? <p className="tm-field-hint">{TERMINAL.exits.now(`${value.approx ? "≈ " : ""}${money(value.valueBase)}`)}</p> : null}
+      <div className="tm-tabs" role="tablist" aria-label={TERMINAL.exits.open}>
+        {EXIT_MODES.map((m) => (
+          <button key={m} type="button" role="tab" className="tm-choice" aria-selected={mode === m} onClick={() => (tapFeedback(), setMode(m))}>{TERMINAL.exits.modes[m]}</button>
+        ))}
+      </div>
+      <p className="tm-field-hint">{mode === "change" ? hint.change(p.asset, p.entrySpot === null) : hint[mode]}</p>
+      <ExitCard kind="tp" mode={mode} base={tp} onBase={setTp} ctx={ctx} asset={p.asset} />
+      <ExitCard kind="sl" mode={mode} base={sl} onBase={setSl} ctx={ctx} asset={p.asset} />
+      {p.trailStop !== null ? <p className="tm-field-hint">{TERMINAL.exits.trailing(usd(p.trailStop))}</p> : null}
+      <button type="button" className="tm-btn tm-btn-cta" disabled={blocked} onClick={save}>{TERMINAL.exits.save}</button>
+    </>
+  );
+}
+
+export function ExitsDrawer({ p, value, open, onOpenChange }: { p: TerminalPosition | null; value: PositionValue | null; open: boolean; onOpenChange: (o: boolean) => void }) {
+  if (!p) return null;
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
       <SlideOverContent title={TERMINAL.exits.title(sideWord(p.side), p.asset)} description={TERMINAL.exits.body}>
-        {value?.valueBase != null ? <p className="tm-field-hint">{TERMINAL.exits.now(`${value.approx ? "≈ " : ""}${money(value.valueBase)}`)} · {TERMINAL.positions.staked} {money(p.costBase)}</p> : null}
-        <Row label={TERMINAL.exits.tp} roi={TP_ROI} cost={p.costBase} value={tp} onChange={setTp} />
-        <Row label={TERMINAL.exits.sl} roi={SL_ROI} cost={p.costBase} value={sl} onChange={setSl} />
-        <button type="button" className="tm-btn tm-btn-cta" onClick={save}>{TERMINAL.exits.save}</button>
+        <ExitsForm key={p.id} p={p} value={value} onDone={() => onOpenChange(false)} />
       </SlideOverContent>
     </SlideOver>
   );

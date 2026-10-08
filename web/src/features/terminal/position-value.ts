@@ -67,6 +67,30 @@ export function breakEvenSpotE8(i: { anchor: ValueAnchor; costBase: bigint; side
   return spotForValueE8({ ...i, targetBase: i.costBase });
 }
 
+export interface ValueModel {
+  anchor: ValueAnchor;
+  side: Side;
+  openE8: bigint | null;
+  sigmaE8: bigint | null;
+  tauSec: number;
+}
+
+/**
+ * What Close would pay with the asset at `spotE8`, on the reprice model and uncapped — a target's value, not a promise
+ * (the TP/SL drawer's trigger price → exit value). Null without the model's inputs.
+ */
+export function valueAtSpotBase(i: ValueModel, spotE8: bigint): bigint | null {
+  if (i.anchor.spotE8 === null || i.openE8 === null || !i.sigmaE8 || i.anchor.proceedsBase <= 0n || spotE8 <= 0n) return null;
+  const outcome = i.side === "up" ? 0 : 1;
+  try {
+    const at = fairSideProbE6(fairProbUpE6(i.anchor.spotE8, i.openE8, i.sigmaE8, i.tauSec), outcome);
+    if (at <= 0n) return null;
+    return (i.anchor.proceedsBase * fairSideProbE6(fairProbUpE6(spotE8, i.openE8, i.sigmaE8, i.tauSec), outcome)) / at;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * The spot at which Close would pay `targetBase` (a take-profit or stop-loss drawn on the chart, "≈"), on the same model
  * and within the same ±10 % bracket as break-even. Null without the inputs or when no spot in range reaches it.
