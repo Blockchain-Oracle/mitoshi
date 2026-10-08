@@ -159,12 +159,14 @@ try {
   await page.goto(`${base}/settings/account`, { waitUntil: "load" });
   await settle(page);
   // The EXIT grant made from the terminal (S24.5): listed sell-only, and stopped from here in one step.
-  const exitRow = page.locator("li").filter({ hasText: "Exits with the app closed" }).first();
+  // A live grant's row offers Stop; a stopped one moves to the history below (also an <li>, with the same name).
+  const liveExitRows = page.locator("li").filter({ hasText: "Exits with the app closed" }).filter({ has: page.getByRole("button", { name: /^Stop/ }) });
+  const exitRow = liveExitRows.first();
   await expect(exitRow).toBeVisible({ timeout: 60_000 });
   note({ step: "grant-listed", exit: (await exitRow.innerText()).replace(/\s+/g, " ").slice(0, 240) });
   const beforeExitStop = s.assertions();
   await exitRow.getByRole("button", { name: /^Stop/ }).click();
-  await expect(page.locator("li").filter({ hasText: "Exits with the app closed" })).toHaveCount(0, { timeout: 120_000 });
+  await expect(liveExitRows).toHaveCount(0, { timeout: 120_000 });
   note({ step: "exit-stopped", prompts: s.assertions() - beforeExitStop });
   const stop = page.getByRole("button", { name: /^Stop/ }).first();
   if (await stop.count()) {
