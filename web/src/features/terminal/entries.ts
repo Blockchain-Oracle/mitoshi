@@ -13,6 +13,9 @@ export interface EntryRecord {
   spot: number;
   atMs: number;
   trailStop: number | null;
+  /** Take-profit and stop-loss on what Close pays, base units as decimal strings (23e, D-197); absent when unset. */
+  tpBase?: string | null;
+  slBase?: string | null;
 }
 
 const KEY = "cwf.trade.entries.v1";
@@ -44,7 +47,15 @@ function commit(): void {
 export function rememberEntry(marketId: string, side: string, spot: number, trailStop?: number | null): void {
   hydrate();
   const prev = entries[keyOf(marketId, side)];
-  entries = { ...entries, [keyOf(marketId, side)]: { spot: prev?.spot && trailStop !== undefined ? prev.spot : spot, atMs: prev?.atMs ?? Date.now(), trailStop: trailStop === undefined ? (prev?.trailStop ?? null) : trailStop } };
+  entries = { ...entries, [keyOf(marketId, side)]: { ...prev, spot: prev?.spot && trailStop !== undefined ? prev.spot : spot, atMs: prev?.atMs ?? Date.now(), trailStop: trailStop === undefined ? (prev?.trailStop ?? null) : trailStop } };
+  commit();
+}
+
+/** Sets or clears the position's take-profit and stop-loss (exit-value targets). */
+export function setExits(marketId: string, side: string, exits: { tpBase: bigint | null; slBase: bigint | null }, spot: number): void {
+  hydrate();
+  const prev = entries[keyOf(marketId, side)];
+  entries = { ...entries, [keyOf(marketId, side)]: { spot: prev?.spot ?? spot, atMs: prev?.atMs ?? Date.now(), trailStop: prev?.trailStop ?? null, tpBase: exits.tpBase?.toString() ?? null, slBase: exits.slBase?.toString() ?? null } };
   commit();
 }
 

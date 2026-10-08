@@ -23,6 +23,9 @@ export interface TerminalPosition {
   /** The spot when it was opened in this browser (the Entry line and PnL band); null when opened elsewhere. */
   entrySpot: number | null;
   trailStop: number | null;
+  /** Take-profit and stop-loss on what Close pays (23e); null when unset. */
+  tpBase: bigint | null;
+  slBase: bigint | null;
   openedAtMs: number;
 }
 
@@ -40,7 +43,7 @@ export function useTerminalPositions(address: Address | null): TerminalPosition[
       out.push({
         id: `w:${r.marketId}`, via: "wallet", marketId: r.marketId, asset: r.asset, intervalSec: r.intervalSec, expirySec: r.expirySec, side,
         heldRaw: side === "up" ? r.balanceUpRaw : r.balanceDownRaw, costBase: r.costBasisBase, decimals: r.decimals,
-        entrySpot: e?.spot || null, trailStop: e?.trailStop ?? null, openedAtMs: e?.atMs ?? 0,
+        entrySpot: e?.spot || null, trailStop: e?.trailStop ?? null, openedAtMs: e?.atMs ?? 0, tpBase: e?.tpBase ? BigInt(e.tpBase) : null, slBase: e?.slBase ? BigInt(e.slBase) : null,
       });
     }
     for (const b of vault?.ok ? vault.value : []) {
@@ -50,7 +53,7 @@ export function useTerminalPositions(address: Address | null): TerminalPosition[
       out.push({
         id: `v:${b.marketId}`, via: "vault", marketId: b.marketId, asset: b.asset, intervalSec: b.intervalSec, expirySec: b.expirySec, side,
         heldRaw: side === "up" ? b.upRaw : b.downRaw, costBase: b.costBase - b.proceedsBase > 0n ? b.costBase - b.proceedsBase : 0n, decimals: b.decimals,
-        entrySpot: e?.spot || null, trailStop: e?.trailStop ?? null, openedAtMs: e?.atMs ?? 0,
+        entrySpot: e?.spot || null, trailStop: e?.trailStop ?? null, openedAtMs: e?.atMs ?? 0, tpBase: e?.tpBase ? BigInt(e.tpBase) : null, slBase: e?.slBase ? BigInt(e.slBase) : null,
       });
     }
     return out.sort((a, b) => a.expirySec - b.expirySec);

@@ -222,6 +222,21 @@ export const TERMINAL = {
   arm: {
     lead: "Turn on one-tap: one passkey prompt now, then every tap signs itself.",
   },
+  exits: {
+    title: (side: string, symbol: string) => `TP / SL · ${side} ${symbol}`,
+    open: "TP / SL",
+    body: "Close automatically when what Close pays reaches a target — only while Mitoshi is open.",
+    tp: "Take profit",
+    sl: "Stop loss",
+    off: "Off",
+    roi: (pct: number) => `${pct > 0 ? "+" : "−"}${Math.abs(pct)}%`,
+    when: (kind: string, amount: string) => `${kind} when Close pays ${amount}`,
+    save: "Set",
+    saved: (symbol: string) => `Exits set · ${symbol}`,
+    tpHit: (symbol: string) => `Take profit hit · ${symbol}`,
+    slHit: (symbol: string) => `Stop loss hit · ${symbol}`,
+    now: (amount: string) => `Close pays ${amount} now`,
+  },
   trail: {
     armed: (symbol: string) => `Trailing stop armed · ${symbol}`,
     armedBody: (pct: string) => `Closes if the price comes back ${pct}% — only while Mitoshi is open`,

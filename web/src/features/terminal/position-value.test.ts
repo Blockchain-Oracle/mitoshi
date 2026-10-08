@@ -1,6 +1,6 @@
 import { sigmaE8FromBps, CALENDAR_YEAR_SEC } from "@cwf/core";
 import { describe, expect, it } from "vitest";
-import { breakEvenSpotE8, closeFloorBase, liveValue, pnlOf, ratchet, trailEligible, trailHit, trailStart } from "./position-value";
+import { breakEvenSpotE8, closeFloorBase, exitHit, liveValue, pnlOf, ratchet, spotForValueE8, trailEligible, trailHit, trailStart } from "./position-value";
 
 const OPEN = 62_000n * 100_000_000n;
 const SIGMA = sigmaE8FromBps(5_000, CALENDAR_YEAR_SEC);
@@ -57,5 +57,20 @@ describe("break-even and Trail (23e)", () => {
     expect(trailHit("up", 100.3, 100.29)).toBe(true);
     expect(trailHit("down", 99.6, 99.61)).toBe(true);
     expect(trailHit("up", 100.3, 100.31)).toBe(false);
+  });
+});
+
+describe("take-profit and stop-loss on what Close pays (23e)", () => {
+  it("hits on the exit value, TP at or above, SL at or below", () => {
+    expect(exitHit(6_000_000n, 6_000_000n, 4_000_000n)).toBe("tp");
+    expect(exitHit(4_000_000n, 6_000_000n, 4_000_000n)).toBe("sl");
+    expect(exitHit(5_000_000n, 6_000_000n, 4_000_000n)).toBeNull();
+    expect(exitHit(5_000_000n, null, null)).toBeNull();
+  });
+  it("draws a take-profit above the anchor for Up and a stop-loss below", () => {
+    const tp = spotForValueE8({ anchor, targetBase: 6_000_000n, side: "up", openE8: OPEN, sigmaE8: SIGMA, tauSec: 200 })!;
+    const sl = spotForValueE8({ anchor, targetBase: 4_000_000n, side: "up", openE8: OPEN, sigmaE8: SIGMA, tauSec: 200 })!;
+    expect(tp > OPEN).toBe(true);
+    expect(sl < OPEN).toBe(true);
   });
 });

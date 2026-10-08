@@ -15,11 +15,14 @@ import { notify } from "@/lib/toast";
 import { useWalletSession } from "@/lib/wallet-session";
 import { useTapSubmitter } from "@/providers/wallet/tap-session";
 import { TERMINAL } from "./copy";
-import { forgetEntry } from "./entries";
+import { forgetEntry, setExits } from "./entries";
 import { clockText, money } from "./format";
 import { closeFloorBase } from "./position-value";
 import { tradeSettings } from "./settings";
 import type { TerminalPosition } from "./terminal-positions";
+
+/** An exit that fired is spent: its targets go with the position. */
+const clearExits = (p: TerminalPosition) => setExits(p.marketId, p.side, { tpBase: null, slBase: null }, p.entrySpot ?? 0);
 
 export function useTerminalClose() {
   const submitter = useTapSubmitter();
@@ -34,7 +37,7 @@ export function useTerminalClose() {
   latest.current = { submitter, port, address, session, view };
 
   const close = useCallback(
-    async (p: TerminalPosition, shown: ExitQuote | null, accept?: ExitQuote, why: "close" | "trail" = "close", sellRaw?: bigint): Promise<void> => {
+    async (p: TerminalPosition, shown: ExitQuote | null, accept?: ExitQuote, why: "close" | "trail" | "tp" | "sl" = "close", sellRaw?: bigint): Promise<void> => {
       const { submitter: sub, port: prt, address: wallet, session: sess, view: v } = latest.current;
       if (inFlight.current) return;
       const id = `close-${p.marketId}`;
@@ -66,8 +69,9 @@ export function useTerminalClose() {
             closeFeedback(Number(pnl));
             if (!partial) forgetEntry(p.marketId, p.side);
             void invalidateAfterWrite(queryClient, { wallet, marketId: p.marketId });
-            const title = partial ? TERMINAL.close.reduced(p.asset) : why === "trail" ? TERMINAL.trail.hit(p.asset) : TERMINAL.close.closed(p.asset);
-            return void notify.item({ id, title, description: why === "trail" && !partial ? TERMINAL.close.lockedIn(money(pnl, true)) : TERMINAL.close.realized(money(pnl, true), money(outcome.booked.proceedsBase)) });
+            const title = partial ? TERMINAL.close.reduced(p.asset) : why === "trail" ? TERMINAL.trail.hit(p.asset) : why === "tp" ? TERMINAL.exits.tpHit(p.asset) : why === "sl" ? TERMINAL.exits.slHit(p.asset) : TERMINAL.close.closed(p.asset);
+            if (!partial && why !== "close") clearExits(p);
+            return void notify.item({ id, title, description: why !== "close" && !partial ? TERMINAL.close.lockedIn(money(pnl, true)) : TERMINAL.close.realized(money(pnl, true), money(outcome.booked.proceedsBase)) });
           }
           case "requote": {
             const next = outcome.exit;

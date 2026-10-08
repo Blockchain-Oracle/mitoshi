@@ -22,13 +22,14 @@ import { AddModal } from "./AddModal";
 
 const REDUCE = [25n, 50n, 75n, 100n] as const;
 
-export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow, spendableBase, busy }: {
+export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow, onExits, spendableBase, busy }: {
   p: TerminalPosition | null;
   value: PositionValue | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
   onReduce: (p: TerminalPosition, sellRaw: bigint) => void;
   onShow: (p: TerminalPosition) => void;
+  onExits: (p: TerminalPosition) => void;
   spendableBase: bigint | null;
   busy: boolean;
 }) {
@@ -74,6 +75,7 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
           </div>
           <div className="tm-choices">
             <button type="button" className="tm-choice" disabled={value?.locked} onClick={() => (tapFeedback(), setAdding(true))}>{TERMINAL.details.add}</button>
+            <button type="button" className="tm-choice" disabled={value?.locked} onClick={() => (tapFeedback(), onExits(p))}>{TERMINAL.exits.open}</button>
             <button type="button" className="tm-choice" onClick={() => (tapFeedback(), onShow(p))}>{TERMINAL.details.chart}</button>
             <Link href={`/proof/${p.marketId}`} className="tm-choice tm-link">{TERMINAL.details.proof}</Link>
           </div>

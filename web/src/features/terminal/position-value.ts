@@ -64,8 +64,17 @@ export function closeFloorBase(minProceedsBase: bigint, toleranceBps: number): b
  * anchor spot (26 halvings: well under a cent). Null without the model's inputs or when no spot in range breaks even.
  */
 export function breakEvenSpotE8(i: { anchor: ValueAnchor; costBase: bigint; side: Side; openE8: bigint | null; sigmaE8: bigint | null; tauSec: number }): bigint | null {
+  return spotForValueE8({ ...i, targetBase: i.costBase });
+}
+
+/**
+ * The spot at which Close would pay `targetBase` (a take-profit or stop-loss drawn on the chart, "≈"), on the same model
+ * and within the same ±10 % bracket as break-even. Null without the inputs or when no spot in range reaches it.
+ */
+export function spotForValueE8(i: { anchor: ValueAnchor; targetBase: bigint; side: Side; openE8: bigint | null; sigmaE8: bigint | null; tauSec: number }): bigint | null {
   const { anchor } = i;
-  if (anchor.spotE8 === null || i.openE8 === null || !i.sigmaE8 || anchor.proceedsBase <= 0n || i.costBase <= 0n) return null;
+  const costBase = i.targetBase;
+  if (anchor.spotE8 === null || i.openE8 === null || !i.sigmaE8 || anchor.proceedsBase <= 0n || costBase <= 0n) return null;
   const outcome = i.side === "up" ? 0 : 1;
   const prob = (spotE8: bigint) => fairSideProbE6(fairProbUpE6(spotE8, i.openE8!, i.sigmaE8!, i.tauSec), outcome);
   try {
@@ -75,7 +84,7 @@ export function breakEvenSpotE8(i: { anchor: ValueAnchor; costBase: bigint; side
     let lo = (anchor.spotE8 * 90n) / 100n;
     let hi = (anchor.spotE8 * 110n) / 100n;
     // Value rises with the spot for Up and falls for Down: orient so f(lo) < 0 < f(hi).
-    const f = (s: bigint) => (i.side === "up" ? value(s) - i.costBase : i.costBase - value(s));
+    const f = (s: bigint) => (i.side === "up" ? value(s) - costBase : costBase - value(s));
     if (f(lo) > 0n || f(hi) < 0n) return null;
     for (let k = 0; k < 26; k++) {
       const mid = (lo + hi) / 2n;
@@ -101,3 +110,10 @@ export const trailStart = (side: Side, spot: number, ref: number, pct: number): 
 export const ratchet = (side: Side, stop: number, spot: number, pct: number): number => (side === "up" ? Math.max(stop, spot * (1 - pct)) : Math.min(stop, spot * (1 + pct)));
 
 export const trailHit = (side: Side, stop: number, spot: number): boolean => (side === "up" ? spot <= stop : spot >= stop);
+
+/** Whether a take-profit or a stop-loss is hit by what Close pays now (both on the exit value, D-197). */
+export function exitHit(valueBase: bigint, tpBase: bigint | null, slBase: bigint | null): "tp" | "sl" | null {
+  if (tpBase !== null && valueBase >= tpBase) return "tp";
+  if (slBase !== null && valueBase <= slBase) return "sl";
+  return null;
+}

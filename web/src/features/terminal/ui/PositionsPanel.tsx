@@ -16,7 +16,7 @@ import { useRowTrail } from "../useTrail";
 const noTrail = () => undefined;
 const roiText = (bps: number | null) => (bps === null ? "" : ` (${bps >= 0 ? "+" : "−"}${(Math.abs(bps) / 100).toFixed(1)}%)`);
 
-function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }: { p: TerminalPosition; current: boolean; busy: boolean; onClose: (p: TerminalPosition, v: PositionValue) => void; onOpen: (p: TerminalPosition) => void; onTrailHit: (p: TerminalPosition, v: PositionValue, why: "trail") => void; onValue: (id: string, v: PositionValue) => void }) {
+function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }: { p: TerminalPosition; current: boolean; busy: boolean; onClose: (p: TerminalPosition, v: PositionValue) => void; onOpen: (p: TerminalPosition) => void; onTrailHit: (p: TerminalPosition, v: PositionValue, why: "trail" | "tp" | "sl") => void; onValue: (id: string, v: PositionValue) => void }) {
   const masked = usePrivacy();
   const v = usePositionValue(p);
   useEffect(() => onValue(p.id, v), [p.id, v, onValue]);
@@ -62,7 +62,7 @@ export function PositionsList({ positions, activeMarketId, busyId, onClose, onOp
   onClose: (p: TerminalPosition, v: PositionValue) => void;
   onOpen: (p: TerminalPosition) => void;
   /** Wired on one list only (the always-mounted one), so a hit closes once. */
-  onTrailHit: ((p: TerminalPosition, v: PositionValue, why: "trail") => void) | null;
+  onTrailHit: ((p: TerminalPosition, v: PositionValue, why: "trail" | "tp" | "sl") => void) | null;
   onValue: (id: string, v: PositionValue) => void;
 }) {
   if (positions.length === 0) return <p className="tm-empty">{TERMINAL.positions.none}</p>;

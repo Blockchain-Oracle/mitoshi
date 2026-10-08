@@ -39,6 +39,7 @@ import { ScheduledTrade } from "./ui/ScheduledTrade";
 import { ChartControls } from "./ui/ChartControls";
 import { AccountDrawer } from "./ui/AccountDrawer";
 import { PositionDetails } from "./ui/PositionDetails";
+import { ExitsDrawer } from "./ui/ExitsDrawer";
 import { ReactionOverlay } from "./ui/ReactionOverlay";
 import { useChartFeedback } from "./useChartFeedback";
 import { useReplayRecorder } from "./replay";
@@ -54,7 +55,7 @@ import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 // The Markets hero's depth view, loaded when first shown (a lazy island).
 const HeroDepth = dynamic(() => import("@/features/markets/hero/HeroDepth"), { ssr: false });
 
-export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account", history: "trade-history", position: "trade-position", mode: "trade-mode" } as const;
+export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account", history: "trade-history", position: "trade-position", mode: "trade-mode", exits: "trade-exits" } as const;
 
 /** The symbol in the address: a market switch rewrites it in place (no remount), so the path is the source. */
 function useSymbol(initial: string): string {
@@ -90,7 +91,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
     });
   }, []);
   const onClose = useCallback((p: TerminalPosition, v: PositionValue) => void closer.close(p, v.exit), [closer]);
-  const onTrailHit = useCallback((p: TerminalPosition, v: PositionValue) => closer.close(p, v.exit, undefined, "trail"), [closer]);
+  const onTrailHit = useCallback((p: TerminalPosition, v: PositionValue, why: "trail" | "tp" | "sl") => closer.close(p, v.exit, undefined, why), [closer]);
   const toggleTrail = useTrailToggle();
   const [detailId, setDetailId] = useState<string | null>(null);
   const onOpenPosition = useCallback((p: TerminalPosition) => {
@@ -127,7 +128,14 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
     const base = s.overlay.current ?? { pnl: null, pnlText: "", entry: null, levels: [] };
     const pnlBase = activeValue?.pnlBase ?? null;
     const be = activeValue?.breakEven ?? null;
-    const levels = be === null ? base.levels : [...base.levels, { kind: "breakeven" as const, price: be, label: "B/E" }];
+    const tp = activeValue?.tpSpot ?? null;
+    const sl = activeValue?.slSpot ?? null;
+    const levels = [
+      ...base.levels,
+      ...(be === null ? [] : [{ kind: "breakeven" as const, price: be, label: "B/E" }]),
+      ...(tp === null ? [] : [{ kind: "tp" as const, price: tp, label: "TP ≈" }]),
+      ...(sl === null ? [] : [{ kind: "sl" as const, price: sl, label: "SL ≈" }]),
+    ];
     s.overlay.current = { ...base, levels, pnl: pnlBase === null ? null : Number(pnlBase) / 1e6, pnlText: pnlBase === null ? "" : masked ? SHELL.masked : livePnlText(pnlBase) };
   }
   const [depth, setDepth] = useState(false);
@@ -279,6 +287,12 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
         onOpenChange={(o) => !o && drawer.close()}
         onReduce={(p, sellRaw) => void closer.close(p, null, undefined, "close", sellRaw)}
         onShow={(p) => window.history.replaceState(null, "", `/trade/${p.asset}?w=${p.marketId}`)}
+        onExits={() => {
+          // The details drawer's entry becomes the exits drawer's: Back still closes it.
+          const url = new URL(window.location.href);
+          url.searchParams.set("d", DRAWERS.exits);
+          window.history.replaceState({ __drawer: DRAWERS.exits }, "", url);
+        }}
         spendableBase={s.spendableBase}
         busy={detail !== null && closer.busy === detail.id}
       />
@@ -289,6 +303,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
           </SlideOverContent>
         </SlideOver>
       ) : null}
+      <ExitsDrawer p={detail} value={detail ? (values.get(detail.id) ?? null) : null} open={drawer.open === DRAWERS.exits && detail !== null} onOpenChange={(o) => !o && drawer.close()} />
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
           <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
