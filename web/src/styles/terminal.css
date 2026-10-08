@@ -1,0 +1,19 @@
+/* The terminal (S23, D-199): the canvas chart's fonts as tokens the engine reads at runtime (`LiveChart.readTheme`),
+ * from Mitoshi's faces — figures in JetBrains Mono, the 見通し watermark in the Noto Serif JP subset. Imported by the
+ * terminal only (plan §3.1 "CSS per route"). */
+.terminal-chart {
+  --chart-axis-font: 500 11px var(--font-data);
+  --chart-pill-font: 600 15px var(--font-data);
+  --chart-pill-price-font: 600 14px var(--font-data);
+  --chart-pill-pnl-font: 600 11px var(--font-data);
+  --chart-tag-font: 500 10px var(--font-data);
+  --chart-tag-strong-font: 600 10px var(--font-data);
+  --chart-mark-font: 700 160px var(--font-stamp);
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--chart-ground);
+}
+.terminal-chart canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.terminal-chart[data-view="candles"] canvas { touch-action: none; }

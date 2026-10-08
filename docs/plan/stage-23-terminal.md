@@ -4,7 +4,7 @@ On `integration/t1` (D-201). Sources: the Tradash spec
 (`canton-season3/context/13-revamp/tradash/SPEC-{chart,flow}.md`), Owarine `ecb7565b` (`web/src/features/terminal/**`,
 `services/ops/src/prices/*`, `services/ops/src/http/coalesce.ts`). Ledger rows RV-20…RV-96 in `revamp-parity.md`.
 
-- [ ] 23a Display feed (ops): ported Owarine `prices/{crypto-spot,crypto-rest,chart-candles,alpaca-bars,day-stats,
+- [x] 23a Display feed (ops): ported Owarine `prices/{crypto-spot,crypto-rest,chart-candles,alpaca-bars,day-stats,
   recent-ring}.ts` + `http/coalesce.ts` into `services/ops/src/display/` (no Bybit; `@cwf/core` registry with SOL on all
   five venues; `DisplayQuote` with `atMs`; `displayE8` truncating floats); new `alpaca-trades.ts` (IEX latest trades
   every 1.5 s, 04:00–20:00 ET only, `data.alpaca.markets/v2`); `feed.ts` — fast source first, RedStone after 15 s quiet,
@@ -16,7 +16,10 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   them); seed-maker divergence guard (`guard.ts`: widen by the display's shift of the fair, requote when the spread must
   widen, pull past 25 bps and 6σ of the lag). `DISPLAY_FEED=0` turns it off. Tests: coalesce, crypto-spot, crypto-rest,
   candles/bars/ring/trades, feed, guard, stream (+27). The `markets.ts:70` "the chart follows the same feed" copy stays
-  true until 23b moves the chart to `ticks` — fixed there. Deploy ops.
+  true until 23b moves the chart to `ticks` — fixed there. Deployed 2026-10-08 (c9b8e7c, then 6364a63): `/health` ok
+  with `display-crypto` "socket 3/3" and `display-stocks` "pre: 10 ticker(s) on IEX"; `ticks` 38 frames in 4 s;
+  `/prices/candles` answers `coinbase` (ETH) and `alpaca` (TSLA); `/prices/day` names `coinbase`/`alpaca` rows. Seen
+  live and fixed: a minutes-old pre-market IEX trade had muted RedStone and frozen the stock line.
 - [ ] 23b LiveStore + chart: `packages/markets/src/runtime/live-ticks.ts` (`subscribeTopic("ticks")`, per-symbol rings
   seeded from `/prices/recent`, `useCommittedSpot` ≤ 5 Hz with a trailing flush, stale flag; the RedStone `prices` topic
   until `ticks` is deployed); port `web/src/features/terminal/chart/*` + `engine.test.ts` (tokens per DESIGN.md's chart

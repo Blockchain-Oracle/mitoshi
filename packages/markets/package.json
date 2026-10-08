@@ -20,6 +20,7 @@
     "./key-status": "./src/keys/status.ts",
     "./react-session": "./src/react/session-builder.tsx",
     "./stream": "./src/runtime/stream-hub.ts",
+    "./live-ticks": "./src/runtime/live-ticks.ts",
     "./ops": "./src/ops/index.ts",
     "./parlay": "./src/parlay/index.ts",
     "./range": "./src/range/index.ts",

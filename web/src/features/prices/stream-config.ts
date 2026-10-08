@@ -3,6 +3,7 @@
  * reaches it first (the ticker on every page, the price cache on app pages). Per-user topics get their 60 s ticket
  * from `/api/stream/ticket` (a signed-in session); signed out, there is none and those topics are simply not asked for.
  */
+import { configureLiveTicks } from "@cwf/markets/live-ticks";
 import { configureStream } from "@cwf/markets/stream";
 import { webEnv } from "@/lib/env";
 
@@ -17,4 +18,10 @@ async function fetchTicket(): Promise<string | null> {
   const res = await fetch("/api/stream/ticket", { method: "POST", credentials: "same-origin" }).catch(() => null);
   if (!res?.ok) return null;
   return ((await res.json()) as { ticket?: string }).ticket ?? null;
+}
+
+/** The terminal's line (S23b): the stream plus `/prices/recent` on ops, which seeds each symbol's last half hour. */
+export function ensureLiveTicks(): boolean {
+  configureLiveTicks({ opsUrl: webEnv.markets.opsUrl ?? null });
+  return ensureStream();
 }
