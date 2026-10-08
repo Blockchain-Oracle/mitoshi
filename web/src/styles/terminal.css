@@ -88,7 +88,10 @@
 .tm-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .tm-btn svg { width: 20px; height: 20px; flex: none; }
 .tm-btn-label { display: flex; flex-direction: column; align-items: flex-start; }
-.tm-btn-sub { margin-top: 4px; font: 600 11px/1 var(--font-body); letter-spacing: 0; opacity: 0.8; }
+/* 11 px needs 4.5:1: the side colour on its soft tint reaches 3.9–4.45 in light, so the sub-line reads in ink there
+   (the label keeps the side colour); on a solid button it inherits the button's own text, at full strength. */
+.tm-btn-sub { margin-top: 4px; font: 600 11px/1 var(--font-body); letter-spacing: 0; }
+.tm-up-soft .tm-btn-sub, .tm-down-soft .tm-btn-sub { color: var(--color-ink); }
 .tm-btn-note { min-height: 14px; color: var(--color-ink-secondary); font: 500 11px/1.3 var(--font-body); text-align: center; }
 .tm-up-soft { background: color-mix(in oklab, var(--chart-up) 16%, var(--color-surface-1)); color: var(--chart-up); }
 .tm-down-soft { background: color-mix(in oklab, var(--chart-down) 14%, var(--color-surface-1)); color: var(--chart-down); }

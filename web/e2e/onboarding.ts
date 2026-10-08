@@ -1,11 +1,12 @@
 /**
- * The one-ceremony sign-up end to end (D-046, S1 gate) with a Chrome virtual authenticator (CDP WebAuthn): open the
- * app, Sign in → Create my account (one biometric) → the server faucet funds the new passkey account on Moderato with
- * no second prompt → the funded receipt → Go to Markets. Asserts the header balance is > $0 afterwards, that no
- * WebAuthn assertion was needed for funding, and prints the funding tx hashes for `cast receipt`. Also checks the
- * modal is centred at 390 px (never a bottom sheet), axe on the funded step, and 0 console errors.
+ * The one-ceremony sign-up on the terminal (D-046, D-191; S1 gate re-run for S23) with a Chrome virtual authenticator,
+ * at 390 and 1440: `/trade/BTC` → the five-step tour → "Start trading" → Create my account (one biometric) → the server
+ * faucet funds the new passkey account on Moderato with no second prompt → the funded step. Asserts no passkey
+ * assertion was needed for funding, the modal centred (never a bottom sheet), axe on the funded step, the equity pill
+ * above $0, the tour staying dismissed across a reload, Add money from Account naming the faucet's cooldown with no
+ * button that would fail, and 0 console errors. Prints the funding tx hashes for `cast receipt`.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/onboarding.ts --base http://localhost:3101 --out <dir>
+ *   pnpm --filter @cwf/web exec tsx e2e/onboarding.ts --base https://testnet.mitoshi.xyz --out <dir>
  */
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -14,7 +15,7 @@ import { chromium, expect } from "@playwright/test";
 import { settle } from "./lib/settle";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "http://localhost:3101");
+const base = arg("base", "https://testnet.mitoshi.xyz");
 const out = arg("out", "onboarding-out");
 mkdirSync(out, { recursive: true });
 
@@ -22,6 +23,7 @@ const browser = await chromium.launch();
 const failures: string[] = [];
 for (const width of [390, 1440]) {
   const context = await browser.newContext({ viewport: { width, height: 900 }, hasTouch: width < 768 });
+  context.setDefaultTimeout(90_000);
   const page = await context.newPage();
   const errors: string[] = [];
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
@@ -41,15 +43,17 @@ for (const width of [390, 1440]) {
   });
 
   try {
-    await page.goto(`${base}/markets`, { waitUntil: "load" });
+    await page.goto(`${base}/trade/BTC`, { waitUntil: "load" });
     await settle(page);
-    await page.getByRole("button", { name: "Sign in", exact: true }).first().click();
+    const tour = page.getByRole("dialog");
+    await expect(tour.getByText("Watch the market")).toBeVisible({ timeout: 120_000 });
+    for (let i = 0; i < 4; i++) await tour.getByRole("button", { name: "Next" }).click();
+    await tour.getByRole("button", { name: "Start trading" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog).toBeVisible();
     await page.getByLabel(/Name this passkey/).fill(`e2e ${width}`);
     await page.getByRole("button", { name: "Create my account" }).click();
-    await expect(dialog.getByText("Your account is ready")).toBeVisible({ timeout: 30_000 });
-    await expect(dialog.getByText(/You're funded/)).toBeVisible({ timeout: 60_000 });
+    await expect(dialog.getByText("Your account is ready")).toBeVisible({ timeout: 60_000 });
+    await expect(dialog.getByText(/You're funded/)).toBeVisible({ timeout: 120_000 });
     const box = (await dialog.boundingBox())!;
     const centred = Math.abs(box.x + box.width / 2 - width / 2) < 2 && box.y > 0;
     if (!centred) throw new Error(`modal not centred: x=${box.x} w=${box.width} y=${box.y}`);
@@ -58,30 +62,33 @@ for (const width of [390, 1440]) {
     const axe = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(["wcag2a", "wcag2aa"]).analyze();
     if (axe.violations.length) throw new Error(`axe: ${axe.violations.map((v) => v.id).join(", ")}`);
     if (assertions !== 0) throw new Error(`funding needed ${assertions} extra passkey prompt(s)`);
-    await dialog.getByRole("button", { name: "Go to Markets" }).click();
-    await expect(dialog).toBeHidden();
-    await page.waitForURL(/\/markets$/);
-    const pill = page.getByRole("button", { name: /^Balance \$/ });
-    await expect(pill).not.toHaveAccessibleName(/Balance \$0\.00|Balance —/, { timeout: 20_000 });
-    // The first-use explainer for Windows shows once on /markets and stays dismissed across reloads.
-    const hint = page.getByRole("complementary", { name: "How a Window works" });
-    await expect(hint).toBeVisible();
-    await hint.getByRole("button").click();
-    await expect(hint).toBeHidden();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden({ timeout: 10_000 });
+
+    // Equity on the pill (NumberFlow's own label carries the figure; its digits render in a shadow root).
+    const figure = page.locator(".tm-equity:visible [role='img']").first();
+    await expect(figure).toHaveAttribute("aria-label", /\$[1-9]/, { timeout: 30_000 });
+    const equity = await figure.getAttribute("aria-label");
+
+    // The tour shows on the first visit only: a reload goes straight to the terminal.
     await page.reload({ waitUntil: "load" });
     await settle(page);
-    await expect(page.getByRole("complementary", { name: "How a Window works" })).toBeHidden();
-    // Add money from the header: the same account today is told about the cooldown up front and offered no button that would fail.
-    await page.getByRole("button", { name: /^Balance \$/ }).click();
-    const funds = page.getByRole("dialog");
-    await expect(funds.getByText("This account already got test dollars today.")).toBeVisible({ timeout: 20_000 });
+    await page.waitForTimeout(2_000);
+    if (await page.getByRole("dialog").getByText("Watch the market").isVisible().catch(() => false)) throw new Error("the tour came back after a reload");
+
+    // Add money from Account: the same account today is told about the cooldown up front, with no button that would fail.
+    await page.locator(".tm-equity:visible").first().click();
+    await page.getByRole("dialog").getByRole("button", { name: "Add money" }).click();
+    const funds = page.getByRole("dialog").filter({ hasText: "test dollars" }).last();
+    await expect(funds.getByText("This account already got test dollars today.")).toBeVisible({ timeout: 30_000 });
     await expect(funds.getByRole("button", { name: "Get test dollars" })).toBeDisabled();
     await page.screenshot({ path: join(out, `addfunds-cooldown-${width}.png`) });
     const axeFunds = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(["wcag2a", "wcag2aa"]).analyze();
     if (axeFunds.violations.length) throw new Error(`axe add money: ${axeFunds.violations.map((v) => v.id).join(", ")}`);
     await page.keyboard.press("Escape");
+
     const credentials = await cdp.send("WebAuthn.getCredentials", { authenticatorId });
-    console.log(JSON.stringify({ width, ok: true, credentials: credentials.credentials.length, extraPrompts: assertions, balance: await pill.getAttribute("aria-label"), faucetHashes }));
+    console.log(JSON.stringify({ width, ok: true, credentials: credentials.credentials.length, extraPrompts: assertions, equity, faucetHashes }));
     if (errors.length) throw new Error(`console errors: ${errors.slice(0, 3).join(" | ")}`);
   } catch (error) {
     failures.push(`${width}: ${(error as Error).message.split("\n")[0]}`);
