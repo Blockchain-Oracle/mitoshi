@@ -91,7 +91,7 @@ export function TableRow({ className, expanded = false, children, ...props }: Re
   );
 }
 
-export function TableHead({ className, sortDirection = null, onSort, align = "start", children, ...props }: React.ThHTMLAttributes<HTMLTableCellElement> & { sortDirection?: SortDirection; onSort?: () => void; align?: "start" | "end" }) {
+export function TableHead({ className, sortDirection = null, onSort, align = "start", children, ...props }: Omit<React.ThHTMLAttributes<HTMLTableCellElement>, "align"> & { sortDirection?: SortDirection; onSort?: () => void; align?: "start" | "end" }) {
   const { density } = React.useContext(Ctx);
   const sortable = onSort !== undefined;
   const aria = sortDirection === "asc" ? "ascending" : sortDirection === "desc" ? "descending" : sortable ? "none" : undefined;
@@ -109,7 +109,7 @@ export function TableHead({ className, sortDirection = null, onSort, align = "st
   );
 }
 
-export function TableCell({ className, align = "start", ...props }: React.TdHTMLAttributes<HTMLTableCellElement> & { align?: "start" | "end" }) {
+export function TableCell({ className, align = "start", ...props }: Omit<React.TdHTMLAttributes<HTMLTableCellElement>, "align"> & { align?: "start" | "end" }) {
   const { density } = React.useContext(Ctx);
   return <td className={cn("align-middle text-ink", DENSITY[density].cell, align === "end" && "numbers text-right", className)} {...props} />;
 }

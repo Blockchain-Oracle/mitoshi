@@ -48,7 +48,7 @@ export function SurfaceRow({ w, modelled, nowMs, expanded, onToggle, onFigures }
         <TableCell align="end" className="numbers">
           <Countdown expirySec={m.expirySec} intervalSec={m.intervalSec} nowMs={nowMs} />
         </TableCell>
-        <TableCell className="w-[160px] min-w-[140px]">
+        <TableCell className="w-40 min-w-35">
           <Sparkline points={f.path} baselineE8={m.openingPriceRaw} format={usd2} formatTime={time} label={SURFACE.pathLabel(m.asset)} />
         </TableCell>
         <TableCell align="end" className="max-md:hidden">{m.openingPriceRaw !== null ? usd0(m.openingPriceRaw) : <span className="text-ink-secondary">{SURFACE.pendingPrint}</span>}</TableCell>
@@ -61,7 +61,7 @@ export function SurfaceRow({ w, modelled, nowMs, expanded, onToggle, onFigures }
       <TableExpandableContent open={expanded} colSpan={COLS}>
         <div className="flex flex-col gap-3">
           <p className="type-caption text-ink-secondary">{SURFACE.detail.depth}</p>
-          <div className="h-[220px]"><HeroDepth market={m} /></div>
+          <div className="h-55"><HeroDepth market={m} /></div>
           <p className="type-caption text-ink">{fairC !== null ? SURFACE.detail.model(`${fairC.toFixed(1)}¢`) : modelled ? SURFACE.hydrating : SURFACE.detail.noModel}</p>
           <Link href={`/markets/${m.marketId}`} className="min-h-touch self-start py-2 type-body-strong text-ink underline decoration-accent decoration-2 underline-offset-4">{SURFACE.detail.open}</Link>
         </div>

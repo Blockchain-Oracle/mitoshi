@@ -90,7 +90,7 @@ export function Sparkline({ points, baselineE8, format, formatTime, label, class
   return (
     <div
       ref={ref}
-      className={cn("sparkline relative h-14 w-full min-w-[120px] rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-accent", className)}
+      className={cn("sparkline relative h-14 w-full min-w-30 rounded-sm outline-none focus-visible:outline-2 focus-visible:outline-accent", className)}
       tabIndex={0}
       role="group"
       aria-label={summary}
@@ -120,15 +120,15 @@ export function Sparkline({ points, baselineE8, format, formatTime, label, class
         {baseY !== null ? <line x1={0} x2={W} y1={baseY} y2={baseY} stroke="var(--color-ink-secondary)" strokeDasharray="3 3" strokeWidth={1} vectorEffect="non-scaling-stroke" /> : null}
         <path d={d} fill="none" stroke={hue} strokeWidth={STROKE} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
       </svg>
-      <span className="pointer-events-none absolute numbers text-[10px] text-ink-secondary" style={{ ...edge(xy[iMax]!.x), top: 0 }} aria-hidden>{format(drawn[iMax]!.priceE8)}</span>
-      <span className="pointer-events-none absolute numbers text-[10px] text-ink-secondary" style={{ ...edge(xy[iMin]!.x), bottom: -2 }} aria-hidden>{format(drawn[iMin]!.priceE8)}</span>
+      <span className="pointer-events-none absolute numbers type-label-micro normal-case tracking-normal text-ink-secondary" style={{ ...edge(xy[iMax]!.x), top: 0 }} aria-hidden>{format(drawn[iMax]!.priceE8)}</span>
+      <span className="pointer-events-none absolute numbers type-label-micro normal-case tracking-normal text-ink-secondary" style={{ ...edge(xy[iMin]!.x), bottom: -2 }} aria-hidden>{format(drawn[iMin]!.priceE8)}</span>
       {at ? (
         <>
           <i aria-hidden className="pointer-events-none absolute inset-y-0 w-0 border-l border-dashed border-ink-secondary" style={{ left: `${(at.xy.x / W) * 100}%` }} />
-          <i aria-hidden className="pointer-events-none absolute block size-[7px] -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: `${(at.xy.x / W) * 100}%`, top: `${(at.xy.y / H) * 100}%`, background: hue, boxShadow: "0 0 0 1.5px var(--color-surface-1)" }} />
+          <i aria-hidden className="pointer-events-none absolute block size-1.75 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-surface-1" style={{ left: `${(at.xy.x / W) * 100}%`, top: `${(at.xy.y / H) * 100}%`, background: hue }} />
           <div role="status" className="pointer-events-none absolute z-10 whitespace-nowrap rounded-md border border-hairline bg-surface-1 px-2 py-1 shadow-lg" style={{ left: `${(at.xy.x / W) * 100}%`, bottom: "100%", transform: at.xy.x / W < 0.5 ? "translateX(0)" : "translateX(-100%)" }}>
             <div className="numbers type-caption text-ink">{format(at.p.priceE8)}</div>
-            <div className="numbers text-[10px] text-ink-secondary">{formatTime(at.p.tSec)}</div>
+            <div className="numbers type-label-micro normal-case tracking-normal text-ink-secondary">{formatTime(at.p.tSec)}</div>
           </div>
         </>
       ) : null}
