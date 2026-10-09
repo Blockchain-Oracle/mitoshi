@@ -135,8 +135,10 @@ export async function applyVaultEvent(tx: Tx, e: IdxEvent): Promise<boolean> {
     case "Swept":
       return true;
     case "ExitGranted":
-      // Follows `GrantCreated` in the same transaction (v2's `grantExit`): the tolerance the floor is taken under.
-      await tx`update idx_vault_grants set exit_tolerance_bps = ${Number(str(d, "toleranceBps"))} where vault = ${e.address} and grant_id = ${str(d, "grantId")}::bigint`;
+      // Follows `GrantCreated` in the same transaction (v2's `grantExit`): what the floor is taken under — the tolerance,
+      // and since D-213 the absolute slack (a retired v2's event has none).
+      await tx`update idx_vault_grants set exit_tolerance_bps = ${Number(str(d, "toleranceBps"))}, exit_slack_bps = ${d.slackBps === undefined ? null : Number(str(d, "slackBps"))}
+        where vault = ${e.address} and grant_id = ${str(d, "grantId")}::bigint`;
       return true;
     default:
       return false;

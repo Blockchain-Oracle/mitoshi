@@ -122,10 +122,10 @@ export type VaultIntent =
   | { kind: "vault-sweep"; marketId: MarketId }
   /**
    * The EXIT grant (S24, D-193; v2 only): `actor` — the exit keeper — may sell this owner's positions (in `market`, or
-   * any Window for null) at no less than the fair value less `toleranceBps`, until `expiresAtSec`. Root-signed, never
-   * sponsored; replaces a live EXIT grant.
+   * any Window for null) at no less than the fair value less the wider of `toleranceBps` of it and `slackBps` of a whole
+   * token's payout (D-213), until `expiresAtSec`. Root-signed, never sponsored; replaces a live EXIT grant.
    */
-  | { kind: "vault-grant-exit"; actor: Address; market: MarketId | null; expiresAtSec: number; toleranceBps: number };
+  | { kind: "vault-grant-exit"; actor: Address; market: MarketId | null; expiresAtSec: number; toleranceBps: number; slackBps: number };
 
 export type TxIntent =
   | { kind: "approve"; token: Address; spender: Address; amountBase: bigint }

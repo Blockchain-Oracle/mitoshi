@@ -1,10 +1,11 @@
 "use client";
-// The previous Trading Balance (S24.2): once v2 is the current vault, what v1 still holds is the owner's to take out —
-// its free balance withdrawn to the account (sponsored, the owner signs), and an old tap-trading key's budget stopped
-// back into it first. Positions left there keep settling into it (the settler cranks both vaults), so the card comes
-// back when a payout lands. Hidden when v1 holds nothing.
-import { useLegacyVaultSnapshot } from "@cwf/markets/react";
-import type { Address } from "@cwf/core";
+// The previous Trading Balances (S24.2; D-213): once a new vault is the current one, what an earlier one still holds is
+// the owner's to take out — its free balance withdrawn to the account (sponsored, the owner signs), and an old
+// tap-trading key's budget stopped back into it first. Positions left there keep settling into it (the settler cranks
+// every vault), so a card comes back when a payout lands. One card per previous vault that holds anything; none
+// otherwise.
+import { useLegacyVaultSnapshots } from "@cwf/markets/react";
+import type { Address, VaultSnapshot } from "@cwf/core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTxLifecycle } from "@/components/tx";
 import { useRootSubmitter } from "@/features/session/context";
@@ -16,13 +17,22 @@ const L = VAULT.legacy;
 const BTN = "min-h-touch rounded-md border border-border-strong px-4 type-body-strong text-ink disabled:opacity-50";
 
 export function LegacyBalance({ owner }: { owner: Address | null }) {
-  const reading = useLegacyVaultSnapshot(owner);
+  const reading = useLegacyVaultSnapshots(owner);
+  if (!owner || !reading?.ok) return null;
+  return (
+    <>
+      {reading.value.map((snap) => (
+        <LegacyVault key={snap.deployment.eventVault} snap={snap} />
+      ))}
+    </>
+  );
+}
+
+function LegacyVault({ snap }: { snap: VaultSnapshot }) {
   const root = useRootSubmitter();
   const withdraw = useTxLifecycle({ submitter: root });
   const stop = useTxLifecycle({ submitter: root });
   const queryClient = useQueryClient();
-  const snap = reading?.ok ? reading.value : null;
-  if (!owner || !snap) return null;
   const free = snap.account.availableBase;
   const grant = snap.grants.session && !snap.grants.session.revoked && snap.grants.session.budgetBase > 0n ? snap.grants.session : null;
   if (free === 0n && !grant) return null;

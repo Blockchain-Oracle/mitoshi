@@ -7,7 +7,7 @@
 import type { Address, MarketId, Reading, VaultBet, VaultHoldings, VaultSnapshot } from "@cwf/core";
 import { getPublicClient } from "../runtime/read-runtime";
 import { withReading } from "../runtime/reading";
-import { legacyVaultDeploymentOf, readVaultSnapshot } from "../vault/read";
+import { legacyVaultDeploymentsOf, readVaultSnapshot } from "../vault/read";
 import { keys } from "./keys";
 import { useReadingQuery } from "./useReadingQuery";
 import { usePortReading } from "./window-reads";
@@ -33,17 +33,18 @@ export function useVaultBets(wallet: Address | null, enabled = true): Reading<Va
 }
 
 /**
- * A previous Trading Balance (v1 once v2 is deployed, S24.2): its account and live grants, so the owner can withdraw
- * what it still holds and stop an old key. `null` value = no previous vault on this network.
+ * Every previous Trading Balance (v1 since v2, S24.2; the first v2 since D-213 redeployed it), newest first: each one's
+ * account and live grants, so the owner can withdraw what it still holds and stop an old key. Empty = none on this
+ * network.
  */
-export function useLegacyVaultSnapshot(wallet: Address | null): Reading<VaultSnapshot | null> | null {
+export function useLegacyVaultSnapshots(wallet: Address | null): Reading<VaultSnapshot[]> | null {
   return useReadingQuery(
     [...keys.vault(wallet), "legacy"],
     () =>
-      withReading(`legacyVault:${wallet?.toLowerCase()}`, async () => {
+      withReading(`legacyVaults:${wallet?.toLowerCase()}`, async () => {
         const client = await getPublicClient();
-        const legacy = legacyVaultDeploymentOf(client.chain.id);
-        return legacy ? readVaultSnapshot(wallet!, legacy.eventVault) : null;
+        const snaps = await Promise.all(legacyVaultDeploymentsOf(client.chain.id).map((d) => readVaultSnapshot(wallet!, d.eventVault)));
+        return snaps.filter((s): s is VaultSnapshot => s !== null);
       }),
     { enabled: wallet !== null, pollMs: VAULT_POLL_MS },
   );

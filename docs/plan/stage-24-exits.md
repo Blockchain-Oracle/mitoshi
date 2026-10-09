@@ -70,6 +70,13 @@ RV-55, RV-97, RV-98.
   terminal with 0 prompts, and its stop-loss was sold by the keeper with the tab closed 20.6 s later. The EXIT and
   session grants were each stopped from `/settings/account` with 1 assertion. Also: a sale made while the app was
   closed is announced on the next visit (`missedSales`, by transaction), and `/api/exits` names each row's asset.
+- [ ] 24.6 Q-033 (c), D-213: the EXIT floor is the fair value less the wider of the tolerance share and an absolute
+  slack (`grantExit(…, toleranceBps, slackBps)`, `exitSlackBps`, `BadSlack` over 15¢); EventVaultV2 redeployed on
+  Moderato with the old address in `history[]`, and every vault list reads the history (previous balances, indexer,
+  settler, relay targets); the drawer and Grants say "15% or 10¢, whichever is more"; index/0005. Tests: the floor
+  formula fuzzed on both sides; F-S24-01's shape (the share alone refuses at a bid 6.4¢ under a ~41¢ fair, the slack
+  sells at the bid); the bound; the index on real Postgres; the retired vault's area and targets. Live check: the CI
+  `trading-balance` keeper step brackets SOL's cheap side and passes only on a sale.
 - **Gate:** on Moderato the keeper fires a trail with the tab closed, survives a restart, honours the proof floor (a
   sell below it reverts), and is revoked from `/settings/account`; v1 balances withdraw and v1 positions crank; house
   bids visible until T−30 s and gone after; every tx in `acceptance/S24.md` after `cast receipt`. **Rows:** RV-51,

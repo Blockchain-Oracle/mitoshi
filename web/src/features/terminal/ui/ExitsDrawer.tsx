@@ -7,10 +7,12 @@
 // D-193): one passkey confirmation grants EXIT, then every Set is signed by the session key and runs with the app
 // closed; otherwise they run only while Mitoshi is open, and need a key that signs without a prompt until the Window
 // closes.
+import type { VaultGrant } from "@cwf/core";
 import { diagnosisCopy } from "@cwf/core/copy";
 import { useState } from "react";
 import { useTxLifecycle } from "@/components/tx/useTxLifecycle";
 import { useSessionActions, useSessionView } from "@/features/session";
+import { exitAllowanceText } from "@/features/session/caps";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { tapFeedback } from "@/lib/feedback";
 import { notify } from "@/lib/toast";
@@ -20,7 +22,7 @@ import { setExits } from "../entries";
 import { EXIT_MODES, exitCaption, exitError, modeText, priceText, targetFromMode, targetFromPrice, type ExitCtx, type ExitKind, type ExitMode } from "../exits-form";
 import { money, sideWord } from "../format";
 import type { TerminalPosition } from "../terminal-positions";
-import { EXIT_GRANT_SEC, EXIT_TOLERANCE_BPS, serverExitState, useExitKeeper, useServerExit, writeServerExit, type ServerExitState } from "../server-exits";
+import { EXIT_GRANT_SEC, EXIT_SLACK_BPS, EXIT_TOLERANCE_BPS, serverExitState, useExitKeeper, useServerExit, writeServerExit, type ServerExitState } from "../server-exits";
 import { tradeSettings } from "../settings";
 import type { PositionValue } from "../usePositionValue";
 import { unattendedRefusal, useSignerLasts } from "../useTrail";
@@ -71,21 +73,19 @@ function ExitCard({ kind, mode, base, onBase, ctx, asset }: { kind: ExitKind; mo
   );
 }
 
-const pctText = (bps: number) => `${(bps / 100).toFixed(bps % 100 === 0 ? 0 : 1)}%`;
-
 /** Where these exits run: with the app closed (the keeper), after one confirmation, or only in this tab. */
-function KeeperRow({ state, toleranceBps, waiting, onGrant, granting }: { state: ServerExitState; toleranceBps: number | undefined; waiting: string | null; onGrant: () => void; granting: boolean }) {
+function KeeperRow({ state, grant, waiting, onGrant, granting }: { state: ServerExitState; grant: VaultGrant | null; waiting: string | null; onGrant: () => void; granting: boolean }) {
   if (state === "unavailable") return <p className="tm-field-hint">{TERMINAL.keeper.tabOnly}</p>;
   if (state === "live")
     return (
       <>
-        <p className="tm-field-hint" data-keeper="live">{TERMINAL.keeper.runs(pctText(toleranceBps ?? EXIT_TOLERANCE_BPS))}</p>
+        <p className="tm-field-hint" data-keeper="live">{TERMINAL.keeper.runs(exitAllowanceText(grant?.exitToleranceBps ?? EXIT_TOLERANCE_BPS, grant?.exitSlackBps))}</p>
         {waiting ? <p className="tm-field-hint" role="status">{TERMINAL.keeper.waiting(waiting)}</p> : null}
       </>
     );
   return (
     <div className="tm-card tm-exit-card" data-keeper="needs-grant">
-      <p className="tm-field-hint">{TERMINAL.keeper.turnOnBody(pctText(EXIT_TOLERANCE_BPS))}</p>
+      <p className="tm-field-hint">{TERMINAL.keeper.turnOnBody(exitAllowanceText(EXIT_TOLERANCE_BPS, EXIT_SLACK_BPS))}</p>
       <button type="button" className="tm-choice" disabled={granting} onClick={onGrant}>{granting ? TERMINAL.keeper.turningOn : TERMINAL.keeper.turnOn}</button>
     </div>
   );
@@ -105,7 +105,7 @@ function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionV
     if (!keeper) return;
     tapFeedback();
     setGranting(true);
-    const outcome = await tx.run({ kind: "vault-grant-exit", actor: keeper, market: null, expiresAtSec: Math.floor(Date.now() / 1000) + EXIT_GRANT_SEC, toleranceBps: EXIT_TOLERANCE_BPS });
+    const outcome = await tx.run({ kind: "vault-grant-exit", actor: keeper, market: null, expiresAtSec: Math.floor(Date.now() / 1000) + EXIT_GRANT_SEC, toleranceBps: EXIT_TOLERANCE_BPS, slackBps: EXIT_SLACK_BPS });
     setGranting(false);
     const id = `keeper-${p.marketId}`;
     if (outcome?.status === "confirmed") {
@@ -147,7 +147,7 @@ function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionV
       <ExitCard kind="tp" mode={mode} base={tp} onBase={setTp} ctx={ctx} asset={p.asset} />
       <ExitCard kind="sl" mode={mode} base={sl} onBase={setSl} ctx={ctx} asset={p.asset} />
       {p.trailStop !== null ? <p className="tm-field-hint">{TERMINAL.exits.trailing(usd(p.trailStop))}</p> : null}
-      <KeeperRow state={keeperState} toleranceBps={view.exitGrant?.exitToleranceBps} waiting={held?.status === "armed" ? held.lastError : null} onGrant={() => void grant()} granting={granting} />
+      <KeeperRow state={keeperState} grant={view.exitGrant ?? null} waiting={held?.status === "armed" ? held.lastError : null} onGrant={() => void grant()} granting={granting} />
       <button type="button" className="tm-btn tm-btn-cta" disabled={blocked} onClick={() => void save()}>{TERMINAL.exits.save}</button>
     </>
   );

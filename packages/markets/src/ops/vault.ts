@@ -5,10 +5,10 @@
  * a settled Window still hold vault positions or a grant tag on it, read head-fresh on chain before any send.
  * `crankSettle(owner, m)` credits the owner's Trading Balance; anyone may call it (the settler key pays its fee).
  */
-import { decodeEventLog, encodeFunctionData, getAddress, type Address, type Hex, type Log } from "viem";
+import { decodeEventLog, encodeFunctionData, getAddress, parseAbi, type Address, type Hex, type Log } from "viem";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
-import { deploymentOf } from "../deployments";
+import { deploymentOf, deploymentsWithHistory } from "../deployments";
 import { vaultOutcomeId } from "../vault/read";
 import type { Call } from "../tx/batch";
 import type { OpsClient } from "./client";
@@ -24,17 +24,24 @@ export function vaultVenueOf(chainId: number): VaultVenue | null {
   return v ? { vault: getAddress(v.address), deployBlock: BigInt(v.deployBlock ?? 0) } : null;
 }
 
-/** Every Trading Balance on the chain, the current one first (S24.2): v2 (`EventVaultV2`, the EXIT grant), then v1. */
+/**
+ * Every Trading Balance on the chain, the current one first: v2 (`EventVaultV2`, the EXIT grant), every v2 it replaced
+ * (D-213), then v1 (S24.2). The indexer follows each and the settler cranks each while an owner holds anything there.
+ */
 export function vaultVenuesOf(chainId: number): VaultVenue[] {
-  const v2 = deploymentOf("vault2", chainId)?.EventVaultV2;
-  return [...(v2 ? [{ vault: getAddress(v2.address), deployBlock: BigInt(v2.deployBlock ?? 0) }] : []), ...(vaultVenueOf(chainId) ? [vaultVenueOf(chainId)!] : [])];
+  const venue = (d: { address: Address; deployBlock: number | null }): VaultVenue => ({ vault: getAddress(d.address), deployBlock: BigInt(d.deployBlock ?? 0) });
+  return [...deploymentsWithHistory("vault2", "EventVaultV2", chainId).map(venue), ...deploymentsWithHistory("vault", "EventVault", chainId).map(venue)];
 }
+
+/** `ExitGranted` as the first EventVaultV2 emitted it, before D-213's slack: the retired vault's logs stay readable. */
+const EXIT_GRANTED_BEFORE_SLACK = parseAbi(["event ExitGranted(uint256 indexed grantId, address indexed owner, address indexed actor, bytes32 market, uint64 expiresAtSec, uint16 toleranceBps)"]);
+/** v2's ABI is v1's plus `ExitGranted` (both shapes, told apart by topic0): one decoder for every vault. */
+const VAULT_LOGS = [...eventVaultV2Abi, ...EXIT_GRANTED_BEFORE_SLACK];
 
 /** One vault log as the index stores it; null for a log that is not a vault event. */
 export function decodeVaultLog(chainId: number, log: Log, blockTimeSec: number): ChainEvent | null {
   try {
-    // v2's ABI is v1's plus `ExitGranted`: one decoder for both vaults.
-    const decoded = decodeEventLog({ abi: eventVaultV2Abi, data: log.data, topics: log.topics as [Hex, ...Hex[]] });
+    const decoded = decodeEventLog({ abi: VAULT_LOGS, data: log.data, topics: log.topics as [Hex, ...Hex[]] });
     return {
       chainId, address: log.address, txHash: log.transactionHash!, logIndex: Number(log.logIndex), blockNumber: Number(log.blockNumber), blockTimeSec,
       name: decoded.eventName as string, market: null, seq: null, data: jsonSafe(decoded.args ?? {}) as Record<string, unknown>,

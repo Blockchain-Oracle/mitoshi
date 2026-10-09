@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deploymentOf, isDeployed } from "./deployments";
+import { deploymentOf, deploymentsWithHistory, isDeployed } from "./deployments";
 
 describe("deployments", () => {
   it("reads a generated fragment's contracts per chain and area", () => {
@@ -13,5 +13,27 @@ describe("deployments", () => {
     expect(isDeployed("vault", 42431)).toBe(true); // EventVault (S7, D-114)
     expect(isDeployed("engine", 42431)).toBe(true);
     expect(deploymentOf("launch", 4217)).toBeNull();
+  });
+
+  it("lists a contract's current address, then every one it replaced, newest first (D-213)", () => {
+    const source = {
+      "42431": {
+        vault2: {
+          contracts: {
+            EventVaultV2: {
+              address: "0x0000000000000000000000000000000000000003",
+              deployBlock: 300,
+              history: [
+                { address: "0x0000000000000000000000000000000000000001", deployBlock: 100 },
+                { address: "0x0000000000000000000000000000000000000002", deployBlock: 200 },
+              ],
+            },
+          },
+        },
+      },
+    };
+    expect(deploymentsWithHistory("vault2", "EventVaultV2", 42431, source).map((d) => [d.address.slice(-1), d.deployBlock])).toEqual([["3", 300], ["2", 200], ["1", 100]]);
+    expect(deploymentsWithHistory("vault2", "EventVaultV2", 4217, source)).toEqual([]);
+    expect(deploymentsWithHistory("vault", "EventVault", 42431, source)).toEqual([]);
   });
 });

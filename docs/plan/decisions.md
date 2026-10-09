@@ -1832,6 +1832,26 @@ never opens never errors — viem's timeout covers the request, not the connect 
 now uses HTTP only, like the session and wallet keys. The read runtime keeps its socket for logs and heads, wrapped so
 every request (the connect included) gives up after 8 s and the fallback takes HTTP (`bounded`, `SOCKET_GIVE_UP_MS`).
 
+### D-213 — owner answer to Q-033 (2026-10-09): the EXIT floor takes an absolute slack
+
+**A keeper sale's floor is the side's fair value less the wider of the grant's tolerance share and an absolute slack**,
+`fair − max(toleranceBps × fair, slackBps × $1)`, never under 0 (Q-033 option (c), recommended in F-S24-01, answered
+"yes" by the owner). Why: 15 % of a cheap side is a few ticks (6.2¢ on a 41¢ Down), inside the house's half spread
+once it is widened (3¢ base, doubled in the tail, plus the divergence guard's gap between the display and signed
+fairs: 6.4¢ in run 37920856259), and a stop-loss fires exactly when the display leads the signed fair down, so it
+waited under the floor until the Window ended. The slack fixes that without loosening the house's own protection
+against latency pick-off (option (d) would have).
+- Per grant, like the tolerance, stated by the owner when granting and recorded in `ExitGranted`; the contract caps
+  it at 15¢ (`MAX_EXIT_SLACK_BPS`, the house's widest fixed half spread, its quote across RedStone's daily gap). The
+  app grants 15 % or 10¢ (`EXIT_SLACK_BPS`); a later change of default needs no redeploy.
+- What it costs the owner: the most a keeper sale can give up per token is now max(15 % of fair, 10¢) rather than
+  15 % of fair; on a side worth under 10¢ that is all of it. That is the bound the drawer and Grants state.
+- EventVaultV2 is not upgradeable, so it is redeployed on Moderato; the old address moves to the fragment's
+  `history[]`. Every place that lists vaults now reads that history (`deploymentsWithHistory`): the app's previous
+  balances (one card per previous vault), the indexer's followers, the settler's cranks, and the v2 relay policy's
+  targets (withdraw, revoke and crank stay sponsored there). The old `ExitGranted` shape still decodes; index/0005
+  adds `exit_slack_bps`. Owners re-arm on the new vault, as at the v1 → v2 move.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
@@ -1870,4 +1890,4 @@ Defaults apply until answered; none is a scope cut.
 | Q-030 | Ask Colosseum whether judges install apps and whether judge emails can be shared for internal TestFlight | Ask now (agent drafts); public link + internal path both kept ready | SM5 |
 | Q-031 | Wallet-mode access key defaults (D38): daily limit and expiry | Masayume's session defaults: $25/day, 24 h, renewable in one tap | S4 |
 | Q-032 | Should arming one-tap add the Boost, Range and Parlay selectors to the wallet key (its scope is the engine only, D-138) | Those modes name the passkey prompt on the CTA | S23i |
-| Q-033 | A keeper sale can't clear the EXIT floor (fair on RedStone's signed spot × (1 − tolerance)) when every bid sits under it. That happens on a cheap side, where 15 % is few ticks, in a fast move, when the house's spread is widened by the divergence guard. Stop-losses fire exactly there (F-S24-01). Choose: (a) keep it, since the floor is the promise and the drawer says why the keeper waits; (b) a 20 % default tolerance (the contract's maximum); (c) a VaultExits floor of fair − max(tolerance × fair, k ticks), a contract change under the money gate; (d) the house keeps its quotes inside the floor when its two fairs agree (latency pick-off when they don't). Recommended: (c) | (a) | S24 |
+| Q-033 | A keeper sale can't clear the EXIT floor (fair on RedStone's signed spot × (1 − tolerance)) when every bid sits under it. That happens on a cheap side, where 15 % is few ticks, in a fast move, when the house's spread is widened by the divergence guard. Stop-losses fire exactly there (F-S24-01). Choose: (a) keep it, since the floor is the promise and the drawer says why the keeper waits; (b) a 20 % default tolerance (the contract's maximum); (c) a VaultExits floor of fair − max(tolerance × fair, k ticks), a contract change under the money gate; (d) the house keeps its quotes inside the floor when its two fairs agree (latency pick-off when they don't). Recommended: (c). **Answered 2026-10-09: (c), D-213** | — | S24 |

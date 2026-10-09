@@ -105,6 +105,8 @@ export interface ExitGrantView {
   /** The Window the grant is scoped to, or null for any. */
   market: Hex | null;
   toleranceBps: number;
+  /** The absolute slack under the fair value, in bps of a whole token's payout (D-213). */
+  slackBps: number;
 }
 
 /** Each owner's live EXIT grant on v2 and whether it names `keeper` now; an owner with none is absent. */
@@ -117,13 +119,17 @@ export async function readExitGrants(client: OpsClient, ev: ExitVenue, owners: r
   const live = unique.map((owner, i) => ({ owner, id: ids[i]! })).filter((g) => g.id !== 0n);
   if (live.length === 0) return out;
   const rows = (await client.public.multicall({
-    contracts: live.flatMap(({ id }) => [{ ...vault, functionName: "grantOf" as const, args: [id] as const }, { ...vault, functionName: "exitToleranceBps" as const, args: [id] as const }]),
+    contracts: live.flatMap(({ id }) => [
+      { ...vault, functionName: "grantOf" as const, args: [id] as const },
+      { ...vault, functionName: "exitToleranceBps" as const, args: [id] as const },
+      { ...vault, functionName: "exitSlackBps" as const, args: [id] as const },
+    ]),
     allowFailure: false,
   })) as unknown[];
   live.forEach(({ owner, id }, i) => {
-    const g = toVaultGrant(id, rows[2 * i] as GrantTuple);
+    const g = toVaultGrant(id, rows[3 * i] as GrantTuple);
     const why = g.revoked ? "the EXIT grant was revoked" : g.expiresAtSec < nowSec ? "the EXIT grant expired" : g.actor.toLowerCase() !== keeper.toLowerCase() ? "the EXIT grant names another keeper" : null;
-    out.set(owner, { grantId: id, why, market: g.caps.market, toleranceBps: Number(rows[2 * i + 1]) });
+    out.set(owner, { grantId: id, why, market: g.caps.market, toleranceBps: Number(rows[3 * i + 1]), slackBps: Number(rows[3 * i + 2]) });
   });
   return out;
 }

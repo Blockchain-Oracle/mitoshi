@@ -16,7 +16,7 @@ export interface DeployedContract {
 
 export type AreaDeployment = Readonly<Record<string, DeployedContract>>;
 
-type Generated = Readonly<Record<string, Readonly<Record<string, { contracts: Readonly<Record<string, { address: string; deployBlock?: number | null }>> }>>>>;
+type Generated = Readonly<Record<string, Readonly<Record<string, { contracts: Readonly<Record<string, { address: string; deployBlock?: number | null; history?: readonly { address: string; deployBlock?: number | null }[] }>> }>>>>;
 
 /** The deployment of one area on one chain, or null when no fragment exists for it. */
 export function deploymentOf(area: Area, chainId: number, source: Generated = generated as unknown as Generated): AreaDeployment | null {
@@ -25,6 +25,18 @@ export function deploymentOf(area: Area, chainId: number, source: Generated = ge
   const out: Record<string, DeployedContract> = {};
   for (const [name, c] of Object.entries(byArea)) out[name] = { address: c.address as Address, deployBlock: c.deployBlock ?? null };
   return out;
+}
+
+/**
+ * One contract of an area on one chain, the current deployment first, then every address it replaced, newest first
+ * (the fragment's `history[]`, kept by `scripts/deploy/finalize.ts`). Empty when the area isn't deployed. Retired
+ * addresses matter where money can still sit in them (D-213: a redeployed Trading Balance stays withdrawable).
+ */
+export function deploymentsWithHistory(area: Area, contract: string, chainId: number, source: Generated = generated as unknown as Generated): DeployedContract[] {
+  const c = source[String(chainId)]?.[area]?.contracts[contract];
+  if (!c) return [];
+  const retired = [...(c.history ?? [])].reverse();
+  return [c, ...retired].map((d) => ({ address: d.address as Address, deployBlock: d.deployBlock ?? null }));
 }
 
 export function isDeployed(area: Area, chainId: number, source?: Generated): boolean {

@@ -66,8 +66,8 @@ export const ACCOUNT_PAGE = {
     expires: "Ends",
     never: "Never: withdraw, send money anywhere, or spend past these caps.",
     /** The EXIT grant (S24, D-193): Mitoshi's exit keeper, sell-only, at the vault's fair-value floor. */
-    exitScope: (tolerancePct: string | null, market: string | null) =>
-      `sell your Trading Balance positions${market ? ` in ${market}` : ""} when your Trail, take-profit or stop-loss is hit — never below the fair value${tolerancePct ? ` less ${tolerancePct}` : ""}`,
+    exitScope: (allowance: string | null, market: string | null) =>
+      `sell your Trading Balance positions${market ? ` in ${market}` : ""} when your Trail, take-profit or stop-loss is hit — never below the fair value${allowance ? ` less ${allowance}` : ""}`,
     exitNever: "Never: buy, withdraw, or send money anywhere. Sales pay your Trading Balance.",
     stop: "Stop",
     stopping: "Stopping…",

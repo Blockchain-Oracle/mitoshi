@@ -22,8 +22,12 @@ import { TERMINAL } from "./copy";
 import { money } from "./format";
 import type { TerminalPosition } from "./terminal-positions";
 
-/** An EXIT grant made here: the keeper sells at no less than the fair value less 15 % (the house quotes within it). */
+/** An EXIT grant made here: the keeper sells at no less than the fair value less 15 % of it… */
 export const EXIT_TOLERANCE_BPS = 1_500;
+/** …or 10¢ (bps of a whole token's payout), whichever is more (D-213): on a cheap side 15 % is a few ticks, inside the
+ *  house's widened half spread (3¢, doubled in the tail, plus the divergence guard's gap), so a stop-loss there would
+ *  wait under the floor until the Window ends (F-S24-01). The contract allows up to 15¢. */
+export const EXIT_SLACK_BPS = 1_000;
 /** …and lasts 30 days; it is listed and stopped in Settings like every grant. */
 export const EXIT_GRANT_SEC = 30 * 86_400;
 

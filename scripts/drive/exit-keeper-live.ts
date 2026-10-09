@@ -78,9 +78,9 @@ const arm = await owner.submitTx({ kind: "vault-deposit-and-grant", amountBase: 
 if (arm.status !== "confirmed") throw new Error(`arm: ${JSON.stringify(arm)}`);
 const vault = { address: v2.eventVault, abi: eventVaultV2Abi } as const;
 const sessionGrant = (await reader.readContract({ ...vault, functionName: "activeGrantOf", args: [root.address, 0] })) as bigint;
-const grantExit = await sendBatch(rootClient as never, { calls: [{ to: v2.eventVault, data: encodeFunctionData({ abi: eventVaultV2Abi, functionName: "grantExit", args: [keeper, zeroHash, BigInt(nowSec() + 6 * 3600), 1_500] }) }], sponsored: false, nonce: { kind: "expiring" }, nowSec: nowSec() });
+const grantExit = await sendBatch(rootClient as never, { calls: [{ to: v2.eventVault, data: encodeFunctionData({ abi: eventVaultV2Abi, functionName: "grantExit", args: [keeper, zeroHash, BigInt(nowSec() + 6 * 3600), 1_500, 1_000] }) }], sponsored: false, nonce: { kind: "expiring" }, nowSec: nowSec() });
 const exitGrant = (await reader.readContract({ ...vault, functionName: "activeGrantOf", args: [root.address, 3] })) as bigint;
-out("armed", { owner: root.address, key: key.address, armTx: arm.txHash, sessionGrant, grantExitTx: grantExit.hash, grantExitStatus: grantExit.receipt.status, exitGrant, toleranceBps: 1_500 });
+out("armed", { owner: root.address, key: key.address, armTx: arm.txHash, sessionGrant, grantExitTx: grantExit.hash, grantExitStatus: grantExit.receipt.status, exitGrant, toleranceBps: 1_500, slackBps: 1_000 });
 
 const session = sessionKeySession({ record: key, network: "testnet", rpcHttpUrls: [RPC], relayUrl: relay.url, nowSec });
 async function tap(side: Side): Promise<bigint> {

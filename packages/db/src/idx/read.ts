@@ -108,7 +108,7 @@ export function indexReader(sql: Sql) {
     async vault(owner: string): Promise<IdxRow[]> {
       const accounts = await sql`select vault, owner, available_base::text, private_available_base::text, deposited_base::text, withdrawn_base::text, updated_block::text from idx_vault_accounts where owner = ${owner} order by updated_block desc`;
       const grants = await sql`
-        select vault, grant_id::text, owner, actor, kind, exit_tolerance_bps, max_stake_per_trade_base::text, max_daily_spend_base::text, max_open_positions, max_price_raw::text, market,
+        select vault, grant_id::text, owner, actor, kind, exit_tolerance_bps, exit_slack_bps, max_stake_per_trade_base::text, max_daily_spend_base::text, max_open_positions, max_price_raw::text, market,
           expires_at_sec::text, budget_base::text, funded_base::text, spent_base::text, taps, revoked, returned_base::text, created_tx, created_at_sec::text,
           revoked_tx, revoked_at_sec::text, last_used_tx, last_used_at_sec::text
         from idx_vault_grants where owner = ${owner} order by created_block desc, grant_id desc limit 100`;

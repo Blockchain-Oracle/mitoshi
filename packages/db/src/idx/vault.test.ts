@@ -98,4 +98,20 @@ describe.skipIf(!url)("vault index projections (real Moderato logs)", () => {
     expect(new Set(row.accounts.map((a) => a.vault))).toEqual(new Set([fx.vault.toLowerCase(), V2]));
     expect(new Set(row.grants.map((g) => g.vault)).size).toBe(2);
   });
+
+  it("keeps an EXIT grant's tolerance and, since D-213, its slack (null on the retired v2's grants)", async () => {
+    const w = indexWriter(sql);
+    const created = events.find((e) => e.name === "GrantCreated")!;
+    const exitOn = (vault: string, slack: boolean): IdxEvent[] => {
+      const tx = `0x${vault.slice(2, 10)}${"e".repeat(56)}`;
+      const grant = { ...created, address: vault, txHash: tx, data: { ...created.data, grantId: "900", kind: 3, budget: "0" } };
+      const data = { grantId: "900", owner: created.data.owner, actor: created.data.actor, market: `0x${"0".repeat(64)}`, expiresAtSec: "2000000000", toleranceBps: 1_500, ...(slack ? { slackBps: 1_000 } : {}) };
+      return [grant, { ...created, address: vault, txHash: tx, logIndex: created.logIndex + 1, name: "ExitGranted", data }];
+    };
+    const RETIRED = "0x6f05b0dcaa31c241a4f6e8ceb170090b41679e95";
+    const CURRENT = `0x${"5a".repeat(20)}`;
+    for (const [vault, slack] of [[RETIRED, false], [CURRENT, true]] as const) await w.writeWindow(exitOn(vault, slack), { chainId: 42431, address: vault, block: Number(fx.toBlock) + 1 });
+    const rows = await sql`select vault, exit_tolerance_bps, exit_slack_bps from idx_vault_grants where grant_id = 900 order by vault`;
+    expect(rows.map((r) => [r.vault, r.exit_tolerance_bps, r.exit_slack_bps])).toEqual([[CURRENT, 1_500, 1_000], [RETIRED, 1_500, null]]);
+  });
 });

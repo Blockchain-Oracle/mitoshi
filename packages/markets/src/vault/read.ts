@@ -10,20 +10,19 @@ import { getAddress, keccak256, encodeAbiParameters, zeroHash, type Address, typ
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
 import { grantKindOf, grantKindsOf, GRANT_KINDS, toMarketId, USD_DECIMALS, type GrantKind, type MarketId, type Reading, type VaultDeployment, type VaultGrant, type VaultHoldings, type VaultSnapshot } from "@cwf/core";
-import { deploymentOf } from "../deployments";
+import { deploymentsWithHistory } from "../deployments";
 import { getPublicClient } from "../runtime/read-runtime";
 import { withReading } from "../runtime/reading";
 
 const PATH_USD = "0x20C0000000000000000000000000000000000000" as Address;
 
-/** Every Trading Balance on `chainId`, the current first (S24.2): v2 where deployed, then v1. Empty when none is. */
+/**
+ * Every Trading Balance on `chainId`, the current first: v2, every v2 it replaced (newest first; D-213 redeployed it with
+ * the floor's slack), then v1 (S24.2). Empty when none is deployed.
+ */
 export function vaultDeploymentsOf(chainId: number): VaultDeployment[] {
-  const v2 = deploymentOf("vault2", chainId)?.EventVaultV2;
-  const v1 = deploymentOf("vault", chainId)?.EventVault;
-  return [
-    ...(v2 ? [{ chainId, eventVault: getAddress(v2.address), collateral: PATH_USD, fromBlock: BigInt(v2.deployBlock ?? 0), version: 2 as const }] : []),
-    ...(v1 ? [{ chainId, eventVault: getAddress(v1.address), collateral: PATH_USD, fromBlock: BigInt(v1.deployBlock ?? 0), version: 1 as const }] : []),
-  ];
+  const at = (version: 1 | 2) => (d: { address: Address; deployBlock: number | null }): VaultDeployment => ({ chainId, eventVault: getAddress(d.address), collateral: PATH_USD, fromBlock: BigInt(d.deployBlock ?? 0), version });
+  return [...deploymentsWithHistory("vault2", "EventVaultV2", chainId).map(at(2)), ...deploymentsWithHistory("vault", "EventVault", chainId).map(at(1))];
 }
 
 /** The current Trading Balance on `chainId` — where every new deposit, grant and trade goes — or null (not deployed). */
@@ -31,13 +30,12 @@ export function vaultDeploymentOf(chainId: number): VaultDeployment | null {
   return vaultDeploymentsOf(chainId)[0] ?? null;
 }
 
-/** A previous Trading Balance still to empty (v1 once v2 is deployed), or null. */
-export function legacyVaultDeploymentOf(chainId: number): VaultDeployment | null {
-  const all = vaultDeploymentsOf(chainId);
-  return all.length > 1 ? all[all.length - 1]! : null;
+/** The previous Trading Balances still to empty (every one but the current), newest first; empty when there are none. */
+export function legacyVaultDeploymentsOf(chainId: number): VaultDeployment[] {
+  return vaultDeploymentsOf(chainId).slice(1);
 }
 
-/** The deployment at `vault` (either version), or the current one when `vault` is absent. */
+/** The deployment at `vault` (any of them), or the current one when `vault` is absent. */
 export function vaultDeploymentAt(chainId: number, vault?: Address | null): VaultDeployment | null {
   if (!vault) return vaultDeploymentOf(chainId);
   return vaultDeploymentsOf(chainId).find((d) => d.eventVault.toLowerCase() === vault.toLowerCase()) ?? null;
@@ -121,10 +119,22 @@ export async function readVaultSnapshot(wallet: Address, vault?: Address | null)
   live.forEach(({ kind, id }, i) => {
     grants[kind] = toVaultGrant(id, tuples[i]!);
   });
-  // v2's EXIT grant sells at the fair value less its own tolerance (S24): one more read, only when there is one.
+  // v2's EXIT grant sells at the fair value less the wider of its tolerance and its slack (S24, D-213): one more round,
+  // only when there is one. A retired v2 (before the slack) has no `exitSlackBps`, so that read may fail alone.
   if (grants.exit) {
-    const bps = (await client.readContract({ address: contract.address, abi: eventVaultV2Abi, functionName: "exitToleranceBps", args: [grants.exit.grantId] })) as number;
-    grants.exit = { ...grants.exit, exitToleranceBps: Number(bps) };
+    const id = grants.exit.grantId;
+    const [tolerance, slack] = await client.multicall({
+      allowFailure: true,
+      contracts: [
+        { address: contract.address, abi: eventVaultV2Abi, functionName: "exitToleranceBps", args: [id] },
+        { address: contract.address, abi: eventVaultV2Abi, functionName: "exitSlackBps", args: [id] },
+      ],
+    });
+    grants.exit = {
+      ...grants.exit,
+      ...(tolerance.status === "success" ? { exitToleranceBps: Number(tolerance.result) } : {}),
+      ...(slack.status === "success" ? { exitSlackBps: Number(slack.result) } : {}),
+    };
   }
   const a = account as unknown as { available: bigint; privateAvailable: bigint; totalDeposited: bigint; totalWithdrawn: bigint };
   return {

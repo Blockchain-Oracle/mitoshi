@@ -5,7 +5,8 @@ import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { toMarketId, type TxIntent, type VaultGrant } from "@cwf/core";
 import { OrderRefusedError } from "../submitter/errors";
 import { encodeVaultIntent } from "./calls";
-import { legacyVaultDeploymentOf, vaultDeploymentAt } from "./read";
+import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
+import { legacyVaultDeploymentsOf, vaultDeploymentAt } from "./read";
 import { assertGrantCovers } from "./order";
 import { vaultDeploymentOf, vaultOutcomeId } from "./read";
 
@@ -24,16 +25,26 @@ const encode = (intent: TxIntent) => {
 const fn = (data: `0x${string}`) => decodeFunctionData({ abi: eventVaultAbi, data }).functionName;
 
 describe("vault intents → calls (C.2.3 vault rows)", () => {
-  it("targets the current Moderato vault (v2, S24.1) with pathUSD as its collateral; v1 stays as the one to empty", () => {
+  it("targets the current Moderato vault (v2, S24.1) with pathUSD as its collateral; the previous ones stay to empty", () => {
     expect(vault.eventVault).toBe(getAddress("0x6f05b0dcaa31c241a4f6e8ceb170090b41679e95"));
     expect(vault.version).toBe(2);
-    const legacy = legacyVaultDeploymentOf(42431)!;
-    expect(legacy.eventVault).toBe(getAddress("0x5E38dc8b7402FFB608134872a64663e5D75235b8"));
-    expect([legacy.version, legacy.fromBlock]).toEqual([1, 37_385_655n]);
-    expect(vaultDeploymentAt(42431, legacy.eventVault)?.version).toBe(1);
-    // A withdraw may empty v1; every other intent goes to v2.
-    const out = encodeVaultIntent({ kind: "vault-withdraw", amountBase: 1n, vault: legacy.eventVault }, { chainId: 42431 } as never);
-    expect(out?.ok && [out.value.calls[0]!.to, out.value.area]).toEqual([legacy.eventVault, "vault"]);
+    const legacy = legacyVaultDeploymentsOf(42431);
+    const v1 = legacy.at(-1)!;
+    expect(v1.eventVault).toBe(getAddress("0x5E38dc8b7402FFB608134872a64663e5D75235b8"));
+    expect([v1.version, v1.fromBlock]).toEqual([1, 37_385_655n]);
+    expect(vaultDeploymentAt(42431, v1.eventVault)?.version).toBe(1);
+    // A withdraw may empty any previous vault, each on its own area; every other intent goes to the current one.
+    for (const previous of legacy) {
+      const out = encodeVaultIntent({ kind: "vault-withdraw", amountBase: 1n, vault: previous.eventVault }, { chainId: 42431 } as never);
+      expect(out?.ok && [out.value.calls[0]!.to, out.value.area]).toEqual([previous.eventVault, previous.version === 2 ? "vault2" : "vault"]);
+    }
+  });
+
+  it("the EXIT grant names the keeper, its tolerance and its slack, on the current vault only (D-213)", () => {
+    const e = encode({ kind: "vault-grant-exit", actor: KEY, market: null, expiresAtSec: 2_000_000_000, toleranceBps: 1_500, slackBps: 1_000 });
+    expect([e.area, e.sponsored, e.calls[0]!.to]).toEqual(["vault2", false, vault.eventVault]);
+    const call = decodeFunctionData({ abi: eventVaultV2Abi, data: e.calls[0]!.data });
+    expect([call.functionName, ...(call.args ?? [])]).toEqual(["grantExit", getAddress(KEY), `0x${"0".repeat(64)}`, 2_000_000_000n, 1_500, 1_000]);
   });
 
   it("capital intake and delegation setup are root-signed and never sponsored; intake carries its exact approve", () => {

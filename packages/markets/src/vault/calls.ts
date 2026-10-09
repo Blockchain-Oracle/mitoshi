@@ -65,7 +65,7 @@ export function summarizeVault(intent: VaultIntent, decimals = USD_DECIMALS): st
     case "vault-sweep":
       return `sweep the vault's engine credit on ${intent.marketId.slice(0, 10)}`;
     case "vault-grant-exit":
-      return `keep exits running with the app closed — sells at no less than ${(intent.toleranceBps / 100).toFixed(1)}% under fair value`;
+      return `keep exits running with the app closed — sells at no less than the fair value less ${(intent.toleranceBps / 100).toFixed(1)}% or ${(intent.slackBps / 100).toFixed(1)}¢, whichever is more`;
   }
 }
 
@@ -99,7 +99,7 @@ function callsOf(vault: Address, collateral: Address, intent: VaultIntent): { ca
     case "vault-grant-exit":
       // v2's own function (`VaultExits.grantExit`); never sponsored — the relay's v2 policy refuses it too.
       return {
-        calls: [{ to: vault, data: encodeFunctionData({ abi: eventVaultV2Abi, functionName: "grantExit", args: [intent.actor, (intent.market ?? zeroHash) as Hex, BigInt(intent.expiresAtSec), intent.toleranceBps] }) }],
+        calls: [{ to: vault, data: encodeFunctionData({ abi: eventVaultV2Abi, functionName: "grantExit", args: [intent.actor, (intent.market ?? zeroHash) as Hex, BigInt(intent.expiresAtSec), intent.toleranceBps, intent.slackBps] }) }],
         sponsored: false,
       };
   }

@@ -288,7 +288,7 @@ export const events = {
     "Credited(address,address,uint256,uint256)",
     "Deposited(address,uint256,uint256)",
     "Executed(address,bytes32,uint256,uint8,bool,uint256,uint256,address,uint64)",
-    "ExitGranted(uint256,address,address,bytes32,uint64,uint16)",
+    "ExitGranted(uint256,address,address,bytes32,uint64,uint16,uint16)",
     "GrantCreated(uint256,address,address,uint8,tuple,uint64,uint256)",
     "GrantFunded(uint256,uint256,uint256)",
     "GrantRevoked(uint256,address,uint256)",

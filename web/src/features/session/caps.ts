@@ -9,6 +9,13 @@ const ONE = 1_000_000n;
 /** Dollars: whole amounts bare ("$25"), anything else to the cent ("$24.60"). */
 export const usd = (base: bigint) => `$${formatBaseUnits(base, 6, base % ONE === 0n ? { minDp: 0, maxDp: 0 } : { minDp: 2, maxDp: 2 })}`;
 
+/** What an EXIT grant may sell under the fair value at (D-193, D-213): "15%", or "15% or 10¢, whichever is more". */
+export function exitAllowanceText(toleranceBps: number, slackBps?: number): string {
+  const pct = `${(toleranceBps / 100).toFixed(toleranceBps % 100 === 0 ? 0 : 1)}%`;
+  if (!slackBps) return pct;
+  return `${pct} or ${(slackBps / 100).toFixed(slackBps % 100 === 0 ? 0 : 1)}¢, whichever is more`;
+}
+
 export type PresetId = "light" | "standard" | "big";
 export type ExpiryId = "h6" | "h24" | "d7";
 

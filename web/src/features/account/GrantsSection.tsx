@@ -12,7 +12,7 @@ import { useState } from "react";
 import { MotionScope } from "@/components/motion-scope";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
-import { leftNowBase, spentTodayBase, usd } from "@/features/session/caps";
+import { exitAllowanceText, leftNowBase, spentTodayBase, usd } from "@/features/session/caps";
 import { useSessionActions, useSessionView } from "@/features/session/context";
 import { ACCOUNT_PAGE } from "./copy";
 import { whenText } from "./KeyRow";
@@ -49,7 +49,7 @@ function LiveGrant({ grant, thisDevice, nowSec, onStop, stopping, busy }: { gran
       {grant.kind === "exit" ? (
         // Sell-only, no budget (S24): its caps and spend would read as zeros, so the row says what it does instead.
         <dl className="grid grid-cols-1 gap-1 type-caption text-ink-secondary">
-          <div><dt className="inline">{G.scope}: </dt><dd className="inline text-ink">{G.exitScope(grant.exitToleranceBps !== undefined ? `${(grant.exitToleranceBps / 100).toFixed(1)}%` : null, grant.caps.market ? shortHex(grant.caps.market) : null)}</dd></div>
+          <div><dt className="inline">{G.scope}: </dt><dd className="inline text-ink">{G.exitScope(grant.exitToleranceBps !== undefined ? exitAllowanceText(grant.exitToleranceBps, grant.exitSlackBps) : null, grant.caps.market ? shortHex(grant.caps.market) : null)}</dd></div>
           <div><dt className="inline">{G.expires}: </dt><dd className="inline text-ink">{whenText(BigInt(grant.expiresAtSec))}</dd></div>
         </dl>
       ) : (

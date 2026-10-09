@@ -43,8 +43,11 @@ export interface VaultGrant {
   caps: VaultCaps;
   /** What the actor may still spend; proceeds never return here. */
   budgetBase: bigint;
-  /** An EXIT grant's tolerance (v2, S24): it sells at no less than the fair value less this many bps. */
+  /** An EXIT grant's tolerance (v2, S24): the share of the fair value it may sell under it at, in bps. */
   exitToleranceBps?: number;
+  /** An EXIT grant's absolute slack (D-213), in bps of a whole token's payout (1,000 = 10¢). It sells at no less than
+   *  the fair value less the wider of the two. Absent on a grant from before the slack. */
+  exitSlackBps?: number;
 }
 
 export interface VaultAccount {

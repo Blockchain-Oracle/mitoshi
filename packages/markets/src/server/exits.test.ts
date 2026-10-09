@@ -6,7 +6,7 @@ import type { VaultGrant } from "@cwf/core";
 import { exitTriggerTypedData, type ExitTrigger } from "@cwf/core/exits";
 import { tempoReadChain } from "../read-chain";
 import { generateSessionKey, sessionKeyAccount } from "../sessions";
-import { legacyVaultDeploymentOf, vaultDeploymentOf } from "../vault/read";
+import { legacyVaultDeploymentsOf, vaultDeploymentOf } from "../vault/read";
 import { exitSignatureCheck, verifyExitTrigger } from "./exits";
 
 const CHAIN = 42431;
@@ -46,10 +46,9 @@ describe("verifyExitTrigger", () => {
     expect(await verifyExitTrigger(T, sig, deps(grant({ revoked: true })))).toMatchObject({ ok: false, error: /turned off/ });
     expect(await verifyExitTrigger(T, sig, deps(grant({ expiresAtSec: NOW / 1000 })))).toMatchObject({ ok: false, error: /expired/ });
     expect(await verifyExitTrigger(T, sig, deps(null))).toMatchObject({ ok: false, status: 403 });
-    const v1 = legacyVaultDeploymentOf(CHAIN);
-    if (v1) {
-      const onV1 = { ...T, vault: v1.eventVault };
-      expect(await verifyExitTrigger(onV1, await sign(onV1), deps(grant()))).toMatchObject({ ok: false, status: 400, error: /current Trading Balance/ });
+    for (const previous of legacyVaultDeploymentsOf(CHAIN)) {
+      const onPrevious = { ...T, vault: previous.eventVault };
+      expect(await verifyExitTrigger(onPrevious, await sign(onPrevious), deps(grant()))).toMatchObject({ ok: false, status: 400, error: /current Trading Balance/ });
     }
     expect(await verifyExitTrigger(T, "0x1234", deps(grant()))).toMatchObject({ ok: false, status: 403 });
   });

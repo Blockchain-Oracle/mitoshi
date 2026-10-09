@@ -286,11 +286,11 @@ export const TERMINAL = {
   },
   /** Exits with the app closed (S24.5, D-193): the EXIT grant and Mitoshi's exit keeper. */
   keeper: {
-    runs: (pct: string) => `Runs with the app closed — Mitoshi's exit keeper sells at no less than ${pct} under fair value.`,
+    runs: (allowance: string) => `Runs with the app closed — Mitoshi's exit keeper sells at no less than the fair value less ${allowance}.`,
     tabOnly: "Runs only while Mitoshi is open.",
     turnOn: "Keep exits running with the app closed",
-    turnOnBody: (pct: string) =>
-      `One passkey confirmation. Mitoshi's exit keeper may then sell your Trading Balance positions when a Trail, take-profit or stop-loss you set is reached — never below the fair value less ${pct}, never buy or withdraw. Stop it any time in Settings.`,
+    turnOnBody: (allowance: string) =>
+      `One passkey confirmation. Mitoshi's exit keeper may then sell your Trading Balance positions when a Trail, take-profit or stop-loss you set is reached — never below the fair value less ${allowance}, never buy or withdraw. Stop it any time in Settings.`,
     turningOn: "Confirm with your passkey…",
     on: "Exits now run with the app closed",
     onBody: "Set a Trail, take-profit or stop-loss and it runs without this tab.",
