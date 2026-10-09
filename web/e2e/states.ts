@@ -158,17 +158,19 @@ async function signedIn(width: number) {
     }
     // Phones keep the positions behind the "View position" pill.
     if (width < 768) await page.locator(".tm-view").first().click({ timeout: 60_000 });
-    const row = page.locator(".tm-pos").filter({ hasText: "Up BTC" }).first();
+    const row = page.locator(".tm-pos:visible").filter({ hasText: "Up BTC" }).first();
     await expect(row).toBeVisible({ timeout: 120_000 });
     await row.locator(".tm-pos-open-btn").click();
     const details = modal(page);
     await shot(page, "position-details", width);
-    await details.getByRole("button", { name: "CLOSE" }).click();
+    // The Reduce row's 100 % is its CLOSE (the screen's own CLOSE button sits under the drawer).
+    await details.locator(".tm-field").getByRole("button", { name: "CLOSE", exact: true }).first().click();
     await expect(details.getByText("This position is no longer open.")).toBeVisible({ timeout: 120_000 });
     await shot(page, "position-gone", width, "closed from its own details (Reduce → CLOSE)");
     await details.getByRole("button", { name: "Done" }).click();
   });
   await attempt("history-stats", width, async () => {
+    await page.keyboard.press("Escape");
     await page.locator(".tm-equity:visible").first().click();
     const drawer = modal(page);
     await drawer.getByRole("button", { name: "Trade history" }).first().click();
@@ -179,11 +181,12 @@ async function signedIn(width: number) {
   await attempt("reconnecting", width, async () => {
     // The stream closes while the page is hidden and reopens when it shows (stream-hub): hide it, refuse the stream's
     // address, show it — the reconnect fails as a dropped connection would, and after 10 s the chip says so.
-    const visibility = (hidden: boolean) => page.evaluate((h) => {
-      Object.defineProperty(document, "hidden", { configurable: true, get: () => h });
-      Object.defineProperty(document, "visibilityState", { configurable: true, get: () => (h ? "hidden" : "visible") });
+    // A string, not a closure: tsx wraps named inner functions in `__name`, which the page doesn't have.
+    const visibility = (hidden: boolean) => page.evaluate(`(() => {
+      Object.defineProperty(document, "hidden", { configurable: true, get: () => ${hidden} });
+      Object.defineProperty(document, "visibilityState", { configurable: true, get: () => "${hidden ? "hidden" : "visible"}" });
       document.dispatchEvent(new Event("visibilitychange"));
-    }, hidden);
+    })()`);
     await visibility(true);
     await page.route(/\/v1\/stream/, (r) => r.abort());
     await page.waitForTimeout(1_500);
