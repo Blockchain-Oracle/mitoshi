@@ -1,6 +1,7 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-09 11:10Z (S24.5 live; the Trading Balance check green end to end). **Never trust memory over this file.**
+Updated 2026-10-09 15:40Z (the S24 gate passed; Q-033 answered (c), D-213: EventVaultV2 redeployed with the floor's
+slack). **Never trust memory over this file.**
 
 ## Where we are
 
@@ -70,8 +71,22 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
   92cc15f, to re-measure);
 - Lighthouse with `/trade/BTC`, the §8 screenshots, and the owner's phone run.
 
-**S24 (2026-10-09):** v2 is the Trading Balance on Moderato (24.1, 24.2). 24.3's `exit-keeper` and `/api/exits` are
-proven live (`acceptance/S24.md`): a stranger's trigger refused, a sale under the floor reverts, take-profit and trail
+**S24 — gate passed 2026-10-09 (every box ticked; `acceptance/S24.md`).** Since 15:00Z:
+- **Q-033 answered (c), D-213.** A keeper sale's floor is fair − max(tolerance × fair, slack); the app grants 15 % or
+  10¢, and the contract caps the slack at 15¢. EventVaultV2 was redeployed at `0xdbb3…2040` (block 38,862,004). The
+  first v2, `0x6f05…9e95`, is kept in the fragment's `history[]`: still a previous Trading Balance (the account
+  drawer's card), indexed, cranked, and relay-sponsored for withdraw, revoke and crank. Ops and web are on fbb4e48.
+- CI runs 37948666312 and 37951646703 (all green) each sold a stop-loss on SOL's cheap side with the tab closed, on
+  the first try. Both sales were under the old 15 % floor: 21.3¢ against a 24.3¢ floor at a 28.6¢ fair; 6.2¢ against a
+  13.4¢ floor at a 15.8¢ fair, the house's bid then 9.6¢ under the signed fair. That is the trade-off D-213 states.
+- 24.4 ticked: both house sides through BTC 5m #2972's tail (half size from lock − 61, nothing new from lock − 45,
+  gone at lock − 27), and a CI CLOSE at lock − 60 inside the tail (the driver now times it there).
+- The gate's previous-vault line, live (`scripts/drive/previous-vaults-live.ts`): v1 and the retired v2 each withdrew
+  $1 through the deployed relay (relay-paid) with a position open, and the ops settler cranked both positions.
+- Owners re-arm on the new vault once; what they hold in a previous one shows in the account drawer to withdraw.
+
+Before the gate (2026-10-09 morning): v2 is the Trading Balance on Moderato (24.1, 24.2). 24.3's `exit-keeper` and
+`/api/exits` are proven live (`acceptance/S24.md`): a stranger's trigger refused, a sale under the floor reverts, take-profit and trail
 sold by the keeper with no tab, an armed trail survives an ops restart. 24.4's exit tail is deployed (ops 42c498a).
 24.5 is live and ticked: the CI Trading Balance check passes with every step (run 37924296152, web b8ae2f6, ops
 fdc7062): arm (1 assertion) → Up BTC and Down ETH from the Trading Balance (0 prompts, ~1.7–2.2 s) → TP/SL hands the
@@ -87,8 +102,7 @@ EXIT grant and the session grant each stopped from `/settings/account` with 1 as
   closed announced on the next visit.
 - Expired triggers left `armed` (now ended `expired` with the keeper's last reason), and a tap the book outran on chain
   (now a requote, as a CLOSE is).
-- **Open (Q-033, F-S24-01):** a stop-loss on a cheap side can wait under the EXIT floor until its Window ends. 15 % of
-  a 41¢ side is 6.2¢, inside the house's widened half-spread. Recommended: a VaultExits floor with an absolute slack.
+- F-S24-01 (a stop-loss on a cheap side waited under the 15 % floor) is closed by D-213 above.
 - Seen live: a CLOSE 34 s before lock meets the tail's wide book (611 / 955 at fair 783), so the terminal offers
   "Close for $0.09" instead of selling under the tolerance.
 
@@ -121,11 +135,8 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
 2. S10 remainder: `/api/prices/datastreams-report`, 10a.4 (a won ticket claimed, UX gate), the S10d browser gate, the
    stage gate.
 3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes). R.0, S22 and S23's boxes are done;
-   S24.1–24.3 done, 24.4 deployed, 24.5 live and ticked (CI run 37924296152: a bracket written from the terminal, sold
-   by the keeper with the tab closed). Open for the owner: Q-033, stop-losses on cheap sides wait under the EXIT floor
-   (F-S24-01).
-   Next: 24.4's box after `scripts/drive/exit-tail-live.ts` shows both sides through a Window's tail; the S24 gate's
-   remaining lines (v1 balances withdraw and v1 positions crank, house bids gone after T−30 s); then the S23 gate
+   S24 is complete: every box ticked and the gate passed on 2026-10-09 (D-213 answered Q-033 with the floor's slack).
+   Next: the S23 gate
    (above). S5's leaderboard data comes before S23g's leaderboard.
 4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the

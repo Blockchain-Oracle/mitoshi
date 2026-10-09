@@ -76,11 +76,11 @@ reference surface is one row; a row moves only at its stage's gate, with evidenc
 | RV-48 | Unrealized card, Close all | F §2.3: "Unrealized PnL", ±$, ±%, "Close all (N)", "Closing…", no confirm | same; "≈" while repriced (D-197) | E |
 | RV-49 | Equity pill | F §1.6: equity odometer, skeleton, "Connect" | wallet pathUSD + Trading Balance + Σ exit values; "Sign in" | A |
 | RV-50 | UP/DOWN ↔ TRAIL/CLOSE | F §2.4: cross-fade y 12 → 0, 0.18 s; "Need +0.1% to trail"; phone "View position / View N positions" pill | same (O `TradeButtons.tsx`) | E |
-| RV-51 | TRAIL | F §2.5: eligible past trail %; stop = max(p·(1−pct), ref), ratchets; toasts "Trailing stop armed · BTC" / "Locks profit if price reverses 0.1%" / "Trailing stop hit · BTC" / "Locked +$x"; "Demo: only while app is open" | on spot with ref = break-even spot; in the tab first (D-200: "Only while Mitoshi is open"), keeper-held after S24 ("Runs with the app closed") | A → E at S24 |
+| RV-51 | TRAIL | F §2.5: eligible past trail %; stop = max(p·(1−pct), ref), ratchets; toasts "Trailing stop armed · BTC" / "Locks profit if price reverses 0.1%" / "Trailing stop hit · BTC" / "Locked +$x"; "Demo: only while app is open" | on spot with ref = break-even spot; in the tab first (D-200: "Only while Mitoshi is open"), keeper-held after S24 ("Runs with the app closed") | E (S24 gate 2026-10-09, `acceptance/S24.md`) |
 | RV-52 | CLOSE | F §2.6: one tap, no confirm, full position; win if pnl ≥ 0; confetti > 0 | one tap, floor = last book exit less the close tolerance, requote inside tolerance auto-accepted, "Closing…" on sign (D-197); vault positions through the new sell lane; Boost via `LeverageReserve.close`; dust < 1 contract "settles at 14:05" | E / A |
 | RV-53 | Liquidation | F §2.6: "BTC liquidated · Lost −$500.00 margin" | a Window settling the wrong side pays 0: "BTC 5m settled · −$5.00" with 逆夢; wins auto-pay with 正夢 + confetti; voids "Returned" with 無効 | A |
 | RV-54 | Add / Reduce | F §2.7: 25/50/75/Max, "After this order", min $5, Add plays `open`, Reduce plays `close` | centred modal; Add = another buy; Reduce = partial IOC sell | A |
-| RV-55 | TP / SL | F §2.8: ROI % / Change % / P&L, validation copy, live only | same drawer; ROI and P&L on exit value; Change % to spot "≈" (D-200); in the tab, then the keeper (S24) | A → E at S24 |
+| RV-55 | TP / SL | F §2.8: ROI % / Change % / P&L, validation copy, live only | same drawer; ROI and P&L on exit value; Change % to spot "≈" (D-200); in the tab, then the keeper (S24) | E (S24 gate 2026-10-09; a cheap-side stop-loss sells since D-213) |
 | RV-56 | Settings stack + drawer | F §4: glass, flush left, peek, drag in y, tap → "BTC settings"; Size / Leverage / Trailing with `?` tooltips; summary rows | Size · Pays · Fees · Trailing · **Close tolerance**; drag by pointer events; tooltips adapted | A |
 | RV-57 | Window chip | — | lanes 5m/15m/60m; Regular · 24/7 · Gap; "trades 42s · closes · pricing… · next Window soon"; NYSE closed; prelisted Windows take a scheduled call at a cents price; resting orders cancellable | + |
 | RV-58 | Depth | — | chart ↔ depth toggle (`HeroDepth`) | + |
@@ -123,8 +123,8 @@ reference surface is one row; a row moves only at its stage's gate, with evidenc
 |---|---|---|---|
 | RV-95 | Display feed | D-196: Coinbase WS → 5-venue median → RedStone (crypto); Alpaca in NYSE hours, RedStone `---24_7` off-hours (stocks); `ticks` topic, ephemeral; maker divergence guard | A (better) |
 | RV-96 | Live value | D-197: exit walk anchored, repriced by fair value, "≈" | A |
-| RV-97 | Server-side exits | D-193: EXIT grant + keeper; trust model stated | A |
-| RV-98 | Exit tail | D-194: house bids to T−30 s | + |
+| RV-97 | Server-side exits | D-193: EXIT grant + keeper; trust model stated; floor = fair − max(tolerance, slack) (D-213) | A (S24 gate 2026-10-09) |
+| RV-98 | Exit tail | D-194: house bids to T−30 s | + (S24 gate 2026-10-09: #2972, CLOSE at lock − 60) |
 
 ## Empty, loading, error and stale states (F §8 → Mitoshi copy; the S23 gate screenshots each)
 

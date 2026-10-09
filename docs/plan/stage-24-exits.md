@@ -43,7 +43,7 @@ RV-55, RV-97, RV-98.
   floor reverted. Found on the way: the read chain can't verify P-256 (ae2aa40); the floor drifts with the block's clock
   (the limit leads it, 42c498a); in a book wider than the tolerance the floor refuses (the drawer says the keeper waits);
   RedStone's gateway shutdown (D-210).
-- [ ] 24.4 The house's exit tail (D-194, D-204): `seed-maker/{quote,lanes,window,index}.ts`. Both sides stay from
+- [x] 24.4 The house's exit tail (D-194, D-204): `seed-maker/{quote,lanes,window,index}.ts`. Both sides stay from
   lock − 75. A pair already resting is kept. New placements are half the lots at twice the half spread. Nothing new is
   placed from lock − 45. The pair lapses at lock − 30 with no cancel, and a pair already resting to lock − 30 is never
   churned. Each Window is tended on the chain clock of its moment, and a placement with under 8 s to rest is skipped.
@@ -57,6 +57,10 @@ RV-55, RV-97, RV-98.
   requote and its fallback); `send-split.test.ts` (same-bytes retry,
   fail-fast). Live check: `scripts/drive/exit-tail-live.ts` shows both sides through a Window's tail, and the
   terminal-trade CI driver closes inside it (acceptance S23).
+  Done (ops fbb4e48; `acceptance/S24.md`): BTC/crypto24/5m #2972. The full pair kept resting into the tail, then one
+  half-size tail requote at lock − 61. Nothing new was placed from lock − 45, and both sides were gone at lock − 27
+  (lapsed, no cancel). CI run 37951646703 closed Down ETH at lock − 60, inside the tail: "Realized −$0.57 · $0.40
+  paid" in 2.0 s, 0 prompts (the driver now times its CLOSE there, d1bc1bc).
 - [x] 24.5 Terminal: Trail/TP/SL switch to the keeper ("Runs with the app closed"); the EXIT grant's one passkey prompt
   in the Trail/TP/SL drawer ("Keep exits running with the app closed"); a row in `GrantsSection` with revoke.
   Built: the TP/SL drawer says where its exits run — "Runs with the app closed" (the keeper, at the grant's tolerance),
@@ -70,17 +74,28 @@ RV-55, RV-97, RV-98.
   terminal with 0 prompts, and its stop-loss was sold by the keeper with the tab closed 20.6 s later. The EXIT and
   session grants were each stopped from `/settings/account` with 1 assertion. Also: a sale made while the app was
   closed is announced on the next visit (`missedSales`, by transaction), and `/api/exits` names each row's asset.
-- [ ] 24.6 Q-033 (c), D-213: the EXIT floor is the fair value less the wider of the tolerance share and an absolute
+- [x] 24.6 Q-033 (c), D-213: the EXIT floor is the fair value less the wider of the tolerance share and an absolute
   slack (`grantExit(…, toleranceBps, slackBps)`, `exitSlackBps`, `BadSlack` over 15¢); EventVaultV2 redeployed on
   Moderato with the old address in `history[]`, and every vault list reads the history (previous balances, indexer,
   settler, relay targets); the drawer and Grants say "15% or 10¢, whichever is more"; index/0005. Tests: the floor
   formula fuzzed on both sides; F-S24-01's shape (the share alone refuses at a bid 6.4¢ under a ~41¢ fair, the slack
   sells at the bid); the bound; the index on real Postgres; the retired vault's area and targets. Live check: the CI
   `trading-balance` keeper step brackets SOL's cheap side and passes only on a sale.
-- **Gate:** on Moderato the keeper fires a trail with the tab closed, survives a restart, honours the proof floor (a
-  sell below it reverts), and is revoked from `/settings/account`; v1 balances withdraw and v1 positions crank; house
-  bids visible until T−30 s and gone after; every tx in `acceptance/S24.md` after `cast receipt`. **Rows:** RV-51,
-  RV-55, RV-97, RV-98, UX-19.
+  Done (d9aba5e, fbb4e48; `acceptance/S24.md`): `0xdbb3…2040` on Moderato (block 38,862,004), `0x6f05…9e95` in
+  `history[]`; ops and web on fbb4e48, the indexer following all three vaults. CI run 37948666312 passed every step.
+  Its keeper sold a stop-loss on SOL's cheap side 58.1 s after the tab left, at 21.3¢ a contract against a fair of
+  28.6¢: under the 15 %-only floor (24.3¢), over the slack's (18.6¢). That is a sale the contract refused before. The
+  previous vaults withdraw through the deployed relay and are cranked by the settler (`previous-vaults-live.ts`).
+- **Gate: passed 2026-10-09** (`acceptance/S24.md`). Trail fired with the tab closed, a restart survived, a sale
+  under the floor reverted (24.3). Revoked from `/settings/account` (24.5, and runs 37948666312 / 37951646703). The
+  previous balances withdrew through the deployed relay and their positions were cranked by the settler, for v1 and
+  the retired v2 (`previous-vaults-live.ts`). House bids were visible to lock − 30 and gone after (#2972). Every tx
+  is checked with `cast receipt`. Since D-213 a cheap-side stop-loss sells (runs 37948666312 and 37951646703, both
+  under the old floor).
+- Gate as planned: on Moderato the keeper fires a trail with the tab closed, survives a restart, honours the proof
+  floor (a sell below it reverts), and is revoked from `/settings/account`; v1 balances withdraw and v1 positions
+  crank; house bids visible until T−30 s and gone after; every tx in `acceptance/S24.md` after `cast receipt`.
+  **Rows:** RV-51, RV-55, RV-97, RV-98, UX-19.
 
 ## Findings
 
