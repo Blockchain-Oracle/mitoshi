@@ -76,6 +76,7 @@ export const TERMINAL = {
     openedBody: (pays: string, staked: string) => `pays ${pays} · ${staked} staked`,
     priceMoved: "Price moved",
     priceMovedBody: (cents: string) => `The book moved to ${cents}. Tap again to take it.`,
+    tapAgain: "The book moved before it filled. Tap again for the new price.",
     nothingFilled: "Nothing filled",
     nothingFilledBody: "The price moved before it landed. Nothing was taken.",
     unknown: "Waiting for the chain",

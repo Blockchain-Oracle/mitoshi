@@ -106,6 +106,8 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
       return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.opened(words, m.asset), description: TERMINAL.toast.openedBody(multipleOf(b.avgPriceBps / 10), money(b.costBase)) });
     }
     if (outcome.status === "requote") return void notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.priceMoved, description: TERMINAL.toast.priceMovedBody(centsOf(outcome.quote.avgPriceBps / 10)) });
+    // The IOC found the book moved before it filled (a house requote): the same "Price moved — tap again", not a failure.
+    if (outcome.status === "refused" && outcome.diagnosis.kind === "requote") return void notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.priceMoved, description: TERMINAL.toast.tapAgain });
     if (outcome.status === "nothingFilled") return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.nothingFilled, description: TERMINAL.toast.nothingFilledBody });
     if (outcome.status === "unknown") return void notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.unknown, description: TERMINAL.toast.unknownBody });
     notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.failed, ...("diagnosis" in outcome ? { description: diagnosisCopy(outcome.diagnosis.kind).headline } : {}) });
