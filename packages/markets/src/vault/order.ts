@@ -15,7 +15,7 @@ import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { diagnosis, formatBaseUnits, formatCadence, oneUnit, ownTermsPriceRaw, simulateCaps, type BookedOrder, type CapRefusal, type Diagnosis, type MarketId, type OrderOutcome, type OrderRequest, type PhaseListener, type Side, type VaultGrant } from "@cwf/core";
 import { isAmbiguousSend } from "../submitter/diagnose-write";
 import { OrderRefusedError, RequoteError } from "../submitter/errors";
-import { freshQuote, type OrderLaneContext } from "../submitter/order-lane";
+import { freshQuote, requoteAfterRevert, type OrderLaneContext } from "../submitter/order-lane";
 import { statusGate } from "../submitter/status-gate";
 import { takerExpirySec } from "../submitter/expiry";
 import { sendBatch } from "../tx/send";
@@ -166,6 +166,8 @@ export async function submitVaultOrder(ctx: OrderLaneContext, req: OrderRequest,
       if (receipt.status !== "success") {
         await ctx.journal.markFailed(record.id, "reverted on chain");
         onPhase?.("reverted", { txHash: hash });
+        const moved = await requoteAfterRevert(w, req, ctx.nowMs());
+        if (moved) return moved;
         return { status: "reverted", diagnosis: diagnosis("contract-revert", "the vault order reverted", { txHash: hash }), txHash: hash };
       }
       const booked = bookVaultFill(receipt.logs as never, vault, owner, marketId, grantId, req.side, hash);

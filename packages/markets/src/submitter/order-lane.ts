@@ -63,6 +63,20 @@ export async function freshQuote(w: WindowFacts, req: OrderRequest, nowMs: numbe
   return held;
 }
 
+/**
+ * After an IOC buy reverted on chain: the book as it is now. A dearer book is a requote; one the confirmed cap still
+ * covers is "tap again" (the asks moved between the read and the block: `ImmediateOrCancelNoFill`, run 37923300525).
+ * Null when nothing is quotable, and the caller says it reverted. A sale does the same (`vault/sell.ts`).
+ */
+export async function requoteAfterRevert(w: WindowFacts, req: OrderRequest, nowMs: number): Promise<OrderOutcome | null> {
+  try {
+    await freshQuote(w, req, nowMs);
+    return refused(diagnosis("requote", "the book moved before the order filled; the confirmed cap still covers the fresh price, tap again", { errorName: PRICE_MOVED }));
+  } catch (error) {
+    return error instanceof RequoteError ? { status: "requote", quote: error.quote } : null;
+  }
+}
+
 /** What the engine's `OrderExecuted` booked for this taker; null when nothing crossed (a PostOnly that rested). */
 export function bookExecution(result: { filledLots: bigint; cashSpent: bigint; fills: number }, req: Pick<OrderRequest, "side" | "market">, lotBase: bigint, txHash: `0x${string}`): BookedOrder | null {
   if (result.filledLots === 0n) return null;
@@ -148,6 +162,8 @@ export async function submitOrder(ctx: OrderLaneContext, req: OrderRequest, onPh
       if (receipt.status !== "success") {
         await ctx.journal.markFailed(record.id, "reverted on chain");
         onPhase?.("reverted", { txHash: hash });
+        const moved = await requoteAfterRevert(w, req, ctx.nowMs());
+        if (moved) return moved;
         return { status: "reverted", diagnosis: diagnosis("contract-revert", "the order reverted", { txHash: hash }), txHash: hash };
       }
       const executed = ownExecution(decodeEngineEvents(venue.engine, receipt.logs), ctx.wallet, w.marketId, clientId);
