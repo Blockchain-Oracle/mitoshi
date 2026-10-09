@@ -13,6 +13,7 @@ import { subscribeTopic } from "@cwf/markets/stream";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { ensureStream } from "@/features/prices/stream-config";
+import { useSessionView } from "@/features/session/context";
 import type { SessionView } from "@/features/session/view";
 import { webEnv } from "@/lib/env";
 import { notify } from "@/lib/toast";
@@ -28,9 +29,11 @@ export const EXIT_GRANT_SEC = 30 * 86_400;
 
 export type ServerExitState = "unavailable" | "needs-grant" | "live";
 
-/** The keeper's address from ops (`/exits/keeper`), or null when none runs. */
+/** The keeper's address from ops (`/exits/keeper`), or null when none runs. Asked only once the Trading Balance is armed
+ *  (`serverExitState` is "unavailable" before), so a signed-out visit never calls ops for it. */
 export function useExitKeeper(): Address | null {
   const base = webEnv.markets.opsUrl?.replace(/\/+$/, "") ?? null;
+  const armed = useSessionView().status === "armed";
   const q = useQuery({
     queryKey: ["cwf", "exits", "keeper"],
     queryFn: async () => {
@@ -38,7 +41,7 @@ export function useExitKeeper(): Address | null {
       if (!res.ok) return null;
       return ((await res.json()) as { keeper: Address | null }).keeper;
     },
-    enabled: base !== null,
+    enabled: base !== null && armed,
     staleTime: 5 * 60_000,
   });
   return q.data ?? null;
