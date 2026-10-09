@@ -123,6 +123,11 @@ async function signedIn(width: number) {
     await page.keyboard.press("Escape");
     await expect(page.getByRole("button", { name: "Turn on one-tap" }).first()).toBeVisible({ timeout: 30_000 });
     await shot(page, "turn-on-one-tap", width);
+    // Then arm it from that card, so the trade below takes one tap with no prompt.
+    await page.getByRole("button", { name: "Turn on one-tap" }).first().click();
+    await modal(page).getByRole("button", { name: "Arm tap-trading" }).last().click();
+    await expect(page.getByRole("button", { name: "Turn on one-tap" })).toHaveCount(0, { timeout: 60_000 });
+    await page.keyboard.press("Escape");
   });
   await attempt("account-empty", width, async () => {
     await page.locator(".tm-equity:visible").first().click();
@@ -142,7 +147,17 @@ async function signedIn(width: number) {
   await attempt("position-gone", width, async () => {
     await stakeMin(page);
     await waitEnterable(s, "up");
-    await page.locator(".tm-btn").filter({ hasText: "UP" }).first().click();
+    const toast = () => page.locator('[data-slot="toast-title"]').allInnerTexts();
+    const up = page.locator(".tm-btn").filter({ hasText: "UP" }).first();
+    await up.click();
+    await expect.poll(toast, { timeout: 90_000 }).toContainEqual(expect.stringMatching(/Up BTC opened|Price moved|failed|Nothing filled/));
+    if ((await toast()).includes("Price moved")) {
+      await page.waitForTimeout(1_000);
+      await up.click();
+      await expect.poll(toast, { timeout: 90_000 }).toContainEqual(expect.stringMatching(/Up BTC opened/));
+    }
+    // Phones keep the positions behind the "View position" pill.
+    if (width < 768) await page.locator(".tm-view").first().click({ timeout: 60_000 });
     const row = page.locator(".tm-pos").filter({ hasText: "Up BTC" }).first();
     await expect(row).toBeVisible({ timeout: 120_000 });
     await row.locator(".tm-pos-open-btn").click();
@@ -162,11 +177,20 @@ async function signedIn(width: number) {
     await page.keyboard.press("Escape");
   });
   await attempt("reconnecting", width, async () => {
-    const cdp = await s.context.newCDPSession(page);
-    await cdp.send("Network.emulateNetworkConditions", { offline: true, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
-    await expect(page.locator(".tm-asset-name").first()).toContainText("Reconnecting…", { timeout: 30_000 });
-    await shot(page, "reconnecting", width, "network offline > 10 s");
-    await cdp.send("Network.emulateNetworkConditions", { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+    // The stream closes while the page is hidden and reopens when it shows (stream-hub): hide it, refuse the stream's
+    // address, show it — the reconnect fails as a dropped connection would, and after 10 s the chip says so.
+    const visibility = (hidden: boolean) => page.evaluate((h) => {
+      Object.defineProperty(document, "hidden", { configurable: true, get: () => h });
+      Object.defineProperty(document, "visibilityState", { configurable: true, get: () => (h ? "hidden" : "visible") });
+      document.dispatchEvent(new Event("visibilitychange"));
+    }, hidden);
+    await visibility(true);
+    await page.route(/\/v1\/stream/, (r) => r.abort());
+    await page.waitForTimeout(1_500);
+    await visibility(false);
+    await expect(page.locator(".tm-asset-name").first()).toContainText("Reconnecting…", { timeout: 45_000 });
+    await shot(page, "reconnecting", width, "the stream's reconnect refused for > 10 s");
+    await page.unroute(/\/v1\/stream/);
   });
   await s.browser.close();
 }
