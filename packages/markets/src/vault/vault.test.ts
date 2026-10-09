@@ -25,10 +25,12 @@ const encode = (intent: TxIntent) => {
 const fn = (data: `0x${string}`) => decodeFunctionData({ abi: eventVaultAbi, data }).functionName;
 
 describe("vault intents → calls (C.2.3 vault rows)", () => {
-  it("targets the current Moderato vault (v2, S24.1) with pathUSD as its collateral; the previous ones stay to empty", () => {
-    expect(vault.eventVault).toBe(getAddress("0x6f05b0dcaa31c241a4f6e8ceb170090b41679e95"));
-    expect(vault.version).toBe(2);
+  it("targets the current Moderato vault (v2 with the slack, D-213) with pathUSD as its collateral; the previous ones stay to empty", () => {
+    expect(vault.eventVault).toBe(getAddress("0xdbb3fa8667351df47f54b1d8ea9b44b28b9c2040"));
+    expect([vault.version, vault.fromBlock]).toEqual([2, 38_862_004n]);
     const legacy = legacyVaultDeploymentsOf(42431);
+    // The retired v2 (before the slack) first, then v1.
+    expect(legacy.map((d) => [d.eventVault, d.version])).toEqual([[getAddress("0x6f05b0dcaa31c241a4f6e8ceb170090b41679e95"), 2], [getAddress("0x5E38dc8b7402FFB608134872a64663e5D75235b8"), 1]]);
     const v1 = legacy.at(-1)!;
     expect(v1.eventVault).toBe(getAddress("0x5E38dc8b7402FFB608134872a64663e5D75235b8"));
     expect([v1.version, v1.fromBlock]).toEqual([1, 37_385_655n]);

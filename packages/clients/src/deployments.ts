@@ -863,13 +863,19 @@ export const deployments = {
     "vault2": {
       "contracts": {
         "EventVaultV2": {
-          "address": "0x6f05b0dCaA31C241a4f6E8Ceb170090b41679e95",
+          "address": "0xdbb3Fa8667351Df47f54b1d8ea9B44B28b9C2040",
           "artifact": "EventVaultV2.sol:EventVaultV2",
           "profile": "default",
           "proxy": false,
-          "txHash": "0x32cd78d6c66d8c799cfb28bee3c71b2e4bedb025b0483a4a53f5581f10847eac",
-          "deployBlock": 38745365,
-          "history": []
+          "txHash": "0x12eebe2e8966aa54711ba32d53231df5bd381b851e9aad28be507af743ee5de4",
+          "deployBlock": 38862004,
+          "history": [
+            {
+              "address": "0x6f05b0dCaA31C241a4f6E8Ceb170090b41679e95",
+              "deployBlock": 38745365,
+              "retiredAtUtc": "2026-10-09T14:51:59.021Z"
+            }
+          ]
         }
       },
       "roles": {},
@@ -883,7 +889,7 @@ export const deployments = {
         "maxExitToleranceBps": 2000
       },
       "external": {},
-      "commit": "04b6e23"
+      "commit": "d9aba5e"
     }
   },
   "84532": {

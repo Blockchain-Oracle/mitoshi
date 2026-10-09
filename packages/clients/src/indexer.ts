@@ -761,8 +761,8 @@ export const indexerSources = {
     {
       area: "vault2",
       contract: "EventVaultV2",
-      address: "0x6f05b0dCaA31C241a4f6E8Ceb170090b41679e95",
-      deployBlock: 38745365,
+      address: "0xdbb3Fa8667351Df47f54b1d8ea9B44B28b9C2040",
+      deployBlock: 38862004,
       events: [
         {"name":"Credited","signature":"Credited(address indexed owner, address indexed from, uint256 amount, uint256 available)","topic0":"0xdd0ef63b44a932361273bab95d6e9bfcea5c7850c43844f540314e89899b970c"},
         {"name":"Deposited","signature":"Deposited(address indexed owner, uint256 amount, uint256 available)","topic0":"0x73a19dd210f1a7f902193214c0ee91dd35ee5b4d920cba8d519eca65a7b488ca"},
