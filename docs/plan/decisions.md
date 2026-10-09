@@ -1812,6 +1812,17 @@ host stayed refused by RedStone's CDN (CloudFront "Request blocked", while anoth
 refusing gateway is now rested in-process — a minute, doubling to ten, reset by the first answer — so a refusal stops
 the whole process asking. Owner action: the key request.
 
+### D-211 — one stream ticket secret, and a refused ticket never closes the public stream (2026-10-09)
+
+**Every signed-in page had no live stream since the ticket was introduced:** the web minted `user:` tickets with one
+`STREAM_TICKET_SECRET` and ops verified them with another (two unrelated 64/66-character values in Coolify), so ops
+answered 401 and the client retried the same refusal with backoff forever — no ticks on the chart ("Reconnecting…"),
+no market or `user:` events (the keeper's "hit" toast included). Signed out, the stream worked. Fixed on testnet: the
+web's secret now equals ops's (copied app to app, never shown; web restarted) — `env-matrix.md` already required one
+value. **And the client degrades:** a 401 to a ticketed connect rests the per-user topic for a minute and reconnects
+at once with the public topics (`USER_REST_MS`), telling the caller (`onUserGrant(false)`), so a secret out of step
+can cost user events, never prices.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

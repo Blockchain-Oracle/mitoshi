@@ -5,14 +5,14 @@ import { createSseParser } from "./sse";
 import { createStreamClient, type StreamEvent } from "./stream";
 
 /** A real SSE server with the ops wire format: records each request, lets a test push frames or drop connections. */
-function sseServer() {
+function sseServer(refuse: (url: URL) => boolean = () => false) {
   const requests: URL[] = [];
   const open = new Set<ServerResponse>();
   let seq = 0;
   const server = createServer((req: IncomingMessage, res: ServerResponse) => {
     const url = new URL(req.url ?? "/", "http://x");
     requests.push(url);
-    if (url.searchParams.get("topics")?.includes("user:") && !url.searchParams.get("ticket")) {
+    if ((url.searchParams.get("topics")?.includes("user:") && !url.searchParams.get("ticket")) || refuse(url)) {
       res.writeHead(401).end();
       return;
     }
@@ -138,5 +138,23 @@ describe("stream client (one connection, real HTTP)", () => {
     expect(again.searchParams.get("topics")).toBe("prices,user:0x00000000000000000000000000000000000000a1");
     expect(again.searchParams.get("ticket")).toBe("0xabc.1.def");
     expect(grants).toEqual([false, true]);
+  });
+
+  it("keeps the public topics flowing when the stream refuses the ticket — and asks for the user topic later", async () => {
+    // 2026-10-09: web and ops held different ticket secrets; every signed-in page retried the same 401 and got nothing.
+    const srv = sseServer((u) => u.searchParams.get("ticket") === "forged");
+    const url = await srv.listen();
+    cleanup.push(srv.close);
+    const grants: boolean[] = [];
+    const client = createStreamClient({ url, onBatch: () => undefined, visibility: null, debounceMs: 5, ticket: async () => "forged", onUserGrant: (g) => grants.push(g) });
+    cleanup.push(async () => client.close());
+    client.subscribe("prices");
+    client.subscribe("user:0x00000000000000000000000000000000000000a1");
+    await until(() => srv.open.size === 1 && client.state() === "open");
+    expect(srv.requests[0]!.searchParams.get("ticket")).toBe("forged");
+    expect(srv.requests.at(-1)!.searchParams.get("topics")).toBe("prices");
+    expect(srv.requests.at(-1)!.searchParams.get("ticket")).toBeNull();
+    expect(client.state()).toBe("open");
+    expect(grants).toEqual([true, false, false]);
   });
 });

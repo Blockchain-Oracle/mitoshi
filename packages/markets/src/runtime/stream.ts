@@ -66,6 +66,9 @@ export interface StreamClient {
   close(): void;
 }
 
+/** How long a refused ticket rests the per-user topic before the stream asks for one again. */
+export const USER_REST_MS = 60_000;
+
 export function createStreamClient(options: StreamClientOptions): StreamClient {
   const doFetch = options.fetch ?? fetch;
   const visibility = options.visibility === undefined ? documentVisibility() : options.visibility;
@@ -78,6 +81,8 @@ export function createStreamClient(options: StreamClientOptions): StreamClient {
   let failures = 0;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let closed = false;
+  // A refused ticket (401) rests the per-user topic for a minute; the public topics carry on without it.
+  let userRestUntil = 0;
 
   const setState = (next: StreamState) => {
     if (state === next) return;
@@ -105,7 +110,7 @@ export function createStreamClient(options: StreamClientOptions): StreamClient {
     if (topics.length === 0) return setState("idle");
     if (visibility?.hidden()) return setState("paused");
     const wantsUser = topics.some((t) => t.startsWith("user:"));
-    const ticket = wantsUser && options.ticket ? await options.ticket().catch(() => null) : null;
+    const ticket = wantsUser && options.ticket && Date.now() >= userRestUntil ? await options.ticket().catch(() => null) : null;
     if (wantsUser) options.onUserGrant?.(ticket !== null);
     const granted = wantsUser && !ticket ? topics.filter((t) => !t.startsWith("user:")) : topics;
     if (granted.length === 0) return setState("idle");
@@ -117,6 +122,14 @@ export function createStreamClient(options: StreamClientOptions): StreamClient {
     setState(failures > 0 ? "retrying" : "connecting");
     try {
       const res = await doFetch(`${options.url.replace(/\/$/, "")}/v1/stream?${params}`, { signal: mine.signal, headers: { accept: "text/event-stream" }, cache: "no-store" });
+      if (res.status === 401 && ticket) {
+        // The stream refused the ticket (2026-10-09: web and ops held different secrets, and every signed-in page
+        // retried the same refusal — no prices, no events). Reconnect at once with the public topics; ask again later.
+        userRestUntil = Date.now() + USER_REST_MS;
+        options.onUserGrant?.(false);
+        if (controller === mine) schedule(0);
+        return;
+      }
       if (!res.ok || !res.body) throw new Error(`stream ${res.status}`);
       setState("open");
       failures = 0;
