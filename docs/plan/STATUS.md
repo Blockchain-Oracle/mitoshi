@@ -1,7 +1,7 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-09 15:40Z (the S24 gate passed; Q-033 answered (c), D-213: EventVaultV2 redeployed with the floor's
-slack). **Never trust memory over this file.**
+Updated 2026-10-09 20:10Z (S23 gate in progress: LCP fixed, §8 states built, the passkey session fix, the S8
+earn-quoter live; TBT and /markets CLS still open). **Never trust memory over this file.**
 
 ## Where we are
 
@@ -71,6 +71,26 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
   92cc15f, to re-measure);
 - Lighthouse with `/trade/BTC`, the §8 screenshots, and the owner's phone run.
 
+**S23 gate — in progress since 2026-10-09 16:00Z (`acceptance/S23.md`, F-S23-06…11).** Live on Moderato from GitHub
+runners against the deployed site (web 20261009194409, ops 8837084+):
+- Passed: onboarding at 390/1440 (0 extra prompts, funded, still signed in after two more page loads); tap-latency
+  (6 opens + 6 closes, 0 prompts, tap → card p50 1.29 s, "Closing…" p50 18 ms); a TSLA trade in NYSE hours (UP 2.0 s,
+  CLOSE 2.3 s); the Trading Balance check (with session keys loading `viem/tempo` on demand); Boost; frame work at 1×
+  CPU p50 0.6 / p95 4.0 ms. Off-hours TSLA run 37984448118 dispatched 20:03Z.
+- Built for the gate: every §8 state and Tradash's account surfaces (RV-80/81/82): P&L line + curve, 6-stat history,
+  Activity as money moves (`/api/activity`, migration `activity/0001`), position-gone, the failure titles saying whether
+  money moved; the one-tap card button; `web/e2e/states.ts` captures 36 of 38 states beside Tradash live (the history
+  grid re-running).
+- Fixed: a passkey session lost on the second page load (the lazy Tempo Wallet connector's store over the passkey's,
+  F-S23-10); /trade LCP 7.4 → 2.3 s (the first tour step server-rendered); the chart and price commits idle behind a
+  centred modal; zod and our `viem/tempo` imports off /trade's load (2,884 → 2,492 KB raw); /markets reserves its
+  layout while loading; AA initials avatars.
+- S8's ops **earn-quoter** now quotes the maker vault (setMaker done; `OPS_ACTORS` updated) — Range, Moonshot and
+  Parlay had no depth without the manual script. The `/earn` UI (rest of S8 box 2) is still open.
+- Open: Lighthouse TBT on /trade (~975 ms), /markets (~1.3 s) and /portfolio (~300 ms); /markets CLS re-measure; Range
+  and Moonshot re-run on the quoter's depth; tap → card ≤ 1 s (F-S23-11); the owner's phone run; S5/S13 items (share,
+  leaderboard, season, Sensei).
+
 **S24 — gate passed 2026-10-09 (every box ticked; `acceptance/S24.md`).** Since 15:00Z:
 - **Q-033 answered (c), D-213.** A keeper sale's floor is fair − max(tolerance × fair, slack); the app grants 15 % or
   10¢, and the contract caps the slack at 15¢. EventVaultV2 was redeployed at `0xdbb3…2040` (block 38,862,004). The
@@ -136,7 +156,7 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
    stage gate.
 3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes). R.0, S22 and S23's boxes are done;
    S24 is complete: every box ticked and the gate passed on 2026-10-09 (D-213 answered Q-033 with the floor's slack).
-   Next: the S23 gate
+   Next: finish the S23 gate (its open list above)
    (above). S5's leaderboard data comes before S23g's leaderboard.
 4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
