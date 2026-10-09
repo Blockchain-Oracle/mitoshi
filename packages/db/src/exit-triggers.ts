@@ -54,6 +54,11 @@ export interface ExitTriggersStore {
   release(id: number, error: string, nowMs: number): Promise<void>;
   /** A live row ends: its Window locked (`expired`) or nothing is held any more (`gone`). */
   close(id: number, status: "expired" | "gone", note: string, nowMs: number): Promise<void>;
+  /**
+   * Armed rows whose Window has passed end `expired` — `armed` never returns them again, so no pass would — keeping the
+   * last reason the keeper waited, if any. How many ended.
+   */
+  expireLapsed(nowSec: number, nowMs: number): Promise<number>;
   /** The trail moved; ignored when the owner replaced the trigger meanwhile. */
   moveTrail(id: number, nonce: bigint, stopE8: bigint, nowMs: number): Promise<boolean>;
   /** Why an armed trigger is waiting (no live EXIT grant, no bid at the floor), kept for the owner to read. */
@@ -136,6 +141,12 @@ export function createPgExitTriggersStore(sql: Sql): ExitTriggersStore {
       const rows = await sql`update exit_triggers set trail_stop_e8 = ${stopE8.toString()}, updated_at_ms = ${nowMs}
         where id = ${id} and nonce = ${nonce.toString()} and status = 'armed' returning id`;
       return rows.length === 1;
+    },
+    async expireLapsed(nowSec, nowMs) {
+      const ended = await sql`update exit_triggers
+        set status = 'expired', last_error = left(case when last_error is null then 'the Window locked' else 'the Window locked · ' || last_error end, 300), updated_at_ms = ${nowMs}
+        where status = 'armed' and expires_at_sec <= ${nowSec}`;
+      return ended.count;
     },
     async note(id, nonce, error, nowMs) {
       await sql`update exit_triggers set last_error = ${error === null ? null : error.slice(0, 300)}, updated_at_ms = ${nowMs}

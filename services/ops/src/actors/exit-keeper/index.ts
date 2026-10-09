@@ -198,6 +198,9 @@ export function startExitKeeper(deps: VenueDeps): { stop: () => void } {
     const notes = await recover();
     const nowMs = Date.now();
     const nowSec = Math.floor(nowMs / 1000);
+    // A trigger whose Window passed while nothing fired ends here (`armed` won't return it again).
+    const lapsed = await store.expireLapsed(nowSec, nowMs);
+    if (lapsed) notes.push(`${lapsed} expired with their Window`);
     armed = await store.armed(nowSec);
     const live = new Set(armed.map((r) => r.id));
     for (const id of trails.keys()) if (!live.has(id)) trails.delete(id);

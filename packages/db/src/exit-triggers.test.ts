@@ -77,5 +77,14 @@ describe.skipIf(!url)("exit triggers store", () => {
     expect("row" in again && again.row.status).toBe("armed");
     const cancel = await store.write({ trigger: { ...T, nonce: T.nonce + 21n, takeProfitBase: null, trailBps: null, trailStopE8: null }, signer: "0xAAA", signature: "0x05", nowMs: NOW + 21 });
     expect("row" in cancel && cancel.row.status).toBe("cancelled");
+
+    // A trigger its Window outlived ends expired, with the keeper's last reason; a live one is untouched.
+    const lapsing = await store.write({ trigger: { ...T, market: `0x${"77".repeat(32)}`, nonce: T.nonce + 30n }, signer: "0xAAA", signature: "0x06", nowMs: NOW + 30 });
+    if (!("row" in lapsing)) throw new Error("not written");
+    await store.note(lapsing.row.id, T.nonce + 30n, "no bid at or above the floor (35.6¢)", NOW + 31);
+    expect(await store.expireLapsed(T.expiresAtSec - 1, NOW + 32)).toBe(0);
+    expect(await store.expireLapsed(T.expiresAtSec, NOW + 33)).toBe(1);
+    const ended = (await store.listByOwner(T.owner)).find((r) => r.id === lapsing.row.id);
+    expect(ended).toMatchObject({ status: "expired", lastError: "the Window locked · no bid at or above the floor (35.6¢)" });
   });
 });
