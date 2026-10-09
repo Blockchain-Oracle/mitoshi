@@ -5,7 +5,6 @@
  * cached for the process (persisted-read allowlist, C.2.2 `getBookParams`).
  */
 import { getAddress, type Abi, type Address, type Hex } from "viem";
-import { Abis, Addresses } from "viem/tempo";
 import { engineLensAbi } from "@cwf/clients/abis/EngineLens";
 import { plainQuestion } from "@cwf/core/copy";
 import { printSourceOf, tickerById, toMarketId, USD_DECIMALS, type EventMarket, type MarketId, type MarketState, type OnchainSnapshot, type OutcomeIdx, type PrintView, type BookLevel } from "@cwf/core";
@@ -13,6 +12,10 @@ import { multicallSliced, type SlicedClient } from "../runtime/multicall-sliced"
 import { getPublicClient } from "../runtime/read-runtime";
 import { laneBasisOf, marketIdOf, unpackPrint, venueOf, type Venue } from "../ops/venue";
 import type { Grid, YesBook } from "./quote";
+import { TEMPO } from "@cwf/clients";
+
+/** TIP-403's receive check, pinned from viem 2.56.9 `Abis.tip403Registry` (one item, not the `Abis` namespace: S23 gate). */
+const VALIDATE_RECEIVE_POLICY_ABI = [{ name: "validateReceivePolicy", type: "function", stateMutability: "view", inputs: [{ type: "address", name: "token" }, { type: "address", name: "sender" }, { type: "address", name: "receiver" }], outputs: [{ type: "bool", name: "authorized" }, { type: "uint8", name: "blockedReason" }] }] as const;
 
 export const PAYOUT_DENOMINATOR = 10_000_000n;
 /** Levels a quote walks (16 fills cap a taker; 32 covers evictions and display). */
@@ -29,7 +32,7 @@ export async function engineVenue(): Promise<EngineVenue> {
   const client = await getPublicClient();
   const venue = venueOf(client.chain.id);
   if (!venue) throw new EngineNotDeployedError(client.chain.id);
-  return { ...venue, collateral: getAddress(Addresses.pathUsd) };
+  return { ...venue, collateral: getAddress(TEMPO.pathUSD) };
 }
 
 export class EngineNotDeployedError extends Error {
@@ -175,7 +178,7 @@ export function toFacts(marketId: MarketId, mk: Raw, status: number, s: SeriesFa
     singleSource: (Number(mk.flags) & 4) === 4, // MARKET_FLAG_SINGLE_SOURCE
     state,
     status: state === "resolved" ? "Resolved" : state === "voided" ? "Voided" : status === 0 ? "Listed" : status === 1 ? "Trading" : "Locked",
-    collateral: getAddress(Addresses.pathUsd),
+    collateral: getAddress(TEMPO.pathUSD),
     decimals: s.decimals,
     winningOutcome,
     voidReason: state === "voided" ? (Number(mk.voidReason) === 2 ? "cross-check-divergence" : "missing-print") : null,
@@ -298,6 +301,6 @@ export async function readOpenOrders(marketId: MarketId, holder: Address): Promi
 /** Whether the engine may pay `holder` right now (TIP-403 receive policy; the engine's own pre-check). */
 export async function engineMayPay(holder: Address): Promise<boolean> {
   const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
-  const [ok] = (await client.readContract({ address: Addresses.tip403Registry as Address, abi: Abis.tip403Registry, functionName: "validateReceivePolicy", args: [venue.collateral, venue.engine, holder] })) as readonly [boolean, unknown];
+  const [ok] = (await client.readContract({ address: TEMPO.tip403Registry as Address, abi: VALIDATE_RECEIVE_POLICY_ABI, functionName: "validateReceivePolicy", args: [venue.collateral, venue.engine, holder] })) as readonly [boolean, unknown];
   return ok;
 }

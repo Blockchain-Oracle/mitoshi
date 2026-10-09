@@ -6,10 +6,24 @@
  * made; it can never withdraw, because the vault pays only the owner. The gas top-up is deleted: Tempo has no gas
  * token, and the relay pays the key's fees under the vault policy.
  */
-import { Account, WebCryptoP256 } from "viem/tempo";
 import type { Address } from "@cwf/core";
 
-export type SessionKeyPair = Awaited<ReturnType<typeof WebCryptoP256.createKeyPair>>;
+type TempoAccounts = Pick<typeof import("viem/tempo"), "Account" | "WebCryptoP256">;
+export type SessionKeyPair = Awaited<ReturnType<TempoAccounts["WebCryptoP256"]["createKeyPair"]>>;
+
+/**
+ * viem/tempo's account helpers, loaded on first need: any import from the `viem/tempo` barrel ships its whole `Actions`
+ * and `Abis` with every page under Turbopack (S23 gate, F-S23-08). `generateSessionKey` and `loadSessionKey` load it, so
+ * a record in hand can always be turned into an account; a record read from another store calls this first.
+ */
+let tempo: TempoAccounts | null = null;
+export async function loadTempoAccounts(): Promise<TempoAccounts> {
+  return (tempo ??= await import("viem/tempo"));
+}
+function accounts(): TempoAccounts {
+  if (!tempo) throw new Error("session keys: await loadTempoAccounts() (or loadSessionKey / generateSessionKey) first");
+  return tempo;
+}
 
 export interface SessionKeyRecord {
   owner: Address;
@@ -20,6 +34,7 @@ export interface SessionKeyRecord {
 
 /** A fresh non-extractable P-256 key for `owner`. */
 export async function generateSessionKey(owner: Address, nowMs: number = Date.now()): Promise<SessionKeyRecord> {
+  const { Account, WebCryptoP256 } = await loadTempoAccounts();
   const keyPair = await WebCryptoP256.createKeyPair({ extractable: false });
   const account = Account.fromWebCryptoP256(keyPair);
   return { owner, address: account.address as Address, keyPair, createdAtMs: nowMs };
@@ -27,12 +42,12 @@ export async function generateSessionKey(owner: Address, nowMs: number = Date.no
 
 /** The key as a Tempo account (P-256 envelope signatures, prehashed). */
 export function sessionKeyAccount(record: Pick<SessionKeyRecord, "keyPair">) {
-  return Account.fromWebCryptoP256(record.keyPair);
+  return accounts().Account.fromWebCryptoP256(record.keyPair);
 }
 
 /** The same key used as a TIP-1011 access key of `root` (wallet mode, D-047): signs as `root` within its limits. */
 export function accessKeyAccount(record: Pick<SessionKeyRecord, "keyPair">, root: Address) {
-  return Account.fromWebCryptoP256(record.keyPair, { access: root });
+  return accounts().Account.fromWebCryptoP256(record.keyPair, { access: root });
 }
 
 // ------------------------------------------------------------------ this browser's store (IndexedDB)
@@ -106,7 +121,9 @@ const storeKey = (chainId: number, owner: Address) => `${chainId}.${owner.toLowe
 export async function loadSessionKey(chainId: number, owner: Address): Promise<SessionKeyRecord | null> {
   try {
     const found = await withStore<SessionKeyRecord | undefined>("readonly", (s) => s.get(storeKey(chainId, owner)));
-    return found && found.owner.toLowerCase() === owner.toLowerCase() ? found : null;
+    if (!found || found.owner.toLowerCase() !== owner.toLowerCase()) return null;
+    await loadTempoAccounts();
+    return found;
   } catch {
     return null;
   }

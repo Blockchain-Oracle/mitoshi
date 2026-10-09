@@ -1,6 +1,5 @@
 // Ported from Agari 03b30ab:packages/core/src/market/calendar.ts
-import { z } from "zod";
-import { datesBetween, etWallToUtcSec, parseClockMinutes, SEC_PER_HOUR } from "./et-time";
+import { datesBetween, etWallToUtcSec, SEC_PER_HOUR } from "./et-time";
 
 /** A regular-hours close earlier than this (minutes after ET midnight) is an early close. */
 export const REGULAR_CLOSE_MINUTES = 16 * 60;
@@ -31,22 +30,6 @@ export interface SessionCalendar {
   unknownDates: readonly string[];
 }
 
-const DATE = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
-const CLOCK_COLON = z.string().regex(/^\d{2}:\d{2}$/);
-const CLOCK_COMPACT = z.string().regex(/^\d{4}$/);
-
-/** One row of Alpaca `GET /v2/calendar` (verified live 2026-09-14: `{date, open, close, session_open, session_close, settlement_date}`). */
-export const alpacaCalendarDaySchema = z.object({
-  date: DATE,
-  open: CLOCK_COLON,
-  close: CLOCK_COLON,
-  session_open: CLOCK_COMPACT.optional(),
-  session_close: CLOCK_COMPACT.optional(),
-  settlement_date: DATE.optional(),
-});
-
-export type AlpacaCalendarDay = z.infer<typeof alpacaCalendarDaySchema>;
-
 export function sessionAt(date: string, openMinutes: number, closeMinutes: number): TradingSession {
   if (closeMinutes <= openMinutes) throw new Error(`session on ${date} closes before it opens`);
   return {
@@ -55,23 +38,6 @@ export function sessionAt(date: string, openMinutes: number, closeMinutes: numbe
     closeSec: etWallToUtcSec(date, closeMinutes),
     earlyClose: closeMinutes < REGULAR_CLOSE_MINUTES,
   };
-}
-
-export function sessionFromAlpaca(day: AlpacaCalendarDay): TradingSession {
-  return sessionAt(day.date, parseClockMinutes(day.open), parseClockMinutes(day.close));
-}
-
-/**
- * A calendar from Alpaca's response for `[fromDate, toDate]`. Alpaca lists only trading days, so a
- * missing date inside the requested range is a closed day. Throws on a malformed payload.
- */
-export function calendarFromAlpaca(rows: unknown, fromDate: string, toDate: string): SessionCalendar {
-  const days = z.array(alpacaCalendarDaySchema).parse(rows);
-  const sessions = days
-    .filter((day) => day.date >= fromDate && day.date <= toDate)
-    .map(sessionFromAlpaca)
-    .sort((a, b) => a.openSec - b.openSec);
-  return { fromDate, toDate, sessions, unknownDates: [] };
 }
 
 /** The session on an ET date: a session, `null` when closed, or `undefined` when the calendar doesn't know. */

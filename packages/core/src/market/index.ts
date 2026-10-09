@@ -6,6 +6,7 @@ export * from "./horizons";
 export * from "./lanes";
 export * from "./book-math";
 export * from "./calendar";
+export * from "./calendar-alpaca";
 export * from "./et-time";
 export * from "./redstone-schedule";
 export * from "./session";

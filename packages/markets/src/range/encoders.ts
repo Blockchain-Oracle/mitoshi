@@ -5,13 +5,13 @@
  * is capital intake and is never sponsored.
  */
 import { encodeFunctionData, type Hex } from "viem";
-import { Addresses } from "viem/tempo";
 import { diagnosis, type TxIntent } from "@cwf/core";
 import { rangeSideIndex } from "@cwf/core/range";
 import { rangeReserveAbi } from "@cwf/clients/abis/RangeReserve";
 import { approveCall, type Call } from "../tx/batch";
 import type { EncodeContext, EncodeResult } from "../submitter/encoders";
 import { rangeVenueOf } from "./deployment";
+import { TEMPO } from "@cwf/clients";
 
 const call = (to: Hex, functionName: string, args: readonly unknown[]): Call => ({
   to,
@@ -23,7 +23,7 @@ export function encodeRangeIntent(intent: TxIntent, ctx: EncodeContext): EncodeR
   const v = rangeVenueOf(ctx.chainId);
   if (!v) return { ok: false, diagnosis: diagnosis("not-deployed", `RangeReserve is not deployed on chain ${ctx.chainId}`) };
   const r = v.rangeReserve;
-  const usd = Addresses.pathUsd as Hex;
+  const usd = TEMPO.pathUSD as Hex;
   const one = (c: Call, summary: string): EncodeResult => ({ ok: true, value: { area: "range", calls: [c], sponsored: true, summary } });
   switch (intent.kind) {
     case "range-open": {

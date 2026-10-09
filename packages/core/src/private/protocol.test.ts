@@ -1,6 +1,7 @@
 // Ported from Masayume 68f7a09:packages/core/src/private/protocol.test.ts
 import { describe, expect, it } from "vitest";
-import { PRIVATE_AUTH_TTL_MS, privateAuthFresh, privateCashoutRequestSchema, privateOpenMessage, privateOpenRequestSchema } from "./protocol";
+import { PRIVATE_AUTH_TTL_MS, privateAuthFresh, privateOpenMessage } from "./protocol";
+import { privateCashoutRequestSchema, privateOpenRequestSchema } from "./protocol-schema";
 
 const INPUT = {
   owner: "0xD357A1b7F6E1C2d3E4F5061728394A5B6C7D9358",

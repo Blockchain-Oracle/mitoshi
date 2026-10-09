@@ -4,10 +4,12 @@
  * policy — the routing of viem 2.56's `withRelay` (D-055), rebuilt here with retries off at the proxy (X20: viem's
  * `createTransport` bakes 3 retries into `withRelay`, and with the RPC's own retries one relay refusal became ~50
  * requests and a tap that outlived its 25 s expiring window). A refusal comes back at once; reads keep one RPC retry.
- * Lives here because only `@cwf/markets` imports `viem/tempo` (chain-io-boundary).
+ * Lives here because only `@cwf/markets` does chain I/O (chain-io-boundary). The sponsor check reads the envelope with
+ * ox's own `TxEnvelopeTempo` module: any import from the `viem/tempo` barrel ships all of its `Actions` and `Abis` with
+ * every page under Turbopack (S23 gate, F-S23-08).
  */
+import * as TxEnvelopeTempo from "ox/tempo/TxEnvelopeTempo";
 import { createTransport, fallback, http, webSocket, type Hex, type Transport } from "viem";
-import { Transaction } from "viem/tempo";
 import { tempoHttp } from "./rpc-http";
 
 /** Moderato's rate-limit answer ("Request exceeds defined limit. rate limited, try again in 118ms"), with its hint. */
@@ -34,6 +36,16 @@ async function withRateLimitRetry<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
+/**
+ * A Tempo transaction (type 0x76 / 0x78) marked for a fee payer and not yet co-signed: `feePayerSignature` is null
+ * (viem 2.56.9 `Transaction.deserialize` semantics; any other type has none).
+ */
+export function awaitsFeePayer(serialized: Hex): boolean {
+  const type = serialized.slice(0, 4).toLowerCase();
+  if (type !== "0x76" && type !== "0x78") return false;
+  return TxEnvelopeTempo.deserialize(serialized as never).feePayerSignature === null;
+}
+
 /** Routes like viem's `withRelay` (policy "sign-only"), with no retries of its own beyond rate limits. */
 export function relayProxy(rpc: Transport, relay: Transport, send: Transport = rpc): Transport {
   return (config) => {
@@ -49,8 +61,7 @@ export function relayProxy(rpc: Transport, relay: Transport, send: Transport = r
         if (method === "eth_fillTransaction") return withRateLimitRetry(() => relayT.request({ method, params } as never, options as never));
         if (method === "eth_sendRawTransactionSync" || method === "eth_sendRawTransaction") {
           const serialized = (params as [Hex])[0];
-          const tx = Transaction.deserialize(serialized as never) as { feePayerSignature?: unknown };
-          if (tx.feePayerSignature === null) {
+          if (awaitsFeePayer(serialized)) {
             const signed = await withRateLimitRetry(() => relayT.request({ method: "eth_signRawTransaction", params: [serialized] } as never, options as never));
             return sendT.request({ method, params: [signed] } as never, options as never);
           }

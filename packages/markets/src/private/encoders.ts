@@ -5,12 +5,12 @@
  * permissionless `settleSlot` are. The desk's own calls never ride this lane — the desk service sends them (C.3.8).
  */
 import { encodeFunctionData, type Hex } from "viem";
-import { Addresses } from "viem/tempo";
 import { diagnosis, type TxIntent } from "@cwf/core";
 import { privateDeskAbi } from "@cwf/clients/abis/PrivateDesk";
 import { approveCall, type Call } from "../tx/batch";
 import type { EncodeContext, EncodeResult } from "../submitter/encoders";
 import { privateDeskOf } from "./deployment";
+import { TEMPO } from "@cwf/clients";
 
 const call = (to: Hex, functionName: string, args: readonly unknown[]): Call => ({ to, data: encodeFunctionData({ abi: privateDeskAbi, functionName: functionName as never, args: args as never }) });
 
@@ -19,7 +19,7 @@ export function encodePrivateIntent(intent: TxIntent, ctx: EncodeContext): Encod
   const d = privateDeskOf(ctx.chainId);
   if (!d) return { ok: false, diagnosis: diagnosis("not-deployed", `PrivateDesk is not deployed on chain ${ctx.chainId}`) };
   const desk = d.privateDesk;
-  const usd = Addresses.pathUsd as Hex;
+  const usd = TEMPO.pathUSD as Hex;
   switch (intent.kind) {
     case "private-deposit-and-allow": {
       const calls = intent.amountBase > 0n ? [approveCall(usd, desk, intent.amountBase), call(desk, "depositAndAllow", [intent.amountBase, intent.allowanceBase])] : [call(desk, "allow", [intent.allowanceBase])];

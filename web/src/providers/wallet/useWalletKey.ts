@@ -7,7 +7,7 @@
  * publishes the authorization with its first send; the chain decides whether the key still exists (revoked or expired
  * keys are forgotten here). Only a passkey account can arm; an injected wallet signs each call itself (X8).
  */
-import { newWalletKey, walletKeyOnChain, walletKeyReader, walletKeySession, type SubmitterSession, type WalletKeyRecord } from "@cwf/markets";
+import { loadTempoAccounts, newWalletKey, walletKeyOnChain, walletKeyReader, walletKeySession, type SubmitterSession, type WalletKeyRecord } from "@cwf/markets";
 import type { Address } from "@cwf/core";
 import { del, get, set } from "idb-keyval";
 import { useCallback, useEffect, useState } from "react";
@@ -69,6 +69,9 @@ export function useWalletKey(account: { address: Address; kind: string; connecto
       }
       const authorizationRpc = onChain?.published ? null : stored.authorizationRpc;
       if (onChain?.published && stored.authorizationRpc) await set(idbKey(address), { ...stored, authorizationRpc: null }).catch(() => undefined);
+      // The record came from this hook's own store: load the account helpers its session signs with (session-key.ts).
+      await loadTempoAccounts();
+      if (cancelled) return;
       setSession(walletKeySession({ record: stored.record, root: address, network: env.network, rpcHttpUrls: env.rpcHttpUrls, relayUrl: env.relayUrl, authorizationRpc, nowSec }));
     })();
     return () => {

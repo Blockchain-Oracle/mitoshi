@@ -6,13 +6,13 @@
  * is capital intake and is never sponsored.
  */
 import { encodeFunctionData, type Hex } from "viem";
-import { Addresses } from "viem/tempo";
 import { diagnosis, type TxIntent } from "@cwf/core";
 import { parlayReserveAbi } from "@cwf/clients/abis/ParlayReserve";
 import { approveCall, type Call } from "../tx/batch";
 import type { EncodeContext, EncodeResult } from "../submitter/encoders";
 import { parlayVenueOf } from "./deployment";
 import { legTuples } from "./read";
+import { TEMPO } from "@cwf/clients";
 
 const call = (to: Hex, functionName: string, args: readonly unknown[]): Call => ({
   to,
@@ -24,7 +24,7 @@ export function encodeParlayIntent(intent: TxIntent, ctx: EncodeContext): Encode
   const v = parlayVenueOf(ctx.chainId);
   if (!v) return { ok: false, diagnosis: diagnosis("not-deployed", `ParlayReserve is not deployed on chain ${ctx.chainId}`) };
   const r = v.parlayReserve;
-  const usd = Addresses.pathUsd as Hex;
+  const usd = TEMPO.pathUSD as Hex;
   switch (intent.kind) {
     case "parlay-open": {
       if (intent.spotProofs.length !== intent.legs.length) {

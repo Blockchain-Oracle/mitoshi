@@ -4,7 +4,7 @@
  * surface) and the relay's no-op proof call. S4 adds the engine (`engine-encoders.ts`), S7 the vault, and so on.
  */
 import { encodeFunctionData, erc20Abi, isAddress, multicall3Abi, type Address } from "viem";
-import { Abis } from "viem/tempo";
+import { accountKeychainAbi } from "../keys/keychain-abi";
 import { diagnosis, type Diagnosis, type TxIntent } from "@cwf/core";
 import { TEMPO, UTILITIES } from "@cwf/clients";
 import type { Call } from "../tx/batch";
@@ -46,7 +46,7 @@ function encodeKeyRevoke(intent: TxIntent): EncodeResult | null {
   if (intent.keyIds.length === 0 || intent.keyIds.length > MAX_REVOKE) {
     return { ok: false, diagnosis: diagnosis("sponsor-refused", `the relay co-signs 1–${MAX_REVOKE} revokes per transaction (got ${intent.keyIds.length})`) };
   }
-  const calls = intent.keyIds.map((keyId) => ({ to: TEMPO.accountKeychain, data: encodeFunctionData({ abi: Abis.accountKeychain, functionName: "revokeKey", args: [keyId] }) }));
+  const calls = intent.keyIds.map((keyId) => ({ to: TEMPO.accountKeychain, data: encodeFunctionData({ abi: accountKeychainAbi, functionName: "revokeKey", args: [keyId] }) }));
   return { ok: true, value: { area: "keys", calls, sponsored: true, summary: `revoke ${intent.keyIds.length} key(s)` } };
 }
 

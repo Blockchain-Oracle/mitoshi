@@ -1,5 +1,6 @@
 // Ported from Agari 03b30ab:packages/core/src/market/calendar.fixtures.ts
-import { calendarFromAlpaca, type AlpacaCalendarDay, type SessionCalendar } from "./calendar";
+import { calendarFromAlpaca, type AlpacaCalendarDay } from "./calendar-alpaca";
+import type { SessionCalendar } from "./calendar";
 import { datesBetween, weekdayOfDate } from "./et-time";
 
 /** Three real rows from Alpaca `/v2/calendar?start=2026-11-25&end=2026-11-30`, fetched 2026-09-14. */

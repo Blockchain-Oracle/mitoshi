@@ -1,6 +1,6 @@
 // Ported from Agari 03b30ab:packages/core/src/market/calendar.test.ts
 import { describe, expect, it } from "vitest";
-import { calendarFromAlpaca } from "./calendar";
+import { calendarFromAlpaca } from "./calendar-alpaca";
 import { alpacaCalendar, LIVE_ALPACA_ROWS, utc } from "./calendar.fixtures";
 import { etWallToUtcSec } from "./et-time";
 import { agreeWithRedStone, nextBoundaryAfter } from "./redstone-schedule";

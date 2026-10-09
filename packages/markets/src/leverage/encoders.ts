@@ -5,12 +5,12 @@
  * settle and claims are single sponsored calls; `supply` is capital intake and never sponsored.
  */
 import { encodeFunctionData, type Hex } from "viem";
-import { Addresses } from "viem/tempo";
 import { diagnosis, SIDE_TO_OUTCOME, type TxIntent } from "@cwf/core";
 import { leverageReserveAbi } from "@cwf/clients/abis/LeverageReserve";
 import { approveCall, type Call } from "../tx/batch";
 import type { EncodeContext, EncodeResult } from "../submitter/encoders";
 import { leverageVenueOf } from "./deployment";
+import { TEMPO } from "@cwf/clients";
 
 const call = (to: Hex, functionName: string, args: readonly unknown[]): Call => ({ to, data: encodeFunctionData({ abi: leverageReserveAbi, functionName: functionName as never, args: args as never }) });
 
@@ -19,7 +19,7 @@ export function encodeLeverageIntent(intent: TxIntent, ctx: EncodeContext): Enco
   const v = leverageVenueOf(ctx.chainId);
   if (!v) return { ok: false, diagnosis: diagnosis("not-deployed", `LeverageReserve is not deployed on chain ${ctx.chainId}`) };
   const r = v.leverageReserve;
-  const usd = Addresses.pathUsd as Hex;
+  const usd = TEMPO.pathUSD as Hex;
   const one = (c: Call, summary: string): EncodeResult => ({ ok: true, value: { area: "leverage", calls: [c], sponsored: true, summary } });
   switch (intent.kind) {
     case "leverage-open":
