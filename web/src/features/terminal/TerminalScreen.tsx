@@ -2,7 +2,7 @@
 // Ported in shape from Owarine ecb7565b:web/src/features/terminal/TerminalScreen.tsx — split per the stage plan
 // (`useTerminalState`, `TerminalTrade`, the drawers), on Mitoshi's markets and shell: no demo (D-191), drawers on the
 // right edge in the URL (D-190), the shell's rail beside it (D-192). One tree for every width; CSS places it.
-import type { TickerSymbol } from "@cwf/core";
+import { isStockSymbol, type TickerSymbol } from "@cwf/core";
 import { usePathname } from "next/navigation";
 import { holdStreamAwake } from "@cwf/markets/stream";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -191,7 +191,9 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
     else closeDrawer();
   };
 
-  const feed = TERMINAL.feed[s.spot.source ?? "redstone"];
+  // A stock on RedStone is off NYSE hours (IEX trades carry it 04:00–20:00 ET): §8's "outside NYSE hours" note.
+  const source = s.spot.source ?? "redstone";
+  const feed = source === "redstone" && isStockSymbol(symbol) ? TERMINAL.feed.offHours : TERMINAL.feed[source];
   const priceText = s.spot.price === null ? "—" : `$${formatPrice(s.spot.price, priceDecimals(s.spot.price))}`;
   const equity = s.cashBase === null ? null : Number(s.cashBase + totals.value) / 1e6;
   const stakeText = s.capped ? `${money(s.stakeBase)} max` : money(s.stakeBase);
@@ -279,6 +281,8 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
           wallet={s.address}
           equityBase={s.cashBase === null ? null : s.cashBase + totals.value}
           walletBase={s.walletBase}
+          unrealizedBase={totals.pnl}
+          openCostBase={totals.cost}
           onSettings={() => {
             // The account drawer's entry becomes the settings drawer's: Back still closes it.
             const url = new URL(window.location.href);
@@ -290,7 +294,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
       <PositionDetails
         p={detail}
         value={detail ? (values.get(detail.id) ?? null) : null}
-        open={drawer.open === DRAWERS.position && detail !== null}
+        open={drawer.open === DRAWERS.position && detailId !== null}
         onOpenChange={(o) => !o && drawer.close()}
         onReduce={(p, sellRaw) => void closer.close(p, null, undefined, "close", sellRaw)}
         onShow={(p) => window.history.replaceState(null, "", `/trade/${p.asset}?w=${p.marketId}`)}
@@ -310,7 +314,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
           </SlideOverContent>
         </SlideOver>
       ) : null}
-      <ExitsDrawer p={detail} value={detail ? (values.get(detail.id) ?? null) : null} open={drawer.open === DRAWERS.exits && detail !== null} onOpenChange={(o) => !o && drawer.close()} />
+      <ExitsDrawer p={detail} value={detail ? (values.get(detail.id) ?? null) : null} open={drawer.open === DRAWERS.exits && detailId !== null} onOpenChange={(o) => !o && drawer.close()} />
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
           <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />

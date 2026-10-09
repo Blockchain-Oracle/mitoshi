@@ -69,7 +69,7 @@ export function logWindows(from: bigint, to: bigint, size = LOG_WINDOW): [bigint
 }
 
 /** Moderato's public RPC answers bursts with "Request exceeds defined limit": back off and retry a window (4 tries). */
-async function withRetry<T>(run: () => Promise<T>, tries = 4): Promise<T> {
+export async function withRetry<T>(run: () => Promise<T>, tries = 4): Promise<T> {
   for (let attempt = 1; ; attempt++) {
     try {
       return await run();

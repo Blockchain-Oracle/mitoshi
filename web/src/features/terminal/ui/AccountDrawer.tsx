@@ -1,7 +1,8 @@
 "use client";
 // Ported in shape from Owarine ecb7565b:web/src/features/terminal/ui/sheets/AccountSheet.tsx — a right-edge drawer
-// (D-190) on Mitoshi's money: the wallet's pathUSD and the Trading Balance as two tiles, Add money (the faucet on
-// testnet), Withdraw (`SendPanel`), the Trading Balance's own panel (in and out), Activity (trade history), Collect for
+// (D-190) on Mitoshi's money: the wallet's pathUSD and the Trading Balance as two tiles with the range P&L line and
+// curve (`PnlCard`), Add money (the faucet on testnet), Withdraw (`SendPanel`), the Trading Balance's own panel (in and
+// out), Activity (the money moves, `ActivityView`; trades are Trade history's), Collect for
 // anything settled and still held, the one-tap card, the Trading and App groups, and Sign out behind a centred confirm.
 // No demo, no reset (D-191).
 import type { Address } from "@cwf/core";
@@ -24,7 +25,9 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { useTapArmed } from "@/providers/wallet/tap-session";
 import { TERMINAL } from "../copy";
 import { money } from "../format";
+import { ActivityView } from "./ActivityView";
 import { HistoryView } from "./HistoryView";
+import { PnlCard } from "./PnlCard";
 import { InstallDrawer } from "./InstallDrawer";
 import { ReplayDrawer } from "./ReplayDrawer";
 import type { Episode } from "../replay";
@@ -34,7 +37,7 @@ const TradingBalancePanel = dynamic(() => import("@/features/vault/TradingBalanc
 // What a previous Trading Balance still holds (S24.2), self-hiding when it holds nothing.
 const LegacyBalance = dynamic(() => import("@/features/vault/LegacyBalance").then((m) => m.LegacyBalance), { ssr: false });
 
-export type AccountView = "menu" | "send" | "balance" | "history";
+export type AccountView = "menu" | "send" | "balance" | "history" | "activity";
 
 function Item({ icon: Icon, label, detail, onClick, href }: { icon: typeof History; label: string; detail?: string; onClick?: () => void; href?: string }) {
   const body = (
@@ -61,12 +64,15 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBase, onSettings, initialView = "menu" }: {
+export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBase, unrealizedBase, openCostBase, onSettings, initialView = "menu" }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   wallet: Address;
   equityBase: bigint | null;
   walletBase: bigint | null;
+  /** What the open positions are up or down now (null until each is priced), and what they cost. */
+  unrealizedBase: bigint | null;
+  openCostBase: bigint;
   onSettings: () => void;
   initialView?: AccountView;
 }) {
@@ -85,7 +91,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
   }, [open, initialView]);
   const hide = (base: bigint | null) => (base === null ? "—" : masked ? SHELL.masked : money(base));
   const balance = sessionView.deployed ? hide(sessionView.availableBase) : TERMINAL.account.off;
-  const titles: Record<AccountView, string> = { menu: TERMINAL.account.title, send: TERMINAL.send.title, balance: TERMINAL.account.balance, history: TERMINAL.history.title };
+  const titles: Record<AccountView, string> = { menu: TERMINAL.account.title, send: TERMINAL.send.title, balance: TERMINAL.account.balance, history: TERMINAL.history.title, activity: TERMINAL.activity.title };
 
   return (
     <>
@@ -99,6 +105,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
           {view === "send" ? <SendPanel wallet={wallet} balanceBase={walletBase} onDone={() => setView("menu")} /> : null}
           {view === "balance" ? <TradingBalancePanel /> : null}
           {view === "history" ? <HistoryView wallet={wallet} onReplay={(episode, finalPnl) => setReplay({ episode, finalPnl })} /> : null}
+          {view === "activity" ? <ActivityView wallet={wallet} open={open} /> : null}
           {view === "menu" ? (
             <div className="tm-account">
               <div className="tm-profile">
@@ -112,6 +119,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
               <div className="tm-card tm-balance">
                 <span className="tm-card-title">{TERMINAL.account.equity}</span>
                 <span className="tm-balance-figure">{hide(equityBase)}</span>
+                <PnlCard wallet={wallet} unrealizedBase={unrealizedBase} openCostBase={openCostBase} />
                 <div className="tm-tiles">
                   <span><small>{TERMINAL.account.wallet}</small>{hide(walletBase)}</span>
                   <span><small>{TERMINAL.account.balance}</small>{balance}</span>
@@ -121,7 +129,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
                 <button type="button" className="tm-action" onClick={() => (tapFeedback(), openFunds())}><ArrowDownToLine aria-hidden />{TERMINAL.account.addMoney}</button>
                 <button type="button" className="tm-action" onClick={() => (tapFeedback(), setView("send"))}><ArrowUpFromLine aria-hidden />{TERMINAL.account.withdraw}</button>
                 <button type="button" className="tm-action" onClick={() => (tapFeedback(), setView("balance"))}><Wallet aria-hidden />{TERMINAL.account.transfer}</button>
-                <button type="button" className="tm-action" onClick={() => (tapFeedback(), setView("history"))}><History aria-hidden />{TERMINAL.account.activity}</button>
+                <button type="button" className="tm-action" onClick={() => (tapFeedback(), setView("activity"))}><History aria-hidden />{TERMINAL.account.activity}</button>
               </div>
               {collectable.length ? <CollectPlate wallet={wallet} rows={collectable} /> : null}
               {!tapArmed && sessionView.status !== "armed" ? (

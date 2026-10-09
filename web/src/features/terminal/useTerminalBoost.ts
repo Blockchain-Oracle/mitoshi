@@ -38,7 +38,7 @@ export function useTerminalBoost({ market, stakeBase, multiple, enabled }: { mar
       const b = outcome.booked;
       return void notify.item({ id: BOOST_TOAST, title: TERMINAL.boost.opened(sideWord(side), market.asset, multiple), description: b ? TERMINAL.boost.openedBody(money(b.stakeBase)) : BOOST.outcome.placedUnread });
     }
-    notify.item({ id: BOOST_TOAST, type: "warning", title: TERMINAL.toast.failed, description: diagnosisCopy(outcome.diagnosis.kind).headline });
+    notify.item({ id: BOOST_TOAST, type: "warning", title: TERMINAL.toast.failed, description: `${diagnosisCopy(outcome.diagnosis.kind).headline} ${TERMINAL.toast.nothingTaken}` });
   }, [outcome, market.asset, multiple]);
 
   const open = (side: Side) => {

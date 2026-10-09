@@ -77,7 +77,9 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
     };
     const topCents = side === "up" ? top.upCents : top.downCents;
     const multiple = quote.quote ? 10_000 / quote.quote.avgPriceBps : topCents ? 100 / topCents : null;
-    const blocked = blocker && blocker !== "quoting" && blocker !== "placing" ? blockerLabel(blocker, ctx) : route.fallback?.reason ?? null;
+    // The region hold reads in the terminal's own words (§8 live guards); the rest are the ticket's D-160 words.
+    const label = blocker === "region-restricted" ? TERMINAL.guards.region : blocker ? blockerLabel(blocker, ctx) : null;
+    const blocked = blocker && blocker !== "quoting" && blocker !== "placing" ? label : route.fallback?.reason ?? null;
     return { quote, route, multiple, blocked, stakeBase: capped ? q!.fillableStakeBase : stakeBase, capped };
   };
   const sides = { up: view("up"), down: view("down") };
@@ -110,7 +112,7 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
     if (outcome.status === "refused" && outcome.diagnosis.kind === "requote") return void notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.priceMoved, description: TERMINAL.toast.tapAgain });
     if (outcome.status === "nothingFilled") return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.nothingFilled, description: TERMINAL.toast.nothingFilledBody });
     if (outcome.status === "unknown") return void notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.unknown, description: TERMINAL.toast.unknownBody });
-    notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.failed, ...("diagnosis" in outcome ? { description: diagnosisCopy(outcome.diagnosis.kind).headline } : {}) });
+    notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.failed, description: "diagnosis" in outcome ? `${diagnosisCopy(outcome.diagnosis.kind).headline} ${TERMINAL.toast.nothingTaken}` : TERMINAL.toast.nothingTaken });
   }, [outcome]);
 
   /** One tap: UP or DOWN at the stake, through the ticket's own lane; anything in the way is said, never sent. */

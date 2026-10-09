@@ -16,18 +16,26 @@ import { notify } from "@/lib/toast";
 import { TERMINAL } from "../copy";
 import { money, multipleOf, sideWord } from "../format";
 import type { TerminalPosition } from "../terminal-positions";
+import { PositionGone } from "./PositionGone";
 
 const CHIPS = [2_500n, 5_000n, 7_500n, 10_000n] as const;
 
-export function AddModal({ p, open, onOpenChange, spendableBase }: { p: TerminalPosition; open: boolean; onOpenChange: (o: boolean) => void; spendableBase: bigint | null }) {
+export function AddModal({ p, open, onOpenChange, spendableBase }: { p: TerminalPosition | null; open: boolean; onOpenChange: (o: boolean) => void; spendableBase: bigint | null }) {
   const nowMs = useNowMs();
   const { address, hasSigner } = useSigner();
-  const reading = useMarket(open ? p.marketId : null);
+  const reading = useMarket(open && p ? p.marketId : null);
   const market = reading && isOk(reading) ? reading.value : null;
   const [stakeBase, setStakeBase] = useState(0n);
   useEffect(() => {
     if (open && spendableBase !== null) setStakeBase((spendableBase * CHIPS[0]) / 10_000n);
   }, [open, spendableBase]);
+  if (!p) {
+    return (
+      <Modal open={open} onOpenChange={onOpenChange} title={TERMINAL.gone.title}>
+        <PositionGone onDone={() => onOpenChange(false)} />
+      </Modal>
+    );
+  }
   return (
     <Modal open={open} onOpenChange={onOpenChange} title={TERMINAL.add.title(sideWord(p.side), p.asset)} description={TERMINAL.add.body}>
       {market ? <AddBody p={p} market={market} side={p.side} stakeBase={stakeBase} setStakeBase={setStakeBase} spendableBase={spendableBase} nowMs={nowMs} wallet={address} enabled={hasSigner && open} onDone={() => onOpenChange(false)} /> : <p className="tm-empty">…</p>}
@@ -50,7 +58,7 @@ function AddBody({ p, market, side, stakeBase, setStakeBase, spendableBase, nowM
       tradeFeedback("open", "open");
       notify.item({ id: "terminal-add", title: TERMINAL.add.added(p.asset), description: `+${money(o.booked.costBase)} staked` });
       onDone();
-    } else notify.item({ id: "terminal-add", type: "warning", title: o.status === "requote" ? TERMINAL.toast.priceMoved : TERMINAL.toast.failed });
+    } else notify.item({ id: "terminal-add", type: "warning", title: o.status === "requote" ? TERMINAL.toast.priceMoved : TERMINAL.add.failed, description: TERMINAL.toast.nothingTaken });
   }, [bet.state.outcome, p.asset, onDone]);
   const q = quote.quote;
   const afterContracts = q ? p.heldRaw + q.contractsRaw : null;

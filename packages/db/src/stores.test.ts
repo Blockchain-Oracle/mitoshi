@@ -7,13 +7,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createPgFaucetStore, createPgKeychainStore, createPgLedger, createPgPrivateClaimsStore, createPgVitalsStore, createSql, runMigrations, type Sql } from "./index";
+import { createPgFaucetStore, createPgKeychainStore, createPgLedger, createPgPrivateClaimsStore, createPgTransferStore, createPgVitalsStore, createSql, runMigrations, type Sql } from "./index";
 
 const BIN = "/opt/homebrew/opt/postgresql@16/bin";
 const hasPg = spawnSync(`${BIN}/initdb`, ["--version"]).status === 0;
 const PORT = 55_437;
 
-describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain, vitals, private claims)", () => {
+describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain, transfers, vitals, private claims)", () => {
   let dir: string;
   let server: ChildProcess;
   let sql: Sql;
@@ -76,6 +76,23 @@ describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain, vitals
     expect(await store.range(42431, acct.toLowerCase())).toEqual({ lo: 0n, hi: 300n });
     expect(await store.events(42431, acct)).toEqual([{ ...e, keyId: e.keyId.toLowerCase() }]);
     expect(await store.events(4217, acct)).toEqual([]);
+  });
+
+  it("keeps one scanned range per account and token, each transfer once, and reads the newest first-in-time", async () => {
+    const store = createPgTransferStore(sql);
+    const acct = "0x00000000000000000000000000000000000000A1";
+    const token = "0x20C0000000000000000000000000000000000000";
+    const t = (block: bigint, logIndex: number, value: bigint) => ({
+      blockNumber: block, logIndex, txHash: `0x${block.toString(16).padStart(64, "0")}` as const, atSec: block * 2n,
+      from: "0x0000000000000000000000000000000000000000" as const, to: acct as `0x${string}`, valueBase: value,
+    });
+    expect(await store.range(42431, acct, token)).toBeNull();
+    await store.save(42431, acct, token, { lo: 200n, hi: 300n }, [t(250n, 0, 5n)], 1);
+    await store.save(42431, acct, token, { lo: 100n, hi: 199n }, [t(150n, 1, 7n), t(150n, 1, 7n)], 2);
+    await store.save(42431, acct, token, { lo: 301n, hi: 400n }, [t(350n, 0, 9n)], 3);
+    expect(await store.range(42431, acct.toLowerCase(), token)).toEqual({ lo: 100n, hi: 400n });
+    expect((await store.transfers(42431, acct, token, 10)).map((x) => [x.blockNumber, x.valueBase, x.atSec])).toEqual([[150n, 7n, 300n], [250n, 5n, 500n], [350n, 9n, 700n]]);
+    expect((await store.transfers(42431, acct, token, 2)).map((x) => x.blockNumber)).toEqual([250n, 350n]);
   });
 
   it("summarises field vitals as p75 per route and metric, per network and window", async () => {

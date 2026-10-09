@@ -39,6 +39,8 @@ export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase
             {TERMINAL.settings.size}
             <span className="tm-stack-value">{money(stakeBase)}</span>
           </label>
+          {/* Tradash's Size header (§8): what can be spent, or "Balance unavailable" before it's read. */}
+          <span className="tm-field-hint">{maxBase === null ? TERMINAL.settings.balanceUnavailable : TERMINAL.settings.available(money(maxBase))}</span>
           <input
             id="tm-size"
             className="tm-input"

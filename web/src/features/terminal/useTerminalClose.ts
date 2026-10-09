@@ -75,7 +75,7 @@ export function useTerminalClose() {
         const owner = next > b.frontedBase ? next - b.frontedBase : 0n;
         return void notify.item({ id, type: "warning", title: TERMINAL.toast.priceMoved, description: TERMINAL.close.requote(money(owner)), timeout: 8_000, action: { label: TERMINAL.close.closeFor(money(owner)), onClick: () => void closeBoost(p, why, next) } });
       }
-      return void notify.item({ id, type: "warning", title: r.status === "unknown" ? TERMINAL.toast.unknown : TERMINAL.close.failed, description: r.status === "unknown" ? TERMINAL.toast.unknownBody : diagnosisCopy(r.diagnosis.kind).headline });
+      return void notify.item({ id, type: "warning", title: r.status === "unknown" ? TERMINAL.toast.unknown : TERMINAL.close.failed(p.asset), description: r.status === "unknown" ? TERMINAL.toast.unknownBody : `${diagnosisCopy(r.diagnosis.kind).headline} ${TERMINAL.close.unchanged}` });
     },
     [queryClient],
   );
@@ -111,7 +111,7 @@ export function useTerminalClose() {
         const displayed = accept ?? { ...exit, minProceedsBase: closeFloorBase(exit.minProceedsBase, tradeSettings().closeToleranceBps) };
         notify.item({ id, type: "loading", title: TERMINAL.close.closing(p.asset) });
         const market = await prt.getMarket(p.marketId);
-        if (!isOk(market) || !market.value) return void notify.item({ id, type: "warning", title: TERMINAL.toast.failed, ...(isOk(market) ? {} : { description: diagnosisCopy(market.error.kind).headline }) });
+        if (!isOk(market) || !market.value) return void notify.item({ id, type: "warning", title: partial ? TERMINAL.close.reduceFailed : TERMINAL.close.failed(p.asset), description: isOk(market) ? TERMINAL.close.unchanged : `${diagnosisCopy(market.error.kind).headline} ${TERMINAL.close.unchanged}` });
         // A Trading Balance position sells on its own vault: the session key's grant lives on the current one, so a
         // position left on v1 is the owner's own sale there (S24.2).
         const onCurrent = !p.vault || !v.vault || p.vault.toLowerCase() === v.vault.toLowerCase();
@@ -145,7 +145,7 @@ export function useTerminalClose() {
           case "unknown":
             return void notify.item({ id, type: "warning", title: TERMINAL.toast.unknown, description: TERMINAL.toast.unknownBody });
           default:
-            return void notify.item({ id, type: "warning", title: TERMINAL.close.failed, description: diagnosisCopy(outcome.diagnosis.kind).headline });
+            return void notify.item({ id, type: "warning", title: partial ? TERMINAL.close.reduceFailed : TERMINAL.close.failed(p.asset), description: `${diagnosisCopy(outcome.diagnosis.kind).headline} ${TERMINAL.close.unchanged}` });
         }
       } finally {
         inFlight.current = false;

@@ -3,6 +3,8 @@
 // (D-190): search, the tabs Favourites · All · Hot · Crypto · Stocks · 24/7, a star per row, the live display price
 // and the day's change (`/prices/day`: a stock against its previous close, crypto over 24 h), the shortest Window the
 // symbol trades on; a symbol with no Window says why (SPCX: no signed price source). "Events" opens the word board.
+// Tradash's states (§8): price and change skeletons until the first tick and the day's figures, "Loading movers…" on
+// Hot until they arrive, and its two empty lines.
 import { CRYPTO_SYMBOLS, STOCK_SYMBOLS, TICKER_SYMBOLS, TICKERS, type LaneSet, type TickerSymbol } from "@cwf/core";
 import { liveTick } from "@cwf/markets/live-ticks";
 import { Star } from "lucide-react";
@@ -22,7 +24,7 @@ type Tab = "favourites" | "all" | "hot" | "crypto" | "stocks" | "allDay";
 const TABS: Tab[] = ["favourites", "all", "hot", "crypto", "stocks", "allDay"];
 const HOT_COUNT = 4;
 
-function Row({ symbol, current, lanes, day, starred, onPick }: { symbol: TickerSymbol; current: boolean; lanes: string | null; day: DayFigures | undefined; starred: boolean; onPick: (s: TickerSymbol) => void }) {
+function Row({ symbol, current, lanes, day, dayLoading, starred, onPick }: { symbol: TickerSymbol; current: boolean; lanes: string | null; day: DayFigures | undefined; dayLoading: boolean; starred: boolean; onPick: (s: TickerSymbol) => void }) {
   const spot = useCommittedSpot(symbol, { seed: false });
   const change = dayChange(spot.price, day);
   const toggleStar = () => {
@@ -41,8 +43,9 @@ function Row({ symbol, current, lanes, day, starred, onPick }: { symbol: TickerS
           <span className="tm-pos-meta">{lanes ?? (TICKERS[symbol].redstoneFeedId ? TERMINAL.picker.noLane : TERMINAL.noWindow.spcx)}</span>
         </span>
         <span className="tm-pos-figure">
-          {spot.price === null ? "—" : `$${formatPrice(spot.price, priceDecimals(spot.price))}`}
-          {change === null ? null : <span className={`tm-pos-pnl ${change >= 0 ? "is-up" : "is-down"}`}>{`${change >= 0 ? "+" : "−"}${Math.abs(change * 100).toFixed(2)}%`}</span>}
+          {spot.price === null ? <span aria-hidden className="tm-skel" style={{ width: "4.5rem" }} /> : `$${formatPrice(spot.price, priceDecimals(spot.price))}`}
+          {change !== null ? <span className={`tm-pos-pnl ${change >= 0 ? "is-up" : "is-down"}`}>{`${change >= 0 ? "+" : "−"}${Math.abs(change * 100).toFixed(2)}%`}</span>
+            : dayLoading || spot.price === null ? <span aria-hidden className="tm-skel" style={{ width: "3rem" }} /> : null}
         </span>
       </button>
       <button type="button" className={`tm-star${starred ? " is-on" : ""}`} aria-pressed={starred} aria-label={TERMINAL.picker.star(symbol)} onClick={toggleStar}>
@@ -89,10 +92,11 @@ export function MarketsDrawer({ open, onOpenChange, symbol, set, nowSec, onPick 
                 <button key={t} type="button" role="tab" aria-selected={tab === t} className="tm-choice" onClick={() => (tapFeedback(), setTab(t))}>{TERMINAL.picker.tabs[t]}</button>
               ))}
             </div>
-            {shown.length === 0 ? <p className="tm-empty">{tab === "favourites" && !q ? TERMINAL.picker.noFavourites : TERMINAL.picker.noMatch}</p> : null}
-            {shown.map((s) => (
-              <Row key={s} symbol={s} current={s === symbol} lanes={lanesOf(s)} day={day?.[s]} starred={settings.favourites.includes(s)} onPick={onPick} />
-            ))}
+            {tab === "hot" && day === null ? <p className="tm-empty" role="status">{TERMINAL.picker.loadingMovers}</p>
+              : shown.length === 0 ? <p className="tm-empty">{tab === "favourites" && !q ? TERMINAL.picker.noFavourites : TERMINAL.picker.noMatch}</p>
+              : shown.map((s) => (
+                <Row key={s} symbol={s} current={s === symbol} lanes={lanesOf(s)} day={day?.[s]} dayLoading={day === null} starred={settings.favourites.includes(s)} onPick={onPick} />
+              ))}
             <p className="tm-market-group">
               <Link href="/markets" className="underline decoration-dotted underline-offset-4">{TERMINAL.picker.all}</Link>
               {" · "}

@@ -40,14 +40,14 @@ export function ScheduledTrade({ market, stakeBase }: { market: EventMarket; sta
       return void notify.item({ id: TOAST, title: TICKET.scheduled.rested, description: `${sideWord(side)} ${market.asset} at ${cents}¢` });
     }
     if (outcome.status === "confirmed") return void notify.item({ id: TOAST, title: TERMINAL.toast.opened(sideWord(side), market.asset) });
-    notify.item({ id: TOAST, type: "warning", title: TERMINAL.toast.failed });
+    notify.item({ id: TOAST, type: "warning", title: TERMINAL.toast.failed, description: TERMINAL.toast.nothingTaken });
   }, [bet.state.outcome, cents, market.asset]);
 
   const schedule = (side: Side) => {
     if (!session.isConnected) return void notify.item({ id: TOAST, title: TERMINAL.toast.signIn, action: { label: CONNECT.connect, onClick: session.connect } });
     if (!grid?.ok) return void notify.item({ id: TOAST, title: TERMINAL.toast.gettingPrice, timeout: 2_000 });
     const q = restingQuote({ side, priceCents: cents, stakeBase, grid: grid.value, decimals: market.decimals, quotedAtMs: Date.now() });
-    if (!q.ok) return void notify.item({ id: TOAST, type: "warning", title: q.blocker === "too-small" ? TICKET.scheduled.tooSmall : TERMINAL.toast.failed });
+    if (!q.ok) return void notify.item({ id: TOAST, type: "warning", title: q.blocker === "too-small" ? TICKET.scheduled.tooSmall : TERMINAL.toast.failed, description: TERMINAL.toast.nothingTaken });
     tapped.current = side;
     setBusy(side);
     notify.item({ id: TOAST, type: "loading", title: TERMINAL.scheduled.scheduling(sideWord(side), market.asset) });

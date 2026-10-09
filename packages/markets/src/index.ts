@@ -29,3 +29,4 @@ export function tempoReadClient(network: Network, rpcUrl?: string): PublicClient
 }
 export * from "./keys";
 export * from "./read-chain";
+export * from "./activity/transfers";

@@ -59,8 +59,9 @@ export function EquityPill({ equity, address, masked, onOpen, onSignIn, classNam
   }
   return (
     <button type="button" aria-label={TERMINAL.equity.account} className={`tm-glass tm-equity ${className ?? ""}`} onClick={() => (tapFeedback(), onOpen())}>
-      <span>{masked ? SHELL.masked : equity === null ? "—" : <NumberFlow value={equity} format={USD(2)} willChange />}</span>
-      <span aria-hidden className="tm-avatar" style={{ "--tm-hue": addressHue(address) } as CSSProperties}>{address.slice(2, 4).toUpperCase()}</span>
+      {/* Tradash's loading pill (§8): a 4.5rem skeleton bar and a pulsing avatar until the balance is read. */}
+      <span>{masked ? SHELL.masked : equity === null ? <span role="status" aria-label={TERMINAL.equity.loading} className="tm-skel" style={{ width: "4.5rem" }} /> : <NumberFlow value={equity} format={USD(2)} willChange />}</span>
+      <span aria-hidden className={`tm-avatar${equity === null && !masked ? " tm-skel-pulse" : ""}`} style={{ "--tm-hue": addressHue(address) } as CSSProperties}>{address.slice(2, 4).toUpperCase()}</span>
     </button>
   );
 }

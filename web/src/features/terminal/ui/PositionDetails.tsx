@@ -19,6 +19,7 @@ import { centsOf, clockText, livePnlText, money, sideWord } from "../format";
 import type { TerminalPosition } from "../terminal-positions";
 import type { PositionValue } from "../usePositionValue";
 import { AddModal } from "./AddModal";
+import { PositionGone } from "./PositionGone";
 
 const REDUCE = [25n, 50n, 75n, 100n] as const;
 
@@ -39,7 +40,17 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
   const market = marketReading && isOk(marketReading) ? marketReading.value : null;
   const opening = useOpeningPrice(open && p ? p.marketId : null);
   const lineE8 = opening && isOk(opening) ? opening.value : null;
-  if (!p) return null;
+  if (!p) {
+    // The position closed (a keeper sale, a settle, a Reduce to zero) while this was open.
+    return (
+      <>
+        <SlideOver open={open} onOpenChange={onOpenChange}>
+          <SlideOverContent title={TERMINAL.gone.title}><PositionGone onDone={() => onOpenChange(false)} /></SlideOverContent>
+        </SlideOver>
+        <AddModal p={null} open={adding} onOpenChange={setAdding} spendableBase={spendableBase} />
+      </>
+    );
+  }
   const hide = (text: string) => (masked ? SHELL.masked : text);
   // Cents a contract: cost ÷ contracts and the exit's proceeds ÷ its contracts, both on six decimals.
   const perContract = (base: bigint, contracts: bigint) => (contracts > 0n ? centsOf(Number((base * 1_000n) / contracts)) : "—");

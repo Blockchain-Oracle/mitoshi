@@ -26,6 +26,7 @@ import { EXIT_GRANT_SEC, EXIT_SLACK_BPS, EXIT_TOLERANCE_BPS, serverExitState, us
 import { tradeSettings } from "../settings";
 import type { PositionValue } from "../usePositionValue";
 import { unattendedRefusal, useSignerLasts } from "../useTrail";
+import { PositionGone } from "./PositionGone";
 
 const PRESETS: Record<ExitKind, readonly number[]> = { tp: [25, 50, 100], sl: [-25, -50, -75] };
 const none = () => null;
@@ -154,7 +155,13 @@ function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionV
 }
 
 export function ExitsDrawer({ p, value, open, onOpenChange }: { p: TerminalPosition | null; value: PositionValue | null; open: boolean; onOpenChange: (o: boolean) => void }) {
-  if (!p) return null;
+  if (!p) {
+    return (
+      <SlideOver open={open} onOpenChange={onOpenChange}>
+        <SlideOverContent title={TERMINAL.exits.open}><PositionGone onDone={() => onOpenChange(false)} /></SlideOverContent>
+      </SlideOver>
+    );
+  }
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
       <SlideOverContent title={TERMINAL.exits.title(sideWord(p.side), p.asset)} description={TERMINAL.exits.body}>

@@ -12,6 +12,7 @@ export { runMigrations } from "./migrations";
 export { createPgLedger } from "./relay-ledger";
 export { createPgFaucetStore, type FaucetStore } from "./faucet-store";
 export { createPgKeychainStore, type KeychainStore, type ScanRange } from "./keychain-store";
+export { createPgTransferStore, type TransferStore } from "./transfer-store";
 export { createPgVitalsStore, VITAL_METRICS, type VitalMetric, type VitalSample, type VitalSummary, type VitalsStore } from "./vitals-store";
 export { insertMppReceipt, receiptsForDecision, type MppReceiptInsert, type MppReceiptRecord } from "./mpp";
 export { agentRegistrationByStrategy, setAgentRegistrationUri, upsertAgentRegistration, type AgentRegistrationRow } from "./agents";
