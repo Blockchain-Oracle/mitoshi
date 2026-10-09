@@ -164,7 +164,16 @@ try {
   const closed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Closed |^Reduced / });
   const notClosed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Price moved|No bids|Close didn't go through|Nothing sold/ });
   await expect(closed.or(notClosed).first()).toBeVisible({ timeout: 90_000 });
-  note({ step: "vault-close", ok: (await closed.count()) > 0, ms: Date.now() - c0, prompts: s.assertions() - beforeClose, toast: await closed.or(notClosed).first().innerText().catch(() => ""), body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
+  // A book that moved past the close tolerance (the house's wide last-minute tail, D-194: run 37907670978 closed at
+  // lock − 34 s) offers "Close for $X" on the toast; take it, as a person would, and the close must land.
+  let requote: string | null = null;
+  const closeFor = page.getByRole("button", { name: /^Close for / });
+  if ((await closed.count()) === 0 && (await closeFor.count()) > 0) {
+    requote = await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "");
+    await closeFor.first().click();
+    await expect(closed.first()).toBeVisible({ timeout: 60_000 }).catch(() => undefined);
+  }
+  note({ step: "vault-close", ok: (await closed.count()) > 0, ms: Date.now() - c0, prompts: s.assertions() - beforeClose, requote, toast: await closed.or(notClosed).first().innerText().catch(() => ""), body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
   await page.screenshot({ path: join(out, `vault-close-${width}.png`) });
 
   // 4. Over the per-tap cap: the reason under the button (D-160), nothing sent, no prompt.
