@@ -193,16 +193,19 @@ try {
   // What the stop does on the wire and in the console (a stop that hung before its prompt, run 37900125861).
   const wire: string[] = [];
   const onRequest = (r: import("@playwright/test").Request) => {
-    if (r.method() !== "POST" || !/\/api\/(relay|auth)|rpc\./.test(r.url())) return;
-    const m = /"method"\s*:\s*"([a-zA-Z_]+)"/.exec(r.postData() ?? "")?.[1] ?? "?";
-    wire.push(`→ ${new URL(r.url()).pathname} ${m}`);
+    const u = new URL(r.url());
+    if (/\.(js|css|woff2?|png|svg)$/.test(u.pathname)) return;
+    const m = r.method() === "POST" ? /"method"\s*:\s*"([a-zA-Z_]+)"/.exec(r.postData() ?? "")?.[1] ?? "" : "";
+    wire.push(`→ ${r.method()} ${u.host}${u.pathname.slice(0, 50)} ${m}`);
   };
+  const onPageError = (e: Error) => wire.push(`pageerror: ${e.message.slice(0, 200)}`);
   const onResponse = (r: import("@playwright/test").Response) => {
     if (/\/api\/(relay|auth)/.test(r.url())) wire.push(`← ${new URL(r.url()).pathname} ${r.status()}`);
   };
   const onConsole = (m: import("@playwright/test").ConsoleMessage) => {
-    if (m.type() === "error" || m.type() === "warning") wire.push(`console.${m.type()}: ${m.text().slice(0, 160)}`);
+    if (!/preloaded using link preload/.test(m.text())) wire.push(`console.${m.type()}: ${m.text().slice(0, 160)}`);
   };
+  page.on("pageerror", onPageError);
   page.on("request", onRequest);
   page.on("response", onResponse);
   page.on("console", onConsole);
@@ -214,10 +217,11 @@ try {
   await expect(stoppedRow.or(failure).first()).toBeAttached({ timeout: 120_000 }).catch(() => undefined);
   await page.screenshot({ path: join(out, `exit-stop-${width}.png`) });
   const stopped = (await stoppedRow.count()) > 0;
+  page.off("pageerror", onPageError);
   page.off("request", onRequest);
   page.off("response", onResponse);
   page.off("console", onConsole);
-  note({ step: "exit-stopped", ok: stopped, grant: exitId, prompts: s.assertions() - beforeExitStop, alert: stopped ? null : await failure.first().innerText().catch(() => null), wire: wire.slice(0, 30) });
+  note({ step: "exit-stopped", ok: stopped, grant: exitId, prompts: s.assertions() - beforeExitStop, alert: stopped ? null : await failure.first().innerText().catch(() => null), wire: wire.slice(0, 60) });
   if (!stopped) throw new Error(`the EXIT grant #${exitId} was not stopped`);
   const stop = page.getByRole("button", { name: /^Stop/ }).first();
   if (await stop.count()) {
