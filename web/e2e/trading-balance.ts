@@ -49,13 +49,14 @@ async function tap(t: TerminalSession, symbol: string, side: "up" | "down") {
   const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /Price moved|Nothing filled|didn't go through|Waiting for the chain/ });
   await expect(opened.or(refused).first()).toBeVisible({ timeout: 90_000 });
   const toastMs = Date.now() - t0;
-  // A dearer book is a requote (D-208): "Tap again to take it" — once, as a person would.
-  if ((await opened.count()) === 0 && /Price moved/.test(await refused.first().innerText().catch(() => ""))) {
+  // A dearer book is a requote (D-208): "Tap again", as a person would — up to three times, each answer noted.
+  for (let again = 0; again < 3 && (await opened.count()) === 0 && /Price moved/.test(await refused.first().innerText().catch(() => "")); again++) {
     note({ step: "requote", symbol, side, body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
     // The buttons may be between rounds by now (the last 30 s, the next opening print): wait, as a person would.
     await waitEnterable(t, side, 300_000);
+    await page.locator('[data-slot="toast-title"]').first().waitFor({ state: "detached", timeout: 10_000 }).catch(() => undefined);
     await button.click();
-    await expect(opened.first()).toBeVisible({ timeout: 90_000 }).catch(() => undefined);
+    await expect(opened.or(refused).first()).toBeVisible({ timeout: 90_000 }).catch(() => undefined);
   }
   const ok = (await opened.count()) > 0;
   const row = page.locator(".tm-side-list .tm-pos").filter({ hasText: `${side === "up" ? "Up" : "Down"} ${symbol}` }).first();
@@ -199,6 +200,12 @@ try {
     wire.push(`→ ${r.method()} ${u.host}${u.pathname.slice(0, 50)} ${m}`);
   };
   const onPageError = (e: Error) => wire.push(`pageerror: ${e.message.slice(0, 200)}`);
+  const onSocket = (ws: import("@playwright/test").WebSocket) => {
+    wire.push(`ws open ${ws.url().slice(0, 60)}`);
+    ws.on("framesent", (f) => wire.push(`ws → ${String(f.payload).slice(0, 90)}`));
+    ws.on("framereceived", (f) => wire.push(`ws ← ${String(f.payload).slice(0, 90)}`));
+    ws.on("close", () => wire.push(`ws closed ${ws.url().slice(0, 60)}`));
+  };
   const onResponse = (r: import("@playwright/test").Response) => {
     if (/\/api\/(relay|auth)/.test(r.url())) wire.push(`← ${new URL(r.url()).pathname} ${r.status()}`);
   };
@@ -206,6 +213,7 @@ try {
     if (!/preloaded using link preload/.test(m.text())) wire.push(`console.${m.type()}: ${m.text().slice(0, 160)}`);
   };
   page.on("pageerror", onPageError);
+  page.on("websocket", onSocket);
   page.on("request", onRequest);
   page.on("response", onResponse);
   page.on("console", onConsole);
@@ -218,6 +226,7 @@ try {
   await page.screenshot({ path: join(out, `exit-stop-${width}.png`) });
   const stopped = (await stoppedRow.count()) > 0;
   page.off("pageerror", onPageError);
+  page.off("websocket", onSocket);
   page.off("request", onRequest);
   page.off("response", onResponse);
   page.off("console", onConsole);
