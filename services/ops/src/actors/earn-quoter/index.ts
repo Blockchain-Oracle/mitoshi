@@ -14,18 +14,17 @@ import { fairValueGuardAbi } from "@cwf/clients/abis/FairValueGuard";
 import { marketMakerVaultAbi } from "@cwf/clients/abis/MarketMakerVault";
 import { TICKERS, TICKER_SYMBOLS } from "@cwf/core";
 import { deploymentOf } from "@cwf/markets";
-import { chainNowSec, createOpsClient, sendOps, venueOf } from "@cwf/markets/ops";
+import { chainNowSec, createOpsClient, fetchMarkets, listSeries, marketIdOf, sendOps, venueOf } from "@cwf/markets/ops";
 import { errorText, roleKey, runActor, type VenueDeps } from "../../runtime";
 import { decideQuote, needsQuote, type LastQuote } from "./decide";
 
 const EVERY_MS = 15_000;
-const SCAN_BACK = 60;
 const num = (name: string, fallback: number) => (Number.isFinite(Number(process.env[name])) && process.env[name] ? Number(process.env[name]) : fallback);
 
-/** Crypto tickers by engine ticker id (the vault quotes crypto Windows, its launch scope). */
-const CRYPTO_BY_ID = new Map(TICKER_SYMBOLS.filter((s) => TICKERS[s].kind === "crypto").map((s) => [TICKERS[s].tickerId, s] as const));
+/** Crypto symbols (the vault quotes crypto Windows, its launch scope). */
+const CRYPTO = new Set<string>(TICKER_SYMBOLS.filter((s) => TICKERS[s].kind === "crypto"));
 
-type MarketRef = { lockAt: bigint; status: number; ticker: number; openE8: bigint };
+type MarketRef = { status: number };
 
 export function startEarnQuoter(deps: VenueDeps): { stop: () => void } {
   const env = {
@@ -79,22 +78,24 @@ export function startEarnQuoter(deps: VenueDeps): { stop: () => void } {
       const isMaker = client.address !== null && maker.toLowerCase() === client.address.toLowerCase();
       if (!isMaker) return { why: `${notes.length} settled; not quoting: the vault's maker is ${maker}, not this key (${client.address ?? "none"}) — setMaker from deployer-maker (D-117)${notes.length ? ` | ${notes.join("; ")}` : ""}` };
 
-      // 2. Live crypto Windows: Trading, opening print in, enough time left; soonest lock first.
+      // 2. Live crypto Windows (each crypto Series' newest two, as the seed maker reads them): open, Trading, opening
+      // print in, enough time left; soonest lock first.
       const [, minSpreadRaw, minPriceRaw, maxPriceRaw, maxQuantityRaw, , maxOpenWindows, minTimeLeftSec] = params;
-      const cfg = await read<{ nextMIdx: number }>(venue.lens, engineLensAbi, "config");
-      const live: { m: Hex; ref: MarketRef; symbol: string }[] = [];
-      for (let i = Number(cfg.nextMIdx); i > 0 && i > Number(cfg.nextMIdx) - SCAN_BACK; i--) {
-        const m = await read<Hex>(venue.lens, engineLensAbi, "marketIdAt", [i]);
-        const ref = await read<MarketRef>(venue.lens, engineLensAbi, "marketRef", [m]);
-        const symbol = CRYPTO_BY_ID.get(ref.ticker);
-        const left = Number(ref.lockAt) - nowSec;
-        if (symbol && ref.status === 1 && ref.openE8 > 0n && left >= Math.max(env.minLeftSec, minTimeLeftSec)) live.push({ m, ref, symbol });
-      }
-      live.sort((a, b) => Number(a.ref.lockAt - b.ref.lockAt));
+      const series = (await listSeries(client, venue)).filter((x) => x.symbol !== null && CRYPTO.has(x.symbol));
+      const refs = series.flatMap((x) => [1n, 2n].filter((k) => x.nextIndex >= k).map((k) => ({ symbol: x.symbol!, m: marketIdOf(x.seriesId, x.nextIndex - k) })));
+      const views = await fetchMarkets(client, venue, refs.map((r) => r.m));
+      const live: { m: Hex; lockAtSec: number; symbol: string }[] = [];
+      refs.forEach((r, i) => {
+        const v = views[i];
+        if (!v || v.state !== 0 || v.tradingStartSec > nowSec || v.prints.open.source === 0) return;
+        if (v.lockAtSec - nowSec < Math.max(env.minLeftSec, minTimeLeftSec)) return;
+        live.push({ m: r.m, lockAtSec: v.lockAtSec, symbol: r.symbol });
+      });
+      live.sort((a, b) => a.lockAtSec - b.lockAtSec);
       const open = new Set(openWindows.map((m) => m.toLowerCase()));
       const quantity = BigInt(env.quantityContracts) * 1_000_000n > maxQuantityRaw ? maxQuantityRaw : BigInt(env.quantityContracts) * 1_000_000n;
       let quoted = 0;
-      for (const { m, ref, symbol } of live) {
+      for (const { m, lockAtSec, symbol } of live) {
         if (!open.has(m.toLowerCase()) && open.size >= maxOpenWindows) {
           notes.push(`${symbol} ${m.slice(0, 10)}: the vault holds ${maxOpenWindows} Windows`);
           continue;
@@ -115,7 +116,7 @@ export function startEarnQuoter(deps: VenueDeps): { stop: () => void } {
           continue;
         }
         if (!needsQuote(last.get(m), d.midTicks, nowSec, env.requoteTicks, env.requoteSec)) continue;
-        const data = encodeFunctionData({ abi: marketMakerVaultAbi, functionName: "quote", args: [m, BigInt(d.bidTicks) * 1000n, BigInt(d.askTicks) * 1000n, quantity, ref.lockAt * 1_000_000_000n] });
+        const data = encodeFunctionData({ abi: marketMakerVaultAbi, functionName: "quote", args: [m, BigInt(d.bidTicks) * 1000n, BigInt(d.askTicks) * 1000n, quantity, BigInt(lockAtSec) * 1_000_000_000n] });
         try {
           notes.push(await send(data, `${symbol} ${m.slice(0, 10)} ${d.bidTicks}/${d.askTicks} (model ${d.midTicks})`));
           last.set(m, { midTicks: d.midTicks, atSec: nowSec });
