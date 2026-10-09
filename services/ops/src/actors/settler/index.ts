@@ -11,7 +11,7 @@ import type { Address, Hex } from "viem";
 import { engineLensAbi } from "@cwf/clients/abis/EngineLens";
 import { chainNowSec, createOpsClient, crankOptedOut, fetchMarkets, OpsSendError, positionsOf, redeemForCall, sendOps, settleCall, sweepExpiredCall, venueOf, voidExpiredCall, type MarketView } from "@cwf/markets/ops";
 import { errorText, runActor, roleKey, type VenueDeps } from "../../runtime";
-import { decideSettle, type SettleAction } from "./decide";
+import { decideSettle, PRINT_POLL_SEC, type SettleAction } from "./decide";
 import { vaultCranker } from "./vault-crank";
 
 const PASS_MS = 5_000;
@@ -33,6 +33,10 @@ export function startSettler(deps: VenueDeps): { stop: () => void } {
   if (!key) deps.log("SETTLER_PRIVATE_KEY / settler.json missing: scanning and reporting only");
   const vault = vaultCranker(client, sql, dryRun);
   const work = new Map<string, Work>();
+  // Windows found done (or unknown to this engine) this process: the index can keep listing them (a position it still
+  // counts unredeemed that the chain paid out), and re-adding them every pass starved the Windows that need settling
+  // (2026-10-09: 500+ Windows with both prints in sat unresolved behind them). Cleared on restart.
+  const finished = new Set<string>();
   const optedOut = new Set<string>();
   const counts: Record<string, number> = {};
   let recent: Array<{ action: string; market: string; tx: string }> = [];
@@ -43,8 +47,8 @@ export function startSettler(deps: VenueDeps): { stop: () => void } {
         (m.state = 'open' and least(m.expiry_sec, m.open_deadline_sec) <= ${nowSec})
         or (m.state <> 'open' and (exists (select 1 from idx_positions p where p.market = m.market and not p.redeemed)
                                    or exists (select 1 from idx_orders o where o.market = m.market and o.status = 'open'))))
-      order by m.expiry_sec limit 500`;
-    return rows.map((r) => r.market);
+      order by (m.state = 'open') desc, m.expiry_sec limit 500`;
+    return rows.map((r) => r.market).filter((m) => !finished.has(m));
   };
 
   const holdersOf = async (m: MarketView): Promise<Address[]> => {
@@ -111,6 +115,7 @@ export function startSettler(deps: VenueDeps): { stop: () => void } {
       const m = views[i];
       if (!m) {
         w.done = true;
+        finished.add(w.market);
         continue;
       }
       const check = await checkOf(m);
@@ -122,10 +127,12 @@ export function startSettler(deps: VenueDeps): { stop: () => void } {
       });
       if (action.kind === "done") {
         w.done = true;
+        finished.add(w.market);
         continue;
       }
       if (action.kind === "wait") {
-        w.checkAtSec = action.untilSec;
+        // A wait whose moment has passed (a print due a while ago) is looked at again on the print poll, not every pass.
+        w.checkAtSec = Math.max(action.untilSec, nowSec + PRINT_POLL_SEC);
         continue;
       }
       if (budget.sends <= 0) break;
