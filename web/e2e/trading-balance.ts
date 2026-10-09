@@ -219,9 +219,10 @@ try {
   page.on("console", onConsole);
   await exitRow.getByRole("button", { name: /^Stop/ }).click();
   // Stopped means the history lists it as stopped (the live list empties for a moment while it re-reads — not proof);
-  // a failure shows its card.
+  // a failure shows its card inside the grants section. Not any `role="alert"` on the page: Next's route announcer is
+  // one, always attached and empty, so run 37906085039 "failed" 230 ms after the click with the revoke still signing.
   const stoppedRow = page.locator("details li").filter({ hasText: `#${exitId}` });
-  const failure = page.getByRole("alert");
+  const failure = page.locator('section[aria-labelledby="grants-title"]').getByRole("alert");
   await expect(stoppedRow.or(failure).first()).toBeAttached({ timeout: 120_000 }).catch(() => undefined);
   await page.screenshot({ path: join(out, `exit-stop-${width}.png`) });
   const stopped = (await stoppedRow.count()) > 0;
