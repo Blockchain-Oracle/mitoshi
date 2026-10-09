@@ -23,7 +23,10 @@ export const SIDE_CHAINS = env.network === "mainnet" ? ([robinhood] as const) : 
 
 function transports(): Record<number, Transport> {
   const out: Record<number, Transport> = {
-    [TEMPO_CHAIN.id]: tempoTransport({ rpcHttpUrls: env.rpcHttpUrls, rpcWsUrls: env.rpcWsUrls, relayUrl: env.relayUrl }),
+    // HTTP only, like every other signer here (the session and wallet keys): the wallet signs and sends, it subscribes
+    // to nothing. A WebSocket first in the fallback hung every root write on a freshly loaded page — the socket stuck
+    // opening, which never errors, so viem never fell back (Stop on /settings/account, 2026-10-09: no frame in 120 s).
+    [TEMPO_CHAIN.id]: tempoTransport({ rpcHttpUrls: env.rpcHttpUrls, relayUrl: env.relayUrl }),
   };
   for (const chain of SIDE_CHAINS) out[chain.id] = http();
   return out;

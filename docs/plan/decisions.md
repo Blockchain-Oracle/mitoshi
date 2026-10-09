@@ -1823,6 +1823,15 @@ value. **And the client degrades:** a 401 to a ticketed connect rests the per-us
 at once with the public topics (`USER_REST_MS`), telling the caller (`onUserGrant(false)`), so a secret out of step
 can cost user events, never prices.
 
+### D-212 — a WebSocket never stalls a request; the wallet signs over HTTP (2026-10-09)
+
+**A root write on a freshly loaded page hung with no prompt and no request** (Stop on the EXIT grant in Settings, five
+CI runs): the wallet's transport put a WebSocket first in viem's `fallback`, the socket stuck opening, and a socket that
+never opens never errors — viem's timeout covers the request, not the connect — so the fallback never reached HTTP
+(captured: one `wss://` open, no frame in 120 s). The wallet's client signs and sends and subscribes to nothing, so it
+now uses HTTP only, like the session and wallet keys. The read runtime keeps its socket for logs and heads, wrapped so
+every request (the connect included) gives up after 8 s and the fallback takes HTTP (`bounded`, `SOCKET_GIVE_UP_MS`).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
