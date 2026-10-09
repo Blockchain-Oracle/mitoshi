@@ -104,6 +104,15 @@ for (const width of [390, 1440]) {
     }
     await page.keyboard.press("Escape");
 
+    // A remembered session survives every later load (F-S23-10): two more pages, then the terminal still signed in.
+    await page.goto(`${base}/games/range`, { waitUntil: "load" });
+    await settle(page);
+    await page.waitForTimeout(6_000);
+    await page.goto(`${base}/trade/BTC`, { waitUntil: "load" });
+    await settle(page);
+    await expect.poll(equityName, { timeout: 45_000 }).toMatch(/\$[1-9]/);
+    console.log(JSON.stringify({ width, step: "still-signed-in-after-two-loads", equity: await equityName() }));
+
     const credentials = await cdp.send("WebAuthn.getCredentials", { authenticatorId });
     console.log(JSON.stringify({ width, ok: true, credentials: credentials.credentials.length, extraPrompts: assertions, equity, faucetHashes }));
     if (errors.length) throw new Error(`console errors: ${errors.slice(0, 3).join(" | ")}`);
