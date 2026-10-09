@@ -198,7 +198,8 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
 
   // A stock on RedStone is off NYSE hours (IEX trades carry it 04:00–20:00 ET): §8's "outside NYSE hours" note.
   const source = s.spot.source ?? "redstone";
-  const feed = source === "redstone" && isStockSymbol(symbol) ? TERMINAL.feed.offHours : TERMINAL.feed[source];
+  const offHours = source === "redstone" && isStockSymbol(symbol) && !s.spot.connecting;
+  const feed = offHours ? TERMINAL.feed.redstoneStock : TERMINAL.feed[source];
   const priceText = s.spot.price === null ? "—" : `$${formatPrice(s.spot.price, priceDecimals(s.spot.price))}`;
   const equity = s.cashBase === null ? null : Number(s.cashBase + totals.value) / 1e6;
   const stakeText = s.capped ? `${money(s.stakeBase)} max` : money(s.stakeBase);
@@ -234,6 +235,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
               <span className="tm-glass tm-note">{noWindowNote(s.ticker, nyse, s.nowSec)}</span>
             )}
             {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
+            {offHours ? <span className="tm-glass tm-note">{TERMINAL.feed.offHoursNote}</span> : null}
           </div>
           <div className="tm-stack-slot">
             <SettingsStack asset={symbol} size={stakeText} pays={s.settings.boostX > 1 ? TERMINAL.positions.boost(s.settings.boostX) : market ? pays : "—"} trailing={`${trailWords(s.settings.trailPct)}%`} onOpen={() => drawer.show(DRAWERS.settings)} />

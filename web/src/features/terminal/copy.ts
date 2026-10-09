@@ -15,8 +15,9 @@ export const TERMINAL = {
     bitstamp: "Bitstamp",
     alpaca: "IEX trades",
     redstone: "RedStone · updates every 10 s",
-    /** A stock off NYSE hours: the display falls back to RedStone's signed 24/7 value (§8). */
-    offHours: "RedStone · updates every 10 s outside NYSE hours",
+    /** A stock off NYSE hours: the chip names the source, and §8's note sits under it (the display is RedStone's 24/7). */
+    redstoneStock: "RedStone",
+    offHoursNote: "Updates every 10 s outside NYSE hours",
     connecting: "Connecting…",
     stale: "Reconnecting…",
     settlesOn: "Settles on RedStone's signed print",
