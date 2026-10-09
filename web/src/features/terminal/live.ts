@@ -6,9 +6,15 @@ import { liveTick, subscribeLiveTick, tickStale, type TickSource } from "@cwf/ma
 import { streamEverOpened } from "@cwf/markets/stream";
 import { useEffect, useState } from "react";
 import { ensureLiveTicks } from "@/features/prices/stream-config";
+import { modalOpen } from "@/lib/modal-signal";
 
 /** Tradash commits prices to its store at most every 200 ms per symbol (leading edge); PnL and reactions run on that. */
 export const COMMIT_MS = 200;
+/**
+ * Behind a centred modal (the first-visit tour), once a second: the screen under its scrim needn't re-render five times a
+ * second (S23 gate, F-S23-08: React's work on /trade under the tour). The next tick after it closes is back to 200 ms.
+ */
+const BEHIND_MODAL_COMMIT_MS = 1_000;
 /** How often a quiet line re-checks whether it went stale. */
 const STALE_CHECK_MS = 5_000;
 
@@ -53,7 +59,7 @@ export function useCommittedSpot(symbol: string | null, { seed = true }: { seed?
     const off = subscribeLiveTick(
       symbol,
       () => {
-        const wait = last + COMMIT_MS - performance.now();
+        const wait = last + (modalOpen() ? BEHIND_MODAL_COMMIT_MS : COMMIT_MS) - performance.now();
         if (wait <= 0) commit();
         else trailing ??= setTimeout(() => ((trailing = null), commit()), wait);
       },
