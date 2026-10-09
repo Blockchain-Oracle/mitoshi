@@ -11,7 +11,7 @@ import type { Address } from "@cwf/core";
 import { faucetClaimView, faucetCooldownUntilMs, TEMPO_FAUCET_POLICY, type FaucetAuth, type FaucetClaimView } from "@cwf/core/faucet";
 import { tempoChain } from "@cwf/markets";
 import { fundAddress } from "@cwf/markets/server";
-import { createPublicClient, http, type PublicClient } from "viem";
+import { createPublicClient, http, type Hex, type PublicClient } from "viem";
 import { db } from "./db";
 import { serverEnv } from "./env";
 
@@ -51,17 +51,24 @@ export async function claimFunds(input: { wallet: Address; auth: FaucetAuth; ipH
     return { ok: false, status: 503, code: "daily_cap", message: "Test funds are used up for today. Try again tomorrow." };
   }
   const base = { id: randomUUID(), wallet: input.wallet, ipHash: input.ipHash, auth: input.auth, createdAtMs: input.nowMs };
+  let txHashes: Hex[];
   try {
-    const txHashes = await fundAddress(chainClient(), input.wallet);
-    // Answer "funded" only once the transfers are included (~0.5 s on Tempo), so the balance the client refetches
-    // right after is the funded one — never a receipt over a $0.00 read.
-    const receipts = await Promise.all(txHashes.map((hash) => chainClient().waitForTransactionReceipt({ hash, timeout: 20_000 })));
-    if (receipts.some((r) => r.status !== "success")) throw new Error("a faucet transfer reverted");
-    const claim = { ...base, txHashes, status: "funded" as const };
-    await s.saveClaim(claim);
-    return { ok: true, claim: faucetClaimView(claim) };
+    txHashes = await fundAddress(chainClient(), input.wallet);
   } catch (error) {
+    // The faucet itself refused or didn't answer: nothing was sent.
     await s.saveClaim({ ...base, txHashes: [], status: "failed" });
     return { ok: false, status: 502, code: "fund_failed", message: `The testnet faucet did not answer: ${error instanceof Error ? error.message.split("\n")[0] : "unknown error"}` };
   }
+  // Answer "funded" once the transfers are included (~0.5 s on Tempo), so the balance the client refetches right after
+  // is the funded one. The transfers are sent either way: a receipt wait that times out (a slow RPC, 2026-10-09 — the
+  // wallet showed $1,000,000 under "Nothing was sent") keeps the claim as funded with its hashes; only a reverted
+  // transfer is a failure.
+  const receipts = await Promise.all(txHashes.map((hash) => chainClient().waitForTransactionReceipt({ hash, timeout: 20_000 }).catch(() => null)));
+  if (receipts.some((r) => r !== null && r.status !== "success")) {
+    await s.saveClaim({ ...base, txHashes, status: "failed" });
+    return { ok: false, status: 502, code: "fund_failed", message: "A faucet transfer reverted on chain." };
+  }
+  const claim = { ...base, txHashes, status: "funded" as const };
+  await s.saveClaim(claim);
+  return { ok: true, claim: faucetClaimView(claim) };
 }
