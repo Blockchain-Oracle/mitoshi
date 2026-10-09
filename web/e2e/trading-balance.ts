@@ -49,7 +49,7 @@ async function tap(t: TerminalSession, symbol: string, side: "up" | "down") {
   const button = page.locator(".tm-buttons .tm-btn").filter({ hasText: side.toUpperCase() }).first();
   await button.click();
   const opened = page.locator('[data-slot="toast-title"]').filter({ hasText: / opened$/ });
-  const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /Price moved|Nothing filled|didn't go through|Waiting for the chain/ });
+  const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /Price moved|Nothing filled|Order failed|didn't go through|Waiting for the chain/ });
   await expect(opened.or(refused).first()).toBeVisible({ timeout: 90_000 });
   const toastMs = Date.now() - t0;
   // A dearer book is a requote (D-208): "Tap again", as a person would — up to three times, each answer noted.
@@ -171,7 +171,7 @@ try {
   const c0 = Date.now();
   await close.click();
   const closed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Closed |^Reduced / });
-  const notClosed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Price moved|No bids|Close didn't go through|Nothing sold/ });
+  const notClosed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Price moved|No bids|Close failed|Close didn't go through|Nothing sold/ });
   await expect(closed.or(notClosed).first()).toBeVisible({ timeout: 90_000 });
   // A book that moved past the close tolerance (the house's wide last-minute tail, D-194: run 37907670978 closed at
   // lock − 34 s) offers "Close for $X" on the toast; take it, as a person would, and the close must land.

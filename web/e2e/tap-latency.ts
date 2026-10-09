@@ -40,15 +40,22 @@ await page.addInitScript(`(() => {
     else if (/^CLOSE/.test(t)) mark("e2e:close-press");
   }, true);
   const seen = new Set();
+  // What was on screen at the cycle's reset (the last cycle's toasts and row) never marks this cycle.
+  let stale = new WeakSet();
   new MutationObserver(() => {
-    if (!seen.has("card") && document.querySelector(".tm-side-list .tm-pos")) { seen.add("card"); mark("e2e:card"); }
+    if (!seen.has("card") && [...document.querySelectorAll(".tm-side-list .tm-pos")].some((el) => !stale.has(el))) { seen.add("card"); mark("e2e:card"); }
     for (const el of document.querySelectorAll('[data-slot="toast-title"]')) {
+      if (stale.has(el)) continue;
       const t = el.textContent || "";
       const key = / opened$/.test(t) ? "confirmed" : /^Closing /.test(t) ? "closing" : /^Closed /.test(t) ? "closed" : null;
       if (key && !seen.has(key)) { seen.add(key); mark("e2e:" + key); }
     }
   }).observe(document, { subtree: true, childList: true, characterData: true });
-  window.__resetMarks = () => { seen.clear(); performance.clearMarks(); };
+  window.__resetMarks = () => {
+    seen.clear();
+    performance.clearMarks();
+    stale = new WeakSet(document.querySelectorAll('[data-slot="toast-title"], .tm-side-list .tm-pos'));
+  };
 })()`);
 
 const net: NetCall[] = [];
@@ -78,14 +85,15 @@ async function cycle(asset: string, side: "up" | "down"): Promise<boolean> {
   const before = s.assertions();
   const netFrom = net.length;
   await page.locator(".tm-buttons .tm-btn").filter({ hasText: side.toUpperCase() }).first().click();
-  const opened = page.locator('[data-slot="toast-title"]').filter({ hasText: / opened$/ });
-  const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /Price moved|Nothing filled|Order didn't go through|Waiting for the chain/ });
-  await expect(opened.or(refused).first()).toBeVisible({ timeout: 90_000 });
-  if (!(await opened.count())) {
+  // This cycle's own marks, not whatever toast or row the last cycle left on screen.
+  const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /Price moved|Nothing filled|Order failed|didn't go through|Waiting for the chain/ });
+  const mark = async (n: string) => (await at(page, [n]))[n] ?? null;
+  await expect.poll(async () => (await mark("e2e:confirmed")) !== null || (await refused.count()) > 0, { timeout: 90_000 }).toBe(true);
+  if ((await mark("e2e:confirmed")) === null) {
     log({ step: "not-opened", asset, side, toast: await refused.first().innerText().catch(() => "") });
     return false;
   }
-  await expect(page.locator(".tm-side-list .tm-pos").first()).toBeVisible({ timeout: 60_000 });
+  await expect.poll(() => mark("e2e:card"), { timeout: 60_000 }).not.toBeNull();
   const m = await at(page, ["e2e:press", "cwf:tap:start", "cwf:tap:sent", "cwf:tap:signed", "cwf:tap:done", "e2e:card", "e2e:confirmed"]);
   const marks: TapMarks = { press: m["e2e:press"] ?? null, start: m["cwf:tap:start"] ?? null, sent: m["cwf:tap:sent"] ?? null, signed: m["cwf:tap:signed"] ?? null, done: m["cwf:tap:done"] ?? null, card: m["e2e:card"] ?? null, confirmed: m["e2e:confirmed"] ?? null };
   const row = { step: "open", asset, side, prompts: s.assertions() - before, ...phasesOf(marks, net.slice(netFrom)) };
@@ -98,11 +106,10 @@ async function cycle(asset: string, side: "up" | "down"): Promise<boolean> {
   const closeFrom = net.length;
   const closeBefore = s.assertions();
   await close.click();
-  const closed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Closed |^Reduced / });
-  const notClosed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Price moved|No bids|Close didn't go through|Nothing sold/ });
-  await expect(closed.or(notClosed).first()).toBeVisible({ timeout: 90_000 });
+  const notClosed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Price moved|No bids|Close failed|Close didn't go through|Nothing sold/ });
+  await expect.poll(async () => (await mark("e2e:closed")) !== null || (await notClosed.count()) > 0, { timeout: 90_000 }).toBe(true);
   const c = await at(page, ["e2e:close-press", "e2e:closing", "e2e:closed"]);
-  if (!(await closed.count()) || !c["e2e:close-press"] || !c["e2e:closed"]) {
+  if (!c["e2e:close-press"] || !c["e2e:closed"]) {
     log({ step: "not-closed", asset, side, toast: await notClosed.first().innerText().catch(() => "") });
     return true;
   }

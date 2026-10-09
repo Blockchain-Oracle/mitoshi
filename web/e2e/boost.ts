@@ -51,7 +51,7 @@ try {
   const t0 = Date.now();
   await page.locator(".tm-buttons .tm-btn").filter({ hasText: "UP" }).first().click();
   const boosted = page.locator('[data-slot="toast-title"]').filter({ hasText: /boosted 2×/ });
-  const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /didn't go through|Boost|Top up/ });
+  const refused = page.locator('[data-slot="toast-title"]').filter({ hasText: /Order failed|didn't go through|Boost|Top up/ });
   await expect(boosted.or(refused).first()).toBeVisible({ timeout: 120_000 });
   const ok = (await boosted.count()) > 0;
   note({ step: "boost-open", ok, ms: Date.now() - t0, prompts: s.assertions() - before, toast: await boosted.or(refused).first().innerText(), body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
@@ -69,7 +69,7 @@ try {
   const c0 = Date.now();
   await row.locator(".tm-pos-close").click();
   const closed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Closed / });
-  const notClosed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Price moved|No bids|Close didn't go through/ });
+  const notClosed = page.locator('[data-slot="toast-title"]').filter({ hasText: /^Price moved|No bids|Close failed|Close didn't go through/ });
   await expect(closed.or(notClosed).first()).toBeVisible({ timeout: 120_000 });
   note({ step: "boost-close", ok: (await closed.count()) > 0, ms: Date.now() - c0, prompts: s.assertions() - b, toast: await closed.or(notClosed).first().innerText(), body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
   await page.screenshot({ path: join(out, `boost-closed-${width}.png`) });

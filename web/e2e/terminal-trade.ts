@@ -83,7 +83,7 @@ try {
   // CLOSE, one tap; a requote outside the tolerance offers "Close for $X".
   const t1 = Date.now();
   await close.click();
-  await expect.poll(toastTitles, { timeout: 90_000 }).toContainEqual(expect.stringMatching(new RegExp(`Closed ${symbol}|Reduced ${symbol}|Price moved|Nothing sold|No bids|didn't go through|Waiting for the chain`)));
+  await expect.poll(toastTitles, { timeout: 90_000 }).toContainEqual(expect.stringMatching(new RegExp(`Closed ${symbol}|Reduced ${symbol}|Price moved|Nothing sold|No bids|Close failed|didn't go through|Waiting for the chain`)));
   let titles = await toastTitles();
   if (titles.some((t) => t === "Price moved")) {
     log({ step: "close-requote", toasts: titles });
