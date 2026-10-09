@@ -4,7 +4,8 @@
  * aside with ONE more assertion ($1 taps, `[approve, depositAndGrant]`); then on `/trade`:
  *   - UP and DOWN sign with the session key — ZERO assertions, sponsored — and the positions are held in the Trading
  *     Balance (the details drawer says so);
- *   - CLOSE sells one back through the vault's sell lane (`placeFor`, the session key) — ZERO assertions;
+ *   - CLOSE sells one back through the vault's sell lane (`placeFor`, the session key) — ZERO assertions — timed into
+ *     the house's exit tail (lock − 60 s, S24.4), taking a "Close for $X" offer as a person would;
  *   - a stake over the $1 per-tap cap is refused under the button in D-160's words, nothing sent, no prompt;
  *   - a SOL position's exits on the cheap side, bracketed around what Close pays and written from the terminal, are
  *     sold by the keeper with the tab closed (S24.5; the cheap side since D-213's slack, F-S24-01);
@@ -147,7 +148,7 @@ try {
   const beforeSet = s.assertions();
   await exits.getByRole("button", { name: "Set", exact: true }).click();
   await expect(page.locator('[data-slot="toast-title"]').filter({ hasText: /^TP\/SL updated/ })).toBeVisible({ timeout: 30_000 });
-  const held = (await page.evaluate(`fetch("/api/exits").then((r) => r.status === 200 ? r.json() : { status: r.status })`)) as { exits?: Array<{ market: string; side: string; status: string; takeProfitBase: string | null }>; status?: number };
+  const held = (await page.evaluate(`fetch("/api/exits").then((r) => r.status === 200 ? r.json() : { status: r.status })`)) as { exits?: Array<{ market: string; side: string; status: string; takeProfitBase: string | null; expiresAtSec: number }>; status?: number };
   const armed = held.exits?.find((e) => e.status === "armed" && e.side === "down") ?? null;
   note({ step: "keeper-armed", grantPrompts, setPrompts: s.assertions() - beforeSet, armed, read: held.status ?? 200 });
   if (!armed) throw new Error(`the keeper holds no armed exit: ${JSON.stringify(held).slice(0, 200)}`);
@@ -157,7 +158,13 @@ try {
     await page.waitForTimeout(400);
   }
 
-  // 3. CLOSE through the vault's sell lane: the session key signs `placeFor`, no prompt.
+  // 3. CLOSE through the vault's sell lane: the session key signs `placeFor`, no prompt. Timed into the house's exit
+  // tail (S24.4's live check, D-194/D-204): from lock − 75 the pair is half size at twice the half spread and nothing
+  // new is placed from lock − 45, so the close goes at about lock − 60. The armed trigger's expiry is the Window's lock.
+  const lockSec = armed.expiresAtSec;
+  const early = lockSec - Math.floor(Date.now() / 1000);
+  if (early > 68) await page.waitForTimeout((early - 60) * 1_000);
+  const closeToLockSec = lockSec - Math.floor(Date.now() / 1000);
   const close = page.locator(".tm-buttons .tm-btn").filter({ hasText: "CLOSE" });
   await expect(close).toBeVisible({ timeout: 30_000 });
   const beforeClose = s.assertions();
@@ -175,7 +182,7 @@ try {
     await closeFor.first().click();
     await expect(closed.first()).toBeVisible({ timeout: 60_000 }).catch(() => undefined);
   }
-  note({ step: "vault-close", ok: (await closed.count()) > 0, ms: Date.now() - c0, prompts: s.assertions() - beforeClose, requote, toast: await closed.or(notClosed).first().innerText().catch(() => ""), body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
+  note({ step: "vault-close", ok: (await closed.count()) > 0, toLockSec: closeToLockSec, inTail: closeToLockSec <= 75 && closeToLockSec > 30, ms: Date.now() - c0, prompts: s.assertions() - beforeClose, requote, toast: await closed.or(notClosed).first().innerText().catch(() => ""), body: await page.locator('[data-slot="toast-description"]').first().innerText().catch(() => "") });
   await page.screenshot({ path: join(out, `vault-close-${width}.png`) });
 
   // 4. Over the per-tap cap: the reason under the button (D-160), nothing sent, no prompt.
