@@ -115,7 +115,22 @@ try {
   // 2b. Exits with the app closed (S24.5): from the position's TP/SL drawer, one passkey confirmation grants EXIT, a
   // take-profit is handed to the keeper (the session key signs it, no prompt) and the server holds it armed.
   await ethRow.locator(".tm-pos-open-btn").click();
-  await modal(page).getByRole("button", { name: "TP / SL", exact: true }).click();
+  await page.waitForTimeout(600);
+  // The TP / SL button's box over a dozen frames (run 37900571332: "not stable" for 90 s) — what moves, by how much.
+  const jitter = await page.evaluate(`(async () => {
+    const b = [...document.querySelectorAll('[role="dialog"] button')].find((x) => x.textContent.trim() === "TP / SL");
+    const out = [];
+    for (let i = 0; i < 12; i++) {
+      const r = b ? b.getBoundingClientRect() : null;
+      const panel = b ? b.closest('[role="dialog"]').getBoundingClientRect() : null;
+      out.push(r ? [Math.round(r.x * 10) / 10, Math.round(r.y * 10) / 10, panel ? Math.round(panel.x * 10) / 10 : null] : null);
+      await new Promise((res) => requestAnimationFrame(res));
+    }
+    return out;
+  })()`);
+  note({ step: "tpsl-box", jitter });
+  await page.screenshot({ path: join(out, `details-${width}.png`) });
+  await modal(page).getByRole("button", { name: "TP / SL", exact: true }).click({ timeout: 20_000 });
   const exits = modal(page);
   const turnOn = exits.getByRole("button", { name: "Keep exits running with the app closed" });
   await expect(turnOn).toBeVisible({ timeout: 30_000 });
