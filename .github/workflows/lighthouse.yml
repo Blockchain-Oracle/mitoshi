@@ -8,7 +8,8 @@ name: lighthouse
 #   measured before it is deployed. GitHub's runners differ in speed by ~40 % (the summary prints Lighthouse's host
 #   benchmark), so `base_ref` measures a second build on the same runner first — a same-host before/after:
 #     gh workflow run lighthouse.yml --ref <branch carrying this file> -f ref=<branch|sha> [-f base_ref=<sha>] [-f shifts=true]
-# Each later stage appends its routes to ROUTES.
+# Each later stage appends its routes to ROUTES. `/markets/<id>` is a redirect to the terminal since S23 (D-192), so
+# the terminal is measured on its own routes: `/trade/BTC` (crypto, Coinbase's line) and `/trade/TSLA` (a stock, IEX/RedStone).
 on:
   repository_dispatch:
     types: [coolify-deployment-success]
@@ -35,7 +36,7 @@ jobs:
       BASE: ${{ github.event.client_payload.url || inputs.url || 'http://localhost:3000' }}
       REF: ${{ (github.event_name == 'workflow_dispatch' && !inputs.url) && inputs.ref || '' }}
       BASE_REF: ${{ (github.event_name == 'workflow_dispatch' && !inputs.url && inputs.ref) && inputs.base_ref || '' }}
-      ROUTES: "/ /markets /markets/0x0000000000000000000000000000000000000000000000000000000000000001 /portfolio /proof/0x0000000000000000000000000000000000000000000000000000000000000001 /status /trade/BTC"
+      ROUTES: "/ /markets /portfolio /proof/0x0000000000000000000000000000000000000000000000000000000000000001 /status /trade/BTC /trade/TSLA"
     steps:
       - name: Mode
         run: |
@@ -128,11 +129,11 @@ jobs:
       - name: Main-thread tasks
         if: always() && env.REF != ''
         continue-on-error: true
-        run: WEB_DIR=target/web node scripts/perf/trace-tasks.mjs http://localhost:3000 / /markets /markets/0x0000000000000000000000000000000000000000000000000000000000000001 /portfolio --seconds 20 --shifts 3 --chrome
+        run: WEB_DIR=target/web node scripts/perf/trace-tasks.mjs http://localhost:3000 / /markets /portfolio /trade/BTC --seconds 20 --shifts 3 --chrome
       - name: Lighthouse trace layout shifts
         if: always() && env.REF != '' && inputs.shifts == 'true'
         continue-on-error: true
-        run: node scripts/perf/lh-shifts.mjs http://localhost:3000/markets http://localhost:3000/markets/0x0000000000000000000000000000000000000000000000000000000000000001 --runs 4
+        run: node scripts/perf/lh-shifts.mjs http://localhost:3000/markets http://localhost:3000/trade/BTC --runs 4
       - name: Server logs
         if: always() && env.REF != ''
         run: tail -n 40 "$RUNNER_TEMP/next.log" "$RUNNER_TEMP/serve.log" || true

@@ -4,24 +4,55 @@
  * TTI cut-off), but a like-for-like comparison of two builds back to back on the same host — e.g. the deployed site
  * against a local build — when a loaded workstation makes the lab's simulated TBT meaningless.
  *
+ * Then the frame work (the S23 gate's ≤ 2 ms): every `requestAnimationFrame` callback is timed and summed per frame
+ * (callbacks sharing a frame timestamp), over `--frames-s` seconds of steady state after the first 12 s — the terminal's
+ * chart loop plus anything else animating. Reported as p50 / p95 / max per frame at the same CPU rate.
+ *
  *   pnpm --filter @cwf/web exec tsx e2e/long-tasks.ts https://testnet.mitoshi.xyz / /markets /portfolio
+ *   pnpm --filter @cwf/web exec tsx e2e/long-tasks.ts --base https://testnet.mitoshi.xyz --routes /trade/BTC [--cpu 1] [--out <dir>]
  */
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { chromium } from "@playwright/test";
-const base = process.argv[2] ?? "https://testnet.mitoshi.xyz";
-const routes = process.argv.slice(3);
+
+const arg = (n: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : undefined; };
+const flagged = process.argv.some((a) => a.startsWith("--"));
+const base = (flagged ? arg("base") : process.argv[2]) ?? "https://testnet.mitoshi.xyz";
+const routes = flagged ? (arg("routes") ?? "/trade/BTC").split(",") : process.argv.slice(3);
+const cpu = Number(arg("cpu") ?? "4");
+const framesS = Number(arg("frames-s") ?? "10");
+const out = arg("out");
+if (out) mkdirSync(out, { recursive: true });
+
+const pct = (xs: number[], p: number) => xs.length ? xs[Math.min(xs.length - 1, Math.floor((p / 100) * xs.length))]! : 0;
+const rows: Record<string, unknown>[] = [];
 const browser = await chromium.launch();
 for (const r of routes) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
   const page = await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);
-  await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
+  await cdp.send("Emulation.setCPUThrottlingRate", { rate: cpu });
   await page.addInitScript(`window.__lt=[];new PerformanceObserver(l=>{for(const e of l.getEntries())window.__lt.push([Math.round(e.startTime),Math.round(e.duration)])}).observe({type:"longtask",buffered:true});`);
+  // One entry per frame: the summed duration of every rAF callback run with that frame's timestamp.
+  await page.addInitScript(`(()=>{const raf=window.requestAnimationFrame.bind(window);window.__fw=[];let cur=null;
+    window.requestAnimationFrame=(cb)=>raf((ts)=>{const t0=performance.now();try{cb(ts)}finally{const d=performance.now()-t0;
+    if(cur&&cur.ts===ts)cur.ms+=d;else{cur={ts,at:t0,ms:d};window.__fw.push(cur)}}});})();`);
   await page.goto(base + r, { waitUntil: "load" });
   await page.waitForTimeout(12000);
   const lt = await page.evaluate(`window.__lt`) as [number, number][];
   const tbt = lt.reduce((s, [, d]) => s + Math.max(0, d - 50), 0);
   const frames = page.frames().map((f) => new URL(f.url() || "about:blank").host).filter(Boolean);
-  console.log(r, "longtasks", lt.length, "blocking>50", tbt, "top", JSON.stringify(lt.sort((a, b) => b[1] - a[1]).slice(0, 6)), "frames", frames.join(","));
+  const top = lt.sort((a, b) => b[1] - a[1]).slice(0, 6);
+  console.log(r, "longtasks", lt.length, "blocking>50", tbt, "top", JSON.stringify(top), "frames", frames.join(","));
+
+  const from = await page.evaluate(`performance.now()`) as number;
+  await page.waitForTimeout(framesS * 1000);
+  const fw = (await page.evaluate(`window.__fw`) as { at: number; ms: number }[]).filter((f) => f.at >= from).map((f) => f.ms).sort((a, b) => a - b);
+  const frameWork = { frames: fw.length, fps: Math.round(fw.length / framesS), p50: +pct(fw, 50).toFixed(2), p95: +pct(fw, 95).toFixed(2), max: +(fw.at(-1) ?? 0).toFixed(2) };
+  console.log(r, `frame work at ${cpu}× CPU over ${framesS} s`, JSON.stringify(frameWork));
+  rows.push({ route: r, cpu, longtasks: lt.length, blocking: tbt, top, crossOriginFrames: frames, frameWork });
+  if (out) await page.screenshot({ path: join(out, `${r.replace(/\W+/g, "_") || "root"}.png`) });
   await ctx.close();
 }
 await browser.close();
+if (out) writeFileSync(join(out, "long-tasks.json"), JSON.stringify(rows, null, 2));

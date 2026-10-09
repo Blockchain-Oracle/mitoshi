@@ -2,7 +2,7 @@ name: e2e
 # Runs one browser driver from `web/e2e/` against a deployed build from a GitHub runner (S23): the owner's link is too
 # slow for page loads against testnet (F-S22-03), so stage gates that drive the deployed site run here. Screenshots and
 # the driver's log are uploaded as an artifact.
-#   gh workflow run e2e.yml -f url=https://testnet.mitoshi.xyz -f driver=terminal
+#   gh workflow run e2e.yml -f url=https://testnet.mitoshi.xyz -f driver=terminal [-f args="--symbol TSLA"]
 on:
   workflow_dispatch:
     inputs:
@@ -14,6 +14,10 @@ on:
         description: Driver name in web/e2e (without .ts), e.g. terminal, shell-interactions, ux-gate
         required: true
         default: terminal
+      args:
+        description: Extra driver flags, e.g. --symbol TSLA or --routes /trade/BTC (letters, digits, - / . , = and spaces)
+        required: false
+        default: ""
 
 jobs:
   drive:
@@ -29,9 +33,14 @@ jobs:
       - run: pnpm install --frozen-lockfile --filter "@cwf/web..."
       - run: pnpm --filter @cwf/web exec playwright install --with-deps chromium
       - name: Drive
+        env:
+          DRIVER_ARGS: ${{ inputs.args }}
         run: |
           case "${{ inputs.driver }}" in *[!a-z0-9-]*) echo "::error::driver names are lower-case words"; exit 1;; esac
-          pnpm --filter @cwf/web exec tsx "e2e/${{ inputs.driver }}.ts" --base "${{ inputs.url }}" --out "$GITHUB_WORKSPACE/e2e-out" 2>&1 | tee "$GITHUB_WORKSPACE/e2e-out.log"
+          case "$DRIVER_ARGS" in *[!A-Za-z0-9\ /.,=-]*) echo "::error::args take letters, digits, - / . , = and spaces"; exit 1;; esac
+          # Word-split on purpose: each flag and value is its own argument (the characters above admit no globbing).
+          # shellcheck disable=SC2086
+          pnpm --filter @cwf/web exec tsx "e2e/${{ inputs.driver }}.ts" --base "${{ inputs.url }}" --out "$GITHUB_WORKSPACE/e2e-out" $DRIVER_ARGS 2>&1 | tee "$GITHUB_WORKSPACE/e2e-out.log"
           exit "${PIPESTATUS[0]}"
       - if: always()
         uses: actions/upload-artifact@v4
