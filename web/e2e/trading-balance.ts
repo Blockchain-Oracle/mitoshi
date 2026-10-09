@@ -6,6 +6,8 @@
  *     Balance (the details drawer says so);
  *   - CLOSE sells one back through the vault's sell lane (`placeFor`, the session key) — ZERO assertions;
  *   - a stake over the $1 per-tap cap is refused under the button in D-160's words, nothing sent, no prompt;
+ *   - a Down BTC's exits, bracketed around what Close pays and written from the terminal, are sold by the keeper with
+ *     the tab closed (S24.5);
  *   - the grant is listed on /settings/account and stops (one assertion).
  * `--verdict-min N` also waits for the open position's Window to settle into the Trading Balance. Prints every tx.
  *
@@ -188,6 +190,58 @@ try {
   const shown = await expect(capNote).toContainText(/per tap/, { timeout: 60_000 }).then(() => true, () => false);
   note({ step: "cap-refusal", shown, text: await capNote.innerText().catch(() => ""), prompts: s.assertions() - before });
   await page.screenshot({ path: join(out, `cap-refusal-${width}.png`) });
+
+  // 4b. A trigger written from the terminal, sold by the keeper with the tab closed (S24.5's live check). A fresh
+  // Down BTC (the account is new each run, so its row is unique) in a Window with at least 200 s left, so the sale is
+  // not left to the house's last-minute tail. Its exits are bracketed 1¢ around what Close pays now: a stop-loss under
+  // it, and a take-profit at whichever is higher of 1¢ over it and 1¢ over the stake (a take-profit must clear the stake).
+  // The tab then leaves the app, and `/api/exits` is read until the keeper reports.
+  // The stake back under the $1 per-tap cap (step 4 left it at $1.50).
+  await page.locator(".tm-stack").click();
+  await modal(page).getByLabel(/Size|Stake/).first().fill("1.00");
+  await modal(page).getByLabel(/Size|Stake/).first().blur();
+  await page.keyboard.press("Escape");
+  const left = 300 - (Math.floor(Date.now() / 1000) % 300);
+  if (left < 200) await page.waitForTimeout((left + 8) * 1_000);
+  await page.goto(`${base}/trade/BTC`, { waitUntil: "load" });
+  await settle(page);
+  const keptRow = await tap(s, "BTC", "down");
+  await keptRow.locator(".tm-pos-open-btn").click();
+  await modal(page).getByRole("button", { name: "TP / SL", exact: true }).click({ timeout: 20_000 });
+  const bracket = modal(page);
+  await expect(bracket.getByText(/^Runs with the app closed/)).toBeVisible({ timeout: 60_000 });
+  await bracket.getByRole("tab", { name: "P&L" }).click();
+  const cents = (re: RegExp, text: string) => Math.round(Number((re.exec(text)?.[1] ?? "NaN").replace(/,/g, "")) * 100);
+  const drawerText = await bracket.innerText();
+  const stakeC = cents(/\$([\d,.]+) staked/, drawerText);
+  const nowC = cents(/Close pays (?:≈ )?\$([\d,.]+) now/, drawerText);
+  if (!Number.isFinite(stakeC) || !Number.isFinite(nowC)) throw new Error(`keeper-sold: no stake or value in the drawer: ${drawerText.slice(0, 200)}`);
+  const pnl = (c: number) => `${c < 0 ? "-" : ""}${(Math.abs(c) / 100).toFixed(2)}`;
+  const slC = nowC - 1 < stakeC ? nowC - 1 : null;
+  const tpC = Math.max(nowC + 1, stakeC + 1);
+  if (slC !== null && slC > 0) await bracket.getByRole("group", { name: "Stop loss" }).getByLabel("P&L").fill(pnl(slC - stakeC));
+  await bracket.getByRole("group", { name: "Take profit" }).getByLabel("P&L").fill(pnl(tpC - stakeC));
+  const beforeBracket = s.assertions();
+  await bracket.getByRole("button", { name: "Set", exact: true }).click();
+  await expect(page.locator('[data-slot="toast-title"]').filter({ hasText: /^TP\/SL updated/ })).toBeVisible({ timeout: 30_000 });
+  type ExitRow = { market: string; side: string; status: string; reason: string | null; takeProfitBase: string | null; stopLossBase: string | null; expiresAtSec: number; lastError: string | null; fireTx: string | null; proceedsBase: string | null; contractsRaw: string | null };
+  const readExits = async () => {
+    const r = await page.context().request.get(`${base}/api/exits`);
+    return r.ok() ? ((await r.json()) as { exits: ExitRow[] }).exits : [];
+  };
+  const keptArmed = (await readExits()).find((e) => e.side === "down" && e.status === "armed" && (e.takeProfitBase !== null || e.stopLossBase !== null)) ?? null;
+  note({ step: "keeper-bracket", stakeC, nowC, slC, tpC, prompts: s.assertions() - beforeBracket, armed: keptArmed });
+  if (!keptArmed) throw new Error("keeper-sold: the keeper holds no armed bracket");
+  await page.goto("about:blank");
+  let kept: ExitRow | null = keptArmed;
+  const t0Kept = Date.now();
+  while (kept && (kept.status === "armed" || kept.status === "firing") && Date.now() / 1000 < kept.expiresAtSec + 30) {
+    await new Promise((r) => setTimeout(r, 4_000));
+    kept = (await readExits()).find((e) => e.market === keptArmed.market && e.side === "down") ?? null;
+  }
+  if (kept?.fireTx) log({ step: "tx", hash: kept.fireTx });
+  note({ step: "keeper-sold", ok: kept?.status === "fired", afterMs: Date.now() - t0Kept, status: kept?.status ?? null, reason: kept?.reason ?? null, fireTx: kept?.fireTx ?? null, proceedsBase: kept?.proceedsBase ?? null, contractsRaw: kept?.contractsRaw ?? null, lastError: kept?.lastError ?? null });
+  if (kept?.status !== "fired" && !kept?.lastError) throw new Error(`keeper-sold: ended ${kept?.status ?? "missing"} with no reason from the keeper`);
 
   // 5. The grant on /settings/account, and Stop (one assertion).
   await page.goto(`${base}/settings/account`, { waitUntil: "load" });
