@@ -41,9 +41,20 @@ describe("lazyConnector (D-152)", () => {
     const { cfg } = config(null);
     const c = lazyConnector({ id: "xyz.tempo", name: "Tempo Wallet", type: "injected" }, () => fn)(cfg);
     expect([c.id, c.name, c.type]).toEqual(["xyz.tempo", "Tempo Wallet", "injected"]);
-    // wagmi's reconnect asks every connector; one the user did not use last stays unbuilt.
+    // wagmi's reconnect asks every connector for its provider, then whether it is authorised (reconnect.js): one the
+    // user did not use last answers with no provider and stays unbuilt.
+    expect(await c.getProvider()).toBeUndefined();
     expect(await c.isAuthorized()).toBe(false);
     expect(built).not.toHaveBeenCalled();
+  });
+
+  it("builds from an async loader (a store of its own) on first use", async () => {
+    const { built, fn } = probe();
+    const { cfg } = config(null);
+    const c = lazyConnector({ id: "xyz.tempo", name: "Tempo Wallet", type: "injected" }, async () => fn)(cfg);
+    expect(await c.connect()).toEqual({ accounts: [ACCOUNT], chainId: 42431 });
+    expect(await c.getProvider()).toEqual({});
+    expect(built).toHaveBeenCalledTimes(1);
   });
 
   it("builds the real connector on connect, once, on wagmi's own emitter", async () => {

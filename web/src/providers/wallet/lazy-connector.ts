@@ -5,16 +5,21 @@
  * to /markets as 2.4–5 s of blocking time on a quiet CI host. Wrapped here, the connector is only an id, a name and an
  * icon until someone picks it in the sign-in modal or it was the last connector used (wagmi's reconnect), and then it
  * is the real connector with the same emitter, storage and chains, so its events reach wagmi unchanged.
+ *
+ * wagmi's `reconnect` asks every connector for its provider BEFORE `isAuthorized`, so `getProvider` stays lazy too: an
+ * unused connector answers with no provider and reconnect skips it unbuilt. Building it there (S23 gate, F-S23-10)
+ * mounted the Tempo Wallet iframe on every reload with a session, whose empty store then persisted `accounts: []` over
+ * the passkey's — the next page load was signed out. The loader may be async (a store of its own needs `accounts`).
  */
 import { createConnector, type CreateConnectorFn } from "wagmi";
 
-export function lazyConnector(meta: { id: string; name: string; icon?: string; rdns?: string; type: string }, load: () => CreateConnectorFn): CreateConnectorFn {
+export function lazyConnector(meta: { id: string; name: string; icon?: string; rdns?: string; type: string }, load: () => CreateConnectorFn | Promise<CreateConnectorFn>): CreateConnectorFn {
   return createConnector((config) => {
     type Inner = ReturnType<CreateConnectorFn>;
     let inner: Promise<Inner> | null = null;
     const real = () =>
       (inner ??= (async () => {
-        const connector = load()(config);
+        const connector = (await load())(config);
         await connector.setup?.();
         return connector;
       })());
@@ -35,6 +40,8 @@ export function lazyConnector(meta: { id: string; name: string; icon?: string; r
         return (await real()).getChainId();
       },
       async getProvider(parameters) {
+        // reconnect's first question to every connector: an unused one has no provider (wagmi skips it).
+        if (!inner && !(await recent())) return undefined as never;
         return (await real()).getProvider(parameters);
       },
       async getClient(parameters) {
