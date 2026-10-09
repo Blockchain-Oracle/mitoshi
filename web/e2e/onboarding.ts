@@ -66,10 +66,20 @@ for (const width of [390, 1440]) {
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden({ timeout: 10_000 });
 
-    // Equity on the pill (NumberFlow's own label carries the figure; its digits render in a shadow root).
-    const figure = page.locator(".tm-equity:visible [role='img']").first();
-    await expect(figure).toHaveAttribute("aria-label", /\$[1-9]/, { timeout: 30_000 });
-    const equity = await figure.getAttribute("aria-label");
+    // Equity on the pill. NumberFlow's digits render in a shadow root and its role ("img") and label are set through
+    // ElementInternals, not attributes, so the figure is read from Chrome's accessibility tree under the pill.
+    const equityName = async (): Promise<string | null> => {
+      const { root } = await cdp.send("DOM.getDocument", { depth: 0 });
+      const { nodeIds } = await cdp.send("DOM.querySelectorAll", { nodeId: root.nodeId, selector: ".tm-equity" });
+      for (const nodeId of nodeIds) {
+        const { nodes } = await cdp.send("Accessibility.queryAXTree", { nodeId, role: "image" });
+        const name = nodes.map((n) => n.name?.value).find((v): v is string => typeof v === "string" && /\$\d/.test(v));
+        if (name) return name;
+      }
+      return null;
+    };
+    await expect.poll(equityName, { timeout: 30_000 }).toMatch(/\$[1-9]/);
+    const equity = await equityName();
 
     // The tour shows on the first visit only: a reload goes straight to the terminal.
     await page.reload({ waitUntil: "load" });

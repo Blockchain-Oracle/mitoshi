@@ -36,7 +36,16 @@ try {
   const before = session.assertions();
   const t0 = Date.now();
   await up.click();
-  await expect.poll(toastTitles, { timeout: 90_000 }).toContainEqual(expect.stringMatching(new RegExp(`Up ${symbol} opened|Price moved|Nothing filled|didn't go through|Waiting for the chain`)));
+  const outcome = new RegExp(`Up ${symbol} opened|Price moved|Nothing filled|didn't go through|failed|Waiting for the chain`);
+  await expect.poll(toastTitles, { timeout: 90_000 }).toContainEqual(expect.stringMatching(outcome));
+  // A requote (D-208) says "Tap again to take it": a person taps again, once, at the new price.
+  if ((await toastTitles()).includes("Price moved")) {
+    log({ step: "open-requote", toasts: await toastTitles(), body: await page.locator('[data-slot="toast-description"]').allInnerTexts() });
+    await page.locator('[data-slot="toast-close"]').first().click().catch(() => undefined);
+    await expect.poll(toastTitles, { timeout: 10_000 }).not.toContain("Price moved");
+    await up.click();
+    await expect.poll(toastTitles, { timeout: 90_000 }).toContainEqual(expect.stringMatching(outcome));
+  }
   const opened = (await toastTitles()).some((t) => t.includes("opened"));
   log({ step: "open", ok: opened, ms: Date.now() - t0, prompts: session.assertions() - before, toasts: await toastTitles() });
   if (!opened) throw new Error("UP did not open");

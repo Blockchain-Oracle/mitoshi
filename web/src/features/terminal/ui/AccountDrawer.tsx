@@ -125,7 +125,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
               </div>
               {collectable.length ? <CollectPlate wallet={wallet} rows={collectable} /> : null}
               {!tapArmed && sessionView.status !== "armed" ? (
-                <div className="tm-arm"><span className="tm-field-hint">{TERMINAL.arm.lead}</span><TapTradingChip /></div>
+                <div className="tm-arm"><span className="tm-field-hint">{TERMINAL.arm.lead}</span><TapTradingChip className="tm-choice tm-arm-cta" offLabel={TERMINAL.arm.cta} /></div>
               ) : null}
               <Group title={TERMINAL.account.trading}>
                 <Item icon={History} label={TERMINAL.account.history} onClick={() => setView("history")} />

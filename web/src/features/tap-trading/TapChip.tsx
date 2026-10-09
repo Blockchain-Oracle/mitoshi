@@ -10,16 +10,17 @@ import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { ArmWalletKey, dollars, untilText } from "./ArmWalletKey";
 import { TAP } from "./copy";
 
-export function TapChip() {
+/** `className` and `offLabel` restyle the trigger for a surface without the ticket's `tk-*` styles (the terminal). */
+export function TapChip({ className, offLabel }: { className?: string; offLabel?: string } = {}) {
   const shell = useWalletShell();
   const [open, setOpen] = useState(false);
   if (!shell.tempo) return null;
   const key = shell.walletKey;
   const title = key ? TAP.chip.titleOn(dollars(key.limitBase), untilText(key.expirySec)) : shell.canArmWalletKey ? TAP.chip.titleOff : TAP.chip.titleUnavailable;
-  const label = key ? TAP.chip.on : TAP.chip.off;
+  const label = key ? TAP.chip.on : (offLabel ?? TAP.chip.off);
   return (
     <>
-      <button type="button" className="tk-lev min-h-touch" aria-pressed={key !== null} disabled={!key && !shell.canArmWalletKey} title={title} aria-label={`${label} — ${title}`} onClick={() => setOpen(true)}>
+      <button type="button" className={className ?? "tk-lev min-h-touch"} aria-pressed={key !== null} disabled={!key && !shell.canArmWalletKey} title={title} aria-label={`${label} — ${title}`} onClick={() => setOpen(true)}>
         {label}
       </button>
       {open ? (

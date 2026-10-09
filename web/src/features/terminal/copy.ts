@@ -246,6 +246,7 @@ export const TERMINAL = {
   },
   arm: {
     lead: "Turn on one-tap: one passkey prompt now, then every tap signs itself.",
+    cta: "Turn on one-tap",
   },
   exits: {
     title: (side: string, symbol: string) => `TP / SL · ${side} ${symbol}`,

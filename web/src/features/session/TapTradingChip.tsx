@@ -16,18 +16,19 @@ import { ArmTradingBalance } from "./ArmTradingBalance";
 import { SESSION } from "./copy";
 import { useSessionView } from "./context";
 
-export function TapTradingChip() {
+/** `className` and `offLabel` restyle the off trigger where the ticket's `tk-*` styles aren't loaded (the terminal). */
+export function TapTradingChip({ className, offLabel }: { className?: string; offLabel?: string } = {}) {
   const view = useSessionView();
   const shell = useWalletShell();
   const [open, setOpen] = useState(false);
   if (view.grant && view.status !== "disarmed") return <AllowancePill />;
   const offerBalance = view.status === "disarmed";
-  if (!offerBalance) return <TapChip />;
+  if (!offerBalance) return <TapChip className={className} offLabel={offLabel} />;
   const walletKeyOn = shell.walletKey !== null;
   return (
     <>
-      <button type="button" className="tk-lev min-h-touch" aria-pressed={walletKeyOn} title={walletKeyOn ? SESSION.chooser.titleOn : SESSION.chooser.titleOff} onClick={() => setOpen(true)}>
-        {walletKeyOn ? TAP.chip.on : TAP.chip.off}
+      <button type="button" className={className ?? "tk-lev min-h-touch"} aria-pressed={walletKeyOn} title={walletKeyOn ? SESSION.chooser.titleOn : SESSION.chooser.titleOff} onClick={() => setOpen(true)}>
+        {walletKeyOn ? TAP.chip.on : (offLabel ?? TAP.chip.off)}
       </button>
       {open ? (
         <Modal open={open} onOpenChange={setOpen} eyebrow={TAP.eyebrow} title={TAP.title}>

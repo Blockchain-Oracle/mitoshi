@@ -244,7 +244,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
           {needsArm ? (
             <div className="tm-arm" role="note">
               <span className="tm-field-hint">{TERMINAL.arm.lead}</span>
-              <TapTradingChip />
+              <TapTradingChip className="tm-choice tm-arm-cta" offLabel={TERMINAL.arm.cta} />
             </div>
           ) : null}
           {market ? <ModeChips mode={mode} onMode={chooseMode} /> : null}

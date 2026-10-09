@@ -169,6 +169,8 @@
 .tm-unrealized .tm-choice { grid-row: span 2; white-space: nowrap; }
 .tm-unrealized-figure { font: 700 18px/1.2 var(--font-data); font-variant-numeric: tabular-nums; }
 .tm-pos-tag { margin-left: 6px; padding: 2px 6px; border-radius: var(--radius-full); background: color-mix(in oklab, var(--chart-up) 16%, var(--color-surface-1)); color: var(--chart-up); font: 700 9px/1 var(--font-body); letter-spacing: 0.08em; vertical-align: middle; }
+.tm-arm-cta { background: var(--accent-fill); color: var(--on-accent); }
+.tm-arm-cta:disabled { opacity: 0.5; }
 .tm-arm { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
 .tm-scheduled { display: flex; flex-direction: column; gap: 10px; }
 .tm-price { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
