@@ -34,7 +34,8 @@ function useGrantHistory(owner: Address) {
   });
 }
 
-function LiveGrant({ grant, thisDevice, nowSec, onStop, stopping }: { grant: VaultGrant; thisDevice: boolean; nowSec: number; onStop?: () => void; stopping: boolean }) {
+// While a stop runs every row's button is disabled and the one being stopped says so (the row stays until the re-read).
+function LiveGrant({ grant, thisDevice, nowSec, onStop, stopping, busy }: { grant: VaultGrant; thisDevice: boolean; nowSec: number; onStop: () => void; stopping: boolean; busy: boolean }) {
   const expired = grant.expiresAtSec < nowSec;
   return (
     <li className="flex flex-col gap-3 rounded-lg border border-hairline bg-surface-1 p-4">
@@ -60,11 +61,9 @@ function LiveGrant({ grant, thisDevice, nowSec, onStop, stopping }: { grant: Vau
         </dl>
       )}
       <p className="type-caption text-ink-secondary">{grant.kind === "exit" ? G.exitNever : G.never}</p>
-      {onStop ? (
-        <button type="button" onClick={onStop} disabled={stopping} className="min-h-touch self-start rounded-md border border-border-strong px-4 type-body-strong text-ink disabled:opacity-50">
-          {stopping ? G.stopping : G.stop}
-        </button>
-      ) : null}
+      <button type="button" onClick={onStop} disabled={busy} aria-busy={stopping} className="min-h-touch self-start rounded-md border border-border-strong px-4 type-body-strong text-ink disabled:opacity-50">
+        {stopping ? G.stopping : G.stop}
+      </button>
     </li>
   );
 }
@@ -105,7 +104,7 @@ export function GrantsSection({ account, network }: { account: Address; network:
         {live.length > 0 ? (
           <ul className="flex flex-col gap-3">
             {live.map((g) => (
-              <LiveGrant key={g.grantId.toString()} grant={g} nowSec={nowSec} thisDevice={view.keyAddress !== null && g.actor.toLowerCase() === view.keyAddress.toLowerCase()} stopping={stopping.includes(g.grantId.toString())} onStop={stopping.length ? undefined : () => void stop([g])} />
+              <LiveGrant key={g.grantId.toString()} grant={g} nowSec={nowSec} thisDevice={view.keyAddress !== null && g.actor.toLowerCase() === view.keyAddress.toLowerCase()} stopping={stopping.includes(g.grantId.toString())} busy={stopping.length > 0} onStop={() => void stop([g])} />
             ))}
           </ul>
         ) : null}
