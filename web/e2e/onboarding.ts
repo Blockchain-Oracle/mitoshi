@@ -61,7 +61,10 @@ for (const width of [390, 1440]) {
     await page.waitForTimeout(400);
     await page.screenshot({ path: join(out, `funded-${width}.png`) });
     const axe = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(["wcag2a", "wcag2aa"]).analyze();
-    if (axe.violations.length) throw new Error(`axe: ${axe.violations.map((v) => v.id).join(", ")}`);
+    if (axe.violations.length) {
+      for (const v of axe.violations) for (const n of v.nodes.slice(0, 6)) console.log(JSON.stringify({ axe: v.id, target: n.target.join(" "), why: (n.failureSummary ?? "").split("\n").slice(0, 3).join(" | ") }));
+      throw new Error(`axe: ${axe.violations.map((v) => v.id).join(", ")}`);
+    }
     if (assertions !== 0) throw new Error(`funding needed ${assertions} extra passkey prompt(s)`);
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden({ timeout: 10_000 });
@@ -95,7 +98,10 @@ for (const width of [390, 1440]) {
     await expect(funds.getByRole("button", { name: "Get test dollars" })).toBeDisabled();
     await page.screenshot({ path: join(out, `addfunds-cooldown-${width}.png`) });
     const axeFunds = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(["wcag2a", "wcag2aa"]).analyze();
-    if (axeFunds.violations.length) throw new Error(`axe add money: ${axeFunds.violations.map((v) => v.id).join(", ")}`);
+    if (axeFunds.violations.length) {
+      for (const v of axeFunds.violations) for (const n of v.nodes.slice(0, 6)) console.log(JSON.stringify({ axe: v.id, target: n.target.join(" "), why: (n.failureSummary ?? "").split("\n").slice(0, 3).join(" | ") }));
+      throw new Error(`axe add money: ${axeFunds.violations.map((v) => v.id).join(", ")}`);
+    }
     await page.keyboard.press("Escape");
 
     const credentials = await cdp.send("WebAuthn.getCredentials", { authenticatorId });
