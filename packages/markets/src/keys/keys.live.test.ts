@@ -7,7 +7,7 @@
 import { P256 } from "ox";
 import { createPublicClient, createWalletClient, encodeFunctionData, http, type Address } from "viem";
 import { generatePrivateKey } from "viem/accounts";
-import { Abis, Account, Actions } from "viem/tempo";
+import { Account, Actions } from "viem/tempo";
 import { describe, expect, it } from "vitest";
 import { TEMPO_RPC_HTTP } from "@cwf/core";
 import { TEMPO } from "@cwf/clients";
@@ -18,6 +18,7 @@ import { withAuthorizedLimits } from "./authorization";
 import { foldKeychain } from "./fold";
 import { keyStatus, readKeyStates } from "./live";
 import { scanKeychain } from "./events";
+import { accountKeychainAbi } from "./keychain-abi";
 
 const chain = tempoChain("testnet");
 const client = createPublicClient({ chain, transport: http(TEMPO_RPC_HTTP.testnet) });
@@ -36,7 +37,7 @@ describe("keychain trust surface on Moderato", () => {
     // The 3-argument overload (0x980a6025): Moderato retired the legacy 5-argument selector (LegacyAuthorizeKeySelectorChanged).
     // KeyRestrictions; "expiry" (unix seconds) is the precompile's own field name.
     const config = { "expiry": BigInt(nowSec + 86_400), enforceLimits: true, limits: [{ token: PATH_USD, amount: 25_000_000n, period: 86_400n }], allowAnyCalls: true, allowedCalls: [] };
-    const authorize = encodeFunctionData({ abi: Abis.accountKeychain, functionName: "authorizeKey", args: [keyId, 1, config] });
+    const authorize = encodeFunctionData({ abi: accountKeychainAbi, functionName: "authorizeKey", args: [keyId, 1, config] });
     const auth = await sendBatch(wallet as never, { calls: [{ to: TEMPO.accountKeychain as Address, data: authorize }], sponsored: false, nonce: { kind: "protocol" }, nowSec });
     expect(auth.receipt.status).toBe("success");
 
@@ -47,7 +48,7 @@ describe("keychain trust surface on Moderato", () => {
     expect(keyStatus(state!, BigInt(nowSec))).toBe("active");
     expect(state!.tokens).toMatchObject([{ token: PATH_USD, limit: 25_000_000n, period: 86_400n, remaining: 25_000_000n }]);
 
-    const revoke = encodeFunctionData({ abi: Abis.accountKeychain, functionName: "revokeKey", args: [keyId] });
+    const revoke = encodeFunctionData({ abi: accountKeychainAbi, functionName: "revokeKey", args: [keyId] });
     const rev = await sendBatch(wallet as never, { calls: [{ to: TEMPO.accountKeychain as Address, data: revoke }], sponsored: true, nonce: { kind: "expiring" }, nowSec: Math.floor(Date.now() / 1000) });
     expect(rev.receipt.status).toBe("success");
     const feePayer = (rev.receipt as { feePayer?: string }).feePayer?.toLowerCase();

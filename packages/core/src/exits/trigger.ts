@@ -7,8 +7,6 @@
  * One trigger per position (vault, owner, Window, side): each write replaces the last and carries a larger `nonce`
  * (milliseconds); a write with no TP, no SL and no trail cancels. Money in collateral base units, spots × 10⁸.
  */
-import { z } from "zod";
-import { addressSchema, bytes32Schema } from "../schemas/primitives";
 import type { Side } from "../types/market";
 import type { Address, Bytes32 } from "../types/primitives";
 
@@ -94,27 +92,21 @@ export function exitTriggerProblem(t: ExitTrigger, nowMs: number): string | null
   return null;
 }
 
-// The wire shape: bigints as decimal strings (JSON has none).
-const uintText = z.string().regex(/^\d{1,78}$/);
-const optUintText = uintText.nullable();
-
-export const exitTriggerWireSchema = z.object({
-  owner: addressSchema,
-  vault: addressSchema,
-  chainId: z.number().int().positive(),
-  market: bytes32Schema,
-  side: z.enum(["up", "down"]),
-  grantId: uintText,
-  takeProfitBase: optUintText,
-  stopLossBase: optUintText,
-  trailBps: z.number().int().nullable(),
-  trailStopE8: optUintText,
-  nonce: uintText,
-  expiresAtSec: z.number().int().positive(),
-});
-export type ExitTriggerWire = z.infer<typeof exitTriggerWireSchema>;
-
-export const exitTriggerRequestSchema = z.object({ trigger: exitTriggerWireSchema, signature: z.string().regex(/^0x[0-9a-fA-F]+$/).max(2_000) });
+/** The wire shape: bigints as decimal strings (JSON has none). Parsed on the server by `trigger-schema.ts` (zod). */
+export interface ExitTriggerWire {
+  owner: Address;
+  vault: Address;
+  chainId: number;
+  market: Bytes32;
+  side: Side;
+  grantId: string;
+  takeProfitBase: string | null;
+  stopLossBase: string | null;
+  trailBps: number | null;
+  trailStopE8: string | null;
+  nonce: string;
+  expiresAtSec: number;
+}
 
 const big = (s: string | null) => (s === null ? null : BigInt(s));
 

@@ -1,7 +1,7 @@
 // Ported from Masayume 68f7a09:packages/core/src/surface/term.test.ts
 import { describe, expect, it } from "vitest";
 import { testMarket } from "../testing/fixtures";
-import { err, ok, stale } from "../schemas/reading";
+import { err, ok, stale } from "../types/reading";
 import { diagnosis } from "../types/diagnosis";
 import { toMarketId, type EventMarket } from "../types/market";
 import type { BookDepth, BookLevelView } from "../types/trading";

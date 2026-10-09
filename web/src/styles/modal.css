@@ -60,4 +60,5 @@
 .modal.modal-anim[data-starting-style], .modal.modal-anim[data-ending-style] { transform: scale(0.97); }
 .modal-eyebrow { color: var(--gray-400); font-size: 11px; }
 .modal-close { color: var(--gray-400); }
+.modal-anim.modal-instant[data-starting-style] { opacity: 1; transform: none; transition: none; }
 @media (prefers-reduced-motion: reduce) { .modal-anim { transition: none; } }

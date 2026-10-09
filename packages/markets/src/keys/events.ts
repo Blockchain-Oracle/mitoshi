@@ -6,15 +6,15 @@
  * blocks).
  */
 import { decodeEventLog, pad, toEventSelector, type AbiEvent, type AbiItem, type Address, type Hex, type Log, type PublicClient } from "viem";
-import { Abis } from "viem/tempo";
 import { TEMPO } from "@cwf/clients";
+import { accountKeychainAbi } from "./keychain-abi";
 
 export const LOG_WINDOW = 100_000n;
 
 const NAMES = ["KeyAuthorized", "AdminKeyAuthorized", "KeyRevoked", "SpendingLimitUpdated", "AccessKeySpend"] as const;
 export type KeychainEventName = (typeof NAMES)[number];
 
-const EVENTS = (Abis.accountKeychain as readonly AbiItem[]).filter(
+const EVENTS = (accountKeychainAbi as readonly AbiItem[]).filter(
   (i): i is AbiEvent => i.type === "event" && NAMES.includes(i.name as KeychainEventName),
 );
 export const KEYCHAIN_TOPICS: Hex[] = EVENTS.map((e) => toEventSelector(e));
@@ -37,7 +37,7 @@ export interface KeychainEvent {
 
 export function decodeKeychainLog(log: Pick<Log, "topics" | "data" | "blockNumber" | "logIndex" | "transactionHash">): KeychainEvent | null {
   try {
-    const d = decodeEventLog({ abi: Abis.accountKeychain, topics: log.topics as [Hex, ...Hex[]], data: log.data });
+    const d = decodeEventLog({ abi: accountKeychainAbi, topics: log.topics as [Hex, ...Hex[]], data: log.data });
     if (!NAMES.includes(d.eventName as KeychainEventName)) return null;
     const a = d.args as Record<string, unknown>;
     return {

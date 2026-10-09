@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { exitHit, ratchet, trailHit } from "./rules";
-import { exitTriggerFromWire, exitTriggerMessage, exitTriggerProblem, exitTriggerToWire, exitTriggerWireSchema, isExitCancel, MAX_EXIT_TRIGGER_SEC, type ExitTrigger } from "./trigger";
+import { exitTriggerFromWire, exitTriggerMessage, exitTriggerProblem, exitTriggerToWire, isExitCancel, MAX_EXIT_TRIGGER_SEC, type ExitTrigger } from "./trigger";
+import { exitTriggerWireSchema } from "./trigger-schema";
 
 const NOW_MS = 1_791_489_000_000;
 const T: ExitTrigger = {

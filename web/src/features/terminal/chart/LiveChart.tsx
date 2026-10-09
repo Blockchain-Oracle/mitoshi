@@ -15,6 +15,7 @@ import { ChartEngine, type ChartOverlay, type ChartTheme, type FrameInfo } from 
 import type { ChartView } from "./chart-style";
 import { DotGrid } from "./dot-grid";
 import "@/styles/terminal.css";
+import { modalOpen } from "@/lib/modal-signal";
 
 export type { ChartLevel, ChartOverlay, FrameInfo } from "./chart-engine";
 
@@ -56,6 +57,9 @@ function readTheme(el: Element): { chart: ChartTheme; dots: string } {
   };
 }
 
+/** A frame every this many ms while a centred modal covers the chart. */
+const BEHIND_MODAL_MS = 200;
+
 /** Runs `run` after the browser has painted the frame that mounted the chart (two animation frames). */
 function afterFirstPaint(run: () => void): () => void {
   let second = 0;
@@ -92,12 +96,17 @@ export function LiveChart({ symbol, overlay, onFrame, view = "line", interval = 
       engine.resize();
       dots.resize();
     };
+    let drawn = 0;
     const loop = (now: number) => {
+      raf = requestAnimationFrame(loop);
+      // Behind a centred modal's scrim (the first-visit tour) the line only has to stay alive: ~5 frames a second; the
+      // engine's dt-corrected easing and 60 Hz sample clock keep it true across the gaps.
+      if (modalOpen() && now - drawn < BEHIND_MODAL_MS) return;
+      drawn = now;
       engine.setOverlay(overlay?.current ?? null);
       const info = engine.frame(now);
       dots.frame(info, reduced.matches);
       onFrame?.current?.(info);
-      raf = requestAnimationFrame(loop);
     };
     resize();
     // Tradash starts the loop once the splash has gone (SPEC-chart §1), after a first paint; the price keeps arriving.

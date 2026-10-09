@@ -4,9 +4,9 @@
  * transaction's inline `keyAuthorization` (the sign-in ceremony's path).
  */
 import { decodeFunctionData, type Address, type Hex, type PublicClient } from "viem";
-import { Abis } from "viem/tempo";
 import { TEMPO } from "@cwf/clients";
 import type { KeyHistory } from "./fold";
+import { accountKeychainAbi } from "./keychain-abi";
 
 export interface AuthorizedLimit {
   token: Address;
@@ -29,7 +29,7 @@ export function limitsInTransaction(tx: TxShape, keyId: Address): AuthorizedLimi
   for (const call of tx.calls ?? []) {
     if (call.to?.toLowerCase() !== (TEMPO.accountKeychain as string).toLowerCase()) continue;
     try {
-      const d = decodeFunctionData({ abi: Abis.accountKeychain, data: (call.data ?? call.input)! });
+      const d = decodeFunctionData({ abi: accountKeychainAbi, data: (call.data ?? call.input)! });
       if (d.functionName !== "authorizeKey") continue;
       const args = d.args as readonly unknown[];
       if ((args[0] as string).toLowerCase() !== want) continue;

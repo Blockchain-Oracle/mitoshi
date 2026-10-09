@@ -1,6 +1,6 @@
 // Ported from Masayume 68f7a09:packages/core/src/surface/term.ts
 import { formatCadence } from "../market/lanes";
-import type { Reading } from "../schemas/reading";
+import type { Reading } from "../types/reading";
 import type { EventMarket, MarketId } from "../types/market";
 import type { BookDepth } from "../types/trading";
 import { remainingSec } from "../units/time";

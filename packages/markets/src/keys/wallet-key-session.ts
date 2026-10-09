@@ -9,7 +9,6 @@
  */
 import { KeyAuthorization } from "ox/tempo";
 import { createPublicClient, createWalletClient, type Account, type Address, type Chain, type Hex, type PublicClient, type Transport, type WalletClient } from "viem";
-import { Abis } from "viem/tempo";
 import { TEMPO } from "@cwf/clients";
 import type { Network } from "@cwf/core";
 import { tempoChain } from "../chains";
@@ -18,6 +17,7 @@ import { accessKeyAccount, generateSessionKey, type SessionKeyRecord } from "../
 import { createSubmitterSession, FULL_TEMPO_CAPS, type SubmitterSession } from "../sessions/submitter-session";
 import { createLocalStorageJournal } from "../submitter/journal-local-storage";
 import type { PendingKeyAuthorization } from "../tx/send";
+import { accountKeychainAbi } from "./keychain-abi";
 
 export type WalletKeyRecord = SessionKeyRecord;
 
@@ -29,7 +29,7 @@ export function newWalletKey(root: Address): Promise<WalletKeyRecord> {
 /** The key's on-chain state on the AccountKeychain: absent until its first send publishes it. */
 export async function walletKeyOnChain(client: PublicClient, root: Address, keyId: Address): Promise<{ published: boolean; revoked: boolean; expirySec: bigint }> {
   // The precompile's own field is `expiry` (seconds); read by name, never renamed on the wire.
-  const r = (await client.readContract({ address: TEMPO.accountKeychain as Address, abi: Abis.accountKeychain, functionName: "getKey", args: [root, keyId] })) as Record<string, unknown>;
+  const r = (await client.readContract({ address: TEMPO.accountKeychain as Address, abi: accountKeychainAbi, functionName: "getKey", args: [root, keyId] })) as Record<string, unknown>;
   const expirySec = BigInt((r["expiry"] as bigint | undefined) ?? 0n);
   const revoked = r["isRevoked"] === true;
   return { published: expirySec > 0n || revoked, revoked, expirySec };

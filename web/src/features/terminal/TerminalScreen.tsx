@@ -66,7 +66,8 @@ function useSymbol(initial: string): string {
   return m ? m[1]! : initial;
 }
 
-export function TerminalScreen({ symbol: initial }: { symbol: string }) {
+/** `onTourSettled`: the trade settings are read and the tour is open or not (the page drops its `TourCover`). */
+export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = false }: { symbol: string; onTourSettled?: () => void; instantTour?: boolean }) {
   const symbol = useSymbol(initial);
   const s = useTerminalState(symbol);
   const session = useWalletSession();
@@ -155,6 +156,10 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
   // First visit: the five-step tour, once the browser's settings have loaded with it unseen.
   const settingsState = useTradeSettingsState();
   const tourOpen = settingsState !== null && !settingsState.tutorialSeen;
+  const settled = settingsState !== null;
+  useEffect(() => {
+    if (settled) onTourSettled?.();
+  }, [settled, onTourSettled]);
   const endTour = (choice: "start" | "later" | "skip") => {
     setTradeSettings({ tutorialSeen: true });
     if (choice === "start" && !session.isConnected) session.connect();
@@ -270,7 +275,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
           ) : null}
         </aside>
       </div>
-      <Tutorial open={tourOpen} onDone={endTour} />
+      <Tutorial open={tourOpen} onDone={endTour} instant={instantTour} />
       <MarketsDrawer open={drawer.open === DRAWERS.markets} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} set={s.win.set} nowSec={s.nowSec} onPick={pick} />
       <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} capped={s.capped ? s.capReason : null} />
       {s.address ? (

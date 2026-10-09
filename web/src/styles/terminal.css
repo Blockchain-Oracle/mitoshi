@@ -334,7 +334,12 @@
 .tm-tour-dots span { width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--color-hairline); transition: width var(--duration-state) var(--ease-out), background-color var(--duration-state); }
 .tm-tour-dots span[data-on] { width: 24px; background: var(--color-accent); }
 @media (prefers-reduced-motion: reduce) { .tm-tour-line { animation: none; stroke-dashoffset: 0; } }
-.tm-splash { position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; background: var(--chart-ground); animation: tm-splash-out 0.5s ease-in-out forwards; animation-play-state: paused; }
+/* The first tour step, server-rendered (TourCover): the real modal's place, hidden before paint once the tour was seen. */
+.tm-tour-cover { position: fixed; inset: 0; z-index: 100; }
+.tm-tour-cover .modal-scrim { position: absolute; }
+[data-tm-tour-seen] .tm-tour-cover { display: none; }
+/* Full-screen like Tradash's, above the tour cover and the modal layer while it shows. */
+.tm-splash { position: fixed; inset: 0; z-index: 101; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; background: var(--chart-ground); animation: tm-splash-out 0.5s ease-in-out forwards; animation-play-state: paused; }
 .tm-splash[data-leaving] { animation-play-state: running; }
 @keyframes tm-splash-out { to { opacity: 0; visibility: hidden; } }
 .tm-splash-mark { width: 88px; height: 88px; color: var(--color-accent); animation: tm-splash-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }

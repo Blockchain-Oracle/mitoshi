@@ -1,6 +1,6 @@
 // Ported from Masayume 68f7a09:packages/markets/src/range/moonshot.test.ts
 import { bandProbE6, floorStake, rungHolds, sideProbRaw, solveStrike, type RangeParams } from "@cwf/core/range";
-import { err, ok } from "@cwf/core/schemas";
+import { err, ok } from "@cwf/core";
 import { diagnosis, toMarketId } from "@cwf/core/types";
 import { describe, expect, it } from "vitest";
 import { solveMoonshotQuote, type MoonshotReads } from "./moonshot";

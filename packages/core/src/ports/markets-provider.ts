@@ -1,6 +1,6 @@
 // Ported from Masayume 68f7a09:packages/core/src/ports/markets-provider.ts
 import type { WalletHistory } from "../projection/types";
-import type { Reading } from "../schemas/reading";
+import type { Reading } from "../types/reading";
 import type { AssetPrice, ClockSync, PricePoint, Resolution } from "../types/feeds";
 import type { EventMarket, LaneSet, MarketId, OnchainSnapshot, SeriesId, Side } from "../types/market";
 import type { Address } from "../types/primitives";

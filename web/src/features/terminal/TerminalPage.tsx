@@ -4,13 +4,14 @@
  * chart's own ground with a named wait, so nothing shifts when the screen lands.
  */
 import dynamic from "next/dynamic";
-import { Suspense, useEffect, useLayoutEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useState } from "react";
 import MitoshiMark from "@/components/shell/MitoshiMark";
 import { BRAND } from "@/lib/copy";
 import { markSplashDone } from "@/lib/splash";
 import { LoadingState } from "@/components/states";
 import { useDataReady } from "@/providers/data/context";
 import { TERMINAL } from "./copy";
+import { TOUR_SEEN_SCRIPT, TourCover } from "./ui/TourStep";
 import "@/styles/terminal.css";
 
 const TerminalScreen = dynamic(() => import("./TerminalScreen").then((m) => m.TerminalScreen), { ssr: false, loading: () => <TerminalPlaceholder symbol="" /> });
@@ -71,15 +72,24 @@ function useSplash(ready: boolean): "on" | "leaving" | "off" {
 export function TerminalPage({ symbol }: { symbol: string }) {
   const ready = useDataReady();
   const splash = useSplash(ready);
+  // The first tour step is in the HTML (under the splash) until the screen has read whether this browser saw it.
+  const [cover, setCover] = useState(true);
+  const settle = useCallback(() => setCover(false), []);
   return (
     <>
       {ready ? (
         <Suspense fallback={<TerminalPlaceholder symbol={symbol} />}>
-          <TerminalScreen symbol={symbol} />
+          <TerminalScreen symbol={symbol} onTourSettled={settle} instantTour={cover} />
         </Suspense>
       ) : (
         <TerminalPlaceholder symbol={symbol} />
       )}
+      {cover ? (
+        <>
+          <script dangerouslySetInnerHTML={{ __html: TOUR_SEEN_SCRIPT }} />
+          <TourCover />
+        </>
+      ) : null}
       {splash !== "off" ? (
         <div className="tm-splash" data-leaving={splash === "leaving" ? "" : undefined} role="status" aria-label={TERMINAL.waiting(symbol)}>
           <span className="tm-splash-mark"><MitoshiMark /></span>

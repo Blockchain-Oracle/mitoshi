@@ -8,6 +8,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
 import { SHELL } from "@/lib/copy";
+import { useModalSignal } from "@/lib/modal-signal";
 import { cn } from "@/lib/utils";
 
 export interface ModalProps {
@@ -20,17 +21,20 @@ export interface ModalProps {
   footer?: ReactNode;
   /** Hide the close button while a ceremony must not be interrupted mid-way. */
   dismissible?: boolean;
+  /** Open without the entry animation: it replaces an identical server-rendered cover (the terminal's first tour). */
+  instant?: boolean;
   className?: string;
   children?: ReactNode;
 }
 
-export function Modal({ open, onOpenChange, title, description, eyebrow, footer, dismissible = true, className, children }: ModalProps) {
+export function Modal({ open, onOpenChange, title, description, eyebrow, footer, dismissible = true, instant = false, className, children }: ModalProps) {
+  useModalSignal(open);
   return (
     <Dialog.Root open={open} onOpenChange={(next) => (dismissible || next ? onOpenChange(next) : undefined)}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="modal-scrim modal-anim" />
+        <Dialog.Backdrop className={cn("modal-scrim modal-anim", instant && "modal-instant")} />
         <Dialog.Viewport className="modal-root">
-          <Dialog.Popup className={cn("modal modal-anim", className)}>
+          <Dialog.Popup className={cn("modal modal-anim", instant && "modal-instant", className)}>
             {dismissible ? (
               <Dialog.Close className="modal-close grid size-touch place-items-center" aria-label={SHELL.close}>
                 <X aria-hidden className="size-4" />

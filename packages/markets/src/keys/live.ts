@@ -3,9 +3,9 @@
  * when the period ends (`getRemainingLimitWithPeriod`). One multicall per refresh.
  */
 import type { Address, PublicClient } from "viem";
-import { Abis } from "viem/tempo";
 import { TEMPO } from "@cwf/clients";
 import type { KeyHistory } from "./fold";
+import { accountKeychainAbi } from "./keychain-abi";
 
 export { keyStatus, type KeyStatus } from "./status";
 
@@ -26,7 +26,7 @@ export interface KeyState extends Omit<KeyHistory, "tokens"> {
 
 export async function readKeyStates(client: PublicClient, account: Address, keys: readonly KeyHistory[]): Promise<KeyState[]> {
   const address = TEMPO.accountKeychain as Address;
-  const abi = Abis.accountKeychain;
+  const abi = accountKeychainAbi;
   const keyCalls = keys.map((k) => ({ address, abi, functionName: "getKey" as const, args: [account, k.keyId] as const }));
   const limitCalls = keys.flatMap((k) => k.tokens.map((t) => ({ address, abi, functionName: "getRemainingLimitWithPeriod" as const, args: [account, k.keyId, t.token] as const })));
   const [keyRes, limitRes] = await Promise.all([
@@ -51,6 +51,6 @@ export async function readKeyStates(client: PublicClient, account: Address, keys
  * stake by it, so a tap over the key's daily limit is named before signing instead of refused by the chain).
  */
 export async function readKeyRemaining(client: PublicClient, account: Address, keyId: Address, token: Address = TEMPO.pathUSD as Address): Promise<{ remaining: bigint; periodEndSec: bigint }> {
-  const [remaining, periodEndSec] = (await client.readContract({ address: TEMPO.accountKeychain as Address, abi: Abis.accountKeychain, functionName: "getRemainingLimitWithPeriod", args: [account, keyId, token] })) as readonly [bigint, bigint];
+  const [remaining, periodEndSec] = (await client.readContract({ address: TEMPO.accountKeychain as Address, abi: accountKeychainAbi, functionName: "getRemainingLimitWithPeriod", args: [account, keyId, token] })) as readonly [bigint, bigint];
   return { remaining, periodEndSec };
 }
