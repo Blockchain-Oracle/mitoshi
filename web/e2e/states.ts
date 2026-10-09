@@ -170,11 +170,19 @@ async function signedIn(width: number) {
     await details.getByRole("button", { name: "Done" }).click();
   });
   await attempt("history-stats", width, async () => {
-    await page.keyboard.press("Escape");
-    await page.locator(".tm-equity:visible").first().click();
-    const drawer = modal(page);
-    await drawer.getByRole("button", { name: "Trade history" }).first().click();
-    await expect(drawer.getByText("Lifetime PnL")).toBeVisible({ timeout: 120_000 });
+    // Every drawer the trade opened is closed (phones stack positions under details), then the closed round is
+    // awaited in the indexed history: it lands within minutes, so the history is reopened until it does.
+    for (let i = 0; i < 3 && (await modal(page).count()) > 0; i++) await page.keyboard.press("Escape");
+    const deadline = Date.now() + 6 * 60_000;
+    for (;;) {
+      await page.locator(".tm-equity:visible").first().click();
+      const drawer = modal(page);
+      await drawer.getByRole("button", { name: "Trade history" }).first().click();
+      if (await drawer.getByText("Lifetime PnL").waitFor({ timeout: 30_000 }).then(() => true, () => false)) break;
+      if (Date.now() > deadline) throw new Error("the closed round never reached the history");
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(20_000);
+    }
     await shot(page, "history-stats", width);
     await page.keyboard.press("Escape");
   });
