@@ -17,7 +17,7 @@ import type { TerminalLane } from "../pick-window";
 const USD = (dp: number) => ({ style: "currency", currency: "USD", minimumFractionDigits: dp, maximumFractionDigits: dp }) as const;
 
 /** Tradash's asset chip: the disc, the live price rolling ("—" before the first tick), "BTC · Bitcoin" and the feed. */
-export function AssetChip({ asset, name, price, feed, stale, onOpen }: { asset: string; name: string; price: number | null; feed: string; stale: boolean; onOpen: () => void }) {
+export function AssetChip({ asset, name, price, feed, stale, connecting, onOpen }: { asset: string; name: string; price: number | null; feed: string; stale: boolean; connecting: boolean; onOpen: () => void }) {
   return (
     <button type="button" className="tm-glass tm-asset" onClick={() => (tapFeedback(), onOpen())} aria-haspopup="dialog">
       <AssetDisc asset={asset} className="tm-disc" />
@@ -27,7 +27,7 @@ export function AssetChip({ asset, name, price, feed, stale, onOpen }: { asset: 
           <ChevronDown aria-hidden />
         </span>
         <span className="tm-asset-name" data-stale={stale ? "" : undefined}>
-          {asset} · {name} · {stale ? TERMINAL.feed.stale : feed}
+          {asset} · {name} · {connecting ? TERMINAL.feed.connecting : stale ? TERMINAL.feed.stale : feed}
         </span>
       </span>
     </button>

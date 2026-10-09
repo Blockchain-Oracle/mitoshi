@@ -3,6 +3,7 @@
 // with the source and staleness the terminal labels. The ladder and live-book hooks are re-done in 23d on Mitoshi's
 // exit read (D-197).
 import { liveTick, subscribeLiveTick, tickStale, type TickSource } from "@cwf/markets/live-ticks";
+import { streamEverOpened } from "@cwf/markets/stream";
 import { useEffect, useState } from "react";
 import { ensureLiveTicks } from "@/features/prices/stream-config";
 
@@ -19,14 +20,18 @@ export interface CommittedSpot {
   source: TickSource | null;
   /** No tick, the stream down, or the newest tick older than its source's cadence allows. */
   stale: boolean;
+  /** Stale because the stream has not opened yet in this tab (the first connect), not because it dropped. */
+  connecting: boolean;
 }
 
-const EMPTY: CommittedSpot = { price: null, priceE8: null, atMs: null, source: null, stale: true };
+const EMPTY: CommittedSpot = { price: null, priceE8: null, atMs: null, source: null, stale: true, connecting: true };
 
 function read(symbol: string): CommittedSpot {
+  const connecting = !streamEverOpened();
   const tick = liveTick(symbol);
-  if (!tick) return EMPTY;
-  return { price: Number(tick.priceE8) / 1e8, priceE8: tick.priceE8, atMs: tick.atMs, source: tick.source, stale: tickStale(symbol, Date.now()) };
+  if (!tick) return { price: null, priceE8: null, atMs: null, source: null, stale: true, connecting };
+  const stale = tickStale(symbol, Date.now());
+  return { price: Number(tick.priceE8) / 1e8, priceE8: tick.priceE8, atMs: tick.atMs, source: tick.source, stale, connecting: stale && connecting };
 }
 
 /**
@@ -43,7 +48,7 @@ export function useCommittedSpot(symbol: string | null, { seed = true }: { seed?
     const commit = () => {
       last = performance.now();
       const next = read(symbol);
-      setSpot((prev) => (prev.priceE8 === next.priceE8 && prev.atMs === next.atMs && prev.stale === next.stale ? prev : next));
+      setSpot((prev) => (prev.priceE8 === next.priceE8 && prev.atMs === next.atMs && prev.stale === next.stale && prev.connecting === next.connecting ? prev : next));
     };
     const off = subscribeLiveTick(
       symbol,

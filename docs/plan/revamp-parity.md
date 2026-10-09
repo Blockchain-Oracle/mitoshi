@@ -140,6 +140,7 @@ reference surface is one row; a row moves only at its stage's gate, with evidenc
 | P&L chart | "No closed trades in this window" | same |
 | Leaderboard | "No ranked traders yet. Close a trade to get on the board." / "Couldn't load the leaderboard." + Try again / "Couldn't load this profile." / "Loading…" / "No trades in this period." | same |
 | Money | "No transfers yet" | "No activity yet" |
+| Stream not yet open (first load) | — | "Connecting…" on the asset chip until the stream first opens in the tab |
 | Stream dropped | silent reconnect after 1.5 s | silent reconnect; after 10 s a "Reconnecting…" chip on the asset chip |
 | Off-hours stock | — | "Updates every 10 s outside NYSE hours" under the asset chip |
 | No Window | — | Window chip reasons (04:00 gap, no 24/7 lane, no signed source, next Window soon) |

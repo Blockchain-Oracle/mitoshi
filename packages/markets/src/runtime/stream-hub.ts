@@ -17,6 +17,7 @@ const stateListeners = new Set<(s: StreamState) => void>();
 /** Whether the last connection that asked for a `user:` topic got its ticket (null: none asked yet). */
 let userGrant: boolean | null = null;
 const grantListeners = new Set<(granted: boolean | null) => void>();
+let everOpen = false;
 
 export function configureStream(next: { url: string | null; ticket?: () => Promise<string | null> }): void {
   if (next.url === config.url) return void (config = next);
@@ -72,7 +73,10 @@ function hub(): StreamClient | null {
       for (const e of events) byTopic.set(e.topic, [...(byTopic.get(e.topic) ?? []), e]);
       for (const [topic, list] of byTopic) for (const l of listeners.get(topic) ?? []) l(list);
     },
-    onState: (s) => stateListeners.forEach((l) => l(s)),
+    onState: (s) => {
+      if (s === "open") everOpen = true;
+      stateListeners.forEach((l) => l(s));
+    },
     onUserGrant: (granted) => {
       if (granted === userGrant) return;
       userGrant = granted;
@@ -95,6 +99,11 @@ export function subscribeTopic(topic: string, listener: Listener): () => void {
     if (set!.size === 0) listeners.delete(topic);
     release();
   };
+}
+
+/** Whether the stream has opened at least once in this tab: before that a quiet line is connecting, after it reconnecting. */
+export function streamEverOpened(): boolean {
+  return everOpen;
 }
 
 export function streamState(): StreamState {

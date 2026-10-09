@@ -217,7 +217,7 @@ export function TerminalScreen({ symbol: initial }: { symbol: string }) {
                 <button type="button" className="tm-glass tm-disc tm-phone" aria-label={BRAND.name} onClick={() => (tapFeedback(), openDrawer(EVERYTHING_DRAWER))}>
                   <MitoshiMark />
                 </button>
-                <AssetChip asset={symbol} name={s.name} price={s.spot.price} feed={feed} stale={s.spot.stale} onOpen={() => drawer.show(DRAWERS.markets)} />
+                <AssetChip asset={symbol} name={s.name} price={s.spot.price} feed={feed} stale={s.spot.stale} connecting={s.spot.connecting} onOpen={() => drawer.show(DRAWERS.markets)} />
               </span>
               <EquityPill className="tm-phone" equity={equity} address={s.address} masked={masked} onOpen={() => drawer.show(DRAWERS.account)} onSignIn={session.connect} />
             </div>

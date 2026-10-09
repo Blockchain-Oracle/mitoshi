@@ -12,6 +12,7 @@ export const TERMINAL = {
     bitstamp: "Bitstamp",
     alpaca: "IEX trades",
     redstone: "RedStone · updates every 10 s",
+    connecting: "Connecting…",
     stale: "Reconnecting…",
     settlesOn: "Settles on RedStone's signed print",
   },
