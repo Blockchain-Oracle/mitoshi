@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { VaultGrant } from "@cwf/core";
 import type { SessionView } from "@/features/session/view";
-import { serverExitState } from "./server-exits";
+import { MISSED_SALES_MS, missedSales, saleKey, serverExitState } from "./server-exits";
 import type { TerminalPosition } from "./terminal-positions";
 
 const KEEPER = "0x6ed3a4b6e42b2c45211074f8d7ba58dbb2faad0c";
@@ -34,5 +34,28 @@ describe("where a position's exits run (S24.5)", () => {
     expect(serverExitState(p({ vault: "0x5e38dc0000000000000000000000000000000000" as never }), view(), KEEPER as never)).toBe("unavailable");
     expect(serverExitState(p(), view({ status: "disarmed" }), KEEPER as never)).toBe("unavailable");
     expect(serverExitState(p(), view(), null)).toBe("unavailable");
+  });
+});
+
+describe("sales the keeper made while the app was closed", () => {
+  const NOW = 1_800_000_000_000;
+  let n = 0;
+  const sale = (over: Record<string, unknown> = {}) => ({ market: MARKET, side: "down" as const, status: "fired" as const, trailStopE8: null, lastError: null, reason: "sl" as const, fireTx: `0x${(++n).toString(16).padStart(64, "0")}`, proceedsBase: "940000", firedAtMs: NOW - 60_000, symbol: "BTC", ...over });
+
+  it("announces each unseen sale of the last day once (by its transaction), newest first, three at most", () => {
+    const other = `0x${"cd".repeat(32)}`;
+    const rows = [
+      sale(),
+      sale({ market: other, side: "up", firedAtMs: NOW - 5_000 }),
+      sale({ market: `0x${"ef".repeat(32)}`, firedAtMs: NOW - MISSED_SALES_MS - 1 }),
+      sale({ market: `0x${"01".repeat(32)}`, status: "armed" }),
+      sale({ market: `0x${"02".repeat(32)}`, proceedsBase: null }),
+    ];
+    expect(missedSales(rows, new Set(), NOW).map((r) => r.market)).toEqual([other, MARKET]);
+    expect(missedSales(rows, new Set([saleKey(rows[0]!.fireTx.toUpperCase())]), NOW).map((r) => r.market)).toEqual([other]);
+    // The same Window and side selling again (a later position) is a new sale.
+    expect(missedSales([...rows, sale({ firedAtMs: NOW - 1_000 })], new Set([saleKey(rows[0]!.fireTx)]), NOW).map((r) => r.firedAtMs)).toEqual([NOW - 1_000, NOW - 5_000]);
+    const many = Array.from({ length: 5 }, (_, i) => sale({ market: `0x${String(i).repeat(64)}`, firedAtMs: NOW - i }));
+    expect(missedSales(many, new Set(), NOW)).toHaveLength(3);
   });
 });

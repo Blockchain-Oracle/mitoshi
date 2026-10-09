@@ -299,6 +299,8 @@ export const TERMINAL = {
     notStored: (symbol: string) => `Set on this device only · ${symbol}`,
     notStoredBody: (why: string) => `The keeper didn't take it (${why}); it runs while Mitoshi is open.`,
     sold: (paid: string, pnl: string | null) => `Sold for ${paid}${pnl ? ` · Locked ${pnl}` : ""} — with the app closed`,
+    /** A sale whose asset the index could not name. */
+    aPosition: "a position",
     armedBody: (pct: string) => `Closes if the price comes back ${pct}% — runs with the app closed`,
     /** The keeper's last word on an armed exit it couldn't sell yet (the floor protects: it never sells under it). */
     waiting: (why: string) => `The keeper is waiting: ${why}. It tries again until the Window locks.`,

@@ -8,7 +8,7 @@
  * never also closed by the tab.
  */
 import type { Address, Hex, MarketId, Side } from "@cwf/core";
-import { exitTriggerToWire, type ExitFiredEvent, type ExitTrailEvent, type ExitTrigger } from "@cwf/core/exits";
+import { exitTriggerToWire, type ExitFiredEvent, type ExitReason, type ExitTrailEvent, type ExitTrigger } from "@cwf/core/exits";
 import { subscribeTopic } from "@cwf/markets/stream";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useSyncExternalStore } from "react";
@@ -86,7 +86,10 @@ export function useServerExit(marketId: string, side: Side): ServerExit | null {
   );
 }
 
-type Row = { market: string; side: Side; status: ServerExit["status"]; trailStopE8: string | null; lastError: string | null };
+type Row = {
+  market: string; side: Side; status: ServerExit["status"]; trailStopE8: string | null; lastError: string | null;
+  reason?: ExitReason | null; fireTx?: string | null; proceedsBase?: string | null; firedAtMs?: number | null; symbol?: string | null;
+};
 const fromRow = (r: Row): ServerExit => ({ status: r.status, trailStopE8: r.trailStopE8 === null ? null : BigInt(r.trailStopE8), lastError: r.lastError });
 
 export interface ExitTargets {
@@ -121,6 +124,38 @@ export async function writeServerExit(p: TerminalPosition, targets: ExitTargets,
 
 const REASON_TITLE = { trail: TERMINAL.trail.hit, tp: TERMINAL.exits.tpHit, sl: TERMINAL.exits.slHit } as const;
 
+/** How far back a returning tab announces the keeper's sales (one toast each, newest first, at most the toast stack). */
+export const MISSED_SALES_MS = 24 * 3_600_000;
+const MISSED_SALES_MAX = 3;
+/** A sale is known by its transaction (a Window and side can sell again for a later position) — no clock compared across machines. */
+export const saleKey = (txHash: string) => txHash.toLowerCase();
+
+/** The sales the keeper made in the last day that this device has not announced, newest first. Pure, for the load-time toasts. */
+export function missedSales(rows: readonly Row[], seen: ReadonlySet<string>, nowMs: number): Row[] {
+  return rows
+    .filter((r) => r.status === "fired" && r.reason && r.fireTx && r.proceedsBase != null && r.firedAtMs != null && r.firedAtMs > nowMs - MISSED_SALES_MS && !seen.has(saleKey(r.fireTx)))
+    .sort((a, b) => b.firedAtMs! - a.firedAtMs!)
+    .slice(0, MISSED_SALES_MAX);
+}
+
+// The sales this device has announced, per owner (the last 50; a reload never repeats one). Storage may be absent or refuse.
+const seenKey = (owner: Address) => `cwf.exits.seen.v1:${owner.toLowerCase()}`;
+function seenSales(owner: Address): Set<string> {
+  try {
+    const v: unknown = JSON.parse(localStorage.getItem(seenKey(owner)) ?? "[]");
+    return new Set(Array.isArray(v) ? v.filter((k): k is string => typeof k === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+function markSeen(owner: Address, keys: readonly string[]): void {
+  try {
+    localStorage.setItem(seenKey(owner), JSON.stringify([...new Set([...seenSales(owner), ...keys])].slice(-50)));
+  } catch {
+    // Not kept: the next load may announce the same sale once more.
+  }
+}
+
 /**
  * The owner's keeper state, read once per owner (their server session) and then kept by the `user:` stream: a sale
  * becomes the "hit" toast — what it paid and, from the position's cost, what it locked — and a moved trail redraws.
@@ -136,6 +171,12 @@ export function useServerExitFeed(owner: Address | null, costOf: (marketId: stri
       .then((body) => {
         if (cancelled || !body) return;
         for (const r of body.exits) if (r.status === "armed" || r.status === "firing") set(r.market, r.side, fromRow(r));
+        // Sold while the app was closed: said once, on the next visit (the same id as the stream's toast).
+        const missed = missedSales(body.exits, seenSales(owner), Date.now());
+        for (const r of missed) {
+          notify.item({ id: `exit-${r.market}-${r.side}`, title: REASON_TITLE[r.reason!](r.symbol ?? TERMINAL.keeper.aPosition), description: TERMINAL.keeper.sold(money(BigInt(r.proceedsBase!)), null) });
+        }
+        if (missed.length) markSeen(owner, missed.map((r) => saleKey(r.fireTx!)));
       })
       .catch(() => undefined);
     if (!ensureStream()) return () => void (cancelled = true);
@@ -150,6 +191,7 @@ export function useServerExitFeed(owner: Address | null, costOf: (marketId: stri
           const paid = BigInt(d.proceedsBase);
           const paidFor = cost.current(d.marketId, d.side);
           set(d.marketId, d.side, { status: "fired", trailStopE8: null, lastError: null });
+          markSeen(owner, [saleKey(d.txHash)]);
           notify.item({ id: `exit-${d.marketId}-${d.side}`, title: REASON_TITLE[d.reason](d.symbol), description: TERMINAL.keeper.sold(money(paid), paidFor !== null ? money(paid - paidFor, true) : null) });
         }
       }

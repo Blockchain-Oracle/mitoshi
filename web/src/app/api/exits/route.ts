@@ -10,7 +10,7 @@ import { exitSignatureCheck, verifyExitTrigger } from "@cwf/markets/server";
 import { http, type Hex } from "viem";
 import { ceremonyLimiter } from "@/server/auth";
 import { MissingConfigError, serverEnv, unavailable } from "@/server/env";
-import { exitTriggers, publicExitRow } from "@/server/exits";
+import { exitSymbols, exitTriggers, publicExitRow } from "@/server/exits";
 import { ipHash } from "@/server/request";
 import { callerSession } from "@/server/session";
 
@@ -41,7 +41,8 @@ export async function GET(req: Request): Promise<Response> {
     const session = await callerSession(req);
     if (!session) return Response.json({ error: "sign in to read your exits" }, { status: 401, headers: noStore });
     const rows = await exitTriggers().listByOwner(session.address);
-    return Response.json({ exits: rows.map(publicExitRow) }, { headers: noStore });
+    const symbols = await exitSymbols(rows.map((r) => r.market));
+    return Response.json({ exits: rows.map((r) => ({ ...publicExitRow(r), symbol: symbols.get(r.market.toLowerCase()) ?? null })) }, { headers: noStore });
   } catch (error) {
     if (error instanceof MissingConfigError) return unavailable(error);
     return Response.json({ error: (error instanceof Error ? error.message : String(error)).split("\n")[0]!.slice(0, 200) }, { status: 502, headers: noStore });

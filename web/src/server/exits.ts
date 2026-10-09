@@ -22,3 +22,15 @@ export function publicExitRow(r: ExitTriggerRow) {
   };
 }
 export type PublicExitRow = ReturnType<typeof publicExitRow>;
+
+/**
+ * Each row's asset, from the indexer's Window table (the same registry symbol the keeper names in its `exit` event), so
+ * a sale the terminal missed can still say "· BTC". Lower-case market ids, one indexed lookup; an index that can't be
+ * read answers nothing rather than failing the list.
+ */
+export async function exitSymbols(markets: readonly string[]): Promise<Map<string, string>> {
+  const ids = [...new Set(markets.map((m) => m.toLowerCase()))];
+  if (ids.length === 0) return new Map();
+  const rows = await db()<{ market: string; symbol: string | null }[]>`select market, symbol from idx_markets where market = any(${ids}::text[])`.catch(() => []);
+  return new Map(rows.filter((r) => r.symbol).map((r) => [r.market.toLowerCase(), r.symbol!]));
+}
