@@ -1,6 +1,6 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-08 21:30Z (S24 exits; RedStone's gateway shutdown). **Never trust memory over this file.**
+Updated 2026-10-09 11:10Z (S24.5 live; the Trading Balance check green end to end). **Never trust memory over this file.**
 
 ## Where we are
 
@@ -70,13 +70,27 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
   92cc15f, to re-measure);
 - Lighthouse with `/trade/BTC`, the §8 screenshots, and the owner's phone run.
 
-**S24 (2026-10-08, evening):** v2 is the Trading Balance on Moderato (24.1, 24.2; the Trading Balance driver passes on
-it end to end, run 37838428040). 24.3 `exit-keeper` and `/api/exits` are deployed and proven live
-(`scripts/drive/exit-keeper-live.ts`, `acceptance/S24.md`): a stranger's trigger refused, a sale one tick under the
-floor reverts, the owner's take-profit sold by the keeper with no tab (tx 0xe0e3…919b), an armed trail survives an ops
-restart. 24.5 (the terminal hands Trail/TP/SL to the keeper after one passkey confirmation) is built (1d6f7a0); its
-live check and the trail's sale wait on RedStone (below). Also fixed today: a requote now means a dearer book (D-208);
-the trigger signature is checked on the full Tempo chain (P-256 envelopes); ops runs both keepers (`OPS_ACTORS`).
+**S24 (2026-10-09):** v2 is the Trading Balance on Moderato (24.1, 24.2). 24.3's `exit-keeper` and `/api/exits` are
+proven live (`acceptance/S24.md`): a stranger's trigger refused, a sale under the floor reverts, take-profit and trail
+sold by the keeper with no tab, an armed trail survives an ops restart. 24.4's exit tail is deployed (ops 42c498a).
+24.5 is live and ticked: the CI Trading Balance check passes with every step (run 37924296152, web b8ae2f6, ops
+fdc7062): arm (1 assertion) → Up BTC and Down ETH from the Trading Balance (0 prompts, ~1.7–2.2 s) → TP/SL hands the
+position to the keeper (EXIT grant, 1 assertion; the trigger, 0) → one-tap CLOSE (1.5 s) → the $1 cap refused → a SOL
+bracket written from the terminal, sold by the keeper on its stop-loss 20.6 s after the tab left (0xa5dd…36aa) → the
+EXIT grant and the session grant each stopped from `/settings/account` with 1 assertion, relay-paid. Fixed on the way (2026-10-09):
+- D-211: web and ops had different stream ticket secrets, so every signed-in stream got 401. Aligned in Coolify; a
+  refused ticket now keeps the public stream.
+- D-212: the wallet signs over HTTP; a socket stuck opening stalled the Settings revoke.
+- The driver's Stop "failure" was Next's always-attached route announcer.
+- The faucet's false "Nothing was sent", the position row's layout, a CLOSE the book outran (a requote, retried once
+  inside the tolerance), the stopping grant's "Stopping…", "Connecting…" on first load, and a sale made with the app
+  closed announced on the next visit.
+- Expired triggers left `armed` (now ended `expired` with the keeper's last reason), and a tap the book outran on chain
+  (now a requote, as a CLOSE is).
+- **Open (Q-033, F-S24-01):** a stop-loss on a cheap side can wait under the EXIT floor until its Window ends. 15 % of
+  a 41¢ side is 6.2¢, inside the house's widened half-spread. Recommended: a VaultExits floor with an absolute slack.
+- Seen live: a CLOSE 34 s before lock meets the tail's wide book (611 / 955 at fair 783), so the terminal offers
+  "Close for $0.09" instead of selling under the tolerance.
 
 **RedStone is switching its public gateways off (D-210):** since 2026-10-08 they refuse requests in daily windows that
 grow until 2026-10-29, then stop. Inside a window, settlement prints, the house's quotes, halt-watch, Boost knock-outs
@@ -107,12 +121,12 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
 2. S10 remainder: `/api/prices/datastreams-report`, 10a.4 (a won ticket claimed, UX gate), the S10d browser gate, the
    stage gate.
 3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes). R.0, S22 and S23's boxes are done;
-   S24.1, 24.2 done, 24.3 deployed and proven live but for the trail's sale (RedStone window), 24.4 live, 24.5 built.
-   Next: with RedStone readable (or the key set), re-run `exit-keeper-live.ts --restart` (the trail's sale after a
-   restart) and tick 24.3; deploy 1d6f7a0's web if not yet, then the 24.5 live check (grant from the drawer, a trigger
-   written from the terminal, sold with the tab closed) and the S24 gate; 24.4's box after its live check; then the
-   S23 gate (above). The Trading Balance driver's Down tap took 22.8 s with the app's phases at 1.6 s — the next run's
-   `toastMs`/`rowMs` split says where. S5's leaderboard data comes before S23g's leaderboard.
+   S24.1–24.3 done, 24.4 deployed, 24.5 live and ticked (CI run 37924296152: a bracket written from the terminal, sold
+   by the keeper with the tab closed). Open for the owner: Q-033, stop-losses on cheap sides wait under the EXIT floor
+   (F-S24-01).
+   Next: 24.4's box after `scripts/drive/exit-tail-live.ts` shows both sides through a Window's tail; the S24 gate's
+   remaining lines (v1 balances withdraw and v1 positions crank, house bids gone after T−30 s); then the S23 gate
+   (above). S5's leaderboard data comes before S23g's leaderboard.
 4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
    revamped UI.

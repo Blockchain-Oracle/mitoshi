@@ -57,7 +57,7 @@ RV-55, RV-97, RV-98.
   requote and its fallback); `send-split.test.ts` (same-bytes retry,
   fail-fast). Live check: `scripts/drive/exit-tail-live.ts` shows both sides through a Window's tail, and the
   terminal-trade CI driver closes inside it (acceptance S23).
-- [ ] 24.5 Terminal: Trail/TP/SL switch to the keeper ("Runs with the app closed"); the EXIT grant's one passkey prompt
+- [x] 24.5 Terminal: Trail/TP/SL switch to the keeper ("Runs with the app closed"); the EXIT grant's one passkey prompt
   in the Trail/TP/SL drawer ("Keep exits running with the app closed"); a row in `GrantsSection` with revoke.
   Built: the TP/SL drawer says where its exits run — "Runs with the app closed" (the keeper, at the grant's tolerance),
   "Keep exits running with the app closed" (one passkey confirmation: `vault-grant-exit`, root-signed, never
@@ -65,12 +65,24 @@ RV-55, RV-97, RV-98.
   (the session key signs, `signExit`, no prompt); the tab never fires a position the keeper runs; the keeper's `exit`
   becomes the "… hit · BTC — Sold for $x · Locked +$y — with the app closed" toast; Grants lists the EXIT grant as
   sell-only with its tolerance and Stop. The keeper's address comes from ops `/exits/keeper`. Test: where a position's
-  exits run (`server-exits.test.ts`). Live check: after the deploy and RedStone's key (D-210).
+  exits run (`server-exits.test.ts`). Live (2026-10-09, `acceptance/S24.md`): CI `trading-balance` run 37924296152
+  (web b8ae2f6, ops fdc7062). The EXIT grant from the drawer took 1 assertion. A SOL bracket was written from the
+  terminal with 0 prompts, and its stop-loss was sold by the keeper with the tab closed 20.6 s later. The EXIT and
+  session grants were each stopped from `/settings/account` with 1 assertion. Also: a sale made while the app was
+  closed is announced on the next visit (`missedSales`, by transaction), and `/api/exits` names each row's asset.
 - **Gate:** on Moderato the keeper fires a trail with the tab closed, survives a restart, honours the proof floor (a
   sell below it reverts), and is revoked from `/settings/account`; v1 balances withdraw and v1 positions crank; house
   bids visible until T−30 s and gone after; every tx in `acceptance/S24.md` after `cast receipt`. **Rows:** RV-51,
   RV-55, RV-97, RV-98, UX-19.
 
 ## Findings
+
+- **F-S24-01 (2026-10-09), a stop-loss on a cheap side waits under the floor.** CI run 37920856259: a Down BTC's
+  stop-loss was written from the terminal. The keeper fired it at 11:07:12 (#22), then refused to sell nine times until
+  the Window ended: "no bid at or above the floor (35.6¢ … 18.3¢)", plus one `ImmediateOrCancelNoFill` against a
+  vanishing bid. The side was worth about 41¢, so its 15 % floor sat about 6.2¢ under fair. The house's half-spread
+  was about 6.4¢, widened by the divergence guard spanning the display and signed fairs. Take-profits fire on dear
+  sides and cleared on the first try (24.3). The floor kept D-193's promise; whether to change it is Q-033. The same
+  run found triggers outliving their Window as `armed`, now ended `expired` with the last reason (4acbdf8).
 
 ## Handoff
