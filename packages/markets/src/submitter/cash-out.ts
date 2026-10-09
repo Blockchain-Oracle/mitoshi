@@ -100,6 +100,9 @@ export async function submitCashOut(ctx: CashOutContext, req: CashOutRequest, on
       if (receipt.status !== "success") {
         await ctx.journal.markFailed(record.id, "reverted on chain");
         onPhase?.("reverted", { txHash: hash });
+        // An IOC sell that reverts moved nothing (the bids moved before the block): say what Close pays now.
+        const again = await freshExit(w, req, held, ctx.nowMs()).catch(() => null);
+        if (again) return { status: "requote", exit: again };
         return { status: "reverted", diagnosis: diagnosis("contract-revert", "the sell reverted", { txHash: hash }), txHash: hash };
       }
       const executed = ownExecution(decodeEngineEvents(venue.engine, receipt.logs), ctx.wallet, w.marketId, clientId);

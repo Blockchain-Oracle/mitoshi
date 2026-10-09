@@ -132,6 +132,12 @@ export function useTerminalClose() {
           }
           case "requote": {
             const next = outcome.exit;
+            // Still at or above the floor the user accepted (the close tolerance): take it once more without asking — a
+            // sale the book outran by a block is still the Close they asked for. Below it, the toast asks.
+            if (!accept && next.minProceedsBase >= displayed.minProceedsBase) {
+              setTimeout(() => void close(p, next, next, why, sellRaw), 0);
+              return;
+            }
             return void notify.item({ id, type: "warning", title: TERMINAL.toast.priceMoved, description: TERMINAL.close.requote(money(next.minProceedsBase)), timeout: 8_000, action: { label: TERMINAL.close.closeFor(money(next.minProceedsBase)), onClick: () => void close(p, next, next, why, sellRaw) } });
           }
           case "nothingFilled":

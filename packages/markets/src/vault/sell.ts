@@ -102,6 +102,10 @@ export async function submitVaultSell(ctx: OrderLaneContext, req: CashOutRequest
       if (receipt.status !== "success") {
         await ctx.journal.markFailed(record.id, "reverted on chain");
         onPhase?.("reverted", { txHash: hash });
+        // An IOC sale that reverts moved nothing: the bids moved between the read and the block (`ImmediateOrCancelNoFill`,
+        // a house requote — 2026-10-09). Say what Close pays now, not "the contract refused".
+        const again = await freshVaultExit(w, req.side, req.contractsRaw, heldRaw, ctx.nowMs()).catch(() => null);
+        if (again) return { status: "requote", exit: again };
         return { status: "reverted", diagnosis: diagnosis("contract-revert", "the vault sale reverted", { txHash: hash }), txHash: hash };
       }
       const booked = bookVaultSale(receipt.logs as never, vault, owner, marketId, grantId, req.side, hash);

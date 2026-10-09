@@ -173,10 +173,18 @@ try {
   const exitRow = liveExitRows.first();
   await expect(exitRow).toBeVisible({ timeout: 60_000 });
   note({ step: "grant-listed", exit: (await exitRow.innerText()).replace(/\s+/g, " ").slice(0, 240) });
+  const exitId = /#(\d+)/.exec(await exitRow.innerText())?.[1] ?? "";
   const beforeExitStop = s.assertions();
   await exitRow.getByRole("button", { name: /^Stop/ }).click();
-  await expect(liveExitRows).toHaveCount(0, { timeout: 120_000 });
-  note({ step: "exit-stopped", prompts: s.assertions() - beforeExitStop });
+  // Stopped means the history lists it as stopped (the live list empties for a moment while it re-reads — not proof);
+  // a failure shows its card.
+  const stoppedRow = page.locator("details li").filter({ hasText: `#${exitId}` });
+  const failure = page.getByRole("alert");
+  await expect(stoppedRow.or(failure).first()).toBeAttached({ timeout: 120_000 }).catch(() => undefined);
+  await page.screenshot({ path: join(out, `exit-stop-${width}.png`) });
+  const stopped = (await stoppedRow.count()) > 0;
+  note({ step: "exit-stopped", ok: stopped, grant: exitId, prompts: s.assertions() - beforeExitStop, alert: stopped ? null : await failure.first().innerText().catch(() => null) });
+  if (!stopped) throw new Error(`the EXIT grant #${exitId} was not stopped`);
   const stop = page.getByRole("button", { name: /^Stop/ }).first();
   if (await stop.count()) {
     const b = s.assertions();
