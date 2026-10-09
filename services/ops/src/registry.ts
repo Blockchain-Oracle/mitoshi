@@ -12,6 +12,7 @@ import { startSettler } from "./actors/settler";
 import { startSeedMaker } from "./actors/seed-maker";
 import { startLeverageKeeper } from "./actors/leverage-keeper";
 import { startExitKeeper } from "./actors/exit-keeper";
+import { startEarnQuoter } from "./actors/earn-quoter";
 import { startHaltWatch } from "./actors/halt-watch";
 import { startEarnings } from "./calendar/earnings";
 import { startCalendar } from "./calendar";
@@ -53,6 +54,9 @@ export const ACTORS: Record<string, ActorEntry> = {
   // S24.3: Trail / take-profit / stop-loss with the app closed — sells through the owners' EXIT grants at the vault's
   // fair-value floor; `keeper` role key; trails step on the display feed (so it asks for the spot/display runtime).
   "exit-keeper": { start: (d) => startExitKeeper(d), spot: true },
+  // S8: the maker vault's quotes (the depth Range, Moonshot and Parlay price against) and its closed-Window settles,
+  // on the FairValueGuard's model at the signed spot; `earn-quoter` role key, the vault's maker.
+  "earn-quoter": { start: (d) => startEarnQuoter(d), spot: true },
   // S3.5: the hourly Tempo Indexer API / tidx recount. Reads only on an API key or self-hosted tidx (idles with the
   // reason until one is configured); a paid MPP route honours DRY_RUN inside the pass. Needs DATABASE_URL.
   "indexer-recount": {
@@ -78,4 +82,4 @@ export const ACTORS: Record<string, ActorEntry> = {
   "reference-writer": { start: (d) => runActor({ name: "reference-writer", log: d.log, dryRun: d.env.dryRun, everyMs: REFERENCE_WRITER_EVERY_MS, pass: referenceWriterPass(d.env) }) },
 };
 
-export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "exit-keeper"] as const;
+export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "exit-keeper", "earn-quoter"] as const;

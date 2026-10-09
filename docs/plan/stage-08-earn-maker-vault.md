@@ -9,6 +9,13 @@
   yield (A-2c) and Agari's risk bounds; keeper settles closed Windows before withdraw ("Settling 2 of 4"); partial
   withdraw; "Max is X" instead of silent clamps; a typed inline result (no "✓" string matching); `relay/policies/maker.ts`.
   21st starts: tabs 26923, vault card composed from stats 7870 + balance chart 30538 (weak coverage, E.4).
+  Progress 2026-10-09 (S23 gate, F-S23-10: Range/Moonshot/Parlay found no depth without the manual script): the ops
+  **earn-quoter** runs on `runActor` in the default set — each pass settles the vault's closed Windows, then rests a
+  two-sided quote on every Trading crypto Window with its opening print and ≥ 120 s left, a 15-tick half spread around
+  the FairValueGuard's model at ops' signed spot, never crossing the book, inside the vault's band and spread floor,
+  requoted on a 30-tick move or after 120 s (`actors/earn-quoter/{decide,index}.ts` + test). `setMaker(earn-quoter)`
+  from `deployer-maker` (0x18e84b37…a31c, block 38,892,496); `EARN_QUOTER_PRIVATE_KEY` added to the testnet ops app
+  (runtime only). Still in this box: the `/earn` 4-tab supplier UI and the rest listed above.
 - **Gate:** the vault quotes live Windows, wallet-mode takers fill against it (EventVault takers too once S7 has
   passed), it settles; depth visible via the lens.
   **Rows:** L-50, A-2b, A-2c.
