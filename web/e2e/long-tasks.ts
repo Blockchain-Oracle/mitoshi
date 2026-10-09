@@ -5,8 +5,9 @@
  * against a local build — when a loaded workstation makes the lab's simulated TBT meaningless.
  *
  * Then the frame work (the S23 gate's ≤ 2 ms): every `requestAnimationFrame` callback is timed and summed per frame
- * (callbacks sharing a frame timestamp), over `--frames-s` seconds of steady state after the first 12 s — the terminal's
- * chart loop plus anything else animating. Reported as p50 / p95 / max per frame at the same CPU rate.
+ * (callbacks sharing a frame timestamp), over `--frames-s` seconds of steady state after the first 12 s, with the
+ * first-visit tour dismissed — the terminal's live chart loop plus anything else animating. Reported as p50 / p95 / max
+ * per frame at the same CPU rate.
  *
  *   pnpm --filter @cwf/web exec tsx e2e/long-tasks.ts https://testnet.mitoshi.xyz / /markets /portfolio
  *   pnpm --filter @cwf/web exec tsx e2e/long-tasks.ts --base https://testnet.mitoshi.xyz --routes /trade/BTC [--cpu 1] [--out <dir>]
@@ -45,6 +46,12 @@ for (const r of routes) {
   const top = lt.sort((a, b) => b[1] - a[1]).slice(0, 6);
   console.log(r, "longtasks", lt.length, "blocking>50", tbt, "top", JSON.stringify(top), "frames", frames.join(","));
 
+  // Frame work is the live chart's cost, so the first-visit tour (whose scrim slows the chart to ~5 fps) goes first.
+  const skip = page.getByRole("button", { name: "Skip" });
+  if (await skip.isVisible().catch(() => false)) {
+    await skip.click();
+    await page.waitForTimeout(2000);
+  }
   const from = await page.evaluate(`performance.now()`) as number;
   await page.waitForTimeout(framesS * 1000);
   const fw = (await page.evaluate(`window.__fw`) as { at: number; ms: number }[]).filter((f) => f.at >= from).map((f) => f.ms).sort((a, b) => a - b);
