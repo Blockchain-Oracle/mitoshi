@@ -40,12 +40,15 @@ await page.addInitScript(`(() => {
     else if (/^CLOSE/.test(t)) mark("e2e:close-press");
   }, true);
   const seen = new Set();
-  // What was on screen at the cycle's reset (the last cycle's toasts and row) never marks this cycle.
-  let stale = new WeakSet();
+  // What was on screen at the cycle's reset never marks this cycle: a toast whose text hasn't changed since (the
+  // terminal replaces a toast in place by id, so the same element can carry this cycle's result), and the rows whose
+  // titles were already listed.
+  let staleText = new WeakMap();
+  let titlesAtReset = new Set();
   new MutationObserver(() => {
-    if (!seen.has("card") && [...document.querySelectorAll(".tm-side-list .tm-pos")].some((el) => !stale.has(el))) { seen.add("card"); mark("e2e:card"); }
+    if (!seen.has("card") && [...document.querySelectorAll(".tm-side-list .tm-pos .tm-pos-title")].some((t) => !titlesAtReset.has(t.textContent))) { seen.add("card"); mark("e2e:card"); }
     for (const el of document.querySelectorAll('[data-slot="toast-title"]')) {
-      if (stale.has(el)) continue;
+      if (staleText.get(el) === el.textContent) continue;
       const t = el.textContent || "";
       const key = / opened$/.test(t) ? "confirmed" : /^Closing /.test(t) ? "closing" : /^Closed /.test(t) ? "closed" : null;
       if (key && !seen.has(key)) { seen.add(key); mark("e2e:" + key); }
@@ -54,7 +57,8 @@ await page.addInitScript(`(() => {
   window.__resetMarks = () => {
     seen.clear();
     performance.clearMarks();
-    stale = new WeakSet(document.querySelectorAll('[data-slot="toast-title"], .tm-side-list .tm-pos'));
+    staleText = new WeakMap([...document.querySelectorAll('[data-slot="toast-title"]')].map((el) => [el, el.textContent]));
+    titlesAtReset = new Set([...document.querySelectorAll(".tm-side-list .tm-pos .tm-pos-title")].map((t) => t.textContent));
   };
 })()`);
 
