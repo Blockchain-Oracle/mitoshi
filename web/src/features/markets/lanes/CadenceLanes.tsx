@@ -43,7 +43,7 @@ export function CadenceLanes({ state, selectedMarketId, onSelect }: CadenceLanes
   const topById = new Map(pager.slice.map((m, i) => [m.marketId, tops[i]] as const));
   const tickers = lane ? laneTickers(lane) : [];
   return (
-    <ReadingBoundary reading={state.reading} shape="row" retry={state.retry} isEmpty={(set) => set.lanes.length === 0 && !state.pinnedMissing} empty={MARKETS.noLiveWindows}>
+    <ReadingBoundary reading={state.reading} shape="cards" retry={state.retry} isEmpty={(set) => set.lanes.length === 0 && !state.pinnedMissing} empty={MARKETS.noLiveWindows}>
       {(laneSet) => {
         const tabs = laneSet.lanes.map((l) => ({ key: laneKeyOf(l), count: l.markets.length }));
         if (state.pinnedMissing && state.activeKey && !tabs.some((t) => t.key === state.activeKey)) tabs.push({ key: state.activeKey, count: 0 });

@@ -10,7 +10,6 @@
 import type { MarketId } from "@cwf/core";
 import { parseMarketsSearch } from "@cwf/core/urls";
 import { useLiveMarketData } from "@cwf/markets/react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { MotionScope } from "@/components/motion-scope";
@@ -19,6 +18,7 @@ import { tapFeedback } from "@/lib/feedback";
 import { useWalletSession } from "@/lib/wallet-session";
 import { MARKETS, SECTIONS } from "./copy";
 import { YourCalls } from "./calls/YourCalls";
+import { MarketsHead } from "./MarketsHead";
 import { MarketsAllowance } from "@/features/session/MarketsAllowance";
 import { terminalHref } from "@/features/terminal/route";
 import { tickerMarkets } from "./data/lane-view";
@@ -59,12 +59,7 @@ function Screen() {
   return (
     <div className="markets-main">
       <div className="container">
-        <header className="markets-head flex flex-col gap-2">
-          <span className="type-label-micro text-ink-secondary">{MARKETS.list.eyebrow}</span>
-          <h1 className="type-display text-ink">{MARKETS.list.title}</h1>
-          <p className="max-w-(--content-reading) type-body text-ink-secondary">{MARKETS.list.body}</p>
-          <Link href="/trade" className="btn btn-primary self-start" onClick={tapFeedback}>{MARKETS.list.cta}</Link>
-        </header>
+        <MarketsHead />
         <MarketsAllowance />
         <YourCalls />
         <section className="markets-section flex flex-col gap-4" aria-label={SECTIONS.lanes.title}>

@@ -7,7 +7,7 @@ function Skeleton({ className }: { className: string }) {
   return <div className={`animate-pulse bg-surface-2 motion-reduce:animate-none ${className}`} />;
 }
 
-export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket";
+export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards";
 
 const SHAPES: Record<LoadingShape, () => ReactNode> = {
   line: () => <Skeleton className="h-4 w-2/3 rounded-md" />,
@@ -21,6 +21,15 @@ const SHAPES: Record<LoadingShape, () => ReactNode> = {
     </div>
   ),
   plate: () => <Skeleton className="h-24 w-full rounded-lg" />,
+  // /markets' lane while it loads: the tabs and two Window cards at their reserved sizes (`market-card.css`), so the
+  // sections below start where they will stay.
+  cards: () => (
+    <>
+      <Skeleton className="h-touch w-full rounded-md" />
+      <Skeleton className="h-[342px] w-full rounded-lg md:h-[475px]" />
+      <Skeleton className="h-[342px] w-full rounded-lg md:h-[475px]" />
+    </>
+  ),
   chart: () => <Skeleton className="h-48 w-full rounded-lg" />,
   ticket: () => (
     <>
