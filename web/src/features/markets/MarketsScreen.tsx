@@ -18,7 +18,6 @@ import { tapFeedback } from "@/lib/feedback";
 import { useWalletSession } from "@/lib/wallet-session";
 import { MARKETS, SECTIONS } from "./copy";
 import { YourCalls } from "./calls/YourCalls";
-import { MarketsHead } from "./MarketsHead";
 import { MarketsAllowance } from "@/features/session/MarketsAllowance";
 import { terminalHref } from "@/features/terminal/route";
 import { tickerMarkets } from "./data/lane-view";
@@ -56,10 +55,9 @@ function Screen() {
     router.push(m ? terminalHref(m.asset, marketId) : `/trade?w=${marketId}`);
   };
 
+  // The frame and the header are MarketsPage's (one node from the first paint on); this is everything under them.
   return (
-    <div className="markets-main">
-      <div className="container">
-        <MarketsHead />
+    <>
         <MarketsAllowance />
         <YourCalls />
         <section className="markets-section flex flex-col gap-4" aria-label={SECTIONS.lanes.title}>
@@ -70,7 +68,6 @@ function Screen() {
           <SectionHead number={SECTIONS.words.index} title={SECTIONS.words.title} desc={SECTIONS.words.desc} />
           <WordMarketBoard laneSet={lanes.laneSet} onSelect={open} />
         </section>
-      </div>
-    </div>
+    </>
   );
 }

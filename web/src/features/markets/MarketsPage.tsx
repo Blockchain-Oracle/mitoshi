@@ -19,27 +19,35 @@ import "@/styles/claim-winnings.css";
 import "@/styles/history.css";
 import "./markets.css";
 
-/** The list's own shape while it loads: its header, the lanes' head and two card-sized waits (nothing shifts after). */
+/** The lanes' own shape while the list loads: their head and two card-sized waits (nothing below shifts after). */
 function Placeholder() {
+  return (
+    <section className="markets-section flex flex-col gap-4" aria-label={SECTIONS.lanes.title}>
+      <SectionHead number={SECTIONS.lanes.index} title={SECTIONS.lanes.title} live />
+      <LoadingState shape="cards" label={MARKETS.loadingWindows} />
+    </section>
+  );
+}
+
+/**
+ * The frame and the header render once, from the HTML on: only what's under them swaps from the wait to the list, so
+ * the page's largest text is one node painted at first paint (a header swapped with the list left Lighthouse an LCP
+ * node that no longer existed, at the swap's time).
+ */
+export function MarketsPage() {
+  const ready = useDataReady();
   return (
     <div className="markets-main">
       <div className="container">
         <MarketsHead />
-        <section className="markets-section flex flex-col gap-4" aria-label={SECTIONS.lanes.title}>
-          <SectionHead number={SECTIONS.lanes.index} title={SECTIONS.lanes.title} live />
-          <LoadingState shape="cards" label={MARKETS.loadingWindows} />
-        </section>
+        {ready ? (
+          <Suspense fallback={<Placeholder />}>
+            <MarketsScreen />
+          </Suspense>
+        ) : (
+          <Placeholder />
+        )}
       </div>
     </div>
-  );
-}
-
-export function MarketsPage() {
-  const ready = useDataReady();
-  if (!ready) return <Placeholder />;
-  return (
-    <Suspense fallback={<Placeholder />}>
-      <MarketsScreen />
-    </Suspense>
   );
 }
