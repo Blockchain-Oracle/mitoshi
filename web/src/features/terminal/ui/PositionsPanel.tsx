@@ -33,8 +33,9 @@ function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }:
           {p.boost ? <span className="tm-pos-tag">{TERMINAL.positions.boost(p.boost.leverageBps / 10_000)}</span> : null}
           {p.trailStop !== null ? <span className="tm-pos-tag">{TERMINAL.buttons.trailing}</span> : null}
         </button>
+        {/* Parts break between each other, never inside one (the 320 px side panel). */}
         <span className="tm-pos-meta">
-          {formatBaseUnits(p.heldRaw, p.decimals, { minDp: 0, maxDp: 2 })} · {TERMINAL.positions.staked} {masked ? SHELL.masked : money(p.costBase)} · {TERMINAL.positions.settles} {clockText(p.expirySec)}
+          <span className="tm-nowrap">{formatBaseUnits(p.heldRaw, p.decimals, { minDp: 0, maxDp: 2 })}</span> · <span className="tm-nowrap">{TERMINAL.positions.staked} {masked ? SHELL.masked : money(p.costBase)}</span> · <span className="tm-nowrap">{TERMINAL.positions.settles} {clockText(p.expirySec)}</span>
         </span>
       </span>
       <span className="tm-pos-figure">
@@ -48,7 +49,10 @@ function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }:
           <>
             <span className="sr-only">{TERMINAL.close.value} </span>
             {v.approx ? `${TERMINAL.close.approx} ` : ""}{masked ? SHELL.masked : money(v.valueBase)}
-            <span className={`tm-pos-pnl ${gain ? "is-up" : "is-down"}`}>{masked ? SHELL.masked : `${livePnlText(v.pnlBase ?? 0n)}${roiText(v.roiBps)}`}</span>
+            <span className={`tm-pos-pnl ${gain ? "is-up" : "is-down"}`}>
+              {masked ? SHELL.masked : livePnlText(v.pnlBase ?? 0n)}
+              {masked ? null : <span className="tm-pos-roi">{roiText(v.roiBps)}</span>}
+            </span>
           </>
         )}
       </span>

@@ -133,6 +133,11 @@ try {
   const armed = held.exits?.find((e) => e.status === "armed" && e.side === "down") ?? null;
   note({ step: "keeper-armed", grantPrompts, setPrompts: s.assertions() - beforeSet, armed, read: held.status ?? 200 });
   if (!armed) throw new Error(`the keeper holds no armed exit: ${JSON.stringify(held).slice(0, 200)}`);
+  // Set returns to the position's details (the drawer stack): close every drawer before CLOSE, as a person would.
+  for (let i = 0; i < 3 && (await page.locator(".slide-over-body").count()) > 0; i++) {
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(400);
+  }
 
   // 3. CLOSE through the vault's sell lane: the session key signs `placeFor`, no prompt.
   const close = page.locator(".tm-buttons .tm-btn").filter({ hasText: "CLOSE" });
