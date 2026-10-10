@@ -2,6 +2,7 @@
 export * from "./agent";
 export * from "./agent-prompt";
 export * from "./health";
+export * from "./mirror";
 export * from "./model";
 export * from "./ranking";
 export * from "./record";

@@ -37,6 +37,7 @@ describe("record", () => {
     tokenDeltaRaw: 100n,
     atSec: 10,
     dryRun: false,
+    mode: "follow",
     ...over,
   });
   it("scores a win, a loss and a void by the chain's rule and builds the curve", () => {
