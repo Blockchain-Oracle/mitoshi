@@ -1,0 +1,49 @@
+name: s6-gate
+# The S6 gate over a real session (stage-06 Handoff step 10): `web/e2e/s6-session.ts` against the deployed testnet site at
+# the hours the gate needs — Monday 2026-10-12's pre-market (08:15 ET), the open (09:31 ET, on AMD and PLTR, whose
+# RedStone signers fall short at the open most often, F-S3-09: the likeliest live halt), and after hours (17:00 ET). The
+# weekend's closed and Gap states passed in CI 38083317317. Cron fields are UTC; GitHub may start a scheduled run late.
+# Retire this file once the S6 box is ticked.
+on:
+  schedule:
+    - cron: "15 12 12 10 *"
+    - cron: "31 13 12 10 *"
+    - cron: "0 21 12 10 *"
+  workflow_dispatch:
+    inputs:
+      symbol:
+        description: Ticker the terminal opens on (letters only)
+        required: true
+        default: TSLA
+
+jobs:
+  session:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        symbol: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('["{0}"]', inputs.symbol) || (github.event.schedule == '31 13 12 10 *' && '["AMD","PLTR","TSLA"]' || '["TSLA"]')) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter "@cwf/web..."
+      - run: pnpm --filter @cwf/web exec playwright install --with-deps chromium
+      - name: Session check
+        env:
+          SYMBOL: ${{ matrix.symbol }}
+        run: |
+          case "$SYMBOL" in *[!A-Z]*|"") echo "::error::symbol is upper-case letters"; exit 1;; esac
+          pnpm --filter @cwf/web exec tsx e2e/s6-session.ts --base https://testnet.mitoshi.xyz --out "$GITHUB_WORKSPACE/s6-out" --widths 1440,390 --symbol "$SYMBOL" 2>&1 | tee "$GITHUB_WORKSPACE/s6-out.log"
+          exit "${PIPESTATUS[0]}"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s6-session-${{ matrix.symbol }}
+          path: |
+            s6-out
+            s6-out.log

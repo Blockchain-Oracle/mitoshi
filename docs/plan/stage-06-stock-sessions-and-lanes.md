@@ -54,5 +54,8 @@ with the archive's Friday print). S6 is mostly the surfaces. Steps, in order:
    graceSec,feeds}`; four Foundry tests and a spec ↔ relay feed test. Open: boundary statuses need a credentialed report,
    and halt-watch's Data Streams read (both owner/S19).
 10. The gate on testnet over a real session (halted, closed, pre/after, Gap): `web/e2e/s6-session.ts` through
-    `e2e.yml` (a runner's visible browser; the hidden browser pane never starts the terminal's clock) — this weekend for
-    closed + the Gap, Monday 10-12 for pre-market and after hours, a halt when halt-watch confirms one.
+    `e2e.yml` (a runner's visible browser; the hidden browser pane never starts the terminal's clock). **Closed and the
+    Gap passed** over the real weekend (CI 38083317317). `s6-gate.yml` runs it on Monday 10-12 at 12:15Z (pre-market),
+    13:31Z (the open, on AMD, PLTR and TSLA — AMD/PLTR's signer shortfalls at the open are the likeliest live halt,
+    F-S3-09) and 21:00Z (after hours); the weekend Gap settles at 13:30Z (check its verdict in the index). Retire
+    `s6-gate.yml` when the box is ticked.
