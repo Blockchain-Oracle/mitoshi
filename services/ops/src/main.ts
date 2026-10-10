@@ -66,6 +66,8 @@ async function boot(): Promise<void> {
       throw new Error(`${name}: ${errorText(error)}`);
     }
   }
+  // S13 (D-043): the moderation queue runs wherever there is a database, whatever OPS_ACTORS lists — it only reads.
+  if (sql && !wanted.includes("moderation")) await ACTORS.moderation!.start(deps("moderation"));
   await startHttp({
     env, sql, spot, display, sessions, halts, events, bus, redstoneSigners: redstone.signers, log: log("http"),
     snapshot: async (topic) => {
