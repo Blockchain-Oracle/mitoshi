@@ -12,6 +12,10 @@ function show(item: ToastItem): void {
   const { action, timeout, id, ...rest } = item;
   const options = {
     ...rest,
+    // Always named, even when absent: Base UI's update spreads over the toast it replaces, so a "Closing…" loading
+    // toast updated to "Closed" kept `type: "loading"` — its spinner, and no timer — and sat over the phone's equity
+    // pill until dismissed by hand (states run 38033455356). An outcome with no type is a plain, timed toast.
+    type: item.type,
     timeout: timeout ?? (item.type === "loading" ? 0 : undefined),
     actionProps: action ? { children: action.label, onClick: action.onClick } : undefined,
   };
