@@ -59,7 +59,15 @@ if (!live) {
     check("a reaction lands", (await call("/api/social/react", { method: "POST", body: JSON.stringify({ target: "take", id: t.id, kind: "fire", on: true }) })).status, 200);
     const feed = await call("/api/social/takes?symbol=NVDA");
     check("the take is filed under its cashtags", feed.status, 200, String((feed.body.takes as { id: string }[]).some((x) => x.id === t.id)));
-    check("a report reaches the queue", (await call("/api/social/report", { method: "POST", body: JSON.stringify({ targetKind: "take", targetId: t.id, reason: "spam", note: "S13 live check — dismiss" }) })).status, 201);
+    check("reporting your own take is refused", (await call("/api/social/report", { method: "POST", body: JSON.stringify({ targetKind: "take", targetId: t.id, reason: "spam", note: "S13 live check" }) })).status, 400);
+    // A second person signs in once and reports it: the report reaches ops' moderation queue.
+    const mine = cookie;
+    cookie = "";
+    const other = privateKeyToAccount(generatePrivateKey());
+    const otherText = socialSessionMessage({ address: other.address, network: "testnet", issuedAtSec: Math.floor(Date.now() / 1000), nonce: "fedcba9876543210fedc" });
+    check("a second person signs in", (await call("/api/social/session", { method: "POST", body: JSON.stringify({ text: otherText, signature: await other.signMessage({ message: otherText }) }) })).status, 200);
+    check("their report reaches the queue", (await call("/api/social/report", { method: "POST", body: JSON.stringify({ targetKind: "take", targetId: t.id, reason: "spam", note: "S13 live check — hide" }) })).status, 201);
+    cookie = mine;
   }
 }
 check("signing out clears the session", (await call("/api/social/session", { method: "DELETE" })).status, 200);

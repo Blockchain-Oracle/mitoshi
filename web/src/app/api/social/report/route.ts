@@ -26,6 +26,8 @@ export async function POST(req: Request): Promise<Response> {
       : kind === "profile" ? b.targetId.toLowerCase()
       : null;
     if ((kind === "comment" || kind === "take") && !author) return Response.json({ error: "not_found" }, { status: 404, headers: noStore });
+    // Your own post or profile isn't a report: delete or edit it instead (the live check reported its own take, S13).
+    if (author && author === session.address.toLowerCase()) return Response.json({ error: "own", message: "That's yours — edit or delete it instead." }, { status: 400, headers: noStore });
     const r = await moderation().report({ reporter: session.address, targetKind: kind, targetId: kind === "profile" ? b.targetId.toLowerCase() : b.targetId, targetAuthor: author, reason: b.reason as ReportReason, note });
     return Response.json({ id: r.id, duplicate: r.duplicate }, { status: r.duplicate ? 200 : 201, headers: noStore });
   } catch {
