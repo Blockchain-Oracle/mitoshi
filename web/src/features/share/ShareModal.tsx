@@ -33,13 +33,9 @@ type Mode = (typeof SHARE.modes)[number]["value"];
 const dollars = (base: bigint, decimals: number) => (moneyTone(base, decimals) === "" && base !== 0n ? livePnlText(base, decimals) : money(base, true, decimals));
 
 export function ShareModal({ subject, open, onOpenChange }: { subject: ShareSubject | null; open: boolean; onOpenChange: (o: boolean) => void }) {
-  // The card is the moment the reader tapped Share: a live PnL moves every tick, and a card that redraws under the
-  // reader's thumb isn't one they can post.
-  const [s, setS] = useState<ShareSubject | null>(null);
-  useEffect(() => {
-    if (open) setS(subject);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- frozen on open by design
-  }, [open]);
+  // The card is the moment the reader tapped Share: the caller freezes `subject` then (a live PnL moves every tick,
+  // and a card that redraws under the reader's thumb isn't one they can post).
+  const s = subject;
   const [mode, setMode] = useState<Mode>("both");
   const [png, setPng] = useState<{ url: string; blob: Blob } | null>(null);
   const [failed, setFailed] = useState(false);
@@ -59,6 +55,8 @@ export function ShareModal({ subject, open, onOpenChange }: { subject: ShareSubj
     if (!open || !s || masked) return;
     let live = true;
     let made: string | null = null;
+    // A redraw (another subject, another mode) never shows or saves the previous card meanwhile.
+    setPng(null);
     setFailed(false);
     renderSharePng({ call, result, win, entry: s.entry, exit: s.exit, exitLabel: s.closed ? "Exit" : "Mark", url: link })
       .then((blob) => {
@@ -71,7 +69,7 @@ export function ShareModal({ subject, open, onOpenChange }: { subject: ShareSubj
       live = false;
       if (made) URL.revokeObjectURL(made);
     };
-  }, [open, s, masked, call, result, win, link, attempt]); // s is frozen state; the rest are strings
+  }, [open, s, masked, call, result, win, link, attempt]); // s is frozen by the caller; the rest are strings
 
   if (!s) return null;
   const intent = `https://x.com/intent/post?text=${encodeURIComponent(SHARE.post(s.asset, s.side, pnlText, roi, win))}&url=${encodeURIComponent(link)}`;

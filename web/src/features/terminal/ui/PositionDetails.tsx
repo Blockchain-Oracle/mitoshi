@@ -25,6 +25,7 @@ import { PositionGone } from "./PositionGone";
 
 const REDUCE = [25n, 50n, 75n, 100n] as const;
 const ShareModal = dynamic(() => import("@/features/share/ShareModal").then((m) => m.ShareModal), { ssr: false });
+type ShareSubject = import("@/features/share/ShareModal").ShareSubject;
 
 export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow, onExits, spendableBase, busy }: {
   p: TerminalPosition | null;
@@ -38,7 +39,8 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
   busy: boolean;
 }) {
   const [adding, setAdding] = useState(false);
-  const [sharing, setSharing] = useState(false);
+  // The share card's subject, frozen when Share is tapped (null: the modal is closed).
+  const [sharing, setSharing] = useState<ShareSubject | null>(null);
   const masked = usePrivacy();
   const marketReading = useMarket(open && p ? p.marketId : null);
   const market = marketReading && isOk(marketReading) ? marketReading.value : null;
@@ -94,22 +96,26 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
             <button type="button" className="tm-choice" disabled={value?.locked} onClick={() => (tapFeedback(), onExits(p))}>{TERMINAL.exits.open}</button>
             <button type="button" className="tm-choice" onClick={() => (tapFeedback(), onShow(p))}>{TERMINAL.details.chart}</button>
             <Link href={`/proof/${p.marketId}`} className="tm-choice tm-link">{TERMINAL.details.proof}</Link>
-            <button type="button" className="tm-choice" disabled={masked || value?.pnlBase == null} onClick={() => (tapFeedback(), setSharing(true))}>{TERMINAL.details.share}</button>
+            <button
+              type="button"
+              className="tm-choice"
+              disabled={masked || value?.pnlBase == null}
+              onClick={() => {
+                tapFeedback();
+                setSharing({
+                  asset: p.asset, side: p.side, intervalSec: p.intervalSec, pnlBase: value?.pnlBase ?? 0n, costBase: p.costBase, decimals: p.decimals, closed: false,
+                  entry: p.entrySpot ? `$${formatPrice(p.entrySpot, priceDecimals(p.entrySpot))}` : null,
+                  exit: value?.spot ? `$${formatPrice(value.spot, priceDecimals(value.spot))}` : null,
+                });
+              }}
+            >
+              {TERMINAL.details.share}
+            </button>
           </div>
         </SlideOverContent>
       </SlideOver>
       <AddModal p={p} open={adding} onOpenChange={setAdding} spendableBase={spendableBase} />
-      {sharing ? (
-        <ShareModal
-          open={sharing}
-          onOpenChange={setSharing}
-          subject={{
-            asset: p.asset, side: p.side, intervalSec: p.intervalSec, pnlBase: value?.pnlBase ?? 0n, costBase: p.costBase, decimals: p.decimals, closed: false,
-            entry: p.entrySpot ? `$${formatPrice(p.entrySpot, priceDecimals(p.entrySpot))}` : null,
-            exit: value?.spot ? `$${formatPrice(value.spot, priceDecimals(value.spot))}` : null,
-          }}
-        />
-      ) : null}
+      {sharing ? <ShareModal open onOpenChange={(o) => !o && setSharing(null)} subject={sharing} /> : null}
     </>
   );
 }
