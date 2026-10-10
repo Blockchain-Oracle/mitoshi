@@ -9,6 +9,7 @@ import { RECORD_CHART } from "@/features/markets/copy";
 import { recordPoints } from "@/features/markets/portfolio/RecordChart";
 import { money as moneyText, moneyTone } from "@/features/terminal/format";
 import { EDGE } from "./copy";
+import { RecordBadges } from "./RecordBadges";
 
 type Tone = "gain" | "loss" | "flat";
 /** The tone of a figure as it reads at two decimals: a P&L that rounds to zero cents is flat, never a red −$0.00. */
@@ -121,7 +122,7 @@ function Payoff({ report, decimals }: { report: TraderEdge; decimals: number }) 
   );
 }
 
-export function EdgeReport({ history, report, onRetry }: { history: WalletHistory; report: TraderEdge; onRetry: () => void }) {
+export function EdgeReport({ history, report, onRetry, address }: { history: WalletHistory; report: TraderEdge; onRetry: () => void; address: string }) {
   const { decimals } = history;
   const tone = toneOf(report.netBase, decimals);
   const m = EDGE.report.metrics;
@@ -160,6 +161,7 @@ export function EdgeReport({ history, report, onRetry }: { history: WalletHistor
         <Windows report={report} decimals={decimals} />
         <Payoff report={report} decimals={decimals} />
       </div>
+      <RecordBadges history={history} report={report} address={address} />
       <p className="type-caption text-ink-secondary">{EDGE.report.footer}</p>
     </div>
   );

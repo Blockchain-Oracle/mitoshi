@@ -56,7 +56,7 @@ export function EdgeScreen() {
     const open = openCount;
     body = <State eyebrow={S.none.eyebrow} title={S.none.title} copy={open > 0 ? S.none.open(open) : S.none.first} action={<Link href={START} className={`${BUTTON} bg-accent-fill text-on-accent!`}>{S.none.action}</Link>} />;
   } else {
-    body = <EdgeReport history={value} report={report} onRetry={retry} />;
+    body = <EdgeReport history={value} report={report} onRetry={retry} address={wallet} />;
   }
 
   const I = EDGE.intro;
