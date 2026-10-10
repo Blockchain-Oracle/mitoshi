@@ -99,12 +99,13 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
 - `/portfolio/edge`: Trader Edge with reputation, badges and the CSV of settled Windows (L-47, L-49).
 - Link previews (L-23, Y-14): the site card, each terminal's card, each Window's proof card.
 - The share card (L-22; S23g RV-83): Share from a position's details — Owarine's card re-branded, Download / X.
-- Live check `web/e2e/s5-pages.ts` (CI e2e.yml): run 2 passed 17/17 (share included). A code review of the day's
+- Live check `web/e2e/s5-pages.ts` (CI e2e.yml): run 3 passed 19/19 (share, the drawer's board, a profile). The UX
+  gate on the nine S5 routes × 4 widths × 2 themes: 0 findings after one fix round (b7f350f). A code review of the day's
   diff fixed: a two-caller direct fill counted twice in "traded", one round per wallet and Window (own + Trading
   Balance merged), the vault-owner lookup, the walker's tail halving.
-Next in S5: the gate (UX pass on the deployed pages, a proof reverified from the archive, stats == recount — open as
-F-S5-02: the full chain recount takes more than a day at today's size), and the leaderboard's agent and game-rank
-tabs with S9 and S12.
+Next in S5: the gate's last item, stats == recount (F-S5-02) — the full chain replay is running detached since 11:07Z
+with the walker fixes (~500k blocks/h; log in the session scratchpad, re-run with `pnpm --dir scripts exec tsx
+drive/recount.ts`); then tick S5. The leaderboard's agent and game-rank tabs come with S9 and S12.
 
 **S23 gate — nearly closed (`acceptance/S23.md` passes 1–5, F-S23-06…13).** Since 2026-10-09 20:10Z:
 - Passed live: Range + Moonshot on the earn-quoter's depth (37996617218); **states 38 of 38** (38034974579, after
