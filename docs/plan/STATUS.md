@@ -1,7 +1,7 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-10 11:55Z (S5: /stats, the leaderboard with its data and API, /news live on testnet; /proof and
-/status before them. S23 gate nearly closed; S20 public story under way). **Never trust memory over this file.**
+Updated 2026-10-10 11:10Z (S5: /stats, the leaderboard (page, API, terminal drawer), /news, Trader Edge with badges and
+CSV, profiles, link previews and the share card; S23 gate nearly closed; S20 public story under way). **Never trust memory over this file.**
 
 ## Where we are
 
@@ -82,19 +82,25 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
   `web/e2e/footage.ts` records the real flow for the demo video (1440 run 38037521151, 116 s; 390 re-run going).
 - Left: the two videos (owner's voice), the form, owner review of GTM; `/news` (S5), `/contact` (S13).
 
-**S5 — under way (`acceptance/S5.md`, the stage file's Handoff).** Live on testnet:
-- `/proof/[market]`: both prints, their record txs, and **re-verification in the browser** from the chain alone.
-- `/status`: every ops keeper and the fee relay, read at request time.
-- `/stats` (D-215): 134 wallets that made a call, 462 calls, $637 traded, $868 paid out, the growth curve, the venue's
-  counts and the latest calls with receipts. The house (`HOUSE_TRADERS` + the maker vault) is never counted, and a
-  Trading Balance tap counts for its owner (`server/demand.ts`, shared with the leaderboard).
-- The leaderboard: `readSettledRounds` prices each settled round by the settlement rule (equal to every redemption on
-  testnet); `/api/leaderboard` (Daily · Weekly · Monthly · All time × P&L / ROI, top 50 + your row); `/leaderboard`
-  with 21st 13057's podium and 13063's rankings. S23g's drawer can mount `useLeaderboard`.
-- `/news`: Finnhub market + company news for the stocks, Cointelegraph/Decrypt for the coins (`FINNHUB_API_KEY` copied
-  to the testnet web app, runtime only).
-Next in S5: `/portfolio/edge`, reputation/badges/CSV, the shared profile, share cards and OG images. Open for the
-gate: F-S5-02 — the full chain recount is too slow at today's size (more than a day; RPC refuses big windows).
+**S5 — under way (`acceptance/S5.md`, the stage file's Handoff).** Live on testnet (web deployed through 506f544;
+385f0cc…91db2e3 committed, deploying next):
+- `/proof/[market]` (re-verification in the browser), `/status` (every keeper and the fee relay).
+- `/stats` (D-215): wallets that made a call, calls, traded, paid out, the growth curve, the venue's counts, the
+  latest calls with receipts. The house (`HOUSE_TRADERS` + the maker vault) is never counted; a Trading Balance tap
+  counts for its owner (`server/demand.ts`, shared with the leaderboard and the profile).
+- The leaderboard: `readSettledRounds` (each settled round by the settlement rule; equal to every redemption on
+  testnet), `/api/leaderboard` (Daily · Weekly · Monthly · All time × P&L / ROI), `/leaderboard` (21st 13057 podium +
+  13063 rankings) and the terminal's account-drawer view (S23g, RV-86). Rows open `/u/<address>`.
+- `/u/<address>`: a wallet's public record (21st 781 header, figures, tier, badges, latest Windows with proofs).
+- `/news`: Finnhub (stocks) + Cointelegraph/Decrypt (coins); `FINNHUB_API_KEY` copied to the testnet web app.
+- `/portfolio/edge`: Trader Edge with reputation, badges and the CSV of settled Windows (L-47, L-49).
+- Link previews (L-23, Y-14): the site card, each terminal's card, each Window's proof card.
+- The share card (L-22; S23g RV-83): Share from a position's details — Owarine's card re-branded, Download / X.
+- Live check `web/e2e/s5-pages.ts` (CI e2e.yml): run 1 passed 15/16; its miss and two figure defects fixed
+  (F-S5-04); run 2 (with the share step) running.
+Next in S5: the gate (UX pass on the deployed pages, a proof reverified from the archive, stats == recount — open as
+F-S5-02: the full chain recount takes more than a day at today's size), and the leaderboard's agent and game-rank
+tabs with S9 and S12.
 
 **S23 gate — nearly closed (`acceptance/S23.md` passes 1–5, F-S23-06…13).** Since 2026-10-09 20:10Z:
 - Passed live: Range + Moonshot on the earn-quoter's depth (37996617218); **states 38 of 38** (38034974579, after
