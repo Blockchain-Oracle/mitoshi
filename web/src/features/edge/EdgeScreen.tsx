@@ -5,7 +5,7 @@
 // (`useWalletHistory`, the reading `/portfolio`'s record and journal use), computed in the browser by core's
 // `computeTraderEdge`, grouped by the device's local hour.
 import { computeTraderEdge, isOk } from "@cwf/core";
-import { keys, useWalletHistory } from "@cwf/markets/react";
+import { keys, usePositions, useVaultBets, useWalletHistory } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -35,8 +35,14 @@ export function EdgeScreen() {
   const history = useWalletHistory(wallet);
   const queryClient = useQueryClient();
   const retry = useCallback(() => void queryClient.invalidateQueries({ queryKey: keys.history(wallet) }), [queryClient, wallet]);
+  // Open Windows from the live positions (the wallet's and the Trading Balance's), as /portfolio and the terminal count
+  // them: the settled history is an archive refreshed slowly, so a call made a moment ago isn't in its open count yet.
+  const wallets = usePositions(wallet);
+  const vault = useVaultBets(wallet);
   const value = history && isOk(history) ? history.value : null;
-  const report = useMemo(() => (value ? computeTraderEdge(value.rounds, value.openCount) : null), [value]);
+  const live = wallets && isOk(wallets) ? wallets.value.filter((r) => r.balanceUpRaw > 0n || r.balanceDownRaw > 0n).length + (vault && isOk(vault) ? vault.value.filter((b) => b.state === "open" && (b.upRaw > 0n || b.downRaw > 0n)).length : 0) : null;
+  const openCount = live ?? value?.openCount ?? 0;
+  const report = useMemo(() => (value ? computeTraderEdge(value.rounds, openCount) : null), [value, openCount]);
   const S = EDGE.states;
 
   let body: ReactNode;
@@ -47,7 +53,7 @@ export function EdgeScreen() {
   } else if (!isOk(history)) {
     body = <State {...S.failed} action={<button type="button" onClick={retry} className={`${BUTTON} border border-hairline text-ink hover:bg-surface-2`}>{S.failed.retry}</button>} />;
   } else if (!value || !report || report.settledRounds === 0) {
-    const open = value?.openCount ?? 0;
+    const open = openCount;
     body = <State eyebrow={S.none.eyebrow} title={S.none.title} copy={open > 0 ? S.none.open(open) : S.none.first} action={<Link href={START} className={`${BUTTON} bg-accent-fill text-on-accent!`}>{S.none.action}</Link>} />;
   } else {
     body = <EdgeReport history={value} report={report} onRetry={retry} />;

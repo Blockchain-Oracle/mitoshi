@@ -3,23 +3,21 @@
 // the net result with its curve and readout, four metrics, the time-of-day split bars and the payoff shape. The
 // reference's own SVG curve gives way to 21st 29532 (`components/ui/portfolio-chart`, the curve `/portfolio` already
 // draws from the same rounds, so the two can't disagree); the `edge-*` palette gives way to Mitoshi's tokens.
-import { formatBaseUnits, type TraderEdge, type WalletHistory } from "@cwf/core";
+import type { TraderEdge, WalletHistory } from "@cwf/core";
 import { PortfolioChart } from "@/components/ui/portfolio-chart";
 import { RECORD_CHART } from "@/features/markets/copy";
 import { recordPoints } from "@/features/markets/portfolio/RecordChart";
+import { money as moneyText, moneyTone } from "@/features/terminal/format";
 import { EDGE } from "./copy";
 
 type Tone = "gain" | "loss" | "flat";
-const toneOf = (v: bigint): Tone => (v > 0n ? "gain" : v < 0n ? "loss" : "flat");
+/** The tone of a figure as it reads at two decimals: a P&L that rounds to zero cents is flat, never a red −$0.00. */
+const toneOf = (v: bigint, decimals = 6): Tone => ({ "is-up": "gain", "is-down": "loss", "": "flat" } as const)[moneyTone(v, decimals)];
 const INK: Record<Tone, string> = { gain: "text-up", loss: "text-down", flat: "text-ink" };
 const MIN_BAR_PCT = 4;
 
-/** `+$1.20` / `−$0.40` / `$0.00` over base units, never a float. */
-function money(v: bigint, decimals: number, signed = true): string {
-  const text = formatBaseUnits(v < 0n ? -v : v, decimals, { maxDp: 2, minDp: 2 });
-  if (!signed || v === 0n) return `$${text}`;
-  return `${v > 0n ? "+" : "−"}$${text}`;
-}
+/** `+$1.20` / `−$0.40` / `$0.00`, rounded to the cent as the terminal and the record's curve round (`terminal/format`). */
+const money = (v: bigint, decimals: number, signed = true): string => moneyText(signed ? v : v < 0n ? -v : v, signed, decimals);
 const pct = (v: number) => (Math.abs(v) < 0.05 ? "0.0" : `${v > 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}`);
 
 function readout(report: TraderEdge, decimals: number): string {
@@ -125,7 +123,7 @@ function Payoff({ report, decimals }: { report: TraderEdge; decimals: number }) 
 
 export function EdgeReport({ history, report, onRetry }: { history: WalletHistory; report: TraderEdge; onRetry: () => void }) {
   const { decimals } = history;
-  const tone = toneOf(report.netBase);
+  const tone = toneOf(report.netBase, decimals);
   const m = EDGE.report.metrics;
   return (
     <div className="flex flex-col gap-6">
@@ -154,7 +152,7 @@ export function EdgeReport({ history, report, onRetry }: { history: WalletHistor
       <section aria-label={m.label} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Metric label={m.winRate.label} value={report.winRatePct === null ? m.winRate.unset : `${report.winRatePct.toFixed(0)}%`} note={m.winRate.note(report.wins, report.losses)} />
         <Metric label={m.profitFactor.label} value={report.profitFactor === null ? m.profitFactor.noLoss : report.profitFactor.toFixed(2)} note={m.profitFactor.note} />
-        <Metric label={m.expectancy.label} value={report.expectancyBase === null ? m.expectancy.unset : money(report.expectancyBase, decimals)} note={m.expectancy.note} tone={report.expectancyBase === null ? "flat" : toneOf(report.expectancyBase)} />
+        <Metric label={m.expectancy.label} value={report.expectancyBase === null ? m.expectancy.unset : money(report.expectancyBase, decimals)} note={m.expectancy.note} tone={report.expectancyBase === null ? "flat" : toneOf(report.expectancyBase, decimals)} />
         <Metric label={m.drawdown.label} value={money(report.maxDrawdownBase, decimals, false)} note={m.drawdown.note} />
       </section>
 

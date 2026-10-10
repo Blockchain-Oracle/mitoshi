@@ -3,7 +3,7 @@
 // podium, the board and the reader's own row — over the index's settled rounds, with Tradash's P&L / ROI and
 // Daily · Weekly · Monthly · All time tabs (23552 segmented controls) and its five states. Rows open the wallet on the
 // explorer until S13's profile (`/u/[address]`) exists.
-import { addressUrl, formatBaseUnits, USD_DECIMALS, type Address } from "@cwf/core";
+import { addressUrl, type Address } from "@cwf/core";
 import { useState } from "react";
 import { LoadingState } from "@/components/states/LoadingState";
 import { EmptyState } from "@/components/states/EmptyState";
@@ -13,6 +13,7 @@ import { MotionScope } from "@/components/motion-scope";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
+import { money, moneyTone } from "@/features/terminal/format";
 import { LEADERBOARD as L } from "./copy";
 import type { BoardRow, BoardSort, Period } from "./protocol";
 import { useLeaderboard } from "./useLeaderboard";
@@ -24,9 +25,10 @@ function figureOf(r: BoardRow, sort: BoardSort): Pick<RankingRow, "figure" | "to
     if (r.roiBps === null) return { figure: "—", tone: "flat" };
     return { figure: `${r.roiBps > 0 ? "+" : ""}${(r.roiBps / 100).toFixed(1)}%`, tone: r.roiBps > 0 ? "up" : r.roiBps < 0 ? "down" : "flat" };
   }
+  // Rounded to the cent as the terminal rounds; a P&L that rounds to zero reads "$0.00", never a red "−$0.00".
   const pnl = BigInt(r.pnlBase);
-  const text = formatBaseUnits(pnl < 0n ? -pnl : pnl, USD_DECIMALS, { maxDp: 2, minDp: 2 });
-  return { figure: pnl === 0n ? "$0.00" : `${pnl > 0n ? "+" : "−"}$${text}`, tone: pnl > 0n ? "up" : pnl < 0n ? "down" : "flat" };
+  const tone = moneyTone(pnl);
+  return { figure: money(pnl, true), tone: tone === "is-up" ? "up" : tone === "is-down" ? "down" : "flat" };
 }
 
 function toRow(r: BoardRow, sort: BoardSort): RankingRow {
