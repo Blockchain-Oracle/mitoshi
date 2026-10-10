@@ -1914,6 +1914,27 @@ report can still be fetched and verified on Monday, where RedStone's gateway kee
 Proven in `contracts/test/engine/GapDataStreams.t.sol` (the engine accepts it on a Gap, refuses it elsewhere, refuses a
 check strictness outside its window; the real spec picks it on 4217 only).
 
+### D-218 — S9's open choices, defaulted (decision, S9, 2026-10-11)
+
+The S9 survey left ten questions; each takes the default that matches what is built, recorded so the owner can
+overturn any:
+1. The StrategyRegistry binds to **EventVaultV2** (the Trading Balance users hold today); `vault` stays immutable.
+2. **Copy is self-paid**: the one-transaction batch carries `grant`, which the relay never sponsors (D-156), so the
+   copier pays its fee and the copy drawer says so. Stop (revoke + unsubscribe) stays sponsored as an exit.
+3. Per-subscriber **`maxFee`** is the fee guard (`FeeAboveMax`); L-51's "D-112" was the reference repo's numbering.
+4. **Testnet decisions are labelled "unpaid"**: the AI hosts charge on mainnet only and Q-020 is open; the receipt slot
+   shows a real `mpp_receipts` row whenever one exists (mainnet after Q-020).
+5. **Ranking keeps Q-001's inherited rule, labelled "inherited"**, and every row also shows P&L with its sample size
+   ("12 settled"); the owner may switch the sort.
+6. The **agent-rater** is its own key role (`agent-rater`, AG-15: the owner can't rate their own agent), dry-run by
+   default; cadence: one pass a day over settled decisions until the owner sets another.
+7. **ERC-8004 registration is the creator's choice at publish** (a sponsored `register`), its id passed as `agentId`.
+8. **Envelope market scope** is one series id or "any"; `subscribe` refuses a grant whose `Caps.market` is outside it.
+9. **Mirror** (A-3b) is a spec preset (`mirror`, the source address as a parameter): data, so the registry is unchanged.
+10. **SeasonPrizePool stays in S12b** (its tests are listed there).
+
+**Why:** none blocks building; each matches the code already on chain or the decisions it cites.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

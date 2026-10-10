@@ -21,6 +21,26 @@ _None yet._
 
 ## Handoff
 
+Started 2026-10-11. Survey: nothing on chain for strategies; the vault has `GrantKind.STRATEGY`, `activeGrantOf` and
+`Caps.market` (EventVaultV2 `0xdbb3…2040`); `packages/core/src/strategies` (ported, no `agentId`/fade/`maxFee`/mirror),
+`packages/brain`, `packages/markets/src/{agents,mpp}`, `strategies/0001-0002` migrations and agent 6 on Moderato exist.
+References: Masayume `sommina-events` @ 68f7a09 (`contracts/src/strategy/*`, `services/ops/src/actors/strategy-runner`,
+`web/src/features/strategies/*`), Agari 03b30ab (`mirror-scan`, `checkCopyForm`, the Memory Market routes). Defaults
+for the open questions: D-218. Steps, in order:
+1. Contracts: `StrategyRegistry` (Masayume's + `agentId` owned per ERC-8004, follow/fade, `maxFee`, SSTORE2 metadata
+   from the root key only, envelope market scope, fee recipient's receive policy), its tests on the real engine and
+   vault, the deploy on Moderato bound to EventVaultV2.
+2. Core: strategy types gain `agentId`, mode, `maxFee`, market scope, the `mirror` preset and `sideForSubscriber`.
+3. Markets: `strategies/*` reads and writes (publish, copy batch, pause, stop), the `strategy` relay policy, encoders.
+4. Index + db: `idx_strategies`, `idx_subscriptions`, `idx_agent_feedback`; the strategy store.
+5. Ops: `strategy-runner` (STRATEGY grants, expiring nonces, decision before send, fade, dry default), `runner-main.ts`.
+6. Ops: `mirror-scan` (A-3b) and the `agent-rater` (dry default, D-218.6).
+7. Web: `/strategies` desk and builder (Reversion, 21st 23576), copy drawer (one tx, 26650; `checkCopyForm`), pause/stop.
+8. Web: `/agents` board (13063, P&L + sample size, inherited rule labelled), agent profile (31599), copier P&L panel,
+   MPP receipt against each decision, Report/Block on agent pages.
+9. Memory Market (Agari) with the optional MPP read.
+10. The gate: copy in one tx, stop in one tx, a runner placement from a STRATEGY grant, a decision with its receipt
+    (or "unpaid" on testnet), copier P&L = index, UX gate.
+
 - S13 hand-off (2026-10-11): agent pages carry Report and Block — `/api/social/report` already accepts `targetKind: "agent"` (D34); the page adds the button (`features/social/report-dialog-lazy.ts`).
 
-_Not started._
