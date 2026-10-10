@@ -18,6 +18,9 @@ catalogs:
     '@number-flow/react':
       specifier: ^0.6.2
       version: 0.6.2
+    qrcode-generator:
+      specifier: 2.0.4
+      version: 2.0.4
     '@playwright/test':
       specifier: ^1.63.0
       version: 1.63.0
@@ -420,6 +423,9 @@ importers:
       next:
         specifier: 'catalog:'
         version: 16.3.6(@playwright/test@1.63.0)(@types/node@24.19.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      qrcode-generator:
+        specifier: 'catalog:'
+        version: 2.0.4
       react:
         specifier: 'catalog:'
         version: 19.2.8
@@ -3836,6 +3842,9 @@ packages:
   puppeteer-core@24.43.1:
     resolution: {integrity: sha512-T5ScUMAsmhdNbgDR41AGESYeS6V9MSgetkSnVhhW+gXvzC42VesKCn5ld87gAZDJ6vLHL9GkRvY9WtQWSnwFbw==}
     engines: {node: '>=18'}
+
+  qrcode-generator@2.0.4:
+    resolution: {integrity: sha512-mZSiP6RnbHl4xL2Ap5HfkjLnmxfKcPWpWe/c+5XxCuetEenqmNFf1FH/ftXPCtFG5/TDobjsjz6sSNL0Sr8Z9g==}
 
   qrcode@1.5.3:
     resolution: {integrity: sha512-puyri6ApkEHYiVl4CFzo1tDkAZ+ATcnbJrJ6RiBM1Fhctdn/ix9MTE3hRph33omisEbC/2fcfemsseiKgBPKZg==}
@@ -8951,6 +8960,8 @@ snapshots:
       - react-native-b4a
       - supports-color
       - utf-8-validate
+
+  qrcode-generator@2.0.4: {}
 
   qrcode@1.5.3:
     dependencies:

@@ -2,7 +2,8 @@
  * The S5 gate's browser pass (D-207: the product checked live, no UI test suite), from a CI runner like the other
  * drivers. Signed out, at each width: `/stats`, `/news`, `/status`, `/leaderboard` (P&L ↔ ROI, Daily ↔ All time) and
  * `/portfolio/edge`'s sign-in state. Signed in (a fresh passkey from the terminal's tour, the faucet, one-tap armed): a
- * $1 UP on BTC held through its Window's settlement, then `/portfolio/edge` — "nothing settled yet" with the open count
+ * $1 UP on BTC held through its Window's settlement — shared from its details (the card, and the PNG Download saves) —
+ * then `/portfolio/edge` — "nothing settled yet" with the open count
  * while the Window runs, the report once it settles — and `/leaderboard` with the account's own row (Daily). Every
  * capture is listed in `s5-pages.json`; a miss keeps its screen and the reason.
  *
@@ -12,7 +13,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { chromium, expect, type Page } from "@playwright/test";
 import { settle } from "./lib/settle";
-import { openTerminalSession, signUpFromTour, stakeMin, waitEnterable } from "./lib/terminal";
+import { modal, openTerminalSession, signUpFromTour, stakeMin, waitEnterable } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "https://testnet.mitoshi.xyz");
@@ -110,6 +111,24 @@ async function signedIn(width: number) {
     s.log({ step: "opened", txs: s.txs });
   });
   if (!opened) return void (await s.browser.close());
+  await attempt("share", width, page, async () => {
+    // The position's details → Share: the card is drawn in the browser, then Download saves the same PNG.
+    if (width < 768) await page.locator(".tm-view").first().click({ timeout: 60_000 });
+    const row = page.locator(".tm-pos:visible").filter({ hasText: "Up BTC" }).first();
+    await expect(row).toBeVisible({ timeout: 120_000 });
+    await row.locator(".tm-pos-open-btn").click();
+    const share = modal(page).getByRole("button", { name: "Share", exact: true });
+    await expect(share).toBeEnabled({ timeout: 60_000 });
+    await share.click();
+    await expect(page.getByRole("img", { name: /^Share card: BTC UP/ })).toBeVisible({ timeout: 30_000 });
+    await shot(page, "share", width, "the share modal over the position's details");
+    const download = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Download" }).click();
+    await (await download).saveAs(join(out, `share-card-${width}.png`));
+    shots.push({ state: "share-card", width, file: `share-card-${width}.png`, ok: true, note: "the PNG Download saved" });
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("Escape");
+  });
   await attempt("edge-open", width, page, async () => {
     await page.goto(`${base}/portfolio/edge`, { waitUntil: "load" });
     await settle(page);

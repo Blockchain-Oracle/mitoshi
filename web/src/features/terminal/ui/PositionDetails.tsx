@@ -2,11 +2,13 @@
 // Tradash's Position details (RV-47) as a right-edge drawer (D-190), on Mitoshi's facts: the Window and where the
 // position is held, the Line (the opening print) and the entry spot, avg in and what Close pays now (both in cents a
 // contract), PnL, the settle time and the Window's proof page; Reduce (25 / 50 / 75 / 100 % through the one-tap Close),
-// Add (a centred modal), and "Show on the chart" for a Window not on screen.
+// Add (a centred modal), "Show on the chart" for a Window not on screen, and Share (RV-83: the S5 share card in a
+// centred modal, loaded on the tap).
 import { formatCadence } from "@cwf/core/copy";
 import { isOk } from "@cwf/core";
 import { formatBaseUnits } from "@cwf/core/units";
 import { useMarket, useOpeningPrice } from "@cwf/markets/react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
@@ -22,6 +24,7 @@ import { AddModal } from "./AddModal";
 import { PositionGone } from "./PositionGone";
 
 const REDUCE = [25n, 50n, 75n, 100n] as const;
+const ShareModal = dynamic(() => import("@/features/share/ShareModal").then((m) => m.ShareModal), { ssr: false });
 
 export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow, onExits, spendableBase, busy }: {
   p: TerminalPosition | null;
@@ -35,6 +38,7 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
   busy: boolean;
 }) {
   const [adding, setAdding] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const masked = usePrivacy();
   const marketReading = useMarket(open && p ? p.marketId : null);
   const market = marketReading && isOk(marketReading) ? marketReading.value : null;
@@ -90,10 +94,22 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
             <button type="button" className="tm-choice" disabled={value?.locked} onClick={() => (tapFeedback(), onExits(p))}>{TERMINAL.exits.open}</button>
             <button type="button" className="tm-choice" onClick={() => (tapFeedback(), onShow(p))}>{TERMINAL.details.chart}</button>
             <Link href={`/proof/${p.marketId}`} className="tm-choice tm-link">{TERMINAL.details.proof}</Link>
+            <button type="button" className="tm-choice" disabled={masked || value?.pnlBase == null} onClick={() => (tapFeedback(), setSharing(true))}>{TERMINAL.details.share}</button>
           </div>
         </SlideOverContent>
       </SlideOver>
       <AddModal p={p} open={adding} onOpenChange={setAdding} spendableBase={spendableBase} />
+      {sharing ? (
+        <ShareModal
+          open={sharing}
+          onOpenChange={setSharing}
+          subject={{
+            asset: p.asset, side: p.side, intervalSec: p.intervalSec, pnlBase: value?.pnlBase ?? 0n, costBase: p.costBase, decimals: p.decimals, closed: false,
+            entry: p.entrySpot ? `$${formatPrice(p.entrySpot, priceDecimals(p.entrySpot))}` : null,
+            exit: value?.spot ? `$${formatPrice(value.spot, priceDecimals(value.spot))}` : null,
+          }}
+        />
+      ) : null}
     </>
   );
 }

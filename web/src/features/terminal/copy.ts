@@ -168,6 +168,7 @@ export const TERMINAL = {
     balance: "Trading Balance",
     boost: "Boost (part fronted by the reserve)",
     proof: "Proof of the prints",
+    share: "Share",
     chart: "Show on the chart",
     reduce: "Reduce",
     add: "Add",
