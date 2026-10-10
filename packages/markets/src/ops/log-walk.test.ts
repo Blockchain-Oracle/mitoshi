@@ -73,6 +73,26 @@ describe("adaptive eth_getLogs walk (recount, D-187)", () => {
     expect(Math.max(...ranges.filter(([f]) => f >= 70_000n).map(([f, t]) => Number(t - f + 1n)))).toBeGreaterThanOrEqual(50_000);
   });
 
+  it("keeps under a window an un-hinted refusal set, instead of being refused once per window (F-S5-02)", async () => {
+    // Moderato aborts a body over its size limit with no range to retry: here, any window over 12,000 blocks.
+    const sizes: bigint[] = [];
+    let refused = 0;
+    const stats = await walkLogWindows(0n, 399_999n, async (from, to) => {
+      sizes.push(to - from + 1n);
+      if (to - from + 1n > 12_000n) {
+        refused++;
+        throw new Error("HTTP response body exceeded the size limit.");
+      }
+    });
+    expect(refused).toBe(stats.refused);
+    // 50,000 → 25,000 → 12,500 refused, then ≤ 9,375 (¾ of the ceiling). Every 16 answers the ceiling relaxes, which
+    // costs at most two refusals before it settles again — against one refusal per two windows without a ceiling.
+    const answered = sizes.filter((n) => n <= 12_000n);
+    expect(answered.reduce((a, n) => a + n, 0n)).toBe(400_000n);
+    expect(stats.refused).toBeLessThanOrEqual(3 + 2 * Math.ceil(answered.length / 16));
+    expect(stats.refused * 4).toBeLessThan(answered.length);
+  });
+
   it("halves on an error without a hint, and gives up only at the minimum window", async () => {
     let calls = 0;
     const seen: bigint[] = [];

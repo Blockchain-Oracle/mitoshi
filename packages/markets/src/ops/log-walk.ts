@@ -3,7 +3,13 @@
  * with `-32602 "query exceeds max results 20000, retry with the range A-B"` (measured 2026-09-30): the walk retries with
  * the range the RPC names, halves when an error names none, and doubles again after every answered window — the ops
  * indexer's window rule (`services/ops/src/actors/indexer/window.ts`) plus the RPC's own hint (D-187).
+ *
+ * A refusal that names no range (Moderato aborting a body over its size limit, or timing out — F-S5-02) is a ceiling
+ * too: growth stays under ¾ of the smallest such window, so a dense chain isn't refused once per window (each refusal
+ * there costs a large aborted transfer). After `RELAX_AFTER` answered windows in a row the ceiling doubles, so a
+ * quieter stretch can widen again.
  */
+const RELAX_AFTER = 16;
 
 export interface LogWalkOptions {
   /** First window, in blocks (default 50,000). */
@@ -44,12 +50,15 @@ export function suggestedLogRange(error: unknown): { from: bigint; to: bigint } 
 /**
  * Calls `fetchWindow(from, to)` over consecutive windows covering `[fromBlock, toBlock]` exactly once, in order. A
  * refused window is retried smaller (the RPC's suggested end when it starts at `from`, else half); an answered one
- * doubles the next, up to `maxBlocks`.
+ * doubles the next, up to `maxBlocks` and under the ceiling an un-hinted refusal set.
  */
 export async function walkLogWindows(fromBlock: bigint, toBlock: bigint, fetchWindow: (from: bigint, to: bigint) => Promise<void>, options: LogWalkOptions = {}): Promise<LogWalkStats> {
   const max = options.maxBlocks ?? 100_000n;
   const min = options.minBlocks ?? 100n;
   let size = options.initialBlocks ?? 50_000n;
+  /** The smallest window refused without a hint; growth stays under ¾ of it. */
+  let ceiling: bigint | null = null;
+  let answered = 0;
   const stats: LogWalkStats = { windows: 0, refused: 0 };
   for (let from = fromBlock; from <= toBlock; ) {
     const to = from + size - 1n > toBlock ? toBlock : from + size - 1n;
@@ -59,15 +68,25 @@ export async function walkLogWindows(fromBlock: bigint, toBlock: bigint, fetchWi
       const hint = suggestedLogRange(error);
       const why = errorTexts(error)[0] ?? String(error);
       stats.refused++;
+      answered = 0;
       options.onRefused?.(from, to, why);
       if (hint && hint.from === from && hint.to >= from && hint.to < to) size = hint.to - from + 1n;
-      else if (size > min) size = size / 2n > min ? size / 2n : min;
-      else throw error;
+      else if (size > min) {
+        const tried = to - from + 1n;
+        ceiling = ceiling === null || tried < ceiling ? tried : ceiling;
+        size = size / 2n > min ? size / 2n : min;
+      } else throw error;
       continue;
     }
     stats.windows++;
     from = to + 1n;
-    size = size * 2n > max ? max : size * 2n;
+    if (ceiling !== null && ++answered >= RELAX_AFTER) {
+      ceiling *= 2n;
+      answered = 0;
+    }
+    const cap = ceiling === null ? max : (ceiling * 3n) / 4n < max ? (ceiling * 3n) / 4n : max;
+    const grown = size * 2n > cap ? cap : size * 2n;
+    size = grown > size ? grown : size;
   }
   return stats;
 }
