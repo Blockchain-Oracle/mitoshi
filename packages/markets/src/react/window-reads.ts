@@ -62,10 +62,13 @@ export function useResolution(marketId: MarketId | null, enabled = true): Readin
 /** Both sides of one Window's book in their own terms (what you pay). */
 export function useBookDepth(market: Pick<EventMarket, "marketId" | "decimals"> | null, options: { depth?: number; pollMs?: number } = {}): Reading<BookDepth> | null {
   const marketId = market?.marketId ?? null;
+  // Read outside the callback: the React Compiler memoizes on what the callback reads, and `market!.decimals` there
+  // was hoisted into that check and threw for a null market (no Window yet), which this hook's signature allows.
+  const decimals = market?.decimals ?? 0;
   const { depth = 10, pollMs = ONCHAIN_POLL_MS } = options;
   // One depth read per Window, shared by every card that shows it; a list of many Windows polls slower (the public
   // RPC's per-IP budget, D-134) and leans on the stream's `market:<id>`/`fills` invalidations instead.
-  return usePortReading(keys.depth(marketId), (p) => p.getBookDepth({ marketId: marketId!, decimals: market!.decimals }, depth), { enabled: marketId !== null, pollMs });
+  return usePortReading(keys.depth(marketId), (p) => p.getBookDepth({ marketId: marketId!, decimals }, depth), { enabled: marketId !== null, pollMs });
 }
 
 /** `useBookDepth`'s query for one Window — the same key, read and poll — for subscribing to many at once. */
@@ -90,7 +93,10 @@ export function useBookDepths(markets: readonly Pick<EventMarket, "marketId" | "
 export function useStakeQuote(input: { market: Pick<EventMarket, "marketId" | "decimals" | "intervalSec"> | null; side: Side; stakeBase: bigint; enabled?: boolean }): Reading<Quote | null> | null {
   const { market, side, stakeBase, enabled = true } = input;
   const marketId = market?.marketId ?? null;
-  return usePortReading([...keys.depth(marketId), "quote", side, stakeBase.toString()], (p) => p.freshQuoteStake({ marketId: marketId!, decimals: market!.decimals, intervalSec: market!.intervalSec }, side, stakeBase), {
+  // Outside the callback for the React Compiler (see `useBookDepth`).
+  const decimals = market?.decimals ?? 0;
+  const intervalSec = market?.intervalSec ?? 0;
+  return usePortReading([...keys.depth(marketId), "quote", side, stakeBase.toString()], (p) => p.freshQuoteStake({ marketId: marketId!, decimals, intervalSec }, side, stakeBase), {
     enabled: enabled && marketId !== null && stakeBase > 0n,
     pollMs: REQUOTE_MS,
   });
@@ -100,7 +106,8 @@ export function useStakeQuote(input: { market: Pick<EventMarket, "marketId" | "d
 export function useExitQuote(input: { market: Pick<EventMarket, "marketId" | "decimals"> | null; side: Side | null; contractsRaw: bigint; enabled?: boolean; pollMs?: number }): Reading<ExitQuote | null> | null {
   const { market, side, contractsRaw, enabled = true, pollMs = REQUOTE_MS } = input;
   const marketId = market?.marketId ?? null;
-  return usePortReading([...keys.depth(marketId), "exit", side, contractsRaw.toString()], (p) => p.freshExitQuote({ marketId: marketId!, decimals: market!.decimals }, side!, contractsRaw), {
+  const decimals = market?.decimals ?? 0;
+  return usePortReading([...keys.depth(marketId), "exit", side, contractsRaw.toString()], (p) => p.freshExitQuote({ marketId: marketId!, decimals }, side!, contractsRaw), {
     enabled: enabled && marketId !== null && side !== null && contractsRaw > 0n,
     pollMs,
   });

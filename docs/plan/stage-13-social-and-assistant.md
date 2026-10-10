@@ -66,7 +66,16 @@ streaming, profile editing, export/deletion, a trading-points league — built h
    topic allows); `/settings/notifications` (browser permission; Money moved on by default, Price alerts, Social, Games;
    every alert with a remove) and the LifecycleWatcher reading those topics. `/u` back under its budget (338.7 → 211.6
    KB: `networkLine` moved out of the zod module, the report dialog lazy). Push delivery lands with SM2.
-8. Sensei: the brain (MPP or a direct key), streamed tokens, AI data-sharing consent first.
+8. **Done (live once a model key is set — owner action):** Sensei — `/api/sensei` on the shared brain (`@cwf/brain`;
+   default `anthropic/claude-opus-5-5`, effort low, adaptive thinking, Anthropic's server-side refusal fallback on the
+   direct route; `SENSEI_VIA=mpp` pays each question through the MPP payer with an `mpp_receipts` row per question),
+   streamed as NDJSON token by token; Agari's voice, THE BRAKE and the advice tripwire with every fact rewritten for
+   Mitoshi (one book per Window, signed RedStone close, void at 50 cents, Close, Boost, the network's money); the
+   consent before the first question, naming the provider from the server's configuration and enforced by the route
+   (per provider and version); the terminal's drawer (21st 31661 thread + 12399 composer) reading the Window on screen,
+   its book, the session, positions with what Close pays, the settled record and the next report; rate gate 3 s /
+   30 per 10 min / 600 an hour. The chart controls wrap upward under ~360 px. `useBookDepth`/`useStakeQuote`/
+   `useExitQuote` no longer throw for a null market (F-S13-03).
 9. Reels.
 10. `/settings/account` completion (backup passkey, key-used history, AI consent, export, deletion, 5 s Undo),
     `/contact` (21st 25081), privacy/terms updated for social and AI data.

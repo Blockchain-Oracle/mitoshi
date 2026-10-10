@@ -179,6 +179,7 @@ export const TERMINAL = {
   controls: {
     room: "Open the room",
     alerts: "Price alerts",
+    sensei: "Ask Sensei",
     interval: (i: string) => `Candle interval: ${i}`,
     intervals: "Candle intervals",
     minutes: "Minutes",

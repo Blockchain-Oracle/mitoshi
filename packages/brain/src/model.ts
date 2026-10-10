@@ -10,7 +10,7 @@ import type { LanguageModel } from "ai";
  * A model is resolved from configuration through the AI SDK's uniform interface, so Claude, GPT, Gemini or anything
  * speaking the OpenAI protocol are the same call with a different string:
  *
- *   AI_MODEL="anthropic/claude-opus-5"   (the default)
+ *   AI_MODEL="anthropic/claude-opus-5-5" (the default)
  *   AI_MODEL="openai/gpt-5.4"
  *   AI_MODEL="google/gemini-3-5-flash"
  *
@@ -29,7 +29,7 @@ import type { LanguageModel } from "ai";
  */
 
 /** Claude stays the default. It is the best model for this job; the point is that it is now a setting. */
-export const DEFAULT_AI_MODEL = "anthropic/claude-opus-5";
+export const DEFAULT_AI_MODEL = "anthropic/claude-opus-5-5";
 
 type Factory = (modelId: string) => LanguageModel;
 

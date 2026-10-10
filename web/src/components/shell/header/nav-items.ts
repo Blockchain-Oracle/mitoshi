@@ -4,7 +4,7 @@
 // S22 (D-189): the rail's places and the phone dock (Baku/roy-chain's Slush-measured shell) replace the header nav and
 // the pill nav; everything else lives in the Everything drawer (the former More panel), one home per destination.
 import {
-  Activity, ArrowLeftRight, BarChart3, Bell, BookOpen, Bot, Building2, CandlestickChart, ChartCandlestick, ChartLine, ChartNoAxesCombined,
+  Activity, ArrowLeftRight, BarChart3, Bell, BookOpen, Bot, Building2, CandlestickChart, CirclePause, ChartCandlestick, ChartLine, ChartNoAxesCombined,
   CircleHelp, Clapperboard, Coins, Dices, Download, GalleryVerticalEnd, Gamepad2, Goal, Handshake, History, KeyRound,
   Layers3, MessageSquare, Mountain, Newspaper, Palette, Presentation, Rocket, ScanSearch, Settings, ShieldCheck, Trophy,
   WalletCards, X as XLogo, type LucideIcon,
@@ -57,7 +57,7 @@ export const NAV_ITEMS = {
   launch: item({ id: "launch", name: "Launch", href: "/launch", description: "Launch a stablecoin or a memecoin.", icon: Rocket, keywords: "token create memecoin stablecoin" }),
   earn: item({ id: "earn", name: "Earn", href: "/earn", description: "Put capital into earning opportunities.", icon: Coins, keywords: "vault yield maker" }),
   parlay: item({ id: "parlay", name: "Parlay", href: "/parlay", description: "Combine several market outcomes.", icon: ChartNoAxesCombined }),
-  sensei: item({ id: "sensei", name: "Sensei", href: "/markets?sensei=1", description: "Ask the market assistant.", icon: MessageSquare, keywords: "assistant ai help", match: { paths: [] } }),
+  sensei: item({ id: "sensei", name: "Sensei", href: "/trade?d=trade-sensei", description: "Ask the market assistant about the Window on screen.", icon: MessageSquare, keywords: "assistant ai help", match: { paths: [] } }),
   surface: item({ id: "surface", name: "Market Surface", href: "/surface", description: "Read the market structure at a glance.", icon: ScanSearch }),
   leaderboard: item({ id: "leaderboard", name: "Leaderboard", href: "/leaderboard", description: "Verified records, traders and game ranks.", icon: Trophy, keywords: "rank ranking" }),
   gamesRank: item({ id: "games-rank", name: "Game ranks", href: "/games/rank", description: "Season standings for duels.", icon: Trophy, match: { paths: ["/games/rank"], exact: true } }),
@@ -66,6 +66,7 @@ export const NAV_ITEMS = {
   howItWorks: item({ id: "how-it-works", name: "How it works", href: "/how-it-works", description: "Understand the product from end to end.", icon: CircleHelp }),
   docs: item({ id: "docs", name: "Docs", href: DOCS_URL, external: DOCS_EXTERNAL, description: "Read step-by-step guides and product documentation.", icon: BookOpen }),
   status: item({ id: "status", name: "Status", href: "/status", description: "Check connected services and contracts.", icon: Activity }),
+  halts: item({ id: "halts", name: "Trading halts", href: "/status/halts", description: "Halts on the listed stocks, now and over 30 days.", icon: CirclePause, keywords: "halt luld paused stock" }),
   download: item({ id: "download", name: "Download", href: "/download", description: "Install Mitoshi as an app.", icon: Download, keywords: "install pwa app" }),
   demo: item({ id: "demo", name: "Demo", href: "/demo", description: "Walk through the complete product story.", icon: Clapperboard }),
   pitch: item({ id: "pitch", name: "Pitch", href: "/pitch", description: "Read the concise Mitoshi thesis.", icon: Presentation }),
@@ -110,7 +111,7 @@ export const EXPLORE_GROUP: NavGroup = {
   sections: [
     { id: "trade", name: "Trade", description: "More ways to make a call", items: [NAV_ITEMS.earn, NAV_ITEMS.parlay, NAV_ITEMS.surface, NAV_ITEMS.sensei] },
     { id: "records", name: "Records", description: "Rankings and market evidence", items: [NAV_ITEMS.leaderboard, NAV_ITEMS.gamesRank, NAV_ITEMS.stats, NAV_ITEMS.activity] },
-    { id: "learn", name: "Learn", description: "Guidance and context", items: [NAV_ITEMS.news, NAV_ITEMS.howItWorks, NAV_ITEMS.docs, NAV_ITEMS.status, NAV_ITEMS.download, NAV_ITEMS.demo, NAV_ITEMS.pitch] },
+    { id: "learn", name: "Learn", description: "Guidance and context", items: [NAV_ITEMS.news, NAV_ITEMS.howItWorks, NAV_ITEMS.docs, NAV_ITEMS.status, NAV_ITEMS.halts, NAV_ITEMS.download, NAV_ITEMS.demo, NAV_ITEMS.pitch] },
   ],
 };
 
@@ -151,7 +152,7 @@ export const NAVIGABLE_ROUTE_PATHS = [
   "/activity", "/agents", "/bridge", "/claim", "/demo", "/docs", "/download", "/earn", "/games", "/games/candle-hop", "/games/duel",
   "/games/history", "/games/line-rider", "/games/lucky", "/games/moonshot", "/games/practice", "/games/range", "/games/rank",
   "/how-it-works", "/launch", "/leaderboard", "/markets", "/news", "/parlay", "/pitch", "/portfolio", "/portfolio/edge",
-  "/reels", "/reserves", "/settings/account", "/settings/notifications", "/stats", "/status", "/stocks", "/strategies",
+  "/reels", "/reserves", "/settings/account", "/settings/notifications", "/stats", "/status", "/status/halts", "/stocks", "/strategies",
   "/surface", "/themes", "/trade", "/trade-from-x",
 ] as const;
 

@@ -15,6 +15,7 @@ export const PositionDetails = dynamic(() => import("./ui/PositionDetails").then
 export const ExitsDrawer = dynamic(() => import("./ui/ExitsDrawer").then((m) => m.ExitsDrawer), { ssr: false });
 export const RoomDrawer = dynamic(() => import("./ui/RoomDrawer").then((m) => m.RoomDrawer), { ssr: false });
 export const AlertsDrawer = dynamic(() => import("./ui/AlertsDrawer").then((m) => m.AlertsDrawer), { ssr: false });
+export const SenseiDrawer = dynamic(() => import("./ui/SenseiDrawer").then((m) => m.SenseiDrawer), { ssr: false });
 
 /** Safari has no `requestIdleCallback`: a short timeout after the first paint stands in. */
 const IDLE_TIMEOUT_MS = 2_000;

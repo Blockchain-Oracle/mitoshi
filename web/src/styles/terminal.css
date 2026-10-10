@@ -196,7 +196,8 @@
 .tm-price-value { min-width: 56px; font: 700 20px/1 var(--font-data); text-align: center; font-variant-numeric: tabular-nums; }
 
 /* ── chart controls and reactions (23f) ────────────────────────────────────────────────────────────────────────── */
-.tm-controls { display: flex; align-items: center; gap: 8px; }
+/* Phones under ~360 px: the row wraps upward instead of running off the screen (the music button, the recentre). */
+.tm-controls { display: flex; flex-wrap: wrap-reverse; align-items: center; gap: 8px; max-width: calc(100vw - 24px); }
 .tm-ctl { display: grid; width: 40px; height: 40px; place-items: center; border-radius: var(--radius-full); color: var(--color-ink); }
 .tm-ctl svg { width: 18px; height: 18px; }
 .tm-ctl.is-on { color: var(--chart-up); }
