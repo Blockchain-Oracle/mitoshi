@@ -14,11 +14,17 @@ This entry ports code the owner wrote before the hackathon, and says so file by 
   Ported files carry `Ported from Masayume 68f7a09:<path>`.
 - **Agari** (`agari-wt/w1`) — the events-engine semantics (rewritten in Solidity), the ops runtime, the wallet modal
   replica and venue features. Ported files carry `Agari <sha>:<path>`.
-- Yosuku-derived design (through Masayume) and third-party material: `THIRD_PARTY_NOTICES.md`.
+- **Owarine** (`owarine` @ `ecb7565b`, the owner's MIT repo) — the Tradash-behaviour trading terminal that `/trade`
+  ports. Ported files carry `Ported from Owarine ecb7565b:<path>`.
+- **Baku** (`roy-chain` @ `ede3ed38`, the owner's MIT repo) — the app shell (rail, top line, stage, dock). Ported files
+  carry `Ported from Baku (roy-chain) ede3ed38:<path>`.
+- Yosuku-derived design (through Masayume), Tradash as a behaviour reference only (nothing of theirs copied),
+  21st.dev components and other third-party material: `THIRD_PARTY_NOTICES.md`.
 
 New for this hackathon: the Tempo engine and product contracts, stocks on Tempo (Robinhood Chain bridge, v4 pools with
-a guard hook, themes), the launchpads, the Tempo wallet/relay/passkey layer, the mobile app and the UX rebuild. The
-plan (`docs/plan/00-plan.md`) and the git history show what was built when.
+a guard hook, themes — contracts deployed on Moderato, their screens next), the launchpads, the Tempo
+wallet/relay/passkey layer, the ops keepers, the terminal and the UX rebuild. The native mobile app is planned
+(SM1–SM5) and not built yet. The plan (`docs/plan/00-plan.md`) and the git history show what was built when.
 
 ## Layout
 
