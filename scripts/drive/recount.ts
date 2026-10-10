@@ -5,17 +5,18 @@
  * recount (S3 gate "recount == index"): walks every engine log from the deploy block to a pinned head with its own
  * `eth_getLogs` + ABI decode (nothing read from the database), replays Windows, prints, fills, sets and redemptions,
  * and diffs the totals and every Window's digest against ops `GET /index/recount?through=<head>`. The index also holds
- * the EventVault's logs (S7, D-161), so those are walked and counted by name too. Log windows follow what the RPC
- * accepts: it refuses more than 20,000 results and names a range that fits (D-187). Exit 1 on any mismatch.
+ * every Trading Balance's logs — the current EventVaultV2, each v2 it replaced (D-213) and v1 (S7, D-161) — so each is
+ * walked and counted by name too, decoded with this script's own ABI list. Log windows follow what the RPC accepts: it
+ * refuses more than 20,000 results and names a range that fits (D-187). Exit 1 on any mismatch.
  *
  *   pnpm --dir scripts exec tsx drive/recount.ts [--ops https://ops.testnet.mitoshi.xyz] [--rpc https://rpc.moderato.tempo.xyz]
  */
-import { createPublicClient, decodeEventLog, getAddress, type Address, type Hex, type Log } from "viem";
+import { createPublicClient, decodeEventLog, getAddress, parseAbi, type Address, type Hex, type Log } from "viem";
 import { tempoModerato } from "viem/chains";
 import { deployments } from "@cwf/clients";
 import { eventsEngineAbi } from "@cwf/clients/abis/EventsEngine";
-import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
-import { tempoHttp, vaultVenueOf, walkLogWindows } from "@cwf/markets/ops";
+import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
+import { tempoHttp, vaultVenuesOf, walkLogWindows } from "@cwf/markets/ops";
 
 const arg = (name: string, fallback: string) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1]! : fallback);
 const OPS = arg("--ops", "https://ops.testnet.mitoshi.xyz").replace(/\/$/, "");
@@ -25,7 +26,9 @@ const client = createPublicClient({ chain: tempoModerato, transport: tempoHttp(R
 const frag = (deployments as unknown as Record<string, Record<string, { contracts: Record<string, { address: string; deployBlock: number }> }>>)["42431"]!.engine!;
 const ENGINE = getAddress(frag.contracts.EventsEngine!.address);
 const DEPLOY = BigInt(frag.contracts.EventsEngine!.deployBlock);
-const VAULT = vaultVenueOf(tempoModerato.id);
+const VAULTS = vaultVenuesOf(tempoModerato.id);
+/** v2's events are v1's plus `ExitGranted`; the first v2 emitted it without D-213's slack (told apart by topic0). */
+const VAULT_ABI = [...eventVaultV2Abi, ...parseAbi(["event ExitGranted(uint256 indexed grantId, address indexed owner, address indexed actor, bytes32 market, uint64 expiresAtSec, uint16 toleranceBps)"])];
 
 /** Every log of `address` in `[from, to]`, in windows the RPC accepts. */
 async function logsOf(address: Address, from: bigint, to: bigint, onLogs: (logs: Log[]) => void): Promise<void> {
@@ -54,12 +57,12 @@ async function main() {
   let opened = 0;
   let logs = 0;
   let vaultLogs = 0;
-  if (VAULT) {
-    await logsOf(VAULT.vault, VAULT.deployBlock, head, (found) => {
+  for (const vault of VAULTS) {
+    await logsOf(vault.vault, vault.deployBlock, head, (found) => {
       for (const log of found) {
         let name: string;
         try {
-          name = decodeEventLog({ abi: eventVaultAbi, data: log.data, topics: log.topics as [Hex, ...Hex[]] }).eventName;
+          name = decodeEventLog({ abi: VAULT_ABI, data: log.data, topics: log.topics as [Hex, ...Hex[]] }).eventName;
         } catch {
           continue; // the indexer stores only the vault's decodable events
         }
@@ -132,8 +135,8 @@ async function main() {
     if (res.ok) {
       served = (await res.json()) as Served;
       const at = (a: string | undefined) => served!.cursors?.find((c) => c.address?.toLowerCase() === a?.toLowerCase());
-      // Every source the index follows must have reached the pinned head (engine, and the vault when deployed).
-      if ([ENGINE, VAULT?.vault].filter(Boolean).every((a) => at(a) && BigInt(at(a)!.block) >= head)) break;
+      // Every source the index follows must have reached the pinned head (the engine and every vault).
+      if ([ENGINE, ...VAULTS.map((v) => v.vault)].every((a) => at(a) && BigInt(at(a)!.block) >= head)) break;
     }
     await new Promise((r) => setTimeout(r, 2_000));
   }
