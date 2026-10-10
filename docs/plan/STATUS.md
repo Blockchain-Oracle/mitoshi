@@ -78,9 +78,14 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
 - `/pitch` (L-14, Masayume 52a86fc's folio), `/how-it-works` (L-12), `/demo` (L-13: dated captures + six receipts,
   the video slot honest until it exists), `/docs` (L-20, D-214: eleven pages in the site group) with `/privacy` and
   `/terms` in its layout, the web app manifest + icons (L-18's install claim now true), one title pattern.
-- Left: the two videos (pitch 2–3 min, demo ≤ 3 min — owner voice; footage and scripts can be prepared), GTM/demand
-  text and the submission form; `/status`, `/news`, `/proof/[market]` are S5's (the terminal's "Proof of the prints"
-  links to `/proof`), `/contact` is S13's.
+- Submission drafts in `docs/submission/` (form fields with [owner] marks, pitch and demo scripts, disclosure);
+  `web/e2e/footage.ts` records the real flow for the demo video (1440 run 38037521151, 116 s; 390 re-run going).
+- Left: the two videos (owner's voice), the form, owner review of GTM; `/news` (S5), `/contact` (S13).
+
+**S5 — started 2026-10-10 (`acceptance/S5.md`).** `/proof/[market]` live: both prints, their record txs, and
+**re-verification in the browser** from the chain alone (record tx → `recordPrint`'s signed packages → `eth_call
+verifyPrint`; matched the recorded close exactly). `/status` live: every ops keeper and the fee relay, read at request
+time. Next in S5: `/stats`, the leaderboard data, `/news`, `/portfolio/edge`, share cards.
 
 **S23 gate — nearly closed (`acceptance/S23.md` passes 1–5, F-S23-06…13).** Since 2026-10-09 20:10Z:
 - Passed live: Range + Moonshot on the earn-quoter's depth (37996617218); **states 38 of 38** (38034974579, after
@@ -160,9 +165,9 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
    stage gate.
 3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes). R.0, S22 and S23's boxes are done;
    S24 is complete: every box ticked and the gate passed on 2026-10-09 (D-213 answered Q-033 with the floor's slack).
-   Next, in order: S20's videos (footage and scripts for the owner's voice), GTM text and the submission (due
-   2026-10-12 23:59 PT); S5's `/proof/[market]` (the terminal links to it) and `/status`; then the S23 gate's open
-   list (above). S5's leaderboard data comes before S23g's leaderboard.
+   Next, in order: S20's videos (footage and scripts are ready for the owner's voice) and the submission (due
+   2026-10-12 23:59 PT); S5's remaining surfaces (`/stats`, leaderboard data, `/news`); then the S23 gate's open list
+   (above). S5's leaderboard data comes before S23g's leaderboard.
 4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
    revamped UI.
