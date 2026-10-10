@@ -44,7 +44,7 @@ export const STATS = {
   attribution: (unattributed: number) =>
     `The house's keys and the maker vault are never counted. A Trading Balance tap counts for the wallet it was made for. ${
       unattributed > 0
-        ? `${unattributed} ${unattributed === 1 ? "call was" : "calls were"} taken by Boost, Parlay, Range or the private desk for an owner this index doesn't record yet: counted as calls, not as wallets.`
+        ? `${unattributed} ${unattributed === 1 ? "call has" : "calls have"} no wallet named yet — taken by Boost, Parlay, Range or the private desk for an owner this index doesn't record yet, or a Trading Balance tap still being indexed: counted as calls, not as wallets.`
         : ""
     }`.trim(),
   testnet:

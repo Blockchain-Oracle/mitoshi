@@ -39,14 +39,17 @@ describe.skipIf(!url)("readTraction (fresh schema)", () => {
     await runMigrations(sql);
     await sql`insert into idx_series (series, ticker, symbol, cadence_sec, basis, lot_base, tick_base, cash_unit) values ('s1', 1, 'BTC', 300, 0, 1000, 1000, 1)`;
     await sql`insert into idx_markets (market, series, symbol, cadence_sec, basis, opened_tx, state) values (${M}, 's1', 'BTC', 300, 0, '0xopen', 'resolved')`;
-    const fill = (i: number, taker: string, kind: number, maker: string, path: number, price: number) =>
+    // The maker's kind as the Fill event carries it: a mint pairs BUY_YES with BUY_NO, a direct path a buy with a sell.
+    const fill = (i: number, taker: string, kind: number, maker: string, makerKind: number, path: number, price: number) =>
       sql`insert into idx_fills (chain_id, tx_hash, log_index, market, seq, block_number, ts_sec, taker, taker_kind, maker, maker_kind, maker_order_id, path, price_ticks, lots, maker_remaining)
-          values (42431, ${`0xtx${i}`}, 0, ${M}, ${i}, ${i}, ${T0 + i}, ${taker}, ${kind}, ${maker}, 0, 1, ${path}, ${price}, 1000, 0)`;
-    await fill(1, KEEPER, 0, SEED, 2, 500);
-    await fill(2, U1, 0, SEED, 2, 520);
-    await fill(3, VAULT, 2, SEED, 2, 480);
-    await fill(4, KEEPER, 0, U3, 2, 600);
-    await fill(5, PRODUCT, 1, SEED, 0, 700);
+          values (42431, ${`0xtx${i}`}, 0, ${M}, ${i}, ${i}, ${T0 + i}, ${taker}, ${kind}, ${maker}, ${makerKind}, 1, ${path}, ${price}, 1000, 0)`;
+    await fill(1, KEEPER, 0, SEED, 2, 2, 500);
+    await fill(2, U1, 0, SEED, 2, 2, 520);
+    await fill(3, VAULT, 2, SEED, 0, 2, 480);
+    await fill(4, KEEPER, 0, U3, 2, 2, 600);
+    await fill(5, PRODUCT, 1, SEED, 0, 0, 700);
+    // Two callers on a direct path: U1 buys YES from U3's resting sell at 550 — $0.55 changes hands once.
+    await fill(6, U1, 0, U3, 1, 0, 550);
     await sql`insert into idx_vault_executions (tx_hash, log_index, vault, block_number, owner, market, grant_id, outcome_idx, is_buy, cash_delta, token_delta, actor, at_sec)
       values ('0xtx3', 1, ${VAULT}, 3, ${U2}, ${M}, 1, 1, true, 520000, 1000000, ${U2}, ${T0 + 3})`;
     const redeem = (i: number, holder: string, total: number) =>
@@ -66,13 +69,15 @@ describe.skipIf(!url)("readTraction (fresh schema)", () => {
 
   it("counts wallets and calls without the house, attributes vault taps, and names no one for a product", async () => {
     const t = await readTraction(sql, { house: [KEEPER, SEED], vaults: [VAULT], products: [PRODUCT], nowSec: T0 + 60 });
-    expect(t).toMatchObject({ wallets: 3, wallets24h: 3, calls: 4, calls24h: 4, unattributed: 1, houseFills: 1, windowsOpened: 1, windowsResolved: 1 });
-    // 520¢ + (1000 − 480) + the maker's NO at 1000 − 600 + 700, per 1,000 lots: what each caller paid or received.
-    expect(t.tradedBase).toBe(String(520_000 + 520_000 + 400_000 + 700_000));
+    expect(t).toMatchObject({ wallets: 3, wallets24h: 3, calls: 5, calls24h: 5, unattributed: 1, houseFills: 1, windowsOpened: 1, windowsResolved: 1 });
+    // 520¢ + (1000 − 480) + the maker's NO at 1000 − 600 + 700 + the two callers' 550 counted once, per 1,000 lots.
+    expect(t.tradedBase).toBe(String(520_000 + 520_000 + 400_000 + 700_000 + 550_000));
     // U1's redemption + U2's Trading Balance settlement; the house's and the vault's own redemptions are not wallets'.
     expect(t.paidBase).toBe("1250000");
-    expect(t.days).toEqual([{ day: 20_736, newWallets: 3, calls: 4 }]);
+    expect(t.days).toEqual([{ day: 20_736, newWallets: 3, calls: 5 }]);
     expect(t.recent.map((c) => [c.txHash, c.wallet, c.kind, c.cashBase])).toEqual([
+      ["0xtx6", U1, 0, "550000"],
+      ["0xtx6", U3, 1, "550000"],
       ["0xtx5", null, 1, "700000"],
       ["0xtx4", U3, 2, "400000"],
       ["0xtx3", U2, 2, "520000"],
