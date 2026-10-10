@@ -33,12 +33,16 @@ async function shot(page: Page, state: string, width: number, note?: string) {
   shots.push({ state, width, file, ok: true, ...(note ? { note } : {}) });
   console.log(JSON.stringify({ step: "shot", state, width }));
 }
-async function attempt(state: string, width: number, run: () => Promise<void>) {
+/** A miss keeps the screen as it was and Playwright's call log (which locator, what was in its way). */
+async function attempt(state: string, width: number, run: () => Promise<void>, page?: Page) {
   try {
     await run();
   } catch (e) {
-    shots.push({ state, width, file: "", ok: false, note: (e as Error).message.split("\n")[0] });
-    console.log(JSON.stringify({ step: "miss", state, width, why: (e as Error).message.split("\n")[0] }));
+    const lines = (e as Error).message.split("\n").map((l) => l.trim()).filter(Boolean);
+    const file = `miss-${state}-${width}.png`;
+    const saved = page ? await page.screenshot({ path: join(out, file) }).then(() => file, () => "") : "";
+    shots.push({ state, width, file: saved, ok: false, note: lines[0] });
+    console.log(JSON.stringify({ step: "miss", state, width, why: lines[0], log: lines.slice(1, 9), screenshot: saved || null }));
   }
 }
 
@@ -191,7 +195,7 @@ async function signedIn(width: number) {
     }
     await shot(page, "history-stats", width);
     await page.keyboard.press("Escape");
-  });
+  }, page);
   await attempt("reconnecting", width, async () => {
     // The stream closes while the page is hidden and reopens when it shows (stream-hub): hide it, refuse the stream's
     // address, show it — the reconnect fails as a dropped connection would, and after 10 s the chip says so.
