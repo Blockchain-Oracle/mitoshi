@@ -28,11 +28,11 @@ export interface Take {
   local?: { state: "sending" | "failed"; error?: string };
 }
 
-/** A ticker's takes (`{symbol}`) or one person's (`{author}`). */
-export function useTakes(query: { symbol: string } | { author: string }) {
+/** A ticker's takes (`{symbol}`), one person's (`{author}`), or everyone's newest (`{}`, the reel). */
+export function useTakes(query: { symbol: string } | { author: string } | Record<string, never>) {
   const symbol = "symbol" in query ? query.symbol : null;
   const author = "author" in query ? query.author.toLowerCase() : null;
-  const qs = symbol ? `symbol=${encodeURIComponent(symbol)}` : `authors=${author}`;
+  const qs = symbol ? `symbol=${encodeURIComponent(symbol)}` : author ? `authors=${author}` : "";
   const social = useSocialSession();
   const [takes, setTakes] = useState<Take[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
@@ -53,7 +53,7 @@ export function useTakes(query: { symbol: string } | { author: string }) {
       for (const e of events) {
         if (e.event === "take") {
           const t = e.data as Take;
-          if (symbol ? t.asset !== symbol && !t.tags.includes(symbol) : t.author !== author) continue;
+          if (symbol ? t.asset !== symbol && !t.tags.includes(symbol) : author ? t.author !== author : false) continue;
           setTakes((prev) => (prev.some((x) => x.id === t.id) ? prev : [{ ...t, reactions: { counts: t.reactions?.counts ?? {}, mine: [] } }, ...prev]));
         } else if (e.event === "reactions") {
           const r = e.data as { target: string; id: string; counts: Record<string, number> };

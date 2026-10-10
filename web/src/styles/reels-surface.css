@@ -1,0 +1,49 @@
+/* /reels in Mitoshi's shell (S13 step 9). The ported reel (`reel.css`, `reel-chrome.css`, `take.css`, from Masayume)
+ * pinned itself `position: fixed` under the old Masayume header. Here the stage holds it edge to edge, as it holds the
+ * terminal: no top line or footer, the rail on desktop, the dock floating over the card's bottom padding on phones. */
+.app-column:has(.reels-surface) { padding: 0; }
+.app-column:has(.reels-surface) > .app-topline, .app-column:has(.reels-surface) > .footer { display: none; }
+.app-column:has(.reels-surface) .appstrip, .app-column:has(.reels-surface) .shell-banner[data-kind="signed-out"] { display: none; }
+.app-stage:has(> .reels-surface) { display: flex; height: 100dvh; padding: 0; overflow: hidden; border: 0; border-radius: 0; }
+@media (min-width: 768px) {
+  .app-column:has(.reels-surface) { padding: var(--spacing-rail-inset) var(--spacing-rail-inset) var(--spacing-rail-inset) calc(var(--spacing-rail-compact) + var(--spacing-rail-inset) * 2); }
+  .app-stage:has(> .reels-surface) { height: calc(100dvh - var(--spacing-rail-inset) * 2); border: var(--spacing-stage-edge) solid var(--color-stage-edge); border-radius: var(--radius-xl); }
+}
+@media (min-width: 1280px) { .app-column:has(.reels-surface) { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
+
+.reels-surface { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; }
+/* The feed fills the stage instead of the viewport under a header that no longer exists. */
+.reels-surface .feed-snap { position: absolute; inset: 0; }
+.reels-surface .reel-take { position: absolute; }
+.reels-surface .reel-hint { position: absolute; }
+/* Phones: the dock floats over the bottom (`.reel-slot` keeps its 92 px for it); from tablets there is no dock. */
+@media (min-width: 768px) {
+  .reels-surface .reel-slot { padding: 16px 72px 16px 16px; }
+  .reels-surface .reel-hint { bottom: 24px; }
+}
+
+/* "3 of 18" (21st 23559's position, as a quiet pill) and the desktop previous/next pair. */
+.reel-count {
+  position: absolute; z-index: 20; top: max(12px, env(safe-area-inset-top, 0px)); right: 16px; padding: 6px 10px;
+  border-radius: var(--radius-full); background: rgb(var(--reel-ink-rgb) / 0.08); color: rgb(var(--reel-ink-rgb) / 0.7);
+  font: 600 12px/1 var(--font-data); font-variant-numeric: tabular-nums;
+}
+.reel-steps { display: none; }
+@media (min-width: 1024px) {
+  .reel-steps { position: absolute; z-index: 20; right: 16px; bottom: 24px; display: flex; flex-direction: column; gap: 8px; }
+  .reel-steps button {
+    display: grid; width: 44px; height: 44px; place-items: center; border-radius: var(--radius-full);
+    border: 1px solid rgb(var(--reel-ink-rgb) / 0.12); background: rgb(var(--reel-ink-rgb) / 0.04); color: rgb(var(--reel-ink-rgb) / 0.85);
+  }
+  .reel-steps button:disabled { opacity: 0.35; }
+  .reel-steps button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .reel-steps svg { width: 20px; height: 20px; }
+}
+
+/* The take card's pieces Agari kept in `take-cashtag.css`: the chip's mark, the cashtag links, Tail and Fade side by side. */
+.take-chip-mark { width: 18px; height: 18px; flex-shrink: 0; border-radius: var(--radius-full); }
+.take-cashtag { color: var(--color-accent); text-underline-offset: 2px; }
+.take-cashtag:hover { text-decoration: underline; }
+.take-chip-tag { font-weight: 700; }
+.take-ctas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.take-ctas .take-cta { padding: 14px 8px; }

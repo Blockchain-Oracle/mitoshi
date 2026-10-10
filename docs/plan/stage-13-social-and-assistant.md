@@ -76,7 +76,11 @@ streaming, profile editing, export/deletion, a trading-points league — built h
    its book, the session, positions with what Close pays, the settled record and the next report; rate gate 3 s /
    30 per 10 min / 600 an hour. The chart controls wrap upward under ~360 px. `useBookDepth`/`useStakeQuote`/
    `useExitQuote` no longer throw for a null market (F-S13-03).
-9. Reels.
+9. **Done (live check next):** reels — `/reels` ports Agari's reel (Masayume's CSS already in `styles/`): live
+   Windows, the soonest per asset and lane, woven with everyone's takes (`/api/social/takes` unfiltered); the market
+   card's sparkline, line and live price, UP/DOWN into the terminal with the side picked; the take card with Tail and
+   Fade and the Room; the Take button opens the composer (now shared with the Room drawer's Takes) bound to the Window
+   on screen; `?w=` keeps the place; the stage holds the reel like the terminal; 199.6 KB first load.
 10. `/settings/account` completion (backup passkey, key-used history, AI consent, export, deletion, 5 s Undo),
     `/contact` (21st 25081), privacy/terms updated for social and AI data.
 11. The weekly season league (D-195) in the account drawer.

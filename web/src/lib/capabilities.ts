@@ -18,7 +18,6 @@ const engine = "the market engine on Tempo (S2) and the first-call flow (S4)";
 export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/markets": { eyebrow: "Markets", title: "Call where a price closes", body: "Live Windows for BTC, ETH, SOL and nine US stocks. Pick UP or DOWN, see your cost and the most you can lose, and get a receipt you can click.", dependency: engine },
   "/markets/[id]": { eyebrow: "Markets", title: "This Window", body: "A shared link to one Window opens it here with its live book, your position and its verdict.", dependency: engine },
-  "/reels": { eyebrow: "Reels", title: "Markets as stories", body: "Swipe through live Windows and the calls people make on them.", dependency: `${engine}, and the social layer (S13)` },
   "/portfolio": { eyebrow: "Portfolio", title: "Your positions, money and verdicts", body: "Open calls, settled Windows paid automatically, leftovers to collect in one tap, and every stock and theme you hold.", dependency: engine },
   "/stocks": { eyebrow: "Stocks", title: "Tokenized stocks on Tempo", body: "Buy and sell stock tokens bridged from Robinhood Chain, priced against signed quotes, with the reserve backing every token shown.", dependency: "the stock pools and price guard (S15)" },
   "/stocks/[symbol]": { eyebrow: "Stocks", title: "One stock", body: "Price, your holdings, the reserve behind the token, and the calls on this ticker.", dependency: "the stock pools and price guard (S15)" },
