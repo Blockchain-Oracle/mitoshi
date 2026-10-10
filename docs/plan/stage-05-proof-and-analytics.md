@@ -2,7 +2,7 @@
 
 > **Revamp (2026-10-08, D-189…D-200):** the leaderboard data and proof links also feed the terminal's leaderboard drawer and position details (S23g); S5's data lands before S23's gate.
 
-- [ ] `/stats`, `/status` framework (C.6 probes; S14/S15 add LayerZero and v4 probes), leaderboard, `/portfolio/edge`,
+- [x] `/stats`, `/status` framework (C.6 probes; S14/S15 add LayerZero and v4 probes), leaderboard, `/portfolio/edge`,
   reputation/badges/CSV; **S5 owns the shared profile, share-card and OG components**; `/proof/[market]` with browser
   `eth_call` reverify; `/news` + Finnhub. UX: profile 781 + 29440 (shared with S13); share entry 10388
   Shatlyk1011/social-share-button → native share in the shell; `/proof` feed on 31861 data-table, virtualised, reverify
@@ -21,7 +21,10 @@ _None yet._
 
 ## Handoff
 
-In progress (2026-10-10; evidence in `acceptance/S5.md`). Live on testnet, each in the site group unless noted:
+**Gate passed 2026-10-10** (evidence in `acceptance/S5.md`): the browser pass with the UX gate (runs 1–3, 19/19; 0 findings),
+a proof re-verified from the archive (G-10), no wallet stack on the S5 routes (D-216), and **stats == recount** (CI
+38067568117: the index equals an independent chain replay through block 39,012,040). Live on testnet, each in the site
+group unless noted:
 - `/proof/[market]` (L-15/G-10): both prints, record txs, re-verification in the browser.
 - `/status` (L-16): every ops keeper and the fee relay, read at request time.
 - `/stats` (L-15, D-215): wallets that made a call, calls, traded, paid out, the growth curve, the venue's counts, the

@@ -1,8 +1,8 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-10 11:20Z (S5: /stats, the leaderboard (page, API, terminal drawer), /news, Trader Edge with badges and
-CSV, profiles, link previews, the share card, proofs checked against the archive; S3's 04:00 ET item passed live;
-S23 gate nearly closed; S20 public story under way). **Never trust memory over this file.**
+Updated 2026-10-10 18:30Z (**S5 gate passed** — stats == recount from a GitHub runner; **S6 under way**: the NYSE session
+on the terminal, the session blockers, the halt banner, crowd sentiment, earnings — deployed on testnet).
+**Never trust memory over this file.**
 
 ## Where we are
 
@@ -103,9 +103,22 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
   gate on the nine S5 routes × 4 widths × 2 themes: 0 findings after one fix round (b7f350f). A code review of the day's
   diff fixed: a two-caller direct fill counted twice in "traded", one round per wallet and Window (own + Trading
   Balance merged), the vault-owner lookup, the walker's tail halving.
-Next in S5: the gate's last item, stats == recount (F-S5-02) — the full chain replay is running detached since 11:07Z
-with the walker fixes (~500k blocks/h; log in the session scratchpad, re-run with `pnpm --dir scripts exec tsx
-drive/recount.ts`); then tick S5. The leaderboard's agent and game-rank tabs come with S9 and S12.
+**S5 gate passed 2026-10-10 17:15Z.** stats == recount (F-S5-02): `recount.yml` (a GitHub runner; the owner's link drops
+connections mid-walk) replayed the engine and all three Trading Balances through block 39,012,040 and the index matched
+total for total and Window for Window (CI 38067568117). On the way: `marketDigest` set-based (12 min → 5 s), the walker
+waits out dropped connections, and the recount now walks every vault (it walked only v1). D-216: the S5 routes carry no
+wallet stack, checked per route group. The leaderboard's agent and game-rank tabs come with S9 and S12.
+
+**S6 — under way (`stage-06-stock-sessions-and-lanes.md` Handoff, 10 steps).** Most of the backend came with S3; S6 is
+the surfaces. Done and deployed on testnet (web e577857):
+- The session store (`features/markets/session`: the stream's `session` + `halts` topics, no zod on the terminal) and
+  Agari's session words with the boundary in the reader's zone (`lib/when.ts`).
+- On `/trade`: the session cell beside the Window chip ("Weekend · reopens Mon 14:30 (09:30 ET)"), the crowd
+  ("Crowd 56% UP · 7 d", `/api/sentiment`, the house never counted), the earnings line ("TSLA reports Tue 10-20, after
+  the close", `/api/earnings` from ops' calendar), the halt banner over UP/DOWN (21st 19366), and the session blockers
+  under UP/DOWN, Boost and the scheduled call. Every state renders in `/dev/session` (UX gate 0 findings).
+Next in S6: the halts board (`/status/halts`, 21st 5693 + 26906 over `/halts/log`; episode derivation written and
+tested), corporate skips, G-04/G-05 labels, the Data Streams Gap config, then the gate over a real session (Monday).
 
 **S23 gate — nearly closed (`acceptance/S23.md` passes 1–5, F-S23-06…13).** Since 2026-10-09 20:10Z:
 - Passed live: Range + Moonshot on the earn-quoter's depth (37996617218); **states 38 of 38** (38034974579, after
