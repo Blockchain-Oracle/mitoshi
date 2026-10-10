@@ -47,11 +47,9 @@ export async function siteImage(): Promise<ImageResponse> {
   );
 }
 
-/** The latest recorded print of a ticker in the last day, from the index. */
+/** The ticker's most recent recorded print, from the index. */
 async function lastPrint(symbol: TickerSymbol): Promise<{ priceE8: string; atSec: number } | null> {
-  const nowSec = Math.floor(Date.now() / 1000);
-  const rows = await indexReader(db()).printHistory(symbol, nowSec - 86_400, nowSec, 1_000);
-  const last = rows.at(-1);
+  const last = await indexReader(db()).latestPrint(symbol);
   return last ? { priceE8: String(last.price_e8), atSec: Number(last.source_ts_sec) } : null;
 }
 

@@ -66,7 +66,9 @@ function Windows({ report, decimals }: { report: TraderEdge; decimals: number })
       ) : (
         <ul className="flex flex-col gap-4">
           {report.windows.map((x) => {
-            const positive = x.netBase >= 0n;
+            // As the figure reads at two decimals: a window that rounds to $0.00 is neither green nor red.
+            const t = toneOf(x.netBase, decimals);
+            const positive = t !== "loss";
             const abs = x.netBase < 0n ? -x.netBase : x.netBase;
             const width = x.count === 0 ? 0 : Math.max(MIN_BAR_PCT, Number((abs * 100n) / maxAbs));
             const label = w.labels[x.key];
@@ -77,12 +79,12 @@ function Windows({ report, decimals }: { report: TraderEdge; decimals: number })
                   <span className="font-mono type-caption text-ink-secondary">{label.range}</span>
                 </span>
                 <span aria-hidden className="grid h-2.5 grid-cols-[1fr_1px_1fr] items-center">
-                  <span className="flex h-full justify-end">{!positive && x.count > 0 ? <span className="h-full rounded-l-sm bg-down" style={{ width: `${width}%` }} /> : null}</span>
+                  <span className="flex h-full justify-end">{t === "loss" && x.count > 0 ? <span className="h-full rounded-l-sm bg-down" style={{ width: `${width}%` }} /> : null}</span>
                   <span className="h-4 bg-hairline" />
-                  <span className="flex h-full">{positive && x.count > 0 ? <span className="h-full rounded-r-sm bg-up" style={{ width: `${width}%` }} /> : null}</span>
+                  <span className="flex h-full">{t === "gain" && x.count > 0 ? <span className="h-full rounded-r-sm bg-up" style={{ width: `${width}%` }} /> : null}</span>
                 </span>
                 <span className="flex min-w-24 flex-col items-end">
-                  <span className={`type-body-strong tabular-nums ${x.count === 0 ? "text-ink-secondary" : positive ? "text-up" : "text-down"}`}>{x.count === 0 ? w.none : money(x.netBase, decimals)}</span>
+                  <span className={`type-body-strong tabular-nums ${x.count === 0 ? "text-ink-secondary" : INK[t]}`}>{x.count === 0 ? w.none : money(x.netBase, decimals)}</span>
                   <span className="type-caption text-ink-secondary">{w.rounds(x.count)}</span>
                 </span>
               </li>

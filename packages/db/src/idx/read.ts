@@ -146,6 +146,14 @@ export function indexReader(sql: Sql) {
         order by p.source_ts_sec, p.source limit ${clamp(limit, 500)}`;
     },
 
+    /** A ticker's most recent recorded opening or closing print (a link preview's "last signed print"). */
+    async latestPrint(symbol: string): Promise<IdxRow | null> {
+      const [row] = await sql`
+        select p.source_ts_sec::text, p.price_e8::text, p.signers from idx_prints p join idx_markets m on m.market = p.market
+        where m.symbol = ${symbol} and p.which in (0, 1) order by p.source_ts_sec desc limit 1`;
+      return row ?? null;
+    },
+
     /** Counts of what the index holds at or below `block` (the recount compares them with an independent chain walk). */
     async countsThrough(chainId: number, block: number): Promise<IdxRow> {
       const [row] = await sql`

@@ -35,7 +35,7 @@ const FEEDS = [
 ] as const;
 
 const POS = /\b(surge|surges|surged|rally|rallies|gain|gains|soar|soars|record|high|highs|bull|bullish|jump|jumps|climb|climbs|rise|rises|adoption|approve|approved|inflows?)\b/i;
-const NEG = /\b(crash|crashes|plunge|plunges|drop|drops|fall|falls|hack|hacked|exploit|bear|bearish|loss|losses|sell-?off|liquidat|down|slump|outflows?|ban|lawsuit)\b/i;
+const NEG = /\b(crash|crashes|plunge|plunges|drop|drops|fall|falls|hack|hacked|exploit|bear|bearish|loss|losses|sell-?off|down|slump|outflows?|ban|lawsuit)\b|\bliquidat\w*/i;
 const COINS: readonly [TickerSymbol, RegExp][] = [
   ["BTC", /\b(bitcoin|btc)\b/i],
   ["ETH", /\b(ethereum|ether|eth)\b/i],
@@ -50,16 +50,17 @@ const MAX_SYMBOLS = 4;
 const sentiment = (title: string): Sentiment => (NEG.test(title) ? "negative" : POS.test(title) ? "positive" : "neutral");
 const isTicker = (s: string): s is TickerSymbol => (TICKER_SYMBOLS as readonly string[]).includes(s);
 
+const NAMED: Record<string, string> = { quot: '"', apos: "'", lt: "<", gt: ">", nbsp: " " };
+
+/** CDATA and tags out, every numeric entity and the common named ones decoded, `&amp;` last (no double decoding). */
 function strip(text: string): string {
   return text
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
     .replace(/<[^>]+>/g, "")
+    .replace(/&#(\d+);/g, (_, n: string) => String.fromCodePoint(Number(n)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n: string) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&(quot|apos|lt|gt|nbsp);/g, (_, k: string) => NAMED[k]!)
     .replace(/&amp;/g, "&")
-    .replace(/&#39;|&apos;|&#8217;/g, "'")
-    .replace(/&quot;|&#8220;|&#8221;/g, '"')
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&nbsp;/g, " ")
     .trim();
 }
 

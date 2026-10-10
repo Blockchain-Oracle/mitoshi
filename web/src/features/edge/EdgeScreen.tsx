@@ -40,7 +40,11 @@ export function EdgeScreen() {
   const wallets = usePositions(wallet);
   const vault = useVaultBets(wallet);
   const value = history && isOk(history) ? history.value : null;
-  const live = wallets && isOk(wallets) ? wallets.value.filter((r) => r.balanceUpRaw > 0n || r.balanceDownRaw > 0n).length + (vault && isOk(vault) ? vault.value.filter((b) => b.state === "open" && (b.upRaw > 0n || b.downRaw > 0n)).length : 0) : null;
+  // Only when both are read: a missing half would undercount, so until then the history's own count stands.
+  const live =
+    wallets && isOk(wallets) && vault && isOk(vault)
+      ? wallets.value.filter((r) => r.balanceUpRaw > 0n || r.balanceDownRaw > 0n).length + vault.value.filter((b) => b.state === "open" && (b.upRaw > 0n || b.downRaw > 0n)).length
+      : null;
   const openCount = live ?? value?.openCount ?? 0;
   const report = useMemo(() => (value ? computeTraderEdge(value.rounds, openCount) : null), [value, openCount]);
   const S = EDGE.states;

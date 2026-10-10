@@ -43,10 +43,14 @@ export interface Profile {
 
 const RECENT = 12;
 
-export async function readProfile(address: string): Promise<Profile> {
+/** One cache entry per wallet, whatever the case of the address in the link. */
+export function readProfile(address: string): Promise<Profile> {
+  return cachedProfile(address.toLowerCase());
+}
+
+async function cachedProfile(owner: string): Promise<Profile> {
   "use cache";
   cacheLife("minutes");
-  const owner = address.toLowerCase();
   const who = demandAddresses();
   const empty = { rounds: 0, wins: 0, losses: 0, pnlBase: "0", stakeBase: "0", roiBps: null, winRatePct: 0, bestStreak: 0, currentStreak: 0, rank: null, of: 0, recent: [] };
   if ([...who.house, ...who.vaults, ...who.products].includes(owner)) return { address: owner, house: true, ...empty, computedAtMs: Date.now() };
