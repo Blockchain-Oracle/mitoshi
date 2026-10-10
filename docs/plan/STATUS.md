@@ -191,9 +191,18 @@ moment the owner has the key; the ops container checks `/livez`, so a RedStone o
   `ops.mainnet.example` / `infra/secrets.md`; `relay/policies/guard.ts` not yet registered.
 - S17b: the launch keeper has no sender wired; ~~S1: `/api/stream/ticket` 401 to a signed-in user~~ — S4-fix (D-151; non-passkey wallets wait on S13's social session and follow the chain meanwhile); S3.5: `idx_events` counter in recount.
 
+- **S13 (social and assistant), 2026-10-10/11, deployed on testnet (web e1925da, ops 8b30ead):** steps 1–11 done — the
+  one social session, rooms with the position gate, takes, profiles and follows, the notification centre, price alerts
+  and `/settings/notifications`, Sensei (streamed, consent first; **off until the owner sets a model key**), reels,
+  Your data (export, deletion with Undo, AI sharing), `/contact`, privacy/terms, "key used" history, the season league.
+  Gate evidence (`acceptance/S13.md`): `social-live.ts` 17/17 and `s13-gate.ts` 14/14 on testnet; CI drivers
+  `s13-social`, `s13-draft`. **Left in S13:** the backup passkey (TIP-1049 admin key — T6 is live on Moderato; the
+  recovery sign-in needs an `accounts` patch, research in the stage Handoff), then tick the gate.
+
 ## Waiting on the owner
 
-See `owner-actions.md` (open rows). **First: RedStone's authenticated-gateway key (form in owner-actions, D-210) — the
+See `owner-actions.md` (open rows). **New (S13):** a model key for Sensei on the testnet web app (`ANTHROPIC_API_KEY`),
+and Coolify's image retention for the web and ops apps (the box filled its disk on 2026-10-10, F-S13-04). **First: RedStone's authenticated-gateway key (form in owner-actions, D-210) — the
 public gateways stop on 2026-10-29 and already refuse in daily windows.** Then: Robinhood testnet faucet claims (X11) and test ETH for the S14c legs; passkey runs on
 your own device (S1, S4 gate 2, S15, S16); the Cloudflare country header for the live geofence; the capped mainnet MPP
 wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §14c.13 A).

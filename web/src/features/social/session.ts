@@ -50,6 +50,10 @@ export function useSocialSession() {
 
   const ensure = useCallback(async (): Promise<EnsureResult> => {
     if (!walletAddress) {
+      // A session that outlived the wallet's connection still covers social writes (the server checks only it): the
+      // page already shows this person as signed in, so posting must not ask them to connect again.
+      const now = current.read ? current : await readSession();
+      if (now.address) return { ok: true, address: now.address };
       wallet.connect();
       return { ok: false, reason: "no-wallet" };
     }
