@@ -1,9 +1,9 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// The pitch folio (S20, L-14): Masayume 52a86fc's `/pitch` with Mitoshi's thesis — every claim on Mitoshi's evidence.
+import type { Metadata } from "next";
+import { PitchDeck } from "@/features/pitch";
 
-export const metadata = { title: pendingFor("/pitch").title };
+export const metadata: Metadata = { title: "Pitch" };
 
 export default function PitchPage() {
-  return <PendingRoute route="/pitch" />;
+  return <PitchDeck />;
 }

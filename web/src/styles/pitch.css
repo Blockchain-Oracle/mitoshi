@@ -1,4 +1,3 @@
-/* Ported from Masayume 68f7a09:web/src/styles/pitch.css */
 /* The folio — ported from reference/yosuku/app/pitch/page.tsx.
  *
  * The reference writes every value inline: a palette of consts (PAPER, INK, VERM,
@@ -28,9 +27,6 @@
   --pp-hair: rgba(20, 18, 16, 0.14);
   --pp-soft: rgba(20, 18, 16, 0.03);
   --pp-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  /* radial-gradient(circle at center, HAIR 0 1.3px, transparent 1.6px) 7px 3px — the ticket-stub leader */
-  --pp-dots-hair: radial-gradient(circle at center, var(--pp-hair) 0 1.3px, transparent 1.6px);
-  --pp-dots-ink: radial-gradient(circle at center, var(--pp-ink) 0 1.3px, transparent 1.6px);
 
   /* fixed inset-0 overflow-hidden select-none, background slide.paper, color INK, Sora */
   position: fixed;
@@ -208,17 +204,11 @@ body:has(.pitch-deck) .grain {
 .pitch-h1 { font-family: var(--font-display); font-weight: 700; color: var(--pp-ink); letter-spacing: -0.03em; line-height: 0.94; }
 .pitch-h1-cover { font-size: clamp(2rem, 5.3vw, 4.5rem); }
 .pitch-h1-art { font-size: clamp(2.4rem, 6.8vw, 5.6rem); }
-.pitch-h1-dense { font-size: clamp(1.9rem, 3.9vw, 3.2rem); }
-.pitch-h1-proof { font-size: clamp(2rem, 5.2vw, 4.2rem); }
-.pitch-h1-close { font-size: clamp(2.4rem, 6vw, 5rem); }
 
 /* mt-6 font-mono; color BODY; fontSize clamp(15.5px,1.85vw,20px); lineHeight 1.6; maxWidth 44ch */
 .pitch-lead { margin-top: 24px; font-family: var(--font-mono); color: var(--pp-body); font-size: clamp(15.5px, 1.85vw, 20px); line-height: 1.6; max-width: 44ch; }
 .pitch-lead-50 { max-width: 50ch; }
-.pitch-lead-58 { max-width: 58ch; }
-.pitch-lead-64 { max-width: 64ch; }
 .pitch-lead-66 { max-width: 66ch; }
-.pitch-lead-mute { margin-top: 12px; color: var(--pp-mute); }
 .pitch-lead .ink { color: var(--pp-ink); }
 
 /* font-mono uppercase letterSpacing 0.16em */
@@ -228,39 +218,14 @@ body:has(.pitch-deck) .grain {
 .pitch-mono[data-tone="mute"] { color: var(--pp-mute); }
 .pitch-mono[data-tone="faint"] { color: var(--pp-faint); }
 .pitch-mono[data-tone="ink"] { color: var(--pp-ink); }
-.pitch-faint { color: var(--pp-faint); }
-.pitch-link-verm { font-family: var(--font-mono); font-size: 11px; color: var(--pp-verm); }
 
 /* Kicker: inline-flex gap-2 mono uppercase 12px ls 0.2em MUTE mb 16; 7×7 ink square */
 .pitch-kicker { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); text-transform: uppercase; font-size: 12px; letter-spacing: 0.2em; color: var(--pp-mute); margin-bottom: 16px; }
 .pitch-kicker-square { width: 7px; height: 7px; background: var(--pp-ink); }
 
-/* Pill: mono uppercase 10.5px ls 0.08em; padding 6px 11px; border HAIR; bg CARD; rounded */
-.pitch-pill { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.08em; padding: 6px 11px; border: 1px solid var(--pp-hair); background: var(--pp-card); border-radius: 4px; color: var(--pp-mute); }
-.pitch-pill[data-tone="live"] { color: var(--pp-green); }
-.pitch-pill[data-tone="verm"] { color: var(--pp-verm); }
-.pitch-pill-dot { width: 6px; height: 6px; border-radius: 9999px; background: currentColor; }
-.pitch-pill-icon { display: inline-flex; align-items: center; }
-/* mt-7 flex gap-2.5 flex-wrap */
-.pitch-pills { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px; }
-
 /* the ledger rule: height 2 ink, with a 6px vermilion eyelet on its right end */
 .pitch-rule { position: relative; height: 2px; background: var(--pp-ink); }
 .pitch-rule-eyelet { position: absolute; right: 0; top: 50%; width: 6px; height: 6px; border-radius: 9999px; background: var(--pp-verm); transform: translate(50%, -50%); }
-/* the dotted leader: flex-1, height 3, margin 0 12px, translateY(-3px) */
-.pitch-leader { flex: 1 1 0%; height: 3px; margin: 0 12px; transform: translateY(-3px); background-image: var(--pp-dots-hair); background-size: 7px 3px; background-repeat: repeat-x; }
-
-/* SpecPanel (w 430 · 440 wide) */
-.pitch-spec { width: 430px; max-width: 100%; flex-shrink: 0; }
-.pitch-spec.wide { width: 440px; }
-.pitch-spec-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px; }
-.pitch-spec-title { font-size: 10.5px; color: var(--pp-ink); }
-.pitch-spec-badge { font-size: 10px; }
-.pitch-spec-rows { margin-top: 3px; }
-.pitch-spec-row { display: flex; align-items: baseline; padding: 10px 0; }
-.pitch-spec-key { font-size: 12.5px; color: var(--pp-mute); letter-spacing: 0.05em; white-space: nowrap; }
-.pitch-spec-val { font-family: var(--font-mono); font-size: 15px; color: var(--pp-ink); white-space: nowrap; }
-.pitch-spec-val[data-hl="true"] { color: var(--pp-green); }
 
 /* Glance (w 440) */
 .pitch-glance { width: 440px; max-width: 100%; flex-shrink: 0; }
@@ -273,20 +238,6 @@ body:has(.pitch-deck) .grain {
 .pitch-glance-val { font-family: var(--font-display); font-weight: 600; font-size: 22px; color: var(--pp-ink); letter-spacing: -0.015em; line-height: 1.1; text-align: right; }
 .pitch-glance-val[data-hl="true"] { color: var(--pp-green); }
 .pitch-glance-el { display: flex; align-items: center; gap: 10px; }
-.pitch-glance-marks { display: flex; align-items: center; gap: 12px; }
-.pitch-mark { fill: var(--pp-ink); }
-.pitch-mark-stroke { stroke: var(--pp-ink); }
-.pitch-mark-fill { fill: var(--pp-ink); }
-
-/* StatCard */
-.pitch-stats { margin-top: 32px; display: flex; gap: 16px; max-width: 1020px; }
-.pitch-stat { flex: 1 1 0%; }
-.pitch-stat-value { font-family: var(--font-display); font-weight: 800; font-size: clamp(1.9rem, 3.6vw, 3.1rem); letter-spacing: -0.035em; line-height: 0.9; color: var(--pp-ink); }
-.pitch-stat-value[data-hl="true"] { color: var(--pp-green); }
-.pitch-stat-holding { font-family: var(--font-mono); font-weight: 400; font-size: 14px; letter-spacing: 0; color: var(--pp-mute); }
-.pitch-stat-dots { height: 3px; width: 46%; margin: 14px 0 12px; background-image: var(--pp-dots-ink); background-size: 7px 3px; background-repeat: repeat-x; }
-.pitch-stat-label { font-family: var(--font-mono); text-transform: uppercase; font-size: 13.5px; letter-spacing: 0.09em; color: var(--pp-body); line-height: 1.5; }
-.pitch-stat-source { margin-top: 10px; font-family: var(--font-mono); font-size: 12px; color: var(--pp-mute); letter-spacing: 0.04em; }
 
 /* PhaseCard */
 .pitch-phases { margin-top: 32px; display: flex; gap: 16px; max-width: 1020px; }
@@ -297,9 +248,6 @@ body:has(.pitch-deck) .grain {
 .pitch-phase-title { margin-top: 8px; font-family: var(--font-display); font-weight: 700; font-size: 21px; color: var(--pp-ink); letter-spacing: -0.01em; }
 .pitch-phase-body { margin-top: 8px; font-family: var(--font-mono); font-size: 14px; color: var(--pp-body); line-height: 1.5; }
 .pitch-roadmap-foot { margin-top: 28px; display: inline-flex; align-items: center; gap: 12px; border-top: 2px solid var(--pp-green); padding-top: 12px; align-self: flex-start; font-size: 12px; }
-
-/* the small truth tag on a mock */
-.pitch-tag { position: absolute; top: -22px; left: 0; font-family: var(--font-mono); text-transform: uppercase; font-size: 9.5px; letter-spacing: 0.14em; color: var(--pp-verm); border: 1px solid rgba(224, 77, 38, 0.4); border-radius: 4px; padding: 2px 6px; background: var(--pp-card); white-space: nowrap; }
 
 @media (prefers-reduced-motion: reduce) {
   .pitch-rise, .pitch-emph-line, .pitch-emph-dot { animation: none; }
