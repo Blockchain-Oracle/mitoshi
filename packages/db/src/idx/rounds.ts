@@ -26,6 +26,8 @@ export interface RoundsQuery {
   products: readonly string[];
   /** Rounds whose Window settled at or after this second (a period); omit for all time. */
   sinceSec?: number;
+  /** One wallet's rounds only (its profile, S5/S13); omit for every wallet. */
+  owner?: string;
 }
 
 export interface RoundRow {
@@ -44,6 +46,7 @@ export async function readSettledRounds(sql: Sql, q: RoundsQuery): Promise<Round
   const excluded = [...q.house, ...q.vaults, ...q.products].map((a) => a.toLowerCase());
   const vaults = q.vaults.map((a) => a.toLowerCase());
   const since = q.sinceSec ?? 0;
+  const owner = q.owner?.toLowerCase() ?? null;
   const rows = await sql`
     with settled as (
       select m.market, m.symbol, m.cadence_sec, m.state, m.payout_yes, m.payout_no, coalesce(m.resolved_ts_sec, m.expiry_sec) as settled_sec,
@@ -60,7 +63,7 @@ export async function readSettledRounds(sql: Sql, q: RoundsQuery): Promise<Round
         (p.bought_yes_lots - p.sold_yes_lots + p.minted_lots - p.merged_lots) * w.payout_yes * w.lot_base / ${PAYOUT_DENOMINATOR}
           + (p.bought_no_lots - p.sold_no_lots + p.minted_lots - p.merged_lots) * w.payout_no * w.lot_base / ${PAYOUT_DENOMINATOR} as payout
       from idx_positions p join settled w on w.market = p.market
-      where p.owner <> all(${excluded}::text[]) and (p.paid_ticklots > 0 or p.set_paid_base > 0)
+      where p.owner <> all(${excluded}::text[]) and (p.paid_ticklots > 0 or p.set_paid_base > 0) ${owner ? sql`and p.owner = ${owner}` : sql``}
     ),
     taps as (
       select x.owner, w.market, w.symbol, w.cadence_sec, w.state, w.settled_sec,
@@ -70,7 +73,7 @@ export async function readSettledRounds(sql: Sql, q: RoundsQuery): Promise<Round
         coalesce(sum(case when x.is_buy then x.token_delta else -x.token_delta end) filter (where x.outcome_idx = 1), 0) as held_no,
         max(w.payout_yes) as payout_yes, max(w.payout_no) as payout_no
       from idx_vault_executions x join settled w on w.market = x.market
-      where x.vault = any(${vaults}::text[]) and x.owner <> all(${excluded}::text[])
+      where x.vault = any(${vaults}::text[]) and x.owner <> all(${excluded}::text[]) ${owner ? sql`and x.owner = ${owner}` : sql``}
       group by x.owner, w.market, w.symbol, w.cadence_sec, w.state, w.settled_sec
     ),
     rounds as (

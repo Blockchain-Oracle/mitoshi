@@ -68,5 +68,7 @@ describe.skipIf(!url)("readSettledRounds (fresh schema)", () => {
       [U1, m(3), "void", 500_000n, 0n, 500_000n],
     ]);
     expect(await readSettledRounds(sql, { house: [SEED], vaults: [VAULT], products: [], sinceSec: 2003 })).toHaveLength(1);
+    // One wallet's profile: its direct and its Trading Balance rounds, nobody else's.
+    expect((await readSettledRounds(sql, { house: [SEED], vaults: [VAULT], products: [], owner: U2 })).map((r) => r.outcome)).toEqual(["closed", "win"]);
   });
 });

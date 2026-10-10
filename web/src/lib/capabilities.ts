@@ -50,7 +50,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/trade-from-x": { eyebrow: "X-trade", title: "Trade from a post", body: "Turn a post into a bounded trade under a grant you control.", dependency: "the X relay (S11)" },
   "/claim": { eyebrow: "X recovery", title: "Recover a trade from X", body: "Claim a trade an X post created for you.", dependency: "the X relay (S11)" },
   "/activity": { eyebrow: "Activity", title: "What's happening", body: "Calls, takes and follows as they happen.", dependency: "the social layer (S13)" },
-  "/u/[address]": { eyebrow: "Profile", title: "A trader", body: "Their record, calls and takes.", dependency: "the social layer (S13)" },
   "/status": { eyebrow: "Status", title: "Is everything running?", body: "Chain, indexer, oracle freshness, relay balance and every service we depend on.", dependency: "the status probes (S5)" },
   "/proof/[market]": { eyebrow: "Proof", title: "Don't trust it. Click it.", body: "Both prints, their signers, and a re-verification you run in your browser.", dependency: "the print verifiers (S2) and the proof page (S5)" },
   "/how-it-works": { eyebrow: "How it works", title: "From a call to a receipt", body: "Passkeys, dollars, Windows, verdicts and stock tokens, explained once.", dependency: "the public story (S20)" },

@@ -1,15 +1,14 @@
 "use client";
 // Tradash's Leaderboard (RV-86) as the account drawer's view (D-190): ROI / PnL × Daily · Weekly · Monthly · All time,
 // the podium and the board with your own row, on S5's data (`features/leaderboard`: `/api/leaderboard`, the same
-// snapshot `/leaderboard` reads) and Tradash's five states. A wallet opens on the explorer until S13's profile exists.
-import { addressUrl, type Address } from "@cwf/core";
+// snapshot `/leaderboard` reads) and Tradash's five states. A row opens the wallet's profile (RV-86's drill-down).
+import type { Address } from "@cwf/core";
 import { useState } from "react";
 import { LeaderboardPodium } from "@/components/ui/leaderboard-podium";
 import { LeaderboardRankings, type RankingRow } from "@/components/ui/leaderboard-rankings";
 import { LEADERBOARD as L } from "@/features/leaderboard/copy";
 import type { BoardRow, BoardSort, Period } from "@/features/leaderboard/protocol";
 import { useLeaderboard } from "@/features/leaderboard/useLeaderboard";
-import { webEnv } from "@/lib/env";
 import { tapFeedback } from "@/lib/feedback";
 import { money, moneyTone } from "../format";
 
@@ -23,7 +22,7 @@ function toRow(r: BoardRow, sort: BoardSort): RankingRow {
         ? { figure: "—", tone: "flat" as const }
         : { figure: `${r.roiBps > 0 ? "+" : r.roiBps < 0 ? "−" : ""}${Math.abs(r.roiBps / 100).toFixed(1)}%`, tone: r.roiBps > 0 ? ("up" as const) : r.roiBps < 0 ? ("down" as const) : ("flat" as const) }
       : { figure: money(BigInt(r.pnlBase), true), tone: tone(moneyTone(BigInt(r.pnlBase))) };
-  return { rank: r.rank, owner: r.owner, label: short(r.owner), byline: L.byline(r.tradeCount, r.settledTrades, r.winRatePct, r.bestStreak), href: addressUrl(r.owner as Address, webEnv.markets.network), ...figure };
+  return { rank: r.rank, owner: r.owner, label: short(r.owner), byline: L.byline(r.tradeCount, r.settledTrades, r.winRatePct, r.bestStreak), href: `/u/${r.owner}`, ...figure };
 }
 
 function Tabs<V extends string>({ label, options, value, onChange }: { label: string; options: readonly { value: V; label: string }[]; value: V; onChange: (v: V) => void }) {

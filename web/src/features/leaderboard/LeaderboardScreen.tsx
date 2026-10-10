@@ -1,9 +1,8 @@
 "use client";
 // `/leaderboard` (S5, L-48, RV-86): Masayume 68f7a09 `features/leaderboard/LeaderboardScreen.tsx`'s order — the
 // podium, the board and the reader's own row — over the index's settled rounds, with Tradash's P&L / ROI and
-// Daily · Weekly · Monthly · All time tabs (23552 segmented controls) and its five states. Rows open the wallet on the
-// explorer until S13's profile (`/u/[address]`) exists.
-import { addressUrl, type Address } from "@cwf/core";
+// Daily · Weekly · Monthly · All time tabs (23552 segmented controls) and its five states. A row opens the wallet's
+// profile (`/u/[address]`).
 import { useState } from "react";
 import { LoadingState } from "@/components/states/LoadingState";
 import { EmptyState } from "@/components/states/EmptyState";
@@ -11,7 +10,6 @@ import { LeaderboardPodium } from "@/components/ui/leaderboard-podium";
 import { LeaderboardRankings, type RankingRow } from "@/components/ui/leaderboard-rankings";
 import { MotionScope } from "@/components/motion-scope";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
 import { money, moneyTone } from "@/features/terminal/format";
 import { LEADERBOARD as L } from "./copy";
@@ -37,7 +35,7 @@ function toRow(r: BoardRow, sort: BoardSort): RankingRow {
     owner: r.owner,
     label: short(r.owner),
     byline: L.byline(r.tradeCount, r.settledTrades, r.winRatePct, r.bestStreak),
-    href: addressUrl(r.owner as Address, webEnv.markets.network),
+    href: `/u/${r.owner}`,
     ...figureOf(r, sort),
   };
 }
