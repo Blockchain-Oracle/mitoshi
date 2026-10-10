@@ -16,4 +16,5 @@ export * from "./tickers";
 export * from "./halts";
 export * from "./void-reason";
 export * from "./events-calendar";
+export * from "./events-calendar-finnhub";
 export * from "./corporate";

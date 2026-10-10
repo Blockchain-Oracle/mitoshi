@@ -2,7 +2,8 @@
 import { describe, expect, it } from "vitest";
 import type { EarningsEvent } from "../types/session-lanes";
 import { alpacaCalendar, utc } from "./calendar.fixtures";
-import { EARNINGS_SYMBOLS, earningsEventFor, earningsFlag, earningsRange, parseFinnhubEarnings } from "./events-calendar";
+import { EARNINGS_SYMBOLS, earningsEventFor, earningsFlag, earningsRange } from "./events-calendar";
+import { parseFinnhubEarnings } from "./events-calendar-finnhub";
 import { gapWindows, regularWindows } from "./windows";
 
 const calendar = alpacaCalendar("2026-09-14", "2027-04-02");

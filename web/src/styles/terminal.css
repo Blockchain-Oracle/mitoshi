@@ -369,3 +369,5 @@
 .tm-crowd[data-lean="down"] .tm-crowd-figure { color: var(--chart-down); }
 [data-theme="light"] .tm-crowd-figure { color: color-mix(in oklab, var(--chart-up) 75%, black); }
 [data-theme="light"] .tm-crowd[data-lean="down"] .tm-crowd-figure { color: color-mix(in oklab, var(--chart-down) 75%, black); }
+/* The earnings line (S6): plain ahead of a report, the accent on the Window that sits on one. */
+.tm-earnings[data-tone="warning"] { border-color: color-mix(in oklab, var(--color-accent) 50%, transparent); color: var(--color-ink); }

@@ -30,7 +30,11 @@ with the archive's Friday print). S6 is mostly the surfaces. Steps, in order:
    lots, house sides never counted, D-215), the last 24 h, else 7 d, ≥ 10 sides or no reading. Read-only on the testnet
    index 2026-10-10 17:05Z: BTC 78 sides 59 % UP (24 h), ETH 19 → 53 % UP, SOL 21 → 53 % DOWN, TSLA 6 → 7 d 11 sides
    56 % UP; the other stocks show nothing.
-5. `/api/earnings` + the terminal's earnings note ("TSLA reports Tue 10-20 after the close — prices can gap").
+5. **Done:** `/api/earnings[?symbol=]` from ops' `earnings` actor (`/session.earnings`, 14 days; the web spends none of
+   the shared Finnhub key; 503 when unknown, never an empty list) and the terminal's earnings line — Agari's warning on
+   the Window that sits on a report ("TSLA reports after the close today — prices can gap"), else the next report
+   ("TSLA reports Tue 10-20, after the close"). The Finnhub parser moved to `events-calendar-finnhub.ts` so the terminal
+   ships no zod (as F-S23-08).
 6. The halts board (21st 5693 + 26906 per ticker over `/halts/log`), beside `/status`.
 7. Corporate skips: the proposer script (`scripts/drive/corporate-check.ts`, Agari's) and the skip shown on the lane.
 8. G-04: each 24/7 lane named as the provider's price; G-05: NFLX and pre-IPO shown paused honestly.

@@ -29,6 +29,7 @@ import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } fr
 import { SessionCell } from "./ui/SessionCell";
 import { HaltNotice } from "./ui/HaltNotice";
 import { CrowdCell } from "./ui/CrowdCell";
+import { EarningsCell } from "./ui/EarningsCell";
 import type { TerminalPosition } from "./terminal-positions";
 import { useTerminalClose } from "./useTerminalClose";
 import { useTrailToggle } from "./useTrail";
@@ -240,6 +241,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
               )}
               <SessionCell symbol={symbol} basis={s.win.lane?.basis ?? null} />
               <CrowdCell symbol={symbol} />
+              <EarningsCell symbol={symbol} market={market ?? null} />
             </div>
             {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
             {offHours ? <span className="tm-glass tm-note">{TERMINAL.feed.offHoursNote}</span> : null}
