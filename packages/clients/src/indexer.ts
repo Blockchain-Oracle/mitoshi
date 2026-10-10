@@ -678,6 +678,20 @@ export const indexerSources = {
       ],
     },
     {
+      area: "strategies",
+      contract: "StrategyRegistry",
+      address: "0x79156a899BC8CB773D8b70ecD0392C78eE9FB8FD",
+      deployBlock: 39054922,
+      events: [
+        {"name":"Deactivated","signature":"Deactivated(uint256 indexed strategyId)","topic0":"0xed48e4e899b34abded07dd8f092a22585a3fdec7db6b83f3927af165bf04cb1e"},
+        {"name":"Published","signature":"Published(uint256 indexed strategyId, address indexed creator, address indexed runner, bytes32 specHash, bytes32 metadataHash, uint256 agentId, tuple envelope, uint128 fee)","topic0":"0x614cb84b4f322c1ff05584d49651e36a7caa593803e05f3d9204eacfddeb5284"},
+        {"name":"RunnerChanged","signature":"RunnerChanged(uint256 indexed strategyId, address indexed runner)","topic0":"0xcb8bee5fdf5272d2f3a10c6bc019994f499bbb3a7dd016bc0a190e7b694f8286"},
+        {"name":"Subscribed","signature":"Subscribed(uint256 indexed strategyId, address indexed subscriber, uint256 indexed grantId, uint8 mode, uint128 feePaid, uint32 subscribers)","topic0":"0xf5db343b152ab0cf3c89838373a55e40d54e9196d6a8e2bf422a68e9839c43c0"},
+        {"name":"Unsubscribed","signature":"Unsubscribed(uint256 indexed strategyId, address indexed subscriber, uint32 subscribers)","topic0":"0x357e52c99525060c6b982b2dd05b0791417785798154466428217f46133510dc"},
+        {"name":"Updated","signature":"Updated(uint256 indexed strategyId, bytes32 specHash, bytes32 metadataHash, uint128 fee, uint32 revision)","topic0":"0x90a34298d14ea9646a8ec411013f895fa2c7873e06d40386a8a5908519f1fd88"},
+      ],
+    },
+    {
       area: "themes",
       contract: "ThemeRegistry",
       address: "0xdAb8A7fb64b561716cbE27CB0Eb9c49FB9414a9B",

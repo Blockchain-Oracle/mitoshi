@@ -229,6 +229,14 @@ export const events = {
     "SyncIgnored(bytes32,address,uint8)",
     "TokenBound(address,address,address)"
   ],
+  "StrategyRegistry": [
+    "Deactivated(uint256)",
+    "Published(uint256,address,address,bytes32,bytes32,uint256,tuple,uint128)",
+    "RunnerChanged(uint256,address)",
+    "Subscribed(uint256,address,uint256,uint8,uint128,uint32)",
+    "Unsubscribed(uint256,address,uint32)",
+    "Updated(uint256,bytes32,bytes32,uint128,uint32)"
+  ],
   "ThemeRegistry": [
     "AgentSet(uint64,uint256)",
     "Delisted(uint64,bool)",

@@ -714,6 +714,29 @@ export const deployments = {
       "external": {},
       "commit": "959edd4"
     },
+    "strategies": {
+      "contracts": {
+        "StrategyRegistry": {
+          "address": "0x79156a899BC8CB773D8b70ecD0392C78eE9FB8FD",
+          "artifact": "StrategyRegistry.sol:StrategyRegistry",
+          "profile": "default",
+          "proxy": false,
+          "txHash": "0x6f63f31301fa10cea735e62ed81c436bdd83ef81699c282d5879407110efde4e",
+          "deployBlock": 39054922,
+          "history": []
+        }
+      },
+      "roles": {},
+      "params": {
+        "collateral": "0x20C0000000000000000000000000000000000000",
+        "identity": "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+        "lens": "0x664BdF6A8075848946A4a694f9d275E1Aa74956F",
+        "maxMetadataBytes": 8192,
+        "vault": "0xdbb3Fa8667351Df47f54b1d8ea9B44B28b9C2040"
+      },
+      "external": {},
+      "commit": "7a907ee"
+    },
     "themes": {
       "contracts": {
         "ThemeRegistry": {

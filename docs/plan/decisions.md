@@ -1935,6 +1935,23 @@ overturn any:
 
 **Why:** none blocks building; each matches the code already on chain or the decisions it cites.
 
+### D-219 — the registry's market scope, the copy batch and the fee, as built (decision, S9, 2026-10-11)
+
+What S9.1 settled while building D-218.8 and L-53 into `StrategyRegistry` (Moderato `0x7915…B8FD`):
+1. **Series scope is the runner's to hold.** EventVaultV2 pins a grant to one Window or any Window (D-091); it cannot
+   pin one to a series. So a series-scoped strategy accepts an any-Window grant or a Window of its series, and refuses
+   a Window of another series (`OutsideEnvelopeMarket`: a grant its runner could never use). The runner asks
+   `inScope(id, market)` before each order; the copy drawer says the agent trades only that series.
+2. **`subscribe(id, 0, …)` reads the caller's active STRATEGY grant**, so copy is one batch (`grant` + `approve` +
+   `subscribe`) though a batch can't pass one call's result to the next. The vault keeps one live STRATEGY grant per
+   owner, so a copier follows one runner at a time.
+3. **The fee is paid when a subscription starts**, not on each `subscribe`: moving onto a new grant or switching
+   follow ↔ fade while subscribed is free (`maxFee` 0 passes).
+4. **Metadata is `bytes`** (UTF-8 JSON from the app), at most 8 KB; publishing without metadata needs no root key.
+5. The deployment area is **`strategies`** (the name `AREAS` and `RelayArea` already used).
+
+**Why:** each is what the deployed vault and Tempo's batch rules allow, without changing the vault users hold.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

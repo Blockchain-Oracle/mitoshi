@@ -1,10 +1,11 @@
 # S9 — Agents: calls (after S7, S3.5; A.4.8)
 
-- [ ] `src/products/strategy/{StrategyRegistry,IStrategyRegistry}.sol` (+ agentId via ERC-8004 `ownerOf`, follow/fade,
+- [x] `src/products/strategy/{StrategyRegistry,IStrategyRegistry}.sol` (+ agentId via ERC-8004 `ownerOf`, follow/fade,
   `maxFee`, SSTORE2 metadata written by the root key only (D10), envelope market scope); its Masayume tests + the A.8 S9 tests +
   `test_metadataWriteRefusedUnderAccessKey`; deploy with per-chain
-  ERC-8004 addresses.
-- [ ] Off-chain: `strategies/*` markets; `relay/policies/strategy.ts`; strategy-runner + mirror-scan + fade + self-host
+  ERC-8004 addresses. — Done 2026-10-10: 18 local + 2 real-tx + 3 Moderato-fork tests; deployed `0x7915…B8FD`,
+  Sourcify exact (acceptance/S9.md; D-219).
+- [ ] Off-chain: `strategies/*` markets; `relay/policies/strategies.ts` (landed with the deploy, S9.1); strategy-runner + mirror-scan + fade + self-host
   `runner-main.ts`; agent-rater (dry default, Q-001/AG-15 cadence); port Masayume `web/src/features/strategies/*`
   (desk, builder with Reversion, copy batched, board with MPP receipts); Memory Market (Agari) + optional MPP read. UX
   (fix 7): copy = one batched passkey tx (grant + subscribe + approve), pause = one batch; the copier's own P&L panel;
