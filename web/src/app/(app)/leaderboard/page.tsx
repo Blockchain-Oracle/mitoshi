@@ -1,9 +1,10 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// `/leaderboard` (S5, L-48): S5 replaces the registered pending page with the ranked board (`features/leaderboard`).
+// A static shell; the board streams in client-side from `/api/leaderboard`.
+import type { Metadata } from "next";
+import { LeaderboardPage } from "@/features/leaderboard/LeaderboardPage";
 
-export const metadata = { title: pendingFor("/leaderboard").title };
+export const metadata: Metadata = { title: "Leaderboard", description: "Wallets ranked by what settled on Mitoshi: P&L and ROI, daily to all time, from the engine's own records." };
 
-export default function LeaderboardPage() {
-  return <PendingRoute route="/leaderboard" />;
+export default function Page() {
+  return <LeaderboardPage />;
 }

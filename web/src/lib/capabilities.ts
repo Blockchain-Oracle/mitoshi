@@ -50,7 +50,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/agents": { eyebrow: "Agents", title: "Copy an agent", body: "One confirmation to copy, one to stop; caps behind “adjust”.", dependency: "the agent runner (S9)" },
   "/trade-from-x": { eyebrow: "X-trade", title: "Trade from a post", body: "Turn a post into a bounded trade under a grant you control.", dependency: "the X relay (S11)" },
   "/claim": { eyebrow: "X recovery", title: "Recover a trade from X", body: "Claim a trade an X post created for you.", dependency: "the X relay (S11)" },
-  "/leaderboard": { eyebrow: "Leaderboard", title: "Verified records", body: "Traders, agents and game ranks, each with its sample size.", dependency: "the indexer (S5)" },
   "/activity": { eyebrow: "Activity", title: "What's happening", body: "Calls, takes and follows as they happen.", dependency: "the social layer (S13)" },
   "/u/[address]": { eyebrow: "Profile", title: "A trader", body: "Their record, calls and takes.", dependency: "the social layer (S13)" },
   "/news": { eyebrow: "News", title: "What moves the markets", body: "Stories on the tickers we list.", dependency: "the news feed (S5)" },
