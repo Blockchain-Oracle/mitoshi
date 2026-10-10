@@ -9,7 +9,7 @@ import { addressHue } from "@/lib/address-hue";
 export function ProfileHeader({ address, name, meta, action }: { address: string; name: string; meta: readonly ReactNode[]; action?: { label: string; href: string } }) {
   return (
     <header className="flex flex-col items-center gap-3 text-center">
-      <span aria-hidden className="grid size-20 place-items-center rounded-[34px] type-title text-cream" style={{ background: `oklch(0.47 0.13 ${addressHue(address)}deg)` } as CSSProperties}>
+      <span aria-hidden className="grid size-20 place-items-center rounded-3xl type-title text-cream" style={{ background: `oklch(0.47 0.13 ${addressHue(address)}deg)` } as CSSProperties}>
         {address.slice(2, 4).toUpperCase()}
       </span>
       <h1 className="font-mono type-title text-ink">{name}</h1>
