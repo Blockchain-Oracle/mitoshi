@@ -60,15 +60,15 @@ describe.skipIf(!url)("readSettledRounds (fresh schema)", () => {
   it("prices each round by the settlement rule on what was held, and attributes the vault's to its owner", async () => {
     const rounds = await readSettledRounds(sql, { house: [SEED], vaults: [VAULT], products: [] });
     const view = rounds.map((r) => [r.owner, r.market, r.outcome, r.stakeBase, r.proceedsBase, r.payoutBase]);
+    // U2's own closed position and its Trading Balance's winning taps on m2 are one round: summed, a win overall.
     expect(view).toEqual([
       [U1, m(1), "win", 520_000n, 0n, 1_000_000n],
       [U1, m(2), "loss", 800_000n, 0n, 0n],
-      [U2, m(2), "closed", 450_000n, 480_000n, 0n],
-      [U2, m(2), "win", 971_020n, 40_000n, 2_000_000n],
+      [U2, m(2), "win", 1_421_020n, 520_000n, 2_000_000n],
       [U1, m(3), "void", 500_000n, 0n, 500_000n],
     ]);
     expect(await readSettledRounds(sql, { house: [SEED], vaults: [VAULT], products: [], sinceSec: 2003 })).toHaveLength(1);
     // One wallet's profile: its direct and its Trading Balance rounds, nobody else's.
-    expect((await readSettledRounds(sql, { house: [SEED], vaults: [VAULT], products: [], owner: U2 })).map((r) => r.outcome)).toEqual(["closed", "win"]);
+    expect((await readSettledRounds(sql, { house: [SEED], vaults: [VAULT], products: [], owner: U2 })).map((r) => r.outcome)).toEqual(["win"]);
   });
 });

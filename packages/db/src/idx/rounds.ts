@@ -76,16 +76,21 @@ export async function readSettledRounds(sql: Sql, q: RoundsQuery): Promise<Round
       where x.vault = any(${vaults}::text[]) and x.owner <> all(${excluded}::text[]) ${owner ? sql`and x.owner = ${owner}` : sql``}
       group by x.owner, w.market, w.symbol, w.cadence_sec, w.state, w.settled_sec
     ),
-    rounds as (
-      select 0 as src, owner, market, symbol, cadence_sec, state, settled_sec, stake, proceeds, held_yes, held_no, payout from direct
+    parts as (
+      select owner, market, symbol, cadence_sec, state, settled_sec, stake, proceeds, held_yes + held_no > 0 as held, payout from direct
       union all
-      select 1, owner, market, symbol, cadence_sec, state, settled_sec, stake, proceeds, held_yes, held_no,
+      select owner, market, symbol, cadence_sec, state, settled_sec, stake, proceeds, held_yes + held_no > 0,
         (held_yes * payout_yes + held_no * payout_no) / ${PAYOUT_DENOMINATOR} from taps where stake > 0
+    ),
+    -- One round per wallet and Window: its own position and its Trading Balance's taps in that Window are one call.
+    rounds as (
+      select owner, market, symbol, cadence_sec, state, settled_sec, sum(stake) as stake, sum(proceeds) as proceeds, sum(payout) as payout, bool_or(held) as held
+      from parts group by owner, market, symbol, cadence_sec, state, settled_sec
     )
     select owner, market, symbol, cadence_sec, settled_sec::text, floor(stake)::text as stake, floor(proceeds)::text as proceeds, floor(payout)::text as payout,
-      case when state = 'voided' then 'void' when held_yes + held_no <= 0 then 'closed' when payout <= 0 then 'loss'
+      case when state = 'voided' then 'void' when not held then 'closed' when payout <= 0 then 'loss'
         when proceeds + payout >= stake then 'win' else 'loss' end as outcome
-    from rounds order by settled_sec, market, owner, src`;
+    from rounds order by settled_sec, market, owner`;
   return rows.map((r) => ({
     owner: String(r.owner),
     market: String(r.market),
