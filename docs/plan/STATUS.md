@@ -1,7 +1,8 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-10 11:10Z (S5: /stats, the leaderboard (page, API, terminal drawer), /news, Trader Edge with badges and
-CSV, profiles, link previews and the share card; S23 gate nearly closed; S20 public story under way). **Never trust memory over this file.**
+Updated 2026-10-10 11:20Z (S5: /stats, the leaderboard (page, API, terminal drawer), /news, Trader Edge with badges and
+CSV, profiles, link previews, the share card, proofs checked against the archive; S3's 04:00 ET item passed live;
+S23 gate nearly closed; S20 public story under way). **Never trust memory over this file.**
 
 ## Where we are
 
@@ -22,7 +23,8 @@ CSV, profiles, link previews and the share card; S23 gate nearly closed; S20 pub
   pools, S16c themes contracts (configured), S17a/b launchpads, S7 EventVault contracts, S1 up to 05990e6.
   **S7 merged (546a8ed, gate passed on Moderato); web
   and ops deployed (ops fffc58f 2026-09-30 ~13:50Z: vault index migration applied, vault crank live).** **S3 gate NOT
-  passed** (acceptance/S3.md): 42 voids from RedStone's daily 04:00 ET `---24_7` gap + false all-feeds-stale in
+  passed** (acceptance/S3.md; re-check 2026-10-10: the 04:00 ET item passes, halts replay OK, 81 of 83 voids are
+  RedStone's public-gateway window, 2 are F-S3-09 — AMD/PLTR short of signers at the open): 42 voids from RedStone's daily 04:00 ET `---24_7` gap + false all-feeds-stale in
   halt-watch; everything else passed. S3-fix2 (merged 2026-10-08) fixes both + the recount window; needs the ops redeploy, then a fresh 24 h window spanning a 04:00 ET. **S4 merged to the trunk (2ab3639; S4-fix cc65634: tap → Call card p50 942 ms deployed)**: backend + UI, gate (1) passed on Moderato
   (acceptance/S4.md: 0 prompts cold → first call after the arm step, NVDA stock call in NYSE hours, 6 wins auto-paid);
   open: tap → Call card p50 5.97 s vs 1 s (D-143, re-measure on the deployed site), a void shown "Returned" on a real
@@ -84,7 +86,8 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
 
 **S5 — under way (`acceptance/S5.md`, the stage file's Handoff).** Live on testnet (web deployed through 506f544;
 385f0cc…91db2e3 committed, deploying next):
-- `/proof/[market]` (re-verification in the browser), `/status` (every keeper and the fee relay).
+- `/proof/[market]`: re-verification in the browser from the record tx, and "Check against the archive" (G-10) — a
+  void's missing print shows what the archive held and the verifier's refusal. `/status` (every keeper, the fee relay).
 - `/stats` (D-215): wallets that made a call, calls, traded, paid out, the growth curve, the venue's counts, the
   latest calls with receipts. The house (`HOUSE_TRADERS` + the maker vault) is never counted; a Trading Balance tap
   counts for its owner (`server/demand.ts`, shared with the leaderboard and the profile).
@@ -96,8 +99,9 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
 - `/portfolio/edge`: Trader Edge with reputation, badges and the CSV of settled Windows (L-47, L-49).
 - Link previews (L-23, Y-14): the site card, each terminal's card, each Window's proof card.
 - The share card (L-22; S23g RV-83): Share from a position's details — Owarine's card re-branded, Download / X.
-- Live check `web/e2e/s5-pages.ts` (CI e2e.yml): run 1 passed 15/16; its miss and two figure defects fixed
-  (F-S5-04); run 2 (with the share step) running.
+- Live check `web/e2e/s5-pages.ts` (CI e2e.yml): run 2 passed 17/17 (share included). A code review of the day's
+  diff fixed: a two-caller direct fill counted twice in "traded", one round per wallet and Window (own + Trading
+  Balance merged), the vault-owner lookup, the walker's tail halving.
 Next in S5: the gate (UX pass on the deployed pages, a proof reverified from the archive, stats == recount — open as
 F-S5-02: the full chain recount takes more than a day at today's size), and the leaderboard's agent and game-rank
 tabs with S9 and S12.
