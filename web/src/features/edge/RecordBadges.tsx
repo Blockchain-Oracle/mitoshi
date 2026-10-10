@@ -87,7 +87,7 @@ export function BadgeGrid({ badges }: { badges: readonly Badge[] }) {
             <li key={b.id} className={`flex flex-col gap-2 rounded-md border p-3 ${b.earned ? "border-accent/40 bg-accent/10" : "border-hairline bg-surface-2"}`}>
               <span className="flex items-center justify-between type-label-micro text-ink-secondary">
                 <span className="tabular-nums">{String(i + 1).padStart(2, "0")}</span>
-                <span className={b.earned ? "text-accent" : ""}>{b.earned ? W.unlocked : b.pending === "earn" ? W.pendingEarn : W.locked}</span>
+                <span className={b.earned ? "text-ink" : ""}>{b.earned ? W.unlocked : b.pending === "earn" ? W.pendingEarn : W.locked}</span>
               </span>
               <Icon aria-hidden strokeWidth={1.9} className={`size-6 ${b.earned ? "text-accent" : "text-ink-secondary"}`} />
               <span className="type-body-strong text-ink">{words.name}</span>

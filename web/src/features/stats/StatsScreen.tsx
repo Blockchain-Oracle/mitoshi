@@ -26,7 +26,7 @@ const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 function SectionHead({ index, title, tag }: { index: string; title: string; tag: string }) {
   return (
     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-hairline pb-3">
-      <span className="type-label-micro text-accent tabular-nums">{index}</span>
+      <span className="type-label-micro text-ink-secondary tabular-nums">{index}</span>
       <h2 className="type-title text-ink">{title}</h2>
       <span className="type-caption text-ink-secondary">{tag}</span>
     </div>

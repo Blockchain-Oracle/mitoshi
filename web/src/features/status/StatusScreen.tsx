@@ -6,6 +6,7 @@ import { H1, Lead, Note, Table } from "@/features/docs/Prose";
 import { readStatus, type Tone } from "./probes";
 
 const DOT: Record<Tone, string> = { good: "bg-up", warn: "bg-warning", bad: "bg-down" };
+const TONE_WORD: Record<Tone, string> = { good: "Running", warn: "Behind", bad: "Not running" };
 
 export async function StatusScreen() {
   await connection();
@@ -24,7 +25,7 @@ export async function StatusScreen() {
       <Table
         head={["", "Part", "Last", "What it says"]}
         rows={s.rows.map((r) => [
-          <span key="d" aria-label={r.tone} className={`inline-block size-2.5 rounded-full ${DOT[r.tone]}`} />,
+          <span key="d" role="img" aria-label={TONE_WORD[r.tone]} className={`inline-block size-2.5 rounded-full ${DOT[r.tone]}`} />,
           <b key="l">{r.label}</b>,
           <span key="f" className="whitespace-nowrap tabular-nums">{r.figure}</span>,
           <span key="w" className="type-caption text-ink-secondary">{r.detail}</span>,

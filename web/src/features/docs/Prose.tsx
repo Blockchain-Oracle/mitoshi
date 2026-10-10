@@ -25,7 +25,8 @@ export const A = ({ href, children }: { href: string; children: ReactNode }) =>
 export const Code = ({ children }: { children: ReactNode }) => <code className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[0.9em] text-ink">{children}</code>;
 export function Table({ head, rows }: { head: readonly string[]; rows: readonly (readonly ReactNode[])[] }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-hairline">
+    // Focusable so a keyboard can scroll a table wider than a phone (axe: scrollable-region-focusable).
+    <div tabIndex={0} className="overflow-x-auto rounded-lg border border-hairline focus-visible:outline-2 focus-visible:outline-accent">
       <table className="w-full border-collapse type-body">
         {head.some(Boolean) ? (
           <thead className="bg-surface-1 text-left text-ink-secondary">

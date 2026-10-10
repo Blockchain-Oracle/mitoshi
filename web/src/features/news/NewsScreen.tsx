@@ -40,7 +40,7 @@ export async function NewsScreen() {
                   <span className="font-mono tabular-nums">{timeAgo(a.publishedAtSec, now)}</span>
                   <span>{a.source}</span>
                   {a.symbols.map((s) => (
-                    <Link key={s} href={`/trade/${s}`} aria-label={NEWS.trade(s)} className="inline-flex min-h-6 items-center font-mono text-ink underline-offset-4 hover:underline">
+                    <Link key={s} href={`/trade/${s}`} aria-label={NEWS.trade(s)} className="-my-2.5 inline-flex min-h-touch min-w-touch items-center justify-center font-mono text-ink underline-offset-4 hover:underline">
                       ${s}
                     </Link>
                   ))}
