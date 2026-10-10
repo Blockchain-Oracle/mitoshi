@@ -9,6 +9,7 @@ import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
 import { TERMINAL } from "../copy";
 import { clockText, livePnlText, money, sideWord } from "../format";
+import type { PendingFill } from "../fresh-fills";
 import type { TerminalPosition } from "../terminal-positions";
 import { usePositionValue, type PositionValue } from "../usePositionValue";
 import { useRowTrail } from "../useTrail";
@@ -63,8 +64,30 @@ function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }:
   );
 }
 
-export function PositionsList({ positions, activeMarketId, busyId, onClose, onOpen, onTrailHit, onValue }: {
+/** A signed tap before its receipt (D-150): the confirmed quote's stake ceiling, no value, nothing to close yet. */
+function PendingRow({ f }: { f: PendingFill }) {
+  const masked = usePrivacy();
+  const up = f.side === "up";
+  const Dir = up ? ArrowUp : ArrowDown;
+  return (
+    <div role="listitem" className="tm-pos" aria-busy="true">
+      <span className={`tm-pos-side ${up ? "tm-up-soft" : "tm-down-soft"}`}><Dir aria-hidden strokeWidth={3} /></span>
+      <span className="tm-pos-main">
+        <span className="tm-pos-title">{sideWord(f.side)} {f.asset}</span>
+        <span className="tm-pos-meta">
+          <span className="tm-nowrap">{TERMINAL.positions.stakingUpTo(masked ? SHELL.masked : money(f.maxCostBase))}</span> · <span className="tm-nowrap">{TERMINAL.positions.settles} {clockText(f.expirySec)}</span>
+        </span>
+      </span>
+      <span className="tm-pos-figure"><span className="tm-pos-meta">{TERMINAL.positions.confirming}</span></span>
+      <span className="tm-pos-close" aria-hidden="true"><LoaderCircle className="tm-spin" /></span>
+    </div>
+  );
+}
+
+export function PositionsList({ positions, pending = [], activeMarketId, busyId, onClose, onOpen, onTrailHit, onValue }: {
   positions: readonly TerminalPosition[];
+  /** Signed taps awaiting their receipt, listed first (`fresh-fills.ts`). */
+  pending?: readonly PendingFill[];
   activeMarketId: string | null;
   busyId: string | null;
   onClose: (p: TerminalPosition, v: PositionValue) => void;
@@ -73,9 +96,12 @@ export function PositionsList({ positions, activeMarketId, busyId, onClose, onOp
   onTrailHit: ((p: TerminalPosition, v: PositionValue, why: "trail" | "tp" | "sl") => void) | null;
   onValue: (id: string, v: PositionValue) => void;
 }) {
-  if (positions.length === 0) return <p className="tm-empty">{TERMINAL.positions.none}</p>;
+  if (positions.length === 0 && pending.length === 0) return <p className="tm-empty">{TERMINAL.positions.none}</p>;
   return (
     <div className="tm-card" aria-label={TERMINAL.positions.title} role="list">
+      {pending.map((f) => (
+        <PendingRow key={`pending:${f.marketId}:${f.side}`} f={f} />
+      ))}
       {positions.map((p) => (
         <PositionRow key={p.id} p={p} current={p.marketId === activeMarketId} busy={busyId === p.id} onClose={onClose} onOpen={onOpen} onTrailHit={onTrailHit ?? noTrail} onValue={onValue} />
       ))}

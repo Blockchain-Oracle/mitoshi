@@ -44,6 +44,7 @@ import { useAppUpdate } from "./useAppUpdate";
 import { setTradeSettings, useTradeSettingsState } from "./settings";
 import { Tutorial } from "./ui/Tutorial";
 import { AccountDrawer, ExitsDrawer, MarketsDrawer, PositionDetails, SettingsDrawer, useDrawersMounted } from "./lazy-drawers";
+import { usePendingFills } from "./fresh-fills";
 import { ModeChips, ModePanel, type TerminalMode } from "./ui/ModePanel";
 import { useDrawnBand } from "@/features/range/band-store";
 import { TICKET_RAIL_MIN_WIDTH } from "@/features/markets/data/useSelection";
@@ -70,6 +71,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const masked = usePrivacy();
   const drawer = useDrawerParam();
   const drawersMounted = useDrawersMounted(drawer.open !== null);
+  const pendingFills = usePendingFills();
   const tapArmed = useTapArmed();
   const nyse = useMarketSession();
   // The 24/7 lane on screen sits idle across RedStone's 04:00 ET gap (D-185): say why and when it resumes.
@@ -244,7 +246,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           </div>
           <div className="tm-side-list">
             <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
-            <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={onTrailHit} onValue={onValue} />
+            <PositionsList positions={s.positions} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={onTrailHit} onValue={onValue} />
           </div>
           {count > 0 ? <ViewPositionPill count={count} roiPct={totals.pnl !== null && totals.cost > 0n ? Number((totals.pnl * 10_000n) / totals.cost) / 100 : null} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
           {needsArm ? (
@@ -326,7 +328,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
           <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
-          <PositionsList positions={s.positions} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={null} onValue={onValue} />
+          <PositionsList positions={s.positions} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={null} onValue={onValue} />
         </SlideOverContent>
       </SlideOver>
     </MotionScope>

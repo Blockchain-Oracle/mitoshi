@@ -29,6 +29,42 @@ export function rememberFill(f: FreshFill): void {
   listeners.forEach((l) => l());
 }
 
+/**
+ * A tap the key has signed and sent whose receipt is not in yet (D-150 confirmed-pending): shown as its own row from the
+ * confirmed quote's figures — "Staking up to", "Confirming on Tempo…" — and never part of the positions the totals,
+ * Close all or the chart read. The receipt replaces it with the booked fill; any other outcome removes it.
+ */
+export interface PendingFill {
+  marketId: MarketId;
+  side: Side;
+  asset: string;
+  expirySec: number;
+  maxCostBase: bigint;
+  atMs: number;
+}
+
+let pending: PendingFill[] = [];
+const samePending = (p: PendingFill, marketId: MarketId, side: Side) => p.marketId.toLowerCase() === marketId.toLowerCase() && p.side === side;
+
+export function rememberPending(p: PendingFill): void {
+  pending = [...pending.filter((x) => Date.now() - x.atMs < FRESH_MS && !samePending(x, p.marketId, p.side)), p];
+  listeners.forEach((l) => l());
+}
+
+export function forgetPending(marketId: MarketId, side: Side): void {
+  if (!pending.some((x) => samePending(x, marketId, side))) return;
+  pending = pending.filter((x) => !samePending(x, marketId, side));
+  listeners.forEach((l) => l());
+}
+
+export function usePendingFills(): PendingFill[] {
+  return useSyncExternalStore(
+    (l) => (listeners.add(l), () => listeners.delete(l)),
+    () => pending,
+    () => pending,
+  );
+}
+
 export function useFreshFills(): FreshFill[] {
   return useSyncExternalStore(
     (l) => (listeners.add(l), () => listeners.delete(l)),

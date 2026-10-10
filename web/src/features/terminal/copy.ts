@@ -289,6 +289,9 @@ export const TERMINAL = {
     none: "No open positions",
     staked: "Staked",
     settles: "Settles",
+    // D-150 confirmed-pending: the key has signed and the bytes are sent; the receipt swaps in what the engine booked.
+    confirming: "Confirming on Tempo…",
+    stakingUpTo: (amount: string) => `Staking up to ${amount}`,
     other: (n: number) => (n === 1 ? "1 position on another Window" : `${n} positions on other Windows`),
     view: (n: number) => (n === 1 ? "View position" : `View ${n} positions`),
   },
