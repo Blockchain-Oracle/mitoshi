@@ -8,6 +8,9 @@ import type { MarketId, Side } from "@cwf/core";
 import { betweenRoundsLine } from "@cwf/core/copy";
 import { useDeferredValue } from "react";
 import { EmptyState, ReadingBoundary } from "@/components/states";
+import { useMarketSession } from "@/features/markets/session";
+import { SESSION } from "@/features/markets/session/copy";
+import { useSessionPhrase } from "@/lib/when";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNowMs } from "@/lib/clock";
 import { usePager } from "@/lib/use-pager";
@@ -31,7 +34,12 @@ interface CadenceLanesProps {
 
 function Between({ laneKey }: { laneKey: LaneTabKey }) {
   const nowMs = useNowMs();
-  return <EmptyState why={betweenRoundsLine(null, nowMs, laneTabParts(laneKey).intervalSec)} />;
+  const session = useMarketSession();
+  const phrase = useSessionPhrase();
+  const { basis, intervalSec } = laneTabParts(laneKey);
+  // A Regular lane outside the session isn't between rounds: the market is shut, and it says until when (S6).
+  if (basis === "regular" && session && !session.open && nowMs) return <EmptyState why={SESSION.regularClosed(phrase(session.status, Math.floor(nowMs / 1000)))} />;
+  return <EmptyState why={betweenRoundsLine(null, nowMs, intervalSec)} />;
 }
 
 export function CadenceLanes({ state, selectedMarketId, onSelect }: CadenceLanesProps) {
