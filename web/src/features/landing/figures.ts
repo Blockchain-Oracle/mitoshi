@@ -16,12 +16,17 @@ export interface LandingFigures {
   fills: number;
 }
 
-export async function landingFigures(): Promise<LandingFigures | null> {
+/** Throws when the index can't be read, so a failed read is never what the cache keeps for minutes. */
+async function headline(): Promise<LandingFigures> {
   "use cache";
   cacheLife("minutes");
+  const r = await indexReader(db()).headline();
+  return { windowsOpened: Number(r.windows_opened), windowsResolved: Number(r.windows_resolved), windowsOpen: Number(r.windows_open), fills: Number(r.fills) };
+}
+
+export async function landingFigures(): Promise<LandingFigures | null> {
   try {
-    const r = await indexReader(db()).headline();
-    return { windowsOpened: Number(r.windows_opened), windowsResolved: Number(r.windows_resolved), windowsOpen: Number(r.windows_open), fills: Number(r.fills) };
+    return await headline();
   } catch {
     return null;
   }
