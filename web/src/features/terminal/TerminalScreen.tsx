@@ -154,7 +154,8 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   useWalletToasts();
   // First visit: the five-step tour, once the browser's settings have loaded with it unseen.
   const settingsState = useTradeSettingsState();
-  const tourOpen = settingsState !== null && !settingsState.tutorialSeen;
+  // In a frame (the landing's phone) the tour never opens: that phone shows the app; the tour belongs to a real visit.
+  const tourOpen = settingsState !== null && !settingsState.tutorialSeen && window.self === window.top;
   const settled = settingsState !== null;
   useEffect(() => {
     if (settled) onTourSettled?.();

@@ -106,6 +106,13 @@ html[data-shell="app"] .grain { display: none; }
 /* ── Desktop header targets: nav links and the mark stand 44 px tall (they were 21 px). ── */
 .nav-link, .nav-menu-trigger { min-height: 44px; display: inline-flex; align-items: center; }
 .logo { min-height: 44px; min-width: 44px; }
+/* The site header on a phone: the mark keeps its 17 px (flex had squeezed it to 0 at 375 px), the wordmark gives way
+   under 420 px, and "Open the app" stays on one line (it wrapped to two). */
+.site-header .logo-mark { flex: none; width: 17px; }
+.site-header .btn { white-space: nowrap; }
+@media (max-width: 420px) {
+  .site-header .logo > span:last-child { display: none; }
+}
 .nav-link::after { bottom: 8px; }
 
 /* Small vermilion labels: light-theme vermilion is 3.9:1 on cream at 11 px, so they take the pressed vermilion there
