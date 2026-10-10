@@ -28,18 +28,22 @@ export interface Take {
   local?: { state: "sending" | "failed"; error?: string };
 }
 
-export function useTakes(symbol: string) {
+/** A ticker's takes (`{symbol}`) or one person's (`{author}`). */
+export function useTakes(query: { symbol: string } | { author: string }) {
+  const symbol = "symbol" in query ? query.symbol : null;
+  const author = "author" in query ? query.author.toLowerCase() : null;
+  const qs = symbol ? `symbol=${encodeURIComponent(symbol)}` : `authors=${author}`;
   const social = useSocialSession();
   const [takes, setTakes] = useState<Take[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
   const load = useCallback(async () => {
     setState("loading");
-    const res = await fetch(`/api/social/takes?symbol=${encodeURIComponent(symbol)}`, { credentials: "same-origin", cache: "no-store" }).catch(() => null);
+    const res = await fetch(`/api/social/takes?${qs}`, { credentials: "same-origin", cache: "no-store" }).catch(() => null);
     if (!res?.ok) return void setState("error");
     setTakes(((await res.json()) as { takes: Take[] }).takes);
     setState("ready");
-  }, [symbol]);
+  }, [qs]);
 
   useEffect(() => void load(), [load, social.address]);
 
@@ -49,7 +53,7 @@ export function useTakes(symbol: string) {
       for (const e of events) {
         if (e.event === "take") {
           const t = e.data as Take;
-          if (t.asset !== symbol && !t.tags.includes(symbol)) continue;
+          if (symbol ? t.asset !== symbol && !t.tags.includes(symbol) : t.author !== author) continue;
           setTakes((prev) => (prev.some((x) => x.id === t.id) ? prev : [{ ...t, reactions: { counts: t.reactions?.counts ?? {}, mine: [] } }, ...prev]));
         } else if (e.event === "reactions") {
           const r = e.data as { target: string; id: string; counts: Record<string, number> };
@@ -58,7 +62,7 @@ export function useTakes(symbol: string) {
         }
       }
     });
-  }, [symbol]);
+  }, [symbol, author]);
 
   const post = useCallback(async (input: { marketId: string; side: "up" | "down"; caption: string; window: Pick<Take, "asset" | "intervalSec" | "expirySec"> }): Promise<{ ok: true } | { ok: false; message: string }> => {
     const session = await social.ensure();

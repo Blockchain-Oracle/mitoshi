@@ -26,6 +26,7 @@ import { useTapArmed } from "@/providers/wallet/tap-session";
 import { TERMINAL } from "../copy";
 import { money } from "../format";
 import { ActivityView } from "./ActivityView";
+import { AccountProfile } from "./AccountProfile";
 import { HistoryView } from "./HistoryView";
 import { PnlCard } from "./PnlCard";
 import { InstallDrawer } from "./InstallDrawer";
@@ -111,13 +112,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
           {view === "leaderboard" ? <LeaderboardView wallet={wallet} /> : null}
           {view === "menu" ? (
             <div className="tm-account">
-              <div className="tm-profile">
-                <span aria-hidden className="tm-avatar tm-avatar-lg" style={{ "--tm-hue": addressHue(wallet) } as CSSProperties}>{wallet.slice(2, 4).toUpperCase()}</span>
-                <span className="tm-pos-main">
-                  <span className="tm-pos-title tm-mono">{`${wallet.slice(0, 6)}…${wallet.slice(-4)}`}</span>
-                  <span className="tm-pos-meta">{TERMINAL.account.testnet}</span>
-                </span>
-              </div>
+              <AccountProfile wallet={wallet} />
               <LegacyBalance owner={wallet} />
               <div className="tm-card tm-balance">
                 <span className="tm-card-title">{TERMINAL.account.equity}</span>

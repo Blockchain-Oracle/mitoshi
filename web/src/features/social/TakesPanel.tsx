@@ -17,7 +17,7 @@ const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 const lineText = (raw: string | null) => (raw === null ? null : `$${(Number(raw) / 1e8).toLocaleString("en-US", { maximumFractionDigits: 2 })}`);
 const CAPTION_MAX = 240;
 
-function TakeCard({ t, me, onReact, onDismiss, onReport, onBlock }: { t: Take; me: string | null; onReact: (k: (typeof REACTIONS)[number]["kind"], on: boolean) => void; onDismiss: () => void; onReport: () => void; onBlock: () => void }) {
+export function TakeCard({ t, me, onReact, onDismiss, onReport, onBlock }: { t: Take; me: string | null; onReact: (k: (typeof REACTIONS)[number]["kind"], on: boolean) => void; onDismiss: () => void; onReport: () => void; onBlock: () => void }) {
   const who = t.name ?? short(t.author);
   const live = t.expirySec * 1000 > Date.now();
   const words = SOCIAL.takes;
@@ -77,7 +77,7 @@ export interface TakeWindow {
 }
 
 export function TakesPanel({ symbol, window }: { symbol: string; window: TakeWindow | null }) {
-  const t = useTakes(symbol);
+  const t = useTakes({ symbol });
   const [side, setSide] = useState<"up" | "down" | null>(null);
   const [caption, setCaption] = useState("");
   const [busy, setBusy] = useState(false);

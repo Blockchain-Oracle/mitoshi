@@ -51,7 +51,10 @@ streaming, profile editing, export/deletion, a trading-points league — built h
    cashtags in core, reactions, report and block on takes, Tail / Fade (the terminal on that Window with `?pick=` the
    same or the other side highlighted; nothing trades from the feed), the composer bound to the Window on screen; the
    stream's `takes` topic. In the Room drawer as "Takes".
-5. Profiles: editing, follows, the drawer's profile header; `/u` shows takes and follows.
+5. **Done (live check with 3–4):** profiles — `/api/social/profile` (read anyone's; edit your own: a 3–20 name, unique
+   without case, refused if the filter would star it; a 160-character bio starred on read) and `/api/social/follow`;
+   `/u` renders the public name and a social island (bio, followers · following, Follow, report, block, their takes);
+   the account drawer's header shows the name with "Edit profile" in place.
 6. `/activity` + the LifecycleWatcher + the rail's badge (the notification centre under Portfolio).
 7. Alerts (basis + staleness gate) + `/settings/notifications`; push delivery lands with SM2.
 8. Sensei: the brain (MPP or a direct key), streamed tokens, AI data-sharing consent first.
