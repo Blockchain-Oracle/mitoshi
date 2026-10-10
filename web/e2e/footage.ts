@@ -59,8 +59,11 @@ for (const width of widths) {
     await up.click();
     await expect(opened).toBeVisible({ timeout: 60_000 });
     await hold(page, 2);
-    if (width < 768) await page.locator(".tm-view").first().click().catch(() => undefined);
-    await page.locator(".tm-pos:visible .tm-pos-open-btn").first().click();
+    // A phone keeps the new position behind the "View position" pill, which appears once the position is read.
+    if (width < 768) await page.locator(".tm-view").first().click({ timeout: 60_000 });
+    const second = page.locator(".tm-pos:visible").filter({ hasText: "Up BTC" }).first();
+    await expect(second).toBeVisible({ timeout: 120_000 });
+    await second.locator(".tm-pos-open-btn").click();
     await hold(page, 3);
     // The share card from the same details: PnL · ROI · Both, Download, Share on X.
     const share = modal(page).getByRole("button", { name: "Share", exact: true });
