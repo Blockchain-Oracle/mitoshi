@@ -1,7 +1,8 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-10 17:31Z (**S5 gate passed** — stats == recount from a GitHub runner; **S6 under way**: the NYSE session
-on the terminal, the session blockers, the halt banner, crowd sentiment, earnings — deployed on testnet).
+Updated 2026-10-10 20:17Z (**S5 gate passed** — stats == recount from a GitHub runner; **S6 steps 1–9 done and
+deployed** — the session on the terminal, blockers, halt banner, crowd, earnings, the halts board, skips, G-04/G-05, the
+mainnet Gap on Data Streams — the S6 gate runs over the real weekend and Monday's session).
 **Never trust memory over this file.**
 
 ## Where we are
@@ -109,16 +110,22 @@ total for total and Window for Window (CI 38067568117). On the way: `marketDiges
 waits out dropped connections, and the recount now walks every vault (it walked only v1). D-216: the S5 routes carry no
 wallet stack, checked per route group. The leaderboard's agent and game-rank tabs come with S9 and S12.
 
-**S6 — under way (`stage-06-stock-sessions-and-lanes.md` Handoff, 10 steps).** Most of the backend came with S3; S6 is
-the surfaces. Done and deployed on testnet (web e577857):
+**S6 — steps 1–9 done; the gate is next (`stage-06-stock-sessions-and-lanes.md` Handoff, `acceptance/S6.md`).** Most of
+the backend came with S3; S6 built the surfaces, deployed on testnet:
 - The session store (`features/markets/session`: the stream's `session` + `halts` topics, no zod on the terminal) and
   Agari's session words with the boundary in the reader's zone (`lib/when.ts`).
-- On `/trade`: the session cell beside the Window chip ("Weekend · reopens Mon 14:30 (09:30 ET)"), the crowd
-  ("Crowd 56% UP · 7 d", `/api/sentiment`, the house never counted), the earnings line ("TSLA reports Tue 10-20, after
-  the close", `/api/earnings` from ops' calendar), the halt banner over UP/DOWN (21st 19366), and the session blockers
-  under UP/DOWN, Boost and the scheduled call. Every state renders in `/dev/session` (UX gate 0 findings).
-Next in S6: the halts board (`/status/halts`, 21st 5693 + 26906 over `/halts/log`; episode derivation written and
-tested), corporate skips, G-04/G-05 labels, the Data Streams Gap config, then the gate over a real session (Monday).
+- On `/trade`: the session cell beside the Window chip, the crowd (`/api/sentiment`, the house never counted), the
+  earnings line (`/api/earnings` from ops' calendar), the halt banner over UP/DOWN (21st 19366), the session blockers
+  under UP/DOWN / Boost / the scheduled call, a paused lane's reason on the chip, the 24/7 lane named as RedStone's 24/7
+  feed (G-04), NFLX and Pre-IPO under "Paused" in the markets drawer (G-05). Every state renders in `/dev/session`.
+- `/status/halts` (21st 5693): each ticker's halt now, its last, 30 ET days, every halt (124 since 09-29).
+- `scripts/drive/corporate-check.ts` on Robinhood's ERC-8056 (G-08); D-217: the mainnet Gap on Data Streams with a
+  RedStone check (`GapPolicy.sol`, Foundry-proven; boundary statuses wait for credentials, Q-011).
+- `/markets`' empty Regular lane names the session; `/docs/windows` covers hours, halts and pauses.
+Next in S6: the gate over a real session — `e2e/s6-session.ts` from a runner (the browser pane is hidden here, so the
+terminal's clock never starts in it): closed + the Gap this weekend (Gap Windows live 10-09 20:00Z → lock 10-12 00:00Z),
+pre-market and after hours on Monday 10-12, and a halt when one is confirmed (none since 10-08; AMD/PLTR's signer
+shortfalls at the open, F-S3-09, are the likeliest).
 
 **S23 gate — nearly closed (`acceptance/S23.md` passes 1–5, F-S23-06…13).** Since 2026-10-09 20:10Z:
 - Passed live: Range + Moonshot on the earn-quoter's depth (37996617218); **states 38 of 38** (38034974579, after

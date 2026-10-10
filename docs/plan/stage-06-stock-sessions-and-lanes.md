@@ -53,4 +53,6 @@ with the archive's Friday print). S6 is mostly the surfaces. Steps, in order:
    keeps RedStone + the archive. `GapPolicy.sol`, `EngineCheck.seriesPolicy`, `venue-spec.json` `dataStreams.{gapChains,
    graceSec,feeds}`; four Foundry tests and a spec ↔ relay feed test. Open: boundary statuses need a credentialed report,
    and halt-watch's Data Streams read (both owner/S19).
-10. The gate on testnet over a real session (halted, closed, pre/after, Gap).
+10. The gate on testnet over a real session (halted, closed, pre/after, Gap): `web/e2e/s6-session.ts` through
+    `e2e.yml` (a runner's visible browser; the hidden browser pane never starts the terminal's clock) — this weekend for
+    closed + the Gap, Monday 10-12 for pre-market and after hours, a halt when halt-watch confirms one.
