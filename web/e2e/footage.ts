@@ -79,10 +79,14 @@ for (const width of widths) {
       await page.keyboard.press("Escape");
       await page.waitForTimeout(700);
     }
-    // Range mode with its band on the chart.
+    // Range mode with its band on the chart (a right-edge drawer on a phone, closed before the next beat).
     await page.getByRole("tab", { name: "Range" }).click().catch(() => undefined);
     await hold(page, 6);
-    await page.getByRole("tab", { name: "Up / Down" }).click().catch(() => undefined);
+    for (let i = 0; i < 4 && (await modal(page).count()) > 0; i++) {
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(700);
+    }
+    await page.getByRole("tab", { name: "Up / Down" }).click({ timeout: 10_000 }).catch(() => undefined);
     // The history.
     await page.locator(".tm-equity:visible").first().click();
     await modal(page).getByRole("button", { name: "Trade history" }).first().click();
