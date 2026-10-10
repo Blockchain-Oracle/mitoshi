@@ -1863,6 +1863,24 @@ works on the deployed host the moment it ships. `NEXT_PUBLIC_DOCS_URL` still poi
 site, with `/docs` redirecting there, if a separate docs host is wanted later. The layout's sidebar is 21st 19371
 (uiable/sidebar-1), opening from the right edge on phones (D-190).
 
+### D-215 — /stats counts wallets, never the house; in the site group (decision, S5, 2026-10-10)
+
+**`/stats` (L-15) counts a wallet when it took a side on a Window, read from the index's fills over all time** (the 24 h
+cap in Masayume was DreamDEX's paging limit; our index has none). Three rules decide whom a fill counts for, proven on
+live data (1,437 fills: 975 were the house against itself) and in `traction.test.ts`:
+- **The house is never demand.** `HOUSE_TRADERS` (`@cwf/core`: the keeper/house taker, seed maker, earn quoter and desk
+  keys from S0.10) and the maker vault are left out; a fill with the house on both sides is not a call and is shown
+  apart ("House fills"). Mainnet's role keys join that list at S19.
+- **A Trading Balance tap counts for its owner**: a vault side resolves to the owner `idx_vault_executions` records in
+  the same tx and Window (every vault fill on testnet has one).
+- **A product contract (Boost, Parlay, Range, the private desk) is a call with no name**: counted as a call, reported as
+  unattributed, never guessed, until those products are indexed by owner.
+A maker side's kind and price follow the fill's path (direct: the opposite buy/sell of the same outcome at the same
+price; mint/burn: the same buy/sell of the other outcome at the complement). The page says plainly that testnet wallets
+include our own end-to-end runs' fresh passkey accounts. **It lives in the site group** with `/status` and `/proof`, so
+it carries no wallet stack (S5 gate: site-owned 23.6 KB of 35); a failed read is never cached (the cached function
+throws; the caller shows no numbers), which also fixes the landing's figures.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
