@@ -82,7 +82,7 @@ export function SenseiMessageRow({ role, failed, children }: { role: "user" | "a
 }
 
 export function StreamingCursor() {
-  return <span aria-hidden className="ms-0.5 inline-block h-[1em] w-[0.5em] translate-y-[0.15em] animate-pulse rounded-[1px] bg-ink align-baseline motion-reduce:animate-none" />;
+  return <span aria-hidden className="ms-0.5 inline-block h-[1em] w-[0.5em] translate-y-[0.15em] animate-pulse rounded-xs bg-ink align-baseline motion-reduce:animate-none" />;
 }
 
 export function TypingDots() {

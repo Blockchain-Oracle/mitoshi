@@ -42,7 +42,7 @@ export function ContactForm({ sent, error }: { sent: boolean; error: string | nu
           <span className="type-caption text-ink-secondary">{C.emailHint}</span>
         </label>
         {/* Off screen and out of the tab order: only a bot fills it. */}
-        <div aria-hidden className="absolute -left-[9999px] size-px overflow-hidden">
+        <div aria-hidden className="sr-only">
           <label>Website<input type="text" name="website" tabIndex={-1} autoComplete="off" /></label>
         </div>
         <button type="submit" className="min-h-touch w-full rounded-lg bg-accent-fill px-4 type-body-strong text-on-accent">{C.send}</button>

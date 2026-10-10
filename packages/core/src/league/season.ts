@@ -65,7 +65,9 @@ export function scoreWeek(rounds: readonly LeagueRound[], week: SeasonWeek, deci
   }
   const days = new Set(inWeek.map((r) => Math.floor(r.atSec / DAY_SEC))).size;
   const staked = inWeek.reduce((sum, r) => sum + r.stakeBase, 0n);
-  const tens = Number(staked / (10n * 10n ** BigInt(decimals)));
+  // Whole $10s staked, clamped in bigint before it becomes a count (the cap is reached long before it would matter).
+  const wholeTens = staked / (10n * 10n ** BigInt(decimals));
+  const tens = Number(wholeTens < BigInt(LEAGUE_POINTS.volumeCap) ? wholeTens : BigInt(LEAGUE_POINTS.volumeCap));
   const categories: LeagueScore["categories"] = [
     { key: "calls", points: inWeek.length * LEAGUE_POINTS.call },
     { key: "wins", points: inWeek.filter((r) => r.pnlBase > 0n).length * LEAGUE_POINTS.win },
