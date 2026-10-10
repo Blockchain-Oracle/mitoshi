@@ -71,6 +71,11 @@ try {
   a.page.on("response", (r) => { if (r.url().includes("/api/account/backup-passkey") && r.request().method() === "POST") void r.text().then((t) => log({ backupPost: r.status(), body: t.slice(0, 200) })); });
   a.page.on("response", (r) => { if (r.status() >= 400) void r.text().then((t) => log({ failedResponse: r.status(), url: r.url().slice(0, 100), body: t.slice(0, 300) })).catch(() => undefined); });
   await a.page.getByRole("button", { name: "Add a backup passkey" }).click();
+  // Step 1 made the backup on the USB key; take its credential and unplug it, so only this passkey answers step 2.
+  await a.page.getByRole("button", { name: "Confirm with this passkey" }).waitFor({ timeout: 60_000 });
+  const { credentials } = await a.cdp.send("WebAuthn.getCredentials", { authenticatorId: usb });
+  await a.cdp.send("WebAuthn.removeVirtualAuthenticator", { authenticatorId: usb });
+  await a.page.getByRole("button", { name: "Confirm with this passkey" }).click();
   const shown = await a.page.getByText("Mitoshi backup").first().waitFor({ state: "visible", timeout: 120_000 }).then(() => true, () => false);
   if (!shown) {
     await a.page.screenshot({ path: join(out, "backup-failed.png") });
@@ -80,7 +85,6 @@ try {
   const after = await accountOf(a.page);
   result.backups = after.backups?.length ?? 0;
   await a.page.screenshot({ path: join(out, "backup-added.png") });
-  const { credentials } = await a.cdp.send("WebAuthn.getCredentials", { authenticatorId: usb });
   log({ step: "backup added", backups: result.backups, credentials: credentials.length });
 
   // 3. A fresh browser with only the backup credential signs in as the same account.

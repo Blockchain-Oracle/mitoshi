@@ -30,6 +30,8 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
   const [phase, setPhase] = useState<"idle" | "creating" | "authorising" | "saving">("idle");
   // Why the last attempt stopped, kept on screen (a toast is gone before anyone reads it).
   const [error, setError] = useState<string | null>(null);
+  // Step 1 made this credential on the other device; step 2 authorises it with this passkey (two prompts, two clicks).
+  const [created, setCreated] = useState<{ id: string; publicKey: Hex } | null>(null);
   const q = useQuery({
     queryKey: ["backup-passkeys"],
     queryFn: async (): Promise<BackupAnswer> => {
@@ -39,11 +41,10 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
     },
   });
   const data = q.data;
-  const add = async () => {
+  const create = async () => {
     if (!data?.credentialId) return;
     setError(null);
     setPhase("creating");
-    let credential: { id: string; publicKey: Hex };
     try {
       // Another device or a security key (cross-platform): a backup on this same device wouldn't survive losing it.
       const c = await createWebAuthnCredential({
@@ -52,14 +53,19 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
         excludeCredentialIds: [data.credentialId, ...data.backups.map((b) => b.credentialId)],
         authenticatorSelection: { authenticatorAttachment: "cross-platform", residentKey: "required", userVerification: "required" },
       });
-      credential = { id: c.id, publicKey: `0x04${c.publicKey.slice(2)}` as Hex };
+      setCreated({ id: c.id, publicKey: `0x04${c.publicKey.slice(2)}` as Hex });
     } catch (e) {
-      setPhase("idle");
       setError(`${BACKUP.cancelled} ${e instanceof Error ? e.message.split("\n")[0]!.slice(0, 160) : ""}`.trim());
-      return notify.item({ id: "backup", title: BACKUP.cancelled });
+      notify.item({ id: "backup", title: BACKUP.cancelled });
+    } finally {
+      setPhase("idle");
     }
+  };
+  const authorise = async () => {
+    if (!created) return;
+    setError(null);
     setPhase("authorising");
-    const outcome = await tx.run({ kind: "key-backup", keyId: keyIdOf(credential.publicKey) });
+    const outcome = await tx.run({ kind: "key-backup", keyId: keyIdOf(created.publicKey) });
     if (outcome?.status !== "confirmed") {
       setPhase("idle");
       const d = outcome && "diagnosis" in outcome ? outcome.diagnosis : undefined;
@@ -69,13 +75,14 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
       return notify.item({ id: "backup", type: "warning", title: BACKUP.failed });
     }
     setPhase("saving");
-    const res = await fetch("/api/account/backup-passkey", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ credentialId: credential.id, publicKey: credential.publicKey, name: BACKUP.name }) }).catch(() => null);
+    const res = await fetch("/api/account/backup-passkey", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ credentialId: created.id, publicKey: created.publicKey, name: BACKUP.name }) }).catch(() => null);
     setPhase("idle");
     if (!res?.ok) {
       const json = res ? ((await res.json().catch(() => ({}))) as { message?: string }) : {};
       setError(json.message ?? BACKUP.failed);
       return notify.item({ id: "backup", type: "warning", title: json.message ?? BACKUP.failed });
     }
+    setCreated(null);
     notify.item({ id: "backup", title: BACKUP.done });
     await Promise.all([qc.invalidateQueries({ queryKey: ["backup-passkeys"] }), qc.invalidateQueries({ queryKey: ["account-keys"] })]);
   };
@@ -102,9 +109,14 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
           <p className="type-caption text-ink-secondary">{BACKUP.how}</p>
           <p className="type-caption text-ink-secondary">{BACKUP.fee}</p>
           {error && phase === "idle" ? <p role="alert" className="type-body text-warning">{error}</p> : null}
-          {phase === "idle" ? (
-            <button type="button" onClick={() => void add()} className="min-h-touch self-start rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{BACKUP.add}</button>
-          ) : <p role="status" className="type-body text-ink-secondary">{BACKUP[phase]}</p>}
+          {phase !== "idle" ? <p role="status" className="type-body text-ink-secondary">{BACKUP[phase]}</p> : created ? (
+            <div className="flex flex-col items-start gap-2">
+              <p className="type-body text-ink">{BACKUP.step2}</p>
+              <button type="button" onClick={() => void authorise()} className="min-h-touch rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{BACKUP.confirm}</button>
+            </div>
+          ) : (
+            <button type="button" onClick={() => void create()} className="min-h-touch self-start rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{BACKUP.add}</button>
+          )}
         </>
       )}
     </section>

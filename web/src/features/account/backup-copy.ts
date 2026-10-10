@@ -8,6 +8,8 @@ export const BACKUP = {
   none: "No backup yet.",
   added: (when: string) => `Added ${when}`,
   add: "Add a backup passkey",
+  step2: "Backup created on the other device. Now confirm with this passkey to make it an admin key of your account.",
+  confirm: "Confirm with this passkey",
   creating: "Create the backup on the other device or security key…",
   authorising: "Confirm with this passkey…",
   saving: "Saving the backup…",
