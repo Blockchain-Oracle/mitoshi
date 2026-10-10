@@ -26,7 +26,10 @@ with the archive's Friday print). S6 is mostly the surfaces. Steps, in order:
 3. **Done:** the session blockers (`session-closed`, `halted`, `lane-paused`, `corporate-action`) under UP/DOWN, Boost
    and the scheduled call (`laneBlocker`, `useLaneGuard`); the halt banner over UP/DOWN (21st 19366 → `NoticeAlert`).
    Every state renders in `/dev/session` (UX gate there: 0 findings, 4 widths × 2 themes).
-4. Crowd sentiment on the Window chip (`/api/sentiment`, the house never counted, D-215's rules).
+4. **Done:** crowd sentiment beside the session cell — `/api/sentiment?symbol=` (`readCrowdLean`: UP's share of demand
+   lots, house sides never counted, D-215), the last 24 h, else 7 d, ≥ 10 sides or no reading. Read-only on the testnet
+   index 2026-10-10 17:05Z: BTC 78 sides 59 % UP (24 h), ETH 19 → 53 % UP, SOL 21 → 53 % DOWN, TSLA 6 → 7 d 11 sides
+   56 % UP; the other stocks show nothing.
 5. `/api/earnings` + the terminal's earnings note ("TSLA reports Tue 10-20 after the close — prices can gap").
 6. The halts board (21st 5693 + 26906 per ticker over `/halts/log`), beside `/status`.
 7. Corporate skips: the proposer script (`scripts/drive/corporate-check.ts`, Agari's) and the skip shown on the lane.

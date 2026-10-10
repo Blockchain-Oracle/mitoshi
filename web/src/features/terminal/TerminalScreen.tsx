@@ -28,6 +28,7 @@ import { useTerminalState } from "./useTerminalState";
 import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } from "./ui/Chrome";
 import { SessionCell } from "./ui/SessionCell";
 import { HaltNotice } from "./ui/HaltNotice";
+import { CrowdCell } from "./ui/CrowdCell";
 import type { TerminalPosition } from "./terminal-positions";
 import { useTerminalClose } from "./useTerminalClose";
 import { useTrailToggle } from "./useTrail";
@@ -238,6 +239,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
                 <span className="tm-glass tm-note">{noWindowNote(s.ticker, nyse, s.nowSec)}</span>
               )}
               <SessionCell symbol={symbol} basis={s.win.lane?.basis ?? null} />
+              <CrowdCell symbol={symbol} />
             </div>
             {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
             {offHours ? <span className="tm-glass tm-note">{TERMINAL.feed.offHoursNote}</span> : null}

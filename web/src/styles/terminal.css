@@ -364,3 +364,8 @@
 .tm-modes .tm-choice[aria-selected="true"] { background: var(--color-ink); color: var(--color-stage); }
 .tm-mode-panel { display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow-y: auto; }
 @media (min-width: 1024px) { .tm-mode-panel { max-height: 60dvh; } }
+/* The crowd's lean beside the session cell (S6): the figure in the side's own colour. */
+.tm-crowd-figure { color: var(--chart-up); font: 700 12px/1.2 var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tm-crowd[data-lean="down"] .tm-crowd-figure { color: var(--chart-down); }
+[data-theme="light"] .tm-crowd-figure { color: color-mix(in oklab, var(--chart-up) 75%, black); }
+[data-theme="light"] .tm-crowd[data-lean="down"] .tm-crowd-figure { color: color-mix(in oklab, var(--chart-down) 75%, black); }
