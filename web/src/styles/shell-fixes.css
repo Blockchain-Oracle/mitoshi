@@ -88,6 +88,10 @@ html[data-shell="app"] .grain { display: none; }
 .shell-banner button, .shell-banner a { min-height: 44px; padding: 0 14px; border-radius: var(--radius-full); border: 1px solid var(--color-border-strong); color: var(--white); font-size: 13px; font-weight: 600; }
 
 /* ── The footer carries the disclosure and the legal links. ── */
+/* Laid out only as it nears the viewport (F-S23-08): its 見通し is the only CJK text in a page's first paint, and
+   shaping it in a system CJK fallback was the first layout's longest step (66–212 ms at 4× CPU, every route). The
+   reserve is its height at 375 px (100 px from 1024 px); it is the page's last box, so the estimate moves nothing. */
+.footer { content-visibility: auto; contain-intrinsic-size: auto 118px; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .footer-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--gray-400); }
 .footer-disclosure { margin-top: 8px; max-width: 62ch; color: var(--gray-400); font-size: 12px; line-height: 1.5; }

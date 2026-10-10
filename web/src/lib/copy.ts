@@ -102,7 +102,6 @@ export const APP_STRIP = {
 } as const;
 
 export const FOOTER = {
-  tagline: `${BRAND.name} ${BRAND.kanji} · ${BRAND.tagline}`,
   disclosure: "Testnet. Not investment advice. Prices come from signed oracle feeds; receipts link to the chain.",
   links: { privacy: "Privacy", terms: "Terms", contact: "Contact", status: "Status", docs: "Docs" },
 } as const;
