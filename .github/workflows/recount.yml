@@ -1,0 +1,38 @@
+name: recount
+# The S3/S5 gate's "recount == index" (F-S5-02) from a GitHub runner: `scripts/drive/recount.ts` walks every engine
+# and vault log on Moderato (~1.6M blocks, about an hour) and diffs it against ops `GET /index/recount`. The owner's
+# link drops connections mid-walk (F-S22-03), so the full replay runs here; its log is uploaded as an artifact.
+#   gh workflow run recount.yml [-f ops=https://ops.testnet.mitoshi.xyz]
+on:
+  workflow_dispatch:
+    inputs:
+      ops:
+        description: Base URL of the ops service whose index is checked (no trailing slash)
+        required: true
+        default: https://ops.testnet.mitoshi.xyz
+
+jobs:
+  recount:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter "@cwf/scripts..."
+      - name: Recount
+        env:
+          OPS: ${{ inputs.ops }}
+        run: |
+          case "$OPS" in https://*) ;; *) echo "::error::ops is an https URL"; exit 1;; esac
+          case "$OPS" in *[!A-Za-z0-9./:-]*) echo "::error::ops takes letters, digits, . / : and -"; exit 1;; esac
+          pnpm --dir scripts exec tsx drive/recount.ts --ops "$OPS" 2>&1 | tee "$GITHUB_WORKSPACE/recount.log"
+          exit "${PIPESTATUS[0]}"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recount
+          path: recount.log
