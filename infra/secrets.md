@@ -13,7 +13,7 @@
 | `REDIS_URL` | Coolify web + ops | Coolify Redis (passkey challenges, sessions) |
 | AI provider keys | Coolify web + ops | Sensei, agents |
 | X OAuth + rettiwt cookies | Coolify ops | x-relay |
-| `FINNHUB_API_KEY`, `ALPACA_*`, `DATASTREAMS_API_KEY/SECRET`, `TEMPO_INDEXER_API_KEY` | Coolify web + ops (testnet ops: the owner's Alpaca + Finnhub keys, the same ones Agari uses, set 2026-09-29 runtime-only) | data providers (calendar, halts, earnings) |
+| `FINNHUB_API_KEY`, `ALPACA_*`, `DATASTREAMS_API_KEY/SECRET`, `TEMPO_INDEXER_API_KEY` | Coolify web + ops (testnet ops: the owner's Alpaca + Finnhub keys, the same ones Agari uses, set 2026-09-29 runtime-only; testnet web: `FINNHUB_API_KEY` copied app to app from ops 2026-10-10 for `/news`, runtime-only, never shown) | data providers (calendar, halts, earnings) |
 | `TIDX_URL`, `TIDX_BASIC_AUTH` | Coolify ops (when a self-hosted tidx is chosen, D-086) | indexer recount |
 | RPC provider URLs (`TEMPO_RPC_*`, `RH_RPC_HTTP_URL`, `BASE_SEPOLIA_RPC_HTTP_URL`) | Coolify web + ops + GitHub Actions | chain reads |
 | APNs `.p8` + key ID + team ID, FCM service account | Coolify ops | notifier (SM2) |
