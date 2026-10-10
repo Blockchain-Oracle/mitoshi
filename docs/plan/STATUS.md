@@ -1,6 +1,6 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-10 18:30Z (**S5 gate passed** — stats == recount from a GitHub runner; **S6 under way**: the NYSE session
+Updated 2026-10-10 17:31Z (**S5 gate passed** — stats == recount from a GitHub runner; **S6 under way**: the NYSE session
 on the terminal, the session blockers, the halt banner, crowd sentiment, earnings — deployed on testnet).
 **Never trust memory over this file.**
 
