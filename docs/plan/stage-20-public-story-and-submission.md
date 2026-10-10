@@ -10,10 +10,15 @@
   `52a86fc` `features/pitch` (the only post-pin web diff); `/pitch` and `/demo` in Learn/footer rather than the user More
   panel; `/privacy`, `/terms` reuse the docs layout. **Rows:** L-11, L-12, L-13, L-14, L-18, L-20, Y-06.
 
+Progress (2026-10-10, `acceptance/S20.md`): landing, how it works, pitch, demo (video slot honest until recorded),
+docs (D-214: `/docs` in the site group) with privacy and terms, the manifest and icons are deployed; the submission
+text and both video scripts are drafted in `docs/submission/`; footage is recorded by `web/e2e/footage.ts`. Open:
+the two videos (owner's voice), the form, the download page's native builds (SM5), GTM review by the owner.
+
 ## Findings
 
-_None yet._
+F-S20-01…03 in `acceptance/S20.md` (the dead docs link, no manifest/icons, a stock-trading claim in metadata).
 
 ## Handoff
 
-_Not started._
+_In progress._
