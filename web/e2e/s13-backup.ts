@@ -49,8 +49,9 @@ try {
   // 1b. Control: an unsponsored root send (Withdraw $1) before any second authenticator exists — the same send path
   //     the backup's authorisation takes, so a failure here is the wallet stack's, not the backup's.
   await openTerminal(a.page, base, "BTC");
-  await a.page.goto(`${base}/trade/BTC?d=trade-account`, { waitUntil: "load" });
-  await a.page.getByRole("button", { name: "Withdraw" }).first().click();
+  // The equity pill opens the account drawer (as s5-pages does).
+  await a.page.locator(".tm-equity:visible").first().click();
+  await a.page.getByRole("dialog").getByRole("button", { name: "Withdraw" }).first().click();
   await a.page.getByPlaceholder("0x…").fill("0x000000000000000000000000000000000000dEaD");
   await a.page.getByPlaceholder("0.00").fill("1");
   await a.page.getByRole("button", { name: /^Send \$/ }).click();
@@ -100,6 +101,7 @@ try {
   log({ step: "signed in with the backup", account: recovered.account, same: result.sameAccount });
 } catch (e) {
   result.error = String(e).slice(0, 400);
+  for (const [i, ctx] of browser.contexts().entries()) for (const p of ctx.pages()) await p.screenshot({ path: join(out, `failure-${i}.png`) }).catch(() => undefined);
 } finally {
   await browser.close();
 }
