@@ -1,9 +1,18 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// `/status` (S5, L-16): every keeper and the fee relay, read at request time (`features/status`).
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { DocsLayout } from "@/features/docs/DocsLayout";
+import { Note } from "@/features/docs/Prose";
+import { StatusScreen } from "@/features/status/StatusScreen";
 
-export const metadata = { title: pendingFor("/status").title };
+export const metadata: Metadata = { title: "Status" };
 
-export default function StatusPage() {
-  return <PendingRoute route="/status" />;
+export default function Page() {
+  return (
+    <DocsLayout>
+      <Suspense fallback={<Note>Reading the keepers…</Note>}>
+        <StatusScreen />
+      </Suspense>
+    </DocsLayout>
+  );
 }
