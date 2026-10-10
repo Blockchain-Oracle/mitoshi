@@ -1,0 +1,16 @@
+/* The season league view in the account drawer (S13 step 11; RV-87): Tradash's Aura card — a tint by league, the
+ * points large, two tiles — on Mitoshi's tokens. The league hues are the medals', kept here (no hex in TSX). */
+.tm-league { --tier: var(--color-ink-secondary); position: relative; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-xl); padding: 16px; background: var(--color-surface-1); }
+.tm-league::before { content: ""; position: absolute; inset: 0; background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--tier) 22%, transparent), transparent 60%); pointer-events: none; }
+.tm-league[data-tier="bronze"] { --tier: #d08a4e; }
+.tm-league[data-tier="silver"] { --tier: #b9c0cb; }
+.tm-league[data-tier="gold"] { --tier: #e9b93c; }
+.tm-league[data-tier="platinum"] { --tier: #6fd3c6; }
+.tm-league[data-tier="diamond"] { --tier: #6cb6ff; }
+.tm-league > * { position: relative; }
+.tm-league-dot { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--tier); }
+.tm-league-points { font: 700 40px/1.05 var(--font-data); font-variant-numeric: tabular-nums; color: var(--color-ink); }
+.tm-league-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.tm-league-tile { border-radius: var(--radius-lg); background: color-mix(in srgb, var(--color-ink) 4%, transparent); padding: 8px 12px; }
+.tm-league-bar { height: 4px; overflow: hidden; border-radius: var(--radius-full); background: color-mix(in srgb, var(--color-ink) 8%, transparent); }
+.tm-league-bar > span { display: block; height: 100%; border-radius: inherit; background: color-mix(in srgb, var(--chart-up) 70%, transparent); }

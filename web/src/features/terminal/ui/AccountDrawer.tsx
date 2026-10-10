@@ -7,7 +7,7 @@
 // No demo, no reset (D-191).
 import type { Address } from "@cwf/core";
 import { useClaimables } from "@cwf/markets/react";
-import { ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, CircleHelp, Download, History, MessageSquare, Settings, SlidersHorizontal, Trophy, Wallet } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, CircleHelp, Download, History, Medal, MessageSquare, Settings, SlidersHorizontal, Trophy, Wallet } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
@@ -39,8 +39,10 @@ const TradingBalancePanel = dynamic(() => import("@/features/vault/TradingBalanc
 const LegacyBalance = dynamic(() => import("@/features/vault/LegacyBalance").then((m) => m.LegacyBalance), { ssr: false });
 // The leaderboard view (RV-86, S5's data) loads when it is opened.
 const LeaderboardView = dynamic(() => import("./LeaderboardView").then((m) => m.LeaderboardView), { ssr: false });
+// The season league (D-195, S13 step 11) loads when it is opened.
+const LeagueView = dynamic(() => import("./LeagueView").then((m) => m.LeagueView), { ssr: false });
 
-export type AccountView = "menu" | "send" | "balance" | "history" | "activity" | "leaderboard";
+export type AccountView = "menu" | "send" | "balance" | "history" | "activity" | "leaderboard" | "league";
 
 function Item({ icon: Icon, label, detail, onClick, href }: { icon: typeof History; label: string; detail?: string; onClick?: () => void; href?: string }) {
   const body = (
@@ -94,7 +96,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
   }, [open, initialView]);
   const hide = (base: bigint | null) => (base === null ? "—" : masked ? SHELL.masked : money(base));
   const balance = sessionView.deployed ? hide(sessionView.availableBase) : TERMINAL.account.off;
-  const titles: Record<AccountView, string> = { menu: TERMINAL.account.title, send: TERMINAL.send.title, balance: TERMINAL.account.balance, history: TERMINAL.history.title, activity: TERMINAL.activity.title, leaderboard: TERMINAL.account.leaderboard };
+  const titles: Record<AccountView, string> = { menu: TERMINAL.account.title, send: TERMINAL.send.title, balance: TERMINAL.account.balance, history: TERMINAL.history.title, activity: TERMINAL.activity.title, leaderboard: TERMINAL.account.leaderboard, league: TERMINAL.account.league };
 
   return (
     <>
@@ -110,6 +112,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
           {view === "history" ? <HistoryView wallet={wallet} onReplay={(episode, finalPnl) => setReplay({ episode, finalPnl })} /> : null}
           {view === "activity" ? <ActivityView wallet={wallet} open={open} /> : null}
           {view === "leaderboard" ? <LeaderboardView wallet={wallet} /> : null}
+          {view === "league" ? <LeagueView wallet={wallet} /> : null}
           {view === "menu" ? (
             <div className="tm-account">
               <AccountProfile wallet={wallet} />
@@ -136,6 +139,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
               <Group title={TERMINAL.account.trading}>
                 <Item icon={History} label={TERMINAL.account.history} onClick={() => setView("history")} />
                 <Item icon={Trophy} label={TERMINAL.account.leaderboard} onClick={() => setView("leaderboard")} />
+                <Item icon={Medal} label={TERMINAL.account.league} onClick={() => setView("league")} />
                 <Item icon={SlidersHorizontal} label={TERMINAL.account.settings} onClick={onSettings} />
               </Group>
               <Group title={TERMINAL.account.app}>

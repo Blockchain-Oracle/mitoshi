@@ -58,6 +58,7 @@ export const TERMINAL_ACCOUNT = {
     app: "App",
     history: "Trade history",
     leaderboard: "Leaderboard",
+    league: "Season league",
     settings: "Trade settings",
     soundVibration: "Sound & Vibration",
     howItWorks: "How it works",

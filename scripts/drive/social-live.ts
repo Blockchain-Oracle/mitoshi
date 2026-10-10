@@ -3,11 +3,12 @@
  * The social layer live (S13, D-207: the product checked live), with a fresh throwaway key — no funds, no chain writes:
  * a visitor reads a room; a write without a session is refused; one signature buys the 30-day session; the room's
  * position gate refuses an address with no call; the profile takes a name; a take posts on a live TSLA Window (takes
- * need no call — "backed" says whether there is one); a reaction and a report land; the session signs out.
+ * need no call — "backed" says whether there is one); a reaction and a report land; the account downloads its data and
+ * deletes it with a fresh signature (another account's text refused); a contact message lands; the session signs out.
  *
  *   pnpm --dir scripts exec tsx drive/social-live.ts [--base https://testnet.mitoshi.xyz]
  */
-import { socialSessionMessage } from "@cwf/core";
+import { deletionMessage, socialSessionMessage } from "@cwf/core";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 const arg = (n: string, d: string) => (process.argv.includes(n) ? process.argv[process.argv.indexOf(n) + 1]! : d);
@@ -70,6 +71,17 @@ if (!live) {
     cookie = mine;
   }
 }
+// S13 step 10a: the account's own data — a download, a deletion signed fresh (another account's text refused), a contact.
+const exported = await call("/api/account/data");
+check("the export holds the account's rows", exported.status, 200, `takes ${(exported.body.takes as unknown[] | undefined)?.length ?? "?"}, profile ${exported.body.profile ? "set" : "none"}`);
+const stranger = privateKeyToAccount(generatePrivateKey());
+const theirs = deletionMessage({ address: stranger.address, network: "testnet", issuedAtSec: Math.floor(Date.now() / 1000), nonce: "abcdefabcdefabcdef01" });
+check("a deletion text for another account is refused", (await call("/api/account/data", { method: "DELETE", body: JSON.stringify({ text: theirs, signature: await stranger.signMessage({ message: theirs }) }) })).status, 403);
+const mine = deletionMessage({ address: account.address, network: "testnet", issuedAtSec: Math.floor(Date.now() / 1000), nonce: "0a1b2c3d4e5f60718293" });
+const del = await call("/api/account/data", { method: "DELETE", body: JSON.stringify({ text: mine, signature: await account.signMessage({ message: mine }) }) });
+check("a fresh signed deletion empties the account's rows", del.status, 200, JSON.stringify(del.body.deleted ?? del.body.message));
+const contact = await fetch(`${BASE}/api/contact`, { method: "POST", redirect: "manual", body: new URLSearchParams({ topic: "question", message: `S13 live check ${account.address.slice(0, 10)} — close me`, email: "", website: "" }), signal: AbortSignal.timeout(60_000) });
+check("a contact message is stored and the page told", contact.status, 303, contact.headers.get("location") ?? "");
 check("signing out clears the session", (await call("/api/social/session", { method: "DELETE" })).status, 200);
 const failed = results.filter((r) => !r.ok);
 console.log(JSON.stringify({ step: "done", address: account.address, checks: results.length, failed: failed.length }));

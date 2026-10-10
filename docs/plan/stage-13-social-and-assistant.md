@@ -88,7 +88,16 @@ streaming, profile editing, export/deletion, a trading-points league — built h
     `contact_messages` in `social/0004`, counted by ops' `moderation` actor, `moderate.ts contact · close`; signed-in
     messages go with the export and deletion); `/privacy` and `/terms` updated for posts, Sensei, device-only data,
     contact and deletion. **10b next:** the backup passkey — a second passkey authorised as a TIP-1049 admin key (needs
-    T6 on Moderato; recovery signs in by finding the parent account from the key's `AdminKeyAuthorized` log) — and each
-    key's "key used" history from its `AccessKeySpend` events.
-11. The weekly season league (D-195) in the account drawer.
+    T6 on Moderato — checked 2026-10-10: `isAdminKey(root, root)` answers true at block 39,045,630) — and each key's
+    "key used" history from its `AccessKeySpend` events. Research for 10b: the root adds the backup with a direct
+    `authorizeAdminKey(keyId, 2 /* WebAuthn */, witness)` call (viem `accessKey.authorize({ admin: true })`); recovery
+    is the hard half — `accounts` 0.18.4 hydrates a stored passkey as `fromWebAuthnP256(credential, { rpId })` with no
+    `access`, so a backup passkey signs in as its own derived address, never the parent. It needs a `pnpm patch` to
+    pass `{ access: parent }` for a backup credential, and the credential → parent mapping (the `AdminKeyAuthorized`
+    log filtered by `publicKey`, or a row written when the backup is added).
+11. **Done (live check next):** the weekly season league (D-195) — core `league/season.ts` scores each ISO week (UTC)
+    from settled rounds: 10 per call, 5 per win, 3 per call in the best winning run, 5 per active day, 1 per $10
+    staked up to 100; leagues by percentile (Diamond 1 %, Platinum 5 %, Gold 15 %, Silver 40 %, Bronze); `/api/league`
+    reads the leaderboard's cached snapshot (no new query); the account drawer's Season league view (Tradash's Aura,
+    re-implemented).
 12. The gate.

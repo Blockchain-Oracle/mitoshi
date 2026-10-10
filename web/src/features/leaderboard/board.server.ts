@@ -22,8 +22,8 @@ interface Snapshot {
   rounds: [string, { pnl: string; stake: string; outcome: RankRound["outcome"]; settledAtMs: number; expirySec: number }[]][];
 }
 
-/** Throws on a failed read, so the cache never keeps one. */
-async function snapshot(): Promise<Snapshot> {
+/** Throws on a failed read, so the cache never keeps one. Shared with the season league (S13 step 11). */
+export async function settledSnapshot(): Promise<Snapshot> {
   "use cache";
   cacheLife("minutes");
   const rows = await readSettledRounds(db(), demandAddresses());
@@ -49,7 +49,7 @@ const row = (r: TraderRanking, i: number): BoardRow => ({
 });
 
 export async function readBoard(period: Period, sort: BoardSort, you?: string): Promise<BoardPayload> {
-  const s = await snapshot();
+  const s = await settledSnapshot();
   const byWallet = new Map<Address, RankRound[]>(
     s.rounds.map(([owner, list]) => [owner as Address, list.map((x) => ({ pnlBase: BigInt(x.pnl), stakeBase: BigInt(x.stake), outcome: x.outcome, settledAtMs: x.settledAtMs, expirySec: x.expirySec }))]),
   );
