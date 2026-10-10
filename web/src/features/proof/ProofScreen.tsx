@@ -7,6 +7,7 @@ import { TEMPO_RPC_HTTP, txUrl } from "@cwf/core";
 import { A, Code, H1, H2, Lead, Note, P, Table } from "@/features/docs/Prose";
 import { PROOF } from "./copy";
 import { readProof } from "./data";
+import { ArchiveVerifyButton } from "./ArchiveVerifyButton";
 import { ReverifyButton } from "./ReverifyButton";
 
 const utc = (sec: number) => new Date(sec * 1000).toISOString().replace("T", " ").slice(0, 19);
@@ -49,8 +50,23 @@ export async function ProofScreen({ market }: { market: `0x${string}` }) {
           ) : p.txHash && w.feed && w.verifier ? (
             <ReverifyButton expectedE8={p.priceE8} input={{ rpcUrl: TEMPO_RPC_HTTP.testnet, txHash: p.txHash, market: w.market, which: p.which, feed: w.feed, t: p.sourceTsSec, verifier: w.verifier }} />
           ) : null}
+          {!p.copied && w.feed && w.verifier ? (
+            <ArchiveVerifyButton expectedE8={p.priceE8} input={{ rpcUrl: TEMPO_RPC_HTTP.testnet, market: w.market, which: p.which, feed: w.feed, t: p.sourceTsSec, verifier: w.verifier }} />
+          ) : null}
         </section>
       ))}
+      {/* A settled Window missing a print (a void): what the archive held at that instant, and the verifier's answer. */}
+      {w.state !== "open" && w.feed && w.verifier
+        ? ([[0, w.tradingStartSec], [1, w.expirySec]] as const)
+            .filter(([which]) => !w.prints.some((p) => p.which === which))
+            .map(([which, t]) => (
+              <section key={`missing-${which}`} className="flex flex-col gap-4">
+                <H2>{PROOF.which[which]}</H2>
+                <P>{PROOF.archive.missingPrint(PROOF.which[which] ?? "print", utc(t))}</P>
+                <ArchiveVerifyButton expectedE8={null} input={{ rpcUrl: TEMPO_RPC_HTTP.testnet, market: w.market, which, feed: w.feed!, t, verifier: w.verifier! }} />
+              </section>
+            ))
+        : null}
     </>
   );
 }

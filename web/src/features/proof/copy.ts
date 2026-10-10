@@ -35,4 +35,24 @@ export const PROOF = {
   differs: (price: string) => `The verifier answers ${price}, which differs from the recorded print.`,
   failed: (why: string) => `Re-verification didn't complete: ${why}`,
   how: "How: eth_getTransactionByHash → decode recordPrint(market, which, proof) → eth_call verifyPrint(proof, query) on the verifier.",
+  /** G-10: the same check on the packages ops archived for the instant, apart from the record transaction. */
+  archive: {
+    button: "Check against the archive",
+    checking: "Reading the archive and asking the verifier…",
+    how: "How: the RedStone packages archived for this instant (/api/index/archive) → the verifier's payload → eth_call verifyPrint on the same verifier.",
+    matches: (price: string, n: number) => `The archive agrees: ${price} from ${n} signers — the same packages the engine verified.`,
+    wouldPrint: (price: string, n: number) => `The archive's packages verify now: ${price} from ${n} signers.`,
+    refused: (n: number, reason: string) => `The archive holds ${n} ${n === 1 ? "package" : "packages"} for this instant, and the verifier refuses ${n === 1 ? "it" : "them"}: ${reason}.`,
+    missing: "The archive holds no package for this feed at this instant.",
+    reasons: {
+      InsufficientRedStoneSigners: "too few of RedStone's signers (it needs 3)",
+      RedStoneTimestampMismatch: "a package is stamped at another instant",
+      FeedIdMismatch: "a package is for another feed",
+      UnknownRedStoneSigner: "a signer isn't one of RedStone's",
+      DuplicateRedStoneSigner: "a signer appears twice",
+      InvalidPrintValue: "the value is out of range",
+      SpotTooOld: "the packages are too old",
+    } as Record<string, string>,
+    missingPrint: (which: string, at: string) => `No ${which.toLowerCase()} was recorded for ${at} UTC.`,
+  },
 } as const;

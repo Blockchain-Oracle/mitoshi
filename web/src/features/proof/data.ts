@@ -24,6 +24,7 @@ export interface ProofWindow {
   symbol: string;
   cadenceSec: number;
   basis: number;
+  tradingStartSec: number;
   expirySec: number;
   state: string;
   winner: number | null;
@@ -51,6 +52,7 @@ export async function readProof(market: `0x${string}`): Promise<ProofWindow | "u
       symbol,
       cadenceSec: Number(m.cadence_sec),
       basis,
+      tradingStartSec: Number(m.trading_start_sec),
       expirySec: Number(m.expiry_sec),
       state: String(m.state),
       winner: m.winner === null || m.winner === undefined ? null : Number(m.winner),
