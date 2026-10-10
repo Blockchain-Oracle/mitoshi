@@ -48,9 +48,17 @@ try {
   await drawer.getByRole("radio", { name: "Takes" }).or(drawer.getByRole("button", { name: "Takes" })).or(drawer.getByRole("tab", { name: "Takes" })).first().click();
   await drawer.getByRole("radio", { name: "UP" }).click();
   await drawer.getByRole("textbox", { name: "Why? (optional)" }).fill(caption);
+  page.on("console", (m) => m.type() === "error" && log({ console: m.text().slice(0, 200) }));
+  const posted = page.waitForResponse((r) => r.url().includes("/api/social/takes") && r.request().method() === "POST", { timeout: 20_000 }).catch(() => null);
   await drawer.getByRole("button", { name: "Post take" }).click();
+  const res = await posted;
+  result.postStatus = res ? res.status() : "no request";
+  result.postBody = res ? (await res.text().catch(() => "")).slice(0, 200) : null;
+  await page.waitForTimeout(1_000);
+  await page.screenshot({ path: join(out, "after-click.png") });
+  result.toasts = await page.locator("[data-sonner-toast], [role=status], [role=alert]").allInnerTexts().then((t) => t.map((x) => x.replace(/\s+/g, " ").slice(0, 120)).slice(0, 6));
   const failed = drawer.getByRole("alert").first();
-  await failed.waitFor({ state: "visible", timeout: 30_000 });
+  await failed.waitFor({ state: "visible", timeout: 15_000 });
   result.failedSays = (await failed.innerText()).replace(/\s+/g, " ").slice(0, 160);
   result.draftKept = (await drawer.getByRole("textbox", { name: "Why? (optional)" }).inputValue()) === caption;
   await page.screenshot({ path: join(out, "draft-kept.png") });
