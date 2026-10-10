@@ -35,6 +35,7 @@ export const DOCS_NAV: readonly DocsSection[] = [
     pages: [
       { href: "/docs/settlement", title: "Prints and settlement" },
       { href: "/docs/fees", title: "Fees" },
+      { href: "/docs/record", title: "The record and its proof" },
     ],
   },
   {

@@ -18,6 +18,7 @@ export default function Page() {
           <>Windows on BTC, ETH, SOL and nine US stocks (<A href="/docs/windows">lanes</A>), settled on RedStone&apos;s signed prints (<A href="/docs/settlement">settlement</A>).</>,
           <><A href="/docs/exits">Take-profit, stop-loss and trailing stops</A> that a keeper sells with the app closed.</>,
           <><A href="/docs/games">Range, Moonshot, Parlay and Boost</A>, priced against the same books and the maker vault&apos;s depth.</>,
+          <><A href="/docs/record">The record and its proof</A>: each Window&apos;s prints re-verified in your browser, proof of demand, the leaderboard and profiles, Trader Edge, and share cards.</>,
         ]}
       />
       <H2>Next</H2>
