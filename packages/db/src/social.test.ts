@@ -9,7 +9,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createPgSocialModeration, createPgSocialPeople, createPgSocialPosts, createSql, runMigrations, type Sql } from "./index";
+import { createPgSocialModeration, createPgSocialPeople, createPgSocialPosts, createSql, runMigrations, type Sql, exportSocialData } from "./index";
 import { hasCalled } from "./idx";
 
 const BIN = "/opt/homebrew/opt/postgresql@16/bin";
@@ -119,11 +119,20 @@ describe.skipIf(!hasPg)("social stores (profiles, follows, blocks, rooms, takes,
     const posts = createPgSocialPosts(sql);
     const mod = createPgSocialModeration(sql);
     await people.follow(C, B);
+    // The export holds every row the deletion is about to remove, the hidden ones too.
+    const before = await exportSocialData(sql, B);
+    expect([before.takes.length, before.roomMessages.length, before.followers.length, before.blocks.length]).toEqual([1, 1, 1, 0]);
+    expect(before.takes[0]).toMatchObject({ side: expect.any(String), tags: expect.any(Array) });
     const deleted = await mod.deleteAll(B);
-    expect(deleted).toMatchObject({ comments: 1, takes: 1, follows: 1, blocks: 1, profile: 0 });
+    expect(deleted).toMatchObject({ comments: 1, takes: 1, follows: 1, blocks: 0, profile: 0 });
+    // A's block of B is A's: B deleting their data never lifts it.
+    const [kept] = await sql<{ n: number }[]>`select count(*)::int as n from social_blocks where blocker = ${A} and blocked = ${B}`;
+    expect(kept?.n).toBe(1);
     expect((await posts.comments({ room: "$TSLA" })).map((c) => c.author)).toEqual([A]);
     const [row] = await sql<{ n: number }[]>`select (select count(*) from reactions)::int + (select count(*) from take_tags)::int as n`;
     expect(row?.n).toBe(0);
     expect((await people.profiles([A])).get(A)?.displayName).toBe("Kaito_77");
+    const after = await exportSocialData(sql, B);
+    expect([after.profile, after.takes, after.roomMessages, after.reactions, after.following, after.followers, after.blocks, after.reportsFiled, after.gameSeats]).toEqual([null, [], [], [], [], [], [], [], []]);
   });
 });

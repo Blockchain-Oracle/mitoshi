@@ -92,7 +92,9 @@ export function createPgSocialModeration(sql: Sql): SocialModerationStore {
         const takes = await n(tx`delete from takes where author = ${a}`);
         const comments = await n(tx`delete from room_comments where author = ${a}`);
         const follows = await n(tx`delete from game_follows where follower = ${a} or followee = ${a}`);
-        const blocks = await n(tx`delete from social_blocks where blocker = ${a} or blocked = ${a}`);
+        // Only the blocks this person made: a block someone placed on them is that person's safety, and deleting
+        // your data must never be a way out of someone else's block.
+        const blocks = await n(tx`delete from social_blocks where blocker = ${a}`);
         const reports = await n(tx`delete from social_reports where reporter = ${a}`);
         const profile = await n(tx`delete from profiles where address = ${a}`);
         const memberships = (await n(tx`delete from bettors where wallet = ${a}`)) + (await n(tx`delete from game_profiles where wallet = ${a}`));
