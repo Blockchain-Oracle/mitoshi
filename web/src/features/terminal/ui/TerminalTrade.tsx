@@ -17,7 +17,7 @@ const paysText = (multiple: number | null, cappedTo: string | null = null) =>
 export function TerminalTrade({ market, phase, stakeBase, spot, boostX, onPays }: { market: EventMarket; phase: MarketPhase | null; stakeBase: bigint; spot: number | null; boostX: number; onPays: (text: string) => void }) {
   const t = useTerminalOpen({ market, phase, stakeBase, spot });
   // A Boost set in the stack (RV-41): UP/DOWN open it, with its own refusals under each button.
-  const b = useTerminalBoost({ market, stakeBase, multiple: boostX, enabled: phase === "trading" });
+  const b = useTerminalBoost({ market, phase, stakeBase, multiple: boostX, enabled: phase === "trading" });
   const pair = paysPair(t.sides.up.multiple, t.sides.down.multiple);
   useEffect(() => onPays(pair), [pair, onPays]);
   if (b.on) {

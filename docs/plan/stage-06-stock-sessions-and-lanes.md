@@ -16,4 +16,20 @@ _None yet._
 
 ## Handoff
 
-_Not started._
+In progress (2026-10-10). Most of the backend came with S3 (ops `calendar` + `/session`, `halt-watch` + the halt board and
+`/halts/log`, the `earnings` actor, `config/corporate-actions.json`, the roller's paused states, the Gap lane on RedStone
+with the archive's Friday print). S6 is mostly the surfaces. Steps, in order:
+1. **Done:** session words (`@cwf/core/copy` `session-words.ts`, Agari's) and the reader's-zone time (`web/src/lib/when.ts`).
+2. **Done:** one session store for the tab (`features/markets/session`: the stream's `session` + `halts` topics, read by
+   hand — no zod on the terminal) replacing the terminal's own reader; the session cell beside the Window chip
+   (RV-11/RV-57).
+3. **Done:** the session blockers (`session-closed`, `halted`, `lane-paused`, `corporate-action`) under UP/DOWN, Boost
+   and the scheduled call (`laneBlocker`, `useLaneGuard`); the halt banner over UP/DOWN (21st 19366 → `NoticeAlert`).
+   Every state renders in `/dev/session` (UX gate there: 0 findings, 4 widths × 2 themes).
+4. Crowd sentiment on the Window chip (`/api/sentiment`, the house never counted, D-215's rules).
+5. `/api/earnings` + the terminal's earnings note ("TSLA reports Tue 10-20 after the close — prices can gap").
+6. The halts board (21st 5693 + 26906 per ticker over `/halts/log`), beside `/status`.
+7. Corporate skips: the proposer script (`scripts/drive/corporate-check.ts`, Agari's) and the skip shown on the lane.
+8. G-04: each 24/7 lane named as the provider's price; G-05: NFLX and pre-IPO shown paused honestly.
+9. The Gap on Data Streams in the mainnet config, with the RedStone archive fallback.
+10. The gate on testnet over a real session (halted, closed, pre/after, Gap).

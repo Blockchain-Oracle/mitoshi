@@ -56,6 +56,16 @@
 .tm-lane:hover { color: var(--color-ink); }
 .tm-lane[aria-pressed="true"] { background: var(--color-ink); color: var(--color-stage); }
 .tm-window-state { flex: none; padding: 0 8px; color: var(--color-ink-secondary); font: 500 12px/1 var(--font-data); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* The NYSE hour beside the Window chip (S6, RV-57): beside it on desktop, under it on a phone. */
+.tm-window-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.tm-window-row > .tm-window { min-width: 0; }
+.tm-session { display: inline-flex; max-width: 100%; align-items: center; gap: 6px; padding: 8px 12px; border-radius: var(--radius-full); color: var(--color-ink-secondary); font: 500 12px/1.2 var(--font-body); }
+.tm-session-word { flex: none; color: var(--color-ink); font-weight: 700; white-space: nowrap; }
+.tm-session-dot { flex: none; width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--color-ink-muted); }
+.tm-session[data-state="regular"] .tm-session-dot, .tm-session[data-state="early-close"] .tm-session-dot { background: var(--color-profit); }
+.tm-session[data-state="pre"] .tm-session-dot, .tm-session[data-state="post"] .tm-session-dot { background: var(--color-accent); }
+.tm-session[data-state="halted"] { border-color: color-mix(in oklab, var(--color-warning) 55%, transparent); }
+.tm-session[data-state="halted"] .tm-session-dot { background: var(--color-warning); }
 .tm-equity { display: flex; flex: none; height: 44px; align-items: center; gap: 8px; padding: 0 4px 0 14px; border-radius: var(--radius-full); font: 700 16px/1 var(--font-data); font-variant-numeric: tabular-nums; }
 .tm-equity[data-signed-out] { padding: 0 16px; font: 700 14px/1 var(--font-body); }
 .tm-avatar { display: grid; width: 36px; height: 36px; place-items: center; border-radius: var(--radius-full); color: var(--color-cream); font: 700 13px/1 var(--font-body); }

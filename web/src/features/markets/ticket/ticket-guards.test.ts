@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ok, type Quote } from "@cwf/core";
-import { commonBlocker, deriveBlocker, type TicketBlockerInput } from "./ticket-guards";
+import { blockerLabel } from "@cwf/core/copy";
+import { commonBlocker, deriveBlocker, laneBlocker, type LaneGuardInput, type TicketBlockerInput } from "./ticket-guards";
 
 const quote = (over: Partial<Quote> = {}): Quote => ({
   side: "up", stakeBase: 5_000_000n, contractsRaw: 9_000_000n, expectedCostBase: 4_950_000n, maxCostBase: 5_000_000n, limitPriceRaw: 560_000n, avgPriceBps: 5_500,
@@ -27,5 +28,32 @@ describe("ticket blockers (the CTA names its blocker, D-045)", () => {
   it("a Listed Window takes a scheduled call (D-088) only where the caller allows it", () => {
     expect(commonBlocker({ ...base, phase: "upcoming" })).toBe("upcoming");
     expect(commonBlocker({ ...base, phase: "upcoming" }, { upcoming: true })).toBeNull();
+  });
+});
+
+describe("session and lane blockers (S6, Agari's laneBlocker)", () => {
+  const lane = (over: Partial<LaneGuardInput> = {}): LaneGuardInput => ({ basis: "regular", sessionOpen: true, halt: null, laneState: "open #22", ...over });
+  const halt = { reason: "exchange-halt" as const, sinceSec: 1 };
+  it("a halt holds a Window open to calls, before the generic phase word", () => {
+    expect(deriveBlocker({ ...base, lane: lane({ halt }) })).toBe("halted");
+    expect(laneBlocker("upcoming", lane({ halt }))).toBe("halted");
+    expect(laneBlocker("locked", lane({ halt }))).toBeNull();
+    expect(blockerLabel("halted", { haltStale: false })).toBe("Trading halted — no new calls");
+    expect(blockerLabel("halted", { haltStale: true })).toBe("Signed price stale — no new calls");
+  });
+  it("a paused lane holds a Window waiting on its open; a corporate action is named as such", () => {
+    expect(laneBlocker("upcoming", lane({ laneState: "paused: corporate action (TSLA split 2026-10-12)" }))).toBe("corporate-action");
+    expect(laneBlocker("pendingOpeningPrint", lane({ laneState: "paused: no signed source (no RedStone 24/7 feed)" }))).toBe("lane-paused");
+    expect(laneBlocker("trading", lane({ laneState: "paused: no signed source" }))).toBeNull();
+  });
+  it("a settled Regular Window outside the session says when the market opens", () => {
+    expect(laneBlocker("finalized", lane({ sessionOpen: false }))).toBe("session-closed");
+    expect(laneBlocker("finalized", lane({ basis: "stock24", sessionOpen: false }))).toBeNull();
+    expect(laneBlocker("finalized", lane({ sessionOpen: null }))).toBeNull();
+    expect(blockerLabel("session-closed", { opensText: "Mon 14:30 (09:30 ET)" })).toBe("Market closed — opens Mon 14:30 (09:30 ET)");
+  });
+  it("without session facts nothing is claimed", () => {
+    expect(deriveBlocker({ ...base, lane: null })).toBeNull();
+    expect(laneBlocker("trading", undefined)).toBeNull();
   });
 });

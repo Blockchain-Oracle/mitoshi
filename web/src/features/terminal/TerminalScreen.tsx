@@ -23,9 +23,11 @@ import { TERMINAL } from "./copy";
 import { clockText, livePnlText, money } from "./format";
 import { gap0400NextOpen } from "./pick-window";
 import { replaceTradeParams } from "./useTerminalWindow";
-import { useMarketSession } from "./market-session";
+import { useMarketSession, type MarketSession } from "@/features/markets/session";
 import { useTerminalState } from "./useTerminalState";
 import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } from "./ui/Chrome";
+import { SessionCell } from "./ui/SessionCell";
+import { HaltNotice } from "./ui/HaltNotice";
 import type { TerminalPosition } from "./terminal-positions";
 import { useTerminalClose } from "./useTerminalClose";
 import { useTrailToggle } from "./useTrail";
@@ -229,11 +231,14 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
               </span>
               <EquityPill className="tm-phone" equity={equity} address={s.address} masked={masked} onOpen={() => drawer.show(DRAWERS.account)} onSignIn={session.connect} />
             </div>
-            {s.win.lanes.length ? (
-              <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText} />
-            ) : s.win.loading ? null : (
-              <span className="tm-glass tm-note">{noWindowNote(s.ticker, nyse, s.nowSec)}</span>
-            )}
+            <div className="tm-window-row">
+              {s.win.lanes.length ? (
+                <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText} />
+              ) : s.win.loading ? null : (
+                <span className="tm-glass tm-note">{noWindowNote(s.ticker, nyse, s.nowSec)}</span>
+              )}
+              <SessionCell symbol={symbol} basis={s.win.lane?.basis ?? null} />
+            </div>
             {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
             {offHours ? <span className="tm-glass tm-note">{TERMINAL.feed.offHoursNote}</span> : null}
           </div>
@@ -256,6 +261,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
               <TapTradingChip className="tm-choice tm-arm-cta" offLabel={TERMINAL.arm.cta} />
             </div>
           ) : null}
+          <HaltNotice symbol={symbol} basis={s.win.lane?.basis ?? null} />
           {market ? <ModeChips mode={mode} onMode={chooseMode} /> : null}
           {mode !== "updown" && market ? (
             <div className="tm-desk"><ModePanel mode={mode} market={market} side={null} /></div>
@@ -337,11 +343,11 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
 }
 
 /** Why a symbol lists no Window right now (the state table, stage-23 "Window rule"). */
-function noWindowNote(ticker: { redstoneFeedId: string | null; redstone24x7FeedId: string | null; kind: string } | null, nyse: { state: string | null; label: string | null }, nowSec: number): string {
+function noWindowNote(ticker: { redstoneFeedId: string | null; redstone24x7FeedId: string | null; kind: string } | null, nyse: MarketSession | null, nowSec: number): string {
   if (ticker && !ticker.redstoneFeedId) return TERMINAL.noWindow.spcx;
-  const regularHours = nyse.state === "regular" || nyse.state === "early-close";
+  const regularHours = nyse?.status.state === "regular" || nyse?.status.state === "early-close";
   const gapNext = ticker?.kind === "stock" && ticker.redstone24x7FeedId && !regularHours ? gap0400NextOpen("stock24", 300, nowSec) : null;
   if (gapNext !== null) return TERMINAL.noWindow.gap0400(clockText(gapNext));
-  if (ticker?.kind === "stock" && !ticker.redstone24x7FeedId && !regularHours && nyse.label) return TERMINAL.noWindow.regularOnly(nyse.label.replace(/^Opens /, ""));
+  if (ticker?.kind === "stock" && !ticker.redstone24x7FeedId && !regularHours && nyse?.label) return TERMINAL.noWindow.regularOnly(nyse.label.replace(/^Opens /, ""));
   return TERMINAL.noWindow.none;
 }

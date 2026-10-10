@@ -10,6 +10,7 @@ import { useBalanceSheet, useSigner } from "@cwf/markets/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTopOfBook } from "@/features/markets/data/useTopOfBook";
 import { deriveBlocker } from "@/features/markets/ticket/ticket-guards";
+import { useLaneGuard } from "@/features/markets/ticket/useLaneGuard";
 import { usePlaceBet } from "@/features/markets/ticket/usePlaceBet";
 import { useQuote, type QuoteState } from "@/features/markets/ticket/useQuote";
 import { useTicketRoute, type TicketRoute } from "@/features/session";
@@ -55,6 +56,8 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
   const top = useTopOfBook(market);
   const bet = usePlaceBet(address, { quiet: true });
   const regionHeld = readRegionPosture().markets === "restricted";
+  // The session and the lane (S6): a halt, a paused lane or a closed market is named before anything else.
+  const guard = useLaneGuard(market);
 
   const view = (side: Side): SideView => {
     const quote = side === "up" ? quoteUp : quoteDown;
@@ -67,8 +70,10 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
     const blocker = deriveBlocker({
       connected: session.isConnected, connecting: session.isConnecting, rightChain: session.isRightChain, hasSigner, regionHeld, phase,
       placing: bet.placing, side, availableBase: spend, stakeBase, decimals: market.decimals, quote: reading, quoting: quote.pending, quoteStale: quote.stale,
+      lane: guard.lane,
     });
     const ctx: BlockerContext = {
+      ...guard.ctx,
       cadence: formatCadence(market.intervalSec),
       minStakeText: money(minStakeBase(market.decimals)),
       ...(spend !== null ? { spendableText: money(spend) } : {}),

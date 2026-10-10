@@ -3,11 +3,14 @@
 // at the user's own cents price that fills when it opens — the ticket's `restingQuote` on the Series grid and
 // `usePlaceBet(…, { resting: true })` from the wallet (a scheduled call never pays from the Trading Balance).
 import { restingQuote, type EventMarket, type Side } from "@cwf/core";
+import { blockerLabel } from "@cwf/core/copy";
 import { useSeriesGrid, useSigner } from "@cwf/markets/react";
 import { Minus, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { TICKET } from "@/features/markets/copy";
 import { DEFAULT_PRICE_CENTS } from "@/features/markets/ticket/PriceControl";
+import { laneBlocker } from "@/features/markets/ticket/ticket-guards";
+import { useLaneGuard } from "@/features/markets/ticket/useLaneGuard";
 import { usePlaceBet } from "@/features/markets/ticket/usePlaceBet";
 import { CONNECT } from "@/lib/copy";
 import { tapFeedback, tradeFeedback } from "@/lib/feedback";
@@ -28,6 +31,10 @@ export function ScheduledTrade({ market, stakeBase }: { market: EventMarket; sta
   const bet = usePlaceBet(address, { quiet: true });
   const [busy, setBusy] = useState<Side | null>(null);
   const tapped = useRef<Side | null>(null);
+  // A halt, a paused lane or a corporate skip holds a Window before its open too (S6): said under both buttons.
+  const guard = useLaneGuard(market);
+  const laneKind = laneBlocker("upcoming", guard.lane);
+  const held = laneKind ? blockerLabel(laneKind, guard.ctx) : null;
 
   useEffect(() => {
     const outcome = bet.state.outcome;
@@ -45,6 +52,7 @@ export function ScheduledTrade({ market, stakeBase }: { market: EventMarket; sta
 
   const schedule = (side: Side) => {
     if (!session.isConnected) return void notify.item({ id: TOAST, title: TERMINAL.toast.signIn, action: { label: CONNECT.connect, onClick: session.connect } });
+    if (held) return void notify.item({ id: TOAST, type: "warning", title: held });
     if (!grid?.ok) return void notify.item({ id: TOAST, title: TERMINAL.toast.gettingPrice, timeout: 2_000 });
     const q = restingQuote({ side, priceCents: cents, stakeBase, grid: grid.value, decimals: market.decimals, quotedAtMs: Date.now() });
     if (!q.ok) return void notify.item({ id: TOAST, type: "warning", title: q.blocker === "too-small" ? TICKET.scheduled.tooSmall : TERMINAL.toast.failed, description: TERMINAL.toast.nothingTaken });
@@ -77,8 +85,8 @@ export function ScheduledTrade({ market, stakeBase }: { market: EventMarket; sta
         busy={busy}
         upSub={TERMINAL.buttons.pays(pays)}
         downSub={TERMINAL.buttons.pays(pays)}
-        upNote={null}
-        downNote={null}
+        upNote={held}
+        downNote={held}
       />
     </div>
   );

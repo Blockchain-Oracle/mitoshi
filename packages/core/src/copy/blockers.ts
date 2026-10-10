@@ -38,6 +38,11 @@ export const BLOCKER_KINDS = [
   "private-over-cap",
   "private-unreadable",
   "private-refused",
+  // S6, ported from Agari 03b30ab:packages/core/src/copy/blockers.ts: the session and the lane, named before the phase.
+  "session-closed",
+  "halted",
+  "lane-paused",
+  "corporate-action",
 ] as const;
 
 export type BlockerKind = (typeof BLOCKER_KINDS)[number];
@@ -53,6 +58,10 @@ export interface BlockerContext {
   quoteAgeSec?: number;
   privateMinText?: string;
   privateCapText?: string;
+  /** `session-closed`: the next open in the reader's zone ("Mon 14:30 (09:30 ET)"). */
+  opensText?: string;
+  /** `halted`: the halt is RedStone's health ("Signed price stale"), not the exchange's. */
+  haltStale?: boolean;
 }
 
 const DEFAULT_CHAIN = "Tempo";
@@ -131,5 +140,13 @@ export function blockerLabel(kind: BlockerKind, ctx: BlockerContext = {}): strin
       return "Could not read your private balance just now — try again in a moment";
     case "private-refused":
       return "The desk refused this bet — see why above";
+    case "session-closed":
+      return ctx.opensText ? `Market closed — opens ${ctx.opensText}` : "Market closed";
+    case "halted":
+      return ctx.haltStale ? "Signed price stale — no new calls" : "Trading halted — no new calls";
+    case "lane-paused":
+      return "Paused: no signed price source";
+    case "corporate-action":
+      return "Paused: corporate action";
   }
 }

@@ -3,9 +3,19 @@
 // re-checked by the order lane at send; here the balance sheet answers "enough?" before any prompt. A held region is
 // browse-only (Q-008); exits stay open elsewhere.
 import type { BlockerKind } from "@cwf/core/copy";
-import type { MarketPhase } from "@cwf/core/lifecycle";
-import type { Quote, Reading, Side } from "@cwf/core";
+import { isSettled, type MarketPhase } from "@cwf/core/lifecycle";
+import type { HaltEntry, LaneBasis, Quote, Reading, Side } from "@cwf/core";
 import { admissibilityBlocker, belowMinStake } from "@cwf/core";
+
+/** A Window's session and lane facts (S6): its lane, the NYSE hours, its asset's halt, the roller's word for its lane. */
+export interface LaneGuardInput {
+  basis: LaneBasis;
+  /** Regular hours (null: the session is unknown, and nothing is claimed about it). */
+  sessionOpen: boolean | null;
+  halt: HaltEntry | null;
+  /** `open #22 …`, `paused: no signed source …`, `paused: corporate action (…)`, `closed: no session`. */
+  laneState: string | null;
+}
 
 export interface TicketBlockerInput {
   connected: boolean;
@@ -22,6 +32,8 @@ export interface TicketBlockerInput {
   quote: Reading<Quote | null> | null;
   quoting: boolean;
   quoteStale: boolean;
+  /** The Window's session and lane (S6); absent where the caller has none to give. */
+  lane?: LaneGuardInput | null;
 }
 
 const PHASE_BLOCKERS: Partial<Record<MarketPhase, BlockerKind>> = {
@@ -34,6 +46,22 @@ const PHASE_BLOCKERS: Partial<Record<MarketPhase, BlockerKind>> = {
   voided: "locked",
 };
 
+/**
+ * Ported from Agari 03b30ab:web/src/features/markets/ticket/ticket-guards.ts `laneBlocker` (S6): why this Window can't
+ * take a call for a session, source or corporate reason, named before the generic phase word. A halt holds any Window
+ * still open to calls; a paused lane holds one waiting on its opening print; a settled Regular Window outside the
+ * session says when the market opens.
+ */
+export function laneBlocker(phase: MarketPhase, lane: LaneGuardInput | null | undefined): BlockerKind | null {
+  if (!lane) return null;
+  const beforeOpen = phase === "upcoming" || phase === "pendingOpeningPrint";
+  if (lane.halt && (beforeOpen || phase === "trading")) return "halted";
+  if (beforeOpen && lane.laneState?.startsWith("paused: corporate action")) return "corporate-action";
+  if (beforeOpen && lane.laneState?.startsWith("paused")) return "lane-paused";
+  if (lane.basis === "regular" && lane.sessionOpen === false && isSettled(phase)) return "session-closed";
+  return null;
+}
+
 /** Everything before the quote: the session, the region, the Window, the stake against what can back it. */
 export function commonBlocker(i: TicketBlockerInput, allow: { upcoming?: boolean } = {}): BlockerKind | null {
   if (!i.connected) return i.connecting ? "connecting" : "disconnected";
@@ -42,6 +70,8 @@ export function commonBlocker(i: TicketBlockerInput, allow: { upcoming?: boolean
   if (i.regionHeld) return "region-restricted";
   if (i.placing) return "placing";
   if (i.phase === null) return "syncing";
+  const lane = laneBlocker(i.phase, i.lane);
+  if (lane) return lane;
   const phaseBlocker = allow.upcoming && i.phase === "upcoming" ? null : PHASE_BLOCKERS[i.phase];
   if (phaseBlocker) return phaseBlocker;
   if (i.availableBase === 0n) return "no-funds";
