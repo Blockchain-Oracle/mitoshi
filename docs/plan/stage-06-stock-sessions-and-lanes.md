@@ -35,7 +35,10 @@ with the archive's Friday print). S6 is mostly the surfaces. Steps, in order:
    the Window that sits on a report ("TSLA reports after the close today — prices can gap"), else the next report
    ("TSLA reports Tue 10-20, after the close"). The Finnhub parser moved to `events-calendar-finnhub.ts` so the terminal
    ships no zod (as F-S23-08).
-6. The halts board (21st 5693 + 26906 per ticker over `/halts/log`), beside `/status`.
+6. **Done:** the halts board `/status/halts` (21st 5693; 26906's hover-card days not taken — the 44 px rule — see
+   components.md), linked from `/status`'s "Trading halts" row: each ticker's halt now (both feeds), its last halt, 30 ET
+   days, every halt in full — episodes derived from halt-watch's log (`features/halts/episodes.ts`, fixture runs
+   skipped). Real log: 124 episodes since 09-29 (the pre-D-186 RedStone fetch failures), none since 10-08. UX gate 0.
 7. Corporate skips: the proposer script (`scripts/drive/corporate-check.ts`, Agari's) and the skip shown on the lane.
 8. G-04: each 24/7 lane named as the provider's price; G-05: NFLX and pre-IPO shown paused honestly.
 9. The Gap on Data Streams in the mainnet config, with the RedStone archive fallback.

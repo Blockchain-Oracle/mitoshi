@@ -1,0 +1,18 @@
+export const HALTS = {
+  title: "Trading halts",
+  lead: "When a stock's exchange stops trading it, or the signed price a Window settles on goes stale, no new calls are taken on it until the price is healthy again. A Window whose print can't be recorded voids, and both sides pay 0.5. This board shows every halt halt-watch confirmed over the last 30 days, in New York time.",
+  unreadable: "The halt log can't be read right now. This says nothing about halts — reload in a minute.",
+  noneNow: "No halts now: every watched price is fresh and every listed stock is trading as its exchange reports.",
+  someNow: (symbols: string[]) => `Halted now: ${symbols.join(", ")}. No new calls on ${symbols.length === 1 ? "it" : "them"} until the price is healthy again.`,
+  clear: "No halt now",
+  unwatched: "No signed price source on testnet — no Windows, nothing to watch",
+  now: (label: string, feed: "regular" | "24/7", since: string) => `${label} · ${feed === "24/7" ? "24/7 feed" : "Regular feed"} · since ${since}`,
+  last: (day: string, label: string) => `Last: ${day} · ${label}`,
+  strip: (symbol: string, days: string[]) => (days.length ? `${symbol}, last 30 days: halts on ${days.join(", ")}` : `${symbol}, last 30 days: no halts`),
+  noRecord: "before the log",
+  noHalt: "no halt",
+  legend: { clear: "No halt", stale: "Signed price stale", halted: "Trading halted", none: "Before the log" },
+  rowsLabel: "Each ticker's halts",
+  history: (n: number) => `Every halt, newest first (${n})`,
+  checked: (at: string) => `Read ${at} UTC from halt-watch's log. Reload for a fresh read.`,
+} as const;

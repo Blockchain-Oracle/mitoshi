@@ -1,6 +1,7 @@
 // `/status` (S5, L-16; Masayume 68f7a09 `features/status`'s banner + one row per dependency, its dot ladder): read at
 // request time from ops' `/health` and the fee relay, in the docs' type.
 import { CheckCircleIcon, TriangleAlertIcon } from "lucide-react";
+import Link from "next/link";
 import { connection } from "next/server";
 import { H1, Lead, Note, Table } from "@/features/docs/Prose";
 import { readStatus, type Tone } from "./probes";
@@ -26,7 +27,8 @@ export async function StatusScreen() {
         head={["", "Part", "Last", "What it says"]}
         rows={s.rows.map((r) => [
           <span key="d" role="img" aria-label={TONE_WORD[r.tone]} className={`inline-block size-2.5 rounded-full ${DOT[r.tone]}`} />,
-          <b key="l">{r.label}</b>,
+          // The halt-watch row opens the halts board (S6): every ticker's halts over 30 days.
+          r.id === "halt-watch" ? <Link key="l" href="/status/halts" className="font-bold underline underline-offset-2">{r.label}</Link> : <b key="l">{r.label}</b>,
           <span key="f" className="whitespace-nowrap tabular-nums">{r.figure}</span>,
           <span key="w" className="type-caption text-ink-secondary">{r.detail}</span>,
         ])}
