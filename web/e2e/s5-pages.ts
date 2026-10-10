@@ -4,7 +4,8 @@
  * `/portfolio/edge`'s sign-in state. Signed in (a fresh passkey from the terminal's tour, the faucet, one-tap armed): a
  * $1 UP on BTC held through its Window's settlement — shared from its details (the card, and the PNG Download saves) —
  * then `/portfolio/edge` — "nothing settled yet" with the open count
- * while the Window runs, the report once it settles — and `/leaderboard` with the account's own row (Daily). Every
+ * while the Window runs, the report once it settles — `/leaderboard` with the account's own row (Daily), and the
+ * terminal drawer's board opening a profile. Every
  * capture is listed in `s5-pages.json`; a miss keeps its screen and the reason.
  *
  *   pnpm --filter @cwf/web exec tsx e2e/s5-pages.ts --base https://testnet.mitoshi.xyz --out <dir> [--widths 1440,390]
@@ -154,6 +155,20 @@ async function signedIn(width: number) {
       await expect(page.locator('[aria-current="true"]').first()).toBeVisible({ timeout: 15_000 });
     }).toPass({ timeout: 10 * 60_000, intervals: [45_000] });
     await shot(page, "leaderboard-you", width, "the account's own row, highlighted");
+  });
+  await attempt("terminal-leaderboard", width, page, async () => {
+    // The same board in the terminal's account drawer (S23g, RV-86), and a row opening the wallet's profile.
+    await page.goto(`${base}/trade/BTC`, { waitUntil: "load" });
+    await settle(page);
+    await page.locator(".tm-equity:visible").first().click();
+    await modal(page).getByRole("button", { name: "Leaderboard" }).first().click();
+    const board = modal(page).getByRole("list", { name: "Ranked wallets" });
+    await expect(board).toBeVisible({ timeout: 60_000 });
+    await shot(page, "terminal-leaderboard", width, "the account drawer's leaderboard view");
+    await board.getByRole("link").first().click();
+    await page.waitForURL(/\/u\/0x[0-9a-f]{40}/, { timeout: 30_000 });
+    await expect(page.getByText(/on the all-time board|Not on the board yet/).first()).toBeVisible({ timeout: 30_000 });
+    await shot(page, "profile", width, "a ranked wallet's profile, from the drawer");
   });
   await s.browser.close();
 }
