@@ -50,7 +50,7 @@ export const NAV_ITEMS = {
   portfolio: item({ id: "portfolio", name: "Portfolio", href: "/portfolio", description: "Track positions, money, and activity.", icon: WalletCards, match: { paths: ["/portfolio"], exact: true } }),
   edge: item({ id: "edge", name: "Trader Edge", href: "/portfolio/edge", description: "Review your trading edge report.", icon: ChartCandlestick }),
   gamesHistory: item({ id: "games-history", name: "Games history", href: "/games/history", description: "Every duel and run you played.", icon: History, match: { paths: ["/games/history"], exact: true } }),
-  activity: item({ id: "activity", name: "Activity", href: "/activity", description: "What's happening across the floor.", icon: Activity, keywords: "feed social" }),
+  activity: item({ id: "activity", name: "Activity", href: "/activity", description: "Your calls settling, new followers, takes by people you follow.", icon: Activity, keywords: "notifications feed social inbox" }),
   strategies: item({ id: "strategies", name: "Strategies", href: "/strategies", description: "Explore repeatable trading approaches.", icon: Bot, beta: true }),
   agents: item({ id: "agents", name: "Agents", href: "/agents", description: "Copy automated market agents.", icon: Bot }),
   xTrade: item({ id: "x-trade", name: "X-trade", href: "/trade-from-x", description: "Turn a post into a bounded trade.", icon: XLogo }),

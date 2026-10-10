@@ -49,7 +49,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/agents": { eyebrow: "Agents", title: "Copy an agent", body: "One confirmation to copy, one to stop; caps behind “adjust”.", dependency: "the agent runner (S9)" },
   "/trade-from-x": { eyebrow: "X-trade", title: "Trade from a post", body: "Turn a post into a bounded trade under a grant you control.", dependency: "the X relay (S11)" },
   "/claim": { eyebrow: "X recovery", title: "Recover a trade from X", body: "Claim a trade an X post created for you.", dependency: "the X relay (S11)" },
-  "/activity": { eyebrow: "Activity", title: "What's happening", body: "Calls, takes and follows as they happen.", dependency: "the social layer (S13)" },
   "/status": { eyebrow: "Status", title: "Is everything running?", body: "Chain, indexer, oracle freshness, relay balance and every service we depend on.", dependency: "the status probes (S5)" },
   "/proof/[market]": { eyebrow: "Proof", title: "Don't trust it. Click it.", body: "Both prints, their signers, and a re-verification you run in your browser.", dependency: "the print verifiers (S2) and the proof page (S5)" },
   "/how-it-works": { eyebrow: "How it works", title: "From a call to a receipt", body: "Passkeys, dollars, Windows, verdicts and stock tokens, explained once.", dependency: "the public story (S20)" },
@@ -57,8 +56,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/pitch": { eyebrow: "Pitch", title: "Why Mitoshi", body: "The thesis in a few slides.", dependency: "the public story (S20)" },
   "/settings/account": { eyebrow: "Account & keys", title: "See and stop every key", body: "Your passkey devices and every live trading key and grant — its scope, what it may still spend, when it expires — each revocable in one place.", dependency: "the account trust surface (S1 settings step)" },
   "/settings/notifications": { eyebrow: "Notifications", title: "What reaches you", body: "Verdicts, fills and bridge deliveries — money topics on by default.", dependency: "push and the notification centre (S13, SM2)" },
-  "/privacy": { eyebrow: "Privacy", title: "Privacy policy", body: "What we store off chain, who sees it, and how to delete it.", dependency: "the App Review obligations (S13, D-043)" },
-  "/terms": { eyebrow: "Terms", title: "Terms of use", body: "The rules of the venue and the regions it serves.", dependency: "the App Review obligations (S13, D-043)" },
   "/contact": { eyebrow: "Contact", title: "Reach us", body: "Report a problem or a person, or ask a question.", dependency: "the App Review obligations (S13, D-043)" },
   "/native-auth": { eyebrow: "App sign-in", title: "Finishing sign-in in the app", body: "The app hands your sign-in back here.", dependency: "the native app handoff (SM2)" },
 };

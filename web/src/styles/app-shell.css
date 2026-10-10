@@ -37,6 +37,8 @@
 .rail-item:hover { color: var(--color-ink); background: color-mix(in srgb, var(--color-rail-active) 45%, transparent); }
 .rail-item[aria-current="page"] { color: var(--color-ink); background: transparent; }
 .rail-item:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent); }
+/* S13: the notification centre's unread count on Portfolio. */
+.rail-badge { position: absolute; top: 4px; right: 10px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-accent-fill); color: var(--color-on-accent); font: 700 11px/18px var(--font-body); text-align: center; }
 .rail-icon { width: 24px; height: 24px; flex-shrink: 0; stroke-width: 1.9; }
 .rail-label, .rail-key { display: none; }
 @media (min-width: 1280px) {

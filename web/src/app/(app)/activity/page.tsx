@@ -1,9 +1,8 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// `/activity` — the notification centre (S13 step 6, filed under Portfolio with the rail's badge).
+import { NotificationCentre } from "@/features/notifications/NotificationCentre";
 
-export const metadata = { title: pendingFor("/activity").title };
+export const metadata = { title: "Activity" };
 
 export default function ActivityPage() {
-  return <PendingRoute route="/activity" />;
+  return <NotificationCentre />;
 }

@@ -6,6 +6,8 @@
 // roy-chain's `layoutId` spring from 21st.dev 21517 (unlumen/animated-sidebar); the mode switch is gone (Mitoshi has
 // one network per deployment — the Testnet pill says which); places come from the nav registry and the fifth key opens
 // the Everything drawer. The path is read inside Suspense (cacheComponents keeps the static shell).
+import { NOTICES } from "@/features/notifications/copy";
+import { useUnread } from "@/features/notifications/store";
 import { History, LayoutGrid, LineChart, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -51,6 +53,8 @@ function usePlaceKeys(): void {
 
 function RailNav({ pathname }: { pathname: string | null }) {
   const active = RAIL_NAV.findIndex((item) => isActiveNavItem(pathname, item));
+  // S13: what arrived since the notification centre was last opened (it lives under Portfolio).
+  const unread = useUnread();
   return (
     <nav aria-label={SHELL.railNav} className="rail-nav">
       <span aria-hidden className="rail-pill" data-on={active >= 0 ? "" : undefined} style={{ "--rail-i": Math.max(active, 0) } as CSSProperties} />
@@ -68,6 +72,7 @@ function RailNav({ pathname }: { pathname: string | null }) {
           >
             <Icon aria-hidden className="rail-icon" />
             <span className="rail-label">{item.name}</span>
+            {item.id === "portfolio" && unread > 0 ? <span className="rail-badge" aria-label={NOTICES.badge(unread)}>{unread > 9 ? "9+" : unread}</span> : null}
             <kbd aria-hidden className="rail-key">{i + 1}</kbd>
           </Link>
         );

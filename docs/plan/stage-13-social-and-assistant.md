@@ -55,7 +55,11 @@ streaming, profile editing, export/deletion, a trading-points league — built h
    without case, refused if the filter would star it; a 160-character bio starred on read) and `/api/social/follow`;
    `/u` renders the public name and a social island (bio, followers · following, Follow, report, block, their takes);
    the account drawer's header shows the name with "Edit profile" in place.
-6. `/activity` + the LifecycleWatcher + the rail's badge (the notification centre under Portfolio).
+6. **Done (live check next):** the notification centre — `/api/notifications?wallet=` (fills from `readWalletFills`,
+   settlements from `readSettledRounds`, new followers, takes by people followed; seven days), `/activity` grouped by
+   day, the LifecycleWatcher in the app shell (polls every 15 s while visible; says settlements, voids, followers and
+   takes — fills stay the terminal's), the unread badge on the rail's Portfolio place; the stale pending entries for
+   `/activity`, `/privacy` and `/terms` removed.
 7. Alerts (basis + staleness gate) + `/settings/notifications`; push delivery lands with SM2.
 8. Sensei: the brain (MPP or a direct key), streamed tokens, AI data-sharing consent first.
 9. Reels.
