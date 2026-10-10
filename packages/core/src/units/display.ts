@@ -12,8 +12,6 @@ export function formatClock(remainingSec: number): string {
   return hours > 0 ? `${hours}:${pad2(minutes)}:${pad2(seconds)}` : `${minutes}:${pad2(seconds)}`;
 }
 
-let wallClock: Intl.DateTimeFormat | undefined;
-
 /**
  * Wall-clock `h:mm` for "closes at 3:45" — the word board's own idiom, where a
  * scheduled time reads more naturally than a countdown.
@@ -21,12 +19,15 @@ let wallClock: Intl.DateTimeFormat | undefined;
  * Locale-dependent, so it is only ever safe from a mounted clock: every caller
  * gates on `useChainNowMs() > 0`, which is 0 until the first client tick, so the
  * server never renders a time the client would disagree with.
+ *
+ * Built from the Date's own fields, not Intl: a page's first Intl.DateTimeFormat builds ICU's date-pattern machinery,
+ * 63 ms at 4× CPU inside the first /markets card render (F-S23-08; before it, D-181 kept one formatter rather than one
+ * per call). The output is en-US's to the character (V8 prints a plain space before the day period).
  */
 export function formatWallClock(ms: number): string {
-  // One formatter for every call: `toLocaleTimeString(locale, options)` builds a new Intl.DateTimeFormat each time, the
-  // costliest line of a board re-render (D-181). Same locale, same options, same output.
-  wallClock ??= new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" });
-  return wallClock.format(ms);
+  const d = new Date(ms);
+  const h = d.getHours();
+  return `${h % 12 || 12}:${pad2(d.getMinutes())} ${h < 12 ? "AM" : "PM"}`;
 }
 
 export function shortHex(hex: string, lead = 6, tail = 4): string {
