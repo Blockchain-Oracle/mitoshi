@@ -8,7 +8,7 @@ export const BRAND = {
   kanji: "見通し",
   romaji: "mitoshi",
   tagline: "see where it's going",
-  description: "Prediction markets and stocks on Tempo. Call where a price closes, trade tokenized stocks, and click every receipt.",
+  description: "Call where a price closes, on Tempo: BTC, ETH, SOL and US stocks in Windows, a passkey to sign up and one tap to trade, every receipt on chain.",
   domain: "mitoshi.xyz",
 } as const;
 

@@ -6,7 +6,7 @@ import { TERMINAL_ACCOUNT } from "./copy-account";
 
 export const TERMINAL = {
   ...TERMINAL_ACCOUNT,
-  title: (name: string, symbol: string) => `${name} (${symbol}) | Mitoshi`,
+  title: (name: string, symbol: string) => `${name} (${symbol}) · Mitoshi`,
   chartLabel: (name: string, price: string) => `${name} live price ${price}`,
   waiting: (symbol: string) => `Waiting for ${symbol}…`,
   feed: {

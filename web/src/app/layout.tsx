@@ -6,10 +6,15 @@ import type { ReactNode } from "react";
 import { tokens } from "@cwf/tokens";
 import { PageRuntime } from "@/components/shell/PageRuntime";
 import { fontVariables } from "@/lib/fonts";
+import { BRAND } from "@/lib/copy";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "@/styles/index.css";
 
-export const metadata: Metadata = { title: "Mitoshi", description: "Prediction markets and stocks on Tempo." };
+// Every page's title reads "<page> · Mitoshi"; the description says only what is live (S20).
+export const metadata: Metadata = {
+  title: { default: `${BRAND.name} — ${BRAND.tagline}`, template: `%s · ${BRAND.name}` },
+  description: BRAND.description,
+};
 
 export const viewport: Viewport = {
   viewportFit: "cover",
