@@ -15,11 +15,12 @@ export interface SocialExport {
   reportsFiled: Record<string, unknown>[];
   gameSeats: Record<string, unknown>[];
   gameProfile: Record<string, unknown> | null;
+  contactMessages: Record<string, unknown>[];
 }
 
 export async function exportSocialData(sql: Sql, address: string, now = new Date()): Promise<SocialExport> {
   const a = address.toLowerCase();
-  const [profile, takes, roomMessages, reactions, following, followers, blocks, reportsFiled, gameSeats, gameProfile] = await Promise.all([
+  const [profile, takes, roomMessages, reactions, following, followers, blocks, reportsFiled, gameSeats, gameProfile, contactMessages] = await Promise.all([
     sql`select address, display_name, bio, updated_at from profiles where address = ${a}`,
     sql`select t.id, t.market_id, t.side, t.caption, t.asset, t.interval_sec, t.expiry_sec, t.line_raw, t.backed, t.via, t.hidden_at, t.created_at,
           coalesce((select array_agg(symbol order by symbol) from take_tags g where g.take_id = t.id), '{}') as tags
@@ -32,6 +33,7 @@ export async function exportSocialData(sql: Sql, address: string, now = new Date
     sql`select id, target_kind, target_id, reason, note, status, created_at, resolved_at from social_reports where reporter = ${a} order by id`,
     sql`select chain_id, market_id, tx_hash, route, created_at from bettors where wallet = ${a} order by created_at`,
     sql`select accent, streak_days, last_seen_at, created_at from game_profiles where wallet = ${a}`,
+    sql`select id, topic, body, email, status, created_at, closed_at from contact_messages where address = ${a} order by id`,
   ]);
   const rows = (r: readonly unknown[]) => [...r] as Record<string, unknown>[];
   return {
@@ -47,5 +49,6 @@ export async function exportSocialData(sql: Sql, address: string, now = new Date
     reportsFiled: rows(reportsFiled),
     gameSeats: rows(gameSeats),
     gameProfile: (gameProfile[0] as Record<string, unknown> | undefined) ?? null,
+    contactMessages: rows(contactMessages),
   };
 }

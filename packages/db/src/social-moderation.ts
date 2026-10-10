@@ -32,6 +32,8 @@ export interface DeletedRows {
   profile: number;
   /** Room seats (`bettors`) and the games profile: off-chain records of on-chain facts, gone with the rest. */
   memberships: number;
+  /** `/contact` messages sent while signed in. */
+  contact: number;
 }
 
 const lc = (a: string) => a.toLowerCase();
@@ -98,7 +100,8 @@ export function createPgSocialModeration(sql: Sql): SocialModerationStore {
         const reports = await n(tx`delete from social_reports where reporter = ${a}`);
         const profile = await n(tx`delete from profiles where address = ${a}`);
         const memberships = (await n(tx`delete from bettors where wallet = ${a}`)) + (await n(tx`delete from game_profiles where wallet = ${a}`));
-        return { comments, takes, reactions, follows, blocks, reports, profile, memberships };
+        const contact = await n(tx`delete from contact_messages where address = ${a}`);
+        return { comments, takes, reactions, follows, blocks, reports, profile, memberships, contact };
       });
     },
   };

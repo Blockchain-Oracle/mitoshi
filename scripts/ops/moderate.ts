@@ -7,8 +7,10 @@
  *   DATABASE_URL=… pnpm --dir scripts exec tsx ops/moderate.ts list
  *   DATABASE_URL=… pnpm --dir scripts exec tsx ops/moderate.ts hide <report id>
  *   DATABASE_URL=… pnpm --dir scripts exec tsx ops/moderate.ts dismiss <report id>
+ *   DATABASE_URL=… pnpm --dir scripts exec tsx ops/moderate.ts contact            (open `/contact` messages)
+ *   DATABASE_URL=… pnpm --dir scripts exec tsx ops/moderate.ts close <message id>  (answered or nothing to do)
  */
-import { createPgSocialModeration, createSql } from "@cwf/db";
+import { createPgContact, createPgSocialModeration, createSql } from "@cwf/db";
 
 const [command, id] = process.argv.slice(2);
 const sql = createSql();
@@ -24,8 +26,17 @@ try {
     }
   } else if ((command === "hide" || command === "dismiss") && id && /^\d+$/.test(id)) {
     console.log((await store.resolve(id, command)) ? `#${id}: ${command === "hide" ? "hidden, every open report on it closed" : "dismissed"}` : `#${id}: no open report with that id`);
+  } else if (command === "contact") {
+    const open = await createPgContact(sql).open(200);
+    if (open.length === 0) console.log("no open messages");
+    for (const m of open) {
+      console.log(`#${m.id}  ${m.createdAt}  ${m.topic}${m.address ? `  from ${m.address}` : ""}${m.email ? `  reply to ${m.email}` : ""}`);
+      console.log(`      "${m.body}"`);
+    }
+  } else if (command === "close" && id && /^\d+$/.test(id)) {
+    console.log((await createPgContact(sql).close(id)) ? `#${id}: closed` : `#${id}: no open message with that id`);
   } else {
-    console.log("usage: moderate.ts list | hide <report id> | dismiss <report id>");
+    console.log("usage: moderate.ts list | hide <report id> | dismiss <report id> | contact | close <message id>");
     process.exitCode = 2;
   }
 } finally {

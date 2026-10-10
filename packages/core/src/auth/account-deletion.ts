@@ -1,5 +1,5 @@
-// The off-chain deletion request (S13 step 10; D34, App Review 5.1.1(v)): a text the account's own key signs, fresh,
-// so a borrowed browser session alone can't erase someone. It says what goes and what can't: the chain keeps its own.
+// The off-chain deletion request (S13 step 10; D34, App Review 5.1.1(v)): a text this account signs, fresh (its own key
+// or an access key it authorized), so a stolen session cookie alone can't erase someone. It says what goes and what stays.
 import { networkLine, type Network } from "../constants/network";
 import { isAddress, type Address } from "../types/primitives";
 import type { SocialSignIn } from "./social-session";

@@ -1,0 +1,38 @@
+// `/settings/account` → Your data (S13 step 10; D34): AI sharing, the export and the off-chain deletion, in words.
+export const DATA = {
+  title: "Your data",
+  lead: "What Mitoshi keeps about you off chain: your public name and bio, takes, room messages, reactions, follows, blocks, reports you filed and game seats. Everything you do on Tempo is on chain, public and permanent.",
+  ai: {
+    title: "AI sharing",
+    on: (provider: string, since: string) => `Sensei sends your questions and the figures on your screen to ${provider}, since ${since}.`,
+    off: "Sensei asks before it shares anything with an AI provider. Nothing is shared now.",
+    stop: "Stop sharing",
+    stopped: "Sensei stopped sharing. It asks again before your next question.",
+  },
+  export: {
+    title: "Download your data",
+    body: "One JSON file with every off-chain row about this account.",
+    button: "Download",
+    working: "Preparing your file…",
+    failed: "Your data couldn't be read right now. Try again.",
+    signIn: "Sign in once so Mitoshi knows it's you.",
+  },
+  delete: {
+    title: "Delete your Mitoshi data",
+    body: "Deletes your profile, takes, room messages, reactions, follows, blocks you made, reports you filed and game seats. Blocks others placed on you stay theirs.",
+    chain: "Your trades, positions, keys and payouts are transactions on Tempo: public and permanent. Deleting here can't touch them, and your money stays where it is.",
+    typePrefix: "Type",
+    typeSuffix: "to confirm",
+    permanent: "This can't be undone after the five seconds that follow your signature.",
+    word: "DELETE",
+    hold: "Hold to delete",
+    holding: "Deleting…",
+    signing: "Sign the deletion request…",
+    undo: "Undo",
+    pending: (sec: number) => `Deleting your data in ${sec} s`,
+    undone: "Nothing was deleted.",
+    done: (rows: number) => `Deleted ${rows.toLocaleString("en-US")} ${rows === 1 ? "row" : "rows"}. Your on-chain history is unchanged.`,
+    refused: "Deletion cancelled: the request wasn't signed.",
+    failed: "Your data couldn't be deleted. Nothing changed. Try again.",
+  },
+} as const;

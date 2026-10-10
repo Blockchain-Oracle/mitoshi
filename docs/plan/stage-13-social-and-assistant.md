@@ -81,7 +81,14 @@ streaming, profile editing, export/deletion, a trading-points league — built h
    card's sparkline, line and live price, UP/DOWN into the terminal with the side picked; the take card with Tail and
    Fade and the Room; the Take button opens the composer (now shared with the Room drawer's Takes) bound to the Window
    on screen; `?w=` keeps the place; the stage holds the reel like the terminal; 199.6 KB first load.
-10. `/settings/account` completion (backup passkey, key-used history, AI consent, export, deletion, 5 s Undo),
-    `/contact` (21st 25081), privacy/terms updated for social and AI data.
+10. `/settings/account` completion. **10a done:** Your data — AI sharing with Stop sharing; Download your data
+    (`/api/account/data` GET: every off-chain row, hidden posts included, never who blocked you); Delete (21st 25081's
+    danger zone: typed phrase, hold, a fresh signature of `deletionMessage`, then 5 s with Undo before the DELETE; the
+    chain's part said plainly) — deletion now keeps blocks others placed on you; `/contact` (21st 27904, a plain form,
+    `contact_messages` in `social/0004`, counted by ops' `moderation` actor, `moderate.ts contact · close`; signed-in
+    messages go with the export and deletion); `/privacy` and `/terms` updated for posts, Sensei, device-only data,
+    contact and deletion. **10b next:** the backup passkey — a second passkey authorised as a TIP-1049 admin key (needs
+    T6 on Moderato; recovery signs in by finding the parent account from the key's `AdminKeyAuthorized` log) — and each
+    key's "key used" history from its `AccessKeySpend` events.
 11. The weekly season league (D-195) in the account drawer.
 12. The gate.

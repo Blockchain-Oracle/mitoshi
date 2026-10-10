@@ -31,6 +31,7 @@ function KeysLoading() {
 const KeysSection = dynamic(() => import("./KeysSection").then((m) => m.KeysSection), { ssr: false, loading: KeysLoading });
 // The Trading Balance's grants (S7): the same lazy-island rule — its content waits on the chain and the index anyway.
 const GrantsSection = dynamic(() => import("./GrantsSection").then((m) => m.GrantsSection), { ssr: false });
+const DataSection = dynamic(() => import("./DataSection").then((m) => m.DataSection), { ssr: false });
 const card = "flex flex-col gap-2 rounded-lg border border-hairline bg-surface-1 p-4";
 
 export function AccountSettings() {
@@ -91,6 +92,8 @@ export function AccountSettings() {
               )}
             </div>
           </section>
+
+          <DataSection address={session.address} className={card} />
         </>
       )}
 
