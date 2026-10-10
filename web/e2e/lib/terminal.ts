@@ -23,10 +23,16 @@ export interface TerminalSession {
   log: (o: Record<string, unknown>) => void;
 }
 
-export async function openTerminalSession(opts: { width?: number } = {}): Promise<TerminalSession> {
+/** `videoDir` records the session (`footage.ts`): Playwright writes a .webm per page there when the context closes. */
+export async function openTerminalSession(opts: { width?: number; videoDir?: string } = {}): Promise<TerminalSession> {
   const width = opts.width ?? 1440;
+  const height = width < 768 ? 844 : 900;
   const browser = await chromium.launch();
-  const context = await browser.newContext({ viewport: { width, height: width < 768 ? 844 : 900 }, hasTouch: width < 768 });
+  const context = await browser.newContext({
+    viewport: { width, height },
+    hasTouch: width < 768,
+    ...(opts.videoDir ? { recordVideo: { dir: opts.videoDir, size: { width, height } } } : {}),
+  });
   context.setDefaultTimeout(90_000);
   const page = await context.newPage();
   await page.addInitScript(() => {
