@@ -15,6 +15,7 @@ export const REELS = {
   noLine: "—",
   livePrice: "live price",
   versusLine: "vs line",
+  atLine: "at the line",
   chart: (asset: string) => `${asset} since this Window opened`,
   swipeToRead: "swipe to this Window to read it live",
   closing: "closing. the next Window is already rolling",

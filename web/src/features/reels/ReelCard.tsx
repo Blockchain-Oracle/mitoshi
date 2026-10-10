@@ -56,10 +56,14 @@ function ReelQuestion({ asset, openingRaw, currentRaw }: { asset: string; openin
       <div className="reel-spot">
         <span>{currentRaw === null ? REELS.noLine : usd2(currentRaw)}</span>
         {move && openingRaw !== null && currentRaw !== null ? (
-          <span className={cn("reel-distance", above ? "above" : "below")}>
-            {above ? "+" : "−"}
-            {usd2(above ? currentRaw - openingRaw : move.upNeedsRaw)} {REELS.versusLine}
-          </span>
+          usd2(above ? currentRaw - openingRaw : move.upNeedsRaw) === "$0.00" ? (
+            <span className="reel-distance">{REELS.atLine}</span>
+          ) : (
+            <span className={cn("reel-distance", above ? "above" : "below")}>
+              {above ? "+" : "−"}
+              {usd2(above ? currentRaw - openingRaw : move.upNeedsRaw)} {REELS.versusLine}
+            </span>
+          )
         ) : null}
         <span className="reel-spot-label">{REELS.livePrice}</span>
       </div>

@@ -76,7 +76,7 @@ for (const width of widths) {
 
   await capture(page, "settings-notifications", width, async () => {
     await page.goto(`${base}/settings/notifications`, { waitUntil: "load" });
-    await page.getByRole("heading", { name: "Notifications" }).waitFor();
+    await page.getByRole("heading", { name: "Notifications", exact: true }).waitFor();
     return { switches: await page.getByRole("switch").count(), text: (await page.locator("main, #content").first().innerText()).replace(/\s+/g, " ").slice(0, 300) };
   });
   await context.close();

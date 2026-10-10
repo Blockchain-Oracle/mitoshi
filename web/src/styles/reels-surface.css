@@ -16,7 +16,13 @@
 .reels-surface .feed-snap { position: absolute; inset: 0; }
 .reels-surface .reel-take { position: absolute; }
 .reels-surface .reel-hint { position: absolute; }
-/* Phones: the dock floats over the bottom (`.reel-slot` keeps its 92 px for it); from tablets there is no dock. */
+/* Phones: the position pill sits above the card and the swipe hint between the card and the dock, so neither covers the
+ * card's clock or its UP button; from tablets there is no dock. */
+@media (max-width: 767px) {
+  .reels-surface .reel-slot { padding: 40px 12px 132px; }
+  .reels-surface .reel-hint { bottom: 96px; }
+  .reels-surface .reel-count { top: 10px; right: 50%; translate: 50% 0; }
+}
 @media (min-width: 768px) {
   .reels-surface .reel-slot { padding: 16px 72px 16px 16px; }
   .reels-surface .reel-hint { bottom: 24px; }
