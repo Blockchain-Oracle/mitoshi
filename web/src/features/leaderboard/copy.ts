@@ -18,7 +18,9 @@ export const LEADERBOARD = {
   podium: "Top three",
   list: "Ranked wallets",
   you: "You",
-  byline: (rounds: number, winPct: number, streak: number) => `${rounds} ${rounds === 1 ? "round" : "rounds"} · ${winPct}% won${streak > 1 ? ` · best streak ${streak}` : ""}`,
+  /** Win rate is over rounds the settlement decided; a round sold back before the close has no verdict. */
+  byline: (rounds: number, settled: number, winPct: number, streak: number) =>
+    `${rounds} ${rounds === 1 ? "round" : "rounds"} · ${settled === 0 ? "sold before the close" : `${winPct}% won`}${streak > 1 ? ` · best streak ${streak}` : ""}`,
   summary: (wallets: number, rounds: number) => `${wallets.toLocaleString("en-US")} ranked ${wallets === 1 ? "wallet" : "wallets"} · ${rounds.toLocaleString("en-US")} settled ${rounds === 1 ? "round" : "rounds"}`,
   loading: "Loading…",
   empty: "No ranked traders yet. Close a trade to get on the board.",

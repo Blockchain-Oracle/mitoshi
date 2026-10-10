@@ -9,6 +9,7 @@ import { LoadingState } from "@/components/states/LoadingState";
 import { EmptyState } from "@/components/states/EmptyState";
 import { LeaderboardPodium } from "@/components/ui/leaderboard-podium";
 import { LeaderboardRankings, type RankingRow } from "@/components/ui/leaderboard-rankings";
+import { MotionScope } from "@/components/motion-scope";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -33,7 +34,7 @@ function toRow(r: BoardRow, sort: BoardSort): RankingRow {
     rank: r.rank,
     owner: r.owner,
     label: short(r.owner),
-    byline: L.byline(r.tradeCount, r.winRatePct, r.bestStreak),
+    byline: L.byline(r.tradeCount, r.settledTrades, r.winRatePct, r.bestStreak),
     href: addressUrl(r.owner as Address, webEnv.markets.network),
     ...figureOf(r, sort),
   };
@@ -55,10 +56,12 @@ export function LeaderboardScreen() {
         <p className="max-w-(--content-reading) type-body text-ink-secondary">{L.lead}</p>
       </header>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <SegmentedControl label={L.sortLabel} options={L.sorts} value={sort} onValueChange={setSort} />
-        <SegmentedControl label={L.periodLabel} options={L.periods} value={period} onValueChange={setPeriod} />
-      </div>
+      <MotionScope>
+        <div className="flex flex-wrap items-center gap-3">
+          <SegmentedControl label={L.sortLabel} options={L.sorts} value={sort} onValueChange={setSort} />
+          <SegmentedControl label={L.periodLabel} options={L.periods} value={period} onValueChange={setPeriod} />
+        </div>
+      </MotionScope>
 
       {board.isPending ? (
         <LoadingState shape="plate" label={L.loading} />
