@@ -32,3 +32,11 @@ export const USD_DECIMALS = 6;
  */
 export const EXPIRING_NONCE_MAX_SEC = 300;
 export const TAP_VALID_FOR_SEC = 25;
+
+/**
+ * The line that binds a signed text to one network, so a testnet signature is never a mainnet one. Here, not in
+ * `auth/signed-message.ts`, so the social sign-in text builds in the browser without that module's zod schema.
+ */
+export function networkLine(network: Network): string {
+  return `Network: ${NETWORK_LABEL[network]} (${NETWORKS[network]})`;
+}

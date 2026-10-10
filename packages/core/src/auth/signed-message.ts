@@ -1,7 +1,6 @@
 // Ported from Agari 03b30ab:packages/core/src/auth/signed-message.ts — ed25519 over raw bytes becomes EIP-191 text
 // verified by Tempo's signature rules (secp256k1, P-256, WebAuthn, keychain envelopes; plan C.2.1, X9).
 import { z } from "zod";
-import { NETWORK_LABEL, NETWORKS, type Network } from "../constants/network";
 import { isAddress, isSignature, type Address, type Signature } from "../types/primitives";
 
 /**
@@ -14,11 +13,6 @@ import { isAddress, isSignature, type Address, type Signature } from "../types/p
  * Core carries no crypto. The verifier is passed in: `@cwf/markets/server`'s `auth/verify.ts` wraps viem's Tempo
  * `verifyHash`, which accepts every Tempo signature type (conformance proven against `SignatureVerifier` in X9).
  */
-
-/** The line that binds a signed text to one network, so a testnet signature is never a mainnet one. */
-export function networkLine(network: Network): string {
-  return `Network: ${NETWORK_LABEL[network]} (${NETWORKS[network]})`;
-}
 
 /** WHATWG TextEncoder: global in every runtime we target; declared here because core compiles with no DOM lib. */
 declare const TextEncoder: new () => { encode(input: string): Uint8Array };

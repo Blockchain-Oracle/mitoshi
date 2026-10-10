@@ -10,7 +10,7 @@ import { formatCadence } from "@cwf/core/copy";
 import { notify } from "@/lib/toast";
 import { SOCIAL } from "./copy";
 import { REACTIONS } from "./reactions";
-import { ReportDialog } from "./ReportDialog";
+import { ReportDialog } from "./report-dialog-lazy";
 import { useTakes, type Take } from "./useTakes";
 
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;

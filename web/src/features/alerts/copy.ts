@@ -1,0 +1,22 @@
+export const ALERTS = {
+  title: "Price alerts",
+  lead: (symbol: string) => `Get told when ${symbol} crosses a price. Alerts live on this device; it tells you while Mitoshi is open, with a browser notification if you allow it.`,
+  above: "Above",
+  below: "Below",
+  target: "Price",
+  basis: { regular: "In NYSE hours", allDay: "Any hour" },
+  basisHint: "In NYSE hours watches the session price only; any hour also watches the 24/7 price after the close.",
+  add: "Add alert",
+  bad: "Enter a price above $0.",
+  none: "No alerts on this market yet.",
+  remove: (line: string) => `Remove the alert ${line}`,
+  fired: {
+    title: (asset: string, direction: "above" | "below", target: string) => `${asset} ${direction === "above" ? "rose to" : "fell to"} ${target}`,
+    body: (now: string) => `Now ${now}.`,
+  },
+  line: (direction: "above" | "below", target: string) => `${direction === "above" ? "above" : "below"} ${target}`,
+  done: "Fired",
+  allow: "Allow browser notifications",
+  allowed: "Browser notifications are on.",
+  blocked: "Browser notifications are blocked in this browser's settings; alerts still show here.",
+} as const;

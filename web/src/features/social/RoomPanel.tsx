@@ -9,7 +9,7 @@ import { addressHue } from "@/lib/address-hue";
 import { notify } from "@/lib/toast";
 import { SOCIAL } from "./copy";
 import { REACTIONS } from "./reactions";
-import { ReportDialog } from "./ReportDialog";
+import { ReportDialog } from "./report-dialog-lazy";
 import { useSocialSession } from "./session";
 import { useRoom, type RoomMessage } from "./useRoom";
 

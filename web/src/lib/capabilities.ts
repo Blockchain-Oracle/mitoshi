@@ -55,7 +55,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/demo": { eyebrow: "Demo", title: "The whole product, walked through", body: "A guided run from sign-up to a paid verdict.", dependency: "the public story (S20)" },
   "/pitch": { eyebrow: "Pitch", title: "Why Mitoshi", body: "The thesis in a few slides.", dependency: "the public story (S20)" },
   "/settings/account": { eyebrow: "Account & keys", title: "See and stop every key", body: "Your passkey devices and every live trading key and grant — its scope, what it may still spend, when it expires — each revocable in one place.", dependency: "the account trust surface (S1 settings step)" },
-  "/settings/notifications": { eyebrow: "Notifications", title: "What reaches you", body: "Verdicts, fills and bridge deliveries — money topics on by default.", dependency: "push and the notification centre (S13, SM2)" },
   "/contact": { eyebrow: "Contact", title: "Reach us", body: "Report a problem or a person, or ask a question.", dependency: "the App Review obligations (S13, D-043)" },
   "/native-auth": { eyebrow: "App sign-in", title: "Finishing sign-in in the app", body: "The app hands your sign-in back here.", dependency: "the native app handoff (SM2)" },
 };

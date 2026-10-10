@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { notify } from "@/lib/toast";
 import { SOCIAL } from "./copy";
-import { ReportDialog } from "./ReportDialog";
+import { ReportDialog } from "./report-dialog-lazy";
 import { TakeCard } from "./TakesPanel";
 import { useProfile } from "./useProfile";
 import { useTakes } from "./useTakes";

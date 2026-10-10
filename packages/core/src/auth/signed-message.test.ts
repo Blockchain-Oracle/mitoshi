@@ -1,6 +1,7 @@
 // Ported from Agari 03b30ab:packages/core/src/auth/signed-message.test.ts (EVM form)
 import { describe, expect, it } from "vitest";
-import { messageBytes, networkLine, verifySignedMessage, type MessageVerify } from "./signed-message";
+import { networkLine } from "../constants/network";
+import { messageBytes, verifySignedMessage, type MessageVerify } from "./signed-message";
 import type { Address, Signature } from "../types/primitives";
 
 const SIGNER = "0x00000000000000000000000000000000000000a7" as Address;

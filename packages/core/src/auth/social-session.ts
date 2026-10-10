@@ -1,7 +1,6 @@
 // The one social sign-in (S13, UX fix 10; replaces Agari 03b30ab's per-scope `socialSessionMessage` + a room join
 // signature + a signature per take): one text a wallet signs once covers joining rooms, posting, following and reacting.
-import { networkLine } from "./signed-message";
-import type { Network } from "../constants/network";
+import { networkLine, type Network } from "../constants/network";
 import { isAddress, type Address } from "../types/primitives";
 
 /** How long the session it buys lasts (the passkey session's 30 days, D-151). */

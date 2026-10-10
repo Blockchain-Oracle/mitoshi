@@ -1,9 +1,8 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// `/settings/notifications` (S13 step 7): what this device announces, the browser's permission, and the price alerts.
+import { NotificationSettings } from "@/features/notifications/NotificationSettings";
 
-export const metadata = { title: pendingFor("/settings/notifications").title };
+export const metadata = { title: "Notifications" };
 
 export default function SettingsNotificationsPage() {
-  return <PendingRoute route="/settings/notifications" />;
+  return <NotificationSettings />;
 }

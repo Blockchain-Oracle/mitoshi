@@ -60,7 +60,12 @@ streaming, profile editing, export/deletion, a trading-points league — built h
    day, the LifecycleWatcher in the app shell (polls every 15 s while visible; says settlements, voids, followers and
    takes — fills stay the terminal's), the unread badge on the rail's Portfolio place; the stale pending entries for
    `/activity`, `/privacy` and `/terms` removed.
-7. Alerts (basis + staleness gate) + `/settings/notifications`; push delivery lands with SM2.
+7. **Done (live check next):** price alerts — Agari's store (above/below, In NYSE hours or Any hour for stocks) on
+   this device, the terminal's bell opening the alerts drawer, the `AlertsWatcher` in the app shell (fires once on a
+   fresh tick ≤ 60 s; a Regular rule only in session and not halted; a toast, plus a browser notification when the
+   topic allows); `/settings/notifications` (browser permission; Money moved on by default, Price alerts, Social, Games;
+   every alert with a remove) and the LifecycleWatcher reading those topics. `/u` back under its budget (338.7 → 211.6
+   KB: `networkLine` moved out of the zod module, the report dialog lazy). Push delivery lands with SM2.
 8. Sensei: the brain (MPP or a direct key), streamed tokens, AI data-sharing consent first.
 9. Reels.
 10. `/settings/account` completion (backup passkey, key-used history, AI consent, export, deletion, 5 s Undo),
