@@ -1,9 +1,9 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// How it works (S20, L-12): Masayume 68f7a09's page, rewritten for Mitoshi's engine on Tempo (`features/how-it-works`).
+import type { Metadata } from "next";
+import { HowItWorksPage } from "@/features/how-it-works";
 
-export const metadata = { title: pendingFor("/how-it-works").title };
+export const metadata: Metadata = { title: "How it works" };
 
-export default function HowItWorksPage() {
-  return <PendingRoute route="/how-it-works" />;
+export default function Page() {
+  return <HowItWorksPage />;
 }
