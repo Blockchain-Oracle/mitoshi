@@ -68,7 +68,7 @@ try {
   const { authenticatorId: usb } = await a.cdp.send("WebAuthn.addVirtualAuthenticator", authOptions("usb"));
   await a.page.reload({ waitUntil: "load" });
   await settle(a.page);
-  a.page.on("response", (r) => { if (r.url().includes("/api/account/backup-passkey") && r.request().method() === "POST") void r.text().then((t) => log({ backupPost: r.status(), body: t.slice(0, 200) })); });
+  a.page.on("response", (r) => { if (r.url().includes("/api/account/backup-passkey") && r.request().method() === "POST") void r.text().then((t) => log({ backupPost: r.status(), body: t.slice(0, 200) })).catch(() => undefined); });
   a.page.on("response", (r) => { if (r.status() >= 400) void r.text().then((t) => log({ failedResponse: r.status(), url: r.url().slice(0, 100), body: t.slice(0, 300) })).catch(() => undefined); });
   await a.page.getByRole("button", { name: "Add a backup passkey" }).click();
   // Step 1 made the backup on the USB key; take its credential and unplug it, so only this passkey answers step 2.

@@ -95,6 +95,7 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
       {!passkey ? <p className="type-body text-ink-secondary">{BACKUP.passkeyOnly}</p> : (
         <>
           {nudge ? <p role="status" className="flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 p-3 type-body text-ink"><ShieldAlert aria-hidden className="mt-0.5 size-4 flex-none text-warning" />{BACKUP.nudge}</p> : null}
+          {data.backups.some((b) => b.credentialId === data.credentialId) ? <p role="status" className="type-body-strong text-ink">{BACKUP.viaBackup}</p> : null}
           <p className="type-body text-ink-secondary">{BACKUP.lead}</p>
           {data.backups.length === 0 ? <p className="type-body text-ink">{BACKUP.none}</p> : (
             <ul className="flex flex-col divide-y divide-hairline">

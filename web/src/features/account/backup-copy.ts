@@ -6,6 +6,7 @@ export const BACKUP = {
   fee: "Adding it is one transaction your account pays a network fee for (a fraction of a cent); the relay doesn't sponsor key authority.",
   nudge: "You have money on this account and only one passkey.",
   none: "No backup yet.",
+  viaBackup: "You're signed in with a backup passkey — an admin key of this account. It can do everything your first passkey can, including adding another backup.",
   added: (when: string) => `Added ${when}`,
   add: "Add a backup passkey",
   step2: "Backup created on the other device. Now confirm with this passkey to make it an admin key of your account.",
