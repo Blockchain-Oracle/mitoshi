@@ -49,8 +49,15 @@ try {
   const { authenticatorId: usb } = await a.cdp.send("WebAuthn.addVirtualAuthenticator", authOptions("usb"));
   await a.page.reload({ waitUntil: "load" });
   await settle(a.page);
+  a.page.on("response", (r) => { if (r.url().includes("/api/account/backup-passkey") && r.request().method() === "POST") void r.text().then((t) => log({ backupPost: r.status(), body: t.slice(0, 200) })); });
+  a.page.on("response", (r) => { if (/\/api\/relay|rpc\.moderato/.test(r.url()) && r.status() >= 400) log({ chain: r.status(), url: r.url().slice(0, 80) }); });
   await a.page.getByRole("button", { name: "Add a backup passkey" }).click();
-  await expect(a.page.getByText("Mitoshi backup").first()).toBeVisible({ timeout: 120_000 });
+  const shown = await a.page.getByText("Mitoshi backup").first().waitFor({ state: "visible", timeout: 120_000 }).then(() => true, () => false);
+  if (!shown) {
+    await a.page.screenshot({ path: join(out, "backup-failed.png") });
+    const texts = await a.page.locator("[role=status], [role=alert], [data-sonner-toast]").allInnerTexts();
+    throw new Error(`no backup shown; page says: ${texts.map((t) => t.replace(/\s+/g, " ").slice(0, 140)).join(" | ")}`);
+  }
   const after = await accountOf(a.page);
   result.backups = after.backups?.length ?? 0;
   await a.page.screenshot({ path: join(out, "backup-added.png") });
