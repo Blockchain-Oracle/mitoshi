@@ -110,7 +110,9 @@ for (const width of widths) {
     await hold(page, 4);
     log({ step: "done", txs: s.txs.length, prompts: s.assertions() });
   } catch (e) {
-    log({ step: "stopped", width, why: (e as Error).message.split("\n")[0] });
+    // The screen as it stopped and Playwright's call log (which locator, what was in its way).
+    await page.screenshot({ path: join(out, `stopped-${width}.png`) }).catch(() => undefined);
+    log({ step: "stopped", width, why: (e as Error).message.split("\n").slice(0, 12).join(" | ") });
   } finally {
     await s.context.close();
     await s.browser.close();
