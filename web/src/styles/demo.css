@@ -1,4 +1,4 @@
-/* Ported from Masayume 68f7a09:web/src/styles/demo.css */
+/* Ported from Masayume 68f7a09:web/src/styles/demo.css (imported by the demo page only); Mitoshi adds the pending video frame. */
 @import "./demo-sections.css";
 
 /* /demo — ported from reference/yosuku/app/demo/page.tsx.
@@ -210,6 +210,9 @@
 .demo-video-figure { margin: 0; min-width: 0; }
 .demo-video-figure .demo-video { display: block; width: 100%; max-width: 100%; height: auto; min-height: 200px; background: #050505; }
 .demo-video-figure .demo-video:focus-visible { outline: 3px solid var(--vermilion); outline-offset: 4px; }
+/* Mitoshi: the frame before the video exists says so (DemoVideo's pending state), at the video's own size. */
+.demo-video-figure .demo-video-pending { display: grid; place-content: center; gap: 8px; aspect-ratio: 16 / 9; padding: 24px; text-align: center; color: var(--gray-400); font-size: 14px; line-height: 1.5; }
+.demo-video-pending strong { color: var(--white); font-family: var(--font-display); font-size: 20px; font-weight: 600; }
 .demo-video-caption { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; color: var(--gray-400); font-size: 13px; line-height: 1.5; }
 .demo-video-caption a { min-height: 44px; display: inline-flex; align-items: center; color: var(--white); text-decoration: underline; text-underline-offset: 3px; }
 .demo-video-caption span { align-self: center; }
