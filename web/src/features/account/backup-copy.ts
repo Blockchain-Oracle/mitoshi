@@ -14,6 +14,7 @@ export const BACKUP = {
   done: "Backup added. Keep that device or key safe: it can sign in as this account.",
   cancelled: "No backup was added.",
   failed: "The backup couldn't be added. Nothing changed on your account.",
+  noSigner: "This page isn't connected to your passkey right now; sign in again and retry.",
   passkeyOnly: "Backups are for passkey accounts. A wallet account is backed up by the wallet's own recovery phrase.",
   name: "Mitoshi backup",
 } as const;

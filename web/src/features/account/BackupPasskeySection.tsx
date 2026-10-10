@@ -10,6 +10,7 @@ import { useState } from "react";
 import { createWebAuthnCredential } from "viem/account-abstraction";
 import { getAddress, keccak256, type Hex } from "viem";
 import { useTxLifecycle } from "@/components/tx";
+import { diagnosisCopy } from "@/lib/copy";
 import { notify } from "@/lib/toast";
 import { BACKUP } from "./backup-copy";
 
@@ -27,6 +28,8 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
   const tx = useTxLifecycle();
   const qc = useQueryClient();
   const [phase, setPhase] = useState<"idle" | "creating" | "authorising" | "saving">("idle");
+  // Why the last attempt stopped, kept on screen (a toast is gone before anyone reads it).
+  const [error, setError] = useState<string | null>(null);
   const q = useQuery({
     queryKey: ["backup-passkeys"],
     queryFn: async (): Promise<BackupAnswer> => {
@@ -38,6 +41,7 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
   const data = q.data;
   const add = async () => {
     if (!data?.credentialId) return;
+    setError(null);
     setPhase("creating");
     let credential: { id: string; publicKey: Hex };
     try {
@@ -49,14 +53,17 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
         authenticatorSelection: { authenticatorAttachment: "cross-platform", residentKey: "required", userVerification: "required" },
       });
       credential = { id: c.id, publicKey: `0x04${c.publicKey.slice(2)}` as Hex };
-    } catch {
+    } catch (e) {
       setPhase("idle");
+      setError(`${BACKUP.cancelled} ${e instanceof Error ? e.message.split("\n")[0]!.slice(0, 160) : ""}`.trim());
       return notify.item({ id: "backup", title: BACKUP.cancelled });
     }
     setPhase("authorising");
     const outcome = await tx.run({ kind: "key-backup", keyId: keyIdOf(credential.publicKey) });
     if (outcome?.status !== "confirmed") {
       setPhase("idle");
+      const why = outcome && "diagnosis" in outcome && outcome.diagnosis ? diagnosisCopy(outcome.diagnosis.kind).headline : outcome === null ? BACKUP.noSigner : "";
+      setError(`${BACKUP.failed} ${why}`.trim());
       return notify.item({ id: "backup", type: "warning", title: BACKUP.failed });
     }
     setPhase("saving");
@@ -64,6 +71,7 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
     setPhase("idle");
     if (!res?.ok) {
       const json = res ? ((await res.json().catch(() => ({}))) as { message?: string }) : {};
+      setError(json.message ?? BACKUP.failed);
       return notify.item({ id: "backup", type: "warning", title: json.message ?? BACKUP.failed });
     }
     notify.item({ id: "backup", title: BACKUP.done });
@@ -91,6 +99,7 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
           )}
           <p className="type-caption text-ink-secondary">{BACKUP.how}</p>
           <p className="type-caption text-ink-secondary">{BACKUP.fee}</p>
+          {error && phase === "idle" ? <p role="alert" className="type-body text-warning">{error}</p> : null}
           {phase === "idle" ? (
             <button type="button" onClick={() => void add()} className="min-h-touch self-start rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{BACKUP.add}</button>
           ) : <p role="status" className="type-body text-ink-secondary">{BACKUP[phase]}</p>}
