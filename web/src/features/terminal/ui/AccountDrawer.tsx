@@ -7,7 +7,7 @@
 // No demo, no reset (D-191).
 import type { Address } from "@cwf/core";
 import { useClaimables } from "@cwf/markets/react";
-import { ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, CircleHelp, Download, History, Medal, MessageSquare, Settings, SlidersHorizontal, Trophy, Wallet } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, CircleHelp, Download, History, Medal, MessageSquare, Settings, ShieldAlert, SlidersHorizontal, Trophy, Wallet } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
@@ -22,6 +22,7 @@ import { tapFeedback } from "@/lib/feedback";
 import { openFunds } from "@/lib/funds-event";
 import { usePrivacy } from "@/lib/privacy";
 import { useWalletSession } from "@/lib/wallet-session";
+import { useBackupNeeded } from "@/features/account/useBackupNeeded";
 import { useTapArmed } from "@/providers/wallet/tap-session";
 import { TERMINAL } from "../copy";
 import { money } from "../format";
@@ -88,6 +89,8 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
   const masked = usePrivacy();
   const session = useWalletSession();
   const sessionView = useSessionView();
+  // The backup-passkey prompt after the first deposit (D-053).
+  const backupNeeded = useBackupNeeded(session.kind === "passkey", walletBase !== null && walletBase > 0n);
   const tapArmed = useTapArmed();
   const claims = useClaimables(open ? wallet : null);
   const collectable = claims?.ok ? collectableRows(claims.value) : [];
@@ -135,6 +138,11 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
               {collectable.length ? <CollectPlate wallet={wallet} rows={collectable} /> : null}
               {!tapArmed && sessionView.status !== "armed" ? (
                 <div className="tm-arm"><span className="tm-field-hint">{TERMINAL.arm.lead}</span><TapTradingChip className="tm-choice tm-arm-cta" offLabel={TERMINAL.arm.cta} /></div>
+              ) : null}
+              {backupNeeded ? (
+                <Group title={TERMINAL.account.security}>
+                  <Item icon={ShieldAlert} label={TERMINAL.account.backup} detail={TERMINAL.account.backupWhy} href="/settings/account#backup" />
+                </Group>
               ) : null}
               <Group title={TERMINAL.account.trading}>
                 <Item icon={History} label={TERMINAL.account.history} onClick={() => setView("history")} />
