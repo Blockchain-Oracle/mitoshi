@@ -1,0 +1,50 @@
+/* The landing (S20, L-11): what its sections need beyond tokens and utilities. Imported by the page, so only `/`
+   carries it. */
+
+/* Sections below the fold are laid out as they near view, like the footer (F-S23-08): the first layout stays the
+   hero's. The reserve is a section's typical height; nothing sits after them but the footer. */
+.landing-defer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
+}
+
+/* The phone running the terminal (`LandingPhone`): a phone's proportions, at most 390 px wide, so the terminal inside
+   lays out with its own phone layout. */
+.landing-phone {
+  width: min(100%, 390px);
+  aspect-ratio: 9 / 19.5;
+  max-height: 844px;
+  margin-inline: auto;
+  padding: 10px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 48px;
+  background: var(--color-surface-2);
+  box-shadow: 0 30px 80px -30px rgb(0 0 0 / 0.45);
+}
+
+.landing-phone-screen {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 38px;
+  background: var(--chart-ground);
+}
+
+.landing-phone-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.landing-phone-wait {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  color: var(--color-ink-muted);
+}
+
+.landing-phone-wait svg {
+  width: 64px;
+  height: auto;
+}

@@ -186,6 +186,19 @@ export function indexReader(sql: Sql) {
     },
 
     /** Counts and freshness for `/api/index/status`, `/health` and the soak. */
+    /**
+     * The landing's figures (S20): Windows opened, resolved and open now, and fills — counts over the indexed markets
+     * and fills only (status() also scans every event), cheap enough to serve every few minutes.
+     */
+    async headline(): Promise<IdxRow> {
+      const [row] = await sql`
+        select (select count(*) from idx_markets where opened_tx is not null)::int as windows_opened,
+          (select count(*) from idx_markets where state <> 'open')::int as windows_resolved,
+          (select count(*) from idx_markets where state = 'open' and opened_tx is not null)::int as windows_open,
+          (select count(*) from idx_fills)::int as fills`;
+      return row!;
+    },
+
     async status(): Promise<IdxRow> {
       const [row] = await sql`
         select (select count(*) from idx_events)::int as events, (select count(*) from idx_fills)::int as fills,

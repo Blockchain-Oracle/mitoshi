@@ -1,8 +1,8 @@
 "use client";
-// Ported from Masayume 52a86fc:web/src/features/pitch/primitives.tsx unchanged.
+// Ported from Masayume 52a86fc:web/src/features/pitch/primitives.tsx — classes join as plain strings rather than `cn`,
+// which would bring tailwind-merge (~8 KB gzip) over the site routes' owned-JS budget (D-071) for nothing to merge.
 
 import type { CSSProperties, ReactNode } from "react";
-import { cn } from "@/lib/utils";
 
 /**
  * The folio's typographic furniture — ported from `reference/yosuku/app/pitch/page.tsx`
@@ -19,7 +19,7 @@ type Tone = "ink" | "live" | "verm";
 /** One risen element; `i` is its place in the parent's stagger order (reference: staggerChildren 0.08). */
 export function Rise({ i = 0, className, children, style }: { i?: number; className?: string; children: ReactNode; style?: CSSProperties }) {
   return (
-    <div className={cn("pitch-rise", className)} style={{ ...style, "--i": i } as CSSProperties}>
+    <div className={className ? `pitch-rise ${className}` : "pitch-rise"} style={{ ...style, "--i": i } as CSSProperties}>
       {children}
     </div>
   );
@@ -39,7 +39,7 @@ export function Emph({ children, delay = 0.55 }: { children: ReactNode; delay?: 
 /* font-mono uppercase, letterSpacing 0.16em (reference L47) */
 export function Mono({ children, className, tone }: { children: ReactNode; className?: string; tone?: Tone | "mute" | "faint" }) {
   return (
-    <span className={cn("pitch-mono", className)} data-tone={tone}>
+    <span className={className ? `pitch-mono ${className}` : "pitch-mono"} data-tone={tone}>
       {children}
     </span>
   );
