@@ -29,5 +29,7 @@ export const OG_COPY = {
     closed: (price: string, when: string, signers: number) => `Closed ${price} at ${when} UTC · ${signers} signers`,
     reverify: "Re-verify it in your browser.",
     unknown: "This Window isn't in the index.",
+    /** The index was slow or down when the card was drawn: say what the page holds, not that the Window is missing. */
+    unread: "Both signed prints and its verdict, re-verifiable in your browser.",
   },
 } as const;

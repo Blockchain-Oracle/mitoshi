@@ -106,7 +106,7 @@ export async function windowImage(market: string): Promise<ImageResponse> {
       ) : (
         <div style={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "center" }}>
           <div style={QUESTION}>{OG_COPY.ticker.question}</div>
-          <div style={{ display: "flex", marginTop: 24, fontSize: 32, color: OG.soft }}>{V.unknown}</div>
+          <div style={{ display: "flex", marginTop: 24, fontSize: 32, color: OG.soft }}>{read === "unknown" || !valid ? V.unknown : V.unread}</div>
         </div>
       )}
     </OgFrame>,
