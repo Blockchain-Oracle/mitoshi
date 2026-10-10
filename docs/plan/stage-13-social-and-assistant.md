@@ -2,7 +2,7 @@
 
 > **Revamp (2026-10-08, D-189…D-200):** adds the season league (D-195, Tradash's Aura) shown in the terminal's account drawer, profile editing for the drawer's profile header, and the activity badge on the rail.
 
-- [ ] Sensei (brain + optional MPP, streamed tokens; stock holdings line lands in S15e), Room + ticker rooms (position
+- [x] Sensei (brain + optional MPP, streamed tokens; stock holdings line lands in S15e), Room + ticker rooms (position
   gate), takes + cashtags, alerts (basis + staleness gate; delivered by push in the app), reels, `/u/[address]`,
   `/api/social/*`, `/activity` + LifecycleWatcher (filed under Portfolio as the notification centre with a header
   badge), subscription coordinator. UX (fix 10): one app session for joins, follows and takes (passkey session or key,
@@ -10,11 +10,11 @@
   the draft on failure; reactions; Tail and Fade on takes; the take composer bound to the current card; rooms/takes on the D40 stream. 21st
   starts: chat 26900, takes 2652 + context menu 23646, reels 23559/23568, profile 781, activity 28490, assistant dock
   31661 + 12399.
-- [ ] D34 on the web (the app inherits it): report / block / filter on rooms, takes, profiles, agent and token pages
+- [x] D34 on the web (the app inherits it): report / block / filter on rooms, takes, profiles, agent and token pages
   (`social_reports`, `social_blocks`, word filter, moderation queue in ops), published contact; AI data-sharing consent
   before the first Sensei or agent call (which provider receives what); `/settings/account` deletion of off-chain data
   (profile, takes, room memberships, push devices, X binding, KV session records) with the on-chain disclosure.
-- [ ] `/settings/account` completion (D44): backup-passkey prompt, "key used" history, linked wallets, AI consent,
+- [x] `/settings/account` completion (D44): backup-passkey prompt, "key used" history, linked wallets, AI consent,
   export, deletion, region posture; `/privacy`, `/terms`, `/contact` (21st 25081 form); `/settings/notifications` (topics grouped Money moved / Social / Games; money on by default); 5 s Undo before
   non-urgent revokes (D43).
   21st starts: form 25081, fields 26523, dialog 31359 (Base UI) + 28339 reasons for report/block.
@@ -25,7 +25,12 @@
 
 ## Findings
 
-_None yet._
+F-S13-01…06 in `acceptance/S13.md`: the moderation actor missing from testnet's explicit actor list; self-reports
+accepted; the Coolify disk filled by kept images; a session that outlived the wallet still asked to sign in; deletion
+lifting other people's blocks (found by the export test); the one-step backup under two virtual authenticators.
+Sensei is built and live but **off on testnet until the owner sets a model key** (owner action); one-tap arming while
+signed in with a backup passkey is not yet checked. Report on agent pages (S9) and `/launch/[token]` (S17) is handed
+to those stages (the API takes both targets).
 
 ## Handoff
 
@@ -107,4 +112,12 @@ streaming, profile editing, export/deletion, a trading-points league — built h
     staked up to 100; leagues by percentile (Diamond 1 %, Platinum 5 %, Gold 15 %, Silver 40 %, Bronze); `/api/league`
     reads the leaderboard's cached snapshot (no new query); the account drawer's Season league view (Tradash's Aura,
     re-implemented).
-12. The gate.
+12. **Gate passed (2026-10-11, `acceptance/S13.md`):** one session covers join, follow and take (`s13-gate.ts`); a
+    room gated on a real engine position (the house key's BTC fills seat it; a key with no call is refused); an
+    optimistic post that fails keeps its draft (`s13-draft`, 429 → the card says why, the caption stays); a report
+    reaches the queue; a blocked author leaves the blocker's room and stays in a visitor's; deletion removes every
+    off-chain row (Postgres test, `social-live.ts`, `s13-gate.ts`). Rows: L-41 (Sensei; live once keyed), L-42 rooms,
+    L-43 alerts, L-44 reels, L-45 takes, A-3a profiles and follows, A-3c rooms/takes/activity/notifications, M-11 (one
+    book read per Window shared by every route, refreshed by the stream's `market:<id>` events — D-184), MOB-14 web
+    part (report/block/filter, contact, deletion, AI consent), UX-07 (`/settings/account`: backup passkey, key used,
+    data, AI sharing), UX-09 (`/activity` + `/settings/notifications`).

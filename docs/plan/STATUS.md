@@ -191,13 +191,14 @@ moment the owner has the key; the ops container checks `/livez`, so a RedStone o
   `ops.mainnet.example` / `infra/secrets.md`; `relay/policies/guard.ts` not yet registered.
 - S17b: the launch keeper has no sender wired; ~~S1: `/api/stream/ticket` 401 to a signed-in user~~ — S4-fix (D-151; non-passkey wallets wait on S13's social session and follow the chain meanwhile); S3.5: `idx_events` counter in recount.
 
-- **S13 (social and assistant), 2026-10-10/11, deployed on testnet (web e1925da, ops 8b30ead):** steps 1–11 done — the
+- **S13 (social and assistant), 2026-10-10/11, deployed on testnet (web 92f3f86 pending deploy, ops 1044380):** steps 1–12 done — the
   one social session, rooms with the position gate, takes, profiles and follows, the notification centre, price alerts
   and `/settings/notifications`, Sensei (streamed, consent first; **off until the owner sets a model key**), reels,
   Your data (export, deletion with Undo, AI sharing), `/contact`, privacy/terms, "key used" history, the season league.
-  Gate evidence (`acceptance/S13.md`): `social-live.ts` 17/17 and `s13-gate.ts` 14/14 on testnet; CI drivers
-  `s13-social`, `s13-draft`. **Left in S13:** the backup passkey (TIP-1049 admin key — T6 is live on Moderato; the
-  recovery sign-in needs an `accounts` patch, research in the stage Handoff), then tick the gate.
+  **Gate passed 2026-10-11** (`acceptance/S13.md`): `social-live.ts` 17/17, `s13-gate.ts` 14/14, CI drivers `s13-social`,
+  `s13-draft`, `s13-backup` (a backup passkey signs in alone as the same account). The backup passkey is a TIP-1049
+  admin key with a `pnpm patch` of `accounts` 0.18.4 (`patches/`). Open: Sensei waits on the model key; one-tap arming
+  from a backup sign-in unchecked.
 
 ## Waiting on the owner
 
