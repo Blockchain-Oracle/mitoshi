@@ -1,17 +1,18 @@
 // Ported from Agari 03b30ab:web/src/app/dev/session/market-session-fixtures.ts — canned NYSE sessions for the S6 state
 // fixtures: the same `MarketSession` a live `/session` read builds (`toMarketSession`), over an Alpaca-shaped calendar and
 // fixed clocks, so a cell, a banner or a blocker renders here exactly as it would on the terminal.
-import { calendarFromAlpaca, datesBetween, weekdayOfDate, type HaltBoard, type SessionCalendar } from "@cwf/core";
+import { datesBetween, sessionAt, weekdayOfDate, type HaltBoard, type SessionCalendar } from "@cwf/core";
 import { toMarketSession, type MarketSession, type SessionBody } from "@/features/markets/session";
 
 const HOLIDAYS = new Set(["2026-11-26"]);
 const EARLY_CLOSES = new Set(["2026-11-27"]);
 
+/** Weekdays 09:30–16:00 ET (13:00 on an early close), holidays left out — built with `sessionAt`, so no zod here. */
 function calendar(from: string, to: string): SessionCalendar {
-  const rows = datesBetween(from, to)
+  const sessions = datesBetween(from, to)
     .filter((date) => weekdayOfDate(date) < 5 && !HOLIDAYS.has(date))
-    .map((date) => ({ date, open: "09:30", close: EARLY_CLOSES.has(date) ? "13:00" : "16:00" }));
-  return calendarFromAlpaca(rows, from, to);
+    .map((date) => sessionAt(date, 9 * 60 + 30, EARLY_CLOSES.has(date) ? 13 * 60 : 16 * 60));
+  return { fromDate: from, toDate: to, sessions, unknownDates: [] };
 }
 
 const SEPTEMBER = calendar("2026-09-08", "2026-09-30");
