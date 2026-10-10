@@ -62,7 +62,9 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
     const outcome = await tx.run({ kind: "key-backup", keyId: keyIdOf(credential.publicKey) });
     if (outcome?.status !== "confirmed") {
       setPhase("idle");
-      const why = outcome && "diagnosis" in outcome && outcome.diagnosis ? diagnosisCopy(outcome.diagnosis.kind).headline : outcome === null ? BACKUP.noSigner : "";
+      const d = outcome && "diagnosis" in outcome ? outcome.diagnosis : undefined;
+      // The headline for people; the technical line (truncated) so a report can say what the chain answered.
+      const why = d ? `${diagnosisCopy(d.kind).headline}. ${d.technical.split("\n")[0]!.slice(0, 140)}` : outcome === null ? BACKUP.noSigner : "";
       setError(`${BACKUP.failed} ${why}`.trim());
       return notify.item({ id: "backup", type: "warning", title: BACKUP.failed });
     }

@@ -50,7 +50,7 @@ try {
   await a.page.reload({ waitUntil: "load" });
   await settle(a.page);
   a.page.on("response", (r) => { if (r.url().includes("/api/account/backup-passkey") && r.request().method() === "POST") void r.text().then((t) => log({ backupPost: r.status(), body: t.slice(0, 200) })); });
-  a.page.on("response", (r) => { if (/\/api\/relay|rpc\.moderato/.test(r.url()) && r.status() >= 400) log({ chain: r.status(), url: r.url().slice(0, 80) }); });
+  a.page.on("response", (r) => { if (r.status() >= 400) void r.text().then((t) => log({ failedResponse: r.status(), url: r.url().slice(0, 100), body: t.slice(0, 300) })).catch(() => undefined); });
   await a.page.getByRole("button", { name: "Add a backup passkey" }).click();
   const shown = await a.page.getByText("Mitoshi backup").first().waitFor({ state: "visible", timeout: 120_000 }).then(() => true, () => false);
   if (!shown) {
