@@ -56,7 +56,8 @@ const ROWS: readonly [string, string][] = [
 const ago = (ms: number) => (ms < 60_000 ? `${Math.max(0, Math.round(ms / 1000))} s ago` : ms < 3_600_000 ? `${Math.round(ms / 60_000)} min ago` : `${Math.round(ms / 3_600_000)} h ago`);
 /** The actor's own sentence, up to its first " | " (the rest is a list of recent sends), kept short. */
 const said = (why: string | undefined) => {
-  const head = (why ?? "").split(" | ")[0]!.trim();
+  // A display feed reports prices at 8 decimals ("BTC 8271804000000"): shown in dollars.
+  const head = (why ?? "").split(" | ")[0]!.trim().replace(/\b([A-Z]{2,6}) (\d{9,})\b/g, (_, sym: string, e8: string) => `${sym} $${(Number(e8) / 1e8).toLocaleString("en-US", { maximumFractionDigits: 2 })}`);
   return head.length > 140 ? `${head.slice(0, 139)}…` : head;
 };
 
