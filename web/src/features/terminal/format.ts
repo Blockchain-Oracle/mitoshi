@@ -35,11 +35,20 @@ const grouped = (n: number, dp: number) => {
   return f.format(Number(fixedText(n, dp)));
 };
 
-/** Base units → "$24.54", or signed with a true minus ("+$3.76" / "−$5.74") when `signed`; 2 dp (settled figures). */
+/**
+ * Base units → "$24.54", or signed with a true minus ("+$3.76" / "−$5.74") when `signed`; 2 dp (settled figures). A
+ * signed figure that rounds to zero cents reads "$0.00", never "−$0.00" (the history showed a −$0.002 lifetime PnL so).
+ */
 export function money(base: bigint, signed = false, decimals = USD_DECIMALS): string {
   const n = Number(base) / 10 ** decimals;
-  if (!signed) return `$${grouped(n, 2)}`;
+  if (!signed || Number(fixedText(n, 2)) === 0) return `$${grouped(n, 2)}`;
   return `${n < 0 ? "−" : "+"}$${grouped(n, 2)}`;
+}
+
+/** The colour class for a settled figure as `money(…, true)` shows it: none when it rounds to zero cents. */
+export function moneyTone(base: bigint, decimals = USD_DECIMALS): "is-up" | "is-down" | "" {
+  const cents = Number(fixedText(Number(base) / 10 ** decimals, 2));
+  return cents === 0 ? "" : base > 0n ? "is-up" : "is-down";
 }
 
 /** A live PnL in base units, signed at the magnitude decimals ("+$0.0412", "+$12.345", "−$1,204.50"), so it keeps moving. */

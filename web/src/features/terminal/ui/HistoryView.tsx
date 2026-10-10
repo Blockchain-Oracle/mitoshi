@@ -13,7 +13,7 @@ import type { ReactNode } from "react";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
 import { TERMINAL } from "../copy";
-import { clockText, money } from "../format";
+import { clockText, money, moneyTone } from "../format";
 import { episodeFor, replayable, useEpisodes, type Episode } from "../replay";
 
 const roiText = (pnl: bigint, stake: bigint) => {
@@ -43,7 +43,7 @@ export function HistoryView({ wallet, onReplay }: { wallet: Address; onReplay: (
   const streaks = winStreaks(rounds);
   const hide = (text: string) => (masked ? SHELL.masked : text);
   const stats: Array<[string, ReactNode]> = [
-    [TERMINAL.history.lifetime, <b key="pnl" className={pnl >= 0n ? "is-up" : "is-down"}>{hide(money(pnl, true))}</b>],
+    [TERMINAL.history.lifetime, <b key="pnl" className={moneyTone(pnl)}>{hide(money(pnl, true))}</b>],
     [TERMINAL.history.winRate, <b key="rate">{decided.length ? `${Math.round((wins / decided.length) * 100)}%` : "—"}</b>],
     [TERMINAL.history.trades, <b key="n">{rounds.length}</b>],
     [TERMINAL.history.streak, <b key="s">{streaks.current}</b>],
@@ -69,7 +69,7 @@ export function HistoryView({ wallet, onReplay }: { wallet: Address; onReplay: (
                 <span className="tm-pos-title">{up ? "Up" : "Down"} {r.asset} <span className="tm-pos-tag is-plain">{tag}</span></span>
                 <span className="tm-pos-meta">{formatCadence(r.intervalSec)} · {TERMINAL.positions.staked} {hide(money(r.stakeBase))} · {clockText(r.expirySec)}</span>
               </span>
-              <span className={`tm-pos-figure ${r.pnlBase >= 0n ? "is-up" : "is-down"}`}>
+              <span className={`tm-pos-figure ${moneyTone(r.pnlBase)}`}>
                 {hide(money(r.pnlBase, true))}
                 {roi && !masked ? <span className="tm-pos-pnl">{roi}</span> : null}
               </span>
