@@ -21,4 +21,17 @@ _None yet._
 
 ## Handoff
 
-_Not started._
+In progress (2026-10-10; evidence in `acceptance/S5.md`). Live on testnet, each in the site group unless noted:
+- `/proof/[market]` (L-15/G-10): both prints, record txs, re-verification in the browser.
+- `/status` (L-16): every ops keeper and the fee relay, read at request time.
+- `/stats` (L-15, D-215): wallets that made a call, calls, traded, paid out, the growth curve, the venue's counts, the
+  latest calls with receipts; the house never counted, Trading Balance taps attributed to owners.
+- Leaderboard data (L-48): `readSettledRounds` + `/api/leaderboard` (Daily · Weekly · Monthly · All time × P&L / ROI,
+  top 50 and the asker's row) and `/leaderboard` in the app group (21st 13057 podium + 13063 rankings). The terminal's
+  leaderboard drawer (S23g, RV-86) can mount `useLeaderboard` as is.
+- `/news` (L-17): Finnhub market + company news for the listed stocks and Cointelegraph/Decrypt RSS for the coins.
+
+Left: `/portfolio/edge` (L-47, 29532 + 27124), reputation/badges/CSV (L-49), the shared profile, share cards and OG
+images (L-22, L-23, Y-14), the leaderboard's agents and game-rank tabs (with S9, S12), then the gate: a browser pass
+with the UX gate, a proof reverified from the archive, stats == recount (`scripts/drive/recount.ts` full replay
+running), no wallet stack on the site routes (met: /proof 28.0, /status 26.8, /stats 23.6, /news 24.9 KB owned).

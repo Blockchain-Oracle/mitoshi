@@ -1,7 +1,7 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-10 08:40Z (S23 gate nearly closed: states 38/38, tap → card 643 ms, compile hints; S20 public story
-under way: landing, pitch, how-it-works, demo, docs, privacy/terms, manifest live). **Never trust memory over this file.**
+Updated 2026-10-10 11:55Z (S5: /stats, the leaderboard with its data and API, /news live on testnet; /proof and
+/status before them. S23 gate nearly closed; S20 public story under way). **Never trust memory over this file.**
 
 ## Where we are
 
@@ -82,10 +82,19 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
   `web/e2e/footage.ts` records the real flow for the demo video (1440 run 38037521151, 116 s; 390 re-run going).
 - Left: the two videos (owner's voice), the form, owner review of GTM; `/news` (S5), `/contact` (S13).
 
-**S5 — started 2026-10-10 (`acceptance/S5.md`).** `/proof/[market]` live: both prints, their record txs, and
-**re-verification in the browser** from the chain alone (record tx → `recordPrint`'s signed packages → `eth_call
-verifyPrint`; matched the recorded close exactly). `/status` live: every ops keeper and the fee relay, read at request
-time. Next in S5: `/stats`, the leaderboard data, `/news`, `/portfolio/edge`, share cards.
+**S5 — under way (`acceptance/S5.md`, the stage file's Handoff).** Live on testnet:
+- `/proof/[market]`: both prints, their record txs, and **re-verification in the browser** from the chain alone.
+- `/status`: every ops keeper and the fee relay, read at request time.
+- `/stats` (D-215): 134 wallets that made a call, 462 calls, $637 traded, $868 paid out, the growth curve, the venue's
+  counts and the latest calls with receipts. The house (`HOUSE_TRADERS` + the maker vault) is never counted, and a
+  Trading Balance tap counts for its owner (`server/demand.ts`, shared with the leaderboard).
+- The leaderboard: `readSettledRounds` prices each settled round by the settlement rule (equal to every redemption on
+  testnet); `/api/leaderboard` (Daily · Weekly · Monthly · All time × P&L / ROI, top 50 + your row); `/leaderboard`
+  with 21st 13057's podium and 13063's rankings. S23g's drawer can mount `useLeaderboard`.
+- `/news`: Finnhub market + company news for the stocks, Cointelegraph/Decrypt for the coins (`FINNHUB_API_KEY` copied
+  to the testnet web app, runtime only).
+Next in S5: `/portfolio/edge`, reputation/badges/CSV, the shared profile, share cards and OG images. Open for the
+gate: F-S5-02 — the full chain recount is too slow at today's size (more than a day; RPC refuses big windows).
 
 **S23 gate — nearly closed (`acceptance/S23.md` passes 1–5, F-S23-06…13).** Since 2026-10-09 20:10Z:
 - Passed live: Range + Moonshot on the earn-quoter's depth (37996617218); **states 38 of 38** (38034974579, after
@@ -166,8 +175,8 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
 3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes). R.0, S22 and S23's boxes are done;
    S24 is complete: every box ticked and the gate passed on 2026-10-09 (D-213 answered Q-033 with the floor's slack).
    Next, in order: S20's videos (footage and scripts are ready for the owner's voice) and the submission (due
-   2026-10-12 23:59 PT); S5's remaining surfaces (`/stats`, leaderboard data, `/news`); then the S23 gate's open list
-   (above). S5's leaderboard data comes before S23g's leaderboard.
+   2026-10-12 23:59 PT); S5's remaining surfaces (`/portfolio/edge`, share cards, OG images, profile); S23g's
+   leaderboard drawer on S5's data (now live); then the S23 gate's open list (above).
 4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
    revamped UI.
