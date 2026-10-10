@@ -21,6 +21,7 @@ import { startHouseTaker } from "./actors/house-taker";
 import { indexerRecountPass, INDEXER_RECOUNT_EVERY_MS } from "./actors/indexer-recount";
 import { referenceWriterPass, REFERENCE_WRITER_EVERY_MS } from "./actors/reference-writer";
 import { keeperDeps, launchKeeperPass, LAUNCH_KEEPER_EVERY_MS } from "./actors/launch-keeper";
+import { moderationPass, MODERATION_EVERY_MS } from "./actors/moderation";
 import { memeAddresses } from "@cwf/markets/launch";
 import { tempoReadClient } from "@cwf/markets";
 import { runActor, type VenueDeps } from "./runtime";
@@ -65,6 +66,13 @@ export const ACTORS: Record<string, ActorEntry> = {
       return runActor({ name: "indexer-recount", log: d.log, dryRun: d.env.dryRun, everyMs: INDEXER_RECOUNT_EVERY_MS, pass: indexerRecountPass(d.env, d.sql) });
     },
   },
+  // S13 (D-043): the moderation queue in the heartbeat; signs nothing, needs DATABASE_URL.
+  moderation: {
+    start: (d) => {
+      if (!d.sql) throw new Error("moderation needs DATABASE_URL");
+      return runActor({ name: "moderation", log: d.log, dryRun: false, everyMs: MODERATION_EVERY_MS, pass: moderationPass(d.sql, d.log) });
+    },
+  },
   // Opt-in (S3 soak): house-key trades so an unattended soak exercises fills and auto-pay; never in the default set.
   "house-taker": { start: (d) => startHouseTaker(d) },
   // Opt-in (S17b): graduates Complete memecoins. Until `tx/send.ts` is wired as its sender (D-098) it plans and
@@ -82,4 +90,4 @@ export const ACTORS: Record<string, ActorEntry> = {
   "reference-writer": { start: (d) => runActor({ name: "reference-writer", log: d.log, dryRun: d.env.dryRun, everyMs: REFERENCE_WRITER_EVERY_MS, pass: referenceWriterPass(d.env) }) },
 };
 
-export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "exit-keeper", "earn-quoter"] as const;
+export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "exit-keeper", "earn-quoter", "moderation"] as const;

@@ -19,3 +19,6 @@ export { agentRegistrationByStrategy, setAgentRegistrationUri, upsertAgentRegist
 export { insertRecounts, type RecountInsert } from "./recounts";
 export { createPgPrivateClaimsStore, type PrivateClaimRow, type PrivateClaimsStore, type PrivateClaimStatus } from "./private-claims";
 export { createPgExitTriggersStore, type ExitTriggerRow, type ExitTriggerStatus, type ExitTriggersStore, type ExitWriteConflict } from "./exit-triggers";
+export { createPgSocialPeople, BIO_MAX, DISPLAY_NAME, type Profile, type SetProfileResult, type SocialPeopleStore } from "./social-people";
+export { createPgSocialPosts, type NewTake, type ReactionSummary, type ReactionTarget, type RoomComment, type SocialPostsStore, type TakeRow, type Via } from "./social-posts";
+export { createPgSocialModeration, REPORT_REASONS, type DeletedRows, type ReportReason, type ReportRow, type ReportTarget, type SocialModerationStore } from "./social-moderation";

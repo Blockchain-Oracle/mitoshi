@@ -36,8 +36,11 @@ the stream's allow-list; `server/session.ts` reads `cwf_social` but nothing issu
 only); Masayume 68f7a09 for the EVM signature check; Owarine/Tradash for the league view (Aura is display-only there).
 None has: one session for all social writes, visitor-readable rooms, reactions, Tail/Fade, moderation, AI consent,
 streaming, profile editing, export/deletion, a trading-points league — built here. Steps, in order:
-1. The one social session: a passkey session counts; any other wallet signs once → `cwf_social` (30 days).
-2. Social tables + moderation: profiles, follows, reports, blocks, word filter, the ops moderation queue.
+1. **Done:** the one social session — a passkey session counts; any other wallet signs once → `cwf_social` (30 days).
+2. **Done:** `social/0003` (profiles, reactions, reports, blocks, hidden rows; takes/messages record `via`, not a
+   signature; follows on `game_follows`), the stores (`social-people`, `social-posts`, `social-moderation`, Postgres-tested),
+   the word filter (obscenity 0.4.6: originals kept, matches starred on read), the ops `moderation` actor (the queue in
+   `/health`) and `scripts/ops/moderate.ts` (list · hide · dismiss).
 3. Rooms (ticker + Window): visitors read; posting gated on a real engine position; optimistic, draft kept on failure.
 4. Takes + cashtags + reactions + Tail/Fade; the composer bound to the card on screen; rooms/takes on the stream.
 5. Profiles: editing, follows, the drawer's profile header; `/u` shows takes and follows.
