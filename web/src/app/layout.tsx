@@ -5,6 +5,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { tokens } from "@cwf/tokens";
 import { PageRuntime } from "@/components/shell/PageRuntime";
+import { webEnv } from "@/lib/env";
 import { fontVariables } from "@/lib/fonts";
 import { BRAND } from "@/lib/copy";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -12,6 +13,8 @@ import "@/styles/index.css";
 
 // Every page's title reads "<page> · Mitoshi"; the description says only what is live (S20).
 export const metadata: Metadata = {
+  // Absolute link-preview URLs (L-23): the deployment's own origin, not the build host's.
+  metadataBase: new URL(webEnv.appOrigin),
   title: { default: `${BRAND.name} — ${BRAND.tagline}`, template: `%s · ${BRAND.name}` },
   description: BRAND.description,
 };
