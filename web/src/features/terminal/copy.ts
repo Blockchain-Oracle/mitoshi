@@ -21,6 +21,8 @@ export const TERMINAL = {
     connecting: "Connecting…",
     stale: "Reconnecting…",
     settlesOn: "Settles on RedStone's signed print",
+    /** G-04 (S6): a stock's 24/7 lane settles on the provider's own 24/7 feed (`<T>---24_7`), named as such. */
+    lane247: (symbol: string) => `24/7 lane · settles on RedStone's 24/7 ${symbol} feed, not the NYSE print`,
   },
   window: {
     trades: (left: string) => `trades ${left}`,
@@ -309,6 +311,12 @@ export const TERMINAL = {
     noFavourites: "No favourites yet. Tap a star to add one.",
     noMatch: "No markets match that search.",
     loadingMovers: "Loading movers…",
+    /** G-05 (S6): what exists but can't list a Window on testnet, said plainly rather than hidden. */
+    paused: {
+      title: "Paused",
+      nflx: { name: "NFLX · Netflix", why: "Bridged to Tempo testnet, but no signed price source carries NFLX, so no Window can settle on it." },
+      preIpo: { name: "Pre-IPO", why: "No attested price source for private companies exists on Tempo yet, so this lane is paused." },
+    },
   },
   settings: {
     boost: "Boost",

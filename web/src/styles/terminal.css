@@ -373,3 +373,6 @@
 [data-theme="light"] .tm-crowd[data-lean="down"] .tm-crowd-figure { color: color-mix(in oklab, var(--chart-down) 75%, black); }
 /* The earnings line (S6): plain ahead of a report, the accent on the Window that sits on one. */
 .tm-earnings[data-tone="warning"] { border-color: color-mix(in oklab, var(--color-accent) 50%, transparent); color: var(--color-ink); }
+/* G-05 (S6): what exists but can't list a Window, under the market list — not tappable, said plainly. */
+.tm-paused-row { display: flex; flex-direction: column; gap: 4px; padding: 10px 8px; border-top: 1px solid var(--color-hairline); }
+.tm-paused-row .tm-pos-title { color: var(--color-ink-secondary); }

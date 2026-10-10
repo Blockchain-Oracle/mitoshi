@@ -97,6 +97,17 @@ export function MarketsDrawer({ open, onOpenChange, symbol, set, nowSec, onPick 
               : shown.map((s) => (
                 <Row key={s} symbol={s} current={s === symbol} lanes={lanesOf(s)} day={day?.[s]} dayLoading={day === null} starred={settings.favourites.includes(s)} onPick={onPick} />
               ))}
+            {(tab === "all" || tab === "stocks") && !q ? (
+              <section aria-label={TERMINAL.picker.paused.title} className="tm-paused">
+                <p className="tm-market-group">{TERMINAL.picker.paused.title}</p>
+                {[TERMINAL.picker.paused.nflx, TERMINAL.picker.paused.preIpo].map((p) => (
+                  <div key={p.name} className="tm-pos-text tm-paused-row">
+                    <span className="tm-pos-title">{p.name}</span>
+                    <span className="tm-pos-meta">{p.why}</span>
+                  </div>
+                ))}
+              </section>
+            ) : null}
             <p className="tm-market-group">
               <Link href="/markets" className="underline decoration-dotted underline-offset-4">{TERMINAL.picker.all}</Link>
               {" · "}

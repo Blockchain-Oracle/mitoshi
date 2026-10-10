@@ -247,7 +247,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
               <EarningsCell symbol={symbol} market={market ?? null} />
             </div>
             {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
-            {offHours ? <span className="tm-glass tm-note">{TERMINAL.feed.offHoursNote}</span> : null}
+            {s.win.lane?.basis === "stock24" ? <span className="tm-glass tm-note">{TERMINAL.feed.lane247(symbol)}</span> : offHours ? <span className="tm-glass tm-note">{TERMINAL.feed.offHoursNote}</span> : null}
           </div>
           <div className="tm-stack-slot">
             <SettingsStack asset={symbol} size={stakeText} pays={s.settings.boostX > 1 ? TERMINAL.positions.boost(s.settings.boostX) : market ? pays : "—"} trailing={`${trailWords(s.settings.trailPct)}%`} onOpen={() => drawer.show(DRAWERS.settings)} />

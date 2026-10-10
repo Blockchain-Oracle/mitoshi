@@ -44,6 +44,9 @@ with the archive's Friday print). S6 is mostly the surfaces. Steps, in order:
    the file). Live 2026-10-10: the five testnet tokens read multiplier 1, nothing pending. A paused lane says why on
    the Window chip (`lane-note.ts`: corporate action with its reason, halt, no signed source) and under UP/DOWN
    (`corporate-action`, step 3).
-8. G-04: each 24/7 lane named as the provider's price; G-05: NFLX and pre-IPO shown paused honestly.
+8. **Done:** G-04 — a stock's 24/7 lane says "settles on RedStone's 24/7 TSLA feed, not the NYSE print" (the feed's own
+   semantics stay unverified, `tempo/15` §5, so nothing more is claimed); G-05 — the markets drawer lists, under
+   "Paused", NFLX (bridged to Tempo testnet, no signed source carries it, D-107) and Pre-IPO (no attested source on
+   Tempo, Q-007's default), never invented names.
 9. The Gap on Data Streams in the mainnet config, with the RedStone archive fallback.
 10. The gate on testnet over a real session (halted, closed, pre/after, Gap).
