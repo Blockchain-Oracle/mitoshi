@@ -71,10 +71,12 @@ export async function walkLogWindows(fromBlock: bigint, toBlock: bigint, fetchWi
       answered = 0;
       options.onRefused?.(from, to, why);
       if (hint && hint.from === from && hint.to >= from && hint.to < to) size = hint.to - from + 1n;
-      else if (size > min) {
+      else if (to - from + 1n > min) {
+        // Halve the window actually tried (a tail clipped at `toBlock` is shorter than `size`), so a refusal always
+        // shrinks the next request.
         const tried = to - from + 1n;
         ceiling = ceiling === null || tried < ceiling ? tried : ceiling;
-        size = size / 2n > min ? size / 2n : min;
+        size = tried / 2n > min ? tried / 2n : min;
       } else throw error;
       continue;
     }

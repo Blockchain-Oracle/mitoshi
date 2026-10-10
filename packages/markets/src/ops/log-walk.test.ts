@@ -93,6 +93,16 @@ describe("adaptive eth_getLogs walk (recount, D-187)", () => {
     expect(stats.refused * 4).toBeLessThan(answered.length);
   });
 
+  it("shrinks a tail clipped at the range's end on every refusal, never retrying the same window", async () => {
+    // A 100,000-block window over an 11,000-block range is clipped to 11,000: its refusal must halve 11,000, not 100,000.
+    const tried: bigint[] = [];
+    await walkLogWindows(0n, 10_999n, async (from, to) => {
+      tried.push(to - from + 1n);
+      if (to - from + 1n > 4_000n) throw new Error("HTTP response body exceeded the size limit.");
+    }, { initialBlocks: 100_000n });
+    expect(tried.slice(0, 3)).toEqual([11_000n, 5_500n, 2_750n]);
+  });
+
   it("halves on an error without a hint, and gives up only at the minimum window", async () => {
     let calls = 0;
     const seen: bigint[] = [];
