@@ -100,8 +100,8 @@ On `integration/t1` (D-201). Sources: the Tradash spec
   day change from `/prices/day`), account (equity, tiles, Add money, Withdraw — a new unsponsored `transfer` intent the
   passkey signs —, the Trading Balance panel, Activity, Collect, the one-tap card, Sign out confirm), position details
   (Reduce, Add, proof link, show on chart), open positions (phone), trade history + stats, replay, settings (size,
-  trailing, close tolerance), the rail's Trade sub-list. Waits on its stages: the share modal and leaderboard on S5's
-  card and data, the season league on S13. Since then: "Wallet connected" / "Wallet disconnected" (RV-92,
+  trailing, close tolerance), the rail's Trade sub-list. On S5's card and data (2026-10-10): the share modal from position
+  details (506f544) and the leaderboard as the account drawer's view (RV-86). Waits on its stage: the season league on S13. Since then: "Wallet connected" / "Wallet disconnected" (RV-92,
   `useWalletToasts`), silent while a remembered session restores, and tested. The install drawer from Account
   (RV-91) runs on `features/install`'s store: one-tap install where the browser offers it, Safari steps on iOS,
   "Installed" when it is, `/download` one link away.

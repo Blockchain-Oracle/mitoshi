@@ -36,8 +36,10 @@ import { SendPanel } from "./SendPanel";
 const TradingBalancePanel = dynamic(() => import("@/features/vault/TradingBalancePanel").then((m) => m.TradingBalancePanel), { ssr: false });
 // What a previous Trading Balance still holds (S24.2), self-hiding when it holds nothing.
 const LegacyBalance = dynamic(() => import("@/features/vault/LegacyBalance").then((m) => m.LegacyBalance), { ssr: false });
+// The leaderboard view (RV-86, S5's data) loads when it is opened.
+const LeaderboardView = dynamic(() => import("./LeaderboardView").then((m) => m.LeaderboardView), { ssr: false });
 
-export type AccountView = "menu" | "send" | "balance" | "history" | "activity";
+export type AccountView = "menu" | "send" | "balance" | "history" | "activity" | "leaderboard";
 
 function Item({ icon: Icon, label, detail, onClick, href }: { icon: typeof History; label: string; detail?: string; onClick?: () => void; href?: string }) {
   const body = (
@@ -91,7 +93,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
   }, [open, initialView]);
   const hide = (base: bigint | null) => (base === null ? "—" : masked ? SHELL.masked : money(base));
   const balance = sessionView.deployed ? hide(sessionView.availableBase) : TERMINAL.account.off;
-  const titles: Record<AccountView, string> = { menu: TERMINAL.account.title, send: TERMINAL.send.title, balance: TERMINAL.account.balance, history: TERMINAL.history.title, activity: TERMINAL.activity.title };
+  const titles: Record<AccountView, string> = { menu: TERMINAL.account.title, send: TERMINAL.send.title, balance: TERMINAL.account.balance, history: TERMINAL.history.title, activity: TERMINAL.activity.title, leaderboard: TERMINAL.account.leaderboard };
 
   return (
     <>
@@ -106,6 +108,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
           {view === "balance" ? <TradingBalancePanel /> : null}
           {view === "history" ? <HistoryView wallet={wallet} onReplay={(episode, finalPnl) => setReplay({ episode, finalPnl })} /> : null}
           {view === "activity" ? <ActivityView wallet={wallet} open={open} /> : null}
+          {view === "leaderboard" ? <LeaderboardView wallet={wallet} /> : null}
           {view === "menu" ? (
             <div className="tm-account">
               <div className="tm-profile">
@@ -137,7 +140,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
               ) : null}
               <Group title={TERMINAL.account.trading}>
                 <Item icon={History} label={TERMINAL.account.history} onClick={() => setView("history")} />
-                <Item icon={Trophy} label={TERMINAL.account.leaderboard} href="/leaderboard" />
+                <Item icon={Trophy} label={TERMINAL.account.leaderboard} onClick={() => setView("leaderboard")} />
                 <Item icon={SlidersHorizontal} label={TERMINAL.account.settings} onClick={onSettings} />
               </Group>
               <Group title={TERMINAL.account.app}>
