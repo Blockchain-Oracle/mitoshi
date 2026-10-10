@@ -26,7 +26,6 @@ import { replaceTradeParams } from "./useTerminalWindow";
 import { useMarketSession } from "./market-session";
 import { useTerminalState } from "./useTerminalState";
 import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } from "./ui/Chrome";
-import { MarketsDrawer } from "./ui/MarketsDrawer";
 import type { TerminalPosition } from "./terminal-positions";
 import { useTerminalClose } from "./useTerminalClose";
 import { useTrailToggle } from "./useTrail";
@@ -35,19 +34,16 @@ import { trailEligible } from "./position-value";
 import type { PositionValue } from "./usePositionValue";
 import { PositionsList, UnrealizedCard } from "./ui/PositionsPanel";
 import { TradeButtons, trailWords } from "./ui/TradeButtons";
-import { SettingsDrawer } from "./ui/SettingsDrawer";
 import { TerminalTrade } from "./ui/TerminalTrade";
 import { ScheduledTrade } from "./ui/ScheduledTrade";
 import { ChartControls } from "./ui/ChartControls";
-import { AccountDrawer } from "./ui/AccountDrawer";
-import { PositionDetails } from "./ui/PositionDetails";
-import { ExitsDrawer } from "./ui/ExitsDrawer";
 import { ReactionOverlay } from "./ui/ReactionOverlay";
 import { useChartFeedback } from "./useChartFeedback";
 import { useReplayRecorder } from "./replay";
 import { useAppUpdate } from "./useAppUpdate";
 import { setTradeSettings, useTradeSettingsState } from "./settings";
 import { Tutorial } from "./ui/Tutorial";
+import { AccountDrawer, ExitsDrawer, MarketsDrawer, PositionDetails, SettingsDrawer, useDrawersMounted } from "./lazy-drawers";
 import { ModeChips, ModePanel, type TerminalMode } from "./ui/ModePanel";
 import { useDrawnBand } from "@/features/range/band-store";
 import { TICKET_RAIL_MIN_WIDTH } from "@/features/markets/data/useSelection";
@@ -73,6 +69,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const session = useWalletSession();
   const masked = usePrivacy();
   const drawer = useDrawerParam();
+  const drawersMounted = useDrawersMounted(drawer.open !== null);
   const tapArmed = useTapArmed();
   const nyse = useMarketSession();
   // The 24/7 lane on screen sits idle across RedStone's 04:00 ET gap (D-185): say why and when it resumes.
@@ -278,42 +275,6 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
         </aside>
       </div>
       <Tutorial open={tourOpen} onDone={endTour} instant={instantTour} />
-      <MarketsDrawer open={drawer.open === DRAWERS.markets} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} set={s.win.set} nowSec={s.nowSec} onPick={pick} />
-      <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} capped={s.capped ? s.capReason : null} />
-      {s.address ? (
-        <AccountDrawer
-          open={drawer.open === DRAWERS.account || drawer.open === DRAWERS.history}
-          initialView={drawer.open === DRAWERS.history ? "history" : "menu"}
-          onOpenChange={(o) => !o && drawer.close()}
-          wallet={s.address}
-          equityBase={s.cashBase === null ? null : s.cashBase + totals.value}
-          walletBase={s.walletBase}
-          unrealizedBase={totals.pnl}
-          openCostBase={totals.cost}
-          onSettings={() => {
-            // The account drawer's entry becomes the settings drawer's: Back still closes it.
-            const url = new URL(window.location.href);
-            url.searchParams.set("d", DRAWERS.settings);
-            window.history.replaceState({ __drawer: DRAWERS.settings }, "", url);
-          }}
-        />
-      ) : null}
-      <PositionDetails
-        p={detail}
-        value={detail ? (values.get(detail.id) ?? null) : null}
-        open={drawer.open === DRAWERS.position && detailId !== null}
-        onOpenChange={(o) => !o && drawer.close()}
-        onReduce={(p, sellRaw) => void closer.close(p, null, undefined, "close", sellRaw)}
-        onShow={(p) => window.history.replaceState(null, "", `/trade/${p.asset}?w=${p.marketId}`)}
-        onExits={() => {
-          // The details drawer's entry becomes the exits drawer's: Back still closes it.
-          const url = new URL(window.location.href);
-          url.searchParams.set("d", DRAWERS.exits);
-          window.history.replaceState({ __drawer: DRAWERS.exits }, "", url);
-        }}
-        spendableBase={s.spendableBase}
-        busy={detail !== null && closer.busy === detail.id}
-      />
       {mode !== "updown" && market ? (
         <SlideOver open={drawer.open === DRAWERS.mode} onOpenChange={(o) => { if (!o) { drawer.close(); setMode("updown"); } }}>
           <SlideOverContent title={TERMINAL.modes.names[mode]}>
@@ -321,7 +282,47 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           </SlideOverContent>
         </SlideOver>
       ) : null}
-      <ExitsDrawer p={detail} value={detail ? (values.get(detail.id) ?? null) : null} open={drawer.open === DRAWERS.exits && detailId !== null} onOpenChange={(o) => !o && drawer.close()} />
+      {drawersMounted ? (
+        <>
+          <MarketsDrawer open={drawer.open === DRAWERS.markets} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} set={s.win.set} nowSec={s.nowSec} onPick={pick} />
+          <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} capped={s.capped ? s.capReason : null} />
+          {s.address ? (
+            <AccountDrawer
+              open={drawer.open === DRAWERS.account || drawer.open === DRAWERS.history}
+              initialView={drawer.open === DRAWERS.history ? "history" : "menu"}
+              onOpenChange={(o) => !o && drawer.close()}
+              wallet={s.address}
+              equityBase={s.cashBase === null ? null : s.cashBase + totals.value}
+              walletBase={s.walletBase}
+              unrealizedBase={totals.pnl}
+              openCostBase={totals.cost}
+              onSettings={() => {
+                // The account drawer's entry becomes the settings drawer's: Back still closes it.
+                const url = new URL(window.location.href);
+                url.searchParams.set("d", DRAWERS.settings);
+                window.history.replaceState({ __drawer: DRAWERS.settings }, "", url);
+              }}
+            />
+          ) : null}
+          <PositionDetails
+            p={detail}
+            value={detail ? (values.get(detail.id) ?? null) : null}
+            open={drawer.open === DRAWERS.position && detailId !== null}
+            onOpenChange={(o) => !o && drawer.close()}
+            onReduce={(p, sellRaw) => void closer.close(p, null, undefined, "close", sellRaw)}
+            onShow={(p) => window.history.replaceState(null, "", `/trade/${p.asset}?w=${p.marketId}`)}
+            onExits={() => {
+              // The details drawer's entry becomes the exits drawer's: Back still closes it.
+              const url = new URL(window.location.href);
+              url.searchParams.set("d", DRAWERS.exits);
+              window.history.replaceState({ __drawer: DRAWERS.exits }, "", url);
+            }}
+            spendableBase={s.spendableBase}
+            busy={detail !== null && closer.busy === detail.id}
+          />
+          <ExitsDrawer p={detail} value={detail ? (values.get(detail.id) ?? null) : null} open={drawer.open === DRAWERS.exits && detailId !== null} onOpenChange={(o) => !o && drawer.close()} />
+        </>
+      ) : null}
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
           <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />

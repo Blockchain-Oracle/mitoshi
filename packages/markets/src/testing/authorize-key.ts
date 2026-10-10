@@ -8,7 +8,8 @@ import { P256 } from "ox";
 import { createWalletClient, encodeFunctionData, http, type Address, type Hex } from "viem";
 import { Abis, Account } from "viem/tempo";
 import { TEMPO } from "@cwf/clients";
-import { PATH_USD, tempoChain } from "../chains";
+import { tempoChain } from "../chains";
+import { PATH_USD } from "../path-usd";
 import { sendBatch } from "../tx/send";
 
 export interface AuthorizedTestKey {

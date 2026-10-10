@@ -11,9 +11,12 @@ import type { Session } from "./guard";
 
 const HOUR = 3_600_000;
 
-/** America/New_York wall-clock parts of `ms` (DST-aware, no library). */
+let nyFormatter: Intl.DateTimeFormat | undefined;
+
+/** America/New_York wall-clock parts of `ms` (DST-aware, no library); one formatter for every call. */
 export function nyClock(ms: number): { date: string; minutes: number } {
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date(ms));
+  nyFormatter ??= new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  const parts = nyFormatter.formatToParts(new Date(ms));
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
   return { date: `${get("year")}-${get("month")}-${get("day")}`, minutes: Number(get("hour")) * 60 + Number(get("minute")) };
 }

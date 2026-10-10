@@ -4,6 +4,7 @@
  */
 export * from "./agents";
 export * from "./chains";
+export { PATH_USD } from "./path-usd";
 export * from "./deployments";
 export * from "./env";
 export * from "./errors";

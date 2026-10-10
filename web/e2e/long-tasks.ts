@@ -11,6 +11,9 @@
  *
  *   pnpm --filter @cwf/web exec tsx e2e/long-tasks.ts https://testnet.mitoshi.xyz / /markets /portfolio
  *   pnpm --filter @cwf/web exec tsx e2e/long-tasks.ts --base https://testnet.mitoshi.xyz --routes /trade/BTC [--cpu 1] [--out <dir>]
+ *
+ * `--profile` (with `--out`) also saves each route's first 12 s as a V8 CPU profile (`<route>.cpuprofile`, 100 µs
+ * sampling) — against a local `ANALYZE_MAPS=1` build its frames map back to source through the chunks' `.map` files.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -23,6 +26,7 @@ const routes = flagged ? (arg("routes") ?? "/trade/BTC").split(",") : process.ar
 const cpu = Number(arg("cpu") ?? "4");
 const framesS = Number(arg("frames-s") ?? "10");
 const out = arg("out");
+const profile = process.argv.includes("--profile") && out !== undefined;
 if (out) mkdirSync(out, { recursive: true });
 
 const pct = (xs: number[], p: number) => xs.length ? xs[Math.min(xs.length - 1, Math.floor((p / 100) * xs.length))]! : 0;
@@ -38,8 +42,14 @@ for (const r of routes) {
   await page.addInitScript(`(()=>{const raf=window.requestAnimationFrame.bind(window);window.__fw=[];let cur=null;
     window.requestAnimationFrame=(cb)=>raf((ts)=>{const t0=performance.now();try{cb(ts)}finally{const d=performance.now()-t0;
     if(cur&&cur.ts===ts)cur.ms+=d;else{cur={ts,at:t0,ms:d};window.__fw.push(cur)}}});})();`);
+  if (profile) {
+    await cdp.send("Profiler.enable");
+    await cdp.send("Profiler.setSamplingInterval", { interval: 100 });
+    await cdp.send("Profiler.start");
+  }
   await page.goto(base + r, { waitUntil: "load" });
   await page.waitForTimeout(12000);
+  if (profile) writeFileSync(join(out!, `${r.replace(/\W+/g, "_") || "root"}.cpuprofile`), JSON.stringify((await cdp.send("Profiler.stop")).profile));
   const lt = await page.evaluate(`window.__lt`) as [number, number][];
   const tbt = lt.reduce((s, [, d]) => s + Math.max(0, d - 50), 0);
   const frames = page.frames().map((f) => new URL(f.url() || "about:blank").host).filter(Boolean);

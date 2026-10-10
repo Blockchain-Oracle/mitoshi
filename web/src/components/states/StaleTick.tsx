@@ -12,10 +12,12 @@ interface StaleTickProps {
   className?: string;
 }
 
-const LOCAL_TIME = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" });
+// Built on first use, not at import: the page's first Intl.DateTimeFormat loads ICU's date data (~56 ms at 4× CPU on
+// /trade's load, F-S23-08), and a tick only needs it once something is stale.
+let localTime: Intl.DateTimeFormat | undefined;
 
 export function localClock(ms: number): string {
-  return LOCAL_TIME.format(new Date(ms));
+  return (localTime ??= new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" })).format(new Date(ms));
 }
 
 /** The previous value stays at full ink; this tick says how old it is, in the reader's own clock. */

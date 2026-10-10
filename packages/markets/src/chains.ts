@@ -6,12 +6,10 @@
 import { baseSepolia, robinhood, robinhoodTestnet, tempo, tempoModerato } from "viem/chains";
 import type { Chain } from "viem";
 import { NETWORKS, type Network } from "@cwf/core";
-import { TEMPO, UTILITIES } from "@cwf/clients";
+import { UTILITIES } from "@cwf/clients";
+import { PATH_USD } from "./path-usd";
 
 export { baseSepolia, robinhood, robinhoodTestnet, tempo, tempoModerato };
-
-/** pathUSD: the fee token on every send (N-12) and the collateral of every market. */
-export const PATH_USD = TEMPO.pathUSD;
 
 /**
  * The Tempo chain for a network, with pathUSD as the default fee token and Multicall3 declared: viem's Tempo chains

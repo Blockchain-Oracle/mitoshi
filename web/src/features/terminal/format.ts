@@ -26,7 +26,14 @@ export function fixedText(value: number, dp: number): string {
   return (Math.round(scaled) / 10 ** dp).toFixed(dp);
 }
 
-const grouped = (n: number, dp: number) => Number(fixedText(n, dp)).toLocaleString("en-US", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+// One formatter per decimals: `toLocaleString(locale, options)` builds a new Intl.NumberFormat on every call, and every
+// money figure on the terminal goes through here on every tick (D-181's rule, F-S23-08). Same locale, same output.
+const groupers = new Map<number, Intl.NumberFormat>();
+const grouped = (n: number, dp: number) => {
+  let f = groupers.get(dp);
+  if (!f) groupers.set(dp, (f = new Intl.NumberFormat("en-US", { minimumFractionDigits: dp, maximumFractionDigits: dp })));
+  return f.format(Number(fixedText(n, dp)));
+};
 
 /** Base units → "$24.54", or signed with a true minus ("+$3.76" / "−$5.74") when `signed`; 2 dp (settled figures). */
 export function money(base: bigint, signed = false, decimals = USD_DECIMALS): string {
@@ -63,4 +70,5 @@ export function untilText(targetSec: number, nowSec: number): string {
   return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}` : `${m}:${String(r).padStart(2, "0")}`;
 }
 
-export const clockText = (sec: number): string => new Date(sec * 1000).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+let clock: Intl.DateTimeFormat | undefined;
+export const clockText = (sec: number): string => (clock ??= new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" })).format(sec * 1000);

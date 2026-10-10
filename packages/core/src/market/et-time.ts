@@ -20,7 +20,10 @@ export const MIN_PER_DAY = 1_440;
 
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-const partsFormatter = new Intl.DateTimeFormat("en-US", {
+// Built on first use, not at import (a browser page that imports the calendar may never convert a time; the first
+// time-zoned Intl.DateTimeFormat loads ICU's zone data).
+let partsFormatter: Intl.DateTimeFormat | undefined;
+const etParts = () => (partsFormatter ??= new Intl.DateTimeFormat("en-US", {
   timeZone: ET_TIME_ZONE,
   hourCycle: "h23",
   year: "numeric",
@@ -29,7 +32,7 @@ const partsFormatter = new Intl.DateTimeFormat("en-US", {
   hour: "2-digit",
   minute: "2-digit",
   second: "2-digit",
-});
+}));
 
 interface WallParts {
   year: number;
@@ -42,7 +45,7 @@ interface WallParts {
 
 function wallParts(sec: number): WallParts {
   const out: Record<string, number> = {};
-  for (const part of partsFormatter.formatToParts(new Date(sec * 1000))) {
+  for (const part of etParts().formatToParts(new Date(sec * 1000))) {
     if (part.type !== "literal") out[part.type] = Number(part.value);
   }
   return { year: out.year!, month: out.month!, day: out.day!, hour: out.hour!, minute: out.minute!, second: out.second! };

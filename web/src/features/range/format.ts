@@ -22,8 +22,11 @@ export function usdBand(print: bigint): string {
 }
 
 /** A dollar amount on the band's grid — `$5`, `$0.20`, `$1,240`. */
+const onGrid = new Map<number, Intl.NumberFormat>();
 export function usdOnGrid(usd: number, decimals: number): string {
-  return `$${usd.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
+  let f = onGrid.get(decimals);
+  if (!f) onGrid.set(decimals, (f = new Intl.NumberFormat("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })));
+  return `$${f.format(usd)}`;
 }
 
 /** A print in cents → dollars with cents, for the band arithmetic the reference does in dollars. */
