@@ -33,6 +33,7 @@ export const ACCOUNT_PAGE = {
     resets: (when: string) => `resets ${when}`,
     noLimit: "No spending limit",
     lastUsed: "Last used",
+    history: (n: number) => `Key used · last ${n} ${n === 1 ? "spend" : "spends"}`,
     neverUsed: "Not used yet",
     authorized: "Added",
     revokedAt: "Revoked",

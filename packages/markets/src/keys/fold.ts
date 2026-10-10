@@ -22,15 +22,28 @@ export interface KeyHistory {
   authorized: { block: bigint; txHash: Hex } | null;
   revoked: { block: bigint; txHash: Hex } | null;
   lastUsed: { block: bigint; txHash: Hex } | null;
+  /** "Key used" (D43): its spends, newest first, at most `KEY_USES_KEPT`. */
+  uses: KeyUse[];
   tokens: KeyTokenLimit[];
 }
+
+export interface KeyUse {
+  block: bigint;
+  txHash: Hex;
+  token: Address | null;
+  /** What this spend took, in the token's base units; null when the event carried none. */
+  amount: bigint | null;
+}
+
+/** Enough to read a key's recent story without the record growing with every tap. */
+export const KEY_USES_KEPT = 25;
 
 export function foldKeychain(events: readonly KeychainEvent[]): KeyHistory[] {
   const keys = new Map<string, KeyHistory>();
   const get = (keyId: Address) => {
     const k = keyId.toLowerCase();
     let rec = keys.get(k);
-    if (!rec) keys.set(k, (rec = { keyId, admin: false, signatureType: null, expirySec: null, authorized: null, revoked: null, lastUsed: null, tokens: [] }));
+    if (!rec) keys.set(k, (rec = { keyId, admin: false, signatureType: null, expirySec: null, authorized: null, revoked: null, lastUsed: null, uses: [], tokens: [] }));
     return rec;
   };
   const token = (rec: KeyHistory, t: Address) => {
@@ -44,7 +57,7 @@ export function foldKeychain(events: readonly KeychainEvent[]): KeyHistory[] {
     switch (e.name) {
       case "KeyAuthorized":
         // Re-authorising after a revoke starts a fresh record for the same key id.
-        if (rec.revoked) Object.assign(rec, { revoked: null, lastUsed: null, tokens: [] });
+        if (rec.revoked) Object.assign(rec, { revoked: null, lastUsed: null, uses: [], tokens: [] });
         Object.assign(rec, { signatureType: e.signatureType, expirySec: e.expirySec, authorized: at });
         break;
       case "AdminKeyAuthorized":
@@ -59,6 +72,8 @@ export function foldKeychain(events: readonly KeychainEvent[]): KeyHistory[] {
       case "AccessKeySpend":
         if (e.token) token(rec, e.token);
         rec.lastUsed = at;
+        rec.uses.unshift({ ...at, token: e.token, amount: e.amount });
+        if (rec.uses.length > KEY_USES_KEPT) rec.uses.length = KEY_USES_KEPT;
         break;
     }
   }

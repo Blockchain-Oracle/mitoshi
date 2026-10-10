@@ -13,7 +13,7 @@ export interface KeysAnswer {
 }
 
 const big = (v: string | null | undefined) => (v === null || v === undefined ? null : BigInt(v));
-type Raw = { keys: (Omit<KeyState, "expiry" | "authorized" | "revoked" | "lastUsed" | "live" | "tokens"> & Record<string, unknown>)[]; coverage: Record<string, string | boolean | null> };
+type Raw = { keys: (Omit<KeyState, "expiry" | "authorized" | "revoked" | "lastUsed" | "uses" | "live" | "tokens"> & Record<string, unknown>)[]; coverage: Record<string, string | boolean | null> };
 const at = (v: unknown) => (v ? { block: BigInt((v as { block: string }).block), txHash: (v as { txHash: Hex }).txHash } : null);
 
 export function parseKeys(raw: Raw): KeysAnswer {
@@ -26,6 +26,7 @@ export function parseKeys(raw: Raw): KeysAnswer {
       return {
         keyId: k.keyId, admin: k.admin, signatureType: k.signatureType, expirySec: big(k.expiry as string | null),
         authorized: at(k.authorized), revoked: at(k.revoked), lastUsed: at(k.lastUsed),
+        uses: ((k.uses as { block: string; txHash: Hex; token: Address | null; amount: string | null }[] | undefined) ?? []).map((u) => ({ block: BigInt(u.block), txHash: u.txHash, token: u.token, amount: big(u.amount) })),
         live: live ? { revoked: live.revoked, expirySec: BigInt(live.expirySec), enforceLimits: live.enforceLimits } : null, tokens,
       };
     }),

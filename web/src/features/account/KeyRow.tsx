@@ -65,6 +65,19 @@ export function KeyRow({ keyState, nowSec, network, onRevoke, revoking, thisDevi
           <div><dt className="inline">{K.revokedAt}: </dt><dd className="inline"><a className="numbers underline decoration-dotted underline-offset-4" href={link(keyState.revoked.txHash)} target="_blank" rel="noreferrer">block {keyState.revoked.block.toString()}</a></dd></div>
         ) : null}
       </dl>
+      {keyState.uses.length > 0 ? (
+        <details className="type-caption text-ink-secondary">
+          <summary className="min-h-touch cursor-pointer content-center type-body-strong text-ink">{K.history(keyState.uses.length)}</summary>
+          <ol className="mt-1 flex flex-col divide-y divide-hairline">
+            {keyState.uses.map((u) => (
+              <li key={`${u.txHash}-${u.token ?? ""}`} className="flex items-center justify-between gap-3 py-2">
+                <span className="numbers text-ink">{u.amount === null ? "—" : `${dollars(u.amount)} ${u.token ? tokenName(u.token) : ""}`}</span>
+                <a className="numbers underline decoration-dotted underline-offset-4" href={link(u.txHash)} target="_blank" rel="noreferrer">block {u.block.toString()}</a>
+              </li>
+            ))}
+          </ol>
+        </details>
+      ) : null}
       {status === "active" && onRevoke ? (
         <button type="button" onClick={onRevoke} disabled={revoking} className="min-h-touch self-start rounded-md border border-border-strong px-4 type-body-strong text-ink disabled:opacity-50">
           {revoking ? K.revokingAll : K.revoke}

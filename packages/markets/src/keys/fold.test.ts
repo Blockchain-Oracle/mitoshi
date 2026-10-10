@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Address, Hex } from "viem";
 import type { KeychainEvent } from "./events";
 import { logWindows } from "./events";
-import { foldKeychain } from "./fold";
+import { foldKeychain, KEY_USES_KEPT } from "./fold";
 
 const K1 = "0x00000000000000000000000000000000000000a1" as Address;
 const K2 = "0x00000000000000000000000000000000000000a2" as Address;
@@ -29,7 +29,15 @@ describe("foldKeychain", () => {
 
   it("a key re-authorised after a revoke starts a fresh record", () => {
     const [k] = foldKeychain([ev("KeyAuthorized", 1n), ev("AccessKeySpend", 2n, { token: PUSD }), ev("KeyRevoked", 3n), ev("KeyAuthorized", 4n, { expirySec: 0n })]);
-    expect(k).toMatchObject({ revoked: null, lastUsed: null, tokens: [], authorized: { block: 4n }, expirySec: 0n });
+    expect(k).toMatchObject({ revoked: null, lastUsed: null, uses: [], tokens: [], authorized: { block: 4n }, expirySec: 0n });
+  });
+
+  it("keeps the key's recent spends, newest first, and no more than it shows", () => {
+    const spends = Array.from({ length: KEY_USES_KEPT + 5 }, (_, i) => ev("AccessKeySpend", BigInt(100 + i), { token: PUSD, amount: BigInt(i + 1) * 1_000n }));
+    const [k] = foldKeychain([ev("KeyAuthorized", 1n), ...spends]);
+    expect(k!.uses).toHaveLength(KEY_USES_KEPT);
+    expect(k!.uses[0]).toMatchObject({ block: 129n, token: PUSD, amount: 30_000n });
+    expect(k!.uses.at(-1)).toMatchObject({ block: 105n });
   });
 });
 
