@@ -32,7 +32,7 @@ export const STEPS: readonly Step[] = [
   {
     number: 2,
     title: "Pick a Window",
-    description: "Each Window is one asset over one lane: five minutes, fifteen or an hour. BTC, ETH and SOL run around the clock; US stocks run in and out of NYSE hours on RedStone's 24/7 feeds. The line on the chart is the Window's opening print.",
+    description: "Each Window is one asset over one lane. BTC, ETH and SOL run five-minute Windows around the clock; nine US stocks run five-, fifteen- and sixty-minute Windows in NYSE hours and on RedStone's 24/7 feeds, plus a weekend Gap. The line on the chart is the Window's opening print.",
     icon: TargetIcon,
     tone: "blue",
   },

@@ -6,7 +6,8 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { PENDING } from "../../../lib/capabilities";
-import { DOCS_URL } from "../../../lib/docs-url";
+import { DOCS_EXTERNAL, DOCS_URL } from "../../../lib/docs-url";
+import { DOCS_NAV } from "../../../features/docs/nav";
 import { DOCK_NAV, EVERYTHING_SECTIONS, isActiveNavItem, isTopLevel, NAVIGABLE_ROUTE_PATHS, NAV_ITEMS, RAIL_NAV, searchNav, type NavItem } from "./nav-items";
 
 const APP_DIR = fileURLToPath(new URL("../../../app", import.meta.url));
@@ -57,9 +58,9 @@ describe("navigation registry", () => {
     expect(isTopLevel("/games/duel")).toBe(false);
   });
 
-  it("keeps docs external and every app destination internal", () => {
+  it("keeps docs external only when they are another site, and every app destination internal", () => {
     const items: NavItem[] = Object.values(NAV_ITEMS);
-    expect(items.filter((i) => i.external).map((i) => i.id)).toEqual(["docs"]);
+    expect(items.filter((i) => i.external).map((i) => i.id)).toEqual(DOCS_EXTERNAL ? ["docs"] : []);
     expect(NAV_ITEMS.docs.href).toBe(DOCS_URL);
     expect(items.filter((i) => !i.external).every((i) => i.href.startsWith("/"))).toBe(true);
   });
@@ -80,7 +81,8 @@ describe("route coverage (fidelity list 14)", () => {
 
   it("gives every static page a nav home, a parent that links to it, or an explicit off-nav reason", () => {
     const navigable = new Set<string>(NAVIGABLE_ROUTE_PATHS);
-    const linkedFrom = new Set(Object.values(PENDING).flatMap((p) => (p.links ?? []).map((l) => l.href)));
+    // Pending pages link their children; the docs' sidebar links every docs page (S20, L-20).
+    const linkedFrom = new Set([...Object.values(PENDING).flatMap((p) => (p.links ?? []).map((l) => l.href)), ...DOCS_NAV.flatMap((s) => s.pages.map((p) => p.href))]);
     const orphans = routes.filter((r) => !r.includes("[") && !navigable.has(r) && !OFF_NAV.has(r) && !linkedFrom.has(r));
     expect(orphans).toEqual([]);
   });

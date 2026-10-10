@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { DOCS_URL, docsUrl } from "./src/lib/docs-url";
+import { DOCS_EXTERNAL, DOCS_URL, docsUrl } from "./src/lib/docs-url";
 
 /**
  * Plan D-050 (D41): cached rendering, the React Compiler, partial prefetching, and no agent files written by
@@ -25,8 +25,13 @@ const config: NextConfig = {
     moved("/beta", "/markets"),
     moved("/pool", "/earn"),
     moved("/tickers/:symbol", "/stocks/:symbol"),
-    { source: "/docs", destination: DOCS_URL, permanent: false },
-    { source: "/docs/:path*", destination: docsUrl(":path*"), permanent: false },
+    // Only when the docs are another site: by default they are this app's own `/docs`.
+    ...(DOCS_EXTERNAL
+      ? [
+          { source: "/docs", destination: DOCS_URL, permanent: false },
+          { source: "/docs/:path*", destination: docsUrl(":path*"), permanent: false },
+        ]
+      : []),
   ],
 };
 

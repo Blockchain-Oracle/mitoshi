@@ -1852,6 +1852,17 @@ against latency pick-off (option (d) would have).
   targets (withdraw, revoke and crank stay sponsored there). The old `ExitGranted` shape still decodes; index/0005
   adds `exit_slack_bps`. Owners re-arm on the new vault, as at the v1 → v2 move.
 
+### D-214 — the docs live in the site group at /docs, beside /privacy and /terms (decision, S20, 2026-10-10)
+
+**The documentation (L-20) is a section of the web app at `/docs`, in the site route group, not a separate site.**
+The parity row said "new docs repo"; three facts made one app the better shape. (1) S20's own row has `/privacy` and
+`/terms` reuse the docs layout, so that layout is in the web app either way. (2) "Only shipped surfaces" (L-20) holds
+best when the docs deploy with what they describe — the contracts page reads the same generated deployments the app
+calls, so it can't drift. (3) `docs.mitoshi.xyz` had no DNS record and the footer's Docs link was dead; `/docs`
+works on the deployed host the moment it ships. `NEXT_PUBLIC_DOCS_URL` still points the nav and footer at another
+site, with `/docs` redirecting there, if a separate docs host is wanted later. The layout's sidebar is 21st 19371
+(uiable/sidebar-1), opening from the right edge on phones (D-190).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

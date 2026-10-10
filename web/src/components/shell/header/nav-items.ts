@@ -9,7 +9,7 @@ import {
   Layers3, MessageSquare, Mountain, Newspaper, Palette, Presentation, Rocket, ScanSearch, Settings, ShieldCheck, Trophy,
   WalletCards, X as XLogo, type LucideIcon,
 } from "lucide-react";
-import { DOCS_URL } from "../../../lib/docs-url";
+import { DOCS_EXTERNAL, DOCS_URL } from "../../../lib/docs-url";
 
 export type NavItem = {
   id: string;
@@ -64,7 +64,7 @@ export const NAV_ITEMS = {
   stats: item({ id: "stats", name: "Stats", href: "/stats", description: "Inspect protocol and market activity.", icon: BarChart3 }),
   news: item({ id: "news", name: "News", href: "/news", description: "Follow the stories moving markets.", icon: Newspaper }),
   howItWorks: item({ id: "how-it-works", name: "How it works", href: "/how-it-works", description: "Understand the product from end to end.", icon: CircleHelp }),
-  docs: item({ id: "docs", name: "Docs", href: DOCS_URL, external: true, description: "Read step-by-step guides and product documentation.", icon: BookOpen }),
+  docs: item({ id: "docs", name: "Docs", href: DOCS_URL, external: DOCS_EXTERNAL, description: "Read step-by-step guides and product documentation.", icon: BookOpen }),
   status: item({ id: "status", name: "Status", href: "/status", description: "Check connected services and contracts.", icon: Activity }),
   download: item({ id: "download", name: "Download", href: "/download", description: "Install Mitoshi as an app.", icon: Download, keywords: "install pwa app" }),
   demo: item({ id: "demo", name: "Demo", href: "/demo", description: "Walk through the complete product story.", icon: Clapperboard }),
@@ -148,7 +148,7 @@ export const EVERYTHING_ITEMS: readonly NavItem[] = EVERYTHING_SECTIONS.flatMap(
 
 /** Every real, user-facing page that must retain an explicit navigation home (the route-coverage contract). */
 export const NAVIGABLE_ROUTE_PATHS = [
-  "/activity", "/agents", "/bridge", "/claim", "/demo", "/download", "/earn", "/games", "/games/candle-hop", "/games/duel",
+  "/activity", "/agents", "/bridge", "/claim", "/demo", "/docs", "/download", "/earn", "/games", "/games/candle-hop", "/games/duel",
   "/games/history", "/games/line-rider", "/games/lucky", "/games/moonshot", "/games/practice", "/games/range", "/games/rank",
   "/how-it-works", "/launch", "/leaderboard", "/markets", "/news", "/parlay", "/pitch", "/portfolio", "/portfolio/edge",
   "/reels", "/reserves", "/settings/account", "/settings/notifications", "/stats", "/status", "/stocks", "/strategies",

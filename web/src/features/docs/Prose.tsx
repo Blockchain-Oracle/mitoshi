@@ -1,0 +1,41 @@
+// The docs' typography: a handful of server components over Mitoshi's type tokens, so a page reads as plain structure.
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+export const H1 = ({ children }: { children: ReactNode }) => <h1 className="type-display text-ink">{children}</h1>;
+export const Lead = ({ children }: { children: ReactNode }) => <p className="type-body text-ink-secondary">{children}</p>;
+export const H2 = ({ children, id }: { children: ReactNode; id?: string }) => <h2 id={id} className="mt-4 type-title text-ink">{children}</h2>;
+export const P = ({ children }: { children: ReactNode }) => <p className="type-body text-ink">{children}</p>;
+export const Ul = ({ items }: { items: readonly ReactNode[] }) => (
+  <ul className="flex list-disc flex-col gap-2 pl-5 type-body text-ink">{items.map((item, i) => <li key={i}>{item}</li>)}</ul>
+);
+export const Ol = ({ items }: { items: readonly ReactNode[] }) => (
+  <ol className="flex list-decimal flex-col gap-2 pl-5 type-body text-ink">{items.map((item, i) => <li key={i}>{item}</li>)}</ol>
+);
+/** A note the reader must not miss: testnet money, a limit, what is next. */
+export const Note = ({ children }: { children: ReactNode }) => (
+  <aside className="rounded-lg border border-hairline bg-surface-1 p-4 type-body text-ink-secondary">{children}</aside>
+);
+export const A = ({ href, children }: { href: string; children: ReactNode }) =>
+  href.startsWith("http") ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="text-ink underline underline-offset-4">{children}</a>
+  ) : (
+    <Link href={href} className="text-ink underline underline-offset-4">{children}</Link>
+  );
+export const Code = ({ children }: { children: ReactNode }) => <code className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-[0.9em] text-ink">{children}</code>;
+export function Table({ head, rows }: { head: readonly string[]; rows: readonly (readonly ReactNode[])[] }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-hairline">
+      <table className="w-full border-collapse type-body">
+        <thead className="bg-surface-1 text-left text-ink-secondary">
+          <tr>{head.map((h) => <th key={h} className="px-4 py-3 type-label-micro">{h}</th>)}</tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} className="border-t border-hairline">{r.map((c, j) => <td key={j} className="px-4 py-3 align-top text-ink">{c}</td>)}</tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
