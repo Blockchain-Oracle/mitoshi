@@ -5,6 +5,9 @@ import { winStreaks } from "./equity";
 import { roundSettledAtMs } from "./settle";
 import type { SettledRound, TraderRanking } from "./types";
 
+/** What ranking reads of a round: its money, its outcome and when it settled (a full `SettledRound` is one). */
+export type RankRound = Pick<SettledRound, "pnlBase" | "stakeBase" | "outcome" | "settledAtMs" | "expirySec">;
+
 export interface RankWindow {
   windowStartMs: number;
   windowEndMs: number;
@@ -18,7 +21,7 @@ export interface RankResult {
   totalWallets: number;
 }
 
-function inWindow(round: SettledRound, window: RankWindow): boolean {
+function inWindow(round: RankRound, window: RankWindow): boolean {
   const at = roundSettledAtMs(round);
   return at >= window.windowStartMs && at < window.windowEndMs;
 }
@@ -33,7 +36,7 @@ function compare(a: TraderRanking, b: TraderRanking): number {
   return a.owner.localeCompare(b.owner);
 }
 
-function rankOne(owner: Address, rounds: readonly SettledRound[]): TraderRanking | null {
+function rankOne(owner: Address, rounds: readonly RankRound[]): TraderRanking | null {
   if (rounds.length === 0) return null;
   const pnlBase = rounds.reduce((sum, round) => sum + round.pnlBase, 0n);
   const volumeBase = rounds.reduce((sum, round) => sum + round.stakeBase, 0n);
@@ -55,7 +58,7 @@ function rankOne(owner: Address, rounds: readonly SettledRound[]): TraderRanking
  * Ranks every wallet by realised result over the rounds that closed inside the window.
  * A loss is a round like any other: it enters the sum, and it cannot leave it.
  */
-export function rankTraders(byWallet: ReadonlyMap<Address, readonly SettledRound[]>, window: RankWindow): RankResult {
+export function rankTraders(byWallet: ReadonlyMap<Address, readonly RankRound[]>, window: RankWindow): RankResult {
   const rankings: TraderRanking[] = [];
   let closedCalls = 0;
   for (const [owner, rounds] of byWallet) {
@@ -67,4 +70,16 @@ export function rankTraders(byWallet: ReadonlyMap<Address, readonly SettledRound
   }
   rankings.sort(compare);
   return { rankings, closedCalls, totalWallets: rankings.length };
+}
+
+/**
+ * The ROI tab's order (RV-86): return on stake, then the P&L tie-breaks. A ranking with nothing staked has no ROI and
+ * sorts last.
+ */
+export function sortByRoi(rankings: readonly TraderRanking[]): TraderRanking[] {
+  return [...rankings].sort((a, b) => {
+    const roiA = a.roiBps ?? Number.NEGATIVE_INFINITY;
+    const roiB = b.roiBps ?? Number.NEGATIVE_INFINITY;
+    return roiA !== roiB ? roiB - roiA : compare(a, b);
+  });
 }

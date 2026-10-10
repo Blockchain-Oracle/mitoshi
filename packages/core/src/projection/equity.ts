@@ -9,7 +9,7 @@ export interface EquityPoint {
 }
 
 /** Oldest first, so the curve reads left to right the way the rows read top to bottom. */
-export function chronological(rounds: readonly SettledRound[]): SettledRound[] {
+export function chronological<R extends Pick<SettledRound, "settledAtMs" | "expirySec">>(rounds: readonly R[]): R[] {
   return [...rounds].sort((a, b) => roundSettledAtMs(a) - roundSettledAtMs(b));
 }
 
@@ -37,7 +37,7 @@ export function maxDrawdownBase(points: readonly EquityPoint[]): bigint {
 }
 
 /** Longest run of consecutive wins, and the run the wallet is on now, over decided rounds only. */
-export function winStreaks(rounds: readonly SettledRound[]): { best: number; current: number } {
+export function winStreaks(rounds: readonly Pick<SettledRound, "outcome" | "settledAtMs" | "expirySec">[]): { best: number; current: number } {
   let best = 0;
   let run = 0;
   for (const round of chronological(rounds)) {

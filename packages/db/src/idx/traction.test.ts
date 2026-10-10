@@ -29,7 +29,7 @@ describe("everyDay", () => {
 });
 
 describe.skipIf(!url)("readTraction (fresh schema)", () => {
-  const schema = `t_${Date.now().toString(36)}`;
+  const schema = `t_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
   let admin: postgres.Sql;
   let sql: postgres.Sql;
   beforeAll(async () => {
