@@ -1,7 +1,7 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-09 20:10Z (S23 gate in progress: LCP fixed, §8 states built, the passkey session fix, the S8
-earn-quoter live; TBT and /markets CLS still open). **Never trust memory over this file.**
+Updated 2026-10-10 08:40Z (S23 gate nearly closed: states 38/38, tap → card 643 ms, compile hints; S20 public story
+under way: landing, pitch, how-it-works, demo, docs, privacy/terms, manifest live). **Never trust memory over this file.**
 
 ## Where we are
 
@@ -71,25 +71,29 @@ s), twice. The S23 gate (D-207: the product checked live, no UI test suites) has
   92cc15f, to re-measure);
 - Lighthouse with `/trade/BTC`, the §8 screenshots, and the owner's phone run.
 
-**S23 gate — in progress since 2026-10-09 16:00Z (`acceptance/S23.md`, F-S23-06…11).** Live on Moderato from GitHub
-runners against the deployed site (web 20261009194409, ops 8837084+):
-- Passed: onboarding at 390/1440 (0 extra prompts, funded, still signed in after two more page loads); tap-latency
-  (6 opens + 6 closes, 0 prompts, tap → card p50 1.29 s, "Closing…" p50 18 ms); a TSLA trade in NYSE hours (UP 2.0 s,
-  CLOSE 2.3 s); the Trading Balance check (with session keys loading `viem/tempo` on demand); Boost; frame work at 1×
-  CPU p50 0.6 / p95 4.0 ms. Off-hours TSLA run 37984448118 dispatched 20:03Z.
-- Built for the gate: every §8 state and Tradash's account surfaces (RV-80/81/82): P&L line + curve, 6-stat history,
-  Activity as money moves (`/api/activity`, migration `activity/0001`), position-gone, the failure titles saying whether
-  money moved; the one-tap card button; `web/e2e/states.ts` captures 36 of 38 states beside Tradash live (the history
-  grid re-running).
-- Fixed: a passkey session lost on the second page load (the lazy Tempo Wallet connector's store over the passkey's,
-  F-S23-10); /trade LCP 7.4 → 2.3 s (the first tour step server-rendered); the chart and price commits idle behind a
-  centred modal; zod and our `viem/tempo` imports off /trade's load (2,884 → 2,492 KB raw); /markets reserves its
-  layout while loading; AA initials avatars.
-- S8's ops **earn-quoter** now quotes the maker vault (setMaker done; `OPS_ACTORS` updated) — Range, Moonshot and
-  Parlay had no depth without the manual script. The `/earn` UI (rest of S8 box 2) is still open.
-- Open: Lighthouse TBT on /trade (~975 ms), /markets (~1.3 s) and /portfolio (~300 ms); /markets CLS re-measure; Range
-  and Moonshot re-run on the quoter's depth; tap → card ≤ 1 s (F-S23-11); the owner's phone run; S5/S13 items (share,
-  leaderboard, season, Sensei).
+**S20 — public story, started 2026-10-10 (submission due 2026-10-12 23:59 PT).** Deployed on testnet.mitoshi.xyz:
+- `/` (L-11): one line + one button (21st 23414 slot headline), the live terminal on a phone (an iframe mounted on
+  screen; `frame-ancestors 'self'` now sent on every route), both pillars in 21st 27082's bento, 26891's steps,
+  29870's tiles with the indexer's live counts (49,8xx Windows opened), 28155's band. Site-owned JS 25.4 KB.
+- `/pitch` (L-14, Masayume 52a86fc's folio), `/how-it-works` (L-12), `/demo` (L-13: dated captures + six receipts,
+  the video slot honest until it exists), `/docs` (L-20, D-214: eleven pages in the site group) with `/privacy` and
+  `/terms` in its layout, the web app manifest + icons (L-18's install claim now true), one title pattern.
+- Left: the two videos (pitch 2–3 min, demo ≤ 3 min — owner voice; footage and scripts can be prepared), GTM/demand
+  text and the submission form; `/status`, `/news`, `/proof/[market]` are S5's (the terminal's "Proof of the prints"
+  links to `/proof`), `/contact` is S13's.
+
+**S23 gate — nearly closed (`acceptance/S23.md` passes 1–5, F-S23-06…13).** Since 2026-10-09 20:10Z:
+- Passed live: Range + Moonshot on the earn-quoter's depth (37996617218); **states 38 of 38** (38034974579, after
+  the spinning "Closed" toast fix); **tap → card p50 643 ms** (38033450444; the terminal row confirmed-pending at
+  signing, D-150 — F-S23-11 met); first-load JS 205 KB on /trade (budget 250).
+- Performance from a source-mapped 4× profile (F-S23-08): `PATH_USD` off viem's tempo/Abis (/trade 2,503 → 2,155 KB
+  raw), formatters off the first render, idle-mounted drawers, **V8 explicit compile hints on every chunk**
+  (`web/scripts/compile-hints.mjs`), the footer's CJK shaping deferred, the wall clock without Intl. Deployed 4×
+  blocking /trade/BTC 298 → 78–146 ms, /markets 299 → 135–140, /portfolio 205 → 40–64. Lighthouse TBT on a slow
+  host (benchmark ~2100): /trade 800 → 427, /markets 1,087 → 464, /portfolio 290 → 93 (passes), `/` 10 ms.
+- Open: Lighthouse TBT ≤ 200 on /trade and /markets on slow hosts; F-S23-12 (two Range sends reverted with no data at
+  a Window's first quote — RPC and relay ruled out); F-S23-13 RedStone's public-gateway windows (owner: the key,
+  D-210); the owner's phone run; S5/S13 items (share, leaderboard, season, Sensei).
 
 **S24 — gate passed 2026-10-09 (every box ticked; `acceptance/S24.md`).** Since 15:00Z:
 - **Q-033 answered (c), D-213.** A keeper sale's floor is fair − max(tolerance × fair, slack); the app grants 15 % or
@@ -156,8 +160,9 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
    stage gate.
 3. The revamp, sequentially on `integration/t1` (D-201: no worktrees, no lanes). R.0, S22 and S23's boxes are done;
    S24 is complete: every box ticked and the gate passed on 2026-10-09 (D-213 answered Q-033 with the floor's slack).
-   Next: finish the S23 gate (its open list above)
-   (above). S5's leaderboard data comes before S23g's leaderboard.
+   Next, in order: S20's videos (footage and scripts for the owner's voice), GTM text and the submission (due
+   2026-10-12 23:59 PT); S5's `/proof/[market]` (the terminal links to it) and `/status`; then the S23 gate's open
+   list (above). S5's leaderboard data comes before S23g's leaderboard.
 4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
    revamped UI.
