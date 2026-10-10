@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/modal";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { tapFeedback } from "@/lib/feedback";
 import { usePrivacy } from "@/lib/privacy";
+import { livePnlText, money, moneyTone } from "@/features/terminal/format";
 import { SHARE } from "./copy";
 import { renderSharePng, saveSharePng } from "./share-png";
 
@@ -28,10 +29,8 @@ export interface ShareSubject {
 
 type Mode = (typeof SHARE.modes)[number]["value"];
 
-const dollars = (base: bigint, decimals: number) => {
-  const n = Math.abs(Number(base)) / 10 ** decimals;
-  return `${base < 0n ? "−" : "+"}$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-};
+/** Cents, as the terminal settles figures; under a cent its live precision ("−$0.0019"), never a bare "−$0.00". */
+const dollars = (base: bigint, decimals: number) => (moneyTone(base, decimals) === "" && base !== 0n ? livePnlText(base, decimals) : money(base, true, decimals));
 
 export function ShareModal({ subject, open, onOpenChange }: { subject: ShareSubject | null; open: boolean; onOpenChange: (o: boolean) => void }) {
   // The card is the moment the reader tapped Share: a live PnL moves every tick, and a card that redraws under the
