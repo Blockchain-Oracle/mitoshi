@@ -53,6 +53,8 @@
 
 ## Handoff
 
+- S13 hand-off (2026-10-11): `/launch/[token]` carries Report — `/api/social/report` already accepts `targetKind: "token"` (D34); the page adds the button (`features/social/report-dialog-lazy.ts`) and runs the token's name and description through the word filter (`server/word-filter.ts`).
+
 **17a — contracts, batch, guard, policy and sub-gate done; the `/launch/stablecoin` wizard waits for S1's shell.**
 Done (branch `stage/S17a-launch`): `src/launch/{LaunchRegistry,ReservedCodes}.sol` (deployed + Sourcify-verified on
 Moderato `0x9b664B9B73497Aa140EdA23a81fCC3db279c50b7`, fragment `deployments/42431/launch.json`),

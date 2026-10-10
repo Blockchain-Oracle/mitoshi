@@ -31,7 +31,7 @@ export const DATA = {
     undo: "Undo",
     pending: (sec: number) => `Deleting your data in ${sec} s`,
     undone: "Nothing was deleted.",
-    done: (rows: number) => `Deleted ${rows.toLocaleString("en-US")} ${rows === 1 ? "row" : "rows"}. Your on-chain history is unchanged.`,
+    done: (rows: number) => `Deleted ${rows.toLocaleString("en-US")} ${rows === 1 ? "row" : "rows"} and signed you out. Your on-chain history is unchanged.`,
     refused: "Deletion cancelled: the request wasn't signed.",
     failed: "Your data couldn't be deleted. Nothing changed. Try again.",
   },

@@ -55,8 +55,11 @@ export function DataSection({ address, className }: { address: Address; classNam
     setTyped("");
     if (!res?.ok || !json.deleted) return notify.item({ id: "data-delete", type: "warning", title: json.message ?? DATA.delete.failed });
     withdrawAiConsent();
+    // The sessions go with the data (D34: "KV session records"): the social cookie, then the passkey session the
+    // wallet's disconnect revokes on the server.
     await social.signOut();
     notify.item({ id: "data-delete", title: DATA.delete.done(Object.values(json.deleted).reduce((a, b) => a + b, 0)) });
+    await shell.disconnect().catch(() => undefined);
   };
 
   const requestDeletion = async () => {

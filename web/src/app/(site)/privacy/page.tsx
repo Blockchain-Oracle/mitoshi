@@ -43,7 +43,7 @@ export default function Page() {
       <H2>When you contact us</H2>
       <P>What you send through the contact page is kept so someone can read and answer it: the topic, your message, an email only if you gave one for a reply, and your address only if you were signed in.</P>
       <H2>Download or delete</H2>
-      <P>Settings → Account downloads everything Mitoshi keeps off chain about your account as one file, and deletes it: profile, takes, room messages, reactions, follows, blocks you made, reports you filed, game seats and contact messages sent while signed in. Deletion asks for a fresh signature and waits five seconds so you can undo. Blocks other people placed on you stay theirs.</P>
+      <P>Settings → Account downloads everything Mitoshi keeps off chain about your account as one file, and deletes it: profile, takes, room messages, reactions, follows, blocks you made, reports you filed, game seats and contact messages sent while signed in. Deletion asks for a fresh signature, waits five seconds so you can undo, and ends your sessions. Blocks other people placed on you stay theirs. Your passkey&apos;s public key (and any backup&apos;s) stays, because your account on Tempo still exists and that key is how you sign in to it.</P>
       <H2>On chain</H2>
       <P>What you do on Tempo — your address, trades, balances and receipts — is public on the blockchain, as it is for everyone. Mitoshi&apos;s indexer reads that public record to show your positions and history, as anyone could.</P>
       <H2>Others involved</H2>

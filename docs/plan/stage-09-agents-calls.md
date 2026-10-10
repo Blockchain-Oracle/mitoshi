@@ -21,4 +21,6 @@ _None yet._
 
 ## Handoff
 
+- S13 hand-off (2026-10-11): agent pages carry Report and Block — `/api/social/report` already accepts `targetKind: "agent"` (D34); the page adds the button (`features/social/report-dialog-lazy.ts`).
+
 _Not started._
