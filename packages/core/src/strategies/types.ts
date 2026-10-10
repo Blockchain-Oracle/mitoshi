@@ -177,6 +177,8 @@ export type StrategyIntent =
     }
   /** Re-subscribe while subscribed: move onto another grant or switch follow ↔ fade; no fee (D-219.3). */
   | { kind: "strategy-subscribe"; strategyId: bigint; grantId: bigint; mode: SubscriptionMode; maxFeeBase: bigint }
+  /** Revoke the grant, keep the consent: the runner stops; resuming is a `strategy-copy` with no fee (D-219.3). */
+  | { kind: "strategy-pause"; strategyId: bigint; grantId: bigint }
   | { kind: "strategy-stop"; strategyId: bigint; grantId: bigint }
   | { kind: "strategy-unsubscribe"; strategyId: bigint }
   | { kind: "strategy-deactivate"; strategyId: bigint };

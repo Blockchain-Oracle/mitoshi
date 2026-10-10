@@ -10,6 +10,7 @@ import { eventsEngineAbi } from "@cwf/clients/abis/EventsEngine";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
 import { fairValueGuardAbi } from "@cwf/clients/abis/FairValueGuard";
+import { strategyRegistryAbi } from "@cwf/clients/abis/StrategyRegistry";
 import { EXPIRING_NONCE_MAX_SEC } from "@cwf/core";
 import type { Call } from "../tx/batch";
 import { sendBatch } from "../tx/send";
@@ -34,7 +35,7 @@ export const OPS_VALID_FOR_SEC = 60;
  * The engine's errors, then the EventVault's (an actor that cranks the vault reads its refusals by name too, S7), then
  * v2's EXIT grant and the fair-value guard behind its floor (the exit keeper, S24.3).
  */
-const ERROR_ABIS = [eventsEngineAbi, eventVaultAbi, eventVaultV2Abi, fairValueGuardAbi] as const;
+const ERROR_ABIS = [eventsEngineAbi, eventVaultAbi, eventVaultV2Abi, fairValueGuardAbi, strategyRegistryAbi] as const;
 
 function decodeName(data: Hex): string | null {
   for (const abi of ERROR_ABIS) {

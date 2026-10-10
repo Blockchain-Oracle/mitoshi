@@ -78,6 +78,26 @@ function approvalOf(call: RelayCall): Approval | "not-approve" | "bad" {
   return { token: to, spender, amount };
 }
 
+/**
+ * The area a transaction belongs to: its only one, or the one whose companions name every other area's call (each
+ * already checked against its own policy). Null when no area can lead the batch.
+ */
+function leadOf(seen: readonly { policy: RelayPolicy; fn: string }[]): { policy: RelayPolicy; extraGas: bigint } | null {
+  const areas = [...new Map(seen.map((s) => [s.policy.area, s.policy])).values()];
+  if (areas.length === 1) return { policy: areas[0]!, extraGas: 0n };
+  for (const lead of areas) {
+    let extraGas = 0n;
+    const covered = seen.every((s) => {
+      if (s.policy.area === lead.area) return true;
+      const c = lead.companions?.find((c) => c.area === s.policy.area && c.functions.includes(s.fn));
+      if (c) extraGas += c.extraGas;
+      return !!c;
+    });
+    if (covered) return { policy: lead, extraGas };
+  }
+  return null;
+}
+
 /** Evaluates a sponsorship request against every rule except budgets. */
 export async function evaluate(config: EngineConfig, request: RelayRequest, ctx: RelayContext, sender: SenderFacts = { isNew: false }): Promise<PolicyVerdict> {
   if (request.chainId !== config.chainId) return refuse("chain", `chain ${request.chainId} is not ${config.chainId}`);
@@ -87,6 +107,7 @@ export async function evaluate(config: EngineConfig, request: RelayRequest, ctx:
 
   let area: RelayPolicy | null = null;
   const approvals: Approval[] = [];
+  const seen: { policy: RelayPolicy; fn: string }[] = [];
   for (const call of request.calls) {
     if (call.value !== 0n) return refuse("value", "no native value on Tempo");
     if (!call.to) return refuse("create", "contract creation is never sponsored");
@@ -98,8 +119,9 @@ export async function evaluate(config: EngineConfig, request: RelayRequest, ctx:
     }
     const policy = policyOf(config.policies, call.to);
     if (!policy) return refuse("target", `${call.to} is not a sponsored target`);
-    if (area && area.area !== policy.area) return refuse("target", `one area per transaction (${area.area} and ${policy.area})`);
-    area = policy;
+    // A second area is refused at once unless one of the two declares companions; then the whole batch decides below.
+    if (area && area.area !== policy.area && !area.companions && !policy.companions) return refuse("target", `one area per transaction (${area.area} and ${policy.area})`);
+    area ??= policy;
     const fn = functionNameOf(policy.abi, call.data);
     if (!fn) return refuse("selector", `unknown selector ${call.data.slice(0, 10)} on ${policy.area}`);
     if (policy.never.includes(fn.name)) return refuse("never", `${policy.area}.${fn.name} is never sponsored`);
@@ -110,8 +132,12 @@ export async function evaluate(config: EngineConfig, request: RelayRequest, ctx:
     if (policy.asyncSender && !(await policy.asyncSender({ from: request.from, call, functionName: fn.name, args: fn.args, read: config.reader ?? null }).catch(() => false))) {
       return refuse("sender", `${request.from} may not call ${policy.area}.${fn.name}`);
     }
+    seen.push({ policy, fn: fn.name });
   }
   if (!area) return refuse("target", "approvals alone are never sponsored");
+  const lead = leadOf(seen);
+  if (!lead) return refuse("target", `one area per transaction (${[...new Set(seen.map((s) => s.policy.area))].join(" and ")})`);
+  area = lead.policy;
   for (const a of approvals) {
     const spenderOk = area.targets.some((t) => lower(t) === lower(a.spender)) || (lower(a.spender) === lower(UTILITIES.permit2) && isTip20(a.token));
     if (!spenderOk) return refuse("approve-spender", `approve spender ${a.spender} is not a ${area.area} target`);
@@ -125,7 +151,7 @@ export async function evaluate(config: EngineConfig, request: RelayRequest, ctx:
     if (why) return refuse("key-auth", why);
     keyGas = area.keyAuthorization.extraGas;
   }
-  const gasCap = area.maxGas + keyGas + (sender.isNew ? NEW_ACCOUNT_GAS : 0n);
+  const gasCap = area.maxGas + lead.extraGas + keyGas + (sender.isNew ? NEW_ACCOUNT_GAS : 0n);
   if (request.gas !== null && request.gas > gasCap) return refuse("gas", `gas ${request.gas} over the ${area.area} cap ${gasCap}`);
   if (request.feeToken !== null && lower(request.feeToken) !== lower(TEMPO.pathUSD)) return refuse("fee-token", "the fee token must be pathUSD");
   if (request.nonceKey === maxUint256) {

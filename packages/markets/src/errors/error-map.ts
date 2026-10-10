@@ -49,6 +49,18 @@ const REVERT_KINDS: Record<string, DiagnosisKind> = {
   InsufficientCredit: "insufficient-collateral",
   // The engine pre-checks the payee's TIP-403 receive policy (engine A.2 `_pay`).
   ReceivePolicyBlocked: "receive-policy",
+  // StrategyRegistry (S9, A.4.8): a fee raised since it was read is a re-quote; a grant the registry can't accept is
+  // the grant's refusal; metadata is the root key's to write (D-019) — an access key may not make that call.
+  FeeAboveMax: "requote",
+  FeeRecipientBlocked: "receive-policy",
+  CapsOutsideEnvelope: "grant-refused",
+  OutsideEnvelopeMarket: "grant-refused",
+  WrongActor: "grant-refused",
+  WrongGrantKind: "grant-refused",
+  GrantNotLive: "grant-refused",
+  NotGrantOwner: "grant-refused",
+  NoSuchGrant: "grant-refused",
+  MetadataNeedsRootKey: "call-not-allowed",
 };
 
 const MESSAGE_KINDS: ReadonlyArray<readonly [RegExp, DiagnosisKind]> = [

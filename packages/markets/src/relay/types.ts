@@ -51,6 +51,17 @@ export interface AsyncSenderCheck {
   (input: { from: Address; call: RelayCall; functionName: string; args: readonly unknown[]; read: RelayReader | null }): Promise<boolean>;
 }
 
+/**
+ * A call from another area that may ride in this area's transaction — an exit that belongs with this one (stop = the
+ * vault's `revoke` + the registry's `unsubscribe`, D-218.2). The call still passes its own area's policy (sponsor list,
+ * never list, sender rule); this only lifts "one area per transaction" for the named functions, and adds their gas.
+ */
+export interface RelayCompanion {
+  area: RelayArea;
+  functions: readonly string[];
+  extraGas: bigint;
+}
+
 export interface RelayPolicy {
   area: RelayArea;
   /** The area's contracts on this chain. */
@@ -68,6 +79,8 @@ export interface RelayPolicy {
   asyncSender?: AsyncSenderCheck;
   /** Which tx-level key authorizations this area sponsors publishing (D-136); absent = none. */
   keyAuthorization?: KeyAuthorizationRule;
+  /** Other areas' calls this area's transaction may carry; absent = none (one area per transaction). */
+  companions?: readonly RelayCompanion[];
 }
 
 export type RefusalCode =
