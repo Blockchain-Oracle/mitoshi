@@ -103,6 +103,18 @@ describe("adaptive eth_getLogs walk (recount, D-187)", () => {
     expect(tried.slice(0, 3)).toEqual([11_000n, 5_500n, 2_750n]);
   });
 
+  it("waits out a transport failure on the same window instead of shrinking it", async () => {
+    const tried: Array<[bigint, bigint]> = [];
+    const waits: number[] = [];
+    let down = 3;
+    await walkLogWindows(0n, 9_999n, async (from, to) => {
+      tried.push([from, to]);
+      if (down-- > 0) throw new Error("HTTP request failed.\n\nDetails: fetch failed");
+    }, { initialBlocks: 10_000n, sleep: async (ms) => void waits.push(ms) });
+    expect(tried).toEqual([[0n, 9_999n], [0n, 9_999n], [0n, 9_999n], [0n, 9_999n]]);
+    expect(waits).toEqual([2_000, 4_000, 8_000]);
+  });
+
   it("halves on an error without a hint, and gives up only at the minimum window", async () => {
     let calls = 0;
     const seen: bigint[] = [];

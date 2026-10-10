@@ -11,6 +11,9 @@
  */
 const RELAX_AFTER = 16;
 
+/** A transport failure, not a refusal: the RPC never answered, so the window's size says nothing about it. */
+const TRANSIENT = /fetch failed|ECONNRESET|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN|socket hang up|network error|other side closed/i;
+
 export interface LogWalkOptions {
   /** First window, in blocks (default 50,000). */
   initialBlocks?: bigint;
@@ -20,6 +23,10 @@ export interface LogWalkOptions {
   minBlocks?: bigint;
   /** Called on every refused window, for the caller's log. */
   onRefused?: (from: bigint, to: bigint, why: string) => void;
+  /** Retries of the same window after a transport failure, waiting 2 s doubling to 60 s (default 8, ~5 min). */
+  transientRetries?: number;
+  /** Test seam for the wait between transient retries. */
+  sleep?: (ms: number) => Promise<void>;
 }
 
 export interface LogWalkStats {
@@ -59,17 +66,27 @@ export async function walkLogWindows(fromBlock: bigint, toBlock: bigint, fetchWi
   /** The smallest window refused without a hint; growth stays under ¾ of it. */
   let ceiling: bigint | null = null;
   let answered = 0;
+  let transient = 0;
+  const retries = options.transientRetries ?? 8;
+  const sleep = options.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
   const stats: LogWalkStats = { windows: 0, refused: 0 };
   for (let from = fromBlock; from <= toBlock; ) {
     const to = from + size - 1n > toBlock ? toBlock : from + size - 1n;
     try {
       await fetchWindow(from, to);
+      transient = 0;
     } catch (error) {
       const hint = suggestedLogRange(error);
       const why = errorTexts(error)[0] ?? String(error);
       stats.refused++;
       answered = 0;
       options.onRefused?.(from, to, why);
+      // The network dropped the request: wait and ask for the same window again (F-S5-02, a recount lost at 85 %).
+      if (!hint && errorTexts(error).some((t) => TRANSIENT.test(t)) && transient < retries) {
+        await sleep(Math.min(60_000, 2_000 * 2 ** transient++));
+        continue;
+      }
+      transient = 0;
       if (hint && hint.from === from && hint.to >= from && hint.to < to) size = hint.to - from + 1n;
       else if (to - from + 1n > min) {
         // Halve the window actually tried (a tail clipped at `toBlock` is shorter than `size`), so a refusal always
