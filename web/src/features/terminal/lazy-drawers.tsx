@@ -13,6 +13,7 @@ export const SettingsDrawer = dynamic(() => import("./ui/SettingsDrawer").then((
 export const AccountDrawer = dynamic(() => import("./ui/AccountDrawer").then((m) => m.AccountDrawer), { ssr: false });
 export const PositionDetails = dynamic(() => import("./ui/PositionDetails").then((m) => m.PositionDetails), { ssr: false });
 export const ExitsDrawer = dynamic(() => import("./ui/ExitsDrawer").then((m) => m.ExitsDrawer), { ssr: false });
+export const RoomDrawer = dynamic(() => import("./ui/RoomDrawer").then((m) => m.RoomDrawer), { ssr: false });
 
 /** Safari has no `requestIdleCallback`: a short timeout after the first paint stands in. */
 const IDLE_TIMEOUT_MS = 2_000;

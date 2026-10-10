@@ -41,7 +41,11 @@ streaming, profile editing, export/deletion, a trading-points league — built h
    signature; follows on `game_follows`), the stores (`social-people`, `social-posts`, `social-moderation`, Postgres-tested),
    the word filter (obscenity 0.4.6: originals kept, matches starred on read), the ops `moderation` actor (the queue in
    `/health`) and `scripts/ops/moderate.ts` (list · hide · dismiss).
-3. Rooms (ticker + Window): visitors read; posting gated on a real engine position; optimistic, draft kept on failure.
+3. **Done (deploy + live check next):** rooms — `/api/social/rooms/<$TSLA | market id>` (anyone reads; posting needs
+   the session and a call there: `hasCalled` over fills, Trading Balance executions and seats; 1 post / 3 s, 20 / 10 min),
+   reactions, report (21st 31359 + 28339 reasons) and block; live through Postgres NOTIFY → ops `social` relay → the
+   stream's `rooms` topic; the terminal's Room drawer (21st 26900's rows, chips and optimistic states; the draft is
+   kept on failure) from a chat button beside the chart controls.
 4. Takes + cashtags + reactions + Tail/Fade; the composer bound to the card on screen; rooms/takes on the stream.
 5. Profiles: editing, follows, the drawer's profile header; `/u` shows takes and follows.
 6. `/activity` + the LifecycleWatcher + the rail's badge (the notification centre under Portfolio).

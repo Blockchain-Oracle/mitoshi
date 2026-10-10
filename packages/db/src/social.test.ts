@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createPgSocialModeration, createPgSocialPeople, createPgSocialPosts, createSql, runMigrations, type Sql } from "./index";
+import { hasCalled } from "./idx";
 
 const BIN = "/opt/homebrew/opt/postgresql@16/bin";
 const hasPg = spawnSync(`${BIN}/initdb`, ["--version"]).status === 0;
@@ -97,6 +98,22 @@ describe.skipIf(!hasPg)("social stores (profiles, follows, blocks, rooms, takes,
     expect(await mod.openReports()).toEqual([]);
   });
 
+  it("seats a room on a call made directly, through a Trading Balance, or registered — ever, on that Window or ticker", async () => {
+    const OTHER = `0x${"22".repeat(32)}`;
+    await sql`insert into idx_markets (market, symbol) values (${MARKET}, 'TSLA'), (${OTHER}, 'NVDA')`;
+    await sql`insert into idx_fills (chain_id, tx_hash, log_index, market, seq, block_number, ts_sec, taker, taker_kind, maker, maker_kind, maker_order_id, path, price_ticks, lots, maker_remaining)
+              values (42431, '0xf1', 0, ${MARKET}, 1, 10, 1000, ${A}, 0, '0x00000000000000000000000000000000000000ee', 1, 1, 0, 550, 1, 0)`;
+    await sql`insert into idx_vault_executions (tx_hash, log_index, vault, block_number, owner, market, grant_id, outcome_idx, is_buy, cash_delta, token_delta, actor, at_sec)
+              values ('0xf2', 1, '0x00000000000000000000000000000000000000dd', 11, ${C}, ${OTHER}, 1, 0, true, -1000000, 1000, ${C}, 1001)`;
+    expect(await hasCalled(sql, { address: A, market: MARKET })).toBe(true);
+    expect(await hasCalled(sql, { address: A, symbol: "TSLA" })).toBe(true);
+    expect(await hasCalled(sql, { address: A, symbol: "NVDA" })).toBe(false);
+    expect(await hasCalled(sql, { address: "0x00000000000000000000000000000000000000EE", market: MARKET })).toBe(true);
+    expect(await hasCalled(sql, { address: C, symbol: "NVDA" })).toBe(true);
+    expect(await hasCalled(sql, { address: C, market: MARKET })).toBe(false);
+    expect(await hasCalled(sql, { address: B, symbol: "TSLA" })).toBe(false);
+  });
+
   it("deletes every off-chain row an account has, and no one else's", async () => {
     const people = createPgSocialPeople(sql);
     const posts = createPgSocialPosts(sql);
@@ -105,8 +122,8 @@ describe.skipIf(!hasPg)("social stores (profiles, follows, blocks, rooms, takes,
     const deleted = await mod.deleteAll(B);
     expect(deleted).toMatchObject({ comments: 1, takes: 1, follows: 1, blocks: 1, profile: 0 });
     expect((await posts.comments({ room: "$TSLA" })).map((c) => c.author)).toEqual([A]);
-    const [{ n }] = await sql<{ n: number }[]>`select (select count(*) from reactions)::int + (select count(*) from take_tags)::int as n`;
-    expect(n).toBe(0);
+    const [row] = await sql<{ n: number }[]>`select (select count(*) from reactions)::int + (select count(*) from take_tags)::int as n`;
+    expect(row?.n).toBe(0);
     expect((await people.profiles([A])).get(A)?.displayName).toBe("Kaito_77");
   });
 });

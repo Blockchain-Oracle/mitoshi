@@ -177,6 +177,7 @@ export const TERMINAL = {
     notYet: "not recorded yet",
   },
   controls: {
+    room: "Open the room",
     interval: (i: string) => `Candle interval: ${i}`,
     intervals: "Candle intervals",
     minutes: "Minutes",

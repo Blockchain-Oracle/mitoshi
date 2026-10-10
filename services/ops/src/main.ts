@@ -5,6 +5,7 @@
  * Shape ported from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:services/ops/src/main.ts (`boot`, `selectedActors`).
  */
 import { createSql, runMigrations, type Sql } from "@cwf/db";
+import { listenSocial } from "./runtime/social-relay";
 import { createSessionService } from "./calendar/session-service";
 import { startDisplay, type DisplayRuntime } from "./display/runtime";
 import { startHttp } from "./http/server";
@@ -39,6 +40,8 @@ async function boot(): Promise<void> {
   for (const name of wanted) if (!ACTORS[name]) throw new Error(`unknown actor "${name}" (known: ${Object.keys(ACTORS).join(", ")})`);
   const redstone = loadRedstoneSources();
   const bus = createBus();
+  // S13: room messages and takes the web writes reach the stream through Postgres NOTIFY.
+  if (sql) await listenSocial(sql, bus, log("social")).catch((e) => log("social")(`listen failed: ${errorText(e)}`));
   const halts = createHaltBoard();
   halts.subscribe((board) => bus.publish("halts", "halts", board));
   const events = createSessionEvents();

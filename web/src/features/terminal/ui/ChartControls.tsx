@@ -2,7 +2,7 @@
 // Ported from Owarine ecb7565b:web/src/features/terminal/ui/ChartControls.tsx — CSS animations instead of motion for these
 // small pieces; the music switch is the app-wide Sound & Vibration "music" (one setting, `lib/feedback.ts`) with the
 // track kept in the terminal's settings; Mitoshi adds the depth toggle (the Markets hero's `HeroDepth`, a lazy island).
-import { CandlestickChart, ChevronDown, Crosshair, Layers, LineChart, Music2 } from "lucide-react";
+import { CandlestickChart, ChevronDown, Crosshair, Layers, LineChart, MessageCircle, Music2 } from "lucide-react";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { setFeedback, tapFeedback, useFeedback } from "@/lib/feedback";
 import { HOUR_INTERVALS, MINUTE_INTERVALS, type CandleInterval } from "../chart/candles";
@@ -12,7 +12,7 @@ import { MUSIC_TRACKS, setTradeSettings, useTradeSettings } from "../settings";
 
 const TRACK_NAMES = { arcade: "Arcade", rush: "Rush", night: "Night" } as const;
 
-export function ChartControls({ handle, depthOn, onDepth }: { handle: RefObject<ChartHandle | null>; depthOn: boolean; onDepth: (on: boolean) => void }) {
+export function ChartControls({ handle, depthOn, onDepth, onRoom }: { handle: RefObject<ChartHandle | null>; depthOn: boolean; onDepth: (on: boolean) => void; onRoom?: () => void }) {
   const settings = useTradeSettings();
   const feedback = useFeedback();
   const [menu, setMenu] = useState(false);
@@ -69,6 +69,11 @@ export function ChartControls({ handle, depthOn, onDepth }: { handle: RefObject<
       <button type="button" className={`tm-glass tm-ctl${depthOn ? " is-on" : ""}`} aria-label={TERMINAL.controls.depth} aria-pressed={depthOn} onClick={() => (tapFeedback(), onDepth(!depthOn))}>
         <Layers aria-hidden />
       </button>
+      {onRoom ? (
+        <button type="button" className="tm-glass tm-ctl" aria-label={TERMINAL.controls.room} onClick={() => (tapFeedback(), onRoom())}>
+          <MessageCircle aria-hidden />
+        </button>
+      ) : null}
       <button
         type="button"
         className={`tm-glass tm-ctl${feedback.music ? " is-on" : ""}`}

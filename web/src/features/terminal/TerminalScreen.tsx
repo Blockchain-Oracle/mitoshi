@@ -48,7 +48,7 @@ import { useReplayRecorder } from "./replay";
 import { useAppUpdate } from "./useAppUpdate";
 import { setTradeSettings, useTradeSettingsState } from "./settings";
 import { Tutorial } from "./ui/Tutorial";
-import { AccountDrawer, ExitsDrawer, MarketsDrawer, PositionDetails, SettingsDrawer, useDrawersMounted } from "./lazy-drawers";
+import { AccountDrawer, ExitsDrawer, MarketsDrawer, PositionDetails, RoomDrawer, SettingsDrawer, useDrawersMounted } from "./lazy-drawers";
 import { usePendingFills } from "./fresh-fills";
 import { ModeChips, ModePanel, type TerminalMode } from "./ui/ModePanel";
 import { useDrawnBand } from "@/features/range/band-store";
@@ -59,7 +59,7 @@ import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 // The Markets hero's depth view, loaded when first shown (a lazy island).
 const HeroDepth = dynamic(() => import("@/features/markets/hero/HeroDepth"), { ssr: false });
 
-export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account", history: "trade-history", position: "trade-position", mode: "trade-mode", exits: "trade-exits" } as const;
+export const DRAWERS = { markets: "trade-markets", settings: "trade-settings", positions: "trade-positions", account: "trade-account", history: "trade-history", position: "trade-position", mode: "trade-mode", exits: "trade-exits", room: "trade-room" } as const;
 
 /** The symbol in the address: a market switch rewrites it in place (no remount), so the path is the source. */
 function useSymbol(initial: string): string {
@@ -224,7 +224,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             </div>
           ) : null}
           <div className="tm-controls-slot">
-            <ChartControls handle={chartHandle} depthOn={depth} onDepth={setDepth} />
+            <ChartControls handle={chartHandle} depthOn={depth} onDepth={setDepth} onRoom={() => drawer.show(DRAWERS.room)} />
           </div>
           <div className="tm-top">
             <div className="tm-top-row">
@@ -337,6 +337,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             busy={detail !== null && closer.busy === detail.id}
           />
           <ExitsDrawer p={detail} value={detail ? (values.get(detail.id) ?? null) : null} open={drawer.open === DRAWERS.exits && detailId !== null} onOpenChange={(o) => !o && drawer.close()} />
+          <RoomDrawer open={drawer.open === DRAWERS.room} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} marketId={market?.marketId ?? null} />
         </>
       ) : null}
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
