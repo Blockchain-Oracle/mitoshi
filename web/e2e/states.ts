@@ -172,7 +172,13 @@ async function signedIn(width: number) {
   await attempt("history-stats", width, async () => {
     // Every drawer the trade opened is closed (phones stack positions under details), then the closed round is
     // awaited in the indexed history: it lands within minutes, so the history is reopened until it does.
-    for (let i = 0; i < 3 && (await modal(page).count()) > 0; i++) await page.keyboard.press("Escape");
+    // Each Escape closes the top drawer; its exit animation keeps it counted for a moment, so wait it out before the
+    // next (run 37996627086: the phone's positions slide-over stayed over the equity pill and the click timed out).
+    for (let i = 0; i < 4 && (await modal(page).count()) > 0; i++) {
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(700);
+    }
+    await expect(modal(page)).toHaveCount(0, { timeout: 10_000 });
     const deadline = Date.now() + 6 * 60_000;
     for (;;) {
       await page.locator(".tm-equity:visible").first().click();
