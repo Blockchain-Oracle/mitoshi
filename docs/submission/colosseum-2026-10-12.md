@@ -25,6 +25,12 @@ pays the network fee in dollars. On testnet the median from press to position is
 one tap at what the line shows, and take-profit, stop-loss and trailing exits are sold by a keeper with the app
 closed. Range, Moonshot, Parlay and Boost price against the same books and a maker vault's depth.
 
+Everything is on the record and checkable. Each Window's proof page re-verifies both of its signed prints in your
+browser from the chain alone; `/stats` counts the wallets that made a call straight from the engine's fills (the
+house's own keys never counted); the leaderboard ranks wallets by what settled (P&L or ROI, daily to all time) and
+each opens a public profile with its tier, badges and latest Windows; Trader Edge turns your own settled Windows into
+a record of what pays and when, with a CSV; and any position can be shared as a card with its link and QR.
+
 ## Blockchains and tools integrated
 
 - **Tempo** (Moderato testnet, chain 42431) — live: passkey (WebAuthn P-256) accounts, access keys
@@ -42,6 +48,8 @@ closed. Range, Moonshot, Parlay and Boost price against the same books and a mak
 
 - App: https://testnet.mitoshi.xyz (the terminal: https://testnet.mitoshi.xyz/trade/BTC)
 - Pitch: https://testnet.mitoshi.xyz/pitch · Demo walkthrough with on-chain receipts: https://testnet.mitoshi.xyz/demo
+- Proof of demand: https://testnet.mitoshi.xyz/stats · Leaderboard: https://testnet.mitoshi.xyz/leaderboard ·
+  Status: https://testnet.mitoshi.xyz/status · News: https://testnet.mitoshi.xyz/news
 - Docs: https://testnet.mitoshi.xyz/docs
 - Logo: `web/public/icon-512.png` (the mark), `web/src/app/icon.svg`
 - Repo: `Blockchain-Oracle/mitoshi` — **[owner]** private: give `hackathon@colosseum.com` read access, or make it public.
@@ -69,15 +77,19 @@ to say so.
 
 **Distribution.**
 - Every Window has a link (`/trade/BTC?w=…`) that opens the terminal on it, ready to tap — built to be shared where
-  people already talk about prices (X, Telegram, group chats).
+  people already talk about prices (X, Telegram, group chats). Each terminal and each Window's proof has its own link
+  preview, and a position shares as a card (PnL / ROI, the link and its QR) in one tap.
 - An installable web app (no store), so a link becomes a home-screen app in one step.
 - The Tempo ecosystem: Mitoshi is a consumer app that exercises Tempo's account and payments primitives end to end.
 
 **Demand validation — where it honestly stands.** We have not run an external user cohort yet. What is validated is
 that the product works end to end on Tempo testnet with real contracts: the indexer counts tens of thousands of
 Windows opened and resolved on their signed prints, and live runs from fresh accounts — sign-up, taps, closes,
-exits sold with the tab closed, Range and Moonshot — are recorded with their receipts on `/demo`. Next: a public
-testnet beta from the shared Window links, measuring sign-up → first tap and return visits.
+exits sold with the tab closed, Range and Moonshot — are recorded with their receipts on `/demo`. `/stats` shows the
+count live, from the chain: 134 wallets had made a call by 2026-10-10 (462 calls, $637 traded), and it says plainly
+that these include the fresh passkey accounts our own end-to-end checks create, which the chain can't tell apart.
+Next: a public testnet beta from the shared Window links and cards, measuring sign-up → first tap and return visits
+on the same `/stats` page.
 
 **Business model.** No trading or settlement fee today. The venue's makers — the house maker and the maker vault,
 whose suppliers share its result — quote both sides around a fair-value model and earn the spread on the flow; Boost
