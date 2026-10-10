@@ -10,6 +10,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { chromium, expect, type BrowserContext, type Page } from "@playwright/test";
 import { settle } from "./lib/settle";
+import { openTerminal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
 const base = arg("base", "https://testnet.mitoshi.xyz");
@@ -44,6 +45,23 @@ try {
   const before = await accountOf(a.page);
   result.account = before.account;
   log({ step: "signed up", account: before.account });
+
+  // 1b. Control: an unsponsored root send (Withdraw $1) before any second authenticator exists — the same send path
+  //     the backup's authorisation takes, so a failure here is the wallet stack's, not the backup's.
+  await openTerminal(a.page, base, "BTC");
+  await a.page.goto(`${base}/trade/BTC?d=trade-account`, { waitUntil: "load" });
+  await a.page.getByRole("button", { name: "Withdraw" }).first().click();
+  await a.page.getByPlaceholder("0x…").fill("0x000000000000000000000000000000000000dEaD");
+  await a.page.getByPlaceholder("0.00").fill("1");
+  await a.page.getByRole("button", { name: /^Send \$/ }).click();
+  const sent = await Promise.race([
+    a.page.getByText(/^Sent \$/).first().waitFor({ timeout: 90_000 }).then(() => "sent"),
+    a.page.getByText("Didn't send").first().waitFor({ timeout: 90_000 }).then(async () => `didn't send: ${(await a.page.locator("[data-sonner-toast], [role=status], [role=alert]").allInnerTexts()).join(" | ").replace(/\s+/g, " ").slice(0, 200)}`),
+  ]).catch(() => "no answer");
+  result.withdraw = sent;
+  log({ step: "withdraw $1 (unsponsored root send)", result: sent });
+  await a.page.goto(`${base}/settings/account`, { waitUntil: "load" });
+  await settle(a.page);
 
   // 2. Add the backup on a second (USB) authenticator; the page's own passkey signs and pays.
   const { authenticatorId: usb } = await a.cdp.send("WebAuthn.addVirtualAuthenticator", authOptions("usb"));
