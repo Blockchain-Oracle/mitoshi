@@ -122,10 +122,11 @@ the backend came with S3; S6 built the surfaces, deployed on testnet:
 - `scripts/drive/corporate-check.ts` on Robinhood's ERC-8056 (G-08); D-217: the mainnet Gap on Data Streams with a
   RedStone check (`GapPolicy.sol`, Foundry-proven; boundary statuses wait for credentials, Q-011).
 - `/markets`' empty Regular lane names the session; `/docs/windows` covers hours, halts and pauses.
-Next in S6: the gate over a real session — `e2e/s6-session.ts` from a runner (the browser pane is hidden here, so the
-terminal's clock never starts in it): closed + the Gap this weekend (Gap Windows live 10-09 20:00Z → lock 10-12 00:00Z),
-pre-market and after hours on Monday 10-12, and a halt when one is confirmed (none since 10-08; AMD/PLTR's signer
-shortfalls at the open, F-S3-09, are the likeliest).
+S6 gate: **closed and the Gap passed** over the real weekend (`e2e/s6-session.ts`, CI 38083317317, 12/12 captures).
+`.github/workflows/s6-gate.yml` runs the same check on Monday 10-12 at 12:15Z (pre-market), 13:31Z (the open, AMD /
+PLTR / TSLA — the likeliest live halt, F-S3-09) and 21:00Z (after hours). After Monday: read those runs' artifacts into
+`acceptance/S6.md`, check the weekend Gap's verdict (settles 13:30Z), and tick S6 when halted, pre and after are in
+(a halt is recorded whenever halt-watch confirms one); then retire `s6-gate.yml`.
 
 **S23 gate — nearly closed (`acceptance/S23.md` passes 1–5, F-S23-06…13).** Since 2026-10-09 20:10Z:
 - Passed live: Range + Moonshot on the earn-quoter's depth (37996617218); **states 38 of 38** (38034974579, after
