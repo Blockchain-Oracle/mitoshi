@@ -39,7 +39,11 @@ with the archive's Friday print). S6 is mostly the surfaces. Steps, in order:
    components.md), linked from `/status`'s "Trading halts" row: each ticker's halt now (both feeds), its last halt, 30 ET
    days, every halt in full — episodes derived from halt-watch's log (`features/halts/episodes.ts`, fixture runs
    skipped). Real log: 124 episodes since 09-29 (the pre-D-186 RedStone fetch failures), none since 10-08. UX gate 0.
-7. Corporate skips: the proposer script (`scripts/drive/corporate-check.ts`, Agari's) and the skip shown on the lane.
+7. **Done:** corporate skips — `scripts/drive/corporate-check.ts` (Agari's proposer; the multiplier source is Robinhood's
+   own ERC-8056 on the bridged Stock Tokens, what `ScaledUIView` mirrors, plus Finnhub `/stock/split`; it never writes
+   the file). Live 2026-10-10: the five testnet tokens read multiplier 1, nothing pending. A paused lane says why on
+   the Window chip (`lane-note.ts`: corporate action with its reason, halt, no signed source) and under UP/DOWN
+   (`corporate-action`, step 3).
 8. G-04: each 24/7 lane named as the provider's price; G-05: NFLX and pre-IPO shown paused honestly.
 9. The Gap on Data Streams in the mainnet config, with the RedStone archive fallback.
 10. The gate on testnet over a real session (halted, closed, pre/after, Gap).

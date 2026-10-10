@@ -30,6 +30,7 @@ import { SessionCell } from "./ui/SessionCell";
 import { HaltNotice } from "./ui/HaltNotice";
 import { CrowdCell } from "./ui/CrowdCell";
 import { EarningsCell } from "./ui/EarningsCell";
+import { useLaneNote } from "./lane-note";
 import type { TerminalPosition } from "./terminal-positions";
 import { useTerminalClose } from "./useTerminalClose";
 import { useTrailToggle } from "./useTrail";
@@ -81,6 +82,8 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   // The 24/7 lane on screen sits idle across RedStone's 04:00 ET gap (D-185): say why and when it resumes.
   const laneGapNext = s.win.lane ? gap0400NextOpen(s.win.lane.basis, s.win.lane.intervalSec, s.nowSec) : null;
   const sessionView = useSessionView();
+  // A paused lane says why on the chip (S6): a corporate action, a halt, no signed source.
+  const laneNote = useLaneNote(symbol, s.win.lane);
   // Signed in but neither one-tap path on: every tap would prompt. The card says so and arms in one passkey prompt.
   const needsArm = session.isConnected && !tapArmed && sessionView.status !== "armed";
   const chartHandle = useRef<ChartHandle | null>(null);
@@ -235,7 +238,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             </div>
             <div className="tm-window-row">
               {s.win.lanes.length ? (
-                <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText} />
+                <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText === TERMINAL.window.none ? (laneNote ?? s.windowText) : s.windowText} />
               ) : s.win.loading ? null : (
                 <span className="tm-glass tm-note">{noWindowNote(s.ticker, nyse, s.nowSec)}</span>
               )}
