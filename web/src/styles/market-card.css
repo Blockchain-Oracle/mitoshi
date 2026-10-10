@@ -85,13 +85,18 @@
 
 /* Rendering on approach (D-183), as the word board's cards: below the hero on every phone, each card skips style,
    layout and paint while off screen (its countdown and price roll still update the DOM) and keeps its height. */
-.market-card {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 342px;
+/* A card's laid-out height, phone and md+: the off-screen size below and the loading skeleton's (`LoadingState` "cards"). */
+:root {
+  --market-card-height: 342px;
 }
 
 @media (min-width: 48rem) {
-  .market-card {
-    contain-intrinsic-size: auto 475px;
+  :root {
+    --market-card-height: 475px;
   }
+}
+
+.market-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--market-card-height);
 }

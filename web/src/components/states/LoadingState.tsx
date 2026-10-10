@@ -26,8 +26,8 @@ const SHAPES: Record<LoadingShape, () => ReactNode> = {
   cards: () => (
     <>
       <Skeleton className="h-touch w-full rounded-md" />
-      <Skeleton className="h-[342px] w-full rounded-lg md:h-[475px]" />
-      <Skeleton className="h-[342px] w-full rounded-lg md:h-[475px]" />
+      <Skeleton className="h-(--market-card-height) w-full rounded-lg" />
+      <Skeleton className="h-(--market-card-height) w-full rounded-lg" />
     </>
   ),
   chart: () => <Skeleton className="h-48 w-full rounded-lg" />,
