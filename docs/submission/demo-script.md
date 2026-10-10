@@ -14,12 +14,15 @@ say. Keep the cuts honest: no sped-up confirmations, no edited numbers.
 | 1:15–1:40 | P&L on the line moves; CLOSE → "Closing…" → "Closed · realized" | "The P&L is what CLOSE pays. One tap sells it back to the book." |
 | 1:40–2:05 | Open a position → TP / SL → "Keep exits running with the app closed" | "Set a take-profit or stop-loss and leave. A keeper sells it when it triggers, with the app closed." |
 | 2:05–2:30 | Range mode: the band on the chart → Hold to place | "Range: call a band the close lands inside. It prices off the maker vault's depth and pays out of a reserve set aside up front." |
-| 2:30–2:50 | History & stats (lifetime P&L, win rate, streaks); a receipt opened on the explorer | "Every trade is on the record, and every row opens its receipt on Tempo." |
-| 2:50–3:00 | `/demo` proofs list | "The receipts for all of this are on mitoshi's demo page. See where it's going." |
+| 2:30–2:38 | A position's details → Share → the card (PnL · ROI · Both) | "And when it works, the card is one tap — drawn in your browser, with the link and its QR." |
+| 2:38–2:50 | A settled Window's proof page → "Re-verify in this browser" → "Verified now: … the same price the engine recorded" | "Don't trust it. Click it. Your browser re-reads the signed prints from the chain and asks the verifier itself." |
+| 2:50–3:00 | `/stats` (wallets that made a call, the venue's counts) → the leaderboard | "Real wallets, read from the engine's fills — never the house. Mitoshi: see where it's going." |
 
 ## Notes
 
 - The settle beat needs a Window to close (up to 5 min): cut it, or record it separately and show the verdict
   ("Paid automatically") on History.
+- History (lifetime P&L, win rate, streaks) and the leaderboard are in the same account drawer; `footage.ts` records
+  both, then the proof re-verification and `/stats`, so any of them can replace a beat above.
 - Testnet only: say "test dollars" once, early.
 - If the footage shows "pricing…" for long, RedStone's public gateway is refusing (`/docs/testnet`); re-record later.

@@ -3,7 +3,8 @@
  * a fresh account, paced for a voice-over, recorded as video at a desk (1440) and a phone (390) size. Nothing is
  * staged: the passkey is a CDP virtual authenticator, the dollars come from the faucet, every trade is a transaction
  * on Tempo testnet (hashes printed). The beats: landing → sign-up and arm → a tap UP → the P&L moving → CLOSE → TP / SL
- * → Range mode → history. A beat that can't happen (no Window open yet) is waited for, never faked.
+ * and the share card → Range mode → history → the leaderboard → a Window's proof re-verified in the browser → proof of
+ * demand (`/stats`). A beat that can't happen (no Window open yet) is waited for, never faked.
  *
  *   pnpm --filter @cwf/web exec tsx e2e/footage.ts --base https://testnet.mitoshi.xyz --out <dir> [--width 1440|390]
  */
@@ -61,6 +62,14 @@ for (const width of widths) {
     if (width < 768) await page.locator(".tm-view").first().click().catch(() => undefined);
     await page.locator(".tm-pos:visible .tm-pos-open-btn").first().click();
     await hold(page, 3);
+    // The share card from the same details: PnL · ROI · Both, Download, Share on X.
+    const share = modal(page).getByRole("button", { name: "Share", exact: true });
+    await expect(share).toBeEnabled({ timeout: 60_000 });
+    await share.click();
+    await expect(page.getByRole("img", { name: /^Share card:/ })).toBeVisible({ timeout: 30_000 });
+    await hold(page, 5);
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(700);
     await modal(page).getByRole("button", { name: "TP / SL" }).click();
     await hold(page, 5);
     for (let i = 0; i < 4 && (await modal(page).count()) > 0; i++) {
@@ -75,6 +84,27 @@ for (const width of widths) {
     await page.locator(".tm-equity:visible").first().click();
     await modal(page).getByRole("button", { name: "Trade history" }).first().click();
     await hold(page, 6);
+    // The leaderboard, in the same drawer.
+    await modal(page).getByRole("button", { name: "Back" }).click();
+    await modal(page).getByRole("button", { name: "Leaderboard" }).first().click();
+    await expect(modal(page).getByRole("list", { name: "Ranked wallets" })).toBeVisible({ timeout: 60_000 });
+    await hold(page, 5);
+    await page.keyboard.press("Escape");
+    // A settled BTC Window's proof, re-verified in this browser from the chain alone.
+    const listed = (await (await page.request.get(`${base}/api/index/markets?symbol=BTC&state=resolved&limit=1`)).json()) as { rows?: { market: string }[] } | { market: string }[];
+    const market = (Array.isArray(listed) ? listed : listed.rows ?? [])[0]?.market;
+    if (market) {
+      await page.goto(`${base}/proof/${market}`, { waitUntil: "load" });
+      await hold(page, 3);
+      await page.getByRole("button", { name: "Re-verify in this browser" }).last().click();
+      await expect(page.getByText(/Verified now:/).first()).toBeVisible({ timeout: 60_000 });
+      await hold(page, 5);
+    }
+    // Proof of demand: wallets that made a call, read from the engine's fills.
+    await page.goto(`${base}/stats`, { waitUntil: "load" });
+    await hold(page, 5);
+    await page.mouse.wheel(0, 1_100);
+    await hold(page, 4);
     log({ step: "done", txs: s.txs.length, prompts: s.assertions() });
   } catch (e) {
     log({ step: "stopped", width, why: (e as Error).message.split("\n")[0] });
