@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { decodeFunctionData, type Address } from "viem";
 import { Abis } from "viem/tempo";
+import { accountKeychainAbi } from "../keys/keychain-abi";
 import { encodeIntent, MAX_REVOKE } from "./encoders";
 
 const ctx = { chainId: 42431, wallet: "0x00000000000000000000000000000000000000a1" as Address };
@@ -18,6 +19,20 @@ describe("key-revoke encoder (D-053)", () => {
   it("refuses an empty list or more than the relay co-signs in one transaction", async () => {
     expect((await encodeIntent({ kind: "key-revoke", keyIds: [] }, ctx)).ok).toBe(false);
     expect((await encodeIntent({ kind: "key-revoke", keyIds: Array.from({ length: MAX_REVOKE + 1 }, (_, i) => key(i + 1)) }, ctx)).ok).toBe(false);
+  });
+});
+
+describe("key-backup encoder (D-053, TIP-1049)", () => {
+  it("authorises the backup as an admin WebAuthn key, unsponsored", async () => {
+    const r = await encodeIntent({ kind: "key-backup", keyId: key(7) }, ctx);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value).toMatchObject({ area: "keys", sponsored: false });
+    const call = decodeFunctionData({ abi: accountKeychainAbi, data: r.value.calls[0]!.data });
+    expect(call).toMatchObject({ functionName: "authorizeAdminKey", args: [key(7), 2, `0x${"0".repeat(64)}`] });
+  });
+  it("refuses the account itself as its own backup", async () => {
+    expect((await encodeIntent({ kind: "key-backup", keyId: ctx.wallet }, ctx)).ok).toBe(false);
   });
 });
 

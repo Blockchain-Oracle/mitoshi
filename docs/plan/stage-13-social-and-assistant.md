@@ -88,7 +88,13 @@ streaming, profile editing, export/deletion, a trading-points league — built h
     `contact_messages` in `social/0004`, counted by ops' `moderation` actor, `moderate.ts contact · close`; signed-in
     messages go with the export and deletion); `/privacy` and `/terms` updated for posts, Sensei, device-only data,
     contact and deletion. **10b:** each key's "key used" history — done: the keychain fold keeps a key's last 25
-    `AccessKeySpend`s (amount, token, block, transaction), shown under the key's row. **Next:** the backup passkey — a second passkey authorised as a TIP-1049 admin key (needs
+    `AccessKeySpend`s (amount, token, block, transaction), shown under the key's row. **10c done (live check next):** the backup passkey — `/settings/account` → Backup
+    passkey creates a second, cross-platform passkey, the root signs `key-backup` (`authorizeAdminKey`, unsponsored,
+    the account pays the fee), `/api/account/backup-passkey` records it once the chain reads `isAdminKey` and adds its
+    credential to the ceremony's store (set-if-absent); sign-in with it: `/api/auth/login` names the account
+    (`account`), the patched `accounts` 0.18.4 (`patches/`) signs in as that account through the keychain, and the
+    server's passkey session resolves to it (re-checked on chain each minute); the nudge shows once the account holds
+    money and has no backup. Before this: the backup passkey — a second passkey authorised as a TIP-1049 admin key (needs
     T6 on Moderato — checked 2026-10-10: `isAdminKey(root, root)` answers true at block 39,045,630) — and each key's
     "key used" history from its `AccessKeySpend` events. Research for 10b: the root adds the backup with a direct
     `authorizeAdminKey(keyId, 2 /* WebAuthn */, witness)` call (viem `accessKey.authorize({ admin: true })`); recovery

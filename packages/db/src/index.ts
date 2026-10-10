@@ -21,6 +21,7 @@ export { createPgPrivateClaimsStore, type PrivateClaimRow, type PrivateClaimsSto
 export { createPgExitTriggersStore, type ExitTriggerRow, type ExitTriggerStatus, type ExitTriggersStore, type ExitWriteConflict } from "./exit-triggers";
 export { createPgSocialPeople, BIO_MAX, DISPLAY_NAME, type Profile, type SetProfileResult, type SocialPeopleStore } from "./social-people";
 export { createPgSocialPosts, type NewTake, type ReactionSummary, type ReactionTarget, type RoomComment, type SocialPostsStore, type TakeRow, type Via } from "./social-posts";
+export { createPgPasskeyBackups, type PasskeyBackup, type PasskeyBackupStore } from "./passkey-backups";
 export { CONTACT_TOPICS, createPgContact, type ContactMessage, type ContactStore, type ContactTopic } from "./contact";
 export { exportSocialData, type SocialExport } from "./social-export";
 export { createPgSocialModeration, REPORT_REASONS, type DeletedRows, type ReportReason, type ReportRow, type ReportTarget, type SocialModerationStore } from "./social-moderation";

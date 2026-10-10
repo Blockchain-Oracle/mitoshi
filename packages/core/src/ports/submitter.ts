@@ -149,6 +149,11 @@ export type TxIntent =
   | { kind: "cancel-orders"; marketId: MarketId; orderIds: bigint[] }
   /** Revoke TIP-1011 access keys on the AccountKeychain in one transaction (1–8; the `/settings/account` trust surface, D-053). */
   | { kind: "key-revoke"; keyIds: Address[] }
+  /**
+   * Add a backup passkey: authorise a second WebAuthn key as a TIP-1049 admin key, unrestricted and able to manage the
+   * account's keys, so a lost device doesn't lose the account (D-053). Root-signed; the relay never sponsors it.
+   */
+  | { kind: "key-backup"; keyId: Address }
   /** The relay's S1 proof area: a harmless sponsored call that moves nothing (Multicall3 `getBlockNumber`). */
   | { kind: "noop" }
   | VaultIntent

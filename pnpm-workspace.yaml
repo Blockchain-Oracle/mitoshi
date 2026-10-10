@@ -101,3 +101,6 @@ catalogs:
     react-native: 0.86.3
     expo-router: ~57.0.22
     react-native-webview: 13.16.1
+
+patchedDependencies:
+  accounts@0.18.4: patches/accounts@0.18.4.patch

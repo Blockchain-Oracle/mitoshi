@@ -9,6 +9,7 @@ import type { Address } from "@cwf/core";
 import { passkeyAddress } from "@cwf/markets/server";
 import { authHandler } from "./auth";
 import { serverEnv } from "./env";
+import { backupAccount } from "./backup-passkey";
 
 export type CallerSession = { kind: "passkey"; address: Address; credentialId: string } | { kind: "social"; address: Address };
 
@@ -38,7 +39,8 @@ function cookie(req: Request, name: string): string | null {
 
 export async function callerSession(req: Request): Promise<CallerSession | null> {
   const passkey = await authHandler().getSession(req).catch(() => undefined);
-  if (passkey) return { kind: "passkey", address: passkeyAddress(passkey.publicKey), credentialId: passkey.credentialId };
+  // A backup passkey (an admin key of another account, D-053) is that account's session.
+  if (passkey) return { kind: "passkey", address: (await backupAccount(passkey.publicKey)) ?? passkeyAddress(passkey.publicKey), credentialId: passkey.credentialId };
   const secret = serverEnv().socialSecret;
   const token = cookie(req, SOCIAL_COOKIE);
   if (secret && token) {

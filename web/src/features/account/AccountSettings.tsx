@@ -3,6 +3,7 @@
 // with its live limits and one-step revoke, where Trading Balance grants will appear (S7), linked wallets and the
 // region posture. S4 adds the wallet key, S7 the Trading Balance grants, S9/S11/S12b/S16 their keys; S13 completes it.
 import { useEffect, useState } from "react";
+import { useBalanceSheet } from "@cwf/markets/react";
 import type { RegionPosture } from "@cwf/core";
 import { webEnv } from "@/lib/env";
 import { readRegionPosture } from "@/lib/region-mark";
@@ -32,6 +33,7 @@ const KeysSection = dynamic(() => import("./KeysSection").then((m) => m.KeysSect
 // The Trading Balance's grants (S7): the same lazy-island rule — its content waits on the chain and the index anyway.
 const GrantsSection = dynamic(() => import("./GrantsSection").then((m) => m.GrantsSection), { ssr: false });
 const DataSection = dynamic(() => import("./DataSection").then((m) => m.DataSection), { ssr: false });
+const BackupPasskeySection = dynamic(() => import("./BackupPasskeySection").then((m) => m.BackupPasskeySection), { ssr: false });
 const card = "flex flex-col gap-2 rounded-lg border border-hairline bg-surface-1 p-4";
 
 export function AccountSettings() {
@@ -70,6 +72,8 @@ export function AccountSettings() {
             <p className="type-caption text-ink-secondary">{session.kind === "passkey" ? P.account.passkeyNote : P.account.walletNote}</p>
           </section>
 
+          {dataReady ? <BackupPasskeyMount address={session.address} className={card} /> : null}
+
           {dataReady ? <KeysSection account={session.address} network={network} /> : <KeysLoading />}
 
           {dataReady ? (
@@ -105,4 +109,10 @@ export function AccountSettings() {
       </section>
     </section>
   );
+}
+
+/** The backup passkey's nudge follows the first deposit (D-053): money on the account, and only one passkey. */
+function BackupPasskeyMount({ address, className }: { address: `0x${string}`; className: string }) {
+  const sheet = useBalanceSheet(address);
+  return <BackupPasskeySection hasMoney={sheet?.ok === true && sheet.value.spendableBase > 0n} className={className} />;
 }

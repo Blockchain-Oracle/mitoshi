@@ -50,6 +50,22 @@ function encodeKeyRevoke(intent: TxIntent): EncodeResult | null {
   return { ok: true, value: { area: "keys", calls, sponsored: true, summary: `revoke ${intent.keyIds.length} key(s)` } };
 }
 
+/** WebAuthn on the AccountKeychain's signature-type enum (0 secp256k1, 1 P-256, 2 WebAuthn). */
+const WEBAUTHN_SIGNATURE = 2;
+const NO_WITNESS = `0x${"0".repeat(64)}` as const;
+
+/**
+ * `AccountKeychain.authorizeAdminKey(keyId, WebAuthn, 0)` (TIP-1049, T6): a backup passkey as an admin key. Never
+ * sponsored (the relay's `keys` policy refuses it): the account pays its own fee, which is why the prompt follows the
+ * first deposit. The account's own key must sign it.
+ */
+function encodeKeyBackup(intent: TxIntent, ctx: EncodeContext): EncodeResult | null {
+  if (intent.kind !== "key-backup") return null;
+  if (!isAddress(intent.keyId) || intent.keyId.toLowerCase() === ctx.wallet.toLowerCase()) return { ok: false, diagnosis: diagnosis("contract-revert", `not a backup key: ${intent.keyId}`) };
+  const data = encodeFunctionData({ abi: accountKeychainAbi, functionName: "authorizeAdminKey", args: [intent.keyId, WEBAUTHN_SIGNATURE, NO_WITNESS] });
+  return { ok: true, value: { area: "keys", calls: [{ to: TEMPO.accountKeychain, data }], sponsored: false, summary: `add backup passkey ${intent.keyId}` } };
+}
+
 /** Multicall3 `getCurrentBlockTimestamp()`: a view that moves nothing, proves the relay pays exactly what policy allows (S1 gate). */
 function encodeNoop(intent: TxIntent): EncodeResult | null {
   if (intent.kind !== "noop") return null;
@@ -67,7 +83,7 @@ export function encodeTransfer(intent: TxIntent, ctx: EncodeContext): EncodeResu
   return { ok: true, value: { area: "wallet", calls: [{ to: intent.token, data }], sponsored: false, summary: `send ${intent.amountBase} of ${intent.token} to ${intent.to}` } };
 }
 
-export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeNoop, encodeTransfer, encodeEngineIntent, encodeVaultIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent, encodePrivateIntent];
+export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeKeyBackup, encodeNoop, encodeTransfer, encodeEngineIntent, encodeVaultIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent, encodePrivateIntent];
 
 /** The first encoder that claims the intent; an unclaimed intent's area is not deployed on this chain yet. */
 export async function encodeIntent(intent: TxIntent, ctx: EncodeContext, encoders: readonly IntentEncoder[] = DEFAULT_ENCODERS): Promise<EncodeResult> {

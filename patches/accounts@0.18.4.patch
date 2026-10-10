@@ -1,0 +1,115 @@
+diff --git a/dist/core/Account.js b/dist/core/Account.js
+index 5a9407cdb6ef653e4babb8948093df183ac39bd1..bae29c6b4516931ded2f1a329ece25b220488015 100644
+--- a/dist/core/Account.js
++++ b/dist/core/Account.js
+@@ -1,4 +1,4 @@
+-import { Provider } from 'ox';
++import { Provider, PublicKey } from 'ox';
+ import { Account as TempoAccount } from 'viem/tempo';
+ /**
+  * Maps a stored account's key type to the signature key type used on the wire.
+@@ -54,10 +54,21 @@ export function hydrate(account, options = {}) {
+             return TempoAccount.fromP256(account.privateKey);
+         case 'webCrypto':
+             return TempoAccount.fromWebCryptoP256(account.keyPair);
+-        case 'webAuthn':
+-            return TempoAccount.fromWebAuthnP256(account.credential, {
++        case 'webAuthn': {
++            const root = TempoAccount.fromWebAuthnP256(account.credential, {
+                 rpId: account.credential.rpId,
+             });
++            if (root.address.toLowerCase() === account.address.toLowerCase())
++                return root;
++            // Mitoshi patch (S13, D-053): a backup passkey — an admin key (TIP-1049) of `account.address` — signs as
++            // that account through the keychain.
++            return TempoAccount.from({
++                keyType: 'webAuthn',
++                publicKey: PublicKey.fromHex(account.credential.publicKey),
++                sign: ({ hash }) => root.sign({ hash, raw: true }),
++                access: account.address,
++            });
++        }
+         case 'webAuthn_headless':
+             return TempoAccount.fromHeadlessWebAuthn(account.privateKey, {
+                 rpId: account.rpId,
+diff --git a/dist/core/adapters/webAuthn.js b/dist/core/adapters/webAuthn.js
+index 80a7d0deee39a1cd9fad9bcb2b947decda480c5e..0037af26028250615e3409284c8fbabd9afa1c14 100644
+--- a/dist/core/adapters/webAuthn.js
++++ b/dist/core/adapters/webAuthn.js
+@@ -84,7 +84,8 @@ export function webAuthn(options = {}) {
+                 if (!rpId)
+                     throw new Error('rpId is required');
+                 const response = await Authentication.sign({ options });
+-                const { publicKey, username } = await ceremony.verifyAuthentication(response);
++                // Mitoshi patch (S13, D-053): the server names the account a backup passkey signs in as.
++                const { publicKey, username, account: backupOf } = await ceremony.verifyAuthentication(response);
+                 await storage.setItem('lastCredentialId', response.id);
+                 const account = Account.fromWebAuthnP256({ id: response.id, publicKey }, { rpId });
+                 const signature = digest
+@@ -98,7 +99,7 @@ export function webAuthn(options = {}) {
+                 return {
+                     accounts: [
+                         {
+-                            address: account.address,
++                            address: backupOf ?? account.address,
+                             keyType: 'webAuthn',
+                             credential: { id: response.id, publicKey, rpId },
+                         },
+diff --git a/src/core/Account.ts b/src/core/Account.ts
+index 94be01f28c345d56a1462df5906b10dfe87d73d1..4240c24d69ee3cf57ae59ec41d47198f4e89d845 100644
+--- a/src/core/Account.ts
++++ b/src/core/Account.ts
+@@ -1,4 +1,4 @@
+-import { Provider, type WebCryptoP256 } from 'ox'
++import { Provider, PublicKey, type WebCryptoP256 } from 'ox'
+ import type { Hex } from 'viem'
+ import type { Address, JsonRpcAccount } from 'viem/accounts'
+ import { Account as TempoAccount } from 'viem/tempo'
+@@ -119,10 +119,20 @@ export function hydrate(
+       return TempoAccount.fromP256(account.privateKey)
+     case 'webCrypto':
+       return TempoAccount.fromWebCryptoP256(account.keyPair)
+-    case 'webAuthn':
+-      return TempoAccount.fromWebAuthnP256(account.credential, {
++    case 'webAuthn': {
++      const root = TempoAccount.fromWebAuthnP256(account.credential, {
+         rpId: account.credential.rpId,
+       })
++      if (root.address.toLowerCase() === account.address.toLowerCase()) return root
++      // Mitoshi patch (S13, D-053): a backup passkey — an admin key (TIP-1049) of `account.address` — signs as that
++      // account through the keychain.
++      return TempoAccount.from({
++        keyType: 'webAuthn',
++        publicKey: PublicKey.fromHex(account.credential.publicKey),
++        sign: ({ hash }) => root.sign({ hash, raw: true }),
++        access: account.address,
++      })
++    }
+     case 'webAuthn_headless':
+       return TempoAccount.fromHeadlessWebAuthn(account.privateKey, {
+         rpId: account.rpId,
+diff --git a/src/core/adapters/webAuthn.ts b/src/core/adapters/webAuthn.ts
+index e91e0f1b18dce4cd9610c7dd5e9bd70601e53a32..bae093a0d81734495cabbcd9250469d235a8b494 100644
+--- a/src/core/adapters/webAuthn.ts
++++ b/src/core/adapters/webAuthn.ts
+@@ -95,7 +95,10 @@ export function webAuthn(options: webAuthn.Options = {}): Adapter.Adapter {
+         if (!rpId) throw new Error('rpId is required')
+ 
+         const response = await Authentication.sign({ options })
+-        const { publicKey, username } = await ceremony.verifyAuthentication(response)
++        // Mitoshi patch (S13, D-053): the server names the account a backup passkey signs in as.
++        const { publicKey, username, account: backupOf } = (await ceremony.verifyAuthentication(response)) as Awaited<
++          ReturnType<typeof ceremony.verifyAuthentication>
++        > & { account?: `0x${string}` }
+ 
+         await storage.setItem('lastCredentialId', response.id)
+ 
+@@ -116,7 +119,7 @@ export function webAuthn(options: webAuthn.Options = {}): Adapter.Adapter {
+         return {
+           accounts: [
+             {
+-              address: account.address,
++              address: backupOf ?? account.address,
+               keyType: 'webAuthn',
+               credential: { id: response.id, publicKey, rpId },
+             },

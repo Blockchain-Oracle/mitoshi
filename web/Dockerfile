@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certifi
 WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+# pnpm applies `patchedDependencies` at install (the `accounts` backup-passkey patch, D-053).
+COPY patches ./patches
 COPY web/package.json ./web/
 COPY scripts/package.json ./scripts/
 COPY contracts/package.json ./contracts/
