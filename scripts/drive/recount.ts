@@ -127,7 +127,8 @@ async function main() {
   type Served = { counts: Record<string, unknown>; markets: Array<Record<string, unknown>>; cursors: Array<{ address?: string; block: string }> };
   let served = null as Served | null;
   for (let i = 0; i < 30; i++) {
-    const res = await fetch(`${OPS}/index/recount?through=${head}`, { signal: AbortSignal.timeout(30_000) });
+    // ~30 s at 1.8M events (countsThrough ~28 s, the digest ~4 s, F-S5-02): an offline gate tool can wait for it.
+    const res = await fetch(`${OPS}/index/recount?through=${head}`, { signal: AbortSignal.timeout(300_000) });
     if (res.ok) {
       served = (await res.json()) as Served;
       const at = (a: string | undefined) => served!.cursors?.find((c) => c.address?.toLowerCase() === a?.toLowerCase());
