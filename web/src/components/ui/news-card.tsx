@@ -13,7 +13,7 @@ export interface NewsCardItem {
   url: string;
 }
 
-export function NewsCard({ items, title, storyLabel, cycleMs = 5200, className }: { items: readonly NewsCardItem[]; title: string; storyLabel: (n: number) => string; cycleMs?: number; className?: string }) {
+export function NewsCard({ items, title, storyLabel, cycleMs = 5200, className }: { items: readonly NewsCardItem[]; title: string; /** "Story" → each dot reads "Story 2"; a string, so a server page can pass it. */ storyLabel: string; cycleMs?: number; className?: string }) {
   const [i, setI] = useState(0);
   const [reduced, setReduced] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
@@ -57,7 +57,7 @@ export function NewsCard({ items, title, storyLabel, cycleMs = 5200, className }
       {items.length > 1 ? (
         <div className="flex items-center justify-center">
           {items.map((_, n) => (
-            <button key={n} type="button" aria-label={storyLabel(n + 1)} aria-current={n === i} onClick={() => jump(n)} className="group grid size-touch place-items-center">
+            <button key={n} type="button" aria-label={`${storyLabel} ${n + 1}`} aria-current={n === i} onClick={() => jump(n)} className="group grid size-touch place-items-center">
               <span className={`block h-1.5 rounded-full transition-all duration-300 ${n === i ? "w-5 bg-ink" : "w-1.5 bg-ink-secondary/40 group-hover:bg-ink-secondary"}`} />
             </button>
           ))}

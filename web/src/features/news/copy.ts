@@ -14,10 +14,11 @@ export const NEWS = {
   refreshed: (at: string) => `Read ${at} UTC; refreshed every few minutes.`,
   partial: "One of the sources couldn't be read just now, so this is what the others carry.",
   quiet: "The wire is quiet. Headlines return shortly.",
+  reading: "Reading the wire…",
   sentiment: { positive: "bullish", negative: "bearish", neutral: "neutral" } satisfies Record<Sentiment, string>,
   tone: "Tagged from the headline's words, not a market signal.",
   trade: (symbol: string) => `Trade ${symbol}`,
-  story: (n: number) => `Story ${n}`,
+  story: "Story",
 } as const;
 
 /** "now", "5m", "2h", "3d" — the reference's `timeAgo`, against a fixed instant so server and client agree. */

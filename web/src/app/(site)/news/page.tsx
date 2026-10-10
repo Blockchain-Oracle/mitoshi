@@ -22,7 +22,7 @@ export default function Page() {
         <p lang="ja" className="type-body text-ink-secondary">{NEWS.headingJp}</p>
         <p className="type-body text-ink-secondary">{NEWS.intro}</p>
       </header>
-      <Suspense fallback={<p className="type-body text-ink-secondary">{NEWS.quiet.split(".")[0]}…</p>}>
+      <Suspense fallback={<p className="type-body text-ink-secondary">{NEWS.reading}</p>}>
         <NewsScreen />
       </Suspense>
     </div>
