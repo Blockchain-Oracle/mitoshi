@@ -27,9 +27,11 @@ export function Table({ head, rows }: { head: readonly string[]; rows: readonly 
   return (
     <div className="overflow-x-auto rounded-lg border border-hairline">
       <table className="w-full border-collapse type-body">
-        <thead className="bg-surface-1 text-left text-ink-secondary">
-          <tr>{head.map((h) => <th key={h} className="px-4 py-3 type-label-micro">{h}</th>)}</tr>
-        </thead>
+        {head.some(Boolean) ? (
+          <thead className="bg-surface-1 text-left text-ink-secondary">
+            <tr>{head.map((h, i) => <th key={i} className="px-4 py-3 type-label-micro">{h}</th>)}</tr>
+          </thead>
+        ) : null}
         <tbody>
           {rows.map((r, i) => (
             <tr key={i} className="border-t border-hairline">{r.map((c, j) => <td key={j} className="px-4 py-3 align-top text-ink">{c}</td>)}</tr>

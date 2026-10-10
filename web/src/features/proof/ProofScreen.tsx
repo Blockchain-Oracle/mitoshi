@@ -35,7 +35,7 @@ export async function ProofScreen({ market }: { market: `0x${string}` }) {
         <section key={p.which} className="flex flex-col gap-4">
           <H2>{PROOF.which[p.which] ?? `Print ${p.which}`}</H2>
           <Table
-            head={["", ""]}
+            head={[]}
             rows={[
               [PROOF.rows.price, <b key="p">{usd(p.priceE8)}</b>],
               [PROOF.rows.boundary, `${utc(p.sourceTsSec)} UTC`],
