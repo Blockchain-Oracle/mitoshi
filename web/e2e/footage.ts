@@ -43,8 +43,9 @@ for (const width of widths) {
     await hold(page, 3);
     const up = page.locator(".tm-btn").filter({ hasText: "UP" }).first();
     await up.click();
-    const row = page.locator(".tm-pos:visible").filter({ hasText: "Up BTC" }).first();
-    await expect(row).toBeVisible({ timeout: 60_000 });
+    // A phone lists positions behind the "View position" pill; a desk beside the chart.
+    const opened = width < 768 ? page.locator(".tm-view").first() : page.locator(".tm-pos:visible").filter({ hasText: "Up BTC" }).first();
+    await expect(opened).toBeVisible({ timeout: 60_000 });
     log({ step: "tapped-up" });
     await hold(page, 8);
     // CLOSE in one tap.
@@ -55,7 +56,7 @@ for (const width of widths) {
     // Another position, its details and TP / SL.
     await waitEnterable(s, "up");
     await up.click();
-    await expect(row).toBeVisible({ timeout: 60_000 });
+    await expect(opened).toBeVisible({ timeout: 60_000 });
     await hold(page, 2);
     if (width < 768) await page.locator(".tm-view").first().click().catch(() => undefined);
     await page.locator(".tm-pos:visible .tm-pos-open-btn").first().click();
