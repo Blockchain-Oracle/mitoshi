@@ -1881,6 +1881,18 @@ include our own end-to-end runs' fresh passkey accounts. **It lives in the site 
 it carries no wallet stack (S5 gate: site-owned 23.6 KB of 35); a failed read is never cached (the cached function
 throws; the caller shows no numbers), which also fixes the landing's figures.
 
+### D-216 — S5's "no wallet stack" gate line, read per route group (decision, S5, 2026-10-10)
+
+**The S5 gate's "these routes carry no wallet stack (budget ≤ 120 KB)" is checked as: nothing of the wallet runtime
+is in any S5 route's first load; the KB figure is the route group's §3.1 budget as amended by D-071.** The 120 KB
+figure predates D-071 (the framework floor alone is 128 KB gzip), so the public read-only routes (`/stats`,
+`/status`, `/news`, `/proof/[market]`) are gated on site-owned JS ≤ 35 KB. `/leaderboard`, `/u/[address]` and
+`/portfolio/edge` stay in the app group (≤ 250 KB): they open from the terminal's account drawer inside the app shell,
+the board highlights the asker's own row, and Trader Edge is the signed-in wallet's report. They still carry no wallet
+stack on first load — `WalletShellProvider` mounts `WalletRuntime` (wagmi, viem/tempo, the passkey connector,
+WalletConnect) as a lazy island that loads only for a wallet to restore or on the visitor's first interaction (D-152);
+the first-load chunks hold that cookie check and the chain id, nothing else of the wallet.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
