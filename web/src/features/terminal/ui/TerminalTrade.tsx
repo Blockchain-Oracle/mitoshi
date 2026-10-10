@@ -3,6 +3,7 @@
 // (`useQuote`, `useTicketRoute`) take one. Pays × from the live quote, else the top of the book.
 import type { EventMarket } from "@cwf/core";
 import type { MarketPhase } from "@cwf/core/lifecycle";
+import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import { TERMINAL } from "../copy";
 import { money, multipleOf } from "../format";
@@ -19,6 +20,9 @@ export function TerminalTrade({ market, phase, stakeBase, spot, boostX, onPays }
   // A Boost set in the stack (RV-41): UP/DOWN open it, with its own refusals under each button.
   const b = useTerminalBoost({ market, phase, stakeBase, multiple: boostX, enabled: phase === "trading" });
   const pair = paysPair(t.sides.up.multiple, t.sides.down.multiple);
+  // Tail / Fade from a take (S13): `?pick=up|down` arrives with the take's side, or its opposite, highlighted.
+  const pickParam = useSearchParams().get("pick");
+  const picked = pickParam === "up" || pickParam === "down" ? pickParam : null;
   useEffect(() => onPays(pair), [pair, onPays]);
   if (b.on) {
     return (
@@ -35,6 +39,7 @@ export function TerminalTrade({ market, phase, stakeBase, spot, boostX, onPays }
       downSub={paysText(t.sides.down.multiple, t.sides.down.capped ? money(t.sides.down.stakeBase) : null)}
       upNote={t.sides.up.blocked}
       downNote={t.sides.down.blocked}
+      picked={picked}
     />
   );
 }

@@ -337,7 +337,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             busy={detail !== null && closer.busy === detail.id}
           />
           <ExitsDrawer p={detail} value={detail ? (values.get(detail.id) ?? null) : null} open={drawer.open === DRAWERS.exits && detailId !== null} onOpenChange={(o) => !o && drawer.close()} />
-          <RoomDrawer open={drawer.open === DRAWERS.room} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} marketId={market?.marketId ?? null} />
+          <RoomDrawer open={drawer.open === DRAWERS.room} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} window={market ? { marketId: market.marketId, asset: market.asset, intervalSec: market.intervalSec, expirySec: market.expirySec } : null} />
         </>
       ) : null}
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>

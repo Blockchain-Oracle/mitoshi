@@ -46,7 +46,11 @@ streaming, profile editing, export/deletion, a trading-points league — built h
    reactions, report (21st 31359 + 28339 reasons) and block; live through Postgres NOTIFY → ops `social` relay → the
    stream's `rooms` topic; the terminal's Room drawer (21st 26900's rows, chips and optimistic states; the draft is
    kept on failure) from a chat button beside the chart controls.
-4. Takes + cashtags + reactions + Tail/Fade; the composer bound to the card on screen; rooms/takes on the stream.
+4. **Done (deploy + live check next):** takes — `/api/social/takes` (public feed by ticker / authors / following;
+   posting on an open Window, facts and line from the index, "backed" from the room gate's read, 3/min and 30/day),
+   cashtags in core, reactions, report and block on takes, Tail / Fade (the terminal on that Window with `?pick=` the
+   same or the other side highlighted; nothing trades from the feed), the composer bound to the Window on screen; the
+   stream's `takes` topic. In the Room drawer as "Takes".
 5. Profiles: editing, follows, the drawer's profile header; `/u` shows takes and follows.
 6. `/activity` + the LifecycleWatcher + the rail's badge (the notification centre under Portfolio).
 7. Alerts (basis + staleness gate) + `/settings/notifications`; push delivery lands with SM2.
