@@ -24,12 +24,27 @@
   },
   "check": {
     "admissionSec": 120,
-    "maxDivergenceBps": 25
+    "maxDivergenceBps": 25,
+    "redstoneStrictSec": 60
   },
   "dataStreams": {
     "proxy": {
       "4217": "0xcE73c8ad08CBDEaCa6078BF0627C8fe0a9a536E7",
       "42431": "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64"
+    },
+    "_gapDoc": "S6 (G-03, D-217): on these chains a Gap Series' version 0 is Data Streams primary on the ticker's RegularHours v11 stream (open admitted until the lock) with RedStone checked in check.admissionSec; elsewhere RedStone primary with the print archive (Q-011). Feeds: context/tempo/15 §1.3 (Chainlink RDD).",
+    "gapChains": ["4217"],
+    "graceSec": 5,
+    "feeds": {
+      "TSLA": "0x000b2dbed1640ead18d37338b75e4755630a900649261baf4ed79d9a749be13d",
+      "NVDA": "0x000b6aa036224454037bab103184565f6aa9ea589c3b349f6d8471ee753524b9",
+      "AAPL": "0x000bbd87a23775b4c11092ae9a1fc7b3393636ae1dbb9f1ef460f845c0f4cff1",
+      "MSFT": "0x000bc4bcae3f338a2496aeee763156b999465bda826a3ccc94987d32a98212ab",
+      "META": "0x000bc63e601958daafb805b1eecc3972a0ad231e8c08c0432961b7b5c3251166",
+      "GOOGL": "0x000b1a2aa24db17599e5003a09bcd5e2a15ef66f79c2dca4dde108ab923b1e97",
+      "AMZN": "0x000bfb41659084e9ea0ea672b12b7878d88511dcac813d82435da65df946f65c",
+      "PLTR": "0x000b0a2a7bd663521a7e191c71c9e120825c0419445ac614fb9dcd3eafeb6298",
+      "AMD": "0x000b122bc7189267b8c0f0759c71895809633b1aaa0c71ffb31f81ddb5d56849"
     }
   },
   "nodesReserved": 256,

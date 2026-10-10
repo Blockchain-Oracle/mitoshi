@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.30;
 
+import {GapPolicy} from "./GapPolicy.sol";
 import {Script} from "forge-std/Script.sol";
 import {EventsEngine} from "../../src/engine/EventsEngine.sol";
 import {EngineLens} from "../../src/engine/EngineLens.sol";
@@ -27,6 +28,13 @@ abstract contract EngineCheck is Script {
         uint8 fillsCap;
         uint8 evictionsCap;
         uint32 nodesReserved;
+        /// S6 (D-217): the check window and its RedStone strictness, the Data Streams grace, and whether this chain's Gap
+        /// Series take Data Streams (`dataStreams.gapChains`).
+        uint32 checkAdmissionSec;
+        uint16 maxDivergenceBps;
+        uint32 checkStrictSec;
+        uint16 dataStreamsGraceSec;
+        bool gapOnDataStreams;
     }
 
     struct SeriesSpec {
@@ -35,6 +43,7 @@ abstract contract EngineCheck is Script {
         uint8 basis;
         uint32 cadenceSec;
         bytes32 feed;
+        string symbol;
     }
 
     struct Deployed {
@@ -65,6 +74,12 @@ abstract contract EngineCheck is Script {
         s.fillsCap = uint8(vm.parseJsonUint(j, ".grid.fillsCap"));
         s.evictionsCap = uint8(vm.parseJsonUint(j, ".grid.evictionsCap"));
         s.nodesReserved = uint32(vm.parseJsonUint(j, ".nodesReserved"));
+        s.checkAdmissionSec = uint32(vm.parseJsonUint(j, ".check.admissionSec"));
+        s.maxDivergenceBps = uint16(vm.parseJsonUint(j, ".check.maxDivergenceBps"));
+        s.checkStrictSec = uint32(vm.parseJsonUint(j, ".check.redstoneStrictSec"));
+        s.dataStreamsGraceSec = uint16(vm.parseJsonUint(j, ".dataStreams.graceSec"));
+        string[] memory chains = vm.parseJsonStringArray(j, ".dataStreams.gapChains");
+        for (uint256 i; i < chains.length; ++i) if (vm.parseUint(chains[i]) == block.chainid) s.gapOnDataStreams = true;
     }
 
     function seriesSpecs() internal view returns (SeriesSpec[] memory out) {
@@ -79,7 +94,8 @@ abstract contract EngineCheck is Script {
                 uint16(vm.parseJsonUint(j, string.concat(k, ".ticker"))),
                 uint8(vm.parseJsonUint(j, string.concat(k, ".basis"))),
                 uint32(vm.parseJsonUint(j, string.concat(k, ".cadenceSec"))),
-                bytes32(bytes(vm.parseJsonString(j, string.concat(k, ".redstoneFeed"))))
+                bytes32(bytes(vm.parseJsonString(j, string.concat(k, ".redstoneFeed")))),
+                vm.parseJsonString(j, string.concat(k, ".symbol"))
             );
         }
     }
@@ -137,6 +153,25 @@ abstract contract EngineCheck is Script {
         v.primary.strictSec = s.strictSec;
         v.primary.openAdmissionSec = basis == BASIS_GAP ? ADMIT_UNTIL_LOCK : s.admissionSec;
         v.primary.closeAdmissionSec = s.admissionSec;
+    }
+
+    /// Version 0 of a Series: the Gap on Data Streams with a RedStone check where this chain configures it (D-217),
+    /// every other Series (and every Gap elsewhere) on `launchPolicy`.
+    function seriesPolicy(Deployed memory d, SeriesSpec memory x, Spec memory s) internal view returns (PolicyVersion memory) {
+        if (x.basis != BASIS_GAP || !s.gapOnDataStreams) return launchPolicy(address(d.rs), x.feed, s, x.basis);
+        return GapPolicy.dataStreamsPrimary(
+            GapPolicy.Params({
+                dataStreams: address(d.ds),
+                dataStreamsFeed: vm.parseJsonBytes32(specJson(), string.concat(".dataStreams.feeds.", x.symbol)),
+                graceSec: s.dataStreamsGraceSec,
+                redstone: address(d.rs),
+                redstoneFeed: x.feed,
+                strictSec: s.checkStrictSec,
+                admissionSec: s.admissionSec,
+                checkAdmissionSec: s.checkAdmissionSec,
+                maxDivergenceBps: s.maxDivergenceBps
+            })
+        );
     }
 
     function _drift(bool ok, string memory what) internal pure {

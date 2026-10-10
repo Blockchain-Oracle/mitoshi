@@ -48,5 +48,9 @@ with the archive's Friday print). S6 is mostly the surfaces. Steps, in order:
    semantics stay unverified, `tempo/15` §5, so nothing more is claimed); G-05 — the markets drawer lists, under
    "Paused", NFLX (bridged to Tempo testnet, no signed source carries it, D-107) and Pre-IPO (no attested source on
    Tempo, Q-007's default), never invented names.
-9. The Gap on Data Streams in the mainnet config, with the RedStone archive fallback.
+9. **Done (config + proofs; live at S19):** D-217 — the mainnet Gap's version 0 is Data Streams primary (RegularHours
+   v11, open admitted until the lock, status Open|Closed) with a RedStone check (120 s, 60 s strict, 25 bp); Moderato
+   keeps RedStone + the archive. `GapPolicy.sol`, `EngineCheck.seriesPolicy`, `venue-spec.json` `dataStreams.{gapChains,
+   graceSec,feeds}`; four Foundry tests and a spec ↔ relay feed test. Open: boundary statuses need a credentialed report,
+   and halt-watch's Data Streams read (both owner/S19).
 10. The gate on testnet over a real session (halted, closed, pre/after, Gap).

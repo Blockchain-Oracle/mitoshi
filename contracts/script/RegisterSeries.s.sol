@@ -8,6 +8,7 @@ import "../src/engine/EngineTypes.sol";
 
 /// @notice S2.11, ensure-style: every Series in the venue spec exists with the spec's grid and launch policy version 0.
 ///         A missing Series is registered (admin key); an existing one that differs fails the run ("series drift").
+///         S6 (D-217): where `dataStreams.gapChains` names this chain, a Gap's version 0 is Data Streams + a RedStone check.
 contract RegisterSeries is DeploymentWriter, EngineCheck {
     function run() external {
         Spec memory s = spec();
@@ -16,7 +17,7 @@ contract RegisterSeries is DeploymentWriter, EngineCheck {
         for (uint256 i; i < all.length; ++i) {
             SeriesSpec memory x = all[i];
             bytes32 sid = EngineStorage.seriesIdOf(x.ticker, x.cadenceSec, x.basis);
-            PolicyVersion memory want = launchPolicy(address(d.rs), x.feed, s, x.basis);
+            PolicyVersion memory want = seriesPolicy(d, x, s);
             if (_exists(d, sid)) {
                 Series memory have = d.lens.seriesOf(sid);
                 _drift(

@@ -1893,6 +1893,27 @@ stack on first load — `WalletShellProvider` mounts `WalletRuntime` (wagmi, vie
 WalletConnect) as a lazy island that loads only for a wallet to restore or on the visitor's first interaction (D-152);
 the first-load chunks hold that cookie check and the chain id, nothing else of the wallet.
 
+### D-217 — the weekend Gap on Data Streams with a RedStone check, on mainnet (decision, S6, 2026-10-10)
+
+**Where `venue-spec.json` `dataStreams.gapChains` names the chain (Tempo mainnet, 4217), a Gap Series' version 0 is
+Data Streams primary on the ticker's RegularHours v11 stream with RedStone as the check source; on Moderato it stays
+RedStone primary with the print archive (Q-011, D-035).** G-03 prefers Data Streams for the Gap because Friday's close
+report can still be fetched and verified on Monday, where RedStone's gateway keeps about 24 h. `GapPolicy.dataStreamsPrimary`
+(contracts/script/lib) builds it and `EngineCheck.seriesPolicy` picks it per Series (`RegisterSeries`):
+- **Primary:** the stream from `dataStreams.feeds` (the same IDs the relay proves with, `DATA_STREAMS_FEEDS`; a test keeps
+  them equal), grace 5 s, the open admitted until the lock (`ADMIT_UNTIL_LOCK`, the Gap's own rule), the close inside
+  `redstone.admissionSec`.
+- **Status mask 2 Open | 5 Closed**, 0 Unknown refused: a report just after Friday's 16:00 close reads Closed, Monday's
+  09:30:00 print Open. These boundary statuses are **unconfirmed** until a credentialed report exists (owner, Q-011): the
+  first mainnet Gap is checked against it before the Series is registered (S19).
+- **Check:** RedStone on the ticker's feed inside `check.admissionSec` (120 s) at 25 bp, `check.redstoneStrictSec` 60 s
+  (all five signers until then, three after) — the engine requires a RedStone check's strictness inside its window, so
+  the primary's 300 s can't be reused. The relay records it ~10 s after T; one missed settles single-source, never a void.
+- Open for mainnet (S19): halt-watch passes an empty Data Streams input today, so `datastreams-stale` /
+  `datastreams-closed` are never observed; it reads the streams once the credentials exist.
+Proven in `contracts/test/engine/GapDataStreams.t.sol` (the engine accepts it on a Gap, refuses it elsewhere, refuses a
+check strictness outside its window; the real spec picks it on 4217 only).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
