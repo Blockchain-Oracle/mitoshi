@@ -29,4 +29,23 @@ _None yet._
 
 ## Handoff
 
-_Not started._
+Started 2026-10-10. Surveyed: the trunk has groundwork only (`packages/brain` with MPP routing and no callers;
+`social/0001-0002` tables `room_comments`, `bettors`, `takes`, `take_tags` with no readers; `rooms`/`takes` already on
+the stream's allow-list; `server/session.ts` reads `cwf_social` but nothing issues it; orphaned room/take/reel/alert CSS;
+`UNDO_WINDOW_MS` unused). References: Agari 03b30ab for Sensei, rooms, takes, alerts, reels, activity, follows (pin
+only); Masayume 68f7a09 for the EVM signature check; Owarine/Tradash for the league view (Aura is display-only there).
+None has: one session for all social writes, visitor-readable rooms, reactions, Tail/Fade, moderation, AI consent,
+streaming, profile editing, export/deletion, a trading-points league — built here. Steps, in order:
+1. The one social session: a passkey session counts; any other wallet signs once → `cwf_social` (30 days).
+2. Social tables + moderation: profiles, follows, reports, blocks, word filter, the ops moderation queue.
+3. Rooms (ticker + Window): visitors read; posting gated on a real engine position; optimistic, draft kept on failure.
+4. Takes + cashtags + reactions + Tail/Fade; the composer bound to the card on screen; rooms/takes on the stream.
+5. Profiles: editing, follows, the drawer's profile header; `/u` shows takes and follows.
+6. `/activity` + the LifecycleWatcher + the rail's badge (the notification centre under Portfolio).
+7. Alerts (basis + staleness gate) + `/settings/notifications`; push delivery lands with SM2.
+8. Sensei: the brain (MPP or a direct key), streamed tokens, AI data-sharing consent first.
+9. Reels.
+10. `/settings/account` completion (backup passkey, key-used history, AI consent, export, deletion, 5 s Undo),
+    `/contact` (21st 25081), privacy/terms updated for social and AI data.
+11. The weekly season league (D-195) in the account drawer.
+12. The gate.
