@@ -64,7 +64,7 @@ const market = (await provider.getMarket(marketId));
 if (!market.ok || !market.value) throw new Error("the Window did not read");
 
 const remaining = async () => {
-  const [state] = await readKeyStates(reader as never, root.address, [{ keyId: key.keyId, admin: false, signatureType: 1, expirySec: null, authorized: null, revoked: null, lastUsed: null, tokens: [{ token: PATH_USD, limit: auth.limits[0]!.limit, period: 86_400n }] }]);
+  const [state] = await readKeyStates(reader as never, root.address, [{ keyId: key.keyId, admin: false, signatureType: 1, expirySec: null, authorized: null, revoked: null, lastUsed: null, uses: [], tokens: [{ token: PATH_USD, limit: auth.limits[0]!.limit, period: 86_400n }] }]);
   return state?.tokens[0]?.remaining ?? null;
 };
 
