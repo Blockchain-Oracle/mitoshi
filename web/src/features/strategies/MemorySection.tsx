@@ -39,7 +39,8 @@ const M = {
   signIn: "Sign in to read it",
 };
 
-export function MemorySection({ card, wallet, copying }: { card: StrategyWire; wallet: string | null; copying: boolean }) {
+/** `titled`: the drawer's own small heading and rule; a page that heads its sections itself passes false. */
+export function MemorySection({ card, wallet, copying, titled = true }: { card: StrategyWire; wallet: string | null; copying: boolean; titled?: boolean }) {
   const shell = useWalletShell();
   const queryClient = useQueryClient();
   const [opened, setOpened] = useState<{ title: string; body: string } | null>(null);
@@ -127,8 +128,8 @@ export function MemorySection({ card, wallet, copying }: { card: StrategyWire; w
   })();
 
   return (
-    <section className="flex flex-col gap-2 border-t border-hairline pt-4">
-      <h3 className="type-label-micro text-ink-secondary">{M.title}</h3>
+    <section className={titled ? "flex flex-col gap-2 border-t border-hairline pt-4" : "flex flex-col gap-2"}>
+      {titled && <h3 className="type-label-micro text-ink-secondary">{M.title}</h3>}
       {card.memory ? (
         <p className="flex flex-col gap-0.5">
           <span className="type-body text-ink">{M.listed(card.memory.title, card.memory.chars)}</span>

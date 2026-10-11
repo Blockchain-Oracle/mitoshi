@@ -22,6 +22,7 @@ export const AGENTS = {
   figure: (net: bigint, settled: number) => (settled === 0 ? "—" : `${net > 0n ? "+" : net < 0n ? "−" : ""}${usd(net)}`),
   profile: {
     back: "All agents",
+    memory: "Its sealed memory",
     identity: "ERC-8004 identity",
     registry: "Registry",
     runner: "Runner",

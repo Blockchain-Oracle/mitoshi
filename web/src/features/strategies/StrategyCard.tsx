@@ -21,7 +21,7 @@ export function StrategyCard({ card, copying, onOpen, onCopy, onStop }: { card: 
       <button type="button" onClick={onOpen} className="flex flex-col gap-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md">
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 flex-col gap-1">
-            <h3 id={`strategy-${card.strategyId}-name`} className="type-title text-ink truncate">{card.name}</h3>
+            <h3 id={`strategy-${card.strategyId}-name`} className="type-title text-ink line-clamp-2 break-words">{card.name}</h3>
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 type-caption text-ink-secondary">
               <span>{S.card.series(card.envelope.seriesLabel)}</span>
               {card.agentId && (
