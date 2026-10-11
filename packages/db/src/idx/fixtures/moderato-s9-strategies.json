@@ -1,0 +1,233 @@
+{
+ "_doc": "Every StrategyRegistry log on Moderato (0x79156a899BC8CB773D8b70ecD0392C78eE9FB8FD, blocks 39054922–39057364) and every ERC-8004 feedback log (0x8004B663056A597Dffe9eCcC1965A193B7388713, from 37372338), decoded by @cwf/markets/ops as the indexer stores them, and the chain's own strategyOf/subscriptionOf/readFeedback at block 39057364. Fixture for the strategy projection test.",
+ "toBlock": "39057364",
+ "registry": "0x79156a899bc8cb773d8b70ecd0392c78ee9fb8fd",
+ "reputation": "0x8004b663056a597dffe9eccc1965a193b7388713",
+ "events": [
+  {
+   "chainId": 42431,
+   "address": "0x79156a899bc8cb773d8b70ecd0392c78ee9fb8fd",
+   "txHash": "0x35625e417ef949a931a7a4dc9f7d018b3874853e172d5cda4222f8c0977416fd",
+   "logIndex": 1,
+   "blockNumber": 39057188,
+   "blockTimeSec": 1791677114,
+   "name": "Published",
+   "market": null,
+   "seq": null,
+   "data": {
+    "strategyId": "1",
+    "creator": "0xca7BFA5CBdC7135Ba178ca23cD2B12C123258B9a",
+    "runner": "0xca7BFA5CBdC7135Ba178ca23cD2B12C123258B9a",
+    "specHash": "0x4988c83cc5c2e01809da39731b896d84400829baddeaf81129d6e1e0efd0f368",
+    "metadataHash": "0xfda5b32183810dc7ac8c92f6a339fab18589f4e265e36469e76dc312ce0f35ba",
+    "agentId": "7",
+    "envelope": {
+     "maxStakePerTrade": "5000000",
+     "maxDailySpend": "50000000",
+     "maxOpenPositions": 3,
+     "maxPriceRaw": "900000",
+     "market": "0x7c366cf9ea9bdb3de6894bbfe4ec96e0758ddd88f2c87277cec590c5cfd6a45d"
+    },
+    "fee": "0",
+    "metadata": "{\"name\":\"BTC Momentum\",\"description\":\"Rides BTC's five-minute move. When the last six prints climbed or fell by at least 0.20%, it takes that side on the live Window; otherwise it sits the round out.\",\"spec\":{\"preset\":\"momentum\",\"lookback\":6,\"thresholdBps\":20}}"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x79156a899bc8cb773d8b70ecd0392c78ee9fb8fd",
+   "txHash": "0x3e57af1c18376fb528b21243fec6494de1f0a6b9d10759686925d4f7fc077c7c",
+   "logIndex": 2,
+   "blockNumber": 39057201,
+   "blockTimeSec": 1791677122,
+   "name": "Published",
+   "market": null,
+   "seq": null,
+   "data": {
+    "strategyId": "2",
+    "creator": "0xca7BFA5CBdC7135Ba178ca23cD2B12C123258B9a",
+    "runner": "0xca7BFA5CBdC7135Ba178ca23cD2B12C123258B9a",
+    "specHash": "0xca6ec03dd5abecbd8eadd49352272ba7b6689e66921194700cabb60795215f6e",
+    "metadataHash": "0x4e509752db7f6ee43ddbf3b394b1a5d60b3c7ea045c746f3009206155b4f0338",
+    "agentId": "8",
+    "envelope": {
+     "maxStakePerTrade": "5000000",
+     "maxDailySpend": "50000000",
+     "maxOpenPositions": 3,
+     "maxPriceRaw": "900000",
+     "market": "0xcd91c96ec51ab189c340b40adf936c8102c63f98ccf5b340c6b4a75fa1fa9441"
+    },
+    "fee": "0",
+    "metadata": "{\"name\":\"ETH Mean-reversion\",\"description\":\"Bets against ETH's sharp five-minute moves. After a run of at least 0.30% over the last four prints it takes the other side, expecting a pullback.\",\"spec\":{\"preset\":\"reversion\",\"lookback\":4,\"thresholdBps\":30}}"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x79156a899bc8cb773d8b70ecd0392c78ee9fb8fd",
+   "txHash": "0xef86fce6cab12cee55bba29a4c6a40ef004bb322b08d8c0afaf55a2db9d894e1",
+   "logIndex": 0,
+   "blockNumber": 39057214,
+   "blockTimeSec": 1791677130,
+   "name": "Published",
+   "market": null,
+   "seq": null,
+   "data": {
+    "strategyId": "3",
+    "creator": "0xca7BFA5CBdC7135Ba178ca23cD2B12C123258B9a",
+    "runner": "0xca7BFA5CBdC7135Ba178ca23cD2B12C123258B9a",
+    "specHash": "0x692e8a7fe8dbba5f76e3ce3123d27251f1b50e714687e82a1c8f897b646b1c08",
+    "metadataHash": "0x3f7f6c4eb5da4f59b8fbcb8eaa734b74c9656c97d6e19f548e75cf12562e9cb7",
+    "agentId": "9",
+    "envelope": {
+     "maxStakePerTrade": "5000000",
+     "maxDailySpend": "50000000",
+     "maxOpenPositions": 3,
+     "maxPriceRaw": "900000",
+     "market": "0x7c366cf9ea9bdb3de6894bbfe4ec96e0758ddd88f2c87277cec590c5cfd6a45d"
+    },
+    "fee": "0",
+    "metadata": "{\"name\":\"House agent: BTC reader\",\"description\":\"An AI agent that reads each BTC five-minute Window once — the opening print, the move so far and both books — and calls up, down or hold. A fixed gate holds any weak call.\",\"spec\":{\"preset\":\"agent\",\"persona\":\"A patient desk trader on BTC's five-minute Windows. Reads the opening print, the move since, and both sides of the book. Sits out unless the tape and the book agree; never chases a price that has already run.\",\"posture\":\"guarded\",\"cadences\":[300]}}"
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x79156a899bc8cb773d8b70ecd0392c78ee9fb8fd",
+   "txHash": "0x2fc9389ca7ebe13763be3ddd92653109fc4bf9e9273ad37b5e906d30107e154c",
+   "logIndex": 13,
+   "blockNumber": 39057310,
+   "blockTimeSec": 1791677189,
+   "name": "Subscribed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "strategyId": "1",
+    "subscriber": "0xe1a39Ed3228233B8f937Aa52953ECDaE29b07F24",
+    "grantId": "7",
+    "mode": 0,
+    "feePaid": "0",
+    "subscribers": 1
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x79156a899bc8cb773d8b70ecd0392c78ee9fb8fd",
+   "txHash": "0x7e9c451e00c770300359d03e690260ed99e6e744b50065f1bbb15c22eeded76f",
+   "logIndex": 6,
+   "blockNumber": 39057314,
+   "blockTimeSec": 1791677191,
+   "name": "Subscribed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "strategyId": "2",
+    "subscriber": "0xe1a39Ed3228233B8f937Aa52953ECDaE29b07F24",
+    "grantId": "7",
+    "mode": 1,
+    "feePaid": "0",
+    "subscribers": 1
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x79156a899bc8cb773d8b70ecd0392c78ee9fb8fd",
+   "txHash": "0xb08f39e6fb3a475b333f0346c9ed0dc646dc55d47e049f0f56230f606c46f762",
+   "logIndex": 5,
+   "blockNumber": 39057319,
+   "blockTimeSec": 1791677194,
+   "name": "Unsubscribed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "strategyId": "1",
+    "subscriber": "0xe1a39Ed3228233B8f937Aa52953ECDaE29b07F24",
+    "subscribers": 0
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x79156a899bc8cb773d8b70ecd0392c78ee9fb8fd",
+   "txHash": "0xbc05ca4a56648f62ca2c433ceeb7dfb0baa76a8838bcad9ba0b0b198f87f5658",
+   "logIndex": 4,
+   "blockNumber": 39057325,
+   "blockTimeSec": 1791677198,
+   "name": "Unsubscribed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "strategyId": "2",
+    "subscriber": "0xe1a39Ed3228233B8f937Aa52953ECDaE29b07F24",
+    "subscribers": 0
+   }
+  },
+  {
+   "chainId": 42431,
+   "address": "0x8004b663056a597dffe9eccc1965a193b7388713",
+   "txHash": "0x6694bf7a8ca167a3aa680724572425e92f0e4218a21f59b50053efb1c1ffb8f2",
+   "logIndex": 4,
+   "blockNumber": 37372346,
+   "blockTimeSec": 1790659388,
+   "name": "NewFeedback",
+   "market": null,
+   "seq": null,
+   "data": {
+    "agentId": "6",
+    "clientAddress": "0x6Ed3a4b6E42B2C45211074F8D7BA58dbB2FAad0C",
+    "indexedTag1": "0x9aa3355878eb286600e42edd5e58ca8416cf5e9971a8181438ac09ec31ffd668",
+    "feedbackIndex": "1",
+    "value": "100",
+    "valueDecimals": 0,
+    "tag1": "s3.5",
+    "tag2": "smoke",
+    "endpoint": "https://testnet.mitoshi.xyz/api/agents/s3-5-smoke-agent/registration.json",
+    "feedbackURI": "",
+    "feedbackHash": "0x0000000000000000000000000000000000000000000000000000000000000000"
+   }
+  }
+ ],
+ "chain": {
+  "strategies": {
+   "1": {
+    "runner": "0xca7bfa5cbdc7135ba178ca23cd2b12c123258b9a",
+    "feeBase": "0",
+    "active": true,
+    "subscribers": 0,
+    "revision": 0,
+    "agentId": "7"
+   },
+   "2": {
+    "runner": "0xca7bfa5cbdc7135ba178ca23cd2b12c123258b9a",
+    "feeBase": "0",
+    "active": true,
+    "subscribers": 0,
+    "revision": 0,
+    "agentId": "8"
+   },
+   "3": {
+    "runner": "0xca7bfa5cbdc7135ba178ca23cd2b12c123258b9a",
+    "feeBase": "0",
+    "active": true,
+    "subscribers": 0,
+    "revision": 0,
+    "agentId": "9"
+   }
+  },
+  "subscriptions": {
+   "1:0xe1a39ed3228233b8f937aa52953ecdae29b07f24": {
+    "grantId": "7",
+    "mode": 0,
+    "active": false
+   },
+   "2:0xe1a39ed3228233b8f937aa52953ecdae29b07f24": {
+    "grantId": "7",
+    "mode": 1,
+    "active": false
+   }
+  },
+  "feedback": {
+   "6:0x6ed3a4b6e42b2c45211074f8d7ba58dbb2faad0c:1": {
+    "value": "100",
+    "valueDecimals": 0,
+    "revoked": false
+   }
+  }
+ }
+}

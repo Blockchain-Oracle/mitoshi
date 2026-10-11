@@ -5,14 +5,15 @@
  * `latest`, each window written in one DB transaction (idempotent), live every second once caught up. After each
  * window it checks `(marketId, seq)` continuity of the Markets it touched; a hole re-fetches that Market's logs by
  * topic and rebuilds its projections. Applied events go to the stream bus (`market:<id>`, `fills`, `prints`,
- * `verdicts`, `markets`, `activity`, `user:<addr>`). The EventVault is the second source (`vault.ts`, S7): its own
- * cursor, the same writer, one window per pass. Read-only on chain: DRY_RUN changes nothing here.
+ * `verdicts`, `markets`, `activity`, `user:<addr>`). Other sources follow on their own cursors with the same writer, one
+ * window per pass (`follower.ts`): the EventVaults (S7), the StrategyRegistry and ERC-8004 feedback (S9). Read-only on chain: DRY_RUN changes nothing here.
  */
 import { tickerById } from "@cwf/core";
 import { indexWriter, indexReader, type IdxEvent } from "@cwf/db/idx";
 import { createOpsClient, fetchEngineEvents, headBlock, venueOf, type ChainEvent, type OpsClient, type Venue } from "@cwf/markets/ops";
 import { runActor, type PassResult, type VenueDeps } from "../../runtime";
 import { BACKFILL_MAX, grow, nextRange, shrink, topicsOf, type WindowState } from "./window";
+import { strategyFollowers } from "./strategies";
 import { vaultFollowers } from "./vault";
 
 const LIVE_MS = 1_000;
@@ -39,14 +40,16 @@ export function startIndexer(deps: VenueDeps): { stop: () => void } {
     return lastStatus.row;
   };
   const vaults = vaultFollowers(deps, client, writer);
+  // The other sources, each on its own cursor: the Trading Balances (S7), the strategy registry and its agents' feedback (S9).
+  const sources = [...vaults, ...strategyFollowers(deps, client, writer)];
   const vaultPass = async (head: number): Promise<string> => {
-    if (vaults.length === 0) return "vault not deployed";
+    if (sources.length === 0) return "vault not deployed";
     const lines: string[] = [];
-    for (const v of vaults) {
+    for (const v of sources) {
       try {
         lines.push(await v.pass(head));
       } catch (error) {
-        lines.push(`vault window failed (${String(error).slice(0, 120)}); retried next pass`);
+        lines.push(`source window failed (${String(error).slice(0, 120)}); retried next pass`);
       }
     }
     return lines.join(" · ");

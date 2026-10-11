@@ -12,7 +12,7 @@ import type { Bus, BusEvent } from "../runtime/bus";
 export const PING_MS = 15_000;
 const MAX_TOPICS = 32;
 /** Public topic names (`ticks`: the display feed, S23a, never replayed); `market:<0x…32 bytes>` and `symbol:<TICKER>` are parameterised. */
-const PUBLIC = new Set(["prices", "ticks", "markets", "fills", "prints", "verdicts", "halts", "session", "activity", "rooms", "takes"]);
+const PUBLIC = new Set(["prices", "ticks", "markets", "fills", "prints", "verdicts", "halts", "session", "activity", "rooms", "takes", "strategies"]);
 
 /** Topics published with `bus.emit` (never in the replay ring): a replaying client still gets their snapshot. */
 const EPHEMERAL = new Set(["ticks"]);

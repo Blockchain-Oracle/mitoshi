@@ -23,6 +23,7 @@
     "./live-ticks": "./src/runtime/live-ticks.ts",
     "./ops": "./src/ops/index.ts",
     "./parlay": "./src/parlay/index.ts",
+    "./strategies": "./src/strategies/index.ts",
     "./range": "./src/range/index.ts",
     "./leverage": "./src/leverage/index.ts",
     "./private": "./src/private/index.ts",

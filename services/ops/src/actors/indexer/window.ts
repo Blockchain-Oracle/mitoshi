@@ -72,6 +72,21 @@ export function topicsOf(e: { name: string; market: string | null; data: Record<
       add("owner");
       out.push("activity");
       break;
+    // StrategyRegistry (S9): the board hears every change; a subscription is its subscriber's, a strategy its creator's.
+    case "Published":
+      add("creator");
+      out.push("strategies");
+      break;
+    case "Updated":
+    case "RunnerChanged":
+    case "Deactivated":
+      out.push("strategies");
+      break;
+    case "Subscribed":
+    case "Unsubscribed":
+      add("subscriber");
+      out.push("strategies");
+      break;
   }
   for (const u of users) out.push(`user:${u}`);
   return out;

@@ -7,6 +7,7 @@
  */
 import type postgres from "postgres";
 import type { IdxEvent } from "./types";
+import { applyStrategyEvent, FEEDBACK_EVENTS, STRATEGY_EVENTS } from "./apply-strategies";
 import { applyVaultEvent, VAULT_EVENTS } from "./apply-vault";
 
 type Tx = postgres.TransactionSql;
@@ -158,6 +159,11 @@ export async function applyEvent(tx: Tx, e: IdxEvent): Promise<void> {
   // The EventVault's events (index/0002, S7) have their own projections; they carry no engine `seq`.
   if (VAULT_EVENTS.has(e.name)) {
     await applyVaultEvent(tx, e);
+    return;
+  }
+  // The StrategyRegistry's and ERC-8004 feedback (index/0006, S9): no engine `seq` either; no other source emits these names.
+  if (e.market === null && (STRATEGY_EVENTS.has(e.name) || FEEDBACK_EVENTS.has(e.name))) {
+    await applyStrategyEvent(tx, e);
     return;
   }
   const d = e.data;

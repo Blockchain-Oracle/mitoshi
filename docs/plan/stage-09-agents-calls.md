@@ -43,5 +43,11 @@ for the open questions: D-218. Steps, in order:
 10. The gate: copy in one tx, stop in one tx, a runner placement from a STRATEGY grant, a decision with its receipt
     (or "unpaid" on testnet), copier P&L = index, UX gate.
 
+Progress: steps 1–4 done (acceptance/S9.md): the registry deployed; core types; markets writes/reads + the relay
+companion (stop = one sponsored tx); the index (`idx_strategies`, `idx_subscriptions`, `idx_agent_feedback`), the
+runner's store, and three house strategies live on Moderato (#1–#3, agents 7–9, runner `strategy-runner`). Copy note
+for step 7: one live STRATEGY grant per owner, so a second copy of a strategy with the same runner shares the grant
+(`subscribe(id, 0, …)`), never re-grants (that would revoke the first).
+
 - S13 hand-off (2026-10-11): agent pages carry Report and Block — `/api/social/report` already accepts `targetKind: "agent"` (D34); the page adds the button (`features/social/report-dialog-lazy.ts`).
 
