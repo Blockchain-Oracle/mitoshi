@@ -117,3 +117,45 @@ export async function readAgentFeedback(sql: Sql, agentId: string, limit = 50): 
     from idx_agent_feedback where agent_id = ${agentId}::numeric order by block_number desc, feedback_index desc limit ${Math.min(200, limit)}`;
   return rows.map((r) => ({ client: r.client, feedbackIndex: r.feedback_index, value: r.value, valueDecimals: r.value_decimals, tag1: r.tag1, tag2: r.tag2, feedbackUri: r.feedback_uri, revoked: r.revoked, txHash: r.tx_hash, atSec: Number(r.at_sec) }));
 }
+
+/** One of a trader's own calls on a Window, in YES terms (the engine's kinds: 0 BUY_YES, 1 SELL_YES, 2 BUY_NO, 3 SELL_NO). */
+export interface TraderCall {
+  txHash: string;
+  logIndex: number;
+  market: string;
+  kind: number;
+  /** Raw contracts (lots × the Series' lot size for an engine fill; the vault's token delta for a Trading Balance one). */
+  quantityRaw: string;
+  atSec: number;
+}
+
+/**
+ * What a mirror copies (A-3b): one wallet's own calls on these Windows since `sinceSec` — every engine fill it took or
+ * made, and every Trading Balance execution recorded for it as owner except those a STRATEGY grant's runner made (a
+ * copier's fills are someone else's decisions). Units are normalised to raw contracts so the calls net correctly.
+ */
+export async function readTraderCalls(sql: Sql, q: { address: string; sinceSec: number; markets: readonly string[] }): Promise<TraderCall[]> {
+  if (q.markets.length === 0) return [];
+  const a = q.address.toLowerCase();
+  const markets = q.markets.map((m) => m.toLowerCase());
+  const rows = await sql<{ tx_hash: string; log_index: number; market: string; kind: number; quantity_raw: string; at_sec: string }[]>`
+    select * from (
+      select f.tx_hash, f.log_index, f.market, case when f.taker = ${a} then f.taker_kind else f.maker_kind end as kind,
+        (f.lots * s.lot_base)::text as quantity_raw, f.ts_sec::text as at_sec
+      from idx_fills f join idx_markets m on m.market = f.market join idx_series s on s.series = m.series
+      where (f.taker = ${a} or f.maker = ${a}) and f.ts_sec >= ${q.sinceSec} and f.market = any(${markets}::text[])
+      union all
+      select x.tx_hash, x.log_index, x.market,
+        case when x.outcome_idx = 0 then (case when x.is_buy then 0 else 1 end) else (case when x.is_buy then 2 else 3 end) end,
+        abs(x.token_delta)::text, x.at_sec::text
+      from idx_vault_executions x left join idx_vault_grants g on g.vault = x.vault and g.grant_id = x.grant_id
+      where x.owner = ${a} and x.at_sec >= ${q.sinceSec} and x.market = any(${markets}::text[]) and (x.grant_id = 0 or g.kind is distinct from 2)
+    ) u order by at_sec::bigint, log_index`;
+  return rows.map((r) => ({ txHash: r.tx_hash, logIndex: r.log_index, market: r.market, kind: r.kind, quantityRaw: r.quantity_raw, atSec: Number(r.at_sec) }));
+}
+
+/** The days (`tag2`) one client has already rated an agent under `tag1`, revoked ones excluded. */
+export async function readRatedDays(sql: Sql, agentId: string, client: string, tag1: string): Promise<Set<string>> {
+  const rows = await sql<{ tag2: string }[]>`select tag2 from idx_agent_feedback where agent_id = ${agentId}::numeric and client = ${client.toLowerCase()} and tag1 = ${tag1} and not revoked`;
+  return new Set(rows.map((r) => r.tag2));
+}

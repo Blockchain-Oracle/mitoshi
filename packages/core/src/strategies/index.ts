@@ -5,6 +5,7 @@ export * from "./health";
 export * from "./mirror";
 export * from "./model";
 export * from "./ranking";
+export * from "./rating";
 export * from "./record";
 export * from "./spec";
 export * from "./types";

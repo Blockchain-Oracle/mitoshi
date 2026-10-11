@@ -7,17 +7,18 @@
  * turns it around, A-1c), one IOC per Window through `placeFor`, sized inside the grant. Every cycle leaves a heartbeat
  * row in the runner's own words. An agent strategy is decided by its model read once per Window, reserved and recorded
  * before anything is sent (`agent.ts`). Opt-in (`OPS_ACTORS`), dry by default like every actor (D-218.6 / L-55); no key
- * or no DATABASE_URL → report only. Mirror strategies are read by their own scanner (S9.6).
+ * or no DATABASE_URL → report only. A mirror strategy copies one wallet's own calls from the index (`mirror-scan.ts`).
  */
 import type { Address, Hex } from "viem";
 import { parseStrategyMetadata, type SubscriptionMode } from "@cwf/core";
 import { createPgStrategyAttempts, createPgStrategyStore } from "@cwf/db";
-import { readIndexedStrategies, readSubscribers, type IndexedStrategy } from "@cwf/db/idx";
+import { readIndexedStrategies, readSubscribers, readTraderCalls, type IndexedStrategy } from "@cwf/db/idx";
 import { createOpsClient, listSeries, readBooks, readHoldings, readSubscriberStates, runnerVenueOf, tradingWindowsOf, type RunnerVenue } from "@cwf/markets/ops";
 import { errorText, roleKey, runActor, type VenueDeps } from "../../runtime";
 import { agentBootLine, createAgentState, scanAgent, warmAgentState } from "./agent";
 import { settlementReader } from "./agent-record";
 import { scanOracleFollow, type Scan } from "./decide";
+import { scanMirror } from "./mirror-scan";
 import { executeForSubscriber, recoverAttempts } from "./execute";
 
 const DEFAULT_INTERVAL_MS = 30_000;
@@ -66,12 +67,13 @@ export function startStrategyRunner(deps: Pick<VenueDeps, "env" | "log" | "sql" 
     const states = (await readSubscriberStates(client, rv!, id, subs)).filter((x) => x.live && x.grant);
     if (states.length === 0) return heartbeat(id, `${subs.length} subscriber${subs.length === 1 ? "" : "s"}, none with a live grant`);
     const spec = meta.spec;
-    if (spec.preset === "mirror") return heartbeat(id, `mirror strategies are read by their own scanner; ${states.length} live subscriber${states.length === 1 ? "" : "s"} waiting`);
     const nowSec = Math.floor(nowMs / 1000);
     const windows = await tradingWindowsOf(client, rv!, await seriesOf(s), nowSec);
     const spotLatest = (symbol: string) => deps.spot?.latest(symbol as never, SPOT_MAX_AGE_SEC) ?? null;
     const scan =
-      spec.preset === "agent"
+      spec.preset === "mirror"
+        ? scanMirror(windows, spec, await readTraderCalls(deps.sql!, { address: spec.trader, sinceSec: nowSec - spec.withinSec, markets: windows.map((w) => w.marketId) }), nowMs)
+        : spec.preset === "agent"
         ? await scanAgent({
             books: (ids) => readBooks(client, rv!, ids), settlementOf: settlementReader(client, rv!), store: store!, runner, dryRun, agent, log: deps.log,
             spot: { latest: spotLatest, at: (sym, sec, win) => deps.spot?.at(sym as never, sec, win) ?? null },

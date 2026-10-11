@@ -13,6 +13,7 @@ import { startSeedMaker } from "./actors/seed-maker";
 import { startLeverageKeeper } from "./actors/leverage-keeper";
 import { startExitKeeper } from "./actors/exit-keeper";
 import { startStrategyRunner } from "./actors/strategy-runner";
+import { startAgentRater } from "./actors/agent-rater";
 import { startEarnQuoter } from "./actors/earn-quoter";
 import { startHaltWatch } from "./actors/halt-watch";
 import { startEarnings } from "./calendar/earnings";
@@ -59,6 +60,9 @@ export const ACTORS: Record<string, ActorEntry> = {
   // S9.5: the house strategy runner — places for each live subscriber through their STRATEGY grant (`placeFor`) on the
   // opening print vs the RedStone spot; `strategy-runner` role key; opt-in (not in the default set).
   "strategy-runner": { start: (d) => startStrategyRunner(d), spot: true },
+  // S9.6: rates each strategy's ERC-8004 agent once per completed UTC day (AG-15, D-218.6); `agent-rater` role key;
+  // opt-in and dry unless AGENT_RATER_LIVE=1.
+  "agent-rater": { start: (d) => startAgentRater(d) },
   // S8: the maker vault's quotes (the depth Range, Moonshot and Parlay price against) and its closed-Window settles,
   // on the FairValueGuard's model at the signed spot; `earn-quoter` role key, the vault's maker.
   "earn-quoter": { start: (d) => startEarnQuoter(d), spot: true },
