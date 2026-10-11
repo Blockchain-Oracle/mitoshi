@@ -7,7 +7,7 @@ import "server-only";
  * against it), its runner's health in its own words, an agent's last Windows, and its ERC-8004 feedback; plus the
  * latest copy fills. A store that cannot be read fails the whole read (503) rather than serving "empty".
  */
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { getAddress, isAddress } from "viem";
 import { CHAIN } from "@cwf/clients";
 import { decisionIdOf, deriveRunnerHealth, describeSpec, formatCadence, laneBasisOf, parseStrategyMetadata, scoreFillByPayout, strategyRecord, type Address, type AgentWindowOutcome, type MarketId, type StrategyFill } from "@cwf/core";
@@ -82,10 +82,14 @@ function strategyWire(s: IndexedStrategy, fills: StrategyFill[], facts: Map<stri
   };
 }
 
+/** The catalogue's cache tag: a write that changes a card (a sealed memory) expires it. */
+export const STRATEGIES_CACHE_TAG = "strategies";
+
 /** Throws on a failed read, so the cache never keeps one. */
 export async function readStrategies(): Promise<StrategiesPayload> {
   "use cache";
   cacheLife("minutes");
+  cacheTag(STRATEGIES_CACHE_TAG);
   const nowMs = Date.now();
   const venue = strategyVenueOf(chainId());
   if (!venue) return { deployed: false, registry: null, houseRunner: null, series: [], strategies: [], fills: [], computedAtMs: nowMs };

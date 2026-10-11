@@ -3,11 +3,13 @@
 // strategy's creator on chain. The body is stored and never listed; only `memory/read` (copiers) and the paid
 // `[id]/memory` (one MPP read at the signed price, S9.9b) serve it.
 import { isAddress } from "viem";
+import { revalidateTag } from "next/cache";
 import { connection } from "next/server";
 import { MEMORY_READ_PRICE_MAX_BASE, MEMORY_SIGNATURE_TTL_MS, SEALED_BODY_MAX, SEALED_TITLE_MAX, sealMemoryMessage, verifySignedMessage } from "@cwf/core";
 import { createPgSealedMemory } from "@cwf/db";
 import { messageVerifier } from "@cwf/markets/server";
 import { memoryFacts } from "@/features/strategies/memory.server";
+import { STRATEGIES_CACHE_TAG } from "@/features/strategies/strategies.server";
 import { db } from "@/server/db";
 import { serverEnv } from "@/server/env";
 import { chainClient } from "@/server/faucet";
@@ -37,6 +39,8 @@ export async function POST(req: Request): Promise<Response> {
     if (!facts) return Response.json({ error: "no_such_strategy" }, { status: 404 });
     if (facts.creator.toLowerCase() !== creator.toLowerCase()) return Response.json({ error: "not_the_creator" }, { status: 403 });
     await createPgSealedMemory(db()).upsert(strategyId, creator, title, body, readPriceBase);
+    // The creator's next look at the desk lists the memory (Next 16: a route handler expires with `{ expire: 0 }`).
+    revalidateTag(STRATEGIES_CACHE_TAG, { expire: 0 });
     return Response.json({ ok: true });
   } catch (error) {
     console.error("memory seal:", error instanceof Error ? error.message : error);
