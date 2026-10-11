@@ -30,7 +30,7 @@ export async function executeForSubscriber(input: {
   const side = sideForSubscriber(decision.side, sub.mode);
   const key = { strategyId: strategyId.toString(), marketId: w.marketId, owner: sub.owner };
   const previous = await attempts.get(key);
-  if (previous) return { status: previous.state === "unknown" || previous.state === "attempting" ? "unknown" : "skipped", reason: `this Window already has an ${previous.state} attempt; not resending` };
+  if (previous) return { status: previous.state === "unknown" || previous.state === "attempting" ? "unknown" : "skipped", reason: `this Window already has ${/^[aeiu]/.test(previous.state) ? "an" : "a"} ${previous.state} attempt; not resending` };
   const order = runnerOrder(rv, { grant: sub.grant, window: w, side, book: input.book, held: input.held, nowSec, nowMs });
   if (!order.ok) return { status: "skipped", reason: order.why };
   const what = `${side.toUpperCase()}${sub.mode === "fade" ? " (fading)" : ""} $${formatBaseUnits(order.stakeBase, w.grid.decimals, { minDp: 2, maxDp: 2 })} @ ≤${order.quote.oddsCents}¢`;
