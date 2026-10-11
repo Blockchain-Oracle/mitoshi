@@ -23,8 +23,9 @@ export function useCopyWrites() {
   const mine = useMyStrategies(wallet);
   const snapshot = vault && isOk(vault) ? vault.value : null;
   const grant: VaultGrant | null = snapshot?.grants.strategy ?? null;
-  const availableBase = !wallet ? 0n : snapshot ? snapshot.account.availableBase : null;
-  const walletBase = !wallet ? 0n : sheet && isOk(sheet) ? sheet.value.spendableBase : null;
+  // Signed out, nothing is read: the plan then says "Sign in", never a balance it doesn't have.
+  const availableBase = wallet && snapshot ? snapshot.account.availableBase : null;
+  const walletBase = wallet && sheet && isOk(sheet) ? sheet.value.spendableBase : null;
 
   const run = useCallback(
     async (intent: TxIntent) => {

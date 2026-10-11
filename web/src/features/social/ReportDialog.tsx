@@ -10,7 +10,7 @@ import { SOCIAL } from "./copy";
 type Reason = keyof typeof SOCIAL.report.reasons;
 const REASONS = Object.keys(SOCIAL.report.reasons) as Reason[];
 
-export function ReportDialog({ open, onOpenChange, target }: { open: boolean; onOpenChange: (o: boolean) => void; target: { kind: "comment" | "take" | "profile"; id: string } }) {
+export function ReportDialog({ open, onOpenChange, target }: { open: boolean; onOpenChange: (o: boolean) => void; target: { kind: "comment" | "take" | "profile" | "agent"; id: string } }) {
   const [reason, setReason] = useState<Reason | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);

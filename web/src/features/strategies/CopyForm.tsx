@@ -74,15 +74,18 @@ export function CopyForm({ card, strategies, writes }: { card: StrategyWire; str
         </ul>
       )}
       {writes.tx.state.kind === "failed" && <TxFailureCard state={writes.tx.state} onRetry={() => writes.tx.dispatch({ type: "reset" })} />}
-      {!writes.signedIn ? (
-        <button type="button" onClick={writes.connect} className="min-h-touch w-full rounded-full bg-accent-fill px-4 type-body-strong text-on-accent hover:bg-accent-fill-pressed">
-          {COPY.blocked.signIn}
-        </button>
-      ) : plan.blockedBy ? (
-        <p role="status" className="min-h-touch rounded-full border border-hairline px-4 py-3 text-center type-body-strong text-ink-secondary">{plan.blockedBy}</p>
-      ) : (
-        <TxCta state={writes.tx.state} action={COPY.cta(mode)} signer={writes.signer} sponsored={false} onConfirm={() => void send()} />
-      )}
+      {/* The one action stays in reach while the details above it scroll (plan fix 7: sticky CTA). */}
+      <div className="sticky bottom-0 -mx-1 bg-surface-1 px-1 pt-2 pb-2">
+        {!writes.signedIn ? (
+          <button type="button" onClick={writes.connect} className="min-h-touch w-full rounded-full bg-accent-fill px-4 type-body-strong text-on-accent hover:bg-accent-fill-pressed">
+            {COPY.blocked.signIn}
+          </button>
+        ) : plan.blockedBy ? (
+          <p role="status" className="min-h-touch rounded-full border border-hairline px-4 py-3 text-center type-body-strong text-ink-secondary">{plan.blockedBy}</p>
+        ) : (
+          <TxCta state={writes.tx.state} action={COPY.cta(mode)} signer={writes.signer} sponsored={false} onConfirm={() => void send()} />
+        )}
+      </div>
     </div>
   );
 }

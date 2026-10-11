@@ -58,7 +58,7 @@ export function CopyDrawer({ card, strategies, writes, open, onOpenChange }: { c
             </Section>
           )}
         </div>
-        <div className="sticky bottom-0 -mx-1 border-t border-hairline bg-surface-1 px-1 pt-4 pb-2">
+        <div className="border-t border-hairline pt-4">
           {sub ? <ManageCopy card={card} strategies={strategies} sub={sub} writes={writes} /> : <CopyForm card={card} strategies={strategies} writes={writes} />}
         </div>
       </SlideOverContent>

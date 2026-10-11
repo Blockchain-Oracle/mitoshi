@@ -10,13 +10,13 @@ import "server-only";
 import { cacheLife } from "next/cache";
 import { getAddress, isAddress } from "viem";
 import { CHAIN } from "@cwf/clients";
-import { deriveRunnerHealth, describeSpec, formatCadence, laneBasisOf, parseStrategyMetadata, scoreFillByPayout, strategyRecord, type Address, type AgentWindowOutcome, type MarketId, type StrategyFill } from "@cwf/core";
-import { createPgStrategyStore } from "@cwf/db";
-import { readIndexedStrategies, readSeriesList, readSubscriptionsOf, readWindowFacts, type IndexedStrategy, type WindowFacts } from "@cwf/db/idx";
+import { decisionIdOf, deriveRunnerHealth, describeSpec, formatCadence, laneBasisOf, parseStrategyMetadata, scoreFillByPayout, strategyRecord, type Address, type AgentWindowOutcome, type MarketId, type StrategyFill } from "@cwf/core";
+import { createPgStrategyStore, receiptsForDecision } from "@cwf/db";
+import { readAgentFeedback, readIndexedStrategies, readSeriesList, readSubscriptionsOf, readWindowFacts, type IndexedStrategy, type WindowFacts } from "@cwf/db/idx";
 import { strategyVenueOf } from "@cwf/markets/strategies";
 import { db } from "@/server/db";
 import { serverEnv } from "@/server/env";
-import type { DecisionWire, FillWire, MinePayload, StrategiesPayload, StrategyWire } from "./protocol";
+import type { DecisionDetailWire, DecisionWire, FillWire, MinePayload, StrategiesPayload, StrategyDetailPayload, StrategyWire } from "./protocol";
 
 const FILL_LIMIT = 500;
 const DECISION_LIMIT = 200;
@@ -57,7 +57,8 @@ function fillWire(f: StrategyFill, facts: Map<string, WindowFacts>): FillWire {
 
 function strategyWire(s: IndexedStrategy, fills: StrategyFill[], facts: Map<string, WindowFacts>, beat: { tickAtMs: number; intervalMs: number; why: string } | undefined, decisions: DecisionWire[], nowMs: number): StrategyWire {
   const meta = s.metadata ? parseStrategyMetadata(s.metadata) : null;
-  const own = fills.filter((f) => f.strategyId.toString() === s.strategyId && f.mode === "follow").map((f) => scoreFillByPayout(f, facts.get(f.marketId.toLowerCase()) ?? null));
+  const all = fills.filter((f) => f.strategyId.toString() === s.strategyId);
+  const own = all.filter((f) => f.mode === "follow").map((f) => scoreFillByPayout(f, facts.get(f.marketId.toLowerCase()) ?? null));
   const r = strategyRecord(own);
   const seriesLabel = s.seriesSymbol && s.seriesCadenceSec ? `${s.seriesSymbol} ${formatCadence(s.seriesCadenceSec)}` : null;
   return {
@@ -69,6 +70,7 @@ function strategyWire(s: IndexedStrategy, fills: StrategyFill[], facts: Map<stri
     record: {
       fills: r.fills, settled: r.settled, wins: r.wins, losses: r.losses, voids: r.voids, netBase: r.netBase.toString(), stakedBase: r.stakedBase.toString(),
       curve: r.curve.map((p) => ({ atSec: p.atSec, cumBase: p.cumBase.toString() })), lastActiveSec: r.lastActiveSec, distinctSubscribers: r.distinctSubscribers, open: r.fills - r.settled,
+      copyTrades: all.length, entrustedBase: all.reduce((sum, f) => sum + f.cashDeltaBase, 0n).toString(),
     },
     health: deriveRunnerHealth({ lastTickMs: beat?.tickAtMs ?? null, intervalMs: beat?.intervalMs ?? null, why: beat?.why ?? null, nowMs, reachable: true }),
     agent: meta?.spec.preset === "agent" ? { model: decisions[0]?.model ?? null, decisions } : null,
@@ -128,3 +130,36 @@ export async function readMine(wallet: Address): Promise<MinePayload> {
   };
 }
 
+
+/** One strategy's page: its card plus its runner's recent words, its decisions with their receipts, its fills, its feedback. */
+export async function readStrategyDetail(strategyId: string): Promise<StrategyDetailPayload | null> {
+  const nowMs = Date.now();
+  const venue = strategyVenueOf(chainId());
+  if (!venue) return null;
+  const sql = db();
+  const store = createPgStrategyStore(sql);
+  const [row] = await readIndexedStrategies(sql, { registry: venue.strategyRegistry, strategyId });
+  if (!row) return null;
+  const [fillRows, beats, decisionRows] = await Promise.all([store.listFills({ strategyId, limit: 200 }), store.recentHeartbeats(strategyId, 12), store.listDecisions(strategyId, 20)]);
+  const fills = fillRows.map(toFill);
+  const facts = await readWindowFacts(sql, [...new Set([...fills.map((f) => f.marketId), ...decisionRows.map((d) => d.marketId)])]);
+  const live = beats.filter((b) => !b.dryRun);
+  const decisions: DecisionDetailWire[] = await Promise.all(decisionRows.map(async (d) => {
+    const f = facts.get(d.marketId);
+    const paid = await receiptsForDecision(sql, decisionIdOf(strategyId, d.marketId));
+    return {
+      marketId: d.marketId, decidedAtMs: d.decidedAtMs, verdictSide: d.verdictSide, confidence: d.confidence, why: d.why, gate: d.gate, gateReason: d.gateReason, side: d.side, filled: d.filled,
+      model: d.model, label: labelOf(f), outcome: outcomeOf(d.side, f),
+      receipts: paid.length ? paid.map((r) => ({ host: r.host, amountBase: r.amountBase.toString(), currency: r.currency, reference: r.reference, atMs: r.receivedAt.getTime() })) : null,
+    };
+  }));
+  const feedback = row.agentId ? await readAgentFeedback(sql, row.agentId, 50) : [];
+  return {
+    strategy: strategyWire(row, fills, facts, live[0] ? { tickAtMs: live[0].tickAtMs, intervalMs: live[0].intervalMs, why: live[0].why } : undefined, decisions, nowMs),
+    heartbeats: live.map((b) => ({ atMs: b.tickAtMs, why: b.why })),
+    decisions,
+    fills: fills.slice(0, 50).map((f) => fillWire(f, facts)),
+    feedback: feedback.map((f) => ({ client: f.client, value: f.value, valueDecimals: f.valueDecimals, tag1: f.tag1, tag2: f.tag2, revoked: f.revoked, txHash: f.txHash, atSec: f.atSec })),
+    computedAtMs: nowMs,
+  };
+}

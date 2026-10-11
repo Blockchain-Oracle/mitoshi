@@ -11,7 +11,7 @@ const strategy = (id: string, over: Partial<StrategyWire["envelope"]> = {}, runn
   strategyId: id, creator: RUNNER, runner, agentId: "7", name: `S${id}`, description: "", spec: null, specText: null,
   envelope: { maxStakePerTradeBase: "5000000", maxDailySpendBase: "50000000", maxOpenPositions: 3, maxPriceRaw: "900000", series: null, seriesLabel: null, ...over },
   feeBase, active: true, subscribers: 0, createdAtSec: 0, revision: 0,
-  record: { fills: 0, settled: 0, wins: 0, losses: 0, voids: 0, netBase: "0", stakedBase: "0", curve: [], lastActiveSec: 0, distinctSubscribers: 0, open: 0 },
+  record: { fills: 0, settled: 0, wins: 0, losses: 0, voids: 0, netBase: "0", stakedBase: "0", curve: [], lastActiveSec: 0, distinctSubscribers: 0, open: 0, copyTrades: 0, entrustedBase: "0" },
   health: { kind: "alive", lastTickMs: null, intervalMs: null, why: null }, agent: null, feedback: { count: 0, mean: null },
 });
 const grant = (over: Partial<VaultGrant> = {}, caps: Partial<VaultGrant["caps"]> = {}): VaultGrant => ({

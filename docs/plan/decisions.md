@@ -1952,6 +1952,17 @@ What S9.1 settled while building D-218.8 and L-53 into `StrategyRegistry` (Moder
 
 **Why:** each is what the deployed vault and Tempo's batch rules allow, without changing the vault users hold.
 
+### D-220 — the house strategies' triggers sized from the measured regime (decision, S9, 2026-10-11)
+
+The house runner, live on testnet, reported BTC "closest trigger 19–20 bps away" for hours. The index's own prints
+said why: over 24 h (280 Windows each) BTC 5m Windows moved 1.65 bps open→close at the median (p75 3.42, p90 4.97, max
+14.49) and ETH 2.85 (p75 5.03, p90 7.50, max 36.38), so triggers of 20 and 30 bps never fire. House #1 momentum now
+triggers at 3 bps and #2 reversion at 5 bps (≈ p75 of a whole Window's move; fewer fire mid-Window), their words with
+them — an on-chain `update` (spec revision; the envelope copiers agreed to is unchanged). A creator's own strategy keeps
+whatever trigger its creator sets; the builder says what its trigger means in percent.
+
+**Why:** a house strategy that never acts tells a copier nothing; the threshold should fit the market it trades.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

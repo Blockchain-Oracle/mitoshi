@@ -33,14 +33,16 @@ const envelope = (series: Hex): StrategyEnvelope => ({ maxStakePerTradeBase: 5n 
 const HOUSE: { name: string; description: string; spec: StrategySpec; series: Hex }[] = [
   {
     name: "BTC Momentum",
-    description: "Rides BTC's five-minute move. Once BTC has moved at least 0.20% from the live Window's opening print, it takes that side; inside that, it sits the round out.",
-    spec: { preset: "momentum", lookback: 6, thresholdBps: 20 },
+    description: "Rides BTC's five-minute move. Once BTC has moved at least 0.03% from the live Window's opening print, it takes that side; inside that, it sits the round out.",
+    // Sized from the measured regime (D-220): 24 h of BTC 5m Windows moved 1.65 bps at the median, 3.42 at p75.
+    spec: { preset: "momentum", lookback: 6, thresholdBps: 3 },
     series: SERIES.BTC,
   },
   {
     name: "ETH Mean-reversion",
-    description: "Bets against ETH's sharp five-minute moves. Once ETH has run at least 0.30% from the live Window's opening print, it takes the other side, expecting a pullback.",
-    spec: { preset: "reversion", lookback: 4, thresholdBps: 30 },
+    description: "Bets against ETH's sharp five-minute moves. Once ETH has run at least 0.05% from the live Window's opening print, it takes the other side, expecting a pullback.",
+    // Sized from the measured regime (D-220): 24 h of ETH 5m Windows moved 2.85 bps at the median, 5.03 at p75.
+    spec: { preset: "reversion", lookback: 4, thresholdBps: 5 },
     series: SERIES.ETH,
   },
   {
@@ -88,7 +90,7 @@ for (const h of HOUSE) {
       console.log(JSON.stringify({ step: "registration", name: h.name, strategyId: known.toString(), agentId: row.agentId.toString() }));
     }
     const now = parseStrategyMetadata(hexToString(await registryRead<Hex>("metadataOf", [known])));
-    if (now?.description === h.description) {
+    if (now?.description === h.description && JSON.stringify(now.spec) === JSON.stringify(h.spec)) {
       console.log(JSON.stringify({ step: "skip", name: h.name, strategyId: known.toString() }));
       continue;
     }

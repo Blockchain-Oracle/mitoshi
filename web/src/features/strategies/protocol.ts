@@ -42,6 +42,9 @@ export interface RecordWire {
   distinctSubscribers: number;
   /** Fills still waiting on their Window. */
   open: number;
+  /** Copy trades placed for anyone (follow or fade) and the collateral they put to work — Q-001's inherited ranking. */
+  copyTrades: number;
+  entrustedBase: string;
 }
 
 export interface StrategyWire {
@@ -107,5 +110,21 @@ export interface StrategiesPayload {
 export interface MinePayload {
   subscriptions: { strategyId: string; grantId: string; mode: SubscriptionMode; active: boolean; feesPaidBase: string; subscribedAtSec: number }[];
   fills: FillWire[];
+  computedAtMs: number;
+}
+
+/** One decision on the agent's page, with what it cost: its MPP receipts (null: unpaid — testnet reads, D-218.4). */
+export interface DecisionDetailWire extends DecisionWire {
+  receipts: { host: string; amountBase: string; currency: string; reference: string | null; atMs: number }[] | null;
+}
+
+/** `/api/strategies/[id]`: everything an agent's page shows beyond its card. */
+export interface StrategyDetailPayload {
+  strategy: StrategyWire;
+  /** The runner's last words for it, newest first. */
+  heartbeats: { atMs: number; why: string }[];
+  decisions: DecisionDetailWire[];
+  fills: FillWire[];
+  feedback: { client: string; value: string; valueDecimals: number; tag1: string; tag2: string; revoked: boolean; txHash: string; atSec: number }[];
   computedAtMs: number;
 }
