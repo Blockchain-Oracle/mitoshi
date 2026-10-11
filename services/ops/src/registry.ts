@@ -12,6 +12,7 @@ import { startSettler } from "./actors/settler";
 import { startSeedMaker } from "./actors/seed-maker";
 import { startLeverageKeeper } from "./actors/leverage-keeper";
 import { startExitKeeper } from "./actors/exit-keeper";
+import { startStrategyRunner } from "./actors/strategy-runner";
 import { startEarnQuoter } from "./actors/earn-quoter";
 import { startHaltWatch } from "./actors/halt-watch";
 import { startEarnings } from "./calendar/earnings";
@@ -55,6 +56,9 @@ export const ACTORS: Record<string, ActorEntry> = {
   // S24.3: Trail / take-profit / stop-loss with the app closed — sells through the owners' EXIT grants at the vault's
   // fair-value floor; `keeper` role key; trails step on the display feed (so it asks for the spot/display runtime).
   "exit-keeper": { start: (d) => startExitKeeper(d), spot: true },
+  // S9.5: the house strategy runner — places for each live subscriber through their STRATEGY grant (`placeFor`) on the
+  // opening print vs the RedStone spot; `strategy-runner` role key; opt-in (not in the default set).
+  "strategy-runner": { start: (d) => startStrategyRunner(d), spot: true },
   // S8: the maker vault's quotes (the depth Range, Moonshot and Parlay price against) and its closed-Window settles,
   // on the FairValueGuard's model at the signed spot; `earn-quoter` role key, the vault's maker.
   "earn-quoter": { start: (d) => startEarnQuoter(d), spot: true },

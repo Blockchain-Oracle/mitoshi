@@ -10,6 +10,7 @@ export * from "./send";
 export * from "./logs";
 export * from "./vault";
 export * from "./strategies";
+export * from "./strategy-runner";
 export * from "./exits";
 export * from "../prices/redstone";
 export * from "../prices/redstone-gateways";

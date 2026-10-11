@@ -8,12 +8,12 @@ export const PRESETS: Record<PresetKey, { name: string; tagline: string; how: st
   momentum: {
     name: "Momentum",
     tagline: "Follow the trend",
-    how: "Reads the last few prices. If the market moved up past the threshold it bets UP, and DOWN if it fell. It rides whichever way price is already going.",
+    how: "Compares the price with the Window's opening print. Once it has risen past the threshold it bets UP, and DOWN once it has fallen. It rides whichever way price is already going.",
   },
   reversion: {
     name: "Mean-reversion",
     tagline: "Fade the move",
-    how: "The opposite instinct. If the market ran up past the threshold it bets DOWN, expecting a pullback. After a sharp drop it bets UP. It bets against the last move.",
+    how: "The opposite instinct. Once the price has run up past the threshold from the Window's opening print it bets DOWN, expecting a pullback; after a sharp drop it bets UP. It bets against the move.",
   },
   agent: {
     name: "AI agent",
@@ -40,7 +40,9 @@ export function describeSpec(s: StrategySpec, asset = "BTC"): string {
   if (s.preset === "mirror") return `Every round it reads what ${shortTrader(s.trader)} did on each live Window. If that wallet took a side in the last ${s.withinSec} seconds and is still net on it, this takes the same side. Your order lands after theirs, at the book's price then.`;
   const dir = s.preset === "momentum" ? "with" : "against";
   const pct = (s.thresholdBps / 100).toFixed(2).replace(/\.?0+$/, "");
-  return `Every round it reads the last ${s.lookback} prices. If ${asset} moved at least ${pct}%, it bets ${dir} that move. Otherwise it sits out.`;
+  // The Window settles against its opening print, so that print is the reference (Masayume's model); the lookback is
+  // only for a Window with no print, which a trading Window on Tempo never is.
+  return `Every round it compares ${asset}'s price with the Window's opening print. Once it has moved at least ${pct}%, it bets ${dir} that move. Otherwise it sits out.`;
 }
 
 /**

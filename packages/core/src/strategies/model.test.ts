@@ -62,7 +62,7 @@ describe("health and spec", () => {
     expect(deriveRunnerHealth({ lastTickMs: 999_000, intervalMs: 30_000, why: "x", nowMs: 1_000_000, reachable: false }).kind).toBe("unknown");
   });
   it("describes and round-trips a spec", () => {
-    expect(describeSpec(spec)).toBe("Every round it reads the last 6 prices. If BTC moved at least 0.2%, it bets with that move. Otherwise it sits out.");
+    expect(describeSpec(spec)).toBe("Every round it compares BTC's price with the Window's opening print. Once it has moved at least 0.2%, it bets with that move. Otherwise it sits out.");
     expect(encodeSpec(spec)).toBe('{"p":"momentum","lb":6,"th":20}');
     expect(parseStrategyMetadata('{"name":"A","spec":{"preset":"momentum","lookback":6,"thresholdBps":20}}')?.spec).toEqual(spec);
     expect(parseStrategyMetadata("{}")).toBeNull();

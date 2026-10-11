@@ -25,17 +25,18 @@ export interface StrategyAttempt {
   state: StrategyAttemptState;
   txHash: string | null;
   reason: string | null;
+  createdAtMs: number;
 }
-export type NewStrategyAttempt = Omit<StrategyAttempt, "state" | "txHash" | "reason" | "kind"> & { kind?: "order" | "settle" };
+export type NewStrategyAttempt = Omit<StrategyAttempt, "state" | "txHash" | "reason" | "kind" | "createdAtMs"> & { kind?: "order" | "settle" };
 export type AttemptKey = Pick<StrategyAttempt, "strategyId" | "marketId" | "owner"> & { kind?: "order" | "settle" };
 
 type Row = {
   kind: "order" | "settle"; strategy_id: string; market_id: string; owner: string; runner: string; grant_id: string; side: "up" | "down"; mode: "follow" | "fade"; stake_base: string;
-  from_block: string; nonce: number; state: StrategyAttemptState; tx_hash: string | null; reason: string | null;
+  from_block: string; nonce: number; state: StrategyAttemptState; tx_hash: string | null; reason: string | null; created_at: Date;
 };
 const fromRow = (r: Row): StrategyAttempt => ({
   kind: r.kind, strategyId: r.strategy_id, marketId: r.market_id, owner: r.owner, runner: r.runner, grantId: r.grant_id, side: r.side, mode: r.mode, stakeBase: r.stake_base,
-  fromBlock: r.from_block, nonce: r.nonce, state: r.state, txHash: r.tx_hash, reason: r.reason,
+  fromBlock: r.from_block, nonce: r.nonce, state: r.state, txHash: r.tx_hash, reason: r.reason, createdAtMs: r.created_at.getTime(),
 });
 
 export function createPgStrategyAttempts(sql: Sql) {
@@ -54,6 +55,12 @@ export function createPgStrategyAttempts(sql: Sql) {
           ${a.fromBlock}, ${a.nonce}, ${a.kind ?? "order"}, 'attempting')
         on conflict (strategy_id, market_id, owner, kind) do nothing returning strategy_id`;
       return rows.length === 1;
+    },
+
+    /** The hash, once signed and before the send: a restart settles the attempt from its receipt (expiring nonce). */
+    async setTx(key: AttemptKey, txHash: string): Promise<void> {
+      await sql`update strategy_attempts set tx_hash = ${txHash.toLowerCase()}, updated_at = now()
+        where strategy_id = ${key.strategyId} and market_id = ${key.marketId.toLowerCase()} and owner = ${key.owner.toLowerCase()} and kind = ${key.kind ?? "order"} and state = 'attempting'`;
     },
 
     async finish(key: AttemptKey, state: Exclude<StrategyAttemptState, "attempting" | "filled">, txHash: string | null, reason: string): Promise<void> {

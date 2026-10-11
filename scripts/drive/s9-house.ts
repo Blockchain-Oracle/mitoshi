@@ -3,14 +3,14 @@
  * key and published on the StrategyRegistry with that agent id, `strategy-runner` as its runner (the self-hosted
  * runner, S9.5), free to copy. Per strategy: `register` (a self-contained data: URI, the id predicted) → `publish`
  * (agentId) → the `agent_registrations` row → `setAgentURI` (the live registration file). Idempotent by name: one the
- * registry already holds from this creator is skipped. Keys are read from ~/.config/cwf/testnet/ and never printed.
+ * registry already holds from this creator is skipped, or `update`d when its published description differs. Keys are read from ~/.config/cwf/testnet/ and never printed.
  *
  *   DATABASE_URL=… pnpm --dir scripts exec tsx drive/s9-house.ts [--origin https://testnet.mitoshi.xyz]
  */
 import { decodeEventLog, getAddress, hexToString, type Address, type Hex } from "viem";
 import { strategyRegistryAbi } from "@cwf/clients/abis/StrategyRegistry";
 import { parseStrategyMetadata, type StrategyEnvelope, type StrategyMetadata, type StrategySpec, type TxIntent } from "@cwf/core";
-import { createSql, runMigrations, setAgentRegistrationUri, upsertAgentRegistration } from "@cwf/db";
+import { agentRegistrationByStrategy, createSql, runMigrations, setAgentRegistrationUri, upsertAgentRegistration } from "@cwf/db";
 import { buildAgentRegistration, readRegistered, registerAgentCall, registrationUrl, setAgentUriCall, tempoReadClient } from "@cwf/markets";
 import { encodeStrategyIntent, strategyVenueOf } from "@cwf/markets/strategies";
 import { castSend } from "../lib/cast";
@@ -33,13 +33,13 @@ const envelope = (series: Hex): StrategyEnvelope => ({ maxStakePerTradeBase: 5n 
 const HOUSE: { name: string; description: string; spec: StrategySpec; series: Hex }[] = [
   {
     name: "BTC Momentum",
-    description: "Rides BTC's five-minute move. When the last six prints climbed or fell by at least 0.20%, it takes that side on the live Window; otherwise it sits the round out.",
+    description: "Rides BTC's five-minute move. Once BTC has moved at least 0.20% from the live Window's opening print, it takes that side; inside that, it sits the round out.",
     spec: { preset: "momentum", lookback: 6, thresholdBps: 20 },
     series: SERIES.BTC,
   },
   {
     name: "ETH Mean-reversion",
-    description: "Bets against ETH's sharp five-minute moves. After a run of at least 0.30% over the last four prints it takes the other side, expecting a pullback.",
+    description: "Bets against ETH's sharp five-minute moves. Once ETH has run at least 0.30% from the live Window's opening print, it takes the other side, expecting a pullback.",
     spec: { preset: "reversion", lookback: 4, thresholdBps: 30 },
     series: SERIES.ETH,
   },
@@ -78,8 +78,25 @@ const existing = await publishedByName();
 console.log(JSON.stringify({ registry: venue.strategyRegistry, runner, existing: Object.fromEntries([...existing].map(([k, v]) => [k, v.toString()])) }));
 
 for (const h of HOUSE) {
-  if (existing.has(h.name)) {
-    console.log(JSON.stringify({ step: "skip", name: h.name, strategyId: existing.get(h.name)!.toString() }));
+  const known = existing.get(h.name);
+  if (known !== undefined) {
+    // Already published: bring its words up to date (same spec, same fee) when they differ from these — on chain and in
+    // the agent's registration file.
+    const row = sql ? await agentRegistrationByStrategy(sql, CHAIN_ID, known.toString()) : null;
+    if (sql && row && row.description !== h.description) {
+      await upsertAgentRegistration(sql, { ...row, description: h.description });
+      console.log(JSON.stringify({ step: "registration", name: h.name, strategyId: known.toString(), agentId: row.agentId.toString() }));
+    }
+    const now = parseStrategyMetadata(hexToString(await registryRead<Hex>("metadataOf", [known])));
+    if (now?.description === h.description) {
+      console.log(JSON.stringify({ step: "skip", name: h.name, strategyId: known.toString() }));
+      continue;
+    }
+    const update = encodeStrategyIntent({ kind: "strategy-update", strategyId: known, spec: h.spec, metadata: { name: h.name, description: h.description, spec: h.spec }, feeBase: 0n }, { chainId: CHAIN_ID, wallet: runner });
+    if (!update?.ok) throw new Error(`encode refused: ${update?.diagnosis.technical}`);
+    const r = castSend([update.value.calls[0]!.to, update.value.calls[0]!.data], { signer, extra: ["--gas-limit", "8000000"] });
+    if (r.status !== "0x1") throw new Error(`update failed for ${h.name}`);
+    console.log(JSON.stringify({ step: "update", name: h.name, strategyId: known.toString(), tx: r.transactionHash, block: BigInt(r.blockNumber).toString() }));
     continue;
   }
   // 1. the agent, its registration self-contained until the strategy id it serves under exists

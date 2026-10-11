@@ -49,7 +49,7 @@ function check(step: string, ok: boolean, note: unknown) {
   log({ check: step, ok, note });
 }
 
-const funded = await client.request({ method: "tempo_fundAddress" as never, params: [copier] as never });
+const funded: unknown = await client.request({ method: "tempo_fundAddress" as never, params: [copier] as never });
 log({ step: "fund", copier, funded: Array.isArray(funded) ? funded.length : funded });
 
 const caps = { maxStakePerTradeBase: 2n * ONE, maxDailySpendBase: 10n * ONE, maxOpenPositions: 1, maxPriceRaw: 900_000n, market: null };

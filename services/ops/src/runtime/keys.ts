@@ -10,7 +10,7 @@ import { join } from "node:path";
 import type { Hex } from "viem";
 import type { Network } from "@cwf/core";
 
-export type OpsRole = "roller" | "price-relay" | "settler" | "seed-maker" | "keeper" | "earn-quoter" | "ops-fee-payer" | "desk" | "stock-sync" | "x-relay";
+export type OpsRole = "roller" | "price-relay" | "settler" | "seed-maker" | "keeper" | "earn-quoter" | "ops-fee-payer" | "desk" | "stock-sync" | "x-relay" | "strategy-runner" | "agent-rater";
 
 /** `price-relay` → `PRICE_RELAY_PRIVATE_KEY`. */
 export const roleEnvName = (role: OpsRole) => `${role.replaceAll("-", "_").toUpperCase()}_PRIVATE_KEY`;
