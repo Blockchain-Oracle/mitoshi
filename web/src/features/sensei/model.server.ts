@@ -1,11 +1,11 @@
 import "server-only";
 /**
  * Which model answers as Sensei (S13 step 8; plan: "the brain, MPP or a direct key"). The brain's resolver is shared
- * with ops' agents: a key (`ANTHROPIC_API_KEY`, …), the AI Gateway, or an OpenAI-shaped endpoint. `SENSEI_VIA=mpp`
+ * with ops' agents: a key (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY` alone is enough), the AI Gateway, or an OpenAI-shaped endpoint. `SENSEI_VIA=mpp`
  * pays each question on Tempo instead, through the MPP payer (`MPP_PAYER_PRIVATE_KEY` + `MPP_ROOT_ADDRESS`; mainnet
  * only after Q-020), every payment an `mpp_receipts` row scoped to the question. Nothing here reaches the browser.
  */
-import { DEFAULT_AI_MODEL, resolveModel, type ResolvedModel } from "@cwf/brain";
+import { resolveModel, type ResolvedModel } from "@cwf/brain";
 import { insertMppReceipt } from "@cwf/db";
 import { mppPayerFromEnv } from "@cwf/markets/server";
 import { db } from "@/server/db";
@@ -27,7 +27,8 @@ function mppFetch(): typeof globalThis.fetch | null {
 }
 
 export function senseiModel(): SenseiModel | null {
-  const spec = process.env.SENSEI_MODEL?.trim() || process.env.AI_MODEL?.trim() || DEFAULT_AI_MODEL;
+  // `SENSEI_MODEL` names Sensei's own model; otherwise the brain's default (`AI_MODEL`, or whichever provider key is set).
+  const spec = process.env.SENSEI_MODEL?.trim() || undefined;
   if (process.env.SENSEI_VIA?.trim() === "mpp") {
     const fetch = mppFetch();
     const resolved = fetch ? resolveModel({ via: "mpp", fetch, spec }) : null;

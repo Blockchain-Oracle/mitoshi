@@ -1963,6 +1963,25 @@ whatever trigger its creator sets; the builder says what its trigger means in pe
 
 **Why:** a house strategy that never acts tells a copier nothing; the threshold should fit the market it trades.
 
+### D-221 — any one model key switches the brain on; OpenAI's default is `gpt-6-sol` (owner, S9/S13, 2026-10-11)
+
+The owner asked for the agents to run on an OpenAI key too, model-agnostic as in Agari. The resolver already took any
+`creator/model` (Masayume's design, ported); what it lacked was a default per key: with `AI_MODEL` unset it named Claude
+and ignored an OpenAI key. Now `AI_MODEL` wins when set; otherwise the first provider whose key is set answers with its
+default — `ANTHROPIC_API_KEY` → `anthropic/claude-opus-5-5`, `OPENAI_API_KEY` → `openai/gpt-6-sol` — and the hold
+message names both keys. An MPP route's model is never chosen by a key on the box. Sensei takes the same default
+(`SENSEI_MODEL` still overrides).
+
+The OpenAI default was measured, not picked from a price list: house #3's prompt on one fixed Window, three reads each
+through the brain's own `decideAgentWindow` (strict structured output accepted by all four):
+`gpt-5-nano` (Agari's) median 4.9 s, held at 0.40 every time and once cited "several losses" from an empty record;
+`gpt-6-luna` 3.2 s, up 0.76; `gpt-6-sol` 3.1 s, up 0.77–0.78 with reasons tied to the figures ("UP at 58 cents, below
+the chase threshold … 2:30 remains"); `gpt-6.1-sol` 4.5 s, up 0.76. Testnet runs on the owner's OpenAI key (the one
+Agari uses), copied app to app on Coolify, never shown.
+
+**Why:** the brain should switch on with whichever key the owner holds; a model whose stated reason contradicts its own
+inputs would show that error on the public agent page.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

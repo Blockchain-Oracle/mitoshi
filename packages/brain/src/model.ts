@@ -11,8 +11,11 @@ import type { LanguageModel } from "ai";
  * speaking the OpenAI protocol are the same call with a different string:
  *
  *   AI_MODEL="anthropic/claude-opus-5-5" (the default)
- *   AI_MODEL="openai/gpt-5.4"
+ *   AI_MODEL="openai/gpt-6-sol"
  *   AI_MODEL="google/gemini-3-5-flash"
+ *
+ * Without `AI_MODEL`, a provider key alone is enough: the model is that provider's default (`PROVIDER_DEFAULT_MODELS`),
+ * Claude first when both keys are set.
  *
  * Routes, in order:
  *
@@ -30,6 +33,16 @@ import type { LanguageModel } from "ai";
 
 /** Claude stays the default. It is the best model for this job; the point is that it is now a setting. */
 export const DEFAULT_AI_MODEL = "anthropic/claude-opus-5-5";
+
+/**
+ * The model a provider's key answers with when `AI_MODEL` is unset, in preference order. `gpt-6-sol` was chosen on
+ * 2026-10-11 by running the agent read through gpt-5-nano, gpt-6-luna, gpt-6-sol and gpt-6.1-sol on the same Window:
+ * the fastest median (3.1 s) and the reasons most tied to the figures (D-221).
+ */
+export const PROVIDER_DEFAULT_MODELS: readonly { keyEnv: string; spec: string }[] = [
+  { keyEnv: "ANTHROPIC_API_KEY", spec: DEFAULT_AI_MODEL },
+  { keyEnv: "OPENAI_API_KEY", spec: "openai/gpt-6-sol" },
+];
 
 type Factory = (modelId: string) => LanguageModel;
 
@@ -77,8 +90,21 @@ function split(spec: string): { providerName: string; modelId: string } {
   return at === -1 ? { providerName: "", modelId: spec } : { providerName: spec.slice(0, at), modelId: spec.slice(at + 1) };
 }
 
+/**
+ * `AI_MODEL` when set; otherwise the default of the first provider whose key is set, so any one key switches the brain
+ * on; otherwise `DEFAULT_AI_MODEL` (what the gateway and an MPP host receive whole).
+ */
+export function defaultModelSpec(env: NodeJS.ProcessEnv = process.env): string {
+  return env.AI_MODEL?.trim() || PROVIDER_DEFAULT_MODELS.find((p) => env[p.keyEnv]?.trim())?.spec || DEFAULT_AI_MODEL;
+}
+
+/** An MPP route pays per call, so a key on the box does not choose its model: `AI_MODEL` or the default. */
+function specOf(options: ResolveModelOptions): string {
+  return options.spec?.trim() || (options.via === "mpp" ? process.env.AI_MODEL?.trim() || DEFAULT_AI_MODEL : defaultModelSpec());
+}
+
 export function resolveModel(options: ResolveModelOptions = {}): ResolvedModel | null {
-  const spec = options.spec?.trim() || process.env.AI_MODEL?.trim() || DEFAULT_AI_MODEL;
+  const spec = specOf(options);
   const { providerName, modelId } = split(spec);
 
   if (options.via === "mpp") {
@@ -110,13 +136,15 @@ export function resolveModel(options: ResolveModelOptions = {}): ResolvedModel |
 
 /** What is missing, said precisely enough to fix without reading the code. */
 export function missingCredentialHint(options: ResolveModelOptions = {}): string {
-  const spec = options.spec?.trim() || process.env.AI_MODEL?.trim() || DEFAULT_AI_MODEL;
+  const spec = specOf(options);
   const { providerName } = split(spec);
   if (options.via === "mpp") {
     return MPP_MODEL_HOSTS[providerName]
       ? `an MPP payer fetch (MPP_PAYER_PRIVATE_KEY + MPP_ROOT_ADDRESS, Q-020 on mainnet) for ${spec}`
       : `no MPP host for provider "${providerName}" (known: ${Object.keys(MPP_MODEL_HOSTS).join(", ")})`;
   }
+  // No model named: any provider key will do.
+  if (!options.spec?.trim() && !process.env.AI_MODEL?.trim()) return `${PROVIDER_DEFAULT_MODELS.map((p) => p.keyEnv).join(" or ")} (either one), or AI_GATEWAY_API_KEY`;
   const direct = DIRECT[providerName];
   return direct ? `${direct.keyEnv} (for ${spec}), or AI_GATEWAY_API_KEY` : `AI_GATEWAY_API_KEY (for ${spec}), or AI_BASE_URL + AI_API_KEY`;
 }

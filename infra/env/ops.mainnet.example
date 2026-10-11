@@ -40,3 +40,11 @@ TEMPO_INDEXER_API_KEY=
 TIDX_URL=
 TIDX_BASIC_AUTH=
 INDEXER_VIA_MPP=
+# agent brain (S9, D-221): any one model key; AI_MODEL names another model (default: Claude with its key, else openai/gpt-6-sol)
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+AI_MODEL=
+AI_GATEWAY_API_KEY=
+AGENT_VIA=
+AGENT_MAX_CALLS_PER_HOUR=
+AGENT_TIMEOUT_MS=

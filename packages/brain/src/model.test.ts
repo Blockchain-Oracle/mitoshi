@@ -1,6 +1,6 @@
 import { generateText } from "ai";
 import { afterEach, describe, expect, it } from "vitest";
-import { missingCredentialHint, resolveModel } from "./model";
+import { defaultModelSpec, missingCredentialHint, resolveModel } from "./model";
 
 const saved = { ...process.env };
 afterEach(() => {
@@ -30,5 +30,37 @@ describe("resolveModel via mpp", () => {
   it("keeps the key routes when via is omitted", () => {
     process.env.ANTHROPIC_API_KEY = "k";
     expect(resolveModel({ spec: "anthropic/claude-opus-5" })?.via).toBe("direct");
+  });
+  it("does not let a provider key on the box choose the paid model", () => {
+    for (const k of ["AI_MODEL", "ANTHROPIC_API_KEY"]) delete process.env[k];
+    process.env.OPENAI_API_KEY = "k";
+    expect(resolveModel({ via: "mpp", fetch })).toMatchObject({ providerName: "anthropic", modelId: "claude-opus-5-5" });
+  });
+});
+
+describe("resolveModel with no AI_MODEL", () => {
+  const clear = () => {
+    for (const k of ["AI_MODEL", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GOOGLE_GENERATIVE_AI_API_KEY", "AI_GATEWAY_API_KEY", "AI_BASE_URL", "AI_API_KEY"]) delete process.env[k];
+  };
+  it("takes the default model of whichever provider key is set", () => {
+    clear();
+    process.env.OPENAI_API_KEY = "k";
+    expect(defaultModelSpec()).toBe("openai/gpt-6-sol");
+    expect(resolveModel()).toMatchObject({ via: "direct", providerName: "openai", modelId: "gpt-6-sol" });
+  });
+  it("prefers Claude when both keys are set, and AI_MODEL over either", () => {
+    clear();
+    process.env.OPENAI_API_KEY = "k";
+    process.env.ANTHROPIC_API_KEY = "k";
+    expect(resolveModel()).toMatchObject({ providerName: "anthropic", modelId: "claude-opus-5-5" });
+    process.env.AI_MODEL = "openai/gpt-6-luna";
+    expect(resolveModel()).toMatchObject({ providerName: "openai", modelId: "gpt-6-luna" });
+  });
+  it("returns null with no credential and names every key that would do", () => {
+    clear();
+    expect(resolveModel()).toBeNull();
+    expect(missingCredentialHint()).toBe("ANTHROPIC_API_KEY or OPENAI_API_KEY (either one), or AI_GATEWAY_API_KEY");
+    process.env.AI_MODEL = "openai/gpt-6-sol";
+    expect(missingCredentialHint()).toBe("OPENAI_API_KEY (for openai/gpt-6-sol), or AI_GATEWAY_API_KEY");
   });
 });

@@ -97,7 +97,7 @@ describe.skipIf(!url)("scanAgent (real store, mock model)", () => {
   });
 
   it("names what is missing instead of reading when no brain is configured", async () => {
-    const scan = await scanAgent(deps({ brain: null, missing: "ANTHROPIC_API_KEY (for anthropic/claude-opus-5-5), or AI_GATEWAY_API_KEY", callsAtMs: [], maxPerHour: 60, timeoutMs: 5_000 }), strategy, SPEC, [window], NOW * 1000);
-    expect(scan.why).toBe("agent brain not configured — set ANTHROPIC_API_KEY (for anthropic/claude-opus-5-5), or AI_GATEWAY_API_KEY on the runner; holding");
+    const scan = await scanAgent(deps({ brain: null, missing: "ANTHROPIC_API_KEY or OPENAI_API_KEY (either one), or AI_GATEWAY_API_KEY", callsAtMs: [], maxPerHour: 60, timeoutMs: 5_000 }), strategy, SPEC, [window], NOW * 1000);
+    expect(scan.why).toBe("agent brain not configured — set ANTHROPIC_API_KEY or OPENAI_API_KEY (either one), or AI_GATEWAY_API_KEY on the runner; holding");
   });
 });
