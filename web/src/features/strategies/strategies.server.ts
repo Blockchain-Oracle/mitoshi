@@ -56,7 +56,7 @@ function fillWire(f: StrategyFill, facts: Map<string, WindowFacts>): FillWire {
 }
 
 /** A sealed memory is listed only under the strategy's own on-chain creator, whatever the store says. */
-const memoryOf = (row: SealedMemoryIndexRow | undefined, creator: string) => (row && row.creator === creator.toLowerCase() ? { title: row.title, chars: row.chars, updatedAtMs: row.updatedAtMs } : null);
+const memoryOf = (row: SealedMemoryIndexRow | undefined, creator: string) => (row && row.creator === creator.toLowerCase() ? { title: row.title, chars: row.chars, readPriceBase: row.readPriceBase.toString(), updatedAtMs: row.updatedAtMs } : null);
 
 function strategyWire(s: IndexedStrategy, fills: StrategyFill[], facts: Map<string, WindowFacts>, beat: { tickAtMs: number; intervalMs: number; why: string } | undefined, decisions: DecisionWire[], nowMs: number, sealed?: SealedMemoryIndexRow): StrategyWire {
   const meta = s.metadata ? parseStrategyMetadata(s.metadata) : null;

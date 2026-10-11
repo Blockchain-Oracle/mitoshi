@@ -3,6 +3,7 @@
 // round trip through the read runtime. Lists for the board come from the index (S9.4); these are the chain's own
 // answers the copy drawer and the runner check before acting.
 import { hexToString, zeroHash, type Address, type Hex } from "viem";
+import { TEMPO } from "@cwf/clients";
 import { strategyRegistryAbi } from "@cwf/clients/abis/StrategyRegistry";
 import { SUBSCRIPTION_MODES, type SeriesId, type StrategyRecord, type StrategySubscription } from "@cwf/core";
 import { getPublicClient } from "../runtime/read-runtime";
@@ -91,4 +92,17 @@ export async function readInScope(strategyId: bigint, marketId: Hex): Promise<bo
   const { client, contract } = await registry();
   if (!contract) return false;
   return (await client.readContract({ ...contract, functionName: "inScope", args: [strategyId, marketId] })) as boolean;
+}
+
+const VALIDATE_RECEIVE_POLICY_ABI = [{ name: "validateReceivePolicy", type: "function", stateMutability: "view", inputs: [{ type: "address", name: "token" }, { type: "address", name: "sender" }, { type: "address", name: "receiver" }], outputs: [{ type: "bool", name: "authorized" }, { type: "uint8", name: "blockedReason" }] }] as const;
+
+/**
+ * Whether `receiver` accepts `token` from `sender` right now (TIP-403). Asked before a wallet pays a creator for a
+ * memory read (S9.9b): a transfer the receiver's policy blocks still "succeeds" — into a guard — so the payment would
+ * leave the wallet without reaching the creator, and the read would never open.
+ */
+export async function readReceiverAccepts(token: Address, sender: Address, receiver: Address): Promise<boolean> {
+  const client = await getPublicClient();
+  const [ok] = (await client.readContract({ address: TEMPO.tip403Registry as Address, abi: VALIDATE_RECEIVE_POLICY_ABI, functionName: "validateReceivePolicy", args: [token, sender, receiver] })) as readonly [boolean, unknown];
+  return ok;
 }

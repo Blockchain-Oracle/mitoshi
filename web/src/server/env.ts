@@ -19,6 +19,8 @@ export interface ServerEnv {
   socialSecret: string | null;
   /** Shared with the ops app: HMAC for 60 s per-user stream tickets (D-049). */
   streamTicketSecret: string | null;
+  /** mppx's HMAC key binding each payment challenge to its contents (the Memory Market's paid read; ≥ 32 bytes). */
+  mppSecretKey: string | null;
   regionOverride: string | null;
 }
 
@@ -41,6 +43,7 @@ export function serverEnv(): ServerEnv {
     deskKey: desk && /^0x[0-9a-fA-F]{64}$/.test(desk) ? (desk as `0x${string}`) : null,
     socialSecret: process.env.SOCIAL_SESSION_SECRET || null,
     streamTicketSecret: process.env.STREAM_TICKET_SECRET || null,
+    mppSecretKey: process.env.MPP_SECRET_KEY && process.env.MPP_SECRET_KEY.length >= 32 ? process.env.MPP_SECRET_KEY : null,
     regionOverride: process.env.CWF_REGION_OVERRIDE || null,
   };
   return cached;

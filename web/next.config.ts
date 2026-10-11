@@ -16,6 +16,9 @@ const config: NextConfig = {
   // Diagnosis only (plan §3.1): `ANALYZE_MAPS=1 pnpm build` emits browser source maps for `scripts/perf/attribute.ts`.
   productionBrowserSourceMaps: process.env.ANALYZE_MAPS === "1",
   transpilePackages: ["@cwf/core", "@cwf/markets", "@cwf/clients", "@cwf/tokens", "@cwf/db"],
+  // mppx's server (the Memory Market's paid read, S9.9b) runs from node_modules, unbundled: its MCP transport imports an
+  // optional peer (`@modelcontextprotocol/sdk`) that this app doesn't install and never calls.
+  serverExternalPackages: ["mppx"],
   // Only Mitoshi frames Mitoshi (the landing's phone runs the terminal in a frame): no other site can frame the app and
   // lay its own button over a trade (clickjacking). `frame-ancestors` is the standard successor to X-Frame-Options.
   headers: async () => [{ source: "/:path*", headers: [{ key: "Content-Security-Policy", value: "frame-ancestors 'self'" }] }],

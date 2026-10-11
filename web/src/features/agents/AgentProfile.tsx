@@ -99,7 +99,7 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
               <p className="type-body-strong text-ink-secondary">{P.noRecord(s.record.open)}</p>
             )}
           </Block>
-          <MemorySection card={s} wallet={writes.wallet} />
+          <MemorySection card={s} wallet={writes.wallet} copying={writes.mine.some((m) => m.strategyId === s.strategyId && m.active)} />
           <Block title={P.voice}>
             <ul className="flex flex-col gap-1">
               {heartbeats.slice(0, 6).map((h) => (

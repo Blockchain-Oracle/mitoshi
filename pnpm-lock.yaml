@@ -499,6 +499,9 @@ importers:
       motion:
         specifier: 'catalog:'
         version: 13.4.4(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      mppx:
+        specifier: 'catalog:'
+        version: 0.10.1(hono@4.13.9)(next@16.3.6(@playwright/test@1.63.0)(@types/node@24.19.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(typescript@5.9.3)(viem@2.56.9(typescript@5.9.3)(zod@4.6.5))
       next:
         specifier: 'catalog:'
         version: 16.3.6(@playwright/test@1.63.0)(@types/node@24.19.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

@@ -43,7 +43,7 @@ export function CopyDrawer({ card, strategies, writes, open, onOpenChange }: { c
               {card.agentId ? ` · ${COPY.feedback(card.feedback.count, card.feedback.mean)}` : ""}
             </p>
           </Section>
-          <MemorySection card={card} wallet={writes.wallet} />
+          <MemorySection card={card} wallet={writes.wallet} copying={writes.mine.some((m) => m.strategyId === card.strategyId && m.active)} />
           {card.agent && card.agent.decisions.length > 0 && (
             <Section title={COPY.agentReads}>
               <ul className="flex flex-col gap-2">

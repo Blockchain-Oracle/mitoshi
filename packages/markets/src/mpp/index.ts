@@ -5,3 +5,4 @@ export * from "./challenges";
 export * from "./payer";
 export * from "./receipts";
 export * from "./env";
+export * from "./memory-read";
