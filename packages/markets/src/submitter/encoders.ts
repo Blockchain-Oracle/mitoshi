@@ -13,6 +13,7 @@ import { encodeParlayIntent } from "../parlay/encoders";
 import { encodeRangeIntent } from "../range/encoders";
 import { encodeLeverageIntent } from "../leverage/encoders";
 import { encodePrivateIntent } from "../private/encoders";
+import { registerAgentCall, setAgentUriCall } from "../agents/erc8004";
 import { encodeStrategyIntent } from "../strategies/encoders";
 import { encodeVaultIntent } from "../vault/calls";
 
@@ -67,6 +68,17 @@ function encodeKeyBackup(intent: TxIntent, ctx: EncodeContext): EncodeResult | n
   return { ok: true, value: { area: "keys", calls: [{ to: TEMPO.accountKeychain, data }], sponsored: false, summary: `add backup passkey ${intent.keyId}` } };
 }
 
+/** ERC-8004 identity writes (S9, D-218.7): one sponsored call on the chain's IdentityRegistry. */
+function encodeAgentIntent(intent: TxIntent, ctx: EncodeContext): EncodeResult | null {
+  if (intent.kind !== "agent-register" && intent.kind !== "agent-set-uri") return null;
+  try {
+    const call = intent.kind === "agent-register" ? registerAgentCall(ctx.chainId, intent.agentURI) : setAgentUriCall(ctx.chainId, intent.agentId, intent.agentURI);
+    return { ok: true, value: { area: "agents", calls: [call], sponsored: true, summary: intent.kind === "agent-register" ? "register an ERC-8004 agent" : `point agent #${intent.agentId} at a new registration file` } };
+  } catch (error) {
+    return { ok: false, diagnosis: diagnosis("not-deployed", error instanceof Error ? error.message : String(error)) };
+  }
+}
+
 /** Multicall3 `getCurrentBlockTimestamp()`: a view that moves nothing, proves the relay pays exactly what policy allows (S1 gate). */
 function encodeNoop(intent: TxIntent): EncodeResult | null {
   if (intent.kind !== "noop") return null;
@@ -84,7 +96,7 @@ export function encodeTransfer(intent: TxIntent, ctx: EncodeContext): EncodeResu
   return { ok: true, value: { area: "wallet", calls: [{ to: intent.token, data }], sponsored: false, summary: `send ${intent.amountBase} of ${intent.token} to ${intent.to}` } };
 }
 
-export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeKeyBackup, encodeNoop, encodeTransfer, encodeEngineIntent, encodeVaultIntent, encodeStrategyIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent, encodePrivateIntent];
+export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeKeyBackup, encodeAgentIntent, encodeNoop, encodeTransfer, encodeEngineIntent, encodeVaultIntent, encodeStrategyIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent, encodePrivateIntent];
 
 /** The first encoder that claims the intent; an unclaimed intent's area is not deployed on this chain yet. */
 export async function encodeIntent(intent: TxIntent, ctx: EncodeContext, encoders: readonly IntentEncoder[] = DEFAULT_ENCODERS): Promise<EncodeResult> {

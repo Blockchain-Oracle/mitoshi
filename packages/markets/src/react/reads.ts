@@ -34,3 +34,10 @@ export function useKeyRemaining(wallet: Address | null, keyId: Address | null): 
     { enabled: wallet !== null && keyId !== null, pollMs: BALANCE_POLL_MS },
   );
 }
+
+/** One transaction's receipt through the read runtime (a write's follow-up read: an id minted, a strategy published). */
+export async function readReceipt(hash: `0x${string}`): Promise<{ status: "success" | "reverted"; logs: { address: `0x${string}`; topics: `0x${string}`[]; data: `0x${string}` }[] }> {
+  const client = await getPublicClient();
+  const r = await client.waitForTransactionReceipt({ hash, timeout: 30_000 });
+  return { status: r.status, logs: r.logs.map((l) => ({ address: l.address, topics: [...l.topics] as `0x${string}`[], data: l.data })) };
+}

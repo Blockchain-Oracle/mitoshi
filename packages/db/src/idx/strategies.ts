@@ -189,3 +189,9 @@ export async function readWindowFacts(sql: Sql, markets: readonly string[]): Pro
   }
   return out;
 }
+
+/** Every series the index knows (what a strategy may be scoped to), by symbol then cadence. */
+export async function readSeriesList(sql: Sql): Promise<{ series: string; symbol: string | null; cadenceSec: number; basis: number }[]> {
+  const rows = await sql<{ series: string; symbol: string | null; cadence_sec: number; basis: number }[]>`select series, symbol, cadence_sec, basis from idx_series order by symbol, cadence_sec, basis`;
+  return rows.map((r) => ({ series: r.series, symbol: r.symbol, cadenceSec: r.cadence_sec, basis: r.basis }));
+}

@@ -44,7 +44,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/games/moonshot": { eyebrow: "Games", title: "Moonshot", body: "Aim for a distant target.", dependency: "the range reserve (S10)" },
   "/games/line-rider": { eyebrow: "Games", title: "Line Rider", body: "Ride the line; score-only.", dependency: "the arcade (S12)" },
   "/games/candle-hop": { eyebrow: "Games", title: "Candle Hop", body: "Hop the candles; score-only.", dependency: "the arcade (S12)" },
-  "/strategies": { eyebrow: "Strategies", title: "Repeatable approaches", body: "Strategies with their verified records, run by agents under a budget you grant.", dependency: "the agent runner (S9)" },
   "/agents": { eyebrow: "Agents", title: "Copy an agent", body: "One confirmation to copy, one to stop; caps behind “adjust”.", dependency: "the agent runner (S9)" },
   "/trade-from-x": { eyebrow: "X-trade", title: "Trade from a post", body: "Turn a post into a bounded trade under a grant you control.", dependency: "the X relay (S11)" },
   "/claim": { eyebrow: "X recovery", title: "Recover a trade from X", body: "Claim a trade an X post created for you.", dependency: "the X relay (S11)" },

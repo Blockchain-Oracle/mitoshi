@@ -8,11 +8,11 @@ import "server-only";
  * latest copy fills. A store that cannot be read fails the whole read (503) rather than serving "empty".
  */
 import { cacheLife } from "next/cache";
-import { getAddress } from "viem";
+import { getAddress, isAddress } from "viem";
 import { CHAIN } from "@cwf/clients";
-import { deriveRunnerHealth, describeSpec, formatCadence, parseStrategyMetadata, scoreFillByPayout, strategyRecord, type Address, type AgentWindowOutcome, type MarketId, type StrategyFill } from "@cwf/core";
+import { deriveRunnerHealth, describeSpec, formatCadence, laneBasisOf, parseStrategyMetadata, scoreFillByPayout, strategyRecord, type Address, type AgentWindowOutcome, type MarketId, type StrategyFill } from "@cwf/core";
 import { createPgStrategyStore } from "@cwf/db";
-import { readIndexedStrategies, readSubscriptionsOf, readWindowFacts, type IndexedStrategy, type WindowFacts } from "@cwf/db/idx";
+import { readIndexedStrategies, readSeriesList, readSubscriptionsOf, readWindowFacts, type IndexedStrategy, type WindowFacts } from "@cwf/db/idx";
 import { strategyVenueOf } from "@cwf/markets/strategies";
 import { db } from "@/server/db";
 import { serverEnv } from "@/server/env";
@@ -22,6 +22,16 @@ const FILL_LIMIT = 500;
 const DECISION_LIMIT = 200;
 const DECISIONS_PER_CARD = 8;
 
+/** The house runner (`strategy-runner` role) — public: every house strategy names it on chain. */
+const houseRunner = () => {
+  const a = process.env.HOUSE_RUNNER_ADDRESS?.trim();
+  return a && isAddress(a) ? getAddress(a) : null;
+};
+/** "BTC 5m", "TSLA 24/7 15m", "AAPL Monday gap" — the lane's own words (`LaneBasis`). */
+const seriesLabel = (symbol: string, cadenceSec: number, basis: number) => {
+  const lane = laneBasisOf(basis);
+  return lane === "gap" ? `${symbol} Monday gap` : `${symbol}${lane === "stock24" ? " 24/7" : ""} ${formatCadence(cadenceSec)}`;
+};
 const chainId = () => (serverEnv().network === "mainnet" ? CHAIN.tempo : CHAIN.moderato);
 const labelOf = (f: WindowFacts | undefined) => (f?.symbol && f.cadenceSec ? `${f.symbol} ${formatCadence(f.cadenceSec)}` : null);
 
@@ -72,11 +82,12 @@ export async function readStrategies(): Promise<StrategiesPayload> {
   cacheLife("minutes");
   const nowMs = Date.now();
   const venue = strategyVenueOf(chainId());
-  if (!venue) return { deployed: false, registry: null, strategies: [], fills: [], computedAtMs: nowMs };
+  if (!venue) return { deployed: false, registry: null, houseRunner: null, series: [], strategies: [], fills: [], computedAtMs: nowMs };
   const sql = db();
   const store = createPgStrategyStore(sql);
-  const [rows, fillRows, beats, decisionRows] = await Promise.all([
+  const [rows, fillRows, beats, decisionRows, seriesRows] = await Promise.all([
     readIndexedStrategies(sql, { registry: venue.strategyRegistry }), store.listFills({ strategyId: null, limit: FILL_LIMIT }), store.latestHeartbeats(), store.listDecisions(null, DECISION_LIMIT),
+    readSeriesList(sql),
   ]);
   const fills = fillRows.map(toFill);
   const facts = await readWindowFacts(sql, [...new Set([...fills.map((f) => f.marketId), ...decisionRows.map((d) => d.marketId)])]);
@@ -93,6 +104,8 @@ export async function readStrategies(): Promise<StrategiesPayload> {
   return {
     deployed: true,
     registry: getAddress(venue.strategyRegistry),
+    houseRunner: houseRunner(),
+    series: seriesRows.filter((r) => r.symbol).map((r) => ({ seriesId: r.series, label: seriesLabel(r.symbol!, r.cadenceSec, r.basis), symbol: r.symbol!, cadenceSec: r.cadenceSec })),
     strategies: rows.map((s) => strategyWire(s, fills, facts, beatBy.get(s.strategyId), decisionsBy.get(s.strategyId) ?? [], nowMs)),
     fills: fills.slice(0, 50).map((f) => fillWire(f, facts)),
     computedAtMs: nowMs,

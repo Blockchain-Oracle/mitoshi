@@ -110,6 +110,7 @@ export const COPY = {
     mode: (mode: "follow" | "fade") => (mode === "fade" ? "Fading it" : "Following it"),
     switchTo: (mode: "follow" | "fade") => (mode === "fade" ? "Switch to fade" : "Switch to follow"),
     switchHelp: "No fee — you're already subscribed.",
+    renew: "Give it a budget again",
     stop: "Hold to stop copying",
     stopConfirm: "Stopping",
     stopHelp: (sharing: boolean) => (sharing ? "Ends this copy; your budget keeps serving your other copies." : "Ends this copy and returns its unspent budget to your Trading Balance. No fee."),

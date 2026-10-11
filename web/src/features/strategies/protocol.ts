@@ -83,10 +83,21 @@ export interface FillWire {
   pnlBase: string | null;
 }
 
+export interface SeriesWire {
+  seriesId: string;
+  label: string;
+  symbol: string;
+  cadenceSec: number;
+}
+
 export interface StrategiesPayload {
   deployed: boolean;
   /** The registry address (its explorer link). */
   registry: string | null;
+  /** The house runner's key — what a strategy names to be run by the platform; null where none is configured. */
+  houseRunner: string | null;
+  /** What a strategy may be scoped to: every series the index knows. */
+  series: SeriesWire[];
   strategies: StrategyWire[];
   fills: FillWire[];
   computedAtMs: number;

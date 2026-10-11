@@ -154,6 +154,14 @@ export type TxIntent =
    * account's keys, so a lost device doesn't lose the account (D-053). Root-signed; the relay never sponsors it.
    */
   | { kind: "key-backup"; keyId: Address }
+  /**
+   * Register an ERC-8004 agent (S9, D-218.7): mints the identity to the wallet with its registration file as `agentURI`
+   * (a self-contained data: URI or an https file). Sponsored (the relay's `agents` policy); the id comes back in the
+   * receipt's `Registered` event and is what `strategy-publish` names.
+   */
+  | { kind: "agent-register"; agentURI: string }
+  /** Point an agent the wallet owns at a new registration file (sponsored). */
+  | { kind: "agent-set-uri"; agentId: bigint; agentURI: string }
   /** The relay's S1 proof area: a harmless sponsored call that moves nothing (Multicall3 `getBlockNumber`). */
   | { kind: "noop" }
   | VaultIntent
