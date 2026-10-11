@@ -3,7 +3,7 @@ import type { RunnerWindow } from "@cwf/markets/ops";
 import { scanOracleFollow } from "./decide";
 
 const w = (symbol: string, openE8: bigint, index = 1n): RunnerWindow => ({
-  marketId: `0x${index.toString(16).padStart(64, "0")}`, seriesId: `0x${"7c".repeat(32)}`, index, spotSymbol: symbol, cadenceSec: 300, tradingStartSec: 0, lockAtSec: 300, openPriceE8: openE8,
+  marketId: `0x${index.toString(16).padStart(64, "0")}`, seriesId: `0x${"7c".repeat(32)}`, index, spotSymbol: symbol, cadenceSec: 300, tradingStartSec: 0, lockAtSec: 300, expirySec: 300, openPriceE8: openE8,
   grid: { lotBase: 1_000n, tickBase: 1_000n, cashUnit: 1n, minLots: 1n, decimals: 6 },
 });
 const OPEN = 6_000_000_000_000n; // $60,000.00000000

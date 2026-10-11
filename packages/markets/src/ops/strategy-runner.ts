@@ -14,7 +14,7 @@ import { dailyHeadroomBase, formatBaseUnits, oneUnit, orderExpirySec, ownTermsPr
 import { BOOK_LEVELS, levelsCall, TAKER_MIN_REST_SEC, zipLevels, type LevelsAnswer } from "../engine/lens";
 import { quoteFromBook, type Grid, type YesBook } from "../engine/quote";
 
-export type { YesBook } from "../engine/quote";
+export { quoteFromBook, type YesBook } from "../engine/quote";
 import { strategyVenueOf } from "../strategies/deployment";
 import { placeForCall } from "../vault/calls";
 import { toVaultGrant, vaultOutcomeId, type GrantTuple } from "../vault/read";
@@ -45,6 +45,7 @@ export interface RunnerWindow {
   cadenceSec: number;
   tradingStartSec: number;
   lockAtSec: number;
+  expirySec: number;
   openPriceE8: bigint;
   grid: Grid;
 }
@@ -62,7 +63,7 @@ export async function tradingWindowsOf(client: OpsClient, venue: Venue, seriesId
     const symbol = tickerById(s.ticker)?.symbol ?? null;
     return [{
       marketId: id, seriesId: s.seriesId, index, spotSymbol: symbol ? (s.lane === "stock24" ? `${symbol}-24` : symbol) : null, cadenceSec: s.cadenceSec,
-      tradingStartSec: m.tradingStartSec, lockAtSec: m.lockAtSec, openPriceE8: m.prints.open.priceE8,
+      tradingStartSec: m.tradingStartSec, lockAtSec: m.lockAtSec, expirySec: m.expirySec, openPriceE8: m.prints.open.priceE8,
       grid: { lotBase: s.lotBase, tickBase: s.tickBase, cashUnit: s.cashUnit, minLots: s.minLots, decimals: USD_DECIMALS },
     }];
   });

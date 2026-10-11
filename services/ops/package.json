@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@cwf/brain": "workspace:*",
     "@cwf/clients": "workspace:*",
     "@cwf/core": "workspace:*",
     "@cwf/db": "workspace:*",
@@ -19,6 +20,8 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "ai": "catalog:",
+    "postgres": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

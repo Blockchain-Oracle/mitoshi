@@ -5,8 +5,9 @@
  * STRATEGY grant for every strategy that names it (or `STRATEGY_IDS`). Per strategy and cycle: the decision first (the
  * house model on the opening print vs the RedStone spot), then per subscriber the side their consent asks for (a fade
  * turns it around, A-1c), one IOC per Window through `placeFor`, sized inside the grant. Every cycle leaves a heartbeat
- * row in the runner's own words. Opt-in (`OPS_ACTORS`), dry by default like every actor (D-218.6 / L-55); no key or no
- * DATABASE_URL → report only. Agent and mirror strategies are read by their own scanners (S9.5b, S9.6).
+ * row in the runner's own words. An agent strategy is decided by its model read once per Window, reserved and recorded
+ * before anything is sent (`agent.ts`). Opt-in (`OPS_ACTORS`), dry by default like every actor (D-218.6 / L-55); no key
+ * or no DATABASE_URL → report only. Mirror strategies are read by their own scanner (S9.6).
  */
 import type { Address, Hex } from "viem";
 import { parseStrategyMetadata, type SubscriptionMode } from "@cwf/core";
@@ -14,6 +15,8 @@ import { createPgStrategyAttempts, createPgStrategyStore } from "@cwf/db";
 import { readIndexedStrategies, readSubscribers, type IndexedStrategy } from "@cwf/db/idx";
 import { createOpsClient, listSeries, readBooks, readHoldings, readSubscriberStates, runnerVenueOf, tradingWindowsOf, type RunnerVenue } from "@cwf/markets/ops";
 import { errorText, roleKey, runActor, type VenueDeps } from "../../runtime";
+import { agentBootLine, createAgentState, scanAgent, warmAgentState } from "./agent";
+import { settlementReader } from "./agent-record";
 import { scanOracleFollow, type Scan } from "./decide";
 import { executeForSubscriber, recoverAttempts } from "./execute";
 
@@ -35,6 +38,9 @@ export function startStrategyRunner(deps: Pick<VenueDeps, "env" | "log" | "sql" 
   const attempts = deps.sql ? createPgStrategyAttempts(deps.sql) : null;
   const runner = (client.address ?? "0x0000000000000000000000000000000000000000") as Address;
   if (!key) deps.log("STRATEGY_RUNNER_PRIVATE_KEY / strategy-runner.json missing: scanning and reporting only");
+  const agent = createAgentState(deps.sql);
+  deps.log(agentBootLine(agent));
+  let warmed = false;
   let anySeries: Hex[] | null = null;
   let counts = { filled: 0, skipped: 0 };
 
@@ -60,10 +66,17 @@ export function startStrategyRunner(deps: Pick<VenueDeps, "env" | "log" | "sql" 
     const states = (await readSubscriberStates(client, rv!, id, subs)).filter((x) => x.live && x.grant);
     if (states.length === 0) return heartbeat(id, `${subs.length} subscriber${subs.length === 1 ? "" : "s"}, none with a live grant`);
     const spec = meta.spec;
-    if (spec.preset !== "momentum" && spec.preset !== "reversion") return heartbeat(id, `${spec.preset} strategies are read by their own scanner; ${states.length} live subscriber${states.length === 1 ? "" : "s"} waiting`);
+    if (spec.preset === "mirror") return heartbeat(id, `mirror strategies are read by their own scanner; ${states.length} live subscriber${states.length === 1 ? "" : "s"} waiting`);
     const nowSec = Math.floor(nowMs / 1000);
     const windows = await tradingWindowsOf(client, rv!, await seriesOf(s), nowSec);
-    const scan = scanOracleFollow(windows, spec, (symbol) => deps.spot?.latest(symbol as never, SPOT_MAX_AGE_SEC) ?? null);
+    const spotLatest = (symbol: string) => deps.spot?.latest(symbol as never, SPOT_MAX_AGE_SEC) ?? null;
+    const scan =
+      spec.preset === "agent"
+        ? await scanAgent({
+            books: (ids) => readBooks(client, rv!, ids), settlementOf: settlementReader(client, rv!), store: store!, runner, dryRun, agent, log: deps.log,
+            spot: { latest: spotLatest, at: (sym, sec, win) => deps.spot?.at(sym as never, sec, win) ?? null },
+          }, s, spec, windows, nowMs)
+        : scanOracleFollow(windows, spec, spotLatest);
     if (scan.candidates.length === 0) return heartbeat(id, `${scan.why}; ${states.length} live subscriber${states.length === 1 ? "" : "s"}`, scan);
     const markets = scan.candidates.map((c) => c.window.marketId);
     const [books, held] = await Promise.all([readBooks(client, rv!, markets), readHoldings(client, rv!, states.flatMap((st) => markets.map((m) => ({ owner: st.owner, marketId: m }))))]);
@@ -87,12 +100,19 @@ export function startStrategyRunner(deps: Pick<VenueDeps, "env" | "log" | "sql" 
         }
       }
     }
+    if (spec.preset === "agent") for (const { window } of scan.candidates) await store!.markDecisionExecution(s.strategyId, window.marketId, filled, notes.length - filled, dryRun);
     return heartbeat(id, `${scan.why}; ${filled} filled${notes.length ? ` — ${notes.slice(0, 4).join("; ")}` : ""}${dryRun ? " (dry run)" : ""}`, scan);
   };
 
   const pass = async () => {
     if (!rv) return { why: "StrategyRegistry is not deployed on this network; idle" };
     if (!deps.sql || !store || !attempts) return { why: "no DATABASE_URL: the runner's attempt and fill stores are unavailable; holding" };
+    if (!warmed) {
+      // A read interrupted by a restart holds its Window; the hour's reads still count against the budget.
+      await store.interruptDecisions(runner, Date.now());
+      await warmAgentState(agent, store, Date.now());
+      warmed = true;
+    }
     const open = dryRun ? 0 : await recoverAttempts(client, rv, attempts, runner, deps.log);
     if (open > 0) return { why: `${open} attempt(s) with unknown confirmation; holding every new entry until each is settled from its receipt`, detail: { runner, counts } };
     const all = await readIndexedStrategies(deps.sql, { registry: rv.registry });

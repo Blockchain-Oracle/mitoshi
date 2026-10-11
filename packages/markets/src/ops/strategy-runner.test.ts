@@ -9,7 +9,7 @@ const NOW = 1_791_700_000;
 const MARKET = `0x${"ab".repeat(32)}` as Hex;
 /** The live BTC-5m grid: 1,000 raw a lot, 1,000 raw a tick, one base unit a tick-lot. */
 const window: RunnerWindow = {
-  marketId: MARKET, seriesId: `0x${"7c".repeat(32)}`, index: 10n, spotSymbol: "BTC", cadenceSec: 300, tradingStartSec: NOW - 60, lockAtSec: NOW + 240, openPriceE8: 6_000_000_000_000n,
+  marketId: MARKET, seriesId: `0x${"7c".repeat(32)}`, index: 10n, spotSymbol: "BTC", cadenceSec: 300, tradingStartSec: NOW - 60, lockAtSec: NOW + 240, expirySec: NOW + 240, openPriceE8: 6_000_000_000_000n,
   grid: { lotBase: 1_000n, tickBase: 1_000n, cashUnit: 1n, minLots: 1n, decimals: 6 },
 };
 /** Asks 600 (YES at 60¢) and bids 380 (NO asks at 62¢), deep enough for any test stake. */

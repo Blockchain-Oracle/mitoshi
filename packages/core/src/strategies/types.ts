@@ -106,6 +106,11 @@ export interface StrategySubscription {
   mode: SubscriptionMode;
 }
 
+/** One agent read per (strategy, Window): its id, which MPP receipts (`mpp_receipts.decision_id`) are scoped to. */
+export function decisionIdOf(strategyId: bigint | string, marketId: string): string {
+  return `${strategyId.toString()}:${marketId.toLowerCase()}`;
+}
+
 /** The side the runner actually sends for one subscriber: a fade turns the strategy's call around. */
 export function sideForSubscriber(decided: Side, mode: SubscriptionMode): Side {
   return mode === "fade" ? (decided === "up" ? "down" : "up") : decided;
