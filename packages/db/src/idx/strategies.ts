@@ -20,6 +20,9 @@ export interface IndexedStrategy {
   maxOpenPositions: number;
   maxPriceRaw: string;
   series: string | null;
+  /** The series' symbol and cadence from the index (null while the series row is unknown or the scope is any). */
+  seriesSymbol: string | null;
+  seriesCadenceSec: number | null;
   feeBase: string;
   active: boolean;
   subscribers: number;
@@ -58,12 +61,12 @@ export interface AgentFeedback {
 
 type StrategyRaw = {
   registry: string; strategy_id: string; creator: string; runner: string; spec_hash: string; metadata_hash: string | null; metadata: string | null; agent_id: string | null;
-  max_stake_per_trade_base: string; max_daily_spend_base: string; max_open_positions: number; max_price_raw: string; series: string | null; fee_base: string;
+  max_stake_per_trade_base: string; max_daily_spend_base: string; max_open_positions: number; max_price_raw: string; series: string | null; series_symbol: string | null; series_cadence_sec: number | null; fee_base: string;
   active: boolean; subscribers: number; revision: number; created_at_sec: string; feedback_count: number; feedback_mean: string | null;
 };
 const fromStrategy = (r: StrategyRaw): IndexedStrategy => ({
   registry: r.registry, strategyId: r.strategy_id, creator: r.creator, runner: r.runner, specHash: r.spec_hash, metadataHash: r.metadata_hash, metadata: r.metadata, agentId: r.agent_id,
-  maxStakePerTradeBase: r.max_stake_per_trade_base, maxDailySpendBase: r.max_daily_spend_base, maxOpenPositions: r.max_open_positions, maxPriceRaw: r.max_price_raw, series: r.series,
+  maxStakePerTradeBase: r.max_stake_per_trade_base, maxDailySpendBase: r.max_daily_spend_base, maxOpenPositions: r.max_open_positions, maxPriceRaw: r.max_price_raw, series: r.series, seriesSymbol: r.series_symbol, seriesCadenceSec: r.series_cadence_sec,
   feeBase: r.fee_base, active: r.active, subscribers: r.subscribers, revision: r.revision, createdAtSec: Number(r.created_at_sec), feedbackCount: r.feedback_count, feedbackMean: r.feedback_mean,
 });
 
@@ -77,9 +80,10 @@ const fromSubscription = (r: SubscriptionRaw): IndexedSubscription => ({
 export async function readIndexedStrategies(sql: Sql, q: { registry: string; activeOnly?: boolean; strategyId?: string; creator?: string; limit?: number }): Promise<IndexedStrategy[]> {
   const rows = await sql<StrategyRaw[]>`
     select s.registry, s.strategy_id::text, s.creator, s.runner, s.spec_hash, s.metadata_hash, s.metadata, s.agent_id::text, s.max_stake_per_trade_base::text,
-      s.max_daily_spend_base::text, s.max_open_positions, s.max_price_raw::text, s.series, s.fee_base::text, s.active, s.subscribers, s.revision, s.created_at_sec::text,
+      s.max_daily_spend_base::text, s.max_open_positions, s.max_price_raw::text, s.series, sr.symbol as series_symbol, sr.cadence_sec as series_cadence_sec, s.fee_base::text, s.active, s.subscribers, s.revision, s.created_at_sec::text,
       coalesce(f.n, 0)::int as feedback_count, f.mean::text as feedback_mean
     from idx_strategies s
+    left join idx_series sr on sr.series = s.series
     left join lateral (
       select count(*) as n, avg(value / power(10::numeric, value_decimals)) as mean from idx_agent_feedback
       where agent_id = s.agent_id and not revoked
@@ -158,4 +162,30 @@ export async function readTraderCalls(sql: Sql, q: { address: string; sinceSec: 
 export async function readRatedDays(sql: Sql, agentId: string, client: string, tag1: string): Promise<Set<string>> {
   const rows = await sql<{ tag2: string }[]>`select tag2 from idx_agent_feedback where agent_id = ${agentId}::numeric and client = ${client.toLowerCase()} and tag1 = ${tag1} and not revoked`;
   return new Set(rows.map((r) => r.tag2));
+}
+
+/** What the board needs of each Window a fill or decision touched: its asset, cadence and how it settled. */
+export interface WindowFacts {
+  market: string;
+  symbol: string | null;
+  cadenceSec: number | null;
+  expirySec: number | null;
+  settled: boolean;
+  voided: boolean;
+  payoutYes: bigint;
+  payoutNo: bigint;
+}
+
+export async function readWindowFacts(sql: Sql, markets: readonly string[]): Promise<Map<string, WindowFacts>> {
+  const out = new Map<string, WindowFacts>();
+  if (markets.length === 0) return out;
+  const rows = await sql<{ market: string; symbol: string | null; cadence_sec: number | null; expiry_sec: string | null; state: string; payout_yes: string | null; payout_no: string | null }[]>`
+    select market, symbol, cadence_sec, expiry_sec::text, state, payout_yes::text, payout_no::text from idx_markets where market = any(${markets.map((m) => m.toLowerCase())}::text[])`;
+  for (const r of rows) {
+    out.set(r.market, {
+      market: r.market, symbol: r.symbol, cadenceSec: r.cadence_sec, expirySec: r.expiry_sec === null ? null : Number(r.expiry_sec),
+      settled: r.state !== "open", voided: r.state === "voided", payoutYes: BigInt(r.payout_yes ?? "0"), payoutNo: BigInt(r.payout_no ?? "0"),
+    });
+  }
+  return out;
 }

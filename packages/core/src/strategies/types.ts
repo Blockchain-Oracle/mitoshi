@@ -179,6 +179,12 @@ export type StrategyIntent =
       mode: SubscriptionMode;
       /** The most the subscriber agreed to pay; the registry refuses a higher fee (`FeeAboveMax`). */
       maxFeeBase: bigint;
+      /**
+       * The wallet's other subscriptions on the same runner, re-pointed onto the new grant in the same transaction (a
+       * new STRATEGY grant revokes the old one, so they would otherwise stop). No fee: each is already subscribed. Also
+       * how "resume" is sent after a pause.
+       */
+      carry?: { strategyId: bigint; mode: SubscriptionMode }[];
     }
   /** Re-subscribe while subscribed: move onto another grant or switch follow ↔ fade; no fee (D-219.3). */
   | { kind: "strategy-subscribe"; strategyId: bigint; grantId: bigint; mode: SubscriptionMode; maxFeeBase: bigint }

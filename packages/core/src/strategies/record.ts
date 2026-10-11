@@ -36,6 +36,17 @@ export function scoreFill(fill: StrategyFill, settlement: FillSettlement | null,
   return { ...fill, settled: true, payoutBase, pnlBase: payoutBase - fill.cashDeltaBase };
 }
 
+/**
+ * Scores one fill by what its Window actually paid (Tempo's engine: a side's tokens redeem at that side's payout
+ * numerator out of 10,000,000; a void pays what its numerators say; no settlement fee). Null facts or an open Window: open.
+ */
+export function scoreFillByPayout(fill: StrategyFill, facts: { settled: boolean; payoutYes: bigint; payoutNo: bigint } | null): ScoredFill {
+  if (!facts || !facts.settled) return { ...fill, settled: false, payoutBase: null, pnlBase: null };
+  const numerator = fill.side === "up" ? facts.payoutYes : facts.payoutNo;
+  const payoutBase = (fill.tokenDeltaRaw * numerator) / 10_000_000n;
+  return { ...fill, settled: true, payoutBase, pnlBase: payoutBase - fill.cashDeltaBase };
+}
+
 /** The record the card and the leaderboard show — losses counted, always; win rate is not a quality metric. */
 export function strategyRecord(fills: readonly ScoredFill[]): StrategyRecordStats {
   const settled = fills.filter((f) => f.settled && f.pnlBase !== null).sort((a, b) => a.atSec - b.atSec);

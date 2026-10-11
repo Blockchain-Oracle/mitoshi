@@ -30,7 +30,7 @@ import {
   type StrategySpec,
   type TxIntent,
 } from "@cwf/core";
-import { approveCall, type Call } from "../tx/batch";
+import { approveCall, MAX_SPONSORED_CALLS as MAX_CALLS, type Call } from "../tx/batch";
 import type { EncodeContext, EncodeResult } from "../submitter/encoders";
 import { capsTuple, vaultDeploymentOf } from "../vault/read";
 import { strategyVenueOf } from "./deployment";
@@ -67,7 +67,7 @@ export function summarizeStrategy(intent: StrategyIntent): string {
     case "strategy-update":
       return `update strategy #${intent.strategyId}`;
     case "strategy-copy":
-      return `${intent.mode === "fade" ? "fade" : "copy"} strategy #${intent.strategyId} with a ${usd(intent.budgetBase)} budget${intent.maxFeeBase > 0n ? `, fee up to ${usd(intent.maxFeeBase)}` : ""}`;
+      return `${intent.mode === "fade" ? "fade" : "copy"} strategy #${intent.strategyId} with a ${usd(intent.budgetBase)} budget${intent.maxFeeBase > 0n ? `, fee up to ${usd(intent.maxFeeBase)}` : ""}${intent.carry?.length ? `, keeping ${intent.carry.length} other cop${intent.carry.length === 1 ? "y" : "ies"} on it` : ""}`;
     case "strategy-subscribe":
       return `${intent.mode === "fade" ? "fade" : "follow"} strategy #${intent.strategyId} on grant #${intent.grantId}`;
     case "strategy-pause":
@@ -115,6 +115,8 @@ export function encodeStrategyIntent(intent: TxIntent, ctx: EncodeContext): Enco
         i.depositBase > 0n ? [approveCall(vault.collateral, v, i.depositBase), vaultCall(v, "depositAndGrant", [i.depositBase, ...grant])] : [vaultCall(v, "grant", grant)];
       if (i.maxFeeBase > 0n) calls.push(approveCall(vault.collateral, r, i.maxFeeBase));
       calls.push(registryCall(r, "subscribe", [i.strategyId, 0n, SUBSCRIPTION_MODES.indexOf(i.mode), i.maxFeeBase]));
+      for (const c of i.carry ?? []) if (c.strategyId !== i.strategyId) calls.push(registryCall(r, "subscribe", [c.strategyId, 0n, SUBSCRIPTION_MODES.indexOf(c.mode), 0n]));
+      if (calls.length > MAX_CALLS) return refuse(`${calls.length} calls in one transaction; at most ${MAX_CALLS}`);
       return done("strategies", calls, false);
     }
     case "strategy-subscribe": {

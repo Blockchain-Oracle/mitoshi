@@ -76,6 +76,13 @@ describe("strategy encoders (S9.3)", () => {
     expect(decodeAt(v.calls).map((c) => c.functionName)).toEqual(["grant", "subscribe"]);
   });
 
+  it("a new budget carries the wallet's other copies onto the new grant in the same transaction, no fee for them", () => {
+    const v = encode({ kind: "strategy-copy", strategyId: 3n, runner: RUNNER, caps: CAPS, expiresAtSec: 2_000_000_000, budgetBase: 5_000_000n, depositBase: 0n, mode: "follow", maxFeeBase: 0n, carry: [{ strategyId: 1n, mode: "fade" }, { strategyId: 3n, mode: "follow" }] });
+    const calls = decodeAt(v.calls);
+    expect(calls.map((c) => c.functionName)).toEqual(["grant", "subscribe", "subscribe"]);
+    expect(calls[2]!.args).toEqual([1n, 0n, 1, 0n]);
+  });
+
   it("stops in ONE sponsored transaction the relay accepts (revoke + unsubscribe); pause is the revoke alone", async () => {
     const stop = encode({ kind: "strategy-stop", strategyId: 3n, grantId: 9n });
     expect(stop).toMatchObject({ area: "strategies", sponsored: true });
