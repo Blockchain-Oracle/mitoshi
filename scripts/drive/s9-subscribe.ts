@@ -1,12 +1,14 @@
 /**
- * Subscribes a wallet to strategies on Moderato the way the copy drawer will (S9.3, D-219): the first `--copy` is ONE
- * transaction (deposit + STRATEGY grant to the strategy's runner + subscribe on grant 0); each later one subscribes on
- * that same live grant (same runner). A fresh wallet is funded by the faucet first. Reads the consent back.
+ * Subscribes a wallet to strategies on Moderato the way the copy drawer does (S9.3, D-219): with no live STRATEGY grant
+ * to the strategy's runner, the copy is ONE transaction (deposit + STRATEGY grant + subscribe on grant 0); with one, it
+ * subscribes on that grant — never a second grant, which would revoke the first and every consent riding on it (one
+ * live grant per kind per owner). A fresh wallet is funded by the faucet first. Reads the consent back.
  *
  *   pnpm --dir scripts exec tsx drive/s9-subscribe.ts --wallet <cast wallet new --json file> --copy 1 --copy 2:fade [--budget 10] [--stake 2]
  */
 import { readFileSync } from "node:fs";
 import { getAddress, type Address } from "viem";
+import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
 import { strategyRegistryAbi } from "@cwf/clients/abis/StrategyRegistry";
 import type { SubscriptionMode, TxIntent } from "@cwf/core";
 import { tempoReadClient } from "@cwf/markets";
@@ -32,9 +34,18 @@ const pathUsd = (await client.readContract({ address: "0x20C00000000000000000000
 if (pathUsd < budget * 2n) await client.request({ method: "tempo_fundAddress" as never, params: [owner] as never });
 console.log(JSON.stringify({ owner, funded: pathUsd < budget * 2n, native: balance.toString() }));
 
-let first = true;
+/** The owner's live STRATEGY grant (GrantKind 2), if its actor is `runner`: a copy shares it rather than re-granting. */
+async function liveGrantTo(runner: Address): Promise<boolean> {
+  const vault = { address: venue.vault, abi: eventVaultV2Abi } as const;
+  const id = (await client.readContract({ ...vault, functionName: "activeGrantOf", args: [owner, 2] })) as bigint;
+  if (id === 0n) return false;
+  const g = (await client.readContract({ ...vault, functionName: "grantOf", args: [id] })) as { actor: Address; revoked: boolean; expiresAtSec: bigint };
+  return !g.revoked && g.expiresAtSec > BigInt(Math.floor(Date.now() / 1000)) && getAddress(g.actor) === getAddress(runner);
+}
+
 for (const c of copies) {
   const s = await read<{ runner: Address; envelope: { maxPriceRaw: bigint } }>("strategyOf", [c.id]);
+  const first = !(await liveGrantTo(s.runner));
   const intent: TxIntent = first
     ? { kind: "strategy-copy", strategyId: c.id, runner: s.runner, caps: { maxStakePerTradeBase: stake, maxDailySpendBase: budget, maxOpenPositions: 2, maxPriceRaw: s.envelope.maxPriceRaw, market: null }, expiresAtSec: Math.floor(Date.now() / 1000) + 7 * 86_400, budgetBase: budget, depositBase: budget, mode: c.mode, maxFeeBase: 0n }
     : { kind: "strategy-subscribe", strategyId: c.id, grantId: 0n, mode: c.mode, maxFeeBase: 0n };
@@ -45,5 +56,4 @@ for (const c of copies) {
   const live = await read<boolean>("isSubscriptionLive", [c.id, owner]);
   console.log(JSON.stringify({ step: first ? "copy" : "subscribe", strategyId: c.id.toString(), mode: c.mode, tx: receipt.transactionHash, status: receipt.status, grantId: sub.grantId.toString(), live }));
   if (receipt.status !== "0x1" || !live) process.exitCode = 1;
-  first = false;
 }
