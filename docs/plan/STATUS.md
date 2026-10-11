@@ -1,8 +1,9 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-Updated 2026-10-10 20:17Z (**S5 gate passed** — stats == recount from a GitHub runner; **S6 steps 1–9 done and
-deployed** — the session on the terminal, blockers, halt banner, crowd, earnings, the halts board, skips, G-04/G-05, the
-mainnet Gap on Data Streams — the S6 gate runs over the real weekend and Monday's session).
+Updated 2026-10-11 09:45Z (**S9 built and deployed; its gate's chain items pass on Moderato** — copy in one tx, stop in
+one tx the deployed relay sponsors, live runner placements on a copier's STRATEGY grant, copier P&L = index, the Memory
+Market and its MPP read live; open: an agent decision waits on the owner's model key on ops. Earlier: S5 gate passed;
+S6 steps 1–9 deployed, its gate runs over the weekend and Monday's session).
 **Never trust memory over this file.**
 
 ## Where we are
@@ -39,6 +40,24 @@ mainnet Gap on Data Streams — the S6 gate runs over the real weekend and Monda
   5 min, < 60 s after T). 12 testnet role keys funded (`acceptance/S0.md`).
   Checked 2026-10-08 07:22Z: web 200; ops `/health` ok on `fffc58f` (restarted 2026-10-07 04:53Z), all 14 actors ok, RPC
   limiter active. The apex `mitoshi.xyz` serves nothing yet (mainnet is S19). The trunk is ahead of both deploys.
+
+## S9 — Agents: calls (2026-10-11; `stage-09-agents-calls.md`, `acceptance/S9.md`)
+
+- Built and deployed on testnet (web `32353b6`, ops after `dc1765b`): `StrategyRegistry` `0x7915…B8FD` (D-219), three
+  house strategies (#1 BTC Momentum, #2 ETH Mean-reversion, #3 House agent, ERC-8004 agents 7–9) run by the live ops
+  `strategy-runner` (triggers sized from the measured regime, D-220); `/strategies` (desk, copy drawer in one tx,
+  builder), `/agents` (board in the inherited order, labelled, with P&L + sample size) and `/agents/[id]`; the
+  `agent-rater` deployed dry; the Memory Market with its MPP read (`GET /api/strategies/[id]/memory`, paid to the
+  creator; `MPP_SECRET_KEY` set on testnet web).
+- Gate (`scripts/drive/s9-gate.ts`, `s9-memory.ts`): copy one self-paid tx; stop one tx sponsored by the deployed relay;
+  five live runner fills on a copier's STRATEGY grant; copier P&L = index on every settled Window; a sealed memory read
+  by a copier, refused (402) to a stranger, bought by the stranger over MPP ($0.10 on chain to the creator), the spent
+  credential refused. UX pass on the deployed site at 375 px and desktop: two fixes shipped (`32353b6`).
+- **Open:** the agent's first decision with its receipt ("unpaid" on testnet, D-218.4) needs the owner's model key on
+  ops (`ANTHROPIC_API_KEY` or `AI_GATEWAY_API_KEY`; owner-actions.md) — house #3 has a live subscriber and holds with
+  that reason until then. The live test copier is `0x1Ef9…aC18` (scratchpad wallet, testnet only).
+- Infra note: the box's RPC traffic shares the public Moderato RPC's rate limit (-32005 seen live); a provider RPC for
+  web + ops (`TEMPO_RPC_HTTP_URL`) would remove it — the paid read now retries meanwhile.
 
 ## The revamp (decided 2026-10-08, D-189…D-200)
 
@@ -219,6 +238,6 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
    Next, in order: S20's videos (footage and scripts are ready for the owner's voice) and the submission (due
    2026-10-12 23:59 PT); S5's remaining surfaces (`/portfolio/edge`, share cards, OG images, profile); S23g's
    leaderboard drawer on S5's data (now live); then the S23 gate's open list (above).
-4. The stages with no commits yet, per plan §7: S5, S6, S9, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
+4. The stages with no commits yet, per plan §7: S5, S6, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
    revamped UI.
