@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { ReportDialog } from "../social/report-dialog-lazy";
 import { useSocialSession } from "../social/session";
 import { CopyDrawer } from "../strategies/CopyDrawer";
+import { MemorySection } from "../strategies/MemorySection";
 import type { StrategyDetailPayload } from "../strategies/protocol";
 import { useCopyWrites } from "../strategies/useCopyWrites";
 import { useStrategies } from "../strategies/useStrategies";
@@ -98,6 +99,7 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
               <p className="type-body-strong text-ink-secondary">{P.noRecord(s.record.open)}</p>
             )}
           </Block>
+          <MemorySection card={s} wallet={writes.wallet} />
           <Block title={P.voice}>
             <ul className="flex flex-col gap-1">
               {heartbeats.slice(0, 6).map((h) => (

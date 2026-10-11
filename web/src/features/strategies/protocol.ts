@@ -69,6 +69,8 @@ export interface StrategyWire {
   agent: { model: string | null; decisions: DecisionWire[] } | null;
   /** ERC-8004 feedback on its agent (non-revoked): how many, and their mean as a decimal string. */
   feedback: { count: number; mean: string | null };
+  /** A sealed memory subscribers can read (L-56): its title and length only — the body is served by the gated route. */
+  memory: { title: string; chars: number; updatedAtMs: number } | null;
 }
 
 export interface FillWire {

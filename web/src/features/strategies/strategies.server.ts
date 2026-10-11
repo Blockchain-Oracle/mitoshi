@@ -11,7 +11,7 @@ import { cacheLife } from "next/cache";
 import { getAddress, isAddress } from "viem";
 import { CHAIN } from "@cwf/clients";
 import { decisionIdOf, deriveRunnerHealth, describeSpec, formatCadence, laneBasisOf, parseStrategyMetadata, scoreFillByPayout, strategyRecord, type Address, type AgentWindowOutcome, type MarketId, type StrategyFill } from "@cwf/core";
-import { createPgStrategyStore, receiptsForDecision } from "@cwf/db";
+import { createPgSealedMemory, createPgStrategyStore, receiptsForDecision, type SealedMemoryIndexRow } from "@cwf/db";
 import { readAgentFeedback, readIndexedStrategies, readSeriesList, readSubscriptionsOf, readWindowFacts, type IndexedStrategy, type WindowFacts } from "@cwf/db/idx";
 import { strategyVenueOf } from "@cwf/markets/strategies";
 import { db } from "@/server/db";
@@ -55,7 +55,10 @@ function fillWire(f: StrategyFill, facts: Map<string, WindowFacts>): FillWire {
   };
 }
 
-function strategyWire(s: IndexedStrategy, fills: StrategyFill[], facts: Map<string, WindowFacts>, beat: { tickAtMs: number; intervalMs: number; why: string } | undefined, decisions: DecisionWire[], nowMs: number): StrategyWire {
+/** A sealed memory is listed only under the strategy's own on-chain creator, whatever the store says. */
+const memoryOf = (row: SealedMemoryIndexRow | undefined, creator: string) => (row && row.creator === creator.toLowerCase() ? { title: row.title, chars: row.chars, updatedAtMs: row.updatedAtMs } : null);
+
+function strategyWire(s: IndexedStrategy, fills: StrategyFill[], facts: Map<string, WindowFacts>, beat: { tickAtMs: number; intervalMs: number; why: string } | undefined, decisions: DecisionWire[], nowMs: number, sealed?: SealedMemoryIndexRow): StrategyWire {
   const meta = s.metadata ? parseStrategyMetadata(s.metadata) : null;
   const all = fills.filter((f) => f.strategyId.toString() === s.strategyId);
   const own = all.filter((f) => f.mode === "follow").map((f) => scoreFillByPayout(f, facts.get(f.marketId.toLowerCase()) ?? null));
@@ -75,6 +78,7 @@ function strategyWire(s: IndexedStrategy, fills: StrategyFill[], facts: Map<stri
     health: deriveRunnerHealth({ lastTickMs: beat?.tickAtMs ?? null, intervalMs: beat?.intervalMs ?? null, why: beat?.why ?? null, nowMs, reachable: true }),
     agent: meta?.spec.preset === "agent" ? { model: decisions[0]?.model ?? null, decisions } : null,
     feedback: { count: s.feedbackCount, mean: s.feedbackMean },
+    memory: memoryOf(sealed, s.creator),
   };
 }
 
@@ -87,9 +91,9 @@ export async function readStrategies(): Promise<StrategiesPayload> {
   if (!venue) return { deployed: false, registry: null, houseRunner: null, series: [], strategies: [], fills: [], computedAtMs: nowMs };
   const sql = db();
   const store = createPgStrategyStore(sql);
-  const [rows, fillRows, beats, decisionRows, seriesRows] = await Promise.all([
+  const [rows, fillRows, beats, decisionRows, seriesRows, sealedRows] = await Promise.all([
     readIndexedStrategies(sql, { registry: venue.strategyRegistry }), store.listFills({ strategyId: null, limit: FILL_LIMIT }), store.latestHeartbeats(), store.listDecisions(null, DECISION_LIMIT),
-    readSeriesList(sql),
+    readSeriesList(sql), createPgSealedMemory(sql).index(),
   ]);
   const fills = fillRows.map(toFill);
   const facts = await readWindowFacts(sql, [...new Set([...fills.map((f) => f.marketId), ...decisionRows.map((d) => d.marketId)])]);
@@ -108,7 +112,7 @@ export async function readStrategies(): Promise<StrategiesPayload> {
     registry: getAddress(venue.strategyRegistry),
     houseRunner: houseRunner(),
     series: seriesRows.filter((r) => r.symbol).map((r) => ({ seriesId: r.series, label: seriesLabel(r.symbol!, r.cadenceSec, r.basis), symbol: r.symbol!, cadenceSec: r.cadenceSec })),
-    strategies: rows.map((s) => strategyWire(s, fills, facts, beatBy.get(s.strategyId), decisionsBy.get(s.strategyId) ?? [], nowMs)),
+    strategies: rows.map((s) => strategyWire(s, fills, facts, beatBy.get(s.strategyId), decisionsBy.get(s.strategyId) ?? [], nowMs, sealedRows.find((m) => m.strategyId === s.strategyId))),
     fills: fills.slice(0, 50).map((f) => fillWire(f, facts)),
     computedAtMs: nowMs,
   };
@@ -140,7 +144,7 @@ export async function readStrategyDetail(strategyId: string): Promise<StrategyDe
   const store = createPgStrategyStore(sql);
   const [row] = await readIndexedStrategies(sql, { registry: venue.strategyRegistry, strategyId });
   if (!row) return null;
-  const [fillRows, beats, decisionRows] = await Promise.all([store.listFills({ strategyId, limit: 200 }), store.recentHeartbeats(strategyId, 12), store.listDecisions(strategyId, 20)]);
+  const [fillRows, beats, decisionRows, sealedRows] = await Promise.all([store.listFills({ strategyId, limit: 200 }), store.recentHeartbeats(strategyId, 12), store.listDecisions(strategyId, 20), createPgSealedMemory(sql).index()]);
   const fills = fillRows.map(toFill);
   const facts = await readWindowFacts(sql, [...new Set([...fills.map((f) => f.marketId), ...decisionRows.map((d) => d.marketId)])]);
   const live = beats.filter((b) => !b.dryRun);
@@ -155,7 +159,7 @@ export async function readStrategyDetail(strategyId: string): Promise<StrategyDe
   }));
   const feedback = row.agentId ? await readAgentFeedback(sql, row.agentId, 50) : [];
   return {
-    strategy: strategyWire(row, fills, facts, live[0] ? { tickAtMs: live[0].tickAtMs, intervalMs: live[0].intervalMs, why: live[0].why } : undefined, decisions, nowMs),
+    strategy: strategyWire(row, fills, facts, live[0] ? { tickAtMs: live[0].tickAtMs, intervalMs: live[0].intervalMs, why: live[0].why } : undefined, decisions, nowMs, sealedRows.find((m) => m.strategyId === strategyId)),
     heartbeats: live.map((b) => ({ atMs: b.tickAtMs, why: b.why })),
     decisions,
     fills: fills.slice(0, 50).map((f) => fillWire(f, facts)),
