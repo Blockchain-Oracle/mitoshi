@@ -2056,6 +2056,19 @@ Owarine's code, not screenshots; use 21st.dev for parts; fix what he didn't name
 
 **Why:** the owner's words of 2026-10-12, and the audit that found the causes (plan file, Context table).
 
+### D-227 — Round 4: product fidelity, correct P&L, creative games (owner, 2026-10-12)
+
+The owner after round 3: only the terminal and the leaderboard are good; port Owarine's product from its code (Senryo,
+`~/dev/hackathon/metropolis`, for the games' new direction); the P&L is wrong; never make him scroll to the action;
+fewer words; ultracode on. Plan: `owarine-plan-r4-2026-10-12.md` (slices R4-0…R4-13), work orders from a 15-agent
+source study (one spec per surface).
+
+1. **Every `:has()` frame rule matches only a visible surface** (`cacheComponents` keeps hidden route DOM).
+2. **The phone dock stays under the terminal** (Owarine), the chart chips sit above the settings stack.
+3. **One cost basis rule:** a position's P&L is what Close pays now (or the known payout once resolved, or its cost
+   while locked) less the open cost of what is held; sales lower the open cost pro rata.
+4. **One kit** (`components/kit`) before any surface port.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
