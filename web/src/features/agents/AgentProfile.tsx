@@ -56,7 +56,7 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
   const [reporting, setReporting] = useState(false);
   const network = webEnv.markets.network;
 
-  if (detail.isPending) return <div className="mx-auto w-full max-w-(--content-wide) px-gutter py-8"><LoadingState shape="plate" label={AGENTS.loading} /></div>;
+  if (detail.isPending) return <div className="mx-auto w-full max-w-(--content-wide)"><LoadingState shape="page" label={AGENTS.loading} /></div>;
   if (!detail.data) return <div className="mx-auto w-full max-w-(--content-wide) px-gutter py-8"><EmptyState why={detail.isError ? AGENTS.error : P.notFound} /></div>;
   const { strategy: s, heartbeats, decisions, fills, feedback } = detail.data;
   const net = BigInt(s.record.netBase);

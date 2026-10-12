@@ -7,6 +7,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { LiveRegion } from "@/components/states/LiveRegion";
 import { HeaderAccount } from "@/components/shell/header/HeaderAccount";
 import { SessionBanners } from "@/components/shell/SessionBanners";
+import { Splash } from "@/components/shell/Splash";
 import { AlertsWatcher } from "@/features/alerts/AlertsWatcher";
 import { LifecycleWatcher } from "@/features/notifications/LifecycleWatcher";
 import { AppProviders, BootNotice } from "@/providers";
@@ -21,6 +22,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       >
         {children}
       </AppShell>
+      <Splash />
     </AppProviders>
   );
 }

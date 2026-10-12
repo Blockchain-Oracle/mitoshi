@@ -64,7 +64,7 @@ export function LeaderboardScreen() {
       </MotionScope>
 
       {board.isPending ? (
-        <LoadingState shape="plate" label={L.loading} />
+        <LoadingState shape="table" label={L.loading} />
       ) : board.isError && !board.data ? (
         <div role="alert" className="flex flex-col items-center gap-3 rounded-lg border border-hairline bg-surface-1 px-6 py-8 text-center">
           <p className="type-body-strong text-ink">{L.error}</p>

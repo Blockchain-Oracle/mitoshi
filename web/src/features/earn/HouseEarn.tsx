@@ -55,7 +55,7 @@ export function HouseEarn({ kind, tabs }: { kind: HouseKind; tabs: ReactNode }) 
     <>
       {deployed ? <Hero words={words} sheet={value?.sheet ?? null} /> : null}
       {tabs}
-      <ReadingBoundary reading={reading} shape="plate" className="container">
+      <ReadingBoundary reading={reading} shape="tiles" className="container">
         {(state) => (state ? <Page kind={kind} words={words} reading={state} /> : <NotOnThisNetwork words={words} />)}
       </ReadingBoundary>
     </>

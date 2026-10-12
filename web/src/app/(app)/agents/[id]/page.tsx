@@ -21,7 +21,7 @@ async function Agent({ params }: { params: Params }) {
 
 export default function Page({ params }: { params: Params }) {
   return (
-    <Suspense fallback={<LoadingState shape="plate" className="px-gutter py-10 lg:px-gutter-desktop" label="Reading the agent" />}>
+    <Suspense fallback={<LoadingState shape="page" label="Reading the agent" />}>
       <Agent params={params} />
     </Suspense>
   );

@@ -11,7 +11,7 @@ import { SURFACE } from "./copy";
 function Placeholder() {
   return (
     <div className="container px-gutter pl-page lg:px-gutter-desktop">
-      <LoadingState shape="plate" label={SURFACE.loading} />
+      <LoadingState shape="page" label={SURFACE.loading} />
     </div>
   );
 }

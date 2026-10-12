@@ -60,7 +60,7 @@ export function SurfaceScreen() {
         <h1 className="type-display text-ink">{SURFACE.title}</h1>
         <p className="max-w-(--content-reading) type-body text-ink-secondary">{SURFACE.intro}</p>
       </header>
-      <ReadingBoundary reading={sel.reading} shape="plate" isEmpty={(set) => set.lanes.every((l) => l.markets.length === 0)} empty={{ why: SURFACE.noLive }}>
+      <ReadingBoundary reading={sel.reading} shape="table" isEmpty={(set) => set.lanes.every((l) => l.markets.length === 0)} empty={{ why: SURFACE.noLive }}>
         {() => (
           <>
             <div role="radiogroup" aria-label={SURFACE.assets} className="flex gap-2 overflow-x-auto pb-1">

@@ -23,17 +23,13 @@ import "@/styles/history.css";
 import "@/styles/alerts.css";
 import "./markets.css";
 
+/** The page's own outline while the data layer boots (D-226): the hero beside its ticket, then the lane's cards. */
 function Placeholder() {
   return (
-    <section className="page-hero markets-hero">
-      <div className="container">
-        <div className="hero-grid hero-grid-mini">
-          <div className="hero-chart mh-hero-empty">
-            <LoadingState shape="chart" label={MARKETS.loadingWindows} />
-          </div>
-        </div>
-      </div>
-    </section>
+    <div className="flex flex-col gap-10">
+      <LoadingState shape="hero" label={MARKETS.loadingWindows} />
+      <LoadingState shape="cards" />
+    </div>
   );
 }
 

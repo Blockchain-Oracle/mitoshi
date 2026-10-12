@@ -55,7 +55,7 @@ export function StrategiesScreen() {
           setOpenId(id);
         }} />
       ) : reading.isPending ? (
-        <LoadingState shape="plate" label={S.loading} />
+        <LoadingState shape="tiles" label={S.loading} />
       ) : reading.isError && !payload ? (
         <div role="alert" className="flex flex-col items-center gap-3 rounded-lg border border-hairline bg-surface-1 px-6 py-8 text-center">
           <p className="type-body-strong text-ink">{S.error}</p>

@@ -8,7 +8,7 @@ import type { StockHubProps } from "./StockHubScreen";
 const StockHubScreen = dynamic(() => import("./StockHubScreen").then((m) => m.StockHubScreen), { ssr: false, loading: () => <Wait /> });
 
 function Wait() {
-  return <LoadingState shape="plate" className="px-gutter py-6 lg:px-gutter-desktop" />;
+  return <LoadingState shape="page" />;
 }
 
 export function StockHubPage(props: StockHubProps) {

@@ -8,7 +8,7 @@ import { AGENTS } from "./copy";
 function Placeholder() {
   return (
     <div className="mx-auto w-full max-w-(--content-wide) px-gutter py-8 lg:px-gutter-desktop">
-      <LoadingState shape="plate" label={AGENTS.loading} />
+      <LoadingState shape="page" label={AGENTS.loading} />
     </div>
   );
 }

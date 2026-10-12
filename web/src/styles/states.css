@@ -1,0 +1,39 @@
+/* Loading (D-226). The skeleton is 21st.dev 19999 (animbits "Skeleton Loader") revamped: a surface-2 block with a soft
+ * highlight sweeping across it, in CSS (no motion runtime in a route's first load), still under reduced motion. Shapes
+ * live in `components/states/LoadingState.tsx`; each page's loading boundary draws its own layout, so the content lands
+ * where the placeholder stood. */
+.skel { position: relative; overflow: hidden; background: var(--color-surface-2); }
+.skel::after {
+  content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-ink) 7%, transparent), transparent);
+  animation: skel-sweep 1.5s ease-in-out infinite;
+}
+@keyframes skel-sweep { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .skel::after { display: none; } }
+
+.skel-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.skel-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 640px) { .skel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .skel-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.skel-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 1024px) { .skel-hero { grid-template-columns: minmax(0, 1fr) 400px; } }
+.skel-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-hairline); }
+.skel-row:last-child { border-bottom: 0; }
+.skel-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 12px; }
+
+/* The first-load splash (components/shell/Splash.tsx; the terminal's `.tm-splash`, app-wide). It also leaves on its own
+ * at 4 s, so a page whose script never runs is never stuck under it. */
+.app-splash {
+  position: fixed; inset: 0; z-index: var(--z-modal); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+  background: var(--color-canvas); animation: app-splash-out 0.5s ease-in-out 4s forwards;
+}
+.app-splash[data-leaving] { animation-delay: 0s; }
+@keyframes app-splash-out { to { opacity: 0; visibility: hidden; } }
+.app-splash-mark { width: 88px; height: 88px; color: var(--color-accent); animation: app-splash-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes app-splash-in { from { opacity: 0; scale: 0.9; } }
+.app-splash-word { font: 800 20px/1 var(--font-heading); letter-spacing: 0.12em; color: var(--color-ink); }
+.app-splash-line { width: 160px; height: 44px; overflow: visible; color: var(--color-accent); }
+.app-splash-line path { fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: app-splash-draw 1.8s ease-in-out infinite; }
+@keyframes app-splash-draw { 0% { stroke-dashoffset: 1; opacity: 0.4; } 55% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0.4; } }
+@media (prefers-reduced-motion: reduce) { .app-splash { display: none; } }
+html[data-splash-seen] .app-splash { display: none; }

@@ -33,7 +33,7 @@ export function AgentsScreen() {
         {sort === "inherited" && <p className="max-w-(--content-reading) type-caption text-ink-secondary">{A.inheritedNote}</p>}
       </div>
       {reading.isPending ? (
-        <LoadingState shape="plate" label={A.loading} />
+        <LoadingState shape="table" label={A.loading} />
       ) : reading.isError && !reading.data ? (
         <div role="alert" className="flex flex-col items-center gap-3 rounded-lg border border-hairline bg-surface-1 px-6 py-8 text-center">
           <p className="type-body-strong text-ink">{A.error}</p>

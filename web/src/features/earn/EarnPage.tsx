@@ -7,7 +7,7 @@ import { useDataReady } from "@/providers/data/context";
 function Placeholder() {
   return (
     <div className="container px-gutter py-8 lg:px-gutter-desktop">
-      <LoadingState shape="plate" />
+      <LoadingState shape="page" />
     </div>
   );
 }

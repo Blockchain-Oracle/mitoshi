@@ -53,7 +53,7 @@ export function EdgeScreen() {
   if (!wallet) {
     body = <State {...S.connect} action={<button type="button" onClick={session.connect} className={`${BUTTON} bg-accent-fill text-on-accent`}>{S.connect.action}</button>} />;
   } else if (history === null) {
-    body = <LoadingState shape="plate" label={S.reading} />;
+    body = <LoadingState shape="table" label={S.reading} />;
   } else if (!isOk(history)) {
     body = <State {...S.failed} action={<button type="button" onClick={retry} className={`${BUTTON} border border-hairline text-ink hover:bg-surface-2`}>{S.failed.retry}</button>} />;
   } else if (!value || !report || report.settledRounds === 0) {

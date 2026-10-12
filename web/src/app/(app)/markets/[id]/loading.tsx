@@ -3,5 +3,5 @@
 import { LoadingState } from "@/components/states/LoadingState";
 
 export default function Loading() {
-  return <LoadingState shape="plate" className="px-gutter py-6 lg:px-gutter-desktop" />;
+  return <LoadingState shape="hero" />;
 }

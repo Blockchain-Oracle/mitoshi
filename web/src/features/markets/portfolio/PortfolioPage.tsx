@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { LoadingState } from "@/components/states";
 import { useWalletSession } from "@/lib/wallet-session";
 import { useDataReady } from "@/providers/data/context";
-const Loading = () => <LoadingState shape="plate" className="mx-auto w-full max-w-(--content-reading) px-gutter py-8" />;
+const Loading = () => <LoadingState shape="page" className="mx-auto w-full max-w-(--content-reading)" />;
 const PortfolioScreen = dynamic(() => import("./PortfolioScreen").then((m) => m.PortfolioScreen), { ssr: false, loading: Loading });
 const SignedInPortfolio = dynamic(() => import("./SignedInPortfolio").then((m) => m.SignedInPortfolio), { ssr: false, loading: Loading });
 import "@/styles/ledger-plate.css";

@@ -11,7 +11,7 @@ import { EDGE } from "./copy";
 function Placeholder() {
   return (
     <div className="mx-auto w-full max-w-(--content-wide) px-gutter py-8 lg:px-gutter-desktop">
-      <LoadingState shape="plate" label={EDGE.states.reading} />
+      <LoadingState shape="page" label={EDGE.states.reading} />
     </div>
   );
 }

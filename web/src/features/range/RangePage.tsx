@@ -11,7 +11,7 @@ import "@/styles/prediction-ticket.css";
 function Placeholder() {
   return (
     <div className="container px-gutter pl-page lg:px-gutter-desktop">
-      <LoadingState shape="plate" label={RANGE.band.waiting} />
+      <LoadingState shape="page" label={RANGE.band.waiting} />
     </div>
   );
 }

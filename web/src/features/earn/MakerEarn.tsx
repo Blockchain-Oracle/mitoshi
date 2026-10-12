@@ -33,7 +33,7 @@ export function MakerEarn({ tabs }: { tabs: ReactNode }) {
     <>
       {deployed ? <Hero words={WORDS} sheet={vault ? makerSheet(vault) : null} status={status} /> : null}
       {tabs}
-      <ReadingBoundary reading={reading} shape="plate" className="container">
+      <ReadingBoundary reading={reading} shape="tiles" className="container">
         {(state) => (state ? <Page vault={state} /> : <NotDeployed />)}
       </ReadingBoundary>
     </>

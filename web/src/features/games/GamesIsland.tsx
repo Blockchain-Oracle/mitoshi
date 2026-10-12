@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { LoadingState } from "@/components/states";
 import { useDataReady } from "@/providers/data/context";
 
-const Wait = () => <div className="container py-10"><LoadingState shape="cards" label="Loading" /></div>;
+const Wait = () => <div className="container"><LoadingState shape="page" label="Loading" /></div>;
 const Hub = dynamic(() => import("./GamesHub").then((m) => m.GamesHub), { ssr: false, loading: Wait });
 const Practice = dynamic(() => import("./practice/PracticeStage").then((m) => m.PracticeStage), { ssr: false, loading: Wait });
 
