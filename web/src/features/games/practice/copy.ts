@@ -46,8 +46,8 @@ export const PRACTICE = {
     none: {
       title: "No Window to practise on",
       body: "Practice deals from the venue's live Windows, and right now none has enough time left to run a round. The next roll brings one.",
-      /** S23: overnight and at weekends only the 24/7 Windows run: BTC and ETH on Canton (C6), pre-IPO and baskets (the hub card's same list). */
-      closedBody: (label: string) => `US stocks closed${/^(closed)?$/i.test(label) ? "" : ` · ${label}`}. Practice deals from the 24/7 Windows (BTC, ETH, pre-IPO and baskets) until then, and none has enough time left to run a round right now: a card needs two minutes.`,
+      /** Overnight and at weekends only the 24/7 Windows run (crypto and the 24/7 stocks); a card needs two minutes. */
+      closedBody: "US stocks closed. No 24/7 Window has 2 min left — next roll soon.",
     },
     offline: {
       title: "The venue is not readable",

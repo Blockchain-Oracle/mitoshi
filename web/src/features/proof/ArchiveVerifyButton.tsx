@@ -37,7 +37,6 @@ export function ArchiveVerifyButton({ input, expectedE8 }: { input: ArchiveInput
         {state.kind === "ok" ? <span className="inline-flex items-start gap-1.5 text-ink"><ShieldCheckIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />{state.text}</span> : null}
         {state.kind === "note" ? <span className="text-ink">{state.text}</span> : null}
         {state.kind === "bad" ? <span className="inline-flex items-start gap-1.5 text-warning"><TriangleAlertIcon aria-hidden className="mt-0.5 size-4 shrink-0" />{state.text}</span> : null}
-        {state.kind === "idle" || state.kind === "busy" ? A.how : null}
       </p>
     </div>
   );

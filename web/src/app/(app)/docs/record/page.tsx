@@ -12,7 +12,7 @@ export default function Page() {
       <H2>Proof of a Window</H2>
       <P>Each Window has a proof page (a position&apos;s details link to it): its verdict, its settlement transaction, and both prints with their signers and the transaction that recorded them. &ldquo;Re-verify in this browser&rdquo; reads that transaction from Tempo, takes the signed RedStone packages out of it, and asks the on-chain print verifier for the price itself — the page says whether it matches what the engine recorded. Nothing comes from Mitoshi&apos;s servers in that check. &ldquo;Check against the archive&rdquo; runs the same verifier on the packages Mitoshi archived from RedStone for that instant, apart from the transaction; for a Window that never got a print it shows what the archive held and why the verifier refused it — too few signers at that instant, for example.</P>
       <H2>Proof of demand</H2>
-      <P><A href="/stats">Stats</A> counts the wallets that made a call, straight from the engine&apos;s fills: the calls, what changed hands, what was paid out, the growth by day, the venue&apos;s own counts and the latest calls with their receipts.</P>
+      <P><A href="/stats">Stats</A> counts the wallets that made a call, straight from the engine&apos;s fills: the calls, what changed hands, what was paid out, the growth by day, the venue&apos;s own counts and the latest calls with their receipts. It reads Mitoshi&apos;s index of the engine&apos;s events, refreshed every few minutes, and an independent replay of the chain recounts the same index.</P>
       <Ul
         items={[
           <>The house&apos;s keys (its maker, its taker, the maker vault) are never counted; its own fills are shown apart.</>,

@@ -34,12 +34,10 @@ export const PROOF = {
   verified: (price: string, n: number) => `Verified now: ${price} from ${n} signers — the same price the engine recorded.`,
   differs: (price: string) => `The verifier answers ${price}, which differs from the recorded print.`,
   failed: (why: string) => `Re-verification didn't complete: ${why}`,
-  how: "How: eth_getTransactionByHash → decode recordPrint(market, which, proof) → eth_call verifyPrint(proof, query) on the verifier.",
   /** G-10: the same check on the packages ops archived for the instant, apart from the record transaction. */
   archive: {
     button: "Check against the archive",
     checking: "Reading the archive and asking the verifier…",
-    how: "How: the RedStone packages archived for this instant (/api/index/archive) → the verifier's payload → eth_call verifyPrint on the same verifier.",
     matches: (price: string, n: number) => `The archive agrees: ${price} from ${n} signers — the same packages the engine verified.`,
     wouldPrint: (price: string, n: number) => `The archive's packages verify now: ${price} from ${n} signers.`,
     refused: (n: number, reason: string) => `The archive holds ${n} ${n === 1 ? "package" : "packages"} for this instant, and the verifier refuses ${n === 1 ? "it" : "them"}: ${reason}.`,
