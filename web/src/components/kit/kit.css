@@ -33,6 +33,10 @@
   --ow-r-pill: var(--radius-full);
   --ow-spring: var(--ease-drawer);
   --ow-flip: 120ms;
+}
+/* The faces resolve where next/font's variables live, on <body> (styles/base.css, R4-0): declared on :root they
+ * computed to nothing, and every `font:` shorthand that read them fell back to the parent's size and weight. */
+body {
   --ow-font-display: var(--font-heading);
   --ow-font-body: var(--font-body);
   --ow-font-axis: var(--font-data);
@@ -233,6 +237,31 @@ button.kit-capital-chip:focus-visible { outline: 2px solid var(--color-accent); 
 .kit-rail:not([data-at-start]) { --kit-fade-start: var(--kit-fade); }
 .kit-rail:not([data-at-end]) { --kit-fade-end: var(--kit-fade); }
 .kit-rail:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); border-radius: var(--radius-md); }
+
+/* ── CountdownRing: the data ring face, sized, with the time left inside in the figures' face ─────────────────── */
+.kit-ring { position: relative; display: inline-grid; flex: none; place-items: center; }
+.kit-ring[data-size="sm"] { width: 28px; height: 28px; }
+.kit-ring[data-size="md"] { width: 44px; height: 44px; }
+.kit-ring[data-size="lg"] { width: 64px; height: 64px; }
+.kit-ring-left { font: 700 11px/1 var(--font-data); font-variant-numeric: tabular-nums; color: var(--ow-ink); }
+.kit-ring[data-size="sm"] .kit-ring-left { font-size: 8px; }
+.kit-ring[data-size="lg"] .kit-ring-left { font-size: 14px; }
+
+/* ── ShareCharm: the share card as DOM — the cream receipt share-png.ts draws, tilted, in either theme ──────────── */
+.kit-charm {
+  position: relative; width: min(100%, 300px); margin-inline: auto; padding: 40px 28px 24px; border-radius: var(--radius-xl);
+  background: var(--receipt-surface); color: var(--receipt-ink); box-shadow: 0 0 0 4px var(--receipt-hairline), var(--receipt-shadow);
+  rotate: var(--kit-tilt, -3deg);
+}
+.kit-charm-punch { position: absolute; top: 18px; left: 24px; width: 12px; height: 12px; border-radius: var(--radius-full); background: var(--color-accent); }
+.kit-charm-call { font: 800 24px/1.05 var(--ow-font-display); letter-spacing: -0.02em; text-transform: uppercase; overflow-wrap: anywhere; }
+.kit-charm-result { margin-top: 10px; font: 800 44px/1 var(--ow-font-display); letter-spacing: -0.03em; color: var(--receipt-down); overflow-wrap: anywhere; }
+.kit-charm[data-win] .kit-charm-result { color: var(--receipt-up); }
+.kit-charm-lines { margin-top: 12px; font: 600 13px/1.45 var(--font-data); opacity: 0.7; }
+.kit-charm-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 20px; }
+.kit-charm-meta { min-width: 0; font: 600 12px/1.35 var(--ow-font-body); color: color-mix(in srgb, var(--receipt-ink) 60%, transparent); }
+.kit-charm-handle { color: var(--receipt-ink); }
+.kit-charm-stamp { flex: none; font: 700 28px/1 var(--font-stamp); color: var(--color-accent); }
 
 @media (prefers-reduced-motion: reduce) {
   .kit-pill, .kit-tab, .kit-tabs-bar, .kit-key, .kit-toggle, .kit-toggle-knob, .kit-capital-seg { transition: none; }

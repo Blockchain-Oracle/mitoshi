@@ -72,6 +72,8 @@ export const SHELL = {
   privacyShow: "Show balances",
   masked: "••••",
   privacyHidden: "Hidden",
+  /** The kit CountdownRing's name for assistive tech ("4:05 left"). */
+  timeLeft: (t: string) => `${t} left`,
   legal: "Legal",
   legalNav: "Docs and legal",
   health: { healthy: "All systems live", degraded: "Running degraded", unreachable: "Venue unreachable", unread: "Checking…" },

@@ -3,8 +3,9 @@
 import { keypadDisplay } from "@cwf/core/input";
 import { ArrowRight, History, Settings, ShieldCheck } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { Card, Eyebrow, FeatureCard, GroupedItem, GroupedList, GroupedToggle, HoldToConfirm, InfiniteSlider, Keypad, Masked, Odometer, PillButton, pillButtonVariants, PrivacyToggle, ScrollRail, SectionHeader, Seal, Sticker, SwipeToConfirm, TextTabPanel, TextTabs, type FeatureTone, type PillTone } from "@/components/kit";
+import { Card, CountdownRing, Eyebrow, FeatureCard, GroupedItem, GroupedList, GroupedToggle, HoldToConfirm, InfiniteSlider, Keypad, Masked, Odometer, PillButton, pillButtonVariants, PrivacyToggle, ScrollRail, SectionHeader, Seal, ShareCharm, Sticker, SwipeToConfirm, TextTabPanel, TextTabs, type FeatureTone, type PillTone } from "@/components/kit";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
+import { nowMs } from "@/lib/clock";
 
 const TONES: PillTone[] = ["accent", "ink", "white", "ghost", "up", "down"];
 const FEATURE_TONES: FeatureTone[] = ["accent", "profit", "surface", "cream", "black", "white"];
@@ -26,6 +27,8 @@ export function KitFixtures() {
   const [typed, setTyped] = useState("");
   const [held, setHeld] = useState(0);
   const [sound, setSound] = useState(true);
+  // Fixture Windows from the page's first render: one with five minutes left, one in its last tenth.
+  const [t0] = useState(() => nowMs());
   return (
     <div className="flex flex-col gap-10">
       <Fixture index="01" title="PillButton">
@@ -151,6 +154,18 @@ export function KitFixtures() {
             <a key={a} href={`#${a}`} aria-current={i === 0 ? "page" : undefined} className={pillButtonVariants({ tone: "white", size: "sm" })}>{a}</a>
           ))}
         </ScrollRail>
+      </Fixture>
+
+      <Fixture index="09" title="CountdownRing · ShareCharm">
+        <div className="flex flex-wrap items-center gap-5">
+          <CountdownRing startMs={t0} endMs={t0 + 300_000} size="sm" />
+          <CountdownRing startMs={t0} endMs={t0 + 300_000} />
+          <CountdownRing startMs={t0 - 55_000} endMs={t0 + 5_000} size="lg" glow />
+        </div>
+        <div className="grid gap-8 py-4 sm:grid-cols-2">
+          <ShareCharm call="BTC UP · 5M" result="+$12.40" win lines={["Entry $67,120.00", "Exit $67,410.00"]} handle="mitoshi.xyz" />
+          <ShareCharm call="TSLA DOWN · 1H" result="−$3.10" win={false} lines={["Entry $243.10", "Mark $244.92"]} />
+        </div>
       </Fixture>
     </div>
   );

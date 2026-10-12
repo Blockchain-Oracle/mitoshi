@@ -37,8 +37,9 @@ Correction (2026-09-29): the plan's §2.2 and the 21st research say "Plex Mono" 
   can lose work in carries `urlKey` (`?d=`), so Back closes it. The `/markets` ticket is the slide-over that becomes the
   **dock column** at `lg:`.
 - **Kit:** every surface builds from `@/components/kit` (PillButton, TextTabs, Card/FeatureCard/Eyebrow, Odometer,
-  Sticker, Seal, SwipeToConfirm, Keypad, InfiniteSlider, Masked, ScrollRail, SectionHeader, the overlay grammar) and
-  `@/components/kit/desk-kit`; `/dev/kit` renders every piece. No second port of a kit piece.
+  Sticker, Seal, SwipeToConfirm, Keypad, InfiniteSlider, Masked, ScrollRail, CountdownRing, ShareCharm, GroupedList,
+  CapitalBar, PositionCard, SectionHeader, the overlay grammar) and `@/components/kit/desk-kit`; `/dev/kit` renders
+  every piece. No second port of a kit piece. An icon-only control carries `aria-label` and the same `title`.
 - **Layers:** one scale, `--z-*` in `styles/tokens.css` (`layer-scale` invariant: no numeric z-index above 10 elsewhere;
   a component's own stack uses 1–10 inside an isolated box).
 - **Dock clearance:** anything that must clear the phone dock reads `--dock-clearance` / `--dock-strip-offset`; a page's

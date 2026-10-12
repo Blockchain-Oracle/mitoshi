@@ -56,6 +56,10 @@
   --receipt-ink: var(--color-cream-ink);
   --receipt-hairline: var(--color-cream-hairline);
   --receipt-strip: var(--color-accent);
+  /* Profit and loss on the cream receipt in either theme: the light palette's inks (tokens.json palette.light), the
+   * same ones the share image draws with (features/share/share-png.ts). */
+  --receipt-up: #2E6B4F;
+  --receipt-down: #C2381F;
   --receipt-radius: var(--radius-md);
   --receipt-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.6), 0 6px 14px -8px rgb(0 0 0 / 0.45);
 
