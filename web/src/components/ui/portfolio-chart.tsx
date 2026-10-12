@@ -89,7 +89,7 @@ export function PortfolioChart({ points, status, labels, onRetry, className }: {
         <div>
           <span className="type-label-micro text-ink-secondary">{labels.title}</span>
           <div className={cn("mt-1 type-data-lg", up ? "text-profit" : "text-loss")} aria-live="polite">
-            {active ? <NumberFlow value={active.value} format={{ style: "currency", currency: "USD", signDisplay: "always", minimumFractionDigits: 2, maximumFractionDigits: 2 }} /> : "—"}
+            {active ? <NumberFlow locales="en-US" value={active.value} format={{ style: "currency", currency: "USD", signDisplay: "always", minimumFractionDigits: 2, maximumFractionDigits: 2 }} /> : "—"}
           </div>
           <div className="mt-1 flex flex-wrap gap-x-3 type-caption numbers text-ink-secondary">
             <span>{active ? day(active.tMs) : ""}</span>

@@ -49,7 +49,7 @@ export function AccountMenu({ open, onOpenChange, side = "bottom" }: AccountMenu
           <span className="wallet-pill-kind">{kind}</span>
           <span className="numbers wallet-pill-addr">{shortAddress(address)}</span>
         </span>
-        <ChevronDown aria-hidden className="size-3.5" />
+        <ChevronDown aria-hidden className="wallet-pill-chevron size-3.5" />
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner side={side} sideOffset={8} align={side === "top" ? "start" : "end"} collisionPadding={12} className="am-positioner">

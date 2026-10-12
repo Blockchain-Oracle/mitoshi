@@ -63,7 +63,7 @@
 .rail-account.sign-in-button { width: 100%; }
 @media (max-width: 1279px) {
   .rail-account .wallet-pill { width: 44px; height: 44px; padding: 0; justify-content: center; }
-  .rail-account .wallet-pill-addr, .rail-account .wallet-pill > svg { display: none; }
+  .rail-account .wallet-pill-addr, .rail-account .wallet-pill-chevron { display: none; }
   .rail-account.sign-in-button { width: 44px; height: 44px; padding: 0; }
   .rail-account .sign-in-label, .rail-account.sign-in-button .sign-in-label { display: none; }
 }
@@ -116,10 +116,12 @@
   .app-topline .sign-in-button { width: 44px; padding: 0; }
   .app-topline .sign-in-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
-/* The wrappers only choose a width; the signed-out button keeps its own box. */
+/* The wrappers only choose a width; the signed-out button keeps its own box. The hides name the span too (R4-0,
+   D-227): `span.top-*` outranked a bare `.top-*`, so the money and the account showed twice beside the rail
+   (Owarine `TopBar`: the balance below xl, the account below md). */
 span.top-money, span.top-account { display: contents; }
-@media (min-width: 1280px) { .top-money { display: none; } }
-@media (min-width: 768px) { .top-account { display: none; } }
+@media (min-width: 1280px) { span.top-money { display: none; } }
+@media (min-width: 768px) { span.top-account, .top-account { display: none; } }
 .money-pill { display: inline-flex; align-items: center; gap: 2px; }
 .money-eye { display: grid; place-items: center; border-radius: var(--radius-full); color: var(--color-ink-secondary); }
 .money-eye:hover { color: var(--color-ink); background: var(--color-surface-2); }
@@ -247,15 +249,14 @@ span.top-money, span.top-account { display: contents; }
 .wallet-pill .wallet-pill-addr { font-size: 11px; color: var(--color-ink-secondary); }
 .rail-account .wallet-pill { gap: 10px; padding: 8px 12px 8px 8px; border: 0; border-radius: 1.25rem; background: color-mix(in oklab, var(--color-rail-active) 55%, transparent); color: var(--color-ink-secondary); }
 .rail-account .wallet-pill:hover { background: var(--color-rail-active); }
-.rail-account .wallet-pill .addr-dot { width: 32px; height: 32px; }
-.rail-account .wallet-pill .addr-dot::after { inset: 10px; }
-.rail-account .wallet-pill > svg { margin-left: auto; }
-@media (max-width: 1279px) { .rail-account .wallet-pill-id { display: none; } .rail-account .wallet-pill .addr-dot { width: 26px; height: 26px; } .rail-account .wallet-pill .addr-dot::after { inset: 8px; } }
+.rail-account .wallet-pill-chevron { margin-left: auto; }
+/* The compact rail's account is the marble, centred (this rule's padding outranked the 44 px box above). */
+@media (max-width: 1279px) { .rail-account .wallet-pill-id { display: none; } .rail-account .wallet-pill { padding: 0; } }
 .top-account .wallet-pill-kind { display: none; }
 /* The phone's account is the marble alone (Owarine `TopBar`; R4-0, D-227): the address and chevron ran the signed-in
-   top line ~60 px past a 375 px screen. */
+   top line ~60 px past a 375 px screen. The chevron is named, not `> svg`: the marble is an svg too. */
 .top-account .wallet-pill { width: 44px; height: 44px; padding: 0; justify-content: center; border: 0; }
-.top-account .wallet-pill-id, .top-account .wallet-pill > svg { display: none; }
+.top-account .wallet-pill-id, .top-account .wallet-pill-chevron { display: none; }
 .top-account .wallet-pill-avatar { width: 36px; height: 36px; }
 
 /* P0 (D-222/D-223), Owarine 90a91d71 AppRail and FloatingDock: Docs · Legal at the rail's foot; the dock's centre seal. */

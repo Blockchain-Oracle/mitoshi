@@ -141,7 +141,7 @@ export function ReplayDrawer({ open, onOpenChange, episode, finalPnl }: { open: 
           <div>
             <p className="tm-card-title">{realized ? TERMINAL.replay.realized : TERMINAL.replay.unrealized}</p>
             <span className={`tm-balance-figure ${pnl >= 0 ? "is-up" : "is-down"}`}>
-              <NumberFlow value={pnl} format={{ style: "currency", currency: "USD", signDisplay: "always", minimumFractionDigits: 2, maximumFractionDigits: realized ? 2 : 4 }} />
+              <NumberFlow locales="en-US" value={pnl} format={{ style: "currency", currency: "USD", signDisplay: "always", minimumFractionDigits: 2, maximumFractionDigits: realized ? 2 : 4 }} />
             </span>
           </div>
           <canvas ref={canvas} className="tm-replay-canvas" role="img" aria-label={TERMINAL.replay.canvas} />

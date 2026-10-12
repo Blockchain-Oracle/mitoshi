@@ -92,7 +92,7 @@ export function HeaderAccount({ placement = "top" }: { placement?: AccountPlacem
         <span className="wallet-pill-kind">{session.kind ? ACCOUNT.kinds[session.kind] : ACCOUNT_MENU.open}</span>
         <span className="numbers wallet-pill-addr">{shortAddress(session.address)}</span>
       </span>
-      <ChevronDown aria-hidden className="size-3.5" />
+      <ChevronDown aria-hidden className="wallet-pill-chevron size-3.5" />
     </button>
   );
   if (rail) {

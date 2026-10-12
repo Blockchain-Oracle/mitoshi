@@ -90,8 +90,9 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const sessionView = useSessionView();
   // A paused lane says why on the chip (S6): a corporate action, a halt, no signed source.
   const laneNote = useLaneNote(symbol, s.win.lane);
-  // Signed in but neither one-tap path on: every tap would prompt. The card says so and arms in one passkey prompt.
-  const needsArm = session.isConnected && !tapArmed && sessionView.status !== "armed";
+  // Signed in but neither one-tap path on: every tap would prompt. The card says so and arms in one passkey prompt. A
+  // browser wallet signs each call itself and can never arm (D-140), so it gets no card with a dead button (R4-0).
+  const needsArm = session.isConnected && sessionView.status !== "not-passkey" && !tapArmed && sessionView.status !== "armed";
   const chartHandle = useRef<ChartHandle | null>(null);
   const market = s.market;
   const [pays, setPays] = useState("—");

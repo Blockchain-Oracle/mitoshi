@@ -71,6 +71,11 @@ DEMO's paper History, the unpriced pill's clock, the Window countdown pinned wit
 chip, a 44 px Sign in, the palette's query reset and idle preload; back-chevron parents; toasts on their own layer and
 under the top line; the 404 (status 404) and crashes in the shell; the games' how-to and settings plates. Not done, on
 purpose: the button sub's "· max $X" stays — it is the book's depth cap, not the stack's spend cap.
+R4-0 signed-in pass (a read-only EIP-6963 test wallet on the dev server): the marble shows in the phone top line and
+the compact rail (`> svg` had hidden it with the chevron — an empty 44 px button), the money and the account no longer
+show twice beside the rail (`span.top-*` outranked the hides), a browser wallet gets no one-tap card with a dead button,
+the shortest phones get the card as its button alone and the stack centres between the header and the controls, and
+every rolling dollar figure says "$" in any locale (NumberFlow read "US$" under en-GB).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on

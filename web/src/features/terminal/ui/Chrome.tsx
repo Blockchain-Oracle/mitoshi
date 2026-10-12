@@ -17,6 +17,8 @@ import { priceDecimals } from "../chart/engine";
 import { TERMINAL } from "../copy";
 import { windowChips, type TerminalLane } from "../pick-window";
 
+// NumberFlow formats in the browser's locale unless told: en-GB read "US$997,888.48", two characters wider than the
+// "$" every other figure in the app shows (R4-0, D-227), so each one here says en-US.
 const USD = (dp: number) => ({ style: "currency", currency: "USD", minimumFractionDigits: dp, maximumFractionDigits: dp }) as const;
 const COMPACT = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 });
 
@@ -24,7 +26,7 @@ const COMPACT = new Intl.NumberFormat("en-US", { style: "currency", currency: "U
 function Equity({ value }: { value: number }) {
   return (
     <>
-      <span className="tm-equity-full"><NumberFlow value={value} format={USD(2)} willChange /></span>
+      <span className="tm-equity-full"><NumberFlow locales="en-US" value={value} format={USD(2)} willChange /></span>
       <span className="tm-equity-compact" aria-hidden>{COMPACT.format(value)}</span>
     </>
   );
@@ -37,7 +39,7 @@ export function AssetChip({ asset, name, price, feed, stale, connecting, onOpen 
       <AssetDisc asset={asset} className="tm-disc" />
       <span className="tm-asset-text">
         <span className="tm-asset-price">
-          {price === null ? "—" : <NumberFlow value={price} format={USD(priceDecimals(price))} willChange />}
+          {price === null ? "—" : <NumberFlow locales="en-US" value={price} format={USD(priceDecimals(price))} willChange />}
           <ChevronDown aria-hidden />
         </span>
         <span className="tm-asset-name" data-stale={stale ? "" : undefined}>
@@ -158,7 +160,7 @@ export function ViewPositionPill({ count, roiPct, onOpen }: { count: number; roi
     <button type="button" className="tm-glass tm-view tm-phone" onClick={() => (tapFeedback(), onOpen())}>
       <span className={`tm-pos-side ${tone}`}><Dir aria-hidden strokeWidth={2.75} /></span>
       <span>{TERMINAL.positions.view(count)}</span>
-      {roiPct === null ? <span className="tm-view-dash">—</span> : <NumberFlow value={roiPct / 100} format={{ style: "percent", signDisplay: "always", maximumFractionDigits: 1 }} />}
+      {roiPct === null ? <span className="tm-view-dash">—</span> : <NumberFlow locales="en-US" value={roiPct / 100} format={{ style: "percent", signDisplay: "always", maximumFractionDigits: 1 }} />}
       <ChevronRight aria-hidden className="size-4" />
     </button>
   );

@@ -70,10 +70,17 @@
 }
 .tm-history-title { display: inline-flex; align-items: center; gap: 8px; }
 /* A short chart (R4-0: with the dock under the terminal a 320 × 568 phone leaves ~300 px of chart): the stack goes two
-   by two and sits under the header, and the chart controls keep one row. Everything in the stage is absolute, so its
-   size containment changes no layout. */
+   by two and centres in the band between the header's foot (--tm-head; the stage starts at the top of the screen) and
+   the controls' top (12 px + 40 px up from the floor), and the chart controls keep one row. Everything in the stage is
+   absolute, so its size containment changes no layout. */
 @container tm-stage (max-height: 380px) {
   .tm-stage .tm-stack { grid-template-columns: repeat(4, auto); }
-  .tm-stage .tm-stack-slot { top: max(50%, calc(var(--tm-head, 0px) + 41px)); }
+  .tm-stage .tm-stack-slot { top: calc((var(--tm-head, 0px) + 100cqh - 52px) / 2); }
+}
+/* Signed in, not yet one-tap, on the shortest phones (320 × 568): the card is its button alone — the hint wrapped to
+   three lines and took the chart's last 64 px, so the stack sat on the controls. The button's title says the rest. */
+@media (max-width: 767px) and (max-height: 600px) {
+  .tm-side .tm-arm { padding: 0; border: 0; background: none; }
+  .tm-side .tm-arm .tm-field-hint { display: none; }
 }
 @container tm-stage (max-width: 340px) { .tm-stage .tm-controls { gap: 2px; } }
