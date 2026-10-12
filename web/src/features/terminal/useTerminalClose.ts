@@ -96,7 +96,7 @@ export function useTerminalClose() {
     const pnl = fresh.value.proceedsBase - costShare;
     settlePaper(
       p.id.slice(2),
-      { kind: partial ? "reduce" : why === "trail" ? "trail" : "close", asset: p.asset, side: p.side, intervalSec: p.intervalSec, costBase: costShare.toString(), pnlBase: pnl.toString(), openedAtMs: p.openedAtMs, closedAtMs: Date.now() },
+      { kind: partial ? "reduce" : why === "trail" ? "trail" : "close", asset: p.asset, side: p.side, intervalSec: p.intervalSec, costBase: costShare.toString(), pnlBase: pnl.toString(), openedAtMs: p.openedAtMs, closedAtMs: Date.now(), expirySec: p.expirySec },
       partial ? { contractsRaw: p.heldRaw - sell, costBase: p.costBase - costShare } : undefined,
     );
     closeFeedback(Number(pnl));

@@ -32,6 +32,14 @@ describe("paper history rows", () => {
     expect(rows.map((r) => r.outcome)).toEqual(["win", "win", "loss", "void", "void"]);
   });
 
+  it("times the row at the Window's close, as a wallet row is — a settle recorded on the next visit keeps it", () => {
+    const [late, older] = paperRows([trade({ kind: "settle", closedAtMs: 9_000_000, expirySec: 1_800 }), trade({ closedAtMs: 2_500_999 })]);
+    expect(late!.expirySec).toBe(1_800);
+    expect(late!.settledAtMs).toBe(9_000_000);
+    // Stored before the Window's close was kept: when it closed.
+    expect(older!.expirySec).toBe(2_500);
+  });
+
   it("counts streaks over settled verdicts only, as the wallet's history does", () => {
     const at = (closedAtMs: number, kind: PaperTrade["kind"], pnlBase: string) => trade({ id: `${M}:up:1:${closedAtMs}`, kind, pnlBase, closedAtMs });
     // Newest first, as demo.ts keeps them: win, close, win, loss.

@@ -35,6 +35,8 @@ export interface PaperTrade {
   closedAtMs: number;
   /** A settle on a voided Window (it paid half a dollar a contract): neither a win nor a loss. */
   voided?: boolean;
+  /** The Window's close, which the history row shows as the wallet's rows do (a settle can be recorded long after it). */
+  expirySec?: number;
 }
 
 interface DemoState {
@@ -57,6 +59,12 @@ const isPosition = (p: unknown): p is PaperPosition => {
   return typeof x?.id === "string" && typeof x.marketId === "string" && (x.side === "up" || x.side === "down") && /^\d+$/.test(x.contractsRaw ?? "") && /^\d+$/.test(x.costBase ?? "");
 };
 
+/** A stored paper trade the history can read: its money in base units, as integer strings. */
+const isTrade = (t: unknown): t is PaperTrade => {
+  const x = t as PaperTrade;
+  return typeof x?.id === "string" && /^\d+$/.test(x.costBase ?? "") && /^-?\d+$/.test(x.pnlBase ?? "");
+};
+
 function hydrate(): void {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
@@ -67,7 +75,7 @@ function hydrate(): void {
     state = {
       balanceBase: typeof p.balanceBase === "string" && /^-?\d+$/.test(p.balanceBase) ? p.balanceBase : INITIAL.balanceBase,
       positions: Array.isArray(p.positions) ? p.positions.filter(isPosition) : [],
-      history: Array.isArray(p.history) ? p.history.filter((t): t is PaperTrade => typeof t?.id === "string").slice(0, HISTORY_CAP) : [],
+      history: Array.isArray(p.history) ? p.history.filter(isTrade).slice(0, HISTORY_CAP) : [],
     };
   } catch {
     state = INITIAL;

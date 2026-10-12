@@ -45,11 +45,13 @@
 
 /* S22 (RV-16): the stack sits top-centre, under the notch. R4-0 (D-227): on the toast layer, above sheets and modals
    (a toast fired from an open sheet rendered under its scrim); on a phone under the sticky top line, and on the
-   terminal under its header (`--tm-head`, published by TerminalScreen), so it never covers the balance or the account. */
+   terminal under its header (`--tm-head`, published by TerminalScreen), so it never covers the balance or the account.
+   A terminal Next keeps for Back counts only on screen: hidden on its own node, or under its kept group's (the island
+   route's toasts sat 6rem down after /trade). */
 .toast-viewport-top { z-index: var(--z-toast); top: calc(env(safe-area-inset-top, 0px) + 12px); }
 @media (max-width: 767px) {
   .toast-viewport-top { top: calc(var(--spacing-topline) + env(safe-area-inset-top, 0px) + 8px); }
 }
 @media (max-width: 1023px) {
-  body:has(.terminal-surface:not([style*="display: none"])) .toast-viewport-top { top: calc(var(--tm-head, 6rem) + 8px); }
+  body:has(.terminal-surface:not([style*="display: none"]):not([style*="display: none"] *)) .toast-viewport-top { top: calc(var(--tm-head, 6rem) + 8px); }
 }

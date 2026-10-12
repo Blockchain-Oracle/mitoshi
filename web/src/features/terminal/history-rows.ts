@@ -32,7 +32,8 @@ export function walletRows(rounds: readonly SettledRound[]): HistoryRow[] {
 /**
  * A paper close (or reduce, or trail) is "closed"; a settle is the Window's verdict — voided, else won when it paid at
  * least its cost (a winning side pays a dollar a contract, never under what it cost), else lost. The paper trade's id is
- * `<marketId>:<side>:<opened>:<closed>`, so the Window comes back out of it.
+ * `<marketId>:<side>:<opened>:<closed>`, so the Window comes back out of it; the row's time is the Window's close, as a
+ * wallet row's is (a trade recorded before it was stored falls back to when it closed).
  */
 export function paperRows(trades: readonly PaperTrade[]): HistoryRow[] {
   return trades.map((t) => {
@@ -40,7 +41,7 @@ export function paperRows(trades: readonly PaperTrade[]): HistoryRow[] {
     const outcome: RoundOutcome = t.kind !== "settle" ? "closed" : t.voided ? "void" : pnlBase >= 0n ? "win" : "loss";
     return {
       key: t.id, marketId: t.id.split(":")[0] ?? t.id, asset: t.asset, up: t.side === "up", outcome, intervalSec: t.intervalSec,
-      stakeBase: BigInt(t.costBase), pnlBase, decimals: PAPER_DECIMALS, settledAtMs: t.closedAtMs, expirySec: Math.floor(t.closedAtMs / 1000),
+      stakeBase: BigInt(t.costBase), pnlBase, decimals: PAPER_DECIMALS, settledAtMs: t.closedAtMs, expirySec: t.expirySec ?? Math.floor(t.closedAtMs / 1000),
     };
   });
 }

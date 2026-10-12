@@ -76,6 +76,10 @@ the compact rail (`> svg` had hidden it with the chevron — an empty 44 px butt
 show twice beside the rail (`span.top-*` outranked the hides), a browser wallet gets no one-tap card with a dead button,
 the shortest phones get the card as its button alone and the stack centres between the header and the controls, and
 every rolling dollar figure says "$" in any locale (NumberFlow read "US$" under en-GB).
+R4-0 spec check: two `:has()` rules still matched a copy hidden on an ancestor (Next keeps a whole route group): /reels
+then the landing hid the landing's footer (`reel.css`), and the island route's toasts sat under a terminal header that
+wasn't there (`toast.css`) — both now skip `[style*="display: none"] *` too, as pitch.css does. A paper trade keeps its
+Window's close, so its history row is timed as a wallet row is, and stored paper history is validated before BigInt.
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on

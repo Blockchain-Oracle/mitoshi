@@ -23,8 +23,10 @@
 }
 
 /* The reference renders no Footer on /feed; the fixed reel would cover it anyway,
- * and leaving it in the tree hands a keyboard a link nobody can see. */
-body:has(.reels-surface:not([style*="display: none"]) .reel-page) .footer {
+ * and leaving it in the tree hands a keyboard a link nobody can see. Only while the reel is on screen (R4-0, D-227): a
+ * copy Next keeps for Back is hidden on its own node or, once the app group itself is kept, on an ancestor — /reels then
+ * the landing hid the landing's footer. */
+body:has(.reels-surface:not([style*="display: none"]):not([style*="display: none"] *) .reel-page) .footer {
   display: none;
 }
 
