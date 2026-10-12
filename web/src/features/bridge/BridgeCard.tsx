@@ -101,7 +101,6 @@ export function BridgeCard({ model: mo, tracker }: { model: BridgeModel; tracker
         <span className="brc-head-title">{BRIDGE.chain[inbound ? "robinhood" : "tempo"]} → {BRIDGE.chain[inbound ? "tempo" : "robinhood"]}</span>
         {badge ? <span className="brc-badge" data-live={live ? "" : undefined}>{badge}</span> : null}
       </header>
-      {links && !links.robinhoodLive && !tracking ? <p className="brc-note">{BRIDGE.notLiveLine}</p> : null}
       <AnimatePresence mode="wait" initial={false}>
         {tracking ? (
           <m.div key="track" initial={reduced ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={reduced ? undefined : { opacity: 0 }} transition={reduced ? { duration: 0 } : FADE}>
@@ -132,6 +131,8 @@ export function BridgeCard({ model: mo, tracker }: { model: BridgeModel; tracker
               <TxCta state={state} action={label(step, mo.ticker, from, amountText)} signer={signer} onConfirm={act} className="brc-cta" />
             )}
             {mo.sideError ? <p className="brc-error" role="alert">{mo.sideError}</p> : null}
+            {/* The not-live line sits under the button (the badge says it above): nothing pushes the CTA down. */}
+            {links && !links.robinhoodLive ? <p className="brc-note">{BRIDGE.notLiveLine}</p> : null}
             {step.kind === "link" && noWalletHere() ? (
               <p className="brc-wallets">
                 <span>{BRIDGE.wallets.note}</span>
