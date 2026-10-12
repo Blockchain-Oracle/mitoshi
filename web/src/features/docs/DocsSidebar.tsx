@@ -2,11 +2,12 @@
 // From 21st 19371 · uiable/sidebar-1 (S20 row: the docs sidebar, a right-edge panel on phones). Revamped: the dummy
 // component list became the docs' sections and pages (`nav.ts`), its buttons real links with the current page from
 // the route, and its card, input and scroll area Mitoshi's tokens and plain elements. Kept: the filter box over the
-// list, grouped sections with sticky headings, the active row's tint.
-import { Search } from "lucide-react";
+// list, grouped sections with sticky headings, the active row's tint. Last: the full guides (the docs site, D-227).
+import { ArrowUpRight, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { DOCS_URL } from "@/lib/docs-url";
 import { DOCS_NAV } from "./nav";
 
 export function DocsSidebar({ onNavigate }: { onNavigate?: () => void }) {
@@ -47,6 +48,15 @@ export function DocsSidebar({ onNavigate }: { onNavigate?: () => void }) {
           })}
         </div>
       ))}
+      <a
+        href={DOCS_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onNavigate}
+        className="flex min-h-touch items-center gap-2 rounded-md border border-hairline px-3 type-body text-ink-secondary hover:bg-surface-1 hover:text-ink"
+      >
+        The full guides <ArrowUpRight aria-hidden className="size-4" />
+      </a>
     </nav>
   );
 }

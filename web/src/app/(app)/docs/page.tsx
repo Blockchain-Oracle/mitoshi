@@ -1,6 +1,8 @@
-// /docs — the introduction (S20, L-20): what Mitoshi is, what is live on Tempo testnet, what is next.
+// /docs — the introduction (S20, L-20): what Mitoshi is, what is live on Tempo testnet, what is next. The full guides
+// are the docs site, linked first as Owarine 90a91d71 links its docs (D-227).
 import type { Metadata } from "next";
 import { A, H1, H2, Lead, Note, P, Ul } from "@/features/docs/Prose";
+import { DOCS_URL } from "@/lib/docs-url";
 
 export const metadata: Metadata = { title: "Docs" };
 
@@ -9,6 +11,7 @@ export default function Page() {
     <>
       <H1>Mitoshi docs</H1>
       <Lead>Mitoshi 見通し — &ldquo;see where it&apos;s going&rdquo; — is a one-screen app for calling where a price closes, on Tempo. These pages document what runs today on Tempo testnet; what comes next is said to be next.</Lead>
+      <P>These are the short pages. <A href={DOCS_URL}>The full guides</A> cover every feature step by step, the architecture, the deployed addresses and dated evidence.</P>
       <Note>Mitoshi runs on Tempo testnet (Moderato). The dollars are testnet pathUSD from the faucet and have no value. Everything else is real: the order books, the signed prints, the settlement and the receipts.</Note>
       <H2>Live on testnet</H2>
       <Ul
