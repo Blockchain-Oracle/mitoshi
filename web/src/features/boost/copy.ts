@@ -59,6 +59,8 @@ export const BOOST = {
     boosted: (x: number) => `${x}× boosted`,
     line: (line: string) => `knocks out at ${line}`,
     lineMark: (line: string, mark: string) => `knocks out at ${line} · the book pays ${mark} now`,
+    // The position card (D-227, Owarine 90a91d71 `PositionCard`).
+    card: { worth: "Worth now", paid: "Paid back", avgIn: "Avg in", invested: "Invested" },
     size: (contracts: string, stake: string, fronted: string) => `${contracts} contracts · ${stake} staked · ${fronted} fronted`,
     knockable: "at the knock-out line — anyone may close it now",
     cashOut: "Cash out",

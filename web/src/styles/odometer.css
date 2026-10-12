@@ -1,0 +1,4 @@
+/* The Odometer (components/data/Odometer.tsx; Owarine 90a91d71 kit, D-227): the data face, tabular, toned by sign. */
+.odometer { display: inline-flex; white-space: nowrap; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.odometer[data-dir="up"] { color: var(--chart-up); }
+.odometer[data-dir="down"] { color: var(--chart-down); }

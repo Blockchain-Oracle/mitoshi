@@ -4,9 +4,11 @@
 // P&L plus what is open now and Y is X over what the range staked plus what is open; the line opens a smoothed
 // cumulative area chart of 64 samples with the range chips 24H · 7D · 30D · All; empty, "No closed trades in this
 // window". Drawn with the shared chart engine's monotone curve (21st 29532, `components/ui/chart-engine`) on the same
-// `useWalletHistory` reading as the history list and /portfolio's record, so the three can't disagree.
+// `useWalletHistory` reading as the history list and /portfolio's record, so the three can't disagree. D-227: that
+// reading is the account's (`useAccountHistory`: the wallet's, the Trading Balance's and the Boosts' rounds), and "open"
+// is the priced positions' P&L and cost plus what sales on still-open Windows already realised.
 import type { Address } from "@cwf/core";
-import { useWalletHistory } from "@cwf/markets/react";
+import { useAccountHistory } from "@cwf/markets/react";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { monotonePath } from "@/components/ui/chart-engine";
@@ -17,6 +19,7 @@ import { usePrivacy } from "@/lib/privacy";
 import { TERMINAL } from "../copy";
 import { money } from "../format";
 import { PNL_RANGES, pnlInRange, rangeRoiBps, type PnlRange } from "../pnl-range";
+import type { PositionsTotals } from "../positions-totals";
 
 const W = 300;
 const H = 88;
@@ -40,16 +43,17 @@ function Curve({ curve }: { curve: bigint[] }) {
   );
 }
 
-export function PnlCard({ wallet, unrealizedBase, openCostBase }: { wallet: Address; unrealizedBase: bigint | null; openCostBase: bigint }) {
+export function PnlCard({ wallet, totals }: { wallet: Address; totals: PositionsTotals }) {
   const masked = usePrivacy();
   const nowMs = useNowMs();
   const [range, setRange] = useState<PnlRange>("24H");
   const [open, setOpen] = useState(false);
-  const reading = useWalletHistory(wallet);
+  const reading = useAccountHistory(wallet);
   const rounds = reading?.ok ? reading.value.rounds : null;
   const figures = rounds && nowMs > 0 ? pnlInRange(rounds, range, nowMs) : null;
-  const total = figures ? figures.realizedBase + (unrealizedBase ?? 0n) : null;
-  const roi = figures && total !== null ? rangeRoiBps(total, figures.stakedBase, unrealizedBase === null ? 0n : openCostBase) : null;
+  const total = figures ? figures.realizedBase + totals.realizedBase + (totals.pnlBase ?? 0n) : null;
+  // Over what the range staked, what the open Windows' sales were costed at, and what the priced positions cost.
+  const roi = figures && total !== null ? rangeRoiBps(total, figures.stakedBase + totals.realizedCostBase, totals.pnlBase === null ? 0n : totals.costBase) : null;
   const label = TERMINAL.pnl.ranges[range];
   const figure = total === null ? null : masked ? SHELL.masked : `${money(total, true)}${roi === null ? "" : ` (${roi >= 0 ? "+" : "−"}${(Math.abs(roi) / 100).toFixed(2)}%)`}`;
   return (

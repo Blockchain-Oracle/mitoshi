@@ -2,6 +2,7 @@
 // Ported from Masayume 68f7a09:web/src/features/vault/{VaultBetRows,VaultBetRow}.tsx — the Windows the vault holds for
 // the owner, in the portfolio's bet-row grammar; plus what Masayume showed on /claims ("settle into Trading Balance"),
 // here as the row's own state, because the settler pays every settled Window into the balance with no claim (D-155).
+// D-227: "Staked" is what the contracts still held cost (average cost), not cost less proceeds.
 import type { Reading, VaultBet } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import { formatBaseUnits } from "@cwf/core/units";
@@ -31,7 +32,7 @@ export function VaultBetRows({ bets, nowSec }: { bets: Reading<VaultBet[]> | nul
             <div className="flex min-w-0 flex-col">
               <span className="type-body-strong text-ink">{bet.asset} · {formatCadence(bet.intervalSec)}</span>
               <span className="numbers type-caption text-ink-secondary">
-                {bet.upRaw > 0n ? `▲ ${contracts(bet.upRaw)} ` : ""}{bet.downRaw > 0n ? `▼ ${contracts(bet.downRaw)} ` : ""}{VAULT.bets.staked(usd(bet.costBase - bet.proceedsBase > 0n ? bet.costBase - bet.proceedsBase : 0n))}
+                {bet.upRaw > 0n ? `▲ ${contracts(bet.upRaw)} ` : ""}{bet.downRaw > 0n ? `▼ ${contracts(bet.downRaw)} ` : ""}{VAULT.bets.staked(usd(bet.upRaw + bet.downRaw > 0n ? bet.costUpBase + bet.costDownBase : bet.costBase))}
               </span>
             </div>
             <span className="type-caption text-ink" role="status">{statusOf(bet, nowSec)}</span>

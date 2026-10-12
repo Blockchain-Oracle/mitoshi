@@ -2,6 +2,7 @@
 /**
  * Your record as a curve (21st 29532 via `components/ui/portfolio-chart`): realised P&L summed over every settled Window
  * of the fills projection, in settlement order — the same reading the history journal lists, so they can't disagree.
+ * D-227: that reading is the account's (`useAccountHistory`: wallet, Trading Balance and Boost rounds).
  */
 import type { Reading, WalletHistory } from "@cwf/core";
 import { isOk } from "@cwf/core";

@@ -112,7 +112,7 @@ export const PARLAY = {
     claimed: (amount: string) => `Claimed ${amount} to your wallet.`,
     settled: "Leg settled.",
     lost: "One leg settled against you. The ticket is dead, stake lost.",
-    voidedNote: "A Window voided, so the ticket is void. Your stake is back in your wallet.",
+    voidedNote: "Void · stake returned",
     paidNote: "Paid out to your wallet.",
     owed: (amount: string) => `${amount} is held for you (your receive policy refused it) — collect it once it allows transfers.`,
   },

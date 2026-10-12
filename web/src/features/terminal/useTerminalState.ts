@@ -82,7 +82,9 @@ export function useTerminalState(symbol: string) {
   const cashBase = demoCashBase ?? (walletBase === null && view.availableBase === null ? null : (walletBase ?? 0n) + (view.deployed ? (view.availableBase ?? 0n) : 0n));
 
   const positions = useTerminalPositions(address, win.set);
-  const active = positions.find((p) => p.marketId === market?.marketId) ?? null;
+  // Every position on the Window on screen (D-227: a wallet row, a Trading Balance row and Boosts can share one).
+  const active = useMemo(() => positions.filter((p) => p.marketId === market?.marketId), [positions, market?.marketId]);
+  const lead = active[0] ?? null;
   // What the exit keeper does with the app closed (S24.5): its sales as toasts, costed against the position held.
   useServerExitFeed(view.owner, (marketId, side) => positions.find((p) => p.via === "vault" && p.marketId.toLowerCase() === marketId.toLowerCase() && p.side === side)?.costBase ?? null);
 
@@ -95,11 +97,11 @@ export function useTerminalState(symbol: string) {
     if (line !== null) out.push({ kind: "line", price: line, label: "Line" });
     const signed = e8(signedE8);
     if (signed !== null) out.push({ kind: "signed", price: signed, label: "Signed" });
-    if (active?.entrySpot) out.push({ kind: "entry", price: active.entrySpot, label: "Entry" });
-    if (active?.trailStop) out.push({ kind: "trail", price: active.trailStop, label: "Trail" });
+    if (lead?.entrySpot) out.push({ kind: "entry", price: lead.entrySpot, label: "Entry" });
+    for (const p of active) if (p.trailStop) out.push({ kind: "trail", price: p.trailStop, label: "Trail" });
     return out;
-  }, [openingRaw, signedE8, active]);
-  overlay.current = levels.length ? { pnl: null, pnlText: "", entry: active?.entrySpot ?? null, levels } : null;
+  }, [openingRaw, signedE8, active, lead]);
+  overlay.current = levels.length ? { pnl: null, pnlText: "", entry: lead?.entrySpot ?? null, levels } : null;
 
   // The address and the tab say which market; the cookie brings `/trade` back here next time.
   useEffect(() => {

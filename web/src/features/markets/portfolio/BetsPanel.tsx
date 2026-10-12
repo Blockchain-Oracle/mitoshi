@@ -2,9 +2,11 @@
 /**
  * Your bets (Ported from Masayume 68f7a09:web/src/features/markets/portfolio/BetsPanel.tsx): one plate, two tabs —
  * Open (every position still running, with its cash-out) and History (every settled Window from the fill projection)
- * — eight rows a page with a pager, never an endless scroll.
+ * — eight rows a page with a pager, never an endless scroll. D-227: Open lists the wallet's and the Trading Balance's
+ * bets valued by the terminal's engine (`usePortfolioPositions`); History is the account's (Trading Balance and Boost
+ * rounds too).
  */
-import type { Address, OpenPosition, Reading } from "@cwf/core";
+import type { Address, Reading } from "@cwf/core";
 import type { WalletHistory } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import { formatBaseUnits } from "@cwf/core/units";
@@ -20,16 +22,26 @@ import { cn } from "@/lib/utils";
 import { JOURNAL, PORTFOLIO } from "../copy";
 import { SIDE_WORD } from "../side-styles";
 import { Pager } from "../Pager";
+import type { useTerminalClose } from "@/features/terminal/useTerminalClose";
+import type { PositionValue } from "@/features/terminal/usePositionValue";
 import { BetRow } from "./BetRow";
+import type { BetGroup } from "./usePortfolioPositions";
 
 type Tab = "open" | "history";
 const PAGE = 8;
 
-function OpenList({ positions, wallet }: { positions: OpenPosition[]; wallet: Address }) {
-  const pager = usePager(positions, PAGE);
+/** The Open tab's rows and what values them (the page owns the valuers, so every row is valued on any page). */
+export interface OpenBets {
+  groups: BetGroup[];
+  values: ReadonlyMap<string, PositionValue>;
+  closer: ReturnType<typeof useTerminalClose>;
+}
+
+function OpenList({ open, wallet }: { open: OpenBets; wallet: Address }) {
+  const pager = usePager(open.groups, PAGE);
   return (
     <>
-      <ul className="bets-list">{pager.slice.map((p) => <BetRow key={p.marketId} position={p} wallet={wallet} />)}</ul>
+      <ul className="bets-list">{pager.slice.map((g) => <BetRow key={g.key} legs={g.legs} values={open.values} wallet={wallet} closer={open.closer} />)}</ul>
       <Pager pager={pager} />
     </>
   );
@@ -39,7 +51,7 @@ function OpenList({ positions, wallet }: { positions: OpenPosition[]; wallet: Ad
 function HistoryList({ history }: { history: WalletHistory }) {
   const usd = (b: bigint, d: number) => `$${formatBaseUnits(b < 0n ? -b : b, d, { minDp: 2, maxDp: 2 })}`;
   const entries: JournalEntry[] = history.rounds.map((r) => ({
-    id: r.marketId,
+    id: `${r.source}:${r.marketId}`,
     atMs: r.settledAtMs ?? r.expirySec * 1000,
     asset: `${r.asset} · ${formatCadence(r.intervalSec)}`,
     side: r.sidesTraded.map((o) => SIDE_WORD[OUTCOME_TO_SIDE[o]]).join(" + "),
@@ -49,14 +61,15 @@ function HistoryList({ history }: { history: WalletHistory }) {
     outcome: r.outcome as JournalEntry["outcome"],
     outcomeLabel: PORTFOLIO.outcome[r.outcome] ?? r.outcome.toUpperCase(),
     formula: PORTFOLIO.pnlFormula,
-    href: txUrl(r.entryTxHash, webEnv.markets.network),
+    // A Trading Balance or Boost round has no single transaction of the wallet's to link (the vault or reserve traded).
+    href: r.source === "wallet" ? txUrl(r.entryTxHash, webEnv.markets.network) : undefined,
   }));
   return <TradeJournal entries={entries} labels={JOURNAL} />;
 }
 
-export function BetsPanel({ wallet, positions, history, index, retry }: { wallet: Address; positions: Reading<OpenPosition[]> | null; history: Reading<WalletHistory> | null; index: string; retry: () => void }) {
+export function BetsPanel({ wallet, positions, open, history, index, retry }: { wallet: Address; positions: Reading<unknown> | null; open: OpenBets; history: Reading<WalletHistory> | null; index: string; retry: () => void }) {
   const [tab, setTab] = useState<Tab>("open");
-  const openCount = positions?.ok ? positions.value.length : null;
+  const openCount = positions?.ok ? open.groups.length : null;
   const settledCount = history?.ok ? history.value.rounds.length : null;
   const tabButton = (t: Tab, label: string, count: number | null) => (
     <button type="button" role="tab" aria-selected={tab === t} className={cn("bets-tab min-h-touch", tab === t && "bets-tab--on")} onClick={() => setTab(t)}>
@@ -73,8 +86,8 @@ export function BetsPanel({ wallet, positions, history, index, retry }: { wallet
       </div>
       <div className="bets-plate" role="tabpanel">
         {tab === "open" ? (
-          <ReadingBoundary reading={positions} shape="row" retry={retry} isEmpty={(v) => v.length === 0} empty={{ why: PORTFOLIO.noBets, nextAction: { label: PORTFOLIO.firstCall, href: "/markets" } }}>
-            {(v) => <OpenList positions={v} wallet={wallet} />}
+          <ReadingBoundary reading={positions} shape="row" retry={retry} isEmpty={() => open.groups.length === 0} empty={{ why: PORTFOLIO.noBets, nextAction: { label: PORTFOLIO.firstCall, href: "/markets" } }}>
+            {() => <OpenList open={open} wallet={wallet} />}
           </ReadingBoundary>
         ) : (
           <ReadingBoundary reading={history} shape="row" retry={retry}>
