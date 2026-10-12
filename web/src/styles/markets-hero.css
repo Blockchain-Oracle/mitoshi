@@ -184,6 +184,12 @@
   text-align: right;
   flex-shrink: 0;
 }
+/* The question column gives way to the countdown, never the reverse (D-226: at 375 px "Settles in" was pushed off). */
+.mh-head-main { flex: 1 1 auto; min-width: 0; }
+@media (max-width: 479px) {
+  .mh-settles-label { font-size: 8px; letter-spacing: 0.12em; }
+  .mh-settles-value { font-size: 20px; }
+}
 
 /* font-mono text-[9px] tracking-[0.16em] uppercase block mb-1 text-gray-600 */
 .mh-settles-label {
@@ -315,4 +321,15 @@
   justify-content: center;
   padding: 24px;
   text-align: center;
+}
+
+/* The foot on a phone (D-226): Room · Alert · Price/Depth on one line, the UP ramp under it at full width. */
+.mh-view { flex: none; }
+@media (max-width: 639px) {
+  .hero-chart-foot { flex-wrap: wrap; row-gap: 10px; padding: 10px 14px; }
+  .mh-foot-actions { flex: 1 1 100%; flex-wrap: nowrap; }
+  .mh-foot-actions .mh-room { white-space: nowrap; }
+  .mh-view { margin-left: auto; }
+  .hero-chart-foot .ramp { flex: 1 1 100%; }
+  .hero-chart-foot .ramp .bar { flex: 1; width: auto; }
 }

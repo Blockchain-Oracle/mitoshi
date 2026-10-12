@@ -48,7 +48,7 @@ export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: H
   return (
     <div className="hero-chart">
       <div className="hero-chart-head">
-        <div>
+        <div className="mh-head-main">
           <div className="mh-asset-row">
             <AssetDisc asset={market.asset} className="mh-asset-badge" />
             <span className="mh-asset-label">{market.asset}</span>
@@ -58,9 +58,6 @@ export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: H
           <HeroQuestion asset={market.asset} openingRaw={openingRaw} currentRaw={latestRaw} />
         </div>
         <HeroSettlesIn tradingStartSec={market.tradingStartSec} expirySec={market.expirySec} intervalSec={market.intervalSec} />
-      </div>
-      <div className="flex justify-end px-1">
-        <SegmentedControl label={DEPTH.toggle} value={view} onValueChange={setView} options={[{ value: "price", label: DEPTH.price }, { value: "depth", label: DEPTH.depth }]} />
       </div>
       <div className="hero-chart-canvas">
         <div className="mh-chart-fill">
@@ -83,6 +80,7 @@ export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: H
             <Bell className="mh-room-icon" aria-hidden />
             {HERO_HEAD.alert}
           </button>
+          <SegmentedControl className="mh-view" label={DEPTH.toggle} value={view} onValueChange={setView} options={[{ value: "price", label: DEPTH.price }, { value: "depth", label: DEPTH.depth }]} />
         </div>
         <span className="ramp" aria-label={HERO_HEAD.upCosts(cents(book.upCents))}>
           <span>{HERO_HEAD.rampUp}</span>

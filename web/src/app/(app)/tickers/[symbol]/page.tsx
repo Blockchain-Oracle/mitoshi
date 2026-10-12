@@ -1,4 +1,4 @@
-// /stocks/<SYMBOL> (P5, D-224) — one spelling (upper case; any other case redirects to it), an unlisted symbol is a real
+// /tickers/<SYMBOL> (P5, D-224; Owarine's route since D-226, which retired /stocks) — one spelling (upper case; any other case redirects to it), an unlisted symbol is a real
 // 404. The ticker's headlines are read here at request time from Finnhub's company wire (`/news`'s own source), so
 // the island opens with them; prices, the session and the Windows stream in client-side.
 import { isStockSymbol, TICKERS } from "@cwf/core";
@@ -24,7 +24,7 @@ export default async function StockPage({ params }: Props) {
   const { symbol } = await params;
   const upper = symbol.toUpperCase();
   if (!isStockSymbol(upper)) notFound();
-  if (symbol !== upper) redirect(`/stocks/${upper}`);
+  if (symbol !== upper) redirect(`/tickers/${upper}`);
   await connection();
   const headlinesOff = !finnhubConfigured();
   const feed = headlinesOff ? null : await companyNews(upper);

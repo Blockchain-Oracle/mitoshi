@@ -2,7 +2,7 @@
  * A pathname → its route template for field metrics (D-071): ids, addresses and symbols collapse to `[param]` so p75s
  * group by page, not by market or wallet. Unknown shapes fall back to the path with id-like segments replaced.
  */
-const PARAM_AFTER: Record<string, string> = { markets: "[id]", stocks: "[symbol]", themes: "[slug]", launch: "[token]", u: "[address]", proof: "[market]", duel: "[matchId]" };
+const PARAM_AFTER: Record<string, string> = { markets: "[id]", tickers: "[symbol]", themes: "[slug]", launch: "[token]", u: "[address]", proof: "[market]", duel: "[matchId]" };
 const FIXED = new Set(["create", "stablecoin", "meme", "edge", "practice", "history", "rank", "lucky", "range", "moonshot", "line-rider", "candle-hop"]);
 
 export function routeTemplate(pathname: string): string {

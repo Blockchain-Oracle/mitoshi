@@ -30,16 +30,16 @@ function pageRoutes(dir = APP_DIR): string[] {
 const OFF_NAV = new Set(["/", "/privacy", "/terms", "/contact", "/native-auth"]);
 
 describe("navigation registry", () => {
-  it("keeps Owarine's rail places and phone dock (D-223): the dock is Trade · Markets · [seal] · Portfolio · More", () => {
-    expect(RAIL_NAV.map((i) => i.name)).toEqual(["Trade", "Markets", "Stocks", "Games", "Portfolio", "Leaderboard"]);
+  it("keeps Owarine's six places (D-226: no Stocks place) and phone dock: Trade · Markets · [seal] · Portfolio · More", () => {
+    expect(RAIL_NAV.map((i) => i.name)).toEqual(["Trade", "Markets", "Portfolio", "Games", "Automate", "Leaderboard"]);
     expect(DOCK_NAV.map((i) => i.name)).toEqual(["Trade", "Markets", "Portfolio"]);
   });
 
-  it("gives every Everything destination exactly one home; rail places the dock leaves out are listed there", () => {
+  it("gives every More destination exactly one home, never a place again", () => {
     const ids = EVERYTHING_SECTIONS.flatMap((s) => s.items.map((i) => i.id));
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids.filter((id) => DOCK_NAV.some((p) => p.id === id))).toEqual([]);
-    expect(ids.filter((id) => RAIL_NAV.some((p) => p.id === id)).sort()).toEqual(["games", "leaderboard", "stocks"]);
+    expect(ids.filter((id) => RAIL_NAV.some((p) => p.id === id))).toEqual([]);
+    expect(Object.values(NAV_ITEMS).some((i) => i.href.startsWith("/stocks"))).toBe(false);
   });
 
   it("gives every navigable route a nav home", () => {
@@ -49,8 +49,10 @@ describe("navigation registry", () => {
 
   it("maps nested routes to their top-level destinations and knows the top level", () => {
     expect(isActiveNavItem("/games/range", NAV_ITEMS.games)).toBe(true);
-    expect(isActiveNavItem("/games/range", NAV_ITEMS.gamesHub)).toBe(false);
     expect(isActiveNavItem("/markets/0xabc", NAV_ITEMS.markets)).toBe(true);
+    expect(isActiveNavItem("/tickers/TSLA", NAV_ITEMS.markets)).toBe(true);
+    expect(isActiveNavItem("/agents/7", NAV_ITEMS.automate)).toBe(true);
+    expect(isActiveNavItem("/u/0xabc", NAV_ITEMS.leaderboard)).toBe(true);
     expect(isActiveNavItem("/trade/BTC", NAV_ITEMS.trade)).toBe(true);
     expect(isActiveNavItem("/trade-from-x", NAV_ITEMS.trade)).toBe(false);
     expect(isActiveNavItem("/portfolio/edge", NAV_ITEMS.portfolio)).toBe(false);
@@ -65,7 +67,7 @@ describe("navigation registry", () => {
     expect(items.filter((i) => !i.external).every((i) => i.href.startsWith("/"))).toBe(true);
   });
 
-  it("searches Everything by name, description and keywords", () => {
+  it("searches More by name, description and keywords", () => {
     expect(searchNav(EVERYTHING_SECTIONS.flatMap((s) => s.items), "revoke").map((i) => i.id)).toEqual(["account"]);
     expect(searchNav([NAV_ITEMS.bridge], "robinhood")).toHaveLength(1);
     expect(searchNav([NAV_ITEMS.bridge], "zzz")).toHaveLength(0);

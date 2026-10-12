@@ -6,7 +6,8 @@
 // registry is flat); options ≥ 44 px, input 16 px. Loaded on first open (lazy island, plan §3.1).
 import { Autocomplete } from "@base-ui/react/autocomplete";
 import { Dialog } from "@base-ui/react/dialog";
-import { CornerDownLeft, Search } from "lucide-react";
+import { CRYPTO_SYMBOLS, STOCK_SYMBOLS, TICKERS } from "@cwf/core";
+import { Building2, CandlestickChart, CornerDownLeft, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { EVERYTHING_SECTIONS, RAIL_NAV, searchNav, type NavItem } from "@/components/shell/header/nav-items";
@@ -19,11 +20,24 @@ const GROUPS: { heading: string; items: readonly NavItem[] }[] = [
   ...EVERYTHING_SECTIONS.map((s) => ({ heading: s.name, items: s.items })),
 ];
 
+/** Every listed asset to trade, and each stock's hub (D-226: no Stocks place; Owarine's palette lists the venue's assets).
+ *  Shown once the person types, so the empty palette stays the map of places. */
+const TICKER_GROUPS: { heading: string; items: readonly NavItem[] }[] = [
+  {
+    heading: "Trade",
+    items: [...CRYPTO_SYMBOLS, ...STOCK_SYMBOLS].map((s) => ({ id: `trade-${s}`, name: `${TICKERS[s].name} · ${s}`, href: `/trade/${s}`, description: "Up or Down on the live chart.", icon: CandlestickChart, keywords: s })),
+  },
+  {
+    heading: "Stocks",
+    items: STOCK_SYMBOLS.map((s) => ({ id: `ticker-${s}`, name: TICKERS[s].name, href: `/tickers/${s}`, description: `$${s} · spot, reports, Windows, news.`, icon: Building2, keywords: `${s} stock` })),
+  },
+];
+
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const groups = useMemo(
-    () => GROUPS.map((g) => ({ ...g, items: searchNav(g.items, query) })).filter((g) => g.items.length > 0),
+    () => (query.trim() ? [...GROUPS, ...TICKER_GROUPS] : GROUPS).map((g) => ({ ...g, items: searchNav(g.items, query) })).filter((g) => g.items.length > 0),
     [query],
   );
   const go = (item: NavItem) => {

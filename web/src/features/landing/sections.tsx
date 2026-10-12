@@ -31,7 +31,7 @@ export function Pillars() {
       <div className="grid grid-cols-6 gap-px overflow-hidden rounded-lg border border-hairline bg-hairline">
         {[
           { p: P.markets, href: START, Icon: ChartLine },
-          { p: P.stocks, href: "/stocks", Icon: Building2 },
+          { p: P.stocks, href: "/markets", Icon: Building2 },
         ].map(({ p, href, Icon }) => (
           <Link key={href} href={href} className={`${cell} group col-span-6 md:col-span-3 md:row-span-2`}>
             <span className="flex items-center gap-2 type-label-micro text-ink-secondary"><Icon aria-hidden className="size-4 text-accent" />{p.tag}</span>

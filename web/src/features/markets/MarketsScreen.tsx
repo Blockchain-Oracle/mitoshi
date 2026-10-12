@@ -9,7 +9,7 @@
  * 12). Live data: the D-049 stream marks the hero's book, the visible Windows and the wallet's reads stale as events
  * land (`useLiveMarketData`).
  */
-import type { MarketId, Side } from "@cwf/core";
+import { isAllHoursLane, type MarketId, type Side } from "@cwf/core";
 import { useLiveMarketData, useOpeningPrice } from "@cwf/markets/react";
 import { MotionScope } from "@/components/motion-scope";
 import SectionHead from "@/components/shell/SectionHead";
@@ -20,7 +20,7 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { SECTIONS } from "./copy";
 import { YourCalls } from "./calls/YourCalls";
 import { MarketsAllowance } from "@/features/session/MarketsAllowance";
-import { tickerMarkets, type LaneTabKey } from "./data/lane-view";
+import { laneTickers, tickerMarkets, type LaneTabKey } from "./data/lane-view";
 import { useLanesState } from "./data/useLanesState";
 import { useMarketsSelection } from "./data/useSelection";
 import { MarketsHero } from "./hero/MarketsHero";
@@ -46,7 +46,10 @@ function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
   // A lane's Windows arrive in index order: the hero takes the one trading now (the terminal's `pickWindow`), else the
   // soonest to open — never a Window listed for tomorrow's bell while today's trade.
   const minute = useClockValue((ms) => Math.floor(ms / 60_000));
-  const candidates = lanes.activeLane ? tickerMarkets(lanes.activeLane, lanes.ticker) : [];
+  // Unpinned, the hero leads with the lane's first asset — BTC on the 24/7 lanes (D-226) — not whichever Window has the
+  // most time left.
+  const heroTicker = lanes.ticker ?? (lanes.activeLane ? (laneTickers(lanes.activeLane)[0] ?? null) : null);
+  const candidates = lanes.activeLane ? tickerMarkets(lanes.activeLane, heroTicker) : [];
   const fallback = pickWindow(candidates, minute * 60) ?? candidates[0] ?? lanes.activeLane?.markets[0] ?? null;
   const { selection, setSelection } = useMarketsSelection(lanes.laneSet, fallback, routeMarketId);
   const opening = useOpeningPrice(selection.marketId);
@@ -79,7 +82,7 @@ function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
           <MarketsAllowance />
           <YourCalls />
           <section className="markets-section flex flex-col gap-4" aria-label={SECTIONS.lanes.title}>
-            <SectionHead number={SECTIONS.lanes.index} title={SECTIONS.lanes.title} live aside={<MarketSessionChip />} />
+            <SectionHead number={SECTIONS.lanes.index} title={SECTIONS.lanes.title} live aside={<MarketSessionChip allHours={lanes.activeLane ? isAllHoursLane(lanes.activeLane.basis) : false} />} />
             <CadenceLanes state={lanes} selectedMarketId={selection.marketId} onSelect={select} />
             <ClosedStocks laneSet={lanes.laneSet} />
           </section>

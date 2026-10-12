@@ -15,11 +15,21 @@ interface ChipProps {
   /** The Window's asset and lane: a halt replaces the hours while it holds; a 24/7 lane never shows NYSE hours. */
   asset?: string;
   basis?: LaneBasis | null;
+  /** A whole 24/7 lane (the Markets board's §01, D-226): "24/7 market", never the NYSE hours. */
+  allHours?: boolean;
   className?: string;
 }
 
-export function MarketSessionChipView({ session, asset, basis, className, nowSec }: ChipProps & { session: MarketSession; nowSec: number }) {
+export function MarketSessionChipView({ session, asset, basis, allHours = false, className, nowSec }: ChipProps & { session: MarketSession; nowSec: number }) {
   const phrase = useSessionPhrase();
+  if (allHours && !asset) {
+    return (
+      <span className={cn("mks-chip", className)} data-state="regular" role="status">
+        <span className="mks-chip-dot" aria-hidden />
+        <span className="mks-chip-state">{SESSION.roundTheClock}</span>
+      </span>
+    );
+  }
   if (session.halt && asset) {
     const label = haltLabel(session.halt.reason);
     return (
@@ -51,10 +61,10 @@ export function MarketSessionChipView({ session, asset, basis, className, nowSec
 }
 
 /** Nothing while the session is unknown, so a dead ops process never prints hours it can't vouch for. */
-export function MarketSessionChip({ asset, basis = null, className }: ChipProps) {
+export function MarketSessionChip({ asset, basis = null, allHours = false, className }: ChipProps) {
   const halt = asset && isTickerSymbol(asset) ? laneHaltAsset(asset, basis ?? (isStockSymbol(asset) ? "regular" : "crypto24")) : undefined;
   const session = useMarketSession(halt);
   const minute = useClockValue((ms) => Math.floor(ms / 60_000));
   if (!session || minute === 0) return null;
-  return <MarketSessionChipView session={session} asset={asset} basis={basis} className={className} nowSec={minute * 60} />;
+  return <MarketSessionChipView session={session} asset={asset} basis={basis} allHours={allHours} className={className} nowSec={minute * 60} />;
 }

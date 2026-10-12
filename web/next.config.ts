@@ -27,7 +27,9 @@ const config: NextConfig = {
     moved("/bell", "/markets"),
     moved("/beta", "/markets"),
     moved("/pool", "/earn"),
-    moved("/tickers/:symbol", "/stocks/:symbol"),
+    // D-226: no Stocks section — the listed stocks trade in Markets' 24/7 lanes; each ticker's hub is /tickers/<SYM>.
+    { source: "/stocks", destination: "/markets", permanent: true },
+    { source: "/stocks/:symbol", destination: "/tickers/:symbol", permanent: true },
     // Only when the docs are another site: by default they are this app's own `/docs`.
     ...(DOCS_EXTERNAL
       ? [

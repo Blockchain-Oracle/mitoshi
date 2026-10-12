@@ -14,51 +14,6 @@
 
 /* The modal drawer must sit above the floating app chrome and own the viewport. */
 
-.mobile-nav-groups {
-  flex: 1;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 0.35rem 1rem calc(1.5rem + env(safe-area-inset-bottom));
-}
-
-.mobile-nav-group { padding: 1rem 0; }
-.mobile-nav-group + .mobile-nav-group { border-top: 1px solid var(--nav-section-divider); }
-
-.mobile-nav-group-title {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0 0.25rem 0.55rem;
-}
-
-.mobile-nav-group-title h2 { color: var(--white); font-family: var(--font-mono); font-size: 0.65rem; font-weight: 750; letter-spacing: 0.15em; text-transform: uppercase; }
-.mobile-nav-group-title span { color: var(--gray-500); font-family: var(--font-mono); font-size: 0.58rem; }
-.mobile-nav-links { display: grid; gap: 0.25rem; }
-
-.mobile-nav-link {
-  display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr);
-  gap: 0.75rem;
-  align-items: center;
-  min-height: 3.75rem;
-  padding: 0.55rem;
-  border: 1px solid transparent;
-  border-radius: 0.6rem;
-  color: var(--gray-300);
-}
-
-.mobile-nav-link:hover,
-.mobile-nav-link:focus-visible,
-.mobile-nav-link.active { border-color: var(--nav-item-border); background: var(--nav-item-fill); outline: none; }
-
-.mobile-nav-icon { display: grid; width: 2.25rem; height: 2.25rem; place-items: center; border: 1px solid var(--nav-icon-border); border-radius: 0.5rem; color: var(--gray-500); }
-.mobile-nav-icon svg { width: 1.05rem; height: 1.05rem; stroke-width: 1.8; }
-.mobile-nav-link.active .mobile-nav-icon { border-color: var(--nav-active-border); color: var(--vermilion); }
-.mobile-nav-copy strong { display: block; font-size: 0.78rem; font-weight: 680; line-height: 1.2; }
-.mobile-nav-copy strong sup { margin-left: 0.25rem; color: var(--vermilion); font-family: var(--font-mono); font-size: 0.5rem; text-transform: uppercase; }
-.mobile-nav-copy small { display: block; margin-top: 0.25rem; color: var(--gray-500); font-size: 0.68rem; line-height: 1.35; }
-
 @media (max-width: 1040px) and (min-width: 768px) {
   .header { padding-inline: 1.25rem; }
   .logo > span:last-child { display: none; }
@@ -82,8 +37,31 @@
 
 /* Everything on a phone (P6, D-224; Owarine `MoreSheet`): the undocked places as a 3-up grid over the sections, and the
  * theme toggle in the foot (the top line has no room for it there). Both hidden from 768 px (app-shell.css). */
-.more-places { display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 8px 0 4px; }
+.more-places { display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .more-place { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border-radius: 0.75rem; background: var(--color-rail); color: var(--color-ink); font-size: 13px; font-weight: 700; }
 .more-place[aria-current="page"] { outline: 2px solid var(--color-accent); outline-offset: -2px; }
 .more-place svg { width: 22px; height: 22px; stroke-width: 1.9; }
-.more-foot { display: none; justify-content: center; padding: 12px 0 calc(8px + env(safe-area-inset-bottom, 0px)); }
+.more-foot { display: none; justify-content: center; padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* ── More (D-226; Owarine `MoreSheet`): a pill search row, the 3-up places, sections of tiles. ── */
+.more-body { display: flex; flex-direction: column; gap: 24px; padding-bottom: 8px; }
+.more-search { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 16px; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink-secondary); }
+.more-search:focus-within { box-shadow: 0 0 0 2px var(--color-accent); }
+.more-search svg { flex: none; width: 18px; height: 18px; }
+.more-search input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--color-ink); font-size: 16px; outline: none; /* ≥ 16 px: iOS never zooms (§2.5) */ }
+.more-search input::placeholder { color: var(--color-ink-secondary); }
+.more-empty { padding: 4px; color: var(--color-ink-secondary); font-size: 13px; }
+.more-section { display: flex; flex-direction: column; gap: 8px; }
+.more-section-title { padding: 0 4px; color: var(--color-ink-secondary); font: 700 11px/1.2 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; }
+.more-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+@media (min-width: 640px) { .more-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.more-tile { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: var(--radius-lg); background: color-mix(in srgb, var(--color-surface-2) 60%, transparent); color: var(--color-ink); outline: none; transition: background-color 160ms var(--ease); }
+.more-tile:hover, .more-tile[aria-current="page"] { background: var(--color-surface-2); }
+.more-tile:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); }
+.more-tile-disc { display: grid; flex: none; width: 36px; height: 36px; place-items: center; border-radius: var(--radius-full); background: var(--color-surface-1); }
+.more-tile-disc svg { width: 18px; height: 18px; }
+.more-tile[aria-current="page"] .more-tile-disc { color: var(--color-accent); }
+.more-tile-copy { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.more-tile-name { font: 700 14px/1.25 var(--font-body); }
+.more-tile-name sup { margin-left: 4px; color: var(--color-accent); font: 600 9px/1 var(--font-data); text-transform: uppercase; }
+.more-tile-line { display: -webkit-box; overflow: hidden; color: var(--color-ink-secondary); font-size: 12px; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }

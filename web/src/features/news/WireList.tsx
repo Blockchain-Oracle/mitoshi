@@ -2,6 +2,7 @@
 // stock hub (P5, D-224). No hooks: it renders on the server and in an island alike.
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { tickerHref } from "@/lib/ticker-href";
 import { NEWS, timeAgo } from "./copy";
 import type { Article, Sentiment } from "./wire";
 
@@ -23,7 +24,7 @@ export function WireList({ articles, now }: { articles: readonly Article[]; now:
               <span className="font-mono tabular-nums">{timeAgo(a.publishedAtSec, now)}</span>
               <span>{a.source}</span>
               {a.symbols.map((s) => (
-                <Link key={s} href={`/trade/${s}`} aria-label={NEWS.trade(s)} className="-my-2.5 inline-flex min-h-touch min-w-touch items-center justify-center font-mono text-ink underline-offset-4 hover:underline">
+                <Link key={s} href={tickerHref(s)} aria-label={NEWS.trade(s)} className="-my-2.5 inline-flex min-h-touch min-w-touch items-center justify-center font-mono text-ink underline-offset-4 hover:underline">
                   ${s}
                 </Link>
               ))}

@@ -1,9 +1,9 @@
 "use client";
-// The Everything drawer (S22, D-189/D-190): every destination that isn't a rail place, one home each, with the search
-// row at the top (ux-audit fix 14) — the former phone More panel (Masayume 68f7a09 MobileBottomNav's sheet, From
-// 21st.dev 31360 via `ui/drawer.tsx`), now the floating right drawer at every width and opened from the rail, the dock,
-// key 5 and the `?d=everything` URL. The external Docs link goes through `open-external` so the app's web view never
-// navigates away; a link drops the URL param first so Back from the new page doesn't reopen the drawer.
+// More (D-226) — Owarine 90a91d71 `components/shell/app/MoreSheet.tsx`'s anatomy on Mitoshi's drawer (a bottom sheet
+// under 768 px, the wide right drawer above): the search row, the places the phone dock has no room for as a 3-up grid,
+// then every page that is not a place, grouped, as tiles (icon disc, name, one line). Opened from the rail, the dock and
+// `?d=everything`. The external Docs link goes through `open-external` so the app's web view never navigates away; a
+// link drops the URL param first so Back from the new page doesn't reopen the drawer.
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -12,16 +12,33 @@ import { SHELL } from "@/lib/copy";
 import { dropDrawerParam } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { externalClick } from "@/lib/open-external";
-import { DOCK_OMITTED, EVERYTHING_SECTIONS, isActiveNavItem, NAV_ITEMS, searchNav } from "./header/nav-items";
+import { DOCK_OMITTED, EVERYTHING_SECTIONS, isActiveNavItem, searchNav, type NavItem } from "./header/nav-items";
 import ThemeToggle from "./ThemeToggle";
-
-/** The rail's places the phone dock leaves out (Owarine `MoreSheet`'s 3-up grid; P6, D-224). */
-const PLACES = [...DOCK_OMITTED, NAV_ITEMS.leaderboard];
 
 export interface EverythingDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pathname: string | null;
+}
+
+function Tile({ item, active }: { item: NavItem; active: boolean }) {
+  const Icon = item.icon;
+  const body = (
+    <>
+      <span className="more-tile-disc"><Icon aria-hidden /></span>
+      <span className="more-tile-copy">
+        <span className="more-tile-name">{item.name}{item.beta ? <sup>beta</sup> : null}</span>
+        <span className="more-tile-line">{item.description}</span>
+      </span>
+    </>
+  );
+  return item.external ? (
+    <a href={item.href} target="_blank" rel="noopener noreferrer" className="more-tile" onClick={externalClick}>{body}</a>
+  ) : (
+    <Link href={item.href} className="more-tile" aria-current={active ? "page" : undefined} onClick={() => { tapFeedback(); dropDrawerParam(); }}>
+      {body}
+    </Link>
+  );
 }
 
 export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDrawerProps) {
@@ -34,71 +51,40 @@ export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDra
 
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={SHELL.moreTitle}>
-        <div className="more-search" role="search">
-          <label className="relative block">
+      <SlideOverContent title={SHELL.moreTitle} className="is-wide">
+        <div className="more-body">
+          <label className="more-search" role="search">
             <span className="sr-only">{SHELL.searchLabel}</span>
             <Search aria-hidden />
             <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={SHELL.searchPlaceholder} autoComplete="off" enterKeyHint="go" />
           </label>
-        </div>
-        {query === "" ? (
-          <nav className="more-places" aria-label={SHELL.railNav}>
-            {PLACES.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link key={item.id} href={item.href} className="more-place" aria-current={isActiveNavItem(pathname, item) ? "page" : undefined} onClick={() => { tapFeedback(); dropDrawerParam(); }}>
-                  <Icon aria-hidden />
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        ) : null}
-        <nav className="mobile-nav-groups" aria-label={SHELL.allDestinations}>
+          {query === "" ? (
+            <nav className="more-places" aria-label={SHELL.railNav}>
+              {DOCK_OMITTED.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link key={item.id} href={item.href} className="more-place" aria-current={isActiveNavItem(pathname, item) ? "page" : undefined} onClick={() => { tapFeedback(); dropDrawerParam(); }}>
+                    <Icon aria-hidden />
+                    <span>{item.name}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          ) : null}
           {sections.length === 0 ? <p className="more-empty" role="status">{SHELL.searchEmpty(query)}</p> : null}
           {sections.map((section) => (
-            <section className="mobile-nav-group" key={section.id} aria-labelledby={`everything-${section.id}`}>
-              <div className="mobile-nav-group-title">
-                <h2 id={`everything-${section.id}`}>{section.name}</h2>
-                <span>{section.description}</span>
-              </div>
-              <div className="mobile-nav-links">
-                {section.items.map((item) => {
-                  const Icon = item.icon;
-                  const active = isActiveNavItem(pathname, item);
-                  const body = (
-                    <>
-                      <span className="mobile-nav-icon"><Icon aria-hidden="true" /></span>
-                      <span className="mobile-nav-copy">
-                        <strong>{item.name}{item.beta && <sup>beta</sup>}</strong>
-                        <small>{item.description}</small>
-                      </span>
-                    </>
-                  );
-                  return item.external ? (
-                    <a key={item.id} href={item.href} target="_blank" rel="noopener noreferrer" className="mobile-nav-link" onClick={externalClick}>{body}</a>
-                  ) : (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      className={`mobile-nav-link ${active ? "active" : ""}`}
-                      aria-current={active ? "page" : undefined}
-                      onClick={() => {
-                        tapFeedback();
-                        dropDrawerParam();
-                      }}
-                    >
-                      {body}
-                    </Link>
-                  );
-                })}
+            <section className="more-section" key={section.id} aria-labelledby={`more-${section.id}`}>
+              <h2 id={`more-${section.id}`} className="more-section-title">{section.name}</h2>
+              <div className="more-grid">
+                {section.items.map((item) => (
+                  <Tile key={item.id} item={item} active={isActiveNavItem(pathname, item)} />
+                ))}
               </div>
             </section>
           ))}
-        </nav>
-        <div className="more-foot">
-          <ThemeToggle />
+          <div className="more-foot">
+            <ThemeToggle />
+          </div>
         </div>
       </SlideOverContent>
     </SlideOver>
