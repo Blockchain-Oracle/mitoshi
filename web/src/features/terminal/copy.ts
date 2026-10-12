@@ -291,6 +291,7 @@ export const TERMINAL = {
     value: "Close pays",
     approx: "≈",
   },
+  sideTabs: { label: "Terminal panels", markets: "Markets", history: "History", settings: "Settings" },
   positions: {
     boost: (x: number) => `Boost ${Number.isInteger(x) ? x : x.toFixed(1)}×`,
     resolved: "Settled — the settler pays it",
@@ -298,6 +299,7 @@ export const TERMINAL = {
     unrealized: "Unrealized PnL",
     title: "Positions",
     none: "No open positions",
+    manage: "Manage",
     staked: "Staked",
     settles: "Settles",
     // D-150 confirmed-pending: the key has signed and the bytes are sent; the receipt swaps in what the engine booked.

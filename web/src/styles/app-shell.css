@@ -244,3 +244,5 @@ span.top-money, span.top-account { display: contents; }
 .health-chip[data-state="unreachable"] .health-dot { background: var(--color-loss); }
 .health-net { font-weight: 600; color: var(--color-ink); }
 @media (max-width: 1023px) { .health-word { display: none; } }
+/* DEMO (D-223): the paper equity's tag, as Owarine's "DEMO 10,000.00". */
+.tm-demo-tag { padding: 2px 6px; border-radius: var(--radius-full); background: var(--color-accent); color: var(--on-accent); font: 700 10px/1.2 var(--font-body); letter-spacing: 0.06em; }

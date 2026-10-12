@@ -56,6 +56,8 @@ import { useDrawnBand } from "@/features/range/band-store";
 import { TICKET_RAIL_MIN_WIDTH } from "@/features/markets/data/useSelection";
 import dynamic from "next/dynamic";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
+import { History, LineChart, Settings } from "lucide-react";
+import "@/styles/terminal-side.css";
 
 // The Markets hero's depth view, loaded when first shown (a lazy island).
 const HeroDepth = dynamic(() => import("@/features/markets/hero/HeroDepth"), { ssr: false });
@@ -257,6 +259,12 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           </div>
         </section>
         <aside className="tm-side" aria-label={TERMINAL.positions.title}>
+          {/* Owarine 90a91d71 terminal sidebar (P3, D-223): Markets · History · Settings, then the balance. */}
+          <nav className="tm-side-tabs" aria-label={TERMINAL.sideTabs.label}>
+            <button type="button" onClick={() => drawer.show(DRAWERS.markets)}><LineChart aria-hidden />{TERMINAL.sideTabs.markets}</button>
+            <button type="button" onClick={() => drawer.show(DRAWERS.history)}><History aria-hidden />{TERMINAL.sideTabs.history}</button>
+            <button type="button" onClick={() => drawer.show(DRAWERS.settings)}><Settings aria-hidden />{TERMINAL.sideTabs.settings}</button>
+          </nav>
           <div className="tm-desk tm-end">
             <EquityPill equity={equity} address={s.address} masked={masked} onOpen={() => drawer.show(DRAWERS.account)} onSignIn={session.connect} />
           </div>
