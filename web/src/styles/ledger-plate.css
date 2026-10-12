@@ -72,3 +72,29 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .connect-card-title { font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--white); margin-bottom: 24px; }
 .connect-card-link { font-size: 11px; color: var(--gray-600); transition: color 180ms var(--ease); }
 .connect-card-link:hover { color: var(--white); }
+
+/* P2 (D-223), Owarine 90a91d71 plate/MoneyHero + Pockets on Mitoshi's tokens: one black card with the figure, its
+   three legs and the split bar; pockets as equal tiles. Sticker colours identify the legs, so the bar needs no legend. */
+.money-hero { --leg-dollars: var(--color-accent); --leg-positions: #7DD3FC; --leg-collect: #BEF264; position: relative; overflow: hidden; padding: 24px; border-radius: 28px; background: #000; color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1); }
+@media (min-width: 640px) { .money-hero { padding: 32px; } }
+.money-hero-eyebrow { font: 500 13px/1.2 var(--font-body); color: rgba(255, 255, 255, 0.6); }
+.money-hero-figure { font: 700 44px/1 var(--font-data); letter-spacing: -0.02em; }
+@media (min-width: 640px) { .money-hero-figure { font-size: 56px; } }
+.money-hero-line { font: 400 15px/1.4 var(--font-body); color: rgba(255, 255, 255, 0.7); }
+.money-hero-strong { font-weight: 700; color: #fff; }
+.money-hero-primary { display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: var(--radius-full); background: var(--accent-fill); color: var(--on-accent); font: 700 15px/1 var(--font-body); }
+.money-hero-secondary { display: inline-flex; align-items: center; gap: 6px; height: 48px; padding: 0 22px; border-radius: var(--radius-full); background: #fff; color: #000; font: 700 15px/1 var(--font-body); }
+.money-hero-dot { width: 12px; height: 12px; flex: none; border-radius: 50%; }
+.money-hero-leg { font: 500 13px/1.2 var(--font-body); color: rgba(255, 255, 255, 0.7); }
+.money-hero-amount { font: 700 17px/1 var(--font-data); }
+.money-hero-counts { display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.15); font: 500 13px/1.2 var(--font-body); color: rgba(255, 255, 255, 0.7); }
+.money-hero-bar { display: flex; gap: 4px; height: 12px; margin-top: 32px; overflow: hidden; border-radius: var(--radius-full); background: rgba(255, 255, 255, 0.12); }
+.money-hero-seg { height: 100%; border-radius: var(--radius-full); }
+.mh-leg-dollars { background: var(--leg-dollars); }
+.mh-leg-positions { background: var(--leg-positions); }
+.mh-leg-collect { background: var(--leg-collect); }
+.pocket { display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 20px; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
+.pocket-icon { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink); }
+.pocket-amount { font: 700 28px/1 var(--font-data); color: var(--color-ink); }
+.pocket-manage { align-self: flex-start; height: 36px; padding: 0 16px; border-radius: var(--radius-full); background: var(--color-ink); color: var(--color-ground, #000); font: 700 13px/36px var(--font-body); }
+.connect-card-icon { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 12px; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink); box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-surface-2) 40%, transparent); }

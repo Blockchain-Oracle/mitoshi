@@ -66,7 +66,7 @@ export const PLATE = {
     escrow: { label: "Resting orders", note: "Locked behind your scheduled calls until they fill or you cancel." },
     credit: { label: "Credit on Windows", note: "Payouts and refunds waiting on settled Windows — Collect pays them to your account." },
   },
-  connect: { title: "Sign in", body: "Your money, your open calls and what's waiting to collect — all in one place.", newHere: "New here? Test dollars are free →" },
+  connect: { title: "Sign in", newHere: "New here? Test dollars are free →" },
   chart: { title: "Account value", empty: "Your account value shows here once you've settled a Window.", peak: "below peak" },
 } as const;
 
@@ -89,4 +89,26 @@ export const PAGER = {
   prev: "← Prev",
   next: "Next →",
   range: (from: number, to: number, total: number) => `${from}–${to} of ${total}`,
+} as const;
+
+/** The money card and pockets (Owarine 90a91d71 `plate/copy.ts`; P2, D-223). */
+export const HERO_MONEY = {
+  eyebrow: "Your balance",
+  ready: "ready to bet",
+  notSummed: "not in this figure",
+  legs: { dollars: "Test dollars", positions: "Open positions · at mark", collect: "To collect" },
+  addMoney: "Add money",
+  getTest: "Get test dollars",
+  trade: "Trade",
+  open: "open",
+  settled: "settled",
+  pocketsTitle: "Pockets",
+  manage: "Manage",
+  pockets: {
+    vault: { label: "Trading Balance", note: "Taps spend from here with no prompt." },
+    private: { label: "Private", note: "Private bets spend from this. Only you can withdraw it." },
+  },
+  collectTitle: "To collect",
+  betsTitle: "Your bets",
+  demo: { title: "Demo", note: "Paper dollars in this browser.", cta: "Trade on paper" },
 } as const;
