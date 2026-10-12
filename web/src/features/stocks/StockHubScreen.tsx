@@ -66,7 +66,8 @@ function Windows({ symbol }: { symbol: StockSymbol }) {
       .slice(0, WINDOWS);
   }, [lanes, symbol, tick]);
   const tops = useTopsOfBook(markets, CARD_BOOK_POLL_MS);
-  if (lanes === null) return <p className="stk-quiet" role="status">{STOCKS.windows.reading}</p>;
+  // Before the lanes answer, and before the chain clock's first tick (no phase can be read yet), it is reading — never "none".
+  if (lanes === null || tick === 0) return <p className="stk-quiet" role="status">{STOCKS.windows.reading}</p>;
   if (markets.length === 0) return <p className="stk-quiet">{STOCKS.windows.empty}</p>;
   return (
     <ul className="stk-windows">
