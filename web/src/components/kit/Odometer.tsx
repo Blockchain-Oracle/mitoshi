@@ -3,8 +3,11 @@
 // on NumberFlow, on Mitoshi's tokens: the sign tones are the chart's up/down (vermilion stays the accent), the numerals
 // the data face. Display only: the money stays in bigints upstream and arrives as a plain number for the view. Always
 // en-US, so "$" never reads "US$" (R4-0). A ticking figure is never inside an aria-live region (D-227 accessibility):
-// state changes are announced once through the page's live region, not on every tick. NumberFlow honours reduced motion.
+// state changes are announced once through the page's live region, not on every tick. NumberFlow honours reduced motion;
+// inside a frame with its own `data-reduced-motion` (the games' setting, lib/frame-motion) the frame's choice wins.
 import NumberFlow, { type Format } from "@number-flow/react";
+import { useRef } from "react";
+import { useFrameReducedMotion } from "@/lib/frame-motion";
 import { cn } from "@/lib/utils";
 
 /** `usd` $1,234.56 · `pnl` +$12.34 signed and toned · `pct` +4.20% (a percent value: 4.2 → 4.20%) · `plain` 1,234. */
@@ -40,9 +43,11 @@ export function Odometer({ value, kind = "usd", decimals, signed, tone, zeroIsUp
     signDisplay: isSigned ? (zeroIsUp ? "always" : "exceptZero") : "auto",
   };
   const dir = zeroIsUp && safe === 0 ? "up" : directionOf(safe);
+  const root = useRef<HTMLSpanElement>(null);
+  const frame = useFrameReducedMotion(root);
   return (
-    <span data-slot="odometer" data-dir={colour && dir !== "flat" ? dir : undefined} className={cn("odometer", className)}>
-      <NumberFlow locales="en-US" value={kind === "pct" ? safe / 100 : safe} format={format} transformTiming={TIMING} spinTiming={TIMING} willChange />
+    <span ref={root} data-slot="odometer" data-dir={colour && dir !== "flat" ? dir : undefined} className={cn("odometer", className)}>
+      <NumberFlow locales="en-US" value={kind === "pct" ? safe / 100 : safe} format={format} transformTiming={TIMING} spinTiming={TIMING} animated={frame !== true} respectMotionPreference={frame === null} willChange />
     </span>
   );
 }

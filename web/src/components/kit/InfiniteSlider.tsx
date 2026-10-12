@@ -2,9 +2,11 @@
 // Ported from Owarine 90a91d71:web/src/components/kit/InfiniteSlider.tsx (R4-2, D-227), itself 21st.dev "Logo Marquee"
 // by grootstudio (motion-primitives `InfiniteSlider`, adapted): the children twice, slid by one copy's measured width at
 // a constant speed, slowing (not stopping) under the pointer. Here on the Web Animations API instead of a motion runtime
-// (`updatePlaybackRate` eases the slow-down); measured with a ResizeObserver. Reduced motion: it stands still and
-// scrolls by hand. The second copy is inert and hidden from assistive tech.
+// (`updatePlaybackRate` eases the slow-down); measured with a ResizeObserver. Reduced motion — the OS's, or the frame's
+// own `data-reduced-motion` (the games' setting, lib/frame-motion) — it stands still and scrolls by hand. The second
+// copy is inert and hidden from assistive tech.
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useFrameReducedMotion } from "@/lib/frame-motion";
 import { cn } from "@/lib/utils";
 
 const REDUCE = "(prefers-reduced-motion: reduce)";
@@ -12,11 +14,13 @@ const REDUCE = "(prefers-reduced-motion: reduce)";
 export function InfiniteSlider({ children, gapRem = 1, duration = 40, durationOnHover, reverse = false, className }: { children: ReactNode; gapRem?: number; /** Seconds for one copy to pass. */ duration?: number; durationOnHover?: number; reverse?: boolean; className?: string }) {
   const track = useRef<HTMLDivElement>(null);
   const run = useRef<Animation | null>(null);
-  const [still, setStill] = useState(false);
+  const [osStill, setOsStill] = useState(false);
+  const frame = useFrameReducedMotion(track);
+  const still = frame ?? osStill;
 
   useEffect(() => {
     const media = window.matchMedia(REDUCE);
-    const sync = () => setStill(media.matches);
+    const sync = () => setOsStill(media.matches);
     sync();
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
