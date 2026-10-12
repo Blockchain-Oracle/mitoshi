@@ -2007,7 +2007,13 @@ P6). R1: every rendered string over ~60 characters cut to Owarine's length and t
 strings, `EXPLAINERS`, the session banner); "Create account" closes the modal on the passkey and the shell funds the
 new account (`FirstFund` → `CreditWelcome`), so the onboarding step and `Onboarding.tsx` are gone; the account popover
 is Owarine's `SeatAccountMenu` (marble avatar, address with copy, the two balances, Portfolio · Account & keys · Sign
-out) and the second `AccountModal` is deleted; capability pages carry no stage codes.
+out) and the second `AccountModal` is deleted; capability pages carry no stage codes. **R1b (the owner's clip, "move
+wallet connect to the end — connecting a wallet is a signing step, not a login step"):** signed out, the ticket
+composes as if signed in and its one CTA is the order ("Buy UP for $5.00"); tapping it opens sign-in titled for that
+order (`session.connectFor`, the shell's `pickerIntent`) and the side and stake survive it; no sign-in wall before
+value. P5: `/stocks` tiles and the ticker hub on real data (spot stream, session store, Finnhub, the lane cards, the
+Mirror token). P6: under 768 px every drawer and modal is Owarine's bottom sheet; the top line is mark · mode chip ·
+balance · account; Everything carries the places grid and the theme.
 
 ## Open questions
 
