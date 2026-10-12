@@ -1982,6 +1982,17 @@ Agari uses), copied app to app on Coolify, never shown.
 **Why:** the brain should switch on with whichever key the owner holds; a model whose stated reason contradicts its own
 inputs would show that error on the public agent page.
 
+### D-222 — Owarine is the UX baseline for markets, terminal, portfolio, sign-in, games and phone (owner, 2026-10-12)
+
+After reviewing the deployed UI the owner made Owarine (`90a91d71`, the owner's own Masayume port) the reference:
+logos on every asset, honest 24/7 vs session labels, the /markets hero with its chart and ticket, the terminal's
+positions panel and settings sheet, the sign-in picker, the rail balance tile, portfolio, stocks and games. Two
+choices, both the owner's: Mitoshi keeps its brand (vermilion, its fonts, dark default) and takes Owarine's surface
+treatments; on phones overlays become bottom sheets as on Owarine, **superseding the 2026-09-04 "no bottom sheets"
+rule** (desktop keeps right drawers and centred modals). Ledger: `owarine-parity.md`.
+
+**Why:** the owner: "you don't have to be mediocre… you have a lot of inspiration to take from".
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

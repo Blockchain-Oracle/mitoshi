@@ -8,6 +8,7 @@ import { ArrowUpDown, ChevronDown, X } from "lucide-react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 
 export interface SwapAsset {
   symbol: string;
@@ -59,13 +60,6 @@ export function formatUnits(value: bigint, decimals: number, maxFraction = 6): s
   return `${neg ? "-" : ""}${whole}${frac ? `.${frac}` : ""}`;
 }
 
-function AssetDisc({ symbol }: { symbol: string }) {
-  return (
-    <span aria-hidden className="grid size-6 shrink-0 place-items-center rounded-full bg-surface-3 type-label-micro tracking-normal text-ink">
-      {symbol.slice(0, 1)}
-    </span>
-  );
-}
 
 function AmountRow(props: {
   label: string;
@@ -113,7 +107,7 @@ function AmountRow(props: {
           aria-label={`${label}: ${asset.symbol}. Change asset`}
           className="flex min-h-touch shrink-0 items-center gap-2 rounded-full border border-hairline bg-surface-2 pl-1 pr-3 text-ink"
         >
-          <AssetDisc symbol={asset.symbol} />
+          <AssetDisc asset={asset.symbol} className="swap-disc" />
           <span className="type-body-strong">{asset.symbol}</span>
           <ChevronDown aria-hidden className="size-4" />
         </button>
@@ -157,7 +151,7 @@ function AssetPicker(props: { side: "pay" | "receive"; assets: readonly SwapAsse
                 onClick={() => props.onPick(a)}
                 className={cn("flex min-h-touch w-full items-center gap-3 rounded-md px-2 text-left", active && "bg-surface-2")}
               >
-                <AssetDisc symbol={a.symbol} />
+                <AssetDisc asset={a.symbol} className="swap-disc" />
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="type-body-strong text-ink">{a.symbol}</span>
                   <span className="truncate type-caption text-ink-secondary">{a.name}</span>

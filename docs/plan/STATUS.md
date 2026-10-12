@@ -1,5 +1,8 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
+**2026-10-12 (submission day): the owner's UX review made Owarine the baseline (D-222, `owarine-parity.md` O-1…O-14).
+Work it in that order, one slice at a time; S9's gate passed (agent on OpenAI).**
+
 Updated 2026-10-11 09:45Z (**S9 built and deployed; its gate's chain items pass on Moderato** — copy in one tx, stop in
 one tx the deployed relay sponsors, live runner placements on a copier's STRATEGY grant, copier P&L = index, the Memory
 Market and its MPP read live; open: an agent decision waits on the owner's model key on ops. Earlier: S5 gate passed;
@@ -53,9 +56,9 @@ S6 steps 1–9 deployed, its gate runs over the weekend and Monday's session).
   five live runner fills on a copier's STRATEGY grant; copier P&L = index on every settled Window; a sealed memory read
   by a copier, refused (402) to a stranger, bought by the stranger over MPP ($0.10 on chain to the creator), the spent
   credential refused. UX pass on the deployed site at 375 px and desktop: two fixes shipped (`32353b6`).
-- **Open:** the agent's first decision with its receipt ("unpaid" on testnet, D-218.4) needs the owner's model key on
-  ops (`ANTHROPIC_API_KEY` or `AI_GATEWAY_API_KEY`; owner-actions.md) — house #3 has a live subscriber and holds with
-  that reason until then. The live test copier is `0x1Ef9…aC18` (scratchpad wallet, testnet only).
+- **Gate passed 2026-10-12:** the agent decision with its receipt and its fills — house #3 runs on `openai/gpt-6-sol`
+  (the owner's OpenAI key, D-221; any one model key now switches the brain and Sensei on) and filled two copiers on
+  its 08:11Z DOWN call (acceptance/S9.md). Test copiers: `0x1Ef9…aC18` (#1–#3, grant 11) and `0x4eF8…D308` (#3 only).
 - Infra note: the box's RPC traffic shares the public Moderato RPC's rate limit (-32005 seen live); a provider RPC for
   web + ops (`TEMPO_RPC_HTTP_URL`) would remove it — the paid read now retries meanwhile.
 

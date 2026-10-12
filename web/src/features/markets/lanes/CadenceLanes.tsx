@@ -16,6 +16,7 @@ import { useNowMs } from "@/lib/clock";
 import { usePager } from "@/lib/use-pager";
 import { cn } from "@/lib/utils";
 import { MARKETS } from "../copy";
+import { AssetDisc } from "../hero/AssetDisc";
 import { laneKeyOf, laneTabLabel, laneTabParts, laneTickers, tickerMarkets, type LaneTabKey } from "../data/lane-view";
 import type { LanesState } from "../data/useLanesState";
 import { useTopsOfBook } from "../data/useTopOfBook";
@@ -76,8 +77,9 @@ export function CadenceLanes({ state, selectedMarketId, onSelect }: CadenceLanes
                     role="radio"
                     aria-checked={state.ticker === t}
                     onClick={() => state.pinTicker(t)}
-                    className={cn("min-h-touch shrink-0 rounded-full border px-4 type-body-strong", state.ticker === t ? "border-border-strong bg-surface-2 text-ink" : "border-hairline text-ink-secondary")}
+                    className={cn("inline-flex min-h-touch shrink-0 items-center gap-2 rounded-full border px-4 type-body-strong", state.ticker === t ? "border-border-strong bg-surface-2 text-ink" : "border-hairline text-ink-secondary")}
                   >
+                    {t && <AssetDisc asset={t} className="lane-chip-mark" />}
                     {t ?? MARKETS.allTickers}
                   </button>
                 ))}

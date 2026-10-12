@@ -29,3 +29,57 @@
   border-color: transparent;
   box-shadow: none;
 }
+
+/* O-1 (D-222), ported from Owarine 90a91d71:web/src/styles/icons.css — the listed tickers' brand colours, mirrored from
+   `Ticker.brand` in packages/core/src/market/tickers.ts (the registry is the source; `asset-marks/brand.test.ts` fails
+   when a value here drifts). A brand colour identifies the asset, so none flips with the theme. */
+:root {
+  --brand-tesla: #CC0000;
+  --brand-nvidia: #76B900;
+  --brand-apple: #111111;
+  --brand-microsoft: #0078D4;
+  --brand-meta: #0467DF;
+  --brand-google: #4285F4;
+  --brand-amazon: #FF9900;
+  --brand-palantir: #101113;
+  --brand-amd: #ED1C24;
+  --brand-spacex: #005288;
+  --brand-bitcoin: #F7931A;
+  --brand-ethereum: #627EEA;
+  --brand-solana: #9945FF;
+}
+.mark-tesla-disc { fill: var(--brand-tesla); }
+.mark-nvidia-disc { fill: var(--brand-nvidia); }
+.mark-apple-disc { fill: var(--brand-apple); }
+.mark-microsoft-disc { fill: var(--brand-microsoft); }
+.mark-meta-disc { fill: var(--brand-meta); }
+.mark-google-disc { fill: var(--brand-google); }
+.mark-amazon-disc { fill: var(--brand-amazon); }
+.mark-palantir-disc { fill: var(--brand-palantir); }
+.mark-amd-disc { fill: var(--brand-amd); }
+.mark-spacex-disc { fill: var(--brand-spacex); }
+.mark-bitcoin-disc { fill: var(--brand-bitcoin); }
+.mark-ethereum-disc { fill: var(--brand-ethereum); }
+.mark-solana-disc { fill: var(--brand-solana); }
+
+.mark-glyph { fill: #fff; }
+.mark-monogram { fill: #fff; font-family: var(--font-display); font-weight: 800; font-size: 17px; text-anchor: middle; dominant-baseline: central; }
+/* A near-black disc (Apple, Palantir) carries a hairline ring so it doesn't vanish on the dark ground. */
+.mark-ring { fill: none; stroke: rgba(255, 255, 255, 0.22); stroke-width: 1; }
+[data-theme="light"] .mark-ring { stroke: none; }
+/* Every disc that can hold a mark lets the mark's own circle show. */
+.tm-disc.has-mark,
+.take-chip-mark.has-mark,
+.bets-mark.has-mark,
+.lane-chip-mark.has-mark {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* The disc inside a ticker chip (/markets) and a swap row: the mark at chip scale; an unknown asset's initial. */
+.lane-chip-mark,
+.swap-disc { display: inline-grid; flex: none; place-items: center; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-3); color: var(--color-ink); font: 700 10px/1 var(--font-body); }
+.lane-chip-mark { width: 18px; height: 18px; }
+.swap-disc { width: 24px; height: 24px; font-size: 11px; }
+.swap-disc.has-mark { background: transparent; }
