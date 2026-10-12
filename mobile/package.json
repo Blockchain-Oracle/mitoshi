@@ -29,7 +29,7 @@
     "react-native-webview": "catalog:mobile"
   },
   "devDependencies": {
-    "@types/react": "catalog:mobile",
+    "@types/react": "catalog:",
     "typescript": "catalog:"
   }
 }

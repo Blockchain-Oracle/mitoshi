@@ -111,7 +111,6 @@ catalogs:
     expo-status-bar: ~57.0.1
     expo-system-ui: ~57.0.4
     react-native-safe-area-context: ~5.7.0
-    "@types/react": ~19.2.2
     # The brand faces for the app's one native screen (offline), as Agari and Owarine load them.
     "@expo-google-fonts/inter": ^0.4.2
     "@expo-google-fonts/jetbrains-mono": ^0.4.1
