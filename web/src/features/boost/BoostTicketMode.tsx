@@ -68,7 +68,7 @@ export function BoostTicketMode({ market, side: initialSide }: { market: EventMa
         total={{ label: BOOST.total, value: quote ? usd(quote.winIfRightBase) : null, tone: "profit" }}
       />
       {!session.isConnected ? (
-        <button type="button" onClick={session.connect} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{BOOST.cta.signIn}</button>
+        <button type="button" onClick={() => session.connectFor(BOOST.cta.signInFor)} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{BOOST.cta.signIn}</button>
       ) : busy || writes.fetchingSpot ? (
         <TxCta state={writes.tx} action={writes.fetchingSpot ? BOOST.cta.fetchingSpot : BOOST.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
       ) : blocker ? (

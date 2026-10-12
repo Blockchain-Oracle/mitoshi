@@ -30,6 +30,7 @@ import { AmountBlock, BetModes, RouteToggle, SideSegments, type BetMode } from "
 import "@/styles/prediction-ticket.css";
 import { DEFAULT_PRICE_CENTS, PriceControl } from "./PriceControl";
 import { AccountGate, OutcomeNote, ReadoutStrip, TicketCta, type ReadoutCells } from "./StatusBlocks";
+import { SIDE_WORD } from "../side-styles";
 import { commonBlocker, deriveBlocker } from "./ticket-guards";
 import { usePlaceBet } from "./usePlaceBet";
 import { useQuote } from "./useQuote";
@@ -104,7 +105,12 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
     quoting: quoteState.pending,
     quoteStale: quoteState.stale,
   };
-  const blocker = listed ? (commonBlocker(input, { upcoming: true }) ?? (resting?.ok ? null : "quoting")) : deriveBlocker(input);
+  // Signed out, the ticket composes as if signed in (pick a side, enter an amount), and the one CTA then opens sign-in
+  // for that order: wallet connect is a signing step at the end, never a wall before value (D-224).
+  const signedOut = !session.isConnected && !session.isConnecting;
+  const blocker = signedOut
+    ? commonBlocker({ ...input, connected: true, rightChain: true, hasSigner: true, availableBase: null }, listed ? { upcoming: true } : {})
+    : listed ? (commonBlocker(input, { upcoming: true }) ?? (resting?.ok ? null : "quoting")) : deriveBlocker(input);
   const ctx: BlockerContext = {
     cadence: formatCadence(market.intervalSec),
     minStakeText: usd(minStakeBase(decimals), decimals),
@@ -168,7 +174,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
           {listed ? <PriceControl priceCents={priceCents} onChange={setPriceCents} side={side} /> : null}
           <AmountBlock value={t.stakeText} onChange={t.setStakeText} stakeBase={stakeBase} onStakeBase={t.setStakeBase} balanceBase={spendBase} decimals={decimals} belowMin={stakeBase > 0n && belowMinStake(stakeBase, decimals)} remembered={t.remembered} costBase={displayed?.expectedCostBase ?? null} />
           <ReadoutStrip cells={cellsOf(displayed, decimals)} live={displayed !== null} caption={caption} chance={displayed ? TICKET.chance(Math.round(displayed.avgPriceBps / 100)) : null} />
-          <AccountGate connected={session.isConnected} onSignIn={session.connect} availableBase={spendBase} stakeBase={stakeBase} decimals={decimals} chip={<TapTradingChip />} />
+          <AccountGate connected={session.isConnected} availableBase={spendBase} stakeBase={stakeBase} decimals={decimals} chip={<TapTradingChip />} />
           {t.advancedFrom ? <p role="status" className="type-caption text-ink-secondary">{TICKET.advanced(formatCadence(t.advancedFrom.intervalSec), formatCadence(market.intervalSec))}</p> : null}
           <OutcomeNote tx={bet.state.tx} outcome={bet.state.outcome} decimals={decimals} onDismiss={bet.reset} />
           <div className="tk-cta-dock">
@@ -176,7 +182,17 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
             {tb.fallback && !blocker ? (
               <SessionFallbackCta route={tb} walletKeyArmed={tapArmed} tone={side ?? "accent"} />
             ) : (
-              <TicketCta blocker={blocker} ctx={ctx} tx={bet.state.tx} side={side} costBase={displayed?.maxCostBase ?? null} decimals={decimals} signer={signer} onConfirm={place} action={listed ? TICKET.scheduled.cta : TICKET.buy} />
+              <TicketCta
+                blocker={blocker}
+                ctx={ctx}
+                tx={bet.state.tx}
+                side={side}
+                costBase={displayed?.maxCostBase ?? (signedOut ? stakeBase : null)}
+                decimals={decimals}
+                signer={signer}
+                onConfirm={signedOut ? () => (side ? session.connectFor(TICKET.signInFor(SIDE_WORD[side], usd(stakeBase, decimals))) : session.connect()) : place}
+                action={listed ? TICKET.scheduled.cta : TICKET.buy}
+              />
             )}
             <p className="tk-foot">{tb.viaBalance ? SESSION.footnote : tapArmed ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
           </div>

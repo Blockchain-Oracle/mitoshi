@@ -61,8 +61,8 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
     () => ({
       ...SIGNED_OUT,
       network: webEnv.markets.network,
-      openPicker: (mode = "tempo") => {
-        pending.current = { kind: "picker", mode };
+      openPicker: (mode = "tempo", intent = null) => {
+        pending.current = { kind: "picker", mode, intent };
         setQueued(true);
         want();
       },

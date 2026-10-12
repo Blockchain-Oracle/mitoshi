@@ -111,7 +111,7 @@ export function ParlaySlip({ reserve, windows }: { reserve: ParlayReserveState; 
       />
 
       {!session.isConnected ? (
-        <button type="button" onClick={session.connect} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{PARLAY.cta.signIn}</button>
+        <button type="button" onClick={() => session.connectFor(PARLAY.cta.signInFor)} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{PARLAY.cta.signIn}</button>
       ) : busy || writes.fetchingSpots ? (
         <TxCta state={writes.tx} action={writes.fetchingSpots ? PARLAY.cta.fetchingSpots : PARLAY.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
       ) : blocker ? (

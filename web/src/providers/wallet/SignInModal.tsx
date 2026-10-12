@@ -83,6 +83,8 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
                 <Dialog.Title render={<h1 />} className="wm-t18">
                   {robinhood ? SIGN_IN.robinhood.title : SIGN_IN.title}
                 </Dialog.Title>
+                {/* The order this sign-in is for (the video's rule, D-224): "to place UP · $25.00". */}
+                {!robinhood && shell.pickerIntent ? <p className="wm-t14m wm-intent">{shell.pickerIntent}</p> : null}
               </div>
               <div className="wm-list-close">
                 <CloseButton />

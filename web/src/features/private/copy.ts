@@ -27,6 +27,7 @@ export const PRIVATE = {
   signatures: "One passkey prompt signs the bet's text. It moves nothing by itself; the desk places it from your private balance.",
   cta: {
     signIn: "Sign in to bet privately",
+    signInFor: "to place a private call",
     probing: "Checking private mode…",
     unavailable: (reason: string) => `Private mode isn't available: ${reason}`,
     pickSide: "Pick Up or Down",

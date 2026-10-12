@@ -130,7 +130,7 @@ export function PrivateTicketMode({ market, side: initialSide }: { market: Event
         </button>
       ) : null}
       {!session.isConnected ? (
-        <button type="button" onClick={session.connect} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{PRIVATE.cta.signIn}</button>
+        <button type="button" onClick={() => session.connectFor(PRIVATE.cta.signInFor)} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{PRIVATE.cta.signIn}</button>
       ) : actions.busy === "sign" || actions.busy === "open" ? (
         <button type="button" disabled aria-disabled className="min-h-touch w-full rounded-md bg-surface-2 px-4 type-body-strong text-ink" aria-live="polite">{actions.busy === "sign" ? PRIVATE.cta.signing : PRIVATE.cta.placing}</button>
       ) : blocker ? (

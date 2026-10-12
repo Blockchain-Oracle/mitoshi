@@ -15,6 +15,8 @@ export interface WalletSession {
   isConnecting: boolean;
   isRightChain: boolean;
   connect(): void;
+  /** Opens sign-in for one action, named in its words ("to place UP · $25.00"): a signing step, never a wall (D-224). */
+  connectFor(intent: string): void;
   disconnect(): Promise<void>;
   switchToTempo(): Promise<void>;
 }
@@ -30,6 +32,7 @@ export function useWalletSession(): WalletSession {
     isConnecting: shell.status === "restoring",
     isRightChain: tempo !== null && !shell.wrongChain,
     connect: () => shell.openPicker("tempo"),
+    connectFor: (intent) => shell.openPicker("tempo", intent),
     disconnect: shell.disconnect,
     switchToTempo: shell.switchToTempo,
   };

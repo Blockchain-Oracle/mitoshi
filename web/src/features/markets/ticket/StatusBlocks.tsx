@@ -46,18 +46,13 @@ export function ReadoutStrip({ cells, live, caption, chance }: { cells: ReadoutC
   );
 }
 
-export function AccountGate({ connected, onSignIn, availableBase, stakeBase, decimals, chip }: { connected: boolean; onSignIn: () => void; availableBase: bigint | null; stakeBase: bigint; decimals: number; chip: ReactNode }) {
+/** The top-up gate and the tap-trading chip. No sign-in wall here: signed out, the CTA itself opens sign-in for the order (D-224). */
+export function AccountGate({ connected, availableBase, stakeBase, decimals, chip }: { connected: boolean; availableBase: bigint | null; stakeBase: bigint; decimals: number; chip: ReactNode }) {
   const usd = (b: bigint) => `$${formatBaseUnits(b, decimals, { minDp: 2, maxDp: 2 })}`;
   const short = connected && availableBase !== null && (availableBase === 0n || (stakeBase > 0n && stakeBase > availableBase));
   const needBase = availableBase !== null && stakeBase > availableBase ? stakeBase - availableBase : null;
   return (
     <>
-      {!connected && (
-        <div className="tk-gate">
-          <p className="tk-gate-body">{TICKET.gate.connect}</p>
-          <button type="button" className="tk-gate-cta min-h-touch" onClick={onSignIn}>{TICKET.signIn}</button>
-        </div>
-      )}
       {short && (
         <div className="tk-gate tk-gate--warn" role="status">
           <div className="tk-gate-eyebrow">{TICKET.gate.topUp}</div>

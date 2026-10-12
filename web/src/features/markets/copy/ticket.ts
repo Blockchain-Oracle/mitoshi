@@ -28,6 +28,8 @@ export const TICKET = {
   avgPrice: (cents: number) => `Avg. price ${cents}¢`,
   buy: (side: string) => `Buy ${side} for`,
   buyPlain: "Buy",
+  /** Why the sign-in opened, under its title (D-224): "to place UP · $25.00". */
+  signInFor: (side: string, amount: string) => `to place ${side} · ${amount}`,
   booked: (contractsText: string, side: string, avgPriceBps: number) => `Bought ${contractsText} ${side} contracts at ${Math.round(avgPriceBps / 100)}¢`,
   bookedPrefix: "Bought",
   bookedAt: "at",
@@ -46,14 +48,12 @@ export const TICKET = {
   advanced: (fromCadence: string, toCadence: string) => `Moved to the next ${toCadence} Window — side and stake kept.`,
   srCost: (costText: string) => `Cost ${costText}`,
   gate: {
-    connect: "Sign in to place a call.",
     topUp: "Top up to place this",
     holds: (have: string) => `Your account holds ${have}.`,
     need: (need: string) => `Add ${need} more to place this.`,
     empty: "Get test dollars to place one.",
     addMoney: "Add money",
   },
-  signIn: "Sign in",
   openCall: (side: string) => `Your call · ${side}`,
   openCallPlain: "Open your call",
   /** A Listed Window (pre-open, D-088): the call rests at the confirmed limit until the open print lands. */

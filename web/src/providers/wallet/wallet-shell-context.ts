@@ -42,6 +42,8 @@ export interface WalletShellState {
   wrongChain: boolean;
   /** What the open sign-in modal is for: the Tempo account, or linking a Robinhood Chain wallet. */
   pickerMode: "tempo" | "robinhood";
+  /** Why the sign-in opened, in the order's words ("to place UP · $25.00"); null from a plain Sign in (D-224). */
+  pickerIntent: string | null;
   /** The wallet-mode key armed on this device for this account (D-047); null when taps still prompt. */
   walletKey: WalletKeyState | null;
   /** A passkey account on a network with the engine: the one-tap arm can be offered. */
@@ -49,7 +51,7 @@ export interface WalletShellState {
 }
 
 export interface WalletShellActions {
-  openPicker(mode?: "tempo" | "robinhood"): void;
+  openPicker(mode?: "tempo" | "robinhood", intent?: string | null): void;
   disconnect(): Promise<void>;
   switchToTempo(): Promise<void>;
   /** EIP-191 personal_sign with the connected Tempo account (the faucet challenge); rejects with no account. */
@@ -60,7 +62,7 @@ export interface WalletShellActions {
 
 export type WalletShell = WalletShellState & WalletShellActions;
 
-export const SIGNED_OUT: WalletShellState = { status: "ready", connecting: false, tempo: null, robinhood: null, network: "testnet", wrongChain: false, pickerMode: "tempo", walletKey: null, canArmWalletKey: false };
+export const SIGNED_OUT: WalletShellState = { status: "ready", connecting: false, tempo: null, robinhood: null, network: "testnet", wrongChain: false, pickerMode: "tempo", pickerIntent: null, walletKey: null, canArmWalletKey: false };
 
 export const WalletShellContext = createContext<WalletShell>({
   ...SIGNED_OUT,

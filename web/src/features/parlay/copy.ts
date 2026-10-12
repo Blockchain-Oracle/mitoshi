@@ -66,6 +66,7 @@ export const PARLAY = {
   },
   cta: {
     signIn: "Sign in to place a parlay",
+    signInFor: "to place the parlay",
     needTwo: "Add at least two legs",
     enterAmount: "Enter an amount",
     pricing: "Pricing from the books…",

@@ -23,7 +23,7 @@ const RESTORE_CAP_MS = 3_000;
 const subscribeNothing = () => () => undefined;
 const SIDE_IDS: ReadonlySet<number> = new Set(SIDE_CHAINS.map((c) => c.id));
 
-export type PendingOpen = { kind: "picker"; mode: "tempo" | "robinhood" } | null;
+export type PendingOpen = { kind: "picker"; mode: "tempo" | "robinhood"; intent: string | null } | null;
 
 export interface WalletRuntimeProps {
   publish: (shell: WalletShell) => void;
@@ -52,6 +52,7 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
   const [restoring, setRestoring] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerMode, setPickerMode] = useState<"tempo" | "robinhood">("tempo");
+  const [pickerIntent, setPickerIntent] = useState<string | null>(null);
 
   // Restore a remembered connection after hydration, never longer than the cap (Agari's 3 s window).
   useEffect(() => {
@@ -77,8 +78,9 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
     return c?.accounts[0] ? { address: c.accounts[0] as Address, chainId: c.chainId, connectorId: c.connector.id } : null;
   }, [live]);
 
-  const openPicker = useCallback((mode: "tempo" | "robinhood" = "tempo") => {
+  const openPicker = useCallback((mode: "tempo" | "robinhood" = "tempo", intent: string | null = null) => {
     setPickerMode(mode);
+    setPickerIntent(intent);
     setPickerOpen(true);
   }, []);
   const disconnect = useCallback(async () => {
@@ -105,6 +107,7 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
       network: webEnv.markets.network,
       wrongChain,
       pickerMode,
+      pickerIntent,
       openPicker,
       disconnect,
       switchToTempo,
@@ -113,14 +116,14 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
       canArmWalletKey: walletKey.canArm,
       armWalletKey: walletKey.arm,
     }),
-    [hydrated, restoring, tempo, robinhood, wrongChain, pickerMode, openPicker, disconnect, switchToTempo, signMessage, walletKey.key, walletKey.canArm, walletKey.arm],
+    [hydrated, restoring, tempo, robinhood, wrongChain, pickerMode, pickerIntent, openPicker, disconnect, switchToTempo, signMessage, walletKey.key, walletKey.canArm, walletKey.arm],
   );
   useEffect(() => publish(shell), [publish, shell]);
 
   // An open requested before this runtime loaded (a tap on "Sign in" during the first second) happens now.
   useEffect(() => {
     const pending = takePending();
-    if (pending?.kind === "picker") openPicker(pending.mode);
+    if (pending?.kind === "picker") openPicker(pending.mode, pending.intent);
   }, [takePending, openPicker]);
 
   // The signing session (Agari's UserSessionProvider): the connector client, only while on Tempo, with wallet actions
