@@ -127,12 +127,12 @@ export function Shell() {
     setMount((m) => m + 1);
   }, [source]);
 
-  // Offline → online: retry without a tap.
-  const online = network.isConnected === true && network.isInternetReachable !== false;
+  // Offline → online: retry without a tap. Unknown reachability (the first moments) counts as online.
+  const offline = network.isConnected === false || network.isInternetReachable === false;
   useEffect(() => {
     // Only a change in reachability retries; `failure` and `retry` are read as they are at that moment.
-    if (online && failure === "offline") retry();
-  }, [online]);
+    if (!offline && failure === "offline") retry();
+  }, [offline]);
 
   const fail = useCallback((kind: OfflineKind) => {
     setFailure(kind);
@@ -198,7 +198,7 @@ export function Shell() {
   }, []);
 
   // A page that can't load at all (no network, DNS, TLS, the host down): iOS already drops cancelled loads (-999, 102).
-  const onError = useCallback(() => fail(online ? "down" : "offline"), [fail, online]);
+  const onError = useCallback(() => fail(offline ? "offline" : "down"), [fail, offline]);
 
   const onHttpError = useCallback((e: WebViewHttpErrorEvent) => {
     if (GATEWAY.has(e.nativeEvent.statusCode)) fail("down");
