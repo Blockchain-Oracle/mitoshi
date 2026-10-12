@@ -7,7 +7,7 @@ export const STATS = {
     eyebrow: "Live · on chain · verifiable",
     titleLead: "Proof of",
     titleAccent: "demand",
-    lede: "Wallets that took a side on a Window, read from the engine's fills on Tempo testnet. Every call is a fill on the engine's book, so the chain proves each one: nothing here is self-reported, and every row links to its receipt.",
+    lede: "Wallets that took a side, read from the engine's fills.",
   },
   card: {
     title: "Wallets that made a call",

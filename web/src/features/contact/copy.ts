@@ -1,7 +1,7 @@
 // `/contact` (S13 step 10; D34, App Review 1.2): the words.
 export const CONTACT = {
   title: "Reach us",
-  lead: "Report a problem, a person or a post, ask about your data, or ask a question. A person at Mitoshi reads every message.",
+  lead: "A problem, a person, a post, your data, or a question. A person reads it.",
   topic: "What is it about?",
   topics: [
     { value: "problem", label: "Something isn't working" },

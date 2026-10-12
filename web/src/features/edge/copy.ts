@@ -6,7 +6,7 @@ export const EDGE = {
   intro: {
     eyebrow: "Trader Edge",
     title: "Know your edge.",
-    lede: "Your settled Mitoshi Windows, turned into a clear record of what pays, what costs, and when you trade best.",
+    lede: "Your settled Windows: what pays, what costs, when you trade best.",
     source: { label: "Source", value: "Mitoshi's engine on Tempo testnet" },
     method: { label: "Method", value: "Your fills and the settlement rule, in your browser" },
   },

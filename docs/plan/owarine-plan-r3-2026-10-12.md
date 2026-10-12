@@ -26,6 +26,12 @@ real data only; one slice at a time on `integration/t1`, deployed and checked be
 at **320 · 375 · 768 · 1024 · 1440** in both themes with an overflow sweep (no element past the viewport, no text box
 over another) and a clean console.
 
+## Done so far (2026-10-12, all on `integration/t1`, deployed to testnet)
+A `0f893e0` + live check `scripts/drive/arcade-live.ts` (passed: seed, 401 unsigned, 422 forged, real run ranked #1) ·
+B `0a7f319` · C `0b6fcd8`+`46fd87d` · D `bb93a70` · E `73dbd72` · F+G `47f0558` · H `3ddda19` · I (this commit). Every
+swept route is clean at 320 and 375 (the overflow/overlap sweep). Left for the owner's eye: the signed-in flows on a
+real device (Sensei answering with the model key on testnet; a posted Line Rider run from a passkey account).
+
 ## A — Breakages (first)
 1. Arcade seed: the board route answers `seedFromBytes(randomBytes(4))` (Owarine `score.server.ts` `freshSeed`).
 2. Real board: port `score.server.ts` (shape → store → identity → engine build → envelope → replay → rate limit →

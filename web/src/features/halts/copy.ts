@@ -1,6 +1,6 @@
 export const HALTS = {
   title: "Trading halts",
-  lead: "When a stock's exchange stops trading it, or the signed price a Window settles on goes stale, no new calls are taken on it until the price is healthy again. A Window whose print can't be recorded voids, and both sides pay 0.5. This board shows every halt halt-watch confirmed over the last 30 days, in New York time.",
+  lead: "When a stock or its signed price stops, no new calls until it's back.",
   unreadable: "The halt log can't be read right now. This says nothing about halts — reload in a minute.",
   noneNow: "No halts now: every watched price is fresh and every listed stock is trading as its exchange reports.",
   someNow: (symbols: string[]) => `Halted now: ${symbols.join(", ")}. No new calls on ${symbols.length === 1 ? "it" : "them"} until the price is healthy again.`,

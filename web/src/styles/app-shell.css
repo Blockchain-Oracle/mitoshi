@@ -132,6 +132,9 @@ span.top-money, span.top-account { display: contents; }
 @media (min-width: 640px) { .app-stage { padding: 24px; } }
 @media (min-width: 1024px) { .app-stage { padding: var(--spacing-stage-pad); } }
 .app-stage .container { padding-inline: 0; }
+/* Pages written for the old full-width frame carry `px-gutter` (and `lg:px-gutter-desktop`): inside the stage that was a
+   second inset; the stage is the only one (D-226). */
+.app-stage [class*="px-gutter"] { padding-inline: 0; }
 /* Where a sticky bar pins inside the stage (Owarine `shell.css`): under the stage's top edge on desktop, where the top
  * line scrolls away; under the phone's sticky top line. */
 :root { --stage-sticky-top: 0.75rem; }

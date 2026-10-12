@@ -1,8 +1,9 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
 **2026-10-12, round 3 (D-226, `owarine-plan-r3-2026-10-12.md`): the owner's review after round 2 — no Stocks section,
-Markets carries every market, every width works, Line Rider fixed, loading, Sensei, Earn, News. Slices A → I in order,
-each deployed and checked at five widths; then `/launch*` (uncommitted intents/encoders/reads in `packages/*/launch`).**
+Markets carries every market, every width works, Line Rider fixed, loading, Sensei, Earn, News. Slices A → I built and
+deployed to testnet (commits in the plan's "Done so far"); the arcade board is real (`arcade-live.ts` passed). Next:
+`/launch*` (uncommitted intents/encoders/reads in `packages/*/launch`), `/themes*`, S14, S11, S12b, SM1–SM5.**
 
 **2026-10-12: Owarine is the baseline (D-222, `owarine-parity.md`). P0–P4, then round 2 (`owarine-plan-r2-2026-10-12.md`,
 D-224) R1 words · R1b sign-in at the end (the owner's clip) · P5 stocks · P6 phone pass are built and deployed to

@@ -3,10 +3,10 @@
 // the role="list" rows become an ordered list of links (a row opens the wallet), the collapsed-run ellipsis and the
 // client pagination are dropped (the board serves its top 50 and the asker's own row, shown after an ellipsis), the
 // rank-change arrows are dropped (no earlier rank is stored), and colours are Mitoshi's tokens.
+import { AccountAvatar } from "@/components/shell/header/AccountAvatar";
 import { Crown, EllipsisIcon } from "lucide-react";
 import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
-import { addressHue } from "@/lib/address-hue";
+import type { ReactNode } from "react";
 
 /** A wallet's page: in-app links route, the explorer opens beside the app. */
 function To({ href, className, children, current }: { href: string; className: string; children: ReactNode; current?: boolean }) {
@@ -42,8 +42,8 @@ function Row({ r, mine, youLabel }: { r: RankingRow; mine: boolean; youLabel: st
           <span className="w-6 text-right type-body-strong tabular-nums text-ink">{r.rank}</span>
           {r.rank <= 3 ? <Crown aria-hidden className={`size-4 ${CROWN[r.rank]}`} /> : null}
         </span>
-        <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full type-caption font-semibold text-cream" style={{ background: `oklch(0.47 0.13 ${addressHue(r.owner)}deg)` } as CSSProperties}>
-          {r.owner.slice(2, 4).toUpperCase()}
+        <span aria-hidden className="shrink-0">
+          <AccountAvatar seed={r.owner} size={36} />
         </span>
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="truncate font-mono type-body text-ink">

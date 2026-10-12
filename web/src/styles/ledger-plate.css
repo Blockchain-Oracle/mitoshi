@@ -67,7 +67,9 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 
 /* The disconnected card (reference page L277–292): border border-white/[0.08] rounded bg-bg p-10 text-center;
    icon ring w-16 h-16 border border-white/10 rounded-full; text-gray-500 icon; text-[11px] text-gray-600 link */
-.connect-card { width: 100%; border: 1px solid var(--ms-hairline); border-radius: 4px; background: var(--bg); padding: 40px; text-align: center; }
+/* D-226: the way-in card is the demo card's sibling (Owarine's two-card grid), a surface tile — not a black box inset in
+   the stage. */
+.connect-card { width: 100%; border-radius: 20px; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); padding: 32px 20px; text-align: center; }
 .connect-card-ring { width: 64px; height: 64px; margin: 0 auto 24px; border: 1px solid var(--ms-hairline); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: var(--gray-500); }
 .connect-card-title { font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--white); margin-bottom: 24px; }
 .connect-card-link { font-size: 11px; color: var(--gray-600); transition: color 180ms var(--ease); }

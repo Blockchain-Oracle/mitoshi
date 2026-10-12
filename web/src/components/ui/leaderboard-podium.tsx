@@ -1,11 +1,10 @@
 // From 21st.dev 13057 trophyso/leaderboard-podium, revamped per D-044 for the leaderboard (S5, RV-86): the 2 · 1 · 3
 // order, the crown over each place, the avatar ring and the stepped plinths are the source's; cva variants, the
-// `rank-*` palette and image avatars are gone — a wallet is its initials on its address hue (as the account drawer's
-// avatar), first place takes the accent and the others the ink tiers, and each place is a link with its figure.
+// `rank-*` palette and image avatars are gone — a wallet wears the account's marble (`AccountAvatar`, D-226), first place takes the accent and the others the ink tiers, and each place is a link with its figure.
+import { AccountAvatar } from "@/components/shell/header/AccountAvatar";
 import { Crown } from "lucide-react";
 import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
-import { addressHue } from "@/lib/address-hue";
+import type { ReactNode } from "react";
 
 /** A wallet's page: in-app links route, the explorer opens beside the app. */
 function To({ href, className, children, current }: { href: string; className: string; children: ReactNode; current?: boolean }) {
@@ -39,12 +38,8 @@ export function LeaderboardPodium({ places, label }: { places: readonly PodiumPl
         <li key={p.owner} className={`flex min-w-0 flex-col items-center gap-2 ${p.rank === 1 ? "order-2" : p.rank === 2 ? "order-1" : "order-3"}`}>
           <To href={p.href} className="group flex min-w-0 max-w-full flex-col items-center gap-2 rounded-md p-1 focus-visible:outline-2 focus-visible:outline-accent">
             <Crown aria-hidden className={`size-5 ${CROWN[p.rank]}`} />
-            <span
-              aria-hidden
-              className={`grid size-12 place-items-center rounded-full font-semibold text-cream ring-2 sm:size-14 ${p.rank === 1 ? "ring-accent" : "ring-hairline"}`}
-              style={{ background: `oklch(0.47 0.13 ${addressHue(p.owner)}deg)` } as CSSProperties}
-            >
-              {p.owner.slice(2, 4).toUpperCase()}
+            <span aria-hidden className={`grid place-items-center rounded-full ring-2 ${p.rank === 1 ? "ring-accent" : "ring-hairline"}`}>
+              <AccountAvatar seed={p.owner} size={56} />
             </span>
             <span className="max-w-full truncate font-mono type-caption text-ink group-hover:underline">{p.label}</span>
             <span className={`type-body-strong tabular-nums ${TONE[p.tone]}`}>{p.figure}</span>

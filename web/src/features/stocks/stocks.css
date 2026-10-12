@@ -5,7 +5,7 @@
 .stk-title { margin-bottom: 20px; font-family: var(--font-display); font-size: 36px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; color: var(--color-ink); }
 
 /* ── the index: tiles ── */
-.stk-grid { display: grid; gap: 10px; grid-template-columns: 1fr; }
+.stk-grid { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 640px) { .stk-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1280px) { .stk-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .stk-tile { display: flex; align-items: center; gap: 14px; min-height: 76px; padding: 14px 16px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); color: var(--color-ink); transition: background-color 160ms var(--ease), border-color 160ms var(--ease); }
@@ -45,7 +45,7 @@
 
 .stk-section { margin-top: 36px; }
 .stk-quiet { margin-top: 12px; font-size: 14px; line-height: 1.6; color: var(--color-ink-secondary); }
-.stk-windows { display: grid; gap: 12px; margin-top: 16px; grid-template-columns: 1fr; }
+.stk-windows { display: grid; gap: 12px; margin-top: 16px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 768px) { .stk-windows { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1280px) { .stk-windows { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .stk-section .news-wire, .stk-section ol { margin-top: 16px; }

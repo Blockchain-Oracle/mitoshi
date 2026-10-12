@@ -8,7 +8,7 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 export const STRATEGIES = {
   eyebrow: "Strategies · testnet",
   title: "Copy a strategy, or launch your own.",
-  lead: "Each strategy is published on chain with hard limits. Copying it lets its runner trade for you only inside a budget and caps you sign once — and you can stop it in one tap.",
+  lead: "Published on chain with hard limits. Copy one inside your own budget.",
   views: [
     { value: "copy", label: "Copy" },
     { value: "yours", label: "Yours" },

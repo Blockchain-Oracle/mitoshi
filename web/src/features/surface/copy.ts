@@ -5,7 +5,7 @@
 export const SURFACE = {
   eyebrow: "Market Surface",
   title: "The market's shape",
-  intro: "Every Window is priced by a live order book on Tempo — resting bids and asks, not a formula. On the crypto 5-minute lanes the reserves also check a market model: the chance the close lands above the opening print, from the signed spot price, the Series' volatility and the time left. Here you can read both back, Window by Window, with the price path since each one opened.",
+  intro: "Every Window's live order book, at a glance.",
   assets: "Asset",
   loading: "Reading the live Windows…",
   noLive: "No live Windows right now — the surface fills in when the next Window opens.",

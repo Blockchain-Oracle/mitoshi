@@ -42,7 +42,7 @@ function DemoCard() {
 export function PortfolioScreen() {
   const session = useWalletSession();
   return (
-    <div className="container grid gap-4 px-gutter py-8 lg:grid-cols-2 lg:items-start lg:px-gutter-desktop">
+    <div className="container grid gap-4 lg:grid-cols-2 lg:items-start">
       <ConnectCard onSignIn={session.connect} />
       <DemoCard />
     </div>

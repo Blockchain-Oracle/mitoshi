@@ -51,7 +51,6 @@ export function LeaderboardScreen() {
   return (
     <div className="mx-auto flex w-full max-w-(--content-wide) flex-col gap-6 px-gutter py-8 lg:px-gutter-desktop">
       <header className="flex flex-col gap-2">
-        <span className="type-label-micro text-ink-secondary">{L.eyebrow}</span>
         <h1 className="type-display text-ink">{L.title}</h1>
         <p className="max-w-(--content-reading) type-body text-ink-secondary">{L.lead}</p>
       </header>

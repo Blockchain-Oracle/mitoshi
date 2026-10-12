@@ -106,3 +106,11 @@
 .mc-listed { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 160px; padding: 12px 8px; text-align: center; }
 .mc-listed-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent); }
 .mc-foot .mc-schedule { grid-column: 1 / -1; justify-content: space-between; }
+
+/* The head at phone widths (D-226): the asset side may shrink (its kind chip truncates) so the countdown always shows;
+   under 380 px the kind chip gives way entirely — the lane tab already says 24/7. */
+.mc-head { gap: 8px; min-width: 0; }
+.mc-head .mc-asset { min-width: 0; overflow: hidden; }
+.mc-head .mc-kind { overflow: hidden; text-overflow: ellipsis; }
+.mc-head .mc-countdown { flex: none; }
+@media (max-width: 379px) { .mc-head .mc-kind { display: none; } }

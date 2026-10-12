@@ -11,7 +11,7 @@ import { PRACTICE_WATCH_SEC } from "@cwf/core/games";
 export const PRACTICE = {
   eyebrow: "No stake · no position · nothing on the ledger",
   title: "Practice",
-  intro: "The duel's motion, on the venue's real Windows, with nothing at risk. Swipe each card the way you think the price is going.",
+  intro: "Swipe live Windows the way you think price goes. Nothing at risk.",
 
   scoring: {
     label: "How this is scored",

@@ -7,7 +7,7 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 export const AGENTS = {
   eyebrow: "Agents · ERC-8004 · testnet",
   title: "Agents you can copy.",
-  lead: "Every agent here is a strategy with an on-chain identity, run by a key you can see, inside limits it can't break. Its record is its own calls as the chain settled them.",
+  lead: "Strategies with an on-chain identity, inside limits they can't break.",
   sortLabel: "Order",
   sorts: [
     { value: "inherited", label: "Inherited rank" },

@@ -1,6 +1,6 @@
 export const NOTICES = {
   title: "Activity",
-  lead: "What happened to your calls this week, and around you: fills, settlements and voids, new followers, takes by people you follow.",
+  lead: "Your fills, settlements and voids, and people you follow.",
   signedOut: "Sign in to see what happened to your calls.",
   signIn: "Sign in",
   loading: "Reading your week…",
@@ -12,7 +12,7 @@ export const NOTICES = {
 
 export const NOTICE_SETTINGS = {
   title: "Notifications",
-  lead: "Everything still lands in Activity. These choose what this device announces — a toast while Mitoshi is open, and a browser notification if you allow it.",
+  lead: "Choose what this device announces. Everything still lands in Activity.",
   activity: "Open Activity",
   browser: {
     title: "Browser notifications",
