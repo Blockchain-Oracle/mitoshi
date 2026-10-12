@@ -1,0 +1,23 @@
+/* Ported from Owarine 90a91d71:web/src/features/markets/session/market-session.css (O-2/O-5, D-222) on Mitoshi's
+   tokens: mono 10px uppercase meta with a state dot; it pulses only while the session (or a 24/7 feed) is live. */
+.mks-chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+.mks-chip-dot { width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; background: var(--color-ink-muted); }
+.mks-chip-state { color: var(--color-ink-secondary); }
+.mks-chip[data-state="regular"] .mks-chip-dot,
+.mks-chip[data-state="early-close"] .mks-chip-dot { background: var(--color-profit); animation: mks-pulse 1.6s ease-in-out infinite; }
+.mks-chip[data-state="regular"] .mks-chip-state,
+.mks-chip[data-state="early-close"] .mks-chip-state { color: var(--color-profit); }
+.mks-chip[data-state="pre"] .mks-chip-dot,
+.mks-chip[data-state="post"] .mks-chip-dot { background: var(--color-ink-secondary); }
+.mks-chip[data-state="holiday"] .mks-chip-dot { background: color-mix(in srgb, var(--color-accent) 55%, transparent); }
+.mks-chip[data-state="halted"] .mks-chip-dot { background: var(--color-accent); }
+.mks-chip[data-state="halted"] .mks-chip-state { color: var(--color-accent); }
+.mh-asset-row .mks-chip { font-size: 9px; letter-spacing: 0.14em; }
+@keyframes mks-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@media (max-width: 639px) {
+  .mh-asset-row .mks-chip { display: none; }
+  .mks-chip-state:not(.mks-chip-halt), .mks-chip-sep { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mks-chip[data-state="regular"] .mks-chip-dot, .mks-chip[data-state="early-close"] .mks-chip-dot { animation: none; }
+}

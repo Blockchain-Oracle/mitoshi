@@ -13,6 +13,12 @@ export const SENSEI_STARTERS = ["Read this Window", "Up or down on the next clos
 export const SENSEI = {
   title: "Sensei",
   open: "Ask Sensei",
+  /** The floating dock (Owarine 90a91d71 `SenseiDock`; O-6): three pops of a teaser, then it rests. */
+  teasers: ["Up or down?", "Coin-flip?", "Want a read?", "Which way?"],
+  dockOpen: "Open Sensei, your trading assistant",
+  dockAsk: (teaser: string) => `Ask Sensei: ${teaser}`,
+  dockName: "Ask",
+  dockNameEmphasis: "Sensei",
   placeholder: "Ask Sensei about this Window…",
   send: "Ask",
   stop: "Stop the answer",

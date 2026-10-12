@@ -1,0 +1,126 @@
+"use client";
+// Ported from Owarine 90a91d71:web/src/features/sensei/SenseiDock.tsx (O-6, D-222) — the floating seal over /markets: a
+// ring draining toward the nearest close (urgent under the wire), three teaser pops, and a tap opens Sensei on the
+// Window in the hero (Mitoshi's drawer: consent first, then the chat with the figures read at ask time). The ring and
+// the teasers need no model; only the reply does, and an unconfigured brain says so in the thread.
+import type { Address, EventMarket, LaneSet } from "@cwf/core";
+import { countdown } from "@cwf/core/lifecycle";
+import { useReducedMotion } from "motion/react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import MitoshiMark from "@/components/shell/MitoshiMark";
+import { SenseiDrawer } from "@/features/terminal/lazy-drawers";
+import { useCommittedSpot } from "@/features/terminal/live";
+import { useClockValue } from "@/lib/clock";
+import { cn } from "@/lib/utils";
+import { SENSEI } from "./copy";
+
+/** The ring's geometry, from the reference's `R = 30` on a 72-unit viewBox. */
+const R = 30;
+const TAU = 2 * Math.PI * R;
+const TEASER_FIRST_MS = 3_500;
+const TEASER_HOLD_MS = 4_800;
+const TEASER_GAP_MS = 4_500;
+const TEASER_POPS = 3;
+
+/** Anything on the page can ask for Sensei by firing this. */
+export const SENSEI_OPEN_EVENT = "sensei:open";
+
+function useTeaser(open: boolean): number {
+  const reduced = useReducedMotion() === true;
+  const [index, setIndex] = useState(-1);
+  useEffect(() => {
+    if (open || reduced) {
+      setIndex(-1);
+      return;
+    }
+    let alive = true;
+    let pops = 0;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const cycle = (delay: number) => {
+      timers.push(
+        setTimeout(() => {
+          if (!alive) return;
+          setIndex(pops % SENSEI.teasers.length);
+          timers.push(
+            setTimeout(() => {
+              if (!alive) return;
+              setIndex(-1);
+              pops += 1;
+              if (pops < TEASER_POPS) cycle(TEASER_GAP_MS);
+            }, TEASER_HOLD_MS),
+          );
+        }, delay),
+      );
+    };
+    cycle(TEASER_FIRST_MS);
+    return () => {
+      alive = false;
+      for (const timer of timers) clearTimeout(timer);
+    };
+  }, [open, reduced]);
+  return index;
+}
+
+export function SenseiDock({ laneSet, market, openingRaw, address }: { laneSet: LaneSet | null; market: EventMarket | null; openingRaw: bigint | null; address: Address | null }) {
+  const [open, setOpen] = useState(false);
+  const teaser = useTeaser(open);
+  const spot = useCommittedSpot(open && market ? market.asset : null, { seed: false });
+  const nowSec = useClockValue((ms) => Math.floor(ms / 1000));
+
+  useEffect(() => {
+    const onAsk = () => setOpen(true);
+    window.addEventListener(SENSEI_OPEN_EVENT, onAsk);
+    if (new URLSearchParams(window.location.search).get("sensei") === "1") setOpen(true);
+    return () => window.removeEventListener(SENSEI_OPEN_EVENT, onAsk);
+  }, []);
+
+  // The nearest close on the board drives the ring, as on the reference: the venue-aware `countdown` rule.
+  const nearest = useMemo(
+    () => (laneSet?.lanes ?? []).flatMap((l) => l.markets).filter((m) => m.expirySec > nowSec).sort((a, b) => a.expirySec - b.expirySec)[0] ?? null,
+    [laneSet, nowSec],
+  );
+  const clock = nearest && nowSec > 0 ? countdown(nowSec * 1000, nearest.expirySec, nearest.intervalSec) : null;
+  const urgent = clock?.urgent ?? false;
+  const fraction = nearest && clock ? Math.max(0, Math.min(1, clock.remainingSec / Math.max(1, nearest.intervalSec))) : 0;
+  const askText = teaser >= 0 ? SENSEI.teasers[teaser]! : null;
+
+  return (
+    <>
+      <div className="sensei-dock-wrap">
+        {askText && !open ? (
+          <button key={teaser} type="button" className="sensei-teaser" onClick={() => setOpen(true)} aria-label={SENSEI.dockAsk(askText)}>
+            {askText}
+          </button>
+        ) : null}
+        <button type="button" onClick={() => setOpen(true)} aria-label={SENSEI.dockOpen} aria-expanded={open} className={cn("sensei-dock", urgent && "urgent", open && "is-open")}>
+          <span className="sensei-dock-copy">
+            <span className="sd-name">
+              {SENSEI.dockName} <b>{SENSEI.dockNameEmphasis}</b>
+            </span>
+          </span>
+          <span className="sensei-dock-avatar">
+            <svg viewBox="0 0 72 72" className="sensei-dock-ring" aria-hidden>
+              <circle cx="36" cy="36" r={R} className="sd-track" />
+              <circle cx="36" cy="36" r={R} className="sd-fill" style={{ strokeDasharray: TAU, strokeDashoffset: TAU * (1 - fraction) } as CSSProperties} />
+            </svg>
+            <MitoshiMark className="sd-avatar-glyph" />
+            <span className="sensei-dock-pulse" aria-hidden />
+          </span>
+        </button>
+      </div>
+      {open ? (
+        <SenseiDrawer
+          open
+          onOpenChange={(o) => !o && setOpen(false)}
+          symbol={market?.asset ?? "BTC"}
+          market={market}
+          spot={spot.price}
+          openingRaw={openingRaw}
+          positions={[]}
+          values={new Map()}
+          address={address}
+        />
+      ) : null}
+    </>
+  );
+}

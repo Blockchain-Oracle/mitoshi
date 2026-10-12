@@ -1,73 +1,90 @@
 "use client";
 /**
- * /markets as the list (S23j, D-192; first ported from Masayume 68f7a09:web/src/features/markets/{MarketsPage,
- * MarketsScreen}.tsx): every Window, in lanes and in plain words, with the user's own calls pinned on top (D-048). A
- * Window opens on the terminal (`/trade/<SYM>?w=<id>`) — the hero chart and its ticket retired with the terminal, which
- * now carries the chart, the one-tap call and the other modes. No clock is read here: countdowns, cards and the board
- * tick as leaves (ux-audit fix 12). Live data: the D-049 stream marks the visible Windows and the wallet's reads stale
- * as events land (`useLiveMarketData`). Old share links (`/markets?m=<id>`) land on the terminal too.
+ * /markets (Ported from Masayume 68f7a09:web/src/features/markets/{MarketsPage,MarketsScreen}.tsx; restored to Owarine
+ * 90a91d71's arrangement — O-3/O-5, D-222): the market you are betting on is the page. The hero carries the question,
+ * the live Window chart and the ticket (docked beside it from `lg`, a drawer below); the user's own calls are pinned
+ * under it (D-048); §01's lanes change the hero — a card or its UP/DOWN selects that Window here — with the NYSE session
+ * beside the heading and the closed stocks under them; §02 says the same Windows in plain words. The terminal is one
+ * tap away for the one-tap trader. No clock is read here: countdowns, cards and the board tick as leaves (ux-audit fix
+ * 12). Live data: the D-049 stream marks the hero's book, the visible Windows and the wallet's reads stale as events
+ * land (`useLiveMarketData`).
  */
-import type { MarketId } from "@cwf/core";
-import { parseMarketsSearch } from "@cwf/core/urls";
-import { useLiveMarketData } from "@cwf/markets/react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import type { MarketId, Side } from "@cwf/core";
+import { useLiveMarketData, useOpeningPrice } from "@cwf/markets/react";
 import { MotionScope } from "@/components/motion-scope";
 import SectionHead from "@/components/shell/SectionHead";
 import { tapFeedback } from "@/lib/feedback";
 import { useWalletSession } from "@/lib/wallet-session";
-import { MARKETS, SECTIONS } from "./copy";
+import { SECTIONS } from "./copy";
 import { YourCalls } from "./calls/YourCalls";
 import { MarketsAllowance } from "@/features/session/MarketsAllowance";
-import { terminalHref } from "@/features/terminal/route";
-import { tickerMarkets } from "./data/lane-view";
+import { tickerMarkets, type LaneTabKey } from "./data/lane-view";
 import { useLanesState } from "./data/useLanesState";
-import { findMarket } from "./data/useSelection";
+import { useMarketsSelection } from "./data/useSelection";
+import { MarketsHero } from "./hero/MarketsHero";
 import { CadenceLanes } from "./lanes/CadenceLanes";
+import { ClosedStocks } from "./lanes/ClosedStocks";
+import { MarketSessionChip } from "./session/MarketSessionChip";
+import { TicketDock } from "./ticket/TicketDock";
 import { WordMarketBoard } from "./word-board/WordMarketBoard";
+import { SenseiDock } from "@/features/sensei/SenseiDock";
 
 /** The motion scope rides inside the island, so motion's runtime never enters the route's first load (§3.1). */
-export function MarketsScreen() {
+export function MarketsScreen(props: { routeMarketId?: MarketId | null }) {
   return (
     <MotionScope>
-      <Screen />
+      <Screen {...props} />
     </MotionScope>
   );
 }
 
-function Screen() {
-  const router = useRouter();
-  const params = useSearchParams();
+function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
   const { address } = useWalletSession();
   const lanes = useLanesState();
+  const fallback = lanes.activeLane ? (tickerMarkets(lanes.activeLane, lanes.ticker)[0] ?? lanes.activeLane.markets[0] ?? null) : null;
+  const { selection, setSelection } = useMarketsSelection(lanes.laneSet, fallback, routeMarketId);
+  const opening = useOpeningPrice(selection.marketId);
+  const openingRaw = opening?.ok ? opening.value : (selection.market?.openingPriceRaw ?? null);
   const visible = lanes.activeLane ? tickerMarkets(lanes.activeLane, lanes.ticker).slice(0, 8).map((m) => m.marketId) : [];
-  useLiveMarketData({ marketIds: visible, wallet: address });
+  useLiveMarketData({ marketIds: selection.marketId ? [selection.marketId, ...visible] : visible, wallet: address });
 
-  // A share link from before the terminal (`?m=<id>`) opens that Window there.
-  const linked = parseMarketsSearch(params).marketId;
-  useEffect(() => {
-    if (linked) router.replace(`/trade?w=${linked}`);
-  }, [linked, router]);
-
-  const open = (marketId: MarketId) => {
+  const select = (marketId: MarketId, side?: Side) => {
     tapFeedback();
-    const m = findMarket(lanes.laneSet, marketId);
-    router.push(m ? terminalHref(m.asset, marketId) : `/trade?w=${marketId}`);
+    setSelection(marketId, side);
+  };
+  const pickLane = (key: LaneTabKey, marketId: MarketId) => {
+    lanes.pin(key);
+    setSelection(marketId);
   };
 
-  // The frame and the header are MarketsPage's (one node from the first paint on); this is everything under them.
   return (
     <>
-        <MarketsAllowance />
-        <YourCalls />
-        <section className="markets-section flex flex-col gap-4" aria-label={SECTIONS.lanes.title}>
-          <SectionHead number={SECTIONS.lanes.index} title={SECTIONS.lanes.title} live />
-          <CadenceLanes state={lanes} selectedMarketId={null} onSelect={open} />
-        </section>
-        <section id="words" className="markets-section flex flex-col gap-4 scroll-mt-4" aria-label={SECTIONS.words.title}>
-          <SectionHead number={SECTIONS.words.index} title={SECTIONS.words.title} desc={SECTIONS.words.desc} />
-          <WordMarketBoard laneSet={lanes.laneSet} onSelect={open} />
-        </section>
+      <MarketsHero
+        market={selection.market}
+        openingRaw={openingRaw}
+        lanes={lanes}
+        resolving={selection.resolving}
+        onSelect={select}
+        onPickLane={pickLane}
+        ticket={selection.market ? <TicketDock market={selection.market} side={selection.side} sessionId={selection.sessionId} /> : null}
+      />
+      <div className="markets-main">
+        <div className="container">
+          <MarketsAllowance />
+          <YourCalls />
+          <section className="markets-section flex flex-col gap-4" aria-label={SECTIONS.lanes.title}>
+            <SectionHead number={SECTIONS.lanes.index} title={SECTIONS.lanes.title} live aside={<MarketSessionChip />} />
+            <CadenceLanes state={lanes} selectedMarketId={selection.marketId} onSelect={select} />
+            <ClosedStocks laneSet={lanes.laneSet} />
+          </section>
+          <section id="words" className="markets-section flex flex-col gap-4 scroll-mt-4" aria-label={SECTIONS.words.title}>
+            <SectionHead number={SECTIONS.words.index} title={SECTIONS.words.title} desc={SECTIONS.words.desc} />
+            <WordMarketBoard laneSet={lanes.laneSet} onSelect={select} />
+          </section>
+        </div>
+      </div>
+      {/* The dock rides above the page, as the reference mounts it (Owarine 90a91d71 MarketsScreen L94; O-6). */}
+      <SenseiDock laneSet={lanes.laneSet} market={selection.market} openingRaw={openingRaw} address={address} />
     </>
   );
 }

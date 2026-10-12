@@ -1,0 +1,19 @@
+/* O-3 (D-222): the Window chart's palette and fonts, read at runtime by `WindowChart.readPalette` — Owarine 90a91d71's
+   `--ow-*` chart slots mapped onto Mitoshi's tokens, so the hero chart follows the theme like the terminal's. */
+.window-chart {
+  --wc-ink: var(--color-ink);
+  --wc-muted: var(--color-ink-secondary);
+  --wc-helper: var(--color-ink-muted);
+  --wc-hairline: var(--color-hairline);
+  --wc-card: var(--color-surface-1);
+  --wc-up-line: var(--chart-up);
+  --wc-down-line: var(--chart-down);
+  --wc-up: var(--color-profit);
+  --wc-down: var(--color-loss);
+  --wc-on-line: var(--color-ink);
+  --wc-inverse: var(--chart-ground);
+  --wc-axis-font: 500 11px var(--font-data);
+  --wc-pill-font: 600 15px var(--font-data);
+  --wc-tag-font: 500 10px var(--font-data);
+  --wc-tag-strong-font: 600 10px var(--font-data);
+}

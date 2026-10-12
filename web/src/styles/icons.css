@@ -83,3 +83,5 @@
 .lane-chip-mark { width: 18px; height: 18px; }
 .swap-disc { width: 24px; height: 24px; font-size: 11px; }
 .swap-disc.has-mark { background: transparent; }
+.closed-stock-mark { display: inline-grid; flex: none; width: 36px; height: 36px; place-items: center; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-3); color: var(--color-ink); font: 700 13px/1 var(--font-body); }
+.closed-stock-mark.has-mark { background: transparent; }

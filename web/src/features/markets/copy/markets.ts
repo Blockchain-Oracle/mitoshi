@@ -18,6 +18,13 @@ export const LANE_CARD = {
   oddsLoading: "READING THE BOOK…",
   closing: "CLOSING · NEXT ROUND SOON",
   opensAt: (clock: string) => `OPENS ${clock}`,
+  /** Owarine 90a91d71 `CLOSED.kind` / `ListedCard` (O-5). */
+  kind247: "24/7 · stock",
+  kindCrypto: "24/7 · crypto",
+  schedule: (clock: string) => `Schedule a call · opens ${clock}.`,
+  scheduleLine: "Rest a call at your price now; it fills in the first minute after the bell if the book comes to you.",
+  scheduleCta: "Schedule a call",
+  scheduleMeta: "your price",
   priceLoading: "···",
   line: "line",
 } as const;
@@ -48,12 +55,6 @@ export const MARKETS = {
     successor: (cadence: string) => `That ${cadence} Window settled — moved you to its successor.`,
   },
   loadingWindows: "Loading live Windows",
-  list: {
-    eyebrow: "Markets",
-    title: "Every live Window",
-    body: "BTC, ETH, SOL and nine US stocks, in 5-minute to week-long Windows. Pick one to open it on the terminal — the live line, UP or DOWN in one tap, and every other way to call it.",
-    cta: "Open the terminal",
-  },
 } as const;
 
 export const HERO = {
@@ -87,10 +88,20 @@ export const HERO = {
     voided: "Voided",
   } as Record<string, string>,
   notFound: { why: "This Window is gone.", nextAction: { label: "Pick a live Window", href: "/markets" } },
+  /** The Window chart's own words (Owarine 90a91d71 `HERO.chart`; O-3). */
+  chart: {
+    opens: "OPENS",
+    open: "OPEN",
+    closes: "CLOSES",
+    closed: "CLOSED",
+    pending: "Waiting for the opening print",
+    vs: (label: string) => `vs ${label}`,
+  },
 } as const;
 
 /** The hero-as-ticket head (Yosuku /markets): the opening print is the line. */
 export const HERO_HEAD = {
+  alert: "Alert",
   holdsAbove: (asset: string) => `${asset} holds above`,
   pair: (asset: string) => `${asset} · USD`,
   cadenceGroup: "Market length",
@@ -127,4 +138,11 @@ export const DEPTH = {
   caption: "Order book depth for this Window — cumulative contracts by price, UP terms",
   bid: "Bid",
   ask: "Ask",
+} as const;
+
+/** The closed-market words (Owarine 90a91d71 `lib/copy-closed.ts`; O-2): plain facts while the US market is shut. */
+export const CLOSED = {
+  stocksTitle: "US stocks",
+  stocksLine: (opens: string) => `${opens}. No trading until the open.`,
+  noPrice: "—",
 } as const;

@@ -62,12 +62,23 @@ export function MarketCard({ market, selected, onSelect, upCents, downCents, hyd
           <AssetDisc asset={market.asset} className="glyph" />
           <span className="mc-ticker">{market.asset}</span>
           <span className="mc-cadence">{formatCadence(market.intervalSec)}</span>
+          {market.lane === "stock24" || market.lane === "crypto24" ? <span className="mc-kind">{market.lane === "crypto24" ? LANE_CARD.kindCrypto : LANE_CARD.kind247}</span> : null}
         </span>
         <span className="mc-countdown">
           <span className="clock-dot" aria-hidden />
           {listed ? LANE_CARD.opensAt(formatWallClock(market.tradingStartSec * 1000)) : <Countdown expirySec={market.expirySec} intervalSec={market.intervalSec} />}
         </span>
       </div>
+      {listed ? (
+        // Owarine 90a91d71 `ListedCard` (O-5): a Window listed for the next open is a scheduled call, said so — not an
+        // empty question over a price that isn't its own yet.
+        <div className="mc-body mc-listed">
+          <span className="mc-listed-dot" aria-hidden />
+          <p className="type-caption text-ink-secondary">
+            <span className="type-body-strong text-ink">{LANE_CARD.schedule(formatWallClock(market.tradingStartSec * 1000))}</span> {LANE_CARD.scheduleLine}
+          </p>
+        </div>
+      ) : (
       <div className="mc-body">
         <div className="mc-question">
           {HERO_HEAD.holdsAbove(market.asset)}{" "}
@@ -109,7 +120,15 @@ export function MarketCard({ market, selected, onSelect, upCents, downCents, hyd
           )}
         </div>
       </div>
-      {!closing && (
+      )}
+      {listed ? (
+        <div className="mc-foot">
+          <button type="button" className="mc-side mc-schedule" onClick={(event) => { event.stopPropagation(); onSelect(market.marketId); }}>
+            <span>{LANE_CARD.scheduleCta}</span>
+            <span className="price">{LANE_CARD.scheduleMeta}</span>
+          </button>
+        </div>
+      ) : !closing && (
         <div className="mc-foot">
           {(["up", "down"] as const).map((side) => (
             <button

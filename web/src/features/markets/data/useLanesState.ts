@@ -9,6 +9,7 @@ import { isOk } from "@cwf/core";
 import { keys, useLanes } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useDeferredValue } from "react";
+import { useClockValue } from "@/lib/clock";
 import { usePersistedState } from "@/lib/persisted";
 import { laneKeyOf, laneTabParts, parseLaneTabKey, type LaneTabKey } from "./lane-view";
 
@@ -47,7 +48,11 @@ export function useLanesState(): LanesState {
   const pinnedKey = pinned === NONE ? null : pinned;
   const pinnedLane = pinnedKey === null ? null : (lanes.find((lane) => laneKeyOf(lane) === pinnedKey) ?? null);
   const pinnedMissing = pinnedKey !== null && laneSet !== null && pinnedLane === null;
-  const activeLane = pinnedLane ?? (pinnedMissing ? null : (lanes[0] ?? null));
+  // Unpinned, the board opens on a lane trading now (Owarine 90a91d71 sorts lanes soonest first; O-2): off-hours the
+  // Regular lanes list only tomorrow's Windows, so leading with them showed a board of "opens 14:30" and no prices.
+  const minute = useClockValue((ms) => Math.floor(ms / 60_000));
+  const tradingNow = (lane: Lane) => lane.markets.some((m) => m.tradingStartSec <= minute * 60 && minute * 60 < m.lockAtSec);
+  const activeLane = pinnedLane ?? (pinnedMissing ? null : (lanes.find(tradingNow) ?? lanes[0] ?? null));
   const activeKey = pinnedMissing ? pinnedKey : activeLane ? laneKeyOf(activeLane) : null;
 
   return {
