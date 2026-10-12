@@ -138,10 +138,17 @@ export function runnerOrder(rv: RunnerVenue, input: { grant: VaultGrant; window:
   if (held.up + held.down > 0n) return { ok: false, why: "already in this Window" };
   const headroom = dailyHeadroomBase(grant, nowSec);
   const stakeBase = [grant.caps.maxStakePerTradeBase, headroom, grant.budgetBase].reduce((min, v) => (v < min ? v : min));
-  if (stakeBase <= 0n) return { ok: false, why: "no headroom today" };
+  if (stakeBase <= 0n) return { ok: false, why: grant.budgetBase <= 0n ? "its copy budget is spent" : "no headroom today" };
   if (!book) return { ok: false, why: "book unreadable" };
   const quote = quoteFromBook(book, w.grid, side, stakeBase, nowMs);
-  if (!quote) return { ok: false, why: `nothing rests to fill $${formatBaseUnits(stakeBase, w.grid.decimals, { minDp: 2, maxDp: 2 })} of ${side.toUpperCase()}` };
+  if (!quote) {
+    const usd = `$${formatBaseUnits(stakeBase, w.grid.decimals, { minDp: 2, maxDp: 2 })}`;
+    // A full-size order would fill: the grant's remainder, not the book, is short — named so the copier knows whether
+    // it comes back at 00:00 UTC (today's cap) or needs a new budget.
+    const short = stakeBase < grant.caps.maxStakePerTradeBase && quoteFromBook(book, w.grid, side, grant.caps.maxStakePerTradeBase, nowMs) !== null;
+    const limit = grant.budgetBase <= headroom ? "its copy budget" : "today's cap";
+    return { ok: false, why: short ? `${usd} left of ${limit}, under the smallest order of ${side.toUpperCase()}` : `nothing rests to fill ${usd} of ${side.toUpperCase()}` };
+  }
   const verdict = simulateCaps({
     grant, nowSec, marketId: w.marketId as never, sidePriceRaw: ownTermsPriceRaw(quote.limitPriceRaw, side, w.grid.decimals), quantityRaw: quote.contractsRaw,
     spendBase: quote.maxCostBase, one: oneUnit(w.grid.decimals), opensNewPosition: true,

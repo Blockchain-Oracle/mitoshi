@@ -48,6 +48,17 @@ describe("runnerOrder (S9.5)", () => {
     const poor = order(grant({ budgetBase: 500_000n }));
     expect(poor.ok && poor.stakeBase).toBe(500_000n);
     expect(order(grant({ spentDay: today, spentTodayBase: 10_000_000n }))).toEqual({ ok: false, why: "no headroom today" });
+    expect(order(grant({ budgetBase: 0n }))).toEqual({ ok: false, why: "its copy budget is spent" });
+  });
+
+  it("names the grant's remainder, not the book, when it is under the Series' smallest order", () => {
+    // The live grid's minimum is 1,000 lots — one contract, ~$0.60 here. $0.01 left of a $10 budget can't buy it.
+    const live = { ...window, grid: { ...window.grid, minLots: 1_000n } };
+    const at = (g: VaultGrant, b = book) => runnerOrder(rv, { grant: g, window: live, side: "down", book: b, held: { up: 0n, down: 0n }, nowSec: NOW, nowMs: NOW * 1000 });
+    expect(at(grant({ budgetBase: 10_000n }))).toEqual({ ok: false, why: "$0.01 left of its copy budget, under the smallest order of DOWN" });
+    const today = Math.floor(NOW / 86_400);
+    expect(at(grant({ spentDay: today, spentTodayBase: 9_990_000n }))).toEqual({ ok: false, why: "$0.01 left of today's cap, under the smallest order of DOWN" });
+    expect(at(grant(), { bids: [], asks: book.asks })).toEqual({ ok: false, why: "nothing rests to fill $2.00 of DOWN" });
   });
 
   it("leaves a subscriber already in the Window alone, and names a grant refusal instead of sending it", () => {
