@@ -1,8 +1,9 @@
 "use client";
 // The desk kit (R4-2, D-227; Owarine 90a91d71 components/ui/desk-kit): charts, controls, sequences. Fixture inputs only.
+import { formatBaseUnits } from "@cwf/core/units";
 import { Bot, Check, CircleSlash, Inbox } from "lucide-react";
 import { useState } from "react";
-import { PillButton } from "@/components/kit";
+import { CapitalBar, PillButton } from "@/components/kit";
 import { Donut, EmptyState, LogoStack, NumberTicker, PartitionBar, RadialGauge, RadioCards, Slider, Sparkline, StatusDot, StepProgress, TabsPanel, Timeline, TimelineDay, TimelineNode, UnderlineTabs, type Slice } from "@/components/kit/desk-kit";
 import { Fixture } from "./KitFixtures";
 
@@ -17,6 +18,7 @@ export function DeskKitFixtures() {
   const [pick, setPick] = useState<"follow" | "fade" | null>("follow");
   const [cap, setCap] = useState(40);
   const [step, setStep] = useState(2);
+  const [filter, setFilter] = useState<string | null>(null);
   return (
     <Fixture index="10" title="Desk kit">
       <div className="flex flex-wrap items-center gap-6">
@@ -30,6 +32,19 @@ export function DeskKitFixtures() {
         <LogoStack symbols={["BTC", "ETH", "SOL", "TSLA", "NVDA", "AAPL"]} />
       </div>
       <PartitionBar slices={SLICES} label="Capital split" />
+      <CapitalBar
+        label="Reserve capital"
+        format={(b) => `$${formatBaseUnits(b, 6, { minDp: 2, maxDp: 2 })}`}
+        totalBase={10_000_000n}
+        capBps={8_000}
+        active={filter}
+        onFilter={setFilter}
+        segments={[
+          { id: "idle", label: "Idle", valueBase: 5_500_000n, color: "var(--color-surface-3)" },
+          { id: "deployed", label: "Deployed", valueBase: 3_000_000n, color: "var(--color-accent)" },
+          { id: "won", label: "Won back", valueBase: 1_000_000n, color: "var(--color-profit)" },
+        ]}
+      />
       <Slider value={cap} onChange={setCap} min={0} max={100} step={5} label="Budget" display={`${cap}%`} />
       <div className="flex flex-wrap gap-2">
         <StatusDot tone="live">Live</StatusDot>

@@ -20,6 +20,8 @@ export { Keypad, type KeypadProps } from "./Keypad";
 export { InfiniteSlider } from "./InfiniteSlider";
 export { Masked, PrivacyToggle } from "./Masked";
 export { ScrollRail } from "./ScrollRail";
+export { GroupedList, GroupedItem, GroupedToggle } from "./GroupedList";
+export { CapitalBar, type CapitalBarProps, type CapitalSegment } from "./CapitalBar";
 export { SectionHeader, type SectionHeaderProps } from "../shell/SectionHeader";
 export { HoldToConfirm, type HoldToConfirmProps } from "../ui/hold-to-confirm";
 export { SlideOver, SlideOverContent, SlideOverTrigger, SlideOverClose, SheetFooter, type SlideOverProps, type SlideOverContentProps } from "../ui/drawer";

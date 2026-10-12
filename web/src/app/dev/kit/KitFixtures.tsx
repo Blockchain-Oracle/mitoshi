@@ -1,9 +1,9 @@
 "use client";
 // The kit's pieces at every tone and size (R4-2, D-227). Fixture inputs only.
 import { keypadDisplay } from "@cwf/core/input";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, History, Settings, ShieldCheck } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { Card, Eyebrow, FeatureCard, HoldToConfirm, InfiniteSlider, Keypad, Masked, Odometer, PillButton, pillButtonVariants, PrivacyToggle, ScrollRail, SectionHeader, Seal, Sticker, SwipeToConfirm, TextTabPanel, TextTabs, type FeatureTone, type PillTone } from "@/components/kit";
+import { Card, Eyebrow, FeatureCard, GroupedItem, GroupedList, GroupedToggle, HoldToConfirm, InfiniteSlider, Keypad, Masked, Odometer, PillButton, pillButtonVariants, PrivacyToggle, ScrollRail, SectionHeader, Seal, Sticker, SwipeToConfirm, TextTabPanel, TextTabs, type FeatureTone, type PillTone } from "@/components/kit";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 
 const TONES: PillTone[] = ["accent", "ink", "white", "ghost", "up", "down"];
@@ -25,6 +25,7 @@ export function KitFixtures() {
   const [swipe, setSwipe] = useState<"idle" | "busy" | "done">("idle");
   const [typed, setTyped] = useState("");
   const [held, setHeld] = useState(0);
+  const [sound, setSound] = useState(true);
   return (
     <div className="flex flex-col gap-10">
       <Fixture index="01" title="PillButton">
@@ -123,7 +124,15 @@ export function KitFixtures() {
         <Keypad value={typed} onChange={setTyped} labels={{ group: "Amount keypad", del: "Delete", point: "Decimal point" }} className="mx-auto w-full max-w-sm" />
       </Fixture>
 
-      <Fixture index="08" title="InfiniteSlider · ScrollRail">
+      <Fixture index="08" title="GroupedList">
+        <GroupedList title="Trading">
+          <GroupedItem icon={Settings} label="Trade settings" detail="1m" onClick={() => undefined} />
+          <GroupedItem icon={History} label="Trade history" href="#history" />
+          <GroupedToggle label="Sound" sub="Taps and fills" checked={sound} onChange={setSound} />
+        </GroupedList>
+      </Fixture>
+
+      <Fixture index="08b" title="InfiniteSlider · ScrollRail">
         <InfiniteSlider durationOnHover={90} duration={30}>
           {ASSETS.map((a) => (
             <span key={a} className="flex items-center gap-2 type-body-strong text-ink">

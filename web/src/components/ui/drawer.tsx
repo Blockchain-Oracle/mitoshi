@@ -92,7 +92,9 @@ export interface SlideOverContentProps {
 export function SlideOverContent({ title, description, eyebrow, hideHeading = false, keepMounted = false, footer, size = "md", onBack, headerLeft, fields = false, dismissible = true, instant = false, layer = "drawer", className, bodyClassName, children }: SlideOverContentProps) {
   const phone = usePhoneLayout();
   const [slot, setSlot] = useState<HTMLDivElement | null>(null);
-  const pinned = fields || !dismissible ? "" : undefined;
+  // A sheet with fields drags only from its grab bar; one that must not be dismissed does not drag at all (Base UI reads
+  // the attribute with `closest`, so on the popup it covers everything inside).
+  const pinned = fields ? "" : undefined;
   const left = onBack ? (
     <button type="button" className="slide-over-back" aria-label={SHELL.back} title={SHELL.back} onClick={onBack}>
       <ChevronLeft aria-hidden className="size-4" />
@@ -102,7 +104,7 @@ export function SlideOverContent({ title, description, eyebrow, hideHeading = fa
     <BaseDrawer.Portal keepMounted={keepMounted}>
       <BaseDrawer.Backdrop className={cn("slide-over-backdrop", layer === "modal" && "on-modal")} />
       <BaseDrawer.Viewport className={cn("slide-over-viewport", layer === "modal" && "on-modal")}>
-        <BaseDrawer.Popup className={cn("slide-over-popup", instant && "is-instant", className)} data-size={size}>
+        <BaseDrawer.Popup className={cn("slide-over-popup", instant && "is-instant", className)} data-size={size} data-base-ui-swipe-ignore={dismissible ? undefined : ""}>
           <span aria-hidden className="slide-over-grab" />
           <BaseDrawer.Content className="slide-over-content">
             <div className={cn("slide-over-head", hideHeading && "sr-only", left ? "has-left" : null)}>
