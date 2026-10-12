@@ -41,7 +41,7 @@ describe("bridge encoders (R4-12)", () => {
     expect(decodeFunctionData({ abi: erc20Abi, data: mirror!.data }).args[1]).toBe(5_000_000n);
     const decoded = decodeFunctionData({ abi: tIP20MintBurnAdapterAbi, data: send!.data });
     expect(decoded.functionName).toBe("send");
-    const [sp, fee, refund] = decoded.args as [{ dstEid: number; amountLD: bigint; composeMsg: string }, { nativeFee: bigint }, string];
+    const [sp, fee, refund] = decoded.args as unknown as [{ dstEid: number; amountLD: bigint; composeMsg: string }, { nativeFee: bigint }, string];
     expect(sp.dstEid).toBe(40245);
     expect(sp.amountLD).toBe(5_000_000n);
     expect(sp.composeMsg.slice(2, 66)).toBe((40451).toString(16).padStart(64, "0"));

@@ -20,3 +20,7 @@ export type BridgeIntent =
   | { kind: "bridge-claim-deferred"; ticker: BridgeTicker }
   /** Send a deferred credit straight back to Robinhood Chain (relay-sponsored gas; the LayerZero fee is the holder's). */
   | { kind: "bridge-send-deferred"; ticker: BridgeTicker; amountSD: bigint; recipient: Address; feeBase: bigint };
+
+/** Why the destination held a credit (contracts/src/common/BridgeTypes.sol `DeferReason`, in order; B.1.4). */
+export const DEFER_REASONS = ["none", "invalid-recipient", "token-paused", "policy", "supply-cap", "rate-limit", "receive-policy", "call-reverted"] as const;
+export type DeferReason = (typeof DEFER_REASONS)[number];

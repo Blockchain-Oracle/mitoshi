@@ -18,6 +18,8 @@ export interface LegRecord {
   verifiedAtSec: number | null;
   dstTx: string | null;
   dstAtSec: number | null;
+  /** Set when the destination held the credit (`CreditDeferred` / `UnlockDeferred`). */
+  deferReason?: string | null;
 }
 
 export interface BridgeMessageRow {
