@@ -12,9 +12,7 @@ import { ARCADE } from "./copy";
 import { FlapCanvas, type FlapCue, type FlapHud } from "./FlapCanvas";
 import { RideCanvas, type RideCue, type RideHud } from "./RideCanvas";
 import { localSeed, type ArcadePhase, type ArcadeRun, type RunEnd } from "./run";
-import { useArcadeScore, type PostAbility, type RoomAuth } from "./useArcadeScore";
-
-const NO_ROOM: RoomAuth = { kind: "unavailable" };
+import { useArcadeScore, type PostAbility } from "./useArcadeScore";
 import "./arcade.css";
 
 /**
@@ -28,8 +26,7 @@ import "./arcade.css";
  * Phase is Pips's three: title, playing, over. A run is a seed and the calm flag — the seed from the
  * board's GET when it answered, the browser's own when it did not — and what ends a run is the engine,
  * never the player: there is no quit, so every run that ends is a run that can be posted. Posting
- * carries the duel room's token (the browser key's word for the wallet, no prompt); a signed-out player
- * plays the same game and the board says "connect to post".
+ * rides the caller's session (D-226); a signed-out player plays the same game and the board says "sign in to post".
  */
 interface Hud {
   score: number;
@@ -45,8 +42,7 @@ function localWhy(ability: PostAbility): PostState {
 export function ArcadeStage({ game }: { game: ArcadeGame }) {
   const { reducedMotion, feedback } = useGames();
   const { address } = useWalletSession();
-  const auth = NO_ROOM;
-  const { board, refresh, post, ability } = useArcadeScore(game, auth);
+  const { board, refresh, post, ability } = useArcadeScore(game);
   const words = ARCADE.games[game];
   const Icon = gameEntry(game).nav.icon;
 

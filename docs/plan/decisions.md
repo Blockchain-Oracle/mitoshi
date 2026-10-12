@@ -2037,6 +2037,25 @@ balance · account; Everything carries the places grid and the theme.
 **Why:** the owner's brief for round 2 (D-224) applies to every surface: Owarine's component and words, real data, no
 invented yield.
 
+### D-226 — Round 3: no Stocks section, Markets is every market, every width works (owner, 2026-10-12)
+
+The owner, after round 2: still mediocre; not responsive; "why a /stocks section… market is beyond stocks, we also
+have BTC"; Line Rider can't be played; loading states, Sensei, /earn's "Where the capital is" and News fall short; read
+Owarine's code, not screenshots; use 21st.dev for parts; fix what he didn't name too. Plan:
+`owarine-plan-r3-2026-10-12.md` (slices A–I).
+
+1. **No Stocks place.** Owarine's places (Trade · Markets · Portfolio · Games · Automate · Leaderboard). `/stocks` →
+   `/markets`; the stock hub is `/tickers/[symbol]` (Owarine's route), reached from cashtags, cards and the hero.
+2. **24/7 lanes carry crypto and 24/7 stocks together**, crypto first; the default lane is `5m · 24/7` and the hero
+   defaults to BTC. Regular-session lanes stay their own (`5m`, `15m`, `1h`, `Gap`).
+3. **Every app page except `/` and `/pitch` renders in the app shell** (Owarine's `ShellChrome` rule).
+4. **One breakpoint set** (640/768/1024/1280) and Owarine's in-stage rules (`html[data-shell]`); each slice is checked
+   at 320 · 375 · 768 · 1024 · 1440 in both themes with an overflow sweep.
+5. **Game sounds ship as files** (Owarine's CC0 Kenney set); the terminal's cues stay synthesised.
+6. **The arcade board is real:** replay-checked scores in Mitoshi's Postgres, as Owarine's `score.server.ts`.
+
+**Why:** the owner's words of 2026-10-12, and the audit that found the causes (plan file, Context table).
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

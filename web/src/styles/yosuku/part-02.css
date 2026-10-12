@@ -211,7 +211,7 @@ body.urgent::before {
 @media (prefers-reduced-motion: reduce) { .sensei-dots i { animation: none; } }
 
 /* ── SenseiDock: a compact Yosuku mark that expands on hover, with a cute question teaser ── */
-.sensei-dock-wrap { position: fixed; right: 22px; bottom: 22px; z-index: 900; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.sensei-dock-wrap { position: fixed; right: 22px; bottom: 22px; z-index: var(--z-float); display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 .sensei-dock {
   position: relative; display: inline-flex; align-items: center; gap: 0;
   padding: 7px; border: 0; cursor: pointer; border-radius: 999px;

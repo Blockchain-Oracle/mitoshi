@@ -1,6 +1,15 @@
 /* Ported from Masayume 68f7a09:web/src/styles/tokens.css */
 /* Component-tier tokens — one section per DESIGN.md `components:` key. Values reference theme.css; nothing is re-typed here. */
 :root {
+  /* layers (D-226): one stacking order — sticky top line < rail and dock < floating buttons (Sensei, Parlay slip)
+   * < drawers and sheets < command palette < modals. A floating button never covers an open overlay. */
+  --z-sticky: 30;
+  --z-chrome: 40;
+  --z-float: 45;
+  --z-drawer: 60;
+  --z-command: 70;
+  --z-modal: 100;
+
   /* ticket */
   --ticket-surface: var(--color-surface-1);
   --ticket-border: var(--color-hairline);

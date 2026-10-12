@@ -11,15 +11,15 @@
 /* m6x11plus by Daniel Linssen (public/fonts/SOURCES.md), the game frame's display type; Sora, Inter and Mono stay on the shell.
  * A pixel face reads clean at multiples of its 11px em, so the sizes below are 11, 22, 33, 44. */
 @font-face {
-  font-family: "Owarine Pixel";
+  font-family: "m6x11plus";
   src: url("/fonts/m6x11plus.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 .gm-frame, .du-modal, .gm-howto, .gm-settings-modal {
-  /* P4 (D-222/D-223): Owarine's signal is Mitoshi's accent; no pixel face ships, so the mono stands in. */
-  --font-pixel: var(--font-data, var(--font-mono));
+  /* P4 (D-222/D-223): Owarine's signal is Mitoshi's accent. The pixel face ships with the games (D-226). */
+  --font-pixel: "m6x11plus", var(--font-data, var(--font-mono));
   --signal: var(--color-accent);
   --signal-ink: var(--color-accent);
   --on-signal: var(--on-accent);
@@ -54,6 +54,17 @@
 .gm-frame a[role="button"]:active,
 .gm-frame .gm-card:active,
 .gm-sheet button:not(:disabled):active { transform: scale(0.97); }
+/* The commit button (Owarine 90a91d71 `duel/duel.css:79-86`; that sheet doesn't ship here, so the arcade's PLAY was text). */
+.du-cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  align-self: stretch; min-height: var(--button-primary-height); padding: 0 20px;
+  border-radius: var(--button-primary-radius);
+  background: var(--button-primary-fill); color: var(--button-primary-ink);
+  font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: 0.02em;
+  transition: filter 160ms var(--ease); font-stretch: 100%; }
+.du-cta:not(:disabled):hover { background: var(--button-primary-hover); }
+.du-cta:disabled { opacity: 0.45; cursor: not-allowed; }
+.du-cta--quiet { background: transparent; color: var(--white); border: 1px solid var(--color-hairline); }
 .du-cta, .st-call {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -2px 0 rgba(0, 0, 0, 0.32), 0 2px 0 rgba(0, 0, 0, 0.55);
 }

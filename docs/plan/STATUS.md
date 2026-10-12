@@ -1,9 +1,14 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
+**2026-10-12, round 3 (D-226, `owarine-plan-r3-2026-10-12.md`): the owner's review after round 2 — no Stocks section,
+Markets carries every market, every width works, Line Rider fixed, loading, Sensei, Earn, News. Slices A → I in order,
+each deployed and checked at five widths; then `/launch*` (uncommitted intents/encoders/reads in `packages/*/launch`).**
+
 **2026-10-12: Owarine is the baseline (D-222, `owarine-parity.md`). P0–P4, then round 2 (`owarine-plan-r2-2026-10-12.md`,
 D-224) R1 words · R1b sign-in at the end (the owner's clip) · P5 stocks · P6 phone pass are built and deployed to
-testnet. Next, in order: `/earn`, `/launch*`, `/themes*` on the deployed contracts; S14 bridge and reserves; S11 X;
-S12b arena; SM1–SM5.**
+testnet. `/earn` is built on the deployed maker vault and the three house reserves (D-225, `45b74c2`; S8 box 2 ticked;
+live check `scripts/drive/earn-live.ts` against the deployed relay). Next, in order: `/launch*`, `/themes*` on the
+deployed contracts; S14 bridge and reserves; S11 X; S12b arena; SM1–SM5.**
 
 Updated 2026-10-11 09:45Z (**S9 built and deployed; its gate's chain items pass on Moderato** — copy in one tx, stop in
 one tx the deployed relay sponsors, live runner placements on a copier's STRATEGY grant, copier P&L = index, the Memory

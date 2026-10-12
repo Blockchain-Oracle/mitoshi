@@ -65,3 +65,13 @@ The discs that name a listed asset (`web/src/components/icons/asset-marks/`) car
 | Amazon | simple-icons **14.15.0**, the last release to carry `amazon.svg` | CC0 1.0 at publication (removed in 15.0.0 by the maintainers pending permission, not on a request from Amazon) |
 | Microsoft | Own geometry: four rectangles in `paths.ts`; no third-party artwork | — |
 | Bitcoin, Ethereum | Masayume's own marks | — |
+
+## Game sounds and pixel type (D-226)
+
+Shipped as files under `web/public/` for `/games` only (the terminal's cues stay synthesised in code), ported from
+Owarine 90a91d71 with their provenance files:
+
+| Files | Source | Terms |
+| --- | --- | --- |
+| `sounds/{click,modal-open,modal-close,card-win,card-loss,swipe-up,swipe-down,match-found,duel-win,duel-lose}.mp3` | Kenney — Interface Sounds, Digital Audio, Music Jingles (kenney.nl) | CC0 1.0 (`web/public/sounds/SOURCES.md`) |
+| `fonts/m6x11plus.ttf` | m6x11plus by Daniel Linssen (managore.itch.io/m6x11) | Free to use with attribution; the credit is shown in the games' settings sheet (`web/public/fonts/SOURCES.md`) |

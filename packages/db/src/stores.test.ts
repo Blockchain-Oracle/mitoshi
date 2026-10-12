@@ -7,13 +7,13 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createPgFaucetStore, createPgKeychainStore, createPgLedger, createPgPrivateClaimsStore, createPgTransferStore, createPgVitalsStore, createSql, runMigrations, type Sql } from "./index";
+import { createPgArcadeStore, createPgFaucetStore, createPgKeychainStore, createPgLedger, createPgPrivateClaimsStore, createPgTransferStore, createPgVitalsStore, createSql, runMigrations, type Sql } from "./index";
 
 const BIN = "/opt/homebrew/opt/postgresql@16/bin";
 const hasPg = spawnSync(`${BIN}/initdb`, ["--version"]).status === 0;
 const PORT = 55_437;
 
-describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain, transfers, vitals, private claims)", () => {
+describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain, transfers, vitals, private claims, arcade)", () => {
   let dir: string;
   let server: ChildProcess;
   let sql: Sql;
@@ -118,5 +118,21 @@ describe.skipIf(!hasPg)("Postgres stores (relay ledger, faucet, keychain, transf
     expect(await store.get(slot)).toMatchObject({ status: "open", request: null, updatedAtMs: 400 });
     await store.savePending({ slotId: `0x${"cd".repeat(32)}`, owner: "0x00000000000000000000000000000000000000d2", chainId: 42431, request: {}, nowMs: 600 });
     expect((await store.listByOwner(owner.toLowerCase())).map((r) => r.slotId)).toEqual([slot]);
+  });
+  it("keeps one arcade row per run and ranks each wallet's best, equals sharing a rank and the earlier ahead", async () => {
+    const store = createPgArcadeStore(sql);
+    const run = { game: "line-rider", engineVersion: 1, durationMs: 9_000, seed: "1d1e5eed", traceHash: "h", calm: false } as const;
+    await store.record({ ...run, wallet: "0x00000000000000000000000000000000000000A1", score: 40 });
+    await store.record({ ...run, wallet: "0x00000000000000000000000000000000000000a1", score: 90 });
+    await store.record({ ...run, wallet: "0x00000000000000000000000000000000000000b2", score: 90 });
+    await store.record({ ...run, wallet: "0x00000000000000000000000000000000000000c3", score: 120, calm: true });
+    await store.record({ ...run, wallet: "0x00000000000000000000000000000000000000d4", score: 999, engineVersion: 2 });
+    const board = await store.board("line-rider", 1, 10);
+    expect(board.map((r) => [r.wallet.slice(-2), r.score])).toEqual([["c3", 120], ["a1", 90], ["b2", 90]]);
+    expect(board[0]?.calm).toBe(true);
+    expect(await store.best("0x00000000000000000000000000000000000000A1", "line-rider", 1)).toBe(90);
+    expect(await store.best("0x00000000000000000000000000000000000000a1", "candle-hop", 1)).toBeNull();
+    expect(await store.rank("line-rider", 1, 90)).toBe(2);
+    expect(await store.rank("line-rider", 1, 121)).toBe(1);
   });
 });

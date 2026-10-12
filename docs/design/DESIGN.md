@@ -56,8 +56,8 @@ All sizes are `layout` tokens in `packages/tokens` (S22.1); none are written in 
 
 ## Feedback (sound, haptics, music — D-189, `revamp-parity.md` RV-70…RV-75)
 
-- Cues are synthesised in code (Owarine `ecb7565b` `lib/sound/trade.ts`, to Tradash's measured contours); **no audio
-  files ship**. One AudioContext, imported and unlocked on the first gesture, resumed on visibility, rebuilt if stuck.
+- Terminal cues are synthesised in code (Owarine `ecb7565b` `lib/sound/trade.ts`, to Tradash's measured contours); no
+  audio files ship for them. `/games` plays Owarine's CC0 Kenney files (`web/public/sounds/`, D-226). One AudioContext, imported and unlocked on the first gesture, resumed on visibility, rebuilt if stuck.
 - Tap cue (gain .3) + 8 ms haptic on rail, dock, drawers and chips; trade cues only in the terminal; music is off by
   default and stops when the tab hides; every sound respects the "Sound & Vibration" setting (`cwf.feedback.v1`).
 - A sound never blocks or breaks an action: every audio error is swallowed.

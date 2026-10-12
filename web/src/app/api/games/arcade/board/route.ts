@@ -1,11 +1,21 @@
-// `GET /api/games/arcade/board` (P4, D-223): Mitoshi keeps no arcade scores yet (the score replay server lands with
-// the game room, S12b), and says so — `configured: false`, no rows, and a fresh seed for the next run from the server's
-// own entropy, as the board always hands out. Every run's best stays on the device.
-import { randomBytes } from "node:crypto";
-import { NextResponse } from "next/server";
-import { connection } from "next/server";
+// `GET /api/games/arcade/board?game=…&address=…` (D-226): the top ten replayed runs on this engine build, the caller's
+// best and rank, and a fresh eight-hex seed for the next run (Owarine 90a91d71 `readBoard`).
+import { isArcadeGame } from "@cwf/core/games/arcade";
+import { connection, NextResponse } from "next/server";
+import { readBoard } from "@/features/games/arcade/score.server";
 
-export async function GET() {
+const noStore = { "cache-control": "no-store" };
+
+export async function GET(req: Request) {
   await connection();
-  return NextResponse.json({ configured: false, seed: randomBytes(16).toString("hex"), engineVersion: 1, rows: [], me: null }, { headers: { "cache-control": "no-store" } });
+  const url = new URL(req.url);
+  const game = url.searchParams.get("game") ?? "";
+  if (!isArcadeGame(game)) return NextResponse.json({ error: "unknown game" }, { status: 400, headers: noStore });
+  const address = url.searchParams.get("address");
+  const valid = address && /^0x[0-9a-fA-F]{40}$/.test(address) ? address : null;
+  try {
+    return NextResponse.json(await readBoard(game, valid), { headers: noStore });
+  } catch {
+    return NextResponse.json({ error: "the board did not answer" }, { status: 503, headers: noStore });
+  }
 }
