@@ -1,7 +1,9 @@
 "use client";
 // Ported from Owarine ecb7565b:web/src/features/terminal/ui/TradeButtons.tsx — CSS swap animation (no motion runtime
 // on the terminal's critical path), Mitoshi's tokens, and the blocked reason under a button in the CTA's own words.
-import { ArrowDown, ArrowUp, ArrowUpRight, LoaderCircle, X } from "lucide-react";
+// R4-0 (D-227): the reference's `why` — while the pair is off, one plain sentence above it — and a reason both sides
+// share is that one line too; a side with nothing to say renders no note row.
+import { ArrowDown, ArrowUp, ArrowUpRight, Info, LoaderCircle, X } from "lucide-react";
 import { TERMINAL } from "../copy";
 
 /**
@@ -10,18 +12,26 @@ import { TERMINAL } from "../copy";
  * tap says why in a toast — but reads dimmed with the reason beneath.
  */
 export type TradeButtonsProps =
-  | { mode: "flat"; onUp: () => void; onDown: () => void; busy: "up" | "down" | null; upSub: string | null; downSub: string | null; upNote: string | null; downNote: string | null; disabled?: boolean; /** The side already chosen (Parlay mode: this Window's leg). */ picked?: "up" | "down" | null }
+  | { mode: "flat"; onUp: () => void; onDown: () => void; busy: "up" | "down" | null; upSub: string | null; downSub: string | null; upNote: string | null; downNote: string | null; disabled?: boolean; /** The side already chosen (Parlay mode: this Window's leg). */ picked?: "up" | "down" | null; /** While the pair is off: why, in one sentence. */ why?: string | null }
   | { mode: "open"; trailActive: boolean; trailEligible: boolean; trailNote: string | null; onTrail: () => void; onClose: () => void; busy: "close" | "trail" | null; lockedText: string | null };
 
 const spin = <LoaderCircle aria-hidden className="tm-spin" />;
 
 export function TradeButtons(props: TradeButtonsProps) {
   if (props.mode === "flat") {
+    const shared = props.why ?? (props.upNote !== null && props.upNote === props.downNote ? props.upNote : null);
     return (
       <div key="flat" className="tm-buttons tm-swap">
+        {shared ? (
+          <p id="tm-note-both" role="status" className="tm-why">
+            <Info aria-hidden />
+            <span>{shared}</span>
+          </p>
+        ) : null}
         {(["up", "down"] as const).map((side) => {
           const up = side === "up";
           const note = up ? props.upNote : props.downNote;
+          const noteId = shared ? "tm-note-both" : `tm-note-${side}`;
           const sub = up ? props.upSub : props.downSub;
           return (
             <div key={side} className="tm-btn-col">
@@ -32,7 +42,7 @@ export function TradeButtons(props: TradeButtonsProps) {
                 onClick={up ? props.onUp : props.onDown}
                 disabled={props.disabled || props.busy !== null}
                 aria-disabled={note ? true : undefined}
-                aria-describedby={note ? `tm-note-${side}` : undefined}
+                aria-describedby={note || props.why ? noteId : undefined}
               >
                 {props.busy === side ? spin : up ? <ArrowUp aria-hidden strokeWidth={3} /> : <ArrowDown aria-hidden strokeWidth={3} />}
                 <span className="tm-btn-label">
@@ -40,7 +50,7 @@ export function TradeButtons(props: TradeButtonsProps) {
                   {sub ? <span className="tm-btn-sub">{sub}</span> : null}
                 </span>
               </button>
-              <span id={`tm-note-${side}`} className="tm-btn-note">{note ?? ""}</span>
+              {note && !shared ? <span id={noteId} className="tm-btn-note">{note}</span> : null}
             </div>
           );
         })}

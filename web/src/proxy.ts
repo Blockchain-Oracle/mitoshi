@@ -25,7 +25,6 @@ export function proxy(request: NextRequest): NextResponse {
   const posture = postureOf(country);
   const held = encodePosture(posture);
   const headers = new Headers(request.headers);
-  headers.set("x-cwf-path", request.nextUrl.pathname);
   for (const pillar of GEOFENCE_PILLARS) {
     if (posture[pillar] === "restricted") headers.set(REGION_HEADER[pillar], "restricted");
     else headers.delete(REGION_HEADER[pillar]);

@@ -36,6 +36,13 @@ const TICKER_GROUPS: { heading: string; items: readonly NavItem[] }[] = [
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  // Every way out clears the query — Esc, the backdrop, ⌘K again (R4-0, D-227: only a pick did, so the next open showed
+  // the old filter). Reset while rendering the close, React's pattern for state that follows a prop.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (!open) setQuery("");
+  }
   const groups = useMemo(
     () => (query.trim() ? [...GROUPS, ...TICKER_GROUPS] : GROUPS).map((g) => ({ ...g, items: searchNav(g.items, query) })).filter((g) => g.items.length > 0),
     [query],

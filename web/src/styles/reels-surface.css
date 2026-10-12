@@ -1,15 +1,17 @@
 /* /reels in Mitoshi's shell (S13 step 9). The ported reel (`reel.css`, `reel-chrome.css`, `take.css`, from Masayume)
  * pinned itself `position: fixed` under the old Masayume header. Here the stage holds it edge to edge, as it holds the
  * terminal: no top line or footer, the rail on desktop, the dock floating over the card's bottom padding on phones. */
-.app-column:has(.reels-surface) { padding: 0; }
-.app-column:has(.reels-surface) > .app-topline, .app-column:has(.reels-surface) > .footer { display: none; }
-.app-column:has(.reels-surface) .appstrip, .app-column:has(.reels-surface) .shell-banner[data-kind="signed-out"] { display: none; }
-.app-stage:has(> .reels-surface) { display: flex; height: 100dvh; padding: 0; overflow: hidden; border: 0; border-radius: 0; }
+/* R4-0 (D-227): a copy of /reels Next keeps for Back is hidden in place (`display: none` on `.reels-surface`); only a
+ * visible surface reshapes the shell, and the stage is a column (app-shell.css, the terminal's block). */
+.app-column:has(.reels-surface:not([style*="display: none"])) { padding: 0; }
+.app-column:has(.reels-surface:not([style*="display: none"])) > .app-topline, .app-column:has(.reels-surface:not([style*="display: none"])) > .footer { display: none; }
+.app-column:has(.reels-surface:not([style*="display: none"])) .appstrip, .app-column:has(.reels-surface:not([style*="display: none"])) .shell-banner[data-kind="signed-out"] { display: none; }
+.app-stage:has(> .reels-surface:not([style*="display: none"])) { display: flex; flex-direction: column; height: 100dvh; padding: 0; overflow: hidden; border: 0; border-radius: 0; }
 @media (min-width: 768px) {
-  .app-column:has(.reels-surface) { padding: var(--spacing-rail-inset) var(--spacing-rail-inset) var(--spacing-rail-inset) calc(var(--spacing-rail-compact) + var(--spacing-rail-inset) * 2); }
-  .app-stage:has(> .reels-surface) { height: calc(100dvh - var(--spacing-rail-inset) * 2); border: var(--spacing-stage-edge) solid var(--color-stage-edge); border-radius: var(--radius-xl); }
+  .app-column:has(.reels-surface:not([style*="display: none"])) { padding: var(--spacing-rail-inset) var(--spacing-rail-inset) var(--spacing-rail-inset) calc(var(--spacing-rail-compact) + var(--spacing-rail-inset) * 2); }
+  .app-stage:has(> .reels-surface:not([style*="display: none"])) { height: calc(100dvh - var(--spacing-rail-inset) * 2); border: var(--spacing-stage-edge) solid var(--color-stage-edge); border-radius: var(--radius-xl); }
 }
-@media (min-width: 1280px) { .app-column:has(.reels-surface) { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
+@media (min-width: 1280px) { .app-column:has(.reels-surface:not([style*="display: none"])) { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
 
 .reels-surface { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; }
 /* The feed fills the stage instead of the viewport under a header that no longer exists. */

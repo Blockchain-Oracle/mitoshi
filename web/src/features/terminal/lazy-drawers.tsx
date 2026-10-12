@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 export const MarketsDrawer = dynamic(() => import("./ui/MarketsDrawer").then((m) => m.MarketsDrawer), { ssr: false });
 export const SettingsDrawer = dynamic(() => import("./ui/SettingsDrawer").then((m) => m.SettingsDrawer), { ssr: false });
 export const AccountDrawer = dynamic(() => import("./ui/AccountDrawer").then((m) => m.AccountDrawer), { ssr: false });
+export const DemoHistoryDrawer = dynamic(() => import("./ui/DemoHistoryDrawer").then((m) => m.DemoHistoryDrawer), { ssr: false });
 export const PositionDetails = dynamic(() => import("./ui/PositionDetails").then((m) => m.PositionDetails), { ssr: false });
 export const ExitsDrawer = dynamic(() => import("./ui/ExitsDrawer").then((m) => m.ExitsDrawer), { ssr: false });
 export const RoomDrawer = dynamic(() => import("./ui/RoomDrawer").then((m) => m.RoomDrawer), { ssr: false });

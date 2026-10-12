@@ -1,22 +1,12 @@
-// Ported from Masayume 68f7a09:web/src/app/not-found.tsx — distinct not-found copy (it said "That page moved", ux-audit
-// §8) through the 21st 29419 layout, with the closest nav destination suggested.
-import { headers } from "next/headers";
-import { Suspense } from "react";
-import { NotFound } from "@/components/states/NotFound";
-import { EVERYTHING_ITEMS, RAIL_NAV } from "@/components/shell/header/nav-items";
+// The 404 for every unmatched URL and any `notFound()` outside the app group (R4-0, D-227; Owarine 90a91d71
+// `app/not-found.tsx`): the VOID ticket in the app's frame, which loads with the 404 only (`NotFoundPage`), and the
+// status stays 404. An app page's `notFound()` renders `app/(app)/not-found.tsx`, inside the group's frame.
+import type { Metadata } from "next";
+import { NotFoundPage } from "@/features/not-found/NotFoundPage";
+import { NOT_FOUND } from "@/lib/copy";
 
-async function Suggested() {
-  const h = await headers();
-  const path = h.get("x-cwf-path");
-  const first = path?.split("/").filter(Boolean)[0]?.toLowerCase() ?? "";
-  const hit = first ? [...RAIL_NAV, ...EVERYTHING_ITEMS].find((i) => !i.external && i.href.split("/")[1]?.startsWith(first.slice(0, 4))) : undefined;
-  return <NotFound requestedPath={path} suggestion={hit ? { label: hit.href, href: hit.href } : null} />;
-}
+export const metadata: Metadata = { title: NOT_FOUND.pageTitle };
 
-export default function NotFoundPage() {
-  return (
-    <Suspense fallback={<NotFound />}>
-      <Suggested />
-    </Suspense>
-  );
+export default function NotFound() {
+  return <NotFoundPage />;
 }

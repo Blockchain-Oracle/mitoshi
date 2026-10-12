@@ -1,5 +1,6 @@
 // Ported from Masayume 68f7a09:web/src/features/markets/hero/HeroQuestion.tsx — the question over the Window's signed
-// opening print; before it exists the headline names the pair instead of inventing a level.
+// opening print; before it exists the headline names the pair instead of inventing a level. R4-0 (D-227): the level
+// and its "?" never part (`.mh-question-end`), and a pending line ellipsizes instead of breaking word by word.
 import { neededMove } from "@cwf/core";
 import { cn } from "@/lib/utils";
 import { HERO, HERO_HEAD } from "../copy";
@@ -15,7 +16,10 @@ export function HeroQuestion({ asset, openingRaw, currentRaw }: { asset: string;
           HERO_HEAD.pair(asset)
         ) : (
           <>
-            {HERO_HEAD.holdsAbove(asset)} <span className="mh-question-line">{usd0(openingRaw)}</span>?
+            {HERO_HEAD.holdsAbove(asset)}{" "}
+            <span className="mh-question-end">
+              <span className="mh-question-line">{usd0(openingRaw)}</span>?
+            </span>
           </>
         )}
       </h2>

@@ -33,7 +33,7 @@ export function useDemoSettle(active: boolean): void {
           const held = BigInt(p.contractsRaw);
           const payout = m.state === "voided" ? held / 2n : (m.winningOutcome === 0) === (p.side === "up") ? held : 0n;
           const pnl = payout - BigInt(p.costBase);
-          settlePaper(p.id, { kind: "settle", asset: p.asset, side: p.side, intervalSec: p.intervalSec, costBase: p.costBase, pnlBase: pnl.toString(), openedAtMs: p.openedAtMs, closedAtMs: Date.now() });
+          settlePaper(p.id, { kind: "settle", asset: p.asset, side: p.side, intervalSec: p.intervalSec, costBase: p.costBase, pnlBase: pnl.toString(), openedAtMs: p.openedAtMs, closedAtMs: Date.now(), voided: m.state === "voided" || undefined });
           closeFeedback(Number(pnl));
           notify.item({ title: TERMINAL.toast.settledDemo(p.asset), description: m.state === "voided" ? TERMINAL.toast.voidedDemo : TERMINAL.close.realized(money(pnl, true), money(payout)) });
         });

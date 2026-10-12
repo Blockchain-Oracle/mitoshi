@@ -87,7 +87,7 @@
 
 .app-topline { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--spacing-topline); padding: max(10px, env(safe-area-inset-top, 0px)) 0 10px; }
 .topline-lead, .topline-tools { display: flex; min-width: 0; align-items: center; gap: 6px; }
-@media (min-width: 768px) { .topline-mark, .topline-network { display: none; } }
+@media (min-width: 768px) { .topline-mark { display: none; } }
 .topline-icon { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--radius-full); color: var(--color-ink-secondary); }
 .topline-icon:hover { color: var(--color-ink); background: var(--color-surface-2); }
 .topline-icon svg, .topline-search svg { width: 20px; height: 20px; }
@@ -107,9 +107,15 @@
 @media (max-width: 767px) {
   .topline-tools [aria-keyshortcuts="?"], .topline-tools .money-eye { display: none; }
 }
-@media (max-width: 380px) { .topline-network { padding: 0 8px; } .topline-network .network-label { display: none; } }
 .sign-in-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-.sign-in-button.top-account .sign-in-icon { display: none; }
+/* R4-0 (D-227): Sign in meets the 44 px floor (the `.btn` was 35 px) with its icon; at ≤ 380 px it is the icon alone
+   (Owarine `.ow-seat-cta--bar`), so the phone's top line fits beside the mark, the mode and the balance. */
+.app-topline .sign-in-button { height: 44px; padding: 0 16px; font: 700 14px/1 var(--font-body); }
+@media (min-width: 1280px) { .rail-account.sign-in-button { height: 44px; font: 700 14px/1 var(--font-body); } }
+@media (max-width: 380px) {
+  .app-topline .sign-in-button { width: 44px; padding: 0; }
+  .app-topline .sign-in-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 /* The wrappers only choose a width; the signed-out button keeps its own box. */
 span.top-money, span.top-account { display: contents; }
 @media (min-width: 1280px) { .top-money { display: none; } }
@@ -190,20 +196,29 @@ span.top-money, span.top-account { display: contents; }
 
 @media (prefers-reduced-motion: reduce) { .rail-pill, .dock-pill, .rail-item { transition: none; } }
 
-/* ── the terminal (S23, D-192): the screen is the workspace — no top line, footer or dock; the stage holds it edge to
- * edge (inset on the rail's side as every page, full-bleed on phones). `:has()` reads the route group's wrapper, so
- * the shell needs no pathname read. ─────────────────────────────────────────────────────────────────────────────── */
-.app-column:has(.terminal-surface) { padding: 0; }
-.app-column:has(.terminal-surface) > .app-topline, .app-column:has(.terminal-surface) > .footer, .app-shell:has(.terminal-surface) .app-dock { display: none; }
+/* ── the terminal (S23, D-192): the screen is the workspace — no top line or footer; the stage holds it edge to edge
+ * (inset on the rail's side as every page, full-bleed on phones). `:has()` reads the route group's wrapper, so the
+ * shell needs no pathname read. R4-0 (D-227): routes Next keeps for back/forward (`cacheComponents`) stay in the DOM,
+ * hidden by React with `display: none !important` on their top node, and must not reshape the shell — every rule
+ * matches a visible surface only (a hidden copy of /trade turned /markets into two columns). The stage is a column, as
+ * Owarine's trade `main` is, and the phone dock stays under the terminal (Owarine `ShellChrome`: the trade column ends
+ * above the dock). ─────────────────────────────────────────────────────────────────────────────────────────────── */
+.app-column:has(.terminal-surface:not([style*="display: none"])) { padding: 0; }
+.app-column:has(.terminal-surface:not([style*="display: none"])) > .app-topline, .app-column:has(.terminal-surface:not([style*="display: none"])) > .footer { display: none; }
 /* The signed-out nudge and the app strip repeat the terminal's own Sign in (its equity pill) and the tour; session
  * banners that report trouble (wrong network…) stay. */
-.app-column:has(.terminal-surface) .appstrip, .app-column:has(.terminal-surface) .shell-banner[data-kind="signed-out"] { display: none; }
-.app-stage:has(> .terminal-surface) { display: flex; height: 100dvh; padding: 0; overflow: hidden; border: 0; border-radius: 0; }
-@media (min-width: 768px) {
-  .app-column:has(.terminal-surface) { padding: var(--spacing-rail-inset) var(--spacing-rail-inset) var(--spacing-rail-inset) calc(var(--spacing-rail-compact) + var(--spacing-rail-inset) * 2); }
-  .app-stage:has(> .terminal-surface) { height: calc(100dvh - var(--spacing-rail-inset) * 2); border: var(--spacing-stage-edge) solid var(--color-stage-edge); border-radius: var(--radius-xl); }
+.app-column:has(.terminal-surface:not([style*="display: none"])) .appstrip, .app-column:has(.terminal-surface:not([style*="display: none"])) .shell-banner[data-kind="signed-out"] { display: none; }
+.app-stage:has(> .terminal-surface:not([style*="display: none"])) { display: flex; flex-direction: column; height: 100dvh; padding: 0; overflow: hidden; border: 0; border-radius: 0; }
+/* Phones: the terminal ends above the dock — its 56 px item, 12 px of list padding and 8 px of air (Owarine
+ * `pb-[calc(var(--dock-h)+safe-area)]`); the stage stops growing into the column's full height. */
+@media (max-width: 767px) {
+  .app-stage:has(> .terminal-surface:not([style*="display: none"])) { flex: none; height: calc(100dvh - var(--spacing-dock-item-h) - 20px - max(12px, env(safe-area-inset-bottom, 0px))); }
 }
-@media (min-width: 1280px) { .app-column:has(.terminal-surface) { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
+@media (min-width: 768px) {
+  .app-column:has(.terminal-surface:not([style*="display: none"])) { padding: var(--spacing-rail-inset) var(--spacing-rail-inset) var(--spacing-rail-inset) calc(var(--spacing-rail-compact) + var(--spacing-rail-inset) * 2); }
+  .app-stage:has(> .terminal-surface:not([style*="display: none"])) { height: calc(100dvh - var(--spacing-rail-inset) * 2); border: var(--spacing-stage-edge) solid var(--color-stage-edge); border-radius: var(--radius-xl); }
+}
+@media (min-width: 1280px) { .app-column:has(.terminal-surface:not([style*="display: none"])) { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
 .terminal-surface { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; }
 
 /* The Trade place's own drawers under it on the terminal (S23g). */
@@ -237,6 +252,11 @@ span.top-money, span.top-account { display: contents; }
 .rail-account .wallet-pill > svg { margin-left: auto; }
 @media (max-width: 1279px) { .rail-account .wallet-pill-id { display: none; } .rail-account .wallet-pill .addr-dot { width: 26px; height: 26px; } .rail-account .wallet-pill .addr-dot::after { inset: 8px; } }
 .top-account .wallet-pill-kind { display: none; }
+/* The phone's account is the marble alone (Owarine `TopBar`; R4-0, D-227): the address and chevron ran the signed-in
+   top line ~60 px past a 375 px screen. */
+.top-account .wallet-pill { width: 44px; height: 44px; padding: 0; justify-content: center; border: 0; }
+.top-account .wallet-pill-id, .top-account .wallet-pill > svg { display: none; }
+.top-account .wallet-pill-avatar { width: 36px; height: 36px; }
 
 /* P0 (D-222/D-223), Owarine 90a91d71 AppRail and FloatingDock: Docs · Legal at the rail's foot; the dock's centre seal. */
 .rail-legal { display: flex; gap: 14px; padding: 10px 6px 2px; font: 500 12px/1.2 var(--font-body); }
@@ -265,6 +285,11 @@ span.top-money, span.top-account { display: contents; }
 .mode-chip[data-mode="demo"] { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
 .mode-chip[data-mode="live"] { background: color-mix(in srgb, var(--color-warning) 16%, transparent); }
 .mode-chip-dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--color-warning); }
+/* The narrowest phones keep TESTNET's dot and say the word to a screen reader only (R4-0, D-227). */
+@media (max-width: 360px) {
+  .mode-chip[data-mode="live"] { padding: 0 11px; }
+  .mode-chip[data-mode="live"] .mode-chip-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
 @media (max-width: 767px) {
   .topline-phone { display: contents; }
   .topline-wide { display: none; }

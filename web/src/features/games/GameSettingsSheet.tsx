@@ -55,7 +55,7 @@ export function GameSettingsSheet() {
     // The plate portals to document.body, outside the frame, so it carries the motion setting itself —
     // otherwise the one surface where a player turns motion off keeps animating.
     <div
-      className="du-modal-root gm-modal-root"
+      className="du-modal-root"
       role="dialog"
       aria-modal="true"
       aria-labelledby="gm-settings-title"

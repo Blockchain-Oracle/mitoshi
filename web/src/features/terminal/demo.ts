@@ -33,6 +33,8 @@ export interface PaperTrade {
   pnlBase: string;
   openedAtMs: number;
   closedAtMs: number;
+  /** A settle on a voided Window (it paid half a dollar a contract): neither a win nor a loss. */
+  voided?: boolean;
 }
 
 interface DemoState {

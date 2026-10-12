@@ -2,6 +2,8 @@
 // Ported from Owarine ecb7565b:web/src/features/terminal/ui/ChartControls.tsx — CSS animations instead of motion for these
 // small pieces; the music switch is the app-wide Sound & Vibration "music" (one setting, `lib/feedback.ts`) with the
 // track kept in the terminal's settings; Mitoshi adds the depth toggle (the Markets hero's `HeroDepth`, a lazy island).
+// R4-0 (D-227): the interval menu closes on a tap outside it or Escape (focus back on the pill), and tells the screen
+// it is open (`onMenu`), which hides the settings stack that sat over 1m and 3m on a phone.
 import { Bell, CandlestickChart, ChevronDown, Crosshair, Layers, LineChart, MessageCircle, Music2, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { setFeedback, tapFeedback, useFeedback } from "@/lib/feedback";
@@ -12,14 +14,34 @@ import { MUSIC_TRACKS, setTradeSettings, useTradeSettings } from "../settings";
 
 const TRACK_NAMES = { arcade: "Arcade", rush: "Rush", night: "Night" } as const;
 
-export function ChartControls({ handle, depthOn, onDepth, onRoom, onAlerts, onSensei }: { handle: RefObject<ChartHandle | null>; depthOn: boolean; onDepth: (on: boolean) => void; onRoom?: () => void; onAlerts?: () => void; onSensei?: () => void }) {
+export function ChartControls({ handle, depthOn, onDepth, onRoom, onAlerts, onSensei, onMenu }: { handle: RefObject<ChartHandle | null>; depthOn: boolean; onDepth: (on: boolean) => void; onRoom?: () => void; onAlerts?: () => void; onSensei?: () => void; onMenu?: (open: boolean) => void }) {
   const settings = useTradeSettings();
   const feedback = useFeedback();
   const [menu, setMenu] = useState(false);
   const [chip, setChip] = useState(false);
   const [offCentre, setOffCentre] = useState(false);
   const chipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const interval = useRef<HTMLDivElement>(null);
   const candles = settings.chartView === "candles";
+
+  useEffect(() => {
+    onMenu?.(menu);
+    if (!menu) return;
+    const away = (e: PointerEvent) => {
+      if (!interval.current?.contains(e.target as Node)) setMenu(false);
+    };
+    const esc = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setMenu(false);
+      interval.current?.querySelector("button")?.focus();
+    };
+    document.addEventListener("pointerdown", away, true);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", away, true);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [menu, onMenu]);
 
   useEffect(() => {
     void import("@/lib/sound/music").then((mu) => mu.setMusic(feedback.music, settings.musicTrack));
@@ -43,7 +65,7 @@ export function ChartControls({ handle, depthOn, onDepth, onRoom, onAlerts, onSe
 
   return (
     <div className="tm-controls">
-      <div className="tm-interval">
+      <div className="tm-interval" ref={interval}>
         <button type="button" className={`tm-glass tm-ctl tm-ctl-pill${candles ? "" : " is-dim"}`} aria-label={TERMINAL.controls.interval(settings.chartInterval)} aria-expanded={menu} onClick={() => (tapFeedback(), setMenu((x) => !x))}>
           {settings.chartInterval}
           <ChevronDown aria-hidden className={menu ? "is-open" : undefined} />

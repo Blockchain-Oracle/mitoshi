@@ -6,12 +6,16 @@
  * the open, OPEN and CLOSES, the opening print as the line to beat, green above it and red below, a hover readout. The
  * ramp's fill is the UP price, so a bar at 64¢ means UP costs 64¢; an empty side draws nothing and reads "—". Below
  * `lg` the two buttons are the way into the ticket drawer. The Room and the price alerts open the terminal's drawers.
+ * R4-0 (D-227), Owarine 90a91d71 `HeroChartHead`/`HeroChartFoot`: the source line sits in the head under the question
+ * (`SourceLine className="pair-meta"`), Price/Depth are text tabs in the cadence's own style, and on a phone Sensei is a
+ * foot item (its floating seal would cover DOWN there).
  */
 import type { EventMarket, Lane, MarketId, Side } from "@cwf/core";
-import { Bell, MessageCircle } from "lucide-react";
+import { Bell, MessageCircle, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { SegmentedControl } from "@/components/ui/segmented-control";
+import { SENSEI } from "@/features/sensei/copy";
+import { SENSEI_OPEN_EVENT } from "@/features/sensei/SenseiDock";
 import { DEPTH, HERO, HERO_HEAD, MARKETS } from "../copy";
 import type { LaneTabKey } from "../data/lane-view";
 import { useChartSeries } from "../data/useChartSeries";
@@ -56,6 +60,7 @@ export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: H
             <MarketSessionChip asset={market.asset} basis={market.lane} />
           </div>
           <HeroQuestion asset={market.asset} openingRaw={openingRaw} currentRaw={latestRaw} />
+          <span className="pair-meta mh-source">{HERO.source(source)}</span>
         </div>
         <HeroSettlesIn tradingStartSec={market.tradingStartSec} expirySec={market.expirySec} intervalSec={market.intervalSec} />
       </div>
@@ -68,7 +73,6 @@ export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: H
           )}
         </div>
       </div>
-      <p className="px-1 type-caption text-ink-muted">{HERO.source(source)}</p>
       <div className="hero-chart-foot">
         <div className="mh-foot-actions">
           <button type="button" className="mh-room" onClick={() => setDrawer("room")} aria-label={`${HERO_HEAD.room} · ${HERO_HEAD.roomQualifier}`}>
@@ -80,7 +84,18 @@ export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: H
             <Bell className="mh-room-icon" aria-hidden />
             {HERO_HEAD.alert}
           </button>
-          <SegmentedControl className="mh-view" label={DEPTH.toggle} value={view} onValueChange={setView} options={[{ value: "price", label: DEPTH.price }, { value: "depth", label: DEPTH.depth }]} />
+          <button type="button" className="mh-room mh-sensei" onClick={() => window.dispatchEvent(new Event(SENSEI_OPEN_EVENT))} aria-label={SENSEI.dockOpen}>
+            <Sparkles className="mh-room-icon" aria-hidden />
+            {SENSEI.dockName}
+          </button>
+        </div>
+        <div className="mh-cadence-tabs mh-view" role="group" aria-label={DEPTH.toggle}>
+          {(["price", "depth"] as const).map((v) => (
+            <button key={v} type="button" className="mh-cadence" aria-pressed={view === v} onClick={() => setView(v)}>
+              {v === "price" ? DEPTH.price : DEPTH.depth}
+              {view === v ? <span aria-hidden className="mh-cadence-underline" /> : null}
+            </button>
+          ))}
         </div>
         <span className="ramp" aria-label={HERO_HEAD.upCosts(cents(book.upCents))}>
           <span>{HERO_HEAD.rampUp}</span>

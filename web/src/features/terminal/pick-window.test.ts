@@ -2,7 +2,7 @@
 // (stage-23 "Window rule"): crypto 5m, Regular in NYSE hours, 24/7 off-hours, the weekend Gap, prelisted Windows.
 import type { EventMarket, LaneBasis, LaneSet } from "@cwf/core";
 import { describe, expect, it } from "vitest";
-import { defaultLane, gap0400NextOpen, lanesFor, pickWindow } from "./pick-window";
+import { defaultLane, gap0400NextOpen, lanesFor, pickWindow, windowChips, type TerminalLane } from "./pick-window";
 
 let n = 0;
 const w = (asset: string, lane: LaneBasis, intervalSec: number, start: number, extra: Partial<EventMarket> = {}): EventMarket =>
@@ -74,5 +74,30 @@ describe("RedStone's 04:00 ET gap on a 24/7 stock lane (D-185)", () => {
     expect(gap0400NextOpen("regular", 300, at("2026-10-08T07:57:00Z"))).toBeNull();
     expect(gap0400NextOpen("stock24", 300, at("2026-12-08T07:57:00Z"))).toBeNull();
     expect(gap0400NextOpen("stock24", 300, at("2026-12-08T08:57:00Z"))).toBe(at("2026-12-08T09:05:00Z"));
+  });
+});
+
+describe("the Window chip on a stock with both feeds (R4-0)", () => {
+  const lane = (basis: LaneBasis, intervalSec: number): TerminalLane => ({ key: `${basis}:${intervalSec}` as TerminalLane["key"], basis, intervalSec, label: `${basis} ${intervalSec}` });
+  const stock = [lane("regular", 300), lane("regular", 900), lane("regular", 3_600), lane("stock24", 300), lane("stock24", 900), lane("stock24", 3_600), lane("gap", 604_800)];
+  it("shows the basis on screen, cadence only, the Gap, and a 24/7 switch to the same cadence", () => {
+    const regular = windowChips(stock, "regular:900");
+    expect(regular.shown.map((l) => [l.key, l.label])).toEqual([["regular:300", "5m"], ["regular:900", "15m"], ["regular:3600", "1h"], ["gap:604800", "gap 604800"]]);
+    expect(regular.toggle).toEqual({ on: false, to: stock[4] });
+    const allDay = windowChips(stock, "stock24:3600");
+    expect(allDay.shown.map((l) => l.key)).toEqual(["stock24:300", "stock24:900", "stock24:3600", "gap:604800"]);
+    expect(allDay.toggle).toEqual({ on: true, to: stock[2] });
+  });
+  it("from the Gap or no lane, switches from Regular's first cadence; one basis lists every lane, no switch", () => {
+    expect(windowChips(stock, "gap:604800").toggle).toEqual({ on: false, to: stock[3] });
+    expect(windowChips(stock, null).toggle).toEqual({ on: false, to: stock[3] });
+    const crypto = [lane("crypto24", 300), lane("crypto24", 900)];
+    expect(windowChips(crypto, "crypto24:300")).toEqual({ shown: crypto, toggle: null });
+    const offHours = [lane("stock24", 300), lane("gap", 604_800)];
+    expect(windowChips(offHours, "stock24:300")).toEqual({ shown: offHours, toggle: null });
+  });
+  it("falls back to the other basis's first lane when the cadence isn't listed there", () => {
+    const uneven = [lane("regular", 300), lane("regular", 3_600), lane("stock24", 300)];
+    expect(windowChips(uneven, "regular:3600").toggle).toEqual({ on: false, to: uneven[2] });
   });
 });

@@ -2,13 +2,18 @@
 /* Component-tier tokens — one section per DESIGN.md `components:` key. Values reference theme.css; nothing is re-typed here. */
 :root {
   /* layers (D-226): one stacking order — sticky top line < rail and dock < floating buttons (Sensei, Parlay slip)
-   * < drawers and sheets < command palette < modals. A floating button never covers an open overlay. */
+   * < the chrome's menus (the account popover) < drawers and sheets < command palette < modals < tooltips and popovers
+   * < toasts. A floating button never covers an open overlay; a tip in a sheet and a toast fired from a sheet or a modal
+   * show above it (R4-0, D-227). */
   --z-sticky: 30;
   --z-chrome: 40;
   --z-float: 45;
+  --z-menu: 50;
   --z-drawer: 60;
   --z-command: 70;
   --z-modal: 100;
+  --z-popover: 105;
+  --z-toast: 110;
 
   /* ticket */
   --ticket-surface: var(--color-surface-1);

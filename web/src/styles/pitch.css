@@ -45,13 +45,15 @@
   background: var(--pp-paper2);
 }
 
-/* The reference renders no chrome on this route; ours is global, so it hides here. */
-body:has(.pitch-deck) .appstrip,
-body:has(.pitch-deck) .marquee,
-body:has(.pitch-deck) .header,
-body:has(.pitch-deck) .mobile-bottom-nav,
-body:has(.pitch-deck) .footer,
-body:has(.pitch-deck) .grain {
+/* The reference renders no chrome on this route; ours is global, so it hides here — while the deck is on screen: a
+ * deck Next keeps for Back sits hidden under its group's `display: none` node and leaves the app's chrome alone
+ * (R4-0, D-227). */
+body:has(.pitch-deck:not([style*="display: none"]):not([style*="display: none"] *)) .appstrip,
+body:has(.pitch-deck:not([style*="display: none"]):not([style*="display: none"] *)) .marquee,
+body:has(.pitch-deck:not([style*="display: none"]):not([style*="display: none"] *)) .header,
+body:has(.pitch-deck:not([style*="display: none"]):not([style*="display: none"] *)) .mobile-bottom-nav,
+body:has(.pitch-deck:not([style*="display: none"]):not([style*="display: none"] *)) .footer,
+body:has(.pitch-deck:not([style*="display: none"]):not([style*="display: none"] *)) .grain {
   display: none;
 }
 

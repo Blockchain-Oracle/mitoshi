@@ -29,7 +29,11 @@ export interface TerminalWindow {
   failure: string | null;
 }
 
-/** Writes the address without a navigation (Tradash: market and Window switches never remount the screen). */
+/**
+ * Writes the address without a navigation (Tradash: market and Window switches never remount the screen). The entry's
+ * own state goes along without Next's marker (`__NA`): with it, Next takes the write for its own and `useSearchParams`
+ * never hears the new lane (R4-0, D-227: a lane chip changed the URL and nothing else).
+ */
 export function replaceTradeParams(next: { lane?: LaneTabKey | null; w?: MarketId | null }): void {
   const url = new URL(window.location.href);
   for (const [k, v] of [[LANE_PARAM, next.lane], [WINDOW_PARAM, next.w]] as const) {
@@ -37,7 +41,8 @@ export function replaceTradeParams(next: { lane?: LaneTabKey | null; w?: MarketI
     if (v === null) url.searchParams.delete(k);
     else url.searchParams.set(k, v);
   }
-  window.history.replaceState(window.history.state, "", url);
+  const { __NA: _na, _N: _n, ...state } = (window.history.state ?? {}) as Record<string, unknown>;
+  window.history.replaceState(state, "", url);
 }
 
 /** `?w=`: the linked Window, or — settled — its successor, said once; a gone one falls back to the lane's pick. */

@@ -7,7 +7,8 @@
  * beside the heading and the closed stocks under them; §02 says the same Windows in plain words. The terminal is one
  * tap away for the one-tap trader. No clock is read here: countdowns, cards and the board tick as leaves (ux-audit fix
  * 12). Live data: the D-049 stream marks the hero's book, the visible Windows and the wallet's reads stale as events
- * land (`useLiveMarketData`).
+ * land (`useLiveMarketData`). R4-0 (D-227): one root (`.markets-page`), so the stage always holds a single item —
+ * a fragment let a flex stage set the hero and the lanes side by side.
  */
 import { isAllHoursLane, type MarketId, type Side } from "@cwf/core";
 import { useLiveMarketData, useOpeningPrice } from "@cwf/markets/react";
@@ -67,7 +68,7 @@ function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
   };
 
   return (
-    <>
+    <div className="markets-page">
       <MarketsHero
         market={selection.market}
         openingRaw={openingRaw}
@@ -94,6 +95,6 @@ function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
       </div>
       {/* The dock rides above the page, as the reference mounts it (Owarine 90a91d71 MarketsScreen L94; O-6). */}
       <SenseiDock laneSet={lanes.laneSet} market={selection.market} openingRaw={openingRaw} address={address} onAct={(id, side) => select(id, side)} />
-    </>
+    </div>
   );
 }

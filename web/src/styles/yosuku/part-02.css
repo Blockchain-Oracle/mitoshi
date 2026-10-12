@@ -265,7 +265,8 @@ body.urgent::before {
 }
 
 @media (max-width: 767px) {
-  .sensei-dock-wrap { bottom: 90px; right: 16px; }
+  /* R4-0 (D-227): no floating seal on phones — it sat on the hero's DOWN; Sensei is a hero-foot item and in More. */
+  .sensei-dock-wrap { display: none; }
   .sensei-dock:hover, .sensei-dock:focus-visible { padding: 7px; gap: 0; }
   .sensei-dock:hover .sensei-dock-copy, .sensei-dock:focus-visible .sensei-dock-copy { max-width: 0; opacity: 0; }
 }

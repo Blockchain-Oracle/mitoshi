@@ -31,6 +31,8 @@ export const TERMINAL = {
     pricing: "pricing…",
     none: "no Window",
     settling: "settling…",
+    /** The switch to the same cadence on the 24/7 feed, where a stock lists both. */
+    allDay: "24/7",
   },
   noWindow: {
     spcx: "No Windows — no signed price source",

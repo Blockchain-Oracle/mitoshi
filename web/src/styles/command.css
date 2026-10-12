@@ -1,7 +1,7 @@
 /* The command palette (components/ui/command-palette.tsx; From 21st.dev 31354 wensity/command) in Masayume tokens. */
-.command-backdrop { position: fixed; inset: 0; z-index: 70; background: var(--color-scrim); transition: opacity 120ms ease-out; }
+.command-backdrop { position: fixed; inset: 0; z-index: var(--z-command); background: var(--color-scrim); transition: opacity 120ms ease-out; }
 .command-backdrop[data-starting-style], .command-backdrop[data-ending-style] { opacity: 0; }
-.command-viewport { position: fixed; inset: 0; z-index: 71; display: flex; align-items: flex-start; justify-content: center; padding: calc(var(--safe-top, 0px) + 12vh) 16px 16px; }
+.command-viewport { position: fixed; inset: 0; z-index: calc(var(--z-command) + 1); display: flex; align-items: flex-start; justify-content: center; padding: calc(var(--safe-top, 0px) + 12vh) 16px 16px; }
 .command-popup { width: min(100%, 560px); overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); color: var(--white); transition: opacity 80ms ease-out; }
 .command-popup[data-starting-style], .command-popup[data-ending-style] { opacity: 0; }
 .command-input-row { display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--color-hairline); }

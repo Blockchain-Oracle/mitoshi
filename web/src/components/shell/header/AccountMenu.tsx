@@ -2,7 +2,8 @@
 // The account popover (Owarine 90a91d71 `features/canton-ux/seat/SeatAccountMenu.tsx`; O-10, D-224), a lazy island: the
 // marble avatar, what the account is and its network chip, then one recessed panel — Address (copy), Wallet, Trading
 // Balance, the linked Robinhood Chain wallet — and the items: Portfolio, Account & keys, the balance eye, Sign out.
-// On Base UI Menu (keyboard, typeahead, focus return); the rail's foot opens it upward, the top line below.
+// On Base UI Menu (keyboard, typeahead, focus return); the rail's foot opens it upward, the top line below. Its own
+// positioner class (R4-0, D-227): the old header's one was hidden on phones, so the phone avatar opened nothing.
 import { Menu } from "@base-ui/react/menu";
 import { useBalanceSheet } from "@cwf/markets/react";
 import { Check, ChevronDown, Copy, Link2 } from "lucide-react";
@@ -51,7 +52,7 @@ export function AccountMenu({ open, onOpenChange, side = "bottom" }: AccountMenu
         <ChevronDown aria-hidden className="size-3.5" />
       </Menu.Trigger>
       <Menu.Portal>
-        <Menu.Positioner side={side} sideOffset={8} align={side === "top" ? "start" : "end"} collisionPadding={12} className="nav-menu-positioner">
+        <Menu.Positioner side={side} sideOffset={8} align={side === "top" ? "start" : "end"} collisionPadding={12} className="am-positioner">
           <Menu.Popup className="am-popup">
             <div className="am-head">
               <AccountAvatar seed={address} size={36} />

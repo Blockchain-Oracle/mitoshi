@@ -24,7 +24,7 @@
 
 /* The reference renders no Footer on /feed; the fixed reel would cover it anyway,
  * and leaving it in the tree hands a keyboard a link nobody can see. */
-body:has(.reel-page) .footer {
+body:has(.reels-surface:not([style*="display: none"]) .reel-page) .footer {
   display: none;
 }
 

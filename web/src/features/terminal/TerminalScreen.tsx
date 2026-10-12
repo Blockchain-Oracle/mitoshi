@@ -1,18 +1,19 @@
 "use client";
 // Ported in shape from Owarine ecb7565b:web/src/features/terminal/TerminalScreen.tsx — split per the stage plan
 // (`useTerminalState`, `TerminalTrade`, the drawers), on Mitoshi's markets and shell: no demo (D-191), drawers on the
-// right edge in the URL (D-190), the shell's rail beside it (D-192). One tree for every width; CSS places it.
+// right edge in the URL (D-190), the shell's rail beside it (D-192). One tree for every width; CSS places it. R4-0
+// (D-227): the phone dock stays under it (the mark disc left the header), the stack sits under the chart controls and
+// hides while the interval menu is open, UP/DOWN stay with the reason when no Window is listed, and signed-out History
+// is DEMO's paper history.
 import { isStockSymbol, type TickerSymbol } from "@cwf/core";
 import { usePathname } from "next/navigation";
 import { holdStreamAwake } from "@cwf/markets/stream";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MotionScope } from "@/components/motion-scope";
-import MitoshiMark from "@/components/shell/MitoshiMark";
-import { EVERYTHING_DRAWER } from "@/components/shell/Rail";
-import { BRAND, CONNECT, SHELL } from "@/lib/copy";
+import Link from "next/link";
+import { CONNECT, SHELL } from "@/lib/copy";
 import { notify } from "@/lib/toast";
-import { closeDrawer, openDrawer, useDrawerParam } from "@/lib/drawer-param";
-import { tapFeedback } from "@/lib/feedback";
+import { closeDrawer, useDrawerParam } from "@/lib/drawer-param";
 import { usePrivacy } from "@/lib/privacy";
 import { useWalletSession } from "@/lib/wallet-session";
 import { TapTradingChip, useSessionView } from "@/features/session";
@@ -49,7 +50,7 @@ import { useReplayRecorder } from "./replay";
 import { useAppUpdate } from "./useAppUpdate";
 import { setTradeSettings, useTradeSettingsState } from "./settings";
 import { Tutorial } from "./ui/Tutorial";
-import { AccountDrawer, AlertsDrawer, ExitsDrawer, MarketsDrawer, PositionDetails, RoomDrawer, SenseiDrawer, SettingsDrawer, useDrawersMounted } from "./lazy-drawers";
+import { AccountDrawer, AlertsDrawer, DemoHistoryDrawer, ExitsDrawer, MarketsDrawer, PositionDetails, RoomDrawer, SenseiDrawer, SettingsDrawer, useDrawersMounted } from "./lazy-drawers";
 import { usePendingFills } from "./fresh-fills";
 import { ModeChips, ModePanel, type TerminalMode } from "./ui/ModePanel";
 import { useDrawnBand } from "@/features/range/band-store";
@@ -195,9 +196,10 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
     if (s.win.linkedAsset) window.history.replaceState(null, "", `/trade/${s.win.linkedAsset}${window.location.search}`);
   }, [s.win.linkedAsset]);
 
-  // The account and history drawers need an account: signed out, the link says so instead of opening an empty drawer.
+  // The account drawer needs an account: signed out, the link says so instead of opening an empty drawer. History opens
+  // DEMO's paper history there (R4-0, Owarine's demo account sheet).
   useEffect(() => {
-    if (s.address || (drawer.open !== DRAWERS.account && drawer.open !== DRAWERS.history)) return;
+    if (s.address || drawer.open !== DRAWERS.account) return;
     closeDrawer();
     notify.item({ id: "terminal-signin", title: TERMINAL.toast.signIn, description: TERMINAL.toast.signInBody, action: { label: CONNECT.connect, onClick: session.connect } });
   }, [drawer.open, s.address, session.connect]);
@@ -216,11 +218,26 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const equity = s.cashBase === null ? null : Number(s.cashBase + totals.value) / 1e6;
   const stakeText = s.capped ? `${money(s.stakeBase)} max` : money(s.stakeBase);
   const count = s.positions.length;
+  // The interval menu hides the stack under it (R4-0: the stack painted over 1m and 3m); the header's height places
+  // toasts under it on a phone (toast.css `--tm-head`).
+  const [menuOpen, setMenuOpen] = useState(false);
+  const topRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = topRef.current;
+    if (!el) return;
+    const root = document.documentElement.style;
+    const ro = new ResizeObserver(() => root.setProperty("--tm-head", `${Math.round(el.getBoundingClientRect().bottom)}px`));
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.removeProperty("--tm-head");
+    };
+  }, []);
 
   return (
     <MotionScope>
       <div className="tm-screen">
-        <section className="tm-stage" aria-label={TERMINAL.chartLabel(s.name, priceText)}>
+        <section className="tm-stage" aria-label={TERMINAL.chartLabel(s.name, priceText)} data-menu={menuOpen ? "" : undefined}>
           <LiveChart symbol={symbol} overlay={s.overlay} onFrame={fb.onFrame} view={s.settings.chartView} interval={s.settings.chartInterval} handle={chartHandle} label={TERMINAL.chartLabel(s.name, priceText)} />
           <ReactionOverlay handle={fb.overlayHandle} />
           {depth && market ? (
@@ -228,15 +245,15 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
               <HeroDepth market={market} />
             </div>
           ) : null}
-          <div className="tm-controls-slot">
-            <ChartControls handle={chartHandle} depthOn={depth} onDepth={setDepth} onRoom={() => drawer.show(DRAWERS.room)} onAlerts={() => drawer.show(DRAWERS.alerts)} onSensei={() => drawer.show(DRAWERS.sensei)} />
+          <div className="tm-stack-slot">
+            <SettingsStack asset={symbol} size={stakeText} pays={s.settings.boostX > 1 ? TERMINAL.positions.boost(s.settings.boostX) : market ? pays : "—"} trailing={`${trailWords(s.settings.trailPct)}%`} onOpen={() => drawer.show(DRAWERS.settings)} />
           </div>
-          <div className="tm-top">
+          <div className="tm-controls-slot">
+            <ChartControls handle={chartHandle} depthOn={depth} onDepth={setDepth} onRoom={() => drawer.show(DRAWERS.room)} onAlerts={() => drawer.show(DRAWERS.alerts)} onSensei={() => drawer.show(DRAWERS.sensei)} onMenu={setMenuOpen} />
+          </div>
+          <div className="tm-top" ref={topRef}>
             <div className="tm-top-row">
               <span className="tm-lead">
-                <button type="button" className="tm-glass tm-disc tm-phone" aria-label={BRAND.name} onClick={() => (tapFeedback(), openDrawer(EVERYTHING_DRAWER))}>
-                  <MitoshiMark />
-                </button>
                 <AssetChip asset={symbol} name={s.name} price={s.spot.price} feed={feed} stale={s.spot.stale} connecting={s.spot.connecting} onOpen={() => drawer.show(DRAWERS.markets)} />
               </span>
               <EquityPill className="tm-phone" equity={equity} address={s.address} masked={masked} onOpen={() => drawer.show(DRAWERS.account)} onSignIn={session.connect} />
@@ -244,9 +261,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             <div className="tm-window-row">
               {s.win.lanes.length ? (
                 <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText === TERMINAL.window.none ? (laneNote ?? s.windowText) : s.windowText} />
-              ) : s.win.loading ? null : (
-                <span className="tm-glass tm-note">{noWindowNote(s.ticker, nyse, s.nowSec)}</span>
-              )}
+              ) : null}
               <SessionCell symbol={symbol} basis={s.win.lane?.basis ?? null} />
               <CrowdCell symbol={symbol} />
               <EarningsCell symbol={symbol} market={market ?? null} />
@@ -254,16 +269,14 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
             {s.win.lane?.basis === "stock24" ? <span className="tm-glass tm-note">{TERMINAL.feed.lane247(symbol)}</span> : offHours ? <span className="tm-glass tm-note">{TERMINAL.feed.offHoursNote}</span> : null}
           </div>
-          <div className="tm-stack-slot">
-            <SettingsStack asset={symbol} size={stakeText} pays={s.settings.boostX > 1 ? TERMINAL.positions.boost(s.settings.boostX) : market ? pays : "—"} trailing={`${trailWords(s.settings.trailPct)}%`} onOpen={() => drawer.show(DRAWERS.settings)} />
-          </div>
         </section>
         <aside className="tm-side" aria-label={TERMINAL.positions.title}>
           {/* Owarine 90a91d71 terminal sidebar (P3, D-223): Markets · History · Settings, then the balance. */}
           <nav className="tm-side-tabs" aria-label={TERMINAL.sideTabs.label}>
             <button type="button" onClick={() => drawer.show(DRAWERS.markets)}><LineChart aria-hidden />{TERMINAL.sideTabs.markets}</button>
             <button type="button" onClick={() => drawer.show(DRAWERS.history)}><History aria-hidden />{TERMINAL.sideTabs.history}</button>
-            <button type="button" onClick={() => drawer.show(DRAWERS.settings)}><Settings aria-hidden />{TERMINAL.sideTabs.settings}</button>
+            {/* The app's settings — sound, haptics (Owarine's sidebar Settings is the account's); the trade's own are the stack. */}
+            <Link href="/settings/account#feedback"><Settings aria-hidden />{TERMINAL.sideTabs.settings}</Link>
           </nav>
           <div className="tm-desk tm-end">
             <EquityPill equity={equity} address={s.address} masked={masked} onOpen={() => drawer.show(DRAWERS.account)} onSignIn={session.connect} />
@@ -298,7 +311,10 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             <ScheduledTrade market={market} stakeBase={s.stakeBase} />
           ) : market ? (
             <TerminalTrade market={market} phase={s.phase} stakeBase={s.stakeBase} spot={s.spot.price} boostX={s.settings.boostX} onPays={setPays} />
-          ) : null}
+          ) : (
+            // No Window listed: the pair stays, off, with why (Owarine `TradeButtons` `why`).
+            <TradeButtons mode="flat" disabled onUp={noop} onDown={noop} busy={null} upSub={null} downSub={null} upNote={null} downNote={null} why={s.win.loading ? null : noWindowNote(s.ticker, nyse, s.nowSec)} />
+          )}
         </aside>
       </div>
       <Tutorial open={tourOpen} onDone={endTour} instant={instantTour} />
@@ -313,6 +329,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
         <>
           <MarketsDrawer open={drawer.open === DRAWERS.markets} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} set={s.win.set} nowSec={s.nowSec} onPick={pick} />
           <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} capped={s.capped ? s.capReason : null} pays={pays} />
+          {s.address ? null : <DemoHistoryDrawer open={drawer.open === DRAWERS.history} onOpenChange={(o) => !o && drawer.close()} />}
           {s.address ? (
             <AccountDrawer
               open={drawer.open === DRAWERS.account || drawer.open === DRAWERS.history}
@@ -362,6 +379,8 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
     </MotionScope>
   );
 }
+
+const noop = () => {};
 
 /** Why a symbol lists no Window right now (the state table, stage-23 "Window rule"). */
 function noWindowNote(ticker: { redstoneFeedId: string | null; redstone24x7FeedId: string | null; kind: string } | null, nyse: MarketSession | null, nowSec: number): string {

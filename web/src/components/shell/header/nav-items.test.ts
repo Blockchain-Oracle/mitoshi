@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { PENDING } from "../../../lib/capabilities";
 import { DOCS_EXTERNAL, DOCS_URL } from "../../../lib/docs-url";
 import { DOCS_NAV } from "../../../features/docs/nav";
-import { DOCK_NAV, EVERYTHING_SECTIONS, isActiveNavItem, isTopLevel, NAVIGABLE_ROUTE_PATHS, NAV_ITEMS, RAIL_NAV, searchNav, type NavItem } from "./nav-items";
+import { DOCK_NAV, EVERYTHING_SECTIONS, isActiveNavItem, isTopLevel, NAVIGABLE_ROUTE_PATHS, NAV_ITEMS, parentOf, RAIL_NAV, searchNav, type NavItem } from "./nav-items";
 
 const APP_DIR = fileURLToPath(new URL("../../../app", import.meta.url));
 
@@ -79,6 +79,17 @@ describe("route coverage (fidelity list 14)", () => {
 
   it("has a page for every navigable route", () => {
     expect(NAVIGABLE_ROUTE_PATHS.filter((p) => !routes.includes(p))).toEqual([]);
+  });
+
+  it("sends the back chevron to a real page from every nested route (R4-0: /tickers/*, /u/*, /proof/* 404'd)", () => {
+    expect(parentOf("/tickers/TSLA")).toBe("/markets");
+    expect(parentOf("/u/0xabc")).toBe("/leaderboard");
+    expect(parentOf("/settings/account")).toBe("/portfolio");
+    expect(parentOf("/games/duel/abc")).toBe("/games/duel");
+    // Every nested page's parent is a page (dynamic segments stand in as `[x]`, `/dev` is a fixture).
+    const pages = new Set(routes);
+    const nested = routes.filter((r) => !r.startsWith("/dev") && r.split("/").filter(Boolean).length > 1);
+    expect(nested.map((r) => [r, parentOf(r.replace(/\[[^\]]+\]/g, "x"))]).filter(([, p]) => !pages.has(p!))).toEqual([]);
   });
 
   it("gives every static page a nav home, a parent that links to it, or an explicit off-nav reason", () => {

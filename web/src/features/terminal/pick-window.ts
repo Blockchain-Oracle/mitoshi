@@ -2,6 +2,7 @@
 // lanes are (basis, cadence) pairs (`groupIntoLanes`), Windows run back to back on a lane, and readiness comes from the
 // Window's own phase rather than a ladder's "quoting" flag. Pure.
 import { isRedStone24x7Gap, laneLabel, type EventMarket, type LaneBasis, type LaneSet } from "@cwf/core";
+import { formatCadence } from "@cwf/core/copy";
 import { noEntryCutoffSec } from "@cwf/core/lifecycle";
 import { laneTabKey, type LaneTabKey } from "@/features/markets/data/lane-view";
 
@@ -28,6 +29,25 @@ export function lanesFor(set: LaneSet | null, asset: string, nowSec: number): Te
     out.push({ key: laneTabKey(lane.basis, lane.intervalSec), basis: lane.basis, intervalSec: lane.intervalSec, label: laneLabel(lane.basis, lane.intervalSec) });
   }
   return out.sort((a, b) => BASIS_ORDER[a.basis] - BASIS_ORDER[b.basis] || a.intervalSec - b.intervalSec);
+}
+
+/**
+ * The Window chip's lanes (R4-0, D-227): a stock listing both a Regular and a 24/7 lane shows the cadences of the basis
+ * on screen (cadence only) and the Gap, plus one 24/7 switch to the same cadence on the other basis — seven lanes fit a
+ * phone and the countdown beside them stays in view. With one basis, every lane as listed and no switch.
+ */
+export function windowChips(lanes: readonly TerminalLane[], laneKey: string | null): { shown: TerminalLane[]; toggle: { on: boolean; to: TerminalLane } | null } {
+  const regular = lanes.filter((l) => l.basis === "regular");
+  const allDay = lanes.filter((l) => l.basis === "stock24");
+  if (regular.length === 0 || allDay.length === 0) return { shown: [...lanes], toggle: null };
+  const current = lanes.find((l) => l.key === laneKey) ?? null;
+  const on = current?.basis === "stock24";
+  const [group, other] = on ? [allDay, regular] : [regular, allDay];
+  const cadence = current && current.basis !== "gap" ? current.intervalSec : group[0]!.intervalSec;
+  return {
+    shown: [...group.map((l) => ({ ...l, label: formatCadence(l.intervalSec) })), ...lanes.filter((l) => l.basis === "gap")],
+    toggle: { on, to: other.find((l) => l.intervalSec === cadence) ?? other[0]! },
+  };
 }
 
 /** A lane's Windows for one asset. */

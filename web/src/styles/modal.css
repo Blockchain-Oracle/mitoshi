@@ -4,7 +4,7 @@
  * border border-white/10 bg-[#0d0d10] p-7 shadow-2xl` panel with `role="dialog"`. There is no bottom sheet
  * anywhere in the reference (its only slide-in is the Ticket). funding.css carries the same values for its two
  * dialogs; this sheet is for everything else. */
-.modal-root { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal-root { position: fixed; inset: 0; z-index: var(--z-modal); display: flex; align-items: center; justify-content: center; padding: 16px; }
 /* S22 (D-190): Slush's centred panel — the stage's surface, radius 24, no blur on the scrim (roy-chain's plan; a blur
  * is a full-screen repaint on every frame of the fade). */
 .modal-scrim { position: absolute; inset: 0; background: var(--color-scrim); }
@@ -53,8 +53,8 @@
 .modal-disclosure > *:not(summary) { margin-top: 12px; }
 
 /* Base UI mounting (components/ui/modal.tsx): the scrim is its own fixed layer; enter/exit are opacity + scale. */
-.modal-scrim { position: fixed; z-index: 99; }
-.modal-root { z-index: 100; padding: calc(var(--safe-top, 0px) + 16px) 16px calc(var(--safe-bottom, 0px) + 16px); }
+.modal-scrim { position: fixed; z-index: calc(var(--z-modal) - 1); }
+.modal-root { z-index: var(--z-modal); padding: calc(var(--safe-top, 0px) + 16px) 16px calc(var(--safe-bottom, 0px) + 16px); }
 .modal-anim { transition: opacity 180ms var(--ease-out), transform 220ms var(--ease-out); }
 .modal-anim[data-starting-style], .modal-anim[data-ending-style] { opacity: 0; }
 .modal.modal-anim[data-starting-style], .modal.modal-anim[data-ending-style] { transform: scale(0.97); }

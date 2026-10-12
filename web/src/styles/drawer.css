@@ -5,7 +5,7 @@
 .slide-over-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: var(--z-drawer);
   background: var(--color-scrim);
   opacity: calc(1 - var(--drawer-swipe-progress, 0));
   transition: opacity var(--duration-drawer-in) var(--ease-drawer);
@@ -18,7 +18,7 @@
 .slide-over-viewport {
   position: fixed;
   inset: 0;
-  z-index: 61;
+  z-index: calc(var(--z-drawer) + 1);
   display: flex;
   align-items: stretch;
   justify-content: flex-end;

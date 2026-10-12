@@ -61,6 +61,17 @@ slice at a time on `integration/t1`, built, checked at 320/375/768/1024/1440 wit
 14. **R4-13 Landing · share · 404 · copy** — Owarine's landing anatomy, share cards for calls and verdicts, the app
     shell on 404/crash, the 80 copy cuts.
 
+## Done so far (2026-10-12, on `integration/t1`)
+R4-0 (this commit): a hidden Activity copy of /trade, /reels or /pitch no longer reshapes the shell (`:not([style*="display:
+none"])`, the stage a column, MarketsScreen one root); the hero sized to its panel (container query), OPEN/CLOSES kept in
+the plot, UP/DOWN above the dock at 320–390; the phone dock under the terminal, 1m/3m over the stack with outside/Escape
+close, the price chip beside the equity pill to 320 px, UP/DOWN off with the reason when no Window, no empty note row,
+DEMO's paper History, the unpriced pill's clock, the Window countdown pinned with a 24/7 switch, lane chips that switch
+(Next's `__NA` marker swallowed `replaceTradeParams`); the account menu on phones and under the palette, the health
+chip, a 44 px Sign in, the palette's query reset and idle preload; back-chevron parents; toasts on their own layer and
+under the top line; the 404 (status 404) and crashes in the shell; the games' how-to and settings plates. Not done, on
+purpose: the button sub's "· max $X" stays — it is the book's depth cap, not the stack's spend cap.
+
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
 the slice's routes; a real flow on testnet where money moves (P&L checked against chain reads); deploy web (and ops

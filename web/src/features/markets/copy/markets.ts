@@ -63,7 +63,7 @@ export const HERO = {
   livePrice: "live · signed spot",
   pendingPrint: "waiting for the opening print",
   pendingDistance: "Waiting for the opening print.",
-  noLivePrice: "No live price right now.",
+  noLivePrice: "No live price.",
   depthTitle: "Top of book",
   buyUp: "Buy UP",
   buyDown: "Buy DOWN",

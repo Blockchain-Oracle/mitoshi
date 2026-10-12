@@ -6,6 +6,5 @@ export { ErrorBoundary } from "./ErrorBoundary";
 export { ErrorState } from "./ErrorState";
 export { LiveRegion, announce } from "./LiveRegion";
 export { LoadingState, type LoadingShape } from "./LoadingState";
-export { NotFound } from "./NotFound";
 export { ReadingBoundary, type ReadingMeta } from "./ReadingBoundary";
 export { localClock, StaleTick } from "./StaleTick";

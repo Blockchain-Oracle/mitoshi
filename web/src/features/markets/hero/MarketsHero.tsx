@@ -2,7 +2,8 @@
 /**
  * The page hero (Ported from Masayume 68f7a09:web/src/features/markets/MarketsHero.tsx): the market you are betting on
  * is the page — the question, the chart and the ticket as one object; the lanes below change it. Three faces before a
- * Window exists: loading, broken, genuinely empty.
+ * Window exists: loading, broken, genuinely empty. No crop marks (R4-0, D-227): inside the stage they drew a bracket
+ * over the chart head; the stage's edge is the frame.
  */
 import type { EventMarket, MarketId, Side } from "@cwf/core";
 import { isOk } from "@cwf/core";
@@ -32,10 +33,6 @@ function HeroPlaceholder({ lanes, resolving }: { lanes: LanesState; resolving: b
 export function MarketsHero({ market, openingRaw, lanes, resolving, onSelect, onPickLane, ticket }: MarketsHeroProps) {
   return (
     <section className="page-hero markets-hero">
-      <span className="crop tl" />
-      <span className="crop tr" />
-      <span className="crop bl" />
-      <span className="crop br" />
       <div className="container">
         <div className="hero-grid hero-grid-mini">
           {market ? (

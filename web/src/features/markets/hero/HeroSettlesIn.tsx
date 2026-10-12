@@ -1,7 +1,8 @@
 "use client";
 // Ported from Masayume 68f7a09:web/src/features/markets/hero/HeroSettlesIn.tsx — the clock, flipping vermilion as it
 // runs out (urgency scales with the cadence). A leaf: it reads the shared clock itself (ux-audit fix 12). Before a
-// Listed Window's bell it counts to the open instead.
+// Listed Window's bell it counts to the open instead. While settling the word sits small (R4-0, D-227), so the clock's
+// column keeps its width and the question beside it doesn't reflow at every Window's end.
 import { SETTLING } from "@cwf/core/copy";
 import { countdown } from "@cwf/core/lifecycle";
 import { formatClock } from "@cwf/core/units";
@@ -17,7 +18,7 @@ export function HeroSettlesIn({ tradingStartSec, expirySec, intervalSec }: { tra
   const target = beforeOpen ? tradingStartSec : expirySec;
   const state = nowMs > 0 ? countdown(nowMs, target, intervalSec) : null;
   return (
-    <div className={cn("mh-settles", !beforeOpen && state?.urgent && "urgent")}>
+    <div className={cn("mh-settles", !beforeOpen && state?.urgent && "urgent")} data-settling={state?.settling ? "" : undefined}>
       <span className="mh-settles-label">{beforeOpen ? HERO_HEAD.opensIn : HERO_HEAD.settlesIn}</span>
       <RollingClock text={state ? (state.settling ? SETTLING : formatClock(state.remainingSec)) : "–:––"} className="mh-settles-value" />
       {!beforeOpen ? <MinuteAnnouncer remainingSec={state?.remainingSec ?? null} settling={state?.settling ?? false} /> : null}

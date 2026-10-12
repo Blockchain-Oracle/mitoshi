@@ -125,21 +125,39 @@
   color: var(--vermilion);
 }
 
+/* ── the panel sizes its head (R4-0, D-227) ──
+   The reference keys the head's sizes to the viewport, but beside Mitoshi's rail and the docked ticket the panel is
+   400–835 px wide between 600 and 1279 px: the panel is an inline-size container and the question, the distance and
+   the clock scale with it (about 23/27/32/36 px for 268/400/548/700+ px panels), so the question takes two balanced
+   lines from a 375 px phone up. The grid gives the panel a definite width (`minmax(0, 1fr)` or `1fr`). */
+.markets-hero .hero-chart {
+  container: mh-panel / inline-size;
+}
+
 /* ── the question ──
    font-display font-[800] text-[1.6rem] sm:text-4xl text-white tracking-tight
    leading-[1.05] */
 .mh-question {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1.6rem;
+  font-size: clamp(1.375rem, 0.875rem + 3.4cqi, 2.25rem);
   line-height: 1.05;
   letter-spacing: -0.025em;
   color: var(--white);
+  text-wrap: balance;
 }
-@media (min-width: 640px) {
-  .mh-question {
-    font-size: 2.25rem;
-  }
+
+/* The level and its "?" never part. */
+.mh-question-end {
+  white-space: nowrap;
+}
+
+/* Settles on RedStone — Owarine's `SourceLine className="pair-meta"`, under the question. */
+.mh-source {
+  display: block;
+  margin-top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* text-vermilion — the line itself is the one coloured word in the headline. */
@@ -150,16 +168,19 @@
 /* flex items-center gap-2 mt-2.5 font-mono text-sm sm:text-base */
 .mh-distance {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 8px;
   margin-top: 10px;
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: clamp(0.8125rem, 0.6rem + 1.2cqi, 1rem);
 }
-@media (min-width: 640px) {
-  .mh-distance {
-    font-size: 16px;
-  }
+/* One line: a narrow column ellipsizes instead of breaking "No live price." word by word. */
+.mh-distance > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* text-profit font-semibold / text-loss font-semibold */
@@ -186,10 +207,6 @@
 }
 /* The question column gives way to the countdown, never the reverse (D-226: at 375 px "Settles in" was pushed off). */
 .mh-head-main { flex: 1 1 auto; min-width: 0; }
-@media (max-width: 479px) {
-  .mh-settles-label { font-size: 8px; letter-spacing: 0.12em; }
-  .mh-settles-value { font-size: 20px; }
-}
 
 /* font-mono text-[9px] tracking-[0.16em] uppercase block mb-1 text-gray-600 */
 .mh-settles-label {
@@ -205,14 +222,32 @@
 /* font-mono text-2xl sm:text-3xl font-semibold tabular-nums text-white */
 .mh-settles-value {
   font-family: var(--font-mono);
-  font-size: 24px;
+  font-size: clamp(1.25rem, 0.75rem + 2.6cqi, 1.875rem);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--white);
 }
-@media (min-width: 640px) {
-  .mh-settles-value {
-    font-size: 30px;
+/* "Settling…" at the clock's size was ~165 px wide; small caps keep the column at ~80 px. */
+.mh-settles[data-settling] .mh-settles-value {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* A narrow panel: a tighter head (the reference's 480 px phone tweak, keyed to the panel). */
+@container mh-panel (max-width: 639px) {
+  .markets-hero .hero-chart-head {
+    padding: 14px 16px 12px;
+    gap: 12px;
+  }
+  .mh-settles-label {
+    font-size: 8px;
+    letter-spacing: 0.12em;
+  }
+}
+@container mh-panel (max-width: 359px) {
+  .mh-asset-row {
+    gap: 8px;
   }
 }
 
@@ -299,10 +334,17 @@
 
 /* lg:!items-start — the reference overrides the panel's `align-items: stretch`
    at the desktop breakpoint so a short ticket sits at the top of the rail
-   instead of stretching down beside the chart. */
+   instead of stretching down beside the chart. R4-0 (D-227): the ticket column
+   narrows with the stage (a fixed 400 px left the chart 400 px at 1024). */
 @media (min-width: 1024px) {
   .markets-hero .hero-grid.hero-grid-mini {
     align-items: start;
+    grid-template-columns: minmax(0, 1fr) clamp(20rem, 36%, 25rem);
+  }
+  /* …but the chart fills the row (Owarine 90a91d71 markets-hero.css: beside a tall ticket it grew no taller than its
+     460 px floor and left a dead block under it); the canvas is the flexible part, so the height goes to the chart. */
+  .markets-hero .hero-grid.hero-grid-mini > .hero-chart {
+    align-self: stretch;
   }
 }
 
@@ -323,13 +365,32 @@
   text-align: center;
 }
 
-/* The foot on a phone (D-226): Room · Alert · Price/Depth on one line, the UP ramp under it at full width. */
-.mh-view { flex: none; }
-@media (max-width: 639px) {
-  .hero-chart-foot { flex-wrap: wrap; row-gap: 10px; padding: 10px 14px; }
-  .mh-foot-actions { flex: 1 1 100%; flex-wrap: nowrap; }
+/* The foot (D-226; keyed to the panel, R4-0): Room · Alert on the left, then Price/Depth beside the UP ramp. Price/Depth
+   are text tabs in the cadence's style (Owarine `TextTabs`), not a boxed control. On a narrow panel the actions take
+   the first line and the ramp shares the second with the tabs. */
+.hero-chart-foot { column-gap: 14px; }
+.hero-chart-foot .mh-view { flex: none; margin-left: auto; }
+.mh-view .mh-cadence { text-transform: uppercase; }
+/* Sensei is a foot item on phones, where its floating seal would sit on DOWN (yosuku/part-02.css hides the seal there). */
+@media (min-width: 768px) { .mh-sensei { display: none; } }
+@container mh-panel (max-width: 639px) {
+  .hero-chart-foot { flex-wrap: wrap; row-gap: 4px; padding: 10px 14px 4px; }
+  .hero-chart-foot .mh-foot-actions { flex: 1 1 100%; flex-wrap: nowrap; }
   .mh-foot-actions .mh-room { white-space: nowrap; }
-  .mh-view { margin-left: auto; }
-  .hero-chart-foot .ramp { flex: 1 1 100%; }
+  .hero-chart-foot .mh-view { order: 1; }
+  .hero-chart-foot .ramp { flex: 1 1 0; min-width: 0; }
   .hero-chart-foot .ramp .bar { flex: 1; width: auto; }
+}
+
+/* UP/DOWN above the phone's dock (R4-0, D-227): on a narrow panel the call follows the canvas straight away, the
+   canvas scales with the screen's height, and the panel keeps no floor of its own. */
+@media (max-width: 767px) {
+  .markets-hero .hero-grid-mini .hero-chart { min-height: 0; }
+}
+@media (max-width: 1023px) {
+  @container mh-panel (max-width: 639px) {
+    .markets-hero .hero-grid-mini .hero-chart .hero-chart-canvas { min-height: clamp(150px, 26svh, 230px) !important; }
+    .markets-hero .hero-yesno { order: 1; margin: 12px 14px 0; }
+    .markets-hero .hero-chart-foot { order: 2; margin-top: 12px; }
+  }
 }

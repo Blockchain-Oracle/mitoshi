@@ -91,12 +91,20 @@ export const NOTES = {
   moved: "That page moved — you're on its new home.",
 } as const;
 
+/** The 404 (Owarine 90a91d71 `NotFoundScreen`; R4-0, D-227): a page that isn't there, told as a Window that voided. */
 export const NOT_FOUND = {
-  eyebrow: "404",
-  headline: "Nothing lives at this address.",
-  body: "Nothing changed on your account.",
-  back: "Go to markets",
-  suggestions: "Maybe you meant",
+  pageTitle: "Not found",
+  title: "404",
+  void: "VOID",
+  line: "No print for this page, so it voided. Nothing was lost.",
+  window: "Window",
+  print: "Open print",
+  missing: "missing",
+  result: "Result",
+  refunded: "void · refunded",
+  markets: "Go to markets",
+  home: "Home",
+  search: "Search",
 } as const;
 
 export const MARQUEE = {

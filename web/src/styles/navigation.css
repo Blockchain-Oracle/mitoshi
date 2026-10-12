@@ -3,11 +3,6 @@
  * Opaque stepped surfaces, hairlines, mono labels, and vermilion active marks keep
  * this information-dense without turning it into a promotional mega-menu. */
 
-.nav-menu-positioner {
-  z-index: 920;
-  outline: none;
-}
-
 /* One column per section, 17rem each, and the panel no wider than that: the component sets
    `--nav-sections` from the group, so Build with one section is a single column and Explore with
    three is three — the fixed 44/52/64rem widths kept the columns the removed sections used to fill. */
@@ -18,10 +13,6 @@
   .header { padding-inline: 1.25rem; }
   .logo > span:last-child { display: none; }
   .nav { gap: 1.1rem; }
-}
-
-@media (max-width: 767px) {
-  .nav-menu-positioner { display: none; }
 }
 
 @media (max-width: 420px) {

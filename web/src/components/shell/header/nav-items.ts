@@ -114,6 +114,26 @@ export function isActiveNavItem(pathname: string | null, item: NavItem): boolean
   return match.paths.some((path) => pathname === path || (!match.exact && pathname.startsWith(`${path}/`)));
 }
 
+/**
+ * Where the back chevron goes from a nested page whose parent path is no page (R4-0, D-227): `/tickers`, `/u`, `/proof`
+ * and `/settings` have none, so dropping the last segment opened a 404. First match wins; anything else goes up a
+ * segment (`/games/duel/abc` → `/games/duel`).
+ */
+export const PARENTS: readonly (readonly [prefix: string, href: string])[] = [
+  ["/tickers/", "/markets"],
+  ["/u/", "/leaderboard"],
+  ["/proof/", "/status"],
+  ["/settings/", "/portfolio"],
+];
+
+/** The page above a nested route: its registered parent, else the path one segment up. */
+export function parentOf(pathname: string): string {
+  const hit = PARENTS.find(([prefix]) => pathname.startsWith(prefix));
+  if (hit) return hit[1];
+  const parts = pathname.split("/").filter(Boolean);
+  return parts.length <= 1 ? "/" : `/${parts.slice(0, -1).join("/")}`;
+}
+
 /** The top-level routes: below these, the top line shows a back chevron (ux-audit fix 5). */
 export function isTopLevel(pathname: string | null): boolean {
   if (!pathname || pathname === "/") return true;

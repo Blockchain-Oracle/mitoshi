@@ -11,7 +11,7 @@ const F = ACCOUNT_PAGE.feedback;
 export function FeedbackSection({ className }: { className?: string }) {
   const settings = useFeedback();
   return (
-    <section aria-labelledby="feedback-title" className={className}>
+    <section id="feedback" aria-labelledby="feedback-title" className={className}>
       <h2 id="feedback-title" className="type-title text-ink">{F.title}</h2>
       <p className="type-caption text-ink-secondary">{F.body}</p>
       <ul className="flex flex-col divide-y divide-hairline">

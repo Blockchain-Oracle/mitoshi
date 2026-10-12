@@ -1,0 +1,43 @@
+/* The 404 (features/not-found/NotFoundScreen.tsx; Ported from Owarine 90a91d71 NotFoundScreen, R4-0, D-227) on
+ * Mitoshi's tokens: a display "404" with a stamped VOID, the voided Window's ticket under the seal, three pills. In the
+ * stage it adds no inset of its own (one inset, D-226). */
+.nf { display: flex; min-height: 70vh; align-items: center; justify-content: center; padding-block: 48px; }
+/* Before the root 404's frame has loaded (`NotFoundPage`) the page pads and paints itself. */
+.nf-bare { min-height: 100dvh; padding-inline: 16px; background: var(--color-canvas); color: var(--color-ink); }
+.nf-col { display: flex; width: 100%; max-width: 28rem; flex-direction: column; align-items: center; gap: 28px; text-align: center; }
+.nf-title-wrap { position: relative; }
+.nf-title { font: 800 clamp(4.5rem, 18vw, 7rem)/0.9 var(--font-display); letter-spacing: -0.04em; color: var(--color-ink); }
+.nf-void {
+  position: absolute; top: -12px; right: -24px; padding: 4px 10px; border: 2px solid var(--color-accent); border-radius: 8px;
+  color: var(--color-accent); font: 800 13px/1 var(--font-data); letter-spacing: 0.14em; rotate: -8deg;
+  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-stage));
+}
+.nf-line { max-width: 22rem; color: var(--color-ink-secondary); font: 400 16px/1.5 var(--font-body); }
+.nf-ticket {
+  position: relative; width: 100%; padding: 20px; border-radius: 20px; text-align: left;
+  background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline);
+}
+.nf-seal {
+  position: absolute; top: -24px; left: -10px; display: grid; width: 52px; height: 52px; place-items: center; border-radius: var(--radius-full);
+  background: var(--accent-fill); color: var(--on-accent); rotate: -12deg;
+}
+.nf-seal svg { width: 24px; height: auto; }
+.nf-rows { display: flex; flex-direction: column; gap: 10px; font: 500 13px/1.3 var(--font-data); }
+.nf-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.nf-row + .nf-row { padding-top: 10px; border-top: 1px dashed var(--color-hairline); }
+.nf-row dt { flex: none; color: var(--color-ink-secondary); }
+.nf-row dd { min-width: 0; color: var(--color-ink); }
+.nf-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nf-missing { color: var(--color-loss); }
+.nf-result { font-weight: 700; }
+.nf-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.nf-pill {
+  display: inline-flex; height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 0 20px; border-radius: var(--radius-full);
+  box-shadow: inset 0 0 0 1px var(--color-hairline); color: var(--color-ink); font: 700 14px/1 var(--font-body);
+}
+.nf-pill:hover { background: var(--color-surface-2); }
+.nf-pill:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.nf-pill svg { width: 16px; height: 16px; }
+.nf-pill--ink { background: var(--color-ink); color: var(--color-stage); box-shadow: none; }
+.nf-pill--ink:hover { background: color-mix(in srgb, var(--color-ink) 88%, var(--color-stage)); }
+.nf-pill--icon { width: 44px; padding: 0; }

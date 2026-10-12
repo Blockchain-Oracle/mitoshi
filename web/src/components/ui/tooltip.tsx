@@ -46,7 +46,8 @@ function TooltipContent({
         alignOffset={alignOffset}
         side={side}
         sideOffset={sideOffset}
-        className="isolate z-50"
+        // The popover layer (tokens.css `--z-popover`; R4-0, D-227): a tip inside an open sheet or modal shows over it.
+        className="isolate z-(--z-popover)"
       >
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"

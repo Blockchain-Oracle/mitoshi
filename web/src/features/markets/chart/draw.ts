@@ -203,9 +203,15 @@ export function drawFrame(ctx: CanvasRenderingContext2D, pal: ChartPalette, f: F
       vline(ctx, x, plot.top, plot.bottom);
       ctx.setLineDash([]);
       if (f.compact) continue;
+      // The word sits right of its line, else left, and only where it fits inside the plot (R4-0, D-227: a narrow panel
+      // right-aligned OPEN past the left edge and it read "PEN").
+      const tw = ctx.measureText(label).width;
+      const rightOk = x + 6 + tw <= plot.right;
+      const leftOk = x - 6 - tw >= plot.left;
+      if (!rightOk && !leftOk) continue;
       ctx.fillStyle = pal.muted;
-      ctx.textAlign = x > plot.right - 60 ? "right" : "left";
-      ctx.fillText(label, x + (ctx.textAlign === "right" ? -6 : 6), plot.top + 4);
+      ctx.textAlign = rightOk ? "left" : "right";
+      ctx.fillText(label, rightOk ? x + 6 : x - 6, plot.top + 4);
     }
   }
 

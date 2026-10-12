@@ -20,6 +20,8 @@
 /* Inside the shell the header and footer already frame the page; a full viewport on top of
    them pushes the way out below the fold. The root boundary has no shell and keeps 100vh. */
 .boundary:not(.boundary-root) { min-height: 70vh; }
+/* In the stage (`app/(app)/error.tsx`, R4-0) the stage is the one inset and the ground (D-226). */
+.app-stage .boundary { padding-inline: 0; background: none; }
 
 /* fontFamily var(--font-display) · clamp(1.5rem, 4vw, 2.2rem) · 700 · -0.01em · margin 0 */
 .boundary-title {
