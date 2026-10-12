@@ -18,15 +18,24 @@ describe("the exit keeper", () => {
   });
 
   it("ends a trigger whose Window locked or whose holding is gone, then fires trail, TP and SL", () => {
-    expect(judge(UP, { heldRaw: 5_000n, window: { ...LIVE, trading: false }, valueBase: null }, 1_000, false)).toMatchObject({ kind: "close", status: "expired" });
-    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, valueBase: null }, 2_000, false)).toMatchObject({ kind: "close", status: "expired" });
-    expect(judge(UP, { heldRaw: 999n, window: LIVE, valueBase: 2_000_000n }, 1_000, true)).toMatchObject({ kind: "close", status: "gone" });
-    expect(judge(UP, { heldRaw: 5_000n, window: null, valueBase: null }, 1_000, true)).toMatchObject({ kind: "wait" });
-    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, valueBase: 900_000n }, 1_000, true)).toEqual({ kind: "fire", reason: "trail" });
-    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, valueBase: 1_500_000n }, 1_000, false)).toEqual({ kind: "fire", reason: "tp" });
-    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, valueBase: 400_000n }, 1_000, false)).toEqual({ kind: "fire", reason: "sl" });
-    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, valueBase: 900_000n }, 1_000, false)).toEqual({ kind: "watch" });
-    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, valueBase: null }, 1_000, false)).toEqual({ kind: "watch" });
+    expect(judge(UP, { heldRaw: 5_000n, window: { ...LIVE, trading: false }, exit: null }, 1_000, false)).toMatchObject({ kind: "close", status: "expired" });
+    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, exit: null }, 2_000, false)).toMatchObject({ kind: "close", status: "expired" });
+    expect(judge(UP, { heldRaw: 999n, window: LIVE, exit: { proceedsBase: 2_000_000n, contractsRaw: 5_000n } }, 1_000, true)).toMatchObject({ kind: "close", status: "gone" });
+    expect(judge(UP, { heldRaw: 5_000n, window: null, exit: null }, 1_000, true)).toMatchObject({ kind: "wait" });
+    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, exit: { proceedsBase: 900_000n, contractsRaw: 5_000n } }, 1_000, true)).toEqual({ kind: "fire", reason: "trail" });
+    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, exit: { proceedsBase: 1_500_000n, contractsRaw: 5_000n } }, 1_000, false)).toEqual({ kind: "fire", reason: "tp" });
+    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, exit: { proceedsBase: 400_000n, contractsRaw: 5_000n } }, 1_000, false)).toEqual({ kind: "fire", reason: "sl" });
+    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, exit: { proceedsBase: 900_000n, contractsRaw: 5_000n } }, 1_000, false)).toEqual({ kind: "watch" });
+    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, exit: null }, 1_000, false)).toEqual({ kind: "watch" });
+  });
+
+  it("judges TP and SL like for like on a thin book: the part that fills, at its price, on the whole holding (D-227)", () => {
+    // 5,000 held, the book takes 1,500 for 300,000: worth 1,000,000 held — above the 400,000 stop, under the TP.
+    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, exit: { proceedsBase: 300_000n, contractsRaw: 1_500n } }, 1_000, false)).toEqual({ kind: "watch" });
+    // 1,500 for 450,000 is 1,500,000 on all 5,000: the take-profit fires.
+    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, exit: { proceedsBase: 450_000n, contractsRaw: 1_500n } }, 1_000, false)).toEqual({ kind: "fire", reason: "tp" });
+    // A real drawdown still fires: 1,500 for 120,000 is 400,000 on all of it.
+    expect(judge(UP, { heldRaw: 5_000n, window: LIVE, exit: { proceedsBase: 120_000n, contractsRaw: 1_500n } }, 1_000, false)).toEqual({ kind: "fire", reason: "sl" });
   });
 
   it("backs a failed sale off, capped", () => {

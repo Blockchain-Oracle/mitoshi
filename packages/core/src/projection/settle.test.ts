@@ -8,7 +8,7 @@ const ONE = 1_000_000n;
 const M = toMarketId(`0x${"b2".padStart(64, "0")}`);
 
 const ledger = (overrides: Partial<MarketLedger>): MarketLedger => ({
-  marketId: M, heldUpRaw: 10n * ONE, heldDownRaw: 0n, costBase: 4n * ONE, proceedsBase: 0n, sidesTraded: [0], fillCount: 1, shortCount: 0, firstAtMs: 1_000, lastAtMs: 1_000, entryTxHash: "0x1", ...overrides,
+  marketId: M, heldUpRaw: 10n * ONE, heldDownRaw: 0n, costBase: 4n * ONE, proceedsBase: 0n, openCostUpBase: 4n * ONE, openCostDownBase: 0n, sidesTraded: [0], fillCount: 1, shortCount: 0, firstAtMs: 1_000, lastAtMs: 1_000, entryTxHash: "0x1", ...overrides,
 });
 const market = (overrides: Partial<RoundMarket>): RoundMarket => ({
   marketId: M, asset: "BTC", intervalSec: 300, expirySec: 2_000, decimals: 6, settled: true, voided: false, winningOutcome: 0, resolvedAtMs: 2_001_000, ...overrides,

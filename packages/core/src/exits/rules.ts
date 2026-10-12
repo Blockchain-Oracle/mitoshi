@@ -27,3 +27,13 @@ export function exitHit(valueBase: bigint, tpBase: bigint | null, slBase: bigint
   if (slBase !== null && valueBase <= slBase) return "sl";
   return null;
 }
+
+/**
+ * What an exit trigger compares (D-227): Close's proceeds for the lots the book takes, scaled to everything held at the
+ * same price. A take-profit or stop-loss is a target for the whole position, so a book that rests 30 % of the size reads
+ * as that price on all of it — never as a 70 % drawdown that sells. Null when nothing fills.
+ */
+export function likeForLikeBase(proceedsBase: bigint, soldRaw: bigint, heldRaw: bigint): bigint | null {
+  if (soldRaw <= 0n) return null;
+  return soldRaw >= heldRaw ? proceedsBase : (proceedsBase * heldRaw) / soldRaw;
+}

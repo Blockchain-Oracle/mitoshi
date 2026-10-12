@@ -97,15 +97,29 @@ export interface VaultBet {
   lockAtSec: number;
   decimals: number;
   state: "open" | "resolved" | "voided";
+  /** The Window's answer once resolved (0 Up, 1 Down), and when the chain resolved it. */
+  winningOutcome: 0 | 1 | null;
+  resolvedAtMs: number | null;
   /** Held now (outcome raw units): zero once cranked or sold. */
   upRaw: bigint;
   downRaw: bigint;
+  /** Everything the vault paid for this owner here, both sides (the tally's), and what its sales took in. */
   costBase: bigint;
   proceedsBase: bigint;
   payoutBase: bigint;
+  /** The tally's contracts bought and sold per side. */
+  boughtUpRaw: bigint;
+  boughtDownRaw: bigint;
+  soldUpRaw: bigint;
+  soldDownRaw: bigint;
+  /** What the contracts held now cost, per side, at average cost (D-227, `open-cost.ts`); 0 for a side not held. */
+  costUpBase: bigint;
+  costDownBase: bigint;
   /** 0 until the Window was cranked into the Trading Balance. */
   settledAtSec: number;
   lastAtSec: number;
+  /** The first fill here (the round's open, for the account history). */
+  firstAtSec: number;
 }
 
 export const VAULT_NOT_DEPLOYED = "EventVault is not deployed on this network yet" as const;
