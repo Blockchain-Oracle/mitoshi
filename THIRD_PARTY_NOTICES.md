@@ -47,3 +47,21 @@ when the fonts are ported (S1). Font licenses do not become the license of the a
 
 Moderato's v4 contracts are byte-identical replays of Uniswap Labs' mainnet deployments (BUSL-1.1 permits testnet use);
 only MIT-licensed interfaces and libraries are compiled here. See `docs/specs/v4-replay.md`.
+
+## Sign-in modal (O-9, D-222)
+
+The compact sign-in frame (`web/src/providers/wallet/{wallet-modal-parts.tsx,wallet-modal.css}`) is ported from Owarine
+90a91d71 (the owner's own MIT repo), which replicates the RainbowKit 2.2.11 modals Masayume shipped:
+
+- **RainbowKit** ([rainbow-me/rainbowkit](https://github.com/rainbow-me/rainbowkit), MIT, Copyright (c) 2024 Rainbow): the close, back and spinner glyph paths and the two "What is a Wallet?" illustrations (`web/public/wallet/assets.svg`, `login.svg`).
+
+## Asset marks (O-1, D-222)
+
+The discs that name a listed asset (`web/src/components/icons/asset-marks/`) carry the issuer's mark as inline SVG path data, vendored so nothing is fetched at runtime. The marks and names are trademarks of their owners; they identify the traded assets and imply no endorsement of, or affiliation with, Mitoshi.
+
+| Mark | Source | Terms |
+| --- | --- | --- |
+| Tesla, NVIDIA, Apple, Meta, Google, SpaceX, Solana, AMD, Palantir | [simple-icons](https://github.com/simple-icons/simple-icons) **16.31.0** (`icons/<slug>.svg`) | CC0 1.0 Universal |
+| Amazon | simple-icons **14.15.0**, the last release to carry `amazon.svg` | CC0 1.0 at publication (removed in 15.0.0 by the maintainers pending permission, not on a request from Amazon) |
+| Microsoft | Own geometry: four rectangles in `paths.ts`; no third-party artwork | — |
+| Bitcoin, Ethereum | Masayume's own marks | — |

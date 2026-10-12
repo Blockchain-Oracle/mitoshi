@@ -78,7 +78,7 @@ export function HeaderAccount({ placement = "top" }: { placement?: AccountPlacem
   if (rail) {
     return (
       <>
-        <span className="rail-money"><MoneyPill address={session.address} /></span>
+        <span className="rail-money"><MoneyPill address={session.address} variant="rail" /></span>
         <span className="rail-account">{account}</span>
       </>
     );

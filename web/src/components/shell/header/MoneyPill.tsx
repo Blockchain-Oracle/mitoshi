@@ -4,17 +4,41 @@
 // loads with the signed-in session, not in every page's first load (§3.1).
 import type { Address } from "@cwf/core";
 import { useBalanceSheet } from "@cwf/markets/react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Plus } from "lucide-react";
 import { SHELL } from "@/lib/copy";
 import { openFunds } from "@/lib/funds-event";
 import { setPrivacy, usePrivacy } from "@/lib/privacy";
 import { dollars } from "@/providers/wallet/format";
 
-export function MoneyPill({ address }: { address: Address }) {
+export function MoneyPill({ address, variant = "bar" }: { address: Address; variant?: "rail" | "bar" }) {
   const sheet = useBalanceSheet(address);
   const value = sheet?.ok ? sheet.value : null;
   const total = value ? value.spendableBase + (value.vaultBase ?? 0n) : null;
-  return <MoneyPillView total={total} />;
+  return variant === "rail" ? <MoneyTile total={total} /> : <MoneyPillView total={total} />;
+}
+
+/**
+ * The full rail's money (Owarine 90a91d71 `BalanceChip variant="rail"`; O-10, D-222): a filled tile at the rail's foot —
+ * what the money is, the privacy eye, the sum large, and the solid + that opens Add money.
+ */
+export function MoneyTile({ total }: { total: bigint | null }) {
+  const hidden = usePrivacy();
+  return (
+    <div className="money-tile">
+      <div className="money-tile-head">
+        <span className="money-tile-label">{SHELL.moneyLabel}</span>
+        <button type="button" className="money-tile-eye" aria-pressed={hidden} aria-label={hidden ? SHELL.privacyShow : SHELL.privacyHide} onClick={() => setPrivacy(!hidden)}>
+          {hidden ? <EyeOff aria-hidden className="size-3.5" /> : <Eye aria-hidden className="size-3.5" />}
+        </button>
+      </div>
+      <div className="money-tile-row">
+        <span className={`money-tile-sum numbers${total === null && !hidden ? " is-dim" : ""}`}>{hidden ? SHELL.masked : dollars(total)}</span>
+        <button type="button" onClick={openFunds} aria-label={SHELL.addMoney} className="money-tile-add">
+          <Plus aria-hidden className="size-4" strokeWidth={3} />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export function MoneyPillView({ total }: { total: bigint | null }) {

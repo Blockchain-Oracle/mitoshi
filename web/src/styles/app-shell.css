@@ -203,3 +203,27 @@ span.top-money, span.top-account { display: contents; }
 .rail-sub-item:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-accent); }
 .rail-sub-icon { width: 16px; height: 16px; flex: none; }
 @media (max-width: 1279px) { .rail-sub { padding-left: 0; align-items: center; } .rail-sub-item { justify-content: center; width: 44px; padding: 0; } .rail-sub-item .rail-label { display: none; } }
+
+/* O-10 (D-222), from Owarine 90a91d71 `BalanceChip` (rail) and `SeatAccountMenu`: the rail's money is a filled tile and
+   the account an avatar chip, on the rail's own surfaces in both themes — no hairline pills on the rail's dark ground. */
+.money-tile { display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 1.25rem; background: color-mix(in oklab, var(--color-rail-active) 55%, transparent); }
+.money-tile-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.money-tile-label { font: 500 12px/1.2 var(--font-body); color: var(--color-ink-secondary); }
+.money-tile-eye { display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-full); background: color-mix(in oklab, var(--color-rail-active) 70%, transparent); color: var(--color-ink); }
+.money-tile-eye:hover { background: var(--color-rail-active); }
+.money-tile-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.money-tile-sum { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 20px/1.2 var(--font-data); color: var(--color-ink); }
+.money-tile-sum.is-dim { opacity: 0.55; }
+.money-tile-add { display: grid; flex: none; place-items: center; width: 32px; height: 32px; border-radius: var(--radius-full); background: var(--accent-fill); color: var(--on-accent); }
+.money-tile-add:focus-visible, .money-tile-eye:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
+
+.wallet-pill-id { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+.wallet-pill-kind { font: 700 13px/1.2 var(--font-body); color: var(--color-ink); }
+.wallet-pill .wallet-pill-addr { font-size: 11px; color: var(--color-ink-secondary); }
+.rail-account .wallet-pill { gap: 10px; padding: 8px 12px 8px 8px; border: 0; border-radius: 1.25rem; background: color-mix(in oklab, var(--color-rail-active) 55%, transparent); color: var(--color-ink-secondary); }
+.rail-account .wallet-pill:hover { background: var(--color-rail-active); }
+.rail-account .wallet-pill .addr-dot { width: 32px; height: 32px; }
+.rail-account .wallet-pill .addr-dot::after { inset: 10px; }
+.rail-account .wallet-pill > svg { margin-left: auto; }
+@media (max-width: 1279px) { .rail-account .wallet-pill-id { display: none; } .rail-account .wallet-pill .addr-dot { width: 26px; height: 26px; } .rail-account .wallet-pill .addr-dot::after { inset: 8px; } }
+.top-account .wallet-pill-kind { display: none; }

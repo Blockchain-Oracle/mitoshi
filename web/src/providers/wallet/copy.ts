@@ -30,6 +30,34 @@ export const SIGN_IN = {
   },
 } as const;
 
+/**
+ * The compact sign-in list's frame words (Owarine 90a91d71 `WALLET_MODAL`, RainbowKit 2.2.11's `en_US`; O-9, D-222),
+ * said for passkeys: Mitoshi's accounts are passkeys first, wallets after.
+ */
+export const WALLET_MODAL = {
+  close: "Close",
+  back: "Back",
+  groups: { passkey: (network: string) => `Passkey · ${network}`, wallets: "Wallets" },
+  rows: {
+    create: "Create an account",
+    createNote: "Face ID, Touch ID or a security key",
+    signIn: "Sign in with a passkey",
+    signInNote: "On this device, or another of yours",
+  },
+  newTo: "New to passkeys?",
+  learnMore: "Learn more",
+  intro: {
+    title: "What is a passkey?",
+    assetsTitle: "Your account, on your device",
+    assetsBody: "The key is made by this device and never leaves it. We keep only its public half; there is no seed phrase and no password.",
+    loginTitle: "One tap to sign in",
+    loginBody: "Face ID, Touch ID or a security key signs you in, and Mitoshi pays the network fees.",
+    get: "Create an account",
+  },
+  create: { title: "Create an account", cta: "Create with a passkey" },
+  status: { loading: "Loading" },
+} as const;
+
 export const ACCOUNT = {
   title: "Your account",
   kinds: { passkey: "Passkey", "tempo-wallet": "Tempo Wallet", injected: "Browser wallet", walletconnect: "WalletConnect" },

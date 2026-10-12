@@ -28,7 +28,11 @@ export function AccountMenu({ open, onOpenChange, side = "bottom" }: AccountMenu
     <Menu.Root modal={false} open={open} onOpenChange={onOpenChange}>
       <Menu.Trigger className="wallet-pill min-h-touch" aria-label={ACCOUNT_MENU.open}>
         <span className="addr-dot" aria-hidden />
-        <span className="numbers wallet-pill-addr">{shortAddress(session.address)}</span>
+        {/* Owarine 90a91d71 `SeatAccountMenu` (O-10): what the account is, bold, over its address in mono. */}
+        <span className="wallet-pill-id">
+          <span className="wallet-pill-kind">{session.kind ? ACCOUNT.kinds[session.kind] : ACCOUNT_MENU.open}</span>
+          <span className="numbers wallet-pill-addr">{shortAddress(session.address)}</span>
+        </span>
         <ChevronDown aria-hidden className="size-3.5" />
       </Menu.Trigger>
       <Menu.Portal>

@@ -72,6 +72,9 @@ export const SHELL = {
   privacyHide: "Hide balances",
   privacyShow: "Show balances",
   masked: "••••",
+  /** The rail's money tile (O-10): testnet dollars are never "Live" money. */
+  moneyLabel: "Balance · Tempo testnet",
+  addMoney: "Add money",
   signInPending: "Getting sign-in ready…",
 } as const;
 
