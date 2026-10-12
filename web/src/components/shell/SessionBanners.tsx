@@ -31,29 +31,5 @@ export function SessionBanners() {
       </div>
     );
   }
-  if (!session.isConnected && !dismissed) {
-    return (
-      <div className={restoring ? "shell-banner invisible" : "shell-banner"} data-kind="signed-out" role={restoring ? undefined : "status"} aria-hidden={restoring || undefined}>
-        <span>{SESSION_BANNER.signedOut}</span>
-        <span className="flex gap-2">
-          <button type="button" onClick={session.connect}>{SESSION_BANNER.signIn}</button>
-          <button
-            type="button"
-            aria-label="Dismiss"
-            onClick={() => {
-              setDismissed(true);
-              try {
-                sessionStorage.setItem(DISMISS_KEY, "1");
-              } catch {
-                /* storage blocked: dismissal holds for this page */
-              }
-            }}
-          >
-            ×
-          </button>
-        </span>
-      </div>
-    );
-  }
   return null;
 }

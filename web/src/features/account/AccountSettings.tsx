@@ -8,7 +8,6 @@ import type { RegionPosture } from "@cwf/core";
 import { webEnv } from "@/lib/env";
 import { readRegionPosture } from "@/lib/region-mark";
 import { useWalletSession } from "@/lib/wallet-session";
-import { FirstUseHint } from "@/features/onboarding/FirstUseHint";
 import { ACCOUNT } from "@/providers/wallet/copy";
 import { shortAddress } from "@/providers/wallet/format";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
@@ -51,7 +50,6 @@ export function AccountSettings() {
       <header className="capability-pending m-0! flex max-w-none! flex-col gap-2 p-0!">
         <p className="cp-eyebrow">{P.eyebrow}</p>
         <h1 className="cp-title">{P.title}</h1>
-        <FirstUseHint id="keys" className="mt-2" />
       </header>
 
       {!session.address ? (

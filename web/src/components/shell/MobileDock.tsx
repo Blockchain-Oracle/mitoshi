@@ -8,7 +8,8 @@ import { LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, type CSSProperties } from "react";
-import { SHELL } from "@/lib/copy";
+import { BRAND, SHELL } from "@/lib/copy";
+import MitoshiMark from "./MitoshiMark";
 import { openDrawer } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { DOCK_NAV, isActiveNavItem } from "./header/nav-items";
@@ -20,11 +21,12 @@ function Dock({ pathname }: { pathname: string | null }) {
   return (
     <nav aria-label={SHELL.mobileNav} className="app-dock">
       <ul className="dock-list">
-        <li aria-hidden className="dock-pill" data-on={active >= 0 ? "" : undefined} style={{ "--dock-i": Math.max(active, 0) } as CSSProperties} />
-        {DOCK_NAV.map((item, i) => {
+        {/* The seal sits in the middle slot, so places after it shift one slot right. */}
+        <li aria-hidden className="dock-pill" data-on={active >= 0 ? "" : undefined} style={{ "--dock-i": active >= SEAL_AT ? active + 1 : Math.max(active, 0) } as CSSProperties} />
+        {DOCK_NAV.flatMap((item, i) => {
           const Icon = item.icon;
           const on = i === active;
-          return (
+          const li = (
             <li key={item.id}>
               <Link href={item.href} aria-current={on ? "page" : undefined} className="dock-item" onClick={tapFeedback}>
                 <Icon aria-hidden className="dock-icon" />
@@ -32,6 +34,7 @@ function Dock({ pathname }: { pathname: string | null }) {
               </Link>
             </li>
           );
+          return i === SEAL_AT ? [<SealSlot key="seal" />, li] : [li];
         })}
         <li>
           <button
@@ -50,6 +53,18 @@ function Dock({ pathname }: { pathname: string | null }) {
         </li>
       </ul>
     </nav>
+  );
+}
+
+/** Owarine's centre seal: the mark, home. */
+const SEAL_AT = 2;
+function SealSlot() {
+  return (
+    <li>
+      <Link href="/" aria-label={`${BRAND.name} home`} className="dock-item dock-seal" onClick={tapFeedback}>
+        <span className="dock-seal-disc"><MitoshiMark /></span>
+      </Link>
+    </li>
   );
 }
 

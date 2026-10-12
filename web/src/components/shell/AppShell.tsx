@@ -5,8 +5,6 @@
 // everything that reads the path or the wallet is a client island inside it.
 import { Suspense, type ReactNode } from "react";
 import { SHELL } from "@/lib/copy";
-import AppStrip from "./AppStrip";
-import Footer from "./Footer";
 import { EverythingHost } from "./EverythingHost";
 import { FeedbackPreload } from "./FeedbackPreload";
 import { MobileDock } from "./MobileDock";
@@ -30,9 +28,6 @@ export function AppShell({ children, railFoot, account, notices }: AppShellProps
       <a className="skip-link" href="#content">{SHELL.skipLink}</a>
       <Rail foot={railFoot} />
       <div className="app-column">
-        <Suspense fallback={null}>
-          <AppStrip />
-        </Suspense>
         <TopLine account={account} />
         <div className="app-notices">
           <Suspense fallback={null}>
@@ -44,8 +39,6 @@ export function AppShell({ children, railFoot, account, notices }: AppShellProps
         <main id="content" tabIndex={-1} className="app-stage">
           {children}
         </main>
-        {/* The disclosure and the legal links stay on every page (D-043), as one quiet line under the stage. */}
-        <Footer />
       </div>
       <MobileDock />
       <EverythingHost />

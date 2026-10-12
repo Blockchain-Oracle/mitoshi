@@ -1993,6 +1993,13 @@ rule** (desktop keeps right drawers and centred modals). Ledger: `owarine-parity
 
 **Why:** the owner: "you don't have to be mediocre… you have a lot of inspiration to take from".
 
+### D-223 — DEMO mode as on Owarine; Owarine's word counts (owner, 2026-10-12)
+
+Signed out, Mitoshi runs in DEMO as Owarine does: paper dollars kept in the browser, calls on the live Windows at the
+live price, settled on the real signed close, every surface labelled DEMO; "Create account" moves to live money.
+**Supersedes D-191 ("no paper positions") and the revamp's "no simulated balance".** Copy follows Owarine's density:
+no hints, explainers or stage codes on screen ("too much text… a sign of slop"). Plan: owarine-parity.md P0–P6.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

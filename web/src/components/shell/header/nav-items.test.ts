@@ -30,16 +30,16 @@ function pageRoutes(dir = APP_DIR): string[] {
 const OFF_NAV = new Set(["/", "/privacy", "/terms", "/contact", "/native-auth"]);
 
 describe("navigation registry", () => {
-  it("keeps the rail's places and the phone dock compact, both pillars first-class (S22, D-189)", () => {
-    expect(RAIL_NAV.map((i) => i.name)).toEqual(["Trade", "Markets", "Stocks", "Games", "Portfolio"]);
-    expect(DOCK_NAV.map((i) => i.name)).toEqual(["Trade", "Stocks", "Games", "Portfolio"]);
+  it("keeps Owarine's rail places and phone dock (D-223): the dock is Trade · Markets · [seal] · Portfolio · More", () => {
+    expect(RAIL_NAV.map((i) => i.name)).toEqual(["Trade", "Markets", "Stocks", "Games", "Portfolio", "Leaderboard"]);
+    expect(DOCK_NAV.map((i) => i.name)).toEqual(["Trade", "Markets", "Portfolio"]);
   });
 
-  it("gives every Everything destination exactly one home; the only rail place in it is the one the dock leaves out", () => {
+  it("gives every Everything destination exactly one home; rail places the dock leaves out are listed there", () => {
     const ids = EVERYTHING_SECTIONS.flatMap((s) => s.items.map((i) => i.id));
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.filter((id) => DOCK_NAV.some((p) => p.id === id))).toEqual([]);
-    expect(ids.filter((id) => RAIL_NAV.some((p) => p.id === id))).toEqual(["markets"]);
+    expect(ids.filter((id) => RAIL_NAV.some((p) => p.id === id)).sort()).toEqual(["games", "leaderboard", "stocks"]);
   });
 
   it("gives every navigable route a nav home", () => {

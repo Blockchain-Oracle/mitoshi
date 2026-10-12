@@ -123,16 +123,16 @@ export const ACCOUNT_SECTION: NavSection = { id: "account", name: "Account", des
  * The rail's places, in key order (1–5; 6 opens Everything): the terminal first (S23, D-192), both pillars, play, and
  * your money (S22, D-189).
  */
-export const RAIL_NAV: readonly NavItem[] = [NAV_ITEMS.trade, NAV_ITEMS.markets, NAV_ITEMS.stocks, NAV_ITEMS.games, NAV_ITEMS.portfolio];
+export const RAIL_NAV: readonly NavItem[] = [NAV_ITEMS.trade, NAV_ITEMS.markets, NAV_ITEMS.stocks, NAV_ITEMS.games, NAV_ITEMS.portfolio, NAV_ITEMS.leaderboard];
 
 /**
  * The phone dock: four places, then Everything (five slots fit 320 px). Markets — the full list of Windows — is the
  * place the dock leaves out: on a phone it is one tap from the terminal's markets drawer and listed in Everything.
  */
-export const DOCK_NAV: readonly NavItem[] = [NAV_ITEMS.trade, NAV_ITEMS.stocks, NAV_ITEMS.games, NAV_ITEMS.portfolio];
+export const DOCK_NAV: readonly NavItem[] = [NAV_ITEMS.trade, NAV_ITEMS.markets, NAV_ITEMS.portfolio];
 
 /** Rail places the dock leaves out: Everything lists them too, so a phone reaches them (shown at every width). */
-export const DOCK_OMITTED: readonly NavItem[] = RAIL_NAV.filter((p) => !DOCK_NAV.includes(p));
+export const DOCK_OMITTED: readonly NavItem[] = RAIL_NAV.filter((p) => !DOCK_NAV.includes(p) && p !== NAV_ITEMS.leaderboard);
 
 /** Everything else, one home each — the right-edge Everything drawer (the former More panel) and ⌘K. */
 export const EVERYTHING_SECTIONS: readonly NavSection[] = [

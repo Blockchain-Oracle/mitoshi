@@ -12,7 +12,7 @@ import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { BRAND, SHELL } from "@/lib/copy";
 import { tapFeedback } from "@/lib/feedback";
 import MitoshiMark from "./MitoshiMark";
-import { NetworkPill } from "./NetworkPill";
+import { HealthChip } from "./HealthChip";
 import { shortcutBlocked } from "./Rail";
 import ThemeToggle from "./ThemeToggle";
 import { isTopLevel } from "./header/nav-items";
@@ -70,7 +70,7 @@ export function TopLine({ account }: { account?: ReactNode }) {
         <Link href="/" aria-label={`${BRAND.name} home`} className="topline-mark">
           <MitoshiMark />
         </Link>
-        <NetworkPill className="topline-network" />
+        <HealthChip className="topline-network" />
       </div>
       <div className="topline-tools">
         <button

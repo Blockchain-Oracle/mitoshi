@@ -12,7 +12,7 @@ import { History, LayoutGrid, LineChart, SlidersHorizontal } from "lucide-react"
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, type CSSProperties, type ReactNode } from "react";
-import { BRAND, SHELL } from "@/lib/copy";
+import { BRAND, FOOTER, SHELL } from "@/lib/copy";
 import { openDrawer } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import MitoshiMark from "./MitoshiMark";
@@ -138,6 +138,10 @@ export function Rail({ foot }: { foot?: ReactNode }) {
         <RailNavWithPath />
       </Suspense>
       {foot ? <div className="rail-foot">{foot}</div> : null}
+      <nav className="rail-legal" aria-label={SHELL.legalNav}>
+        <Link href="/docs">{FOOTER.links.docs}</Link>
+        <Link href="/terms">{SHELL.legal}</Link>
+      </nav>
     </aside>
   );
 }

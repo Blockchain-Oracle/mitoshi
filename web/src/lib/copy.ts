@@ -72,6 +72,10 @@ export const SHELL = {
   privacyHide: "Hide balances",
   privacyShow: "Show balances",
   masked: "••••",
+  legal: "Legal",
+  legalNav: "Docs and legal",
+  health: { healthy: "All systems live", degraded: "Running degraded", unreachable: "Venue unreachable", unread: "Checking…" },
+  network: "Tempo testnet",
   /** The rail's money tile (O-10): testnet dollars are never "Live" money. */
   moneyLabel: "Balance · Tempo testnet",
   addMoney: "Add money",

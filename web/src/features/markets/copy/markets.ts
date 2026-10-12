@@ -4,7 +4,7 @@
  * the engine's real book, and a lane is a (basis, cadence) pair across tickers (Agari 03b30ab lane-view).
  */
 /** The user's pinned calls (D-048), above the lanes. */
-export const CALLS_SECTION = { index: "00", title: "Your calls", desc: "Each call stays here through its verdict and payout — whatever Window the page moves to." } as const;
+export const CALLS_SECTION = { index: "00", title: "Your calls", desc: "" } as const;
 
 export const SECTIONS = {
   lanes: { index: "01", title: "Live windows" },
@@ -22,7 +22,7 @@ export const LANE_CARD = {
   kind247: "24/7 · stock",
   kindCrypto: "24/7 · crypto",
   schedule: (clock: string) => `Schedule a call · opens ${clock}.`,
-  scheduleLine: "Rest a call at your price now; it fills in the first minute after the bell if the book comes to you.",
+  scheduleLine: "Rest a call at your price.",
   scheduleCta: "Schedule a call",
   scheduleMeta: "your price",
   priceLoading: "···",

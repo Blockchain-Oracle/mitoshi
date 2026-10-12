@@ -39,9 +39,9 @@ export const TICKET = {
   syncing: "Syncing the chain clock…",
   close: "Close",
   /** "No fees to pay" is true on Tempo and says so on the CTA line (§2.1.4). */
-  footnote: "No fees to pay · settles on its own, right on the price.",
-  footnoteArmed: "Signed by your trading key, no prompt · no fees to pay · settles on its own.",
-  footnotePasskey: "One passkey confirm · no fees to pay · settles on its own.",
+  footnote: "Settles on its own, right on the price.",
+  footnoteArmed: "No prompt · settles on its own.",
+  footnotePasskey: "One passkey confirm · settles on its own.",
   creditNote: (creditText: string) => `${creditText} of payout credit on this Window is spent first.`,
   advanced: (fromCadence: string, toCadence: string) => `That ${fromCadence} Window closed for entries — moved you to the next ${toCadence} Window. Side and stake kept.`,
   srCost: (costText: string) => `Cost ${costText}`,

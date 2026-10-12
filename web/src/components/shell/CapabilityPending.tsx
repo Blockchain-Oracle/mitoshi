@@ -14,7 +14,6 @@ export function CapabilityPending({ eyebrow, title, children, dependency }: { ey
       <p className="cp-eyebrow">{eyebrow}</p>
       <h1 className="cp-title">{title}</h1>
       <div className="cp-body">{children}</div>
-      <p className="cp-meta">Not connected yet · waiting on {dependency}</p>
     </section>
   );
 }
