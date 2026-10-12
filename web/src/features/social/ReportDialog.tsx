@@ -31,6 +31,7 @@ export function ReportDialog({ open, onOpenChange, target }: { open: boolean; on
     <Modal
       open={open}
       onOpenChange={onOpenChange}
+      fields
       title={words.title}
       description={words.lead}
       footer={

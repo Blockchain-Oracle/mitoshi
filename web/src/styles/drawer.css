@@ -14,6 +14,8 @@
 .slide-over-backdrop[data-ending-style] { opacity: 0; }
 .slide-over-backdrop[data-ending-style] { transition-duration: var(--duration-drawer-out); }
 .slide-over-backdrop[data-swiping] { transition-duration: 0ms; }
+/* A modal shown as a phone sheet stays on the modal layer (R4-2, D-227). */
+.slide-over-backdrop.on-modal { z-index: calc(var(--z-modal) - 1); }
 
 .slide-over-viewport {
   position: fixed;
@@ -25,6 +27,7 @@
   padding: max(var(--spacing-drawer-inset), env(safe-area-inset-top, 0px)) var(--spacing-drawer-inset) max(var(--spacing-drawer-inset), env(safe-area-inset-bottom, 0px));
   pointer-events: none;
 }
+.slide-over-viewport.on-modal { z-index: var(--z-modal); }
 
 .slide-over-popup {
   display: flex;
@@ -43,11 +46,12 @@
   transform: translateX(var(--drawer-swipe-movement-x, 0px));
   transition: transform var(--duration-drawer-in) var(--ease-drawer);
 }
-.slide-over-popup.is-wide { width: min(100%, var(--spacing-drawer-wide)); }
+.slide-over-popup[data-size="lg"] { width: min(100%, var(--spacing-drawer-wide)); }
 .slide-over-popup[data-starting-style],
 .slide-over-popup[data-ending-style] { transform: translateX(calc(100% + var(--spacing-drawer-inset) + 4px)); }
 .slide-over-popup[data-swiping] { transition-duration: 0ms; user-select: none; }
 .slide-over-popup[data-ending-style] { transition-duration: calc(var(--drawer-swipe-strength, 1) * var(--duration-drawer-out)); transition-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+.slide-over-popup.is-instant[data-starting-style] { transform: none; transition: none; }
 
 .slide-over-content { position: relative; display: flex; min-height: 0; min-width: 0; flex: 1; flex-direction: column; }
 .slide-over-head {
@@ -78,6 +82,29 @@
 .slide-over-close:hover { color: var(--color-ink); background: var(--color-surface-2); }
 .slide-over-close:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-accent); }
 
+/* R4-2 (D-227), Owarine 90a91d71 kit/Sheet.tsx: the head's left slot (a back arrow or the caller's control), an eyebrow
+ * (a modal's, when the modal is a phone sheet), and the footer pinned outside the scrolling body — empty until a
+ * `footer` or a `SheetFooter` fills it. Every hit area is at least 44 px (the phone's 36 px buttons extend by 4 px). */
+.slide-over-left { position: absolute; top: 10px; left: 10px; display: flex; align-items: center; }
+.slide-over-head.has-left { padding-left: 64px; }
+.slide-over-back {
+  position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-full);
+  color: var(--color-ink-secondary);
+}
+.slide-over-back:hover { color: var(--color-ink); background: var(--color-surface-2); }
+.slide-over-back:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-accent); }
+.slide-over-close::before, .slide-over-back::before { content: ""; position: absolute; inset: -4px; }
+.slide-over-eyebrow { display: inline-flex; align-items: center; gap: 8px; font: 500 11px/1.2 var(--font-data); letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-ink-secondary); }
+.slide-over-eyebrow-dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--color-accent); }
+.slide-over-foot {
+  flex: none; display: flex; flex-direction: column; gap: 8px; padding: 12px 16px 16px;
+  border-top: 1px solid var(--color-hairline); background: var(--color-stage);
+}
+.slide-over-foot:empty { display: none; }
+.slide-over-body:has(+ .slide-over-foot:not(:empty)) { padding-bottom: 16px; }
+/* A modal shown as a phone sheet keeps the modal body's rhythm. */
+.slide-over-body--stack { display: flex; flex-direction: column; gap: 16px; }
+
 @media (prefers-reduced-motion: reduce) {
   .slide-over-popup, .slide-over-backdrop { transition-duration: 0ms; }
 }
@@ -95,11 +122,24 @@
     margin-bottom: -3rem; padding-bottom: 3rem; border-width: 0; border-radius: 32px 32px 0 0;
     transform: translateY(var(--drawer-swipe-movement-y, 0px));
   }
-  .slide-over-popup.is-wide { max-width: 40rem; }
+  .slide-over-popup[data-size="lg"] { max-width: 40rem; }
   .slide-over-popup[data-starting-style], .slide-over-popup[data-ending-style] { transform: translateY(calc(100% + 8px)); }
   .slide-over-grab { display: block; flex: none; width: 40px; height: 4px; margin: 12px auto 0; border-radius: var(--radius-full); background: var(--color-accent); }
+  /* The bar is the handle of a sheet with fields (`fields`: the body and footer opt out of the swipe), so its hit area is
+     a strip across the sheet's top, not the 4 px bar (R4-2, D-227). */
+  .slide-over-grab { position: relative; }
+  .slide-over-grab::before { content: ""; position: absolute; inset: -12px -96px -12px; }
   .slide-over-head { padding: 6px 56px 10px; border-bottom: 0; text-align: center; }
   .slide-over-head .type-title { font-size: 13px; font-weight: 600; color: var(--color-ink-secondary); }
   .slide-over-body { padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
   .slide-over-close { top: 8px; right: 12px; width: 36px; height: 36px; background: var(--color-surface-2); color: var(--color-ink); }
+  .slide-over-left { top: 8px; left: 12px; }
+  .slide-over-back { width: 36px; height: 36px; background: var(--color-surface-2); color: var(--color-ink); }
+  .slide-over-head.has-left { padding-left: 56px; }
+  .slide-over-eyebrow { justify-content: center; }
+  .slide-over-body:has(+ .slide-over-foot:not(:empty)) { padding-bottom: 12px; }
+  /* The footer rides the safe area and, while a field is focused, the software keyboard (Base UI drawer docs: the
+     provider sets `--drawer-keyboard-inset` only while the keyboard is aligned, hence the 0 px fallback). */
+  .slide-over-foot { padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px) + var(--drawer-keyboard-inset, 0px)); transition: padding-bottom 260ms var(--ease-drawer); }
 }
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) { .slide-over-foot { transition: none; } }

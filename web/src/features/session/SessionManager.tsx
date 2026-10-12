@@ -13,6 +13,7 @@ import { leftNowBase, spentTodayBase, topUpBase, usd } from "./caps";
 import { SESSION } from "./copy";
 import { useSessionActions, useSessionView } from "./context";
 import { useSessionWrites } from "./useSessionWrites";
+import { SheetFooter } from "@/components/ui/drawer";
 
 const M = SESSION.manager;
 const at = (sec: number) => new Date(sec * 1000).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
@@ -76,6 +77,7 @@ export function SessionManagerBody() {
       </dl>
       {failure}
       <div className="flex flex-col gap-2">
+        <SheetFooter>
         {needsKey ? (
           <button type="button" className={primary} disabled={busy} onClick={() => void w.rekey()}>{w.busy === "rekey" ? SESSION.busy : M.rekey}</button>
         ) : expired ? (
@@ -86,6 +88,7 @@ export function SessionManagerBody() {
             <button type="button" className={secondary} disabled={busy} onClick={() => void w.extend()}>{w.busy === "extend" ? SESSION.busy : M.extend(SESSION.expiries.h24)}</button>
           </>
         )}
+        </SheetFooter>
         <p className="type-caption text-ink-secondary">{M.rootNote}</p>
         <button type="button" className={secondary} disabled={busy} onClick={() => void w.revoke()}>{w.busy === "revoke" ? M.revoking : M.revoke}</button>
         <p className="type-caption text-ink-secondary">{M.revokeNote}</p>

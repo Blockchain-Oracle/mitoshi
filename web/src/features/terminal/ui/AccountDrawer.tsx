@@ -104,7 +104,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
   return (
     <>
       <SlideOver open={open} onOpenChange={onOpenChange}>
-        <SlideOverContent title={titles[view]}>
+        <SlideOverContent title={titles[view]} fields>
           {view !== "menu" ? (
             <button type="button" className="tm-back" onClick={() => (tapFeedback(), setView("menu"))}>
               <ChevronLeft aria-hidden className="size-4" /> {TERMINAL.account.back}

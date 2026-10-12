@@ -1,8 +1,9 @@
 "use client";
 /**
  * Where the ticket lives (Ported from Masayume 68f7a09:web/src/features/markets/ticket/TicketDock.tsx): docked beside
- * the hero chart from `lg`, the right-edge slide-over below it (owner overlay rule: no bottom sheets) — Base UI Drawer,
- * `swipeDirection="right"`, with the CTA pinned above the safe area (ux-audit fix 6). Every tap that selects a Window
+ * the hero chart from `lg`, the right-edge slide-over below it (a phone's bottom sheet) — Base UI Drawer, with the CTA
+ * in the sheet's pinned footer above the safe area and the keyboard (ux-audit fix 6; R4-2, D-227: `SheetFooter`, and
+ * `?d=ticket` so Back closes it without leaving /markets or dropping the composed order). Every tap that selects a Window
  * bumps the selection's `sessionId`, and that opens it; the drawer has no trigger of its own. The ticket body is a lazy
  * island (§3.1) and stays mounted while closed under `<Activity>` so reopening is instant and keeps the composition.
  */
@@ -38,6 +39,10 @@ export function TicketDock({ market, side, sessionId }: { market: EventMarket; s
   const [open, setOpen] = useState(false);
   const [everOpened, setEverOpened] = useState(false);
 
+  const show = (next: boolean) => {
+    setOpen(next);
+    if (next) setEverOpened(true);
+  };
   useEffect(() => {
     if (hasRail === false && sessionId > 0) {
       setOpen(true);
@@ -63,8 +68,8 @@ export function TicketDock({ market, side, sessionId }: { market: EventMarket; s
     </header>
   );
   return (
-    <SlideOver open={open} onOpenChange={setOpen}>
-      <SlideOverContent title={`${TICKET.title} · ${market.asset}`} hideHeading keepMounted={everOpened} className="tk-slide-over">
+    <SlideOver open={open} onOpenChange={show} urlKey="ticket">
+      <SlideOverContent title={`${TICKET.title} · ${market.asset}`} hideHeading keepMounted={everOpened} fields className="tk-slide-over">
         {everOpened ? (
           <Activity mode={open ? "visible" : "hidden"}>
             <Ticket market={market} side={side} head={<>{head}<TicketMiniChart market={market} /></>} />

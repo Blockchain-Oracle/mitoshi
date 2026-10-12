@@ -93,7 +93,7 @@ export function ReelsScreen() {
         </>
       ) : null}
       {composing && target ? (
-        <Modal open onOpenChange={(o) => !o && setComposing(false)} title={REELS.composerTitle(target.asset)}>
+        <Modal open onOpenChange={(o) => !o && setComposing(false)} fields title={REELS.composerTitle(target.asset)}>
           <TakeComposer window={{ marketId: target.marketId, asset: target.asset, intervalSec: target.intervalSec, expirySec: target.expirySec }} post={feed.post} signedIn={feed.signedIn} onPosted={() => setComposing(false)} />
         </Modal>
       ) : null}

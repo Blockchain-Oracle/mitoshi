@@ -164,7 +164,7 @@ export function ExitsDrawer({ p, value, open, onOpenChange }: { p: TerminalPosit
   }
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={TERMINAL.exits.title(sideWord(p.side), p.asset)} description={TERMINAL.exits.body}>
+      <SlideOverContent title={TERMINAL.exits.title(sideWord(p.side), p.asset)} description={TERMINAL.exits.body} fields>
         <ExitsForm key={p.id} p={p} value={value} onDone={() => onOpenChange(false)} />
       </SlideOverContent>
     </SlideOver>

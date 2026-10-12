@@ -136,7 +136,7 @@ export function ReplayDrawer({ open, onOpenChange, episode, finalPnl }: { open: 
   const pnl = realized ? finalPnl : pnlAt(s, upTo);
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={TERMINAL.replay.title(episode.side === "up" ? "Up" : "Down", episode.asset)}>
+      <SlideOverContent title={TERMINAL.replay.title(episode.side === "up" ? "Up" : "Down", episode.asset)} fields>
         <div className="tm-replay">
           <div>
             <p className="tm-card-title">{realized ? TERMINAL.replay.realized : TERMINAL.replay.unrealized}</p>
