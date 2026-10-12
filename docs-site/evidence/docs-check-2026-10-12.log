@@ -1,0 +1,42 @@
+# pnpm check — 2026-10-12T22:13:49Z, app revision 9002c8c (pin in lib/site.ts)
+$ pnpm check:content && pnpm typecheck && pnpm build
+$ node scripts/check-content.mjs
+Content: 44 pages, 72 docs links, 46 app links, 5 media, 25 receipts, 5 addresses
+✓ source 9002c8c, navigation, links, routes, media, receipts, addresses and deployments
+$ next typegen && tsc --noEmit
+Generating route types...
+✓ Types generated successfully
+$ next build
+▲ Next.js 16.3.4 (Turbopack)
+✓ Running next.config.mjs took 32ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.0s
+  Running TypeScript ...
+  Finished TypeScript in 3.0s ...
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /_not-found
+├   /[[...slug]]
+│ ├ ● /
+│ ├ ● /architecture/contracts
+│ ├ ● /architecture/deployments
+│ └ ● [+41 more paths]
+├ ƒ /api/search
+├ ○ /llms-full.txt
+├ ○ /llms.txt
+├ ○ /opengraph-image
+├   /raw/[[...slug]]
+│ ├ ● /raw
+│ ├ ● /raw/architecture/contracts
+│ ├ ● /raw/architecture/deployments
+│ └ ● [+41 more paths]
+├ ○ /robots.txt
+└ ○ /sitemap.xml
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

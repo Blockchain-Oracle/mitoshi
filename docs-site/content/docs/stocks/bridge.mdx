@@ -1,0 +1,57 @@
+---
+title: The bridge
+description: How a Robinhood Stock Token reaches Tempo over LayerZero — lock there, mint here — and what is live on testnet today.
+sources:
+  - docs/specs/pillar2.md
+  - contracts/src/robinhood/StockLockbox.sol
+  - contracts/src/robinhood/StockSyncSender.sol
+  - contracts/src/transit/HopComposer.sol
+  - contracts/src/stocks/TIP20MintBurnAdapter.sol
+  - contracts/src/stocks/StockSyncReceiver.sol
+  - contracts/deployments/42431/stocks.json
+  - contracts/deployments/84532/stocks.json
+  - docs/plan/acceptance/S14.md
+  - docs/plan/stage-14-bridge.md
+---
+
+## Lock there, mint here
+
+<Steps>
+<Step>
+### Lock on Robinhood Chain
+
+A **StockLockbox** per ticker — an immutable LayerZero OFT adapter — locks your Stock Token and sends a message. A guardian can pause new locks and lower limits; it can never block an unlock. A forged over-release reverts and stays stuck, by design.
+</Step>
+<Step>
+### Cross over LayerZero
+
+On mainnet, Robinhood Chain and Tempo are linked directly with explicit verifiers (Nethermind and LayerZero Labs). On testnet there is no direct path, so a transit OFT and a composer on **Base Sepolia** carry each send onward.
+</Step>
+<Step>
+### Mint the mirror on Tempo
+
+**TIP20MintBurnAdapter** mints the ticker's mirror — a TIP-20 such as bTSLA — to you. If the mint would be refused (the token paused, a policy, the supply cap, a rate limit, your receive policy), the credit is **deferred** and claimable, never lost.
+</Step>
+<Step>
+### Back the other way
+
+Sending back burns the mirror on Tempo and the lockbox releases the token on Robinhood Chain.
+</Step>
+</Steps>
+
+## Splits and pauses travel too
+
+**StockSyncSender** reads a token's UI multiplier, any pending change and its pause flags on Robinhood Chain, and anyone can send that snapshot to Tempo. **StockSyncReceiver** keeps the newest one per mirror and ignores stale or duplicate records; a **ScaledUIView** per mirror shows balances in shares after the multiplier (ERC-8056).
+
+## On testnet today
+
+| | |
+| --- | --- |
+| Moderato | Five mirrors (bTSLA, bAMZN, bPLTR, bNFLX, bAMD), five adapters, five scaled views and the sync receiver — deployed 29 September; each mirror has a supply cap of 1,000 tokens |
+| Base Sepolia | The TSLA transit, its composer and the sync forwarder — deployed |
+| Moderato → Base Sepolia | A LayerZero message delivered in 20 s |
+| Base Sepolia → Moderato | Sent; waiting on LayerZero's testnet verifier for that pathway |
+| Robinhood Chain testnet | Lockboxes and the sync sender not deployed: the deployer has no testnet ETH yet (owner action) |
+| `/bridge` | Registered, not built |
+
+Addresses are in [deployments](/architecture/deployments). A direct Robinhood ↔ Tempo pathway request to LayerZero is drafted for the owner to send.

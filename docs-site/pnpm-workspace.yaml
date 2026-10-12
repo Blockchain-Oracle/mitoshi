@@ -1,0 +1,4 @@
+# The docs site is its own pnpm root (not a member of the app's workspace), as Owarine's and Agari's are.
+allowBuilds:
+  esbuild: true
+  sharp: false

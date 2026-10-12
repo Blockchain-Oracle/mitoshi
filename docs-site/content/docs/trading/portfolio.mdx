@@ -1,0 +1,37 @@
+---
+title: Portfolio and P&L
+description: One rule for P&L everywhere — what CLOSE pays now less the open cost of what you hold — across the wallet, the Trading Balance and Boost.
+sources:
+  - packages/core/src/projection/ledger.ts
+  - packages/core/src/projection/account.ts
+  - packages/core/src/vault/open-cost.ts
+  - web/src/features/markets/copy/portfolio.ts
+  - web/src/features/markets/portfolio
+  - web/src/features/edge
+  - docs/plan/acceptance/R4-1.md
+---
+
+## The P&L rule
+
+A position's P&L is **what CLOSE pays now** less the **open cost** of what you hold.
+
+- **What CLOSE pays** is the walk down the book's bids for your whole holding. Once the Window has its answer it is the known payout; while the Window is locked, or nothing bids, the row is valued at its open cost and says why: "Locked · settles", "No bids", "N% sellable".
+- **Open cost** is per side. A buy adds what it paid; a sale or a merge takes its share out at the average cost; a mint costs half a dollar a side. So Reduce then re-enter doesn't inflate your cost.
+- **Trading Balance** bets use the vault's own tally when it is exact, else its booked fills replayed at average cost.
+- **A Boost's** cost is your stake less what it has paid back; it pays (held − fronted) ÷ stake.
+- **Totals** — equity, the P&L card's return — run over priced rows only, and say how many are unpriced.
+- **TP / SL** judge the whole holding at that same walk, in the tab and in the exit keeper, so a thin book isn't read as a drawdown.
+
+On 12 October the rule was checked against the chain on Moderato, to the base unit: a wallet that bought, Reduced and re-entered, and a Trading Balance that tapped twice, closed part and re-entered ([evidence](/help/evidence)). It is built on the trunk (R4-1, D-227) and deploys with the next web release.
+
+## Portfolio
+
+<AppLink href="/portfolio">Portfolio</AppLink> reads your money and your bets from the chain.
+
+- **Your money:** what you can bet with now — your account and your Trading Balance — with what is yours but not spendable here listed apart: cash behind resting orders, and engine credit on settled Windows that **Collect** pays out. **Add money** claims test dollars; **Withdraw** sends pathUSD out.
+- **Your bets — Open:** one row per held side, wallet and Trading Balance together, Boosts on their own cards; staked, worth now, P&L. **Cash out** sells; a locked Window pays at settlement.
+- **Your bets — History:** one account history — the wallet's rounds, the Trading Balance's and Boost's — as WIN, LOSS, VOID or CLOSED, with net P&L = what came back − what went in, and a realised P&L curve over 7 days, 30 days or all time.
+
+## Trader Edge
+
+<AppLink href="/portfolio/edge">Trader Edge</AppLink> turns your settled Windows into a record: net result and return, win rate, profit factor, average Window, deepest slide, when in the day you do best, your payoff shape, your tier and badges, and a CSV of every settled Window at full precision. It is calculated in your browser from your fills and the settlement rule.

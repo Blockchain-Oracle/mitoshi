@@ -1,0 +1,29 @@
+---
+title: Launchpads
+description: Launch a stablecoin with its pair in one transaction, or a memecoin on a bonding curve that graduates into a Uniswap v4 pool.
+sources:
+  - contracts/src/launch/LaunchRegistry.sol
+  - contracts/src/launch/CurveLaunchpad.sol
+  - contracts/src/launch/LiquidityLocker.sol
+  - contracts/deployments/42431/launch.json
+  - services/ops/src/actors/launch-keeper
+  - docs/plan/acceptance/S17.md
+---
+
+Tempo makes tokens a native primitive: a predeployed **TIP-20 factory** issues them, and fees can be paid in any USD stablecoin. Mitoshi's two launchpads build on that.
+
+## Stablecoin
+
+One batch from your account creates a USD TIP-20 quoted in pathUSD, mints its supply, places a pair of flip orders on Tempo's enshrined stablecoin DEX around par, seeds its fee-AMM pool so the new coin can pay network fees, and records it in **LaunchRegistry**. The batch can be signed by a one-tap access key: the factory's `createToken` is a call, not a contract creation.
+
+On 29 September a root key created "Mitoshi Root Test Dollar" in one transaction, with its pair orders resting and its fee pool funded, and then paid a transaction's fee in the new coin; an access key did the same for a second coin ([evidence](/help/evidence)).
+
+## Memecoin
+
+**CurveLaunchpad** launches a TIP-20 whose currency is its symbol (fiat codes and stock tickers are reserved). Traders buy and sell against a bonding curve that mints on buy and burns on sell. When the curve's reserve reaches its threshold the launch is complete, and anyone may **graduate** it into a hookless Uniswap v4 pool whose full-range position the **LiquidityLocker** holds.
+
+Until graduation a compound transfer policy keeps the coin out of the PoolManager, so nobody can seed the migration pool early. A pool squatted at the wrong price is corrected at graduation, or graduation moves to a backup fee tier with the reason. Payouts go to the caller only, each after a receive-policy check.
+
+## On testnet today
+
+Both are deployed on Moderato and their live drives passed: a stablecoin with its pair and fee pool in one transaction, and a memecoin template, launch, creator buy, squatted tier and graduation. The ops **launch-keeper** that would graduate complete launches plans and simulates only — it has no sender wired yet. <AppLink href="/launch">Launch</AppLink> and its pages are registered and not built.

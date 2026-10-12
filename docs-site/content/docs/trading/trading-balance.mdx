@@ -1,0 +1,41 @@
+---
+title: The Trading Balance
+description: A vault you own on Tempo. A capped key taps from it, a keeper runs your exits from it, a strategy trades in it — and only you withdraw.
+sources:
+  - contracts/src/products/vault/EventVaultV2.sol
+  - contracts/src/products/vault/IEventVault.sol
+  - contracts/src/products/vault/VaultExits.sol
+  - web/src/features/vault/copy.ts
+  - web/src/features/session/copy.ts
+  - contracts/deployments/42431/vault2.json
+  - docs/plan/acceptance/S24.md
+---
+
+The Trading Balance is **EventVaultV2**, one contract that keeps an account for every owner: free money, money set aside in grants, and the positions it holds. Its point is delegation you can bound: you give a key or a keeper one narrow power, and the contract enforces the caps.
+
+## Add and withdraw
+
+- **Add** moves pathUSD from your account in one passkey confirmation. You pay that fee — a fraction of a cent; deposits are never fee-sponsored.
+- **Withdraw** returns free money to your own account, any time. The relay pays that fee.
+- Settled Windows pay into the Trading Balance on their own — no prompt, no claim.
+
+## Grants
+
+Each owner holds at most one live grant of each kind. Every grant names one actor and expires.
+
+| Grant | Who acts | What it may do |
+| --- | --- | --- |
+| **SESSION** | A key made on your device | Buy UP or DOWN from a budget you set aside, up to a per-tap and a daily cap, a number of open Windows and a dearest price ([one-tap](/start/one-tap)) |
+| **STRATEGY** | A strategy's runner | Place for you inside the strategy's envelope and your own budget ([copy strategies](/automate/copy-strategies)) |
+| **EXIT** | Mitoshi's exit keeper | Sell positions the Trading Balance holds, at or above a fair-value floor; no budget, no buys ([exits](/trading/exits)) |
+| **EXECUTOR** | Reply trading from X | Defined in the contract; its screens are not built |
+
+No grant can withdraw or send money anywhere. Proceeds of every sale land back in the owner's account in the vault. Daily caps count by UTC day.
+
+## Stop
+
+<AppLink href="/settings/account">Account & keys</AppLink> lists every grant with what it may still spend. **Stop** revokes it on chain in one transaction the relay pays for; a SESSION grant's unspent budget returns to your free balance.
+
+## Previous Trading Balances
+
+The Trading Balance moved twice on testnet: from the first `EventVault` to EventVaultV2 (exits with the app closed), then to a redeployed V2 when the exit floor gained its absolute slack (D-213). Both earlier vaults stay indexed, cranked and relay-sponsored for withdraw, revoke and settlement; the account drawer shows what you hold in one so you can take it out. Their addresses are in [deployments](/architecture/deployments).

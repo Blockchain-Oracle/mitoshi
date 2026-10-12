@@ -1,0 +1,41 @@
+---
+title: Closing and exits
+description: The P&L on the line is what CLOSE pays. Close by hand, or set take-profit, stop-loss or a trail and walk away.
+sources:
+  - web/src/app/(app)/docs/exits/page.tsx
+  - contracts/src/products/vault/VaultExits.sol
+  - contracts/src/fair/FairValueGuard.sol
+  - services/ops/src/actors/exit-keeper
+  - packages/core/src/exits/rules.ts
+  - web/src/features/terminal/copy.ts
+  - docs/plan/acceptance/S24.md
+---
+
+## CLOSE and Reduce
+
+**CLOSE** sells your whole position back to the Window's book in one tap, at what the position shows — or a little below it, within the close tolerance in Trade settings. **Reduce** sells 25, 50 or 75 %. If the book has moved further than the tolerance, the sale asks again at the new price rather than fill worse. "Closing…" shows the instant the sale is signed. A Window that has locked can't be sold into; it settles.
+
+## Take-profit, stop-loss, trail
+
+- **Take-profit** sells when what CLOSE pays rises to your target.
+- **Stop-loss** sells when it falls to your floor.
+- **Trail** arms once the price is the trailing distance past break-even. Its stop only moves your way, and it closes when the price comes back to it.
+
+On a wallet position these run in your browser while Mitoshi is open, and a trail needs one-tap on to sell without a prompt. A Boost closes from its own row with your passkey; trail and TP/SL don't run on it.
+
+## With the app closed
+
+On a [Trading Balance](/trading/trading-balance) position, **one passkey confirmation** grants Mitoshi's keeper an **EXIT** permission. When your exit triggers, the keeper sells whether your tab is open or not.
+
+<Architecture name="exits" />
+
+- **The floor.** Every keeper sale's limit must be at or above the Window's fair value at a signed RedStone spot, less the wider of 15 % of it or 10¢ — the allowance the app grants. The contract refuses anything wider than 20 % or 15¢, and a sale under the floor reverts.
+- **No bid, no sale.** If no bid meets the floor, the keeper waits and tries again until the Window locks, rather than sell lower. The terminal shows its last reason ("Keeper waiting: …").
+- **Where it applies.** The floor comes from the fair-value guard, which on testnet has a volatility for the BTC, ETH and SOL five-minute Windows. It refuses to price a Window it has no model for, and with no floor the keeper cannot sell.
+- **The house's side.** The house keeps its exit side quoted until about 30 seconds before a Window locks.
+
+Every EXIT grant lasts 30 days and is listed in <AppLink href="/settings/account">Account & keys</AppLink>; **Stop** revokes it on chain.
+
+<Callout title="Seen live">
+On 9 October a CI run armed a stop-loss on SOL from the terminal, closed the tab, and the keeper sold it 20.6 s after it triggered: <Tx hash="0xa5ddbcea7fd0ce01bd5159c939f219784effd52217d4392f3286326d9c1436aa" />. An exit is a sale into a real book: it fills only against a bid that is there.
+</Callout>

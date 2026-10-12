@@ -1,0 +1,40 @@
+---
+title: Stocks on Tempo
+description: Call nine US stocks today. Hold and trade real Robinhood Stock Tokens on Tempo next — the contracts are deployed, the screens are being built.
+sources:
+  - packages/core/src/market/venue-spec.json
+  - contracts/deployments/42431/stocks.json
+  - contracts/deployments/42431/pools.json
+  - contracts/deployments/42431/guard.json
+  - contracts/deployments/42431/themes.json
+  - docs/specs/pillar2.md
+  - web/src/lib/capabilities.ts
+---
+
+Mitoshi brings stocks to Tempo in two ways. One is live; the other is deployed and proven on testnet, with its screens next.
+
+## 1. Call a stock — live
+
+AAPL, AMD, AMZN, GOOGL, META, MSFT, NVDA, PLTR and TSLA trade as [Windows](/trading/windows): 5, 15 and 60 minutes in NYSE hours, the same lanes around the clock on RedStone's 24/7 feeds for seven of them, and the weekend Gap. No token changes hands — you call the price, and the Window settles on RedStone's signed print. Each ticker has a hub of its own — <AppLink href="/tickers/TSLA">TSLA's</AppLink>, for one.
+
+## 2. Hold the real share token — next
+
+Robinhood issues **Stock Tokens** on Robinhood Chain. Mitoshi's pillar two brings them to Tempo:
+
+<Architecture name="stocks" />
+
+| Piece | State on testnet |
+| --- | --- |
+| Five mirror TIP-20s (bTSLA, bAMZN, bPLTR, bNFLX, bAMD) and their mint/burn adapters | Deployed on Moderato |
+| The sync receiver for multipliers and pauses, and the scaled views | Deployed on Moderato |
+| LayerZero hop through Base Sepolia (transit, composer, forwarder) | Deployed; Moderato → Base Sepolia delivered in 20 s; Base Sepolia → Moderato waits on LayerZero's testnet verifier |
+| Lockboxes and the sync sender on Robinhood Chain testnet | Waiting on testnet ETH (owner action) |
+| Uniswap v4 on Moderato, the price guard and the reference | Deployed; four pools initialized with house liquidity |
+| Themes | Deployed and configured |
+| `/bridge`, `/reserves`, `/themes` screens | Registered, not built — each says what it waits on |
+
+Read on: [the bridge](/stocks/bridge), [pools and the guard](/stocks/pools-and-guard), [reserves](/stocks/reserves), [themes](/stocks/themes). The same pillar adds [launchpads](/stocks/launchpads) for stablecoins and memecoins.
+
+<Callout title="Eligibility">
+Robinhood Stock Tokens have their own eligibility and transfer rules. Mainnet stock tokens, their budget and the Safes that would hold admin keys are open owner decisions; nothing here is a mainnet offer.
+</Callout>

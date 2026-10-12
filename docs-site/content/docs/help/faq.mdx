@@ -1,0 +1,48 @@
+---
+title: Questions
+description: Short answers to what people ask first.
+sources:
+  - web/src/features/how-it-works/content.ts
+  - contracts/src/engine/libs/ResolveLib.sol
+  - packages/markets/src/keys/wallet-key.ts
+---
+
+### Is this real money?
+
+No. Mitoshi runs on Tempo testnet. Its dollars are testnet pathUSD from the faucet, with no value. The order books, prints, settlement and receipts are real contracts on a real chain.
+
+### What decides who wins?
+
+Two signed RedStone prints, checked on chain: the Window's open and its close. Close at or above the open pays UP; below pays DOWN. The live line on the chart never decides anything. [More](/trading/settlement).
+
+### Can Mitoshi take my money or change a result?
+
+No contract lets it. Your money moves by your signature or a key or grant you made, inside caps on chain; results come from signed prints and the engine's rule, with no admin void. Mitoshi's servers can stall — then no new Windows open and payouts wait — but anyone can still settle, collect and withdraw. [More](/architecture/overview).
+
+### What can a one-tap key do if my device is stolen?
+
+Place, cancel and redeem orders on the engine, and approve up to $25 of pathUSD a day to it, until it expires within 24 hours. It can't transfer, withdraw or call anything else. Revoke it from Account & keys. [More](/start/one-tap).
+
+### Why did my call not fill?
+
+A tap takes what rests on the book, immediate-or-cancel. If the price moved, the terminal asks again at the new price; if the book is empty, nothing fills and nothing is taken. Between Windows, or in a halt, UP and DOWN are off and say why.
+
+### Why is my Window void?
+
+No reliable print arrived before its deadline — on testnet, most often a RedStone public-gateway window. Both sides are returned at half, $0.50 a contract.
+
+### Do I need to collect winnings?
+
+No. The settler pays winners a few minutes after the close. Collecting yourself only hurries it.
+
+### Why can't I trade stock tokens yet?
+
+The contracts are deployed on Moderato, but the Robinhood Chain side waits on testnet ETH and the screens are being built. You can already call nine stocks as Windows. [More](/stocks/overview).
+
+### Is Sensei advice?
+
+No. It reads the Window with you and recommends; you place every call.
+
+### Where is the code?
+
+The repository is private for now. These guides name the files they were checked against, and every receipt here is in the repository's acceptance records.

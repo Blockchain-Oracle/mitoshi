@@ -1,0 +1,25 @@
+---
+title: Reserves
+description: Every mirror on Tempo should be backed by a token locked on Robinhood Chain. The check, and where it stands.
+sources:
+  - docs/specs/pillar2.md
+  - contracts/src/robinhood/StockLockbox.sol
+  - contracts/src/stocks/TIP20MintBurnAdapter.sol
+  - web/src/lib/capabilities.ts
+---
+
+## The check
+
+For each ticker, two numbers on two chains should agree:
+
+| Robinhood Chain | Tempo |
+| --- | --- |
+| What the ticker's **StockLockbox** has outstanding towards Tempo — its `outstanding` per destination, readable through `reserveView()` | The mirror's **total supply**, which only the adapter can change, by minting on arrival and burning on the way out |
+
+By design, supply on Tempo never exceeds what was locked — the invariant tests hold it on both paths, direct and through the testnet hop: the adapter mints only on a verified LayerZero message from the lockbox's side, and a credit it can't mint is deferred rather than minted elsewhere. Tokens in flight, sent but not yet delivered, are the only honest gap, and the check will name them.
+
+## Where it stands
+
+<AppLink href="/reserves">Reserves</AppLink> is registered and not built: it will read both chains per ticker and give a verdict. On testnet the Robinhood-side lockboxes are not deployed yet (they wait on testnet ETH, an owner action), and no mirror has been minted: all five read a total supply of zero on Moderato at block 39,327,402 on 12 October (`evidence/mirror-supplies-2026-10-12.json`).
+
+Separately, the house reserves you can supply — the maker vault, Range, Parlay and Boost — show their own balance sheets on [Earn](/trading/earn).

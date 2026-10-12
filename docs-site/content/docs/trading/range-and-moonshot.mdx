@@ -1,0 +1,34 @@
+---
+title: Range and Moonshot
+description: Call a band the close lands in, or a level it finishes past. The house reserve takes the other side and sets your payout aside up front.
+sources:
+  - web/src/app/(app)/docs/games/page.tsx
+  - contracts/src/products/range
+  - contracts/deployments/42431/range.json
+  - web/src/features/range
+  - web/src/features/earn/reserves.ts
+  - web/src/features/demo/proofs.ts
+  - docs/plan/acceptance/S10.md
+---
+
+Both are tickets against **RangeReserve**, a house reserve. Each is priced from where the Window's book puts the market now and how much the asset usually moves in the time left, and each settles on the same signed closing print as UP and DOWN.
+
+## Range
+
+Call a band the close lands **inside** — or outside. A narrower band is less likely to catch the close, so it pays a bigger multiple. The reserve centres the band on the book and prices it against the Window's own opening print. The full payout is locked when you buy, so it can never come up short.
+
+## Moonshot
+
+Pick a side and a multiple, and the reserve solves the level the print has to finish past: long wins at or above it, short at or below it. Further out pays more. The payout is locked up front.
+
+## Where you can play them
+
+Open <AppLink href="/games/range">Range</AppLink> or <AppLink href="/games/moonshot">Moonshot</AppLink>, or the **Range** mode under the terminal's chart. On testnet the reserve has a volatility for **BTC, ETH and SOL**, so those Windows are the ones it prices. Each call asks your passkey; one-tap keys don't cover the reserve.
+
+When the book is too thin to centre a band, the ticket says so before any prompt and takes nothing.
+
+## Seen live
+
+A Range band on BTC 5m priced off the maker vault's depth, <Tx hash="0xed2c6c9e1658648b7eb3da6fc4efac1d2a737b530c7973c91b43e0499a2bfecc" />, and a Moonshot long ×2 the same way, <Tx hash="0xb5475fccb8bbf9d6ae232ad948e142fe4903fc7c4444b0ce9782e5310944d2c8" />.
+
+Who funds the payouts, and what suppliers can lose, is on [Earn](/trading/earn).

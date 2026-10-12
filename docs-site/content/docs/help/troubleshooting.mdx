@@ -1,0 +1,29 @@
+---
+title: Troubleshooting
+description: What the app is telling you when something doesn't go through, and what to do.
+sources:
+  - web/src/features/terminal/copy.ts
+  - web/src/features/vault/copy.ts
+  - web/src/features/earn/copy.ts
+  - web/src/features/sensei/copy.ts
+  - web/src/app/api/faucet/route.ts
+---
+
+| You see | What it means | Do |
+| --- | --- | --- |
+| "pricing…" on the Window chip | The opening print hasn't landed yet. | Wait a moment; nothing can take before it. |
+| "no Window" | Between rounds, or the stock's session is closed. | The chip says when the next opens; 24/7 lanes and the Gap trade outside NYSE hours. |
+| "Trading halted" / "Signed price stale" | The exchange stopped the stock, or the signed price went stale or short of signers. | Wait; the banner says since when. Open calls settle or void. |
+| "Price moved" | The book moved between your tap and the fill. | Tap again to take the new price. |
+| "Top up to place this" | Your balance is short. | Add money (once a day on testnet) or a smaller size. |
+| "This wallet already got test funds today." | The faucet's daily cooldown. | Add money says when you can claim again. |
+| "Turn on one-tap first" | A trail needs one-tap to sell without a prompt. | Turn on one-tap, or set a TP / SL from the Trading Balance. |
+| "Keeper waiting: …" | No bid meets your exit's floor yet. | It retries until the Window locks; it never sells lower. |
+| "This Window has no fair-value model yet" (Boost), "… can't be priced into a parlay yet" | Boost and Parlay need the fair-value model; on testnet it covers BTC, ETH and SOL five-minute Windows. | Pick one of those. |
+| "The book is too thin…" | Not enough resting depth to price the ticket. | Try a smaller size or another Window; nothing was taken. |
+| "Your account's receive policy blocks this payment" | A Tempo receive policy refused the transfer, so nothing moved. | Allow the vault or reserve in your policy and try again. |
+| "Maker off · no new quotes" | The maker vault has no maker set. | Earn still settles and withdraws; quotes resume when it is set. |
+| "Sensei isn't switched on here yet" | No model is configured on this server. | Everything else works without it. |
+| A Window shows **VOID** | No reliable print in time. | Both sides get half; see [settlement](/trading/settlement). |
+
+Still stuck? <AppLink href="/status">Status</AppLink> shows every service live, and <AppLink href="/contact">Contact</AppLink> reaches the team.

@@ -10,3 +10,6 @@ context
 data
 mobile/ios
 mobile/android
+# The docs site builds from its own directory (Coolify base directory /docs-site, its own Dockerfile and .dockerignore);
+# web and ops never read it (as Owarine 90a91d71 and Agari exclude theirs, D-227).
+docs-site

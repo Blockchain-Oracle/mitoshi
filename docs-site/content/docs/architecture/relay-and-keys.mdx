@@ -1,0 +1,43 @@
+---
+title: The relay and your keys
+description: How Mitoshi pays your network fees without being able to spend your money, and how one-tap keys stay inside their limits.
+sources:
+  - web/src/server/relay.ts
+  - packages/markets/src/relay/gates.ts
+  - packages/markets/src/relay/policies/index.ts
+  - packages/markets/src/keys/wallet-key.ts
+  - web/src/server/backup-passkey.ts
+  - scripts/invariants/rules.mjs
+  - docs/plan/decisions.md
+---
+
+## Fee sponsorship
+
+Tempo transactions can carry a separate **fee payer**: the sender signs the call, and another account signs to pay its network fee in a stablecoin. Mitoshi's relay, at `/api/relay` on the web app, is that fee payer. It can't change your call — your signature covers it — and it can't spend from your account.
+
+The relay sponsors a call only if a **policy** for that contract allows it. There is one policy per deployed area — the engine, both Trading Balances, the maker vault, Range, Parlay, Boost, the private desk, strategies, themes, launch, stocks, agents and keys — and CI fails if a deployed area has none. Money **coming in** is never sponsored: deposits, `depositAndGrant`, grants and supply are always paid by you.
+
+Its gates, at deployment:
+
+| Gate | Limit |
+| --- | --- |
+| Per sender | 120 sponsored calls an hour |
+| Per device | 240 an hour, $5 of fees a day |
+| Everyone together | $500 of fees a day |
+| Breaker | Stops sponsoring when the fee payer's balance is under $20 |
+
+Budgets are kept in Postgres; the last verdicts show on <AppLink href="/status">Status</AppLink>.
+
+## Access keys
+
+Tempo accounts can authorize **access keys** with limits and scopes enforced by the chain (TIP-1011).
+
+- **The one-tap key** may call the engine's `placeOrder`, `cancelOrders`, `cancelAll`, `redeem` and `withdrawCredit`, and approve pathUSD to the engine only, with **$25 of new approvals a day** for **24 hours**. The limit counts each increase of the engine's allowance, so it bounds what the key can ever move. Anything else it signs is refused `CallNotAllowed`.
+- **A backup passkey** is an admin key on the account, added from Account & keys and confirmed with the first passkey. It signs in alone as the same account.
+- **A theme follow** authorizes the theme agent's key, scoped to the theme router.
+
+Keys can't create contracts: Tempo refuses a contract creation signed by an access key. Every key is listed, with its remaining limit and its spends, in Account & keys, and revoking it is free.
+
+## Grants are not keys
+
+Trading Balance grants (SESSION, STRATEGY, EXIT) are permissions inside the vault contract, not keys on your account. A SESSION grant's actor is still a key made on your device; a STRATEGY or EXIT grant's actor is a Mitoshi runner or keeper. See [the Trading Balance](/trading/trading-balance).

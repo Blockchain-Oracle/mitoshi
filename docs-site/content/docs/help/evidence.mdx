@@ -1,0 +1,95 @@
+---
+title: Evidence
+description: Dated live runs on Tempo testnet, each with its receipt. Every hash here is in the repository's acceptance records, and the docs build checks it.
+sources:
+  - docs/plan/acceptance/S2.md
+  - docs/plan/acceptance/S4.md
+  - docs/plan/acceptance/S5.md
+  - docs/plan/acceptance/S7.md
+  - docs/plan/acceptance/S8.md
+  - docs/plan/acceptance/S9.md
+  - docs/plan/acceptance/S10.md
+  - docs/plan/acceptance/S13.md
+  - docs/plan/acceptance/S14.md
+  - docs/plan/acceptance/S15.md
+  - docs/plan/acceptance/S16.md
+  - docs/plan/acceptance/S17.md
+  - docs/plan/acceptance/S23.md
+  - docs/plan/acceptance/S24.md
+  - docs/plan/acceptance/R4-1.md
+  - web/src/features/demo/proofs.ts
+---
+
+Each stage of the build records its live runs in `docs/plan/acceptance/S<n>.md`: what was run, against which deployment, and every transaction after `cast receipt` read it back with status 1. A receipt is a completed action, not a current position or a payout today. The runs used fresh test accounts, so there is no single demo wallet.
+
+## The core loop
+
+| When (UTC) | What ran | Receipt |
+| --- | --- | --- |
+| 2026-09-29 | The market engine deployed on Moderato | <Tx hash="0x405b915dc4054b8743f20a46517f5e2c738f19e3ec6382edbd3d1cd141355b17" /> |
+| 2026-09-29 | A passkey-shaped account taps UP $1 on a TSLA 24/7 Window; the relay pays the fee | <Tx hash="0x30926215cd02e33feec5d658e4e7a8c68e3b6cdf54bb10d1be0ba219de01a39b" /> |
+| 2026-09-29 | The one-tap key's first tap publishes its authorization; ten taps follow with no prompt | <Tx hash="0x397fffa384c12bc792360e0bd515c10b8ea686396f3387deb18ea1964aed0b57" /> |
+| 2026-10-08 | The terminal: sign-up, one-tap, UP on BTC with 0 prompts in 2.4 s… | <Tx hash="0xcc9db69fb1c42d7c105a32c82ee46d18fb153f0df5c7ba068db1be1266ef0c41" /> |
+| 2026-10-08 | …and CLOSE in one tap; the shown value matched what the sale paid | <Tx hash="0x9d63588d43af5960f0deae5e4dce82c2232586ea7bb3ecc09e7337884bca6924" /> |
+| 2026-10-10 | UP on TSLA off NYSE hours, the 24/7 15-minute Window, one tap | <Tx hash="0x1c724ecc9c553d32a9499f0ec083b846e6791716f4171e572afd13b603309feb" /> |
+| 2026-10-10 | The same position closed in one tap at what the line showed | <Tx hash="0xd7333b4d015980064e0dab6ca423779c1ca5548aeb433123b570c98bce5f61fd" /> |
+
+Tap to position, median over the S23 run: **0.64 s** (the row shows at signing; the receipt follows).
+
+## P&L
+
+| When (UTC) | What ran | Where |
+| --- | --- | --- |
+| 2026-10-12 | A wallet buys, Reduces and re-enters; a Trading Balance taps twice, closes part and re-enters. The app's open cost, realised P&L and what CLOSE pays equal the receipts and balances to the base unit | `acceptance/R4-1.md` |
+
+## Trading Balance and exits
+
+| When (UTC) | What ran | Receipt |
+| --- | --- | --- |
+| 2026-09-30 | A tap from a Trading Balance with no prompt, relay-paid — the first of three in the S7 gate | <Tx hash="0x37298dd43da4b2ce360838ae6b3c2cffc83d511f9f3c49e008078dc5957a5349" /> |
+| 2026-10-09 | One biometric grants the keeper its EXIT permission | <Tx hash="0x251b4ce1af654617c239f8970749d3bfa24d61795a8b33b1089a332002694f51" /> |
+| 2026-10-09 | The stop-loss sold by the keeper 20.6 s after it triggered, tab closed | <Tx hash="0xa5ddbcea7fd0ce01bd5159c939f219784effd52217d4392f3286326d9c1436aa" /> |
+
+## Earn, Range, Parlay, Boost
+
+| When (UTC) | What ran | Receipt |
+| --- | --- | --- |
+| 2026-09-29 | The maker vault deployed; that day a $50 supply, two quotes, a merge, a settle and a withdrawal ran live | <Tx hash="0x9ed3421b7841abd58846e5ecbcbed667cd17bd9776f848c471cfc964c5702510" /> |
+| 2026-09-30 | A two-leg parlay from the browser, one prompt, relay-paid | <Tx hash="0x1c24c91f25ff4dfe92f4e8a0d7cbf81a6b3d7e2e09e1c461afb7849e57d2e5b8" /> |
+| 2026-09-30 | A Range band from the browser, one prompt | <Tx hash="0x36843918f24a1c2f5d7d59a22e5879a8a7c3e808ed53cda36a8f19c7473c83a6" /> |
+| 2026-09-30 | A 2× boost from the browser, one prompt | <Tx hash="0x70c7fa19e6f9fa699a8be964a025dbf439470041ed4d6e0e1999951eaee2463f" /> |
+| 2026-10-10 | A Range band on BTC 5m priced off the maker vault's depth | <Tx hash="0xed2c6c9e1658648b7eb3da6fc4efac1d2a737b530c7973c91b43e0499a2bfecc" /> |
+| 2026-10-10 | A Moonshot long ×2 | <Tx hash="0xb5475fccb8bbf9d6ae232ad948e142fe4903fc7c4444b0ce9782e5310944d2c8" /> |
+
+## Automate
+
+| When (UTC) | What ran | Receipt |
+| --- | --- | --- |
+| 2026-10-10 | StrategyRegistry deployed | <Tx hash="0x6f63f31301fa10cea735e62ed81c436bdd83ef81699c282d5879407110efde4e" /> |
+| 2026-10-11 | Copy in one transaction, stop in one the relay paid; five runner fills; copier P&L equal to the index on every settled Window; a Memory Market read bought over MPP for $0.10 | `acceptance/S9.md` |
+| 2026-10-12 | House agent #3 on a model: its 08:11 DOWN call filled two copiers | `acceptance/S9.md` |
+
+## Records, social, games
+
+| When (UTC) | What ran | Where |
+| --- | --- | --- |
+| 2026-10-10 | Stats equal to a full recount of the engine and the three vaults through block 39,012,040 | `acceptance/S5.md` |
+| 2026-10-10 / 11 | Rooms gated on a real position, moderation, data export and deletion, a backup passkey signing in alone | `acceptance/S13.md` |
+| 2026-10-12 | The arcade board: a real run ranked, a forged score and an unsigned post refused | `owarine-plan-r3-2026-10-12.md` |
+
+## Stocks and tokens
+
+| When (UTC) | What ran | Receipt |
+| --- | --- | --- |
+| 2026-09-29 | A LayerZero message Moderato → Base Sepolia, delivered in 20 s | <Tx hash="0xe0884e295ae00606e8801473d5c7d2d77e76b49bd719a3849a43897fa40db130" /> |
+| 2026-09-29 | The TSLA pool initialized behind the guard with seven house positions | <Tx hash="0x12d40f703277e7d1c8ab0389735612740bc285728827ec8c8fb6c05e1b7df29b" /> |
+| 2026-09-29 | ThemeRegistry deployed | <Tx hash="0x1f3dd368c33c92aa45119791ade4571352f8456de179de0b657ed2040fe8e269" /> |
+| 2026-09-29 | A stablecoin created with its pair and fee pool in one transaction… | <Tx hash="0x585389046673c6cb87311d51f476b49e01844c66d5c6cb22a7dbfca3df7ece44" /> |
+| 2026-09-29 | …and a transaction's fee paid in the new coin | <Tx hash="0x4b60220a77126dfd6152e94e4ac90c059f7327e037f3560345c7d2e1ceaea715" /> |
+
+## Snapshots kept with these docs
+
+- `docs-site/evidence/ops-health-2026-10-12.json` — every ops actor's state and the indexer's counts, read from `/health`.
+- `docs-site/evidence/mirror-supplies-2026-10-12.json` — the five mirrors' total supply, read from Moderato.
+
+What has not run live is on [availability](/help/availability).

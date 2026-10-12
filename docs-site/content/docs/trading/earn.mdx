@@ -1,0 +1,49 @@
+---
+title: Earn
+description: Supply the maker vault that quotes the venue's books, or one of the three house reserves that take the other side of Range, Parlay and Boost.
+sources:
+  - web/src/features/earn/reserves.ts
+  - web/src/features/earn/copy.ts
+  - contracts/src/products/maker
+  - contracts/deployments/42431/maker.json
+  - contracts/deployments/42431/range.json
+  - contracts/deployments/42431/parlay.json
+  - contracts/deployments/42431/leverage.json
+  - services/ops/src/actors/earn-quoter
+  - docs/plan/acceptance/S8.md
+---
+
+<AppLink href="/earn">Earn</AppLink> has four tabs. Each is a contract you supply pathUSD to for shares; each says what it earns, what it holds against, and how a supplier loses money. None shows an APY.
+
+| Tab | Contract | Earns the | Where the money goes |
+| --- | --- | --- | --- |
+| Maker vault | MarketMakerVault | **spread** | It quotes both sides of the crypto Windows with its suppliers' cash and earns the gap between them. |
+| Range & Moonshot | RangeReserve | **margin** | It is the counterparty to every band and locks the payout until the closing print. |
+| Parlay | ParlayReserve | **edge** | It keeps the stake when a ticket misses a leg and pays in full when one hits them all. |
+| Boost | LeverageReserve | **premium** | It fronts the rest of a boosted position and takes a premium up front. |
+
+## Supply and withdraw
+
+- **Supply** is one passkey confirmation from your account, never fee-sponsored. Shares start at 1.0000; the panel shows the share price against it.
+- **Withdraw** takes what is idle any time. What is deployed on live Windows, or locked behind live tickets and boosts, comes back as they settle.
+- Your position splits into **realized** — money paid back above cost — and **on paper** at today's share price.
+- An admin may pause **new** supply. Settlement, merges and withdrawals keep running.
+
+## What bounds the risk
+
+The bounds are the deployed contracts' own parameters, and the tab reads them live. At deployment:
+
+| Contract | A few of its bounds |
+| --- | --- |
+| Maker vault | At most 60 % of capital deployed, $200 on one Window, 8 Windows at once, quotes between 5¢ and 95¢ with at least a 2¢ spread, none in a Window's last 45 s |
+| RangeReserve | A 12 % margin, payouts up to $500, volatility set for BTC, ETH and SOL |
+| ParlayReserve | Up to 3 legs, payouts up to $500, legs within 5¢ of the fair-value model |
+| LeverageReserve | Up to 3×, a premium of 8 % of what it fronts, at most $200 fronted per position |
+
+## Who quotes the vault
+
+The ops **earn-quoter** holds the vault's maker role. It quotes the live crypto five-minute Windows on the fair-value guard's model at the signed spot, and settles closed Windows. With no maker set, the tab says "Maker off · no new quotes". Range, Moonshot and Parlay price against the depth it rests.
+
+<Callout title="Seen live">
+On 29 September a supplier put $50 into the vault on Moderato at 1.000 a share. The vault quoted a five-minute Window, both sides were hit and merged at par by a taker, the Window was settled by anyone, and the supplier withdrew half the shares at 1.0024 ([evidence](/help/evidence)).
+</Callout>
