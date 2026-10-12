@@ -36,7 +36,7 @@ body.urgent { transition: background 600ms var(--ease); }
 body.urgent::before {
   content: '';
   position: fixed; inset: 0;
-  pointer-events: none; z-index: 8500;
+  pointer-events: none; z-index: var(--z-fx);
   background: radial-gradient(ellipse at top right, rgba(224,77,38,0.06), transparent 60%);
   animation: floorPulse 2.4s ease-in-out infinite;
 }
@@ -46,13 +46,13 @@ body.urgent::before {
 .grain {
   position: fixed; inset: 0;
   pointer-events: none;
-  z-index: 9000;
+  z-index: var(--z-fx);
   opacity: 0.045;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
-.scroll-progress { position: fixed; top: 0; left: 0; height: 1px; width: 0%; background: var(--white); z-index: 9100; transition: width 80ms linear; }
+.scroll-progress { position: fixed; top: 0; left: 0; height: 1px; width: 0%; background: var(--white); z-index: calc(var(--z-fx) + 1); transition: width 80ms linear; }
 
 
 /* Marquee — top tape */
@@ -75,7 +75,7 @@ body.urgent::before {
 
 .appstrip {
   position: fixed; top: 0; left: 0; right: 0;
-  height: var(--appstrip); z-index: 900;   /* above ticker (850) and header (800) */
+  height: var(--appstrip); z-index: calc(var(--z-chrome) + 2);   /* above ticker (850) and header (800) */
   display: flex; align-items: center; justify-content: center;
   background: var(--black);
   border-bottom: 1px solid rgba(224,77,38,0.30);
@@ -147,7 +147,7 @@ body.urgent::before {
 
 .marquee {
   position: fixed; top: var(--appstrip); left: 0; right: 0;
-  height: 28px; z-index: 850;
+  height: 28px; z-index: calc(var(--z-chrome) + 1);
   display: flex; align-items: center; overflow: hidden;
   background: var(--black);
   border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -166,7 +166,7 @@ body.urgent::before {
 /* Header */
 .header {
   position: fixed; top: calc(var(--appstrip) + 28px); left: 0; right: 0;
-  height: 64px; z-index: 800;
+  height: 64px; z-index: var(--z-chrome);
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 32px;
   background: rgba(5,5,5,0.7);

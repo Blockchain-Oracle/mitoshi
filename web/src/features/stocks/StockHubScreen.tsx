@@ -136,7 +136,7 @@ export function StockHubScreen({ symbol, articles, headlinesOff, readAtMs }: Sto
           </div>
         </dl>
         <p className="stk-source">{ticker.redstoneFeedId ? STOCKS.source : STOCKS.noSource}</p>
-        <div className="stk-actions">
+        <div className="stk-actions page-action">
           <button type="button" className="stk-room" onClick={() => setRoom(true)}>
             <MessageCircle aria-hidden className="size-4" />
             {STOCKS.room(symbol)}

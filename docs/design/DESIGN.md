@@ -30,10 +30,22 @@ Correction (2026-09-29): the plan's §2.2 and the 21st research say "Plex Mono" 
 - **Tokens only.** No raw hex or px in component code (`design-literals` invariant); component tokens follow
   Masayume's `tokens.css` tiers (`--ticket-*`, `--market-card-*`, `--receipt-*`, …). `packages/tokens` (S1) is the one
   source for web CSS variables and the native Uniwind theme.
-- **Overlays (owner rule, Masayume ledger 2026-09-04; kept by D-190):** centred modals and the right-edge slide-over;
-  **no bottom sheets** (OS share sheets excepted). Long flows are floating right drawers (§Layout); small choices are
-  centred modals. The `/markets` ticket is the right-edge slide-over that becomes the **dock column** at `lg:` (renamed
-  from "rail", which now means the shell's sidebar).
+- **Overlays (D-190, D-222, D-224; R4-2 D-227):** from 768 px, centred modals and the floating right drawer; under 768 px
+  both are Owarine's bottom sheet (one `SlideOver`: grab bar, drag down to dismiss, ≥ half the screen). The primary
+  action sits in the sheet's pinned `footer` (or a body's `SheetFooter`), outside the scroll and above a phone's
+  keyboard; a sheet with fields, a hold or a slider passes `fields` and drags only from its grab bar; every sheet a user
+  can lose work in carries `urlKey` (`?d=`), so Back closes it. The `/markets` ticket is the slide-over that becomes the
+  **dock column** at `lg:`.
+- **Kit:** every surface builds from `@/components/kit` (PillButton, TextTabs, Card/FeatureCard/Eyebrow, Odometer,
+  Sticker, Seal, SwipeToConfirm, Keypad, InfiniteSlider, Masked, ScrollRail, SectionHeader, the overlay grammar) and
+  `@/components/kit/desk-kit`; `/dev/kit` renders every piece. No second port of a kit piece.
+- **Layers:** one scale, `--z-*` in `styles/tokens.css` (`layer-scale` invariant: no numeric z-index above 10 elsewhere;
+  a component's own stack uses 1–10 inside an isolated box).
+- **Dock clearance:** anything that must clear the phone dock reads `--dock-clearance` / `--dock-strip-offset`; a page's
+  one sticky action strip is `.page-action`.
+- **Fold budget:** count a phone fold against `100svh` (the browser's bars shown — a 568 px phone keeps ~450 px), never
+  the device height; check in DevTools with the browser-UI height or on a phone; clamps use `svh`/`dvh` only. Where the
+  budget can't hold the action, the action sticks (`.page-action`).
 - **Primitives:** Base UI only; lucide icons; `motion/react` `m.*` under `LazyMotion` with `MotionConfig
   reducedMotion="user"`; transforms and opacity only.
 - **Phone first:** 390 px primary, no overflow at 320; ≥ 44 px targets; ≥ 16 px inputs; sticky CTA with safe-area inset.
@@ -49,9 +61,9 @@ All sizes are `layout` tokens in `packages/tokens` (S22.1); none are written in 
 | Rail | floating, inset 16, width 248 (≥ 1280) / 88 icon rail (768–1279), radius 24, rail surface; items 48 high at 60 pitch | lucide icon + 18 px label; active pill moved by a CSS transform; hover pill 45 % over 120 ms; key hint 1–6; Testnet pill beside 見通し; account menu + money pill (privacy eye) at the foot; compaction at height ≤ 880 |
 | Top line | search ⌘K · `?` · theme · AllowancePill · account; banners in its slot | hidden on `/trade` |
 | Stage | `main` is one bordered panel: `radius.xl` (24), 2 px edge, surface-1 | `/trade` fills it edge to edge |
-| Dock (< 768) | floating capsule, 5 items 56×60, 22 px icon, 12 px label, safe-area bottom | hidden on `/trade` |
-| Drawer | floating right drawer: inset 16, width 384 / wide 560 (full width − inset on phones), `radius.xl`, 2 px edge, no blur, scrim | 380 ms `cubic-bezier(.32,.72,0,1)` in, 240 ms out; swipe right to dismiss; header back · centred title · ✕; state in `?d=` so Back closes and focus returns |
-| Modal | centred, max 440, `radius.xl` | small choices only |
+| Dock (< 768) | floating capsule, 5 items 56×60, 22 px icon, 12 px label, safe-area bottom; `--dock-clearance` names its height | stays under `/trade` (R4-0) |
+| Drawer | floating right drawer: inset 16, `size` md 384 / lg 560, `radius.xl`, 2 px edge, no blur, scrim; under 768 a bottom sheet (28 / 40 rem) | 380 ms `cubic-bezier(.32,.72,0,1)` in, 240 ms out; swipe right (sheet: down) to dismiss; head: back or a left slot · title · ✕ (44 px hit); pinned footer; state in `?d=` so Back closes and focus returns |
+| Modal | centred, max 440, `radius.xl`; under 768 the sheet | small choices only |
 | Toasts | top-centre, max 3 | success 3.5 s, error 5 s, info 3.5 s, loading persistent; same id replaces |
 
 ## Feedback (sound, haptics, music — D-189, `revamp-parity.md` RV-70…RV-75)

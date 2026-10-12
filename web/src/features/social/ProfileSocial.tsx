@@ -23,7 +23,7 @@ export function ProfileSocial({ address }: { address: string }) {
       <h2 id="profile-social" className="sr-only">{words.social}</h2>
       {profile?.displayName ? <p className="type-title text-ink">@{profile.displayName}</p> : null}
       {profile?.bio ? <p className="type-body text-ink-secondary">{profile.bio}</p> : null}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="page-action flex flex-wrap items-center gap-3 bg-stage py-2">
         <span className="type-caption text-ink-secondary">{words.counts(profile?.followers ?? 0, profile?.following ?? 0)}</span>
         {profile && !profile.self ? (
           <>

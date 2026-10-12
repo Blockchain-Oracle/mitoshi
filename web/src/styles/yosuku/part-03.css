@@ -149,7 +149,7 @@
   position: absolute;
   top: calc(100% + 18px);
   right: 0;
-  z-index: 60;
+  z-index: var(--z-menu);
   width: 202px;
   padding: 8px;
   border: 1px solid rgba(255,255,255,0.1);
@@ -309,7 +309,7 @@
 .bell {
   position: fixed;
   bottom: 48px; right: 28px;
-  z-index: 700;
+  z-index: var(--z-float);
   width: 92px; height: 92px;
   border-radius: 50%;
   background: rgba(5,5,5,0.7);
