@@ -29,7 +29,7 @@ export function HowToSheet({ id, open, onClose }: { id: GameId; open: boolean; o
     <div className="du-modal-root" role="dialog" aria-modal="true" aria-labelledby="gm-howto-title">
       <button type="button" className="du-modal-scrim" aria-label={GAMES.howToWords.close} tabIndex={-1} onClick={onClose} />
       <div className="du-modal gm-howto">
-        <button type="button" className="du-modal-close" onClick={onClose} aria-label={GAMES.howToWords.close}>
+        <button type="button" className="du-modal-close" onClick={onClose} aria-label={GAMES.howToWords.close} title={GAMES.howToWords.close}>
           ✕
         </button>
         <span className="gm-eyebrow">{GAMES.howToWords.eyebrow}</span>

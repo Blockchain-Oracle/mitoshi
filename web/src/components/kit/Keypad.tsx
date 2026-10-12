@@ -45,7 +45,7 @@ export function Keypad({ value, onChange, rules, onPress, labels, className }: K
   return (
     <div role="group" aria-label={labels.group} data-base-ui-swipe-ignore="" className={cn("kit-keypad", className)}>
       {KEYS.map((key) => (
-        <button key={key} type="button" className="kit-key" aria-label={key === "del" ? labels.del : key === "." ? labels.point : key} onClick={() => press(key)}>
+        <button key={key} type="button" className="kit-key" aria-label={key === "del" ? labels.del : key === "." ? labels.point : key} title={key === "del" ? labels.del : undefined} onClick={() => press(key)}>
           {key === "del" ? <Delete aria-hidden strokeWidth={2.25} /> : key}
         </button>
       ))}

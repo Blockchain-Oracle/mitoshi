@@ -40,7 +40,7 @@ function Message({ m, me, onReact, onRetry, onReport, onBlock }: { m: RoomMessag
           <span className="type-caption text-ink-secondary">{m.local?.state === "sending" ? SOCIAL.room.sending : clock(m.createdAtMs)}</span>
           {!m.local && !mine ? (
             <span className="relative ml-auto">
-              <button type="button" aria-label={SOCIAL.menu.open} aria-expanded={menu} onClick={() => setMenu((v) => !v)} className="grid size-touch place-items-center rounded-full text-ink-secondary hover:text-ink">
+              <button type="button" aria-label={SOCIAL.menu.open} title={SOCIAL.menu.open} aria-expanded={menu} onClick={() => setMenu((v) => !v)} className="grid size-touch place-items-center rounded-full text-ink-secondary hover:text-ink">
                 <MoreHorizontal aria-hidden className="size-4" />
               </button>
               {menu ? (
@@ -72,7 +72,7 @@ function Message({ m, me, onReact, onRetry, onReport, onBlock }: { m: RoomMessag
                 </button>
               );
             })}
-            <button type="button" aria-label={SOCIAL.react.add} aria-expanded={picking} onClick={() => setPicking((v) => !v)} className="grid size-touch place-items-center rounded-full border border-hairline text-ink-secondary hover:text-ink">
+            <button type="button" aria-label={SOCIAL.react.add} title={SOCIAL.react.add} aria-expanded={picking} onClick={() => setPicking((v) => !v)} className="grid size-touch place-items-center rounded-full border border-hairline text-ink-secondary hover:text-ink">
               <SmilePlus aria-hidden className="size-4" />
             </button>
             {picking ? (

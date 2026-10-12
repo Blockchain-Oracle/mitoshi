@@ -21,7 +21,7 @@ export function AlertList({ alerts, withAsset = false }: { alerts: readonly Pric
           <li key={a.id} className="flex min-h-touch items-center gap-2 px-3">
             <Bell aria-hidden className={`size-4 flex-none ${a.triggered ? "text-ink-secondary" : "text-accent"}`} />
             <span className="min-w-0 flex-1 type-body text-ink">{withAsset ? `${a.asset} ` : ""}{line}{isStockSymbol(a.asset) ? ` · ${ALERTS.basis[a.basis]}` : ""}{a.triggered ? ` · ${ALERTS.done}` : ""}</span>
-            <button type="button" aria-label={ALERTS.remove(withAsset ? `${a.asset} ${line}` : line)} onClick={() => removeAlert(a.id)} className="grid size-touch flex-none place-items-center rounded-full text-ink-secondary hover:text-ink"><X aria-hidden className="size-4" /></button>
+            <button type="button" aria-label={ALERTS.remove(withAsset ? `${a.asset} ${line}` : line)} title={ALERTS.remove(withAsset ? `${a.asset} ${line}` : line)} onClick={() => removeAlert(a.id)} className="grid size-touch flex-none place-items-center rounded-full text-ink-secondary hover:text-ink"><X aria-hidden className="size-4" /></button>
           </li>
         );
       })}
