@@ -9,12 +9,14 @@ export interface Parts {
   rest: string;
 }
 
-const URL_RE = /^([a-z][a-z0-9+.-]*):(?:\/\/([^/?#]*))?([^?#]*)(.*)$/i;
+// A browser ends the host at `\` as at `/`, and the user info at the last `@`: `https://evil.com\@testnet.mitoshi.xyz`
+// is evil.com, so it must never read as ours.
+const URL_RE = /^([a-z][a-z0-9+.-]*):(?:\/\/([^/?#\\]*))?([^?#]*)(.*)$/i;
 
 export function parseUrl(url: string): Parts | null {
   const m = URL_RE.exec(url.trim());
   if (!m) return null;
-  return { scheme: m[1]!.toLowerCase(), host: (m[2] ?? "").toLowerCase().replace(/^[^@]*@/, ""), path: m[3] ?? "", rest: m[4] ?? "" };
+  return { scheme: m[1]!.toLowerCase(), host: (m[2] ?? "").toLowerCase().replace(/^.*@/, ""), path: m[3] ?? "", rest: m[4] ?? "" };
 }
 
 /** Mitoshi's own hosts: the passkey rpId apex and every subdomain of it (testnet., stream., a docs host). */

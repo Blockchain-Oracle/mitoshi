@@ -26,6 +26,7 @@ import { SHELL_SCRIPT } from "./inject";
 import { isOurHost, parseUrl, routeOf, startUrl } from "./links";
 import { parseMessage } from "./messages";
 import { Offline, type OfflineKind } from "./Offline";
+import { GATEWAY, probe } from "./probe";
 import { saveFile } from "./save-file";
 import { palette, type Mode } from "./theme";
 
@@ -33,8 +34,6 @@ import { palette, type Mode } from "./theme";
 const SPLASH_CAP_MS = 8_000;
 /** After the load ends, `ready` normally lands within a frame or two; this is the fallback's wait. */
 const LOAD_END_GRACE_MS = 600;
-/** Gateway answers from the host during a deploy: the page isn't there, so the app says it can't reach it. */
-const GATEWAY = new Set([502, 503, 504]);
 
 function openOutside(url: string): void {
   Linking.openURL(url).catch(() => undefined);
@@ -120,19 +119,44 @@ export function Shell() {
     setMount((m) => m + 1);
   }, []);
 
+  // Unknown reachability (the first moments) counts as online.
+  const offline = network.isConnected === false || network.isInternetReachable === false;
+  const offlineNow = useRef(offline);
+  useEffect(() => {
+    offlineNow.current = offline;
+  }, [offline]);
+
+  // Try again: the offline screen stays, saying "Trying…", while one request checks the site is there (probe.ts); the
+  // page reopens only when it is, so a failed try never blinks to an empty ground.
+  const probing = useRef(false);
   const retry = useCallback(() => {
+    if (probing.current) return;
+    probing.current = true;
     setRetrying(true);
-    setFailure(null);
-    setSource(lastUrl.current ?? source ?? WEB_ORIGIN);
-    setMount((m) => m + 1);
+    probe().then((reach) => {
+      probing.current = false;
+      setRetrying(false);
+      if (reach === "down") {
+        setFailure(offlineNow.current ? "offline" : "down");
+        return;
+      }
+      setFailure(null);
+      setSource(lastUrl.current ?? source ?? WEB_ORIGIN);
+      setMount((m) => m + 1);
+    });
   }, [source]);
 
-  // Offline → online: retry without a tap. Unknown reachability (the first moments) counts as online.
-  const offline = network.isConnected === false || network.isInternetReachable === false;
+  // The connection drives the screen while it shows: losing it says "offline" (a load that failed before the network
+  // state was known said "can't reach"), and getting it back tries again without a tap.
+  const wasOffline = useRef(offline);
   useEffect(() => {
-    // Only a change in reachability retries; `failure` and `retry` are read as they are at that moment.
-    if (!offline && failure === "offline") retry();
-  }, [offline]);
+    const back = wasOffline.current && !offline;
+    wasOffline.current = offline;
+    if (!failure) return;
+    if (offline) {
+      if (failure !== "offline") setFailure("offline");
+    } else if (back) retry();
+  }, [offline, failure, retry]);
 
   const fail = useCallback((kind: OfflineKind) => {
     setFailure(kind);
