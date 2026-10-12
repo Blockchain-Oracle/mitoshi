@@ -263,9 +263,11 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
               {s.win.lanes.length ? (
                 <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText === TERMINAL.window.none ? (laneNote ?? s.windowText) : s.windowText} />
               ) : null}
-              <SessionCell symbol={symbol} basis={s.win.lane?.basis ?? null} />
-              <CrowdCell symbol={symbol} />
-              <EarningsCell symbol={symbol} market={market ?? null} />
+              <div className="tm-cells">
+                <SessionCell symbol={symbol} basis={s.win.lane?.basis ?? null} />
+                <CrowdCell symbol={symbol} />
+                <EarningsCell symbol={symbol} market={market ?? null} />
+              </div>
             </div>
             {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
             {s.win.lane?.basis === "stock24" ? <span className="tm-glass tm-note tm-note-feed">{TERMINAL.feed.lane247(symbol)}</span> : offHours ? <span className="tm-glass tm-note tm-note-feed">{TERMINAL.feed.offHoursNote}</span> : null}

@@ -7,13 +7,22 @@
 import { ArrowRight, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSyncExternalStore } from "react";
 import MitoshiMark from "@/components/shell/MitoshiMark";
 import { NOT_FOUND } from "@/lib/copy";
 import { openSearch } from "@/lib/search-event";
 import "@/styles/not-found.css";
 
+// The root 404 is prerendered once, as `/_not-found`, so its server path is never the visitor's: the path comes from
+// the address bar after hydration (server and hydration render agree on none — React #418 on testnet otherwise), and
+// `usePathname()` re-renders it on a client navigation to another missing page.
+const noStore = () => () => {};
+const addressPath = () => window.location.pathname;
+const noPath = () => null;
+
 export function NotFoundScreen() {
-  const path = usePathname() ?? "/";
+  usePathname();
+  const path = useSyncExternalStore(noStore, addressPath, noPath);
   return (
     <div className="nf">
       <div className="nf-col">
