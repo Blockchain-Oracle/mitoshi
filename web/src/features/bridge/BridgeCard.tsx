@@ -83,6 +83,12 @@ export function BridgeCard({ model: mo, tracker }: { model: BridgeModel; tracker
   const rhWho = <Who address={shell.robinhood?.address ?? null} you={false} onLink={() => shell.openPicker("robinhood")} />;
   const tempoWho = <Who address={shell.tempo?.address ?? null} you />;
   const tracking = tracker.tracked !== null;
+  const [reopen, setReopen] = useState<string | null>(null);
+  const waiting = mo.sideStep !== null;
+  useEffect(() => {
+    if (!waiting) return setReopen(null);
+    void shell.sideReopenUrl().then(setReopen);
+  }, [waiting, shell]);
   const { dispatch } = mo.tx;
   // Back from a finished transfer, the button starts fresh (a confirmed bridge-out would otherwise stay "Confirmed").
   useEffect(() => {
@@ -121,7 +127,7 @@ export function BridgeCard({ model: mo, tracker }: { model: BridgeModel; tracker
             <ToPanel stop={inbound ? "tempo" : "robinhood"} who={inbound ? tempoWho : rhWho} gets={quote ? BRIDGE.get(sd(quote.receivedSD), to) : mo.amountSD ? BRIDGE.get(amountText, to) : null} />
             <RouteLine fee={fee} via={NETWORK === "testnet"} etaSec={eta?.medianSec ?? null} capacity={cap ? { availableSD: cap.availableSD, capacitySD: cap.capacitySD } : null} />
             {mo.sideStep ? (
-              <WalletWait title={BRIDGE.track.wallet} note={BRIDGE.track.walletNote} />
+              <WalletWait title={BRIDGE.track.wallet} note={BRIDGE.track.walletNote} action={reopen ? <a href={reopen} className="wwait-reopen">{BRIDGE.track.reopen}</a> : undefined} />
             ) : (
               <TxCta state={state} action={label(step, mo.ticker, from, amountText)} signer={signer} onConfirm={act} className="brc-cta" />
             )}

@@ -112,6 +112,16 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
     const client = await getConnectorClient(getWagmiConfig(), { connector: sideConnector(), chainId: chainId as (typeof SIDE_CHAINS)[number]["id"] });
     return client.extend(walletActions) as unknown as SideWallet;
   }, [sideConnector]);
+  // A WalletConnect session names its wallet app's link (`peer.metadata.redirect`); injected wallets have none.
+  const sideReopenUrl = useCallback(async () => {
+    try {
+      const provider = (await sideConnector().getProvider()) as { session?: { peer?: { metadata?: { redirect?: { universal?: string; native?: string } } } } } | undefined;
+      const r = provider?.session?.peer?.metadata?.redirect;
+      return r?.universal || r?.native || null;
+    } catch {
+      return null;
+    }
+  }, [sideConnector]);
 
   const wrongChain = tempo !== null && tempo.chainId !== TEMPO_CHAIN.id;
   const walletKey = useWalletKey(tempo, connections);
@@ -130,12 +140,13 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
       switchToTempo,
       switchSide,
       sideWallet,
+      sideReopenUrl,
       signMessage,
       walletKey: walletKey.key,
       canArmWalletKey: walletKey.canArm,
       armWalletKey: walletKey.arm,
     }),
-    [hydrated, restoring, tempo, robinhood, wrongChain, pickerMode, pickerIntent, openPicker, disconnect, switchToTempo, switchSide, sideWallet, signMessage, walletKey.key, walletKey.canArm, walletKey.arm],
+    [hydrated, restoring, tempo, robinhood, wrongChain, pickerMode, pickerIntent, openPicker, disconnect, switchToTempo, switchSide, sideWallet, sideReopenUrl, signMessage, walletKey.key, walletKey.canArm, walletKey.arm],
   );
   useEffect(() => publish(shell), [publish, shell]);
 

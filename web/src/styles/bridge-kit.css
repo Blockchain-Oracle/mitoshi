@@ -92,3 +92,4 @@
 .alog-tag[data-tone="bad"] { background: var(--color-loss-wash); color: var(--color-down); }
 .alog-detail { grid-column: 2 / -1; font-size: 12px; color: var(--color-ink-secondary); }
 .alog-empty { font-size: 13px; color: var(--color-ink-muted); }
+.wwait-reopen { display: inline-flex; flex: none; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 9999px; background: var(--color-surface-1); font-size: 13px; font-weight: 700; color: var(--color-accent); }

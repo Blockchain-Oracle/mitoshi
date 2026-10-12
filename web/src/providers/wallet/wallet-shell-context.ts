@@ -59,6 +59,8 @@ export interface WalletShellActions {
   switchSide(chainId: number): Promise<void>;
   /** The linked Robinhood wallet as a viem wallet client on `chainId` (bridge-in signs through `@cwf/markets/stocks`). */
   sideWallet(chainId: number): Promise<SideWallet>;
+  /** Where to send the user back to their wallet app while it holds a request (a WalletConnect session's own redirect); null when there's none. */
+  sideReopenUrl(): Promise<string | null>;
   /** EIP-191 personal_sign with the connected Tempo account (the faucet challenge); rejects with no account. */
   signMessage(message: string): Promise<Hex>;
   /** One passkey prompt: authorise the wallet-mode key so later calls sign with no prompt (D-046 arm slot). */
@@ -80,6 +82,7 @@ export const WalletShellContext = createContext<WalletShell>({
   sideWallet: async () => {
     throw new Error("no Robinhood wallet linked");
   },
+  sideReopenUrl: async () => null,
   signMessage: async () => {
     throw new Error("no wallet connected");
   },
