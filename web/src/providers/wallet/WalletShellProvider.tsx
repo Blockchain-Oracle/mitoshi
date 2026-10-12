@@ -66,11 +66,6 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
         setQueued(true);
         want();
       },
-      openAccount: () => {
-        pending.current = { kind: "account" };
-        setQueued(true);
-        want();
-      },
       disconnect: async () => undefined,
       switchToTempo: async () => undefined,
       signMessage: async () => {

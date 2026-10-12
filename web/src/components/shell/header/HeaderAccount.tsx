@@ -8,12 +8,14 @@
 // rail is compact or hidden, the account on phones). Which copy shows at which width is CSS (`app-shell.css`), so
 // both render the same session and one balance query.
 import { ChevronDown, LogIn } from "lucide-react";
+import { AccountAvatar } from "./AccountAvatar";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState, type ComponentType } from "react";
 import { ACCOUNT_MENU, BANNER, CONNECT } from "@/lib/copy";
 import { onIdle } from "@/lib/idle";
 import { useWalletSession } from "@/lib/wallet-session";
 import { cn } from "@/lib/utils";
+import { ACCOUNT } from "@/providers/wallet/copy";
 import { dollars, shortAddress } from "@/providers/wallet/format";
 import { openFunds } from "@/lib/funds-event";
 import type { AccountMenuProps } from "./AccountMenu";
@@ -79,8 +81,11 @@ export function HeaderAccount({ placement = "top" }: { placement?: AccountPlacem
     <Menu open={menuOpen} onOpenChange={setMenuOpen} side={rail ? "top" : "bottom"} />
   ) : (
     <button type="button" className="wallet-pill min-h-touch" aria-label={ACCOUNT_MENU.open} aria-haspopup="menu" aria-expanded={false} onPointerDown={() => { load(); setMenuOpen(true); }} onClick={() => { load(); setMenuOpen(true); }}>
-      <span className="addr-dot" aria-hidden />
-      <span className="numbers wallet-pill-addr">{shortAddress(session.address)}</span>
+      <AccountAvatar seed={session.address} className="wallet-pill-avatar" />
+      <span className="wallet-pill-id">
+        <span className="wallet-pill-kind">{session.kind ? ACCOUNT.kinds[session.kind] : ACCOUNT_MENU.open}</span>
+        <span className="numbers wallet-pill-addr">{shortAddress(session.address)}</span>
+      </span>
       <ChevronDown aria-hidden className="size-3.5" />
     </button>
   );

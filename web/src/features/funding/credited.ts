@@ -1,6 +1,9 @@
 // Ported from Masayume 68f7a09:web/src/features/funding/credited.ts — the per-address "welcomed once" guard.
 import { CREDITED_EVENT } from "./copy";
 
+/** Fired by the sign-in modal the moment a new passkey account exists; `FundsHost` funds it (D-224). */
+export const ACCOUNT_CREATED_EVENT = "cwf:account-created";
+
 export interface CreditedDetail {
   address: string;
   firstTime: boolean;

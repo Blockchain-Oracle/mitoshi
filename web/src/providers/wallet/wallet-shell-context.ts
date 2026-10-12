@@ -50,7 +50,6 @@ export interface WalletShellState {
 
 export interface WalletShellActions {
   openPicker(mode?: "tempo" | "robinhood"): void;
-  openAccount(): void;
   disconnect(): Promise<void>;
   switchToTempo(): Promise<void>;
   /** EIP-191 personal_sign with the connected Tempo account (the faucet challenge); rejects with no account. */
@@ -66,7 +65,6 @@ export const SIGNED_OUT: WalletShellState = { status: "ready", connecting: false
 export const WalletShellContext = createContext<WalletShell>({
   ...SIGNED_OUT,
   openPicker: () => undefined,
-  openAccount: () => undefined,
   disconnect: async () => undefined,
   switchToTempo: async () => undefined,
   signMessage: async () => {

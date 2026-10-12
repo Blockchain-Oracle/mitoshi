@@ -29,7 +29,7 @@ export const ACCOUNT_MENU = {
 } as const;
 
 export const BANNER = {
-  wrongNetwork: (chainName: string) => `This wallet is on another network. The app runs on ${chainName}.`,
+  wrongNetwork: (chainName: string) => `Wrong network — this app runs on ${chainName}.`,
   switchTo: (chainName: string) => `Switch to ${chainName}`,
   switching: "Switching…",
 } as const;
@@ -44,7 +44,6 @@ export const SHELL = {
   commandHint: "Jump to…",
   moreLabel: "More",
   moreTitle: `Everything in Mitoshi`,
-  moreDescription: "Trade, build, verify, or learn — every destination has one home.",
   mobileNav: "Mobile primary navigation",
   primaryNav: "Primary navigation",
   allDestinations: "All Mitoshi destinations",
@@ -57,11 +56,11 @@ export const SHELL = {
   everything: "Everything",
   everythingHint: "Every destination, searchable",
   testnet: "Testnet",
-  testnetTitle: "You're on Tempo's Moderato testnet: test dollars, real trades, nothing of value.",
+  testnetTitle: "Tempo testnet · test dollars, nothing of value.",
   keyHint: (key: string) => `Press ${key}`,
   shortcuts: "Keyboard shortcuts",
   shortcutsOpen: "Show keyboard shortcuts",
-  shortcutsBody: "Everything in Mitoshi works from the keyboard. No shortcut ever places, closes or moves money.",
+  shortcutsBody: "No shortcut moves money.",
   shortcutRows: [
     ["1 – 6", "Trade, Markets, Stocks, Games, Portfolio, Everything"],
     ["⌘ K  or  /", "Search every destination"],
@@ -91,7 +90,7 @@ export const NOTES = {
 export const NOT_FOUND = {
   eyebrow: "404",
   headline: "Nothing lives at this address.",
-  body: "The link may be mistyped, or the page never existed. Nothing was changed on your account.",
+  body: "Nothing changed on your account.",
   back: "Go to markets",
   suggestions: "Maybe you meant",
 } as const;
@@ -118,8 +117,3 @@ export const BOOT = {
   checking: "Checking the chain…",
 } as const;
 
-export const SESSION_BANNER = {
-  signedOut: "You're browsing. Sign in with a passkey to trade — one tap, no seed phrase.",
-  signIn: "Sign in",
-  restoring: "Restoring your session…",
-} as const;

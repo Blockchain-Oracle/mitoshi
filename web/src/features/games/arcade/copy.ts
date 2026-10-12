@@ -70,7 +70,7 @@ export const ARCADE = {
     noStore: "No board yet. Your best stays on this device.",
     unavailable: "No board yet. Your best stays on this device.",
     yours: (score: string, rank: number | null) => (rank === null ? `Your best ${score}` : `Your best ${score} · #${rank}`),
-    connect: "Take a seat to post — play is open without one.",
+    connect: "Sign in to post — play is open without one.",
   },
 
   calm: {

@@ -57,6 +57,7 @@ function Ledger({ wallet }: { wallet: Address }) {
   const critical = [sheet, positions, claimables];
   const criticalSettled = critical.every((r) => r !== null);
   const history = useWalletHistory(wallet, criticalSettled);
+  const privateBudget = usePrivateBudget(wallet);
   useLiveMarketData({ wallet });
   const retry = useCallback(() => void queryClient.invalidateQueries({ queryKey: keys.positions(wallet) }), [queryClient, wallet]);
 
@@ -69,7 +70,6 @@ function Ledger({ wallet }: { wallet: Address }) {
     );
   }
   const rows = claimables && isOk(claimables) ? claimables.value : [];
-  const privateBudget = usePrivateBudget(wallet);
   const value = sheet?.ok ? sheet.value : null;
   const open = positions?.ok ? positions.value : [];
   const money: HeroMoney = {

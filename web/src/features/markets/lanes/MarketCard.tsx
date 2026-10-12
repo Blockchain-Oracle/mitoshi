@@ -75,7 +75,7 @@ export function MarketCard({ market, selected, onSelect, upCents, downCents, hyd
         <div className="mc-body mc-listed">
           <span className="mc-listed-dot" aria-hidden />
           <p className="type-caption text-ink-secondary">
-            <span className="type-body-strong text-ink">{LANE_CARD.schedule(formatWallClock(market.tradingStartSec * 1000))}</span> {LANE_CARD.scheduleLine}
+            <span className="type-body-strong text-ink">{LANE_CARD.schedule(formatWallClock(market.tradingStartSec * 1000))}</span>
           </p>
         </div>
       ) : (

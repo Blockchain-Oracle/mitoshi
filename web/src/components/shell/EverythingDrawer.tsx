@@ -30,7 +30,7 @@ export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDra
 
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={SHELL.moreTitle} description={SHELL.moreDescription}>
+      <SlideOverContent title={SHELL.moreTitle}>
         <div className="more-search" role="search">
           <label className="relative block">
             <span className="sr-only">{SHELL.searchLabel}</span>

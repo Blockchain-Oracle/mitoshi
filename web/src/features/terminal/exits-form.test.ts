@@ -35,7 +35,7 @@ describe("the TP/SL drawer's linked inputs (RV-51, D-200)", () => {
     expect(exitError("tp", null, false, ctx)).toBeNull();
     expect(exitError("tp", null, true, ctx)).toMatch(/trigger price/);
     expect(exitError("tp", 4_000_000n, false, ctx)).toMatch(/above what you staked/);
-    expect(exitError("tp", 11_000_000n, false, ctx)).toMatch(/can't be reached/);
+    expect(exitError("tp", 11_000_000n, false, ctx)).toMatch(/unreachable/);
     expect(exitError("tp", 6_000_000n, false, { ...ctx, nowBase: 6_100_000n })).toMatch(/already been passed/);
     expect(exitError("sl", 6_000_000n, false, ctx)).toMatch(/below what you staked/);
     expect(exitError("sl", 0n, false, ctx)).toMatch(/above \$0/);

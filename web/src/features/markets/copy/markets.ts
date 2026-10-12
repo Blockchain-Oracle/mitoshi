@@ -9,7 +9,7 @@ export const CALLS_SECTION = { index: "00", title: "Your calls", desc: "" } as c
 export const SECTIONS = {
   lanes: { index: "01", title: "Live windows" },
   /** The reference's own §02 header, verbatim. */
-  words: { index: "02", title: "Just ask", desc: "No chart to read. Will it be up? Just answer yes or no." },
+  words: { index: "02", title: "Just ask", desc: "Yes or no." },
 } as const;
 
 export const LANE_CARD = {
@@ -21,8 +21,7 @@ export const LANE_CARD = {
   /** Owarine 90a91d71 `CLOSED.kind` / `ListedCard` (O-5). */
   kind247: "24/7 · stock",
   kindCrypto: "24/7 · crypto",
-  schedule: (clock: string) => `Schedule a call · opens ${clock}.`,
-  scheduleLine: "Rest a call at your price.",
+  schedule: (clock: string) => `Schedule a call · opens ${clock}`,
   scheduleCta: "Schedule a call",
   scheduleMeta: "your price",
   priceLoading: "···",
@@ -31,7 +30,7 @@ export const LANE_CARD = {
 
 export const WORD_BOARD = {
   reading: "reading the board…",
-  between: "Between rounds. New questions open as the next Window does.",
+  between: "Between rounds.",
   closes: (clock: string) => `closes ${clock}`,
   /** The two asks are independent contracts, so the bar is a stated derivation, never "the odds". */
   implied: (share: number) => `${share}% implied on Yes`,
@@ -48,11 +47,11 @@ export const MARKETS = {
   tickerGroup: "Ticker",
   laneGroup: "Market length",
   noTickerHere: (ticker: string, lane: string) => `No live ${ticker} Window in the ${lane} lane right now.`,
-  noLiveWindows: { why: "No live Windows right now — Windows roll continuously, so this fills in as the next one opens." },
+  noLiveWindows: { why: "No live Windows right now." },
   notes: {
     moved: "That page moved — here are the live Windows.",
     gone: "That Window is gone — showing the live Windows instead.",
-    successor: (cadence: string) => `That ${cadence} Window settled — moved you to its successor.`,
+    successor: (cadence: string) => `That ${cadence} Window settled — this is the next one.`,
   },
   loadingWindows: "Loading live Windows",
 } as const;
@@ -63,7 +62,7 @@ export const HERO = {
   bandHigh: "band high",
   livePrice: "live · signed spot",
   pendingPrint: "waiting for the opening print",
-  pendingDistance: "No opening print yet — nothing to measure against.",
+  pendingDistance: "Waiting for the opening print.",
   noLivePrice: "No live price right now.",
   depthTitle: "Top of book",
   buyUp: "Buy UP",
@@ -74,9 +73,10 @@ export const HERO = {
   chartReadout: (time: string, price: string) => `${time} · ${price}`,
   scrubHint: "Arrow keys move through the prices; Escape returns to live.",
   vsLine: "vs the line",
-  source: (source: string) => `Settles on the ${source} signed print at the close · the chart follows the same feed`,
-  sources: { redstone: "RedStone", datastreams: "Chainlink Data Streams", attested: "attested" } as Record<string, string>,
-  sourceUnknown: "signed oracle",
+  /** Owarine 90a91d71 `SOURCE_COPY.settles`: the provider's name, nothing more. */
+  source: (source: string) => `Settles on ${source}`,
+  sources: { redstone: "RedStone", datastreams: "Chainlink Data Streams", attested: "an attested print" } as Record<string, string>,
+  sourceUnknown: "a signed oracle",
   phase: {
     upcoming: "Opens soon",
     pendingOpeningPrint: "Waiting for the opening print",
@@ -118,7 +118,7 @@ export const HERO_HEAD = {
   betDown: "Bet DOWN",
   room: "The Room",
   roomQualifier: "bettors only",
-  roomPending: "The Room opens with the social service — it is not connected yet.",
+  roomPending: "The Room isn't connected yet.",
   upCosts: (cents: string) => `UP costs ${cents}`,
 } as const;
 
@@ -132,10 +132,10 @@ export const DEPTH = {
   spread: "Spread",
   bidDepth: "UP bids",
   askDepth: "UP asks",
-  empty: "No resting orders on either side of this Window right now.",
-  error: "Couldn't read this Window's book. Nothing changed; try again.",
+  empty: "No resting orders on this Window.",
+  error: "Couldn't read the book.",
   retry: "Try again",
-  caption: "Order book depth for this Window — cumulative contracts by price, UP terms",
+  caption: "Order book depth, UP terms",
   bid: "Bid",
   ask: "Ask",
 } as const;

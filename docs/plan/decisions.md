@@ -2000,6 +2000,15 @@ live price, settled on the real signed close, every surface labelled DEMO; "Crea
 **Supersedes D-191 ("no paper positions") and the revamp's "no simulated balance".** Copy follows Owarine's density:
 no hints, explainers or stage codes on screen ("too much text… a sign of slop"). Plan: owarine-parity.md P0–P6.
 
+### D-224 — Round 2 of Owarine parity: one frame in, one account surface, Owarine's counts (owner, 2026-10-12)
+
+The owner restated the brief after P4 (text, the way in, the portfolio). Plan: `owarine-plan-r2-2026-10-12.md` (R1, P5,
+P6). R1: every rendered string over ~60 characters cut to Owarine's length and the dead copy deleted (the old sign-in
+strings, `EXPLAINERS`, the session banner); "Create account" closes the modal on the passkey and the shell funds the
+new account (`FirstFund` → `CreditWelcome`), so the onboarding step and `Onboarding.tsx` are gone; the account popover
+is Owarine's `SeatAccountMenu` (marble avatar, address with copy, the two balances, Portfolio · Account & keys · Sign
+out) and the second `AccountModal` is deleted; capability pages carry no stage codes.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

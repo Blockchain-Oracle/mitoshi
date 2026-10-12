@@ -1,15 +1,22 @@
 "use client";
-// The account menu (the rail's foot opens it upward, the phone's top line below), split out as a lazy island (§3.1). Laid out from 21st.dev 24857
-// shadcnspace/dropdown-menu-01 (identity header, rows, separator, sign out) on Base UI Menu, in Masayume's classes.
+// The account popover (Owarine 90a91d71 `features/canton-ux/seat/SeatAccountMenu.tsx`; O-10, D-224), a lazy island: the
+// marble avatar, what the account is and its network chip, then one recessed panel — Address (copy), Wallet, Trading
+// Balance, the linked Robinhood Chain wallet — and the items: Portfolio, Account & keys, the balance eye, Sign out.
+// On Base UI Menu (keyboard, typeahead, focus return); the rail's foot opens it upward, the top line below.
 import { Menu } from "@base-ui/react/menu";
-import { ChevronDown } from "lucide-react";
-import Link from "next/link";
 import { useBalanceSheet } from "@cwf/markets/react";
+import { Check, ChevronDown, Copy, Link2 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState, type ReactNode } from "react";
 import { ACCOUNT_MENU, CONNECT, SHELL } from "@/lib/copy";
 import { setPrivacy, usePrivacy } from "@/lib/privacy";
 import { useWalletSession } from "@/lib/wallet-session";
 import { ACCOUNT } from "@/providers/wallet/copy";
 import { dollars, shortAddress } from "@/providers/wallet/format";
+import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
+import { AccountAvatar } from "./AccountAvatar";
+
+const COPIED_MS = 1_500;
 
 export interface AccountMenuProps {
   open: boolean;
@@ -20,39 +27,85 @@ export interface AccountMenuProps {
 
 export function AccountMenu({ open, onOpenChange, side = "bottom" }: AccountMenuProps) {
   const session = useWalletSession();
+  const shell = useWalletShell();
   const sheet = useBalanceSheet(session.address);
   const value = sheet?.ok ? sheet.value : null;
   const hidden = usePrivacy();
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const timer = setTimeout(() => setCopied(false), COPIED_MS);
+    return () => clearTimeout(timer);
+  }, [copied]);
   if (!session.address) return null;
+  const address = session.address;
+  const kind = session.kind ? ACCOUNT.kinds[session.kind] : ACCOUNT_MENU.open;
   return (
     <Menu.Root modal={false} open={open} onOpenChange={onOpenChange}>
       <Menu.Trigger className="wallet-pill min-h-touch" aria-label={ACCOUNT_MENU.open}>
-        <span className="addr-dot" aria-hidden />
-        {/* Owarine 90a91d71 `SeatAccountMenu` (O-10): what the account is, bold, over its address in mono. */}
+        <AccountAvatar seed={address} className="wallet-pill-avatar" />
         <span className="wallet-pill-id">
-          <span className="wallet-pill-kind">{session.kind ? ACCOUNT.kinds[session.kind] : ACCOUNT_MENU.open}</span>
-          <span className="numbers wallet-pill-addr">{shortAddress(session.address)}</span>
+          <span className="wallet-pill-kind">{kind}</span>
+          <span className="numbers wallet-pill-addr">{shortAddress(address)}</span>
         </span>
         <ChevronDown aria-hidden className="size-3.5" />
       </Menu.Trigger>
       <Menu.Portal>
-        <Menu.Positioner side={side} sideOffset={8} align={side === "top" ? "start" : "end"} className="nav-menu-positioner">
-          <Menu.Popup className="header-account-menu account-menu-popup">
-            <div className="header-account-pools">
-              <p className="type-caption text-ink-secondary">{session.kind ? ACCOUNT.kinds[session.kind] : ""}</p>
-              <div className="header-account-row"><span>{ACCOUNT_MENU.wallet}</span><span className="val numbers">{hidden ? SHELL.masked : dollars(value?.spendableBase)}</span></div>
-              <div className="header-account-row"><span>{ACCOUNT_MENU.tradingAccount}</span><span className="val val--soft">{hidden ? SHELL.masked : value?.vaultBase === null ? ACCOUNT.tradingBalancePending : dollars(value?.vaultBase)}</span></div>
+        <Menu.Positioner side={side} sideOffset={8} align={side === "top" ? "start" : "end"} collisionPadding={12} className="nav-menu-positioner">
+          <Menu.Popup className="am-popup">
+            <div className="am-head">
+              <AccountAvatar seed={address} size={36} />
+              <span className="am-name">{kind}</span>
+              <span className="am-chip">
+                <span aria-hidden className="am-chip-dot" />
+                {ACCOUNT.network[shell.network]}
+              </span>
             </div>
-            <Menu.LinkItem render={<Link href="/portfolio" />} closeOnClick className="header-account-link">{ACCOUNT_MENU.portfolio}</Menu.LinkItem>
-            <Menu.LinkItem render={<Link href="/settings/account" />} closeOnClick className="header-account-link">{ACCOUNT_MENU.settings}</Menu.LinkItem>
-            <Menu.Item onClick={session.openAccount} className="header-account-link">{ACCOUNT.title}</Menu.Item>
-            {/* The balance eye for every width (phones have no room for it in the top line; Slush's privacy, RV-10). */}
-            <Menu.Item onClick={() => setPrivacy(!hidden)} className="header-account-link">{hidden ? SHELL.privacyShow : SHELL.privacyHide}</Menu.Item>
-            <Menu.Separator className="my-1 h-px bg-hairline" />
-            <Menu.Item onClick={() => void session.disconnect()} className="header-account-link header-account-link--danger">{CONNECT.disconnect}</Menu.Item>
+            <dl className="am-rows">
+              <Row label={ACCOUNT.address}>
+                <span className="flex min-w-0 items-center gap-1">
+                  <span className="numbers truncate">{shortAddress(address)}</span>
+                  <button type="button" className="am-copy" aria-label={copied ? ACCOUNT.copied : ACCOUNT.copy} onClick={() => void navigator.clipboard?.writeText(address).then(() => setCopied(true), () => undefined)}>
+                    {copied ? <Check aria-hidden className="size-3.5" /> : <Copy aria-hidden className="size-3.5" />}
+                  </button>
+                </span>
+              </Row>
+              <Row label={ACCOUNT_MENU.wallet}>
+                <span className="numbers">{hidden ? SHELL.masked : dollars(value?.spendableBase)}</span>
+              </Row>
+              <Row label={ACCOUNT_MENU.tradingAccount}>
+                <span className="numbers">{hidden ? SHELL.masked : value?.vaultBase === null ? ACCOUNT.tradingBalancePending : dollars(value?.vaultBase)}</span>
+              </Row>
+              <Row label={ACCOUNT.robinhood}>
+                {shell.robinhood ? (
+                  <span className="numbers">{shortAddress(shell.robinhood.address)}</span>
+                ) : (
+                  <button type="button" className="am-link" onClick={() => { onOpenChange(false); shell.openPicker("robinhood"); }}>
+                    <Link2 aria-hidden className="size-3.5" />
+                    {ACCOUNT.linkRobinhood}
+                  </button>
+                )}
+              </Row>
+            </dl>
+            <div className="am-items">
+              <Menu.LinkItem render={<Link href="/portfolio" />} closeOnClick className="am-item">{ACCOUNT_MENU.portfolio}</Menu.LinkItem>
+              <Menu.LinkItem render={<Link href="/settings/account" />} closeOnClick className="am-item">{ACCOUNT_MENU.settings}</Menu.LinkItem>
+              {/* The balance eye for every width (phones have no room for it in the top line; Slush's privacy, RV-10). */}
+              <Menu.Item onClick={() => setPrivacy(!hidden)} className="am-item">{hidden ? SHELL.privacyShow : SHELL.privacyHide}</Menu.Item>
+              <Menu.Item onClick={() => void session.disconnect()} className="am-item am-item--danger">{CONNECT.disconnect}</Menu.Item>
+            </div>
           </Menu.Popup>
         </Menu.Positioner>
       </Menu.Portal>
     </Menu.Root>
+  );
+}
+
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="am-row">
+      <dt>{label}</dt>
+      <dd>{children}</dd>
+    </div>
   );
 }

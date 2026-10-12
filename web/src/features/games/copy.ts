@@ -80,7 +80,7 @@ export const GAMES = {
 
   profile: {
     signedOut: {
-      title: "Take a seat to carry a profile",
+      title: "Sign in to carry a profile",
       body: "Your games identity is your address — the same one that signs the orders. Nothing is stored until you play.",
     },
     you: "You",
@@ -97,14 +97,14 @@ export const GAMES = {
   achievements: {
     title: "Achievements",
     body: "Earned from the record itself: duels the arena settled, ratings the settler verified, arcade scores the room vouched for, Lucky Draws the venue resolved.",
-    connect: "Take a seat to see which of these you hold. Each one is earned from a settled record, never from a counter kept here.",
+    connect: "Sign in to see which you hold.",
     noStore: "This deployment keeps no games store, so nothing has been recorded to earn them from.",
     count: (earned: number, total: number) => `${earned} of ${total} earned`,
   },
 
   historyPage: {
     title: "Your duels",
-    connect: "Take a seat to see the duels it has played.",
+    connect: "Sign in to see its duels.",
     loading: "Reading your duels…",
     notConfigured: "This deployment has no games store, so there is no history to read here. Every match is still on the ledger.",
     empty: "No duels yet. The first one is one queue away.",
@@ -146,7 +146,7 @@ export const GAMES = {
     prize: (amount: number, currency: string) => `${amount} ${currency}`,
     locked: (have: number, need: number) => `${have}/${need} ranked`,
     finishToEnter: "finish a ranked duel to enter the ranks",
-    connectToSee: "take a seat to see your rank",
+    connectToSee: "sign in to see your rank",
     ordinal: (n: number) => {
       const v = n % 100;
       const suffix = v >= 11 && v <= 13 ? "th" : n % 10 === 1 ? "st" : n % 10 === 2 ? "nd" : n % 10 === 3 ? "rd" : "th";

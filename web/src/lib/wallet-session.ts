@@ -15,7 +15,6 @@ export interface WalletSession {
   isConnecting: boolean;
   isRightChain: boolean;
   connect(): void;
-  openAccount(): void;
   disconnect(): Promise<void>;
   switchToTempo(): Promise<void>;
 }
@@ -31,7 +30,6 @@ export function useWalletSession(): WalletSession {
     isConnecting: shell.status === "restoring",
     isRightChain: tempo !== null && !shell.wrongChain,
     connect: () => shell.openPicker("tempo"),
-    openAccount: shell.openAccount,
     disconnect: shell.disconnect,
     switchToTempo: shell.switchToTempo,
   };

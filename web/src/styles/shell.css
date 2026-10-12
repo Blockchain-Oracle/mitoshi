@@ -122,6 +122,29 @@
   color: var(--vermilion);
 }
 
+/* The account popover (Owarine 90a91d71 `SeatAccountMenu`; O-10, D-224): a 21 rem card — the marble, the kind, a
+   network chip; one recessed panel of rows; the items. The trigger's marble replaces the address dot. */
+.wallet-pill-avatar { flex: none; width: 26px; height: 26px; border-radius: 999px; outline: 1px solid rgb(0 0 0 / 0.12); outline-offset: -1px; }
+.rail-account .wallet-pill-avatar { width: 32px; height: 32px; }
+.am-popup { width: min(21rem, calc(100vw - 1.5rem)); padding: 8px; border: 1px solid var(--color-hairline); border-radius: 1.5rem; background: var(--color-surface-1); color: var(--color-ink); box-shadow: 0 16px 40px -16px var(--color-scrim, rgb(0 0 0 / 0.5)); transform-origin: var(--transform-origin); transition: scale 150ms var(--ease), opacity 150ms var(--ease); }
+.am-popup[data-starting-style], .am-popup[data-ending-style] { scale: 0.95; opacity: 0; }
+.am-head { display: flex; align-items: center; gap: 12px; padding: 8px 12px 12px; }
+.am-head > svg { flex: none; border-radius: 999px; outline: 1px solid rgb(0 0 0 / 0.12); outline-offset: -1px; }
+.am-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 15px/1.2 var(--font-body); }
+.am-chip { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 999px; background: color-mix(in srgb, var(--color-profit) 15%, transparent); font: 700 11px/1 var(--font-body); color: var(--color-ink); }
+.am-chip-dot { width: 6px; height: 6px; border-radius: 999px; background: var(--color-profit); }
+.am-rows { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 1rem; background: var(--color-surface-2); font-size: 13px; }
+.am-row { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 16px; }
+.am-row dt { flex: none; color: var(--color-ink-secondary); }
+.am-row dd { min-width: 0; text-align: right; color: var(--color-ink); font-variant-numeric: tabular-nums; }
+.am-copy { display: grid; flex: none; place-items: center; width: 24px; height: 24px; border-radius: 999px; color: var(--color-ink-secondary); }
+.am-copy:hover { background: var(--color-hairline); color: var(--color-ink); }
+.am-link { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; font-weight: 600; color: var(--color-ink); text-decoration: underline; text-underline-offset: 4px; }
+.am-items { display: flex; flex-direction: column; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--color-hairline); }
+.am-item { display: flex; width: 100%; height: 44px; align-items: center; gap: 12px; padding: 0 12px; border-radius: 0.875rem; text-align: left; font: 500 14px/1 var(--font-body); color: var(--color-ink); outline: none; transition: background-color 160ms var(--ease); }
+.am-item:hover, .am-item[data-highlighted] { background: var(--color-surface-2); }
+.am-item--danger { color: var(--color-loss, var(--vermilion)); }
+
 /* Clears the fixed chrome: app strip + marquee (28) + header (64) = 92, and on phones
  * the slim pair (20 + 46) = 66, matching the reference's own offsets. The bottom pad
  * keeps content clear of the floating mobile pill nav. */

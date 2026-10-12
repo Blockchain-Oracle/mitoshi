@@ -2,15 +2,16 @@
 
 // The one sign-in modal (plan C.3.1; D-046), in Owarine 90a91d71's compact picker (`WalletPicker`, RainbowKit 2.2.11's
 // compact connect modal as Masayume shipped it — O-9, D-222/D-223): a title, grouped rows — passkey first, then wallets
-// — and "New to passkeys? Learn more". "Create account" goes straight to the passkey prompt (Owarine's two-tap seat);
-// a choice shows a named wait or a failure with its retry; a new account is funded and returns to the page. Below 768 px the panel is
-// the mobile bottom sheet (D-222). Loaded on first open (lazy island).
+// — and "New to passkeys? Learn more". One frame (D-224, Owarine's seat): "Create account" goes straight to the passkey
+// prompt and the modal closes on it; the server funds the new account from the shell (`FirstFund`) and the welcome card
+// says so. A choice shows a named wait or a failure with its retry. Below 768 px the panel is the bottom sheet (D-222).
+// Loaded on first open (lazy island).
 import { Dialog } from "@base-ui/react/dialog";
 import { diagnose } from "@cwf/markets/errors";
 import { Fingerprint, KeyRound, Wallet } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import type { Connector } from "wagmi";
-import { Modal } from "@/components/ui/modal";
+import { ACCOUNT_CREATED_EVENT } from "@/features/funding";
 import { diagnosisCopy } from "@/lib/copy";
 import { cn } from "@/lib/utils";
 import { ACCOUNT, SIGN_IN, WALLET_MODAL as T } from "./copy";
@@ -18,14 +19,12 @@ import { useWalletChoices, type ConnectOutcome } from "./useWalletChoices";
 import { SIDE_CHAINS } from "./wagmi-config";
 import { ActionButton, BackButton, CloseButton, Spinner, WalletDialog, WalletIcon } from "./wallet-modal-parts";
 import { useWalletShell } from "./wallet-shell-context";
-import { Onboarding, ONBOARD } from "@/features/onboarding";
 
 type Step =
   | { kind: "choose" }
   | { kind: "learn" }
   | { kind: "waiting"; label: string }
-  | { kind: "failed"; headline: string; body: string; technical: string; retry: () => void }
-  | { kind: "onboard" };
+  | { kind: "failed"; headline: string; body: string; technical: string; retry: () => void };
 
 export interface SignInModalProps {
   open: boolean;
@@ -38,14 +37,14 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const [step, setStep] = useState<Step>({ kind: "choose" });
   const robinhood = shell.pickerMode === "robinhood";
 
-  // `created`: a new passkey account continues into the rest of the ceremony (fund → arm → /markets) in this modal.
+  // `created`: a brand-new passkey account; the shell funds it once the modal is gone.
   async function run(label: string, attempt: () => Promise<ConnectOutcome>, created = false) {
     setStep({ kind: "waiting", label });
     const result = await attempt();
     if (result.ok) {
-      if (created) return setStep({ kind: "onboard" });
       setStep({ kind: "choose" });
       onOpenChange(false);
+      if (created) window.dispatchEvent(new Event(ACCOUNT_CREATED_EVENT));
       return;
     }
     if (result.aborted) {
@@ -65,14 +64,6 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       onClick={() => void run(SIGN_IN.waiting.wallet(connector.name), () => choices.connect(connector, chainId))}
     />
   );
-
-  if (step.kind === "onboard") {
-    return (
-      <Modal open={open} onOpenChange={onOpenChange} eyebrow={ONBOARD.eyebrow} title={ONBOARD.created}>
-        <Onboarding onClose={() => onOpenChange(false)} />
-      </Modal>
-    );
-  }
 
   const busy = step.kind === "waiting";
   const close = (next: boolean) => {
@@ -163,7 +154,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
                   <div role="alert" className="flex flex-col gap-3 px-1 pt-4">
                     <p className="type-body-strong text-ink">{step.headline}</p>
                     <p className="type-body text-ink-secondary">{step.body}</p>
-                    <p className="type-body-strong text-ink">Nothing was taken.</p>
+                    <p className="type-body-strong text-ink">{SIGN_IN.nothingTaken}</p>
                     {/* The raw reason, behind a disclosure like every failure card (§2.5): what support needs, never the headline. */}
                     <details className="type-caption text-ink-secondary">
                       <summary className="min-h-touch cursor-pointer py-2">{SIGN_IN.technical}</summary>
@@ -195,15 +186,14 @@ function Group({ name, accent = false, children }: { name: string; accent?: bool
   );
 }
 
-/** One row of the list (Owarine `WalletRow`): the icon, the name, a quiet line under it. */
-function Row({ icon, name, note, disabled = false, onClick }: { icon: ReactNode; name: string; note?: string; disabled?: boolean; onClick: () => void }) {
+/** One row of the list (Owarine `WalletRow`): the icon and the name. */
+function Row({ icon, name, disabled = false, onClick }: { icon: ReactNode; name: string; disabled?: boolean; onClick: () => void }) {
   return (
     <button type="button" disabled={disabled} className="wm-row wm-touch wm-shrink disabled:opacity-50" onClick={onClick}>
       <span className="wm-row-inner">
         {icon}
         <span className="min-w-0">
           <span className="wm-row-name">{name}</span>
-          {note ? <span className="wm-row-note">{note}</span> : null}
         </span>
       </span>
     </button>

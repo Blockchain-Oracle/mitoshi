@@ -22,7 +22,6 @@ export default function CreditWelcome({ open, onOpenChange }: { open: boolean; o
       onOpenChange={onOpenChange}
       eyebrow={FUNDING.welcome.eyebrow}
       title={FUNDING.welcome.title}
-      description={FUNDING.welcome.body}
       footer={
         <button type="button" onClick={() => onOpenChange(false)} className="inline-flex h-(--ticket-cta-height) w-full items-center justify-center rounded-md bg-accent-fill px-5 type-body-strong text-on-accent">
           {FUNDING.welcome.cta}
