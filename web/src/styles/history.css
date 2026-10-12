@@ -61,6 +61,8 @@
   transition: background-color 180ms var(--ease);
 }
 .bets-row:hover { background: rgba(255, 255, 255, 0.02); }
+/* The row's asset disc (R4-1: it had no size, so a stock's mark filled the row). */
+.bets-mark { display: inline-grid; flex: none; width: 24px; height: 24px; place-items: center; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink); font: 700 11px/1 var(--font-body); }
 [data-theme="light"] .bets-row:hover { background: rgba(20, 18, 16, 0.03); }
 .bets-break { flex-basis: 100%; height: 0; }
 @media (min-width: 640px) {

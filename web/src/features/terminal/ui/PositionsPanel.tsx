@@ -1,23 +1,32 @@
 "use client";
 // Ported in shape from Owarine ecb7565b:web/src/features/terminal/ui/PositionsPanel.tsx (the row, the Unrealized card
 // and Close all) — each row's value is what Close pays now (D-197), "≈" while repriced on the display spot between book
-// reads; a Window that stopped taking sales says when it pays.
+// reads; a Window that stopped taking sales says when it pays. R4-1 (D-227, Owarine 90a91d71 `PositionRow`,
+// `UnrealizedCard`): every row says why it has its number or none (`position-return.ts`) — a lock, no bids, "N%
+// sellable" on a thin book, "Updating" while the cost indexes — ROI and P&L roll on the Odometer, Now is the walk's own
+// price a contract, a Boost pays (held − fronted) ÷ its stake, and the Unrealized total counts priced rows only.
 import { useOpeningPrice } from "@cwf/markets/react";
-import { ArrowDown, ArrowDownRight, ArrowUp, ArrowUpRight, CandlestickChart, ChevronDown, LoaderCircle } from "lucide-react";
+import { ArrowDown, ArrowDownRight, ArrowUp, ArrowUpRight, CandlestickChart, ChevronDown, LoaderCircle, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Odometer } from "@/components/data/Odometer";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
-import { formatBaseUnits } from "@cwf/core/units";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
 import { TERMINAL } from "../copy";
-import { clockText, livePnlText, money, sideWord } from "../format";
+import { centsOf, clockText, money, moneyDecimals, sideWord, USD_DECIMALS } from "../format";
 import type { PendingFill } from "../fresh-fills";
+import { statusText } from "../position-return";
+import { avgTicksOf, paysMultiple } from "../position-value";
+import { roiBpsOf, type PositionsTotals } from "../positions-totals";
 import type { TerminalPosition } from "../terminal-positions";
 import { usePositionValue, type PositionValue } from "../usePositionValue";
+import { ParlayRow, RangeRow } from "../parlay/BetRows";
+import type { useTerminalBets } from "../parlay/useTerminalBets";
+import type { Valued } from "../positions-totals";
 import { useRowTrail } from "../useTrail";
 
 const noTrail = () => undefined;
-const roiText = (bps: number | null) => (bps === null ? "" : ` (${bps >= 0 ? "+" : "−"}${(Math.abs(bps) / 100).toFixed(1)}%)`);
+const dollars = (base: bigint, decimals: number) => Number(base) / 10 ** decimals;
 
 /**
  * One position, as Owarine 90a91d71's `PositionRow` (P3, D-223): the asset's mark, its side, DEMO when on paper, what
@@ -34,14 +43,14 @@ function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }:
   const line = opening?.ok && opening.value !== null ? Number(opening.value) / 1e8 : null;
   const up = p.side === "up";
   const Dir = up ? ArrowUpRight : ArrowDownRight;
-  const gain = (v.pnlBase ?? 0n) >= 0n;
-  const avgCents = p.heldRaw > 0n ? (100 * Number(p.costBase)) / Number(p.heldRaw) : 0;
-  const nowCents = v.valueBase !== null && p.heldRaw > 0n ? (100 * Number(v.valueBase)) / Number(p.heldRaw) : null;
-  const locked = v.locked || v.settled !== null;
-  const sub = v.settled ? (v.settled === "voided" ? TERMINAL.positions.voided : TERMINAL.positions.resolved) : locked ? `${TERMINAL.positions.settles} ${clockText(p.expirySec)}` : `${cadenceOf(p.intervalSec)} · pays ${avgCents > 0 ? (100 / avgCents).toFixed(2) : "—"}×`;
+  const avg = avgTicksOf(p);
+  const pays = paysMultiple(p);
+  const shut = v.status === "locked" || v.status === "settling";
+  const note = statusText(v.status, p.expirySec, v.fillablePct, v.settled);
+  const sub = `${cadenceOf(p.intervalSec)} · pays ${pays === null ? "—" : `${pays.toFixed(2)}×`}`;
   const hide = (text: string) => (masked ? SHELL.masked : text);
   return (
-    <div role="listitem" className="tm-prow" aria-current={current ? "true" : undefined}>
+    <div role="listitem" className="tm-prow" aria-current={current ? "true" : undefined} data-status={v.status}>
       <button type="button" className="tm-prow-head" onClick={() => setOpen((o) => !o)} aria-expanded={open}>
         <AssetDisc asset={p.asset} className="tm-disc tm-prow-disc" />
         <span className="tm-prow-main">
@@ -49,14 +58,16 @@ function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }:
             {p.asset}
             <Dir aria-hidden className={up ? "tm-prow-up" : "tm-prow-down"} strokeWidth={2.75} />
             {p.via === "paper" ? <span className="tm-prow-tag">DEMO</span> : null}
+            {p.via === "vault" ? <span className="tm-prow-tag">{TERMINAL.positions.balanceTag}</span> : null}
             {p.boost ? <span className="tm-prow-tag">{TERMINAL.positions.boost(p.boost.leverageBps / 10_000)}</span> : null}
             {p.trailStop !== null ? <span className="tm-prow-tag">{TERMINAL.buttons.trailing}</span> : null}
           </span>
           <span className="tm-prow-sub">{sub}</span>
+          {note ? <span className="tm-prow-sub tm-prow-status">{note}</span> : null}
         </span>
         <span className="tm-prow-figure">
-          {v.roiBps !== null && !locked ? <span className={gain ? "is-up" : "is-down"}>{hide(`${v.roiBps >= 0 ? "+" : "−"}${(Math.abs(v.roiBps) / 100).toFixed(1)}%`)}</span> : <span className="tm-prow-muted">—</span>}
-          {v.pnlBase !== null && !locked ? <span className={`tm-prow-pnl ${gain ? "is-up" : "is-down"}`}>{hide(livePnlText(v.pnlBase))}</span> : null}
+          {masked && v.roiBps !== null ? <span className="tm-prow-muted">{SHELL.masked}</span> : v.roiBps !== null ? <Odometer kind="pct" value={v.roiBps / 100} decimals={1} /> : shut ? <Lock aria-label={note} className="tm-prow-lock" /> : <span className="tm-prow-muted">—</span>}
+          {v.pnlBase !== null && !masked ? <Odometer kind="pnl" value={dollars(v.pnlBase, p.decimals)} decimals={moneyDecimals(dollars(v.pnlBase, p.decimals))} className="tm-prow-pnl" /> : null}
         </span>
         <ChevronDown aria-hidden className={`tm-prow-chev${open ? " is-open" : ""}`} />
       </button>
@@ -65,15 +76,15 @@ function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }:
           <dl className="tm-prow-grid">
             <dt>Direction</dt><dd className={up ? "tm-prow-up" : "tm-prow-down"}>{up ? "Up" : "Down"} / {cadenceOf(p.intervalSec)}</dd>
             <dt>ROI</dt><dd>{v.roiBps === null ? "—" : hide(`${(v.roiBps / 100).toFixed(2)}%`)}</dd>
-            <dt>Avg in</dt><dd>{avgCents.toFixed(1)}¢</dd>
-            <dt>Now</dt><dd>{nowCents === null ? "—" : `${nowCents.toFixed(1)}¢`}</dd>
+            <dt>Avg in</dt><dd>{avg === null ? "—" : centsOf(avg)}</dd>
+            <dt>Now</dt><dd>{v.nowTicks === null ? "—" : `${v.approx ? "≈ " : ""}${centsOf(v.nowTicks)}`}</dd>
             <dt>Entry</dt><dd>{p.entrySpot ? `$${p.entrySpot.toLocaleString("en-US", { maximumFractionDigits: 2 })}` : "—"}</dd>
             <dt>Line</dt><dd>{line !== null ? `$${line.toLocaleString("en-US", { maximumFractionDigits: 2 })}` : "—"}</dd>
-            <dt>{TERMINAL.positions.staked}</dt><dd>{hide(money(p.costBase))}</dd>
+            <dt>{TERMINAL.positions.staked}</dt><dd>{hide(money(p.costBase, false, p.decimals))}</dd>
             <dt>{TERMINAL.positions.settles}</dt><dd>{clockText(p.expirySec)}</dd>
           </dl>
           <div className="tm-prow-actions">
-            <button type="button" className="tm-prow-close" onClick={() => onClose(p, v)} disabled={busy || locked} aria-label={`${TERMINAL.buttons.close} ${sideWord(p.side)} ${p.asset}`}>
+            <button type="button" className="tm-prow-close" onClick={() => onClose(p, v)} disabled={busy || shut || v.status === "settled"} aria-label={`${TERMINAL.buttons.close} ${sideWord(p.side)} ${p.asset}`}>
               {busy ? <LoaderCircle aria-hidden className="tm-spin" /> : TERMINAL.buttons.close}
             </button>
             <button type="button" className="tm-prow-manage" onClick={() => onOpen(p)} aria-haspopup="dialog">{TERMINAL.positions.manage}</button>
@@ -106,8 +117,11 @@ function PendingRow({ f }: { f: PendingFill }) {
   );
 }
 
-export function PositionsList({ positions, pending = [], activeMarketId, busyId, onClose, onOpen, onTrailHit, onValue }: {
+export function PositionsList({ positions, bets, pending = [], activeMarketId, busyId, onClose, onOpen, onTrailHit, onValue, onBetValue }: {
   positions: readonly TerminalPosition[];
+  /** Open parlays and Range rounds, at fair value (D-227): listed first, in the totals, never in Close all. */
+  bets?: Pick<ReturnType<typeof useTerminalBets>, "parlays" | "ranges">;
+  onBetValue?: (id: string, v: Valued) => void;
   /** Signed taps awaiting their receipt, listed first (`fresh-fills.ts`). */
   pending?: readonly PendingFill[];
   activeMarketId: string | null;
@@ -118,7 +132,9 @@ export function PositionsList({ positions, pending = [], activeMarketId, busyId,
   onTrailHit: ((p: TerminalPosition, v: PositionValue, why: "trail" | "tp" | "sl") => void) | null;
   onValue: (id: string, v: PositionValue) => void;
 }) {
-  if (positions.length === 0 && pending.length === 0) {
+  const parlays = bets?.parlays ?? [];
+  const ranges = bets?.ranges ?? [];
+  if (positions.length === 0 && pending.length === 0 && parlays.length + ranges.length === 0) {
     return (
       <div className="tm-card tm-empty-card">
         <CandlestickChart aria-hidden className="size-10" strokeWidth={1.5} />
@@ -131,6 +147,8 @@ export function PositionsList({ positions, pending = [], activeMarketId, busyId,
       {pending.map((f) => (
         <PendingRow key={`pending:${f.marketId}:${f.side}`} f={f} />
       ))}
+      {onBetValue ? parlays.map((t) => <ParlayRow key={`parlay:${t.parlayId}`} t={t} onValue={onBetValue} />) : null}
+      {onBetValue ? ranges.map((r) => <RangeRow key={`range:${r.roundId}`} r={r} onValue={onBetValue} />) : null}
       {positions.map((p) => (
         <PositionRow key={p.id} p={p} current={p.marketId === activeMarketId} busy={busyId === p.id} onClose={onClose} onOpen={onOpen} onTrailHit={onTrailHit ?? noTrail} onValue={onValue} />
       ))}
@@ -138,19 +156,33 @@ export function PositionsList({ positions, pending = [], activeMarketId, busyId,
   );
 }
 
-/** Tradash's Unrealized card: the open positions' PnL at what Close pays, and Close all. */
-export function UnrealizedCard({ pnlBase, costBase, count, closing, onCloseAll }: { pnlBase: bigint | null; costBase: bigint; count: number; closing: boolean; onCloseAll: () => void }) {
+/**
+ * Tradash's Unrealized card (Owarine 90a91d71 `UnrealizedCard`): the priced rows' P&L at what Close pays, its % of what
+ * they cost, "· N unpriced" beside it, or "—" with why when none is priced; Close all past one position.
+ */
+export function UnrealizedCard({ totals, count, closable = count, closing, onCloseAll }: { totals: PositionsTotals; count: number; closable?: number; closing: boolean; onCloseAll: () => void }) {
   const masked = usePrivacy();
-  const roiBps = pnlBase !== null && costBase > 0n ? Number((pnlBase * 10_000n) / costBase) : null;
-  const gain = (pnlBase ?? 0n) >= 0n;
+  const roiBps = roiBpsOf(totals.pnlBase, totals.costBase);
+  const pnl = totals.pnlBase === null ? 0 : dollars(totals.pnlBase, USD_DECIMALS);
+  const none = count > 0 && totals.pnlBase === null;
   return (
     <div className="tm-card tm-unrealized">
       <span className="tm-card-title">{TERMINAL.positions.unrealized}</span>
-      <span className={`tm-unrealized-figure ${gain ? "is-up" : "is-down"}`}>{count === 0 ? "$0.00" : pnlBase === null ? "—" : masked ? SHELL.masked : `${livePnlText(pnlBase)}${roiText(roiBps)}`}</span>
-      {count > 1 ? (
+      <span className="tm-unrealized-figure">
+        {count === 0 ? "$0.00" : none ? "—" : masked ? SHELL.masked : <Odometer kind="pnl" value={pnl} decimals={moneyDecimals(pnl)} zeroIsUp />}
+      </span>
+      {closable > 1 ? (
         <button type="button" className="tm-choice" onClick={onCloseAll} disabled={closing}>
-          {closing ? <LoaderCircle aria-hidden className="tm-spin" /> : TERMINAL.close.all(count)}
+          {closing ? <LoaderCircle aria-hidden className="tm-spin" /> : TERMINAL.close.all(closable)}
         </button>
+      ) : null}
+      {none ? (
+        <span className="tm-unrealized-sub">{TERMINAL.positions.allUnpriced}</span>
+      ) : count > 0 && !masked ? (
+        <span className="tm-unrealized-sub">
+          {roiBps !== null ? <Odometer kind="pct" value={roiBps / 100} decimals={2} /> : null}
+          {totals.unpriced > 0 ? <span>{TERMINAL.positions.unpriced(totals.unpriced)}</span> : null}
+        </span>
       ) : null}
     </div>
   );

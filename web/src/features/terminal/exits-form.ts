@@ -14,7 +14,10 @@ export type ExitKind = "tp" | "sl";
 export const EXIT_MODES: readonly ExitMode[] = ["roi", "change", "pnl"];
 
 export interface ExitCtx {
+  /** The open cost of what is held: a target's P&L is the value less it. */
   costBase: bigint;
+  /** ROI's denominator (the row's: the open cost, a Boost's stake); `costBase` when absent. */
+  roiBase?: bigint;
   /** What the position pays if it wins: one collateral unit per contract (`estPayoutBase`, gross). */
   maxBase: bigint;
   /** What Close pays now; null before the first book read. */
@@ -45,7 +48,7 @@ export function targetFromMode(mode: ExitMode, text: string, ctx: ExitCtx): bigi
   }
   const pct = Number(t);
   if (!Number.isFinite(pct)) return null;
-  if (mode === "roi") return (ctx.costBase * BigInt(Math.round((100 + pct) * 100))) / 10_000n;
+  if (mode === "roi") return ctx.costBase + ((ctx.roiBase ?? ctx.costBase) * BigInt(Math.round(pct * 100))) / 10_000n;
   return ctx.refSpot === null ? null : ctx.valueAt(ctx.refSpot * (1 + pct / 100));
 }
 
@@ -58,7 +61,8 @@ export function modeText(mode: ExitMode, base: bigint | null, ctx: ExitCtx): str
     const d = base - ctx.costBase;
     return (d < 0n ? "-" : "") + formatBaseUnits(d < 0n ? -d : d, USD_DECIMALS, { group: false, minDp: 2, maxDp: 2 });
   }
-  if (mode === "roi") return ctx.costBase > 0n ? signedFixed(Number(((base - ctx.costBase) * 10_000n) / ctx.costBase) / 100, 1) : "";
+  const roiBase = ctx.roiBase ?? ctx.costBase;
+  if (mode === "roi") return roiBase > 0n ? signedFixed(Number(((base - ctx.costBase) * 10_000n) / roiBase) / 100, 1) : "";
   const spot = ctx.spotAt(base);
   return spot === null || ctx.refSpot === null ? "" : signedFixed((spot / ctx.refSpot - 1) * 100, 2);
 }
@@ -88,7 +92,8 @@ export function exitError(kind: ExitKind, base: bigint | null, typed: boolean, c
 export function exitCaption(kind: ExitKind, base: bigint | null, ctx: ExitCtx): string {
   if (base === null) return kind === "tp" ? TERMINAL.exits.notSetTp : TERMINAL.exits.notSet;
   const pnl = base - ctx.costBase;
-  const roi = ctx.costBase > 0n ? Number((pnl * 10_000n) / ctx.costBase) / 100 : 0;
+  const roiBase = ctx.roiBase ?? ctx.costBase;
+  const roi = roiBase > 0n ? Number((pnl * 10_000n) / roiBase) / 100 : 0;
   const roiText = `${roi < 0 ? "−" : "+"}${Math.abs(roi).toFixed(1)}%`;
   const spot = ctx.spotAt(base);
   return spot === null ? TERMINAL.exits.closesWhen(money(base), money(pnl, true), roiText) : TERMINAL.exits.closesAt(formatUsd(spot, priceDecimals(spot)), money(pnl, true), roiText);

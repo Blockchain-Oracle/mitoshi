@@ -3,8 +3,8 @@ import type { MarketId, OutcomeIdx } from "../types/market";
 import type { Address, Hex } from "../types/primitives";
 import type { ClaimLeg, VerdictOutcome } from "../types/trading";
 
-/** Where a round's fills came from: the wallet's own orders, or the EventVault trading for it. */
-export type LedgerSource = "wallet" | "vault";
+/** Where a round's fills came from: the wallet's own orders, the EventVault trading for it, or a Boost (the reserve's). */
+export type LedgerSource = "wallet" | "vault" | "boost";
 
 /** The venue's four order sides as the indexer names them — YES is UP, NO is DOWN. */
 export type LedgerSide = "BUY_YES" | "SELL_YES" | "BUY_NO" | "SELL_NO";
@@ -38,6 +38,13 @@ export interface MarketLedger {
   costBase: bigint;
   /** Collateral received from sells and merges before settlement. */
   proceedsBase: bigint;
+  /**
+   * What the contracts still held cost, per side, at average cost (D-227): a buy adds its price, a sale or merge takes
+   * the sold share out pro rata, a mint costs half a dollar a side. `costBase − open cost` is what was sold; the round's
+   * own P&L (`settleRound`) stays on `costBase` and `proceedsBase`.
+   */
+  openCostUpBase: bigint;
+  openCostDownBase: bigint;
   /** Which sides the wallet ever bought — the words on a row that closed out before expiry. */
   sidesTraded: OutcomeIdx[];
   fillCount: number;

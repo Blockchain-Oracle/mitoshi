@@ -20,6 +20,8 @@
 .tm-prow-figure .is-down, .tm-prow-pnl.is-down { color: var(--chart-down); }
 .tm-prow-pnl { font-size: 11px; font-weight: 600; }
 .tm-prow-muted { color: var(--color-ink-muted); }
+.tm-prow-status { color: var(--color-ink-secondary); }
+.tm-prow-lock { width: 16px; height: 16px; color: var(--color-ink-muted); }
 .tm-prow-chev { width: 16px; height: 16px; flex: none; color: var(--color-ink-muted); transition: transform 160ms ease; }
 .tm-prow-chev.is-open { transform: rotate(180deg); }
 .tm-prow-body { padding: 0 12px 12px; }
@@ -102,3 +104,16 @@
   .tm-side .tm-arm .tm-field-hint { display: none; }
 }
 @container tm-stage (max-width: 340px) { .tm-stage .tm-controls { gap: 2px; } }
+/* Open parlays and Range rounds in the list (D-227, Owarine 90a91d71 `ParlayRow`): overlapped discs, leg chips that turn
+   as each leg settles — up/down washes from the chart tokens, a void struck through in muted ink. */
+.tm-leg-discs { display: flex; flex: none; }
+.tm-leg-discs > * + * { margin-left: -12px; box-shadow: 0 0 0 2px var(--color-surface-1); border-radius: var(--radius-full); }
+.tm-leg-chips { display: flex; flex-wrap: wrap; gap: 4px; padding-top: 2px; }
+.tm-leg-chip { display: inline-flex; align-items: center; gap: 2px; padding: 1px 6px; border-radius: var(--radius-full); background: var(--color-surface-2); font: 700 10px/1.4 var(--font-body); color: var(--color-ink); }
+.tm-leg-chip svg { width: 12px; height: 12px; }
+.tm-leg-chip[data-status="won"] { background: color-mix(in oklab, var(--chart-up) 18%, transparent); color: var(--chart-up); }
+.tm-leg-chip[data-status="lost"] { background: color-mix(in oklab, var(--chart-down) 18%, transparent); color: var(--chart-down); }
+.tm-leg-chip[data-status="void"] { color: var(--color-ink-muted); text-decoration: line-through; }
+.tm-leg-chip[data-status="pending"][data-side="up"] svg { color: var(--chart-up); }
+.tm-leg-chip[data-status="pending"][data-side="down"] svg { color: var(--chart-down); }
+.tm-prow-title > svg:first-child:not(.tm-prow-up):not(.tm-prow-down) { color: var(--color-accent); }

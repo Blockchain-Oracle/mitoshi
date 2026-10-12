@@ -4,14 +4,15 @@
 // right edge in the URL (D-190), the shell's rail beside it (D-192). One tree for every width; CSS places it. R4-0
 // (D-227): the phone dock stays under it (the mark disc left the header), the stack sits under the chart controls and
 // hides while the interval menu is open, UP/DOWN stay with the reason when no Window is listed, and signed-out History
-// is DEMO's paper history.
+// is DEMO's paper history. R4-1 (D-227): the book of positions is `useTerminalBook` — totals over priced rows, equity
+// with every row at what it counts for, the Window's positions summed on the chart.
 import { isStockSymbol, type TickerSymbol } from "@cwf/core";
 import { usePathname } from "next/navigation";
 import { holdStreamAwake } from "@cwf/markets/stream";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MotionScope } from "@/components/motion-scope";
 import Link from "next/link";
-import { CONNECT, SHELL } from "@/lib/copy";
+import { CONNECT } from "@/lib/copy";
 import { notify } from "@/lib/toast";
 import { closeDrawer, useDrawerParam } from "@/lib/drawer-param";
 import { usePrivacy } from "@/lib/privacy";
@@ -21,7 +22,7 @@ import { useTapArmed } from "@/providers/wallet/tap-session";
 import { LiveChart, type ChartHandle } from "./chart/LiveChart";
 import { formatPrice, priceDecimals } from "./chart/engine";
 import { TERMINAL } from "./copy";
-import { clockText, livePnlText, money } from "./format";
+import { clockText, money } from "./format";
 import { gap0400NextOpen } from "./pick-window";
 import { replaceTradeParams } from "./useTerminalWindow";
 import { useMarketSession, type MarketSession } from "@/features/markets/session";
@@ -35,10 +36,11 @@ import { EarningsCell } from "./ui/EarningsCell";
 import { useLaneNote } from "./lane-note";
 import type { TerminalPosition } from "./terminal-positions";
 import { useTerminalClose } from "./useTerminalClose";
-import { useTrailToggle } from "./useTrail";
 import { useWalletToasts } from "./useWalletToasts";
-import { trailEligible } from "./position-value";
 import type { PositionValue } from "./usePositionValue";
+import { useTerminalBook } from "./useTerminalBook";
+import { useTerminalBets } from "./parlay/useTerminalBets";
+import { roiBpsOf } from "./positions-totals";
 import { PositionsList, UnrealizedCard } from "./ui/PositionsPanel";
 import { TradeButtons, trailWords } from "./ui/TradeButtons";
 import { TerminalTrade } from "./ui/TerminalTrade";
@@ -97,66 +99,21 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const market = s.market;
   const [pays, setPays] = useState("—");
   const closer = useTerminalClose();
-  const [closingAll, setClosingAll] = useState(false);
-
-  // Each row reports what Close pays for it; the totals, the equity and the chart's PnL row read them (D-197).
-  const [values, setValues] = useState<ReadonlyMap<string, PositionValue>>(() => new Map());
-  const onValue = useCallback((id: string, v: PositionValue) => {
-    setValues((prev) => {
-      const o = prev.get(id);
-      if (o && o.valueBase === v.valueBase && o.pnlBase === v.pnlBase && o.locked === v.locked && o.approx === v.approx && o.exit === v.exit) return prev;
-      return new Map(prev).set(id, v);
-    });
-  }, []);
+  // Each row reports what Close pays for it; the totals, the equity and the chart's PnL row read them (D-197, D-227).
+  const bets = useTerminalBets(s.address);
+  const book = useTerminalBook(s, closer, masked, s.settings.trailPct, bets);
+  const { values, onValue, totals, closingAll } = book;
   const onClose = useCallback((p: TerminalPosition, v: PositionValue) => void closer.close(p, v.exit), [closer]);
   const onTrailHit = useCallback((p: TerminalPosition, v: PositionValue, why: "trail" | "tp" | "sl") => closer.close(p, v.exit, undefined, why), [closer]);
-  const toggleTrail = useTrailToggle();
   const [detailId, setDetailId] = useState<string | null>(null);
   const onOpenPosition = useCallback((p: TerminalPosition) => {
     setDetailId(p.id);
     drawer.show(DRAWERS.position);
   }, [drawer]);
   const detail = s.positions.find((p) => p.id === detailId) ?? null;
-  const totals = useMemo(() => {
-    let value = 0n;
-    let pnl = 0n;
-    let cost = 0n;
-    let priced = 0;
-    for (const p of s.positions) {
-      const v = values.get(p.id);
-      cost += p.costBase;
-      if (v?.valueBase == null || v.pnlBase === null) continue;
-      value += v.valueBase;
-      pnl += v.pnlBase;
-      priced += 1;
-    }
-    return { value, pnl: priced ? pnl : null, cost };
-  }, [s.positions, values]);
-  const closeAll = async () => {
-    setClosingAll(true);
-    try {
-      for (const p of s.positions) await closer.close(p, values.get(p.id)?.exit ?? null);
-    } finally {
-      setClosingAll(false);
-    }
-  };
-  const activeValue = s.active ? (values.get(s.active.id) ?? null) : null;
-  // The chart's pill carries the open position's PnL; the line turns the down colour while it is losing.
-  if (s.active) {
-    const base = s.overlay.current ?? { pnl: null, pnlText: "", entry: null, levels: [] };
-    const pnlBase = activeValue?.pnlBase ?? null;
-    const be = activeValue?.breakEven ?? null;
-    const tp = activeValue?.tpSpot ?? null;
-    const sl = activeValue?.slSpot ?? null;
-    const levels = [
-      ...base.levels,
-      ...(be === null ? [] : [{ kind: "breakeven" as const, price: be, label: "B/E" }]),
-      ...(tp === null ? [] : [{ kind: "tp" as const, price: tp, label: "TP ≈" }]),
-      ...(sl === null ? [] : [{ kind: "sl" as const, price: sl, label: "SL ≈" }]),
-      ...(activeValue?.koSpot == null ? [] : [{ kind: "knockout" as const, price: activeValue.koSpot, label: "KO ≈" }]),
-    ];
-    s.overlay.current = { ...base, levels, pnl: pnlBase === null ? null : Number(pnlBase) / 1e6, pnlText: pnlBase === null ? "" : masked ? SHELL.masked : livePnlText(pnlBase) };
-  }
+  const closeAll = book.closeAll;
+  const active = book.active;
+  const totalRoiBps = roiBpsOf(totals.pnlBase, totals.costBase);
   const [depth, setDepth] = useState(false);
   // Up/Down is Tradash's one tap; the other modes host the ticket's own bodies (inline on desktop, a drawer on phones).
   const [mode, setMode] = useState<TerminalMode>("updown");
@@ -178,7 +135,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
     setTradeSettings({ tutorialSeen: true });
     if (choice === "start" && !session.isConnected) session.connect();
   };
-  const fb = useChartFeedback({ symbol, spot: s.spot.price, active: s.active, value: activeValue, linePrice: s.openingRaw === null ? null : Number(s.openingRaw) / 1e8 });
+  const fb = useChartFeedback({ symbol, spot: s.spot.price, active: active.lead, value: active.leadValue, linePrice: s.openingRaw === null ? null : Number(s.openingRaw) / 1e8 });
   // Every open position's path is recorded for its replay; the Line is known for the Window on screen.
   const lineOnScreen = s.openingRaw === null ? null : Number(s.openingRaw) / 1e8;
   useReplayRecorder(s.positions, values, (id) => (id === market?.marketId ? lineOnScreen : null));
@@ -216,9 +173,9 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const offHours = source === "redstone" && isStockSymbol(symbol) && !s.spot.connecting;
   const feed = offHours ? TERMINAL.feed.redstoneStock : TERMINAL.feed[source];
   const priceText = s.spot.price === null ? "—" : `$${formatPrice(s.spot.price, priceDecimals(s.spot.price))}`;
-  const equity = s.cashBase === null ? null : Number(s.cashBase + totals.value) / 1e6;
+  const equity = s.cashBase === null ? null : Number(s.cashBase + totals.equityBase) / 1e6;
   const stakeText = s.capped ? `${money(s.stakeBase)} max` : money(s.stakeBase);
-  const count = s.positions.length;
+  const count = s.positions.length + bets.rows.length;
   // The interval menu hides the stack under it (R4-0: the stack painted over 1m and 3m); the header's height places
   // toasts under it on a phone (toast.css `--tm-head`).
   const [menuOpen, setMenuOpen] = useState(false);
@@ -285,10 +242,10 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             <EquityPill equity={equity} address={s.address} masked={masked} onOpen={() => drawer.show(DRAWERS.account)} onSignIn={session.connect} />
           </div>
           <div className="tm-side-list">
-            <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
-            <PositionsList positions={s.positions} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={onTrailHit} onValue={onValue} />
+            <UnrealizedCard totals={totals} count={count} closable={s.positions.length} closing={closingAll} onCloseAll={() => void closeAll()} />
+            <PositionsList positions={s.positions} bets={bets} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={onTrailHit} onValue={onValue} onBetValue={book.onBetValue} />
           </div>
-          {count > 0 ? <ViewPositionPill count={count} roiPct={totals.pnl !== null && totals.cost > 0n ? Number((totals.pnl * 10_000n) / totals.cost) / 100 : null} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
+          {count > 0 ? <ViewPositionPill count={count} roiPct={totalRoiBps === null ? null : totalRoiBps / 100} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
           {needsArm ? (
             <div className="tm-arm" role="note">
               <span className="tm-field-hint">{TERMINAL.arm.lead}</span>
@@ -299,16 +256,16 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           {market ? <ModeChips mode={mode} onMode={chooseMode} /> : null}
           {mode !== "updown" && market ? (
             <div className="tm-desk"><ModePanel mode={mode} market={market} side={null} /></div>
-          ) : s.active ? (
+          ) : active.lead ? (
             <TradeButtons
               mode="open"
-              trailActive={s.active.trailStop !== null}
-              trailEligible={trailEligible(s.active.side, activeValue?.spot ?? null, activeValue?.breakEven ?? null, s.settings.trailPct)}
-              trailNote={s.active.trailStop !== null ? TERMINAL.buttons.tabOnly : trailEligible(s.active.side, activeValue?.spot ?? null, activeValue?.breakEven ?? null, s.settings.trailPct) ? null : TERMINAL.buttons.needMove(trailWords(s.settings.trailPct))}
-              onTrail={() => toggleTrail(s.active!, activeValue)}
-              onClose={() => void closer.close(s.active!, activeValue?.exit ?? null)}
-              busy={closer.busy === s.active.id ? "close" : null}
-              lockedText={activeValue?.locked ? TERMINAL.buttons.locked(clockText(s.active.expirySec)) : null}
+              trailActive={active.trailing}
+              trailEligible={active.eligible}
+              trailNote={active.trailing ? TERMINAL.buttons.tabOnly : active.eligible ? null : TERMINAL.buttons.needMove(trailWords(s.settings.trailPct))}
+              onTrail={active.trail}
+              onClose={() => void active.close()}
+              busy={active.busy ? "close" : null}
+              lockedText={active.locked ? TERMINAL.buttons.locked(clockText(active.lead.expirySec)) : null}
             />
           ) : market && s.phase === "upcoming" ? (
             <ScheduledTrade market={market} stakeBase={s.stakeBase} />
@@ -339,10 +296,9 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
               initialView={drawer.open === DRAWERS.history ? "history" : "menu"}
               onOpenChange={(o) => !o && drawer.close()}
               wallet={s.address}
-              equityBase={s.cashBase === null ? null : s.cashBase + totals.value}
+              equityBase={s.cashBase === null ? null : s.cashBase + totals.equityBase}
               walletBase={s.walletBase}
-              unrealizedBase={totals.pnl}
-              openCostBase={totals.cost}
+              totals={totals}
               onSettings={() => {
                 // The account drawer's entry becomes the settings drawer's: Back still closes it.
                 const url = new URL(window.location.href);
@@ -375,8 +331,8 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
       ) : null}
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
-          <UnrealizedCard pnlBase={totals.pnl} costBase={totals.cost} count={count} closing={closingAll} onCloseAll={() => void closeAll()} />
-          <PositionsList positions={s.positions} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={null} onValue={onValue} />
+          <UnrealizedCard totals={totals} count={count} closable={s.positions.length} closing={closingAll} onCloseAll={() => void closeAll()} />
+          <PositionsList positions={s.positions} bets={bets} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={null} onValue={onValue} onBetValue={book.onBetValue} />
         </SlideOverContent>
       </SlideOver>
     </MotionScope>

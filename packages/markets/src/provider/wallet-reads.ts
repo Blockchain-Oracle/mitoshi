@@ -8,7 +8,7 @@ import { erc20Abi, getAbiItem, getAddress, type Address } from "viem";
 import { eventsEngineAbi } from "@cwf/clients/abis/EventsEngine";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { vaultDeploymentOf } from "../vault/read";
-import { buildLedgers, ledgerHasActivity, oneUnit, roundSettledAtMs, settleRound, USD_DECIMALS, type BalanceSheet, type ClaimableRow, type Holdings, type LedgerFill, type LedgerSide, type MarketId, type OnchainSnapshot, type OpenPosition, type Reading, type RoundMarket, type SettledRound, type WalletHistory } from "@cwf/core";
+import { buildLedgers, heldCostOf, ledgerHasActivity, oneUnit, realizedOf, roundSettledAtMs, settleRound, USD_DECIMALS, type BalanceSheet, type ClaimableRow, type Holdings, type LedgerFill, type LedgerSide, type MarketId, type OnchainSnapshot, type OpenPosition, type Reading, type RoundMarket, type SettledRound, type WalletHistory } from "@cwf/core";
 import { deploymentOf } from "../deployments";
 import { getLogClient, getPublicClient } from "../runtime/read-runtime";
 import { engineMayPay, engineVenue, readPositions, readWindows, type EnginePosition, type WindowFacts } from "../engine/lens";
@@ -85,16 +85,19 @@ export const listOpenPositions = (wallet: Address): Promise<Reading<OpenPosition
       const held = heldOf(p, w.series.lotBase);
       if (held.upRaw + held.downRaw === 0n) return;
       const ledger = ledgers.get(p.marketId);
-      const cost = ledger?.costBase ?? 0n;
-      const realized = (ledger?.proceedsBase ?? 0n);
+      // D-227: the cost of what is held now (average cost, a sale takes its share out), per side, on the lens balance.
+      const up = heldCostOf(ledger?.heldUpRaw ?? 0n, ledger?.openCostUpBase ?? 0n, held.upRaw);
+      const down = heldCostOf(ledger?.heldDownRaw ?? 0n, ledger?.openCostDownBase ?? 0n, held.downRaw);
+      const cost = up.costBase + down.costBase;
       const last = w.snapshot.lastPriceTicks;
-      // Mark at the last trade (YES ticks; Down at the complement). No trade yet: marked at cost, never invented.
+      // The last trade's mark (YES ticks; Down at the complement) — a fallback only; what Close pays is the exit walk.
       const mark = last === null ? cost : ((held.upRaw / w.series.lotBase) * BigInt(last) + (held.downRaw / w.series.lotBase) * BigInt(PAIR_TICKS - last)) * w.series.cashUnit;
       const size = held.upRaw + held.downRaw;
       out.push({
         marketId: p.marketId, asset: w.market.asset, intervalSec: w.market.intervalSec, expirySec: w.market.expirySec, decimals: w.market.decimals,
-        balanceUpRaw: held.upRaw, balanceDownRaw: held.downRaw, costBasisBase: cost, avgCostRaw: size === 0n ? 0n : (cost * oneUnit(USD_DECIMALS)) / size,
-        markValueBase: mark, unrealizedPnlBase: mark - cost, realizedPnlBase: realized,
+        balanceUpRaw: held.upRaw, balanceDownRaw: held.downRaw, costBasisBase: cost, costUpBase: up.costBase, costDownBase: down.costBase, costStale: up.stale || down.stale,
+        avgCostRaw: size === 0n ? 0n : (cost * oneUnit(USD_DECIMALS)) / size, markValueBase: mark, unrealizedPnlBase: mark - cost, realizedPnlBase: ledger ? realizedOf(ledger) : 0n,
+        soldCostBase: ledger ? ledger.costBase - ledger.openCostUpBase - ledger.openCostDownBase : 0n,
       });
     });
     return out.sort((a, b) => a.expirySec - b.expirySec);
@@ -132,11 +135,15 @@ export const listWalletHistory = (wallet: Address): Promise<Reading<WalletHistor
       const w = windows.get(id);
       if (!w || !ledgerHasActivity(ledger)) continue;
       const p = positionOf.get(id);
-      if (w.market.state === "open") {
-        if (ledger.heldUpRaw + ledger.heldDownRaw > 0n) openCount += 1;
+      const held = ledger.heldUpRaw + ledger.heldDownRaw > 0n;
+      if (w.market.state === "open" && held) {
+        openCount += 1;
         continue;
       }
-      const round = settleRound({ ledger, market: roundMarket(w), feeBps: 0, liveHoldings: p ? heldOf(p, w.series.lotBase) : null });
+      // Sold out while the Window still runs: the round closed on the book at its last fill (D-227 — its P&L is
+      // realised, so the PnL card never drops it until the Window answers).
+      const market = w.market.state === "open" ? { ...roundMarket(w), settled: true, resolvedAtMs: ledger.lastAtMs } : roundMarket(w);
+      const round = settleRound({ ledger, market, feeBps: 0, liveHoldings: p ? heldOf(p, w.series.lotBase) : null });
       if (round) rounds.push(round);
     }
     rounds.sort((a, b) => roundSettledAtMs(b) - roundSettledAtMs(a));

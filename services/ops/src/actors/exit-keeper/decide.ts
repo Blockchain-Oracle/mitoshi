@@ -1,9 +1,10 @@
 /**
  * The exit keeper's decisions (S24.3), pure: the tab's rules (`@cwf/core/exits`) on the keeper's reads. A trail steps
- * on every display tick (spots × 10⁸); a take-profit or stop-loss reads what Close pays on the book; the Window and the
- * holding decide whether the trigger is still live at all.
+ * on every display tick (spots × 10⁸); a take-profit or stop-loss reads what Close pays on the book, like for like with
+ * the whole holding (D-227: a thin book's part scaled at its price, so size never reads as a drawdown); the Window and
+ * the holding decide whether the trigger is still live at all.
  */
-import { exitHit, ratchet, trailHit, type ExitReason } from "@cwf/core/exits";
+import { exitHit, likeForLikeBase, ratchet, trailHit, type ExitReason } from "@cwf/core/exits";
 import type { Side } from "@cwf/core";
 
 export interface Armed {
@@ -27,8 +28,8 @@ export interface PassRead {
   heldRaw: bigint;
   /** Null when the Window was not read. */
   window: { trading: boolean; lockAtSec: number; lotBase: bigint } | null;
-  /** What Close pays for the holding now; null when not asked for or nothing would fill. */
-  valueBase: bigint | null;
+  /** What Close pays now and for how many contracts (≤ held on a thin book); null when not asked for or nothing fills. */
+  exit: { proceedsBase: bigint; contractsRaw: bigint } | null;
 }
 
 export type Verdict =
@@ -44,8 +45,9 @@ export function judge(a: Armed, read: PassRead, nowSec: number, trailIsHit: bool
   // Under one lot can't be sold; it settles with the Window.
   if (read.heldRaw < read.window.lotBase) return { kind: "close", status: "gone", why: "nothing left to sell" };
   if (trailIsHit) return { kind: "fire", reason: "trail" };
-  if (read.valueBase !== null) {
-    const hit = exitHit(read.valueBase, a.takeProfitBase, a.stopLossBase);
+  const valueBase = read.exit ? likeForLikeBase(read.exit.proceedsBase, read.exit.contractsRaw, read.heldRaw) : null;
+  if (valueBase !== null) {
+    const hit = exitHit(valueBase, a.takeProfitBase, a.stopLossBase);
     if (hit) return { kind: "fire", reason: hit };
   }
   return { kind: "watch" };

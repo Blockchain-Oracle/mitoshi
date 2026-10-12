@@ -1,8 +1,8 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/markets/portfolio/plate/MoneyHero.tsx (P2, D-223) — what is mine right
-// now as one figure: dollars (wallet + Trading Balance), open positions at their mark, and what waits to be collected;
-// what can be bet now; Add money and Trade; the split as a bar. Pools that are yours but not in the figure are named
-// under it, never added (FR-5). R4-0 (D-227): "—" until every leg has read, never a $0.00 flash.
+// now as one figure: dollars (wallet + Trading Balance), open positions at what Close pays (D-227: the rest at cost),
+// and what waits to be collected; what can be bet now; Add money and Trade; the split as a bar. Pools that are yours
+// but not in the figure are named under it, never added (FR-5). R4-0 (D-227): "—" until every leg has read, never a $0.00 flash.
 import { formatBaseUnits } from "@cwf/core/units";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";

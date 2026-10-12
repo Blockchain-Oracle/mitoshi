@@ -126,6 +126,15 @@ export function useWalletHistory(wallet: Address | null, enabled = true): Readin
   return usePortReading(keys.history(wallet), (p) => p.listWalletHistory(wallet!), { enabled: enabled && wallet !== null, pollMs: SETTLED_HISTORY_POLL_MS });
 }
 
+/**
+ * The account's whole history (D-227): the wallet's rounds plus the Trading Balance's and the Boosts', one figure for the
+ * PnL card, the history, the record and Trader Edge. Under the history key, so every write that refreshes it refreshes
+ * this; the provider's code loads with the first read, not with the page.
+ */
+export function useAccountHistory(wallet: Address | null, enabled = true): Reading<WalletHistory> | null {
+  return useReadingQuery([...keys.history(wallet), "account"], () => import("../provider/account-history").then((m) => m.listAccountHistory(wallet!)), { enabled: enabled && wallet !== null, pollMs: SETTLED_HISTORY_POLL_MS });
+}
+
 export function usePriceHistory(asset: string | null, fromSec: number, toSec: number): Reading<PricePoint[]> | null {
   return usePortReading(keys.priceHistory(asset ?? "", fromSec, toSec), (p) => p.getPriceHistory(asset!, fromSec, toSec), {
     enabled: asset !== null && toSec > fromSec,

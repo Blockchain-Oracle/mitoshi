@@ -3,7 +3,8 @@
  * The wallet's rounds (Ported from Masayume 68f7a09:web/src/features/range/{RangeSlip,RangeCard}.tsx): live first, the
  * band (or a Moonshot's one edge), the opening and closing prints, then Settle (anyone, once the engine has answered),
  * the stale void (only while the engine has no answer past the grace — `MustSettle` otherwise, D-108/D-172), the claim
- * (pays the owner only) or the verdict. A payout the owner's receive policy refused is held and collectable.
+ * (pays the owner only) or the verdict. A payout the owner's receive policy refused is held and collectable. A void
+ * returns the stake, so it reads neutral, not lost (D-227).
  */
 import { formatCadence } from "@cwf/core/copy";
 import { classifyRangeBand } from "@cwf/core/range";
@@ -27,11 +28,11 @@ function Round({ r, nowSec, staleAfterSec, writes }: { r: RangeRoundView; nowSec
   const milli = Number((r.maxPayoutBase * 1000n) / (r.stakeBase || 1n));
   const stale = r.status === "live" && !r.answered && nowSec > r.expirySec + staleAfterSec;
   return (
-    <article className={cn("pl-card", r.status === "won" && "pl-card--won", (r.status === "lost" || r.status === "void") && "pl-card--lost")} aria-label={`${r.asset ?? ""} range #${r.roundId}`}>
+    <article className={cn("pl-card", r.status === "won" && "pl-card--won", r.status === "lost" && "pl-card--lost", r.status === "void" && "pl-card--void")} aria-label={`${r.asset ?? ""} range #${r.roundId}`}>
       <div className="pl-card-head">
         <div className="pl-card-name">
           <span className="pl-card-streak">{r.asset ?? "…"} {r.intervalSec !== null ? formatCadence(r.intervalSec) : ""}</span>
-          <span className={cn("pl-pill", (r.status === "won" || r.status === "claimed") && "pl-pill--won", (r.status === "lost" || r.status === "void") && "pl-pill--dead")}>{pill}</span>
+          <span className={cn("pl-pill", (r.status === "won" || r.status === "claimed") && "pl-pill--won", r.status === "lost" && "pl-pill--dead", r.status === "void" && "pl-pill--void")}>{pill}</span>
         </div>
         <div className="pl-card-right">
           <div className="pl-card-x numbers">{formatMultiplier(milli)}</div>

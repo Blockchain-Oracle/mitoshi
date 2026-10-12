@@ -50,4 +50,14 @@ describe("the TP/SL drawer's linked inputs (RV-51, D-200)", () => {
     expect(exitCaption("tp", null, ctx)).toMatch(/no automatic exit in profit/);
     expect(exitCaption("sl", null, ctx)).toBe("Not set.");
   });
+
+  it("ROI targets read as the row's ROI: on the open cost, a Boost's on its stake (D-227)", () => {
+    // A Boost staked $2.00 that paid $0.50 back: $1.50 still in. +50 % ROI is $1.00 of P&L on the stake → $2.50.
+    const boost: ExitCtx = { ...ctx, costBase: 1_500_000n, roiBase: 2_000_000n };
+    expect(targetFromMode("roi", "50", boost)).toBe(2_500_000n);
+    expect(modeText("roi", 2_500_000n, boost)).toBe("50.0");
+    expect(exitCaption("tp", 2_500_000n, { ...boost, spotAt: () => null })).toContain("+50.0%");
+    // Without one, the open cost: +40 % of $5.00 → $7.00.
+    expect(targetFromMode("roi", "40", ctx)).toBe(7_000_000n);
+  });
 });

@@ -1,4 +1,5 @@
-// Ported from Masayume 68f7a09:packages/core/src/projection/ledger.ts
+// Ported from Masayume 68f7a09:packages/core/src/projection/ledger.ts — with the open cost per side (D-227): what the
+// contracts still held cost at average cost, so a Reduce, a merge or a re-entry leaves the rest at its own cost.
 import type { MarketId, OutcomeIdx } from "../types/market";
 import type { Hex } from "../types/primitives";
 import { oneUnit } from "../units/decimals";
@@ -10,7 +11,7 @@ const UP: OutcomeIdx = 0;
 const DOWN: OutcomeIdx = 1;
 
 function fresh(marketId: MarketId, atMs: number, txHash: Hex): MarketLedger {
-  return { marketId, heldUpRaw: 0n, heldDownRaw: 0n, costBase: 0n, proceedsBase: 0n, sidesTraded: [], fillCount: 0, shortCount: 0, firstAtMs: atMs, lastAtMs: atMs, entryTxHash: txHash };
+  return { marketId, heldUpRaw: 0n, heldDownRaw: 0n, costBase: 0n, proceedsBase: 0n, openCostUpBase: 0n, openCostDownBase: 0n, sidesTraded: [], fillCount: 0, shortCount: 0, firstAtMs: atMs, lastAtMs: atMs, entryTxHash: txHash };
 }
 
 function noteSide(ledger: MarketLedger, side: OutcomeIdx): void {
@@ -18,10 +19,22 @@ function noteSide(ledger: MarketLedger, side: OutcomeIdx): void {
 }
 
 function buy(ledger: MarketLedger, side: OutcomeIdx, quantityRaw: bigint, priceRaw: bigint, one: bigint): void {
-  if (side === UP) ledger.heldUpRaw += quantityRaw;
-  else ledger.heldDownRaw += quantityRaw;
-  ledger.costBase += (quantityRaw * priceRaw) / one;
+  const paid = (quantityRaw * priceRaw) / one;
+  if (side === UP) {
+    ledger.heldUpRaw += quantityRaw;
+    ledger.openCostUpBase += paid;
+  } else {
+    ledger.heldDownRaw += quantityRaw;
+    ledger.openCostDownBase += paid;
+  }
+  ledger.costBase += paid;
   noteSide(ledger, side);
+}
+
+/** The open cost a sale of `sold` out of `held` takes with it (average cost); all of it when nothing stays. */
+export function soldShare(openCost: bigint, sold: bigint, held: bigint): bigint {
+  if (held <= 0n || sold <= 0n) return 0n;
+  return sold >= held ? openCost : (openCost * sold) / held;
 }
 
 /**
@@ -35,8 +48,13 @@ function sell(ledger: MarketLedger, side: OutcomeIdx, quantityRaw: bigint, price
   const sold = quantityRaw < held ? quantityRaw : held;
   const shorted = quantityRaw - sold;
   if (sold > 0n) {
-    if (side === UP) ledger.heldUpRaw -= sold;
-    else ledger.heldDownRaw -= sold;
+    if (side === UP) {
+      ledger.openCostUpBase -= soldShare(ledger.openCostUpBase, sold, held);
+      ledger.heldUpRaw -= sold;
+    } else {
+      ledger.openCostDownBase -= soldShare(ledger.openCostDownBase, sold, held);
+      ledger.heldDownRaw -= sold;
+    }
     ledger.proceedsBase += (sold * priceRaw) / one;
   }
   if (shorted > 0n) {
@@ -73,14 +91,20 @@ function setEvent(action: LedgerSetAction, seq: number): Event {
     txHash: action.txHash,
     apply: (ledger) => {
       if (action.kind === "mint") {
+        // A pair costs one collateral: half a dollar a side, the odd base unit on Down so the two sum exactly.
+        const half = action.amountRaw / 2n;
         ledger.heldUpRaw += action.amountRaw;
         ledger.heldDownRaw += action.amountRaw;
+        ledger.openCostUpBase += half;
+        ledger.openCostDownBase += action.amountRaw - half;
         ledger.costBase += action.amountRaw;
         noteSide(ledger, UP);
         noteSide(ledger, DOWN);
       } else {
         const pairs = action.amountRaw < ledger.heldUpRaw ? action.amountRaw : ledger.heldUpRaw;
         const merged = pairs < ledger.heldDownRaw ? pairs : ledger.heldDownRaw;
+        ledger.openCostUpBase -= soldShare(ledger.openCostUpBase, merged, ledger.heldUpRaw);
+        ledger.openCostDownBase -= soldShare(ledger.openCostDownBase, merged, ledger.heldDownRaw);
         ledger.heldUpRaw -= merged;
         ledger.heldDownRaw -= merged;
         ledger.proceedsBase += merged;
@@ -113,4 +137,22 @@ export function buildLedgers(fills: readonly LedgerFill[], actions: readonly Led
 /** True while the wallet still holds something here, or ever traded — a ledger with no fills is not a round. */
 export function ledgerHasActivity(ledger: MarketLedger): boolean {
   return ledger.fillCount > 0 || ledger.costBase > 0n;
+}
+
+/** What the contracts still held cost (both sides). */
+export const openCostOf = (ledger: Pick<MarketLedger, "openCostUpBase" | "openCostDownBase">): bigint => ledger.openCostUpBase + ledger.openCostDownBase;
+
+/** What sales and merges already realised: proceeds less the open cost they took out (`costBase − open cost`). */
+export const realizedOf = (ledger: Pick<MarketLedger, "costBase" | "proceedsBase" | "openCostUpBase" | "openCostDownBase">): bigint => ledger.proceedsBase - (ledger.costBase - openCostOf(ledger));
+
+/**
+ * One side's open cost against the head-fresh balance (D-227: the indexer lags the lens by a block or two). The same
+ * count is the ledger's figure; a different one scales it at the ledger's average cost (an Add or a sale not indexed
+ * yet); contracts the ledger never saw have no cost to scale and read `stale`, never a free position.
+ */
+export function heldCostOf(ledgerHeldRaw: bigint, openCostBase: bigint, heldRaw: bigint): { costBase: bigint; stale: boolean } {
+  if (heldRaw <= 0n) return { costBase: 0n, stale: false };
+  if (ledgerHeldRaw === heldRaw) return { costBase: openCostBase, stale: false };
+  if (ledgerHeldRaw <= 0n) return { costBase: 0n, stale: true };
+  return { costBase: (openCostBase * heldRaw) / ledgerHeldRaw, stale: false };
 }

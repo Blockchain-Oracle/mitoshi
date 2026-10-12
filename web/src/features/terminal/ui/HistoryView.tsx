@@ -1,14 +1,15 @@
 "use client";
 // Ported in shape from Owarine ecb7565b:web/src/features/terminal/ui/sheets/AccountSheet.tsx (Trade history: the stats
-// strip and the list) — on Mitoshi's indexed history (`useWalletHistory`: closed and settled rounds, PnL = proceeds +
+// strip and the list) — on Mitoshi's indexed history (`useAccountHistory`: closed and settled rounds, PnL = proceeds +
 // payout − stake). Tradash's grid (RV-82): Lifetime PnL, Win rate, Trades, Win streak, Best streak, Volume (Σ staked),
 // the streaks from `@cwf/core`'s `winStreaks` (decided rounds only, as the leaderboard counts them); each row's ROI
 // under its PnL; 5 skeleton rows while the history loads; Tradash's empty line. A history that hit a paging cap says
 // it covers a prefix. R4-0 (D-227): the list renders `HistoryRow`s, so signed out it lists DEMO's paper trades
-// (`DemoHistory`, Owarine 90a91d71's demo account sheet) with the same stats and tags.
+// (`DemoHistory`, Owarine 90a91d71's demo account sheet) with the same stats and tags. R4-1: the account's history
+// (`useAccountHistory`) — one-tap Trading Balance and Boost rounds too, each tagged with where it was held.
 import { formatCadence } from "@cwf/core/copy";
 import { winStreaks, type Address } from "@cwf/core";
-import { useWalletHistory } from "@cwf/markets/react";
+import { useAccountHistory } from "@cwf/markets/react";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import type { ReactNode } from "react";
 import { SHELL } from "@/lib/copy";
@@ -26,7 +27,7 @@ const roiText = (pnl: bigint, stake: bigint) => {
 };
 
 export function HistoryView({ wallet, onReplay }: { wallet: Address; onReplay: (episode: Episode, finalPnl: number) => void }) {
-  const reading = useWalletHistory(wallet);
+  const reading = useAccountHistory(wallet);
   if (!reading) {
     return (
       <div className="tm-history" role="status" aria-label={TERMINAL.history.title}>
@@ -78,7 +79,7 @@ function HistoryList({ rows: rounds, complete, onReplay }: { rows: readonly Hist
             <div key={r.key} role="listitem" className="tm-pos">
               <span className={`tm-pos-side ${up ? "tm-up-soft" : "tm-down-soft"}`}><Dir aria-hidden strokeWidth={3} /></span>
               <span className="tm-pos-main">
-                <span className="tm-pos-title">{up ? "Up" : "Down"} {r.asset} <span className="tm-pos-tag is-plain">{tag}</span></span>
+                <span className="tm-pos-title">{up ? "Up" : "Down"} {r.asset} <span className="tm-pos-tag is-plain">{tag}</span>{r.source === "vault" ? <span className="tm-pos-tag is-plain">{TERMINAL.positions.balanceTag}</span> : r.source === "boost" ? <span className="tm-pos-tag is-plain">{TERMINAL.details.boost}</span> : null}</span>
                 <span className="tm-pos-meta">{formatCadence(r.intervalSec)} · {TERMINAL.positions.staked} {hide(money(r.stakeBase))} · {clockText(r.expirySec)}</span>
               </span>
               <span className={`tm-pos-figure ${moneyTone(r.pnlBase)}`}>

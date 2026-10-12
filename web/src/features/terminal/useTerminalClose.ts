@@ -18,7 +18,7 @@ import { useTapSubmitter } from "@/providers/wallet/tap-session";
 import { TERMINAL } from "./copy";
 import { forgetEntry, setExits } from "./entries";
 import { clockText, money } from "./format";
-import { closeFloorBase } from "./position-value";
+import { closeFloorBase, paperClose } from "./position-value";
 import { tradeSettings } from "./settings";
 import { settlePaper } from "./demo";
 import { BOOST_KEYS, type TerminalPosition } from "./terminal-positions";
@@ -62,11 +62,15 @@ export function useTerminalClose() {
       void queryClient.invalidateQueries({ queryKey: BOOST_KEYS });
       if (r.status === "confirmed") {
         const after = await getLeveragePosition(b.positionId);
-        const paid = after.ok && after.value ? after.value.returnedBase : 0n;
+        // What this close paid (the reserve's `returned` is cumulative); a thin book sells part and keeps it live.
+        const paid = after.ok && after.value ? after.value.returnedBase - b.returnedBase : 0n;
+        const live = after.ok && after.value?.status === "live";
+        void invalidateAfterWrite(queryClient, { wallet, marketId: p.marketId });
+        if (live) return void notify.item({ id, title: TERMINAL.close.reduced(p.asset), description: TERMINAL.close.paid(money(paid)) });
+        // The whole Boost: what it paid back in all, less the stake (D-227: `costBase` is the stake less earlier payouts).
         const pnl = paid - p.costBase;
         closeFeedback(Number(pnl));
         forgetEntry(p.entryKey, p.side);
-        void invalidateAfterWrite(queryClient, { wallet, marketId: p.marketId });
         const title = why === "trail" ? TERMINAL.trail.hit(p.asset) : why === "tp" ? TERMINAL.exits.tpHit(p.asset) : why === "sl" ? TERMINAL.exits.slHit(p.asset) : TERMINAL.close.closed(p.asset);
         return void notify.item({ id, title, description: TERMINAL.close.realized(money(pnl, true), money(paid)) });
       }
@@ -83,21 +87,23 @@ export function useTerminalClose() {
 
   /**
    * DEMO's Close (D-223; Owarine 90a91d71 `useTerminalTrade.close` demo path): what the live book pays for the size right
-   * now, realized on paper — no signature, nothing on chain. A locked Window pays at its close instead.
+   * now, realized on paper — no signature, nothing on chain. A locked Window pays at its close instead. D-227: as live, a
+   * thin book sells what it takes (`paperClose`), costed pro rata, and the rest stays open at the rest of the cost.
    */
   const closePaper = useCallback(async (p: TerminalPosition, why: "close" | "trail" | "tp" | "sl", sellRaw?: bigint): Promise<void> => {
     const { port: prt } = latest.current;
     const id = `close-${p.marketId}`;
     const sell = sellRaw !== undefined && sellRaw < p.heldRaw ? sellRaw : p.heldRaw;
-    const partial = sell < p.heldRaw;
     const fresh = prt ? await prt.freshExitQuote({ marketId: p.marketId, decimals: p.decimals }, p.side, sell) : null;
-    if (!fresh || !isOk(fresh) || !fresh.value) return void notify.item({ id, type: "warning", title: TERMINAL.buttons.locked(clockText(p.expirySec)) });
-    const costShare = p.heldRaw > 0n ? (p.costBase * sell) / p.heldRaw : p.costBase;
-    const pnl = fresh.value.proceedsBase - costShare;
+    if (!fresh || !isOk(fresh)) return void notify.item({ id, type: "warning", title: TERMINAL.buttons.locked(clockText(p.expirySec)) });
+    if (!fresh.value) return void notify.item({ id, type: "warning", title: TERMINAL.close.noBids, description: TERMINAL.close.noBidsBody(clockText(p.expirySec)) });
+    const c = paperClose(p, fresh.value);
+    const partial = c.keep !== undefined;
+    const pnl = c.pnlBase;
     settlePaper(
       p.id.slice(2),
-      { kind: partial ? "reduce" : why === "trail" ? "trail" : "close", asset: p.asset, side: p.side, intervalSec: p.intervalSec, costBase: costShare.toString(), pnlBase: pnl.toString(), openedAtMs: p.openedAtMs, closedAtMs: Date.now(), expirySec: p.expirySec },
-      partial ? { contractsRaw: p.heldRaw - sell, costBase: p.costBase - costShare } : undefined,
+      { kind: partial ? "reduce" : why === "trail" ? "trail" : "close", asset: p.asset, side: p.side, intervalSec: p.intervalSec, costBase: c.costShareBase.toString(), pnlBase: pnl.toString(), openedAtMs: p.openedAtMs, closedAtMs: Date.now(), expirySec: p.expirySec },
+      c.keep,
     );
     closeFeedback(Number(pnl));
     notify.item({ id, title: partial ? TERMINAL.close.reduced(p.asset) : TERMINAL.close.closed(p.asset), description: TERMINAL.close.realized(money(pnl, true), money(fresh.value.proceedsBase)) });

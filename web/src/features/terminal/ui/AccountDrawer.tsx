@@ -26,6 +26,7 @@ import { useBackupNeeded } from "@/features/account/useBackupNeeded";
 import { useTapArmed } from "@/providers/wallet/tap-session";
 import { TERMINAL } from "../copy";
 import { money } from "../format";
+import type { PositionsTotals } from "../positions-totals";
 import { ActivityView } from "./ActivityView";
 import { AccountProfile } from "./AccountProfile";
 import { HistoryView } from "./HistoryView";
@@ -70,15 +71,14 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBase, unrealizedBase, openCostBase, onSettings, initialView = "menu" }: {
+export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBase, totals, onSettings, initialView = "menu" }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   wallet: Address;
   equityBase: bigint | null;
   walletBase: bigint | null;
-  /** What the open positions are up or down now (null until each is priced), and what they cost. */
-  unrealizedBase: bigint | null;
-  openCostBase: bigint;
+  /** The open positions: P&L and cost of the priced ones, and what their sales already realised (D-227). */
+  totals: PositionsTotals;
   onSettings: () => void;
   initialView?: AccountView;
 }) {
@@ -123,7 +123,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
               <div className="tm-card tm-balance">
                 <span className="tm-card-title">{TERMINAL.account.equity}</span>
                 <span className="tm-balance-figure">{hide(equityBase)}</span>
-                <PnlCard wallet={wallet} unrealizedBase={unrealizedBase} openCostBase={openCostBase} />
+                <PnlCard wallet={wallet} totals={totals} />
                 <div className="tm-tiles">
                   <span><small>{TERMINAL.account.wallet}</small>{hide(walletBase)}</span>
                   <span><small>{TERMINAL.account.balance}</small>{balance}</span>

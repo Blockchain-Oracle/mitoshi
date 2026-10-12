@@ -229,8 +229,8 @@ export function startExitKeeper(deps: VenueDeps): { stop: () => void } {
           else if (step.kind === "hit") t.hit = true;
         }
       }
-      const valueBase = read.book && w ? (exitFromBook(read.book, w.grid, row.side, read.heldRaw / w.grid.lotBase, nowMs)?.proceedsBase ?? null) : null;
-      const verdict = judge(row, { heldRaw: read.heldRaw, window: w ? { trading: w.trading, lockAtSec: w.lockAtSec, lotBase: w.grid.lotBase } : null, valueBase }, nowSec, t?.hit ?? false);
+      const exit = read.book && w ? exitFromBook(read.book, w.grid, row.side, read.heldRaw / w.grid.lotBase, nowMs) : null;
+      const verdict = judge(row, { heldRaw: read.heldRaw, window: w ? { trading: w.trading, lockAtSec: w.lockAtSec, lotBase: w.grid.lotBase } : null, exit }, nowSec, t?.hit ?? false);
       if (verdict.kind === "close") fires.push(store.close(row.id, verdict.status, verdict.why, nowMs).then(() => `#${row.id}: ${verdict.why}`));
       else if (verdict.kind === "wait") notes.push(`#${row.id}: ${verdict.why}`);
       else {
