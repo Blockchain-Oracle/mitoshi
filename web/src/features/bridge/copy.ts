@@ -57,6 +57,7 @@ export const BRIDGE = {
   track: {
     wallet: "Waiting for your wallet…",
     walletNote: "Approve in your wallet to continue.",
+    approving: "Approval confirming on Robinhood…",
     reopen: "Reopen wallet",
     sent: (from: string) => `Sent from ${from}`,
     hop: "Through Base",

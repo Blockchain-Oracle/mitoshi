@@ -30,7 +30,7 @@ export function useBridge(initialTicker: BridgeTicker, onTracked: (t: Tracked) =
   const [direction, setDirection] = useState<BridgeDirection>("in");
   const [ticker, setTicker] = useState<BridgeTicker>(initialTicker);
   const [amount, setAmount] = useState("");
-  const [sideStep, setSideStep] = useState<"approve" | "send" | null>(null);
+  const [sideStep, setSideStep] = useState<"approve" | "approving" | "send" | null>(null);
   const [sideError, setSideError] = useState<string | null>(null);
   const tx = useTxLifecycle();
   const tempoAddr = shell.tempo?.address ?? null;
@@ -84,7 +84,7 @@ export function useBridge(initialTicker: BridgeTicker, onTracked: (t: Tracked) =
       const c = await bridgeClients();
       const wallet = await shell.sideWallet(RH_CHAIN_ID);
       const calls = bridgeInCalls(ticker, NETWORK, quote.value, rhAddr!, rh?.ok ? rh.value.allowanceLD : 0n);
-      const hash = await sendBridgeIn(wallet, c.robinhood, calls, { onStep: (s) => setSideStep(s) });
+      const hash = await sendBridgeIn(wallet, c.robinhood, calls, { onStep: (s, h) => setSideStep(s === "approve" && h ? "approving" : s) });
       track(hash, rhAddr!, tempoAddr!);
     } catch (error) {
       const text = error instanceof Error ? error.message.split("\n")[0]! : String(error);

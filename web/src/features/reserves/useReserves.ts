@@ -55,7 +55,7 @@ function knownFrom(history: ReserveHistory | null | undefined): KnownIssuers {
 
 export function useReserves() {
   const qc = useQueryClient();
-  const history = useQuery({ queryKey: [...KEY, "history"], queryFn: fetchHistory, staleTime: 60_000, refetchInterval: 5 * 60_000 });
+  const history = useQuery({ queryKey: [...KEY, "history"], queryFn: fetchHistory, staleTime: 60_000, refetchInterval: 5 * 60_000, retry: 1 });
   // The role scan this tab ran on a Re-check outlives the snapshot it started from (newer cursor wins).
   const [scanned, setScanned] = useState<KnownIssuers>({});
   const known = useMemo(() => {

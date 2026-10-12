@@ -68,7 +68,9 @@ export function BridgeCard({ model: mo, tracker }: { model: BridgeModel; tracker
   const cap = mo.capacity?.ok ? mo.capacity.value : null;
   const step = mo.step;
   const signer: SignerKind = inbound ? "injected" : shell.tempo?.kind === "passkey" ? "passkey" : "injected";
-  const state = !inbound && mo.tx.state.kind !== "idle" ? mo.tx.state : mo.sideStep ? ({ kind: "signing" } as const) : step.actionable ? ({ kind: "idle" } as const) : ({ kind: "blocked", reason: label(step, mo.ticker, from, amountText) } as const);
+  const txKind = mo.tx.state.kind;
+  const txLive = !inbound && (txKind === "signing" || txKind === "submitted" || txKind === "unknown" || txKind === "confirmed" || (txKind === "failed" && step.actionable));
+  const state = txLive ? mo.tx.state : mo.sideStep ? ({ kind: "signing" } as const) : step.actionable ? ({ kind: "idle" } as const) : ({ kind: "blocked", reason: label(step, mo.ticker, from, amountText) } as const);
   const balances = Object.fromEntries(BRIDGE_TICKERS.map((t) => [t, inbound && mo.rhAll?.ok && mo.rhAll.value[t] !== undefined ? sd(toShared(mo.rhAll.value[t]!, 18)) : !inbound && t === mo.ticker && tempo ? sd(tempo.mirrorSD) : undefined]).filter(([, v]) => v !== undefined));
 
   const act = () => {
@@ -126,7 +128,7 @@ export function BridgeCard({ model: mo, tracker }: { model: BridgeModel; tracker
             <ToPanel stop={inbound ? "tempo" : "robinhood"} who={inbound ? tempoWho : rhWho} gets={quote ? BRIDGE.get(sd(quote.receivedSD), to) : mo.amountSD ? BRIDGE.get(amountText, to) : null} />
             <RouteLine fee={fee} via={NETWORK === "testnet"} etaSec={eta?.medianSec ?? null} capacity={cap ? { availableSD: cap.availableSD, capacitySD: cap.capacitySD } : null} />
             {mo.sideStep ? (
-              <WalletWait title={BRIDGE.track.wallet} note={BRIDGE.track.walletNote} action={reopen ? <a href={reopen} className="wwait-reopen">{BRIDGE.track.reopen}</a> : undefined} />
+              <WalletWait title={mo.sideStep === "approving" ? BRIDGE.track.approving : BRIDGE.track.wallet} note={mo.sideStep === "approving" ? undefined : BRIDGE.track.walletNote} action={reopen ? <a href={reopen} className="wwait-reopen">{BRIDGE.track.reopen}</a> : undefined} />
             ) : (
               <TxCta state={state} action={label(step, mo.ticker, from, amountText)} signer={signer} onConfirm={act} className="brc-cta" />
             )}
