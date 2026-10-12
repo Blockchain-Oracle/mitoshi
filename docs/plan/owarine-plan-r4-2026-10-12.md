@@ -101,6 +101,21 @@ One miss fixed: Sensei's floating seal covered the end of the ticket's button on
 did at 1024 × 768 — the seal now steps aside while it would sit on anything marked `data-primary-action` (the TxCta,
 the hero's UP/DOWN), the teaser stays quiet while its band is taken, and the wrap passes taps through its gap. The
 passkey-account check (the full one-tap card on a 375 × 667 phone) is the owner's (owner-actions).
+R4-0 deployed on testnet: `d11bac7` · `3a40c25` · `0d1cf80` · `cbf0a37` · `333b9df` (web `cbip2swaiz6td4wx3airsuk4`,
+finished) and `f82144e` from the live check (web `jq2qhsddqwkxqn9luxtkbsfh`, finished); ops not redeployed (no
+`services/ops` change since its deployed `0f893e0`). Live at 320/375/768/1024/1440, dark and light (headless Chromium and
+the Browser pane, the slice's 17 routes and 38 more): two misses fixed in `f82144e` — every unmatched URL threw React
+#418 (the root 404 is prerendered as `/_not-found`, so the ticket's path differed server to client; read after
+hydration now), and a stock's terminal header at 320 × 568 and 375 × 667 stacked its chips three rows deep (235 px), so
+the stack sat on the header and the controls (the session, crowd and earnings chips are one sideways line on a stage
+≤ 420 px: TSLA 195 → 155 px at 320, BTC 155 → 114). Prices and the hero's distance to the line tick, ops reads 19/19
+feeds, `--font-data` resolves on every route. Open: the passkey-account phone check (owner). Rejected: cutting
+"· max $X" (the book's depth cap, not the stack's spend cap). Seen live, for their slices: a landscape phone
+(667 × 375) leaves the terminal a 54 px stage, and a 320 × 568 phone mid "Syncing the chain clock…" still lands the
+stack on the controls (terminal portPlan 2–7, the owner's call); /demo's video card is dark on black in light mode
+(R4-13); /tickers/BTC is a 404 with no title, status 200, React #419 once (R4-10); Lucky reads "Not connected" (R4-9);
+the lane card's kind tag ellipsizes beside OPENS (R4-3); two RSC prefetches answered 502 once in ~650 loads (not
+reproduced).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on

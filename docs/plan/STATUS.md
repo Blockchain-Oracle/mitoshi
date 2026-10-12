@@ -1,6 +1,8 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
-**2026-10-12, round 4 (D-227, `owarine-plan-r4-2026-10-12.md`): fidelity, P&L correctness, creative games; slices R4-0 → R4-13 in order.**
+**2026-10-12, round 4 (D-227, `owarine-plan-r4-2026-10-12.md`): fidelity, P&L correctness, creative games; slices R4-0 → R4-13 in order.
+R4-0 Breakages built and deployed to testnet (web `f82144e`; commits and the live check in the plan's "Done so far").
+Next: R4-1 P&L.**
 
 **2026-10-12, round 3 (D-226, `owarine-plan-r3-2026-10-12.md`): the owner's review after round 2 — no Stocks section,
 Markets carries every market, every width works, Line Rider fixed, loading, Sensei, Earn, News. Slices A → I built and
