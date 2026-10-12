@@ -1,0 +1,196 @@
+/* Ported from Owarine 90a91d71:web/src/styles/news-wire.css (D-226); Owarine's signal is Mitoshi's accent. */
+/* The wire row — one grammar for /news, the activity feed and the ticker hub (D-082, lane 18d, the user's pick
+ * "V1 Ledger" with two tweaks: cashtags in the meta line after the source; under 640 px the tone moves to the meta
+ * row so the title keeps its width).
+ *
+ *   index · mark slot · body (title, meta) · tone (dot + word) · arrow
+ *
+ * The row is a list item; the title is its only link (`features/news/NewsRow.tsx`). The reference's row values
+ * (`group flex items-baseline gap-5 py-5 border-b border-white/[0.06] hover:bg-white/[0.02] hover:translate-x-0.5`)
+ * stay where they are not the grammar's: the rule, the hover, the title face. The `--news-*` ladder comes from
+ * `.news-page` or `.act-list` (news.css, activity.css). */
+
+.news-wire {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.news-row {
+  display: grid;
+  grid-template-columns: 24px 16px minmax(0, 1fr) auto auto;
+  grid-template-areas: "idx mark body tone arrow";
+  column-gap: 16px;
+  align-items: start;
+  padding: 16px 0 16px 12px;
+  border-bottom: 1px solid var(--news-rule);
+  /* the D-082 edge: 2 px in the tone's ink, hairline when neutral */
+  border-left: 2px solid var(--news-hairline);
+  transition: background-color 200ms var(--ease), transform 200ms var(--ease);
+}
+
+.news-row[data-tone="positive"] {
+  border-left-color: var(--profit);
+}
+
+.news-row[data-tone="negative"] {
+  border-left-color: var(--loss);
+}
+
+.news-row:hover {
+  background: var(--news-hover);
+  transform: translateX(2px);
+}
+
+/* The index sits on the title's first line (16px · 1.375 = 22px). */
+.news-row .news-index {
+  grid-area: idx;
+  padding-top: 6px;
+}
+
+/* The mark slot: a 16 px cluster, or a wallet avatar; empty keeps the column so titles align. */
+.news-row-mark {
+  grid-area: mark;
+  display: flex;
+  align-items: center;
+  width: 16px;
+  padding-top: 3px;
+}
+
+.news-marks {
+  display: inline-flex;
+  align-items: center;
+}
+
+.news-mark {
+  display: block;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  /* a ring in the page's ground so overlapping marks stay separate discs */
+  box-shadow: 0 0 0 1.5px var(--bg);
+}
+
+.news-marks .news-mark + .news-mark {
+  margin-left: -5px;
+}
+
+/* A cluster in the slot may spill past the 16 px column; the body's gap absorbs the overlap. */
+.news-row-mark .news-marks {
+  flex-shrink: 0;
+}
+
+/* flex-1 min-w-0 */
+.news-row-body {
+  grid-area: body;
+  min-width: 0;
+}
+
+/* block text-base sm:text-lg font-semibold text-gray-200 leading-snug group-hover:text-white */
+.news-row-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.375;
+  color: var(--gray-200);
+  overflow-wrap: anywhere;
+  transition: color 200ms var(--ease);
+}
+
+@media (min-width: 640px) {
+  .news-row-title {
+    font-size: 18px;
+  }
+}
+
+.news-row:hover .news-row-title,
+.news-row-title:focus-visible {
+  color: var(--white);
+}
+
+/* flex items-center gap-3 mt-1.5 */
+.news-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+/* `$TSLA $NVDA` after the source: mono, quiet, signal on hover */
+.news-cashtags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.news-cashtag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--gray-500);
+  transition: color 150ms var(--ease); font-variant-numeric: tabular-nums; }
+
+.news-cashtag:hover,
+.news-cashtag:focus-visible {
+  color: var(--color-accent);
+  outline: none;
+}
+
+.news-row-tone {
+  grid-area: tone;
+  padding-top: 6px;
+}
+
+/* font-mono text-xs text-gray-700 group-hover:text-signal flex-shrink-0 */
+.news-row-arrow {
+  grid-area: arrow;
+  padding-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--gray-700);
+  transition: color 200ms var(--ease); font-variant-numeric: tabular-nums; }
+
+.news-row:hover .news-row-arrow {
+  color: var(--color-accent);
+}
+
+/* A phone: the title spans every column to the row's edge, and the tone and the arrow drop to the meta row,
+   right-aligned, so the headline never shares its line with a word (the second tweak). */
+@media (max-width: 639px) {
+  .news-row {
+    grid-template-areas:
+      "idx mark title title title"
+      "idx mark meta tone arrow";
+    column-gap: 12px;
+  }
+
+  .news-row-body {
+    display: contents;
+  }
+
+  .news-row-title {
+    grid-area: title;
+  }
+
+  .news-row-meta {
+    grid-area: meta;
+  }
+
+  .news-row-tone,
+  .news-row-arrow {
+    justify-self: end;
+    padding-top: 0;
+    margin-top: 6px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .news-row,
+  .news-row-title,
+  .news-row-arrow,
+  .news-cashtag {
+    transition: none;
+  }
+}

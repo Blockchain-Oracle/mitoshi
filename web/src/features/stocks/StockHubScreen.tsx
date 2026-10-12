@@ -24,7 +24,8 @@ import { MarketCard } from "@/features/markets/lanes/MarketCard";
 import { MarketSessionChip } from "@/features/markets/session/MarketSessionChip";
 import { usd2 } from "@/features/markets/units";
 import type { Article } from "@/features/news/wire";
-import { WireList } from "@/features/news/WireList";
+import { NEWS, timeAgo } from "@/features/news/copy";
+import { articleSymbols, Cashtags, MarkCluster, NewsRow } from "@/features/news/NewsRow";
 import { useCommittedSpot } from "@/features/terminal/live";
 import { RoomDrawer } from "@/features/terminal/ui/RoomDrawer";
 import { useClockValue } from "@/lib/clock";
@@ -33,6 +34,8 @@ import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
 import { STOCKS } from "./copy";
 import { useNextReport } from "./useNextReport";
 import "@/styles/market-card.css";
+import "@/styles/news.css";
+import "@/styles/news-wire.css";
 import "./stocks.css";
 
 const WINDOWS = 6;
@@ -155,7 +158,28 @@ export function StockHubScreen({ symbol, articles, headlinesOff, readAtMs }: Sto
         ) : articles.length === 0 ? (
           <p className="stk-quiet">{STOCKS.headlines.empty}</p>
         ) : (
-          <WireList articles={articles} now={readAtMs} />
+          <ol className="news-wire">
+            {articles.map((a, i) => {
+              const symbols = articleSymbols(a.symbols);
+              return (
+                <NewsRow
+                  key={a.url}
+                  index={i + 1}
+                  title={a.title}
+                  href={a.url}
+                  mark={<MarkCluster symbols={symbols} />}
+                  meta={
+                    <>
+                      <span className="news-meta">{timeAgo(a.publishedAtSec, readAtMs)} · {a.source}</span>
+                      <Cashtags symbols={symbols} />
+                    </>
+                  }
+                  tone={a.sentiment}
+                  toneWord={NEWS.sentiment[a.sentiment]}
+                />
+              );
+            })}
+          </ol>
         )}
       </section>
 

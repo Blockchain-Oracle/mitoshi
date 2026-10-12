@@ -3,5 +3,5 @@
 import { LoadingState } from "@/components/states/LoadingState";
 
 export default function Loading() {
-  return <LoadingState shape="page" className="container py-10" />;
+  return <LoadingState shape="page" />;
 }

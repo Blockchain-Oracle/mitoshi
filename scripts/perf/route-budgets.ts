@@ -52,12 +52,13 @@ function gzipped(path: string): number {
   return size;
 }
 
-/** `(app)/markets/[id]` → route `/markets/[id]`, group from the route group (site pages, docs, proof are "site"). */
+/** `(app)/markets/[id]` → route `/markets/[id]`, group from the route group. Since D-226 only `/` and `/pitch` are in the
+ *  site group; docs, proof, news, stats and status render in the app shell and take the app budget. */
 function classify(dirRel: string): { route: string; kind: keyof typeof BUDGETS } {
   const parts = dirRel.split(sep).filter(Boolean);
   const group = parts.find((p) => p.startsWith("("));
   const route = `/${parts.filter((p) => !p.startsWith("(")).join("/")}`;
-  const site = group === "(site)" || route.startsWith("/docs") || route.startsWith("/proof");
+  const site = group === "(site)";
   return { route, kind: site ? "site" : "app" };
 }
 

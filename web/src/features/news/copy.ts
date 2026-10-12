@@ -3,12 +3,13 @@ import type { Sentiment } from "./wire";
 /** `/news` — Masayume's and Agari's words (Yosuku's own deleted page, `app/news/page.tsx` at 93d09c1^), for Mitoshi. */
 export const NEWS = {
   eyebrow: "News",
+  live: "Updated live",
   heading: "Market",
   headingAccent: "News",
   /** Verbatim from the reference: "headlines that move the market". */
   headingJp: "市場を動かす見出し。",
   intro: "The stories on the coins and stocks Mitoshi lists, newest first, each tagged by the words in its headline. Read the room before you call the close.",
-  credit: "Headlines via Finnhub, Cointelegraph and Decrypt; each opens at its publisher.",
+  credit: "Headlines via Finnhub, Cointelegraph and Decrypt.",
   lead: "Latest",
   list: "The wire",
   refreshed: (at: string) => `Read ${at} UTC; refreshed every few minutes.`,

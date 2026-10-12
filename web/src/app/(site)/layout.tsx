@@ -1,4 +1,4 @@
-// The site route group (D-050): landing, how-it-works, download, demo, pitch, status, proof, legal. It carries NO
+// The site route group (D-050): the landing and the pitch (D-226: every other page renders in the app shell). It carries NO
 // wallet stack, no query client and no chain runtime — the header offers "Open the app" where the app group shows
 // the account. Budget: ≤ 120 KB first-load JS (plan §3.1).
 import Link from "next/link";
