@@ -4,7 +4,7 @@
  * private-blocker}.ts): the side (16240 pills), the stake (16240 field + chips), the desk contract's own sizing
  * (`sizeForStake`) in the 29356 totals, the budget line with its one fix (add to the private balance, or re-allow the
  * desk), then the 23527 hold → one passkey prompt over the bet's text → the desk places it (D-171). Always 1×. A lazy
- * island.
+ * island. R4-2 (D-227): the hold sits in the phone sheet's pinned footer (`SheetFooter`), in place on the rail.
  */
 import { USD_DECIMALS, type EventMarket, type Side } from "@cwf/core";
 import { REQUOTE_MS } from "@cwf/core/constants";
@@ -14,6 +14,7 @@ import { txUrl } from "@cwf/core/urls";
 import { sizePrivateForStake } from "@cwf/markets/private";
 import { useBalanceSheet, useReadingQuery } from "@cwf/markets/react";
 import { useState } from "react";
+import { SheetFooter } from "@/components/ui/drawer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { OrderSummary } from "@/components/ui/order-summary";
 import { AmountField, OutcomePills, QuickAdds } from "@/components/ui/prediction-ticket";
@@ -129,17 +130,19 @@ export function PrivateTicketMode({ market, side: initialSide }: { market: Event
           {actions.busy?.startsWith("resume") ? PRIVATE.claims.resuming : PRIVATE.cta.resume}
         </button>
       ) : null}
-      {!session.isConnected ? (
-        <button type="button" onClick={() => session.connectFor(PRIVATE.cta.signInFor)} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{PRIVATE.cta.signIn}</button>
-      ) : actions.busy === "sign" || actions.busy === "open" ? (
-        <button type="button" disabled aria-disabled className="min-h-touch w-full rounded-md bg-surface-2 px-4 type-body-strong text-ink" aria-live="polite">{actions.busy === "sign" ? PRIVATE.cta.signing : PRIVATE.cta.placing}</button>
-      ) : blocker ? (
-        <button type="button" disabled aria-disabled className="min-h-touch w-full cursor-not-allowed rounded-md border border-hairline bg-surface-2 px-4 type-body-strong text-ink-secondary">{blocker}</button>
-      ) : (
-        <HoldToConfirm className="w-full" confirmLabel={PRIVATE.cta.placing} onConfirm={() => void place()}>
-          {PRIVATE.cta.place(sideWord(side!), usd(stakeBase))}
-        </HoldToConfirm>
-      )}
+      <SheetFooter>
+        {!session.isConnected ? (
+          <button type="button" onClick={() => session.connectFor(PRIVATE.cta.signInFor)} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{PRIVATE.cta.signIn}</button>
+        ) : actions.busy === "sign" || actions.busy === "open" ? (
+          <button type="button" disabled aria-disabled className="min-h-touch w-full rounded-md bg-surface-2 px-4 type-body-strong text-ink" aria-live="polite">{actions.busy === "sign" ? PRIVATE.cta.signing : PRIVATE.cta.placing}</button>
+        ) : blocker ? (
+          <button type="button" disabled aria-disabled className="min-h-touch w-full cursor-not-allowed rounded-md border border-hairline bg-surface-2 px-4 type-body-strong text-ink-secondary">{blocker}</button>
+        ) : (
+          <HoldToConfirm className="w-full" confirmLabel={PRIVATE.cta.placing} onConfirm={() => void place()}>
+            {PRIVATE.cta.place(sideWord(side!), usd(stakeBase))}
+          </HoldToConfirm>
+        )}
+      </SheetFooter>
       {result?.status === "opened" ? (
         <div role="status" className="flex flex-col gap-1 rounded-lg bg-cream p-3 text-cream-ink">
           <p className="type-body-strong">{PRIVATE.outcome.placed(sideWord(result.ticket.claim.outcomeIdx === 0 ? "up" : "down"), contracts(BigInt(result.ticket.quantityRaw)), usd(BigInt(result.ticket.claim.stakeBase)))}</p>

@@ -280,7 +280,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
       <Tutorial open={tourOpen} onDone={endTour} instant={instantTour} />
       {mode !== "updown" && market ? (
         <SlideOver open={drawer.open === DRAWERS.mode} onOpenChange={(o) => { if (!o) { drawer.close(); setMode("updown"); } }}>
-          <SlideOverContent title={TERMINAL.modes.names[mode]}>
+          <SlideOverContent title={TERMINAL.modes.names[mode]} fields>
             <ModePanel mode={mode} market={market} side={null} />
           </SlideOverContent>
         </SlideOver>

@@ -1,11 +1,13 @@
 "use client";
 // Tradash's Add (RV-54) as a centred modal (D-190): more of the same side on the same Window, at a stake from the chips
 // (25 / 50 / 75 % of what can be spent, or Max), with "After this order" — the position's contracts and cost once it
-// fills. Through the ticket's own quote and order lane (`useQuote`, `useTicketRoute`, `usePlaceBet`).
+// fills. Through the ticket's own quote and order lane (`useQuote`, `useTicketRoute`, `usePlaceBet`). R4-2 (D-227): Add
+// sits in the modal's footer (on a phone, the sheet's pinned footer).
 import { isOk, type EventMarket, type Side } from "@cwf/core";
 import { formatBaseUnits } from "@cwf/core/units";
 import { useMarket, useSigner } from "@cwf/markets/react";
 import { useEffect, useRef, useState } from "react";
+import { SheetFooter } from "@/components/ui/drawer";
 import { Modal } from "@/components/ui/modal";
 import { usePlaceBet } from "@/features/markets/ticket/usePlaceBet";
 import { useQuote } from "@/features/markets/ticket/useQuote";
@@ -88,7 +90,9 @@ function AddBody({ p, market, side, stakeBase, setStakeBase, spendableBase, nowM
         <span><small>{TERMINAL.positions.staked}</small>{afterCost === null ? "—" : money(afterCost)}</span>
       </div>
       {route.fallback ? <p className="tm-field-hint tm-warn">{route.fallback.reason}</p> : null}
-      <button type="button" className="tm-btn tm-btn-cta" disabled={!q || bet.placing || Boolean(route.fallback)} onClick={add}>{TERMINAL.add.cta(money(q?.partial ? q.fillableStakeBase : stakeBase))}</button>
+      <SheetFooter>
+        <button type="button" className="tm-btn tm-btn-cta" disabled={!q || bet.placing || Boolean(route.fallback)} onClick={add}>{TERMINAL.add.cta(money(q?.partial ? q.fillableStakeBase : stakeBase))}</button>
+      </SheetFooter>
     </div>
   );
 }

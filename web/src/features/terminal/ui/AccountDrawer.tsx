@@ -4,10 +4,11 @@
 // curve (`PnlCard`), Add money (the faucet on testnet), Withdraw (`SendPanel`), the Trading Balance's own panel (in and
 // out), Activity (the money moves, `ActivityView`; trades are Trade history's), Collect for
 // anything settled and still held, the one-tap card, the Trading and App groups, and Sign out behind a centred confirm.
-// No demo, no reset (D-191).
+// No demo, no reset (D-191). R4-2 (D-227): a drill-in's way back is the sheet head's back arrow (Owarine 90a91d71
+// `AccountSheet.tsx` → `Sheet onBack`), not a button in the body.
 import type { Address } from "@cwf/core";
 import { useClaimables } from "@cwf/markets/react";
-import { ArrowDownToLine, ArrowUpFromLine, ChevronLeft, CircleHelp, Download, History, Medal, MessageSquare, Settings, ShieldAlert, SlidersHorizontal, Trophy, Wallet } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, CircleHelp, Download, History, Medal, MessageSquare, Settings, ShieldAlert, SlidersHorizontal, Trophy, Wallet } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState, type CSSProperties } from "react";
 import { GroupedItem as Item, GroupedList as Group } from "@/components/kit";
@@ -79,12 +80,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
   return (
     <>
       <SlideOver open={open} onOpenChange={onOpenChange}>
-        <SlideOverContent title={titles[view]} fields>
-          {view !== "menu" ? (
-            <button type="button" className="tm-back" onClick={() => (tapFeedback(), setView("menu"))}>
-              <ChevronLeft aria-hidden className="size-4" /> {TERMINAL.account.back}
-            </button>
-          ) : null}
+        <SlideOverContent title={titles[view]} fields onBack={view !== "menu" ? () => (tapFeedback(), setView("menu")) : undefined}>
           {view === "send" ? <SendPanel wallet={wallet} balanceBase={walletBase} onDone={() => setView("menu")} /> : null}
           {view === "balance" ? <TradingBalancePanel /> : null}
           {view === "history" ? <HistoryView wallet={wallet} onReplay={(episode, finalPnl) => setReplay({ episode, finalPnl })} /> : null}

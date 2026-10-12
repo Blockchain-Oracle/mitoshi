@@ -37,7 +37,6 @@
   background: var(--accent-fill); color: var(--on-accent); font-family: var(--font-display); font-weight: 700; font-size: 15px;
 }
 .pl-dock-open { margin-left: auto; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
-.pl-slide-over .slide-over-body { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 
 /* ── the Windows list (109's product rows) ── */
 .pw { display: flex; flex-direction: column; gap: 12px; }

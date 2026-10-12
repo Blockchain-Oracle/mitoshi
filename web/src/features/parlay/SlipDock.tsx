@@ -68,7 +68,7 @@ export function SlipDock({ reserve, windows }: { reserve: ParlayReserveState; wi
         </button>
       </div>
       <SlideOver open={open} onOpenChange={setOpen}>
-        <SlideOverContent title={PARLAY.slip.title} description={PARLAY.slip.legs(legs.length)} fields className="pl-slide-over">
+        <SlideOverContent title={PARLAY.slip.title} description={PARLAY.slip.legs(legs.length)} fields>
           <ParlaySlip reserve={reserve} windows={windows} />
         </SlideOverContent>
       </SlideOver>
