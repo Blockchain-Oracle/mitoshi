@@ -14,7 +14,7 @@ export const site = {
   // Public, revision-pinned source notes. Null while the repository is private.
   source: null as string | null,
   // The app commit every page was last checked against (`pnpm check:content` enforces it).
-  revision: '67cb549',
+  revision: '1ab5eca',
   reviewed: '2026-10-12',
 };
 export function appUrl(path = '/trade/BTC') { return new URL(path, site.app).toString(); }

@@ -6,6 +6,8 @@
  * path, a broken docs link or nav entry, an app route that has no page, a capture whose bytes differ from the app's,
  * an architecture graph out of shape, deployments that differ from the fragments, a transaction hash that no
  * acceptance record or receipt list holds, an address that no fragment or record names, or a previous chain's words.
+ * Recorded media (scripts/media-plan.json → pnpm media:record → pnpm media:publish) must match their SHA-256; a guide may
+ * name a planned capture or walkthrough before it is recorded, and the check lists those as pending.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve, relative, dirname } from 'node:path';
@@ -79,7 +81,13 @@ const PATH_USD = '0x20c0000000000000000000000000000000000000';
 // 3. Pages: links, app routes, captures, graphs, receipts, addresses, words.
 const FORBIDDEN = /\b(Canton|Somnia|DreamDEX|Daml|Solana|devnet|tUSDC|demo credits?)\b/;
 const captureSource = readFileSync(resolve(root, 'lib/captures.ts'), 'utf8');
-const captureNames = new Set([...captureSource.matchAll(/^  ([A-Za-z]\w*): \{/gm)].map(([, n]) => n));
+const mediaRegistry = JSON.parse(readFileSync(resolve(root, 'lib/media.generated.json'), 'utf8'));
+const mediaPlan = JSON.parse(readFileSync(resolve(root, 'scripts/media-plan.json'), 'utf8'));
+const shippedNames = new Set([...captureSource.matchAll(/^  ([A-Za-z]\w*): \{/gm)].map(([, n]) => n));
+const captureNames = new Set([...shippedNames, ...Object.keys(mediaRegistry.captures)]);
+const plannedCaptures = new Set(mediaPlan.captures.map(c => c.name));
+const plannedWalkthroughs = new Set(mediaPlan.walkthroughs.map(w => w.name));
+const pending = new Set();
 for (const path of files(content).filter(p => p.endsWith('.mdx'))) {
   pages++;
   const body = readFileSync(path, 'utf8');
@@ -92,7 +100,16 @@ for (const path of files(content).filter(p => p.endsWith('.mdx'))) {
     else if (!existsSync(docRoute(route))) fail(`${label}: missing docs page ${route}`);
   }
   for (const [, route] of body.matchAll(/<AppLink\s+href="(\/[^"]*)"/g)) { appRoutes++; if (!appRouteExists(route)) fail(`${label}: missing app route ${route}`); }
-  for (const [, name] of body.matchAll(/<GuideCapture\s+name="([^"]+)"/g)) { media++; if (!captureNames.has(name)) fail(`${label}: unknown capture ${name}`); }
+  for (const [, name] of body.matchAll(/<GuideCapture\s+name="([^"]+)"/g)) {
+    media++;
+    if (captureNames.has(name)) continue;
+    if (plannedCaptures.has(name)) pending.add(`capture ${name} (${label})`); else fail(`${label}: unknown capture ${name}`);
+  }
+  for (const [, name] of body.matchAll(/<Walkthrough\s+name="([^"]+)"/g)) {
+    media++;
+    if (name in mediaRegistry.walkthroughs) continue;
+    if (plannedWalkthroughs.has(name)) pending.add(`walkthrough ${name} (${label})`); else fail(`${label}: unknown walkthrough ${name}`);
+  }
   for (const [, name] of body.matchAll(/<Architecture\s+name="([^"]+)"/g)) { media++; if (!(name in graphs)) fail(`${label}: unknown architecture ${name}`); }
   for (const [hash] of body.matchAll(/0x[0-9a-fA-F]{64}\b/g)) { hashes++; if (!record.includes(hash.toLowerCase())) fail(`${label}: ${hash} is in no acceptance record, receipt list or fragment`); }
   for (const [address] of body.matchAll(/0x[0-9a-fA-F]{40}\b(?![0-9a-fA-F])/g)) { addresses++; const a = address.toLowerCase(); if (a !== PATH_USD && !record.includes(a)) fail(`${label}: ${address} is in no deployment fragment or record`); }
@@ -120,8 +137,20 @@ for (const c of provenance.captures) {
   if (sha256(file) !== c.sha256) fail(`Capture ${c.name}: SHA-256 differs from provenance`);
   const app = resolve(source, c.appPath);
   if (existsSync(app) && sha256(app) !== c.sha256) warnings.push(`Capture ${c.name}: the app's ${c.appPath} has changed since the docs copied it`);
-  if (!captureNames.has(c.name)) fail(`Capture ${c.name}: not in lib/captures.ts`);
+  if (!shippedNames.has(c.name)) fail(`Capture ${c.name}: not in lib/captures.ts`);
 }
+// Recorded media: every published file is the one its provenance hashed, and every registry entry has its files.
+const mediaProvenance = resolve(root, 'public/captures/provenance-media.json');
+if (existsSync(mediaProvenance)) {
+  for (const item of JSON.parse(readFileSync(mediaProvenance, 'utf8')).items) {
+    const file = resolve(root, 'public', item.file);
+    if (!existsSync(file)) fail(`Media ${item.name}: missing ${item.file}`);
+    else if (sha256(file) !== item.sha256) fail(`Media ${item.name}: SHA-256 differs from provenance-media.json`);
+  }
+}
+for (const [name, c] of Object.entries(mediaRegistry.captures)) if (!existsSync(resolve(root, 'public/captures', c.file))) fail(`Capture ${name}: missing ${c.file}`);
+for (const [name, w] of Object.entries(mediaRegistry.walkthroughs)) for (const path of [w.poster, w.captions, w.metadata, ...w.sources.map(s => s.src)]) if (!existsSync(resolve(root, 'public', path.slice(1)))) fail(`Walkthrough ${name}: missing ${path}`);
+if (pending.size) warnings.push(`${pending.size} planned capture(s) or walkthrough(s) not recorded yet — they render nothing until \`pnpm media:record && pnpm media:publish\` runs against the deployed product:`, ...[...pending].map(p => `  ${p}`));
 
 // 5. Architecture graphs and their SVGs.
 for (const [name, graph] of Object.entries(graphs)) {

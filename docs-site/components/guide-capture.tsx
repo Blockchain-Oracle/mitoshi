@@ -1,11 +1,13 @@
 'use client';
 // Ported from Owarine 90a91d71:docs-site/components/guide-capture.tsx (D-227), without annotations: a dated capture of
-// the deployed product with its state and date, never a mock-up. The registry is `lib/captures.ts`.
+// the deployed product with its state and date, never a mock-up. The registry is `lib/captures.ts`; a capture the plan
+// lists but nobody has recorded yet renders nothing rather than a placeholder.
 import { Brand } from './brand';
-import { captures, type CaptureName } from '@/lib/captures';
+import { captures } from '@/lib/captures';
 
-export function GuideCapture({ name, caption }: { name: CaptureName; caption?: string }) {
+export function GuideCapture({ name, caption }: { name: string; caption?: string }) {
   const capture = captures[name];
+  if (!capture) return null;
   const phone = capture.width < 600;
   return (
     <figure className="guide-shot not-prose">

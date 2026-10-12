@@ -1,0 +1,66 @@
+{
+  "$comment": "The guides' captures and walkthroughs, recorded from the deployed testnet product by scripts/record-media.mjs and published by scripts/publish-media.mjs (D-227). Alt text and chapter text describe the procedure, which the recorder enforces step by step; a step that fails leaves its clip unpublished.",
+  "origin": "https://testnet.mitoshi.xyz",
+  "viewports": {
+    "phone": { "width": 390, "height": 844, "mobile": true },
+    "desk": { "width": 1440, "height": 900, "mobile": false }
+  },
+  "captures": [
+    { "name": "marketsDesk", "route": "/markets", "viewport": "desk", "title": "Markets on a desk", "alt": "Mitoshi's Markets page at 1440 × 900, signed out." },
+    { "name": "marketsPhone", "route": "/markets", "viewport": "phone", "title": "Markets on a phone", "alt": "Mitoshi's Markets page at 390 × 844, signed out." },
+    { "name": "terminalDesk", "route": "/trade/BTC", "viewport": "desk", "skipTour": true, "waitFor": { "role": "button", "name": "^UP\\b" }, "title": "The BTC terminal on a desk", "alt": "The BTC terminal at 1440 × 900, signed out in DEMO, after the tour was skipped." },
+    { "name": "terminalPhone", "route": "/trade/BTC", "viewport": "phone", "skipTour": true, "waitFor": { "role": "button", "name": "^UP\\b" }, "title": "The BTC terminal on a phone", "alt": "The BTC terminal at 390 × 844, signed out in DEMO, after the tour was skipped." },
+    { "name": "earnDesk", "route": "/earn", "viewport": "desk", "title": "Earn", "alt": "The Earn page at 1440 × 900, signed out." },
+    { "name": "rangePhone", "route": "/games/range", "viewport": "phone", "title": "Range on a phone", "alt": "The Range page at 390 × 844, signed out." },
+    { "name": "parlayDesk", "route": "/parlay", "viewport": "desk", "title": "Parlay", "alt": "The Parlay page at 1440 × 900, signed out." },
+    { "name": "strategiesDesk", "route": "/strategies", "viewport": "desk", "title": "Automate: strategies", "alt": "The strategies page at 1440 × 900, signed out." },
+    { "name": "agentsDesk", "route": "/agents", "viewport": "desk", "title": "Automate: agents", "alt": "The agents page at 1440 × 900, signed out." },
+    { "name": "gamesPhone", "route": "/games", "viewport": "phone", "title": "Games on a phone", "alt": "The games hall at 390 × 844, signed out." },
+    { "name": "proofDesk", "route": "/leaderboard", "follow": ["a[href^='/u/']", "a[href^='/proof/']"], "viewport": "desk", "title": "A settled Window's proof", "alt": "The proof page of a settled Window at 1440 × 900, reached from the leaderboard's first trader's record." },
+    { "name": "leaderboardDesk", "route": "/leaderboard", "viewport": "desk", "title": "The leaderboard", "alt": "The leaderboard at 1440 × 900, signed out." },
+    { "name": "reservesDesk", "route": "/reserves", "viewport": "desk", "title": "Reserves", "alt": "The reserves page at 1440 × 900, signed out." },
+    { "name": "bridgeDesk", "route": "/bridge", "viewport": "desk", "title": "Bridge", "alt": "The bridge page at 1440 × 900, signed out." },
+    { "name": "themesDesk", "route": "/themes", "viewport": "desk", "title": "Themes", "alt": "The themes page at 1440 × 900, signed out." },
+    { "name": "launchDesk", "route": "/launch", "viewport": "desk", "title": "Launch", "alt": "The launch page at 1440 × 900, signed out." },
+    { "name": "statusDesk", "route": "/status", "viewport": "desk", "title": "Status", "alt": "The status page at 1440 × 900." }
+  ],
+  "walkthroughs": [
+    {
+      "name": "first-call-demo",
+      "viewport": "phone",
+      "title": "A first call in DEMO",
+      "description": "Signed out on a phone: the terminal's tour, then UP on BTC and CLOSE, on paper at the live book's price.",
+      "steps": [
+        { "do": "open", "route": "/trade/BTC", "chapter": { "title": "Open the terminal", "text": "Signed out, the terminal trades on paper: the equity pill reads DEMO." } },
+        { "do": "waitFor", "role": "button", "name": "^Skip$", "timeout": 20000, "optional": true },
+        { "do": "wait", "ms": 2500 },
+        { "do": "click", "role": "button", "name": "^Skip$", "optional": true, "chapter": { "title": "Skip the tour", "text": "Five steps explain the line, UP and DOWN, the value pill, Trail and Close." } },
+        { "do": "waitFor", "role": "button", "name": "^UP\\b", "timeout": 30000, "enabled": true },
+        { "do": "wait", "ms": 3000 },
+        { "do": "click", "role": "button", "name": "^UP\\b", "chapter": { "title": "Tap UP", "text": "A paper call fills at the live book's price." } },
+        { "do": "waitFor", "role": "button", "name": "^CLOSE$", "timeout": 20000, "enabled": true },
+        { "do": "wait", "ms": 5000, "chapter": { "title": "Watch what it's worth", "text": "The pill shows what CLOSE pays now." } },
+        { "do": "click", "role": "button", "name": "^CLOSE$", "chapter": { "title": "Close it", "text": "CLOSE sells it back at what the book pays." } },
+        { "do": "waitFor", "role": "button", "name": "^UP\\b", "timeout": 20000 },
+        { "do": "wait", "ms": 2500 }
+      ]
+    },
+    {
+      "name": "proof-reverify",
+      "viewport": "desk",
+      "title": "Re-verify a settled Window",
+      "description": "From the leaderboard to a trader's record to a settled Window's proof, then the closing print re-verified in the browser against the chain.",
+      "steps": [
+        { "do": "open", "route": "/leaderboard", "chapter": { "title": "Open the leaderboard", "text": "Records ranked from their settled calls." } },
+        { "do": "wait", "ms": 2500 },
+        { "do": "follow", "selector": "a[href^='/u/']", "chapter": { "title": "Open a record", "text": "Each row links its calls and their proofs." } },
+        { "do": "wait", "ms": 2500 },
+        { "do": "follow", "selector": "a[href^='/proof/']", "chapter": { "title": "Open a proof", "text": "The verdict, the settlement transaction and both signed prints." } },
+        { "do": "waitFor", "role": "button", "name": "^Re-verify in this browser", "timeout": 30000 },
+        { "do": "wait", "ms": 3000 },
+        { "do": "click", "role": "button", "name": "^Re-verify in this browser", "chapter": { "title": "Re-verify", "text": "The browser reads the recording transaction and asks the verifier contract again." } },
+        { "do": "wait", "ms": 8000 }
+      ]
+    }
+  ]
+}

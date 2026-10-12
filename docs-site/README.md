@@ -5,7 +5,7 @@ call, Windows and lanes, signed prints and settlement, the terminal, the Trading
 Moonshot · Parlay · Boost, strategies and agents, games, stocks on Tempo, and the architecture behind each path, with the
 deployed addresses on Moderato and dated evidence.
 
-**Checked against:** app revision `67cb549` (`site.revision` in `lib/site.ts`) on 12 October 2026. The site lives in the
+**Checked against:** app revision `1ab5eca` (`site.revision` in `lib/site.ts`) on 12 October 2026. The site lives in the
 app's repository at `docs-site/` and is built for `https://docs.testnet.mitoshi.xyz`. Ported from Owarine
 90a91d71:docs-site (Fumadocs on Next 16) in Mitoshi's brand (D-227).
 
@@ -50,6 +50,21 @@ not an ancestor of `HEAD`, and lists the app commits since it — the list to re
 - `lib/deployments.json` — `pnpm sync:deployments` copies the deployment fragments (the image is built from this
   directory alone, so it can't read them at build time).
 - `public/diagrams/*.svg` — `pnpm diagrams` renders `lib/architecture.json`.
+
+## Captures and walkthroughs
+
+`scripts/media-plan.json` lists every capture and walkthrough the guides show (`<GuideCapture name=…/>`,
+`<Walkthrough name=…/>`). They come from the deployed product only, recorded after each deploy that changes a screen:
+
+```sh
+pnpm exec playwright install chromium   # once
+pnpm media:record                        # headless Chromium at 2×, signed out, https://testnet.mitoshi.xyz only
+pnpm media:publish                       # copies captures byte for byte, encodes walkthroughs (ffmpeg), hashes all
+```
+
+`--only name,name` records a few. A page that answers ≥ 400 or a step that fails leaves its item unpublished and says
+where. `public/captures/provenance-media.json` holds each published file's SHA-256, which `pnpm check:content` re-hashes;
+a planned item not yet recorded renders nothing and the check lists it.
 
 ## Evidence
 

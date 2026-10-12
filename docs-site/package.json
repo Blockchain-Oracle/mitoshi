@@ -13,6 +13,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "diagrams": "node scripts/export-architecture.mjs",
     "sync:deployments": "node scripts/sync-deployments.mjs",
+    "media:record": "node scripts/record-media.mjs",
+    "media:publish": "node scripts/publish-media.mjs",
     "check:content": "node scripts/check-content.mjs",
     "check": "pnpm check:content && pnpm typecheck && pnpm build"
   },
@@ -34,6 +36,7 @@
     "@types/node": "24.12.3",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
+    "playwright": "1.63.0",
     "tailwindcss": "4.3.3",
     "typescript": "^5.9.0"
   }

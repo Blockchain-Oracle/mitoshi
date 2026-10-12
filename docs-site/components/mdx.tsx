@@ -7,12 +7,13 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import type { MDXComponents } from 'mdx/types';
 import { AppLink, JourneyList, ProductMap, WelcomeActions } from './welcome';
 import { GuideCapture } from './guide-capture';
+import { Walkthrough } from './walkthrough';
 import { Architecture } from './architecture';
 import { Mermaid } from './mermaid';
 import { Deployments, StockPools } from './deployments';
 import { Tx, Address } from './chain-links';
 export function getMDXComponents(components?: MDXComponents) {
-  return { ...defaultComponents, Callout, Step, Steps, Tab, Tabs, AppLink, JourneyList, ProductMap, WelcomeActions, GuideCapture, Architecture, Mermaid, Deployments, StockPools, Tx, Address, ...components } satisfies MDXComponents;
+  return { ...defaultComponents, Callout, Step, Steps, Tab, Tabs, AppLink, JourneyList, ProductMap, WelcomeActions, GuideCapture, Walkthrough, Architecture, Mermaid, Deployments, StockPools, Tx, Address, ...components } satisfies MDXComponents;
 }
 export const useMDXComponents = getMDXComponents;
 declare global { type MDXProvidedComponents = ReturnType<typeof getMDXComponents> }
