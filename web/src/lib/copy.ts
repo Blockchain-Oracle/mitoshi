@@ -71,6 +71,7 @@ export const SHELL = {
   privacyHide: "Hide balances",
   privacyShow: "Show balances",
   masked: "••••",
+  privacyHidden: "Hidden",
   legal: "Legal",
   legalNav: "Docs and legal",
   health: { healthy: "All systems live", degraded: "Running degraded", unreachable: "Venue unreachable", unread: "Checking…" },
