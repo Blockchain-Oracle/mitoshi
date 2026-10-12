@@ -8,5 +8,6 @@ contracts/broadcast
 reference
 context
 data
-mobile/ios
-mobile/android
+# The Expo app (D-227, MOBILE): only its manifest reaches the web image (web/Dockerfile).
+mobile/*
+!mobile/package.json

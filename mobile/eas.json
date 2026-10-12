@@ -1,0 +1,43 @@
+{
+  "cli": {
+    "version": ">= 24.13.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "base": {
+      "node": "25.9.0",
+      "pnpm": "11.24.0"
+    },
+    "preview": {
+      "extends": "base",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "autoIncrement": true,
+      "ios": {
+        "distribution": "store"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleTeamId": "86C6ZFJ6V6",
+        "ascApiKeyPath": "/Users/abu/.config/agari/apple/AuthKey_852363VPL4.p8",
+        "ascApiKeyId": "852363VPL4",
+        "ascApiKeyIssuerId": "911e920f-cd28-49bb-b3fb-37e38abdb43e"
+      },
+      "android": {
+        "serviceAccountKeyPath": "/Users/abu/.config/senryo/play-service-account.json",
+        "track": "internal"
+      }
+    }
+  }
+}

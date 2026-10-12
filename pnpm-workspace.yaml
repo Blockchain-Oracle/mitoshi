@@ -93,14 +93,29 @@ catalog:
   solidity-bytes-utils: ^0.8.4
   obscenity: 0.4.6
 
-# Expo SDK 57 pins for mobile/ (kept apart from the web's React; plan Appendix D.1).
+# Expo SDK 57 pins for mobile/ (kept apart from the web's React; plan Appendix D.1). Versions are SDK 57's
+# bundledNativeModules.json for expo 57.0.27 (2026-10-06; 57.0.28 landed the day of this pin, inside the release-age gate).
 catalogs:
   mobile:
-    expo: ~57.0.24
+    expo: 57.0.27
     react: 19.2.3
     react-native: 0.86.3
     expo-router: ~57.0.22
     react-native-webview: 13.16.1
+    expo-constants: ~57.0.21
+    expo-file-system: ~57.0.7
+    expo-font: ~57.0.4
+    expo-network: ~57.0.2
+    expo-sharing: ~57.0.22
+    expo-splash-screen: ~57.0.9
+    expo-status-bar: ~57.0.1
+    expo-system-ui: ~57.0.4
+    react-native-safe-area-context: ~5.7.0
+    "@types/react": ~19.2.2
+    # The brand faces for the app's one native screen (offline), as Agari and Owarine load them.
+    "@expo-google-fonts/inter": ^0.4.2
+    "@expo-google-fonts/jetbrains-mono": ^0.4.1
+    "@expo-google-fonts/sora": ^0.4.2
 
 patchedDependencies:
   accounts@0.18.4: patches/accounts@0.18.4.patch

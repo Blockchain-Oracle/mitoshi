@@ -25,6 +25,9 @@ COPY packages/db/package.json ./packages/db/
 COPY packages/markets/package.json ./packages/markets/
 COPY packages/tokens/package.json ./packages/tokens/
 COPY services/ops/package.json ./services/ops/
+# The Expo app's manifest only (its lockfile importer must exist for --frozen-lockfile); the filter installs none of
+# its dependencies, and .dockerignore keeps the rest of mobile/ out of the image.
+COPY mobile/package.json ./mobile/
 RUN --mount=type=cache,id=mitoshi-pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter "@cwf/web..."
 

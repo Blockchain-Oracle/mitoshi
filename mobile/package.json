@@ -1,0 +1,35 @@
+{
+  "name": "@cwf/mobile",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./index.ts",
+  "scripts": {
+    "start": "expo start",
+    "ios": "expo run:ios",
+    "android": "expo run:android",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@cwf/tokens": "workspace:*",
+    "@expo-google-fonts/inter": "catalog:mobile",
+    "@expo-google-fonts/jetbrains-mono": "catalog:mobile",
+    "@expo-google-fonts/sora": "catalog:mobile",
+    "expo": "catalog:mobile",
+    "expo-constants": "catalog:mobile",
+    "expo-file-system": "catalog:mobile",
+    "expo-font": "catalog:mobile",
+    "expo-network": "catalog:mobile",
+    "expo-sharing": "catalog:mobile",
+    "expo-splash-screen": "catalog:mobile",
+    "expo-status-bar": "catalog:mobile",
+    "expo-system-ui": "catalog:mobile",
+    "react": "catalog:mobile",
+    "react-native": "catalog:mobile",
+    "react-native-safe-area-context": "catalog:mobile",
+    "react-native-webview": "catalog:mobile"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:mobile",
+    "typescript": "catalog:"
+  }
+}
