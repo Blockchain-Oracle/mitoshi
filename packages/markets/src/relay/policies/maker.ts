@@ -1,6 +1,5 @@
 /**
- * Relay policy for the `maker` area — the Earn maker vault (plan C.3.3, S8; A.4.2). Shape = `vault.ts` / `engine.ts`
- * until S1's `RelayPolicy` type lands. Masayume had no sponsor list for its maker vault (suppliers paid their own gas
+ * Relay policy for the `maker` area — the Earn maker vault (plan C.3.3, S8; A.4.2). Masayume had no sponsor list for its maker vault (suppliers paid their own gas
  * through the forwarder-less path); ours follows the Trading Balance's rule (D-118): sponsor the exits and the
  * permissionless keeper calls that only ever move the vault's own money, never capital intake or admin.
  *
@@ -16,6 +15,7 @@
 import type { Abi, Address } from "viem";
 import { relayTargets } from "@cwf/clients";
 import { marketMakerVaultAbi } from "@cwf/clients/abis/MarketMakerVault";
+import type { RelayPolicy } from "../types";
 
 const byChain = relayTargets as Record<string, Record<string, readonly string[]>>;
 /** The MarketMakerVault on every chain it is deployed on (generated from deployment fragments). */
@@ -28,13 +28,13 @@ const targets: readonly Address[] = Object.values(byChain).flatMap((areas) => (a
  */
 const MAKER_MAX_GAS = 2_000_000n;
 
-export const makerPolicy = {
-  area: "maker" as const,
+export const makerPolicy: RelayPolicy = {
+  area: "maker",
   targets,
   abi: marketMakerVaultAbi as Abi,
-  sponsor: ["withdraw", "pull", "merge", "settle"] as readonly string[],
-  never: ["supply", "quote", "setParams", "setMaker", "setPaused", "setAdmin"] as readonly string[],
-  pillar: "markets" as const,
-  entry: ["supply"] as readonly string[],
+  sponsor: ["withdraw", "pull", "merge", "settle"],
+  never: ["supply", "quote", "setParams", "setMaker", "setPaused", "setAdmin"],
+  pillar: "markets",
+  entry: ["supply"],
   maxGas: MAKER_MAX_GAS,
 };

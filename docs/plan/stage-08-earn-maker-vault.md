@@ -5,7 +5,7 @@
   `test_thirdPartySweep_bookedAsEscrowBack`, `test_pullAfterLockByAnyone`, `test_mergeAfterLockReverts_settleRedeemsPairsAtPar`,
   `test_realizedPerWindow`, `test_withdrawBlockedWhileExpiredUnsettled`, `test_donationDoesNotMoveSharePrice`,
   `invariant_makerLiquidEqualsWallet`; deploy with Masayume launch params.
-- [ ] ops earn-quoter on `runActor` (built for real); `/earn` Agari 4-tab supplier UI (A-2b) with realized/on-paper
+- [x] ops earn-quoter on `runActor` (built for real); `/earn` Agari 4-tab supplier UI (A-2b) with realized/on-paper
   yield (A-2c) and Agari's risk bounds; keeper settles closed Windows before withdraw ("Settling 2 of 4"); partial
   withdraw; "Max is X" instead of silent clamps; a typed inline result (no "✓" string matching); `relay/policies/maker.ts`.
   21st starts: tabs 26923, vault card composed from stats 7870 + balance chart 30538 (weak coverage, E.4).
@@ -15,7 +15,11 @@
   the FairValueGuard's model at ops' signed spot, never crossing the book, inside the vault's band and spread floor,
   requoted on a 30-tick move or after 120 s (`actors/earn-quoter/{decide,index}.ts` + test). `setMaker(earn-quoter)`
   from `deployer-maker` (0x18e84b37…a31c, block 38,892,496); `EARN_QUOTER_PRIVATE_KEY` added to the testnet ops app
-  (runtime only). Still in this box: the `/earn` 4-tab supplier UI and the rest listed above.
+  (runtime only). **2026-10-12: the `/earn` UI shipped (D-225)** — Owarine 90a91d71's `features/earn` on the four deployed
+  reserves (maker vault, range, parlay, boost as tabs), realized/on-paper from each reserve's own `Supplied`/`SupplyRedeemed`
+  events (A-2c), the withdraw settling closed Windows first (waiting for the print when the engine hasn't it yet), partial
+  withdraw of what is idle with the rest named, the `TxCta` as the typed inline result, `makerPolicy` typed and listed in
+  `POLICIES`; `@cwf/markets/maker` (reads, ledger, encoder, tests); `scripts/drive/earn-live.ts`.
 - **Gate:** the vault quotes live Windows, wallet-mode takers fill against it (EventVault takers too once S7 has
   passed), it settles; depth visible via the lens.
   **Rows:** L-50, A-2b, A-2c.
@@ -46,6 +50,9 @@
   1,050,917. The relay policy's `maxGas` 2M covers `settle` with 16 resting orders.
 
 ## Handoff
+
+**2026-10-12 — box 2 done on the trunk (`/earn`, D-225): see the box and `acceptance/S8.md`; the live check is
+`NETWORK=testnet pnpm --dir scripts exec tsx drive/earn-live.ts` against the deployed relay.**
 
 **Contract half of S8 done (2026-09-29), branch `stage/S8-maker`.** Commits: `cfb13b6` S8.1 port · `1ae4a69` S8.2
 tests · `d9bcc7d` S8.3 deploy + relay policy · S8.4 live gate + docs (this commit). Box 1 ticked; box 2 (off-chain)

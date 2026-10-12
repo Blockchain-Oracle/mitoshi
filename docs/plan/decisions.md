@@ -2015,6 +2015,28 @@ value. P5: `/stocks` tiles and the ticker hub on real data (spot stream, session
 Mirror token). P6: under 768 px every drawer and modal is Owarine's bottom sheet; the top line is mark · mode chip ·
 balance · account; Everything carries the places grid and the theme.
 
+### D-225 — `/earn` is Owarine's four-tab reserve page on the deployed contracts; realized from events; Settle on the engine's word (decision, S8, 2026-10-12)
+
+1. **Four tabs, one page.** The maker vault and the range, parlay and boost reserves expose the same `supply` /
+   `withdraw` / `sharesOf` surface on chain, so `/earn` is Owarine 90a91d71's `EarnScreen`: one hero, the live panel
+   (share price, delta above par, value, utilization), supply and position cards, then the vault's Windows or the
+   reserve's own bounds. The reads share the Range, Parlay and Boost features' query keys, so a supply here refreshes
+   their tickets too.
+2. **Realized and on-paper come from the reserve's own events.** No reserve keeps per-supplier totals, so the ledger
+   folds `Supplied` / `SupplyRedeemed` for the wallet from the reserve's deploy block (≤ 100k-block windows, six at a
+   time), read once per five minutes and after each write. Realized = paid back above cost; on paper = today's worth
+   less the cost still in — never a rate (A-2c).
+3. **Settle only once the engine has its print.** The vault refuses a withdraw from a Window's expiry
+   (`unsettledExpired`), but its `settle` reverts until the engine resolved or voided the Window (status 4/5, the
+   earn-quoter's own rule). The table shows "closed · print pending" meanwhile and the withdraw waits up to 90 s for the
+   settler before saying so.
+4. **Sponsorship as D-118:** `supply` is self-paid (`[approve, supply]`, one passkey prompt); `withdraw`, `merge`,
+   `settle` and `pull` ride the relay's `maker` policy, now typed and listed in `POLICIES` (it was written in S8 but
+   never registered, so the deployed relay refused the maker area until this slice deployed).
+
+**Why:** the owner's brief for round 2 (D-224) applies to every surface: Owarine's component and words, real data, no
+invented yield.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.

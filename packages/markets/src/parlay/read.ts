@@ -342,3 +342,21 @@ export async function checkParlayCapacity(houseLockedBase: bigint, expiriesSec: 
     return diagnoseParlay(error);
   }
 }
+
+/** A supplier's shares and what they are worth of the reserve's total value right now (the Earn page); zeros without a reserve. */
+export async function getParlaySharesOf(wallet: Address): Promise<Reading<{ shares: bigint; worthBase: bigint }>> {
+  return withReading(`parlayShares:${wallet}`, async () => {
+    const { client, v } = await venue();
+    if (!v) return { shares: 0n, worthBase: 0n };
+    const c = { address: v.parlayReserve, abi: PARLAY_READ_ABI } as const;
+    const [shares, supplyShares, totalValue] = await client.multicall({
+      allowFailure: false,
+      contracts: [
+        { ...c, functionName: "sharesOf", args: [wallet] },
+        { ...c, functionName: "supplyShares" },
+        { ...c, functionName: "totalValue" },
+      ],
+    });
+    return { shares, worthBase: supplyShares === 0n ? 0n : (shares * totalValue) / supplyShares };
+  });
+}

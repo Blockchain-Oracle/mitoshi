@@ -19,8 +19,9 @@ Owarine's; real data only; one slice at a time, deployed and checked at 1440 and
 
 ## Done so far (2026-10-12)
 R1 `5de517b` · R1b `7b80542` (the owner's clip, "move wallet connect to the end": the ticket's CTA is the order when
-signed out; sign-in opens for it and keeps the side and stake) · P5 `stocks` · P6 phone pass. All on the trunk and
-deployed to testnet. Next: the after-P6 list below, in order.
+signed out; sign-in opens for it and keeps the side and stake) · P5 `stocks` · P6 phone pass · `/earn` (D-225: Owarine's
+four-tab reserve page on the deployed maker vault and reserves). All on the trunk and deployed to testnet. Next: the
+after-P6 list below, in order.
 
 ## R1 — Words and the way in
 1. **Dead copy out.** `providers/wallet/copy.ts` `SIGN_IN` (eyebrow, body, create, nameLabel, namePlaceholder, signIn,
@@ -75,7 +76,7 @@ deployed to testnet. Next: the after-P6 list below, in order.
 - Check at 375: markets hero + ticket sheet, portfolio, stocks, games, sign-in sheet, account popover.
 
 ## After P6 (sequenced, not cut)
-`/earn`, `/launch*`, `/themes*` on the deployed contracts; S14 bridge and reserves; S11 X; S12b arena; SM1–SM5.
+~~`/earn`~~ (done, D-225), `/launch*`, `/themes*` on the deployed contracts; S14 bridge and reserves; S11 X; S12b arena; SM1–SM5.
 
 ## Verification per slice
 `tsc`, invariants, targeted vitest, `pnpm build` + route budgets; deploy web (`coolify deploy uuid

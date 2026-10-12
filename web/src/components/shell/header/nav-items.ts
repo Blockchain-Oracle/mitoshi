@@ -55,7 +55,7 @@ export const NAV_ITEMS = {
   agents: item({ id: "agents", name: "Agents", href: "/agents", description: "Copy automated market agents.", icon: Bot }),
   xTrade: item({ id: "x-trade", name: "X-trade", href: "/trade-from-x", description: "Turn a post into a bounded trade.", icon: XLogo }),
   launch: item({ id: "launch", name: "Launch", href: "/launch", description: "Launch a stablecoin or a memecoin.", icon: Rocket, keywords: "token create memecoin stablecoin" }),
-  earn: item({ id: "earn", name: "Earn", href: "/earn", description: "Put capital into earning opportunities.", icon: Coins, keywords: "vault yield maker" }),
+  earn: item({ id: "earn", name: "Earn", href: "/earn", description: "Supply the maker vault and the house reserves.", icon: Coins, keywords: "vault yield maker reserve supply" }),
   parlay: item({ id: "parlay", name: "Parlay", href: "/parlay", description: "Combine several market outcomes.", icon: ChartNoAxesCombined }),
   sensei: item({ id: "sensei", name: "Sensei", href: "/trade?d=trade-sensei", description: "Ask the market assistant about the Window on screen.", icon: MessageSquare, keywords: "assistant ai help", match: { paths: [] } }),
   surface: item({ id: "surface", name: "Market Surface", href: "/surface", description: "Read the market structure at a glance.", icon: ScanSearch }),

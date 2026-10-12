@@ -12,6 +12,7 @@ export {
   readFairModels,
   readOpenedTicket,
   readParlayOwed,
+  getParlaySharesOf,
   readParlayReserve,
   toParlayParams,
   type FairModel,
