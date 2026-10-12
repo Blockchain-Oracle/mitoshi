@@ -12,6 +12,7 @@ fragments and its acceptance records (`docs/plan/acceptance/`) before it is writ
 5. When the app advances, `pnpm check` lists the commits since `site.revision`: read them, update the guides they touch,
    then advance `revision` and `reviewed` in `lib/site.ts`. Never advance the pin to silence the warning.
 6. After a deployment changes, run `pnpm sync:deployments`; after `lib/architecture.json` changes, `pnpm diagrams`.
-7. Captures and walkthroughs come only from the deployed product: add them to `scripts/media-plan.json`, run
+7. Captures and walkthroughs come only from the deployed product: add them to `scripts/media-plan.json` with the app
+   files that draw the screen (`sources`), prove them with `pnpm media:record --probe`, run
    `pnpm media:record && pnpm media:publish` after the deploy, and check each one before committing it. Never edit a
-   published file; record it again.
+   published file; record it again when the check lists commits to its screen.

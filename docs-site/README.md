@@ -58,18 +58,21 @@ not an ancestor of `HEAD`, and lists the app commits since it — the list to re
 
 ```sh
 pnpm exec playwright install chromium   # once
+pnpm media:record --probe                # every page, link and step against the live product; no pixels kept
 pnpm media:record                        # headless Chromium at 2×, signed out, https://testnet.mitoshi.xyz only
 pnpm media:publish                       # copies captures byte for byte, encodes walkthroughs (ffmpeg), hashes all
 ```
 
-`--only name,name` records a few. A page that answers ≥ 400 or a step that fails leaves its item unpublished and says
-where. `public/captures/provenance-media.json` holds each published file's SHA-256, which `pnpm check:content` re-hashes;
-a planned item not yet recorded renders nothing and the check lists it.
+`--only name,name` records a few. A page that answers ≥ 400, a step that fails, or a route still showing its not-built
+placeholder leaves its item unpublished and says where. `public/captures/provenance-media.json` holds each published
+file's SHA-256, which `pnpm check:content` re-hashes; a planned item not yet recorded renders nothing and the check lists
+it with the latest probe's verdict (`evidence/media-probe-<date>.json`). Each plan item names the app files that draw its
+screen; after it is recorded, the check lists the commits that touched them — the cue to record it again.
 
 ## Evidence
 
 `evidence/` holds dated snapshots the guides cite: ops' `/health` and the mirrors' total supply, both read on 12 October
-2026. It is excluded from the image.
+2026, and the media probe of the same day. It is excluded from the image.
 
 ## Deploy
 

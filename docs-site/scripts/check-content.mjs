@@ -7,7 +7,9 @@
  * an architecture graph out of shape, deployments that differ from the fragments, a transaction hash that no
  * acceptance record or receipt list holds, an address that no fragment or record names, or a previous chain's words.
  * Recorded media (scripts/media-plan.json → pnpm media:record → pnpm media:publish) must match their SHA-256; a guide may
- * name a planned capture or walkthrough before it is recorded, and the check lists those as pending.
+ * name a planned capture or walkthrough before it is recorded, and the check lists those as pending, with what the
+ * latest `pnpm media:record --probe` found. Each plan item names the app files that draw its screen; a missing one
+ * fails, and commits that touched them after an item was recorded are listed as the cue to record it again.
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve, relative, dirname } from 'node:path';
@@ -87,7 +89,7 @@ const shippedNames = new Set([...captureSource.matchAll(/^  ([A-Za-z]\w*): \{/gm
 const captureNames = new Set([...shippedNames, ...Object.keys(mediaRegistry.captures)]);
 const plannedCaptures = new Set(mediaPlan.captures.map(c => c.name));
 const plannedWalkthroughs = new Set(mediaPlan.walkthroughs.map(w => w.name));
-const pending = new Set();
+const pending = new Map();
 for (const path of files(content).filter(p => p.endsWith('.mdx'))) {
   pages++;
   const body = readFileSync(path, 'utf8');
@@ -103,12 +105,12 @@ for (const path of files(content).filter(p => p.endsWith('.mdx'))) {
   for (const [, name] of body.matchAll(/<GuideCapture\s+name="([^"]+)"/g)) {
     media++;
     if (captureNames.has(name)) continue;
-    if (plannedCaptures.has(name)) pending.add(`capture ${name} (${label})`); else fail(`${label}: unknown capture ${name}`);
+    if (plannedCaptures.has(name)) pending.set(name, `capture ${name} (${label})`); else fail(`${label}: unknown capture ${name}`);
   }
   for (const [, name] of body.matchAll(/<Walkthrough\s+name="([^"]+)"/g)) {
     media++;
     if (name in mediaRegistry.walkthroughs) continue;
-    if (plannedWalkthroughs.has(name)) pending.add(`walkthrough ${name} (${label})`); else fail(`${label}: unknown walkthrough ${name}`);
+    if (plannedWalkthroughs.has(name)) pending.set(name, `walkthrough ${name} (${label})`); else fail(`${label}: unknown walkthrough ${name}`);
   }
   for (const [, name] of body.matchAll(/<Architecture\s+name="([^"]+)"/g)) { media++; if (!(name in graphs)) fail(`${label}: unknown architecture ${name}`); }
   for (const [hash] of body.matchAll(/0x[0-9a-fA-F]{64}\b/g)) { hashes++; if (!record.includes(hash.toLowerCase())) fail(`${label}: ${hash} is in no acceptance record, receipt list or fragment`); }
@@ -140,17 +142,37 @@ for (const c of provenance.captures) {
   if (!shippedNames.has(c.name)) fail(`Capture ${c.name}: not in lib/captures.ts`);
 }
 // Recorded media: every published file is the one its provenance hashed, and every registry entry has its files.
+const planItems = [...mediaPlan.captures, ...mediaPlan.walkthroughs];
+const screenOf = item => [...(mediaPlan.shared ?? []), ...(item.sources ?? [])];
+for (const p of mediaPlan.shared ?? []) if (!existsSync(resolve(source, p))) fail(`media-plan shared: source path missing ${p}`);
+for (const item of planItems) {
+  if (!item.sources?.length) fail(`media-plan ${item.name}: no sources`);
+  for (const p of item.sources ?? []) if (!existsSync(resolve(source, p))) fail(`media-plan ${item.name}: source path missing ${p}`);
+}
 const mediaProvenance = resolve(root, 'public/captures/provenance-media.json');
+const recordedAt = new Map();
 if (existsSync(mediaProvenance)) {
   for (const item of JSON.parse(readFileSync(mediaProvenance, 'utf8')).items) {
     const file = resolve(root, 'public', item.file);
     if (!existsSync(file)) fail(`Media ${item.name}: missing ${item.file}`);
     else if (sha256(file) !== item.sha256) fail(`Media ${item.name}: SHA-256 differs from provenance-media.json`);
+    recordedAt.set(item.name.split(':')[0], item.capturedAt);
   }
+}
+// A recording is as old as the screen it shows: list the commits that touched its screen after it was taken.
+for (const item of planItems) {
+  const at = recordedAt.get(item.name);
+  if (!at || !item.sources?.length) continue;
+  const since = git('log', `--since=${at}`, '--format=%h', 'HEAD', '--', ...screenOf(item))?.split('\n').filter(Boolean) ?? [];
+  if (since.length) warnings.push(`${item.name} (recorded ${at.slice(0, 10)}): ${since.length} app commit(s) touched its screen since (${since.slice(0, 5).join(' ')}${since.length > 5 ? ' …' : ''}) — record it again after they deploy`);
 }
 for (const [name, c] of Object.entries(mediaRegistry.captures)) if (!existsSync(resolve(root, 'public/captures', c.file))) fail(`Capture ${name}: missing ${c.file}`);
 for (const [name, w] of Object.entries(mediaRegistry.walkthroughs)) for (const path of [w.poster, w.captions, w.metadata, ...w.sources.map(s => s.src)]) if (!existsSync(resolve(root, 'public', path.slice(1)))) fail(`Walkthrough ${name}: missing ${path}`);
-if (pending.size) warnings.push(`${pending.size} planned capture(s) or walkthrough(s) not recorded yet — they render nothing until \`pnpm media:record && pnpm media:publish\` runs against the deployed product:`, ...[...pending].map(p => `  ${p}`));
+// The latest probe says which pending items the live product can be filmed for now.
+const probeFile = readdirSync(resolve(root, 'evidence')).filter(f => /^media-probe-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort().at(-1);
+const probe = probeFile ? new Map(JSON.parse(readFileSync(resolve(root, 'evidence', probeFile), 'utf8')).results.map(r => [r.name, r])) : new Map();
+const probeNote = name => { const r = probe.get(name); return !r ? '' : r.ok ? ` — probe ${r.at?.slice(0, 10) ?? ''}: ready` : ` — probe ${r.at?.slice(0, 10) ?? ''}: ${/placeholder/.test(r.error) ? 'not built yet' : r.error.slice(0, 80)}`; };
+if (pending.size) warnings.push(`${pending.size} planned capture(s) or walkthrough(s) not recorded yet — they render nothing until \`pnpm media:record && pnpm media:publish\` runs against the deployed product:`, ...[...pending].map(([name, p]) => `  ${p}${probeNote(name)}`));
 
 // 5. Architecture graphs and their SVGs.
 for (const [name, graph] of Object.entries(graphs)) {
