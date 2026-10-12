@@ -11,6 +11,8 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { walletActions } from "viem";
 import { useConnections, useConnectorClient, useDisconnect, useReconnect, useSignMessage, useSwitchChain, WagmiProvider } from "wagmi";
+import { getConnectorClient } from "wagmi/actions";
+import type { SideWallet } from "@cwf/markets/stocks";
 import { webEnv } from "@/lib/env";
 import { capsOf, kindOf } from "./connector-kind";
 import { getWagmiConfig, SIDE_CHAINS, TEMPO_CHAIN } from "./wagmi-config";
@@ -96,6 +98,21 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
     return (await signMessageAsync({ message, account: tempo.address, connector: c.connector })) as Hex;
   }, [connections, signMessageAsync, tempo]);
 
+  // The linked Robinhood wallet for the bridge-in (R4-12, D-227): switch its chain, and its viem wallet client — the
+  // sends themselves happen in `@cwf/markets/stocks` (the write boundary).
+  const sideConnector = useCallback(() => {
+    const c = connections.find((conn) => conn.connector.id === robinhood?.connectorId);
+    if (!c || !robinhood) throw new Error("no Robinhood wallet linked");
+    return c.connector;
+  }, [connections, robinhood]);
+  const switchSide = useCallback(async (chainId: number) => {
+    await switchChainAsync({ chainId: chainId as (typeof SIDE_CHAINS)[number]["id"], connector: sideConnector() });
+  }, [switchChainAsync, sideConnector]);
+  const sideWallet = useCallback(async (chainId: number) => {
+    const client = await getConnectorClient(getWagmiConfig(), { connector: sideConnector(), chainId: chainId as (typeof SIDE_CHAINS)[number]["id"] });
+    return client.extend(walletActions) as unknown as SideWallet;
+  }, [sideConnector]);
+
   const wrongChain = tempo !== null && tempo.chainId !== TEMPO_CHAIN.id;
   const walletKey = useWalletKey(tempo, connections);
   const shell = useMemo<WalletShell>(
@@ -111,12 +128,14 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
       openPicker,
       disconnect,
       switchToTempo,
+      switchSide,
+      sideWallet,
       signMessage,
       walletKey: walletKey.key,
       canArmWalletKey: walletKey.canArm,
       armWalletKey: walletKey.arm,
     }),
-    [hydrated, restoring, tempo, robinhood, wrongChain, pickerMode, pickerIntent, openPicker, disconnect, switchToTempo, signMessage, walletKey.key, walletKey.canArm, walletKey.arm],
+    [hydrated, restoring, tempo, robinhood, wrongChain, pickerMode, pickerIntent, openPicker, disconnect, switchToTempo, switchSide, sideWallet, signMessage, walletKey.key, walletKey.canArm, walletKey.arm],
   );
   useEffect(() => publish(shell), [publish, shell]);
 

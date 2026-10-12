@@ -29,6 +29,8 @@ describe("a transfer from LZ Scan and receipts (bridge-watch and the tracker, R4
     expect(held).toMatchObject({ status: "deferred", phase: "deferred" });
     expect(held.legs[1]!.deferReason).toBe("supply-cap");
     expect(advanceTransfer(row, { src: "reverted", legs: [], bounced: false }, null, 1)).toMatchObject({ status: "reverted", phase: "nothing", legs: [] });
+    expect(advanceTransfer(row, { src: null, legs: [{ msg: null, deferral: null }], bounced: false }, null, 31 * 60_000)).toMatchObject({ status: "failed", phase: "nothing" });
+    expect(advanceTransfer(row, { src: null, legs: [{ msg: null, deferral: null }], bounced: false }, null, 29 * 60_000).status).toBe("in-flight");
     expect(advanceTransfer(row, { src: "success", legs: [{ msg: hopDone, deferral: null }], bounced: true }, null, 1).status).toBe("failed");
   });
 });

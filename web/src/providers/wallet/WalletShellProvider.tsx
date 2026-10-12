@@ -68,6 +68,12 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
       },
       disconnect: async () => undefined,
       switchToTempo: async () => undefined,
+      switchSide: async () => {
+        throw new Error("no Robinhood wallet linked");
+      },
+      sideWallet: async () => {
+        throw new Error("no Robinhood wallet linked");
+      },
       signMessage: async () => {
         throw new Error("no wallet connected");
       },

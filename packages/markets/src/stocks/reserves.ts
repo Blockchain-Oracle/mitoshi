@@ -17,7 +17,8 @@ import { stockSyncReceiverAbi } from "@cwf/clients/abis/StockSyncReceiver";
 import { tIP20MintBurnAdapterAbi } from "@cwf/clients/abis/TIP20MintBurnAdapter";
 import { transitOFTAbi } from "@cwf/clients/abis/TransitOFT";
 import { withReading } from "../runtime/reading";
-import { lockboxExtraAbi, tip20RolesAbi } from "./abis";
+import { iTIP20RolesAuthAbi } from "@cwf/clients/abis/ITIP20RolesAuth";
+import { stockLockboxAbi } from "@cwf/clients/abis/StockLockbox";
 import { RH_DECIMALS } from "./params";
 import type { BridgeClients } from "./clients";
 import { bridgeTopology, type TickerContracts } from "./topology";
@@ -49,7 +50,7 @@ async function patient<T>(run: () => Promise<T>, tries = 5): Promise<T> {
 /** Applies `RoleMembershipUpdated(ISSUER_ROLE)` events in (`fromBlock`, `toBlock`] to a prior holder set. */
 export async function scanIssuers(client: PublicClient, mirror: Address, fromBlock: bigint, toBlock: bigint, prior: readonly Address[] = []): Promise<IssuerScan> {
   const holders = new Set(prior.map((a) => a.toLowerCase() as Address));
-  const event = tip20RolesAbi.find((e) => e.type === "event" && e.name === "RoleMembershipUpdated")!;
+  const event = iTIP20RolesAuthAbi.find((e) => e.type === "event" && e.name === "RoleMembershipUpdated")!;
   for (let from = fromBlock; from <= toBlock; from += LOG_RANGE) {
     const to = from + LOG_RANGE - 1n < toBlock ? from + LOG_RANGE - 1n : toBlock;
     const logs = await patient(() => client.getLogs({ address: mirror, event, args: { role: ISSUER_ROLE }, fromBlock: from, toBlock: to }));
@@ -110,7 +111,7 @@ async function tempoSide(c: PublicClient, t: TickerContracts, receiver: Address 
       { address: adapter, abi: tIP20MintBurnAdapterAbi, functionName: "sendsPaused" },
       { address: adapter, abi: tIP20MintBurnAdapterAbi, functionName: "inboundLimit" },
       { address: adapter, abi: tIP20MintBurnAdapterAbi, functionName: "outboundLimit", args: [LZ_EID.baseSepolia] },
-      { address: mirror, abi: tip20RolesAbi, functionName: "hasRole", args: [adapter, ISSUER_ROLE] },
+      { address: mirror, abi: iTIP20RolesAuthAbi, functionName: "hasRole", args: [adapter, ISSUER_ROLE] },
     ],
   });
   const [multiplier, sync] = await Promise.all([
@@ -144,9 +145,9 @@ export async function readReserves(clients: BridgeClients, known: KnownIssuers =
           t.transit && clients.base && baseBlock !== null ? clients.base.readContract({ address: t.transit, abi: transitOFTAbi, functionName: "totalSupply", blockNumber: baseBlock }) : Promise.resolve(null),
           t.lockbox && rhBlock !== null
             ? Promise.all([
-                clients.robinhood.readContract({ address: t.lockbox, abi: lockboxExtraAbi, functionName: "reserveView", blockNumber: rhBlock }),
-                clients.robinhood.readContract({ address: t.lockbox, abi: lockboxExtraAbi, functionName: "locksPaused", blockNumber: rhBlock }),
-                clients.robinhood.readContract({ address: t.lockbox, abi: lockboxExtraAbi, functionName: "outboundLimit", args: [LZ_EID.baseSepolia], blockNumber: rhBlock }),
+                clients.robinhood.readContract({ address: t.lockbox, abi: stockLockboxAbi, functionName: "reserveView", blockNumber: rhBlock }),
+                clients.robinhood.readContract({ address: t.lockbox, abi: stockLockboxAbi, functionName: "locksPaused", blockNumber: rhBlock }),
+                clients.robinhood.readContract({ address: t.lockbox, abi: stockLockboxAbi, functionName: "outboundLimit", args: [LZ_EID.baseSepolia], blockNumber: rhBlock }),
               ])
             : Promise.resolve(null),
         ]);

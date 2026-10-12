@@ -6,7 +6,7 @@
 import { parseEventLogs, type Address, type Hex, type PublicClient } from "viem";
 import { DEFER_REASONS, type DeferReason } from "@cwf/core";
 import { tIP20MintBurnAdapterAbi } from "@cwf/clients/abis/TIP20MintBurnAdapter";
-import { lockboxExtraAbi } from "./abis";
+import { stockLockboxAbi } from "@cwf/clients/abis/StockLockbox";
 
 /** A source or destination receipt's outcome; null while the chain has none. */
 export async function receiptStatus(client: PublicClient, tx: Hex): Promise<"success" | "reverted" | null> {
@@ -33,7 +33,7 @@ export async function tempoDeferral(client: PublicClient, tx: Hex, adapter: Addr
 /** A Robinhood unlock the lockbox owed instead of transferring (`UnlockDeferred`), or null. */
 export async function robinhoodDeferral(client: PublicClient, tx: Hex, lockbox: Address): Promise<Deferral | null> {
   const receipt = await client.getTransactionReceipt({ hash: tx });
-  const [log] = parseEventLogs({ abi: lockboxExtraAbi, eventName: "UnlockDeferred", logs: receipt.logs.filter((l) => l.address.toLowerCase() === lockbox.toLowerCase()) });
+  const [log] = parseEventLogs({ abi: stockLockboxAbi, eventName: "UnlockDeferred", logs: receipt.logs.filter((l) => l.address.toLowerCase() === lockbox.toLowerCase()) });
   return log ? { to: log.args.to, amount: log.args.amountLD, reason: "call-reverted" } : null;
 }
 

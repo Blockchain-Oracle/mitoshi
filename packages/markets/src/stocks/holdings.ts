@@ -9,7 +9,7 @@ import { diagnosis, err, toShared, LZ_EID, type BridgeDirection, type BridgeTick
 import { TEMPO } from "@cwf/clients";
 import { tIP20MintBurnAdapterAbi } from "@cwf/clients/abis/TIP20MintBurnAdapter";
 import { withReading } from "../runtime/reading";
-import { lockboxExtraAbi } from "./abis";
+import { stockLockboxAbi } from "@cwf/clients/abis/StockLockbox";
 import { RH_DECIMALS } from "./params";
 import type { BridgeClients } from "./clients";
 import { bridgeTopology } from "./topology";
@@ -40,7 +40,7 @@ export async function readRobinhoodHoldings(clients: BridgeClients, ticker: Brid
       c.getBalance({ address: owner }),
       c.readContract({ address: t.rhStock!, abi: erc20Abi, functionName: "balanceOf", args: [owner] }),
       t.lockbox ? c.readContract({ address: t.rhStock!, abi: erc20Abi, functionName: "allowance", args: [owner, t.lockbox] }) : Promise.resolve(0n),
-      t.lockbox ? c.readContract({ address: t.lockbox, abi: lockboxExtraAbi, functionName: "owed", args: [owner] }) : Promise.resolve(0n),
+      t.lockbox ? c.readContract({ address: t.lockbox, abi: stockLockboxAbi, functionName: "owed", args: [owner] }) : Promise.resolve(0n),
     ]);
     return { eth, stockLD, allowanceLD, owedLD };
   });
@@ -89,7 +89,7 @@ export async function readRouteCapacity(clients: BridgeClients, ticker: BridgeTi
     }
     const [inbound, outbound] = await Promise.all([
       clients.tempo.readContract({ address: t.adapter!, abi: tIP20MintBurnAdapterAbi, functionName: "inboundLimit" }),
-      clients.robinhood.readContract({ address: t.lockbox!, abi: lockboxExtraAbi, functionName: "outboundLimit", args: [LZ_EID.baseSepolia] }),
+      clients.robinhood.readContract({ address: t.lockbox!, abi: stockLockboxAbi, functionName: "outboundLimit", args: [LZ_EID.baseSepolia] }),
     ]);
     const lockAvail = toShared(outbound[2], RH_DECIMALS);
     const lockCap = toShared(outbound[0], RH_DECIMALS);

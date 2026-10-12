@@ -13,7 +13,7 @@ import { diagnosis, err, LZ_EID, removeDust, toShared, type BridgeDirection, typ
 import { transitOFTAbi } from "@cwf/clients/abis/TransitOFT";
 import { tIP20MintBurnAdapterAbi } from "@cwf/clients/abis/TIP20MintBurnAdapter";
 import { withReading } from "../runtime/reading";
-import { lockboxExtraAbi } from "./abis";
+import { stockLockboxAbi } from "@cwf/clients/abis/StockLockbox";
 import type { BridgeClients } from "./clients";
 import { inSendParam, outSendParam, RH_DECIMALS, type SendParam } from "./params";
 import { bridgeTopology, type TickerContracts } from "./topology";
@@ -40,7 +40,7 @@ export interface RouteLinks {
 export async function readRouteLinks(clients: BridgeClients, ticker: BridgeTicker): Promise<Reading<RouteLinks>> {
   return withReading(`bridge:links:${clients.network}:${ticker}`, async () => {
     const t = bridgeTopology(clients.network).tickers[ticker];
-    const peer = async (c: PublicClient | null, address: Address | null, eid: number, abi: typeof tIP20MintBurnAdapterAbi | typeof transitOFTAbi | typeof lockboxExtraAbi) => {
+    const peer = async (c: PublicClient | null, address: Address | null, eid: number, abi: typeof tIP20MintBurnAdapterAbi | typeof transitOFTAbi | typeof stockLockboxAbi) => {
       if (!c || !address) return false;
       const p = (await c.readContract({ address, abi, functionName: "peers", args: [eid] } as never)) as Hex;
       return p !== ZERO32;
@@ -49,7 +49,7 @@ export async function readRouteLinks(clients: BridgeClients, ticker: BridgeTicke
       peer(clients.tempo, t.adapter, LZ_EID.baseSepolia, tIP20MintBurnAdapterAbi),
       peer(clients.base, t.transit, LZ_EID.moderato, transitOFTAbi),
       peer(clients.base, t.transit, LZ_EID.robinhoodTestnet, transitOFTAbi),
-      peer(clients.robinhood, t.lockbox, LZ_EID.baseSepolia, lockboxExtraAbi),
+      peer(clients.robinhood, t.lockbox, LZ_EID.baseSepolia, stockLockboxAbi),
     ]);
     const robinhoodLive = t.lockbox !== null;
     return { inReady: robinhoodLive && lockboxToBase && baseToTempo && adapterToBase, outReady: robinhoodLive && adapterToBase && baseToRh, robinhoodLive };

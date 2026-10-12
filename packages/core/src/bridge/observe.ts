@@ -77,11 +77,16 @@ function record(prev: LegRecord | undefined, obs: LegObservation | undefined, co
   };
 }
 
+/** How long a recorded hash may go unseen (no receipt, no LayerZero message) before it is dropped. */
+export const NEVER_SEEN_MS = 30 * 60_000;
+
 const STATUS_OF: Record<TrackerPhase, BridgeRowStatus> = { wallet: "pending", sent: "in-flight", hop: "in-flight", slow: "in-flight", fuel: "stuck", deferred: "deferred", delivered: "delivered", nothing: "reverted" };
 
 export function advanceTransfer(row: TransferView, obs: TransferObservation, eta: BridgeEta | null, nowMs: number): BridgeAdvance {
   const route = routeOf(row.direction, row.network);
   if (obs.src === "reverted") return { status: "reverted", phase: "nothing", legs: [], lastError: "the source transaction reverted; nothing moved" };
+  // A hash no chain ever confirmed (a dropped or invented transaction) stops being followed after a while.
+  if (obs.src === null && !obs.legs[0]?.msg && nowMs - row.createdAtMs > NEVER_SEEN_MS) return { status: "failed", phase: "nothing", legs: [], lastError: "the source transaction never appeared on chain" };
   const legs: LegRecord[] = [];
   for (const plan of route.legs) {
     const i = plan.index;
