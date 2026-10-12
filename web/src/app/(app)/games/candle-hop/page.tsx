@@ -1,9 +1,9 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
+// /games/candle-hop — Owarine 90a91d71's arcade, score-only (P4, D-223).
+import { ArcadeStage } from "@/features/games/arcade/ArcadeStage";
 import { pendingFor } from "@/lib/capabilities";
 
 export const metadata = { title: pendingFor("/games/candle-hop").title };
 
-export default function GamesCandleHopPage() {
-  return <PendingRoute route="/games/candle-hop" />;
+export default function Page() {
+  return <ArcadeStage game="candle-hop" />;
 }

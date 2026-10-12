@@ -1,9 +1,9 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
+// /games — Owarine 90a91d71's hub (P4, D-223): every mode, whose money is at risk in each, and what each waits on.
+import { GamesHubIsland } from "@/features/games/GamesIsland";
 import { pendingFor } from "@/lib/capabilities";
 
 export const metadata = { title: pendingFor("/games").title };
 
-export default function GamesPage() {
-  return <PendingRoute route="/games" />;
+export default function Page() {
+  return <GamesHubIsland />;
 }

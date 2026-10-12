@@ -1,0 +1,239 @@
+/* The swipe stage — the deck, one card, the two calls, and the strip that says where you are.
+ *
+ * Shared by Practice and the Duel, so nothing here knows about money: the face is a slot the mode
+ * fills. Same two rules as games.css — dark values first with a `[data-theme="light"]` override, and
+ * every colour a Yosuku token or an alpha step over one.
+ */
+
+.st-stage { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Where you are in the deck ────────────────────────────────────────────── */
+
+.st-progress { display: flex; align-items: center; gap: 10px; }
+.st-pips { display: flex; align-items: center; gap: 6px; }
+.st-pip {
+  width: 22px; height: 4px; border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.14);
+  transition: background 200ms var(--ease);
+}
+[data-theme="light"] .st-pip { background: rgba(10, 10, 10, 0.14); }
+.st-pip--active { background: var(--gm-accent, var(--signal)); }
+.st-pip--up { background: var(--profit); }
+.st-pip--down { background: var(--loss); }
+.st-progress-label {
+  margin-left: auto;
+  font-family: var(--font-pixel); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gray-500);
+}
+
+/* ── The stack ────────────────────────────────────────────────────────────── */
+
+/* The stack is exactly one card tall — `popLayout` takes the leaving card out of the flow, so the
+ * two calls do not jump while a throw is in the air and nothing has to be reserved for it. A floor
+ * here instead left a band of dead space under every card that was shorter than the tallest one. */
+.st-deck { position: relative; }
+
+/* Opaque, and that is not a style choice: the cards behind sit directly under this one, so any
+ * translucency prints their asset, question and price straight through the card being played.
+ * `--color-surface-1` is the app's own card surface and already flips with the theme, which is why
+ * there is no light override here. */
+.st-card {
+  position: relative;
+  display: flex; flex-direction: column; gap: 10px;
+  border-radius: 20px; padding: 16px;
+  border: 1px solid var(--color-hairline); background: var(--color-surface-1);
+}
+
+/* The cards still to come, stacked behind and inert. Purely decorative: they carry aria-hidden.
+ * Anchored at the top rather than `inset: 0`, so a face taller than the stack's floor is clipped by
+ * its own card instead of spilling out below it. */
+.st-card--behind {
+  position: absolute; top: 0; left: 0; right: 0;
+  max-height: 100%; overflow: hidden;
+  transform: translateY(calc(var(--st-depth, 1) * 10px)) scale(calc(1 - var(--st-depth, 1) * 0.035));
+  opacity: calc(0.5 - var(--st-depth, 1) * 0.14);
+  pointer-events: none;
+}
+
+.st-card--active { z-index: 2; cursor: grab; touch-action: pan-x; overflow: hidden; }
+
+/* ── Flicky's five bands (swipe-screen.tsx L300–451), as tiles in the venue's tokens ─────────────────
+ * The reference's tile is `border-2 border-black/55 bg-[#0e1530]` with a highlight line inside the top edge
+ * and a shadow line inside the bottom; here the paint is a step of the page's own ground and the two lines
+ * are alpha over it, so the tiles flip with the theme. */
+.st-band {
+  position: relative;
+  border-radius: 10px;
+  border: 1px solid var(--color-hairline);
+  background: color-mix(in srgb, var(--bg) 55%, var(--color-surface-1));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.06), inset 0 -2px 0 rgba(0, 0, 0, 0.45);
+}
+[data-theme="light"] .st-band { box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(10, 10, 10, 0.08); }
+
+/* Band 1 — the title banner: the pair on the left in the reference's amber (signal here), N/M on the right. */
+.st-band--title { display: flex; align-items: center; gap: 8px; padding: 7px 10px; }
+.st-title-asset {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-pixel); font-size: 16px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--signal-ink);
+}
+.st-asset-disc { width: 16px; height: 16px; display: inline-grid; place-items: center; border-radius: 9999px; }
+.st-asset-disc .asset-mark { width: 16px; height: 16px; }
+.st-asset-disc.generic { background: rgba(255, 255, 255, 0.14); font-family: var(--font-mono); font-size: 9px; color: var(--white); font-variant-numeric: tabular-nums; }
+[data-theme="light"] .st-asset-disc.generic { background: rgba(10, 10, 10, 0.12); }
+.st-cadence {
+  padding: 2px 8px; border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: var(--font-pixel); font-size: 11px; letter-spacing: 0.06em;
+  color: var(--gray-400);
+}
+[data-theme="light"] .st-cadence { border-color: rgba(10, 10, 10, 0.14); }
+.st-title-place { margin-left: auto; font-family: var(--font-pixel); font-size: 16px; letter-spacing: 0.18em; color: var(--gray-500); font-variant-numeric: tabular-nums; }
+
+/* Band 2 — the art window and its CRT face (Flicky globals.css L360–425, swipe-screen.tsx L318–338). */
+.st-art {
+  position: relative; display: grid; place-items: center;
+  height: 132px; border-radius: 22px / 14px;
+  border: 1px solid var(--color-hairline);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--white) 6%, var(--bg)), var(--bg));
+}
+.st-art svg { width: 88px; height: 88px; grid-area: 1 / 1; transition: transform 200ms var(--ease), filter 200ms var(--ease); }
+.st-art-up, .st-art-down { display: none; }
+.st-card[data-swipe="up"] .st-art-idle, .st-card[data-swipe="down"] .st-art-idle { display: none; }
+.st-card[data-swipe="up"] .st-art-up { display: block; transform: scale(1.18) rotate(-4deg); filter: drop-shadow(0 0 12px var(--profit)); }
+.st-card[data-swipe="down"] .st-art-down { display: block; transform: scale(1.18) rotate(4deg); filter: drop-shadow(0 0 12px var(--loss)); }
+.st-art-idle { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--signal) 60%, transparent)); }
+/* The four screws in the window's corners (L321–324): a 6px square of ink, half strength. */
+.st-art-screw { position: absolute; width: 6px; height: 6px; background: rgba(0, 0, 0, 0.5); z-index: 4; }
+.st-art-screw--tl { top: 4px; left: 4px; }
+.st-art-screw--tr { top: 4px; right: 4px; }
+.st-art-screw--bl { bottom: 4px; left: 4px; }
+.st-art-screw--br { bottom: 4px; right: 4px; }
+[data-theme="light"] .st-art-screw { background: rgba(10, 10, 10, 0.35); }
+
+/* The CRT: pillow corners, a glass gleam, an edge vignette, scanlines, and a flicker that reduced motion stills. */
+.crt-screen {
+  position: relative; overflow: hidden; border-radius: 22px / 14px;
+  background-image: radial-gradient(ellipse 65% 45% at 28% 22%, rgba(255, 255, 255, 0.06), transparent 70%);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.55), inset 0 0 60px rgba(0, 0, 0, 0.35);
+}
+.crt-screen::before {
+  content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; mix-blend-mode: overlay;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+}
+.crt-screen::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; background: rgba(18, 16, 16, 0.12); opacity: 0; animation: crt-flicker 0.18s infinite; }
+@keyframes crt-flicker { 0% { opacity: 0.03; } 10% { opacity: 0.08; } 20% { opacity: 0.02; } 30% { opacity: 0.1; } 40% { opacity: 0.04; } 50% { opacity: 0.07; } 60% { opacity: 0.03; } 70% { opacity: 0.09; } 80% { opacity: 0.04; } 90% { opacity: 0.06; } 100% { opacity: 0.03; } }
+[data-theme="light"] .crt-screen { box-shadow: inset 0 0 18px rgba(10, 10, 10, 0.25), inset 0 0 60px rgba(10, 10, 10, 0.12); }
+
+/* Band 3 — the quote box (L338–369): a hairline inset one step inside the tile, the eyebrow, the question, the clock. */
+.st-band--quote { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; }
+.st-quote-inset { position: absolute; inset: 4px; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 7px; pointer-events: none; }
+[data-theme="light"] .st-quote-inset { border-color: rgba(10, 10, 10, 0.08); }
+.st-eyebrow { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase; color: color-mix(in srgb, var(--signal-ink) 80%, transparent); }
+.st-question { font-family: var(--font-display); font-weight: 800; font-size: 26px; line-height: 1.05; letter-spacing: -0.02em; color: var(--white); font-stretch: 100%; }
+.st-question-pending { color: var(--gray-500); }
+.st-clock {
+  display: flex; align-items: center; gap: 6px; margin-top: 2px;
+  font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gray-400); font-variant-numeric: tabular-nums;
+}
+.st-clock svg { width: 13px; height: 13px; }
+
+/* Band 4 — the two stat pills (L371–405): a label in the reference's dim uppercase, a figure in the pixel face. */
+.st-pills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.st-pill { display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; min-width: 0; }
+.st-pill-k { font-family: var(--font-pixel); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray-500); }
+.st-pill-v { font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-pill-v[data-tone="up"] { color: var(--profit); }
+.st-pill-v[data-tone="down"] { color: var(--loss); }
+.st-pill-v[data-tone="live"] { color: var(--white); }
+
+/* The behind cards show the back, as Flicky's peek does. */
+.st-card--back { display: grid; place-items: center; }
+.st-back-art { width: 96px; height: 96px; opacity: 0.9; }
+
+/* ── Flicky's drag signals (swipe-screen.tsx L268–297), in the venue's two colours ────────────── */
+
+/* The tint rises with the travel toward the commit line: emerald-500/25 and rose-500/25 there, the profit and loss tokens here. */
+.st-tint { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3; opacity: 0; }
+.st-tint--up { background: color-mix(in srgb, var(--profit) 25%, transparent); }
+.st-tint--down { background: color-mix(in srgb, var(--loss) 25%, transparent); }
+/* The stamp past 24px of travel: a bordered word at ∓6°, with the hard offset shadow of the reference's tiles. */
+.st-stamp {
+  position: absolute; z-index: 4; pointer-events: none;
+  padding: 4px 12px; border: 2px solid; border-radius: 4px;
+  background: color-mix(in srgb, var(--bg) 80%, transparent);
+  font-family: var(--font-pixel); font-weight: 400; font-size: 33px; line-height: 1;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.6);
+}
+.st-stamp--up { top: 18px; left: 18px; transform: rotate(-6deg); color: var(--profit); border-color: var(--profit); }
+.st-stamp--down { bottom: 18px; right: 18px; transform: rotate(6deg); color: var(--loss); border-color: var(--loss); }
+
+/* ── The clock's ramp and the depletion bar (globals.css L748–766, active-duel.tsx L399–418) ───── */
+
+.st-clock[data-urgency="calm"] { color: var(--profit); }
+.st-clock[data-urgency="near"] { color: var(--signal-ink); }
+.st-clock[data-urgency="last"] { color: var(--loss); }
+.st-clock[data-pulse], .st-deplete-fill[data-pulse] { animation: st-urgent 0.8s ease-in-out infinite; }
+@keyframes st-urgent { 50% { filter: brightness(1.35); text-shadow: 0 0 12px currentColor; } }
+.st-deplete { width: 100%; height: 4px; border-radius: 9999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+[data-theme="light"] .st-deplete { background: rgba(10, 10, 10, 0.12); }
+.st-deplete-fill { display: block; height: 100%; border-radius: inherit; background: var(--profit); transition: width 1s linear, background 300ms var(--ease); }
+.st-deplete-fill[data-urgency="near"] { background: var(--signal); color: var(--on-signal); }
+.st-deplete-fill[data-urgency="last"] { background: var(--loss); }
+.st-card--active:active { cursor: grabbing; }
+.st-card--active:focus-visible { outline: 2px solid var(--gm-accent, var(--signal-ink)); outline-offset: 3px; }
+/* A card that cannot be played is still readable — it just stops offering the gesture. */
+.st-card--held { cursor: default; opacity: 0.86; }
+
+.st-empty {
+  display: grid; place-items: center; min-height: 268px; gap: 6px;
+  border-radius: 20px; border: 1px dashed rgba(255, 255, 255, 0.12);
+  text-align: center; padding: 24px;
+}
+[data-theme="light"] .st-empty { border-color: rgba(10, 10, 10, 0.14); }
+.st-empty-title { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white); font-stretch: 100%; }
+.st-empty-body { font-size: 13px; line-height: 1.6; color: var(--gray-400); max-width: 44ch; }
+
+/* ── Band 5 — the two calls, as the reference's YES/NO chips (L407–451): an arrow, the word, the side's odds ── */
+.st-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.st-call {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px; border-radius: 14px; border: 1px solid;
+  font-family: var(--font-display); font-weight: 700; font-size: 14px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.06), inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+  transition: transform 140ms var(--ease), filter 140ms var(--ease), opacity 140ms var(--ease); font-stretch: 100%; }
+.st-call svg { width: 16px; height: 16px; }
+.st-call-odds { font-family: var(--font-pixel); font-size: 16px; letter-spacing: 0.06em; opacity: 0.75; font-variant-numeric: tabular-nums; }
+.st-call:disabled { opacity: 0.42; cursor: not-allowed; }
+/* The reference's `opacity-35 grayscale` on a side that cannot be placed; it stays pressable so the reason can be read. */
+.st-call[data-locked] { opacity: 0.4; filter: grayscale(1); }
+.st-call:not(:disabled):not([data-locked]):hover { filter: brightness(1.12); }
+.st-call:not(:disabled):active { transform: translateY(1px); }
+.st-call--up { border-color: var(--button-up-border); background: var(--button-up-fill); color: var(--button-up-ink); }
+.st-call--down { border-color: var(--button-down-border); background: var(--button-down-fill); color: var(--button-down-ink); }
+
+/* The hint is instruction, not metadata: it takes the body ink step rather than the dim meta one,
+ * which measured 4.0:1 on cream and is under the bar for text a first-time player has to read. */
+.st-hint { font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: var(--gray-400); text-align: center; font-variant-numeric: tabular-nums; }
+.st-hint--locked { color: var(--signal-ink); }
+.st-refusal {
+  border-radius: 12px; padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--signal-ink) 34%, transparent);
+  background: color-mix(in srgb, var(--signal) 7%, transparent);
+  font-size: 12px; line-height: 1.55; color: var(--gray-400);
+}
+
+@media (max-width: 720px) {
+  .st-empty { min-height: 224px; }
+}
+
+@media (max-width: 400px) {
+  .st-card { padding: 14px; gap: 10px; }
+  .st-question { font-size: 22px; }
+  .st-pill-v { font-size: 20px; }
+  .st-title-asset, .st-title-place { font-size: 14px; }
+}

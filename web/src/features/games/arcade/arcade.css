@@ -1,0 +1,151 @@
+/* The arcade pair — the one dark island under /games.
+ *
+ * Two rules, as games.css: dark values first with a `[data-theme="light"]` override, every colour a
+ * Yosuku token or an alpha step over one. The exception is deliberate and it is the screen itself:
+ * the field's black ground is part of the mechanic (the line's heat, the candles' colour, the grip's
+ * red all read against it), so `.ar-screen` re-declares the dark theme's own values as triplets that
+ * the theme cannot flip — the same move `reel-theme.css` makes, in the other direction. The draw
+ * modules read these triplets once per resize; no literal reaches TSX.
+ */
+
+.ar-head { margin-bottom: 20px; }
+.ar-title {
+  margin-top: 8px;
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(2rem, 5.6vw, 3rem); line-height: 0.96; letter-spacing: -0.04em;
+  color: var(--white); font-stretch: 100%; }
+.ar-title .accent { color: var(--signal-ink); }
+
+.ar-layout { display: grid; gap: 16px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 900px) {
+  .ar-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: 24px; }
+}
+.ar-main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.ar-side { display: flex; flex-direction: column; gap: 12px; }
+
+/* ── The screen ───────────────────────────────────────────────────────────── */
+
+.ar-screen {
+  --ar-ground-rgb: 5 5 5;
+  --ar-ink-rgb: 255 255 255;
+  --ar-up-rgb: 52 211 153;
+  --ar-down-rgb: 251 113 133;
+  --ar-accent-rgb: 224 77 38;
+  --ar-ink: rgb(var(--ar-ink-rgb));
+
+  position: relative;
+  width: 100%;
+  /* The field is 16:9 by definition; the screen keeps the ratio and never outgrows the viewport. */
+  aspect-ratio: 16 / 9;
+  max-width: min(100%, calc(72vh * 16 / 9));
+  margin: 0 auto;
+  border: 1px solid var(--color-hairline);
+  background: rgb(var(--ar-ground-rgb));
+  /* Pips's `--screen-rim`: the inset the field keeps clear of the bezel. */
+  --ar-rim: 14px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* The screen owns the thumb only while a run is live: a vertical drag is the ride's wheel then, and
+ * a page scroll the rest of the time — a phone must be able to scroll past a title card. */
+.ar-screen[data-phase="playing"] { touch-action: none; }
+.ar-screen:focus-visible { outline: 2px solid var(--gm-accent, var(--signal-ink)); outline-offset: 3px; }
+.ar-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+/* The four screws, as on the card's art window. */
+.ar-screw { position: absolute; width: 6px; height: 6px; background: rgb(var(--ar-ink-rgb) / 0.18); z-index: 4; pointer-events: none; }
+.ar-screw--tl { top: 4px; left: 4px; }
+.ar-screw--tr { top: 4px; right: 4px; }
+.ar-screw--bl { bottom: 4px; left: 4px; }
+.ar-screw--br { bottom: 4px; right: 4px; }
+
+/* The live readout, top-left over the field: the score in the pixel face, the best under it. */
+.ar-hud {
+  position: absolute; top: var(--ar-rim); left: calc(var(--ar-rim) + 12px); z-index: 5;
+  display: flex; flex-direction: column; gap: 2px; pointer-events: none;
+  color: var(--ar-ink);
+}
+.ar-hud-k { font-family: var(--font-pixel); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--ar-ink-rgb) / 0.55); }
+.ar-hud-v { font-family: var(--font-pixel); font-size: 33px; line-height: 1; font-variant-numeric: tabular-nums; }
+.ar-hud-best { font-family: var(--font-pixel); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--ar-ink-rgb) / 0.55); }
+.ar-hud-best b { font-weight: 400; color: rgb(var(--ar-ink-rgb) / 0.85); }
+.ar-hud-combo { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.1em; color: rgb(var(--ar-accent-rgb)); }
+@media (max-width: 480px) {
+  .ar-hud-v { font-size: 22px; }
+}
+
+/* The title and over plates sit over the field, in the field's own ink — never the theme's. */
+.ar-overlay {
+  position: absolute; inset: 0; z-index: 6;
+  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  padding: var(--ar-rim) calc(var(--ar-rim) + 12px);
+  background: rgb(var(--ar-ground-rgb) / 0.9);
+  color: var(--ar-ink);
+  animation: gm-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.ar-overlay-title { font-family: var(--font-pixel); font-size: 33px; line-height: 1; letter-spacing: 0.06em; text-transform: uppercase; }
+.ar-overlay-pitch { max-width: 44ch; font-size: 13px; line-height: 1.5; color: rgb(var(--ar-ink-rgb) / 0.7); }
+.ar-overlay-banner { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: rgb(var(--ar-ink-rgb) / 0.6); }
+.ar-overlay-banner[data-best] { color: rgb(var(--ar-accent-rgb)); }
+.ar-overlay-score { font-family: var(--font-pixel); font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
+.ar-overlay-sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: rgb(var(--ar-ink-rgb) / 0.55); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.ar-overlay-sub[data-tone="refused"] { color: rgb(var(--ar-down-rgb)); text-transform: none; letter-spacing: 0; }
+.ar-overlay-meta { font-family: var(--font-mono); font-size: 10px; color: rgb(var(--ar-ink-rgb) / 0.4); font-variant-numeric: tabular-nums; }
+.ar-overlay-actions { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+.ar-overlay .du-cta { align-self: flex-start; min-width: 160px; }
+.ar-overlay-best { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--ar-ink-rgb) / 0.6); font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) {
+  .ar-overlay { gap: 6px; }
+  .ar-overlay-title { font-size: 22px; }
+  .ar-overlay-pitch { font-size: 12px; line-height: 1.4; }
+  .ar-overlay-score { font-size: 33px; }
+  .ar-overlay .du-cta { min-height: 40px; min-width: 132px; }
+}
+@media (max-width: 360px) {
+  .ar-overlay-pitch { display: none; }
+}
+
+/* ── Under the screen: Pips's readout — the game's identity and the one control hint ───────────── */
+.ar-readout { display: flex; align-items: center; gap: 12px; }
+.ar-readout-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: var(--signal-ink); background: color-mix(in srgb, var(--signal) 10%, transparent); flex: none; }
+.ar-readout-icon svg { width: 18px; height: 18px; }
+.ar-readout-name { font-family: var(--font-pixel); font-size: 22px; line-height: 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--white); }
+.ar-readout-hint { margin-top: 4px; font-size: 12px; line-height: 1.4; color: var(--gray-400); }
+
+/* ── The side: the honesty note, the calm switch, the board ───────────────── */
+.ar-note {
+  display: flex; flex-direction: column; gap: 6px;
+  border-radius: 14px; padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(23, 22, 22, 0.4);
+}
+[data-theme="light"] .ar-note { border-color: rgba(10, 10, 10, 0.11); background: rgba(255, 255, 255, 0.94); }
+.ar-note-k { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-500); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.ar-note-body { font-size: 12px; line-height: 1.65; color: var(--gray-400); }
+.ar-honesty { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em; color: var(--gray-500); font-variant-numeric: tabular-nums; }
+
+.ar-calm { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.ar-calm input { margin-top: 3px; accent-color: var(--signal); }
+.ar-calm-text { display: flex; flex-direction: column; gap: 2px; }
+.ar-calm-label { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--white); font-stretch: 100%; }
+.ar-calm-hint { font-size: 12px; line-height: 1.5; color: var(--gray-400); }
+
+.ar-board { gap: 10px; }
+.ar-board-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.ar-board-title { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white); font-stretch: 100%; }
+.ar-board-banner { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--signal-ink); }
+.ar-board-rows { display: flex; flex-direction: column; gap: 4px; list-style: none; padding: 0; margin: 0; }
+.ar-board-row {
+  display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  padding: 6px 0;
+  font-family: var(--font-mono); font-size: 13px; color: var(--gray-400);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-variant-numeric: tabular-nums; }
+[data-theme="light"] .ar-board-row { border-bottom-color: rgba(10, 10, 10, 0.08); }
+.ar-board-row:last-child { border-bottom: 0; }
+.ar-board-row[data-you] { color: var(--signal-ink); }
+.ar-board-place { color: var(--gray-500); font-variant-numeric: tabular-nums; }
+.ar-board-who { display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ar-board-tag { padding: 1px 6px; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, 0.14); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-500); }
+[data-theme="light"] .ar-board-tag { border-color: rgba(10, 10, 10, 0.14); }
+.ar-board-score { font-variant-numeric: tabular-nums; color: var(--white); }
+.ar-board-row[data-you] .ar-board-score { color: var(--signal-ink); }
+.ar-board-foot { font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: var(--gray-500); font-variant-numeric: tabular-nums; }
+.ar-board-empty { font-size: 12px; line-height: 1.6; color: var(--gray-400); }
