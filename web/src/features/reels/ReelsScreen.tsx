@@ -4,6 +4,7 @@
 // Native scroll-snap, not drag physics; from 21st 23559 (snap carousel) each card is a labelled slide ("3 of 18"), the
 // position is announced, ↑/↓ move a card and desktop gets visible previous/next buttons. The Take button opens the
 // composer bound to the Window on screen (UX fix 10). Agari's holding and desk cards have no Mitoshi counterpart yet.
+// R4-2 (D-227): the open composer is `?d=take`, so Back closes it instead of leaving the feed with a half-typed take.
 import { useLanes } from "@cwf/markets/react";
 import { ChevronDown, ChevronUp, Feather } from "lucide-react";
 import { useDeferredValue, useMemo, useRef, useState } from "react";
@@ -11,6 +12,7 @@ import { Modal } from "@/components/ui/modal";
 import { TakeComposer } from "@/features/social/TakesPanel";
 import { useTakes } from "@/features/social/useTakes";
 import { useNowMs } from "@/lib/clock";
+import { closeDrawer, openDrawer, useOpenDrawerName } from "@/lib/drawer-param";
 import { REELS } from "./copy";
 import { ReelCard } from "./ReelCard";
 import { ReelHolding } from "./ReelHolding";
@@ -24,6 +26,8 @@ import { reelKey, weaveReel, type ReelItem } from "./weave";
 const SCROLLED_PX = 60;
 /** A take's age prints at a minute's grain, so its card re-renders once a minute. */
 const MINUTE_MS = 60_000;
+/** The open take composer's `?d=` name. */
+const TAKE_DRAWER = "take";
 
 /** The Window the Take button speaks to: the card on screen, or the nearest Window above it when a take is. */
 function windowFor(reel: readonly ReelItem[], index: number) {
@@ -44,7 +48,7 @@ export function ReelsScreen() {
   const reel = useMemo(() => weaveReel(rounds, takes), [rounds, takes]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
-  const [composing, setComposing] = useState(false);
+  const composing = useOpenDrawerName() === TAKE_DRAWER;
   const { register, isNear, activeIndex } = useActiveReel(scrollRef, reel.length);
   useReelPosition(scrollRef, reel, activeIndex);
   const minuteMs = Math.floor(nowMs / MINUTE_MS) * MINUTE_MS;
@@ -76,11 +80,11 @@ export function ReelsScreen() {
           <span aria-live="polite" aria-atomic className="sr-only">{REELS.card(activeIndex + 1, reel.length)}</span>
           <span aria-hidden className="reel-count">{REELS.card(activeIndex + 1, reel.length)}</span>
           <div className="reel-steps">
-            <button type="button" aria-label={REELS.prev} disabled={activeIndex === 0} onClick={() => step(-1)}><ChevronUp aria-hidden /></button>
-            <button type="button" aria-label={REELS.next} disabled={activeIndex >= reel.length - 1} onClick={() => step(1)}><ChevronDown aria-hidden /></button>
+            <button type="button" aria-label={REELS.prev} title={REELS.prev} disabled={activeIndex === 0} onClick={() => step(-1)}><ChevronUp aria-hidden /></button>
+            <button type="button" aria-label={REELS.next} title={REELS.next} disabled={activeIndex >= reel.length - 1} onClick={() => step(1)}><ChevronDown aria-hidden /></button>
           </div>
           {target ? (
-            <button type="button" className="reel-take" onClick={() => setComposing(true)} aria-label={REELS.postTake}>
+            <button type="button" className="reel-take" onClick={() => openDrawer(TAKE_DRAWER)} aria-label={REELS.postTake} title={REELS.postTake}>
               <Feather size={24} aria-hidden />
               <span>{REELS.take}</span>
             </button>
@@ -93,8 +97,8 @@ export function ReelsScreen() {
         </>
       ) : null}
       {composing && target ? (
-        <Modal open onOpenChange={(o) => !o && setComposing(false)} fields title={REELS.composerTitle(target.asset)}>
-          <TakeComposer window={{ marketId: target.marketId, asset: target.asset, intervalSec: target.intervalSec, expirySec: target.expirySec }} post={feed.post} signedIn={feed.signedIn} onPosted={() => setComposing(false)} />
+        <Modal open onOpenChange={(o) => !o && closeDrawer()} fields title={REELS.composerTitle(target.asset)}>
+          <TakeComposer window={{ marketId: target.marketId, asset: target.asset, intervalSec: target.intervalSec, expirySec: target.expirySec }} post={feed.post} signedIn={feed.signedIn} onPosted={closeDrawer} />
         </Modal>
       ) : null}
     </div>

@@ -15,7 +15,7 @@ import { useUrlOverlay } from "@/lib/drawer-param";
 import { useModalSignal } from "@/lib/modal-signal";
 import { usePhoneLayout } from "@/lib/phone-layout";
 import { cn } from "@/lib/utils";
-import { OverlayFooterSlot, SlideOver, SlideOverContent } from "./drawer";
+import { dropOnLeave, OverlayFooterSlot, SlideOver, SlideOverContent } from "./drawer";
 
 export interface ModalProps {
   open: boolean;
@@ -73,8 +73,8 @@ export function Modal({ open, onOpenChange, title, description, eyebrow, footer,
               <Dialog.Title className="modal-title">{title}</Dialog.Title>
               {description ? <Dialog.Description className="modal-desc">{description}</Dialog.Description> : null}
             </div>
-            <OverlayFooterSlot.Provider value={slot}>{children ? <div className="modal-body">{children}</div> : null}</OverlayFooterSlot.Provider>
-            <div ref={setSlot} className="modal-foot">{footer}</div>
+            <OverlayFooterSlot.Provider value={slot}>{children ? <div className="modal-body" onClickCapture={dropOnLeave}>{children}</div> : null}</OverlayFooterSlot.Provider>
+            <div ref={setSlot} className="modal-foot" onClickCapture={dropOnLeave}>{footer}</div>
           </Dialog.Popup>
         </Dialog.Viewport>
       </Dialog.Portal>

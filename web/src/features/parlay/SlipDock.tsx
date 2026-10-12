@@ -4,7 +4,7 @@
  * the right-edge slide-over below it (owner overlay rule — no bottom sheets), opened from a dock pinned above the
  * safe area that names the slip ("Slip · 2 legs") and is where an added leg's chip lands (`data-slip-target`). The
  * composition lives in `SlipProvider`, so closing the slide-over loses nothing. Same shape as the markets ticket's
- * `TicketDock` (S4).
+ * `TicketDock` (S4), and like it the open slip is `?d=slip`: Back closes it instead of leaving the page (R4-2, D-190).
  */
 import type { ParlayReserveState } from "@cwf/core";
 import { Layers } from "lucide-react";
@@ -67,7 +67,7 @@ export function SlipDock({ reserve, windows }: { reserve: ParlayReserveState; wi
           <span className="pl-dock-open">{PARLAY.slip.open}</span>
         </button>
       </div>
-      <SlideOver open={open} onOpenChange={setOpen}>
+      <SlideOver open={open} onOpenChange={setOpen} urlKey="slip">
         <SlideOverContent title={PARLAY.slip.title} description={PARLAY.slip.legs(legs.length)} fields>
           <ParlaySlip reserve={reserve} windows={windows} />
         </SlideOverContent>

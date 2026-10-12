@@ -50,8 +50,8 @@ export function SheetFooter({ children }: { children: ReactNode }) {
   return slot ? createPortal(children, slot) : <>{children}</>;
 }
 
-/** Before a link inside the sheet navigates, drop `?d=` so Back from the new page doesn't reopen the sheet (D-190). */
-function dropOnLeave(event: MouseEvent<HTMLElement>) {
+/** Before a link inside the sheet (or a modal) navigates, drop `?d=` so Back from the new page doesn't reopen it (D-190). */
+export function dropOnLeave(event: MouseEvent<HTMLElement>) {
   if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
   const link = (event.target as Element | null)?.closest?.("a[href]");
   if (!(link instanceof HTMLAnchorElement) || (link.target && link.target !== "_self")) return;
