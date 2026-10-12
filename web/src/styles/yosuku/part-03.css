@@ -1,3 +1,6 @@
+/* R4-2 (D-227): the first two selectors ended part-02.css as a dangling list, which did not parse as a file of its own. */
+[data-theme="light"] .sensei-page .border-white\/\[0\.08\],
+[data-theme="light"] .sensei-page .border-white\/\[0\.1\],
 [data-theme="light"] .sensei-page .border-white\/\[0\.12\] { border-color: rgba(20,18,16,0.12); }
 [data-theme="light"] .sensei-page .text-gray-100 { color: #141210; }
 [data-theme="light"] .sensei-page .text-gray-300 { color: rgba(20,18,16,0.74); }
@@ -82,8 +85,9 @@
 [data-theme="light"] .st-head span:first-child { color: #171310; }
 .st-head .st-sub { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-500); }
 .st-headright { display: flex; align-items: center; gap: 12px; }
-.st-hide { border: 0; background: transparent; padding: 2px 4px; font-size: 13px; line-height: 1; color: var(--gray-500); cursor: pointer; transition: color 150ms var(--ease); }
+.st-hide { position: relative; border: 0; background: transparent; padding: 2px 4px; font-size: 13px; line-height: 1; color: var(--gray-500); cursor: pointer; transition: color 150ms var(--ease); }
 .st-hide:hover { color: var(--white); }
+.st-hide::before { content: ""; position: absolute; inset: -14px -12px; }
 [data-theme="light"] .st-hide:hover { color: #171310; }
 .st-card { border: 1px solid rgba(255,255,255,0.08); border-radius: 13px; background: rgba(255,255,255,0.025); padding: 11px 12px; transition: border-color 200ms var(--ease), background 200ms var(--ease); }
 [data-theme="light"] .st-card { border-color: rgba(20,18,16,0.09); background: #fffdf8; }

@@ -282,8 +282,10 @@ body.urgent::before {
 /* ── the Sensei drawer ── */
 .sensei-drawer-scrim { position: fixed; inset: 0; z-index: var(--z-drawer); background: rgba(6,5,4,0.5); opacity: 0; pointer-events: none; transition: opacity 300ms var(--ease); }
 .sensei-drawer-scrim.show { opacity: 1; pointer-events: auto; }
+/* R4-2 (D-227): while the composer has focus over a software keyboard, `useKeyboardInset` sets --keyboard-top and
+   --keyboard-inset, so the aside fits what is visible and Send rides above the keyboard (0px otherwise). */
 .sensei-drawer {
-  position: fixed; top: 0; right: 0; bottom: 0; z-index: calc(var(--z-drawer) + 1); width: min(400px, 92vw);
+  position: fixed; top: var(--keyboard-top, 0px); right: 0; bottom: var(--keyboard-inset, 0px); z-index: calc(var(--z-drawer) + 1); width: min(400px, 92vw);
   display: flex; flex-direction: column;
   background: #000000; backdrop-filter: blur(16px);
   border-left: 1px solid rgba(255,255,255,0.08); box-shadow: -30px 0 70px -30px rgba(0,0,0,0.7);
@@ -300,7 +302,9 @@ body.urgent::before {
 .sd-head-right { display: flex; align-items: center; gap: 10px; }
 .sd-nextclose { font-family: var(--font-mono); font-size: 11px; color: var(--gray-500); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .sd-nextclose.urgent { color: var(--vermilion); }
-.sd-close { background: none; border: 0; color: var(--gray-500); font-size: 15px; cursor: pointer; padding: 4px; line-height: 1; }
+.sd-close { position: relative; background: none; border: 0; color: var(--gray-500); font-size: 15px; cursor: pointer; padding: 4px; line-height: 1; }
+/* R4-2 (D-227): the ✕ draws at ~23 px and is hit at 44 px. */
+.sd-close::before { content: ""; position: absolute; inset: -11px; }
 .sd-close:hover { color: var(--white); }
 /* ── live market read (the meter): a pinned hairline strip under the header ── */
 .sensei-meter { --dir: var(--gray-500); padding: 9px 20px 8px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 7px; }
@@ -332,5 +336,3 @@ body.urgent::before {
 [data-theme="light"] .sensei-page .bg-white\/\[0\.04\] { background-color: rgba(20,18,16,0.04); }
 [data-theme="light"] .sensei-page .bg-white\/\[0\.03\] { background-color: rgba(20,18,16,0.035); }
 [data-theme="light"] .sensei-page .bg-white\/\[0\.02\] { background-color: rgba(20,18,16,0.03); }
-[data-theme="light"] .sensei-page .border-white\/\[0\.08\],
-[data-theme="light"] .sensei-page .border-white\/\[0\.1\],
