@@ -3,7 +3,7 @@
 // ring draining toward the nearest close (urgent under the wire), three teaser pops, and a tap opens Sensei on the
 // Window in the hero (Mitoshi's drawer: consent first, then the chat with the figures read at ask time). The ring and
 // the teasers need no model; only the reply does, and an unconfigured brain says so in the thread.
-import type { Address, EventMarket, LaneSet } from "@cwf/core";
+import type { Address, EventMarket, LaneSet, Side } from "@cwf/core";
 import { countdown } from "@cwf/core/lifecycle";
 import { useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
@@ -61,17 +61,39 @@ function useTeaser(open: boolean): number {
   return index;
 }
 
-export function SenseiDock({ laneSet, market, openingRaw, address }: { laneSet: LaneSet | null; market: EventMarket | null; openingRaw: bigint | null; address: Address | null }) {
+export function SenseiDock({ laneSet, market, openingRaw, address, onAct }: { laneSet: LaneSet | null; market: EventMarket | null; openingRaw: bigint | null; address: Address | null; onAct?: (marketId: EventMarket["marketId"], side: Side) => void }) {
   const [open, setOpen] = useState(false);
+  const [everOpened, setEverOpened] = useState(false);
+  useEffect(() => void (open && setEverOpened(true)), [open]);
   const teaser = useTeaser(open);
   const spot = useCommittedSpot(open && market ? market.asset : null, { seed: false });
   const nowSec = useClockValue((ms) => Math.floor(ms / 1000));
 
+  // `/markets?sensei=1` opens it (the nav's Sensei item), from another page or from this one: a click on such a link
+  // here opens the drawer instead of navigating (Owarine 90a91d71 `SenseiDock` L93–114), and the param leaves the URL.
   useEffect(() => {
     const onAsk = () => setOpen(true);
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("sensei") === "1") {
+      setOpen(true);
+      url.searchParams.delete("sensei");
+      window.history.replaceState(window.history.state, "", url.pathname + url.search + url.hash);
+    }
+    const onClick = (event: MouseEvent) => {
+      const link = (event.target as Element | null)?.closest?.("a[href]");
+      if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      const href = new URL((link as HTMLAnchorElement).href, window.location.href);
+      if (href.pathname === "/markets" && href.searchParams.get("sensei") === "1" && window.location.pathname === "/markets") {
+        event.preventDefault();
+        setOpen(true);
+      }
+    };
     window.addEventListener(SENSEI_OPEN_EVENT, onAsk);
-    if (new URLSearchParams(window.location.search).get("sensei") === "1") setOpen(true);
-    return () => window.removeEventListener(SENSEI_OPEN_EVENT, onAsk);
+    document.addEventListener("click", onClick, true);
+    return () => {
+      window.removeEventListener(SENSEI_OPEN_EVENT, onAsk);
+      document.removeEventListener("click", onClick, true);
+    };
   }, []);
 
   // The nearest close on the board drives the ring, as on the reference: the venue-aware `countdown` rule.
@@ -108,9 +130,9 @@ export function SenseiDock({ laneSet, market, openingRaw, address }: { laneSet: 
           </span>
         </button>
       </div>
-      {open ? (
+      {open || everOpened ? (
         <SenseiDrawer
-          open
+          open={open}
           onOpenChange={(o) => !o && setOpen(false)}
           symbol={market?.asset ?? "BTC"}
           market={market}
@@ -119,6 +141,7 @@ export function SenseiDock({ laneSet, market, openingRaw, address }: { laneSet: 
           positions={[]}
           values={new Map()}
           address={address}
+          onAct={onAct}
         />
       ) : null}
     </>

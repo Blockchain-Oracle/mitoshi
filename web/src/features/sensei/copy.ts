@@ -13,12 +13,20 @@ export const SENSEI_STARTERS = ["Read this Window", "Up or down on the next clos
 export const SENSEI = {
   title: "Sensei",
   open: "Ask Sensei",
+  /** Owarine's drawer head and foot (D-226). */
+  eyebrow: "Your trading assistant",
+  beta: "beta",
+  close: "Close Sensei",
+  notAdvice: "Not financial advice. You place every call.",
+  stopShort: "Stop",
+  meter: { reading: "Reading…", flat: "flat", minutes: (n: number) => `${n}m`, left: "left" },
+  trade: { head: "Act on it", hide: "Hide", up: "UP", down: "DOWN", pays: "pays $1" },
   /** The floating dock (Owarine 90a91d71 `SenseiDock`; O-6): three pops of a teaser, then it rests. */
   teasers: ["Up or down?", "Coin-flip?", "Want a read?", "Which way?"],
   dockOpen: "Open Sensei, your trading assistant",
   dockAsk: (teaser: string) => `Ask Sensei: ${teaser}`,
-  dockName: "Ask",
-  dockNameEmphasis: "Sensei",
+  dockName: "Sensei",
+  dockNameEmphasis: "AI",
   placeholder: "Ask Sensei about this Window…",
   send: "Ask",
   stop: "Stop the answer",

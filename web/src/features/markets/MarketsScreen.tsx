@@ -93,7 +93,7 @@ function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
         </div>
       </div>
       {/* The dock rides above the page, as the reference mounts it (Owarine 90a91d71 MarketsScreen L94; O-6). */}
-      <SenseiDock laneSet={lanes.laneSet} market={selection.market} openingRaw={openingRaw} address={address} />
+      <SenseiDock laneSet={lanes.laneSet} market={selection.market} openingRaw={openingRaw} address={address} onAct={(id, side) => select(id, side)} />
     </>
   );
 }

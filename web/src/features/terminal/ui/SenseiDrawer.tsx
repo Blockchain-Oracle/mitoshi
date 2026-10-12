@@ -1,19 +1,17 @@
 "use client";
-// Sensei on the terminal (S13 step 8): a right-edge drawer (the owner's overlay rule) over the market on screen. The
+// Sensei (S13 step 8; Owarine's drawer since D-226, `features/sensei/SenseiSheet`) over the market on screen. The
 // figures a question carries are read the moment it is asked: the spot, the Window on screen with its line and each
 // side's price from the book, the NYSE session for a stock, the open positions with what Close pays, the settled
 // record (Sensei's brake reads a losing run) and the stock's next report. Mounted only while open, so its reads cost
 // nothing otherwise.
-import { EARNINGS_LOOKAHEAD_DAYS, addDays, etDateOf, formatCadence, isStockSymbol, type Address, type EventMarket } from "@cwf/core";
+import { EARNINGS_LOOKAHEAD_DAYS, addDays, etDateOf, formatCadence, isStockSymbol, type Address, type EventMarket, type Side } from "@cwf/core";
 import { useWalletHistory } from "@cwf/markets/react";
-import { useCallback, useRef } from "react";
-import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTopOfBook } from "@/features/markets/data/useTopOfBook";
 import { useMarketSession } from "@/features/markets/session";
-import { SENSEI } from "@/features/sensei/copy";
 import type { SenseiContext } from "@/features/sensei/protocol";
 import { recordOf } from "@/features/sensei/record";
-import { SenseiPanel } from "@/features/sensei/SenseiPanel";
+import { SenseiSheet } from "@/features/sensei/SenseiSheet";
 import type { TerminalPosition } from "../terminal-positions";
 import type { PositionValue } from "../usePositionValue";
 
@@ -28,13 +26,15 @@ export interface SenseiDrawerProps {
   positions: readonly TerminalPosition[];
   values: ReadonlyMap<string, PositionValue>;
   address: Address | null;
+  /** Markets: a side on the trade card opens the ticket with it chosen. */
+  onAct?: (marketId: EventMarket["marketId"], side: Side) => void;
 }
 
 const MAX_POSITIONS = 8;
 const cents = (base: bigint, decimals: number) => Math.max(0, Number(base / 10n ** BigInt(Math.max(0, decimals - 2))));
 const minsTo = (sec: number) => Math.max(0, Math.floor((sec - Date.now() / 1000) / 60));
 
-function SenseiBody(p: Omit<SenseiDrawerProps, "open" | "onOpenChange">) {
+function SenseiBody({ open, onClose, ...p }: Omit<SenseiDrawerProps, "onOpenChange"> & { onClose: () => void }) {
   const top = useTopOfBook(p.market);
   const nyse = useMarketSession();
   const history = useWalletHistory(p.address);
@@ -64,13 +64,19 @@ function SenseiBody(p: Omit<SenseiDrawerProps, "open" | "onOpenChange">) {
         : {}),
     };
   }, []);
-  return <SenseiPanel read={read} />;
+  return <SenseiSheet open={open} onClose={onClose} read={read} market={p.market} openingRaw={p.openingRaw} onAct={p.onAct} />;
 }
 
 export function SenseiDrawer({ open, onOpenChange, ...rest }: SenseiDrawerProps) {
-  return (
-    <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={SENSEI.title}>{open ? <SenseiBody {...rest} /> : null}</SlideOverContent>
-    </SlideOver>
-  );
+  // Mounted closed for a frame so the drawer slides in (Owarine's transform transition) rather than appearing.
+  // Its reads (the wallet's record, the session) cost nothing until Sensei is first opened.
+  const [shown, setShown] = useState(false);
+  const [mounted, setMounted] = useState(open);
+  useEffect(() => {
+    if (open) setMounted(true);
+    const id = requestAnimationFrame(() => setShown(open));
+    return () => cancelAnimationFrame(id);
+  }, [open]);
+  if (!mounted) return null;
+  return <SenseiBody {...rest} open={open && shown} onClose={() => onOpenChange(false)} />;
 }
