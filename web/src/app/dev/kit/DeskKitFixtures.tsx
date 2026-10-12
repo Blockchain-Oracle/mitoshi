@@ -3,6 +3,7 @@
 import { formatBaseUnits } from "@cwf/core/units";
 import { Bot, Check, CircleSlash, Inbox } from "lucide-react";
 import { useState } from "react";
+import { EquitySparkline } from "@/components/data/EquitySparkline";
 import { CapitalBar, PillButton } from "@/components/kit";
 import { Donut, EmptyState, LogoStack, NumberTicker, PartitionBar, RadialGauge, RadioCards, Slider, Sparkline, StatusDot, StepProgress, TabsPanel, Timeline, TimelineDay, TimelineNode, UnderlineTabs, type Slice } from "@/components/kit/desk-kit";
 import { Fixture } from "./KitFixtures";
@@ -44,6 +45,11 @@ export function DeskKitFixtures() {
           { id: "deployed", label: "Deployed", valueBase: 3_000_000n, color: "var(--color-accent)" },
           { id: "won", label: "Won back", valueBase: 1_000_000n, color: "var(--color-profit)" },
         ]}
+      />
+      <EquitySparkline
+        decimals={6}
+        labels={{ empty: "No settled rounds yet", curve: (d, amount) => `Net ${d} $${amount}` }}
+        points={[0n, 1_200_000n, 700_000n, 2_100_000n, 1_600_000n, 2_900_000n].map((cumulativeBase, i) => ({ atMs: i === 0 ? null : i, cumulativeBase }))}
       />
       <Slider value={cap} onChange={setCap} min={0} max={100} step={5} label="Budget" display={`${cap}%`} />
       <div className="flex flex-wrap gap-2">
