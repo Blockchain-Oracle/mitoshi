@@ -62,6 +62,8 @@ export const TERMINAL = {
   },
   equity: {
     signIn: "Sign in",
+    demo: "DEMO",
+    demoAria: "Demo balance in paper dollars. Create an account to trade live",
     account: "Account",
     loading: "Loading your balance",
   },
@@ -87,6 +89,9 @@ export const TERMINAL = {
     signInBody: "A passkey account on Tempo testnet — free, funded with testnet dollars.",
     opening: (side: string, symbol: string) => `Opening ${side} ${symbol}…`,
     opened: (side: string, symbol: string) => `${side} ${symbol} opened`,
+    openedDemo: (side: string, symbol: string) => `${side} ${symbol} opened · demo`,
+    settledDemo: (symbol: string) => `${symbol} settled · demo`,
+    voidedDemo: "Voided · half back on both sides",
     openedBody: (pays: string, staked: string) => `pays ${pays} · ${staked} staked`,
     priceMoved: "Price moved",
     priceMovedBody: (cents: string) => `The book moved to ${cents}. Tap again to take it.`,

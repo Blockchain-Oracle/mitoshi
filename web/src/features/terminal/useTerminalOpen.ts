@@ -15,12 +15,12 @@ import { usePlaceBet } from "@/features/markets/ticket/usePlaceBet";
 import { useQuote, type QuoteState } from "@/features/markets/ticket/useQuote";
 import { useTicketRoute, type TicketRoute } from "@/features/session";
 import { useNowMs } from "@/lib/clock";
-import { CONNECT } from "@/lib/copy";
 import { tradeFeedback } from "@/lib/feedback";
 import { readRegionPosture } from "@/lib/region-mark";
 import { notify } from "@/lib/toast";
 import { useWalletSession } from "@/lib/wallet-session";
 import { TERMINAL } from "./copy";
+import { demoState, openPaper } from "./demo";
 import { rememberEntry } from "./entries";
 import { forgetPending, rememberFill, rememberPending } from "./fresh-fills";
 import { centsOf, money, multipleOf, sideWord } from "./format";
@@ -48,7 +48,9 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
   const { address, hasSigner } = useSigner();
   const sheet = useBalanceSheet(address);
   const walletBase = sheet?.ok ? sheet.value.spendableBase : null;
-  const enabled = hasSigner && phase === "trading";
+  // DEMO (D-223): signed out, the buttons quote the live book and a tap books paper at that quote.
+  const demo = !session.isConnected && !session.isConnecting;
+  const enabled = (hasSigner || demo) && phase === "trading";
   const quoteUp = useQuote({ market, side: "up", stakeBase, nowMs, enabled });
   const quoteDown = useQuote({ market, side: "down", stakeBase, nowMs, enabled });
   const routeUp = useTicketRoute({ market, side: "up", stakeBase, quote: quoteUp.quote, listed: false });
@@ -62,13 +64,13 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
   const view = (side: Side): SideView => {
     const quote = side === "up" ? quoteUp : quoteDown;
     const route = side === "up" ? routeUp : routeDown;
-    const spend = route.viaBalance ? route.availableBase : walletBase;
+    const spend = demo ? BigInt(demoState().balanceBase) : route.viaBalance ? route.availableBase : walletBase;
     // A thin book caps the tap at what it fills now (the quote's own fillable stake), unless that is under the minimum.
     const q = quote.quote;
     const capped = q !== null && q.partial && !belowMinStake(q.fillableStakeBase, market.decimals);
     const reading = capped && quote.reading?.ok ? { ...quote.reading, value: { ...q, partial: false } } : quote.reading;
     const blocker = deriveBlocker({
-      connected: session.isConnected, connecting: session.isConnecting, rightChain: session.isRightChain, hasSigner, regionHeld, phase,
+      connected: session.isConnected || demo, connecting: session.isConnecting, rightChain: session.isRightChain || demo, hasSigner: hasSigner || demo, regionHeld, phase,
       placing: bet.placing, side, availableBase: spend, stakeBase, decimals: market.decimals, quote: reading, quoting: quote.pending, quoteStale: quote.stale,
       lane: guard.lane,
     });
@@ -84,7 +86,7 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
     const multiple = quote.quote ? 10_000 / quote.quote.avgPriceBps : topCents ? 100 / topCents : null;
     // The region hold reads in the terminal's own words (§8 live guards); the rest are the ticket's D-160 words.
     const label = blocker === "region-restricted" ? TERMINAL.guards.region : blocker ? blockerLabel(blocker, ctx) : null;
-    const blocked = blocker && blocker !== "quoting" && blocker !== "placing" ? label : route.fallback?.reason ?? null;
+    const blocked = blocker && blocker !== "quoting" && blocker !== "placing" ? label : demo ? null : (route.fallback?.reason ?? null);
     return { quote, route, multiple, blocked, stakeBase: capped ? q!.fillableStakeBase : stakeBase, capped };
   };
   const sides = { up: view("up"), down: view("down") };
@@ -136,10 +138,20 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
       const { sides: v, session: sess, market: m } = latest.current;
       const s = v[side];
       const stake = s.stakeBase;
-      if (!sess.isConnected) {
-        return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.signIn, description: TERMINAL.toast.signInBody, action: { label: CONNECT.connect, onClick: sess.connect } });
-      }
       if (s.blocked) return void notify.item({ id: ENTRY_TOAST, type: "warning", title: s.blocked });
+      if (!sess.isConnected) {
+        // DEMO: paper at the live quote — no signature, nothing on chain (Owarine 90a91d71 `useTerminalTrade` demo path).
+        const q = s.quote.quote;
+        if (!q) return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.gettingPrice, timeout: 2_000 });
+        const { spot: at } = latest.current;
+        openPaper({
+          id: `${m.marketId}:${side}:${Date.now()}`, marketId: m.marketId, asset: m.asset, intervalSec: m.intervalSec, expirySec: m.expirySec, side,
+          contractsRaw: q.contractsRaw.toString(), costBase: q.expectedCostBase.toString(), entrySpot: at ?? 0, openedAtMs: Date.now(),
+        });
+        if (at !== null) rememberEntry(m.marketId, side, at);
+        tradeFeedback("open", "open");
+        return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.openedDemo(sideWord(side), m.asset), description: TERMINAL.toast.openedBody(multipleOf(q.avgPriceBps / 10), money(q.expectedCostBase)) });
+      }
       // "Tap again to take it": the tap right after a requote takes the price the requote showed (D-208), not the
       // button's quote, which may not have re-read the book yet.
       const again = bet.requoted && bet.requoted.side === side && bet.requoted.stakeBase === stake && Date.now() - bet.requoted.quotedAtMs < REQUOTE_HOLD_MS ? bet.requoted : null;

@@ -78,6 +78,7 @@ export const SHELL = {
   network: "Tempo testnet",
   /** The rail's money tile (O-10): testnet dollars are never "Live" money. */
   moneyLabel: "Balance · Tempo testnet",
+  demoLabel: "Demo · paper dollars",
   addMoney: "Add money",
   signInPending: "Getting sign-in ready…",
 } as const;

@@ -9,6 +9,7 @@ import { SHELL } from "@/lib/copy";
 import { openFunds } from "@/lib/funds-event";
 import { setPrivacy, usePrivacy } from "@/lib/privacy";
 import { dollars } from "@/providers/wallet/format";
+import { useDemoState } from "@/features/terminal/demo";
 
 export function MoneyPill({ address, variant = "bar" }: { address: Address; variant?: "rail" | "bar" }) {
   const sheet = useBalanceSheet(address);
@@ -21,21 +22,23 @@ export function MoneyPill({ address, variant = "bar" }: { address: Address; vari
  * The full rail's money (Owarine 90a91d71 `BalanceChip variant="rail"`; O-10, D-222): a filled tile at the rail's foot —
  * what the money is, the privacy eye, the sum large, and the solid + that opens Add money.
  */
-export function MoneyTile({ total }: { total: bigint | null }) {
+export function MoneyTile({ total, label = SHELL.moneyLabel, onAdd = openFunds }: { total: bigint | null; label?: string; onAdd?: (() => void) | null }) {
   const hidden = usePrivacy();
   return (
     <div className="money-tile">
       <div className="money-tile-head">
-        <span className="money-tile-label">{SHELL.moneyLabel}</span>
+        <span className="money-tile-label">{label}</span>
         <button type="button" className="money-tile-eye" aria-pressed={hidden} aria-label={hidden ? SHELL.privacyShow : SHELL.privacyHide} onClick={() => setPrivacy(!hidden)}>
           {hidden ? <EyeOff aria-hidden className="size-3.5" /> : <Eye aria-hidden className="size-3.5" />}
         </button>
       </div>
       <div className="money-tile-row">
         <span className={`money-tile-sum numbers${total === null && !hidden ? " is-dim" : ""}`}>{hidden ? SHELL.masked : dollars(total)}</span>
-        <button type="button" onClick={openFunds} aria-label={SHELL.addMoney} className="money-tile-add">
-          <Plus aria-hidden className="size-4" strokeWidth={3} />
-        </button>
+        {onAdd ? (
+          <button type="button" onClick={onAdd} aria-label={SHELL.addMoney} className="money-tile-add">
+            <Plus aria-hidden className="size-4" strokeWidth={3} />
+          </button>
+        ) : null}
       </div>
     </div>
   );
@@ -56,4 +59,10 @@ export function MoneyPillView({ total }: { total: bigint | null }) {
       </button>
     </span>
   );
+}
+
+/** Signed out: DEMO's paper dollars (D-223; Owarine's "Demo credits 10,000.00"), with no + — paper is not topped up. */
+export function DemoMoneyTile() {
+  const demo = useDemoState();
+  return <MoneyTile total={BigInt(demo.balanceBase)} label={SHELL.demoLabel} onAdd={null} />;
 }

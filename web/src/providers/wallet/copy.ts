@@ -39,22 +39,19 @@ export const WALLET_MODAL = {
   back: "Back",
   groups: { passkey: (network: string) => `Passkey · ${network}`, wallets: "Wallets" },
   rows: {
-    create: "Create an account",
-    createNote: "Face ID, Touch ID or a security key",
-    signIn: "Sign in with a passkey",
-    signInNote: "On this device, or another of yours",
+    create: "Create account",
+    signIn: "I have a passkey",
   },
   newTo: "New to passkeys?",
   learnMore: "Learn more",
   intro: {
     title: "What is a passkey?",
     assetsTitle: "Your account, on your device",
-    assetsBody: "The key is made by this device and never leaves it. We keep only its public half; there is no seed phrase and no password.",
+    assetsBody: "Made by this device and never leaves it. No seed phrase, no password.",
     loginTitle: "One tap to sign in",
-    loginBody: "Face ID, Touch ID or a security key signs you in, and Mitoshi pays the network fees.",
-    get: "Create an account",
+    loginBody: "Face ID or Touch ID signs you in. No fees to pay.",
+    get: "Create account",
   },
-  create: { title: "Create an account", cta: "Create with a passkey" },
   status: { loading: "Loading" },
 } as const;
 

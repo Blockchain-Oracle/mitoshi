@@ -6,16 +6,15 @@
  */
 export const ONBOARD = {
   eyebrow: "Welcome",
-  created: "Your account is ready",
-  fundingBody: "One moment — we're adding test dollars. No second prompt: your passkey already proved it's you.",
-  funding: "Adding test dollars to your account…",
-  fundedBody: "You're funded. Test dollars are play money on Tempo's testnet.",
-  failedBody: "Your account is created and safe. Only the test dollars didn't arrive.",
-  mainnetBody: "Add dollars to make your first call, or look around first.",
+  created: "You're in",
+  funding: "Adding test dollars…",
+  fundedBody: "Funded with test dollars.",
+  failedBody: "Account created. The test dollars didn't arrive.",
+  mainnetBody: "Add dollars to make your first call.",
   addDollars: "Add dollars",
-  go: "Go to Markets",
+  go: "Start trading",
   retry: "Try again",
-  skip: "Continue without test dollars",
+  skip: "Continue",
 } as const;
 
 export interface Explainer {

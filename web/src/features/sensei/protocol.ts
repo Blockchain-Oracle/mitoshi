@@ -31,7 +31,7 @@ export const senseiPositionSchema = z.object({
   asset: z.string().max(16),
   cadence: z.string().max(8),
   side: z.enum(["up", "down"]),
-  via: z.enum(["wallet", "vault", "boost"]),
+  via: z.enum(["wallet", "vault", "boost", "paper"]),
   stakeCents: cents,
   /** What Close pays now; null while the book can't price it. */
   markCents: cents.nullable(),

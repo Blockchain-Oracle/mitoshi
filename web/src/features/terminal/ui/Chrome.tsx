@@ -48,12 +48,16 @@ export function WindowChip({ lanes, laneKey, onPick, state }: { lanes: readonly 
   );
 }
 
-/** Tradash's equity pill: equity rolling and the avatar; "Sign in" when signed out. Masked while balances are hidden. */
+/**
+ * Tradash's equity pill: equity rolling and the avatar. Signed out it is DEMO's paper equity (Owarine 90a91d71's
+ * "DEMO 10,000.00"); a tap moves to a real account. Masked while balances are hidden.
+ */
 export function EquityPill({ equity, address, masked, onOpen, onSignIn, className }: { equity: number | null; address: string | null; masked: boolean; onOpen: () => void; onSignIn: () => void; className?: string }) {
   if (!address) {
     return (
-      <button type="button" className={`tm-glass tm-equity ${className ?? ""}`} data-signed-out="" onClick={() => (tapFeedback(), onSignIn())}>
-        {TERMINAL.equity.signIn}
+      <button type="button" aria-label={TERMINAL.equity.demoAria} className={`tm-glass tm-equity ${className ?? ""}`} data-signed-out="" onClick={() => (tapFeedback(), onSignIn())}>
+        <span className="tm-demo-tag">{TERMINAL.equity.demo}</span>
+        <span>{masked ? SHELL.masked : equity === null ? "—" : <NumberFlow value={equity} format={USD(2)} willChange />}</span>
       </button>
     );
   }

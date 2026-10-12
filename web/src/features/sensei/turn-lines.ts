@@ -8,7 +8,7 @@ const WHOLE_DOLLARS_FROM = 1_000;
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const REPORT_HOUR = { bmo: " before the open", amc: " after the close", dmh: " during market hours" } as const;
 const LANE = { regular: "session", gap: "weekend Gap", stock24: "24/7", crypto24: "24/7" } as const;
-const VIA = { wallet: "", vault: " on the Trading Balance", boost: " as a Boost" } as const;
+const VIA = { wallet: "", vault: " on the Trading Balance", boost: " as a Boost", paper: " on paper (demo)" } as const;
 
 /** "$1,234" from $1,000 up, "$251.37" below. */
 export function usdText(usd: number): string {

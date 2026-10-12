@@ -20,6 +20,7 @@ import { forgetEntry, setExits } from "./entries";
 import { clockText, money } from "./format";
 import { closeFloorBase } from "./position-value";
 import { tradeSettings } from "./settings";
+import { settlePaper } from "./demo";
 import { BOOST_KEYS, type TerminalPosition } from "./terminal-positions";
 
 /** An exit that fired is spent: its targets go with the position. */
@@ -80,6 +81,28 @@ export function useTerminalClose() {
     [queryClient],
   );
 
+  /**
+   * DEMO's Close (D-223; Owarine 90a91d71 `useTerminalTrade.close` demo path): what the live book pays for the size right
+   * now, realized on paper — no signature, nothing on chain. A locked Window pays at its close instead.
+   */
+  const closePaper = useCallback(async (p: TerminalPosition, why: "close" | "trail" | "tp" | "sl", sellRaw?: bigint): Promise<void> => {
+    const { port: prt } = latest.current;
+    const id = `close-${p.marketId}`;
+    const sell = sellRaw !== undefined && sellRaw < p.heldRaw ? sellRaw : p.heldRaw;
+    const partial = sell < p.heldRaw;
+    const fresh = prt ? await prt.freshExitQuote({ marketId: p.marketId, decimals: p.decimals }, p.side, sell) : null;
+    if (!fresh || !isOk(fresh) || !fresh.value) return void notify.item({ id, type: "warning", title: TERMINAL.buttons.locked(clockText(p.expirySec)) });
+    const costShare = p.heldRaw > 0n ? (p.costBase * sell) / p.heldRaw : p.costBase;
+    const pnl = fresh.value.proceedsBase - costShare;
+    settlePaper(
+      p.id.slice(2),
+      { kind: partial ? "reduce" : why === "trail" ? "trail" : "close", asset: p.asset, side: p.side, intervalSec: p.intervalSec, costBase: costShare.toString(), pnlBase: pnl.toString(), openedAtMs: p.openedAtMs, closedAtMs: Date.now() },
+      partial ? { contractsRaw: p.heldRaw - sell, costBase: p.costBase - costShare } : undefined,
+    );
+    closeFeedback(Number(pnl));
+    notify.item({ id, title: partial ? TERMINAL.close.reduced(p.asset) : TERMINAL.close.closed(p.asset), description: TERMINAL.close.realized(money(pnl, true), money(fresh.value.proceedsBase)) });
+  }, []);
+
   const close = useCallback(
     async (p: TerminalPosition, shown: ExitQuote | null, accept?: ExitQuote, why: "close" | "trail" | "tp" | "sl" = "close", sellRaw?: bigint): Promise<void> => {
       const { submitter: sub, port: prt, address: wallet, session: sess, view: v } = latest.current;
@@ -95,6 +118,7 @@ export function useTerminalClose() {
         }
       }
       const id = `close-${p.marketId}`;
+      if (p.via === "paper") return void (await closePaper(p, why, sellRaw));
       if (!sub || !wallet || !prt) return void notify.item({ id, title: TERMINAL.toast.signIn, action: { label: CONNECT.connect, onClick: sess.connect } });
       inFlight.current = true;
       setBusy(p.id);

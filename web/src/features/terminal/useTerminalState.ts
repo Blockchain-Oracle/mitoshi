@@ -22,6 +22,7 @@ import { useTradeSettings, wantedStakeBase } from "./settings";
 import { useServerExitFeed } from "./server-exits";
 import { useTerminalPositions } from "./terminal-positions";
 import { useTerminalWindow } from "./useTerminalWindow";
+import { useDemoState } from "./demo";
 
 const COOKIE_MAX_AGE_SEC = 365 * 86_400;
 
@@ -69,13 +70,16 @@ export function useTerminalState(symbol: string) {
   const keyLeft = useKeyRemaining(address, walletKey?.keyId ?? null);
   const keyRemainingBase = keyLeft?.ok ? keyLeft.value.remaining : null;
   const walletTapBase = walletBase !== null && keyRemainingBase !== null && keyRemainingBase < walletBase ? keyRemainingBase : walletBase;
-  const spendableBase = balanceBase ?? walletTapBase;
+  // DEMO (D-223): signed out, the paper balance less what is open is what one tap may spend.
+  const demo = useDemoState();
+  const demoCashBase = address === null ? BigInt(demo.balanceBase) - demo.positions.reduce((sum, p) => sum + BigInt(p.costBase), 0n) : null;
+  const spendableBase = demoCashBase ?? balanceBase ?? walletTapBase;
   const capReason: "balance" | "key" | "budget" | null = balanceBase !== null ? "budget" : walletTapBase !== walletBase ? "key" : "balance";
   const minBase = minStakeBase(market?.decimals ?? USD_DECIMALS);
   const wanted = wantedStakeBase(settings, spendableBase, minBase);
   const capped = spendableBase !== null && spendableBase >= minBase && wanted > spendableBase;
   const stakeBase = capped ? spendableBase! : wanted;
-  const cashBase = walletBase === null && view.availableBase === null ? null : (walletBase ?? 0n) + (view.deployed ? (view.availableBase ?? 0n) : 0n);
+  const cashBase = demoCashBase ?? (walletBase === null && view.availableBase === null ? null : (walletBase ?? 0n) + (view.deployed ? (view.availableBase ?? 0n) : 0n));
 
   const positions = useTerminalPositions(address, win.set);
   const active = positions.find((p) => p.marketId === market?.marketId) ?? null;

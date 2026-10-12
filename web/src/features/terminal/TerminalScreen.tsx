@@ -27,6 +27,7 @@ import { useMarketSession, type MarketSession } from "@/features/markets/session
 import { useTerminalState } from "./useTerminalState";
 import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } from "./ui/Chrome";
 import { SessionCell } from "./ui/SessionCell";
+import { useDemoSettle } from "./useDemoSettle";
 import { HaltNotice } from "./ui/HaltNotice";
 import { CrowdCell } from "./ui/CrowdCell";
 import { EarningsCell } from "./ui/EarningsCell";
@@ -72,6 +73,8 @@ function useSymbol(initial: string): string {
 export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = false }: { symbol: string; onTourSettled?: () => void; instantTour?: boolean }) {
   const symbol = useSymbol(initial);
   const s = useTerminalState(symbol);
+  // DEMO (D-223): signed out, paper positions settle on their Window's real result.
+  useDemoSettle(s.address === null);
   const session = useWalletSession();
   const masked = usePrivacy();
   const drawer = useDrawerParam();

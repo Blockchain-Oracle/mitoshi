@@ -23,6 +23,8 @@ import { useSessionView } from "@/features/session/context";
 // exists, compact in the top line (the full pill with its one-tap fix lives on the ticket and Portfolio).
 const AllowancePill = dynamic(() => import("@/features/session/AllowancePill").then((m) => m.AllowancePill), { ssr: false });
 
+const DemoMoneyTile = dynamic(() => import("./MoneyPill").then((m) => m.DemoMoneyTile), { ssr: false });
+
 // The money pill's balance read loads with the session (the same pill, "—", shows until it does).
 const MoneyPill = dynamic(() => import("./MoneyPill").then((m) => m.MoneyPill), {
   ssr: false,
@@ -56,12 +58,19 @@ export function HeaderAccount({ placement = "top" }: { placement?: AccountPlacem
     return <span className={cn("btn btn-primary invisible", rail ? "rail-account" : "top-account")} aria-hidden="true">{CONNECT.connect}</span>;
   }
   if (!session.isConnected || !session.address) {
-    return (
+    const signIn = (
       <button type="button" className={cn("btn btn-primary sign-in-button", rail ? "rail-account" : "top-account")} onClick={session.connect} aria-label={CONNECT.connect}>
         <LogIn aria-hidden className="sign-in-icon size-4" />
         <span className="sign-in-label">{CONNECT.connect}</span>
       </button>
     );
+    // DEMO (D-223): the rail shows the paper balance over the way in, as Owarine's demo rail does.
+    return rail ? (
+      <>
+        <span className="rail-money"><DemoMoneyTile /></span>
+        {signIn}
+      </>
+    ) : signIn;
   }
   if (!session.isRightChain) {
     return <button type="button" className={cn("btn btn-outline", rail ? "rail-account" : "top-account")} onClick={() => void session.switchToTempo()}>{BANNER.switchTo("Tempo")}</button>;

@@ -1,14 +1,14 @@
 "use client";
 
 // The one sign-in modal (plan C.3.1; D-046), in Owarine 90a91d71's compact picker (`WalletPicker`, RainbowKit 2.2.11's
-// compact connect modal as Masayume shipped it — O-9, D-222): a title, grouped rows — passkey first, then wallets —
-// and "New to passkeys? Learn more". A choice moves to a step with Back: the passkey's optional name before it is
-// made, a named wait, or a failure with its retry; a new account continues into onboarding. Below 768 px the panel is
+// compact connect modal as Masayume shipped it — O-9, D-222/D-223): a title, grouped rows — passkey first, then wallets
+// — and "New to passkeys? Learn more". "Create account" goes straight to the passkey prompt (Owarine's two-tap seat);
+// a choice shows a named wait or a failure with its retry; a new account is funded and returns to the page. Below 768 px the panel is
 // the mobile bottom sheet (D-222). Loaded on first open (lazy island).
 import { Dialog } from "@base-ui/react/dialog";
 import { diagnose } from "@cwf/markets/errors";
 import { Fingerprint, KeyRound, Wallet } from "lucide-react";
-import { useId, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { Connector } from "wagmi";
 import { Modal } from "@/components/ui/modal";
 import { diagnosisCopy } from "@/lib/copy";
@@ -23,7 +23,6 @@ import { Onboarding, ONBOARD } from "@/features/onboarding";
 type Step =
   | { kind: "choose" }
   | { kind: "learn" }
-  | { kind: "create" }
   | { kind: "waiting"; label: string }
   | { kind: "failed"; headline: string; body: string; technical: string; retry: () => void }
   | { kind: "onboard" };
@@ -37,8 +36,6 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const shell = useWalletShell();
   const choices = useWalletChoices();
   const [step, setStep] = useState<Step>({ kind: "choose" });
-  const [name, setName] = useState("");
-  const nameId = useId();
   const robinhood = shell.pickerMode === "robinhood";
 
   // `created`: a new passkey account continues into the rest of the ceremony (fund → arm → /markets) in this modal.
@@ -113,8 +110,8 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
               ) : (
                 <>
                   <Group name={T.groups.passkey(ACCOUNT.network[shell.network])} accent>
-                    <Row icon={<GlyphIcon accent><Fingerprint className="size-4" /></GlyphIcon>} name={T.rows.create} note={T.rows.createNote} disabled={!choices.passkey} onClick={() => setStep({ kind: "create" })} />
-                    <Row icon={<GlyphIcon><KeyRound className="size-4" /></GlyphIcon>} name={T.rows.signIn} note={T.rows.signInNote} disabled={!choices.passkey} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.signInPasskey())} />
+                    <Row icon={<GlyphIcon accent><Fingerprint className="size-4" /></GlyphIcon>} name={T.rows.create} disabled={!choices.passkey} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.createPasskey(""), true)} />
+                    <Row icon={<GlyphIcon><KeyRound className="size-4" /></GlyphIcon>} name={T.rows.signIn} disabled={!choices.passkey} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.signInPasskey())} />
                   </Group>
                   <Group name={T.groups.wallets}>
                     {choices.tempoWallet ? connectRow(choices.tempoWallet) : null}
@@ -140,7 +137,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
             <div className="wm-step-head">
               <div className="wm-step-head-side">{busy ? null : <BackButton onClick={() => setStep({ kind: "choose" })} />}</div>
               <div className="wm-step-title">
-                <Dialog.Title className="wm-t18">{step.kind === "learn" ? T.intro.title : step.kind === "create" ? T.create.title : SIGN_IN.title}</Dialog.Title>
+                <Dialog.Title className="wm-t18">{step.kind === "learn" ? T.intro.title : SIGN_IN.title}</Dialog.Title>
               </div>
               {busy ? <div className="wm-step-head-side" /> : <CloseButton />}
             </div>
@@ -154,24 +151,8 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
                       <Feature art="/wallet/login.svg" title={T.intro.loginTitle} body={T.intro.loginBody} />
                     </div>
                     <div className="wm-intro-actions">
-                      <ActionButton label={T.intro.get} onClick={() => setStep({ kind: "create" })} />
+                      <ActionButton label={T.intro.get} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.createPasskey(""), true)} />
                     </div>
-                  </div>
-                ) : step.kind === "create" ? (
-                  <div className="flex flex-col gap-4 px-1 pt-4">
-                    <span aria-hidden className="mx-auto grid size-14 place-items-center rounded-lg border border-hairline bg-surface-2 text-accent">
-                      <Fingerprint className="size-7" />
-                    </span>
-                    <p className="text-center type-body text-ink-secondary">{SIGN_IN.body}</p>
-                    <div className="flex flex-col gap-1.5">
-                      <label htmlFor={nameId} className="type-caption text-ink-secondary">{SIGN_IN.nameLabel}</label>
-                      <input id={nameId} value={name} onChange={(e) => setName(e.target.value)} placeholder={SIGN_IN.namePlaceholder} autoComplete="username webauthn" maxLength={48} className="h-12 rounded-md border border-hairline bg-ground px-3 text-ink placeholder:text-ink-muted" />
-                    </div>
-                    <button type="button" disabled={!choices.passkey} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.createPasskey(name), true)} className="inline-flex h-(--ticket-cta-height) items-center justify-center gap-2 rounded-md bg-accent-fill px-5 type-body-strong text-on-accent">
-                      <Fingerprint aria-hidden className="size-4" />
-                      {T.create.cta}
-                    </button>
-                    <p className="text-center type-caption text-ink-secondary">{SIGN_IN.footer}</p>
                   </div>
                 ) : step.kind === "waiting" ? (
                   <div role="status" aria-live="polite" className="flex flex-1 flex-col items-center justify-center gap-4 text-center">

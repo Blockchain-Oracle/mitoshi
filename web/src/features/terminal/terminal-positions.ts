@@ -1,11 +1,13 @@
 "use client";
 // Ported in shape from Owarine ecb7565b:web/src/features/terminal/terminal-positions.ts — Mitoshi's three homes for a
 // position: the wallet's own (the engine's balances, `usePositions`), the Trading Balance's (`useVaultBets`, held by
-// the vault for its owner) and a Boost (the LeverageReserve's, part fronted, S23d). No paper positions (D-191).
+// the vault for its owner), a Boost (the LeverageReserve's, part fronted, S23d) and, signed out, DEMO's paper ones
+// (`demo.ts`, D-223 — superseding D-191's "no paper positions").
 import type { Address, LaneSet, MarketId, Side } from "@cwf/core";
 import { listLeveragePositionsOf } from "@cwf/markets/leverage";
 import { usePositions, useReadingQuery, useVaultBets } from "@cwf/markets/react";
 import { useMemo } from "react";
+import { useDemoState } from "./demo";
 import { entryOf, useEntries } from "./entries";
 import { useFreshFills, withFreshFills } from "./fresh-fills";
 
@@ -15,8 +17,8 @@ export const BOOST_KEYS = ["cwf", "boost"] as const;
 /** One open position on the screen, in either home, with what the chart needs. */
 export interface TerminalPosition {
   id: string;
-  /** Where it is held: the wallet itself, the Trading Balance (the vault's sell lane, 23d), or a Boost (the reserve's). */
-  via: "wallet" | "vault" | "boost";
+  /** Where it is held: the wallet itself, the Trading Balance (the vault's sell lane, 23d), a Boost (the reserve's), or DEMO paper. */
+  via: "wallet" | "vault" | "boost" | "paper";
   /** The key of this position's entry record (Entry line, trail, TP/SL): its Window, or its Boost. */
   entryKey: string;
   marketId: MarketId;
@@ -46,8 +48,20 @@ export function useTerminalPositions(address: Address | null, set: LaneSet | nul
   const boosts = useReadingQuery([...BOOST_KEYS, "positions", address ?? ""], () => listLeveragePositionsOf(address!), { enabled: address !== null, pollMs: 10_000 });
   const entries = useEntries();
   const fresh = useFreshFills();
+  const demo = useDemoState();
   return useMemo(() => {
     const out: TerminalPosition[] = [];
+    // Signed out: DEMO's paper positions, the only ones there are.
+    if (address === null) {
+      for (const p of demo.positions) {
+        const e = entryOf(entries, p.marketId, p.side);
+        out.push({
+          id: `p:${p.id}`, via: "paper", entryKey: p.marketId, marketId: p.marketId as MarketId, asset: p.asset, intervalSec: p.intervalSec, expirySec: p.expirySec, side: p.side,
+          heldRaw: BigInt(p.contractsRaw), costBase: BigInt(p.costBase), decimals: 6, entrySpot: p.entrySpot || null, trailStop: e?.trailStop ?? null, openedAtMs: p.openedAtMs, tpBase: null, slBase: null,
+        });
+      }
+      return out;
+    }
     const nowSec = Math.floor(Date.now() / 1000);
     for (const r of wallet?.ok ? wallet.value : []) {
       if (r.balanceUpRaw === 0n && r.balanceDownRaw === 0n) continue;
@@ -83,5 +97,5 @@ export function useTerminalPositions(address: Address | null, set: LaneSet | nul
       });
     }
     return withFreshFills(out, fresh, (id) => markets.get(id.toLowerCase()) ?? null, Date.now());
-  }, [wallet, vault, boosts, entries, set, fresh]);
+  }, [address, demo, wallet, vault, boosts, entries, set, fresh]);
 }
