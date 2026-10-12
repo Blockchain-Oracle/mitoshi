@@ -112,7 +112,7 @@
 /* Narrow screens: simplify the chart head so the question + price never cram or
    wrap into the chart. Drop the verbose framing ("Tap a side… / settled by oracle /
    live oracle price…") — the question, countdown and price are what matter. */
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   .hero-chart-head { padding: 12px 14px; gap: 10px; }
   .hero-chart-head .meta-soft { display: none; }
   .hero-chart-head .left { gap: 9px; min-width: 0; }
@@ -257,13 +257,13 @@
 .feed-card { height: 100%; scroll-snap-align: start; scroll-snap-stop: always; }
 /* non-scrolling sibling overlay for progress ticks / hint / desktop vignette */
 .feed-chrome { position: fixed; left: 0; right: 0; top: calc(92px + var(--appstrip)); bottom: 0; pointer-events: none; z-index: 10; }
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .feed-snap, .feed-chrome { top: calc(66px + var(--appstrip)); } /* slim mobile marquee (20) + header (46) */
 }
 
 /* ───────── Word markets (/words) ───────── */
 .words-wrap { padding: 120px 0 96px; min-height: 100vh; }
-@media (max-width: 720px) { .words-wrap { padding: 92px 0 120px; } }
+@media (max-width: 767px) { .words-wrap { padding: 92px 0 120px; } }
 .words-hero { padding: 8px 0 40px; }
 .words-eyebrow {
   font-family: var(--font-mono); font-size: 11px; font-weight: 600;
@@ -292,7 +292,7 @@
 .words-sec-label { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; color: var(--white); }
 .words-sec-count { font-family: var(--font-mono); font-size: 12px; color: var(--gray-500); }
 
-.words-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+.words-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); gap: 16px; }
 /* Flat black. The warm radial wash and the vermilion hairline read as a glow on a dark page,
    and the hover halo made whichever card the pointer happened to rest on look like a special
    one. The odds bar and the Yes/No buttons already carry all the colour these need. */
@@ -319,7 +319,7 @@
   letter-spacing: -0.025em; color: var(--white); margin: 18px 0 14px; min-height: 2.3em; text-wrap: balance;
 }
 /* the question headline dominates the narrow mobile card — scale it down there */
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .wq-q { font-size: 16px; line-height: 1.3; margin: 14px 0 12px; }
 }
 /* Polymarket-style odds bar — green (yes) fill on a rose (no) track */

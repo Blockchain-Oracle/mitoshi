@@ -1,5 +1,5 @@
 .wq-yeslead b { color: #34D399; font-weight: 700; }
-.wq-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+.wq-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin-top: auto; }
 .wq-btn {
   /* Sized and coloured to match .mc-side, the minute-card UP/DOWN pair. Two boards showing the
      same BTC market should not have two different button languages: same padding, radius, mono
@@ -41,7 +41,7 @@
 
 /* No phone override any more: .wq-btn now inherits .mc-side's proportions, which are already
    compact enough on a 390px screen and identical to the minute cards at every width. */
-@media (max-width: 720px) { .wq-actions { gap: 8px; } }
+@media (max-width: 767px) { .wq-actions { gap: 8px; } }
 @media (prefers-reduced-motion: reduce) {
   .wq-btn, .wq-btn::before, .wq-btn .wq-side, .wq-btn .wq-cents { transition-duration: 1ms; }
   .wq-btn:hover { transform: none; }

@@ -59,7 +59,7 @@
   contain-intrinsic-size: auto 224px;
 }
 
-@media (min-width: 721px) {
+@media (min-width: 768px) {
   .wq-card {
     contain-intrinsic-size: auto 269px;
   }

@@ -100,8 +100,8 @@
 
 .gm-rail {
   position: sticky;
-  top: calc(var(--appstrip) + 92px);
-  z-index: 40;
+  top: var(--stage-sticky-top);
+  z-index: var(--z-sticky);
   background: rgba(10, 10, 10, 0.96);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -109,8 +109,7 @@
 }
 [data-theme="light"] .gm-rail { background: rgba(255, 255, 255, 0.96); border-bottom-color: rgba(10, 10, 10, 0.1); }
 
-@media (max-width: 720px) {
-  .gm-rail { top: calc(var(--appstrip) + 66px); }
+@media (max-width: 767px) {
   /* On a phone the economic label wrapped mid-phrase between the mode name and the settings
    * control. It is the one thing on this bar that must never be hard to read, so it takes a row of
    * its own rather than being shortened or truncated. */
@@ -150,7 +149,7 @@
   color: var(--gray-400); transition: color 200ms var(--ease), background 200ms var(--ease);
 }
 .gm-rail-settings-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .gm-rail-settings-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 .gm-rail-settings:hover { color: var(--white); background: rgba(255, 255, 255, 0.06); }
@@ -185,7 +184,7 @@
 .gm-section { margin-bottom: 32px; }
 .gm-grid { margin-top: 24px; display: grid; gap: 12px; grid-template-columns: 1fr; }
 .gm-two { margin-top: 24px; display: grid; gap: 12px; grid-template-columns: 1fr; }
-@media (min-width: 720px) {
+@media (min-width: 768px) {
   .gm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .gm-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

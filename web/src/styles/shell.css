@@ -28,12 +28,10 @@
   color: var(--white);
 }
 /* w-3.5 h-3.5 text-gray-500 */
-.dusdc-pill .dusdc-coin { width: 14px; height: 14px; color: var(--gray-500); }
 /* font-semibold tabular-nums text-white (text-white/55 while the sum is unread) */
 .dusdc-pill .dusdc-total { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--white); }
 .dusdc-pill .dusdc-total--dim { color: rgba(255, 255, 255, 0.55); }
 /* hidden sm:inline text-gray-500 */
-.dusdc-pill .dusdc-unit { color: var(--gray-500); }
 /* text-vermilion font-bold ml-0.5 text-[15px] leading-none */
 .dusdc-pill .dusdc-plus { color: var(--vermilion); font-weight: 700; margin-left: 2px; font-size: 15px; line-height: 1; }
 [data-theme="light"] .dusdc-pill { border-color: rgba(20, 18, 16, 0.14); color: rgba(20, 18, 16, 0.75); }
@@ -41,86 +39,9 @@
 [data-theme="light"] .dusdc-pill .dusdc-total { color: #141210; }
 [data-theme="light"] .dusdc-pill .dusdc-total--dim { color: rgba(20, 18, 16, 0.55); }
 
-.header-account-menu {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  margin-top: 8px;
-  z-index: 50;
-  min-width: 210px;
-  padding: 4px 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  background: var(--bg);
-  backdrop-filter: blur(12px);
-}
-
-[data-theme="light"] .header-account-menu {
-  border-color: rgba(20, 18, 16, 0.12);
-}
-
-.header-account-pools {
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-[data-theme="light"] .header-account-pools {
-  border-bottom-color: rgba(20, 18, 16, 0.08);
-}
-
 /* Each pool is named. Economically different money is never summed into one number. */
-.header-account-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--gray-500);
-}
-
-.header-account-row + .header-account-row {
-  margin-top: 4px;
-}
-
-.header-account-row .val {
-  color: var(--white);
-  font-variant-numeric: tabular-nums;
-}
 /* the reference's wallet row is text-white/80 under the account's text-white */
-.header-account-row .val--soft {
-  color: rgba(255, 255, 255, 0.8);
-}
-[data-theme="light"] .header-account-row .val--soft {
-  color: rgba(20, 18, 16, 0.8);
-}
-
-.header-account-link {
-  display: block;
-  padding: 8px 16px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--gray-300);
-  transition: background-color 180ms var(--ease), color 180ms var(--ease);
-}
-
-.header-account-link:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--white);
-}
-
-[data-theme="light"] .header-account-link:hover {
-  background: rgba(20, 18, 16, 0.05);
-}
 /* Disconnect: block w-full text-left · text-vermilion/70 hover:text-vermilion (Header.tsx L356–362) */
-.header-account-link--danger {
-  width: 100%;
-  text-align: left;
-  color: color-mix(in srgb, var(--vermilion) 70%, transparent);
-}
-.header-account-link--danger:hover {
-  color: var(--vermilion);
-}
 
 /* The account popover (Owarine 90a91d71 `SeatAccountMenu`; O-10, D-224): a 21 rem card — the marble, the kind, a
    network chip; one recessed panel of rows; the items. The trigger's marble replaces the address dot. */
@@ -154,7 +75,7 @@
   min-height: 100vh;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .page-shell {
     padding-top: calc(var(--appstrip) + 66px);
     padding-bottom: 112px;
@@ -203,19 +124,6 @@
   color: var(--gray-400);
 }
 
-.capability-pending .cp-meta {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--gray-500);
-}
-
-[data-theme="light"] .capability-pending .cp-meta {
-  border-top-color: rgba(20, 18, 16, 0.12);
-}
-
 /* With the install strip dismissed the reference drops the header to the top (`[data-strip="off"] .header
    { top: 0 }`, part-02) on the assumption that the ticker went with it — but the ticker stays, so the
    header covers it and the page's first line hides under the header. Verified on yosuku.xyz itself
@@ -224,6 +132,6 @@
 .page-island { min-height: 100vh; }
 
 [data-strip="off"] .header { top: 28px; }
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   [data-strip="off"] .header { top: 20px; }
 }

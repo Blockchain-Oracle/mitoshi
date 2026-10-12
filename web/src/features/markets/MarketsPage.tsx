@@ -20,6 +20,7 @@ import "@/styles/ticket-composer-light.css";
 import "@/styles/share-card.css";
 import "@/styles/claim-winnings.css";
 import "@/styles/history.css";
+import "@/styles/alerts.css";
 import "./markets.css";
 
 function Placeholder() {

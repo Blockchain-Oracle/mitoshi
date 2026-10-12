@@ -58,7 +58,7 @@
   border-bottom: 1px solid var(--demo-hair-06);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .demo-bar {
     top: calc(var(--appstrip) + 66px);
   }

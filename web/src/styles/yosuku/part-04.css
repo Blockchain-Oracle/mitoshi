@@ -264,7 +264,7 @@
   /* mobile: hide the side panel; trade via the prominent Trade button → modal */
   .hero-mini-panel { display: none; }
   .hero-yesno {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 12px;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px; margin-top: 12px;
   }
   /* Match the small-card .mc-side buttons exactly so the hero reads balanced:
      mono label, flat fill, 10px radius, same price treatment. */

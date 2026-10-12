@@ -93,7 +93,7 @@
 .st-asset b { font-weight: 800; font-variant-numeric: tabular-nums; }
 [data-theme="light"] .st-asset { color: #171310; }
 .st-meta { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gray-500); font-variant-numeric: tabular-nums; }
-.st-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.st-sides { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 7px; }
 .st-side { display: flex; flex-direction: column; align-items: stretch; gap: 3px; border: 1px solid; border-radius: 11px; padding: 9px 11px 8px; background: transparent; cursor: pointer; text-align: left; transition: background 150ms var(--ease), border-color 150ms var(--ease), transform 120ms var(--ease); }
 .st-side:active { transform: scale(0.98); }
 .st-sidetop { display: flex; align-items: baseline; justify-content: space-between; }

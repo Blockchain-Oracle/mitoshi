@@ -6,7 +6,7 @@
 .pv-note--warn { border-left: 2px solid var(--color-warning); padding-left: 10px; }
 .pv-note summary { cursor: pointer; color: var(--color-ink-secondary); display: flex; align-items: center; }
 .pv-desk { display: flex; flex-direction: column; gap: 16px; }
-.pv-cells { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.pv-cells { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr)); gap: 12px; }
 .pv-cell-label { font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-ink-secondary); }
 .pv-cell-value { font-family: var(--font-mono); font-size: 15px; color: var(--color-ink); }
 .pv-claims { display: flex; flex-direction: column; gap: 10px; }

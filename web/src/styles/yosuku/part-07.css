@@ -116,7 +116,7 @@ body.view-list .mc-badge { position: static; align-self: center; margin-left: 16
 .floor-head p { color: var(--gray-500); font-size: 13px; max-width: 50ch; }
 .floor-grid {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 4px;
   aspect-ratio: 12 / 3;
 }
@@ -178,7 +178,7 @@ body.view-list .mc-badge { position: static; align-self: center; margin-left: 16
 }
 /* 120px of margin plus 64px of padding is a desktop rhythm. On a phone it wrapped a single
    "Docs" line in ~220px of nothing, which was most of the empty screen at the end of Portfolio. */
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .footer { margin-top: 44px; padding: 28px 0 24px; }
 }
 .footer-row {
@@ -247,7 +247,7 @@ body.view-list .mc-badge { position: static; align-self: center; margin-left: 16
 /* The plate is desktop-proportioned: 36px/32px on a 390px screen burns a fifth of the width on
    padding and stacks two tall slabs, one for the account and one for the X wallet. Trimmed for
    phones, where the page was running 1.6 screens with almost nothing in it. */
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .ledger-plate { padding: 16px 14px; border-radius: 5px; }
 }
 
@@ -285,7 +285,7 @@ body.view-list .mc-badge { position: static; align-self: center; margin-left: 16
 /* ───────── Calendar heatmap ───────── */
 .cal-grid {
   display: grid;
-  grid-template-columns: 20px repeat(13, 1fr);
+  grid-template-columns: 20px repeat(13, minmax(0, 1fr));
   gap: 3px;
 }
 .cal-col-lbl, .cal-row-lbl {

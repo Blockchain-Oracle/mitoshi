@@ -92,7 +92,7 @@
 }
 .mobile-more-menu a.active svg { color: var(--vermilion); }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .nav-links { display: none; }
   /* Slim the top bar on mobile: shorter header, tighter logo + wallet pill. */
   .header { padding: 0 14px; height: 46px; }
@@ -134,11 +134,8 @@
   .mobile-bottom-nav a,
   .mobile-bottom-nav button { padding: 9px 10px; }
 }
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .mobile-more-menu { display: grid; }
-  /* Clear the fixed floating bottom-nav (~72px incl. its 16px offset) so page
-     content + footers never hide beneath it on phones. */
-  body { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
   .container { padding-inline: 18px; }
   .page-hero { padding: 116px 0 24px; }
   /* single-column hero on phones: drop the desktop align-end lift + oversized gap
@@ -171,7 +168,7 @@
   .search-box { width: 100%; }
   /* clear the floating bottom nav (bottom:16px + ~64px tall) */
   .bell { width: 76px; height: 76px; bottom: 100px; right: 16px; }
-  .floor-grid { grid-template-columns: repeat(6, 1fr); aspect-ratio: 6 / 5; }
+  .floor-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); aspect-ratio: 6 / 5; }
   body.view-list .market-card { flex-direction: column; align-items: stretch; }
   body.view-list .mc-spark, body.view-list .mc-weight, body.view-list .mc-foot { width: 100%; }
   .lb-hero-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -240,7 +237,7 @@
   /* Stats: tighter on mobile */
   .stats { padding-top: 64px; padding-bottom: 64px; }
   .stats-jp { font-size: 40vw; }
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 0; row-gap: 32px; }
+  .stats-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; row-gap: 32px; }
   .stat { padding: 20px 12px; }
   .stat-value { font-size: clamp(2rem, 10vw, 3rem); }
 
@@ -323,7 +320,7 @@
   .footer-links { flex-direction: row; flex-wrap: wrap; gap: 10px 22px; }
   .footer-links a { display: inline-flex; align-items: baseline; gap: 4px; font-size: 13px; }
   .footer-links a .arr { display: none; }
-  .footer-status { grid-template-columns: 1fr 1fr; }
+  .footer-status { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .footer-watermark { font-size: 18vw; }
 }
 

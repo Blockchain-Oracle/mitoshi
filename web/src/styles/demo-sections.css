@@ -17,7 +17,7 @@
 
 @media (min-width: 1024px) {
   .demo-section:not(.single) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
   /* lg:order-1 / lg:order-2 — the reel section swaps its columns */
@@ -182,7 +182,7 @@
 
 @media (min-width: 768px) {
   .demo-cards {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -236,7 +236,7 @@
 
 @media (min-width: 640px) {
   .demo-proofs {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 

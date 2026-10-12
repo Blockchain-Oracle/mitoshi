@@ -80,7 +80,7 @@
 /* One card per Window rather than the reference's fixed three cadences, so the
    grid fills instead of forcing a three-up row that goes empty or overflows. */
 .markets-grid-live {
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
 }
 
 /* Rendering on approach (D-183), as the word board's cards: below the hero on every phone, each card skips style,

@@ -10,7 +10,7 @@
 .tm-league > * { position: relative; }
 .tm-league-dot { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--tier); }
 .tm-league-points { font: 700 40px/1.05 var(--font-data); font-variant-numeric: tabular-nums; color: var(--color-ink); }
-.tm-league-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.tm-league-tiles { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 12px; }
 .tm-league-tile { border-radius: var(--radius-lg); background: color-mix(in srgb, var(--color-ink) 4%, transparent); padding: 8px 12px; }
 .tm-league-bar { height: 4px; overflow: hidden; border-radius: var(--radius-full); background: color-mix(in srgb, var(--color-ink) 8%, transparent); }
 .tm-league-bar > span { display: block; height: 100%; border-radius: inherit; background: color-mix(in srgb, var(--chart-up) 70%, transparent); }

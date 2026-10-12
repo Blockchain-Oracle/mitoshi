@@ -122,12 +122,12 @@
   .edge-hero-grid, .edge-lower-grid { grid-template-columns: 1fr; }
   .edge-hero-grid { gap: 12px; }
   .edge-readout-panel { min-height: 280px; }
-  .edge-metrics { grid-template-columns: 1fr 1fr; }
+  .edge-metrics { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .edge-metric:nth-child(3) { border-left: 0; border-top: 1px solid var(--edge-rule); }
   .edge-metric:nth-child(4) { border-top: 1px solid var(--edge-rule); }
   .edge-lower-grid { gap: 48px; }
 }
-@media (max-width: 640px) {
+@media (max-width: 639px) {
   .edge-curve-panel, .edge-readout-panel { border-radius: 3px 16px 3px 3px; padding: 20px; }
   .edge-panel-head { display: block; }
   .edge-sample { margin-top: 6px; text-align: left; }

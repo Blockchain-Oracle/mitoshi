@@ -21,7 +21,7 @@
 }
 
 /* The viewport is full-width below `sm`, where a 280px floor would overflow the gutter. */
-@media (max-width: 640px) {
+@media (max-width: 639px) {
   .toast-plate {
     min-width: 0;
   }

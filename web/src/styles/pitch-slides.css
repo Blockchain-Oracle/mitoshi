@@ -40,6 +40,6 @@
   .pitch-nav-prev { left: 4px; }
   .pitch-nav-next { right: 4px; }
 }
-@media (max-width: 640px) {
+@media (max-width: 639px) {
   .pitch-foot-chain { display: none; }
 }

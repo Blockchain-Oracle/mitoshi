@@ -31,7 +31,7 @@
   position: fixed; z-index: var(--z-float); left: 50%; transform: translateX(-50%); width: min(26rem, calc(100vw - 1.25rem));
   bottom: calc(1rem + env(safe-area-inset-bottom));
 }
-@media (max-width: 720px) { .pl-dock { bottom: calc(0.8rem + env(safe-area-inset-bottom) + 4.75rem); } .pl-page { padding-bottom: 180px; } }
+@media (max-width: 767px) { .pl-dock { bottom: calc(0.8rem + env(safe-area-inset-bottom) + 4.75rem); } .pl-page { padding-bottom: 180px; } }
 .pl-dock-btn {
   display: flex; align-items: center; gap: 10px; width: 100%; padding: 0 16px; border-radius: 9999px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
   background: var(--accent-fill); color: var(--on-accent); font-family: var(--font-display); font-weight: 700; font-size: 15px;

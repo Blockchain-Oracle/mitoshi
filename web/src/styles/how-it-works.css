@@ -71,7 +71,7 @@
 
 /* grid grid-cols-1 md:grid-cols-2 gap-4 */
 .hiw-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-@media (min-width: 768px) { .hiw-grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 768px) { .hiw-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 
 /* bg-neutral-900/50 border border-white/5 hover:border-white/10 rounded-2xl p-6 transition-all */
 .hiw-card { border: 1px solid var(--hiw-line); border-radius: 16px; background: var(--hiw-card); padding: 24px; transition: border-color 200ms var(--ease); }
@@ -107,7 +107,7 @@
 .hiw-icon svg { width: 16px; height: 16px; }
 
 /* grid grid-cols-3 gap-3 sm:gap-6 mb-6 text-center */
-.hiw-example-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; text-align: center; }
+.hiw-example-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; text-align: center; }
 @media (min-width: 640px) { .hiw-example-grid { gap: 24px; } }
 /* text-xl sm:text-2xl md:text-3xl font-black font-mono — mint, off-red, white */
 .hiw-figure { font-family: var(--font-mono); font-size: clamp(20px, 3vw, 30px); font-weight: 900; color: var(--white); }
@@ -129,7 +129,7 @@
 .hiw-formula { display: flex; flex-direction: column; gap: 6px; margin-bottom: 24px; overflow-x: auto; border: 1px solid var(--hiw-line); border-radius: 12px; background: var(--hiw-formula); padding: 16px; font-family: var(--font-mono); font-size: 14px; color: var(--vermilion); white-space: nowrap; }
 /* grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-gray-400, keys text-white font-mono */
 .hiw-params { display: grid; grid-template-columns: 1fr; gap: 16px; font-size: 12px; color: var(--gray-400); }
-@media (min-width: 640px) { .hiw-params { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 640px) { .hiw-params { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 .hiw-params dt { display: inline; font-family: var(--font-mono); color: var(--white); }
 .hiw-params dd { display: inline; margin: 0; }
 /* text-sm text-gray-500 mt-6 leading-relaxed */

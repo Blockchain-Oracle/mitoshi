@@ -26,7 +26,7 @@
 .tm-prow-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; padding-bottom: 10px; font: 500 12px/1.3 var(--font-body); }
 .tm-prow-grid dt { color: var(--color-ink-muted); }
 .tm-prow-grid dd { text-align: right; font-family: var(--font-data); color: var(--color-ink); }
-.tm-prow-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tm-prow-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .tm-prow-close, .tm-prow-manage { display: grid; height: 36px; place-items: center; border-radius: var(--radius-full); font: 700 12px/1 var(--font-body); }
 .tm-prow-close { background: color-mix(in oklab, var(--chart-down) 14%, var(--color-surface-1)); color: var(--chart-down); }
 .tm-prow-manage { background: var(--color-surface-2); color: var(--color-ink); }
@@ -45,7 +45,7 @@
 .tm-sheet-chip[data-on] { background: var(--chart-up); color: var(--chart-ground); }
 .tm-sheet-chip:disabled { opacity: 0.4; }
 .tm-sheet-link { align-self: flex-start; font: 600 12px/1 var(--font-body); color: var(--color-accent); }
-.tm-sheet-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tm-sheet-tiles { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .tm-sheet-tile { display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 14px; font: 700 11px/1 var(--font-body); }
 .tm-sheet-tile b { font: 700 22px/1.1 var(--font-data); }
 .tm-sheet-summary { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; padding: 4px; font: 500 13px/1.3 var(--font-body); }

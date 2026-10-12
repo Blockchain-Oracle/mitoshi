@@ -122,13 +122,20 @@ span.top-money, span.top-account { display: contents; }
 .app-column > .footer { margin: 0; padding: 12px 4px 0; border: 0; background: none; }
 .app-column > .footer .container { max-width: none; padding: 0; }
 
-/* The stage: one bordered panel holds the page (Slush). */
+/* The stage: one bordered panel holds the page (Slush). It is the page's one inset (D-226, Owarine `shell.css`
+ * `html[data-shell]`): 12 px on a phone as Owarine's in-stage `.container`, and a page's own `.container` adds none —
+ * four stacked paddings left 279 px of a 375 px phone. `overflow-x: clip` so nothing a page draws widens the stage. */
 .app-stage {
-  flex: 1; min-width: 0; padding: 16px; border: var(--spacing-stage-edge) solid var(--color-stage-edge);
-  border-radius: var(--radius-xl); background: var(--color-stage); outline: none;
+  flex: 1; min-width: 0; padding: 12px; border: var(--spacing-stage-edge) solid var(--color-stage-edge);
+  border-radius: var(--radius-xl); background: var(--color-stage); outline: none; overflow-x: clip;
 }
 @media (min-width: 640px) { .app-stage { padding: 24px; } }
 @media (min-width: 1024px) { .app-stage { padding: var(--spacing-stage-pad); } }
+.app-stage .container { padding-inline: 0; }
+/* Where a sticky bar pins inside the stage (Owarine `shell.css`): under the stage's top edge on desktop, where the top
+ * line scrolls away; under the phone's sticky top line. */
+:root { --stage-sticky-top: 0.75rem; }
+@media (max-width: 767px) { :root { --stage-sticky-top: calc(var(--spacing-topline) + env(safe-area-inset-top, 0px)); } }
 /* The reference hero's top padding cleared the old fixed header; inside the stage it doesn't. */
 .app-stage .page-hero { padding-top: 0; }
 

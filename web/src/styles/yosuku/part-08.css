@@ -193,7 +193,7 @@
 .podium-stats {
   margin-top: 20px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0;
   border-top: 1px solid rgba(255,255,255,0.06);
   padding-top: 16px;
@@ -266,7 +266,7 @@
 .yoko-stats {
   margin-top: 28px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   border-top: 1px solid rgba(255,255,255,0.06);
 }
 .yoko-stats .item { padding: 16px 12px 0 0; border-right: 1px solid rgba(255,255,255,0.04); }

@@ -1,5 +1,5 @@
 /* The ticket's controls from 21st.dev 16240 (components/ui/prediction-ticket.tsx), in Masayume's ticket tokens. */
-.pt-pills { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; padding: 0.375rem; border-radius: var(--radius-lg); background: var(--color-surface-2); }
+.pt-pills { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.5rem; padding: 0.375rem; border-radius: var(--radius-lg); background: var(--color-surface-2); }
 .pt-pill-thumb { position: absolute; inset-block: 0.375rem; left: 0.375rem; width: calc((100% - 1.25rem) / 2); border-radius: var(--radius-md); border: 1px solid var(--button-up-border); background: var(--button-up-fill); transform: translateX(calc(var(--pill-index) * (100% + 0.5rem))); transition: transform 320ms var(--ease-out), background-color 200ms var(--ease), border-color 200ms var(--ease); }
 .pt-pills[data-side="down"] .pt-pill-thumb { border-color: var(--button-down-border); background: var(--button-down-fill); }
 .pt-pill { position: relative; z-index: 1; display: flex; min-height: 3.5rem; align-items: center; justify-content: center; gap: 0.5rem; border-radius: var(--radius-md); font: var(--text-body-strong, inherit); font-weight: 600; color: var(--color-ink-secondary); transition: color 200ms var(--ease), transform 150ms var(--ease); }

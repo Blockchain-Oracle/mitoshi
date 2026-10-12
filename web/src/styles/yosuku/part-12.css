@@ -134,7 +134,7 @@
 /* Landing market cards (preview grid) */
 .lp-markets-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 .lp-market-card {
@@ -213,7 +213,7 @@
   padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.06);
 }
 .lp-market-meta-row .pos { color: var(--white); font-weight: 600; letter-spacing: 0.04em; }
-.lp-market-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.lp-market-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .lp-market-side {
   display: flex; align-items: center; justify-content: space-between;
   padding: 11px 14px; border-radius: 8px;

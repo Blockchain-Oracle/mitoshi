@@ -51,5 +51,5 @@
 .take-cashtag { color: var(--color-accent); text-underline-offset: 2px; }
 .take-cashtag:hover { text-decoration: underline; }
 .take-chip-tag { font-weight: 700; }
-.take-ctas { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.take-ctas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .take-ctas .take-cta { padding: 14px 8px; }

@@ -227,7 +227,7 @@
   font-size: 12px; line-height: 1.55; color: var(--gray-400);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 767px) {
   .st-empty { min-height: 224px; }
 }
 

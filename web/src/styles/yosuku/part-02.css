@@ -264,7 +264,7 @@ body.urgent::before {
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .sensei-dock-wrap { bottom: 90px; right: 16px; }
   .sensei-dock:hover, .sensei-dock:focus-visible { padding: 7px; gap: 0; }
   .sensei-dock:hover .sensei-dock-copy, .sensei-dock:focus-visible .sensei-dock-copy { max-width: 0; opacity: 0; }
