@@ -85,7 +85,8 @@ export async function readAgentVerdict({ model, prompt, timeoutMs = DEFAULT_AGEN
       }),
     );
     const verdict = agentVerdictSchema.parse(result.output);
-    const provider = label.slice(0, label.indexOf("/"));
+    // `openai.responses` → `openai`: the SDK's provider id names its API too; a row names the creator, as AI_MODEL does.
+    const provider = label.slice(0, label.indexOf("/")).split(".")[0];
     const answered = result.response.modelId;
     return { ok: true, verdict, modelId: answered && provider ? `${provider}/${answered}` : label };
   } catch (error) {

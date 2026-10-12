@@ -114,7 +114,7 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
               <ul className="flex flex-col divide-y divide-hairline rounded-lg border border-hairline bg-surface-1">
                 {decisions.map((d) => (
                   <li key={d.marketId} className="flex flex-col gap-1 px-4 py-3">
-                    <span className="type-body-strong text-ink">{d.label ?? d.marketId.slice(0, 10)} · {d.side ? `bet ${d.side.toUpperCase()}` : P.held}{d.side && d.outcome ? ` · ${d.outcome}` : ""}</span>
+                    <span className="type-body-strong text-ink">{d.label ?? d.marketId.slice(0, 10)} · {d.side ? P.decisionLine(d.side.toUpperCase(), d.filled, d.outcome) : P.held}</span>
                     <span className="type-caption text-ink-secondary">{d.why}</span>
                     <span className="type-caption text-ink-muted">{d.model} · {d.receipts ? d.receipts.map((r) => P.paid(usd(BigInt(r.amountBase)), r.host)).join(", ") : P.unpaid}</span>
                   </li>

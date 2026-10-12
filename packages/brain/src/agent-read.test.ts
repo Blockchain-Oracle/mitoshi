@@ -45,6 +45,11 @@ describe("readAgentVerdict", () => {
     const read = await readAgentVerdict({ model: answering('{"side":"up","confidence":0.72,"why":"EMA above the print"}'), prompt: { system: "s", user: "u" } });
     expect(read).toEqual({ ok: true, verdict: { side: "up", confidence: 0.72, why: "EMA above the print" }, modelId: "mock-provider/mock-reader" });
   });
+  it("names the creator, not the SDK's API id (`openai.responses` → `openai`)", async () => {
+    const model = answering('{"side":"hold","confidence":0.4,"why":"thin"}');
+    Object.defineProperty(model, "provider", { value: "openai.responses" });
+    expect(await readAgentVerdict({ model, prompt: { system: "s", user: "u" } })).toMatchObject({ ok: true, modelId: "openai/mock-reader" });
+  });
   it("fails closed on prose, on an off-schema object and on a refusal — never a guessed verdict", async () => {
     const prompt = { system: "s", user: "u" };
     expect(await readAgentVerdict({ model: answering("Looks bullish, I would go up."), prompt })).toMatchObject({ ok: false, failure: "parse" });

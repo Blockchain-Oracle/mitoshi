@@ -36,6 +36,9 @@ export const AGENTS = {
     unpaid: "unpaid (testnet)",
     paid: (amount: string, host: string) => `paid ${amount} · ${host}`,
     held: "held",
+    /** A call that placed a copy is a bet with its result; one nothing filled is only a call — right or wrong, no money. */
+    decisionLine: (side: string, filled: number, outcome: string | null) =>
+      filled > 0 ? `bet ${side}${outcome ? ` · ${outcome}` : ""}` : `called ${side} · no copy filled${outcome === "won" ? " · right" : outcome === "lost" ? " · wrong" : outcome === "void" ? " · void" : ""}`,
     fills: "Copy trades",
     noFills: "No copy trades yet.",
     feedback: "Feedback on ERC-8004",
