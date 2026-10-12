@@ -17,6 +17,10 @@ Checked today on the trunk at 1440 and 375 beside owarine.xyz:
 Rules unchanged: port Owarine's component and words; Mitoshi copy only where Tempo differs; word budget per surface =
 Owarine's; real data only; one slice at a time, deployed and checked at 1440 and 375 before the next. Decision D-224.
 
+## Done so far
+R1 (web `5de517b`), R1b (`7b80542`): the owner's clip — "move wallet connect to the end" — made the ticket's CTA the
+order itself when signed out; sign-in opens for that order and keeps the side and stake. P5 is built; P6 next.
+
 ## R1 — Words and the way in
 1. **Dead copy out.** `providers/wallet/copy.ts` `SIGN_IN` (eyebrow, body, create, nameLabel, namePlaceholder, signIn,
    orWallet, tempoWallet, walletConnect, injectedNote, footer, cancel); `features/onboarding/{copy.ts EXPLAINERS,

@@ -19,8 +19,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/markets": { eyebrow: "Markets", title: "Call where a price closes", body: "Live Windows on BTC, ETH, SOL and US stocks.", dependency: engine },
   "/markets/[id]": { eyebrow: "Markets", title: "This Window", body: "One Window, its book and your position.", dependency: engine },
   "/portfolio": { eyebrow: "Portfolio", title: "Your positions, money and verdicts", body: "Your money, open calls and verdicts.", dependency: engine },
-  "/stocks": { eyebrow: "Stocks", title: "Tokenized stocks on Tempo", body: "Tokenized stocks on Tempo.", dependency: "the stock pools and price guard" },
-  "/stocks/[symbol]": { eyebrow: "Stocks", title: "One stock", body: "Price, holdings and the calls on this ticker.", dependency: "the stock pools and price guard" },
   "/themes": { eyebrow: "Themes", title: "Baskets that rebalance themselves", body: "Baskets an agent rebalances for you.", dependency: "the theme router and agent", links: [{ href: "/themes/create", label: "Create a theme" }] },
   "/themes/[slug]": { eyebrow: "Themes", title: "One theme", body: "Weights, rebalances, follow or unfollow.", dependency: "the theme router and agent" },
   "/themes/create": { eyebrow: "Themes", title: "Create a theme", body: "Pick tickers, an envelope and your fee.", dependency: "the theme router and agent" },

@@ -1,9 +1,9 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// /stocks (P5, D-224): the listed stocks as tiles; each opens its hub. A static shell; prices and the session stream in.
+import { STOCKS } from "@/features/stocks/copy";
+import { StocksPage } from "@/features/stocks/StocksPage";
 
-export const metadata = { title: pendingFor("/stocks").title };
+export const metadata = { title: STOCKS.title };
 
-export default function StocksPage() {
-  return <PendingRoute route="/stocks" />;
+export default function Page() {
+  return <StocksPage />;
 }

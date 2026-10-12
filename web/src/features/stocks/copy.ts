@@ -1,0 +1,27 @@
+/** `/stocks` and `/stocks/[SYMBOL]` — Owarine 90a91d71 `ticker-hub/copy.ts` (`TICKER_HUB`), at its counts (P5, D-224). */
+export const STOCKS = {
+  title: "Stocks",
+  eyebrow: "Stock",
+  intro: (name: string) => `Everything on ${name}: the print, the session, its Windows, its headlines.`,
+  spot: "Spot",
+  spotStale: "last print",
+  report: "Next report",
+  reportNone: "none scheduled",
+  dash: "—",
+  hour: { bmo: "before open", amc: "after close", dmh: "during hours" } as const,
+  source: "Settles on RedStone",
+  noSource: "No signed price source",
+  room: (symbol: string) => `$${symbol} room`,
+  roomQualifier: "bettors only",
+  trade: "Trade it →",
+  windows: { number: "01", title: "Windows", reading: "Reading the Windows…", empty: "No Window on this ticker right now." },
+  headlines: { number: "02", title: "Headlines", credit: "Headlines via Finnhub", empty: "No headlines in the last 48 h.", quiet: "The wire is quiet.", off: "Headlines need a Finnhub key here." },
+  token: {
+    number: "03",
+    title: "The token",
+    mirror: "Mirror token on Tempo",
+    none: "No token on Moderato yet.",
+    blocked: "Buy and sell wait on bridged supply on Moderato.",
+    reserves: "Reserves →",
+  },
+} as const;
