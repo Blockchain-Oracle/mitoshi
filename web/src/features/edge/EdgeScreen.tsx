@@ -3,9 +3,10 @@
 // Trader Edge): the intro with its source and method, then every state the reference draws — sign in, reading,
 // failed with a retry, nothing settled yet (with the open count) and the report — over the account's fills projection
 // (`useWalletHistory`, the reading `/portfolio`'s record and journal use), computed in the browser by core's
-// `computeTraderEdge`, grouped by the device's local hour.
+// `computeTraderEdge`, grouped by the device's local hour. D-227: the account's history (`useAccountHistory`), so its
+// one-tap Trading Balance and Boost rounds count as the wallet's own do.
 import { computeTraderEdge, isOk } from "@cwf/core";
-import { keys, usePositions, useVaultBets, useWalletHistory } from "@cwf/markets/react";
+import { keys, useAccountHistory, usePositions, useVaultBets } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -32,7 +33,7 @@ function State({ eyebrow, title, copy, action }: { eyebrow: string; title: strin
 export function EdgeScreen() {
   const session = useWalletSession();
   const wallet = session.address;
-  const history = useWalletHistory(wallet);
+  const history = useAccountHistory(wallet);
   const queryClient = useQueryClient();
   const retry = useCallback(() => void queryClient.invalidateQueries({ queryKey: keys.history(wallet) }), [queryClient, wallet]);
   // Open Windows from the live positions (the wallet's and the Trading Balance's), as /portfolio and the terminal count

@@ -118,7 +118,8 @@ function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionV
   // Seeded once per opening (the drawer's content unmounts on close), so a positions refresh never resets an edit.
   const [tp, setTp] = useState(p.tpBase);
   const [sl, setSl] = useState(p.slBase);
-  const ctx: ExitCtx = { costBase: p.costBase, maxBase: p.heldRaw, nowBase: value?.valueBase ?? null, refSpot: p.entrySpot ?? value?.spot ?? null, valueAt: value?.valueAt ?? none, spotAt: value?.spotAt ?? none };
+  // D-227: targets are on the whole holding at the walk's price, against its open cost — ROI here is the row's ROI.
+  const ctx: ExitCtx = { costBase: p.costBase, roiBase: p.boost ? p.boost.stakeBase : p.costBase, maxBase: p.boost ? p.heldRaw - p.boost.frontedBase : p.heldRaw, nowBase: value?.triggerValueBase ?? null, refSpot: p.entrySpot ?? value?.spot ?? null, valueAt: value?.valueAt ?? none, spotAt: value?.spotAt ?? none };
   const blocked = exitError("tp", tp, false, ctx) !== null || exitError("sl", sl, false, ctx) !== null;
   const save = async () => {
     tapFeedback();

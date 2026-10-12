@@ -117,6 +117,21 @@ stack on the controls (terminal portPlan 2–7, the owner's call); /demo's video
 the lane card's kind tag ellipsizes beside OPENS (R4-3); two RSC prefetches answered 502 once in ~650 loads (not
 reproduced).
 
+R4-1 (P&L, built and checked live; not yet deployed): one rule everywhere — what Close pays now (or the Window's known
+payout, or the open cost while locked or unpriced) less the open cost of what is held, a sale taking its share out at
+average cost. Core's ledger keeps the open cost per side (Reduce, re-entry, merge, mint, short) and guards the indexer's
+lag; the Trading Balance's cost is the tally's when exact, else its own `Executed` fills replayed; a Boost's is its stake
+less what it paid back. One row per held side; equity counts every row at what it counts for; the totals, the View pill
+and the PnL card's ROI run over priced rows ("· N unpriced"); TP/SL compare the whole holding at the walk's price in the
+tab and in the exit keeper; DEMO's Close sells what fills and keeps the rest; rows say why they have no number (Locked ·
+settles, No bids, N% sellable, Updating) and roll on the Odometer; Now is the walk's price; a Boost pays (held − fronted)
+÷ its stake, its Avg in is its entry price, and its mark stops at the lock. /portfolio values on the terminal's hook
+(Trading Balance bets in Open, hedges as UP + DOWN, Boosts on Owarine's PositionCard); one account history (wallet +
+Trading Balance + Boost, sold-out Windows included) feeds the PnL card, History, the record and Trader Edge; open
+parlays and Range rounds sit in the list at fair value; voids read neutral. Proven on Moderato (acceptance/R4-1.md):
+three drives — a wallet Reduce, a wallet Reduce + re-entry, a Trading Balance two taps + partial Close + re-entry — the
+app's figures equal the chain's to the base unit. The ops exit keeper changed (`decide.ts`): ops needs a deploy.
+
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
 the slice's routes; a real flow on testnet where money moves (P&L checked against chain reads); deploy web (and ops

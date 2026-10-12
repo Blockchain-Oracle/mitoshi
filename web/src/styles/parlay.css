@@ -130,6 +130,8 @@
 .pl-card { border-radius: 16px; border: 1px solid var(--ms-hairline); background: var(--ms-surface-1); padding: 20px; transition: border-color 200ms var(--ease); }
 .pl-card--won { border-color: color-mix(in srgb, var(--vermilion) 40%, transparent); background: color-mix(in srgb, var(--vermilion) 5%, var(--ms-surface-1)); }
 .pl-card--lost { opacity: 0.65; }
+/* A void returns the stake (D-227): neutral — full ink on a plain card, never the loss's fade. */
+.pl-card--void { border-style: dashed; }
 .pl-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .pl-card-name { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .pl-card-name svg { color: var(--vermilion); }
@@ -140,6 +142,7 @@
 }
 .pl-pill--won { background: color-mix(in srgb, var(--vermilion) 15%, transparent); color: var(--white); }
 .pl-pill--dead { color: var(--gray-400); }
+.pl-pill--void { background: transparent; box-shadow: inset 0 0 0 1px var(--ms-hairline); color: var(--gray-300); }
 .pl-card-right { text-align: right; }
 .pl-card-x { font-family: var(--font-display); font-weight: 800; font-size: 20px; line-height: 1; color: var(--vermilion); }
 .pl-card-sub { font-size: 12px; color: var(--gray-400); margin-top: 4px; }

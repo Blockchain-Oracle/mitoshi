@@ -12,6 +12,7 @@ export { PillButton, pillButtonVariants, type PillButtonProps, type PillTone } f
 export { Card, FeatureCard, Eyebrow, type FeatureTone } from "./Card";
 export { TextTabs, TextTabPanel, type TextTab, type TextTabsProps } from "./TextTabs";
 export { Odometer, directionOf, type OdometerKind, type OdometerProps } from "./Odometer";
+export { PositionCard, type PositionCardProps } from "./PositionCard";
 export { Sticker, type StickerTone } from "./Sticker";
 export { Seal } from "./Seal";
 export { SwipeToConfirm, type SwipeToConfirmProps } from "./SwipeToConfirm";

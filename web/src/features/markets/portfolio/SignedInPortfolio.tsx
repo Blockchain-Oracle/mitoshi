@@ -4,11 +4,13 @@
  * the pockets (Trading Balance, Private) with their controls in a sheet, 01 your bets, 02 what waits to collect, then
  * the record and the Trader Edge link. Its own island, loaded once a wallet is
  * there, so a signed-out visitor (the connect card) never evaluates the ledger, the ticket-grade tx components or the
- * Trading Balance controls. The motion scope rides inside it (§3.1).
+ * Trading Balance controls. The motion scope rides inside it (§3.1). D-227: positions are valued as the terminal values
+ * them (`usePortfolioPositions`: what Close pays now, the rest at cost), so the money card and the rows match /trade.
  */
 import type { Address, Reading } from "@cwf/core";
 import { isOk } from "@cwf/core";
-import { keys, useBalanceSheet, useClaimables, useLiveMarketData, usePositions, useWalletHistory } from "@cwf/markets/react";
+import { keys, useAccountHistory, useBalanceSheet, useClaimables, useLiveMarketData, usePositions, useVaultBets } from "@cwf/markets/react";
+import { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import { usePrivateBudget } from "@/features/private/usePrivate";
 import { openFunds } from "@/lib/funds-event";
 import { MoneyHero, type HeroMoney } from "./MoneyHero";
@@ -25,6 +27,7 @@ import { HERO_MONEY, PLATE, PORTFOLIO } from "../copy";
 import { CollectPlate } from "../claims/CollectPlate";
 import { BetsPanel } from "./BetsPanel";
 import { RecordChart } from "./RecordChart";
+import { PositionValuers, usePortfolioPositions } from "./usePortfolioPositions";
 
 // Boosts (S10c) load as their own island: the leverage reads and lane stay out of the Portfolio's first load.
 const BoostPositions = dynamic(() => import("@/features/boost/BoostPositions").then((m) => m.BoostPositions), { ssr: false });
@@ -53,10 +56,13 @@ function Ledger({ wallet }: { wallet: Address }) {
   const queryClient = useQueryClient();
   const sheet = useBalanceSheet(wallet);
   const positions = usePositions(wallet);
+  const vaultBets = useVaultBets(wallet);
   const claimables = useClaimables(wallet);
+  const book = usePortfolioPositions(wallet);
+  const closer = useTerminalClose();
   const critical = [sheet, positions, claimables];
   const criticalSettled = critical.every((r) => r !== null);
-  const history = useWalletHistory(wallet, criticalSettled);
+  const history = useAccountHistory(wallet, criticalSettled);
   const privateBudget = usePrivateBudget(wallet);
   useLiveMarketData({ wallet });
   const retry = useCallback(() => void queryClient.invalidateQueries({ queryKey: keys.positions(wallet) }), [queryClient, wallet]);
@@ -71,21 +77,22 @@ function Ledger({ wallet }: { wallet: Address }) {
   }
   const rows = claimables && isOk(claimables) ? claimables.value : [];
   const value = sheet?.ok ? sheet.value : null;
-  const open = positions?.ok ? positions.value : [];
   const money: HeroMoney = {
     decimals: value?.decimals ?? 6,
     dollarsBase: value ? value.spendableBase + (value.vaultBase ?? 0n) : 0n,
     readyBase: value?.spendableBase ?? 0n,
-    positionsBase: open.reduce((sum, p) => sum + p.markValueBase, 0n),
+    // Every position at what it counts for (D-227): the part the book takes at what Close pays, the rest at cost.
+    positionsBase: book.totals.equityBase,
     collectBase: rows.reduce((sum, r) => sum + r.netPayoutBase, 0n),
     // Engine credit is already inside the collect leg (a redeem pays it); only resting-order escrow is named apart.
     pools: value?.orderEscrowBase ? [{ id: "escrow", label: PLATE.pools.escrow.label, amountBase: value.orderEscrowBase }] : [],
-    // Every leg read (the balance sheet, positions, claimables), so the figure never sums a leg still at 0 (R4-0).
-    ready: value !== null && criticalSettled,
+    // Every leg read (the balance sheet, both homes' positions, claimables), so the figure never sums a leg still at 0 (R4-0).
+    ready: value !== null && criticalSettled && vaultBets !== null,
   };
   return (
     <div className="container flex flex-col gap-10 px-gutter py-8 lg:px-gutter-desktop">
-      <MoneyHero money={money} openBets={open.length} settled={history?.ok ? history.value.rounds.length : 0} onAdd={openFunds} />
+      <PositionValuers positions={book.positions} onValue={book.onValue} />
+      <MoneyHero money={money} openBets={book.groups.length} settled={history?.ok ? history.value.rounds.length : 0} onAdd={openFunds} />
       <Pockets
         decimals={money.decimals}
         pockets={[
@@ -93,8 +100,8 @@ function Ledger({ wallet }: { wallet: Address }) {
           { id: "private", amountBase: privateBudget?.ok ? privateBudget.value.balanceBase : null, panel: <PrivateDesk wallet={wallet} index="" /> },
         ]}
       />
-      <BetsPanel wallet={wallet} positions={positions} history={history} index="01" retry={retry} />
-      <BoostPositions wallet={wallet} index="" />
+      <BetsPanel wallet={wallet} positions={positions} open={{ groups: book.groups, values: book.values, closer }} history={history} index="01" retry={retry} />
+      <BoostPositions wallet={wallet} index="" values={book.values} />
       {rows.length > 0 ? (
         <section className="flex flex-col gap-4" aria-label={HERO_MONEY.collectTitle}>
           <SectionHead number="02" title={HERO_MONEY.collectTitle} />

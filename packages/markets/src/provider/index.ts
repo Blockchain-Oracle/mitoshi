@@ -46,6 +46,7 @@ export function createMarketsProvider(): MarketsProvider {
 
 export * from "./engine-reads";
 export * from "./wallet-reads";
+export * from "./account-history";
 export * from "./prices";
 export * from "./index-api";
 export { chainWalletFills } from "./chain-logs";

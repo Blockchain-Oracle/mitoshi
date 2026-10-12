@@ -4,7 +4,9 @@
  * positions list learns a wallet's Windows from the indexer, which can be a block or two behind the receipt, so a new
  * Window's position waited for the next 15 s poll. The booked fill is exact (contracts and cost from the receipt), so
  * the screen shows it until the fetched list has a position on that Window and side in the same home — then the
- * fetched one, which includes it, takes over. Kept a minute at most. In memory for the tab.
+ * fetched one, which includes it, takes over. Kept a minute at most. In memory for the tab. D-227: a fetched row whose
+ * cost the index hasn't caught up with (`costStale`, the Window's first fill) takes the receipt's exact cost while
+ * the two agree on the size, so a new position never shows a free profit.
  */
 import type { EventMarket, MarketId, Side } from "@cwf/core";
 import { useSyncExternalStore } from "react";
@@ -78,19 +80,22 @@ export function withFreshFills(fetched: TerminalPosition[], fresh: readonly Fres
   const out = [...fetched];
   for (const f of fresh) {
     if (nowMs - f.atMs >= FRESH_MS) continue;
-    if (fetched.some((p) => p.via === f.via && p.marketId.toLowerCase() === f.marketId.toLowerCase() && p.side === f.side)) continue;
+    const at = out.findIndex((p) => p.via === f.via && p.marketId.toLowerCase() === f.marketId.toLowerCase() && p.side === f.side);
+    const got = at >= 0 && at < fetched.length ? out[at]! : null;
+    if (got) {
+      if (got.costStale && got.heldRaw === f.contractsRaw) out[at] = { ...got, costBase: f.costBase, costStale: undefined };
+      continue;
+    }
     const m = marketOf(f.marketId);
     if (!m) continue;
-    const id = `${f.via === "vault" ? "v" : "w"}:${f.marketId}`;
-    const same = out.findIndex((p) => p.id === id && p.side === f.side);
-    if (same >= 0) {
-      const p = out[same]!;
-      out[same] = { ...p, heldRaw: p.heldRaw + f.contractsRaw, costBase: p.costBase + f.costBase };
+    if (at >= 0) {
+      const p = out[at]!;
+      out[at] = { ...p, heldRaw: p.heldRaw + f.contractsRaw, costBase: p.costBase + f.costBase };
       continue;
     }
     out.push({
-      id, via: f.via, entryKey: f.marketId, marketId: f.marketId, asset: m.asset, intervalSec: m.intervalSec, expirySec: m.expirySec, side: f.side,
-      heldRaw: f.contractsRaw, costBase: f.costBase, decimals: m.decimals, entrySpot: null, trailStop: null, tpBase: null, slBase: null, openedAtMs: f.atMs,
+      id: `${f.via === "vault" ? "v" : "w"}:${f.marketId}:${f.side}`, via: f.via, entryKey: f.marketId, marketId: f.marketId, asset: m.asset, intervalSec: m.intervalSec, expirySec: m.expirySec, side: f.side,
+      heldRaw: f.contractsRaw, costBase: f.costBase, realizedBase: 0n, decimals: m.decimals, entrySpot: null, trailStop: null, tpBase: null, slBase: null, openedAtMs: f.atMs,
     });
   }
   return out.sort((a, b) => a.expirySec - b.expirySec);

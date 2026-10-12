@@ -9,4 +9,4 @@ export { isInfrastructureFailure, readingOf, readingQueryOptions, useReadingQuer
 export { usePrice, usePriceStream, useStreamTopic } from "./stream";
 export { useClaimables, useLiveMarketData, usePinnedVerdict } from "./live-data";
 export { useLegacyVaultSnapshots, useVaultBets, useVaultHoldings, useVaultSnapshot } from "./vault-reads";
-export { bookDepthQuery, useAssetPrice, useBookDepth, useBookDepths, useExitQuote, useHoldings, useLanes, useMarket, useNextWindow, useOnchain, useOpenOrders, useOpeningPrice, usePortReading, usePositions, usePriceHistory, useResolution, useSeriesGrid, useStakeQuote, useWalletHistory, type RestingOrderView } from "./window-reads";
+export { bookDepthQuery, useAssetPrice, useBookDepth, useBookDepths, useExitQuote, useHoldings, useLanes, useMarket, useNextWindow, useOnchain, useOpenOrders, useOpeningPrice, usePortReading, usePositions, usePriceHistory, useAccountHistory, useResolution, useSeriesGrid, useStakeQuote, useWalletHistory, type RestingOrderView } from "./window-reads";

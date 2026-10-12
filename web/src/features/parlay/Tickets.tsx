@@ -4,7 +4,7 @@
  * each leg flipping as its Window settles; the streak, its pill, the multiplier, the legs, then the claim or the
  * verdict. Tempo changes: D-108 — only the next leg in close order offers Settle (a later leg that has settled reads
  * "waits its turn"); the settle and the claim are sponsored and pay only the owner; a claim the owner's receive policy
- * refused is held as owed and says so.
+ * refused is held as owed and says so. A void returns the stake, so it reads neutral, not dead (D-227).
  */
 import { SETTLING } from "@cwf/core/copy";
 import { formatCadence } from "@cwf/core/copy";
@@ -48,12 +48,12 @@ function Card({ ticket, nowMs, busy, onSettle, onClaim }: { ticket: ParlayTicket
   const milli = Number((ticket.maxPayoutBase * 1000n) / (ticket.stakeBase || 1n));
   const pill = status === "won" ? T.won : status === "claimed" ? T.paid : status === "lost" ? T.dead : status === "void" ? T.voided : T.inPlay(ticket.wonCount, ticket.legs.length);
   return (
-    <article className={cn("pl-card pl-rise", status === "won" && "pl-card--won", (status === "lost" || status === "void") && "pl-card--lost")} aria-label={`${T.streak(ticket.legs.length)} #${ticket.parlayId}`}>
+    <article className={cn("pl-card pl-rise", status === "won" && "pl-card--won", status === "lost" && "pl-card--lost", status === "void" && "pl-card--void")} aria-label={`${T.streak(ticket.legs.length)} #${ticket.parlayId}`}>
       <div className="pl-card-head">
         <div className="pl-card-name">
           <Layers aria-hidden className="size-3.5" />
           <span className="pl-card-streak">{T.streak(ticket.legs.length)}</span>
-          <span className={cn("pl-pill", (status === "won" || status === "claimed") && "pl-pill--won", (status === "lost" || status === "void") && "pl-pill--dead")}>{pill}</span>
+          <span className={cn("pl-pill", (status === "won" || status === "claimed") && "pl-pill--won", status === "lost" && "pl-pill--dead", status === "void" && "pl-pill--void")}>{pill}</span>
         </div>
         <div className="pl-card-right">
           <div className="pl-card-x numbers">{formatMultiplier(milli)}</div>

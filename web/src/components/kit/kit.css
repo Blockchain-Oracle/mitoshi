@@ -98,10 +98,22 @@
   background: var(--color-accent); translate: var(--active-tab-left) 0; transition: translate 200ms var(--ow-spring), width 200ms var(--ow-spring);
 }
 
-/* ── Odometer (the R4-1 figure, folded in): the data face, tabular, toned by sign ────────────────────────────── */
+/* ── Odometer (R4-1's, folded in — one rolling figure in the app): the data face, tabular, toned by sign ────────── */
 .odometer { display: inline-flex; white-space: nowrap; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
 .odometer[data-dir="up"] { color: var(--chart-up); }
 .odometer[data-dir="down"] { color: var(--chart-down); }
+
+/* ── PositionCard (R4-1's, folded in): worth now, the P&L toned by sign, avg in and invested ─────────────────────── */
+.position-card { border: 1px solid var(--ow-hairline); border-radius: var(--ow-r-card); background: var(--ow-card); padding: 20px; color: var(--ow-ink); }
+.position-card-side { flex: none; border-radius: var(--radius-full); padding: 4px 10px; font: 700 12px/1.2 var(--font-heading); }
+.position-card-side[data-dir="up"] { background: color-mix(in oklab, var(--chart-up) 16%, transparent); color: var(--chart-up); }
+.position-card-side[data-dir="down"] { background: color-mix(in oklab, var(--chart-down) 16%, transparent); color: var(--chart-down); }
+.position-card-figure { display: block; font: 800 28px/1.1 var(--font-data); letter-spacing: -0.02em; }
+.position-card-pnl { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; font: 700 14px/1.2 var(--font-data); }
+.position-card-pnl .odometer:last-child { font-size: 12px; font-weight: 600; }
+.position-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--ow-hairline); font: 500 12px/1.3 var(--font-body); }
+.position-card-grid dt { color: var(--ow-muted); }
+.position-card-grid dd { margin-top: 2px; font: 700 13px/1.3 var(--font-data); }
 
 /* ── Sticker: condensed caps on a bright tone with a cream cut line, tilted a few degrees ────────────────────── */
 .kit-sticker {

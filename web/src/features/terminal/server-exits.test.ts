@@ -9,7 +9,7 @@ const V2 = "0x6f05b0dcaa31c241a4f6e8ceb170090b41679e95";
 const MARKET = `0x${"ab".repeat(32)}`;
 
 const p = (over: Partial<TerminalPosition> = {}): TerminalPosition => ({
-  id: `v:${V2}:${MARKET}`, via: "vault", vault: V2, entryKey: MARKET, marketId: MARKET as never, asset: "BTC", intervalSec: 300, expirySec: 2_000, side: "up",
+  id: `v:${V2}:${MARKET}:up`, via: "vault", vault: V2, entryKey: MARKET, marketId: MARKET as never, asset: "BTC", intervalSec: 300, expirySec: 2_000, side: "up", realizedBase: 0n,
   heldRaw: 1_000_000n, costBase: 600_000n, decimals: 6, entrySpot: null, trailStop: null, tpBase: null, slBase: null, openedAtMs: 0, ...over,
 });
 const exitGrant = (over: Partial<VaultGrant> = {}): VaultGrant => ({

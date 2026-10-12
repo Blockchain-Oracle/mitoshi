@@ -17,7 +17,7 @@ import type { PositionValue } from "./usePositionValue";
  * ends or the tab hides.
  */
 export interface Episode {
-  /** The position's id (`w:<marketId>` in the wallet, `v:<marketId>` in the Trading Balance). */
+  /** The position's id (`w:<marketId>:<side>` in the wallet, `v:<vault>:<marketId>:<side>` in the Trading Balance). */
   positionId: string;
   marketId: string;
   asset: string;
