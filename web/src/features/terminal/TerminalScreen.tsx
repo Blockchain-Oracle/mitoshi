@@ -312,7 +312,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
       {drawersMounted ? (
         <>
           <MarketsDrawer open={drawer.open === DRAWERS.markets} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} set={s.win.set} nowSec={s.nowSec} onPick={pick} />
-          <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} capped={s.capped ? s.capReason : null} />
+          <SettingsDrawer open={drawer.open === DRAWERS.settings} onOpenChange={(o) => !o && drawer.close()} stakeBase={s.stakeBase} minBase={s.minBase} maxBase={s.spendableBase} capped={s.capped ? s.capReason : null} pays={pays} />
           {s.address ? (
             <AccountDrawer
               open={drawer.open === DRAWERS.account || drawer.open === DRAWERS.history}

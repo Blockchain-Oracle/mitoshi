@@ -1,7 +1,7 @@
 "use client";
-// Ported in shape from Owarine ecb7565b:web/src/features/terminal/ui/sheets/SettingsSheet.tsx — a right-edge drawer
-// (D-190) instead of a bottom sheet, with Mitoshi's rows: Size in dollars (integer base units), Boost (Tradash's
-// leverage, RV-41), the trailing distance and the Close tolerance (D-197). Sound & Vibration stays in /settings/account (one app-wide setting).
+// Ported from Owarine 90a91d71:web/src/features/terminal/ui/sheets/SettingsSheet.tsx (P3, D-223) — SIZE (input, slider,
+// Min/25/50/Max, reset), PAYOUT tiles, Mitoshi's Boost, TRAILING (slider and chips), the Close tolerance (D-197) and the
+// order summary. The engine charges no fee, so Fees reads Free from the quote's own rule.
 import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { getLeverageReserveState } from "@cwf/markets/leverage";
 import { useReadingQuery } from "@cwf/markets/react";
@@ -11,10 +11,10 @@ import { boostKeys } from "@/features/boost/useBoostWrites";
 import { tapFeedback } from "@/lib/feedback";
 import { TERMINAL } from "../copy";
 import { money, USD_DECIMALS } from "../format";
-import { CLOSE_TOLERANCE_CHOICES_BPS, setTradeSettings, TRAIL_CHOICES, useTradeSettings } from "../settings";
+import { CLOSE_TOLERANCE_CHOICES_BPS, setTradeSettings, TRAIL_CHOICES, TRAIL_MAX, TRAIL_MIN, useTradeSettings } from "../settings";
 import { trailWords } from "./TradeButtons";
 
-export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase, capped }: { open: boolean; onOpenChange: (open: boolean) => void; stakeBase: bigint; minBase: bigint; maxBase: bigint | null; capped: keyof typeof TERMINAL.stack.cappedWhy | null }) {
+export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase, capped, pays = "—" }: { open: boolean; onOpenChange: (open: boolean) => void; stakeBase: bigint; minBase: bigint; maxBase: bigint | null; capped: keyof typeof TERMINAL.stack.cappedWhy | null; pays?: string }) {
   const settings = useTradeSettings();
   const [text, setText] = useState("");
   useEffect(() => {
@@ -31,65 +31,101 @@ export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase
     ["50%", share(5_000n)],
     [TERMINAL.settings.max, maxBase],
   ];
+  const sliderMax = maxBase !== null && maxBase > minBase ? maxBase : minBase * 20n;
+  const [upPays, downPays] = pays.includes("·") ? pays.split("·").map((x) => x.trim()) : [pays, pays];
+  const multiple = (x: string | undefined) => Number.parseFloat(x ?? "");
+  const paysIfRight = (x: string | undefined) => (Number.isFinite(multiple(x)) ? money(BigInt(Math.round(Number(stakeBase) * multiple(x)))) : "—");
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
       <SlideOverContent title={TERMINAL.settings.title}>
-        <div className="tm-field">
-          <label className="tm-field-head" htmlFor="tm-size">
-            {TERMINAL.settings.size}
-            <span className="tm-stack-value">{money(stakeBase)}</span>
-          </label>
-          {/* Tradash's Size header (§8): what can be spent, or "Balance unavailable" before it's read. */}
-          <span className="tm-field-hint">{maxBase === null ? TERMINAL.settings.balanceUnavailable : TERMINAL.settings.available(money(maxBase))}</span>
-          <input
-            id="tm-size"
-            className="tm-input"
-            inputMode="decimal"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onBlur={() => {
-              const base = parseDecimalToBaseUnits(text, USD_DECIMALS);
-              if (base !== null && base > 0n) setSize(base);
-            }}
-          />
-          <div className="tm-choices">
-            {presets.map(([label, base]) => (
-              <button key={label} type="button" className="tm-choice" disabled={base === null || base <= 0n} onClick={() => base !== null && setSize(base)}>
-                {label}
-              </button>
-            ))}
-            <button type="button" className="tm-choice" aria-pressed={settings.sizeBase === null} onClick={() => setSize(null)}>
-              {TERMINAL.settings.sizeReset}
-            </button>
-          </div>
-          {capped ? <p className="tm-field-hint" role="status">{TERMINAL.stack.capped(money(stakeBase))} — {TERMINAL.stack.cappedWhy[capped]}</p> : null}
-          <p className="tm-field-hint">{TERMINAL.settings.sizeHint}</p>
-        </div>
-        <BoostField boostX={settings.boostX} />
-        <div className="tm-field">
-          <span className="tm-field-head">{TERMINAL.settings.trailing}</span>
-          <div className="tm-choices">
-            {TRAIL_CHOICES.map((pct) => (
-              <button key={pct} type="button" className="tm-choice" aria-pressed={settings.trailPct === pct} onClick={() => (tapFeedback(), setTradeSettings({ trailPct: pct }))}>
-                {trailWords(pct)}%
-              </button>
-            ))}
-          </div>
-          <p className="tm-field-hint">{TERMINAL.settings.trailingHint}</p>
-        </div>
-        <div className="tm-field">
-          <span className="tm-field-head">{TERMINAL.settings.tolerance}</span>
-          <div className="tm-choices">
-            {CLOSE_TOLERANCE_CHOICES_BPS.map((bps) => (
-              <button key={bps} type="button" className="tm-choice" aria-pressed={settings.closeToleranceBps === bps} onClick={() => (tapFeedback(), setTradeSettings({ closeToleranceBps: bps }))}>
-                {(bps / 100).toFixed(bps % 100 === 0 ? 0 : 1)}%
-              </button>
-            ))}
-          </div>
-          <p className="tm-field-hint">{TERMINAL.settings.toleranceHint}</p>
+        <div className="tm-sheet">
+          <Section title={TERMINAL.settings.size} right={maxBase === null ? TERMINAL.settings.balanceUnavailable : TERMINAL.settings.available(money(maxBase))}>
+            <input
+              id="tm-size"
+              aria-label={TERMINAL.settings.size}
+              className="tm-sheet-big"
+              inputMode="decimal"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onBlur={() => {
+                const base = parseDecimalToBaseUnits(text, USD_DECIMALS);
+                if (base !== null && base > 0n) setSize(base);
+              }}
+            />
+            <input
+              type="range"
+              className="tm-sheet-range"
+              aria-label={TERMINAL.settings.size}
+              min={Number(minBase)}
+              max={Number(sliderMax)}
+              step={Number(minBase) || 10_000}
+              value={Math.min(Number(stakeBase), Number(sliderMax))}
+              onChange={(e) => {
+                const base = BigInt(e.target.value);
+                setText(formatBaseUnits(base, USD_DECIMALS, { group: false, minDp: 0, maxDp: 2 }));
+                setTradeSettings({ sizeBase: base.toString() });
+              }}
+            />
+            <div className="tm-sheet-chips">
+              {presets.map(([label, base]) => (
+                <button key={label} type="button" className="tm-sheet-chip" data-on={base !== null && base === stakeBase ? "" : undefined} disabled={base === null || base <= 0n} onClick={() => base !== null && setSize(base)}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            {settings.sizeBase !== null ? (
+              <button type="button" className="tm-sheet-link" onClick={() => setSize(null)}>{TERMINAL.settings.sizeReset}</button>
+            ) : null}
+            {capped ? <p className="tm-field-hint" role="status">{TERMINAL.stack.capped(money(stakeBase))} — {TERMINAL.stack.cappedWhy[capped]}</p> : null}
+          </Section>
+          <Section title={TERMINAL.settings.payout} right={TERMINAL.settings.payoutRight}>
+            <div className="tm-sheet-tiles">
+              <div className="tm-up-soft tm-sheet-tile"><span>{TERMINAL.settings.upPays}</span><b>{upPays}</b></div>
+              <div className="tm-down-soft tm-sheet-tile"><span>{TERMINAL.settings.downPays}</span><b>{downPays}</b></div>
+            </div>
+          </Section>
+          <BoostField boostX={settings.boostX} />
+          <Section title={TERMINAL.settings.trailing} right={TERMINAL.settings.behindPrice}>
+            <p className="tm-sheet-big">{trailWords(settings.trailPct)}%</p>
+            <input type="range" className="tm-sheet-range" aria-label={TERMINAL.settings.trailing} min={TRAIL_MIN * 100} max={TRAIL_MAX * 100} step={0.1} value={settings.trailPct * 100} onChange={(e) => setTradeSettings({ trailPct: Math.min(TRAIL_MAX, Math.max(TRAIL_MIN, Number(e.target.value) / 100)) })} />
+            <div className="tm-sheet-chips">
+              {TRAIL_CHOICES.map((pct) => (
+                <button key={pct} type="button" className="tm-sheet-chip" data-on={settings.trailPct === pct ? "" : undefined} onClick={() => (tapFeedback(), setTradeSettings({ trailPct: pct }))}>
+                  {trailWords(pct)}%
+                </button>
+              ))}
+            </div>
+          </Section>
+          <Section title={TERMINAL.settings.tolerance}>
+            <div className="tm-sheet-chips">
+              {CLOSE_TOLERANCE_CHOICES_BPS.map((bps) => (
+                <button key={bps} type="button" className="tm-sheet-chip" data-on={settings.closeToleranceBps === bps ? "" : undefined} onClick={() => (tapFeedback(), setTradeSettings({ closeToleranceBps: bps }))}>
+                  {(bps / 100).toFixed(bps % 100 === 0 ? 0 : 1)}%
+                </button>
+              ))}
+            </div>
+          </Section>
+          <dl className="tm-sheet-summary">
+            <dt>{TERMINAL.settings.stake}</dt><dd>{money(stakeBase)}</dd>
+            <dt>{TERMINAL.settings.paysIfRight}</dt><dd>{paysIfRight(upPays)} up · {paysIfRight(downPays)} down</dd>
+            <dt>{TERMINAL.settings.fees}</dt><dd>{TERMINAL.stack.free}</dd>
+          </dl>
         </div>
       </SlideOverContent>
     </SlideOver>
+  );
+}
+
+/** One of Owarine 90a91d71 SettingsSheet's sections: the title in caps, what it is read against on the right. */
+function Section({ title, right, children }: { title: string; right?: string; children: React.ReactNode }) {
+  return (
+    <section className="tm-sheet-section">
+      <div className="tm-sheet-head">
+        <span>{title}</span>
+        {right ? <span className="tm-sheet-right">{right}</span> : null}
+      </div>
+      {children}
+    </section>
   );
 }
 
