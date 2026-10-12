@@ -5,46 +5,17 @@
  * permissionless Robinhood corporate-action push. Every send takes a role key the caller resolved; nothing here reads
  * env or holds a key.
  */
-import { createWalletClient, decodeEventLog, http, parseEventLogs, type Address, type Hex, type PublicClient } from "viem";
+import { createWalletClient, decodeEventLog, http, type Address, type Hex, type PublicClient } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { addressToBytes32, DEFER_REASONS, LZ_EID, type BridgeTicker, type DeferReason, type Network } from "@cwf/core";
+import { addressToBytes32, LZ_EID, type BridgeTicker, type Network } from "@cwf/core";
 import { LAYERZERO } from "@cwf/clients";
 import { stockSyncReceiverAbi } from "@cwf/clients/abis/StockSyncReceiver";
-import { tIP20MintBurnAdapterAbi } from "@cwf/clients/abis/TIP20MintBurnAdapter";
 import { transitOFTAbi } from "@cwf/clients/abis/TransitOFT";
 import { baseSepolia, robinhoodTestnet } from "../chains";
-import { endpointComposeAbi, lockboxExtraAbi, scaledUiAbi, stockSyncSenderAbi } from "./abis";
+import { endpointComposeAbi, scaledUiAbi, stockSyncSenderAbi } from "./abis";
+export { receiptStatus, robinhoodDeferral, tempoDeferral, type Deferral } from "./receipts";
 import type { BridgeClients } from "./clients";
 import { bridgeTopology } from "./topology";
-
-/** A source or destination receipt's outcome; null while the chain has none. */
-export async function receiptStatus(client: PublicClient, tx: Hex): Promise<"success" | "reverted" | null> {
-  try {
-    return (await client.getTransactionReceipt({ hash: tx })).status;
-  } catch {
-    return null;
-  }
-}
-
-export interface Deferral {
-  to: Address;
-  amount: bigint;
-  reason: DeferReason;
-}
-
-/** A Tempo credit the adapter deferred inside a delivery transaction (`CreditDeferred`), or null. */
-export async function tempoDeferral(client: PublicClient, tx: Hex, adapter: Address): Promise<Deferral | null> {
-  const receipt = await client.getTransactionReceipt({ hash: tx });
-  const [log] = parseEventLogs({ abi: tIP20MintBurnAdapterAbi, eventName: "CreditDeferred", logs: receipt.logs.filter((l) => l.address.toLowerCase() === adapter.toLowerCase()) });
-  return log ? { to: log.args.to, amount: log.args.amountLD, reason: DEFER_REASONS[log.args.reason] ?? "call-reverted" } : null;
-}
-
-/** A Robinhood unlock the lockbox owed instead of transferring (`UnlockDeferred`), or null. */
-export async function robinhoodDeferral(client: PublicClient, tx: Hex, lockbox: Address): Promise<Deferral | null> {
-  const receipt = await client.getTransactionReceipt({ hash: tx });
-  const [log] = parseEventLogs({ abi: lockboxExtraAbi, eventName: "UnlockDeferred", logs: receipt.logs.filter((l) => l.address.toLowerCase() === lockbox.toLowerCase()) });
-  return log ? { to: log.args.to, amount: log.args.amountLD, reason: "token-paused" } : null;
-}
 
 export interface StoredCompose {
   from: Address;

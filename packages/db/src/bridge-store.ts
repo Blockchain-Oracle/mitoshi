@@ -3,24 +3,10 @@
  * the moment the source wallet returns its hash; ops `bridge-watch` advances it from LayerZero Scan and the chains;
  * the tracker, Recent, Portfolio's "In flight" row and `/status` read it. Addresses and hashes are stored lower-case.
  */
-import type { BridgeDirection, LegStatus, Network, StuckReason, TrackerPhase } from "@cwf/core";
+import type { BridgeAdvance, BridgeDirection, BridgeRowStatus, LegRecord, Network, TrackerPhase } from "@cwf/core";
 import type { Sql } from "./index";
 
-export type BridgeRowStatus = "pending" | "in-flight" | "stuck" | "deferred" | "delivered" | "failed" | "reverted";
-
-/** One leg as bridge-watch last saw it (JSON in `legs`); times are block seconds. */
-export interface LegRecord {
-  guid: string | null;
-  status: LegStatus;
-  stuck: StuckReason | null;
-  srcTx: string | null;
-  srcAtSec: number | null;
-  verifiedAtSec: number | null;
-  dstTx: string | null;
-  dstAtSec: number | null;
-  /** Set when the destination held the credit (`CreditDeferred` / `UnlockDeferred`). */
-  deferReason?: string | null;
-}
+export type { BridgeAdvance, BridgeRowStatus, LegRecord };
 
 export interface BridgeMessageRow {
   id: number;
@@ -53,15 +39,6 @@ export interface TrackInput {
   recipient: string;
   amountSD: bigint;
   nowMs: number;
-}
-
-export interface BridgeAdvance {
-  status: BridgeRowStatus;
-  phase: TrackerPhase;
-  legs: LegRecord[];
-  lastError?: string | null;
-  deliveredAtMs?: number | null;
-  durationSec?: number | null;
 }
 
 export interface BridgeStore {

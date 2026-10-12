@@ -6,6 +6,8 @@ export { browserBridgeClients, sideClients, type BridgeClients, type SideRpc } f
 export { encodeBridgeIntent } from "./encoders";
 export { readRobinhoodBalances, readRobinhoodHoldings, readRouteCapacity, readTempoHoldings, type RobinhoodHoldings, type RouteCapacity, type TempoHoldings } from "./holdings";
 export { LZ_SCAN_API, scanByGuid, scanByTx, type ScanFetch } from "./lzscan";
+export { observeTransfer, type TransferRef } from "./observe";
+export { receiptStatus, robinhoodDeferral, tempoDeferral, type Deferral } from "./receipts";
 export { inSendParam, outSendParam, RH_DECIMALS, type SendParam } from "./params";
 export { ISSUER_ROLE, issuerScansOf, LOG_RANGE, readReserves, scanIssuers, type IssuerScan, type KnownIssuers, type ReservesView, type TickerFacts, type TickerReserve } from "./reserves";
 export { bridgeTopology, robinhoodLive, type BridgeTopology, type TickerContracts } from "./topology";

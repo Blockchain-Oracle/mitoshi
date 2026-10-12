@@ -7,13 +7,12 @@
  * Base (testnet; DRY_RUN never sends). Every minute it reads the hop floats and says when one is under 5 hops.
  * Needs DATABASE_URL; reads only otherwise.
  */
-import { etaOf, routeOf, type DeferReason, type ScanMessage } from "@cwf/core";
+import { advanceTransfer, etaOf, isBridgeTicker } from "@cwf/core";
 import { createPgBridgeStore, type BridgeMessageRow } from "@cwf/db";
 import { createOpsClient } from "@cwf/markets/ops";
-import { bridgeTopology, scanByTx, sideClients, type BridgeClients } from "@cwf/markets/stocks";
-import { readHopFloats, receiptStatus, retryCompose, robinhoodDeferral, storedCompose, tempoDeferral, type HopFloat } from "@cwf/markets/stocks-ops";
+import { observeTransfer, sideClients, type BridgeClients } from "@cwf/markets/stocks";
+import { readHopFloats, retryCompose, storedCompose, type HopFloat } from "@cwf/markets/stocks-ops";
 import { errorText, roleKey, runActor, type VenueDeps } from "../../runtime";
-import { advanceTransfer, type LegObservation, type Observation } from "./advance";
 
 export const BRIDGE_WATCH_EVERY_MS = 10_000;
 const IDLE_MS = 30_000;
@@ -26,27 +25,16 @@ export function startBridgeWatch(deps: VenueDeps): { stop: () => void } {
   const store = createPgBridgeStore(deps.sql);
   const tempo = createOpsClient({ network, rpcUrl: deps.env.tempoRpcUrl, tier: 2 }).public;
   const clients: BridgeClients = { network, tempo, ...sideClients(network, { robinhood: process.env.RH_RPC_HTTP_URL, base: process.env.BASE_SEPOLIA_RPC_HTTP_URL }) };
-  const topo = bridgeTopology(network);
   const retryKey = roleKey("stock-sync", network, process.env, deps.env.keysDir);
   let passes = 0;
   let floats: HopFloat[] = [];
   const retried = new Set<string>();
 
   const follow = async (row: BridgeMessageRow, floatOf: (composer: string) => HopFloat | undefined): Promise<string | null> => {
-    const route = routeOf(row.direction, network);
-    const srcClient = row.srcChainId === clients.tempo.chain?.id ? clients.tempo : clients.robinhood;
-    const src = await receiptStatus(srcClient, row.srcTx as `0x${string}`);
-    const first = (await scanByTx(network, row.srcTx)).find((m) => m.srcEid === route.legs[0]!.srcEid) ?? null;
-    const legs: LegObservation[] = [{ msg: first, deferral: null }];
-    let bounced = false;
+    if (!isBridgeTicker(row.ticker)) return `unknown ticker ${row.ticker}`;
+    const obs = await observeTransfer(clients, { direction: row.direction, ticker: row.ticker, srcTx: row.srcTx as `0x${string}` });
+    const first = obs.legs[0]?.msg ?? null;
     let note: string | null = null;
-    if (route.legs.length > 1 && first?.composeTx) {
-      const onward = (await scanByTx(network, first.composeTx)).find((m) => m.srcEid === route.legs[1]!.srcEid) ?? null;
-      bounced = onward !== null && onward.dstEid !== route.legs[1]!.dstEid;
-      legs.push({ msg: onward, deferral: null });
-    }
-    const last = legs[route.legs.length - 1]?.msg ?? null;
-    if (last && (last.status === "DELIVERED" || last.dstStatus === "SUCCEEDED") && last.dstTx) legs[route.legs.length - 1]!.deferral = await deferralOf(row, last);
     // A stored compose (empty float): re-run it once the composer can pay the onward leg.
     if (first && first.composeStatus && first.composeStatus !== "SUCCEEDED" && first.composeStatus !== "N/A" && first.dstTx && clients.base) {
       const c = await storedCompose(clients.base, first.dstTx);
@@ -60,18 +48,9 @@ export function startBridgeWatch(deps: VenueDeps): { stop: () => void } {
       } else if (c?.pending) note = `compose ${c.guid} waits on the ${f ? "Base float" : "composer"}`;
     }
     const eta = etaOf(await store.durations(network, row.direction));
-    const obs: Observation = { src, legs, bounced };
     await store.advance(row.id, advanceTransfer(row, obs, eta, Date.now()), Date.now());
     return note;
   };
-
-  async function deferralOf(row: BridgeMessageRow, last: ScanMessage): Promise<DeferReason | null> {
-    const t = topo.tickers[row.ticker as keyof typeof topo.tickers];
-    if (!t) return null;
-    if (row.direction === "in" && t.adapter) return (await tempoDeferral(clients.tempo, last.dstTx!, t.adapter))?.reason ?? null;
-    if (row.direction === "out" && t.lockbox) return (await robinhoodDeferral(clients.robinhood, last.dstTx!, t.lockbox))?.reason ?? null;
-    return null;
-  }
 
   const pass = async () => {
     passes += 1;

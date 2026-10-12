@@ -1,9 +1,41 @@
 /**
- * bridge-watch's decision for one transfer (S14 14o; D-227 R4-12), pure: what LayerZero Scan and the receipts showed →
- * the row's legs, status, tracker phase and (once delivered) its measured duration. The I/O is in `./index.ts`.
+ * One transfer's state from what LayerZero Scan and the receipts show (S14 14o/14w; D-227 R4-12), pure — shared by
+ * ops `bridge-watch` (which persists it in `bridge_messages`) and the browser's tracker (which polls LayerZero Scan
+ * itself, so a transfer is followed even before ops sees it). Legs, the row status, the tracker phase and, once
+ * delivered, the measured duration (source block → final delivery) the ETA medians come from.
  */
-import { legFromScan, routeOf, trackerPhase, type BridgeEta, type BridgeLeg, type DeferReason, type ScanMessage, type TrackerPhase } from "@cwf/core";
-import type { BridgeAdvance, BridgeMessageRow, BridgeRowStatus, LegRecord } from "@cwf/db";
+import type { BridgeDirection } from "./route";
+import type { Network } from "../constants/network";
+import { legFromScan, type ScanMessage, type StuckReason } from "./scan";
+import { trackerPhase, type BridgeEta, type TrackerPhase } from "./tracker";
+import { routeOf } from "./route";
+import type { BridgeLeg, LegStatus } from "./index";
+import type { DeferReason } from "./types";
+
+export type BridgeRowStatus = "pending" | "in-flight" | "stuck" | "deferred" | "delivered" | "failed" | "reverted";
+
+/** One leg as last seen; times are block seconds. */
+export interface LegRecord {
+  guid: string | null;
+  status: LegStatus;
+  stuck: StuckReason | null;
+  srcTx: string | null;
+  srcAtSec: number | null;
+  verifiedAtSec: number | null;
+  dstTx: string | null;
+  dstAtSec: number | null;
+  /** Set when the destination held the credit (`CreditDeferred` / `UnlockDeferred`). */
+  deferReason?: string | null;
+}
+
+export interface BridgeAdvance {
+  status: BridgeRowStatus;
+  phase: TrackerPhase;
+  legs: LegRecord[];
+  lastError?: string | null;
+  deliveredAtMs?: number | null;
+  durationSec?: number | null;
+}
 
 export interface LegObservation {
   msg: ScanMessage | null;
@@ -11,7 +43,7 @@ export interface LegObservation {
   deferral: DeferReason | null;
 }
 
-export interface Observation {
+export interface TransferObservation {
   /** The source transaction's receipt; null while the chain has none. */
   src: "success" | "reverted" | null;
   legs: LegObservation[];
@@ -19,7 +51,13 @@ export interface Observation {
   bounced: boolean;
 }
 
-type RowView = Pick<BridgeMessageRow, "direction" | "network" | "srcTx" | "legs" | "createdAtMs">;
+export interface TransferView {
+  direction: BridgeDirection;
+  network: Network;
+  srcTx: string;
+  legs: readonly LegRecord[];
+  createdAtMs: number;
+}
 
 function record(prev: LegRecord | undefined, obs: LegObservation | undefined, compose: boolean, srcTx: string | null): LegRecord {
   const msg = obs?.msg ?? null;
@@ -41,7 +79,7 @@ function record(prev: LegRecord | undefined, obs: LegObservation | undefined, co
 
 const STATUS_OF: Record<TrackerPhase, BridgeRowStatus> = { wallet: "pending", sent: "in-flight", hop: "in-flight", slow: "in-flight", fuel: "stuck", deferred: "deferred", delivered: "delivered", nothing: "reverted" };
 
-export function advanceTransfer(row: RowView, obs: Observation, eta: BridgeEta | null, nowMs: number): BridgeAdvance {
+export function advanceTransfer(row: TransferView, obs: TransferObservation, eta: BridgeEta | null, nowMs: number): BridgeAdvance {
   const route = routeOf(row.direction, row.network);
   if (obs.src === "reverted") return { status: "reverted", phase: "nothing", legs: [], lastError: "the source transaction reverted; nothing moved" };
   const legs: LegRecord[] = [];

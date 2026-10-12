@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ScanMessage } from "@cwf/core";
-import { advanceTransfer } from "./advance";
+import { advanceTransfer, type ScanMessage } from "./index";
 
 const row = { direction: "in" as const, network: "testnet" as const, srcTx: "0xaa", legs: [], createdAtMs: 0 };
 const msg = (over: Partial<ScanMessage>): ScanMessage => ({
@@ -9,7 +8,7 @@ const msg = (over: Partial<ScanMessage>): ScanMessage => ({
 });
 const hopDone = msg({ status: "DELIVERED", dstStatus: "SUCCEEDED", dstTx: "0xb1", dstAtSec: 140, composeStatus: "SUCCEEDED", composeTx: "0xc1", composeAtSec: 150 });
 
-describe("bridge-watch advance (R4-12)", () => {
+describe("a transfer from LZ Scan and receipts (bridge-watch and the tracker, R4-12)", () => {
   it("keeps a just-sent transfer in flight, then hops, then delivers with its measured duration", () => {
     const sent = advanceTransfer(row, { src: null, legs: [], bounced: false }, null, 1_000);
     expect(sent).toMatchObject({ status: "in-flight", phase: "sent" });
