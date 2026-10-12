@@ -7,6 +7,7 @@
  *   `lockbox.send{value: nativeFee}`), waiting for the approval's receipt before the send; resolves with the send's hash
  *   the moment the wallet returns it (the tracker records it before the receipt).
  * - `retryCompose`: re-runs a compose an empty Base float left stored (`EndpointV2.lzCompose`; the composer pays on).
+ * - `claimOwed`: the linked wallet pulls what an unlock owed it on Robinhood Chain (`lockbox.claim()`).
  * - `sendStockSync`: the permissionless corporate-action push (`StockSyncSender.sync{value: fee}`).
  */
 import { createWalletClient, http, type Account, type Address, type Chain, type Hex, type PublicClient, type Transport, type WalletClient } from "viem";
@@ -14,6 +15,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { LZ_EID, type Network } from "@cwf/core";
 import { LAYERZERO } from "@cwf/clients";
 import { iLayerZeroEndpointV2Abi } from "@cwf/clients/abis/ILayerZeroEndpointV2";
+import { stockLockboxAbi } from "@cwf/clients/abis/StockLockbox";
 import { stockSyncSenderAbi } from "@cwf/clients/abis/StockSyncSender";
 import { baseSepolia, robinhoodTestnet } from "../chains";
 import type { SideCall } from "./bridge";
@@ -43,6 +45,11 @@ export async function sendBridgeIn(wallet: SideWallet, read: PublicClient, calls
   }
   if (!last) throw new Error("nothing to send");
   return last;
+}
+
+/** The linked wallet pulls an owed unlock (`StockLockbox.claim`, pays `msg.sender`); returns the hash. */
+export async function claimOwed(wallet: SideWallet, lockbox: Address): Promise<Hex> {
+  return wallet.writeContract({ account: wallet.account, chain: wallet.chain, address: lockbox, abi: stockLockboxAbi, functionName: "claim" });
 }
 
 const sideChain = (stop: "robinhood" | "base") => (stop === "robinhood" ? robinhoodTestnet : baseSepolia);
