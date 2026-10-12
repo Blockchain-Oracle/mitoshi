@@ -8,7 +8,7 @@
  * modules read these triplets once per resize; no literal reaches TSX.
  */
 
-.ar-head { margin-bottom: 20px; }
+.ar-head { margin-bottom: 16px; }
 .ar-title {
   margin-top: 8px;
   font-family: var(--font-display); font-weight: 800;
@@ -96,12 +96,10 @@
 @media (max-width: 480px) {
   .ar-overlay { gap: 6px; }
   .ar-overlay-title { font-size: 22px; }
-  .ar-overlay-pitch { font-size: 12px; line-height: 1.4; }
+  /* A phone's screen is ~184 px tall: the title, PLAY and the best fit; the pitch is in "How to play" (D-226). */
+  .ar-overlay-pitch { display: none; }
   .ar-overlay-score { font-size: 33px; }
   .ar-overlay .du-cta { min-height: 40px; min-width: 132px; }
-}
-@media (max-width: 360px) {
-  .ar-overlay-pitch { display: none; }
 }
 
 /* ── Under the screen: Pips's readout — the game's identity and the one control hint ───────────── */

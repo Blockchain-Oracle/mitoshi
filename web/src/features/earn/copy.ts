@@ -17,7 +17,7 @@ export const EARN = {
   },
   sections: {
     supply: { number: "01" },
-    windows: { number: "02", title: "Where the capital is", meta: "one row per Window the maker is on" },
+    windows: { number: "02", title: "Where the capital is" },
   },
   paused: {
     title: "New deposits are paused",
@@ -79,6 +79,7 @@ export const EARN = {
     settle: "Settle",
     busy: "Sending…",
     quotes: (n: number) => `${n} quote${n === 1 ? "" : "s"}`,
+    total: (open: number) => `deployed on ${open} live Window${open === 1 ? "" : "s"}`,
     reading: "…",
   },
   notDeployed: {

@@ -21,10 +21,16 @@ interface ReservePanelProps {
 export function ReservePanel({ sheet, words, status }: ReservePanelProps) {
   const { panel } = EARN;
   if (!sheet) {
+    // The panel's own outline while the contract answers (D-226), not a "loading" line.
     return (
-      <div className="earn-vault ea-panel">
+      <div className="earn-vault ea-panel" role="status" aria-label={panel.loading}>
         <div className="earn-vault-accent" />
-        <p className="ea-loading" role="status">{panel.loading}</p>
+        <div className="ea-panel-inner flex flex-col gap-4">
+          <div className="flex justify-between"><div className="skel h-5 w-28 rounded-full" /><div className="skel h-5 w-20 rounded-full" /></div>
+          <div className="skel h-14 w-48 rounded-md" />
+          <div className="skel h-3 w-40 rounded-md" />
+          <div className="grid grid-cols-2 gap-6 pt-2"><div className="skel h-10 rounded-md" /><div className="skel h-10 rounded-md" /></div>
+        </div>
       </div>
     );
   }
@@ -85,7 +91,6 @@ export function Hero({ words, sheet, status }: { words: ReserveWords; sheet: Res
               <br />
               <span className="accent">{words.accent}</span>.
             </h1>
-            <p className="ea-blurb">{words.blurb}</p>
           </div>
           <ReservePanel sheet={sheet} words={words} status={status} />
         </div>

@@ -16,5 +16,5 @@ import "./earn.css";
 export function EarnScreen() {
   const [tab, setTab] = useState<ReserveKind>("maker");
   const tabs = <ReserveTabs active={tab} onSelect={setTab} />;
-  return <div className="ea-page">{tab === "maker" ? <MakerEarn tabs={tabs} /> : <HouseEarn key={tab} kind={tab} tabs={tabs} />}</div>;
+  return <div className="earn-page ea-page">{tab === "maker" ? <MakerEarn tabs={tabs} /> : <HouseEarn key={tab} kind={tab} tabs={tabs} />}</div>;
 }

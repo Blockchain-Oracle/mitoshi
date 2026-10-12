@@ -32,7 +32,7 @@ function BackButton() {
   const router = useRouter();
   if (isTopLevel(pathname)) return null;
   return (
-    <button type="button" className="topline-icon" aria-label={SHELL.back} onClick={() => router.push(parentPath(pathname))}>
+    <button type="button" className="topline-icon topline-back" aria-label={SHELL.back} onClick={() => router.push(parentPath(pathname))}>
       <ChevronLeft aria-hidden />
     </button>
   );

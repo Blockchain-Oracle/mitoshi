@@ -73,7 +73,7 @@ function Page({ vault }: { vault: MakerVaultState }) {
         <SupplyCard signedIn={address !== null} signer={signerOf(session.kind)} sheet={sheet} walletBase={walletBase} tx={writes.supplyTx} onSupply={writes.supply} onSignIn={session.connectFor} />
         <PositionCard signedIn={address !== null} signer={signerOf(session.kind)} sheet={sheet} words={WORDS} shares={held.shares} worthBase={held.worthBase} ledger={ledger?.ok ? ledger.value : null} unsettledExpired={unsettledExpired} tx={writes.withdrawTx} note={writes.note} onWithdraw={(s) => void writes.withdraw(s)} />
       </div>
-      <SectionHead number={sections.windows.number} title={sections.windows.title} meta={sections.windows.meta} />
+      <SectionHead number={sections.windows.number} title={sections.windows.title} />
       <WindowsTable open={open} history={history} nowMs={nowMs} busyRow={writes.busyRow} canSign={writes.canSign} onMerge={writes.merge} onSettle={writes.settle} />
       {writes.rowTx.state.kind === "failed" ? <TxFailureCard state={writes.rowTx.state} onRetry={() => writes.rowTx.dispatch({ type: "reset" })} /> : null}
     </div>

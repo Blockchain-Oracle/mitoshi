@@ -8,7 +8,7 @@ import type { ArcadeGame } from "@cwf/core/games/arcade";
  * Pips's, in our words; the control hints say what this build actually listens to.
  */
 export const ARCADE = {
-  eyebrow: "Arcade · no stake · not on the ledger",
+  eyebrow: "Arcade · no stake",
   /** The board's label, verbatim from doc 06: what a score here is and is not. */
   honesty: "arcade score · server-checked · not on the ledger",
 

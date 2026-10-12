@@ -269,3 +269,10 @@ span.top-money, span.top-account { display: contents; }
   .more-places { display: grid; }
   .more-foot { display: flex; }
 }
+
+/* Below the top level a phone's top line carries the back chevron instead of the mark (D-226: back, mark, mode, balance
+ * and Sign in didn't fit 375 px and "Sign in" broke over two lines); labels never wrap. */
+@media (max-width: 767px) {
+  .topline-lead:has(.topline-back) .topline-mark { display: none; }
+  .app-topline .sign-in-button, .app-topline .dusdc-pill, .app-topline .mode-chip { white-space: nowrap; }
+}

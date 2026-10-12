@@ -6,8 +6,7 @@
 export const GAMES = {
   eyebrow: "Play the same live Windows",
   title: "Games",
-  intro:
-    "Seven modes over the same live markets. Each one says plainly whose money is at risk before you start, because a game that hides that is not a game.",
+  intro: "Seven modes on the live markets. Each says whose money is at risk.",
 
   sections: {
     prediction: { number: "01", title: "Prediction", desc: "Real positions or a house-funded outcome on a live Window." },
