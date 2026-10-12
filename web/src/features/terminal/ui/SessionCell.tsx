@@ -12,9 +12,11 @@ import { useSessionPhrase, useWhen } from "@/lib/when";
  * The NYSE hour beside the Window chip: "● Open · closes 21:00 (16:00 ET), in 2h 05m", "● Pre-market · opens 14:30
  * (09:30 ET), in 1h 12m", "● Weekend · reopens Mon 14:30 (09:30 ET)". The asset's halt replaces it while it holds —
  * "● Signed price stale · since 15:02 (10:02 ET)" — on any lane at any hour (a 24/7 lane halts at the weekend too).
- * Stocks only: crypto never closes. `nowSec` is the minute the phrase counts from (fixtures pass a canned one).
+ * Stocks only: crypto never closes. On a 24/7 lane the NYSE hours don't describe the Window — its feed trades through
+ * nights and weekends — so the cell says "24/7 market" (Owarine 90a91d71 `MarketSessionChip`; O-2, D-222).
+ * `nowSec` is the minute the phrase counts from (fixtures pass a canned one).
  */
-export function SessionCellView({ session, symbol, nowSec }: { session: MarketSession; symbol: string; nowSec: number }) {
+export function SessionCellView({ session, symbol, basis, nowSec }: { session: MarketSession; symbol: string; basis: LaneBasis | null; nowSec: number }) {
   const phrase = useSessionPhrase();
   const when = useWhen();
   if (session.halt) {
@@ -29,6 +31,14 @@ export function SessionCellView({ session, symbol, nowSec }: { session: MarketSe
     );
   }
   if (!isStockSymbol(symbol)) return null;
+  if (basis === "stock24") {
+    return (
+      <span className="tm-glass tm-session" data-state="regular" role="status" aria-label={SESSION.roundTheClockAria(symbol)}>
+        <span className="tm-session-dot" aria-hidden />
+        <span className="tm-session-word" aria-hidden>{SESSION.roundTheClock}</span>
+      </span>
+    );
+  }
   const word = sessionStateWord(session.status);
   const line = phrase(session.status, nowSec);
   // The phrase is "<word> · <tail>"; without a tail (no known open) the word stands alone.
@@ -48,5 +58,5 @@ export function SessionCell({ symbol, basis }: { symbol: string; basis: LaneBasi
   const session = useMarketSession(asset);
   const minute = useClockValue((ms) => Math.floor(ms / 60_000));
   if (!session || !asset || minute === 0) return null;
-  return <SessionCellView session={session} symbol={symbol} nowSec={minute * 60} />;
+  return <SessionCellView session={session} symbol={symbol} basis={basis} nowSec={minute * 60} />;
 }

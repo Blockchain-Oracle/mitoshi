@@ -1,6 +1,7 @@
 // Ported from Agari 03b30ab:web/src/app/dev/session/market-session-fixtures.ts — canned NYSE sessions for the S6 state
 // fixtures: the same `MarketSession` a live `/session` read builds (`toMarketSession`), over an Alpaca-shaped calendar and
 // fixed clocks, so a cell, a banner or a blocker renders here exactly as it would on the terminal.
+import type { LaneBasis } from "@cwf/core";
 import { datesBetween, sessionAt, weekdayOfDate, type HaltBoard, type SessionCalendar } from "@cwf/core";
 import { toMarketSession, type MarketSession, type SessionBody } from "@/features/markets/session";
 
@@ -51,7 +52,7 @@ export function fixtureSession(nowSec: number, asset?: keyof typeof HALTS, cal: 
   return toMarketSession(bodyOf(cal, nowSec, HALTS), nowSec, asset)!;
 }
 
-export const STATES: { name: string; symbol: string; nowSec: number; session: MarketSession }[] = [
+export const STATES: { name: string; symbol: string; basis?: LaneBasis; nowSec: number; session: MarketSession }[] = [
   { name: "Overnight (a weekday, before 04:00 ET)", symbol: "TSLA", nowSec: CLOCK.overnightTue, session: fixtureSession(CLOCK.overnightTue) },
   { name: "Pre-market", symbol: "TSLA", nowSec: CLOCK.preTue, session: fixtureSession(CLOCK.preTue) },
   { name: "Open", symbol: "MSFT", nowSec: CLOCK.regularTue, session: fixtureSession(CLOCK.regularTue) },
@@ -62,5 +63,6 @@ export const STATES: { name: string; symbol: string; nowSec: number; session: Ma
   { name: "Halted — the exchange", symbol: "TSLA", nowSec: CLOCK.regularTue, session: fixtureSession(CLOCK.regularTue, "TSLA") },
   { name: "Halted — RedStone stale", symbol: "AAPL", nowSec: CLOCK.regularTue, session: fixtureSession(CLOCK.regularTue, "AAPL") },
   { name: "Halted — RedStone signers", symbol: "NVDA", nowSec: CLOCK.regularTue, session: fixtureSession(CLOCK.regularTue, "NVDA") },
-  { name: "24/7 lane halted at the weekend", symbol: "TSLA", nowSec: CLOCK.weekendSat, session: fixtureSession(CLOCK.weekendSat, "TSLA-24") },
+  { name: "24/7 lane at the weekend (the NYSE is shut, the feed trades)", symbol: "TSLA", basis: "stock24", nowSec: CLOCK.weekendSat, session: fixtureSession(CLOCK.weekendSat) },
+  { name: "24/7 lane halted at the weekend", symbol: "TSLA", basis: "stock24", nowSec: CLOCK.weekendSat, session: fixtureSession(CLOCK.weekendSat, "TSLA-24") },
 ];

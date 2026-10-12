@@ -30,7 +30,7 @@ export function SessionFixtures() {
           {STATES.map((s) => (
             <li key={s.name} className="flex flex-col gap-1">
               <span className="type-caption text-ink-secondary">{s.name} · {s.symbol}</span>
-              <span><SessionCellView session={s.session} symbol={s.symbol} nowSec={s.nowSec} /></span>
+              <span><SessionCellView session={s.session} symbol={s.symbol} basis={s.basis ?? "regular"} nowSec={s.nowSec} /></span>
             </li>
           ))}
         </ul>

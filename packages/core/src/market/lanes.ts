@@ -17,7 +17,8 @@ const BASIS_ORDER: Record<LaneBasis, number> = { regular: 0, gap: 1, stock24: 2,
 
 export function laneLabel(basis: LaneBasis, intervalSec: number): string {
   if (basis === "gap" && intervalSec === GAP_CADENCE_SEC) return "Gap";
-  return basis === "stock24" ? `24/7 ${formatCadence(intervalSec)}` : formatCadence(intervalSec);
+  // Owarine 90a91d71 `lib/copy-lanes.ts`: the cadence first, then what keeps it running round the clock (O-2, D-222).
+  return basis === "stock24" ? `${formatCadence(intervalSec)} · 24/7` : formatCadence(intervalSec);
 }
 
 /**

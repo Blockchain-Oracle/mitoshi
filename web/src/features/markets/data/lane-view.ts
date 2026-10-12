@@ -24,7 +24,7 @@ export function laneTabParts(key: LaneTabKey): { basis: LaneBasis; intervalSec: 
 
 export function laneTabLabel(key: LaneTabKey): string {
   const { basis, intervalSec } = laneTabParts(key);
-  return basis === "crypto24" ? `Crypto ${laneLabel(basis, intervalSec)}` : laneLabel(basis, intervalSec);
+  return basis === "crypto24" ? `${laneLabel(basis, intervalSec)} · Crypto` : laneLabel(basis, intervalSec);
 }
 
 /** The tickers a lane lists, in board order (first expiry first). */

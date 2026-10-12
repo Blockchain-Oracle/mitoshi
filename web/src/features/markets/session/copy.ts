@@ -7,6 +7,8 @@ export const SESSION = {
   aria: (word: string, tail: string | null) => `NYSE: ${word}${tail ? ` · ${tail}` : ""}`,
   haltAria: (label: string, asset: string, since: string) => `${asset}: ${label} since ${since}`,
   since: (at: string) => `since ${at}`,
+  roundTheClock: "24/7 market",
+  roundTheClockAria: (asset: string) => `${asset} · its 24/7 feed trades around the clock`,
   /** /markets' empty Regular lane outside the session: "Weekend · reopens Mon 14:30 (09:30 ET). Regular Windows run in NYSE hours; the 24/7 lanes and the weekend Gap trade outside them." */
   regularClosed: (phrase: string) => `${phrase}. Regular Windows run in NYSE hours; the 24/7 lanes and the weekend Gap trade outside them.`,
   /** The halt banner's line, by who stopped the price (the title is core's `haltLabel`). */
