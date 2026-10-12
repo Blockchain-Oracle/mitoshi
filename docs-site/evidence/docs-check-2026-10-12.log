@@ -1,62 +1,62 @@
 $ pnpm check:content && pnpm typecheck && pnpm build
 $ node scripts/check-content.mjs
-Content: 44 pages, 72 docs links, 46 app links, 24 media, 25 receipts, 5 addresses
+Content: 45 pages, 81 docs links, 46 app links, 24 media, 25 receipts, 5 addresses
 ! 19 planned capture(s) or walkthrough(s) not recorded yet — they render nothing until `pnpm media:record && pnpm media:publish` runs against the deployed product:
-  capture statusDesk (content/docs/architecture/ops-and-indexer.mdx)
-  capture agentsDesk (content/docs/automate/agents.mdx)
-  capture strategiesDesk (content/docs/automate/copy-strategies.mdx)
-  capture leaderboardDesk (content/docs/explore/record.mdx)
-  capture gamesPhone (content/docs/games/overview.mdx)
-  capture marketsDesk (content/docs/start/find-your-way.mdx)
-  capture marketsPhone (content/docs/start/find-your-way.mdx)
-  walkthrough first-call-demo (content/docs/start/quickstart.mdx)
-  capture bridgeDesk (content/docs/stocks/bridge.mdx)
-  capture launchDesk (content/docs/stocks/launchpads.mdx)
-  capture reservesDesk (content/docs/stocks/reserves.mdx)
-  capture themesDesk (content/docs/stocks/themes.mdx)
-  capture earnDesk (content/docs/trading/earn.mdx)
-  capture parlayDesk (content/docs/trading/parlay-boost-private.mdx)
-  capture proofDesk (content/docs/trading/proof.mdx)
-  walkthrough proof-reverify (content/docs/trading/proof.mdx)
-  capture rangePhone (content/docs/trading/range-and-moonshot.mdx)
-  capture terminalDesk (content/docs/trading/terminal.mdx)
-  capture terminalPhone (content/docs/trading/terminal.mdx)
+  capture statusDesk (content/docs/architecture/ops-and-indexer.mdx) — probe 2026-10-12: ready
+  capture agentsDesk (content/docs/automate/agents.mdx) — probe 2026-10-12: ready
+  capture strategiesDesk (content/docs/automate/copy-strategies.mdx) — probe 2026-10-12: ready
+  capture leaderboardDesk (content/docs/explore/record.mdx) — probe 2026-10-12: ready
+  capture gamesPhone (content/docs/games/overview.mdx) — probe 2026-10-12: ready
+  capture marketsDesk (content/docs/start/find-your-way.mdx) — probe 2026-10-12: ready
+  capture marketsPhone (content/docs/start/find-your-way.mdx) — probe 2026-10-12: ready
+  walkthrough first-call-demo (content/docs/start/quickstart.mdx) — probe 2026-10-12: ready
+  capture bridgeDesk (content/docs/stocks/bridge.mdx) — probe 2026-10-12: not built yet
+  capture launchDesk (content/docs/stocks/launchpads.mdx) — probe 2026-10-12: not built yet
+  capture reservesDesk (content/docs/stocks/reserves.mdx) — probe 2026-10-12: not built yet
+  capture themesDesk (content/docs/stocks/themes.mdx) — probe 2026-10-12: not built yet
+  capture earnDesk (content/docs/trading/earn.mdx) — probe 2026-10-12: ready
+  capture parlayDesk (content/docs/trading/parlay-boost-private.mdx) — probe 2026-10-12: ready
+  capture proofDesk (content/docs/trading/proof.mdx) — probe 2026-10-12: ready
+  walkthrough proof-reverify (content/docs/trading/proof.mdx) — probe 2026-10-12: ready
+  capture rangePhone (content/docs/trading/range-and-moonshot.mdx) — probe 2026-10-12: ready
+  capture terminalDesk (content/docs/trading/terminal.mdx) — probe 2026-10-12: ready
+  capture terminalPhone (content/docs/trading/terminal.mdx) — probe 2026-10-12: ready
 ✓ source 1ab5eca, navigation, links, routes, media, receipts, addresses and deployments
 $ next typegen && tsc --noEmit
 Generating route types...
 ✓ Types generated successfully
 $ next build
 ▲ Next.js 16.3.4 (Turbopack)
-✓ Running next.config.mjs took 82ms
+✓ Running next.config.mjs took 222ms
 
   Creating an optimized production build ...
-✓ Compiled successfully in 10.1s
+✓ Compiled successfully in 14.6s
   Running TypeScript ...
-  Finished TypeScript in 5.6s ...
+  Finished TypeScript in 7.6s ...
   Collecting page data using 9 workers ...
-  Generating static pages using 9 workers (0/96) ...
-  Generating static pages using 9 workers (24/96) 
-  Generating static pages using 9 workers (48/96) 
-  Generating static pages using 9 workers (72/96) 
-✓ Generating static pages using 9 workers (96/96) in 2.4s
+  Generating static pages using 9 workers (0/98) ...
+  Generating static pages using 9 workers (24/98) 
+  Generating static pages using 9 workers (48/98) 
+  Generating static pages using 9 workers (73/98) 
+✓ Generating static pages using 9 workers (98/98) in 8.9s
   Finalizing page optimization ...
 
 Route (app)
 ┌ ○ /_not-found
 ├   /[[...slug]]
 │ ├ ● /
-│ ├ ● /architecture/contracts
-│ ├ ● /architecture/deployments
-│ └ ● [+41 more paths]
+│ ├ ● /automate/agents
+│ ├ ● /automate/copy-strategies
+│ └ ● [+42 more paths]
 ├ ƒ /api/search
 ├ ○ /llms-full.txt
 ├ ○ /llms.txt
 ├ ○ /opengraph-image
 ├   /raw/[[...slug]]
 │ ├ ● /raw
-│ ├ ● /raw/automate/agents
-│ ├ ● /raw/automate/copy-strategies
-│ └ ● [+41 more paths]
+│ ├ ● /raw/architecture/built-on
+│ ├ ● /raw/architecture/contracts
+│ └ ● [+42 more paths]
 ├ ○ /robots.txt
 └ ○ /sitemap.xml
 
