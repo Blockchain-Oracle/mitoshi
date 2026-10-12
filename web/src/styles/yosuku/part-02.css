@@ -212,12 +212,17 @@ body.urgent::before {
 
 /* ── SenseiDock: a compact Yosuku mark that expands on hover, with a cute question teaser ── */
 .sensei-dock-wrap { position: fixed; right: 22px; bottom: 22px; z-index: var(--z-float); display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+/* R4-0 (D-227): the wrap passes taps through (its gap sat on whatever was under it); `data-aside` while the seal would
+   cover a primary action (useStepAside) — it sinks and fades, and comes back when the action moves off. */
+.sensei-dock-wrap { pointer-events: none; }
+.sensei-dock-wrap > * { pointer-events: auto; }
+.sensei-dock-wrap[data-aside] > * { visibility: hidden; opacity: 0; transform: translateY(12px) scale(0.9); pointer-events: none; }
 .sensei-dock {
   position: relative; display: inline-flex; align-items: center; gap: 0;
   padding: 7px; border: 0; cursor: pointer; border-radius: 999px;
   background: rgba(23,19,16,0.93); backdrop-filter: blur(10px);
   box-shadow: 0 16px 40px -16px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(224,77,38,0.22);
-  transition: gap 300ms var(--ease), padding 300ms var(--ease), transform 260ms cubic-bezier(.34,1.56,.64,1), box-shadow 220ms var(--ease), opacity 220ms var(--ease);
+  transition: gap 300ms var(--ease), padding 300ms var(--ease), transform 260ms cubic-bezier(.34,1.56,.64,1), box-shadow 220ms var(--ease), opacity 220ms var(--ease), visibility 220ms;
 }
 [data-theme="light"] .sensei-dock { background: rgba(255,255,255,0.95); box-shadow: 0 16px 40px -16px rgba(40,18,6,0.26), inset 0 0 0 1px rgba(224,77,38,0.22); }
 .sensei-dock:hover { transform: translateY(-3px); gap: 11px; padding: 7px 7px 7px 18px; }

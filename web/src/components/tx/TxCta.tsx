@@ -4,6 +4,7 @@
  * The CTA of every write (D-045, D-052): its label IS the blocker while one exists (the accessible name too, Masayume
  * `BlockedButton`), then the lifecycle's own words while it runs — never a bare spinner, every wait named. A tap in a
  * busy state is absorbed. "No fees to pay" sits on the CTA line when the relay covers the call (§2.1.4).
+ * `data-primary-action` keeps floating chrome off it (Sensei's seal steps aside; R4-0, D-227).
  */
 import type { TxState } from "@cwf/core";
 import { canConfirm } from "@cwf/core";
@@ -67,6 +68,7 @@ export function TxCta({ state, action, signer, sponsored = false, onConfirm, ton
     <div className={cn("flex flex-col gap-1.5", className)}>
       <m.button
         type="button"
+        data-primary-action=""
         onClick={() => live && onConfirm()}
         disabled={!live}
         aria-disabled={!live}

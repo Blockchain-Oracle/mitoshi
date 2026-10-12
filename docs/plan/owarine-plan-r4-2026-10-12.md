@@ -95,6 +95,12 @@ while its own tag clears the header; the 404's short-phone rule now outranks `.n
 seal; the site header's TESTNET is its dot at ≤ 360 (it ran under the theme toggle); the pitch's arrows sit in the foot
 row on phones (they covered the text); the portfolio's figure reads "—" until every leg has read (it flashed $0.00 and
 "Get test dollars" on a funded account).
+R4-0 close-out: the five-width sweep (dark and light, live ticks from a dry-run price-only ops) is clean on /markets,
+/trade/BTC, /trade/TSLA, /games, /games/range, /portfolio, /settings/account, /u/*, /tickers/BTC, /reels and the 404.
+One miss fixed: Sensei's floating seal covered the end of the ticket's button on a 1280 × 720 laptop, and its teaser
+did at 1024 × 768 — the seal now steps aside while it would sit on anything marked `data-primary-action` (the TxCta,
+the hero's UP/DOWN), the teaser stays quiet while its band is taken, and the wrap passes taps through its gap. The
+passkey-account check (the full one-tap card on a 375 × 667 phone) is the owner's (owner-actions).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on

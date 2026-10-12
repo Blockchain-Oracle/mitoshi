@@ -105,7 +105,7 @@ export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: H
           <span className="mh-ramp-cents">{cents(book.upCents)}</span>
         </span>
       </div>
-      <div className="hero-yesno">
+      <div className="hero-yesno" data-primary-action="">
         <button type="button" className="hyn hyn-yes" aria-label={`${HERO_HEAD.betUp} · ${cents(book.upCents)}`} onClick={() => onSelect(market.marketId, "up")}>
           <span className="hyn-label">{MARKETS.up}</span>
           <span className="hyn-price">{cents(book.upCents)}</span>

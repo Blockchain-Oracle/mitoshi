@@ -9,7 +9,7 @@
 | S0 gate | ~~Domain + hosting accounts~~ decided: Mitoshi / `mitoshi.xyz` (D-060), Coolify (D-061) | Done |
 | S0 (X11) | Start daily Robinhood Chain testnet faucet claims (5 × 5 tokens / 24 h) | Open |
 | Before S3.5 | Approve and fund the capped mainnet MPP wallet (Q-020) | Open |
-| S1, S4 (NYSE date), S15, S16 | Passkey checks on your own device | Open |
+| S1, S4 (NYSE date), S15, S16, R4-0 | Passkey checks on your own device. R4-0 (2026-10-12): sign in with a passkey on a 375 × 667 phone, open /trade/BTC and check the account reads "Passkey" and the full one-tap card leaves the settings stack clear of the chart controls (agents can only sign in with a browser-wallet test session) | Open |
 | S1 gate (geofence) | Put a country header in front of Coolify for the live domains: proxy `mitoshi.xyz` (and the testnet host) through Cloudflare so requests carry `cf-ipcountry`. Coolify stamps none; without it the geofence answers "open" everywhere (Q-008 not enforced live) | Open |
 | Before S11 | X account for trade-from-X | Open |
 | S14c day 1 | Send the LayerZero direct-pathway request — draft ready in `stage-14-bridge.md` §14c.13 A | Open |

@@ -2,17 +2,19 @@
 // Ported from Owarine 90a91d71:web/src/features/sensei/SenseiDock.tsx (O-6, D-222) — the floating seal over /markets: a
 // ring draining toward the nearest close (urgent under the wire), three teaser pops, and a tap opens Sensei on the
 // Window in the hero (Mitoshi's drawer: consent first, then the chat with the figures read at ask time). The ring and
-// the teasers need no model; only the reply does, and an unconfigured brain says so in the thread.
+// the teasers need no model; only the reply does, and an unconfigured brain says so in the thread. R4-0 (D-227): it
+// steps aside while it would cover a primary action (`useStepAside`).
 import type { Address, EventMarket, LaneSet, Side } from "@cwf/core";
 import { countdown } from "@cwf/core/lifecycle";
 import { useReducedMotion } from "motion/react";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import MitoshiMark from "@/components/shell/MitoshiMark";
 import { SenseiDrawer } from "@/features/terminal/lazy-drawers";
 import { useCommittedSpot } from "@/features/terminal/live";
 import { useClockValue } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { SENSEI } from "./copy";
+import { useStepAside } from "./useStepAside";
 
 /** The ring's geometry, from the reference's `R = 30` on a 72-unit viewBox. */
 const R = 30;
@@ -66,6 +68,9 @@ export function SenseiDock({ laneSet, market, openingRaw, address, onAct }: { la
   const [everOpened, setEverOpened] = useState(false);
   useEffect(() => void (open && setEverOpened(true)), [open]);
   const teaser = useTeaser(open);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const sealRef = useRef<HTMLButtonElement>(null);
+  const { aside, hush } = useStepAside(wrapRef, sealRef);
   const spot = useCommittedSpot(open && market ? market.asset : null, { seed: false });
   const nowSec = useClockValue((ms) => Math.floor(ms / 1000));
 
@@ -104,17 +109,17 @@ export function SenseiDock({ laneSet, market, openingRaw, address, onAct }: { la
   const clock = nearest && nowSec > 0 ? countdown(nowSec * 1000, nearest.expirySec, nearest.intervalSec) : null;
   const urgent = clock?.urgent ?? false;
   const fraction = nearest && clock ? Math.max(0, Math.min(1, clock.remainingSec / Math.max(1, nearest.intervalSec))) : 0;
-  const askText = teaser >= 0 ? SENSEI.teasers[teaser]! : null;
+  const askText = teaser >= 0 && !hush ? SENSEI.teasers[teaser]! : null;
 
   return (
     <>
-      <div className="sensei-dock-wrap">
+      <div ref={wrapRef} className="sensei-dock-wrap" data-aside={aside ? "" : undefined}>
         {askText && !open ? (
           <button key={teaser} type="button" className="sensei-teaser" onClick={() => setOpen(true)} aria-label={SENSEI.dockAsk(askText)}>
             {askText}
           </button>
         ) : null}
-        <button type="button" onClick={() => setOpen(true)} aria-label={SENSEI.dockOpen} aria-expanded={open} className={cn("sensei-dock", urgent && "urgent", open && "is-open")}>
+        <button ref={sealRef} type="button" tabIndex={aside ? -1 : undefined} onClick={() => setOpen(true)} aria-label={SENSEI.dockOpen} aria-expanded={open} className={cn("sensei-dock", urgent && "urgent", open && "is-open")}>
           <span className="sensei-dock-copy">
             <span className="sd-name">
               {SENSEI.dockName} <b>{SENSEI.dockNameEmphasis}</b>
