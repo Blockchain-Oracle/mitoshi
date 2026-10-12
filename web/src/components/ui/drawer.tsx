@@ -1,14 +1,15 @@
 "use client";
 
-// From 21st.dev 31360 wensity/drawer — revamped per D-044 for the owner's overlay rule (centred modals and the
-// right-edge slide-over; NO bottom sheets): only the right side is offered, `swipeDirection="right"` (Base UI Drawer
-// has no `side` prop; docs "Positioning"), Popup moves by `--drawer-swipe-movement-x`, no snap points, no handle, the
-// close button clears the top safe area, lucide instead of tabler, Masayume tokens instead of `--primitive-*`, and the
-// motion/scrim live in `styles/drawer.css` (no px in component code).
+// From 21st.dev 31360 wensity/drawer — revamped per D-044 onto Base UI Drawer: from 768 px the right-edge slide-over
+// (`swipeDirection="right"`, Popup moves by `--drawer-swipe-movement-x`); under 768 px Owarine 90a91d71 `kit/Sheet.tsx`'s
+// bottom sheet (P6, D-224): `swipeDirection="down"`, a grab bar, drag to dismiss, at least half the screen. One
+// component, so every drawer in the app — the terminal's, the ticket's, Everything — turns into a sheet on a phone.
+// The motion and scrim live in `styles/drawer.css` (no px in component code).
 import { Drawer as BaseDrawer } from "@base-ui/react/drawer";
 import { X } from "lucide-react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { SHELL } from "@/lib/copy";
+import { usePhoneLayout } from "@/lib/phone-layout";
 import { cn } from "@/lib/utils";
 
 export interface SlideOverProps extends Omit<ComponentPropsWithoutRef<typeof BaseDrawer.Root>, "swipeDirection" | "onOpenChange" | "children"> {
@@ -16,10 +17,11 @@ export interface SlideOverProps extends Omit<ComponentPropsWithoutRef<typeof Bas
   children: ReactNode;
 }
 
-/** The right-edge slide-over: swipe right or press Escape to close; focus trap and scroll lock from Base UI. */
+/** The drawer: swipe right (a phone: down) or press Escape to close; focus trap and scroll lock from Base UI. */
 export function SlideOver({ onOpenChange, modal = true, children, ...props }: SlideOverProps) {
+  const phone = usePhoneLayout();
   return (
-    <BaseDrawer.Root swipeDirection="right" modal={modal} onOpenChange={onOpenChange ? (open) => onOpenChange(open) : undefined} {...props}>
+    <BaseDrawer.Root swipeDirection={phone ? "down" : "right"} modal={modal} onOpenChange={onOpenChange ? (open) => onOpenChange(open) : undefined} {...props}>
       {children}
     </BaseDrawer.Root>
   );
@@ -45,6 +47,7 @@ export function SlideOverContent({ title, description, hideHeading = false, keep
       <BaseDrawer.Backdrop className="slide-over-backdrop" />
       <BaseDrawer.Viewport className="slide-over-viewport">
         <BaseDrawer.Popup className={cn("slide-over-popup", className)}>
+          <span aria-hidden className="slide-over-grab" />
           <BaseDrawer.Content className="slide-over-content">
             <div className={cn("slide-over-head", hideHeading && "sr-only")}>
               <BaseDrawer.Title className="type-title text-ink">{title}</BaseDrawer.Title>

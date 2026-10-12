@@ -3,24 +3,14 @@
 
 
 import { Dialog } from "@base-ui/react/dialog";
-import { useRef, useSyncExternalStore, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { usePhoneLayout } from "@/lib/phone-layout";
 import { cn } from "@/lib/utils";
 import { WALLET_MODAL } from "./copy";
 import "./wallet-modal.css";
 
-/** RainbowKit's mobile breakpoint (767 px), in rem because component code carries no px literals; the CSS mirrors it. */
-const PHONE_QUERY = "(max-width: 47.9375rem)";
-
-function subscribePhone(onChange: () => void): () => void {
-  const query = window.matchMedia(PHONE_QUERY);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
-/** RainbowKit switched to its mobile layouts on phones; here that is the viewport width. The modal only opens client-side. */
-export function usePhoneLayout(): boolean {
-  return useSyncExternalStore(subscribePhone, () => window.matchMedia(PHONE_QUERY).matches, () => false);
-}
+/** RainbowKit switched to its mobile layouts on phones; the shared hook (`lib/phone-layout`) decides, the CSS mirrors it. */
+export { usePhoneLayout };
 
 /**
  * Our base-ui Dialog in RainbowKit's frame: blurred scrim, centred panel (bottom sheet on phones), slide-up entrance.

@@ -301,3 +301,11 @@
   .nav-menu-popup,
   .nav-menu-link { transition: none; }
 }
+
+/* Everything on a phone (P6, D-224; Owarine `MoreSheet`): the undocked places as a 3-up grid over the sections, and the
+ * theme toggle in the foot (the top line has no room for it there). Both hidden from 768 px (app-shell.css). */
+.more-places { display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 8px 0 4px; }
+.more-place { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border-radius: 0.75rem; background: var(--color-rail); color: var(--color-ink); font-size: 13px; font-weight: 700; }
+.more-place[aria-current="page"] { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.more-place svg { width: 22px; height: 22px; stroke-width: 1.9; }
+.more-foot { display: none; justify-content: center; padding: 12px 0 calc(8px + env(safe-area-inset-bottom, 0px)); }

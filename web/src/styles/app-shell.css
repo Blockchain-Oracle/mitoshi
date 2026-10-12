@@ -246,3 +246,19 @@ span.top-money, span.top-account { display: contents; }
 @media (max-width: 1023px) { .health-word { display: none; } }
 /* DEMO (D-223): the paper equity's tag, as Owarine's "DEMO 10,000.00". */
 .tm-demo-tag { padding: 2px 6px; border-radius: var(--radius-full); background: var(--color-accent); color: var(--on-accent); font: 700 10px/1.2 var(--font-body); letter-spacing: 0.06em; }
+
+/* ── the phone top line (P6, D-224; Owarine `TopBar`): the mark, the mode chip, the balance and the account; search and
+ * the theme live in Everything there. Sticky with a blur so the chrome stays while the page scrolls. ───────────── */
+.topline-phone { display: none; }
+.topline-wide { display: contents; }
+.mode-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--radius-full); color: var(--color-ink); font: 800 11px/1 var(--font-data); letter-spacing: 0.08em; white-space: nowrap; }
+.mode-chip[data-mode="demo"] { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.mode-chip[data-mode="live"] { background: color-mix(in srgb, var(--color-warning) 16%, transparent); }
+.mode-chip-dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--color-warning); }
+@media (max-width: 767px) {
+  .topline-phone { display: contents; }
+  .topline-wide { display: none; }
+  .app-topline { position: sticky; top: 0; z-index: 30; margin: 0 -12px; padding-inline: 12px; background: color-mix(in srgb, var(--color-canvas) 90%, transparent); backdrop-filter: blur(12px); }
+  .more-places { display: grid; }
+  .more-foot { display: flex; }
+}

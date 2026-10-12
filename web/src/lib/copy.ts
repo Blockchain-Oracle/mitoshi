@@ -78,6 +78,10 @@ export const SHELL = {
   /** The rail's money tile (O-10): testnet dollars are never "Live" money. */
   moneyLabel: "Balance · Tempo testnet",
   demoLabel: "Demo · paper dollars",
+  /** The phone's mode chip (Owarine `ModeChip`; P6, D-224). */
+  modeDemo: "DEMO",
+  modeTestnet: "TESTNET",
+  modeMainnet: "TEMPO",
   addMoney: "Add money",
   signInPending: "Getting sign-in ready…",
 } as const;

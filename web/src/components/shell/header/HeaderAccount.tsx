@@ -26,6 +26,7 @@ import { useSessionView } from "@/features/session/context";
 const AllowancePill = dynamic(() => import("@/features/session/AllowancePill").then((m) => m.AllowancePill), { ssr: false });
 
 const DemoMoneyTile = dynamic(() => import("./MoneyPill").then((m) => m.DemoMoneyTile), { ssr: false });
+const DemoMoneyPill = dynamic(() => import("./MoneyPill").then((m) => m.DemoMoneyPill), { ssr: false });
 
 // The money pill's balance read loads with the session (the same pill, "—", shows until it does).
 const MoneyPill = dynamic(() => import("./MoneyPill").then((m) => m.MoneyPill), {
@@ -72,7 +73,12 @@ export function HeaderAccount({ placement = "top" }: { placement?: AccountPlacem
         <span className="rail-money"><DemoMoneyTile /></span>
         {signIn}
       </>
-    ) : signIn;
+    ) : (
+      <>
+        <span className="top-money"><DemoMoneyPill /></span>
+        {signIn}
+      </>
+    );
   }
   if (!session.isRightChain) {
     return <button type="button" className={cn("btn btn-outline", rail ? "rail-account" : "top-account")} onClick={() => void session.switchToTempo()}>{BANNER.switchTo("Tempo")}</button>;

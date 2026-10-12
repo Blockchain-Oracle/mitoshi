@@ -12,7 +12,11 @@ import { SHELL } from "@/lib/copy";
 import { dropDrawerParam } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { externalClick } from "@/lib/open-external";
-import { EVERYTHING_SECTIONS, isActiveNavItem, searchNav } from "./header/nav-items";
+import { DOCK_OMITTED, EVERYTHING_SECTIONS, isActiveNavItem, NAV_ITEMS, searchNav } from "./header/nav-items";
+import ThemeToggle from "./ThemeToggle";
+
+/** The rail's places the phone dock leaves out (Owarine `MoreSheet`'s 3-up grid; P6, D-224). */
+const PLACES = [...DOCK_OMITTED, NAV_ITEMS.leaderboard];
 
 export interface EverythingDrawerProps {
   open: boolean;
@@ -38,6 +42,19 @@ export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDra
             <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={SHELL.searchPlaceholder} autoComplete="off" enterKeyHint="go" />
           </label>
         </div>
+        {query === "" ? (
+          <nav className="more-places" aria-label={SHELL.railNav}>
+            {PLACES.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link key={item.id} href={item.href} className="more-place" aria-current={isActiveNavItem(pathname, item) ? "page" : undefined} onClick={() => { tapFeedback(); dropDrawerParam(); }}>
+                  <Icon aria-hidden />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        ) : null}
         <nav className="mobile-nav-groups" aria-label={SHELL.allDestinations}>
           {sections.length === 0 ? <p className="more-empty" role="status">{SHELL.searchEmpty(query)}</p> : null}
           {sections.map((section) => (
@@ -80,6 +97,9 @@ export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDra
             </section>
           ))}
         </nav>
+        <div className="more-foot">
+          <ThemeToggle />
+        </div>
       </SlideOverContent>
     </SlideOver>
   );

@@ -13,6 +13,7 @@ import { BRAND, SHELL } from "@/lib/copy";
 import { tapFeedback } from "@/lib/feedback";
 import MitoshiMark from "./MitoshiMark";
 import { HealthChip } from "./HealthChip";
+import { ModeChip } from "./ModeChip";
 import { shortcutBlocked } from "./Rail";
 import ThemeToggle from "./ThemeToggle";
 import { isTopLevel } from "./header/nav-items";
@@ -70,12 +71,13 @@ export function TopLine({ account }: { account?: ReactNode }) {
         <Link href="/" aria-label={`${BRAND.name} home`} className="topline-mark">
           <MitoshiMark />
         </Link>
-        <HealthChip className="topline-network" />
+        <span className="topline-phone"><ModeChip /></span>
+        <span className="topline-wide"><HealthChip className="topline-network" /></span>
       </div>
       <div className="topline-tools">
         <button
           type="button"
-          className="topline-search"
+          className="topline-search topline-wide"
           aria-label={SHELL.commandHint}
           aria-keyshortcuts="Meta+K Control+K /"
           onClick={() => {
@@ -99,7 +101,7 @@ export function TopLine({ account }: { account?: ReactNode }) {
         >
           <CircleHelp aria-hidden />
         </button>
-        <ThemeToggle />
+        <span className="topline-wide"><ThemeToggle /></span>
         {account}
       </div>
       {palette !== null ? <CommandPalette open={palette} onOpenChange={setPalette} /> : null}

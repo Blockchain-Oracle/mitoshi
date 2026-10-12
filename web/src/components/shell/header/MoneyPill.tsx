@@ -61,6 +61,19 @@ export function MoneyPillView({ total }: { total: bigint | null }) {
   );
 }
 
+/** The top line's demo balance (Owarine `BalanceChip variant="bar"` in DEMO; P6, D-224): the paper dollars, no +. */
+export function DemoMoneyPill() {
+  const demo = useDemoState();
+  const hidden = usePrivacy();
+  return (
+    <span className="money-pill">
+      <span className="dusdc-pill min-h-touch" title={SHELL.demoLabel}>
+        <span className="dusdc-total numbers">{hidden ? SHELL.masked : dollars(BigInt(demo.balanceBase))}</span>
+      </span>
+    </span>
+  );
+}
+
 /** Signed out: DEMO's paper dollars (D-223; Owarine's "Demo credits 10,000.00"), with no + — paper is not topped up. */
 export function DemoMoneyTile() {
   const demo = useDemoState();

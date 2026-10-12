@@ -3,7 +3,8 @@
 // From 21st.dev 31359 wensity/dialog — revamped per D-044 onto Masayume's one overlay grammar (`styles/modal.css`: a
 // centred panel over a blurred scrim, head / scrolling body / footer that never leaves the screen). Base UI Dialog
 // gives focus trap, Escape, scroll lock and `aria-modal`; the close button is 44 px; motion is opacity + a small
-// scale in CSS (`data-starting/ending-style`), off under reduced motion. Centred on phones too — never a bottom sheet.
+// scale in CSS (`data-starting/ending-style`), off under reduced motion. Under 768 px it is a bottom sheet with a grab
+// bar (Owarine's one overlay on phones; P6, D-224), the same DOM.
 import { Dialog } from "@base-ui/react/dialog";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
@@ -35,6 +36,7 @@ export function Modal({ open, onOpenChange, title, description, eyebrow, footer,
         <Dialog.Backdrop className={cn("modal-scrim modal-anim", instant && "modal-instant")} />
         <Dialog.Viewport className="modal-root">
           <Dialog.Popup className={cn("modal modal-anim", instant && "modal-instant", className)}>
+            <span aria-hidden className="modal-grab" />
             {dismissible ? (
               <Dialog.Close className="modal-close grid size-touch place-items-center" aria-label={SHELL.close}>
                 <X aria-hidden className="size-4" />
