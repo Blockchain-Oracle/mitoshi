@@ -51,11 +51,24 @@ export interface OpenPosition {
   decimals: number;
   balanceUpRaw: bigint;
   balanceDownRaw: bigint;
+  /** What the contracts held now cost (D-227): the ledger's open cost of both sides, a sale taken out at average cost. */
   costBasisBase: bigint;
+  /** The same per side, so a hedged Window shows as one row per side, each at its own cost. */
+  costUpBase: bigint;
+  costDownBase: bigint;
+  /**
+   * The indexed fills are behind the head-fresh balances with nothing to scale from (a new Window's first fill not
+   * indexed yet): the cost is not known, and the row says "Updating" rather than showing a profit it never made.
+   */
+  costStale: boolean;
   avgCostRaw: bigint;
+  /** The last trade's mark: a fallback for a book with no bids, never what Close pays (the exit walk is). */
   markValueBase: bigint;
   unrealizedPnlBase: bigint;
+  /** What sales already took: proceeds − the open cost they took out. */
   realizedPnlBase: bigint;
+  /** The cost those sales took out (gross cost − open cost): what the realised P&L was earned on. */
+  soldCostBase: bigint;
 }
 
 export interface Holdings {

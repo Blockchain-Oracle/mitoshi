@@ -10,7 +10,7 @@ import type { TerminalPosition } from "./terminal-positions";
 import type { PositionValue } from "./usePositionValue";
 import type { ReactionOverlayHandle } from "./ui/ReactionOverlay";
 
-const usd = (base: bigint) => Number(base) / 1e6;
+const usd = (base: bigint, decimals: number) => Number(base) / 10 ** decimals;
 
 export function useChartFeedback(input: { symbol: string; spot: number | null; active: TerminalPosition | null; value: PositionValue | null; linePrice: number | null }) {
   const { symbol, spot, active, value, linePrice } = input;
@@ -27,7 +27,7 @@ export function useChartFeedback(input: { symbol: string; spot: number | null; a
     const out = reactions.current.feed({
       t: performance.now(),
       price: spot,
-      position: active && value?.pnlBase != null ? { key: active.id, side: active.side === "up" ? 1 : -1, pnl: usd(value.pnlBase), margin: usd(active.costBase), entry: active.entrySpot ?? spot, line: linePrice } : null,
+      position: active && value?.pnlBase != null ? { key: active.id, side: active.side === "up" ? 1 : -1, pnl: usd(value.pnlBase, active.decimals), margin: usd(value.costShareBase ?? active.costBase, active.decimals), entry: active.entrySpot ?? spot, line: linePrice } : null,
     });
     const e = feedbackEngines();
     for (const r of out) {
@@ -48,7 +48,7 @@ export function useChartFeedback(input: { symbol: string; spot: number | null; a
   }, [spot]);
 
   // The tense low-pass while the open position is down 5 % or more (the music engine loads only when music is on).
-  const tense = active !== null && value?.pnlBase != null && active.costBase > 0n ? Number(value.pnlBase) / Number(active.costBase) <= -0.05 : false;
+  const tense = active !== null && value?.pnlBase != null && value.roiBps !== null ? value.roiBps <= -500 : false;
   useEffect(() => {
     if (!feedback.music) return;
     void import("@/lib/sound/music").then((mu) => mu.setMusicTense(tense));

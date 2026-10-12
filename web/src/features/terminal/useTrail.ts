@@ -86,7 +86,9 @@ export type { ExitReason } from "@cwf/core/exits";
 
 /**
  * One row's exits in the tab: the take-profit and stop-loss on what Close pays (D-197) and the trail on its asset's
- * line — ratchet on every committed spot, close when one is hit, a refused close retried no sooner than 3 s.
+ * line — ratchet on every committed spot, close when one is hit, a refused close retried no sooner than 3 s. D-227: TP
+ * and SL compare the whole holding at the walk's price (`triggerValueBase`), as the keeper does — a thin book is never
+ * read as a drawdown.
  */
 export function useRowTrail(p: TerminalPosition, v: PositionValue, close: (p: TerminalPosition, v: PositionValue, why: ExitReason) => Promise<void> | void): void {
   const lastTry = useRef(0);
@@ -95,14 +97,14 @@ export function useRowTrail(p: TerminalPosition, v: PositionValue, close: (p: Te
   useEffect(() => {
     const { p: pos, v: val, close: fire } = latest.current;
     // The keeper runs this one (S24.5): it sells with the app open or closed, so the tab doesn't race it.
-    if (val.locked || val.valueBase === null || keeperRuns(pos.marketId, pos.side)) return;
-    const hit = exitHit(val.valueBase, pos.tpBase, pos.slBase);
+    if (val.locked || val.triggerValueBase === null || keeperRuns(pos.marketId, pos.side)) return;
+    const hit = exitHit(val.triggerValueBase, pos.tpBase, pos.slBase);
     if (hit) {
       if (Date.now() - lastTry.current < RETRY_MS) return;
       lastTry.current = Date.now();
       void fire(pos, val, hit);
     }
-  }, [v.valueBase]);
+  }, [v.triggerValueBase]);
   useEffect(() => {
     const { p: pos, v: val, close: fire } = latest.current;
     if (pos.trailStop === null || val.spot === null || val.locked) return;

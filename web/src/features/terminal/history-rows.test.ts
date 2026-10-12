@@ -14,7 +14,7 @@ const trade = (over: Partial<PaperTrade>): PaperTrade => ({
 describe("paper history rows", () => {
   it("tags a close, a reduce and a trail as closed, keeping the Window, the side and base units", () => {
     const [close, reduce, trail] = paperRows([trade({}), trade({ kind: "reduce", side: "down", pnlBase: "-400000" }), trade({ kind: "trail" })]);
-    expect(close).toEqual({ key: `${M}:up:1000:2000`, marketId: M, asset: "BTC", up: true, outcome: "closed", intervalSec: 300, stakeBase: 5_000_000n, pnlBase: 1_250_000n, decimals: 6, settledAtMs: 2_000_000, expirySec: 2_000 });
+    expect(close).toEqual({ key: `${M}:up:1000:2000`, source: "paper", marketId: M, asset: "BTC", up: true, outcome: "closed", intervalSec: 300, stakeBase: 5_000_000n, pnlBase: 1_250_000n, decimals: 6, settledAtMs: 2_000_000, expirySec: 2_000 });
     expect(reduce!.outcome).toBe("closed");
     expect(reduce!.up).toBe(false);
     expect(reduce!.pnlBase).toBe(-400_000n);
@@ -50,7 +50,7 @@ describe("paper history rows", () => {
 
 describe("wallet history rows", () => {
   it("keeps the round's outcome, side, money and decimals", () => {
-    const round = { marketId: M, asset: "ETH", intervalSec: 900, expirySec: 5_000, decimals: 6, outcome: "loss", sidesTraded: [1], stakeBase: 2_000_000n, pnlBase: -2_000_000n, settledAtMs: 5_000_500, openedAtMs: 4_200_000 } as unknown as SettledRound;
-    expect(walletRows([round])).toEqual([{ key: `${M}:4200000`, marketId: M, asset: "ETH", up: false, outcome: "loss", intervalSec: 900, stakeBase: 2_000_000n, pnlBase: -2_000_000n, decimals: 6, settledAtMs: 5_000_500, expirySec: 5_000 }]);
+    const round = { marketId: M, asset: "ETH", intervalSec: 900, expirySec: 5_000, decimals: 6, outcome: "loss", sidesTraded: [1], stakeBase: 2_000_000n, pnlBase: -2_000_000n, settledAtMs: 5_000_500, openedAtMs: 4_200_000, source: "vault" } as unknown as SettledRound;
+    expect(walletRows([round])).toEqual([{ key: `vault:${M}:4200000`, source: "vault", marketId: M, asset: "ETH", up: false, outcome: "loss", intervalSec: 900, stakeBase: 2_000_000n, pnlBase: -2_000_000n, decimals: 6, settledAtMs: 5_000_500, expirySec: 5_000 }]);
   });
 });

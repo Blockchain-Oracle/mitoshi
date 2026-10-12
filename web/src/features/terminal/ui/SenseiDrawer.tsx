@@ -5,7 +5,7 @@
 // record (Sensei's brake reads a losing run) and the stock's next report. Mounted only while open, so its reads cost
 // nothing otherwise.
 import { EARNINGS_LOOKAHEAD_DAYS, addDays, etDateOf, formatCadence, isStockSymbol, type Address, type EventMarket, type Side } from "@cwf/core";
-import { useWalletHistory } from "@cwf/markets/react";
+import { useAccountHistory } from "@cwf/markets/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTopOfBook } from "@/features/markets/data/useTopOfBook";
 import { useMarketSession } from "@/features/markets/session";
@@ -37,7 +37,7 @@ const minsTo = (sec: number) => Math.max(0, Math.floor((sec - Date.now() / 1000)
 function SenseiBody({ open, onClose, ...p }: Omit<SenseiDrawerProps, "onOpenChange"> & { onClose: () => void }) {
   const top = useTopOfBook(p.market);
   const nyse = useMarketSession();
-  const history = useWalletHistory(p.address);
+  const history = useAccountHistory(p.address);
   const latest = useRef({ p, top, nyse, history });
   latest.current = { p, top, nyse, history };
 

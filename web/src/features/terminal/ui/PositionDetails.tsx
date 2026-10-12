@@ -3,24 +3,28 @@
 // position is held, the Line (the opening print) and the entry spot, avg in and what Close pays now (both in cents a
 // contract), PnL, the settle time and the Window's proof page; Reduce (25 / 50 / 75 / 100 % through the one-tap Close),
 // Add (a centred modal), "Show on the chart" for a Window not on screen, and Share (RV-83: the S5 share card in a
-// centred modal, loaded on the tap).
+// centred modal, loaded on the tap). D-227: Staked is the open cost of what is held, Avg in its price a contract (a
+// Boost's own entry price), Close pays now the walk for every home, and the share card's ROI is the row's.
 import { formatCadence } from "@cwf/core/copy";
 import { isOk } from "@cwf/core";
 import { formatBaseUnits } from "@cwf/core/units";
 import { useMarket, useOpeningPrice } from "@cwf/markets/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { Odometer } from "@/components/data/Odometer";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { SHELL } from "@/lib/copy";
 import { tapFeedback } from "@/lib/feedback";
 import { usePrivacy } from "@/lib/privacy";
 import { formatPrice, priceDecimals } from "../chart/engine";
 import { TERMINAL } from "../copy";
-import { centsOf, clockText, livePnlText, money, sideWord } from "../format";
+import { centsOf, clockText, money, moneyDecimals, sideWord } from "../format";
+import { canTrade, statusText } from "../position-return";
 import type { TerminalPosition } from "../terminal-positions";
 import type { PositionValue } from "../usePositionValue";
 import { AddModal } from "./AddModal";
+import { avgTicksOf } from "../position-value";
 import { PositionGone } from "./PositionGone";
 
 const REDUCE = [25n, 50n, 75n, 100n] as const;
@@ -58,17 +62,19 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
     );
   }
   const hide = (text: string) => (masked ? SHELL.masked : text);
-  // Cents a contract: cost ÷ contracts and the exit's proceeds ÷ its contracts, both on six decimals.
-  const perContract = (base: bigint, contracts: bigint) => (contracts > 0n ? centsOf(Number((base * 1_000n) / contracts)) : "—");
-  const rows: Array<[string, string]> = [
+  const avg = avgTicksOf(p);
+  const tradable = value !== null && canTrade(value.status);
+  const why = value ? statusText(value.status, p.expirySec, value.fillablePct, value.settled) : "";
+  const pnl = value?.pnlBase != null ? Number(value.pnlBase) / 10 ** p.decimals : null;
+  const rows: Array<[string, ReactNode]> = [
     [TERMINAL.details.window, market ? `${formatCadence(market.intervalSec)} · ${market.lane === "stock24" ? "24/7" : market.lane === "gap" ? "Gap" : market.lane === "crypto24" ? "Crypto" : "Regular"}` : formatCadence(p.intervalSec)],
     [TERMINAL.details.via, p.via === "vault" ? TERMINAL.details.balance : p.via === "boost" ? TERMINAL.details.boost : TERMINAL.details.wallet],
     [TERMINAL.details.line, lineE8 === null ? TERMINAL.details.notYet : `$${formatPrice(Number(lineE8) / 1e8, priceDecimals(Number(lineE8) / 1e8))}`],
     [TERMINAL.details.entry, p.entrySpot ? `$${formatPrice(p.entrySpot, priceDecimals(p.entrySpot))}` : "—"],
-    [TERMINAL.details.staked, hide(`${money(p.costBase)} · ${formatBaseUnits(p.heldRaw, p.decimals, { minDp: 0, maxDp: 2 })}`)],
-    [TERMINAL.details.avgIn, perContract(p.costBase, p.heldRaw)],
-    [TERMINAL.details.now, value?.exit ? hide(`${value.approx ? "≈ " : ""}${money(value.valueBase ?? 0n)} · ${perContract(value.exit.proceedsBase, value.exit.contractsRaw)}`) : value?.locked ? TERMINAL.buttons.locked(clockText(p.expirySec)) : "—"],
-    [TERMINAL.details.pnl, value?.pnlBase != null ? hide(livePnlText(value.pnlBase)) : "—"],
+    [TERMINAL.details.staked, hide(`${money(p.costBase, false, p.decimals)} · ${formatBaseUnits(p.heldRaw, p.decimals, { minDp: 0, maxDp: 2 })}`)],
+    [TERMINAL.details.avgIn, avg === null ? "—" : centsOf(avg)],
+    [TERMINAL.details.now, value?.valueBase != null ? hide(`${value.approx ? "≈ " : ""}${money(value.valueBase, false, p.decimals)}${value.nowTicks === null ? "" : ` · ${centsOf(value.nowTicks)}`}`) : why || "—"],
+    [TERMINAL.details.pnl, pnl === null ? "—" : masked ? SHELL.masked : <Odometer kind="pnl" value={pnl} decimals={moneyDecimals(pnl)} />],
     [TERMINAL.details.settles, clockText(p.expirySec)],
   ];
   return (
@@ -85,15 +91,15 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
             <div className="tm-choices">
               {/* A Boost sells whole (`LeverageReserve.close`): Close only. */}
               {(p.boost ? [100n] : REDUCE).map((pct) => (
-                <button key={String(pct)} type="button" className="tm-choice" disabled={busy || value?.locked} onClick={() => (tapFeedback(), onReduce(p, (p.heldRaw * pct) / 100n))}>
+                <button key={String(pct)} type="button" className="tm-choice" disabled={busy || !tradable} onClick={() => (tapFeedback(), onReduce(p, (p.heldRaw * pct) / 100n))}>
                   {pct === 100n ? TERMINAL.buttons.close : `${pct}%`}
                 </button>
               ))}
             </div>
           </div>
           <div className="tm-choices">
-            {p.boost ? null : <button type="button" className="tm-choice" disabled={value?.locked} onClick={() => (tapFeedback(), setAdding(true))}>{TERMINAL.details.add}</button>}
-            <button type="button" className="tm-choice" disabled={value?.locked} onClick={() => (tapFeedback(), onExits(p))}>{TERMINAL.exits.open}</button>
+            {p.boost ? null : <button type="button" className="tm-choice" disabled={!tradable} onClick={() => (tapFeedback(), setAdding(true))}>{TERMINAL.details.add}</button>}
+            <button type="button" className="tm-choice" disabled={!tradable} onClick={() => (tapFeedback(), onExits(p))}>{TERMINAL.exits.open}</button>
             <button type="button" className="tm-choice" onClick={() => (tapFeedback(), onShow(p))}>{TERMINAL.details.chart}</button>
             <Link href={`/proof/${p.marketId}`} className="tm-choice tm-link">{TERMINAL.details.proof}</Link>
             <button
@@ -103,7 +109,7 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
               onClick={() => {
                 tapFeedback();
                 setSharing({
-                  asset: p.asset, side: p.side, intervalSec: p.intervalSec, pnlBase: value?.pnlBase ?? 0n, costBase: p.costBase, decimals: p.decimals, closed: false,
+                  asset: p.asset, side: p.side, intervalSec: p.intervalSec, pnlBase: value?.pnlBase ?? 0n, costBase: value?.roiCostBase ?? p.costBase, decimals: p.decimals, closed: false,
                   entry: p.entrySpot ? `$${formatPrice(p.entrySpot, priceDecimals(p.entrySpot))}` : null,
                   exit: value?.spot ? `$${formatPrice(value.spot, priceDecimals(value.spot))}` : null,
                 });

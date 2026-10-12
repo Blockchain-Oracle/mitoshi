@@ -140,3 +140,4 @@ export function settlePaper(id: string, trade: Omit<PaperTrade, "id">, keep?: { 
     : state.positions.filter((p) => p.id !== id);
   commit({ ...state, balanceBase: balance.toString(), positions, history: [{ ...trade, id: `${id}:${trade.closedAtMs}` }, ...state.history].slice(0, HISTORY_CAP) });
 }
+

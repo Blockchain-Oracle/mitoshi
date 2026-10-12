@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { exitHit, ratchet, trailHit } from "./rules";
+import { exitHit, likeForLikeBase, ratchet, trailHit } from "./rules";
 import { exitTriggerFromWire, exitTriggerMessage, exitTriggerProblem, exitTriggerToWire, isExitCancel, MAX_EXIT_TRIGGER_SEC, type ExitTrigger } from "./trigger";
 import { exitTriggerWireSchema } from "./trigger-schema";
 
@@ -50,5 +50,15 @@ describe("exit triggers", () => {
     expect(exitHit(1_500_000n, 1_500_000n, 400_000n)).toBe("tp");
     expect(exitHit(400_000n, 1_500_000n, 400_000n)).toBe("sl");
     expect(exitHit(900_000n, 1_500_000n, null)).toBeNull();
+  });
+
+  it("judges an exit like for like: a thin book's proceeds scaled to everything held at the same price (D-227)", () => {
+    // 10 held, the book takes 3 for $1.50 (50¢): the trigger reads $5.00, not $1.50 — a $4.00 stop-loss holds.
+    expect(likeForLikeBase(1_500_000n, 3_000_000n, 10_000_000n)).toBe(5_000_000n);
+    expect(exitHit(likeForLikeBase(1_500_000n, 3_000_000n, 10_000_000n)!, null, 4_000_000n)).toBeNull();
+    expect(exitHit(1_500_000n, null, 4_000_000n)).toBe("sl");
+    // Everything fills: the proceeds themselves. Nothing fills: no value to judge.
+    expect(likeForLikeBase(4_200_000n, 10_000_000n, 10_000_000n)).toBe(4_200_000n);
+    expect(likeForLikeBase(0n, 0n, 10_000_000n)).toBeNull();
   });
 });
