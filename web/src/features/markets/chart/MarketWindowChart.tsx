@@ -1,6 +1,7 @@
 "use client";
-// Ported from Owarine 90a91d71:web/src/features/markets/chart/MarketWindowChart.tsx (O-3, D-222) — the live line is the
-// asset's display ticks (ops publishes a 24/7 stock's off-hours feed under its own ticker), as on the terminal.
+// Ported from Owarine 90a91d71:web/src/features/markets/chart/MarketWindowChart.tsx (O-3, D-222) — "a 24/7 stock Window
+// follows … the price it settles on": the line is the Window's own signed feed (`useChartSeries`: history, then every
+// signed tick from the stream), never the terminal's display ticks — a second source a few cents away zigzags the line.
 import type { EventMarket } from "@cwf/core";
 import { useMemo } from "react";
 import { HERO } from "../copy";
@@ -23,7 +24,8 @@ export function MarketWindowChart({ market, openingRaw, backfill, variant = "ful
   return (
     <WindowChart
       asset={market.asset}
-      symbol={market.asset}
+      symbol={null}
+      live
       times={times}
       referenceRaw={openingRaw}
       referenceLabel={HERO.openingPrint}

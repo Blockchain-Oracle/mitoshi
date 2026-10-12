@@ -28,6 +28,11 @@ export interface WindowChartProps {
   referenceLabel?: string;
   /** Older points (prints, the signed archive) drawn wherever the live series has not started. */
   backfill?: readonly ChartPoint[];
+  /**
+   * With no `symbol`, the backfill IS the live series (it grows with every signed tick): the head eases to its newest
+   * point and pulses while the Window runs. One feed only — a second source a few cents apart zigzags the line.
+   */
+  live?: boolean;
   /** Compact drops the axis words, the dot field and the time axis (the ticket drawer's 128 px chart). */
   variant?: "full" | "compact";
   className?: string;
@@ -132,7 +137,7 @@ export function WindowChart(props: WindowChartProps) {
         backfill = p.backfill ? { t: p.backfill.map((pt) => pt.timeSec * 1000), p: p.backfill.map((pt) => Number(pt.valueRaw) / E_SCALE) } : EMPTY;
       }
       const live: Series = p.symbol ? liveRing(p.symbol) : EMPTY;
-      const isLive = p.symbol !== null && (live.t.length > 0 || liveTick(p.symbol) !== null);
+      const isLive = p.symbol !== null ? live.t.length > 0 || liveTick(p.symbol) !== null : p.live === true && backfill.t.length > 0;
       const span = chartSpan(p.times, nowMs, backfill, isLive);
       const closed = p.times !== null && nowMs >= p.times.closeMs;
       const untilMs = p.times ? Math.min(nowMs, p.times.closeMs) : nowMs;

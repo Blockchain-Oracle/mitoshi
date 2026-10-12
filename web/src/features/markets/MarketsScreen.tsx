@@ -13,6 +13,8 @@ import type { MarketId, Side } from "@cwf/core";
 import { useLiveMarketData, useOpeningPrice } from "@cwf/markets/react";
 import { MotionScope } from "@/components/motion-scope";
 import SectionHead from "@/components/shell/SectionHead";
+import { pickWindow } from "@/features/terminal/pick-window";
+import { useClockValue } from "@/lib/clock";
 import { tapFeedback } from "@/lib/feedback";
 import { useWalletSession } from "@/lib/wallet-session";
 import { SECTIONS } from "./copy";
@@ -41,7 +43,11 @@ export function MarketsScreen(props: { routeMarketId?: MarketId | null }) {
 function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
   const { address } = useWalletSession();
   const lanes = useLanesState();
-  const fallback = lanes.activeLane ? (tickerMarkets(lanes.activeLane, lanes.ticker)[0] ?? lanes.activeLane.markets[0] ?? null) : null;
+  // A lane's Windows arrive in index order: the hero takes the one trading now (the terminal's `pickWindow`), else the
+  // soonest to open — never a Window listed for tomorrow's bell while today's trade.
+  const minute = useClockValue((ms) => Math.floor(ms / 60_000));
+  const candidates = lanes.activeLane ? tickerMarkets(lanes.activeLane, lanes.ticker) : [];
+  const fallback = pickWindow(candidates, minute * 60) ?? candidates[0] ?? lanes.activeLane?.markets[0] ?? null;
   const { selection, setSelection } = useMarketsSelection(lanes.laneSet, fallback, routeMarketId);
   const opening = useOpeningPrice(selection.marketId);
   const openingRaw = opening?.ok ? opening.value : (selection.market?.openingPriceRaw ?? null);

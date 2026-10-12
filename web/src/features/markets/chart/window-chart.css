@@ -12,8 +12,8 @@
   --wc-down: var(--color-loss);
   --wc-on-line: var(--color-ink);
   --wc-inverse: var(--chart-ground);
-  --wc-axis-font: 500 11px var(--font-data);
-  --wc-pill-font: 600 15px var(--font-data);
-  --wc-tag-font: 500 10px var(--font-data);
-  --wc-tag-strong-font: 600 10px var(--font-data);
+  --wc-axis-font: 500 11px var(--font-data, ui-monospace, monospace);
+  --wc-pill-font: 600 15px var(--font-data, ui-monospace, monospace);
+  --wc-tag-font: 500 10px var(--font-data, ui-monospace, monospace);
+  --wc-tag-strong-font: 600 10px var(--font-data, ui-monospace, monospace);
 }
