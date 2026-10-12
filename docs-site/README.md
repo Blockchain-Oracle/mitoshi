@@ -5,7 +5,7 @@ call, Windows and lanes, signed prints and settlement, the terminal, the Trading
 Moonshot · Parlay · Boost, strategies and agents, games, stocks on Tempo, and the architecture behind each path, with the
 deployed addresses on Moderato and dated evidence.
 
-**Checked against:** app revision `9002c8c` (`site.revision` in `lib/site.ts`) on 12 October 2026. The site lives in the
+**Checked against:** app revision `67cb549` (`site.revision` in `lib/site.ts`) on 12 October 2026. The site lives in the
 app's repository at `docs-site/` and is built for `https://docs.testnet.mitoshi.xyz`. Ported from Owarine
 90a91d71:docs-site (Fumadocs on Next 16) in Mitoshi's brand (D-227).
 
