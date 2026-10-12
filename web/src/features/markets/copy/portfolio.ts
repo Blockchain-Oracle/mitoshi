@@ -95,6 +95,8 @@ export const PAGER = {
 export const HERO_MONEY = {
   eyebrow: "Your balance",
   ready: "ready to bet",
+  /** A figure before its read lands (never $0.00). */
+  pending: "—",
   notSummed: "not in this figure",
   legs: { dollars: "Test dollars", positions: "Open positions · at mark", collect: "To collect" },
   addMoney: "Add money",

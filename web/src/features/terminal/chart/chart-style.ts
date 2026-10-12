@@ -43,6 +43,13 @@ export interface FrameInfo {
 
 export type ChartView = "line" | "candles";
 
+/** How far from the canvas's top and bottom a level tag stays clear of what floats over it (R4-0, D-227). */
+export interface ChartPins {
+  top: number;
+  bottom: number;
+}
+export const NO_PINS: ChartPins = { top: 0, bottom: 0 };
+
 export const PAD_Y = 28;
 export const PILL_RIGHT = 14;
 export const PILL_GAP = 10;

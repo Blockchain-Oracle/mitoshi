@@ -23,6 +23,10 @@
 @media (min-width: 1024px) { .tm-screen { display: grid; grid-template-columns: minmax(0, 1fr) 320px; } }
 .tm-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; container: tm-stage / size; }
 .tm-stage > .terminal-chart { position: absolute; inset: 0; }
+/* An off-screen level's tag pins clear of what floats over the chart (LiveChart reads these, R4-0): the header's foot
+   while the equity pill rides in it, and the 40 px controls row while it spans a phone. */
+@media (max-width: 1023px) { .tm-stage > .terminal-chart { --chart-pin-top: var(--tm-head, 0px); } }
+@media (max-width: 767px) { .tm-stage > .terminal-chart { --chart-pin-bottom: 52px; } }
 .tm-top { position: absolute; z-index: 20; inset: 0 0 auto 0; display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: max(12px, env(safe-area-inset-top, 0px)) 12px 0; pointer-events: none; }
 .tm-top > * { pointer-events: auto; }
 .tm-top-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -104,10 +108,10 @@
 .tm-btn:disabled { pointer-events: none; }
 .tm-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .tm-btn svg { width: 20px; height: 20px; flex: none; }
-.tm-btn-label { display: flex; flex-direction: column; align-items: flex-start; }
+.tm-btn-label { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
 /* 11 px needs 4.5:1: the side colour on its soft tint reaches 3.9–4.45 in light, so the sub-line reads in ink there
    (the label keeps the side colour); on a solid button it inherits the button's own text, at full strength. */
-.tm-btn-sub { margin-top: 4px; font: 600 11px/1 var(--font-body); letter-spacing: 0; }
+.tm-btn-sub { margin-top: 4px; font: 600 11px/1.2 var(--font-body); letter-spacing: 0; }
 .tm-up-soft .tm-btn-sub, .tm-down-soft .tm-btn-sub { color: var(--color-ink); }
 .tm-btn-note { color: var(--color-ink-secondary); font: 500 11px/1.3 var(--font-body); text-align: center; }
 .tm-btn-note:empty { display: none; }
@@ -157,7 +161,8 @@
 .tm-exit-inputs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
 .tm-exit-input { display: flex; flex-direction: column; gap: 4px; min-width: 0; color: var(--color-ink-secondary); font: 600 11px/1.2 var(--font-body); }
 .tm-choices { display: flex; flex-wrap: wrap; gap: 6px; }
-.tm-choice { min-width: 56px; height: 36px; padding: 0 12px; border-radius: var(--radius-full); background: var(--color-surface-2); font: 600 13px/1 var(--font-data); }
+/* Words ("Up / Down", "Close all", "Retry"), so the body face: the data face only became real in R4-0 (base.css). */
+.tm-choice { min-width: 56px; height: 36px; padding: 0 12px; border-radius: var(--radius-full); background: var(--color-surface-2); font: 600 13px/1 var(--font-body); }
 .tm-choice[aria-pressed="true"] { background: var(--color-ink); color: var(--color-stage); }
 .tm-choice:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .tm-input { width: 100%; height: 44px; padding: 0 12px; border: 1px solid var(--color-hairline); border-radius: var(--radius-md); background: var(--color-surface-1); color: var(--color-ink); font: 600 16px/1 var(--font-data); }

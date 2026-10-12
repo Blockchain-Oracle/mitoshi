@@ -12,8 +12,8 @@
  * position is losing.
  */
 import { CanvasOdometer } from "./canvas-odometer";
-import { drawAxis, drawGrid, drawLevel, drawPill, drawWaiting, drawWatermark } from "./chart-draw";
-import { MIN_PLOT_LEFTOVER, PAD_Y, PILL_GAP, PILL_H, PILL_H_POSITION, PILL_RIGHT, withAlpha, type ChartOverlay, type ChartTheme, type ChartView, type FrameInfo } from "./chart-style";
+import { drawAxis, drawGrid, drawLevel, drawPill, drawWaiting, drawWatermark, type TagRow } from "./chart-draw";
+import { MIN_PLOT_LEFTOVER, NO_PINS, PAD_Y, PILL_GAP, PILL_H, PILL_H_POSITION, PILL_RIGHT, withAlpha, type ChartOverlay, type ChartPins, type ChartTheme, type ChartView, type FrameInfo } from "./chart-style";
 import { catmullRom, easeFor, FADE_FRACTION, formatUsd, PRICE_EASE, priceDecimals, SAMPLE_CAPACITY, SAMPLE_MS, SampleRing, SPAN_STEPS, stepFor, yOf, type YWindow } from "./engine";
 import type { CandleView } from "./candle-view";
 
@@ -43,6 +43,7 @@ export class ChartEngine {
   private pending: { view: ChartView; candles: CandleView | null; since: number } | null = null;
   private opacity = 1;
   private lastGeom: { plotW: number; win: YWindow | null } = { plotW: 0, win: null };
+  private pins: ChartPins = NO_PINS;
 
   constructor(private canvas: HTMLCanvasElement, private theme: ChartTheme, private label: string) {
     const ctx = canvas.getContext("2d");
@@ -66,6 +67,11 @@ export class ChartEngine {
       return;
     }
     this.target = price;
+  }
+
+  /** What floats over the canvas, top and bottom; off-screen level tags pin clear of it. */
+  setPins(pins: ChartPins): void {
+    this.pins = pins;
   }
 
   setOverlay(overlay: ChartOverlay | null): void {
@@ -167,7 +173,10 @@ export class ChartEngine {
     const plotW = Math.min(w - PILL_RIGHT - pillW - PILL_GAP, w - MIN_PLOT_LEFTOVER);
     const pillH = withPnl ? PILL_H_POSITION : PILL_H;
     const info = this.candles ? this.drawCandles(plotW, tone, pillH) : this.drawLine(plotW, tone, pillH);
-    if (overlay) for (const level of overlay.levels) drawLevel(ctx, theme, level, info.win, plotW, w, tone);
+    // Where drawPill puts the pill, so a pinned level tag can step past it.
+    const pillTop = Math.min(h - pillH - 2, Math.max(2, info.headY - pillH / 2));
+    const taken: TagRow[] = [];
+    if (overlay) for (const level of overlay.levels) drawLevel(ctx, theme, level, info.win, plotW, w, tone, this.pins, { top: pillTop, bottom: pillTop + pillH }, taken);
     if (this.candles) this.candles.drawCrosshair(ctx, theme, info.win, info.step, plotW, w);
     drawPill(ctx, theme, w, h, info.headY, pillW, tone, this.priceOdo, withPnl ? this.pnlOdo : null);
     this.lastGeom = { plotW, win: info.win };

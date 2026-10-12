@@ -28,6 +28,17 @@
     position: relative;
   }
 
+  /* The faces the token theme names on :root are built on next/font's variables, which live on <body>
+   * (`fontVariables`): at :root they resolved to nothing, so every stylesheet `var(--font-data)` — the numbers law
+   * (D-058), the chart canvas's fonts (it drew 10 px sans-serif), the trade buttons — fell back to the inherited face.
+   * Declared again here, where those variables and fonts-stage.css's fallbacks exist (R4-0, D-227). */
+  body {
+    --font-data: var(--font-jetbrains), "JetBrains Mono", ui-monospace, monospace;
+    --font-heading: var(--font-sora), "Sora", system-ui, sans-serif;
+    --font-stamp: var(--font-noto-serif-jp), "Noto Serif JP", serif;
+    --font-sans: var(--font-inter), "Inter", system-ui, sans-serif;
+  }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;

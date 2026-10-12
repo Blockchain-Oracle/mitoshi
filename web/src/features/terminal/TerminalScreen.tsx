@@ -268,7 +268,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
               <EarningsCell symbol={symbol} market={market ?? null} />
             </div>
             {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
-            {s.win.lane?.basis === "stock24" ? <span className="tm-glass tm-note">{TERMINAL.feed.lane247(symbol)}</span> : offHours ? <span className="tm-glass tm-note">{TERMINAL.feed.offHoursNote}</span> : null}
+            {s.win.lane?.basis === "stock24" ? <span className="tm-glass tm-note tm-note-feed">{TERMINAL.feed.lane247(symbol)}</span> : offHours ? <span className="tm-glass tm-note tm-note-feed">{TERMINAL.feed.offHoursNote}</span> : null}
           </div>
         </section>
         <aside className="tm-side" aria-label={TERMINAL.positions.title}>

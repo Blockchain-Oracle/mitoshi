@@ -5,7 +5,7 @@
  * tags, and the capsule pill). Each takes the canvas context and the theme; nothing here keeps state.
  */
 import type { CanvasOdometer } from "./canvas-odometer";
-import { LABEL_RIGHT, LEVEL_STYLE, levelColour, PAD_Y, textOn, PILL_H, PILL_H_POSITION, PILL_RIGHT, TAG_H, type ChartLevel, type ChartTheme } from "./chart-style";
+import { LABEL_RIGHT, LEVEL_STYLE, levelColour, NO_PINS, PAD_Y, textOn, PILL_H, PILL_H_POSITION, PILL_RIGHT, TAG_H, type ChartLevel, type ChartPins, type ChartTheme } from "./chart-style";
 import { edgeAlpha, formatPrice, gridTicks, labelDecimals, yOf, type YWindow } from "./engine";
 
 const span = (win: YWindow) => [win.center - win.half * 1.2, win.center + win.half * 1.2] as const;
@@ -93,19 +93,32 @@ function tag(ctx: CanvasRenderingContext2D, theme: ChartTheme, text: string, x: 
   ctx.fillText(text, x + 5, y + TAG_H / 2 + 0.5);
 }
 
-/** A level's dashed line and axis tag, or, off-screen, a tag pinned 9 px inside the edge pointing the way. */
-export function drawLevel(ctx: CanvasRenderingContext2D, theme: ChartTheme, level: ChartLevel, win: YWindow, plotW: number, w: number, tone: string): void {
+/**
+ * A level's dashed line and axis tag, or, off-screen, a tag pinned 9 px inside the edge pointing the way. R4-0 (D-227):
+ * `pins` move that edge clear of what floats over the canvas — on a phone the terminal's header (the equity pill hid
+ * "▲ Line $…") and its controls row — and a level behind them counts as off-screen. Any tag steps past the tags already
+ * drawn this frame (`taken`, which it joins): the Line and the Signed value sit dollars apart, and their tags hid each
+ * other. A pinned tag also steps past the price pill (`pill`), which paints over it when a short chart puts the two on
+ * one row: to the near side of what it meets while that still clears the pin, else to the far side.
+ */
+export function drawLevel(ctx: CanvasRenderingContext2D, theme: ChartTheme, level: ChartLevel, win: YWindow, plotW: number, w: number, tone: string, pins: ChartPins = NO_PINS, pill: TagRow | null = null, taken: TagRow[] = []): void {
   const style = LEVEL_STYLE[level.kind];
   const colour = levelColour(level.kind, theme, tone);
   const y = yOf(level.price, win);
+  const h = win.bottom + PAD_Y;
   ctx.font = style.strong ? theme.tagStrongFont : theme.tagFont;
-  if (y < win.top - 2 || y > win.bottom + 2) {
-    const up = y < win.top;
-    const text = `${up ? "▲" : "▼"} ${level.label} $${formatPrice(level.price)}`;
+  // Behind a pin = its own tag (TAG_H tall, centred on the line) would not clear it by 2 px.
+  const above = y < Math.max(win.top - 2, pins.top + TAG_H / 2 + 2);
+  if (above || y > Math.min(win.bottom + 2, h - pins.bottom - TAG_H / 2 - 2)) {
+    const text = `${above ? "▲" : "▼"} ${level.label} $${formatPrice(level.price)}`;
     ctx.font = theme.tagStrongFont;
     const tw = ctx.measureText(text).width + 10;
     ctx.globalAlpha = 0.9;
-    tag(ctx, theme, text, w - LABEL_RIGHT - tw, up ? win.top - PAD_Y + 9 : win.bottom + PAD_Y - 9 - TAG_H, tw, colour);
+    const pinned = above ? Math.max(9, pins.top + 6) : h - Math.max(9, pins.bottom + 6) - TAG_H;
+    // Toward its edge first (the near side of whatever it meets), else away from it.
+    const at = clearRow(pinned, pill ? [...taken, pill] : taken, !above, pins.top + 2, h - pins.bottom - 2);
+    taken.push({ top: at, bottom: at + TAG_H });
+    tag(ctx, theme, text, w - LABEL_RIGHT - tw, at, tw, colour);
     ctx.globalAlpha = 1;
     return;
   }
@@ -120,7 +133,39 @@ export function drawLevel(ctx: CanvasRenderingContext2D, theme: ChartTheme, leve
   ctx.stroke();
   ctx.restore();
   const tw = ctx.measureText(level.label).width + 10;
-  tag(ctx, theme, level.label, w - LABEL_RIGHT - tw, y - TAG_H / 2, tw, colour);
+  // The dashed line stays at its price; only its tag steps aside, away from the tag it would cover.
+  const own = y - TAG_H / 2;
+  const hit = taken.find((r) => own < r.bottom + 2 && own + TAG_H > r.top - 2);
+  const at = clearRow(own, taken, hit ? own >= hit.top : true, pins.top + 2, h - pins.bottom - 2);
+  taken.push({ top: at, bottom: at + TAG_H });
+  tag(ctx, theme, level.label, w - LABEL_RIGHT - tw, at, tw, colour);
+}
+
+/** A row the right edge already carries this frame: a level tag or the price pill (CSS px, top and bottom). */
+export interface TagRow {
+  top: number;
+  bottom: number;
+}
+
+/**
+ * Where a TAG_H-tall tag at `at` lands clear of `taken` (2 px apart): stepping past each row it meets toward `down`, or
+ * the other way when that leaves [lo, hi]; if neither fits it keeps the first answer.
+ */
+export function clearRow(at: number, taken: readonly TagRow[], down: boolean, lo: number, hi: number): number {
+  const walk = (dir: boolean) => {
+    let y = at;
+    for (let i = 0; i <= taken.length; i++) {
+      const hit = taken.find((r) => y < r.bottom + 2 && y + TAG_H > r.top - 2);
+      if (!hit) break;
+      y = dir ? hit.bottom + 2 : hit.top - 2 - TAG_H;
+    }
+    return y;
+  };
+  const fits = (y: number) => y >= lo && y + TAG_H <= hi;
+  const first = walk(down);
+  if (fits(first)) return first;
+  const other = walk(!down);
+  return fits(other) ? other : first;
 }
 
 /** The capsule pill at the axis: the price rolling, and with a position the PnL beneath it; kept inside the canvas. */

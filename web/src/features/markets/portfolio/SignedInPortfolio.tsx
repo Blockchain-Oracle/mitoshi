@@ -80,7 +80,8 @@ function Ledger({ wallet }: { wallet: Address }) {
     collectBase: rows.reduce((sum, r) => sum + r.netPayoutBase, 0n),
     // Engine credit is already inside the collect leg (a redeem pays it); only resting-order escrow is named apart.
     pools: value?.orderEscrowBase ? [{ id: "escrow", label: PLATE.pools.escrow.label, amountBase: value.orderEscrowBase }] : [],
-    ready: value !== null,
+    // Every leg read (the balance sheet, positions, claimables), so the figure never sums a leg still at 0 (R4-0).
+    ready: value !== null && criticalSettled,
   };
   return (
     <div className="container flex flex-col gap-10 px-gutter py-8 lg:px-gutter-desktop">

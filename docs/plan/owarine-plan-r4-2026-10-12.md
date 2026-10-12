@@ -80,6 +80,21 @@ R4-0 spec check: two `:has()` rules still matched a copy hidden on an ancestor (
 then the landing hid the landing's footer (`reel.css`), and the island route's toasts sat under a terminal header that
 wasn't there (`toast.css`) — both now skip `[style*="display: none"] *` too, as pitch.css does. A paper trade keeps its
 Window's close, so its history row is timed as a wallet row is, and stored paper history is validated before BigInt.
+R4-0 live UX pass (headless Chromium at 320/375/768/1024/1440, dark and light, signed out and with the read-only test
+wallet; a dry-run price-only ops on 3197/3198 for live ticks): an off-screen level's tag ("▲ Line $…", "▲ Signed $…")
+pins under the phone header and above the controls instead of under the equity pill, and steps past the price pill; the
+stack centres between the header and the controls below 1024 (a stock's feed note sat under it at 375 × 667); the
+shortest charts drop the feed note and show the stack's size alone (320 × 568: it covered the note, the controls or the
+price pill); a wrapped "pays" line breaks at its "·" and sits left under UP/DOWN; the 404's pills clear the dock at
+320 × 568 and "missing" reads in the loss colour. Then (same pass, resumed): `--font-data`, `--font-heading`,
+`--font-stamp` and `--font-sans` were declared on :root over next/font's variables, which live on <body>, so every
+stylesheet `var(--font-data)` resolved to nothing — the numbers law (D-058), the chart canvas (axis, price pill and tags
+drew in 10 px sans-serif), the UP/DOWN face — now declared again on body (`base.css`), word chips kept in the body face;
+level tags step past each other and the pill (the Line and the Signed value hid each other), and a level keeps its line
+while its own tag clears the header; the 404's short-phone rule now outranks `.nf-col` and its first label clears the
+seal; the site header's TESTNET is its dot at ≤ 360 (it ran under the theme toggle); the pitch's arrows sit in the foot
+row on phones (they covered the text); the portfolio's figure reads "—" until every leg has read (it flashed $0.00 and
+"Get test dollars" on a funded account).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on

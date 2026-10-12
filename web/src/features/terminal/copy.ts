@@ -46,8 +46,9 @@ export const TERMINAL = {
     trail: "TRAIL",
     trailing: "TRAILING",
     close: "CLOSE",
-    pays: (multiple: string) => `pays ${multiple}`,
-    max: (amount: string) => `max ${amount}`,
+    // No-break spaces: a wrapped sub-line breaks at its "·", never between "max" and its amount (R4-0).
+    pays: (multiple: string) => `pays\u00a0${multiple}`,
+    max: (amount: string) => `max\u00a0${amount}`,
     needMove: (pct: string) => `Need +${pct}% past break-even`,
     tabOnly: "Only while Mitoshi is open",
     locked: (at: string) => `Locked — pays at ${at}`,

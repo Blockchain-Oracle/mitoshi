@@ -2,7 +2,7 @@
 // Ported from Owarine 90a91d71:web/src/features/markets/portfolio/plate/MoneyHero.tsx (P2, D-223) — what is mine right
 // now as one figure: dollars (wallet + Trading Balance), open positions at their mark, and what waits to be collected;
 // what can be bet now; Add money and Trade; the split as a bar. Pools that are yours but not in the figure are named
-// under it, never added (FR-5).
+// under it, never added (FR-5). R4-0 (D-227): "—" until every leg has read, never a $0.00 flash.
 import { formatBaseUnits } from "@cwf/core/units";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -32,20 +32,23 @@ export function MoneyHero({ money, openBets, settled, onAdd }: { money: HeroMone
   const { decimals } = money;
   const parts = { dollars: money.dollarsBase, positions: money.positionsBase, collect: money.collectBase } as const;
   const total = parts.dollars + parts.positions + parts.collect;
-  const empty = total === 0n;
+  // Before the reads land every figure reads "—", not $0.00, and the button doesn't offer test dollars to an account
+  // that may hold some (R4-0, D-227: it flashed "$0.00" and "Get test dollars" for ~2 s on a funded account).
+  const empty = money.ready && total === 0n;
+  const usd = (base: bigint) => (money.ready ? `$${fmt2(base, decimals)}` : HERO_MONEY.pending);
   const pct = (part: bigint) => (total > 0n ? Number((part * 1000n) / total) / 10 : 0);
   return (
     <section className="money-hero" aria-label={HERO_MONEY.eyebrow}>
       <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-8">
         <div className="flex min-w-0 flex-col gap-2">
           <span className="money-hero-eyebrow">{HERO_MONEY.eyebrow}</span>
-          <span className={cn("money-hero-figure numbers", !money.ready && "opacity-50")}>${fmt2(total, decimals)}</span>
+          <span className={cn("money-hero-figure numbers", !money.ready && "opacity-50")}>{usd(total)}</span>
           <p className="money-hero-line">
-            <span className="numbers money-hero-strong">${fmt2(money.readyBase, decimals)}</span> {HERO_MONEY.ready}
+            <span className="numbers money-hero-strong">{usd(money.readyBase)}</span> {HERO_MONEY.ready}
             {money.pools.map((p) => (
               <span key={p.id}>
                 {" · "}
-                {p.label} <span className="numbers money-hero-strong">${fmt2(p.amountBase, decimals)}</span> {HERO_MONEY.notSummed}
+                {p.label} <span className="numbers money-hero-strong">{usd(p.amountBase)}</span> {HERO_MONEY.notSummed}
               </span>
             ))}
           </p>
@@ -61,7 +64,7 @@ export function MoneyHero({ money, openBets, settled, onAdd }: { money: HeroMone
             <div key={leg.key} className="flex items-center gap-3">
               <span aria-hidden className={cn("money-hero-dot", leg.tone)} />
               <dt className="min-w-0 flex-1 truncate money-hero-leg">{leg.label}</dt>
-              <dd className="numbers money-hero-amount">${fmt2(parts[leg.key], decimals)}</dd>
+              <dd className="numbers money-hero-amount">{usd(parts[leg.key])}</dd>
             </div>
           ))}
           <div className="money-hero-counts">

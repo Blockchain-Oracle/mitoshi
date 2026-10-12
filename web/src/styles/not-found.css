@@ -5,6 +5,12 @@
 /* Before the root 404's frame has loaded (`NotFoundPage`) the page pads and paints itself. */
 .nf-bare { min-height: 100dvh; padding-inline: 16px; background: var(--color-canvas); color: var(--color-ink); }
 .nf-col { display: flex; width: 100%; max-width: 28rem; flex-direction: column; align-items: center; gap: 28px; text-align: center; }
+/* A short phone (320 × 568): tighter, so the pills clear the dock on the first screen (R4-0). After `.nf-col`, which
+   it overrides. */
+@media (max-height: 640px) {
+  .nf { min-height: 0; padding-block: 12px; }
+  .nf-col { gap: 18px; }
+}
 .nf-title-wrap { position: relative; }
 .nf-title { font: 800 clamp(4.5rem, 18vw, 7rem)/0.9 var(--font-display); letter-spacing: -0.04em; color: var(--color-ink); }
 .nf-void {
@@ -26,9 +32,11 @@
 .nf-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
 .nf-row + .nf-row { padding-top: 10px; border-top: 1px dashed var(--color-hairline); }
 .nf-row dt { flex: none; color: var(--color-ink-secondary); }
+/* The seal sits on the ticket's corner; the first label starts past it (it covered "Wi" of Window). */
+.nf-row:first-child dt { padding-left: 34px; }
 .nf-row dd { min-width: 0; color: var(--color-ink); }
 .nf-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nf-missing { color: var(--color-loss); }
+.nf-row .nf-missing { color: var(--color-loss); }
 .nf-result { font-weight: 700; }
 .nf-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
 .nf-pill {

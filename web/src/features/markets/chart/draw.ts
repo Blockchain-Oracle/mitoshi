@@ -229,7 +229,9 @@ export function drawFrame(ctx: CanvasRenderingContext2D, pal: ChartPalette, f: F
   if (f.pending && f.window?.openX != null && !f.compact) {
     ctx.font = pal.tagFont;
     const tw = ctx.measureText(f.pending).width + 16;
-    const x = Math.min(plot.right - tw - 4, Math.max(plot.left + 4, f.window.openX - tw / 2));
+    // A plot narrower than the words lends them the axis column (R4-0, D-227: at 320 px it read "aiting for…").
+    const right = tw <= plot.right - plot.left - 8 ? plot.right - 4 : f.w - 4;
+    const x = Math.max(4, Math.min(right - tw, Math.max(plot.left + 4, f.window.openX - tw / 2)));
     const low = f.head !== null && f.head.y > (plot.top + plot.bottom) / 2;
     const y = low ? plot.top + 22 : plot.bottom - TAG_H - 6;
     capsule(ctx, x, y, tw, TAG_H, pal.card, pal.hairline);

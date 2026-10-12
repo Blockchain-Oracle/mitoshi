@@ -42,4 +42,10 @@
 }
 @media (max-width: 639px) {
   .pitch-foot-chain { display: none; }
+  /* The arrows sat over the slide's text (the content starts 8vw in, they ended at 36 px), so on a phone they take the
+     ends of the foot row, which steps in to clear them (R4-0, D-227). */
+  .pitch-nav { top: auto; bottom: calc(4vh + 6px); transform: none; }
+  .pitch-nav-prev { left: 8vw; }
+  .pitch-nav-next { right: 8vw; }
+  .pitch-foot { padding-inline: 44px; }
 }

@@ -198,6 +198,8 @@
 .mh-distance-pending {
   color: var(--gray-500);
 }
+/* A sentence, not a figure: on a phone it wraps to a second line rather than read "Waiting for the openi…" (R4-0). */
+.mh-distance > .mh-distance-pending { white-space: normal; text-wrap: balance; }
 
 /* ── settles in ──
    text-right shrink-0 */

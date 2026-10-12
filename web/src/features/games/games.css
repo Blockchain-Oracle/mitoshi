@@ -350,7 +350,7 @@ a.gm-card:hover { border-color: color-mix(in srgb, var(--signal-ink) 40%, transp
 .gm-rail-howto:hover { color: var(--white); border-color: var(--gm-accent, var(--signal-ink)); }
 .gm-howto { gap: 12px; }
 .gm-howto-title { font-size: 22px; }
-.gm-howto-steps { display: flex; flex-direction: column; gap: 8px; padding-left: 20px; font-size: 13px; line-height: 1.6; color: var(--gray-400); }
+.gm-howto-steps { display: flex; flex-direction: column; gap: 8px; padding-left: 20px; list-style: decimal; font-size: 13px; line-height: 1.6; color: var(--gray-400); }
 .gm-howto-steps li::marker { color: var(--gm-accent, var(--signal-ink)); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
 /* ── The season banner (Flicky season-banner.tsx: a 3:1 strip on the home and the ladder), drawn not shipped ── */

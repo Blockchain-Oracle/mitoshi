@@ -69,13 +69,21 @@
   .tm-equity-compact { display: inline; }
 }
 .tm-history-title { display: inline-flex; align-items: center; gap: 8px; }
-/* A short chart (R4-0: with the dock under the terminal a 320 × 568 phone leaves ~300 px of chart): the stack goes two
-   by two and centres in the band between the header's foot (--tm-head; the stage starts at the top of the screen) and
-   the controls' top (12 px + 40 px up from the floor), and the chart controls keep one row. Everything in the stage is
-   absolute, so its size containment changes no layout. */
-@container tm-stage (max-height: 380px) {
-  .tm-stage .tm-stack { grid-template-columns: repeat(4, auto); }
-  .tm-stage .tm-stack-slot { top: calc((var(--tm-head, 0px) + 100cqh - 52px) / 2); }
+/* Below 1024 the stack centres in the band between the header's foot (--tm-head; the stage starts at the top of the
+   screen) and the controls' top (12 px + 40 px up from the floor), not at 50 %: a stock's header carries a feed note,
+   and at 375 × 667 the stack sat on it (R4-0). A short chart (with the dock under the terminal a 320 × 568 phone leaves
+   ~300 px) takes the stack two by two, and the chart controls keep one row. Everything in the stage is absolute, so
+   its size containment changes no layout. */
+@media (max-width: 1023px) { .tm-stage .tm-stack-slot { top: calc((var(--tm-head, 0px) + 100cqh - 52px) / 2); } }
+@container tm-stage (max-height: 380px) { .tm-stage .tm-stack { grid-template-columns: repeat(4, auto); } }
+/* The shortest (a stock's chart at 320 × 568, 230–300 px): the header drops its feed note (the chip names the feed) —
+   it reached the middle, where the line and its price pill run. Under 260 px, and on a short chart 320 px wide (two by
+   two the stack ran under the price pill), the stack shows the size alone — a tap opens the rest; UP and DOWN carry
+   what each pays. */
+@container tm-stage (max-height: 300px) { .tm-stage .tm-note-feed { display: none; } }
+@container tm-stage (max-height: 260px) or ((max-width: 340px) and (max-height: 380px)) {
+  .tm-stage .tm-stack { grid-template-columns: auto auto; }
+  .tm-stage .tm-stack > span:not(:first-child) > span { display: none; }
 }
 /* Signed in, not yet one-tap, on the shortest phones (320 × 568): the card is its button alone — the hint wrapped to
    three lines and took the chart's last 64 px, so the stack sat on the controls. The button's title says the rest. */

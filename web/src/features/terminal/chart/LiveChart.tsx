@@ -12,7 +12,7 @@ import { whenSplashDone } from "@/lib/splash";
 import { CandleView } from "./candle-view";
 import type { CandleInterval } from "./candles";
 import { ChartEngine, type ChartOverlay, type ChartTheme, type FrameInfo } from "./chart-engine";
-import type { ChartView } from "./chart-style";
+import type { ChartPins, ChartView } from "./chart-style";
 import { DotGrid } from "./dot-grid";
 import "@/styles/terminal.css";
 import { modalOpen } from "@/lib/modal-signal";
@@ -57,6 +57,16 @@ function readTheme(el: Element): { chart: ChartTheme; dots: string } {
   };
 }
 
+/**
+ * The pins (R4-0, D-227) from the box's CSS: `--chart-pin-top` is the viewport y where what floats over the canvas ends
+ * (the terminal's header foot, `--tm-head`), `--chart-pin-bottom` the height kept clear above the canvas's foot.
+ */
+function readPins(el: Element): ChartPins {
+  const cs = getComputedStyle(el);
+  const px = (name: string) => parseFloat(cs.getPropertyValue(name)) || 0;
+  return { top: Math.max(0, px("--chart-pin-top") - el.getBoundingClientRect().top), bottom: px("--chart-pin-bottom") };
+}
+
 /** A frame every this many ms while a centred modal covers the chart. */
 const BEHIND_MODAL_MS = 200;
 
@@ -94,6 +104,7 @@ export function LiveChart({ symbol, overlay, onFrame, view = "line", interval = 
 
     const resize = () => {
       engine.resize();
+      engine.setPins(readPins(box));
       dots.resize();
     };
     let drawn = 0;
@@ -115,12 +126,14 @@ export function LiveChart({ symbol, overlay, onFrame, view = "line", interval = 
     const cancelStart = () => (cancelSplash(), cancelPaint());
     const ro = new ResizeObserver(resize);
     ro.observe(box);
+    // The theme, and the header's foot (`--tm-head` lands in the root's style as the header grows or shrinks).
     const mo = new MutationObserver(() => {
       theme = readTheme(box);
       engine.setTheme(theme.chart);
+      engine.setPins(readPins(box));
       dots.setColour(theme.dots);
     });
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class"] });
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
     return () => {
       cancelStart();
       cancelAnimationFrame(raf);
