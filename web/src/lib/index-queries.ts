@@ -49,7 +49,7 @@ const pageQuery = z.object({ market: marketId.optional(), since: optionalInt, li
 const rangeQuery = z.object({ from: int, to: int, limit: optionalInt });
 
 /** Areas indexed by later stages' projections: answered as not deployed until their fragment and projection land. */
-const LATER_AREAS = new Set(["stocks", "themes", "launch", "bridge", "agents"]);
+const LATER_AREAS = new Set(["stocks", "themes", "launch", "agents"]);
 
 function walletQuery(wallet: string, resource: string | undefined, query: Record<string, string>): IndexQuery | null {
   const owner = parse(address, wallet);
