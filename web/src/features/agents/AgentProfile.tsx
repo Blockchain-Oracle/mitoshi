@@ -150,7 +150,7 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
         </div>
       </div>
       <CopyDrawer card={copying ? (catalogue.data?.strategies.find((x) => x.strategyId === s.strategyId) ?? s) : null} strategies={catalogue.data?.strategies ?? [s]} writes={writes} open={copying} onOpenChange={setCopying} />
-      {reporting && <ReportDialog open={reporting} onOpenChange={setReporting} target={{ kind: "agent", id: s.strategyId }} />}
+      {reporting && <ReportDialog open={reporting} onOpenChange={setReporting} target={{ kind: "agent", id: s.strategyId }} urlKey="report" />}
     </div>
   );
 }

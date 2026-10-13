@@ -1,6 +1,7 @@
 "use client";
 // The report flow (S13, D-043): 21st 31359's centred dialog (`Modal`) with 28339's reasons list — one radio per reason,
-// an optional note, one send. Used on room messages, takes and profiles.
+// an optional note, one send. Used on room messages, takes and profiles. On a page (a profile, an agent) it carries
+// `?d=report` so Back closes it rather than the page (D-190, R4-2); inside the Room's sheet it doesn't (the sheet holds ?d=).
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -10,7 +11,7 @@ import { SOCIAL } from "./copy";
 type Reason = keyof typeof SOCIAL.report.reasons;
 const REASONS = Object.keys(SOCIAL.report.reasons) as Reason[];
 
-export function ReportDialog({ open, onOpenChange, target }: { open: boolean; onOpenChange: (o: boolean) => void; target: { kind: "comment" | "take" | "profile" | "agent"; id: string } }) {
+export function ReportDialog({ open, onOpenChange, target, urlKey }: { open: boolean; onOpenChange: (o: boolean) => void; target: { kind: "comment" | "take" | "profile" | "agent"; id: string }; urlKey?: string }) {
   const [reason, setReason] = useState<Reason | null>(null);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -31,6 +32,7 @@ export function ReportDialog({ open, onOpenChange, target }: { open: boolean; on
     <Modal
       open={open}
       onOpenChange={onOpenChange}
+      urlKey={urlKey}
       fields
       title={words.title}
       description={words.lead}

@@ -44,7 +44,7 @@ export function ProfileSocial({ address }: { address: string }) {
           <TakeCard key={t.id} t={t} me={takes.signedIn} onReact={(k, on) => void takes.react(t.id, k, on)} onDismiss={() => takes.dismiss(t.id)} onReport={() => undefined} onBlock={() => undefined} />
         ))}
       </ol>
-      {reporting ? <ReportDialog open onOpenChange={setReporting} target={{ kind: "profile", id: address }} /> : null}
+      {reporting ? <ReportDialog open onOpenChange={setReporting} target={{ kind: "profile", id: address }} urlKey="report" /> : null}
     </section>
   );
 }
