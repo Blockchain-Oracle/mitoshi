@@ -1,7 +1,7 @@
 /** The TxLifecycle family's words (D-045 grammar: the CTA names its blocker; failures say whether money moved). */
 export const TX = {
   signingPasskey: "Confirm with your passkey…",
-  signingKey: "Signing with your trading key…",
+  signingKey: "Signing with One-tap…",
   signingWallet: "Confirm in your wallet…",
   submitted: "Sent — waiting for the chain",
   confirmedPending: "Confirmed",
@@ -29,7 +29,7 @@ export const TX = {
   typedConfirm: (code: string) => `Type ${code} to confirm`,
   typedMismatch: "That doesn't match yet.",
   keyUsed: {
-    title: "Signed by your trading key",
+    title: "Signed by One-tap",
     left: (left: string, limit: string) => `${left} of ${limit} left this period`,
     expires: (when: string) => `Key expires ${when}`,
     manage: "Manage keys",

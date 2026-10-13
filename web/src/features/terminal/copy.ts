@@ -65,7 +65,7 @@ export const TERMINAL = {
     free: "Free",
     trailing: "Trailing",
     capped: (amount: string) => `Capped at ${amount}`,
-    cappedWhy: { balance: "what you can spend", key: "what one-tap may still spend today", budget: "your Trading Balance's room today" },
+    cappedWhy: { balance: "what you can spend", key: "what One-tap may still spend today", budget: "your Trading Balance's room today" },
   },
   equity: {
     signIn: "Sign in",
@@ -211,7 +211,7 @@ export const TERMINAL = {
     scheduling: (side: string, symbol: string) => `Scheduling ${side} ${symbol}…`,
   },
   /** R4-3 (D-227): no card above UP/DOWN — one toast a session after the first prompted trade; the switch is in settings. */
-  arm: { lead: "One prompt, then taps sign themselves.", cta: "Turn on one-tap", toastTitle: "One-tap is off", toastAction: "Turn on" },
+  arm: { lead: "One prompt, then taps sign themselves.", cta: "Turn on One-tap", toastTitle: "One-tap is off", toastAction: "Turn on" },
   exits: {
     title: (side: string, symbol: string) => `TP / SL · ${side} ${symbol}`,
     open: "TP / SL",
@@ -260,7 +260,7 @@ export const TERMINAL = {
     on: "Exits now run with the app closed",
     onBody: "Runs without this tab.",
     failed: "Exits still run only while Mitoshi is open",
-    noSession: "one-tap isn't armed on this device",
+    noSession: "One-tap is off on this device",
     notStored: (symbol: string) => `Set on this device only · ${symbol}`,
     notStoredBody: (why: string) => `The keeper declined (${why}); runs while Mitoshi is open.`,
     sold: (paid: string, pnl: string | null) => `Sold for ${paid}${pnl ? ` · Locked ${pnl}` : ""} — with the app closed`,
@@ -275,8 +275,8 @@ export const TERMINAL = {
     armedBody: (pct: string) => `Closes if price comes back ${pct}% · while Mitoshi is open`,
     off: (symbol: string) => `Trailing stop off · ${symbol}`,
     hit: (symbol: string) => `Trailing stop hit · ${symbol}`,
-    needsKey: "Turn on one-tap first",
-    needsKeyBody: "A trail needs one-tap signing until this Window closes.",
+    needsKey: "Turn on One-tap first",
+    needsKeyBody: "A trail needs One-tap on until this Window closes.",
     boostPasskey: "A Boost closes with your passkey",
     boostPasskeyBody: "Trail and TP/SL can't run on a Boost — close it from its row.",
   },

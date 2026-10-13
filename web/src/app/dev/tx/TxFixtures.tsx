@@ -29,7 +29,7 @@ export function TxFixtures() {
       <TxFailureCard state={{ kind: "failed", diagnosis: diagnosis("fee-token", "InsufficientFeeTokenBalance"), moneyMoved: "no", txHash: null }} />
       <TxFailureCard state={{ kind: "failed", diagnosis: diagnosis("send-unknown", "timeout"), moneyMoved: "unknown", txHash: HASH }} explorerHref="https://explore.testnet.tempo.xyz" />
       <TxReceipt title="Settlement receipt" figure="$9.40" figureLabel="Paid" atMs={1_790_000_000_000} txHash={HASH} network="testnet" rows={[{ label: "Window", value: "TSLA 5m" }]} />
-      <KeyUsedReceipt keyLabel="Trading key on this browser" leftText="$18.00" limitText="$25.00" expiresText="in 23 h" />
+      <KeyUsedReceipt keyLabel="One-tap key on this browser" leftText="$18.00" limitText="$25.00" expiresText="in 23 h" />
       <TypedConfirm code="USD" onMatch={() => undefined} />
       <button type="button" className="min-h-touch self-start rounded-md border border-border-strong px-4 type-body-strong text-ink" onClick={() => notify.neutral("Write landed", "The receipt is in your history.")}>
         Raise a toast

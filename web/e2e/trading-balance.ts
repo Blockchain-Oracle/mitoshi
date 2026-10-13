@@ -104,7 +104,7 @@ try {
   await page.screenshot({ path: join(out, `arm-${width}.png`) });
   await axe(page, "arm", '[role="dialog"]');
   await dialog.getByRole("button", { name: /^Set aside \$10$/ }).click();
-  await expect(dialog.getByText("Tap-trading is on.")).toBeVisible({ timeout: 120_000 });
+  await expect(dialog.getByText("One-tap is on.")).toBeVisible({ timeout: 120_000 });
   note({ step: "armed", ceremonyAssertions: afterSignUp, armAssertions: s.assertions() - afterSignUp });
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden({ timeout: 10_000 });

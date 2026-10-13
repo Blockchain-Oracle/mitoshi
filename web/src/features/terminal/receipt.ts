@@ -26,7 +26,7 @@ export const RECEIPT = {
   window: "Window",
   contracts: "Contracts",
   toWin: "Win if it lands",
-  keys: { session: "Trading Balance key", wallet: "This wallet's trading key" },
+  keys: { session: "One-tap · Trading Balance", wallet: "One-tap key" },
 } as const;
 
 const EVENT = "cwf:trade-receipt";

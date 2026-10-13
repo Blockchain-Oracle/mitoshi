@@ -84,8 +84,8 @@ export async function signUpFromTour(s: TerminalSession, base: string, symbol: s
   const dialog = modal(page);
   await expect(dialog.getByText(/You're funded/)).toBeVisible({ timeout: 120_000 });
   const beforeArm = s.assertions();
-  await dialog.getByRole("button", { name: "Arm tap-trading" }).click();
-  await expect(dialog.getByText("Tap-trading is on.")).toBeVisible({ timeout: 60_000 });
+  await dialog.getByRole("button", { name: "Turn on One-tap" }).click();
+  await expect(dialog.getByText("One-tap is on.")).toBeVisible({ timeout: 60_000 });
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden({ timeout: 10_000 });
   s.log({ step: "signed-up", signUpPrompts: beforeArm, armPrompts: s.assertions() - beforeArm, toasts: await s.toastsSeen() });

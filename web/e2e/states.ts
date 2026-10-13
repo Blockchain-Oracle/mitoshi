@@ -129,7 +129,7 @@ async function signedIn(width: number) {
     await shot(page, "turn-on-one-tap", width);
     // Then arm it from that card, so the trade below takes one tap with no prompt.
     await page.getByRole("button", { name: "Turn on one-tap" }).first().click();
-    await modal(page).getByRole("button", { name: "Arm tap-trading" }).last().click();
+    await modal(page).getByRole("button", { name: "Turn on One-tap" }).last().click();
     await expect(page.getByRole("button", { name: "Turn on one-tap" })).toHaveCount(0, { timeout: 60_000 });
     await page.keyboard.press("Escape");
   });

@@ -4,9 +4,9 @@
  * daily limit ("up to $25 of new approvals a day", D-138), lives 24 hours, and can only trade on the engine.
  */
 export const TAP = {
-  eyebrow: "Tap-trading · trading key",
-  title: "Arm tap-trading",
-  lead: "Arm tap-trading once, and your calls sign with no prompt.",
+  eyebrow: "One-tap",
+  title: "Turn on One-tap",
+  lead: "Turn on One-tap once, and your calls go in with no prompt.",
   // R4-3 (D-227), copy spec: Owarine's word count — the scope, the never and the fees sit in the receipt below.
   facts: (limit: string, hours: number) => `${limit} a day for ${hours} h — calls, cash-outs, collects. Never withdraws.`,
   sponsored: "No fees — we pay the network fee.",
@@ -22,20 +22,20 @@ export const TAP = {
     feesValue: "None — we pay the network fee",
   },
   skip: "Skip it, and every call simply asks your passkey instead.",
-  cta: "Arm tap-trading",
+  cta: "Turn on One-tap",
   busy: "Confirm with your passkey…",
-  armed: "Tap-trading is on.",
+  armed: "One-tap is on.",
   armedBody: (_limit: string, until: string) => `No prompts until ${until}. Stop it in Account.`,
   manage: "Manage keys",
   failed: "Didn't turn on. Nothing was taken.",
   aborted: "No key was made. Every call will ask your passkey.",
   retry: "Try again",
   chip: {
-    on: "tap-trading on",
-    off: "tap-trading",
+    on: "One-tap on",
+    off: "One-tap",
     titleOn: (limit: string, until: string) => `No prompts · ${limit} a day · until ${until}`,
     titleOff: "Arm popup-free calls: one passkey prompt now, none per call.",
-    titleUnavailable: "Tap-trading needs a passkey account; this wallet signs each call itself.",
+    titleUnavailable: "One-tap needs a passkey account; this wallet signs each call itself.",
   },
   pendingOnChain: "Armed · live with your first call.",
 } as const;

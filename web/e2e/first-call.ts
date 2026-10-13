@@ -135,8 +135,8 @@ try {
   await expect(dialog.getByText(/You're funded/)).toBeVisible({ timeout: 90_000 });
   const afterSignUp = assertions;
   await page.screenshot({ path: join(out, `onboard-funded-${width}.png`) });
-  await dialog.getByRole("button", { name: "Arm tap-trading" }).click();
-  await expect(dialog.getByText("Tap-trading is on.")).toBeVisible({ timeout: 30_000 });
+  await dialog.getByRole("button", { name: "Turn on One-tap" }).click();
+  await expect(dialog.getByText("One-tap is on.")).toBeVisible({ timeout: 30_000 });
   note({ step: "armed", ceremonyAssertions: afterSignUp, armAssertions: assertions - afterSignUp });
   await page.screenshot({ path: join(out, `onboard-armed-${width}.png`) });
   const axeModal = await new AxeBuilder({ page }).include('[role="dialog"]').withTags(["wcag2a", "wcag2aa"]).analyze();
@@ -165,7 +165,7 @@ try {
   // 4. The key on the trust surface.
   await page.goto(`${base}/settings/account`, { waitUntil: "load" });
   await settle(page);
-  await expect(page.getByText("Tap-trading key on this device").first()).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText("One-tap key on this device").first()).toBeVisible({ timeout: 60_000 });
   await page.screenshot({ path: join(out, `settings-key-${width}.png`), fullPage: true });
   note({ step: "key-listed" });
 
