@@ -12,6 +12,7 @@ export * from "./vault";
 export * from "./strategies";
 export * from "./strategy-runner";
 export * from "./exits";
+export * from "./bridge";
 export * from "../prices/redstone";
 export * from "../prices/redstone-gateways";
 export * from "../prices/attested";

@@ -1,0 +1,12 @@
+{
+  "displayName": "Mitoshi Testnet",
+  "slug": "mitoshi-testnet",
+  "owner": "0xabu",
+  "bundleId": "xyz.mitoshi.app.testnet",
+  "androidPackage": "xyz.mitoshi.app.testnet",
+  "scheme": "mitoshi",
+  "appleTeamId": "86C6ZFJ6V6",
+  "webOrigin": "https://testnet.mitoshi.xyz",
+  "passkeyRpId": "mitoshi.xyz",
+  "easProjectId": "d015942f-3c96-445f-b4fe-9a8811d2108b"
+}

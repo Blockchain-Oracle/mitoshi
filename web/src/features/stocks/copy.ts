@@ -11,6 +11,8 @@ export const STOCKS = {
   source: "Settles on RedStone",
   noSource: "No signed price source",
   reserves: "Reserves →",
+  /** R4-12 (D-227): a stock with a Mirror token on Tempo bridges from its hub. */
+  bridge: "Bridge →",
   room: (symbol: string) => `$${symbol} room`,
   roomQualifier: "bettors only",
   trade: "Trade it →",

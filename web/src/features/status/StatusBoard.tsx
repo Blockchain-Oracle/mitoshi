@@ -3,7 +3,7 @@
 // (R4-10, D-227): the verdict as the hero (the slowest part, Tempo's head block, a tally, one bar per check), then what
 // needs attention in full, then every check by the system it watches as dropdowns (a system with a problem starts
 // open), two stacks on wide screens. The footer's ring counts down to the next read, every 30 s.
-import { Activity, Boxes, CalendarClock, HandCoins, LineChart, Wallet, type LucideIcon } from "lucide-react";
+import { Activity, ArrowLeftRight, Boxes, CalendarClock, HandCoins, LineChart, Wallet, type LucideIcon } from "lucide-react";
 import { CountdownRing } from "@/components/kit";
 import { cn } from "@/lib/utils";
 import { BoardBanner, BoardStack, CheckLine, RANK, SystemItem, TONE, type BoardTone } from "./BoardParts";
@@ -11,9 +11,9 @@ import { STATUS } from "./copy";
 import type { StatusGroup, StatusReport, StatusRow } from "./probes";
 import { STATUS_POLL_MS, useStatus } from "./useStatus";
 
-const GLYPH: Record<StatusGroup, LucideIcon> = { Chain: Boxes, Prices: LineChart, Windows: Activity, Payouts: HandCoins, Markets: CalendarClock, Fees: Wallet };
+const GLYPH: Record<StatusGroup, LucideIcon> = { Chain: Boxes, Prices: LineChart, Windows: Activity, Payouts: HandCoins, Markets: CalendarClock, Fees: Wallet, Bridge: ArrowLeftRight };
 /** Checks that open a board of their own: the halts board, and the settled prints' proofs. */
-const LINKS: Record<string, string> = { "halt-watch": "/status/halts", "price-relay": "/proof" };
+const LINKS: Record<string, string> = { "halt-watch": "/status/halts", "price-relay": "/proof", "reserve-watch": "/reserves" };
 
 function summaryOf(rows: StatusRow[]): { text: string; tone: BoardTone } {
   const n = (t: BoardTone) => rows.filter((r) => r.tone === t).length;
