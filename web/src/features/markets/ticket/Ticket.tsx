@@ -13,13 +13,14 @@
 import { useFirstFunding } from "@/features/funding/first-fund-state";
 import type { EventMarket, Quote, Side } from "@cwf/core";
 import { belowMinStake, restingQuote } from "@cwf/core";
-import { diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/copy";
+import { diagnosisCopy, formatCadence, type BlockerContext, type BlockerFix } from "@cwf/core/copy";
 import { minStakeBase } from "@cwf/core/sizing";
 import { formatBaseUnits } from "@cwf/core/units";
 import { useBalanceSheet, useSeriesGrid, useSigner } from "@cwf/markets/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { LoadingState } from "@/components/states";
+import { LoadingState } from "@/components/states/LoadingState";
+import { TxMorph } from "@/components/tx/TxMorph";
 import { SheetFooter } from "@/components/ui/overlay-footer";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { SESSION, SessionFallbackCta, TapTradingChip, useTicketRoute } from "@/features/session";
@@ -87,7 +88,9 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
     [listed, side, grid, priceCents, stakeBase, decimals],
   );
 
-  const bet = usePlaceBet(address);
+  // One confirmation for the call you just placed (R6 T12): the CTA morphs into the Call card, so no toast says it twice;
+  // the screen-reader line still goes out. The terminal keeps its own toast grammar.
+  const bet = usePlaceBet(address, { quiet: true });
   const displayed = listed ? (resting?.ok ? resting.quote : null) : (bet.requoted ?? quoteState.quote);
   // S7: the Trading Balance's session key takes the call when armed and its caps cover it; else the CTA says why.
   const tb = useTicketRoute({ market, side, stakeBase, quote: displayed, listed });
@@ -126,6 +129,7 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
     cadence: formatCadence(market.intervalSec),
     minStakeText: usd(minStakeBase(decimals), decimals),
     spendableText: spendBase !== null ? usd(spendBase, decimals) : undefined,
+    spendableBelowMin: spendBase !== null && belowMinStake(spendBase, decimals),
     quotedCents: displayed?.oddsCents,
     fillableStakeText: displayed?.partial ? usd(displayed.fillableStakeBase, decimals) : undefined,
   };
@@ -134,10 +138,22 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
   const caption = listed
     ? resting && !resting.ok && resting.blocker === "too-small" ? TICKET.scheduled.tooSmall : TICKET.scheduled.note(new Date(market.tradingStartSec * 1000).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }))
     : failed
-      ? TICKET.quoteFailed(diagnosisCopy(failed.kind).headline)
+      ? TICKET.quoteFailed(diagnosisCopy(failed.kind, "read").headline)
       : displayed
         ? displayed.partial ? TICKET.partial(usd(displayed.fillableStakeBase, decimals)) : quoteState.stale || quoteState.pending ? TICKET.requoting : TICKET.liveOdds
         : quoteState.pending ? TICKET.gettingQuote : side && stakeBase > 0n && hasSigner && phase === "trading" ? TICKET.noLiquidity : TICKET.enterAmount;
+
+  // A set-stake fix sets the stake the blocker names (R6 D-230): the minimum, what the balance holds, what the book fills.
+  const fixStakeBase = (): bigint | null =>
+    blocker === "below-min-stake" ? minStakeBase(decimals)
+    : blocker === "over-balance" ? spendBase
+    : (blocker === "over-book" || blocker === "no-liquidity-at-size") && displayed?.partial ? displayed.fillableStakeBase
+    : null;
+  const onFix = (f: BlockerFix) => {
+    if (f.kind !== "set-stake") return;
+    const b = fixStakeBase();
+    if (b !== null && b > 0n) t.setStakeBase(b);
+  };
 
   const place = () => {
     if (!side || !displayed) return;
@@ -169,7 +185,9 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
   return (
     <section aria-label={TICKET.title} className={`tk-ticket ${variant === "drawer" ? "tk-ticket--drawer" : "tk-ticket--rail"}`}>
       {head}
-      {booked || scheduled || pending ? (
+      <TxMorph
+        morphed={showingCard}
+        receipt={showingCard ? (
         <CallCard
           card={{
             asset: market.asset, intervalSec: market.intervalSec, side: booked?.side ?? pending?.side ?? side ?? "up", lineRaw: t.openingRaw, stakeBase: booked?.costBase ?? cardQuote?.maxCostBase ?? 0n, contractsRaw: booked?.contractsRaw ?? cardQuote?.contractsRaw ?? 0n, decimals,
@@ -184,7 +202,8 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
           )
           }
         />
-      ) : (
+        ) : null}
+      >
         <>
           <BetModes mode={betMode} onMode={setBetMode} />
           {betMode === "range" ? <RangeTicketMode market={market} /> : <>
@@ -220,6 +239,7 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
                 signer={signer}
                 onConfirm={signedOut ? () => (side ? session.connectFor(TICKET.signInFor(SIDE_WORD[side], usd(stakeBase, decimals))) : session.connect()) : place}
                 action={listed ? TICKET.scheduled.cta : TICKET.buy}
+                onFix={onFix}
               />
             )}
             <p className="tk-foot">{boosted ? BOOST.footnote : tb.viaBalance ? SESSION.footnote : tapArmed ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
@@ -228,7 +248,7 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
           </>}
           </>}
         </>
-      )}
+      </TxMorph>
     </section>
   );
 }

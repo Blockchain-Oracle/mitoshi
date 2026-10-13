@@ -3,6 +3,7 @@
 
 import { ERROR_BOUNDARY } from "@cwf/core/copy";
 import { useEffect } from "react";
+import { PillButton } from "@/components/kit/PillButton";
 
 interface BoundaryScreenProps {
   error: Error & { digest?: string };
@@ -17,7 +18,8 @@ interface BoundaryScreenProps {
  * The error boundary's face — ported from `reference/yosuku/app/error.tsx`: centered,
  * calm, on-brand, with a retry and a route out in both themes. Layout lives in error.css.
  * The technical disclosure under the actions is ours (additive); the way out is a plain
- * link so a fresh navigation clears whatever state threw.
+ * link so a fresh navigation clears whatever state threw. R6 (D-230, T19): both actions are kit pills (ink Retry, ghost
+ * way out) — one button system across every state.
  */
 export function BoundaryScreen({ error, reset, backHref = "/markets", root = false }: BoundaryScreenProps) {
   useEffect(() => {
@@ -31,12 +33,12 @@ export function BoundaryScreen({ error, reset, backHref = "/markets", root = fal
       <h1 className="boundary-title">{ERROR_BOUNDARY.headline}</h1>
       <p className="boundary-body">{ERROR_BOUNDARY.body}</p>
       <div className="boundary-actions">
-        <button type="button" className="boundary-retry" onClick={() => reset()}>
+        <PillButton tone="ink" size="md" onClick={() => reset()}>
           {ERROR_BOUNDARY.retry}
-        </button>
-        <a href={backHref} className="boundary-out">
+        </PillButton>
+        <PillButton tone="ghost" size="md" render={<a href={backHref} />}>
           {ERROR_BOUNDARY.back}
-        </a>
+        </PillButton>
       </div>
       <details className="boundary-details">
         <summary>{ERROR_BOUNDARY.technical}</summary>

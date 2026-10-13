@@ -20,6 +20,13 @@ export const TX = {
   technical: "Technical details",
   noFees: "No fees to pay",
   chips: { signing: "Signing", submitted: "Sent", confirmed: "Confirmed" },
+  progress: "Progress",
+  /** The CTA's face once confirmed, where no receipt takes its place. */
+  confirmedDone: "Confirmed ✓",
+  /** What an `unknown` write promises under the CTA. */
+  notResent: "Nothing is re-sent.",
+  another: "Place another",
+  transaction: "Transaction",
   typedConfirm: (code: string) => `Type ${code} to confirm`,
   typedMismatch: "That doesn't match yet.",
   keyUsed: {

@@ -155,6 +155,94 @@
   font-weight: var(--text-stamp-hero--font-weight);
 }
 
+/* R6 S14 (D-230): the ladder every CSS font-size now reads. data-sm is the floor for anything read to decide. */
+
+@utility type-data-sm {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-data-sm);
+  line-height: var(--text-data-sm--line-height);
+  font-weight: var(--text-data-sm--font-weight);
+}
+
+@utility type-caption-sm {
+  font-family: var(--font-body);
+  font-size: var(--text-caption-sm);
+  line-height: var(--text-caption-sm--line-height);
+  font-weight: var(--text-caption-sm--font-weight);
+}
+
+@utility type-body-lg {
+  font-family: var(--font-body);
+  font-size: var(--text-body-lg);
+  line-height: var(--text-body-lg--line-height);
+  font-weight: var(--text-body-lg--font-weight);
+}
+
+@utility type-cta {
+  font-family: var(--font-body);
+  font-size: var(--text-cta);
+  line-height: var(--text-cta--line-height);
+  letter-spacing: var(--text-cta--letter-spacing);
+  font-weight: var(--text-cta--font-weight);
+}
+
+@utility type-title-lg {
+  font-family: var(--font-display);
+  font-size: var(--text-title-lg);
+  line-height: var(--text-title-lg--line-height);
+  letter-spacing: var(--text-title-lg--letter-spacing);
+  font-weight: var(--text-title-lg--font-weight);
+}
+
+@utility type-heading {
+  font-family: var(--font-display);
+  font-size: var(--text-heading);
+  line-height: var(--text-heading--line-height);
+  letter-spacing: var(--text-heading--letter-spacing);
+  font-weight: var(--text-heading--font-weight);
+}
+
+@utility type-headline-lg {
+  font-family: var(--font-display);
+  font-size: var(--text-headline-lg);
+  line-height: var(--text-headline-lg--line-height);
+  letter-spacing: var(--text-headline-lg--letter-spacing);
+  font-weight: var(--text-headline-lg--font-weight);
+}
+
+@utility type-display-sm {
+  font-family: var(--font-display);
+  font-size: var(--text-display-sm);
+  line-height: var(--text-display-sm--line-height);
+  letter-spacing: var(--text-display-sm--letter-spacing);
+  font-weight: var(--text-display-sm--font-weight);
+}
+
+@utility type-display-lg {
+  font-family: var(--font-display);
+  font-size: var(--text-display-lg);
+  line-height: var(--text-display-lg--line-height);
+  letter-spacing: var(--text-display-lg--letter-spacing);
+  font-weight: var(--text-display-lg--font-weight);
+}
+
+@utility type-display-xl {
+  font-family: var(--font-display);
+  font-size: var(--text-display-xl);
+  line-height: var(--text-display-xl--line-height);
+  letter-spacing: var(--text-display-xl--letter-spacing);
+  font-weight: var(--text-display-xl--font-weight);
+}
+
+@utility type-display-hero {
+  font-family: var(--font-display);
+  font-size: var(--text-display-hero);
+  line-height: var(--text-display-hero--line-height);
+  letter-spacing: var(--text-display-hero--letter-spacing);
+  font-weight: var(--text-display-hero--font-weight);
+}
+
 /* Glow law: live urgency only, one per composition. */
 @utility glow-live {
   box-shadow: var(--glow-live);

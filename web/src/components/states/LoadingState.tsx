@@ -350,16 +350,18 @@ const SHAPES: Record<LoadingShape, () => ReactNode> = {
   ),
 };
 
-interface LoadingStateProps {
+export interface LoadingStateProps {
   shape?: LoadingShape;
   label?: string;
   className?: string;
+  /** Show only after this long (a fast answer never flashes a skeleton); default 0. */
+  delayMs?: number;
 }
 
 /** Skeleton only where nothing was ever known — never an invented number. */
 export function LoadingState({ shape = "line", label = "Loading", className }: LoadingStateProps) {
   return (
-    <div role="status" aria-busy="true" aria-label={label} className={className ? `flex flex-col gap-3 ${className}` : "flex flex-col gap-3"}>
+    <div role="status" aria-busy="true" aria-label={label} data-loading-shape={shape} className={className ? `flex flex-col gap-3 ${className}` : "flex flex-col gap-3"}>
       {SHAPES[shape]()}
     </div>
   );

@@ -15,6 +15,8 @@
   flex-direction: column;
   gap: 12px;
 }
+/* R6 (D-230): the compose blocks sit inside the morph into the Call card; they keep the column's gap. */
+.tk-ticket > .tx-morph > .tx-morph-from, .tk-ticket > .tx-morph > .tx-morph-to { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .tk-ticket--rail {
   border: 1px solid var(--ticket-border);
   border-radius: var(--ticket-radius);
