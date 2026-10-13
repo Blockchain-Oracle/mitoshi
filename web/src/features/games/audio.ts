@@ -92,24 +92,25 @@ function readVolume(key: string): number {
 
 // ── unlock and the effects ──
 
-/** One-time first-gesture unlock. Mount once, in the games shell; returns an uninstaller. Idempotent. */
+/**
+ * The gesture unlock. Mount once, in the games shell; returns an uninstaller. iOS counts touchend/click/pointerup (not
+ * a touch pointerdown) as the gesture that lets audio start, and suspends the context when the app or tab leaves, so
+ * every gesture nudges it again (round 7: the owner heard no sound on the iPhone; lib/sound/trade.ts does the same).
+ */
+const UNLOCK_EVENTS = ["touchend", "click", "pointerup", "keydown"] as const;
 export function installAudioUnlock(): () => void {
   if (typeof window === "undefined") return () => undefined;
-  const off = () => {
-    window.removeEventListener("pointerdown", onGesture);
-    window.removeEventListener("keydown", onGesture);
+  for (const e of UNLOCK_EVENTS) window.addEventListener(e, unlock, { capture: true, passive: true });
+  return () => {
+    for (const e of UNLOCK_EVENTS) window.removeEventListener(e, unlock, { capture: true });
   };
-  const onGesture = () => {
-    off();
-    unlock();
-  };
-  window.addEventListener("pointerdown", onGesture);
-  window.addEventListener("keydown", onGesture);
-  return off;
 }
 
 function unlock(): void {
-  if (unlocked) return;
+  if (unlocked) {
+    if (ctx && ctx.state !== "running" && ctx.state !== "closed") void ctx.resume().catch(() => undefined);
+    return;
+  }
   unlocked = true;
   try {
     if (typeof AudioContext !== "undefined") {

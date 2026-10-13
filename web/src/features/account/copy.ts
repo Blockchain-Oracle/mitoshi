@@ -98,6 +98,7 @@ export const ACCOUNT_PAGE = {
       { key: "reactions", label: "Trade reactions", hint: "Callouts on the chart" },
       { key: "music", label: "Music" },
     ],
+    faceId: { label: "Face ID to open", hint: "Asks when you come back" },
   },
   region: {
     title: "Your region",

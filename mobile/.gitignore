@@ -23,3 +23,4 @@ expo-env.d.ts
 *.aab
 *.apk
 *.ipa
+/.dev-origin

@@ -21,12 +21,30 @@ const webHost = new URL(id.webOrigin).host;
 const linkHosts = [...new Set([webHost, ...(id.legacyLinkHosts ?? [])])];
 /** Hosts that hold the passkey association: the rpId and the site's host (one name since D-228). */
 const credentialHosts = [...new Set([id.passkeyRpId, webHost])];
+/** Round 7: Face ID guards the optional app lock (src/shell/face-id.ts). */
+const FACE_ID_PERMISSION = "Mitoshi uses Face ID to unlock the app.";
+
+/**
+ * A local simulator build can load a dev server instead (round 7: every phone change is checked in the iOS Simulator):
+ * `MITOSHI_WEB_ORIGIN=http://localhost:3110`, or the same origin in `mobile/.dev-origin` (gitignored; Xcode's build
+ * phases evaluate this config again without the shell's environment). Its host then counts as the app's own (passkeys
+ * need the real rpId, so they stay off there). Store builds (EAS) never set either.
+ */
+const devOrigin = process.env.MITOSHI_WEB_ORIGIN || readDevOrigin();
+function readDevOrigin() {
+  try {
+    return require("node:fs").readFileSync(require("node:path").join(__dirname, ".dev-origin"), "utf8").trim() || null;
+  } catch {
+    return null;
+  }
+}
+const webExtra = devOrigin ? { origin: devOrigin, rpId: new URL(devOrigin).hostname } : { origin: id.webOrigin, rpId: id.passkeyRpId };
 
 module.exports = () => ({
   name: id.displayName,
   slug: id.slug,
   owner: id.owner,
-  version: "1.0.1",
+  version: "1.1.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
   scheme: id.scheme,
@@ -68,6 +86,11 @@ module.exports = () => ({
     ],
   },
   plugins: [
+    // Round 7 (native where the finger touches; as Senryo's app configures them): the audio session that lets the
+    // page's sounds play (no microphone), the Face ID lock and its Keychain flag.
+    ["expo-audio", { microphonePermission: false }],
+    ["expo-local-authentication", { faceIDPermission: FACE_ID_PERMISSION }],
+    ["expo-secure-store", { faceIDPermission: FACE_ID_PERMISSION }],
     [
       "expo-splash-screen",
       {
@@ -79,9 +102,11 @@ module.exports = () => ({
     ],
   ],
   extra: {
-    web: { origin: id.webOrigin, rpId: id.passkeyRpId },
+    web: webExtra,
     ...(id.easProjectId ? { eas: { projectId: id.easProjectId } } : {}),
   },
-  // The content is the web, deployed with the web: no over-the-air bundle updates.
-  updates: { enabled: false },
+  // The content is the web, deployed with the web. Round 7: the shell's own code (the native frame around it) updates
+  // over the air within a runtime version, so a shell fix needs no store build unless a native module changes.
+  runtimeVersion: { policy: "appVersion" },
+  ...(id.easProjectId ? { updates: { url: `https://u.expo.dev/${id.easProjectId}` } } : { updates: { enabled: false } }),
 });

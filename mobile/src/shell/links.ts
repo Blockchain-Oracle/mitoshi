@@ -36,21 +36,27 @@ export function routeOf(url: string, rpId: string): Route {
   const p = parseUrl(url);
   if (!p) return "inside";
   if (p.scheme === "about" || p.scheme === "data" || p.scheme === "blob" || p.scheme === "javascript") return "inside";
-  if (p.scheme === "https" || p.scheme === "http") return isOurHost(p.host, rpId) ? "inside" : "browser";
+  // The guides (docs.<rpId>) are their own site: the in-app browser shows them over the app (round 7), so Back returns
+  // to where the reader was instead of the docs replacing the app with no chrome.
+  if (p.scheme === "https" || p.scheme === "http") return isOurHost(p.host, rpId) && !p.host.startsWith("docs.") ? "inside" : "browser";
   return "system";
 }
 
 /**
  * The first page to open: a universal/App Link (`https://mitoshi.xyz/markets/…`, or the old `https://testnet.mitoshi.xyz/…`)
- * or `mitoshi://markets/…` opens that path on `origin`; anything else opens the site's root.
+ * or `mitoshi://markets/…` opens that path on `origin`; anything else opens Markets — the app's home, never the
+ * marketing page (round 7).
  */
+export const HOME_PATH = "/markets";
+
 export function startUrl(link: string | null, origin: string, rpId: string, scheme: string): string {
+  const home = `${origin.replace(/\/+$/, "")}${HOME_PATH}`;
   const p = link ? parseUrl(link) : null;
-  if (!p) return origin;
+  if (!p) return home;
   const ours = (p.scheme === "https" && isOurHost(p.host, rpId)) || p.scheme === scheme;
-  if (!ours) return origin;
+  if (!ours) return home;
   // mitoshi://markets/BTC carries the first segment where a host would be.
   const path = p.scheme === scheme ? `/${p.host}${p.path}` : p.path;
   const clean = `/${path.replace(/^\/+/, "")}`;
-  return `${origin.replace(/\/+$/, "")}${clean === "/" ? "" : clean}${p.rest}`;
+  return clean === "/" ? `${home}${p.rest}` : `${origin.replace(/\/+$/, "")}${clean}${p.rest}`;
 }

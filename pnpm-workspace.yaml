@@ -113,6 +113,13 @@ catalogs:
     expo-status-bar: ~57.0.1
     expo-system-ui: ~57.0.4
     react-native-safe-area-context: ~5.7.0
+    # Round 7 (native where the finger touches, the owner's TestFlight review; versions as Senryo's SDK 57 app).
+    expo-audio: ~57.0.5
+    expo-haptics: ~57.0.3
+    expo-web-browser: ~57.0.3
+    expo-local-authentication: ~57.0.3
+    expo-secure-store: ~57.0.4
+    expo-updates: ~57.0.25
     # The brand faces for the app's one native screen (offline), as Agari and Owarine load them.
     "@expo-google-fonts/inter": ^0.4.2
     "@expo-google-fonts/jetbrains-mono": ^0.4.1

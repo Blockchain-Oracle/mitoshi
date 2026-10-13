@@ -2,7 +2,8 @@
 // Ported from Owarine ecb7565b:web/src/lib/haptics.ts — Tradash's haptic table (canton-season3 tradash/SPEC-chart.md
 // §6; revamp-parity RV-73). `navigator.vibrate` where it exists; on iPhone and iPad, which have no Vibration API, a
 // hidden native switch is clicked 1–5 times 70 ms apart (iOS 18 plays its switch haptic for each). Gated by the
-// Sound & Vibration setting (`lib/feedback.ts`); silent wherever neither works. Unchanged but for the header.
+// Sound & Vibration setting (`lib/feedback.ts`); silent wherever neither works. Round 7: inside the phone app the
+// shell's Taptic Engine plays it (the `haptic` bridge message).
 export type HapticKind = "tap" | "tick" | "open" | "close" | "move" | "surge" | "mega" | "slump" | "warn";
 
 const PATTERN: Record<HapticKind, number | number[]> = {
@@ -50,6 +51,13 @@ export function setHapticsEnabled(next: boolean): void {
 export function haptic(kind: HapticKind): void {
   if (!enabled || typeof navigator === "undefined") return;
   try {
+    // Inside the phone app the Taptic Engine plays it (round 7, mobile/src/shell/feedback.ts): the switch trick below
+    // doesn't reach the engine from a web view, and Android's vibrator is coarser than its haptics.
+    const shell = (window as unknown as { ReactNativeWebView?: { postMessage(m: string): void } }).ReactNativeWebView;
+    if (shell) {
+      shell.postMessage(JSON.stringify({ type: "haptic", kind }));
+      return;
+    }
     if (typeof navigator.vibrate === "function") {
       navigator.vibrate(PATTERN[kind]);
       return;

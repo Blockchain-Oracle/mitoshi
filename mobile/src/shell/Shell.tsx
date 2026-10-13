@@ -5,25 +5,34 @@
 //     Android pads the system bars and the keyboard natively (its WebView's env() insets aren't dependable);
 //   - the status bar and the root view follow the page's theme (inject.ts `theme`);
 //   - Android's Back walks the page's history, then leaves the app; iOS swipes back from the left edge;
-//   - other sites open in the system browser, other schemes (mail, wallets) in their apps (links.ts);
+//   - other sites (and the guides) open in the in-app browser over the app, other schemes (mail, wallets) in their
+//     apps (links.ts);
+//   - round 7 (the owner's TestFlight review, Senryo's app as the model): the page's sounds play through a playback
+//     audio session, its haptics on the Taptic Engine (feedback.ts), it opens on Markets, and an optional Face ID lock
+//     guards the app (face-id.ts);
 //   - files a page downloads go to the share sheet (save-file.ts);
 //   - an offline screen with Retry that also retries by itself when the connection returns;
 //   - passkeys: iOS through the webcredentials association, Android through the WebView WebAuthn module.
 // Pull-to-refresh is off on purpose: the terminal's chart and level handles, the games' stages and the drawers all
 // take vertical drags, and a refresh gesture over them would reload the page mid-trade.
 import * as Network from "expo-network";
+import * as WebBrowser from "expo-web-browser";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import * as SystemUI from "expo-system-ui";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BackHandler, findNodeHandle, Keyboard, Linking, Platform, StyleSheet, useColorScheme, View } from "react-native";
+import { AppState, BackHandler, findNodeHandle, Keyboard, Linking, Platform, StyleSheet, useColorScheme, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView, type WebViewMessageEvent, type WebViewNavigation } from "react-native-webview";
 import type { ShouldStartLoadRequest, WebViewHttpErrorEvent, WebViewOpenWindowEvent } from "react-native-webview/lib/WebViewTypes";
 import { enableWebViewPasskeys } from "../../modules/webview-webauthn";
 import { RP_ID, SCHEME, USER_AGENT_MARK, WEB_ORIGIN } from "./config";
+import { LOCK } from "./copy";
+import { playHaptic, startAudioSession } from "./feedback";
 import { SHELL_SCRIPT } from "./inject";
-import { isOurHost, parseUrl, routeOf, startUrl } from "./links";
+import { HOME_PATH, isOurHost, parseUrl, routeOf, startUrl } from "./links";
+import { Lock } from "./LockScreen";
+import { authenticate, biometricsReady, lockEnabled, RELOCK_AFTER_MS, setLock } from "./face-id";
 import { parseMessage } from "./messages";
 import { Offline, type OfflineKind } from "./Offline";
 import { GATEWAY, probe } from "./probe";
@@ -35,7 +44,17 @@ const SPLASH_CAP_MS = 8_000;
 /** After the load ends, `ready` normally lands within a frame or two; this is the fallback's wait. */
 const LOAD_END_GRACE_MS = 600;
 
-function openOutside(url: string): void {
+const HOME = `${WEB_ORIGIN}${HOME_PATH}`;
+
+/** Another site (or the guides): the in-app browser (SFSafariViewController / Custom Tabs), over the app; any other scheme to its app. */
+function openOutside(url: string, mode: Mode): void {
+  if (/^https?:/i.test(url)) {
+    const c = palette(mode);
+    WebBrowser.openBrowserAsync(url, { controlsColor: c.accent, toolbarColor: c.ground, dismissButtonStyle: "close", enableBarCollapsing: true }).catch(() => {
+      Linking.openURL(url).catch(() => undefined);
+    });
+    return;
+  }
   Linking.openURL(url).catch(() => undefined);
 }
 
@@ -44,6 +63,8 @@ export function Shell() {
   const insets = useSafeAreaInsets();
   const network = Network.useNetworkState();
   const [mode, setMode] = useState<Mode>(os === "light" ? "light" : "dark");
+  const modeNow = useRef(mode);
+  modeNow.current = mode;
   const [source, setSource] = useState<string | null>(null);
   const [mount, setMount] = useState(0);
   const [failure, setFailure] = useState<OfflineKind | null>(null);
@@ -55,6 +76,8 @@ export function Shell() {
   const lastUrl = useRef<string | null>(null);
   const splashUp = useRef(true);
   const passkeysFor = useRef(-1);
+  const [locked, setLocked] = useState(false);
+  const leftAt = useRef<number | null>(null);
 
   const hideSplash = useCallback(() => {
     if (!splashUp.current) return;
@@ -66,7 +89,9 @@ export function Shell() {
   useEffect(() => {
     Linking.getInitialURL()
       .then((link) => setSource(startUrl(link, WEB_ORIGIN, RP_ID, SCHEME)))
-      .catch(() => setSource(WEB_ORIGIN));
+      .catch(() => setSource(HOME));
+    startAudioSession();
+    lockEnabled().then((on) => on && setLocked(true)).catch(() => undefined);
     const cap = setTimeout(hideSplash, SPLASH_CAP_MS);
     return () => clearTimeout(cap);
   }, [hideSplash]);
@@ -84,6 +109,21 @@ export function Shell() {
     const sub = Linking.addEventListener("url", ({ url }) => go(startUrl(url, WEB_ORIGIN, RP_ID, SCHEME)));
     return () => sub.remove();
   }, [go]);
+
+  // The Face ID lock asks again when the app comes back after a while (face-id.ts RELOCK_AFTER_MS).
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "background") leftAt.current = Date.now();
+      if (state !== "active" || leftAt.current === null) return;
+      const away = Date.now() - leftAt.current;
+      leftAt.current = null;
+      if (away >= RELOCK_AFTER_MS) lockEnabled().then((on) => on && setLocked(true)).catch(() => undefined);
+    });
+    return () => sub.remove();
+  }, []);
+  const unlock = useCallback(() => {
+    authenticate(LOCK.prompt).then((ok) => ok && setLocked(false)).catch(() => undefined);
+  }, []);
 
   // The status bar is drawn by <StatusBar>; the root view (seen behind the keyboard and on rotation) follows too.
   useEffect(() => {
@@ -115,7 +155,7 @@ export function Shell() {
 
   // Android: a killed render process leaves a dead view; a fresh one opens where the reader was.
   const reopen = useCallback(() => {
-    setSource(lastUrl.current ?? WEB_ORIGIN);
+    setSource(lastUrl.current ?? HOME);
     setMount((m) => m + 1);
   }, []);
 
@@ -141,7 +181,7 @@ export function Shell() {
         return;
       }
       setFailure(null);
-      setSource(lastUrl.current ?? source ?? WEB_ORIGIN);
+      setSource(lastUrl.current ?? source ?? HOME);
       setMount((m) => m + 1);
     });
   }, [source]);
@@ -181,14 +221,14 @@ export function Shell() {
     if (req.isTopFrame === false) return true;
     const route = routeOf(req.url, RP_ID);
     if (route === "inside") return true;
-    openOutside(req.url);
+    openOutside(req.url, modeNow.current);
     return false;
   }, []);
 
   const onOpenWindow = useCallback((e: WebViewOpenWindowEvent) => {
     const url = e.nativeEvent.targetUrl;
     if (routeOf(url, RP_ID) === "inside" && parseUrl(url)?.scheme.startsWith("http")) go(url);
-    else openOutside(url);
+    else openOutside(url, modeNow.current);
   }, [go]);
 
   const onMessage = useCallback((e: WebViewMessageEvent) => {
@@ -207,7 +247,19 @@ export function Shell() {
       case "open-external": {
         const url = message.url.startsWith("/") ? `${WEB_ORIGIN}${message.url}` : message.url;
         if (routeOf(url, RP_ID) === "inside") go(url);
-        else openOutside(url);
+        else openOutside(url, modeNow.current);
+        return;
+      }
+      case "haptic":
+        playHaptic(message.kind);
+        return;
+      case "face-id":
+      case "face-id-state": {
+        // The page learns the lock's state as an event (web/src/lib/app-shell.ts `useFaceIdLock`).
+        const state = message.type === "face-id" ? setLock(message.enabled, LOCK.enablePrompt) : lockEnabled();
+        Promise.all([state, biometricsReady()])
+          .then(([on, ready]) => web.current?.injectJavaScript(`window.dispatchEvent(new CustomEvent("cwf-shell",{detail:{faceIdLock:${on},biometrics:${ready}}}));true;`))
+          .catch(() => undefined);
         return;
       }
       case "save-file":
@@ -266,6 +318,8 @@ export function Shell() {
             javaScriptEnabled
             domStorageEnabled
             allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            allowsLinkPreview={false}
             allowsBackForwardNavigationGestures
             contentInsetAdjustmentBehavior="never"
             automaticallyAdjustContentInsets={false}
@@ -274,11 +328,12 @@ export function Shell() {
             pullToRefreshEnabled={false}
             textZoom={100}
             setBuiltInZoomControls={false}
-            webviewDebuggingEnabled={__DEV__}
+            webviewDebuggingEnabled
           />
         </View>
       ) : null}
       {failure ? <Offline kind={failure} mode={mode} retrying={retrying} onRetry={retry} /> : null}
+      {locked ? <Lock mode={mode} onUnlock={unlock} /> : null}
     </View>
   );
 }

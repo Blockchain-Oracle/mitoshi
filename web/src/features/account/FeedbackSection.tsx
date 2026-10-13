@@ -3,6 +3,7 @@
 // FEEDBACK group: toggle rows with labels only, Trade reactions alone with a line under it). The four device settings
 // the shell and the terminal read through `lib/feedback.ts`; turning sounds on plays the tap so the change is heard.
 import { GroupedToggle } from "@/components/kit/GroupedList";
+import { useFaceIdLock } from "@/lib/use-face-id-lock";
 import { setFeedback, tapFeedback, useFeedback, type FeedbackSettings } from "@/lib/feedback";
 import { ACCOUNT_PAGE } from "./copy";
 import "@/components/kit/kit.css";
@@ -11,6 +12,7 @@ const F = ACCOUNT_PAGE.feedback;
 
 export function FeedbackRows() {
   const settings = useFeedback();
+  const faceId = useFaceIdLock();
   return (
     <>
       {F.rows.map((row) => {
@@ -28,6 +30,8 @@ export function FeedbackRows() {
           />
         );
       })}
+      {/* Only inside the phone app, on a phone with Face ID (round 7): the app's own lock, set here. */}
+      {faceId?.available ? <GroupedToggle label={F.faceId.label} sub={F.faceId.hint} checked={faceId.on} onChange={faceId.set} /> : null}
     </>
   );
 }

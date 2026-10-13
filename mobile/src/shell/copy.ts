@@ -6,3 +6,11 @@ export const OFFLINE = {
   retry: "Try again",
   retrying: "Trying…",
 } as const;
+
+/** The Face ID lock (round 7, Senryo's "Continue with Face ID"): the prompt the system shows, and the locked screen. */
+export const LOCK = {
+  title: "Mitoshi is locked",
+  unlock: "Continue with Face ID",
+  prompt: "Unlock Mitoshi",
+  enablePrompt: "Use Face ID to open Mitoshi",
+} as const;

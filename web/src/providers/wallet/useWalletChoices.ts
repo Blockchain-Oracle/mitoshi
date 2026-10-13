@@ -19,6 +19,15 @@ export interface WalletChoices {
   connect(connector: Connector): Promise<ConnectOutcome>;
 }
 
+/**
+ * The name the passkey is saved under (round 7): iOS Passwords and Android's password manager show it beside mitoshi.xyz.
+ * With none, the accounts SDK saved "default"; the date tells two accounts on one phone apart.
+ */
+export function passkeyName(name: string, now = new Date()): string {
+  const given = name.trim();
+  return given || `Mitoshi · ${now.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`;
+}
+
 function outcome(error: unknown): ConnectOutcome {
   const text = error instanceof Error ? `${error.name} ${error.message}` : String(error);
   return { ok: false, aborted: /rejected|NotAllowedError|AbortError|cancel/i.test(text), error };
@@ -55,7 +64,7 @@ export function useWalletChoices(): WalletChoices {
     async (name: string): Promise<ConnectOutcome> => {
       if (!passkey) return { ok: false, aborted: false, error: new Error("passkey connector missing") };
       try {
-        await connectAsync({ connector: passkey, chainId: TEMPO_CHAIN.id, capabilities: { method: "register", ...(name.trim() ? { name: name.trim() } : {}) } } as never);
+        await connectAsync({ connector: passkey, chainId: TEMPO_CHAIN.id, capabilities: { method: "register", name: passkeyName(name) } } as never);
         return { ok: true };
       } catch (error) {
         return outcome(error);
