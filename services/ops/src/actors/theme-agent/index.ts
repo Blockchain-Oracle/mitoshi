@@ -14,7 +14,7 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { erc20Abi, getAddress, parseAbi, type Hex, type PublicClient } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { planRebalance, themeDrift, type DriftMember } from "@cwf/core";
+import { NETWORK_FEE_HEADROOM_USD, planRebalance, themeDrift, type DriftMember } from "@cwf/core";
 import type { ThemeKeyStore } from "@cwf/db";
 import { themeRegistryAbi } from "@cwf/clients/abis/ThemeRegistry";
 import { themeRouterAbi } from "@cwf/clients/abis/ThemeRouter";
@@ -105,7 +105,9 @@ export function themeAgentPass(d: ThemeAgentDeps): () => Promise<PassResult> {
           return { token, balance, priceE18: usable ? price : null, band: { minBps: band.minBps, targetBps: band.targetBps, maxBps: band.maxBps, allowed: band.allowed } };
         }),
       );
-      const cash = await d.client.readContract({ address: PATH_USD_ADDRESS, abi: erc20Abi, functionName: "balanceOf", args: [follower] });
+      // The key's own network fee is paid in pathUSD from the same wallet: that headroom never counts as cash to invest.
+      const balance = await d.client.readContract({ address: PATH_USD_ADDRESS, abi: erc20Abi, functionName: "balanceOf", args: [follower] });
+      const cash = balance > NETWORK_FEE_HEADROOM_USD ? balance - NETWORK_FEE_HEADROOM_USD : 0n;
       const drift = themeDrift(members, cash, f.caps.allocationUsd);
       if (!drift.priced) {
         await say("a member has no usable reference price");
@@ -113,7 +115,7 @@ export function themeAgentPass(d: ThemeAgentDeps): () => Promise<PassResult> {
       }
       const dailyLeftUsd = nowSec >= Number(f.dayStart) + 86_400 ? f.caps.maxDailyUsd : f.caps.maxDailyUsd - f.daySpentUsd;
       const scoped = await themeKeyScopedTargets(d.client, follower, f.keyId);
-      const planned = planRebalance(members, drift, { pathUsd: PATH_USD_ADDRESS, maxTradeUsd: f.caps.maxTradeUsd, maxSlippageBps: Math.min(t.maxSlippageBps, f.caps.maxSlippageBps), dailyLeftUsd }).map((l) => ({ ...l, tokenIn: getAddress(l.tokenIn), tokenOut: getAddress(l.tokenOut) }));
+      const planned = planRebalance(members, drift, { pathUsd: PATH_USD_ADDRESS, maxTradeUsd: f.caps.maxTradeUsd, maxSlippageBps: Math.min(t.maxSlippageBps, f.caps.maxSlippageBps), dailyLeftUsd, creatorFeeBps: t.creatorFeeBps }).map((l) => ({ ...l, tokenIn: getAddress(l.tokenIn), tokenOut: getAddress(l.tokenOut) }));
       const legs = planned.filter((l) => scoped.has(l.tokenIn.toLowerCase()) && scoped.has(l.tokenOut.toLowerCase()));
       if (legs.length === 0) {
         await say(planned.length > 0 ? "waiting for the follow's remaining key scopes" : "in band");

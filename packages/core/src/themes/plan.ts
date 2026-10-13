@@ -48,8 +48,10 @@ export function themeDrift(members: readonly DriftMember[], cashBalance: bigint,
 /**
  * The legs that bring every out-of-band token back to its target: sells first (they fund the buys), then buys while
  * cash lasts, each capped at `maxTradeUsd`, never a buy of a token the band forbids. Nothing when the drift is unpriced.
+ * A sell funds the buys only at its floor (`minAmountOut`, what the router guarantees), and the buys leave room for the
+ * creator's fee the router pulls in pathUSD after the swaps: `(Σ buys + Σ sell floors) × creatorFeeBps / 10⁴` (D-101).
  */
-export function planRebalance(members: readonly DriftMember[], drift: ThemeDrift, opts: { pathUsd: string; maxTradeUsd: bigint; maxSlippageBps: number; dailyLeftUsd?: bigint }): PlannedLeg[] {
+export function planRebalance(members: readonly DriftMember[], drift: ThemeDrift, opts: { pathUsd: string; maxTradeUsd: bigint; maxSlippageBps: number; dailyLeftUsd?: bigint; creatorFeeBps?: number }): PlannedLeg[] {
   if (!drift.priced || drift.totalUsd === 0n) return [];
   const floor = (v: bigint) => (v * (BPS - BigInt(opts.maxSlippageBps))) / BPS;
   // Each leg within the per-trade cap and, together, within what the follow's day has left (the router's DailyCap).
@@ -64,7 +66,7 @@ export function planRebalance(members: readonly DriftMember[], drift: ThemeDrift
   };
   const sells: PlannedLeg[] = [];
   const buys: PlannedLeg[] = [];
-  let cash = drift.cashUsd;
+  let sellFloors = 0n;
   members.forEach((m, i) => {
     const row = drift.rows[i]!;
     const targetUsd = (drift.totalUsd * BigInt(m.band.targetBps)) / BPS;
@@ -74,16 +76,20 @@ export function planRebalance(members: readonly DriftMember[], drift: ThemeDrift
       const coin = (usd * E18) / price;
       if (coin > 0n) {
         sells.push({ tokenIn: m.token, tokenOut: opts.pathUsd, amountIn: coin, minAmountOut: floor(usd) });
-        cash += usd;
+        sellFloors += floor(usd);
       }
     }
   });
+  // Σ buys × (1 + f) + Σ sell floors × f ≤ cash + Σ sell floors, so the router's fee never finds the wallet short.
+  const feeBps = BigInt(opts.creatorFeeBps ?? 0);
+  const budget = ((drift.cashUsd + sellFloors) * BPS - sellFloors * feeBps) / (BPS + feeBps);
+  let cash = budget > 0n ? budget : 0n;
   members.forEach((m, i) => {
     const row = drift.rows[i]!;
     if (row.out !== "under" || !m.band.allowed) return;
     const targetUsd = (drift.totalUsd * BigInt(m.band.targetBps)) / BPS;
-    let usd = cap(targetUsd - row.valueUsd);
-    if (usd > cash) usd = cash;
+    const want = targetUsd - row.valueUsd;
+    const usd = cap(want > cash ? cash : want);
     if (usd <= 0n) return;
     buys.push({ tokenIn: opts.pathUsd, tokenOut: m.token, amountIn: usd, minAmountOut: floor((usd * E18) / m.priceE18!) });
     cash -= usd;

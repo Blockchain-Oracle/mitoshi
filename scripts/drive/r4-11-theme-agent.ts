@@ -60,6 +60,6 @@ const drift = themeDrift(members, cash, f.caps.allocationUsd);
 console.log(`drift: total ${drift.totalUsd} cash ${drift.cashUsd} priced ${drift.priced} · ${drift.rows.map((x) => `${x.token.slice(0, 10)} ${x.weightBps}bps ${x.out ?? "in"}`).join(", ")}`);
 const nowSec = Math.floor(Date.now() / 1000);
 const dailyLeftUsd = nowSec >= Number(f.dayStart) + 86_400 ? f.caps.maxDailyUsd : f.caps.maxDailyUsd - f.daySpentUsd;
-const legs = planRebalance(members, drift, { pathUsd: PATH_USD_ADDRESS, maxTradeUsd: f.caps.maxTradeUsd, maxSlippageBps: Math.min(t.maxSlippageBps, f.caps.maxSlippageBps), dailyLeftUsd });
+const legs = planRebalance(members, drift, { pathUsd: PATH_USD_ADDRESS, maxTradeUsd: f.caps.maxTradeUsd, maxSlippageBps: Math.min(t.maxSlippageBps, f.caps.maxSlippageBps), dailyLeftUsd, creatorFeeBps: t.creatorFeeBps });
 console.log(`plan: ${legs.length ? legs.map((l) => `${l.tokenIn.slice(0, 10)}→${l.tokenOut.slice(0, 10)} in ${l.amountIn} min ${l.minAmountOut}`).join("; ") : "none"}`);
 process.exit(0);

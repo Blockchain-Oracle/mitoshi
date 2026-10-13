@@ -35,6 +35,24 @@ describe("theme drift and plan (S16a, R4-11)", () => {
     expect(legs.map((l) => l.amountIn)).toEqual([USD(20), USD(20), USD(10)]);
   });
 
+  it("the buys leave the creator's fee in the wallet, and a sell funds them only at its floor", () => {
+    const band = { minBps: 9_000, targetBps: 10_000, maxBps: 10_000, allowed: true };
+    const m: DriftMember[] = [{ token: "0xA", balance: 0n, priceE18: P(10), band }];
+    const [buy] = planRebalance(m, themeDrift(m, USD(10), USD(10)), { pathUsd: PATH, maxTradeUsd: USD(100), maxSlippageBps: 100, creatorFeeBps: 25 });
+    expect(buy!.amountIn).toBe(9_975_062n); // 10 / 1.0025, floored
+    expect(buy!.amountIn + (buy!.amountIn * 25n) / 10_000n).toBeLessThanOrEqual(USD(10));
+    const half = { minBps: 4_000, targetBps: 5_000, maxBps: 6_000, allowed: true };
+    const two: DriftMember[] = [
+      { token: "0xA", balance: 0n, priceE18: P(10), band: half },
+      { token: "0xB", balance: 10_000_000n, priceE18: P(10), band: half }, // $100, all of it
+    ];
+    const legs = planRebalance(two, themeDrift(two, 0n, USD(100)), { pathUsd: PATH, maxTradeUsd: USD(100), maxSlippageBps: 100, creatorFeeBps: 25 });
+    // Sells $50 with a $49.50 floor; the buy is what that floor pays after the fee on both legs.
+    expect(legs[0]!.minAmountOut).toBe(49_500_000n);
+    expect(legs[1]!.amountIn).toBe(((49_500_000n * 10_000n - 49_500_000n * 25n) / 10_025n));
+    expect(legs[1]!.amountIn + ((legs[1]!.amountIn + 49_500_000n) * 25n) / 10_000n).toBeLessThanOrEqual(49_500_000n);
+  });
+
   it("nothing is planned while a member has no reference price", () => {
     const band = { minBps: 0, targetBps: 10_000, maxBps: 10_000, allowed: true };
     const m: DriftMember[] = [{ token: "0xA", balance: 0n, priceE18: null, band }];
