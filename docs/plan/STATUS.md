@@ -1,5 +1,12 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
+**2026-10-13, round 7 (D-232): the phone app feels native.** App mode on the web (opens on Markets or the new
+`/welcome`; Senryo's dock with the Trade seal; no web chrome inside the app), native shell 1.1.0 (sound through a
+playback audio session, Taptic haptics, in-app browser, Face ID lock, OTA) on TestFlight (build 8) and Play internal,
+passkey naming and errors, Reduce as pick-preview-hold, Sensei as a phone sheet, the browser's `/api/rpc`. Round 6 is
+merged onto the trunk. Next: the money (Portfolio/Earn/Launch) and themes-as-baskets packages (agents in worktrees),
+the games/markets/shell revamp specs, the seven small budget overages, Codex's QA findings when they land.
+
 **2026-10-13, D-231 (owner): the bridge is removed.** The Robinhood ↔ Base Sepolia ↔ Tempo bridge, `/bridge`,
 `/reserves` (Backing), their API routes, the side-chain wallet, the stock sync and the ops actors bridge-watch,
 reserve-watch and stock-sync leave the product (branch `r6/r6-no-bridge`); old `/bridge` and `/reserves` links 308 to

@@ -2174,6 +2174,35 @@ faucet claims, test ETH and the LayerZero pathway request are closed as not need
 **Why:** a feature that can't run end to end is removed, not promised; the stocks pillar that is real today is the
 Windows.
 
+### D-232 — round 7: the phone app feels native — hybrid shell, app mode, a Senryo-style welcome (owner, 2026-10-13)
+
+The owner reviewed TestFlight 1.0.1: onboarding "sucks", Home went to the marketing page, the passkey showed a Google
+prompt, no sound played, "Skip to content" sat under the Dynamic Island, themes/loading/Portfolio/Reduce/Sensei felt
+like a web page; the terminal and Markets were good. Senryo (metropolis/apps/mobile, fully native) is the model. He
+turned ultracode off (token budget) and asked for a plan first (`~/.claude/plans/resilient-seeking-kernighan.md`).
+
+1. **Hybrid, native where the finger touches** — not a native rewrite (a Skia chart, the trade flow out of Next.js and
+   native auth would take weeks): the web screens stay one codebase for iOS, Android and the web; the app around them is
+   native. The owner can still choose a full native app later.
+2. **App mode on the web** (`lib/app-shell.ts`): `<html data-shell="app">` set before paint from the `CWFShell/` user
+   agent (pages stay static); the proxy sends the app's `/` to Markets and a first-time app user (no `cwf_welcomed`
+   cookie, never signed in) to `/welcome`; the dock is Markets · Portfolio · [Trade seal] · Games · More; no web splash,
+   tap flash, long-press callout or skip link under the island.
+3. **Native shell 1.1.0** (mobile/src/shell): a playback audio session (the silent switch had muted every Web Audio cue),
+   Taptic haptics over the bridge, the in-app browser for docs and other sites, an optional Face ID lock (Settings),
+   expo-updates on runtime 1.1.0, start on Markets. Built locally and checked in the iOS Simulator; TestFlight build 8 and
+   Play internal 1.1.0 (7).
+4. **The welcome** (`features/welcome`): a five-scene story over Create account (the passkey ceremony on that tap via
+   new wallet-shell actions, the runtime preloaded) / I have an account / Look around, then Face ID to open.
+5. **Passkeys**: saved as "Mitoshi · <date>" (was "default"); failures name what happened in the phone sheet, no raw box.
+   A Google prompt instead of Face ID is the phone's passkey-provider setting, which no app can override.
+6. **Reduce** is pick → preview ("You get ≈ $X · $Y keeps riding") → hold; **Sensei** renders in a body portal (it was
+   clipped half off-screen by the stage) and is a bottom sheet on phones; **/api/rpc** proxies a page's reads and sends to
+   the private RPC (public behind it).
+7. Round 6 merged first (docs-download, no-bridge, recount, liveness, states-kit, agents) with build/budget repairs: a
+   class-only `Pill` keeps Base UI out of every first load and page skeletons are imported where drawn. Seven routes stay
+   0.4–8 KB over 250 KB (/trade, /u, two arcade games, /pitch site JS, Range/Moonshot CSS) — open.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
