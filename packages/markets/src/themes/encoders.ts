@@ -3,8 +3,11 @@
  * - `theme-publish`: `ThemeRegistry.publish(params)` with `specHash = keccak256(JCS spec)` and the spec as a `data:` URI —
  *   self-paid (a creator's storage-heavy write is never sponsored);
  * - `theme-follow`: `[AccountKeychain.authorizeKey(agent key, scoped), ThemeRouter.follow]` in one root transaction
- *   (D-100), sponsored as the policy's `follow` shape (≤ 5 tokens; more need the split shape);
- * - `theme-update-caps`, `theme-unfollow`, `theme-claim-fees`: one router call each, sponsored.
+ *   (D-100), sponsored as the policy's `follow` shape; past five tokens the key carries every limit but only the first
+ *   token scopes that fit the follow cap (`splitFollowTokens`), and `theme-key-scopes` adds the rest:
+ *   `AccountKeychain.setAllowedCalls(key, ≤ 5 approve(router) scopes)`, sponsored as `scopeChunk` (R4-11);
+ * - `theme-update-caps`, `theme-unfollow`, `theme-claim-fees`: one router call each, sponsored;
+ * - `theme-set-agent`: the creator's `ThemeRegistry.setAgent(themeId, ERC-8004 agent id)`, self-paid.
  */
 import type { TxIntent } from "@cwf/core";
 import { diagnosis, specPayload, type ThemeCaps, type ThemeIntent } from "@cwf/core";
@@ -13,7 +16,7 @@ import { themeRouterAbi } from "@cwf/clients/abis/ThemeRouter";
 import { encodeFunctionData, getAddress, keccak256, type Address } from "viem";
 import { deploymentOf } from "../deployments";
 import type { EncodeContext, EncodeResult } from "../submitter/encoders";
-import { themeKeyAuthorizeCall } from "./keyAuth";
+import { SCOPE_CHUNK, splitFollowTokens, themeKeyAuthorizeCall, themeKeyScopes, themeKeySetAllowedCallsChunks } from "./keyAuth";
 import { buildRebalanceCalls, decisionIdOf } from "./rebalance";
 
 const isTheme = (intent: TxIntent): intent is ThemeIntent => intent.kind.startsWith("theme-");
@@ -61,6 +64,10 @@ export function summarizeTheme(intent: ThemeIntent): string {
       return `unfollow theme #${intent.themeId}`;
     case "theme-claim-fees":
       return "claim your theme creator fees";
+    case "theme-key-scopes":
+      return `let theme #${intent.themeId}'s agent trade ${intent.tokens.length} more stock${intent.tokens.length === 1 ? "" : "s"}`;
+    case "theme-set-agent":
+      return `name agent #${intent.agentId} on theme #${intent.themeId}`;
     case "theme-sell-all":
       return `sell every holding of theme #${intent.themeId} to pathUSD`;
   }
@@ -78,10 +85,19 @@ export function encodeThemeIntent(intent: TxIntent, ctx: EncodeContext): EncodeR
       case "theme-publish":
         return { ok: true, value: { area: "themes", calls: [{ to: v.registry, data: encodeFunctionData({ abi: themeRegistryAbi, functionName: "publish", args: [publishParams(intent)] }) }], sponsored: false, summary } };
       case "theme-follow": {
-        if (intent.tokens.length > 5) return { ok: false, diagnosis: diagnosis("contract-revert", "a theme over five stocks needs the split key authorization") };
-        const auth = themeKeyAuthorizeCall({ keyId: intent.keyId, router: v.router, tokens: intent.tokens, expirySec: intent.caps.expirySec, pathUsdDailyLimit: intent.pathUsdDailyLimit, tokenDailyLimits: intent.tokenDailyLimits });
+        const params = { keyId: intent.keyId, router: v.router, tokens: intent.tokens, expirySec: intent.caps.expirySec, pathUsdDailyLimit: intent.pathUsdDailyLimit, tokenDailyLimits: intent.tokenDailyLimits };
+        // Every daily limit in the follow tx; past five tokens only the first scopes (the rest: theme-key-scopes).
+        const scopes = themeKeyScopes({ router: v.router, tokens: splitFollowTokens(intent.tokens).first });
+        const auth = themeKeyAuthorizeCall(params, scopes);
         return { ok: true, value: { area: "themes", calls: [auth, router("follow", [intent.themeId, intent.version, capsArg(intent.caps), getAddress(intent.keyId)])], sponsored: true, summary } };
       }
+      case "theme-key-scopes": {
+        if (intent.tokens.length === 0 || intent.tokens.length > SCOPE_CHUNK) return { ok: false, diagnosis: diagnosis("contract-revert", `a scope chunk carries 1–${SCOPE_CHUNK} stocks`) };
+        const [chunk] = themeKeySetAllowedCallsChunks(intent.keyId, themeKeyScopes({ router: v.router, tokens: intent.tokens }).slice(2));
+        return { ok: true, value: { area: "themes", calls: [chunk!], sponsored: true, summary } };
+      }
+      case "theme-set-agent":
+        return { ok: true, value: { area: "themes", calls: [{ to: v.registry, data: encodeFunctionData({ abi: themeRegistryAbi, functionName: "setAgent", args: [intent.themeId, intent.agentId] }) }], sponsored: false, summary } };
       case "theme-update-caps":
         return { ok: true, value: { area: "themes", calls: [router("updateCaps", [intent.themeId, capsArg(intent.caps)])], sponsored: true, summary } };
       case "theme-unfollow":

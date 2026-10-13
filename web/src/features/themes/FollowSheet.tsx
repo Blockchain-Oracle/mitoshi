@@ -6,9 +6,11 @@
 // key itself never leaves ops), its daily limits from core's plan at each member's reference price. Unfollow stops
 // the agent after a 5 s Undo (the holdings stay in the wallet; `theme-unfollow`, sponsored); "Sell everything" is its
 // own action — the follower's root rebalance of every holding into pathUSD at the reference less the theme's slippage.
+// Past five stocks the follow is split (D-100): the follow carries every limit and the first scopes, then one
+// `theme-key-scopes` signature per ≤ 5 more stocks; a follow that stopped part-way offers to finish from the key's scopes.
 import { pathUsdDailyLimit, parseDecimalToBaseUnits, tokenDailyLimit, type Address } from "@cwf/core";
-import type { ThemeView } from "@cwf/markets/themes";
-import { invalidateThemes, useThemeHoldings } from "@cwf/markets/react";
+import { SCOPE_CHUNK, splitFollowTokens, type ThemeView } from "@cwf/markets/themes";
+import { invalidateThemes, useThemeHoldings, useThemeUnscoped } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { PillButton, SlideOver, SlideOverContent } from "@/components/kit";
@@ -65,6 +67,24 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
   const name = theme.spec?.name ?? `#${theme.themeId}`;
 
   const holdings = useThemeHoldings(session.address, theme.themeId);
+  const unscopedRead = useThemeUnscoped(session.address, following ? theme.themeId : null);
+  const unscoped = unscopedRead?.ok ? unscopedRead.value : null;
+  const tokens = theme.members.map((m) => m.token);
+  const signatures = 1 + splitFollowTokens(tokens).chunks.length;
+  /** The split follow's later chunks, one signature each; stops at the first that doesn't confirm. */
+  const scopeChunks = async (keyId: Address, chunks: Address[][]) => {
+    for (const chunk of chunks) {
+      const o = await tx.run({ kind: "theme-key-scopes", themeId: theme.themeId, keyId, tokens: chunk });
+      if (o?.status !== "confirmed") return;
+    }
+    await invalidateThemes(queryClient);
+  };
+  const finish = () => {
+    if (!unscoped || unscoped.tokens.length === 0) return;
+    const rest: Address[][] = [];
+    for (let i = 0; i < unscoped.tokens.length; i += SCOPE_CHUNK) rest.push(unscoped.tokens.slice(i, i + SCOPE_CHUNK));
+    void scopeChunks(unscoped.keyId, rest);
+  };
   const unfollow = () => {
     const timer = setTimeout(() => void tx.run({ kind: "theme-unfollow", themeId: theme.themeId }).then(async (o) => { if (o?.status === "confirmed") await invalidateThemes(queryClient); }), UNDO_MS);
     notify.item({ id: "theme-unfollow", title: F.unfollowing(UNDO_MS / 1000), timeout: UNDO_MS, action: { label: F.undo, onClick: () => (clearTimeout(timer), notify.item({ id: "theme-unfollow", title: F.undone })) } });
@@ -90,14 +110,17 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
     if (!key.keyId) return setWhy(key.message);
     const caps = { expirySec: Math.floor(Date.now() / 1000) + EXPIRY_SEC, allocationUsd: usd(allocation), maxTradeUsd: usd(perTrade), maxDailyUsd: usd(perDay), maxSlippageBps: theme.maxSlippageBps, maxFeeBps: theme.creatorFeeBps, minIntervalSec: theme.minIntervalSec };
     const outcome = await tx.run({
-      kind: "theme-follow", themeId: theme.themeId, version: theme.version, caps, keyId: key.keyId, tokens: theme.members.map((m) => m.token),
+      kind: "theme-follow", themeId: theme.themeId, version: theme.version, caps, keyId: key.keyId, tokens,
       tokenDailyLimits: theme.members.map((m) => tokenDailyLimit(caps.maxDailyUsd, m.refPriceE18)), pathUsdDailyLimit: pathUsdDailyLimit(caps.maxDailyUsd, theme.creatorFeeBps),
     });
-    if (outcome?.status === "confirmed") await invalidateThemes(queryClient);
+    if (outcome?.status !== "confirmed") return;
+    await invalidateThemes(queryClient);
+    await scopeChunks(key.keyId, splitFollowTokens(tokens).chunks);
   };
   const confirm = () => (session.address ? (following ? unfollow() : void follow()) : session.connectFor(F.signIn));
   const capsBlocker = usd(allocation) <= 0n || usd(perTrade) <= 0n || usd(perDay) < usd(perTrade) ? F.capsBad : null;
-  const blocker = !session.address || following ? null : theme.members.length > 5 ? F.tooMany : phase === "key" ? F.preparing : capsBlocker;
+  const blocker = !session.address || following ? null : phase === "key" ? F.preparing : capsBlocker;
+  const busy = tx.state.kind === "signing" || tx.state.kind === "submitted";
 
   return (
     <SlideOver open={open} onOpenChange={onOpenChange} urlKey="follow">
@@ -105,7 +128,10 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
         <div className="th-follow">
           <p className="type-body text-ink">{following ? F.unfollowLine : F.line}</p>
           {following ? (
-            <PillButton tone="ghost" block disabled={sellLegs.length === 0 || tx.state.kind === "signing" || tx.state.kind === "submitted"} onClick={() => void sellAll()}>{sellLegs.length === 0 ? F.nothingToSell : F.sellAll}</PillButton>
+            <>
+              {unscoped && unscoped.tokens.length > 0 ? <PillButton tone="accent" block disabled={busy} onClick={finish}>{F.finish(unscoped.tokens.length)}</PillButton> : null}
+              <PillButton tone="ghost" block disabled={sellLegs.length === 0 || busy} onClick={() => void sellAll()}>{sellLegs.length === 0 ? F.nothingToSell : F.sellAll}</PillButton>
+            </>
           ) : (
             <>
               <Field label={F.allocation} value={allocation} onChange={setAllocation} />
@@ -116,6 +142,7 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
                   <Field label={F.perDay} value={perDay} onChange={setPerDay} />
                 </div>
               ) : null}
+              {signatures > 1 ? <p className="type-caption text-ink-muted">{F.split(signatures)}</p> : null}
               <details className="th-signing">
                 <summary>{F.signing}</summary>
                 <p>{F.signingBody}</p>

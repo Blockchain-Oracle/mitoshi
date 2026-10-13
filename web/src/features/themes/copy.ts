@@ -56,7 +56,8 @@ export const THEMES = {
     signingBody: "One key for this theme's agent: it may only rebalance through the theme router and approve it, within your daily limits. Never transfer.",
     agentPending: "The theme agent didn't answer. Try again.",
     preparing: "Preparing the agent's key…",
-    tooMany: "Over five stocks needs two signatures",
+    split: (n: number) => `Over five stocks: ${n} signatures`,
+    finish: (n: number) => `Let the agent trade ${n} more`,
     capsBad: "Set an allocation and a daily cap at least the per-trade cap",
     following: "Following",
     unfollow: "Unfollow",
@@ -71,7 +72,7 @@ export const THEMES = {
   studio: {
     title: "Create a theme",
     steps: { stocks: "Stocks", envelope: "Envelope", name: "Name and fee", publish: "Publish" },
-    pick: "Pick 1–5 stocks",
+    pick: "Pick 1–16 stocks",
     weight: (sym: string) => `${sym} weight`,
     cash: (pct: string) => `Cash ${pct}`,
     over: "Weights are over 100%",

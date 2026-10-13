@@ -5,7 +5,7 @@
  */
 import type { Address, Reading } from "@cwf/core";
 import type { QueryClient } from "@tanstack/react-query";
-import { getFollow, getLatestRebalanceFor, getTheme, getThemeActivity, getThemeHoldings, listEligibleMirrors, listThemes, type ThemeActivity, type ThemeView } from "../themes/reads";
+import { getFollow, getLatestRebalanceFor, getTheme, getThemeActivity, getThemeHoldings, getUnscopedTokens, listEligibleMirrors, listThemes, type ThemeActivity, type ThemeView } from "../themes/reads";
 import { useReadingQuery } from "./useReadingQuery";
 
 const LIST_POLL_MS = 30_000;
@@ -18,6 +18,7 @@ export const themeKeys = {
   activity: (id: bigint | null) => ["cwf", "themes", "activity", id?.toString() ?? null] as const,
   holdings: (who: string | null, id: bigint | null) => ["cwf", "themes", "holdings", who?.toLowerCase() ?? null, id?.toString() ?? null] as const,
   follow: (who: string | null, id: bigint | null) => ["cwf", "themes", "follow", who?.toLowerCase() ?? null, id?.toString() ?? null] as const,
+  unscoped: (who: string | null, id: bigint | null) => ["cwf", "themes", "unscoped", who?.toLowerCase() ?? null, id?.toString() ?? null] as const,
 };
 
 export async function invalidateThemes(queryClient: QueryClient): Promise<void> {
@@ -46,6 +47,11 @@ export function useThemeFollow(who: Address | null, id: bigint | null) {
 
 export function useThemeHoldings(who: Address | null, id: bigint | null) {
   return useReadingQuery(themeKeys.holdings(who, id), () => getThemeHoldings(who!, id!), { enabled: who !== null && id !== null, pollMs: LIST_POLL_MS });
+}
+
+/** A live split follow's tokens still waiting for their key scope (null: not following). */
+export function useThemeUnscoped(who: Address | null, id: bigint | null) {
+  return useReadingQuery(themeKeys.unscoped(who, id), () => getUnscopedTokens(who!, id!), { enabled: who !== null && id !== null, pollMs: LIST_POLL_MS });
 }
 
 /** The follower's latest theme rebalance (the reel's card); polled slowly, an event walk. */

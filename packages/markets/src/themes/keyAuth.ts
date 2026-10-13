@@ -94,6 +94,31 @@ export function themeKeySetAllowedCallsChunks(keyId: Address, scopes: CallScope[
   return out;
 }
 
+/**
+ * Gas, measured on Moderato in spike X4 (acceptance/S16.md C, D; D-100): ≈ 0.5M per daily limit, ≈ 2.03M per call scope,
+ * ≈ 0.93M for `follow`. A split follow's first transaction carries every limit, the router and pathUSD scopes and as
+ * many token scopes as keep it under FOLLOW_TX_GAS (the relay's follow cap is 22M); the rest go in chunks of ≤ 5.
+ */
+export const LIMIT_GAS = 500_000;
+export const SCOPE_GAS = 2_030_000;
+export const FOLLOW_TX_GAS = 20_000_000;
+const FOLLOW_BASE_GAS = 1_300_000;
+
+/** How many theme-token scopes ride in the follow transaction for a theme of `tokenCount` tokens (all of them ≤ 5). */
+export function followTxTokenScopes(tokenCount: number): number {
+  if (tokenCount <= SCOPE_CHUNK) return tokenCount;
+  const fixed = FOLLOW_BASE_GAS + LIMIT_GAS * (tokenCount + 1) + SCOPE_GAS * 2;
+  return Math.max(0, Math.min(SCOPE_CHUNK, Math.floor((FOLLOW_TX_GAS - fixed) / SCOPE_GAS)));
+}
+
+/** The split: theme tokens scoped in the follow tx, then each later `setAllowedCalls` chunk's tokens (≤ 5 each). */
+export function splitFollowTokens<T>(tokens: readonly T[]): { first: T[]; chunks: T[][] } {
+  const k = followTxTokenScopes(tokens.length);
+  const chunks: T[][] = [];
+  for (let i = k; i < tokens.length; i += SCOPE_CHUNK) chunks.push(tokens.slice(i, i + SCOPE_CHUNK));
+  return { first: tokens.slice(0, k), chunks };
+}
+
 /** The same restrictions in viem's `signKeyAuthorization` shape (flat scopes, `limit` field). */
 export function themeKeyAuthorization(p: ThemeKeyParams) {
   const expiry = p.expirySec; // viem's field name

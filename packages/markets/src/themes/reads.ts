@@ -11,6 +11,7 @@ import { themeRegistryAbi } from "@cwf/clients/abis/ThemeRegistry";
 import { themeRouterAbi } from "@cwf/clients/abis/ThemeRouter";
 import { specFromUri, type Reading, type ThemeSpec } from "@cwf/core";
 import { erc20Abi, getAddress, type Address, type Hex } from "viem";
+import { Abis, Addresses } from "viem/tempo";
 import { getLogClient, getPublicClient } from "../runtime/read-runtime";
 import { withReading } from "../runtime/reading";
 import { themesVenueOf } from "./encoders";
@@ -185,6 +186,25 @@ export async function getFollow(follower: Address, themeId: bigint) {
     const { client, v } = await venue();
     if (!v) return null;
     return client.readContract({ address: v.router, abi: themeRouterAbi, functionName: "followOf", args: [follower, themeId] });
+  });
+}
+
+/**
+ * A live follow's theme tokens its agent key may not yet approve (a split follow that stopped before its last
+ * `setAllowedCalls` chunk, D-100): the theme's tokens less the key's scopes (`AccountKeychain.getAllowedCalls`).
+ */
+export async function getUnscopedTokens(follower: Address, themeId: bigint): Promise<Reading<{ keyId: Address; tokens: Address[] } | null>> {
+  return withReading(`themeUnscoped:${follower.toLowerCase()}:${themeId}`, async () => {
+    const { client, v } = await venue();
+    if (!v) return null;
+    const f = await client.readContract({ address: v.router, abi: themeRouterAbi, functionName: "followOf", args: [follower, themeId] });
+    if (!f.active) return null;
+    const [tokens, [, scopes]] = await Promise.all([
+      client.readContract({ address: v.registry, abi: themeRegistryAbi, functionName: "tokensOf", args: [themeId, f.version] }),
+      client.readContract({ address: Addresses.accountKeychain, abi: Abis.accountKeychain, functionName: "getAllowedCalls", args: [follower, f.keyId] }),
+    ]);
+    const scoped = new Set(scopes.map((s) => s.target.toLowerCase()));
+    return { keyId: getAddress(f.keyId), tokens: tokens.filter((t) => !scoped.has(t.toLowerCase())).map((t) => getAddress(t)) };
   });
 }
 

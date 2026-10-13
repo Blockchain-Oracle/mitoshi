@@ -12,8 +12,15 @@ export type ThemeIntent =
   | ThemeSellAllIntent
   /** A new theme: the spec (its canonical JSON travels as the `specURI` data URI) and one band per mirror token. */
   | { kind: "theme-publish"; spec: ThemeSpec; tokens: Address[] }
-  /** Follow with the agent's key (authorised in the same root transaction, D-100). */
+  /**
+   * Follow with the agent's key (authorised in the same root transaction, D-100). Past five tokens the key's first
+   * scopes ride here and the rest follow as `theme-key-scopes` chunks.
+   */
   | { kind: "theme-follow"; themeId: bigint; version: number; caps: ThemeCaps; keyId: Address; tokenDailyLimits: bigint[]; pathUsdDailyLimit: bigint; tokens: Address[] }
+  /** One later chunk of a split follow: `approve(router)` scopes for ≤ 5 more theme tokens on the follow's key. */
+  | { kind: "theme-key-scopes"; themeId: bigint; keyId: Address; tokens: Address[] }
+  /** The creator names the theme's ERC-8004 agent (`ThemeRegistry.setAgent`), self-paid. */
+  | { kind: "theme-set-agent"; themeId: bigint; agentId: bigint }
   | { kind: "theme-update-caps"; themeId: bigint; caps: ThemeCaps }
   /** Stops the agent; holdings stay in the wallet. */
   | { kind: "theme-unfollow"; themeId: bigint }

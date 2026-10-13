@@ -20,7 +20,8 @@ import { pct, sliceColor, usd18 } from "./format";
 import "@/styles/themes.css";
 
 const S = THEMES.studio;
-const MAX_STOCKS = 5;
+// ThemeRegistry's MAX_TOKENS; past five a follow is split into one signature per five more stocks (D-100).
+const MAX_STOCKS = 16;
 const idleOr = (state: TxState, blocker: string | null): TxState => (blocker ? { kind: "blocked", reason: blocker } : state);
 
 export function ThemeStudio() {

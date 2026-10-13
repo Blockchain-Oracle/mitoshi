@@ -6,8 +6,8 @@
  * - **follow** (D-100): one root-signed tx `[AccountKeychain.authorizeKey, ThemeRouter.follow]` — ≈ 17.5M for a
  *   5-token key + 0.93M for `follow` (X4; fork of the deployed router); `maxGas` 22M. `authorizeKey` is sponsored only inside this shape.
  * - **scopeChunk** (D-100 split, themes > 5 tokens): `[AccountKeychain.setAllowedCalls]` ≈ 10.2M per 5 targets; the
- *   relay sponsors it only when the sender's `followOf(sender, themeId).keyId` equals the chunk's key (it reads the
- *   router before signing).
+ *   relay sponsors it only when every scope is `approve(router)` on a TIP-20 and one of the sender's live follows on
+ *   that router names the chunk's key and lists every chunk token (`followOf`, `bandOf`, read before signing; R4-11).
  * - **rebalance** (B.4.4): the agent's key-signed `[approve(router) × k, ThemeRouter.rebalance]`, ≤ 8 calls (the
  *   relay cap: pathUSD + up to 6 sold tokens + rebalance); approvals are only to the router (the key's scope already
  *   binds that). Sponsored so the agent's fees neither drain the follower nor eat the key's pathUSD limit (X4 E).
@@ -19,12 +19,13 @@
  * - Geofence: `follow` is the themes entry (stocks posture, Q-008); exits stay open everywhere.
  */
 import type { Abi, Address, Hex } from "viem";
-import { getAddress, toFunctionSelector } from "viem";
+import { decodeFunctionData, getAddress, toFunctionSelector } from "viem";
 import { Abis, Addresses } from "viem/tempo";
 import { relayTargets } from "@cwf/clients";
 import { themeRegistryAbi } from "@cwf/clients/abis/ThemeRegistry";
 import { themeRouterAbi } from "@cwf/clients/abis/ThemeRouter";
-import type { RelayPolicy } from "../types";
+import { SCOPE_CHUNK } from "../../themes/keyAuth";
+import type { RelayPolicy, RelayReader } from "../types";
 
 const byChain = relayTargets as Record<string, Record<string, readonly string[]>>;
 /** ThemeRegistry + ThemeRouter on every chain they are deployed on (generated from deployment fragments). */
@@ -68,10 +69,60 @@ export const themesPolicy = {
   pillar: "stocks" as const,
   entry: ["follow"] as readonly string[],
   maxGas: 22_000_000n,
-  // Only the follow shape rides a keychain call through the engine: `scopeChunk` needs the router read (followOf's key
-  // = the chunk's key) the engine does not make, so a lone setAllowedCalls stays unsponsored until it does (R4-11).
-  keychainBatch: { keychain: KEYCHAIN, match: (calls: readonly { to: Address; data: Hex }[]) => (matchThemesBatch(calls, "root") === "follow" ? "follow" : null) },
+  // The keychain-carrying root shapes: follow by shape alone, scopeChunk after its chain read (revokeKey is the keys area's).
+  keychainBatch: {
+    keychain: KEYCHAIN,
+    match: async (calls: readonly { to: Address; data: Hex }[], ctx: { from: Address; read: RelayReader | null }) => {
+      const shape = matchThemesBatch(calls, "root");
+      if (shape === "follow") return shape;
+      return shape === "scopeChunk" && (await scopeChunkFollowed(ctx.from, calls[0]!, ctx.read)) ? shape : null;
+    },
+  },
 } satisfies RelayPolicy & { keychain: Address; batches: readonly Shape[] };
+
+/** How many of the newest themes a scopeChunk check looks through for the sender's follow (each is one `followOf`). */
+export const SCOPE_CHUNK_SCAN = 64;
+
+/**
+ * A lone `setAllowedCalls(keyId, scopes)` is sponsored only to finish a split follow (D-100): ≤ SCOPE_CHUNK scopes, each
+ * exactly `approve` recipient-bound to one deployed ThemeRouter on a TIP-20; and among the newest SCOPE_CHUNK_SCAN
+ * themes the sender actively follows one with this key whose version lists every chunk token. Fails closed.
+ */
+export async function scopeChunkFollowed(from: Address, call: { to: Address; data: Hex }, read: RelayReader | null): Promise<boolean> {
+  if (!read || call.to.toLowerCase() !== KEYCHAIN.toLowerCase()) return false;
+  let keyId: Address;
+  let scopes: readonly { target: Address; selectorRules: readonly { selector: Hex; recipients: readonly Address[] }[] }[];
+  try {
+    const d = decodeFunctionData({ abi: Abis.accountKeychain as Abi, data: call.data });
+    if (d.functionName !== "setAllowedCalls") return false;
+    [keyId, scopes] = d.args as unknown as [Address, typeof scopes];
+  } catch {
+    return false;
+  }
+  if (scopes.length === 0 || scopes.length > SCOPE_CHUNK) return false;
+  const routers = new Set(themesPolicy.targets.map((t) => t.toLowerCase()));
+  let router: string | null = null;
+  for (const s of scopes) {
+    const [rule] = s.selectorRules;
+    if (!isTip20(s.target) || s.selectorRules.length !== 1 || rule!.selector.toLowerCase() !== APPROVE || rule!.recipients.length !== 1) return false;
+    const r = rule!.recipients[0]!.toLowerCase();
+    if (!routers.has(r) || (router !== null && router !== r)) return false;
+    router = r;
+  }
+  const at = getAddress(router!);
+  const registry = (await read.readContract({ address: at, abi: themeRouterAbi as Abi, functionName: "registry" })) as Address;
+  const count = (await read.readContract({ address: registry, abi: themeRegistryAbi as Abi, functionName: "themeCount" })) as bigint;
+  for (let id = count; id >= 1n && id > count - BigInt(SCOPE_CHUNK_SCAN); id--) {
+    const f = (await read.readContract({ address: at, abi: themeRouterAbi as Abi, functionName: "followOf", args: [from, id] })) as { keyId: Address; version: number; active: boolean };
+    if (!f.active || f.keyId.toLowerCase() !== keyId.toLowerCase()) continue;
+    for (const s of scopes) {
+      const [listed] = (await read.readContract({ address: registry, abi: themeRegistryAbi as Abi, functionName: "bandOf", args: [id, f.version, s.target] })) as [boolean, unknown];
+      if (!listed) return false;
+    }
+    return true;
+  }
+  return false;
+}
 
 const isTip20 = (a: string) => a.toLowerCase().startsWith("0x20c0");
 

@@ -7,7 +7,8 @@
  *   2. for every issued key the router still names (`followOf(follower, theme).keyId`, active, same version): the
  *      session the theme allows (`oracle.currentSession`), its interval since `lastRebalanceAt`, the members' reference
  *      prices (`oracle.tokenPrice`) and balances → core's drift and plan → `[approve × k, rebalance]` signed by the key
- *      as the follower's access key (`sendBatch`, self-paid; its fee counts against the key's pathUSD limit).
+ *      as the follower's access key (`sendBatch`, self-paid; its fee counts against the key's pathUSD limit). A split
+ *      follow (> 5 stocks, D-100) trades only the tokens its key may already approve (`getAllowedCalls`).
  * Opt-in (`OPS_ACTORS=…,theme-agent`); DRY_RUN or a missing secret plans and says so, never sends.
  */
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
@@ -17,7 +18,7 @@ import { planRebalance, themeDrift, type DriftMember } from "@cwf/core";
 import type { ThemeKeyStore } from "@cwf/db";
 import { themeRegistryAbi } from "@cwf/clients/abis/ThemeRegistry";
 import { themeRouterAbi } from "@cwf/clients/abis/ThemeRouter";
-import { buildRebalanceCalls, decisionIdOf, PATH_USD_ADDRESS, sendThemeRebalance, themesVenueOf } from "@cwf/markets/themes";
+import { buildRebalanceCalls, decisionIdOf, PATH_USD_ADDRESS, sendThemeRebalance, themeKeyScopedTargets, themesVenueOf } from "@cwf/markets/themes";
 import type { PassResult } from "../../runtime";
 
 export const THEME_AGENT_EVERY_MS = 30_000;
@@ -111,9 +112,11 @@ export function themeAgentPass(d: ThemeAgentDeps): () => Promise<PassResult> {
         continue;
       }
       const dailyLeftUsd = nowSec >= Number(f.dayStart) + 86_400 ? f.caps.maxDailyUsd : f.caps.maxDailyUsd - f.daySpentUsd;
-      const legs = planRebalance(members, drift, { pathUsd: PATH_USD_ADDRESS, maxTradeUsd: f.caps.maxTradeUsd, maxSlippageBps: Math.min(t.maxSlippageBps, f.caps.maxSlippageBps), dailyLeftUsd }).map((l) => ({ ...l, tokenIn: getAddress(l.tokenIn), tokenOut: getAddress(l.tokenOut) }));
+      const scoped = await themeKeyScopedTargets(d.client, follower, f.keyId);
+      const planned = planRebalance(members, drift, { pathUsd: PATH_USD_ADDRESS, maxTradeUsd: f.caps.maxTradeUsd, maxSlippageBps: Math.min(t.maxSlippageBps, f.caps.maxSlippageBps), dailyLeftUsd }).map((l) => ({ ...l, tokenIn: getAddress(l.tokenIn), tokenOut: getAddress(l.tokenOut) }));
+      const legs = planned.filter((l) => scoped.has(l.tokenIn.toLowerCase()) && scoped.has(l.tokenOut.toLowerCase()));
       if (legs.length === 0) {
-        await say("in band");
+        await say(planned.length > 0 ? "waiting for the follow's remaining key scopes" : "in band");
         continue;
       }
       const calls = buildRebalanceCalls({ router: v.router, themeId: row.themeId, legs, creatorFeeBps: t.creatorFeeBps, decisionId: decisionIdOf(follower, row.themeId, nowSec) });

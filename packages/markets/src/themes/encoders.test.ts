@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { decodeFunctionData, keccak256, maxUint256, type Address, type Hex } from "viem";
+import { Abis } from "viem/tempo";
 import { themeRegistryAbi } from "@cwf/clients/abis/ThemeRegistry";
 import { TEMPO } from "@cwf/clients";
 import { OPEN_POSTURE, specPayload, type ThemeSpec, type TxIntent } from "@cwf/core";
@@ -56,5 +57,27 @@ describe("themes intents → the tx lane (S16a, R4-11)", () => {
     expect(e.calls).toHaveLength(2);
     expect(await evaluate(config, req(e.calls), ctx)).toMatchObject({ ok: true, area: "themes" });
     expect(await evaluate(config, req([e.calls[0]!]), ctx)).toMatchObject({ ok: false, code: "target" });
+  });
+
+  it("past five stocks the follow carries every limit and the first scopes; the rest are scopeChunk calls (R4-11)", () => {
+    const base = mirrorsOf(CHAIN).map((m) => m.token);
+    const tokens = [...base, ...base.map((t) => `0x20c0${"0".repeat(20)}${t.slice(26, 40)}ff` as Address)].slice(0, 7);
+    const caps = { expirySec: 2_000, allocationUsd: 100_000_000n, maxTradeUsd: 20_000_000n, maxDailyUsd: 50_000_000n, maxSlippageBps: 100, maxFeeBps: 50, minIntervalSec: 3_600 };
+    const key = "0x00000000000000000000000000000000000000b2" as Address;
+    const e = enc({ kind: "theme-follow", themeId: 3n, version: 1, caps, keyId: key, tokens, tokenDailyLimits: tokens.map(() => 1_000_000n), pathUsdDailyLimit: 60_000_000n });
+    const [, , config] = decodeFunctionData({ abi: Abis.accountKeychain, data: e.calls[0]!.data }).args as unknown as [Address, number, { limits: unknown[]; allowedCalls: unknown[] }];
+    expect(config.limits).toHaveLength(8);
+    expect(config.allowedCalls).toHaveLength(2 + 5);
+    const chunk = enc({ kind: "theme-key-scopes", themeId: 3n, keyId: key, tokens: tokens.slice(5) });
+    expect(chunk.sponsored).toBe(true);
+    const [k, scopes] = decodeFunctionData({ abi: Abis.accountKeychain, data: chunk.calls[0]!.data }).args as unknown as [Address, unknown[]];
+    expect([k.toLowerCase(), scopes.length]).toEqual([key, 2]);
+    expect(encodeThemeIntent({ kind: "theme-key-scopes", themeId: 3n, keyId: key, tokens: [...tokens, ...tokens] }, { chainId: CHAIN, wallet: USER })).toMatchObject({ ok: false });
+  });
+
+  it("the creator names the ERC-8004 agent with setAgent, self-paid", () => {
+    const e = enc({ kind: "theme-set-agent", themeId: 1n, agentId: 9n });
+    expect(e.sponsored).toBe(false);
+    expect(decodeFunctionData({ abi: themeRegistryAbi, data: e.calls[0]!.data })).toMatchObject({ functionName: "setAgent", args: [1n, 9n] });
   });
 });

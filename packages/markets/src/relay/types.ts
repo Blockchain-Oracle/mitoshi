@@ -84,9 +84,11 @@ export interface RelayPolicy {
   /**
    * The AccountKeychain precompile is no area's contract, so a call to it is never sponsored on its own; an area whose
    * whole-transaction shapes include it (themes' `[authorizeKey, follow]`, D-100) names it here and answers which of its
-   * root-signed shapes the full call list matches, or null (R4-11, D-227: the engine refused the follow shape).
+   * root-signed shapes the full call list matches, or null (R4-11, D-227: the engine refused the follow shape). A shape
+   * that needs the chain (themes' `scopeChunk`: the sender's follow must name the chunk's key) reads it through `read`;
+   * without a reader it refuses (fails closed).
    */
-  keychainBatch?: { keychain: Address; match: (calls: readonly { to: Address; data: Hex }[]) => string | null };
+  keychainBatch?: { keychain: Address; match: (calls: readonly { to: Address; data: Hex }[], ctx: { from: Address; read: RelayReader | null }) => string | null | Promise<string | null> };
 }
 
 export type RefusalCode =
