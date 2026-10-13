@@ -56,7 +56,7 @@ export async function readBoard(period: Period, sort: BoardSort, you?: string): 
   const span = PERIODS[period];
   const now = Date.now();
   const ranked = rankTraders(byWallet, { windowStartMs: Number.isFinite(span) ? now - span : 0, windowEndMs: now + 1 });
-  const ordered = sort === "roi" ? sortByRoi(ranked.rankings) : ranked.rankings;
+  const ordered = sort === "roi" ? sortByRoi(ranked.rankings) : sort === "streak" ? [...ranked.rankings].filter((r) => r.bestStreak > 0).sort((a, b) => b.bestStreak - a.bestStreak) : ranked.rankings;
   const rows = ordered.map(row);
   const mine = you ? rows.find((r) => r.owner === you.toLowerCase()) ?? null : null;
   return {

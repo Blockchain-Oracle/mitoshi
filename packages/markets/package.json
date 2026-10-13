@@ -31,6 +31,7 @@
     "./leverage": "./src/leverage/index.ts",
     "./maker": "./src/maker/index.ts",
     "./private": "./src/private/index.ts",
+    "./arena": "./src/arena/index.ts",
     "./stream-ticket": "./src/server/stream-ticket.ts",
     "./drive": "./src/testing/wallet-mode.ts"
   },

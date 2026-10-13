@@ -29,7 +29,7 @@ export function useArcadeScore(game: ArcadeGame) {
   const [board, setBoard] = useState<BoardWire | null | undefined>(undefined);
 
   const refresh = useCallback(() => {
-    return fetch(`${BOARD_ENDPOINT}?game=${game}${address ? `&address=${address}` : ""}`, { cache: "no-store" })
+    return fetch(`${BOARD_ENDPOINT}?game=${game}&run=1${address ? `&address=${address}` : ""}`, { cache: "no-store" })
       .then((response) => (response.ok ? (response.json() as Promise<BoardWire>) : Promise.reject(new Error(String(response.status)))))
       .then(setBoard)
       .catch(() => setBoard(null));
@@ -55,14 +55,19 @@ export function useArcadeScore(game: ArcadeGame) {
           body: JSON.stringify({ game, seed: end.seed, engineVersion: board.engineVersion, durationMs: end.durationMs, score: end.score, calm: end.calm, trace: end.trace }),
         });
         const body = (await response.json()) as ScoreAcceptedWire & { error?: string };
-        if (!response.ok) return { kind: "refused", why: body.error ?? `the server answered ${response.status}` };
+        if (!response.ok) {
+          // The seed may be spent now (one score per seed): the next run takes a fresh one.
+          void refresh();
+          return { kind: "refused", why: body.error ?? `the server answered ${response.status}` };
+        }
         setBoard(body.board);
         return { kind: "posted", rank: body.rank, isBest: body.isBest };
       } catch (cause) {
+        void refresh();
         return { kind: "refused", why: String((cause as Error)?.message ?? "the post did not go through").slice(0, 120) };
       }
     },
-    [board, game, social],
+    [board, game, social, refresh],
   );
 
   return { board, refresh, post, ability };

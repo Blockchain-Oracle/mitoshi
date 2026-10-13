@@ -24,11 +24,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/surface": { eyebrow: "Market Surface", title: "Market Surface", body: "Every Window's book at a glance.", dependency: "the parlay and range products" },
   "/games": { eyebrow: "Games", title: "Play the markets", body: "Duels, Lucky, Range, Moonshot and arcade runs.", dependency: `${engine} and the games` },
   "/games/practice": { eyebrow: "Games", title: "Practice", body: "The swipe loop, no stake.", dependency: "the games" },
-  "/games/duel": { eyebrow: "Games", title: "Duel", body: "Face another player over a live deck.", dependency: "the arena" },
-  "/games/duel/[matchId]": { eyebrow: "Games", title: "A duel", body: "Your picks and the settlement.", dependency: "the arena" },
-  "/games/history": { eyebrow: "Games", title: "Your games", body: "Every duel and run you played.", dependency: "the arena" },
-  "/games/rank": { eyebrow: "Games", title: "Season ranks", body: "This season's standings.", dependency: "the arena" },
-  "/games/lucky": { eyebrow: "Games", title: "Lucky", body: "Let the reel pick a live call.", dependency: "the games" },
   "/games/range": { eyebrow: "Games", title: "Range", body: "Pick the band where price finishes.", dependency: "the range reserve" },
   "/games/moonshot": { eyebrow: "Games", title: "Moonshot", body: "Aim for a distant target.", dependency: "the range reserve" },
   "/games/line-rider": { eyebrow: "Games", title: "Line Rider", body: "Ride the line; score-only.", dependency: "the arcade" },
@@ -50,7 +45,7 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
  * one of these surfaces drops it here; `nav-items.test.ts` fails while this set and the pages disagree.
  */
 export const PENDING_ROUTES: ReadonlySet<string> = new Set([
-  "/claim", "/games/duel", "/games/duel/[matchId]", "/games/history", "/games/lucky", "/games/rank", "/native-auth", "/trade-from-x",
+  "/claim", "/native-auth", "/trade-from-x",
 ]);
 
 /** Whether a nav destination still lands on a pending page (its path, query dropped). */

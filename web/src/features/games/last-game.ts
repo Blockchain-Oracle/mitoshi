@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { gameEntry, gameIdFromPath } from "./catalog";
+import { gameKey } from "./keys";
 
 /**
  * Pips remembers the last game a player opened (`lib/storage.ts` `lastGame`) and the hub offers it first.
@@ -11,7 +12,7 @@ import { gameEntry, gameIdFromPath } from "./catalog";
  * so a client that read it while hydrating disagreed with the markup it was handed (measured 2026-09-04 as a
  * hydration error on `/games`). The server snapshot is null, and the plate appears after hydration.
  */
-const KEY = "owarine.games.last";
+const KEY = gameKey("last");
 const NONE = null;
 const noop = () => () => undefined;
 

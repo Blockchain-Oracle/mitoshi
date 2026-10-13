@@ -13,6 +13,7 @@ import { encodeParlayIntent } from "../parlay/encoders";
 import { encodeRangeIntent } from "../range/encoders";
 import { encodeLeverageIntent } from "../leverage/encoders";
 import { encodePrivateIntent } from "../private/encoders";
+import { encodeArenaIntent } from "../arena/encoders";
 import { registerAgentCall, setAgentUriCall } from "../agents/erc8004";
 import { encodeStrategyIntent } from "../strategies/encoders";
 import { encodeVaultIntent } from "../vault/calls";
@@ -100,7 +101,7 @@ export function encodeTransfer(intent: TxIntent, ctx: EncodeContext): EncodeResu
   return { ok: true, value: { area: "wallet", calls: [{ to: intent.token, data }], sponsored: false, summary: `send ${intent.amountBase} of ${intent.token} to ${intent.to}` } };
 }
 
-export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeKeyBackup, encodeAgentIntent, encodeNoop, encodeTransfer, encodeEngineIntent, encodeVaultIntent, encodeMakerIntent, encodeLaunchIntent, encodeThemeIntent, encodeStrategyIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent, encodePrivateIntent, encodeBridgeIntent];
+export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeKeyBackup, encodeAgentIntent, encodeNoop, encodeTransfer, encodeEngineIntent, encodeVaultIntent, encodeMakerIntent, encodeLaunchIntent, encodeThemeIntent, encodeStrategyIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent, encodePrivateIntent, encodeArenaIntent, encodeBridgeIntent];
 
 /** The first encoder that claims the intent; an unclaimed intent's area is not deployed on this chain yet. */
 export async function encodeIntent(intent: TxIntent, ctx: EncodeContext, encoders: readonly IntentEncoder[] = DEFAULT_ENCODERS): Promise<EncodeResult> {

@@ -16,12 +16,15 @@ import { INTERVAL_5M_SEC } from "./deck";
  */
 
 /**
- * Version 1 (2026-09-04): the assets below, the owner's 2/3/5/10/25 reach ladder, no 5m Windows, and two
- * minutes of headroom so a signature never lands on a Window that has already closed to entry.
+ * Version 1 (Masayume, 2026-09-04): BTC and ETH, the owner's 2/3/5/10/25 reach ladder, no 5m Windows, and two minutes
+ * of headroom so a signature never lands on a Window that has already closed to entry.
+ *
+ * Version 2 (Mitoshi, R4-9, D-227): BTC, ETH and SOL (the venue's crypto Series, each live at 5m, 15m and 1h), the
+ * same ladder and headroom, and still no 5m — the owner's standing deck rule, the one the duel keeps too.
  */
-export const LUCKY_POLICY_VERSION = 1;
+export const LUCKY_POLICY_VERSION = 2;
 /** The asset universe the draw is over, pinned by the policy so a verifier replays the same list. */
-export const LUCKY_ASSETS: readonly string[] = ["BTC", "ETH"];
+export const LUCKY_ASSETS: readonly string[] = ["BTC", "ETH", "SOL"];
 export const LUCKY_MULTIPLIERS: readonly number[] = [2, 3, 5, 10, 25];
 /** Headroom for a human signature between the deal and the fill. */
 export const LUCKY_MIN_HEADROOM_SEC = 120;

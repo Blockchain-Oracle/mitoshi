@@ -6,7 +6,10 @@
  */
 export * from "./field";
 export * from "./flap";
+export * from "./hop";
 export * from "./replay";
 export * from "./ride";
 export * from "./rng";
+export * from "./sled";
+export * from "./sled-world";
 export * from "./trace";

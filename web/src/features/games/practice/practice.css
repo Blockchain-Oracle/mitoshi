@@ -1,131 +1,82 @@
-/* Practice — the stage's surroundings: the honesty note, the first-run panel, the watch and the
- * scoreboard. The deck itself is stage.css; nothing here restyles it.
- *
- * Same two rules as games.css: dark first with a `[data-theme="light"]` override, tokens only.
- */
+/* Beat the coin (R4-9, D-227; ported from Senryo:apps/web/src/features/games/games.css `.warm-*`) — the slot strip,
+ * the races, the scoreboard. The deck itself is stage.css. Tokens only; the frame follows the theme. */
 
-/* A stage is not a marketing page: the hero is an eyebrow and a name, and the mode's own sentence
- * moves down beside the honesty note. At 390px the full `page-title` hero pushed the deck and both
- * calls below the fold, which made the first thing a player had to do a scroll. */
-.pr-head { margin-bottom: 20px; }
-.pr-title {
-  margin-top: 8px;
-  font-family: var(--font-display); font-weight: 800;
-  font-size: clamp(2rem, 5.6vw, 3rem); line-height: 0.96; letter-spacing: -0.04em;
-  color: var(--white); font-stretch: 100%; }
-.pr-title .accent { color: var(--signal-ink); }
-.pr-intro { font-size: 13px; line-height: 1.65; color: var(--gray-400); }
+.pr-stage { display: flex; flex-direction: column; gap: 12px; max-width: 640px; margin-inline: auto; }
 
-.pr-layout { display: grid; gap: 16px; grid-template-columns: 1fr; align-items: start; }
-@media (min-width: 900px) {
-  .pr-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: 24px; }
+/* ── You vs the coin: five slots, your pick then the coin's flipping in, ringed as the reveal lands ── */
+.pr-slots { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; list-style: none; padding: 0; margin: 0; }
+.pr-slot {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; border-radius: 12px;
+  background: var(--color-surface-1); border: 1px solid var(--color-hairline);
+  transition: box-shadow 200ms var(--ease), transform 200ms var(--ease);
 }
+.pr-slot[data-result="won"] { box-shadow: inset 0 0 0 2px var(--profit); transform: translateY(-2px); }
+.pr-slot[data-result="lost"] { box-shadow: inset 0 0 0 2px var(--loss); }
+.pr-slot-disc { width: 20px; height: 20px; }
+.pr-chip { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; color: var(--color-canvas); }
+.pr-chip svg { width: 14px; height: 14px; stroke-width: 3; }
+.pr-chip[data-side="up"] { background: var(--profit); }
+.pr-chip[data-side="down"] { background: var(--loss); }
+.pr-chip[data-coin] { opacity: 0.8; }
+.pr-chip--empty { background: color-mix(in srgb, var(--white) 8%, transparent); }
+.pr-coin-flip { display: inline-flex; animation: pr-flip 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 220ms both; }
+@keyframes pr-flip { from { opacity: 0; transform: rotateY(90deg) scale(0.6); } }
 
-.pr-layout-side { display: flex; flex-direction: column; gap: 12px; }
+/* ── The card's live line ── */
+.pr-line { width: 100%; height: 48px; }
+.pr-line-empty { display: block; height: 48px; border-radius: 10px; background: color-mix(in srgb, var(--white) 4%, transparent); }
 
-.pr-note {
-  display: flex; flex-direction: column; gap: 6px;
-  border-radius: 14px; padding: 14px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(23, 22, 22, 0.4);
-}
-[data-theme="light"] .pr-note { border-color: rgba(10, 10, 10, 0.11); background: rgba(255, 255, 255, 0.94); }
-.pr-note-k {
-  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--gray-500); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.pr-note-body { font-size: 12px; line-height: 1.65; color: var(--gray-400); }
-
-/* The first-run panel. Inline rather than a modal: a walkthrough that covers the thing it is
- * describing teaches worse, and this one has to sit beside the deck it explains. */
-.pr-tutorial {
-  border-radius: 14px; padding: 16px;
-  border: 1px solid color-mix(in srgb, var(--signal-ink) 32%, transparent);
-  background: color-mix(in srgb, var(--signal) 6%, transparent);
-}
-.pr-tutorial-title { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--white); font-stretch: 100%; }
-.pr-tutorial-list { margin: 10px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; }
-.pr-tutorial-list li { font-size: 12px; line-height: 1.6; color: var(--gray-400); }
-.pr-tutorial .pr-actions { margin-top: 12px; }
-
-.pr-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.pr-link {
-  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--signal-ink);
-  transition: opacity 200ms var(--ease); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.pr-link:hover { opacity: 0.78; }
-.pr-link--quiet { color: var(--gray-500); }
-
-/* ── The watch ────────────────────────────────────────────────────────────── */
-
+/* ── The watch: five races ── */
 .pr-watch { display: flex; flex-direction: column; gap: 12px; }
 .pr-watch-head { display: flex; align-items: baseline; gap: 10px; }
-.pr-watch-title { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--white); font-stretch: 100%; }
-.pr-watch-clock {
-  margin-left: auto;
-  font-family: var(--font-mono); font-size: 24px; font-variant-numeric: tabular-nums;
-  color: var(--gm-accent, var(--signal-ink));
-}
-.pr-watch-bar { height: 3px; border-radius: 9999px; background: rgba(255, 255, 255, 0.12); overflow: hidden; }
-[data-theme="light"] .pr-watch-bar { background: rgba(10, 10, 10, 0.12); }
-.pr-watch-fill {
-  /* `display: block` is load-bearing: the fill is a span, and width does nothing to an inline box —
-   * the bar rendered as a bare track with no progress in it at all. */
-  display: block;
-  height: 100%; border-radius: 9999px; background: var(--gm-accent, var(--signal));
-  width: calc(var(--pr-left, 1) * 100%);
-  transition: width 900ms linear;
-}
+.pr-watch-title { font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); }
+.pr-watch-clock { margin-left: auto; font-family: var(--font-data); font-size: 24px; font-variant-numeric: tabular-nums; color: var(--gm-accent, var(--signal-ink)); }
+.pr-watch-clock[data-last] { color: var(--loss); animation: pr-beat 1s steps(2, start) infinite; }
+@keyframes pr-beat { 50% { opacity: 0.4; } }
+.pr-watch-bar { height: 3px; border-radius: 9999px; background: color-mix(in srgb, var(--white) 12%, transparent); overflow: hidden; }
+/* `display: block` is load-bearing: the fill is a span, and width does nothing to an inline box. */
+.pr-watch-fill { display: block; height: 100%; border-radius: 9999px; background: var(--gm-accent, var(--signal)); width: calc(var(--pr-left, 1) * 100%); transition: width 900ms linear; }
 
-/* ── Rows: one card, in the watch and in the result ───────────────────────── */
+.pr-races { display: flex; flex-direction: column; list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--color-hairline); }
+.pr-race { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 0; border-bottom: 1px solid var(--color-hairline); animation: gm-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.pr-race-disc { width: 28px; height: 28px; flex: none; }
+.pr-race-name { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.pr-race-asset { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white); }
+.pr-race-move { font-family: var(--font-data); font-size: 11px; font-variant-numeric: tabular-nums; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pr-race-move[data-move="up"] { color: var(--profit); }
+.pr-race-move[data-move="down"] { color: var(--loss); }
+.pr-race-sides { display: flex; gap: 4px; flex: none; }
+.pr-race-lead, .pr-race-stamp { width: 76px; flex: none; text-align: center; font-family: var(--font-pixel); font-size: 16px; line-height: 1; }
+.pr-race-lead { color: var(--gray-500); }
+.pr-race-lead[data-lead="you"] { color: var(--profit); }
+.pr-race-lead[data-lead="coin"] { color: var(--loss); }
+.pr-race-stamp { font-size: 22px; text-transform: uppercase; animation: pr-stamp 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.pr-race-stamp[data-result="won"] { color: var(--profit); }
+.pr-race-stamp[data-result="lost"] { color: var(--loss); }
+.pr-race-stamp[data-result="flat"] { color: var(--gray-500); }
+@keyframes pr-stamp { from { opacity: 0; transform: scale(1.8); } }
+@media (max-width: 360px) { .pr-race-lead, .pr-race-stamp { width: 60px; font-size: 14px; } .pr-race-stamp { font-size: 18px; } }
 
-.pr-rows { display: flex; flex-direction: column; gap: 8px; }
-.pr-row {
-  display: grid; gap: 4px 12px; align-items: center;
-  grid-template-columns: minmax(0, 1fr) auto;
-  border-radius: 12px; padding: 12px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(23, 22, 22, 0.4);
-}
-[data-theme="light"] .pr-row { border-color: rgba(10, 10, 10, 0.11); background: rgba(255, 255, 255, 0.94); }
-.pr-row-name { display: flex; align-items: center; gap: 8px; }
-.pr-row-asset { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white); font-stretch: 100%; }
-.pr-row-meta { font-family: var(--font-mono); font-size: 10px; color: var(--gray-500); font-variant-numeric: tabular-nums; }
-.pr-row-move { justify-self: end; display: inline-flex; align-items: baseline; gap: 4px; font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
-/* The arrow, not the colour, is what says which way it went: doc 04 forbids a colour-only outcome
- * cue, and a move that rounds to 0.000% needs something other than its hue to be readable. */
-.pr-row-arrow { font-size: 12px; }
-.pr-row-sides { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px 14px; }
-.pr-side { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; color: var(--gray-500); font-variant-numeric: tabular-nums; }
-.pr-side-dot { width: 7px; height: 7px; border-radius: 9999px; }
-.pr-side-dot--up { background: var(--profit); }
-.pr-side-dot--down { background: var(--loss); }
-.pr-side-verdict { letter-spacing: 0.06em; text-transform: uppercase; }
-.pr-side-verdict--won { color: var(--profit); }
-.pr-side-verdict--lost { color: var(--loss); }
-.pr-side-verdict--flat { color: var(--gray-500); }
-.pr-up { color: var(--profit); }
-.pr-down { color: var(--loss); }
-.pr-flat { color: var(--gray-500); }
-
-/* ── The scoreboard ───────────────────────────────────────────────────────── */
-
-.pr-score {
-  display: flex; align-items: center; gap: 16px;
-  border-radius: 16px; padding: 18px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(23, 22, 22, 0.5);
-}
-[data-theme="light"] .pr-score { border-color: rgba(10, 10, 10, 0.11); background: rgba(255, 255, 255, 0.96); }
-.pr-score--won { border-color: color-mix(in srgb, var(--profit) 40%, transparent); }
-.pr-score--lost { border-color: color-mix(in srgb, var(--loss) 34%, transparent); }
+/* ── The scoreboard ── */
+.pr-score { display: flex; align-items: center; gap: 16px; border-radius: 16px; padding: 16px 18px; border: 1px solid var(--color-hairline); background: var(--color-surface-1); }
+.pr-score[data-winner="you"] { border-color: color-mix(in srgb, var(--profit) 50%, transparent); }
+.pr-score[data-winner="bot"] { border-color: color-mix(in srgb, var(--loss) 40%, transparent); }
 .pr-score-side { display: flex; flex-direction: column; gap: 4px; }
-.pr-score-k { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-500); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.pr-score-v { font-family: var(--font-mono); font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--white); font-stretch: 75%; }
-.pr-score-verdict {
-  margin-left: auto; text-align: right;
-  font-family: var(--font-display); font-weight: 750; font-size: 16px; color: var(--white); font-stretch: 100%; }
-.pr-score-dash { font-family: var(--font-mono); font-size: 20px; color: var(--gray-600); font-variant-numeric: tabular-nums; }
-.pr-foot { font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: var(--gray-500); font-variant-numeric: tabular-nums; }
+.pr-score-k { font-family: var(--font-pixel); font-size: 14px; line-height: 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gray-500); }
+.pr-score-v { font-family: var(--font-data); font-size: 32px; line-height: 1; font-variant-numeric: tabular-nums; color: var(--white); }
+.pr-score-dash { font-family: var(--font-data); font-size: 20px; color: var(--gray-600); }
+.pr-score-verdict { margin-left: auto; text-align: right; font-family: var(--font-pixel); font-size: 22px; line-height: 1.05; color: var(--white); }
+.pr-score[data-winner="you"] .pr-score-verdict { color: var(--profit); }
+.pr-stamp { rotate: -3deg; animation: pr-stamp 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.pr-foot { font-family: var(--font-data); font-size: 10px; line-height: 1.6; color: var(--gray-500); font-variant-numeric: tabular-nums; }
+.pr-cta-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pr-cta-row .du-cta { min-height: 52px; }
 
 @media (max-width: 400px) {
-  .pr-score { gap: 12px; padding: 16px; }
+  .pr-score { gap: 12px; padding: 14px; }
   .pr-score-v { font-size: 26px; }
-  .pr-score-verdict { font-size: 14px; }
+  .pr-score-verdict { font-size: 18px; }
 }
+
+/* The real call, under the two buttons once the duel took the second (R4-9, D-227). */
+.pr-real { display: grid; place-items: center; min-height: 44px; font-size: 13px; color: var(--gray-400); text-decoration: underline; text-underline-offset: 3px; }

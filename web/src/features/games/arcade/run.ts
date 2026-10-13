@@ -11,6 +11,11 @@ export interface ArcadeRun {
   id: number;
   seed: string;
   calm: boolean;
+  /** Engine v2: the real-price tape the server issued with the seed (R4-9, D-227); absent, the seed draws the line. */
+  tape?: readonly number[];
+  /** Line Rider v3's sled terrain: the same prints as moves (tenths of a bp), and what they are of for the floor. */
+  moves?: readonly number[];
+  tapeMeta?: { feed: string; fromSec: number; toSec: number };
 }
 
 export interface RunEnd {
@@ -32,5 +37,3 @@ export function localSeed(): string {
   return seedFromBytes(bytes);
 }
 
-/** The seed the idle screen draws with, fixed so the still frame is the same one every visit. */
-export const IDLE_SEED = "1d1e5eed";

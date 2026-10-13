@@ -8,7 +8,8 @@ describe("deployments", () => {
     expect(launch?.LaunchRegistry?.deployBlock).toBeGreaterThan(0);
   });
   it("answers not deployed for an area with no fragment", () => {
-    expect(isDeployed("arena", 42431)).toBe(false); // S12 games: no fragment yet
+    expect(isDeployed("agents", 42431)).toBe(false); // no fragment on Moderato
+    expect(isDeployed("arena", 42431)).toBe(true); // GameArena (R4-9, D-227)
     expect(isDeployed("parlay", 42431)).toBe(true); // ParlayReserve (S10a, D-166)
     expect(isDeployed("vault", 42431)).toBe(true); // EventVault (S7, D-114)
     expect(isDeployed("engine", 42431)).toBe(true);

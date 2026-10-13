@@ -1,52 +1,38 @@
 "use client";
 
-import { useEffect } from "react";
-import { createPortal } from "react-dom";
+import type { GameId } from "@cwf/core/games";
+import { Modal } from "@/components/ui/modal";
 import { useModalSfx } from "./audio";
 import { gameEntry } from "./catalog";
 import { GAMES } from "./copy";
-import type { GameId } from "@cwf/core/games";
 
 /**
- * Pips's per-game HOW TO overlay: the mode's name, the honest line about whose money is at risk, and
- * three sentences on how it is played — opened from the rail on any game route. A dialog in the shell's
- * overlay grammar (a centred plate over a scrim), closed by the scrim, the ✕ or Escape.
+ * Pips's per-game HOW TO (R4-9, D-227: on Mitoshi's one overlay, `components/ui/modal.tsx` — Base UI's focus trap,
+ * Escape and scroll lock, a bottom sheet under 768 px, a 44 px close; the `.du-modal*` plate it used had no stylesheet).
+ * The eyebrow is the mode's economic label; the body is three fragments, the proof line last.
  */
 export function HowToSheet({ id, open, onClose }: { id: GameId; open: boolean; onClose: () => void }) {
   useModalSfx(open);
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-  if (!open || typeof document === "undefined") return null;
   const entry = gameEntry(id);
   const lines = GAMES.howTo[id] ?? [];
-  return createPortal(
-    <div className="du-modal-root" role="dialog" aria-modal="true" aria-labelledby="gm-howto-title">
-      <button type="button" className="du-modal-scrim" aria-label={GAMES.howToWords.close} tabIndex={-1} onClick={onClose} />
-      <div className="du-modal gm-howto">
-        <button type="button" className="du-modal-close" onClick={onClose} aria-label={GAMES.howToWords.close} title={GAMES.howToWords.close}>
-          ✕
-        </button>
-        <span className="gm-eyebrow">{GAMES.howToWords.eyebrow}</span>
-        <h2 id="gm-howto-title" className="gm-plate-title gm-howto-title">
-          {entry.nav.name}
-        </h2>
-        <p className={`gm-econ gm-econ--${entry.descriptor.economicKind}`}>{entry.descriptor.economicLabel}</p>
-        <ol className="gm-howto-steps">
-          {lines.map((line, i) => (
-            <li key={i}>{line}</li>
-          ))}
-        </ol>
-        <button type="button" className="du-cta" onClick={onClose}>
+  return (
+    <Modal
+      open={open}
+      onOpenChange={(next) => (next ? undefined : onClose())}
+      eyebrow={entry.descriptor.economicLabel}
+      title={entry.nav.name}
+      className="gm-howto"
+      footer={
+        <button type="button" className="du-cta gm-howto-got" onClick={onClose}>
           {GAMES.howToWords.got}
         </button>
-      </div>
-    </div>,
-    document.body,
+      }
+    >
+      <ol className="gm-howto-steps">
+        {lines.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ol>
+    </Modal>
   );
 }

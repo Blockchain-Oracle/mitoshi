@@ -1,4 +1,5 @@
 // Ported from Masayume 68f7a09:packages/core/src/games/index.ts
+export * from "./achievements";
 export * from "./arena";
 export * from "./commitment";
 export * from "./deck";

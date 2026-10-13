@@ -3,6 +3,29 @@
 export const indexerSources = {
   "42431": [
     {
+      area: "arena",
+      contract: "GameArena",
+      address: "0xbCd862D7B90663700e7BB5d542d5bcEFd1b03DB4",
+      deployBlock: 39358010,
+      events: [
+        {"name":"AdminChanged","signature":"AdminChanged(address indexed admin)","topic0":"0x7ce7ec0b50378fb6c0186ffb5f48325f6593fcb4ca4386f21861af3129188f5c"},
+        {"name":"AgentAuthorized","signature":"AgentAuthorized(bytes32 indexed matchId, address indexed player, address indexed agent, uint64 expiresAtSec, uint128 budgetBase)","topic0":"0x58f988546a7d92b10bdced32cd055a6b905e8a8e2c41e3f093ca7ed4396167a7"},
+        {"name":"CardSettled","signature":"CardSettled(bytes32 indexed matchId, address indexed player, bytes32 indexed marketId, uint8 cardIndex, uint256 payoutBase, int256 pnlBase)","topic0":"0xad3c5630de2ad82e72f9a8f04949d2d758072e105f738b298a1fda2066d644d1"},
+        {"name":"CreditClaimed","signature":"CreditClaimed(address indexed player, uint256 amount, address by)","topic0":"0xfae7aa23273d454bc76a2afb5587a5ba9706dad31e7156a80372f2595a10e481"},
+        {"name":"DeckRevealed","signature":"DeckRevealed(bytes32 indexed matchId, uint32 policyVersion, bytes32[] cards, uint64 pickDeadlineSec)","topic0":"0x1d47a373e24689594ca2a677ad9154031c9bafbfc97b3aa568394ebfef23981c"},
+        {"name":"MatchCreated","signature":"MatchCreated(bytes32 indexed matchId, address indexed creator, uint8 tier, uint128 potBase, bytes32 deckHash, uint8 deckSize, uint64 joinDeadlineSec)","topic0":"0x5aead8192d673154827062548389d8b2572e8fdb81dc95bf8c8658de4aea8134"},
+        {"name":"MatchFinalized","signature":"MatchFinalized(bytes32 indexed matchId, address winner, int256 creatorPnlBase, int256 challengerPnlBase, uint256 potAwarded)","topic0":"0x58ad2a1ba564a581bf8c0cbe5df76d40f50c89eaa464dd07c5fef8088e1e15ad"},
+        {"name":"MatchJoined","signature":"MatchJoined(bytes32 indexed matchId, address indexed challenger, uint128 potBase, uint64 revealDeadlineSec)","topic0":"0xac40a66005c29ff60bee42c73b56a1061cf954cb80c161f8511a168ccf207678"},
+        {"name":"MatchRefunded","signature":"MatchRefunded(bytes32 indexed matchId, uint8 reason, uint256 perPlayerBase)","topic0":"0xfa32be03db928ca860cee2d41255287538f7f46801801c4351fcfd6cbae3a766"},
+        {"name":"ParamsUpdated","signature":"ParamsUpdated(tuple params)","topic0":"0x6df7fc3d6314d0d9c4a9b172123fc4fa2670255c11f1992560eaa2f0ac791943"},
+        {"name":"PausedSet","signature":"PausedSet(bool paused)","topic0":"0x40db37ff5c0bdc2c427fbb2078c8f24afea940abac0e3c23bb4ea3bf2da2b212"},
+        {"name":"PickFilled","signature":"PickFilled(bytes32 indexed matchId, address indexed player, bytes32 indexed marketId, uint8 cardIndex, uint8 outcomeIdx, uint256 quantity, uint256 costBase, uint256 refundBase)","topic0":"0x43b3a1067ffeac178bafaf34aa1f6755d690f6a07f93c136c0aed4cc54174f49"},
+        {"name":"PicksLocked","signature":"PicksLocked(bytes32 indexed matchId, uint8 status, address forfeitedBy)","topic0":"0x9adf2dcba754cccb3f37236f630e4b904955af258a2eff0137d7cc8c66e40f48"},
+        {"name":"Swept","signature":"Swept(uint256 amount)","topic0":"0x7f221332ee403570bf4d61630b58189ea566ff1635269001e9df6a890f413dd8"},
+        {"name":"TierSet","signature":"TierSet(uint8 indexed tier, uint128 potBase, uint128 perCardCapBase, bool enabled)","topic0":"0xd946f095ca75c77847dd232985f83fea2e97f069950861178ae6418be8754250"},
+      ],
+    },
+    {
       area: "engine",
       contract: "EventsEngine",
       address: "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",

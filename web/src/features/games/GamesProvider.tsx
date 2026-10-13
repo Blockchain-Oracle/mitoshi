@@ -1,7 +1,7 @@
 "use client";
 
 import { activeMatchId as activeMatchIdOf, IDLE, type MatchState } from "@cwf/core/games";
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useReducedMotion } from "motion/react";
 
 const usePrefersReducedMotion = () => useReducedMotion() === true;
@@ -40,6 +40,12 @@ interface GamesContextValue {
   activeMatchId: string | null;
   settingsOpen: boolean;
   setSettingsOpen: (open: boolean) => void;
+  /**
+   * A round or run is live (R4-9, D-227): the frame wears `data-immersive`, and on phones the shell hides its dock and
+   * top line (app-shell.css), so the play surface owns the screen — as the terminal does with `:has()`.
+   */
+  immersive: boolean;
+  setImmersive: (on: boolean) => void;
 }
 
 const GamesContext = createContext<GamesContextValue | null>(null);
@@ -49,6 +55,7 @@ export function GamesProvider({ children }: { children: ReactNode }) {
   const systemPrefersReduced = usePrefersReducedMotion();
   const [match, setMatch] = useState<MatchState>(IDLE);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [immersive, setImmersive] = useState(false);
 
   const { settings } = store;
   const reducedMotion = reducedMotionFrom(settings.motion, systemPrefersReduced);
@@ -73,8 +80,10 @@ export function GamesProvider({ children }: { children: ReactNode }) {
       activeMatchId: activeMatchIdOf(match),
       settingsOpen,
       setSettingsOpen,
+      immersive,
+      setImmersive,
     }),
-    [settings, store.hydrated, store.setHaptics, store.setMotion, store.setAccent, systemPrefersReduced, reducedMotion, feedback, match, settingsOpen],
+    [settings, store.hydrated, store.setHaptics, store.setMotion, store.setAccent, systemPrefersReduced, reducedMotion, feedback, match, settingsOpen, immersive],
   );
 
   return <GamesContext.Provider value={value}>{children}</GamesContext.Provider>;
@@ -85,4 +94,13 @@ export function useGames(): GamesContextValue {
   const value = useContext(GamesContext);
   if (!value) throw new Error("useGames must be used inside the /games layout");
   return value;
+}
+
+/** A stage holds the frame immersive while `on` (a round dealt and not scored, a run playing); leaving releases it. */
+export function useImmersive(on: boolean): void {
+  const { setImmersive } = useGames();
+  useEffect(() => {
+    setImmersive(on);
+    return () => setImmersive(false);
+  }, [on, setImmersive]);
 }

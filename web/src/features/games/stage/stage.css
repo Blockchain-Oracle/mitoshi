@@ -237,3 +237,21 @@
   .st-pill-v { font-size: 20px; }
   .st-title-asset, .st-title-place { font-size: 14px; }
 }
+
+/* ── R4-9 (D-227): the live line and the coach stamps ──
+ * On a phone or a short screen the art window gives its 132 px to the asset's 48 px live line, so the calls sit on
+ * the first screen; on a tall screen the art stays and the line rides under the quote. The coach stamps sit on the
+ * card's top and bottom edges for the first round only. */
+.st-line { height: 48px; }
+.st-line > * { height: 100%; }
+@media (max-width: 767px), (max-height: 760px) {
+  .st-art[data-has-line] { display: none; }
+}
+.st-coach {
+  position: absolute; left: 50%; z-index: 5; translate: -50% 0; padding: 2px 10px; border-radius: 9999px;
+  font-family: var(--font-pixel); font-size: 16px; line-height: 1.3; white-space: nowrap; pointer-events: none;
+  animation: st-coach-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.st-coach--up { top: 6px; background: color-mix(in srgb, var(--profit) 18%, var(--color-surface-1)); color: var(--profit); rotate: -3deg; }
+.st-coach--down { bottom: 6px; background: color-mix(in srgb, var(--loss) 18%, var(--color-surface-1)); color: var(--loss); rotate: 3deg; animation-delay: 160ms; }
+@keyframes st-coach-in { from { opacity: 0; scale: 1.6; } }

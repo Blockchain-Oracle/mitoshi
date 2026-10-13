@@ -18,6 +18,7 @@ import { isOk } from "@cwf/core";
 import type { AssetPrice } from "@cwf/core/types";
 import { useLanes } from "@cwf/markets/react";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { feedKeyOf } from "@/features/markets/units";
 import { useNowMs } from "@/lib/clock";
 
 /**
@@ -76,7 +77,8 @@ export function usePracticeRound(): PracticeSession {
     return lanes.value.lanes.flatMap((lane) =>
       lane.markets.map((market) => ({
         marketId: market.marketId,
-        asset: market.asset,
+        // The feed the card is scored on — a 24/7 stock Window reads its `-24` feed (R4-9, D-227).
+        asset: feedKeyOf(market),
         intervalSec: market.intervalSec,
         expirySec: market.expirySec,
         trading: market.status === "Trading",

@@ -17,7 +17,7 @@
   font-style: normal;
   font-display: swap;
 }
-.gm-frame, .du-modal, .gm-howto, .gm-settings-modal {
+.gm-frame, .gm-howto, .gm-settings-modal, .gm-stage-layer {
   /* P4 (D-222/D-223): Owarine's signal is Mitoshi's accent. The pixel face ships with the games (D-226). */
   --font-pixel: "m6x11plus", var(--font-data, var(--font-mono));
   --signal: var(--color-accent);
@@ -27,14 +27,14 @@
 
 .gm-frame { --gm-accent: var(--signal); }
 
-/* ── The checker canvas (Flicky globals.css L49–78), drifting one tile per cycle in Yosuku's surfaces ──
- * The SidOfc four-gradient trick keeps the tile edges clean; the tile is a step of ink over the page's own
- * ground rather than the reference's sky blue, so the games sit inside the shell instead of beside it. */
+/* ── The checker canvas (Flicky globals.css L49–78), drifting one tile per cycle in Mitoshi's surfaces ──
+ * R4-9 (D-227): painted on the stage itself, edge to edge — inside the frame it sat in the stage's padding and drew a
+ * visible inner box. Only a visible frame (a hidden route copy must not repaint the stage, R4-0). */
 @keyframes gm-checker-drift {
   from { background-position: 0 0, 64px 0, 64px -64px, 0 64px; }
   to { background-position: 128px 128px, 192px 128px, 192px 64px, 128px 192px; }
 }
-.gm-frame {
+.app-stage:has(> .gm-frame:not([style*="display: none"])) {
   --gm-tile: rgba(255, 255, 255, 0.028);
   background-image:
     linear-gradient(45deg, var(--gm-tile) 26%, transparent 26%),
@@ -45,7 +45,9 @@
   background-position: 0 0, 64px 0, 64px -64px, 0 64px;
   animation: gm-checker-drift 12s linear infinite;
 }
-[data-theme="light"] .gm-frame { --gm-tile: rgba(10, 10, 10, 0.035); }
+[data-theme="light"] .app-stage:has(> .gm-frame:not([style*="display: none"])) { --gm-tile: rgba(10, 10, 10, 0.035); }
+@media (prefers-reduced-motion: reduce) { .app-stage:has(> .gm-frame) { animation: none; } }
+.app-stage:has(> .gm-frame[data-reduced-motion="true"]) { animation: none; }
 
 /* ── Press physics (Pips styles.css L199–211): a control is a little object, not a swatch ──
  * Every control under the frame depresses on press; the commit buttons carry the lip — a light on the top
@@ -96,176 +98,45 @@
   scroll-behavior: auto !important;
 }
 
-/* ── The rail ─────────────────────────────────────────────────────────────── */
+/* ── The rail (R4-9, D-227): one 44 px row on the stage's own colour — back, the mode, its sticker, ? · sound · settings ── */
 
 .gm-rail {
-  position: sticky;
-  top: var(--stage-sticky-top);
-  z-index: var(--z-sticky);
-  background: rgba(10, 10, 10, 0.96);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: sticky; top: var(--stage-sticky-top); z-index: var(--z-sticky);
+  margin-bottom: 12px; background: var(--color-stage); border-bottom: 1px solid var(--color-hairline);
 }
-[data-theme="light"] .gm-rail { background: rgba(255, 255, 255, 0.96); border-bottom-color: rgba(10, 10, 10, 0.1); }
-
-@media (max-width: 767px) {
-  /* On a phone the economic label wrapped mid-phrase between the mode name and the settings
-   * control. It is the one thing on this bar that must never be hard to read, so it takes a row of
-   * its own rather than being shortened or truncated. */
-  .gm-rail-inner { flex-wrap: wrap; row-gap: 6px; padding-top: 6px; padding-bottom: 6px; min-height: 0; }
-  .gm-rail-back, .gm-rail-here { order: 1; }
-  .gm-rail-sep { order: 2; }
-  .gm-rail-mode { order: 3; }
-  .gm-rail-right { order: 4; }
-  .gm-rail .gm-econ { order: 5; flex: 1 0 100%; }
-}
-
-.gm-rail-inner { display: flex; align-items: center; gap: 12px; min-height: 44px; }
-.gm-rail-back,
-.gm-rail-here {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-family: var(--font-display); font-weight: 700; font-size: 12px;
-  letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--gray-400); font-stretch: 100%; }
-.gm-rail-back { transition: color 200ms var(--ease); }
-.gm-rail-back:hover { color: var(--signal-ink); }
-.gm-rail-chevron { width: 14px; height: 14px; }
-.gm-rail-sep { width: 1px; height: 14px; background: rgba(255, 255, 255, 0.14); }
-[data-theme="light"] .gm-rail-sep { background: rgba(10, 10, 10, 0.16); }
-.gm-rail-mode { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--white); font-stretch: 100%; }
-.gm-rail-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-
-.gm-rail-resume {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 10px; border-radius: 9999px;
-  border: 1px solid color-mix(in srgb, var(--signal-ink) 45%, transparent);
-  color: var(--signal-ink);
-  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.gm-rail-resume-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--signal); color: var(--on-signal); }
-.gm-rail-settings {
-  display: inline-flex; align-items: center; gap: 6px;
-  min-width: 32px; height: 32px; padding: 0 8px; border-radius: 8px;
+.gm-rail-inner { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.gm-rail-mode { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); }
+.gm-rail-econ { flex: none; }
+.gm-rail-right { margin-left: auto; display: flex; align-items: center; gap: 2px; flex: none; }
+.gm-rail-icon {
+  display: grid; place-items: center; width: 44px; height: 44px; flex: none; border-radius: 9999px;
   color: var(--gray-400); transition: color 200ms var(--ease), background 200ms var(--ease);
 }
-.gm-rail-settings-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-@media (max-width: 767px) {
-  .gm-rail-settings-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-}
-.gm-rail-settings:hover { color: var(--white); background: rgba(255, 255, 255, 0.06); }
-[data-theme="light"] .gm-rail-settings:hover { background: rgba(10, 10, 10, 0.06); }
-
-/* ── The economic label — the one chip every mode must wear ───────────────── */
-
-.gm-econ {
-  display: inline-flex; align-items: center; white-space: nowrap;
-  padding: 3px 8px; border-radius: 9999px;
-  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em;
-  border: 1px solid rgba(255, 255, 255, 0.12); color: var(--gray-400); font-variant-numeric: tabular-nums; }
-[data-theme="light"] .gm-econ { border-color: rgba(10, 10, 10, 0.14); }
-/* Money at risk reads in the brand accent; a mode that risks nothing stays quiet. */
-.gm-econ--market-order,
-.gm-econ--market-order-and-pot,
-.gm-econ--house-position {
-  border-color: color-mix(in srgb, var(--signal-ink) 40%, transparent);
-  background: color-mix(in srgb, var(--signal) 8%, transparent);
+.gm-rail-icon svg { width: 20px; height: 20px; }
+.gm-rail-icon:hover { color: var(--white); background: color-mix(in srgb, var(--white) 6%, transparent); }
+.gm-rail-icon:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent); }
+/* At 320 the mode name gives way (it ellipsizes), never a target: the icons stay 44 px. */
+@media (max-width: 360px) { .gm-rail-inner { gap: 6px; } .gm-rail-mode { font-size: 18px; } .gm-rail-right { gap: 0; } }
+.gm-rail-resume {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px;
+  padding: 0 10px; border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--signal-ink) 45%, transparent);
   color: var(--signal-ink);
-}
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.gm-rail-resume-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--signal); animation: du-pulse 1.2s var(--ease) infinite; }
 
-/* ── The hub ──────────────────────────────────────────────────────────────── */
+/* ── Pages: one inset (the stage pads; a page adds none), plates for the states a stage reads ── */
 
-.gm-page { padding-top: 28px; padding-bottom: 64px; }
-.gm-hero { margin-bottom: 40px; }
-.gm-eyebrow {
-  display: block; margin-bottom: 12px;
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--signal-ink); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.gm-intro { margin-top: 16px; max-width: 62ch; font-size: 14px; line-height: 1.7; color: var(--gray-400); }
-.gm-section { margin-bottom: 32px; }
-.gm-grid { margin-top: 24px; display: grid; gap: 12px; grid-template-columns: 1fr; }
-.gm-two { margin-top: 24px; display: grid; gap: 12px; grid-template-columns: 1fr; }
-@media (min-width: 768px) {
-  .gm-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .gm-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (min-width: 1100px) {
-  .gm-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-}
-
-/* ── A mode card ──────────────────────────────────────────────────────────── */
-
-.gm-card {
-  position: relative; display: flex; flex-direction: column; gap: 10px;
-  border-radius: 16px; padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(23, 22, 22, 0.4);
-  transition: border-color 200ms var(--ease), background 200ms var(--ease), transform 200ms var(--easeOut);
-}
-[data-theme="light"] .gm-card { border-color: rgba(10, 10, 10, 0.11); background: rgba(255, 255, 255, 0.94); }
-a.gm-card:hover { border-color: color-mix(in srgb, var(--signal-ink) 40%, transparent); transform: translateY(-2px); }
-.gm-card--pending { opacity: 0.72; }
-
-.gm-card-head { display: flex; align-items: center; gap: 10px; }
-.gm-card-icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; color: var(--signal-ink); background: color-mix(in srgb, var(--signal) 10%, transparent); }
-.gm-card-icon svg { width: 15px; height: 15px; }
-.gm-card-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--white); font-stretch: 100%; }
-.gm-card-blurb { font-size: 13px; line-height: 1.6; color: var(--gray-400); }
-.gm-card-foot { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.gm-card-waiting { font-family: var(--font-mono); font-size: 10px; line-height: 1.5; color: var(--gray-500); font-variant-numeric: tabular-nums; }
-.gm-after-hours { margin: 0 0 12px; font-size: 11px; } /* the hub's one after-hours line, above §01 (R4-2) */
-/* A live count, read without a wallet. Brighter than the build facts above it because it changes. */
-.gm-card-presence { font-family: var(--font-mono); font-size: 10px; line-height: 1.5; color: var(--gray-400); margin-top: 6px; font-variant-numeric: tabular-nums; }
-.gm-card-open {
-  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--signal-ink); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-
-.gm-badge {
-  margin-left: auto;
-  padding: 2px 8px; border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.12); color: var(--gray-500);
-  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-[data-theme="light"] .gm-badge { border-color: rgba(10, 10, 10, 0.14); }
-.gm-badge--live { border-color: color-mix(in srgb, var(--profit) 45%, transparent); color: var(--profit); }
-.gm-badge--after { border-color: color-mix(in srgb, var(--color-warning) 45%, transparent); color: var(--color-warning); }
-
-/* ── Plates: profile, resume, and the sections that have no writer yet ────── */
-
+.gm-page { padding: 0; }
 .gm-plate {
   display: flex; flex-direction: column; gap: 8px;
   border-radius: 16px; padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(23, 22, 22, 0.4);
+  border: 1px solid var(--color-hairline); background: var(--color-surface-1);
 }
-[data-theme="light"] .gm-plate { border-color: rgba(10, 10, 10, 0.11); background: rgba(255, 255, 255, 0.94); }
 .gm-plate-title { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white); font-stretch: 100%; }
 .gm-plate-body { font-size: 13px; line-height: 1.65; color: var(--gray-400); }
 .gm-plate-note,
 .gm-plate-meta { font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: var(--gray-500); font-variant-numeric: tabular-nums; }
-
-.gm-resume {
-  margin-bottom: 32px;
-  border-color: color-mix(in srgb, var(--signal-ink) 40%, transparent);
-  background: color-mix(in srgb, var(--signal) 5%, transparent);
-}
-.gm-resume-cta {
-  align-self: flex-start; margin-top: 4px;
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--signal-ink); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-
-.gm-profile-id { display: flex; align-items: center; gap: 12px; }
-.gm-avatar {
-  width: 36px; height: 36px; border-radius: 9999px; flex-shrink: 0;
-  background: hsl(calc(var(--gm-hue, 0) * 1deg) 58% 52%);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08);
-}
-[data-theme="light"] .gm-avatar { box-shadow: 0 0 0 2px rgba(10, 10, 10, 0.08); }
-/* An explicit accent replaces the address hue rather than ringing it, so the choice is unmistakable. */
-.gm-avatar:not([data-accent="default"]) { background: var(--gm-accent); }
-.gm-profile-name { display: flex; flex-direction: column; gap: 2px; }
-.gm-profile-you { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--white); font-stretch: 100%; }
-.gm-profile-addr { font-size: 11px; color: var(--gray-500); }
-
-.gm-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 4px; }
-.gm-stat-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-500); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.gm-stat-value { font-family: var(--font-display); font-weight: 800; font-size: 20px; color: var(--gray-600); font-variant-numeric: tabular-nums; font-stretch: 100%; }
 
 /* ── The settings sheet's rows ────────────────────────────────────────────── */
 
@@ -308,89 +179,20 @@ a.gm-card:hover { border-color: color-mix(in srgb, var(--signal-ink) 40%, transp
   background: linear-gradient(135deg, var(--signal) 0 34%, var(--profit) 34% 67%, var(--loss) 67% 100%);
 }
 
-/* The overlays' plate (HowToSheet, GameSettingsSheet) — Ported from Owarine 90a91d71:web/src/features/games/duel/duel.css
- * (`.du-modal*`, R4-0, D-227: never ported, so both portalled an unstyled block under the footer). On the modal layer
- * and Mitoshi's scrim; a 44 px close. The settings plate scrolls inside itself, never over four fifths of the screen. */
-.du-modal-root {
-  position: fixed; inset: 0; z-index: var(--z-modal); display: flex; align-items: center; justify-content: center;
-  padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px));
-  background: var(--color-scrim); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
-}
-.du-modal-scrim { position: absolute; inset: 0; background: transparent; }
-.du-modal {
-  position: relative; display: flex; width: 100%; max-width: 384px; flex-direction: column; gap: 20px; padding: 36px 24px 24px;
-  border: 1px solid var(--color-hairline); border-radius: 24px; background: var(--color-surface-1); animation: gm-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.du-modal-close { position: absolute; top: 6px; right: 6px; display: grid; width: 44px; height: 44px; place-items: center; font-size: 18px; color: var(--gray-500); }
-.du-modal-close:hover { color: var(--white); }
 @keyframes du-pulse { 50% { opacity: 0.3; } }
-.gm-settings-modal { max-height: 80dvh; overflow-y: auto; gap: 10px; }
 .gm-settings-modal .gm-settings { padding: 0; max-width: none; gap: 14px; }
-.gm-settings-modal .gm-settings > button:last-child { align-self: stretch; }
 /* Flicky's volume well: `rounded-2xl bg-black/25 p-3`, as a step of the plate's own ink so it reads in both themes. */
 .gm-set-block {
   display: flex; flex-direction: column; gap: 12px; padding: 12px; border-radius: 16px;
   background: color-mix(in srgb, currentColor 7%, transparent);
 }
 
-/* ── Your match (Flicky my-match-tile.tsx), the last game, the two link plates, how to play ──────── */
-.gm-match-tile { display: flex; flex-direction: column; gap: 10px; }
-.gm-match-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.gm-match-badge { font-family: var(--font-pixel); display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 2px 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); background: rgba(255, 255, 255, 0.06); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.gm-match-badge--live { color: var(--profit); background: color-mix(in srgb, var(--profit) 12%, transparent); }
-.gm-match-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--profit); animation: du-pulse 1.2s var(--ease) infinite; }
-.gm-match-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.gm-match-fact { display: flex; flex-direction: column; gap: 2px; }
-.gm-match-k { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-500); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.gm-match-v { font-family: var(--font-mono); font-size: 13px; color: var(--white); font-variant-numeric: tabular-nums; }
-.gm-last, .gm-link-plate { display: flex; flex-direction: column; gap: 8px; text-decoration: none; }
-.gm-link-plate:hover { border-color: var(--gm-accent, var(--signal-ink)); }
-.gm-rail-howto {
-  display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9999px;
-  border: 1px solid var(--color-hairline); font-family: var(--font-mono); font-size: 12px; color: var(--gray-400); font-variant-numeric: tabular-nums; }
-.gm-rail-howto:hover { color: var(--white); border-color: var(--gm-accent, var(--signal-ink)); }
-.gm-howto { gap: 12px; }
-.gm-howto-title { font-size: 22px; }
-.gm-howto-steps { display: flex; flex-direction: column; gap: 8px; padding-left: 20px; list-style: decimal; font-size: 13px; line-height: 1.6; color: var(--gray-400); }
+/* ── How to play (on components/ui/modal) ── */
+.gm-howto-steps { display: flex; flex-direction: column; gap: 8px; padding-left: 20px; list-style: decimal; font-size: 14px; line-height: 1.6; color: var(--gray-400); }
 .gm-howto-steps li::marker { color: var(--gm-accent, var(--signal-ink)); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.gm-howto-got { width: 100%; }
 
-/* ── The season banner (Flicky season-banner.tsx: a 3:1 strip on the home and the ladder), drawn not shipped ── */
-.gm-season-link { display: block; text-decoration: none; color: inherit; margin-bottom: 20px; }
-.gm-season {
-  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
-  min-height: 96px; padding: 14px 18px; border-radius: 16px; overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--signal-ink) 40%, var(--color-hairline));
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--signal) 16%, var(--color-surface-1)), var(--color-surface-1) 70%),
-    var(--color-surface-1);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.06), inset 0 -2px 0 rgba(0, 0, 0, 0.35);
-}
-[data-theme="light"] .gm-season { box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(10, 10, 10, 0.08); }
-.gm-season-trophy { width: 56px; height: 56px; flex: none; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--signal) 55%, transparent)); }
-.gm-season-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.gm-season-eyebrow { font-family: var(--font-pixel); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gray-500); }
-.gm-season-name { font-family: var(--font-pixel); font-size: 33px; line-height: 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--white); }
-.gm-season-line { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--signal-ink); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.gm-season-cta { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); white-space: nowrap; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.gm-season-link:hover .gm-season-cta { color: var(--white); }
-@media (max-width: 480px) {
-  .gm-season { grid-template-columns: auto minmax(0, 1fr); padding: 12px 14px; }
-  .gm-season-cta { display: none; }
-  .gm-season-name { font-size: 22px; }
-  .gm-season-trophy { width: 44px; height: 44px; }
-}
-
-/* The achievements shelf: a locked badge is a goal, so it is shown at lower contrast rather than hidden. */
-.gm-ach-list { margin-top: 12px; display: grid; gap: 6px; grid-template-columns: 1fr; list-style: none; padding: 0; }
-@media (min-width: 520px) { .gm-ach-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.gm-ach {
-  display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 4px;
-  border: 1px solid color-mix(in srgb, var(--white) 7%, transparent);
-  background: color-mix(in srgb, var(--white) 2%, transparent);
-}
-.gm-ach--on { border-color: color-mix(in srgb, var(--signal-ink) 45%, transparent); background: color-mix(in srgb, var(--signal) 9%, transparent); }
-.gm-ach-title { font-family: var(--font-display); font-weight: 700; font-size: 12px; color: var(--gray-400); font-stretch: 100%; }
-.gm-ach--on .gm-ach-title { color: var(--white); }
-.gm-ach-how { font-size: 11px; line-height: 1.5; color: var(--gray-500); }
-.gm-ach-progress { font-family: var(--font-mono); font-size: 10px; color: color-mix(in srgb, var(--signal-ink) 80%, var(--white)); font-variant-numeric: tabular-nums; }
-[data-theme="light"] .gm-ach:not(.gm-ach--on) { border-color: rgba(10, 10, 10, 0.1); background: rgba(10, 10, 10, 0.02); }
+/* ── An asset's disc anywhere in the games (AssetDisc's mark on its brand colour, sized by the caller) ── */
+.gm-disc { display: inline-grid; place-items: center; flex: none; border-radius: 9999px; overflow: hidden; }
+.gm-disc .asset-mark { width: 100%; height: 100%; }
+.gm-disc.generic { background: color-mix(in srgb, var(--white) 14%, transparent); font-family: var(--font-data); font-size: 10px; color: var(--white); }

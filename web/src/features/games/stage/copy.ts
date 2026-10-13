@@ -8,16 +8,16 @@
 export const STAGE = {
   up: "Up",
   down: "Down",
-  hint: "Swipe up or down — the arrow keys and the buttons do the same.",
-  hintHeld: "This card is not playable right now. The reason is above.",
+  hint: "Swipe ↑ or ↓",
+  hintHeld: "Not playable now · reason above",
   /** Flicky's `UNPLACEABLE_HINT`, for a side whose quote the arena refuses: the book cannot fill it at this stake. */
-  hintLocked: (side: "up" | "down") => `${side === "up" ? "Up" : "Down"} cannot be placed on this card right now — the venue's price ladder is too thin on that side for this stake. Swipe the other side.`,
+  hintLocked: (side: "up" | "down") => `${side === "up" ? "Up" : "Down"} locked · book too thin. Try ${side === "up" ? "Down" : "Up"}.`,
   /** The odds slot on a side the arena would refuse. */
   locked: "locked",
   cardOf: (n: number, total: number) => `Card ${n} of ${total}`,
   cardLabel: (asset: string, cadence: string) => `${asset}, ${cadence} Window`,
   /** The title band's pair, as the reference writes `btc / usd`. Every Window here is quoted in dollars. */
-  pair: (asset: string) => `${asset} / USD`,
+  pair: (asset: string) => (asset.endsWith("-24") ? `${asset.slice(0, -3)} / USD · 24/7` : `${asset} / USD`),
   settlesIn: (clock: string) => `settles in ${clock}`,
   settling: "settling…",
   clockPending: "–:––",
@@ -26,6 +26,6 @@ export const STAGE = {
   played: (side: "up" | "down") => (side === "up" ? "You called up" : "You called down"),
   empty: {
     title: "Nothing to play",
-    body: "Every card in this deck has been played.",
+    body: "Every card played.",
   },
 } as const;

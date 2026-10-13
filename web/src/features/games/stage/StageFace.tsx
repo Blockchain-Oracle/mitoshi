@@ -32,6 +32,13 @@ export interface StageFaceProps {
   pills: readonly StagePill[];
   /** Chain-corrected now from the port; omitted, the clock ticks locally. */
   nowMs?: number;
+  /**
+   * The asset's live line (R4-9, D-227): on a phone or a short screen it takes the art window's place (48 px instead
+   * of 132), so the calls sit on the first screen; on a tall screen it rides under the quote band.
+   */
+  line?: ReactNode;
+  /** First-run coach stamps on the card's two edges ("↑ higher in 30 s", "↓ lower"). */
+  coach?: { up: string; down: string } | null;
 }
 
 /**
@@ -41,7 +48,7 @@ export interface StageFaceProps {
  * side's odds on each. The countdown is always the Window's real expiry, whatever the mode scores on: a
  * card is a claim on a specific live Window and a player has to be able to see how much of it is left.
  */
-export function StageFace({ card, place, eyebrow, question, pills, nowMs }: StageFaceProps) {
+export function StageFace({ card, place, eyebrow, question, pills, nowMs, line, coach }: StageFaceProps) {
   const remainingSec = card.expirySec - Math.floor((nowMs ?? Date.now()) / 1_000);
   const urgency = clockUrgency(remainingSec);
   return (
@@ -60,7 +67,13 @@ export function StageFace({ card, place, eyebrow, question, pills, nowMs }: Stag
       {/* Flicky's art window (L318–338): the mascot reacts to the lean — the coin at rest, the bull on an
           upward drag, the bear on a downward one — behind a CRT face with a screw in each corner. The
           card's own `data-swipe` drives the swap, so the face knows nothing about the gesture. */}
-      <div className="st-art crt-screen" aria-hidden>
+      {coach ? (
+        <>
+          <span className="st-coach st-coach--up" aria-hidden>{coach.up}</span>
+          <span className="st-coach st-coach--down" aria-hidden>{coach.down}</span>
+        </>
+      ) : null}
+      <div className="st-art crt-screen" data-has-line={line ? "" : undefined} aria-hidden>
         <span className="st-art-screw st-art-screw--tl" />
         <span className="st-art-screw st-art-screw--tr" />
         <span className="st-art-screw st-art-screw--bl" />
@@ -69,6 +82,8 @@ export function StageFace({ card, place, eyebrow, question, pills, nowMs }: Stag
         <BullMark className="st-art-up" />
         <BearMark className="st-art-down" />
       </div>
+
+      {line ? <div className="st-line">{line}</div> : null}
 
       <div className="st-band st-band--quote">
         <span className="st-quote-inset" aria-hidden />

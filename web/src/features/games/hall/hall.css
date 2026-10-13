@@ -1,0 +1,136 @@
+/* The hall (R4-9, D-227): the games hub as an arcade — the head row with its marquee, the featured cabinet, the cabinet
+ * rail and the streak strip. Ported in spirit from Senryo:apps/web/src/features/games/{GamesHub.tsx,games.css} on
+ * Mitoshi's tokens (vermilion accent, Sora/Inter/JetBrains Mono, the pixel face inside the cabinets). The cabinets'
+ * scenes keep a dark arena in both themes, as Senryo's do. Budget at 320 × 568: head 44 + feature ≈ 260 → PLAY ends
+ * near y ≈ 400, above the dock. */
+
+.hall { display: flex; flex-direction: column; gap: 12px; }
+
+/* ── The head row: title · marquee · settings ── */
+.hall-head { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.hall-title { flex: none; font-family: var(--font-pixel); font-size: 33px; line-height: 1; letter-spacing: 0.02em; color: var(--white); }
+.hall-title::after { content: "."; color: var(--color-accent); }
+.hall-now { position: relative; flex: 1; min-width: 0; height: 32px; display: flex; align-items: center; overflow: hidden; border-radius: 9999px; background: var(--color-surface-1); border: 1px solid var(--color-hairline); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.hall-now--empty { background: none; border: 0; }
+.hall-now-item { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-family: var(--font-data); font-size: 11px; color: var(--gray-400); font-variant-numeric: tabular-nums; }
+.hall-now-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--color-accent); }
+.hall-now-item[data-tone="up"] .hall-now-dot { background: var(--profit); }
+.hall-now-item[data-tone="down"] .hall-now-dot { background: var(--loss); }
+.hall-now-who { color: var(--white); }
+.hall-now-item[data-tone="up"] .hall-now-what { color: var(--profit); }
+.hall-now-item[data-tone="down"] .hall-now-what { color: var(--loss); }
+.hall-now-ago { color: var(--gray-500); }
+.hall-now-item[data-tone="best"] .hall-now-what { color: var(--color-accent); }
+
+/* ── Marquee lights: a dot row across a cabinet's top edge, chasing (21st.dev 25295 educalvolpz/switchboard-card,
+ * revamped: vermilion dots on the cabinet trim, still under reduced motion) ── */
+.hall-lights, .cab-lights {
+  position: absolute; top: 0; left: 16px; right: 16px; height: 6px; pointer-events: none;
+  background-image: radial-gradient(circle, var(--color-accent) 1.5px, transparent 2px);
+  background-size: 12px 6px; background-repeat: repeat-x; opacity: 0.85;
+  animation: hall-chase 1.2s steps(2) infinite;
+}
+@keyframes hall-chase { 50% { opacity: 0.35; background-position: 6px 0; } }
+
+/* ── The featured cabinet ── */
+.hall-feature {
+  position: relative; display: flex; flex-direction: column; gap: 12px; padding: 18px 16px 16px; border-radius: 24px;
+  background: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--color-accent) 14%, var(--color-surface-1)), var(--color-surface-1) 70%);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, var(--color-hairline));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.05), inset 0 -3px 0 rgba(0, 0, 0, 0.3);
+}
+.hall-feature-top { display: flex; align-items: center; gap: 8px; min-height: 28px; }
+.hall-feature-eyebrow { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-pixel); font-size: 14px; line-height: 1; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-400); }
+.hall-continue {
+  margin-left: auto; min-height: 32px; display: inline-flex; align-items: center; padding: 0 12px; border-radius: 9999px;
+  border: 1px solid var(--color-hairline); font-size: 12px; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 50%;
+}
+.hall-continue:hover { border-color: var(--color-accent); }
+.hall-feature-body { display: flex; align-items: center; gap: 12px; }
+.hall-feature-disc { width: 44px; height: 44px; }
+.hall-feature-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.hall-feature-asset { font-family: var(--font-display); font-weight: 800; font-size: 26px; line-height: 1; letter-spacing: -0.02em; color: var(--white); }
+.hall-feature-cadence { font-family: var(--font-data); font-size: 12px; color: var(--gray-400); }
+.hall-feature-ring { flex: none; }
+.hall-feature-state { font-size: 14px; color: var(--gray-400); min-height: 44px; display: flex; align-items: center; }
+.hall-feature-quote { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.hall-price { font-family: var(--font-data); font-size: 22px; font-weight: 600; color: var(--white); font-variant-numeric: tabular-nums; }
+.hall-price--pending { color: var(--gray-500); }
+.hall-crowd { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.hall-crowd-bar { position: relative; width: 72px; height: 6px; border-radius: 9999px; background: var(--loss); overflow: hidden; }
+.hall-crowd-bar > span { position: absolute; inset: 0 auto 0 0; width: var(--up, 50%); background: var(--profit); }
+.hall-crowd-label { font-family: var(--font-data); font-size: 11px; color: var(--gray-400); white-space: nowrap; }
+.hall-play { min-height: 52px; font-family: var(--font-pixel); font-size: 22px; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; gap: 10px; }
+.hall-play-icon { width: 20px; height: 20px; fill: currentColor; }
+.hall-after { font-family: var(--font-data); font-size: 11px; color: var(--color-warning); }
+
+/* ── The cabinet rail: snap-x with a peek on phones, a 2/3/4 grid at 768/1024/1440 ── */
+.cab-rail {
+  display: grid; grid-auto-flow: column; grid-auto-columns: min(78%, 280px); gap: 12px; list-style: none; margin: 0; padding: 4px 0 8px;
+  overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
+}
+.cab-rail::-webkit-scrollbar { display: none; }
+.cab-rail:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; border-radius: 20px; }
+.cab-wrap { display: flex; flex-direction: column; gap: 4px; }
+.cab-dots { display: flex; justify-content: center; gap: 2px; }
+.cab-dot { display: grid; place-items: center; width: 24px; height: 24px; }
+.cab-dot::before { content: ""; width: 6px; height: 6px; border-radius: 9999px; background: var(--gray-600); transition: width 200ms var(--ease), background 200ms var(--ease); }
+.cab-dot[aria-current]::before { width: 16px; background: var(--color-accent); }
+@media (min-width: 768px) { .cab-dots { display: none; } }
+@media (min-width: 768px) { .cab-rail { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; } }
+@media (min-width: 1024px) { .cab-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1440px) { .cab-rail { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.cab {
+  position: relative; display: flex; flex-direction: column; gap: 10px; padding: 12px; scroll-snap-align: start; border-radius: 20px;
+  background: var(--color-surface-1); border: 1px solid var(--color-hairline);
+  transition: transform 200ms var(--ease), border-color 200ms var(--ease);
+}
+.cab[data-off] { opacity: 0.72; }
+.cab:not([data-off]):hover { border-color: color-mix(in srgb, var(--color-accent) 45%, transparent); transform: translateY(-2px); }
+.cab-lights { left: 24px; right: 24px; top: 2px; opacity: 0.5; }
+.cab-screen { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
+.cab-foot { display: flex; flex-direction: column; gap: 8px; }
+.cab-id { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cab-name { font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cab-fact { font-family: var(--font-data); font-size: 11px; color: var(--gray-400); min-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.cab-play { min-height: 44px; font-family: var(--font-pixel); font-size: 18px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
+.cab-soon { display: grid; place-items: center; min-height: 44px; border-radius: var(--button-primary-radius); border: 1px dashed var(--color-hairline); font-family: var(--font-pixel); font-size: 16px; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* Desktop cabinet glass: a pointer-following sheen (21st.dev 2220 preetsuthar17/spotlight-card, revamped in CSS only —
+ * a fixed highlight on hover, ≥1024 and fine pointers only). */
+@media (min-width: 1024px) and (hover: hover) {
+  .cab-screen { position: relative; }
+  .cab-screen::after { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 50% at 30% 20%, rgba(255, 255, 255, 0.12), transparent 60%); opacity: 0; transition: opacity 200ms var(--ease); }
+  .cab:hover .cab-screen::after { opacity: 1; }
+}
+
+/* ── The streak strip ── */
+.streak { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 12px; border-radius: 16px; background: var(--color-surface-1); border: 1px solid var(--color-hairline); }
+.streak--out { width: 100%; font-size: 14px; color: var(--white); justify-content: flex-start; }
+.streak--out:hover { border-color: var(--color-accent); }
+.streak-flame { width: 20px; height: 20px; color: var(--color-accent); flex: none; }
+.streak-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; background: color-mix(in srgb, var(--white) 6%, transparent); }
+.streak-badge[data-on] { background: color-mix(in srgb, var(--color-accent) 16%, transparent); }
+.streak-badge[data-on] .streak-flame { animation: streak-flicker 1.4s ease-in-out infinite; }
+@keyframes streak-flicker { 50% { transform: scale(1.12) rotate(-4deg); } }
+.streak-n { font-family: var(--font-data); font-weight: 700; font-size: 18px; color: var(--white); font-variant-numeric: tabular-nums; }
+.streak-text { display: flex; flex-direction: column; min-width: 0; }
+.streak-main { font-size: 13px; font-weight: 600; color: var(--white); }
+.streak-sub { font-family: var(--font-data); font-size: 11px; color: var(--gray-400); }
+.streak-bests { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.streak-chip { min-height: 32px; display: inline-flex; align-items: center; padding: 0 10px; border-radius: 9999px; border: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 11px; color: var(--white); white-space: nowrap; }
+@media (max-width: 400px) { .streak { flex-wrap: wrap; } .streak-bests { margin-left: 0; justify-content: flex-start; } }
+
+/* ── The achievements shelf (Owarine 90a91d71 AchievementsPlate): a locked badge is a goal, shown at lower contrast ── */
+.ach { display: flex; flex-direction: column; gap: 8px; }
+.ach-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.ach-title { font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); }
+.ach-count { font-family: var(--font-data); font-size: 11px; color: var(--gray-500); }
+.ach-list { display: grid; gap: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
+@media (min-width: 1024px) { .ach-list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ach-badge { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--color-hairline); background: var(--color-surface-1); }
+.ach-badge[data-on] { border-color: color-mix(in srgb, var(--color-accent) 50%, transparent); background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface-1)); }
+.ach-name { font-size: 13px; font-weight: 600; color: var(--gray-400); }
+.ach-badge[data-on] .ach-name { color: var(--white); }
+.ach-how { font-size: 11px; line-height: 1.4; color: var(--gray-500); }
+.ach-progress { font-family: var(--font-data); font-size: 10px; color: var(--color-accent); }

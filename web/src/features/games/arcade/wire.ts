@@ -13,6 +13,8 @@ export interface BoardWire {
   configured: boolean;
   /** A fresh seed for the next run, from the server's entropy. */
   seed: string;
+  /** Engine v2: the real-price tape issued with that seed (`?run=1`), or null — the run then plays the seed's line. */
+  tape: { feed: string; fromSec: number; toSec: number; points: number[]; moves: number[] } | null;
   engineVersion: number;
   rows: BoardRowWire[];
   me: { best: number; rank: number } | null;

@@ -1,6 +1,7 @@
 {
   "generatedBy": "scripts/codegen/clients.mjs",
   "fragments": [
+    "42431/arena",
     "42431/engine",
     "42431/fair",
     "42431/guard",
@@ -33,6 +34,7 @@
     "EventVaultV2",
     "EventsEngine",
     "FairValueGuard",
+    "GameArena",
     "HopComposer",
     "ILayerZeroEndpointV2",
     "IPoolManager",

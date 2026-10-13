@@ -1,5 +1,5 @@
 // Ported from Masayume 68f7a09:packages/core/src/games/arcade/flap.ts
-import { clamp01, FIELD_H, FIELD_W, lerp, STEP_SEC, type ArcadeRunConfig } from "./field";
+import { clamp01, FIELD_H, FIELD_W, lerp, STEP_SEC, TAPE_MIN_POINTS, tapeAt, type ArcadeRunConfig } from "./field";
 import type { Rng } from "./rng";
 
 /**
@@ -14,7 +14,8 @@ import type { Rng } from "./rng";
  * input is one bit a tick. The flyer's tilt, its trail, the shake and the impact flash are visual and
  * live with the draw; the fall itself is here, because the run's length is part of what is checked.
  */
-export const FLAP_ENGINE_VERSION = 1;
+/** v2 (R4-9, D-227): the gaps follow a server-issued tape of real RedStone prints when one is given — its own board. */
+export const FLAP_ENGINE_VERSION = 2;
 
 interface FlapTuning {
   rampSec: number;
@@ -94,6 +95,8 @@ export interface FlapState {
   candles: Candle[];
   spawnX: number;
   lastCenter: number;
+  /** Tape points read so far (v2). */
+  tapeIdx: number;
   difficulty: number;
   speed: number;
   /** Events of the last step, cleared at the top of the next. */
@@ -111,9 +114,18 @@ function spacingOf(d: number): number {
 }
 
 /** The next gap's centre: near the last one, so the run reads, and clamped so both candles stay on screen. */
-function nextCenter(state: FlapState, rng: Rng, half: number): number {
+function nextCenter(state: FlapState, rng: Rng, half: number, config: ArcadeRunConfig): number {
   const lo = half + FLAP.gapEdge;
   const hi = 1 - half - FLAP.gapEdge;
+  const tape = config.tape;
+  if (tape && tape.length >= TAPE_MIN_POINTS) {
+    // The canyon is the real chart: a high print opens the gap high; the step between candles stays readable.
+    state.tapeIdx += 1;
+    const goal = lerp(hi, lo, tapeAt(tape, state.tapeIdx));
+    const c = Math.max(lo, Math.min(hi, Math.max(state.lastCenter - FLAP.gapStep, Math.min(state.lastCenter + FLAP.gapStep, goal))));
+    state.lastCenter = c;
+    return c;
+  }
   let c = state.lastCenter + (rng.next() * 2 - 1) * FLAP.gapStep;
   c = Math.max(lo, Math.min(hi, c));
   state.lastCenter = c;
@@ -121,10 +133,10 @@ function nextCenter(state: FlapState, rng: Rng, half: number): number {
 }
 
 /** Keep candles queued out to just past the right edge. */
-function fill(state: FlapState, rng: Rng, d: number, t: FlapTuning): void {
+function fill(state: FlapState, rng: Rng, d: number, t: FlapTuning, config: ArcadeRunConfig): void {
   const half = lerp(FLAP.gap0, t.gap1, d);
   while (state.spawnX < FIELD_W + spacingOf(d)) {
-    state.candles.push({ x: state.spawnX, center: nextCenter(state, rng, half), half, scored: false });
+    state.candles.push({ x: state.spawnX, center: nextCenter(state, rng, half, config), half, scored: false });
     state.spawnX += spacingOf(d);
   }
 }
@@ -148,13 +160,14 @@ export function createFlapState(rng: Rng, config: ArcadeRunConfig): FlapState {
     candles: [],
     spawnX: FIELD_W + FIELD_W * FLAP.leadFrac,
     lastCenter: FLAP.startY,
+    tapeIdx: 0,
     difficulty: 0,
     speed: tuning(config).speed0,
     scored: false,
     crashed: false,
     impact: null,
   };
-  fill(state, rng, 0, tuning(config));
+  fill(state, rng, 0, tuning(config), config);
   return state;
 }
 
@@ -212,7 +225,7 @@ export function stepFlap(state: FlapState, flap: boolean, rng: Rng, config: Arca
   state.spawnX -= speed * dt;
   for (const c of state.candles) c.x -= speed * dt;
   while (state.candles.length > 0 && (state.candles[0] as Candle).x < -FLAP.bodyW) state.candles.shift();
-  fill(state, rng, d, t);
+  fill(state, rng, d, t, config);
 
   // A candle whose body has fully passed the flyer is a point.
   for (const c of state.candles) {

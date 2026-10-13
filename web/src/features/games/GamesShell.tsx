@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
-import { installAudioUnlock, pressSfx, releaseSfx, startBgm, stopBgm } from "./audio";
+import { installAudioUnlock, pressSfx, releaseSfx, stopBgm } from "./audio";
 import { GameSettingsSheet } from "./GameSettingsSheet";
 import { GamesProvider, useGames } from "./GamesProvider";
 import { GamesRail } from "./GamesRail";
@@ -27,21 +27,20 @@ export function GamesShell({ children }: { children: ReactNode }) {
 
 /** What sounds its press and release: every control under the frame, and the settings plate's, which portals out of it. */
 const CONTROL = "button, a[href], [role='button'], [role='radio'], input[type='range']";
-const SCOPE = ".gm-frame, .gm-settings-modal";
+const SCOPE = ".gm-frame, .gm-settings-modal, .gm-howto";
 
 function isControl(target: EventTarget | null): boolean {
   return target instanceof Element && target.closest(SCOPE) !== null && target.closest(CONTROL) !== null;
 }
 
 function GamesFrame({ children }: { children: ReactNode }) {
-  const { reducedMotion, settings } = useGames();
+  const { reducedMotion, settings, immersive } = useGames();
 
-  // Audio lives for exactly as long as the frame does: unlocked on the first gesture, the bed on while
-  // any game is open (Flicky's layout), and — Pips's discipline — every control sounding its own press
-  // and release, baked in here once rather than wired into each button.
+  // Audio lives for exactly as long as the frame does: unlocked on the first gesture and — Pips's discipline — every
+  // control sounding its own press and release, baked in here once. The music bed is the stages' (R4-9, D-227: Senryo
+  // starts it on Play and stops it at game over or exit); the hub plays only the press sounds.
   useEffect(() => {
     const uninstall = installAudioUnlock();
-    startBgm();
     const onDown = (event: PointerEvent) => {
       if (isControl(event.target)) pressSfx();
     };
@@ -72,7 +71,7 @@ function GamesFrame({ children }: { children: ReactNode }) {
     // `data-reduced-motion` is the single switch every stage animation reads. A stage must never
     // consult the media query itself: the player's explicit choice has to beat the OS, and it can
     // only do that if there is one place that resolves the two.
-    <div className="gm-frame" data-reduced-motion={reducedMotion ? "true" : "false"} data-accent={settings.accent}>
+    <div className="gm-frame" data-reduced-motion={reducedMotion ? "true" : "false"} data-accent={settings.accent} data-immersive={immersive ? "" : undefined}>
       <GamesRail />
       {children}
       <GameSettingsSheet />
