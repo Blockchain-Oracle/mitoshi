@@ -135,8 +135,18 @@ the app's figures equal the chain's to the base unit. Spec check: a Window that 
 payout until it is paid (the wallet's collect read with its balance in one block; the Trading Balance's until its crank),
 proven on two live hedges through lock, answer and the settler's payout; Close all skips rows no book can take; a
 settled row that pays nothing reads "Settled · lost". The ops exit keeper changed (`decide.ts`): ops needs a deploy.
+R4-1 closed out at `1be4aba` (built on the trunk: `8dfd1b2` · `0d150c0` · `9002c8c` · `bd8586a` · `1be4aba`): tsc,
+core/markets/ops/scripts typecheck, invariants, 59 test files, build and 70 route budgets clean; /trade/BTC and
+/portfolio at 375 and 1440 clean (locally the stack's icons sit 2 px past the edge while "Syncing the chain clock…" —
+R4-0's open sync-state item). Web and ops deploys triggered. Open, the owner's call: a Boost's "Close pays now" reads
+the reserve's `markOf` (rested bids only), so it can sit below what Close pays, never above; a Boost that paid back more
+than its stake shows a negative Staked (the P&L is right; a $0.00 floor is a display choice). Seen, outside the spec: a
+wallet row and a Trading Balance row on one Window and side share one TP/SL entry.
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
 the slice's routes; a real flow on testnet where money moves (P&L checked against chain reads); deploy web (and ops
 when the keeper changes).
+Fold budgets (R4-2): count a phone's fold against `100svh` with the browser's bars shown (a 568 px phone keeps ~450 px),
+not the device height — check in DevTools with the browser-UI height or on a phone; clamps use `svh`/`dvh` only, and an
+action the budget can't hold sticks above the dock (`.page-action`). Every new piece comes from `@/components/kit`.

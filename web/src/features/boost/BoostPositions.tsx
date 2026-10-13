@@ -10,7 +10,7 @@
  * closed one is what it paid back against its stake.
  */
 import type { Address } from "@cwf/core";
-import { PositionCard } from "@/components/data/PositionCard";
+import { PositionCard } from "@/components/kit";
 import { statusText } from "@/features/terminal/position-return";
 import { centsOf } from "@/features/terminal/format";
 import type { PositionValue } from "@/features/terminal/usePositionValue";

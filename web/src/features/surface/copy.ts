@@ -24,5 +24,5 @@ export const SURFACE = {
     model: (pct: string) => `The model gives UP ${pct} at the latest signed spot.`,
     noModel: "No fair-value model on this Series yet — the reserves (Parlay, Range, Boost) price only the modelled Windows.",
   },
-  foot: "Books are read from the engine; the model from the fair-value guard contract (`previewFairUpE6`) at the latest signed RedStone spot; the path from the price relay's signed prints. A Window settles on the RedStone signed print at its close.",
+  foot: "Book: engine · Model: fair-value guard · Settles: RedStone.",
 } as const;

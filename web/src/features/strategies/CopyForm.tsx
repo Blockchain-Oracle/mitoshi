@@ -1,9 +1,11 @@
 "use client";
 // Ported in role from Agari 03b30ab:web/src/features/strategies/CopyFormFields.tsx (`checkCopyForm`'s fields and their red
 // lines) — on one transaction: the plan says, line by line, what the one signature does before it is asked for.
+// R4-2 (D-227): the one action sits in the copy sheet's pinned footer (`SheetFooter`), not a sticky strip in the body.
 import { formatBaseUnits, USD_DECIMALS, type SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
+import { SheetFooter } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { COPY } from "./copy";
@@ -74,8 +76,8 @@ export function CopyForm({ card, strategies, writes }: { card: StrategyWire; str
         </ul>
       )}
       {writes.tx.state.kind === "failed" && <TxFailureCard state={writes.tx.state} onRetry={() => writes.tx.dispatch({ type: "reset" })} />}
-      {/* The one action stays in reach while the details above it scroll (plan fix 7: sticky CTA). */}
-      <div className="sticky bottom-0 -mx-1 bg-surface-1 px-1 pt-2 pb-2">
+      {/* The one action stays in reach while the details above it scroll (plan fix 7): the sheet's pinned footer. */}
+      <SheetFooter>
         {!writes.signedIn ? (
           <button type="button" onClick={writes.connect} className="min-h-touch w-full rounded-full bg-accent-fill px-4 type-body-strong text-on-accent hover:bg-accent-fill-pressed">
             {COPY.blocked.signIn}
@@ -85,7 +87,7 @@ export function CopyForm({ card, strategies, writes }: { card: StrategyWire; str
         ) : (
           <TxCta state={writes.tx.state} action={COPY.cta(mode)} signer={writes.signer} sponsored={false} onConfirm={() => void send()} />
         )}
-      </div>
+      </SheetFooter>
     </div>
   );
 }

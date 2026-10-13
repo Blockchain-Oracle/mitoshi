@@ -29,15 +29,15 @@
    chip lands — the slip itself opens as the right-edge slide-over */
 .pl-dock {
   position: fixed; z-index: var(--z-float); left: 50%; transform: translateX(-50%); width: min(26rem, calc(100vw - 1.25rem));
-  bottom: calc(1rem + env(safe-area-inset-bottom));
+  bottom: var(--dock-strip-offset);
 }
-@media (max-width: 767px) { .pl-dock { bottom: calc(0.8rem + env(safe-area-inset-bottom) + 4.75rem); } .pl-page { padding-bottom: 180px; } }
+/* No phone pad of its own (it was 180 px before the column cleared the dock): the column pads by --dock-clearance and
+   the page's 96 px clears the slip strip above the dock (R4-2, D-227). */
 .pl-dock-btn {
   display: flex; align-items: center; gap: 10px; width: 100%; padding: 0 16px; border-radius: 9999px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
   background: var(--accent-fill); color: var(--on-accent); font-family: var(--font-display); font-weight: 700; font-size: 15px;
 }
 .pl-dock-open { margin-left: auto; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
-.pl-slide-over .slide-over-body { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 
 /* ── the Windows list (109's product rows) ── */
 .pw { display: flex; flex-direction: column; gap: 12px; }
@@ -112,7 +112,7 @@
 
 /* the 24524 chip, appended to <body> for the flight */
 .fly-chip {
-  position: fixed; z-index: 60; pointer-events: none; padding: 6px 10px; border-radius: 9999px; transform: translate(-50%, -50%);
+  position: fixed; z-index: calc(var(--z-float) + 1); pointer-events: none; padding: 6px 10px; border-radius: 9999px; transform: translate(-50%, -50%);
   background: var(--vermilion); color: #fff; font-family: var(--font-mono); font-size: 12px; font-weight: 700; white-space: nowrap;
   box-shadow: 0 6px 18px rgb(0 0 0 / 0.35);
 }

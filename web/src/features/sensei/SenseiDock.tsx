@@ -13,6 +13,7 @@ import { SenseiDrawer } from "@/features/terminal/lazy-drawers";
 import { useCommittedSpot } from "@/features/terminal/live";
 import { useClockValue } from "@/lib/clock";
 import { cn } from "@/lib/utils";
+import { useUrlOverlay } from "@/lib/drawer-param";
 import { SENSEI } from "./copy";
 import { useStepAside } from "./useStepAside";
 
@@ -65,6 +66,8 @@ function useTeaser(open: boolean): number {
 
 export function SenseiDock({ laneSet, market, openingRaw, address, onAct }: { laneSet: LaneSet | null; market: EventMarket | null; openingRaw: bigint | null; address: Address | null; onAct?: (marketId: EventMarket["marketId"], side: Side) => void }) {
   const [open, setOpen] = useState(false);
+  // Sensei lives in the URL while open (`?d=sensei`, D-190; R4-2): Back closes it instead of leaving /markets.
+  const url = useUrlOverlay("sensei", open, setOpen);
   const [everOpened, setEverOpened] = useState(false);
   useEffect(() => void (open && setEverOpened(true)), [open]);
   const teaser = useTeaser(open);
@@ -138,7 +141,7 @@ export function SenseiDock({ laneSet, market, openingRaw, address, onAct }: { la
       {open || everOpened ? (
         <SenseiDrawer
           open={open}
-          onOpenChange={(o) => !o && setOpen(false)}
+          onOpenChange={(o) => !o && url.onOpenChange?.(false)}
           symbol={market?.asset ?? "BTC"}
           market={market}
           spot={spot.price}

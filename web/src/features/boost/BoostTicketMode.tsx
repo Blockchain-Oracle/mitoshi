@@ -5,6 +5,7 @@
  * slider, the reserve's own sizing (`sizeForStake`) in the 29356 totals — exposure, entry, fronted, premium, the
  * knock-out line, the most you can lose — and the 23527 hold. Named refusals before the hold: the guard's model at the
  * live spot (PD-2), D-116's void bound per multiple, D-114's healthy-at-birth, the reserve's caps. A lazy island.
+ * R4-2 (D-227): the hold sits in the phone sheet's pinned footer (`SheetFooter`), in place on the rail.
  */
 import { USD_DECIMALS, type EventMarket, type Side } from "@cwf/core";
 import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
@@ -13,6 +14,7 @@ import { useState } from "react";
 import { EmptyState, LoadingState } from "@/components/states";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
+import { SheetFooter } from "@/components/ui/drawer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { LeverageSlider } from "@/components/ui/leverage-slider";
 import { OrderSummary } from "@/components/ui/order-summary";
@@ -67,18 +69,20 @@ export function BoostTicketMode({ market, side: initialSide }: { market: EventMa
         ]}
         total={{ label: BOOST.total, value: quote ? usd(quote.winIfRightBase) : null, tone: "profit" }}
       />
-      {!session.isConnected ? (
-        <button type="button" onClick={() => session.connectFor(BOOST.cta.signInFor)} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{BOOST.cta.signIn}</button>
-      ) : busy || writes.fetchingSpot ? (
-        <TxCta state={writes.tx} action={writes.fetchingSpot ? BOOST.cta.fetchingSpot : BOOST.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
-      ) : blocker ? (
-        <button type="button" disabled aria-disabled className="min-h-touch w-full cursor-not-allowed rounded-md border border-hairline bg-surface-2 px-4 type-body-strong text-ink-secondary">{blocker}</button>
-      ) : (
-        <HoldToConfirm className="w-full" confirmLabel={BOOST.cta.placing} onConfirm={place}>
-          {BOOST.cta.place(multiple, usd(quote!.stakeBase))}
-        </HoldToConfirm>
-      )}
-      {session.isConnected && !blocker && !busy ? <p className="text-center type-caption text-ink-secondary">{TX.noFees}</p> : null}
+      <SheetFooter>
+        {!session.isConnected ? (
+          <button type="button" onClick={() => session.connectFor(BOOST.cta.signInFor)} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{BOOST.cta.signIn}</button>
+        ) : busy || writes.fetchingSpot ? (
+          <TxCta state={writes.tx} action={writes.fetchingSpot ? BOOST.cta.fetchingSpot : BOOST.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
+        ) : blocker ? (
+          <button type="button" disabled aria-disabled className="min-h-touch w-full cursor-not-allowed rounded-md border border-hairline bg-surface-2 px-4 type-body-strong text-ink-secondary">{blocker}</button>
+        ) : (
+          <HoldToConfirm className="w-full" confirmLabel={BOOST.cta.placing} onConfirm={place}>
+            {BOOST.cta.place(multiple, usd(quote!.stakeBase))}
+          </HoldToConfirm>
+        )}
+        {session.isConnected && !blocker && !busy ? <p className="text-center type-caption text-ink-secondary">{TX.noFees}</p> : null}
+      </SheetFooter>
       {writes.outcome?.status === "confirmed" ? (
         <div role="status" className="flex flex-col gap-1 rounded-lg bg-cream p-3 text-cream-ink">
           {writes.outcome.booked ? <p className="type-body-strong">{BOOST.outcome.placed(writes.outcome.booked.positionId.toString(), writes.outcome.booked.leverageBps / 10_000, contracts(writes.outcome.booked.quantityRaw), usd(writes.outcome.booked.stakeBase))}</p> : <p className="type-body-strong">{BOOST.outcome.placedUnread}</p>}

@@ -1,9 +1,9 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// /bridge (R4-12, D-227; S14 14w): stocks between Robinhood Chain and Tempo, one card, tracked to delivery.
+import { BridgePage } from "@/features/bridge/BridgePage";
+import { BRIDGE } from "@/features/bridge/copy";
 
-export const metadata = { title: pendingFor("/bridge").title };
+export const metadata = { title: BRIDGE.title };
 
-export default function BridgePage() {
-  return <PendingRoute route="/bridge" />;
+export default function Page() {
+  return <BridgePage />;
 }

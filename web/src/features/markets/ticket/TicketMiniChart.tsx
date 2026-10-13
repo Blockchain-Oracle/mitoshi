@@ -11,7 +11,7 @@ export function TicketMiniChart({ market }: { market: EventMarket }) {
   const opening = useOpeningPrice(market.marketId);
   const openingRaw = opening?.ok ? opening.value : market.openingPriceRaw;
   return (
-    <div className="tk-mini-chart">
+    <div className="tk-mini-chart" data-base-ui-swipe-ignore="">
       <div className="tk-mini-chart-canvas">
         <MarketWindowChart market={market} openingRaw={openingRaw} backfill={series?.ok ? series.value.points : undefined} variant="compact" className="h-full w-full" />
       </div>
