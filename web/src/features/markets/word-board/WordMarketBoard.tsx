@@ -45,7 +45,7 @@ function byAsset(markets: readonly EventMarket[]): EventMarket[][] {
 
 // The card takes its book's top as plain values from the board's one subscription (D-184), so a batch of answers
 // re-renders only the cards whose numbers moved.
-function WordCard({ market, upCents, downCents, hydrating, onSelect }: { market: EventMarket; onSelect: Select } & TopOfBook) {
+function WordCard({ market, upCents, downCents, hydrating, failed, onSelect }: { market: EventMarket; onSelect: Select } & TopOfBook) {
   const closeClock = formatWallClock(market.expirySec * 1000);
   const question = wordQuestion({ ...market, marketId: String(market.marketId) }, PRICE_SCALE, closeClock);
   const share = impliedUpShare(upCents, downCents);
@@ -63,7 +63,8 @@ function WordCard({ market, upCents, downCents, hydrating, onSelect }: { market:
       {unquoted ? (
         <div className="wq-unquoted">
           <span className="wq-unquoted-dot" aria-hidden />
-          <span className="wq-unquoted-text">{WORD_BOARD.unquoted}</span>
+          {/* A failed read is not an empty book (D-230): the app couldn't look, and says so. */}
+          <span className="wq-unquoted-text">{failed ? WORD_BOARD.unread : WORD_BOARD.unquoted}</span>
           <button type="button" className="wq-unquoted-open min-h-touch" onClick={() => onSelect(market.marketId)}>{WORD_BOARD.open}</button>
         </div>
       ) : (
@@ -160,7 +161,7 @@ export function WordMarketBoard({ laneSet: allLanes, ticker, failure, onSelect }
               {rows
                 ? rows.map((markets) => <WordListedCard key={markets[0]!.asset} markets={markets} onSelect={onSelect} />)
                 : group.markets.map((m) => (
-                    <WordCard key={m.marketId} market={m} upCents={topById.get(m.marketId)?.upCents ?? null} downCents={topById.get(m.marketId)?.downCents ?? null} hydrating={topById.get(m.marketId)?.hydrating ?? true} onSelect={onSelect} />
+                    <WordCard key={m.marketId} market={m} upCents={topById.get(m.marketId)?.upCents ?? null} downCents={topById.get(m.marketId)?.downCents ?? null} hydrating={topById.get(m.marketId)?.hydrating ?? true} failed={topById.get(m.marketId)?.failed ?? false} onSelect={onSelect} />
                   ))}
             </div>
           </section>

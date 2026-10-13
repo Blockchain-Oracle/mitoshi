@@ -2,47 +2,92 @@
 
 /**
  * One shared clock for the whole app, read only by the leaf components that display time (plan §3.2 "Clock";
- * ux-audit fix 12, R2). One `setInterval` per tab no matter how many readers; readers subscribe through
+ * ux-audit fix 12, R2). One timer per tab no matter how many readers; readers subscribe through
  * `useSyncExternalStore`, so only they re-render on a tick. The server snapshot is 0 ("no time yet"), which is also
  * what `cacheComponents` requires: no `Date.now()` during a prerender.
  *
  * `offsetMs` is the chain-clock correction (`@cwf/markets` `nowMs()`), applied by whoever syncs it.
+ *
+ * How it ticks (D-230 item 6): once a second while the page is visible; nothing in a tab hidden after it was seen
+ * (AD-6) — it re-reads the moment it returns. A page hidden from its very load is different: an app's web view or a
+ * prerendered tab can report "hidden" and never send `visibilitychange`, and a clock waiting for that event froze —
+ * the phase stayed null ("Syncing the chain clock…") or every countdown stopped and an upcoming Window never turned to
+ * trading. So until the page has once been seen, it ticks every 5 s; and any sign the page is in use (focus, a pointer,
+ * a key) starts the 1 s tick whatever `visibilityState` claims.
  */
 import { useSyncExternalStore } from "react";
 
 type Listener = () => void;
 
+/** The visible tick, and the slow one of a page hidden since load (never once seen). */
+export const TICK_MS = 1_000;
+export const HIDDEN_AT_LOAD_TICK_MS = 5_000;
+/** Signs a person is using the page — none of them reach a tab in the background (unlike `pageshow` or `resize`). */
+const ALIVE_EVENTS = ["focus", "pointerdown", "keydown"] as const;
+
 const listeners = new Set<Listener>();
 let now = 0;
 let offsetMs = 0;
 let timer: ReturnType<typeof setInterval> | null = null;
+let timerMs = 0;
+let seen = false;
+let inUse = false;
+let bound = false;
 
 function tick() {
   now = Date.now() + offsetMs;
   for (const l of listeners) l();
 }
 
-function start() {
-  if (timer || typeof document === "undefined" || document.visibilityState === "hidden") return;
-  tick();
-  timer = setInterval(tick, 1_000);
+const hidden = () => typeof document !== "undefined" && document.visibilityState === "hidden";
+
+/** The tick the page should run now: 1 s when visible or in use, 5 s hidden since load, none hidden after being seen. */
+function wantedMs(): number {
+  if (listeners.size === 0 || typeof document === "undefined") return 0;
+  if (!hidden() || inUse) return TICK_MS;
+  return seen ? 0 : HIDDEN_AT_LOAD_TICK_MS;
 }
 
 function stop() {
   if (timer) clearInterval(timer);
   timer = null;
+  timerMs = 0;
 }
 
-let visibilityBound = false;
+/** Runs the tick the page wants (re-reading the clock at once when it speeds up). */
+function retune() {
+  if (!hidden()) seen = true;
+  const ms = wantedMs();
+  if (ms === timerMs) return;
+  const faster = timerMs === 0 || ms < timerMs;
+  stop();
+  if (ms === 0) return;
+  if (faster) tick();
+  timer = setInterval(tick, ms);
+  timerMs = ms;
+}
+
+function bind() {
+  if (bound || typeof document === "undefined") return;
+  bound = true;
+  document.addEventListener("visibilitychange", () => {
+    // A real hide ends "in use" until the next sign of it; a return re-reads the clock at once.
+    if (hidden()) inUse = false;
+    retune();
+  });
+  if (typeof window === "undefined") return;
+  const alive = () => {
+    if (inUse && timerMs === TICK_MS) return;
+    inUse = true;
+    retune();
+  };
+  for (const e of ALIVE_EVENTS) window.addEventListener(e, alive, { capture: true, passive: true });
+}
 
 function subscribe(listener: Listener): () => void {
   listeners.add(listener);
-  if (!visibilityBound && typeof document !== "undefined") {
-    visibilityBound = true;
-    // Hidden tabs tick nothing (AD-6); a returning tab re-reads the clock at once.
-    document.addEventListener("visibilitychange", () => (document.visibilityState === "hidden" ? stop() : listeners.size > 0 && start()));
-  }
-  start();
+  bind();
+  retune();
   return () => {
     listeners.delete(listener);
     if (listeners.size === 0) stop();
@@ -55,11 +100,7 @@ export function setClockOffset(ms: number): void {
   if (timer) tick();
 }
 
-/**
- * The client's first read seeds the clock (D-230 item 6): a tab or app web view hidden at load never started the
- * interval, so `now` stayed 0, every phase read null and the terminal sat on "Syncing the chain clock…" until a
- * visibility event that a web view may never send. Seeded, a hidden page holds its last second until it ticks again.
- */
+/** The client's first read seeds the clock, so nothing renders "no time yet" while the first tick is pending. */
 const snapshot = () => (now === 0 && typeof window !== "undefined" ? (now = Date.now() + offsetMs) : now);
 
 /** Chain-corrected now, ticking once a second; 0 on the server. */
@@ -80,3 +121,6 @@ export function useClockValue<T extends string | number | boolean | null>(derive
 export function nowMs(): number {
   return Date.now() + offsetMs;
 }
+
+/** The store as `useSyncExternalStore` sees it (tests drive it without React). */
+export const clockStore = { subscribe, snapshot, tickMs: () => timerMs };

@@ -16,10 +16,11 @@ import { belowMinStake, restingQuote } from "@cwf/core";
 import { diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/copy";
 import { minStakeBase } from "@cwf/core/sizing";
 import { formatBaseUnits } from "@cwf/core/units";
-import { useBalanceSheet, useSeriesGrid, useSigner } from "@cwf/markets/react";
+import { useBalanceSheet, useNextWindow, useSeriesGrid, useSigner } from "@cwf/markets/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { LoadingState } from "@/components/states";
+import { TxCta } from "@/components/tx";
 import { SheetFooter } from "@/components/ui/overlay-footer";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { SESSION, SessionFallbackCta, TapTradingChip, useTicketRoute } from "@/features/session";
@@ -135,8 +136,13 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
   // D-230: the opening print's wait and an empty book say when and why, live — never a bare "waiting" or "no liquidity".
   const prints = usePrintsState();
   const nowSec = Math.floor(nowMs / 1000);
-  const empty = emptyBookWhy(market, nowSec).text;
+  const why = emptyBookWhy(market, nowSec);
+  const empty = why.text;
   const reason = blocker === "pending-opening-print" ? openingWaitLine({ startSec: market.tradingStartSec, nowSec, prints, unread: t.openingUnread }) : blocker === "no-liquidity-at-size" ? empty : null;
+  // The last stretch with nothing left to take: the CTA is the next Window, one tap (the terminal's "Call the next Window").
+  const closingDry = !listed && blocker === "no-liquidity-at-size" && why.closing;
+  const successor = useNextWindow(closingDry ? market : null);
+  const nextWindow = closingDry && successor?.ok && successor.value && successor.value.marketId !== market.marketId ? successor.value : null;
   // A thin book fills part of the stake: one tap stakes what it fills now, instead of a dead "above what fills".
   const fillable = !listed && displayed?.partial && !belowMinStake(displayed.fillableStakeBase, decimals) ? displayed.fillableStakeBase : null;
 
@@ -220,6 +226,8 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
           <div className="tk-cta-dock">
             {boosted ? (
               <BoostCta boost={boost} writes={boostWrites} multiple={multiple} />
+            ) : nextWindow ? (
+              <TxCta state={{ kind: "idle" }} action={TICKET.nextWindow} signer={signer} onConfirm={() => t.advance(nextWindow)} tone={side ?? "accent"} />
             ) : tb.fallback && !blocker ? (
               <SessionFallbackCta route={tb} walletKeyArmed={tapArmed} tone={side ?? "accent"} />
             ) : (

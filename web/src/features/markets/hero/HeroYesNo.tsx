@@ -5,27 +5,33 @@
  * side, which opens the ticket drawer. They stick above the dock while the hero is on screen (`.page-action`, R4-2).
  * D-230: a side with nothing to take read a bare "UP —" — now one line under the pair says why, live: the Window is
  * waiting for its opening price (when it opened, the count), or the book is empty (the house quotes within seconds of
- * the open; late in a Window, when the next opens).
+ * the open; late in a Window, when the next opens). A book not read yet says nothing, and a read that failed says the
+ * app can't read it (retrying) — "no offers" only on a read that answered with an empty side. The count ticks outside
+ * the live region's announcement (`CountedText`).
  */
 import type { EventMarket, MarketId, Side } from "@cwf/core";
 import { noEntryCutoffSec } from "@cwf/core/lifecycle";
 import { useOpeningPrice } from "@cwf/markets/react";
 import { useClockValue } from "@/lib/clock";
-import { HERO_HEAD, MARKETS } from "../copy";
-import { emptyBookWhy, openingWaitLine } from "../data/opening-wait";
+import { HERO_HEAD, LANE_CARD, MARKETS } from "../copy";
+import { bookNote, openingWaitLine } from "../data/opening-wait";
+import type { TopOfBook } from "../data/useTopOfBook";
 import { usePrintsState } from "../session";
+import { CountedText } from "../session/CountedText";
 
 interface HeroYesNoProps {
   market: EventMarket;
   openingRaw: bigint | null;
-  upCents: number | null;
-  downCents: number | null;
+  book: TopOfBook;
   onSelect: (marketId: MarketId, side: Side) => void;
 }
 
-const price = (cents: number | null) => (cents === null ? HERO_HEAD.noPrice : `${cents}¢`);
+/** A side's price: the cents, a loading mark before the book's first answer, else "—" (the note says why). */
+const priceOf = (cents: number | null, hydrating: boolean) => (cents === null ? (hydrating ? LANE_CARD.priceLoading : HERO_HEAD.noPrice) : `${cents}¢`);
 
-export function HeroYesNo({ market, openingRaw, upCents, downCents, onSelect }: HeroYesNoProps) {
+export function HeroYesNo({ market, openingRaw, book, onSelect }: HeroYesNoProps) {
+  const { upCents, downCents, hydrating, failed } = book;
+  const price = (cents: number | null) => priceOf(cents, hydrating);
   const prints = usePrintsState();
   // The chain didn't answer the opening read (a rate-limited RPC): say so, never "waiting" over a trading Window.
   const opening = useOpeningPrice(market.marketId);
@@ -36,7 +42,7 @@ export function HeroYesNo({ market, openingRaw, upCents, downCents, onSelect }: 
     const nowSec = Math.floor(ms / 1000);
     if (ms === 0 || market.state !== "open" || nowSec < market.tradingStartSec || nowSec >= noEntryCutoffSec(market)) return null;
     if (openingRaw === null) return openingWaitLine({ startSec: market.tradingStartSec, nowSec, prints, unread });
-    return empty ? emptyBookWhy(market, nowSec).text : null;
+    return empty ? bookNote({ hydrating, failed }, market, nowSec) : null;
   });
   return (
     <div className="hero-yesno page-action" data-primary-action="">
@@ -50,7 +56,7 @@ export function HeroYesNo({ market, openingRaw, upCents, downCents, onSelect }: 
       </button>
       {note ? (
         <p id="hyn-note" role="status" className="hyn-note">
-          {note}
+          <CountedText text={note} />
         </p>
       ) : null}
     </div>

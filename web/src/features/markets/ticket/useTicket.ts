@@ -3,6 +3,8 @@
  * The ticket's composition (Ported from Masayume 68f7a09:web/src/features/markets/ticket/useTicket.ts): market and side
  * live in the URL (a share link reproduces them); inside the no-entry buffer the ticket moves to the next Window and
  * keeps side and stake (FR-9). New: the stake opens at the last one this account filled (D-048, ux-audit fix 9).
+ * D-230: `advance` moves it to the next Window on a tap, side and stake kept — a Window's last stretch with nothing left
+ * to take offers that instead of a dead CTA.
  */
 import type { EventMarket, MarketId, Side } from "@cwf/core";
 import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
@@ -43,6 +45,15 @@ export function useTicket({ market, side: urlSide, wallet, nowMs }: { market: Ev
     replaceSelection(successor.value.marketId, side);
   }, [phase, successor, market, side]);
 
+  const advance = useCallback(
+    (next: EventMarket) => {
+      if (next.marketId === market.marketId) return;
+      setAdvancedFrom(market);
+      replaceSelection(next.marketId, side);
+    },
+    [market, side],
+  );
+
   const stakeBase = parseDecimalToBaseUnits(stakeText, market.decimals) ?? 0n;
   const edit = useCallback((text: string) => {
     setRemembered(false);
@@ -58,7 +69,7 @@ export function useTicket({ market, side: urlSide, wallet, nowMs }: { market: Ev
     [market.marketId],
   );
 
-  return { market, side, stakeText, stakeBase, remembered, phase, openingRaw, openingUnread, advancedFrom, setStakeText: edit, setStakeBase, selectSide };
+  return { market, side, stakeText, stakeBase, remembered, phase, openingRaw, openingUnread, advancedFrom, setStakeText: edit, setStakeBase, selectSide, advance };
 }
 
 export type TicketApi = ReturnType<typeof useTicket>;

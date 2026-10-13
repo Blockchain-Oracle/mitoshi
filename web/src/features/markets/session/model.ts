@@ -36,13 +36,16 @@ export interface SessionBody {
   prints?: PrintsState | null;
 }
 
-/** Why prints stall: RedStone refuses us, hasn't signed T yet, or can't be reached (ops `http/session.ts`). */
-export type PrintStallKind = "refused" | "unsigned" | "unreachable";
+/**
+ * Why prints stall (ops `http/session.ts`): RedStone refuses us, hasn't signed T yet, or can't be reached; or the print
+ * is in hand and Tempo's RPC keeps refusing the sends (`sending`).
+ */
+export type PrintStallKind = "refused" | "unsigned" | "unreachable" | "sending";
 
 export interface PrintsState {
   /** Median seconds from a Window's start to its opening print, over the relay's last opens; null before any. */
   openLagSec: number | null;
-  /** Due prints waiting on the price network for over 20 s: since when, and why; null while they land. */
+  /** Due prints stuck for over 20 s (on the price network, or on sends Tempo refuses): since when, and why; null while they land. */
   stall: { sinceSec: number; kind: PrintStallKind } | null;
 }
 
@@ -85,7 +88,7 @@ export function parseHaltBoard(v: unknown): HaltBoard {
   return board;
 }
 
-const STALL_KINDS: readonly PrintStallKind[] = ["refused", "unsigned", "unreachable"];
+const STALL_KINDS: readonly PrintStallKind[] = ["refused", "unsigned", "unreachable", "sending"];
 
 /** `/session.prints`, or null when ops doesn't send it (an older deploy): the app then words the wait without it. */
 export function parsePrints(v: unknown): PrintsState | null {

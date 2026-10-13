@@ -27,8 +27,14 @@ export const LANE_CARD = {
   oddsLoading: "READING THE BOOK…",
   /** An empty, read book (Owarine `LANE_CARD.noQuotes`; R4-3): not "reading" forever. */
   noQuotes: "NO QUOTES YET",
+  /** The book's read failed (a rate-limited RPC, D-230): the app couldn't look — not an empty book. */
+  unread: "CAN'T READ THE BOOK · RETRYING",
   closing: "CLOSING · NEXT ROUND SOON",
-  pendingPrint: "WAITING FOR THE STARTING PRICE",
+  /** A Window waiting for its opening print (D-230): when it opened and a count, never a bare wait. */
+  pending: {
+    soon: (at: string, left: string) => `OPENED ${at} · PRICE IN ${left}`,
+    late: (at: string, waited: string) => `OPENED ${at} · WAITING ${waited}`,
+  },
   opensAt: (clock: string) => `OPENS ${clock}`,
   /** Owarine 90a91d71 `CLOSED.kind` / `ListedCard` (O-5). */
   kind247: "24/7 · stock",
@@ -57,6 +63,7 @@ export const WORD_BOARD = {
   /** Owarine word-board states (R4-3): a closed Window, an empty book, the listed companies. */
   kind247: "24/7",
   unquoted: "No quotes yet",
+  unread: "Can't read the book — retrying",
   open: "Open",
   listedWhy: "Schedule a call at your price.",
   closes: (clock: string) => `closes ${clock}`,
@@ -89,8 +96,11 @@ export const HERO = {
   bandLow: "band low",
   bandHigh: "band high",
   livePrice: "live · signed spot",
-  pendingPrint: "waiting for the opening print",
-  pendingDistance: "Waiting for the opening print.",
+  /** Under the question while the line is pending (D-230): a count, never a bare wait; the reason is under UP/DOWN. */
+  pendingDistance: {
+    soon: (_at: string, left: string) => `Opening price in ~${left}`,
+    late: (_at: string, waited: string) => `Waiting ${waited} for the opening price`,
+  },
   noLivePrice: "No live price.",
   depthTitle: "Top of book",
   buyUp: "Buy UP",
@@ -122,20 +132,23 @@ export const HERO = {
     open: "OPEN",
     closes: "CLOSES",
     closed: "CLOSED",
-    pending: "Waiting for the opening print",
     vs: (label: string) => `vs ${label}`,
   },
 } as const;
 
 /**
  * While a Window waits for its opening print (D-230 item 1): when it opened, a live count and why — never a bare wait.
- * `at` is the open in the reader's clock; `left` and `waited` count each second.
+ * `at` is the open in the reader's clock; `left` and `waited` count each second. The cause is named only when ops names
+ * it (`/session.prints.stall`); otherwise the line is neutral.
  */
 export const OPENING_WAIT = {
   soon: (at: string, left: string) => `Opened ${at} · opening price in ~${left}`,
-  late: (at: string, waited: string) => `Opened ${at} · waiting ${waited} for RedStone's opening price`,
+  late: (at: string, waited: string) => `Opened ${at} · waiting ${waited} for the opening price`,
+  unsigned: (at: string, waited: string) => `Opened ${at} · waiting ${waited} for RedStone's opening price`,
   refused: (at: string, waited: string) => `Opened ${at} · waiting ${waited} — RedStone is refusing requests`,
   unreachable: (at: string, waited: string) => `Opened ${at} · waiting ${waited} — RedStone is unreachable`,
+  /** The print is in hand but Tempo's RPC keeps refusing the sends (429, -32005, "Request exceeds defined limit"). */
+  sending: (at: string, waited: string) => `Opened ${at} · waiting ${waited} — Tempo is busy, retrying`,
   /** The chain didn't answer the read (a rate-limited RPC): the print may be in; reads retry on their own. */
   unread: (at: string) => `Opened ${at} · can't reach Tempo to read its opening price — retrying`,
 } as const;
@@ -145,6 +158,8 @@ export const EMPTY_BOOK = {
   quoting: "No offers yet — the house quotes within seconds of the open",
   closing: (next: string) => `No offers left on this Window — the next opens ${next}`,
   none: "No offers on this side right now",
+  /** The book's read failed (a rate-limited RPC): not "no offers" — the app couldn't look. */
+  unread: "Can't read the book right now — retrying",
 } as const;
 
 /** The hero-as-ticket head (Yosuku /markets): the opening print is the line. */
