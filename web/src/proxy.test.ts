@@ -62,6 +62,13 @@ describe("proxy for the phone app", () => {
     const signedIn = proxy(new NextRequest(`${ORIGIN}/markets`, { headers: { host: "mitoshi.xyz", cookie: `wagmi.store=${encodeURIComponent('{"state":{"current":"abc"}}')}`, "user-agent": "CWFShell/1.1.0" } }));
     expect(signedIn.headers.get("location")).toBeNull();
   });
+  it("never sends a client navigation or prefetch to the welcome (the router would keep the redirect)", () => {
+    const nav = (path: string, headers: Record<string, string> = {}) =>
+      proxy(new NextRequest(`${ORIGIN}${path}`, { headers: { host: "mitoshi.xyz", "user-agent": "CWFShell/1.1.0 (ios; testnet)", ...headers } }));
+    expect(nav("/markets", { rsc: "1", "next-router-prefetch": "1" }).headers.get("location")).toBeNull();
+    expect(nav("/markets?_rsc=x1y2").headers.get("location")).toBeNull();
+    expect(nav("/", { rsc: "1" }).headers.get("location")).toBe(`${ORIGIN}/markets`);
+  });
   it("leaves the app's other pages and a browser's / alone", () => {
     expect(app("/portfolio").headers.get("location")).toBeNull();
     expect(answer("/").headers.get("location")).toBeNull();

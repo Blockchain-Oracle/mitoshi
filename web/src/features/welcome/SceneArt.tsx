@@ -1,6 +1,7 @@
 // The welcome's pictures (round 7): each scene is the product's own moment drawn in its own marks — the live line and
 // UP/DOWN, the tap and its receipt, the signed verdict, the passkey, the test dollars — not stock art. Pure SVG, coloured
 // by CSS (styles/welcome.css), animated by CSS keyframes that restart when a scene mounts (reduced motion: still).
+import { faucetDollars } from "@/features/funding/resume";
 import type { SceneKey } from "./copy";
 
 function CallArt() {
@@ -70,7 +71,7 @@ function DollarsArt() {
       <rect x="64" y="64" width="192" height="112" rx="16" className="wl-card" />
       <rect x="84" y="84" width="58" height="22" rx="11" className="wl-plate" />
       <text x="113" y="100" className="wl-plate-text">TEST</text>
-      <text x="160" y="146" className="wl-figure wl-center wl-count">Free test dollars</text>
+      <text x="160" y="148" className="wl-figure wl-center wl-count">{faucetDollars()}</text>
       <circle cx="232" cy="96" r="6" className="wl-dot wl-pop" />
     </svg>
   );

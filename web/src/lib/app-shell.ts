@@ -21,10 +21,14 @@ const SIGNED_IN = /"current":"/;
 /**
  * Where the app's home lands (proxy.ts): a first-time app user who has never signed in meets the welcome; everyone
  * else Markets. Null for a request this doesn't decide.
+ *
+ * Only a page load meets the welcome, never a client navigation or prefetch (`clientNav`): the dock under the welcome
+ * prefetches Markets before the cookie exists, and the router keeps a redirected prefetch, so "Look around" and the
+ * Markets tab would land on the welcome again.
  */
-export function appHome(pathname: string, cookie: (name: string) => string | undefined): string | null {
+export function appHome(pathname: string, cookie: (name: string) => string | undefined, clientNav = false): string | null {
   if (pathname !== "/" && pathname !== "/markets") return null;
-  const fresh = cookie(WELCOMED_COOKIE) !== "1" && !SIGNED_IN.test(decodeURIComponent(cookie("wagmi.store") ?? ""));
+  const fresh = !clientNav && cookie(WELCOMED_COOKIE) !== "1" && !SIGNED_IN.test(decodeURIComponent(cookie("wagmi.store") ?? ""));
   if (fresh) return "/welcome";
   return pathname === "/" ? "/markets" : null;
 }

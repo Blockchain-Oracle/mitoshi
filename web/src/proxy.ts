@@ -31,7 +31,8 @@ export function proxy(request: NextRequest): NextResponse {
   // marks every request `CWFShell/` in the user agent (lib/app-shell.ts), and `/` answers Markets. 307, not 308, so a
   // browser that once was the app keeps no permanent redirect.
   // A first-time app user (no welcome cookie, never signed in here) meets the welcome first (features/welcome).
-  const home = SHELL_UA.test(request.headers.get("user-agent") ?? "") ? appHome(request.nextUrl.pathname, (n) => request.cookies.get(n)?.value) : null;
+  const clientNav = request.headers.get("rsc") === "1" || request.nextUrl.searchParams.has("_rsc");
+  const home = SHELL_UA.test(request.headers.get("user-agent") ?? "") ? appHome(request.nextUrl.pathname, (n) => request.cookies.get(n)?.value, clientNav) : null;
   if (home) {
     const url = request.nextUrl.clone();
     url.pathname = home;
