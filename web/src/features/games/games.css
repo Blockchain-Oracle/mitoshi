@@ -115,7 +115,8 @@
 .gm-rail-icon svg { width: 20px; height: 20px; }
 .gm-rail-icon:hover { color: var(--white); background: color-mix(in srgb, var(--white) 6%, transparent); }
 .gm-rail-icon:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent); }
-@media (max-width: 360px) { .gm-rail-mode { font-size: 18px; } .gm-rail-icon { width: 40px; } }
+/* At 320 the mode name gives way (it ellipsizes), never a target: the icons stay 44 px. */
+@media (max-width: 360px) { .gm-rail-inner { gap: 6px; } .gm-rail-mode { font-size: 18px; } .gm-rail-right { gap: 0; } }
 .gm-rail-resume {
   display: inline-flex; align-items: center; gap: 6px; min-height: 32px;
   padding: 0 10px; border-radius: 9999px;

@@ -65,6 +65,8 @@
   font-family: var(--font-data); font-size: 14px; font-weight: 600; color: var(--gray-400); font-variant-numeric: tabular-nums;
 }
 .lk-chip[data-on] { border-color: var(--color-accent); color: var(--white); background: color-mix(in srgb, var(--color-accent) 14%, var(--color-surface-1)); }
+.lk-chip:not(:disabled):not([data-on]):hover { border-color: color-mix(in srgb, var(--color-accent) 45%, transparent); color: var(--white); }
+.lk-chip:disabled { opacity: 0.45; }
 .lk-cta {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 56px; border-radius: 16px;
   border: 1px solid color-mix(in srgb, var(--color-accent) 60%, transparent); background: var(--color-accent); color: var(--on-accent);
