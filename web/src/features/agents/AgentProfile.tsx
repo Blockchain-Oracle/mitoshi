@@ -51,7 +51,9 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
   const [tab, setTab] = useState<Tab>("overview");
 
   if (detail.isPending) return <LoadingState shape="cockpit" label={AGENTS.loading} />;
-  if (!detail.data) return <EmptyState why={detail.isError ? AGENTS.error : C.notFound} />;
+  if (!detail.data) return detail.isError
+    ? <EmptyState why={AGENTS.error} nextAction={{ label: AGENTS.retry, onClick: () => void detail.refetch() }} />
+    : <EmptyState why={C.notFound} nextAction={{ label: C.back, href: "/agents" }} />;
   const d = detail.data;
   const s = d.strategy;
   const { name } = strategyIdentity(s);

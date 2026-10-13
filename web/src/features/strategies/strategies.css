@@ -164,7 +164,10 @@
 .agents-row:hover .agents-name { color: var(--color-accent); }
 .agents-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 @media (min-width: 768px) { .agents-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-@media (max-width: 400px) { .agents-stat { padding: 14px; } .agents-stat-value { font-size: 24px; } }
+@media (max-width: 400px) { .agents-stat { padding: 14px; } .agents-stat-value { font-size: 22px; } }
+/* A long total (Entrusted) wraps inside its tile rather than pushing the 2 × 2 strip past a phone's edge. */
+.agents-stat { min-width: 0; }
+.agents-stat-value { overflow-wrap: anywhere; }
 @media (max-width: 640px) { .strat-empty { padding: 32px 16px; } }
 /* A phone's recent row: tighter, so the name keeps room beside the P&L, the age and the arrow at 320. */
 @media (max-width: 400px) { .strat-row { padding: 12px 14px; gap: 8px; } }

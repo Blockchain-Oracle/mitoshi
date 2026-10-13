@@ -255,11 +255,11 @@ const SHAPES: Record<LoadingShape, () => ReactNode> = {
   // /agents/[id] (R4-6): the head with its portrait and toolbar, the record beside the next read, the tabs.
   cockpit: () => (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <Skeleton className="size-16 rounded-2xl" />
-        <div className="flex flex-1 flex-col gap-2">
-          <Skeleton className="h-3 w-32 rounded-md" />
-          <Skeleton className="h-8 w-56 rounded-md" />
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <Skeleton className="h-3 w-32 max-w-full rounded-md" />
+          <Skeleton className="h-8 w-56 max-w-full rounded-md" />
         </div>
         <Skeleton className="h-10 w-24 rounded-full" />
       </div>

@@ -111,7 +111,7 @@
 .strat-direction-pill:hover:not(:disabled) { color: var(--color-ink); border-color: color-mix(in srgb, var(--color-ink) 30%, transparent); }
 .strat-direction-pill:disabled { opacity: 0.45; cursor: not-allowed; }
 .strat-direction-pill[aria-checked="true"] { border-color: color-mix(in srgb, var(--color-accent) 60%, transparent); color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
-.strat-direction-pill[aria-checked="true"]:last-child { border-color: var(--button-down-border); color: var(--button-down-ink); background: var(--button-down-fill); }
+.strat-direction > .strat-direction-pill[aria-checked="true"]:last-child { border-color: var(--button-down-border); color: var(--button-down-ink); background: var(--button-down-fill); }
 
 /* Four risk modes (Custom added, R4-6): two by two on a phone. */
 .desk-modes--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
