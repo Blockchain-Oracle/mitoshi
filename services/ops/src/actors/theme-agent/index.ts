@@ -54,7 +54,13 @@ export function themeAgentPass(d: ThemeAgentDeps): () => Promise<PassResult> {
     if (!v) return { why: `themes are not deployed on chain ${d.chainId}` };
     let issued = 0;
     if (d.secret) {
+      // A key only for a theme that exists (the web files any number a signed-in account asks for).
+      const count = await d.client.readContract({ address: v.registry, abi: themeRegistryAbi, functionName: "themeCount" });
       for (const req of await d.keys.pending()) {
+        if (req.themeId > count) {
+          await d.keys.note(req.id, "no such theme");
+          continue;
+        }
         const pk = generatePrivateKey();
         await d.keys.issue(req.id, privateKeyToAccount(pk).address, sealKey(d.secret, pk));
         issued++;
