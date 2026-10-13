@@ -168,17 +168,6 @@ export const TERMINAL = {
       { title: "Close to bank it", body: "Tap Close any time to take the profit or cut the loss. Hold to the close and the Window settles on the signed print." },
     ],
   },
-  /** Reduce, redone (round 7): pick a part, see it, hold to cash out (ui/ReducePanel.tsx). */
-  reduce: {
-    all: "All",
-    unknown: "Reading what it pays…",
-    closes: (gets: string) => `You get ≈ ${gets} · the position closes`,
-    splits: (gets: string, keeps: string) => `You get ≈ ${gets} · ${keeps} keeps riding`,
-    cashOut: "Cash out",
-    cashOutFor: (gets: string) => `Hold to cash out ≈ ${gets}`,
-    holdPart: "Cashing out",
-    holdAll: "Closing",
-  },
   details: {
     title: (side: string, symbol: string) => `${side} ${symbol}`,
     window: "Window",

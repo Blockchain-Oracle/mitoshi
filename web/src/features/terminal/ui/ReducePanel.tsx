@@ -8,6 +8,7 @@ import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { SHELL } from "@/lib/copy";
 import { tapFeedback } from "@/lib/feedback";
 import { TERMINAL } from "../copy";
+import { REDUCE } from "../copy-reduce";
 import { money } from "../format";
 import type { TerminalPosition } from "../terminal-positions";
 
@@ -25,7 +26,7 @@ export function ReducePanel({ p, valueBase, tradable, busy, masked, onReduce }: 
 }) {
   const parts: readonly Part[] = p.boost ? [100n] : PARTS;
   const [part, setPart] = useState<Part>(p.boost ? 100n : 50n);
-  const R = TERMINAL.reduce;
+  const R = REDUCE;
   const gets = valueBase === null ? null : (valueBase * part) / 100n;
   const keeps = valueBase === null || part === 100n ? null : valueBase - (gets ?? 0n);
   const show = (base: bigint) => (masked ? SHELL.masked : money(base, false, p.decimals));
