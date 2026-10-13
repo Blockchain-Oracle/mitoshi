@@ -171,6 +171,13 @@ dock that steps aside for any modal, partial withdraw via core `withdrawSharesFo
 (71 routes within budget, /earn 220.9 KB); /earn at 375 and 1440 clean (the sweep's overlaps are the collapsed, inert
 Window books). Open: a signed-in Supply / partial Withdraw / Settle on testnet with P&L checked against chain reads — not
 driven in this merge (no wallet on the dev server).
+R4-3 (Markets) merged at `76150aa`: Owarine's hero anatomy (head/foot/YES-NO, SourceLine, Price/Depth chip), the framed
+rail ticket (1×/2×/3× chips with Boost's sizing in the strip, Public/Private before the CTA), Room strip / NO QUOTES YET /
+waiting / Listed / Paused cards, TickerPicker and the lane tabs on ScrollRail (closes R4-2's open rail item), the word
+board's states, Your calls as a chip rail, the terminal phone (three controls + ⋯ More, two-row header, arm modal from
+the toast). Checks clean (71 routes within budget, /markets 222.6 KB); /markets at 375 and 1440 clean (the sweep's one
+clip is Sensei's collapsed hover label). Open: a signed-in 2×/3× hold and a Private ticket on testnet — not driven in
+this merge (no wallet on the dev server).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
