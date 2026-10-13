@@ -20,6 +20,7 @@ function summaryOf(rows: StatusRow[]): { text: string; tone: BoardTone } {
   const n = (t: BoardTone) => rows.filter((r) => r.tone === t).length;
   if (n("bad")) return { text: STATUS.summary.bad(n("bad")), tone: "bad" };
   if (n("warn")) return { text: STATUS.summary.warn(n("warn")), tone: "warn" };
+  if (n("wait")) return { text: STATUS.summary.wait(n("wait")), tone: "wait" };
   return { text: STATUS.summary.good(rows.length), tone: "good" };
 }
 
@@ -81,7 +82,7 @@ function Systems({ rows }: { rows: StatusRow[] }) {
 
 export function StatusBoard({ initial }: { initial: StatusReport }) {
   const report = useStatus(initial);
-  const tone: BoardTone = report.overall === "healthy" ? "good" : report.overall === "degraded" ? "warn" : "bad";
+  const tone: BoardTone = report.overall === "healthy" ? "good" : report.overall === "waiting" ? "wait" : report.overall === "degraded" ? "warn" : "bad";
   const attention = report.rows.filter((r) => r.tone !== "good").sort((a, b) => RANK[a.tone] - RANK[b.tone]);
   const slowest = attention[0] ?? null;
   const at = new Date(report.checkedAtMs).toISOString().slice(11, 16);
@@ -90,11 +91,11 @@ export function StatusBoard({ initial }: { initial: StatusReport }) {
       <BoardBanner
         tone={tone}
         eyebrow={STATUS.eyebrow}
-        verdict={STATUS.verdict[report.overall]}
+        verdict={STATUS.verdict(report)}
         sub={slowest ? STATUS.slowest(slowest.label, slowest.figure) : report.overall === "unreachable" ? STATUS.noAnswer : STATUS.allFresh}
         figureLabel={STATUS.head}
         figure={report.head === null ? STATUS.noHead : report.head.toLocaleString("en-US")}
-        tally={(["bad", "warn", "good"] as const).map((t) => ({ tone: t, n: report.rows.filter((r) => r.tone === t).length, word: STATUS.tally[t] }))}
+        tally={(["good", "bad", "warn", "wait"] as const).map((t) => ({ tone: t, n: report.rows.filter((r) => r.tone === t).length, word: STATUS.tally[t] }))}
         pulse={report.rows.map((r) => ({ id: r.id, label: `${r.label} · ${STATUS.tone[r.tone]}`, tone: r.tone }))}
       />
       <Attention rows={attention} />

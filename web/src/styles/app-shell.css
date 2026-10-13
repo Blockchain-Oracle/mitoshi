@@ -325,7 +325,8 @@ span.top-money, span.top-account { display: contents; }
 .health-chip:hover { background: var(--color-surface-2); color: var(--color-ink); }
 .health-dot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--color-ink-muted); }
 .health-chip[data-state="healthy"] .health-dot { background: var(--color-profit); }
-.health-chip[data-state="degraded"] .health-dot { background: var(--color-warning, #f5a524); }
+.health-chip[data-state="degraded"] .health-dot, .health-chip[data-state="warn"] .health-dot, .health-chip[data-state="wait"] .health-dot, .health-chip[data-state="waiting"] .health-dot { background: var(--color-warning, #f5a524); }
+.health-chip[data-state="bad"] .health-dot { background: var(--color-loss); }
 .health-chip[data-state="unreachable"] .health-dot { background: var(--color-loss); }
 .health-chip { flex: none; white-space: nowrap; }
 .health-net { font-weight: 600; color: var(--color-ink); }
@@ -387,3 +388,6 @@ span.top-money, span.top-account { display: contents; }
  * column (`PageColumn`) stops at 90 rem, centred in the stage; the markets hero, the terminal and the reels stay full
  * bleed. ── */
 @media (min-width: 100rem) { .app-stage > .page-col { max-width: 90rem; margin-inline: auto; } }
+
+/* /status's "waiting" (R6 shell T15): amber with a diagonal hatch, so it reads apart from "behind" with no new colour. */
+.tone-wait { background-image: repeating-linear-gradient(135deg, transparent 0 3px, color-mix(in srgb, var(--color-canvas) 45%, transparent) 3px 5px); }

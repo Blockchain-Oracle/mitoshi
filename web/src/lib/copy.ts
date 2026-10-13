@@ -85,7 +85,7 @@ export const SHELL = {
   legalNav: "App, docs and legal",
   /** The rail foot's short way to /download (D-230); its title says it in full. */
   railApp: "App",
-  health: { healthy: "All systems live", degraded: "Running degraded", unreachable: "Venue unreachable", unread: "Checking…" },
+  health: { healthy: "All systems live", waiting: "Waiting", degraded: "Running degraded", unreachable: "Status unreachable", unread: "Checking…" },
   /** The top line's health chip names the chain; the network itself is said once, by the mode plate (D-228). */
   network: "Tempo",
   /** The rail's money tile (O-10). */

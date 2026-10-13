@@ -8,8 +8,11 @@ import "server-only";
  */
 import { webEnv } from "@/lib/env";
 import { relayHandler } from "@/server/relay";
+import { overallOf } from "./grade";
+import { rowDetail } from "./rows-copy";
 
-export type Tone = "good" | "warn" | "bad";
+/** `wait`: expected and not yet possible (a keeper with nothing to do until something lands) — never "live" (T15). */
+export type Tone = "good" | "wait" | "warn" | "bad";
 export type StatusGroup = "Chain" | "Prices" | "Windows" | "Payouts" | "Markets" | "Fees";
 
 export interface StatusRow {
@@ -25,7 +28,7 @@ export interface StatusRow {
 
 export interface StatusReport {
   checkedAtMs: number;
-  overall: "healthy" | "degraded" | "unreachable";
+  overall: "healthy" | "waiting" | "degraded" | "unreachable";
   /** Tempo's head block as the chain-head keeper last read it; null when it didn't say. */
   head: number | null;
   rows: StatusRow[];
@@ -61,13 +64,6 @@ const ROWS: readonly [string, string, StatusGroup][] = [
 ];
 
 const ago = (ms: number) => (ms < 60_000 ? `${Math.max(0, Math.round(ms / 1000))} s ago` : ms < 3_600_000 ? `${Math.round(ms / 60_000)} min ago` : `${Math.round(ms / 3_600_000)} h ago`);
-/** The actor's own sentence, up to its first " | " (the rest is a list of recent sends), kept short. */
-const said = (why: string | undefined) => {
-  // A display feed reports prices at 8 decimals ("BTC 8271804000000"): shown in dollars.
-  const head = (why ?? "").split(" | ")[0]!.trim().replace(/\b([A-Z]{2,6}) (\d{9,})\b/g, (_, sym: string, e8: string) => `${sym} $${(Number(e8) / 1e8).toLocaleString("en-US", { maximumFractionDigits: 2 })}`);
-  return head.length > 140 ? `${head.slice(0, 139)}…` : head;
-};
-
 async function opsHealth(): Promise<{ nowMs: number; actors: Actor[] } | null> {
   const base = webEnv.markets.opsUrl;
   if (!base) return null;
@@ -108,10 +104,9 @@ export async function readStatus(): Promise<StatusReport> {
     const head = name === "chain-head" ? (a.detail?.head as number | undefined) : undefined;
     if (head) chainHead = head;
     const figure = head ? `block ${head.toLocaleString("en-US")}` : a.lastOkMs === null ? "never" : ago(age);
-    rows.push({ id: name, group, label, tone, figure, detail: said(a.lastWhy) });
+    rows.push({ id: name, group, label, tone, figure, detail: rowDetail(name, a.detail, a.lastWhy) });
   }
   rows.push(relay);
   const critical = new Set(ops.actors.filter((a) => a.critical).map((a) => a.actor));
-  const degraded = rows.some((r) => r.tone === "bad" && (critical.has(r.id) || r.id === "relay"));
-  return { checkedAtMs, overall: degraded ? "degraded" : "healthy", head: chainHead, rows };
+  return { checkedAtMs, overall: overallOf(rows, critical), head: chainHead, rows };
 }

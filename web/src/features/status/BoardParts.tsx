@@ -9,15 +9,17 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export type BoardTone = "good" | "warn" | "bad" | "off";
+export type BoardTone = "good" | "wait" | "warn" | "bad" | "off";
 
 export const TONE: Record<BoardTone, { dot: string; ink: string; wash: string }> = {
   good: { dot: "bg-up", ink: "text-ink", wash: "bg-up/10 ring-up/30" },
+  // Waiting is amber with a hatch (status.css `.tone-wait`), so it reads apart from "behind" without a new colour (T15).
+  wait: { dot: "bg-warning tone-wait", ink: "text-warning", wash: "bg-warning/10 ring-warning/30" },
   warn: { dot: "bg-warning", ink: "text-warning", wash: "bg-warning/10 ring-warning/30" },
   bad: { dot: "bg-down", ink: "text-down", wash: "bg-down/10 ring-down/30" },
   off: { dot: "bg-ink-muted", ink: "text-ink-secondary", wash: "bg-surface-1 ring-hairline" },
 };
-export const RANK: Record<BoardTone, number> = { bad: 0, warn: 1, good: 2, off: 3 };
+export const RANK: Record<BoardTone, number> = { bad: 0, warn: 1, wait: 2, good: 3, off: 4 };
 
 export interface Pulse {
   id: string;
