@@ -120,4 +120,16 @@ describe("deck selection", () => {
     const dupe = candidate(1);
     expect(selectDeck([dupe, dupe, dupe, dupe], POLICY, NOW).ok).toBe(false);
   });
+
+  // R4-9 (D-227): a venue whose Windows run 5 minutes names its cadences; the arena's own windows bound the headroom.
+  it("deals 5m Windows when the policy names that cadence, and nothing else then", () => {
+    const fives = Array.from({ length: 3 }, (_, i) => candidate(i + 1, { intervalSec: INTERVAL_5M_SEC, expirySec: NOW + 240 + i }));
+    const policy: DeckPolicy = { ...POLICY, cadences: [INTERVAL_5M_SEC], minHeadroomSec: 180, horizonSec: 300 };
+    const result = selectDeck([...fives, candidate(9)], policy, NOW);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.cards).toHaveLength(3);
+    expect(result.lane).toBe("5m");
+    expect(selectDeck(fives, { ...policy, minHeadroomSec: 250 }, NOW).ok).toBe(false);
+  });
 });

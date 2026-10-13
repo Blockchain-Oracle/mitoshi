@@ -113,5 +113,7 @@ export const GAMES = {
     calm: "calm",
     luckyTitle: "Lucky draws",
     luckyEmpty: "No draws yet.",
+    duelTitle: "Duels",
+    duelEmpty: "No duels yet.",
   },
 } as const;

@@ -1,0 +1,62 @@
+/**
+ * Everything the duel says (R4-9, D-227) — at Owarine 90a91d71's duel word count or fewer (features/games/duel/copy.ts).
+ * The commitment, the seeds and the arena's rules sit behind ⓘ; the stage says the state and the one action.
+ */
+export const DUEL = {
+  title: "Duel",
+  entry: {
+    tier: "Pot",
+    tierWord: (id: string, pot: number) => (id === "free" ? "Free" : `$${pot}`),
+    find: "Find a duel",
+    signIn: "to duel",
+    note: "Real calls · $1 a card · the better P&L takes both pots",
+  },
+  queue: {
+    title: "Finding an opponent",
+    leave: "Leave",
+    deckIn: (sec: number) => `Next deck in ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`,
+    noDeck: (why: string) => `No deck · ${why}`,
+  },
+  lobby: {
+    you: "You",
+    opponent: "Opponent",
+    vs: "VS",
+    open: (pot: string) => `Open the duel · ${pot}`,
+    join: (pot: string) => `Join · ${pot}`,
+    waitOpen: "Opponent is opening the duel…",
+    waitJoin: "Waiting for your opponent to join…",
+    reveal: "Open the deck",
+    revealing: "Opening the deck…",
+    cards: (n: number) => `${n} cards · 5m Windows`,
+  },
+  pick: {
+    eyebrow: (asset: string) => `${asset} · duel`,
+    question: "Higher or lower at the close?",
+    stake: "Your call",
+    yours: "Played",
+    placing: "Placing…",
+    left: (sec: number) => `${sec}s to pick`,
+    waitOpponent: "Your cards are in · waiting on your opponent",
+  },
+  result: {
+    title: (s: string) => ({ waiting: "Opening", activeUnrevealed: "Opening", settling: "Settling", forfeited: "Forfeit", finalized: "Final", refunded: "Refunded", picking: "Picking" })[s] ?? s,
+    you: "You",
+    opponent: "Opponent",
+    pnl: "P&L",
+    won: "You won the pot",
+    lost: "Your opponent won the pot",
+    tie: "Tie · the pot splits",
+    lock: "Close the picks",
+    settle: (n: number) => `Settle card ${n}`,
+    finalize: "Award the pot",
+    claim: (amt: string) => `Claim ${amt}`,
+    again: "Duel again",
+    waiting: "Cards settle on each Window's close",
+    side: { up: "Up", down: "Down" } as Record<string, string>,
+    none: "—",
+  },
+  proof: { open: "Proof", hash: "Commitment", seed: "Server seed", seeds: "Seeds", match: "Match" },
+  failed: (why: string) => `Not sent · ${why}`,
+  sending: "Sending…",
+  offline: "The duel server did not answer.",
+} as const;

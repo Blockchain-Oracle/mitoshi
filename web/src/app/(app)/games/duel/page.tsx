@@ -1,9 +1,8 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// /games/duel — the versus on the arena (R4-9, D-227): Ported from Owarine 90a91d71:web/src/app/games/duel/page.tsx.
+import { DuelIsland } from "@/features/games/GamesIsland";
 
-export const metadata = { title: pendingFor("/games/duel").title };
+export const metadata = { title: "Duel" };
 
 export default function GamesDuelPage() {
-  return <PendingRoute route="/games/duel" />;
+  return <DuelIsland />;
 }

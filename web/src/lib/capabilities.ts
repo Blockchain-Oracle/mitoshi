@@ -31,8 +31,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/surface": { eyebrow: "Market Surface", title: "The market's shape", body: "Term structure and depth across live Windows.", dependency: "the parlay and range products" },
   "/games": { eyebrow: "Games", title: "Play the markets", body: "Duels, Lucky, Range, Moonshot and arcade runs.", dependency: `${engine} and the games` },
   "/games/practice": { eyebrow: "Games", title: "Practice", body: "The swipe loop, no stake.", dependency: "the games" },
-  "/games/duel": { eyebrow: "Games", title: "Duel", body: "Face another player over a live deck.", dependency: "the arena" },
-  "/games/duel/[matchId]": { eyebrow: "Games", title: "A duel", body: "Your picks and the settlement.", dependency: "the arena" },
   "/games/range": { eyebrow: "Games", title: "Range", body: "Pick the band where price finishes.", dependency: "the range reserve" },
   "/games/moonshot": { eyebrow: "Games", title: "Moonshot", body: "Aim for a distant target.", dependency: "the range reserve" },
   "/games/line-rider": { eyebrow: "Games", title: "Line Rider", body: "Ride the line; score-only.", dependency: "the arcade" },

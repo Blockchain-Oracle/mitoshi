@@ -9,6 +9,7 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { ARCADE } from "../arcade/copy";
 import { GAMES } from "../copy";
 import { LuckyHistory } from "../lucky/LuckyHistory";
+import { DuelHistory } from "../duel/DuelHistory";
 import "../rank/rank.css";
 
 interface RunWire {
@@ -77,6 +78,7 @@ export function GamesHistory() {
           </ol>
         )}
       </section>
+      <DuelHistory address={address} />
       <LuckyHistory address={address} />
     </div>
   );

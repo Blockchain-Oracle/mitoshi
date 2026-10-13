@@ -1,9 +1,10 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// /games/duel/<matchId> — one duel as the arena says it (R4-9, D-227; Owarine 90a91d71 DuelPublicResult's role): both
+// P&Ls, each card, and the cranks anyone may send.
+import { DuelMatchIsland } from "@/features/games/GamesIsland";
 
-export const metadata = { title: pendingFor("/games/duel/[matchId]").title };
+export const metadata = { title: "A duel" };
 
-export default function GamesDuelMatchidPage() {
-  return <PendingRoute route="/games/duel/[matchId]" />;
+export default async function GamesDuelMatchPage({ params }: { params: Promise<{ matchId: string }> }) {
+  const { matchId } = await params;
+  return <DuelMatchIsland matchId={matchId} />;
 }

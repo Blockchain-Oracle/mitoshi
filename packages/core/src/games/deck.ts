@@ -72,18 +72,27 @@ export interface DeckPolicy {
   /** Every card must settle inside the match's own horizon, or the duel outlives its players' patience. */
   horizonSec: number;
   minHeadroomSec?: number;
+  /**
+   * The cadences a deck may draw, when the venue says so (R4-9, D-227). Absent: Masayume's rule — never 5m. Mitoshi's
+   * Windows run 5 minutes only, and its arena's windows were sized to fit one (30 s join, 30 s reveal, 120 s card
+   * life), so its policy names `[300]`: the measured-timing condition is the arena's own parameters, not a guess.
+   */
+  cadences?: readonly number[];
 }
+
+/** Mitoshi's deck policy version (the commitment binds it): 2 = 5-minute Windows, sized to the arena's own windows. */
+export const DUEL_POLICY_VERSION = 2;
 
 export type DeckRefusal = { kind: "too-few-eligible"; eligible: number; needed: number };
 
 /** What the deck turned out to be, recorded so a session can see when the venue was thin. Descriptive. */
-export type DeckLane = "15m" | "1h" | "mixed";
+export type DeckLane = "5m" | "15m" | "1h" | "mixed";
 
 export type DeckSelection = { ok: true; cards: readonly DeckCard[]; lane: DeckLane } | { ok: false; refusal: DeckRefusal };
 
 function isEligible(candidate: DeckCandidate, policy: DeckPolicy, nowSec: number): boolean {
   if (!candidate.trading) return false;
-  if (candidate.intervalSec === INTERVAL_5M_SEC) return false;
+  if (policy.cadences ? !policy.cadences.includes(candidate.intervalSec) : candidate.intervalSec === INTERVAL_5M_SEC) return false;
   if (!policy.supportedAssets.includes(candidate.asset)) return false;
   if (candidate.spreadRaw > policy.maxSpreadRaw) return false;
   if (candidate.depthRaw < policy.minDepthRaw) return false;
@@ -120,7 +129,7 @@ function toCards(candidates: readonly DeckCandidate[]): readonly DeckCard[] {
 function laneOf(cards: readonly DeckCard[]): DeckLane {
   const cadences = new Set(cards.map((card) => card.intervalSec));
   if (cadences.size > 1) return "mixed";
-  return cadences.has(INTERVAL_15M_SEC) ? "15m" : "1h";
+  return cadences.has(INTERVAL_5M_SEC) ? "5m" : cadences.has(INTERVAL_15M_SEC) ? "15m" : "1h";
 }
 
 /**

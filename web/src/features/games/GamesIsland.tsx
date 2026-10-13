@@ -11,6 +11,8 @@ const Practice = dynamic(() => import("./practice/PracticeStage").then((m) => m.
 const Rank = dynamic(() => import("./rank/GamesRank").then((m) => m.GamesRank), { ssr: false, loading: Wait });
 const History = dynamic(() => import("./history/GamesHistory").then((m) => m.GamesHistory), { ssr: false, loading: Wait });
 const Lucky = dynamic(() => import("./lucky/LuckyStage").then((m) => m.LuckyStage), { ssr: false, loading: Wait });
+const Duel = dynamic(() => import("./duel/DuelStage").then((m) => m.DuelStage), { ssr: false, loading: Wait });
+const DuelMatch = dynamic(() => import("./duel/DuelMatchView").then((m) => m.DuelMatchView), { ssr: false, loading: Wait });
 
 export function GamesHubIsland() {
   return useDataReady() ? <Hub /> : <Wait />;
@@ -22,6 +24,15 @@ export function PracticeIsland() {
 
 export function LuckyIsland() {
   return useDataReady() ? <Lucky /> : <Wait />;
+}
+
+/** The duel writes through the submitter the late data layer carries (R4-9, D-227). */
+export function DuelIsland() {
+  return useDataReady() ? <Duel /> : <Wait />;
+}
+
+export function DuelMatchIsland({ matchId }: { matchId: string }) {
+  return useDataReady() ? <DuelMatch matchId={matchId} /> : <Wait />;
 }
 
 /** Rank and History read through the query client the late data layer carries (R4-9, D-227). */
