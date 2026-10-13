@@ -23,6 +23,8 @@ import { parlayKeys } from "./data";
 const DEBOUNCE_MS = 400;
 /** A signed spot is re-read this often while a slip is open; the guard accepts one up to 120 s old. */
 const SPOT_REFRESH_MS = 15_000;
+/** The guard takes a signed spot up to this old. */
+const SPOT_MAX_AGE_MS = 120_000;
 /** At the hold, a payload younger than this is sent as is; older, a fresh one is fetched first. */
 export const SPOT_REUSE_SEC = 60;
 
@@ -128,7 +130,9 @@ export function useParlayQuote({ legs, mode, params, enabled }: { legs: readonly
     fair: fairQuery.data ?? null,
     capacity: capacity.data?.refusal ?? null,
     spots,
-    spotsDown: spotsQuery.isError,
+    // R4-5 review: a failed refresh keeps the last payloads (TanStack keeps `data` with `isError`); only none, or none the
+    // guard would still take (120 s), is "down" — one failed 15 s refresh no longer swaps the hold for the blocker.
+    spotsDown: spotsQuery.isError && (spots === null || Date.now() - spotsQuery.dataUpdatedAt > SPOT_MAX_AGE_MS),
     retry,
   };
 }
