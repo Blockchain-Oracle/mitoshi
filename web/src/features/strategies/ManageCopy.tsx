@@ -2,7 +2,7 @@
 // The drawer's "Your copy" tab (R4-6, D-227; Owarine 90a91d71 CopyDrawer's manage state): the copier's own result as one
 // figure (its settled fills, as the chain settled them), live or paused, switch follow ↔ fade (free: already subscribed,
 // D-219.3) and stop behind Hold to stop (`stopIntent`: the grant is revoked only when no other copy shares it). A paused
-// copy renews through the same form as a new one.
+// copy renews through the same form as a new one, and can be stopped from here (its footer is the renewal).
 import type { SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
 import { TxFailureCard } from "@/components/tx";
@@ -24,7 +24,7 @@ export function copyIsLive(sub: Sub, writes: Pick<CopyWrites, "grant">, nowSec =
   return g !== null && g.grantId.toString() === sub.grantId && !g.revoked && g.expiresAtSec > nowSec;
 }
 
-export function ManageCopy({ card, sub, writes, renew }: { card: StrategyWire; sub: Sub; writes: CopyWrites; renew: React.ReactNode }) {
+export function ManageCopy({ card, sub, writes, renew, onStopped }: { card: StrategyWire; sub: Sub; writes: CopyWrites; renew: React.ReactNode; onStopped: () => void }) {
   const [said, setSaid] = useState<string | null>(null);
   const live = copyIsLive(sub, writes);
   const fills = writes.myFills.filter((f) => f.strategyId === card.strategyId);
@@ -67,6 +67,8 @@ export function ManageCopy({ card, sub, writes, renew }: { card: StrategyWire; s
           {M.switchTo(other)}
         </button>
       )}
+      {/* A paused copy can still be ended (the footer carries its renewal, or nothing on a closed strategy). */}
+      {!live && <StopCopy card={card} writes={writes} onStopped={onStopped} />}
     </div>
   );
 }

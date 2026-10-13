@@ -90,7 +90,7 @@ function DrawerBody({ card, strategies, writes, fills, initialTab, onClose }: { 
           <TabsPanel value="copy" className="pt-4">
             {writes.tx.state.kind === "failed" && !sub && <TxFailureCard state={writes.tx.state} onRetry={() => writes.tx.dispatch({ type: "reset" })} />}
             {sub ? (
-              <ManageCopy card={card} sub={sub} writes={writes} renew={<CopyForm card={card} form={form} writes={writes} />} />
+              <ManageCopy card={card} sub={sub} writes={writes} renew={<CopyForm card={card} form={form} writes={writes} />} onStopped={() => done(COPY.done.stopped)} />
             ) : card.active ? (
               <CopyForm card={card} form={form} writes={writes} />
             ) : (
