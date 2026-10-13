@@ -1,7 +1,7 @@
 // Round 7: the browser's RPC proxy passes only a page's methods, caps a batch, and meters each address.
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-const { admit, MAX_BATCH, refusal } = await import("./rpc-proxy");
+const { admit, admitRead, carriesSend, MAX_BATCH, refusal } = await import("./rpc-proxy");
 
 describe("rpc proxy", () => {
   it("passes a page's reads and sends, refuses the rest", () => {
@@ -20,5 +20,14 @@ describe("rpc proxy", () => {
     expect(admit("a", 1, t)).toBe(false);
     expect(admit("a", 1, t + 1_000)).toBe(true);
     expect(admit("b", 1, t)).toBe(true);
+  });
+  it("sends raw sends to the private RPC and caps every viewer's reads together", () => {
+    expect(carriesSend([{ method: "eth_call" }, { method: "eth_sendRawTransactionSync" }])).toBe(true);
+    expect(carriesSend({ method: "eth_getLogs" })).toBe(false);
+    const t = 5_000_000;
+    let passed = 0;
+    for (let i = 0; i < 50; i++) if (admitRead(1, t)) passed++;
+    expect(passed).toBe(30);
+    expect(admitRead(1, t + 1_000)).toBe(true);
   });
 });

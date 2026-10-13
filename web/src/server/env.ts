@@ -11,6 +11,7 @@ export interface ServerEnv {
   appOrigin: string;
   rpId: string;
   rpcHttpUrl: string;
+  rpcReadUrl: string;
   redisUrl: string | null;
   databaseUrl: string | null;
   feePayerKey: `0x${string}` | null;
@@ -37,6 +38,8 @@ export function serverEnv(): ServerEnv {
     appOrigin,
     rpId: process.env.PASSKEY_RP_ID || new URL(appOrigin).hostname,
     rpcHttpUrl: process.env.TEMPO_RPC_HTTP_URL || TEMPO_RPC_HTTP[network],
+    // The browser proxy's reads (R6 shell S04): the public RPC unless set, never the keepers' private one.
+    rpcReadUrl: process.env.RPC_PROXY_READ_URL || TEMPO_RPC_HTTP[network],
     redisUrl: process.env.REDIS_URL || null,
     databaseUrl: process.env.DATABASE_URL || null,
     feePayerKey: key && /^0x[0-9a-fA-F]{64}$/.test(key) ? (key as `0x${string}`) : null,

@@ -1,7 +1,8 @@
-// The browser's same-origin RPC (round 7; server/rpc-proxy.ts): allowlisted JSON-RPC to the server's private RPC.
+// The browser's same-origin RPC (round 7; server/rpc-proxy.ts): allowlisted JSON-RPC — reads to the public RPC under one
+// global cap, raw sends to the server's private RPC (R6 shell S04).
 import { serverEnv } from "@/server/env";
 import { ipHash } from "@/server/request";
-import { admit, refusal } from "@/server/rpc-proxy";
+import { admit, admitRead, carriesSend, refusal } from "@/server/rpc-proxy";
 
 const TIMEOUT_MS = 10_000;
 
@@ -18,9 +19,13 @@ export async function POST(req: Request): Promise<Response> {
   }
   const why = refusal(body);
   if (why) return rpcError(400, why);
-  if (!admit(ipHash(req), Array.isArray(body) ? body.length : 1)) return rpcError(429, "slow down");
+  const cost = Array.isArray(body) ? body.length : 1;
+  if (!admit(ipHash(req), cost)) return rpcError(429, "slow down");
+  const send = carriesSend(body);
+  if (!send && !admitRead(cost)) return rpcError(429, "busy: read directly");
   try {
-    const upstream = await fetch(serverEnv().rpcHttpUrl, {
+    const env = serverEnv();
+    const upstream = await fetch(send ? env.rpcHttpUrl : env.rpcReadUrl, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
