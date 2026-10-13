@@ -5,7 +5,7 @@
  * without the launchpads answers `null` inside it. Log reads (trades, a stablecoin's orders) walk from the area's deploy
  * block in RPC-sized windows and are cached by the page for minutes.
  */
-import { erc20Abi, getAddress, type Address, type Hex } from "viem";
+import { erc20Abi, getAddress, parseAbi, type Address, type Hex } from "viem";
 import { Abis, Addresses } from "viem/tempo";
 import { curveLaunchpadAbi } from "@cwf/clients/abis/CurveLaunchpad";
 import { launchRegistryAbi } from "@cwf/clients/abis/LaunchRegistry";
@@ -14,7 +14,8 @@ import { deploymentOf } from "../deployments";
 import { nowMs } from "../runtime/clock";
 import { getLogClient, getPublicClient } from "../runtime/read-runtime";
 import { withReading } from "../runtime/reading";
-import { memeAddresses, type MemeAddresses } from "./meme";
+import { UNISWAP_V4 } from "@cwf/clients";
+import { memeAddresses, memePoolKey, PATH_USD, type MemeAddresses } from "./meme";
 import { listMemecoins, readMemeClaims, readMemeLaunch, readMemePosition, readMemeTrades, type MemeLaunch, type MemeTrade } from "./memeRead";
 import { readStablecoinLaunch, type StablecoinLaunchState } from "./stablecoin";
 
@@ -227,6 +228,27 @@ export async function getStablecoinLaunch(token: Address): Promise<Reading<Stabl
     ]);
     const state = await readStablecoinLaunch(client as never, { token, registry: a.registry, orderIds });
     return { ...state, token: getAddress(token), name, symbol, decimals: Number(decimals), logoURI, supplyCap };
+  });
+}
+
+const V4_QUOTER_ABI = parseAbi([
+  "struct PoolKey { address currency0; address currency1; uint24 fee; int24 tickSpacing; address hooks; }",
+  "struct QuoteExactSingleParams { PoolKey poolKey; bool zeroForOne; uint128 exactAmount; bytes hookData; }",
+  "function quoteExactInputSingle(QuoteExactSingleParams params) returns (uint256 amountOut, uint256 gasEstimate)",
+]);
+
+/**
+ * A swap in a graduated memecoin's pool, quoted by Uniswap's V4Quoter (an `eth_call`; the quoter reverts internally and
+ * answers the amount): what `amountIn` of pathUSD buys (`buyCoin`) or of the coin sells for. Null without the pool.
+ */
+export async function quotePoolSwap(p: { token: Address; fee: number; tickSpacing: number; buyCoin: boolean; amountIn: bigint }): Promise<Reading<bigint | null>> {
+  return withReading(`poolQuote:${p.token.toLowerCase()}:${p.buyCoin}:${p.amountIn}`, async () => {
+    const { client, a } = await venue();
+    if (!a || p.amountIn <= 0n) return null;
+    const key = memePoolKey(p.token, p.fee, p.tickSpacing);
+    const zeroForOne = p.buyCoin ? key.currency0.toLowerCase() === PATH_USD.toLowerCase() : key.currency0.toLowerCase() === p.token.toLowerCase();
+    const { result } = await client.simulateContract({ address: UNISWAP_V4.v4Quoter as Address, abi: V4_QUOTER_ABI, functionName: "quoteExactInputSingle", args: [{ poolKey: key, zeroForOne, exactAmount: p.amountIn, hookData: "0x" }] });
+    return result[0];
   });
 }
 

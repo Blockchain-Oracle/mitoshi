@@ -7,7 +7,7 @@
 import type { Address, Reading } from "@cwf/core";
 import type { QueryClient } from "@tanstack/react-query";
 import type { MemeLaunch, MemeTrade } from "../launch/memeRead";
-import { getMemeClaims, getMemeLaunch, getMemePosition, getMemeTrades, getStablecoinLaunch, listLaunches, listMemeTemplates, type LaunchRow, type MemeTemplate, type StablecoinView } from "../launch/reads";
+import { getMemeClaims, getMemeLaunch, getMemePosition, getMemeTrades, getStablecoinLaunch, listLaunches, listMemeTemplates, quotePoolSwap, type LaunchRow, type MemeTemplate, type StablecoinView } from "../launch/reads";
 import { useReadingQuery } from "./useReadingQuery";
 
 const LIST_POLL_MS = 30_000;
@@ -22,6 +22,7 @@ export const launchKeys = {
   position: (token: string | null, holder: string | null) => ["cwf", "launch", "position", token?.toLowerCase() ?? null, holder?.toLowerCase() ?? null] as const,
   claims: (holder: string | null, coin: string | null) => ["cwf", "launch", "claims", holder?.toLowerCase() ?? null, coin?.toLowerCase() ?? null] as const,
   stablecoin: (token: string | null) => ["cwf", "launch", "stablecoin", token?.toLowerCase() ?? null] as const,
+  poolQuote: (token: string | null, buyCoin: boolean, amountIn: string) => ["cwf", "launch", "poolQuote", token?.toLowerCase() ?? null, buyCoin, amountIn] as const,
 };
 
 /** After a confirmed `launch-*` write: every launch read refetches (the list, the token, its trades, the position). */
@@ -55,4 +56,9 @@ export function useMemeClaims(holder: Address | null, coin: Address | null) {
 
 export function useStablecoinLaunch(token: Address | null): Reading<StablecoinView | null> | null {
   return useReadingQuery(launchKeys.stablecoin(token), () => getStablecoinLaunch(token!), { enabled: token !== null, pollMs: LIST_POLL_MS });
+}
+
+/** A graduated memecoin's pool quote (V4Quoter) for the trade sheet; refreshed every 10 s while it is open. */
+export function usePoolQuote(p: { token: Address; fee: number; tickSpacing: number; buyCoin: boolean; amountIn: bigint } | null): Reading<bigint | null> | null {
+  return useReadingQuery(launchKeys.poolQuote(p?.token ?? null, p?.buyCoin ?? true, (p?.amountIn ?? 0n).toString()), () => quotePoolSwap(p!), { enabled: p !== null && p.amountIn > 0n, pollMs: TOKEN_POLL_MS });
 }
