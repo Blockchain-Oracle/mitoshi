@@ -27,7 +27,7 @@ export const DUEL = {
     waitJoin: "Waiting for your opponent to join…",
     reveal: "Open the deck",
     revealing: "Opening the deck…",
-    cards: (n: number) => `${n} cards · 5m Windows`,
+    cards: (n: number) => `${n} cards`,
     another: "Not opened · find another duel",
   },
   pick: {

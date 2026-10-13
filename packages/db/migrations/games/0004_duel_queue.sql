@@ -13,6 +13,6 @@ CREATE TABLE IF NOT EXISTS duel_queue (
 CREATE INDEX IF NOT EXISTS duel_queue_waiting_idx
   ON duel_queue (tier, queued_at) WHERE match_id IS NULL;
 
--- Mitoshi's Windows run 5 minutes (deck policy 2): the lane a deck was dealt from may be '5m'.
+-- A venue that names the 5m cadence (core DeckPolicy.cadences) deals a '5m' lane; the check allows it beside 15m, 1h, mixed.
 ALTER TABLE duel_decks DROP CONSTRAINT IF EXISTS duel_decks_lane_check;
 ALTER TABLE duel_decks ADD CONSTRAINT duel_decks_lane_check CHECK (lane IN ('5m', '15m', '1h', 'mixed'));

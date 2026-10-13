@@ -5,9 +5,9 @@ pragma solidity 0.8.30;
 // venue pins become the engine + lens from `deployments/<chainId>/engine.json`; the address goes into the `arena`
 // fragment through `DeploymentWriter` + `scripts/deploy/finalize.ts`. Tiers are Masayume's (Flicky's): Free plus 1 / 5 /
 // 10 pathUSD side-pots and a 1 pathUSD cap on any one card's order, in core `STAKE_TIERS` order.
-// The windows are Mitoshi's, not Masayume's: Mitoshi's Windows run 5 minutes (one per asset at each boundary), so the
-// arena's join + reveal + card life must fit inside one — 30 + 30 + 120 s, with picks open 90 s (a card must outlive
-// the pick window). A deck is dealable in the first two minutes of each 5-minute cycle; `setParams` retunes it live.
+// The windows are Mitoshi's, not Masayume's: tight enough that join + reveal + card life (30 + 30 + 120 s, picks open
+// 90 s — a card must outlive the pick window) would fit even a 5-minute Window, so the 15m and 1h Windows the deck
+// policy deals stay dealable for most of their life; `setParams` retunes them live.
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IEventsEngine} from "../../src/engine/interfaces/IEventsEngine.sol";

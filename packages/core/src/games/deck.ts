@@ -73,14 +73,16 @@ export interface DeckPolicy {
   horizonSec: number;
   minHeadroomSec?: number;
   /**
-   * The cadences a deck may draw, when the venue says so (R4-9, D-227). Absent: Masayume's rule — never 5m. Mitoshi's
-   * Windows run 5 minutes only, and its arena's windows were sized to fit one (30 s join, 30 s reveal, 120 s card
-   * life), so its policy names `[300]`: the measured-timing condition is the arena's own parameters, not a guess.
+   * The cadences a deck may draw, when a venue names them (R4-9, D-227). Absent: the owner's rule — never 5m (15m and
+   * 1h only) until live timing proves a whole duel fits inside a 5-minute Window. Mitoshi's duel uses the default.
    */
   cadences?: readonly number[];
 }
 
-/** Mitoshi's deck policy version (the commitment binds it): 2 = 5-minute Windows, sized to the arena's own windows. */
+/**
+ * Mitoshi's deck policy version (the commitment binds it): 2 = the owner's 15m/1h rule at Mitoshi's arena's own
+ * headroom (join + reveal + card life, 30 + 30 + 120 s, plus the creator's entry), dealt soonest-lock first.
+ */
 export const DUEL_POLICY_VERSION = 2;
 
 export type DeckRefusal = { kind: "too-few-eligible"; eligible: number; needed: number };

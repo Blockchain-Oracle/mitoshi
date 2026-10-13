@@ -1,7 +1,7 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { isOk, type Address, type Bytes32, type MarketId } from "@cwf/core";
-import { applyResult, arenaWinnerOf, deckCommitmentPreimage, DUEL_POLICY_VERSION, NEW_RATING, type RatingRecord, INTERVAL_5M_SEC, nextDealableSec, selectDeck, STAKE_TIERS, toBaseUnits, type DeckCandidate, type DeckCard, type DeckPolicy, type StakeTierId } from "@cwf/core/games";
+import { applyResult, arenaWinnerOf, DECK_MAX, deckCommitmentPreimage, DUEL_POLICY_VERSION, INTERVAL_15M_SEC, INTERVAL_1H_SEC, NEW_RATING, type RatingRecord, nextDealableSec, selectDeck, STAKE_TIERS, toBaseUnits, type DeckCandidate, type DeckCard, type DeckPolicy, type StakeTierId } from "@cwf/core/games";
 import { createPgDuelStore, type DuelMatchRow, type DuelStore } from "@cwf/db";
 import { configureMarkets, createMarketsProvider, marketsEnv, tempoChain } from "@cwf/markets";
 import { arenaOf, getArenaCredit, getArenaMatch, getArenaState } from "@cwf/markets/arena";
@@ -14,8 +14,9 @@ import type { DuelMatchWire, DuelPairedWire, DuelQueueWire } from "./duel-wire";
 /**
  * The duel's matchmaker and deckmaster — server only (R4-9, D-227). Ported from Masayume 68f7a09
  * services/ops/src/actors/matchmaker/{index,deckmaster,seal}.ts onto the web server: two wallets waiting at one tier are
- * paired in one atomic claim; the deck is dealt from the venue's live 5-minute Windows that fill a per-card stake on both
- * sides (core `selectDeck`, policy 2); a fresh server seed and both client seeds — each committed before either player
+ * paired in one atomic claim; the deck is dealt from the venue's live 15-minute and 1-hour Windows that fill a per-card
+ * stake on both sides (core `selectDeck`, the owner's never-5m policy, at the arena's own headroom); a fresh server seed
+ * and both client seeds — each committed before either player
  * saw a deck — fix it under the arena's commitment (core `deckCommitmentPreimage`, the arena's `ArenaCommitment` word for
  * word). The reveal material is sealed at rest (AES-256-GCM, a key derived from a server secret, never in the database)
  * and handed out only once the chain shows both pots in — `revealDeck` is permissionless, so either player's browser
@@ -27,6 +28,8 @@ const DECIMALS = 6;
 const STALE_PAIR_SEC = 120;
 /** Join + reveal + card life at the deployed arena (30 + 30 + 120), plus the creator's entry latency. */
 const DEAL_HEADROOM_SEC = 210;
+/** Windows quoted at once while dealing (two reads each). */
+const QUOTE_BATCH = 4;
 
 let store: DuelStore | null = null;
 function duelStore(): DuelStore | null {
@@ -94,28 +97,38 @@ function pairedWire(m: DuelMatchRow, wallet: string): DuelPairedWire {
 }
 
 /**
- * Every live 5-minute Window with the arena's headroom left that fills the per-card stake on both sides right now (the
- * deck's candidates), and every live 5-minute Window at all (the schedule `nextDealableSec` projects the next deck from).
+ * The deck's candidates and the schedule: every live 15-minute and 1-hour Window (the owner's standing deck policy —
+ * never 5m until live timing proves a whole duel fits inside one; core `selectDeck` without `cadences`), soonest lock
+ * first, quoted on both sides at the per-card stake until a full deck's worth fill; and every live Window of those
+ * cadences, which `nextDealableSec` projects the next deck from.
  */
 async function candidates(capBase: bigint): Promise<{ list: DeckCandidate[]; schedule: DeckCandidate[]; policy: DeckPolicy; nowSec: number } | null> {
   const port = createMarketsProvider();
   const lanes = await port.listLiveLanes();
   if (!isOk(lanes)) return null;
   const nowSec = Math.floor(port.nowMs() / 1_000);
-  const live = lanes.value.lanes.flatMap((l) => l.markets).filter((m) => m.intervalSec === INTERVAL_5M_SEC && m.tradingStartSec <= nowSec && nowSec < m.lockAtSec);
+  const live = lanes.value.lanes
+    .flatMap((l) => l.markets)
+    .filter((m) => (m.intervalSec === INTERVAL_15M_SEC || m.intervalSec === INTERVAL_1H_SEC) && m.tradingStartSec <= nowSec && nowSec < m.lockAtSec)
+    .sort((a, b) => a.lockAtSec - b.lockAtSec || a.marketId.localeCompare(b.marketId));
   // The card's life is counted to its lock: the arena checks `lockAt` at the reveal and at every pick.
   const asCandidate = (m: (typeof live)[number], trading: boolean): DeckCandidate => ({ marketId: m.marketId, asset: m.asset, intervalSec: m.intervalSec, expirySec: m.lockAtSec, trading, spreadRaw: 0n, depthRaw: 0n });
-  const list = await Promise.all(
-    live
-      .filter((m) => m.lockAtSec - nowSec >= DEAL_HEADROOM_SEC)
-      .map(async (m) => {
+  const list: DeckCandidate[] = [];
+  let fillable = 0;
+  // Soonest first, a few at a time, until a full deck's worth fills: the venue is read for what can be dealt, not all.
+  const queue = live.filter((m) => m.lockAtSec - nowSec >= DEAL_HEADROOM_SEC);
+  for (let i = 0; i < queue.length && fillable < DECK_MAX; i += QUOTE_BATCH) {
+    const batch = await Promise.all(
+      queue.slice(i, i + QUOTE_BATCH).map(async (m) => {
         const ref = { marketId: m.marketId, decimals: m.decimals, intervalSec: m.intervalSec };
         const [up, down] = await Promise.all([port.freshQuoteStake(ref, "up", capBase), port.freshQuoteStake(ref, "down", capBase)]);
-        const fills = isOk(up) && isOk(down) && up.value !== null && down.value !== null && !up.value.partial && !down.value.partial;
-        return asCandidate(m, fills);
+        return asCandidate(m, isOk(up) && isOk(down) && up.value !== null && down.value !== null && !up.value.partial && !down.value.partial);
       }),
-  );
-  const policy: DeckPolicy = { supportedAssets: [...new Set(live.map((m) => m.asset))], maxSpreadRaw: 0n, minDepthRaw: 0n, horizonSec: INTERVAL_5M_SEC, minHeadroomSec: DEAL_HEADROOM_SEC, cadences: [INTERVAL_5M_SEC] };
+    );
+    list.push(...batch);
+    fillable += batch.filter((c) => c.trading).length;
+  }
+  const policy: DeckPolicy = { supportedAssets: [...new Set(live.map((m) => m.asset))], maxSpreadRaw: 0n, minDepthRaw: 0n, horizonSec: INTERVAL_1H_SEC, minHeadroomSec: DEAL_HEADROOM_SEC };
   return { list, schedule: live.map((m) => asCandidate(m, true)), policy, nowSec };
 }
 
@@ -146,7 +159,7 @@ export async function enterQueue(input: { wallet: Address; tier: StakeTierId; cl
   if (!dealt || !selection || !selection.ok) {
     await duels.release(opponent.wallet);
     await duels.release(input.wallet);
-    const next = dealt ? nextDealableSec(dealt.schedule, dealt.policy, dealt.nowSec, 300) : null;
+    const next = dealt ? nextDealableSec(dealt.schedule, dealt.policy, dealt.nowSec) : null;
     return waiting(dealt ? "no deck right now" : "the venue could not be read", next);
   }
 

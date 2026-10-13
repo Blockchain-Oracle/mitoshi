@@ -2,7 +2,7 @@
 
 // /games/duel — the versus (R4-9, D-227). Ported from Owarine 90a91d71:web/src/features/games/duel/DuelStage.tsx and
 // Masayume 68f7a09's arena flow, on Mitoshi's GameArena (contracts/src/products/arena, live on Moderato): find a duel at
-// a pot → paired with the longest-waiting wallet at that pot and dealt a sealed deck of live 5-minute Windows → the
+// a pot → paired with the longest-waiting wallet at that pot and dealt a sealed deck of live 15m and 1h Windows → the
 // creator opens the match (its pot in, the deck's commitment on chain), the challenger joins (its pot in) → either
 // browser opens the deck (permissionless; the material is released only once both pots are in) → each seat swipes every
 // card, one real IOC per card at the tier's $1 cap, measured by the arena → the cards settle on their Windows' closes
