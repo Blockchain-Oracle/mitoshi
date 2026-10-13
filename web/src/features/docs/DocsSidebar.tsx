@@ -7,6 +7,7 @@ import { ArrowUpRight, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { ExternalLink } from "@/components/shell/ExternalLink";
 import { DOCS_URL } from "@/lib/docs-url";
 import { DOCS_NAV } from "./nav";
 
@@ -48,15 +49,13 @@ export function DocsSidebar({ onNavigate }: { onNavigate?: () => void }) {
           })}
         </div>
       ))}
-      <a
+      <ExternalLink
         href={DOCS_URL}
-        target="_blank"
-        rel="noopener noreferrer"
         onClick={onNavigate}
         className="flex min-h-touch items-center gap-2 rounded-md border border-hairline px-3 type-body text-ink-secondary hover:bg-surface-1 hover:text-ink"
       >
         The full guides <ArrowUpRight aria-hidden className="size-4" />
-      </a>
+      </ExternalLink>
     </nav>
   );
 }

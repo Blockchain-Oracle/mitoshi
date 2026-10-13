@@ -11,7 +11,7 @@ export default function Page() {
     <>
       <H1>Mitoshi docs</H1>
       <Lead>Mitoshi 見通し — &ldquo;see where it&apos;s going&rdquo; — is a one-screen app for calling where a price closes, on Tempo. These pages document what runs today on Tempo testnet; what comes next is said to be next.</Lead>
-      <P>These are the short pages. <A href={DOCS_URL}>The full guides</A> cover every feature step by step, the architecture, the deployed addresses and dated evidence.</P>
+      <P><A href={DOCS_URL}>The full guides</A> cover every feature, the architecture, the deployed addresses and dated evidence.</P>
       <Note>Mitoshi runs on Tempo testnet (Moderato). The dollars are testnet pathUSD from the faucet and have no value. Everything else is real: the order books, the signed prints, the settlement and the receipts.</Note>
       <H2>Live on testnet</H2>
       <Ul
