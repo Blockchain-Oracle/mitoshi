@@ -6,6 +6,11 @@ sources:
   - contracts/src/robinhood/StockLockbox.sol
   - contracts/src/stocks/TIP20MintBurnAdapter.sol
   - web/src/lib/capabilities.ts
+  - packages/core/src/bridge/conservation.ts
+  - web/src/features/reserves/copy.ts
+  - web/src/features/reserves/useReserves.ts
+  - services/ops/src/actors/reserve-watch/index.ts
+  - docs/plan/acceptance/R4-12.md
 ---
 
 ## The check
@@ -18,9 +23,21 @@ For each ticker, two numbers on two chains should agree:
 
 By design, supply on Tempo never exceeds what was locked — the invariant tests hold it on both paths, direct and through the testnet hop: the adapter mints only on a verified LayerZero message from the lockbox's side, and a credit it can't mint is deferred rather than minted elsewhere. Tokens in flight, sent but not yet delivered, are the only honest gap, and the check will name them.
 
+## The reserves screen
+
+<AppLink href="/reserves">Reserves</AppLink> reads Robinhood Chain, Base and Tempo in your browser, ticker by ticker, at stated blocks, and gives one verdict:
+
+| Verdict | When |
+| --- | --- |
+| **Backed** | Every check passed: the lockbox holds what it owes, and what it owes equals the mirror's supply, held credits, the hop on Base and what is in flight |
+| **Short** | A check failed; the ticker says which |
+| **Partial** | A check couldn't run — it is never passed by assumption |
+
+On Tempo alone two more checks hold: only the adapter mints — supply equals its net mints, and no one else holds the mirror's issuer role — and supply stays within the cap. **Re-check** reads every chain again in your browser. Ops' **reserve-watch** keeps a snapshot every 5 minutes and alerts when a check fails or anyone but the adapter can mint; the screen shows 30 days of it. The screen ships with the next web release.
+
 ## Where it stands
 
-<AppLink href="/reserves">Reserves</AppLink> is registered and not built: it will read both chains per ticker and give a verdict. On testnet the Robinhood-side lockboxes are not deployed yet (they wait on testnet ETH, an owner action), and no mirror has been minted: all five read a total supply of zero on Moderato at block 39,327,402 on 12 October (`evidence/mirror-supplies-2026-10-12.json`).
+The verdict on testnet is **Partial**: the Robinhood-side lockboxes are not deployed yet (they wait on testnet ETH, an owner action). The Tempo side checks out: on 12 October, at Moderato block 39,326,334, all five mirrors had a supply of zero, nothing deferred, net mints of zero, and the adapter alone held each issuer role (`acceptance/R4-12.md`; supplies also in `evidence/mirror-supplies-2026-10-12.json`).
 
 <GuideCapture name="reservesDesk" />
 

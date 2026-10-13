@@ -1,6 +1,6 @@
 $ pnpm check:content && pnpm typecheck && pnpm build
 $ node scripts/check-content.mjs
-Content: 49 pages, 95 docs links, 47 app links, 24 media, 25 receipts, 14 addresses
+Content: 49 pages, 97 docs links, 48 app links, 24 media, 26 receipts, 14 addresses
 ! 19 planned capture(s) or walkthrough(s) not recorded yet — they render nothing until `pnpm media:record && pnpm media:publish` runs against the deployed product:
   capture statusDesk (content/docs/architecture/ops-and-indexer.mdx) — probe 2026-10-12: ready
   capture agentsDesk (content/docs/automate/agents.mdx) — probe 2026-10-12: ready
@@ -21,32 +21,32 @@ Content: 49 pages, 95 docs links, 47 app links, 24 media, 25 receipts, 14 addres
   capture rangePhone (content/docs/trading/range-and-moonshot.mdx) — probe 2026-10-12: ready
   capture terminalDesk (content/docs/trading/terminal.mdx) — probe 2026-10-12: ready
   capture terminalPhone (content/docs/trading/terminal.mdx) — probe 2026-10-12: ready
-✓ source 2c92568, navigation, links, routes, media, receipts, addresses and deployments
+✓ source 595e40d, navigation, links, routes, media, receipts, addresses and deployments
 $ next typegen && tsc --noEmit
 Generating route types...
 ✓ Types generated successfully
 $ next build
 ▲ Next.js 16.3.4 (Turbopack)
-✓ Running next.config.mjs took 368ms
+✓ Running next.config.mjs took 35ms
 
   Creating an optimized production build ...
-✓ Compiled successfully in 5.9s
+✓ Compiled successfully in 6.5s
   Running TypeScript ...
-  Finished TypeScript in 2.5s ...
+  Finished TypeScript in 10.4s ...
   Collecting page data using 9 workers ...
   Generating static pages using 9 workers (0/106) ...
   Generating static pages using 9 workers (26/106) 
   Generating static pages using 9 workers (52/106) 
   Generating static pages using 9 workers (79/106) 
-✓ Generating static pages using 9 workers (106/106) in 2.2s
+✓ Generating static pages using 9 workers (106/106) in 16.3s
   Finalizing page optimization ...
 
 Route (app)
 ┌ ○ /_not-found
 ├   /[[...slug]]
 │ ├ ● /
-│ ├ ● /architecture/built-on
-│ ├ ● /architecture/contracts
+│ ├ ● /automate/agents
+│ ├ ● /automate/copy-strategies
 │ └ ● [+46 more paths]
 ├ ƒ /api/search
 ├ ○ /llms-full.txt

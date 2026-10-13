@@ -7,6 +7,10 @@ sources:
   - services/ops/src/runtime
   - services/ops/src/actors/indexer
   - services/ops/src/actors/indexer-recount
+  - services/ops/src/actors/bridge-watch/index.ts
+  - services/ops/src/actors/reserve-watch/index.ts
+  - services/ops/src/actors/stock-sync/index.ts
+  - services/ops/src/actors/indexer/bridge.ts
   - packages/db/src/idx
   - infra
 ---
@@ -41,9 +45,11 @@ Read from ops' `/health` on 12 October 2026 (21 heartbeats, 20 live, 1 dry):
 
 Three more exist and are not running on testnet: **reference-writer** (keeps the stock reference fresh, opt-in), **launch-keeper** (graduates complete memecoins; plans only, opt-in) and **indexer-recount** (an hourly recount against the Tempo Indexer API or a self-hosted tidx).
 
+Three join the default set with the next ops release, for the bridge: **bridge-watch** follows each recorded transfer leg by leg through LayerZero Scan and re-runs a stored hop once Base can pay; **reserve-watch** snapshots every ticker's backing every 5 minutes and alerts if a check fails or anyone but the adapter can mint; **stock-sync** pushes Robinhood multipliers and pauses to Tempo, and idles until its sender is deployed on Robinhood Chain ([reserves](/stocks/reserves)).
+
 ## The indexer
 
-The indexer follows the engine, the three Trading Balance vaults, the strategy registry and the ERC-8004 reputation registry, block by block, into Postgres — Windows, orders, fills, prints, settlements, vault executions and grants. At 22:06 UTC on 12 October it had seen 60,381 Windows opened and 60,320 resolved (`evidence/ops-health-2026-10-12.json`). Web reads it for Markets, Portfolio, Stats, the leaderboard and profiles.
+The indexer follows the engine, the three Trading Balance vaults, the strategy registry and the ERC-8004 reputation registry, block by block, into Postgres — Windows, orders, fills, prints, settlements, vault executions and grants; with the next ops release, the bridge adapters' mints, burns and held credits too. At 22:06 UTC on 12 October it had seen 60,381 Windows opened and 60,320 resolved (`evidence/ops-health-2026-10-12.json`). Web reads it for Markets, Portfolio, Stats, the leaderboard and profiles.
 
 **Recount.** A separate replay — a GitHub workflow, `recount.yml` — walks the engine's and every vault's logs and compares totals with the index. Through block 39,012,040 the recount equalled the index, total for total and Window for Window.
 

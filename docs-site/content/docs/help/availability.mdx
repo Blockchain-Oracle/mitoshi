@@ -9,9 +9,11 @@ sources:
   - web/src/features/games/catalog.ts
   - contracts/deployments/42431/range.json
   - docs/plan/acceptance/S24.md
+  - docs/plan/acceptance/R4-12.md
+  - mobile/README.md
 ---
 
-Checked against app revision `2c92568` on 13 October 2026. Mitoshi runs on **Tempo testnet (Moderato)** only; nothing is deployed on Tempo mainnet.
+Checked against app revision `595e40d` on 13 October 2026. Mitoshi runs on **Tempo testnet (Moderato)** only; nothing is deployed on Tempo mainnet.
 
 ## Live on testnet
 
@@ -27,18 +29,17 @@ Each of these pages exists, says what it does and names what it waits on — nev
 
 | Page | Waits on |
 | --- | --- |
-| Bridge, Reserves | The bridge screens; the Robinhood-side lockboxes (testnet ETH) |
 | Themes | The themes screens; the relay honouring the follow batch |
 | Launch (stablecoin, memecoin) | The launch screens; the launch keeper's sender |
 | Duel, Games history, Game ranks | The arena contracts |
 | Lucky | The draw server |
 | X-trade, X recovery | The X relay and an X account (owner) |
 
-The native iOS and Android app is specified and not built; the web app installs from the browser.
+The phone app is built for iOS and Android and isn't in a store yet; the web app installs from the browser ([get the app](/start/install)).
 
 ## Being built now
 
-P&L correctness is built and checked against the chain, and ships with the next web release. Next: a shared component kit, Markets, Portfolio, Range · Moonshot · Parlay, Automate, Earn, the palette and shell, games (a full-screen arcade stage, Lucky and Duel), records, account · launch · themes, the bridge and reserves, and the landing. These guides are pinned to a revision; the docs build lists every app change since, to review.
+Built and checked, shipping with the next web and ops releases: P&L correctness; the shared component kit and one sheet grammar (Back closes a sheet); Bridge and Reserves, with ops' bridge-watch, reserve-watch and stock-sync — until the Robinhood-side lockboxes are deployed (testnet ETH) they read "Robinhood side not live" and **Partial**. Next: Markets, Portfolio, Range · Moonshot · Parlay, Automate, Earn, the palette and shell, games (a full-screen arcade stage, Lucky and Duel), records, account · launch · themes, and the landing. These guides are pinned to a revision; the docs build lists every app change since, to review.
 
 ## Waiting on the owner
 
@@ -46,6 +47,7 @@ P&L correctness is built and checked against the chain, and ships with the next 
 | --- | --- |
 | RedStone's authenticated-gateway key, before **29 October 2026** | Inside RedStone's daily refusal windows, prints, quotes, halts, Boost knock-outs and exits wait; Windows that get no print void at half |
 | Test ETH on Robinhood Chain testnet and Base Sepolia; Robinhood faucet claims | The bridge's Robinhood legs can't be deployed |
+| The App Store Connect and Play Console records; `mitoshi.xyz` serving the app's association files | The phone app isn't on TestFlight or Google Play, and passkeys don't work inside it yet |
 | The LayerZero direct-pathway request | Testnet routes through Base Sepolia |
 | A country header in front of the live domains | The region check reads "open" everywhere |
 | Passkey runs on the owner's own phone | Automated checks use virtual authenticators and a browser-wallet test session, not a real device |

@@ -5,6 +5,7 @@ sources:
   - web/src/server/relay.ts
   - packages/markets/src/relay/gates.ts
   - packages/markets/src/relay/policies/index.ts
+  - packages/markets/src/relay/policies/stocks.ts
   - packages/markets/src/keys/wallet-key.ts
   - web/src/server/backup-passkey.ts
   - scripts/invariants/rules.mjs
@@ -16,6 +17,8 @@ sources:
 Tempo transactions can carry a separate **fee payer**: the sender signs the call, and another account signs to pay its network fee in a stablecoin. Mitoshi's relay, at `/api/relay` on the web app, is that fee payer. It can't change your call — your signature covers it — and it can't spend from your account.
 
 The relay sponsors a call only if a **policy** for that contract allows it. There is one policy per deployed area — the engine, both Trading Balances, the maker vault, Range, Parlay, Boost, the private desk, strategies, themes, launch, stocks, agents and keys — and CI fails if a deployed area has none. Money **coming in** is never sponsored: deposits, `depositAndGrant`, grants and supply are always paid by you.
+
+With the next web release the stocks policy pays for the two ways out of a held bridge credit — `claimDeferred` and `sendDeferred`, whose LayerZero fee is still yours — and never for a bridge-out.
 
 Its gates, at deployment:
 
