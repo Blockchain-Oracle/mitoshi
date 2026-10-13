@@ -41,18 +41,22 @@ const ONE = oneUnit(USD_DECIMALS);
 const pctOf = (from: bigint, to: bigint) => (from > 0n ? (Number(to - from) * 100) / Number(from) : 0);
 const signedPct = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
 
-/** Opening print → the level, the live price as a dot between them (Owarine `.rg-track` with one edge). */
+/** Opening print → the level, the live price as a dot between them and the way travelled filled (Owarine `.rg-track`, one edge). */
 function DistanceGauge({ opening, strike, spot }: { opening: bigint; strike: bigint; spot: bigint | null }) {
   const lo = opening < strike ? opening : strike;
   const span = Number((opening < strike ? strike : opening) - lo) || 1;
-  const at = (v: bigint) => `${Math.max(0, Math.min(100, (Number(v - lo) / span) * 100))}%`;
+  const pct = (v: bigint) => Math.max(0, Math.min(100, (Number(v - lo) / span) * 100));
+  const at = (v: bigint) => `${pct(v)}%`;
+  // The fill is the way travelled: from the opening print to the live price, toward the level.
+  const from = pct(opening);
+  const to = spot === null ? from : pct(spot);
   const needs = pctOf(opening, strike);
   const now = spot === null ? null : pctOf(opening, spot);
   return (
     <div className="ms-gauge" role="img" aria-label={MOONSHOT.gauge.label(signedPct(needs), now === null ? "" : signedPct(now))}>
       <div className="ms-track">
         <span className="ms-track-line" />
-        <span className="ms-track-fill" style={{ left: at(lo), right: `calc(100% - ${at(lo === opening ? strike : opening)})` }} />
+        <span className="ms-track-fill" style={{ left: `${Math.min(from, to)}%`, width: `${Math.abs(to - from)}%` }} />
         <span className="ms-track-end" style={{ left: at(opening) }} />
         <span className="ms-track-end is-target" style={{ left: at(strike) }} />
         {spot !== null ? <span className="ms-track-dot" style={{ left: at(spot) }} /> : null}
