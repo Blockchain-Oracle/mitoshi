@@ -40,7 +40,7 @@ function Owed({ wallet }: { wallet: string }) {
 function Page({ reserve }: { reserve: ParlayReserveState }) {
   const nowMs = useNowMs();
   const session = useWalletSession();
-  const { windows, loading, nextOpenSec: nextOpen } = useParlayWindows(nowMs);
+  const { windows, loading, failure, nextOpenSec: nextOpen } = useParlayWindows(nowMs);
   const writes = useParlayWrites(session.address);
   const tickets = useParlayTickets(session.address);
   const mine = tickets && isOk(tickets) ? tickets.value : [];
@@ -72,7 +72,7 @@ function Page({ reserve }: { reserve: ParlayReserveState }) {
       />
       <div className="pl-grid">
         <div className="pl-windows">
-          <WindowList windows={windows} loading={loading} nowMs={nowMs} nextOpenText={nextOpen !== null ? PARLAY.windows.none(formatLeft(nextOpen * 1000 - nowMs)) : PARLAY.windows.noneLater} />
+          <WindowList windows={windows} loading={loading} failure={failure} nowMs={nowMs} nextOpenText={nextOpen !== null ? PARLAY.windows.none(formatLeft(nextOpen * 1000 - nowMs)) : PARLAY.windows.noneLater} />
         </div>
         <SlipDock reserve={reserve} windows={windows} />
       </div>

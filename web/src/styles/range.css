@@ -97,6 +97,8 @@
 .bc-k { display: block; font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-muted); }
 .bc-v { display: block; font-family: var(--font-data); font-size: 15px; font-weight: 600; color: var(--color-accent); }
 .bc-arrow { font-family: var(--font-data); font-size: 12px; color: var(--color-ink-muted); }
+/* R4-5 review: under 360 px a cent-grid print ("$4,123.40") outgrew its 74 px cell and ran into the arrow. */
+@media (max-width: 359px) { .bc-bounds { gap: 4px; } .bc-v { font-size: 13px; } }
 .bc-slider { padding: 0 12px; }
 .bc-slider .band-bars { height: 48px; }
 @media (min-width: 768px) { .bc-slider .band-bars { height: 88px; } }
@@ -154,13 +156,35 @@
 .ms-rung:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .ms-side { display: grid; place-items: center; font-family: var(--font-data); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-muted); }
 .ms-hint { font-size: 12px; color: var(--color-ink-secondary); }
+/* On a phone the readout is only Owarine's hint, once under the pad; the pad itself shows the pick. */
+.ms-aim { display: flex; flex-direction: column; gap: 6px; }
+.ms-readout > :not(.ms-hint) { display: none; }
+/* R4-5 review (D-227): from 768 Owarine's ladder (`.ms-ladder`) — one column, deepest long at the top, deepest short at
+   the floor, the side word where the side flips — with the readout beside it (×N, the side, the hint, ▲ / ▼). The DOM
+   keeps the pad's order (long ×2…×25, short ×2…×25), so the ladder's order is set here; the arrow keys follow it. */
 @media (min-width: 768px) {
-  .ms-aim { display: grid; grid-template-columns: minmax(0, 1fr) 140px; gap: 12px; align-items: center; }
-  .ms-pad { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: 24px repeat(5, auto); }
+  .ms-aim { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 16px; align-items: start; }
+  .ms-pad { display: flex; flex-direction: column; gap: 4px; }
+  .ms-pad .ms-side { justify-content: start; min-height: 20px; }
+  .ms-pad .ms-rung { position: relative; min-height: 40px; }
+  .ms-pad .ms-rung::before { content: ""; position: absolute; inset: -2px 0; }
+  .ms-side--long { order: 0; }
+  .ms-rung[data-aim="25"] { order: 1; } .ms-rung[data-aim="10"] { order: 2; } .ms-rung[data-aim="5"] { order: 3; }
+  .ms-rung[data-aim="3"] { order: 4; } .ms-rung[data-aim="2"] { order: 5; }
+  .ms-side--short { order: 6; margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--color-hairline); }
+  .ms-rung[data-aim="-2"] { order: 7; } .ms-rung[data-aim="-3"] { order: 8; } .ms-rung[data-aim="-5"] { order: 9; }
+  .ms-rung[data-aim="-10"] { order: 10; } .ms-rung[data-aim="-25"] { order: 11; }
+  .ms-readout { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding-top: 24px; }
+  .ms-readout > :not(.ms-hint) { display: revert; }
+  .ms-readout > .ms-steps { display: flex; }
 }
-.ms-readout { display: none; }
-@media (min-width: 768px) { .ms-readout { display: flex; flex-direction: column; align-items: center; gap: 4px; } }
 .ms-readout strong { font-family: var(--font-heading); font-weight: 800; font-size: 40px; line-height: 1; color: var(--color-ink); }
+.ms-readout .ms-readout-side { font-family: var(--font-data); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.ms-steps { gap: 4px; margin-top: 6px; }
+.ms-step { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); color: var(--color-ink-secondary); }
+.ms-step:hover:not(:disabled) { color: var(--color-ink); border-color: var(--color-border-strong); }
+.ms-step:disabled { opacity: 0.45; cursor: not-allowed; }
+.ms-step:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .ms-gauge { padding: 8px 12px; border-radius: var(--radius-lg); border: 1px solid var(--color-hairline); background: var(--color-surface-1); }
 .ms-track { position: relative; height: 16px; margin: 4px 0; }
 .ms-track-line { position: absolute; left: 0; right: 0; top: 50%; height: 2px; transform: translateY(-50%); border-radius: 2px; background: var(--color-surface-3); }
@@ -170,6 +194,12 @@
 .ms-track-dot { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: var(--radius-full); transform: translate(-50%, -50%); background: var(--color-ink); transition: left 300ms var(--easeOut); }
 .ms-gauge-foot { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-data); font-size: 11px; color: var(--color-ink-secondary); }
 @media (prefers-reduced-motion: reduce) { .ms-track-dot, .ts-pays { transition: none; } }
+/* R4-5 review: a pointer's hover on every control of the house games (Owarine's rungs, presets and chips step up). */
+@media (hover: hover) {
+  .gw-chip:not(:disabled):not(.is-on):hover, .bc-preset:not([aria-pressed="true"]):hover, .ts-chip:not([aria-pressed="true"]):hover,
+  .ms-rung:not(:disabled):not([aria-checked="true"]):hover, .bc-nudge:hover, .gh-chip:not(.is-accent):hover, .gh-info:hover { border-color: var(--color-border-strong); color: var(--color-ink); }
+  .bc-side:not([aria-checked="true"]):hover, .bc-recenter:hover { color: var(--color-ink); }
+}
 /* From 1024 the band and the action block sit side by side; the action is sticky beside the board, not above a dock */
 @media (min-width: 1024px) {
   .game-page .rg { display: grid; grid-template-columns: minmax(0, 1fr) 380px; column-gap: 24px; row-gap: 12px; align-items: start; }

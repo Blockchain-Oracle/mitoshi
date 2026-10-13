@@ -8,7 +8,7 @@ import type { MarketId } from "@cwf/core";
 import type { RangeReserveState } from "@cwf/core/range";
 import { useState } from "react";
 import { formatLeft } from "@/components/kit";
-import { LoadingState } from "@/components/states";
+import { ErrorState, LoadingState } from "@/components/states";
 import { useNowMs } from "@/lib/clock";
 import { usePersistedState } from "@/lib/persisted";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -25,7 +25,7 @@ const laneOf = (w: BandWindow) => `${w.market.asset}|${w.market.lane}|${w.market
 
 export function useHouseWindows(reserve: RangeReserveState, storageKey: string) {
   const nowMs = useNowMs();
-  const { windows, nextOpenSec, gapInSec, loading } = useRangeWindows(nowMs, reserve.params.minTimeLeftSec, reserve.params.maxHorizonSec);
+  const { windows, nextOpenSec, gapInSec, loading, error } = useRangeWindows(nowMs, reserve.params.minTimeLeftSec, reserve.params.maxHorizonSec);
   const [picked, setPickedState] = useState<{ id: MarketId; lane: string } | null>(null);
   const [cadence, setCadence] = usePersistedState<string>(`cwf:${storageKey}:cadence`, "", KEY_CODEC);
   const priced = windows.filter((w) => w.model !== null);
@@ -42,7 +42,7 @@ export function useHouseWindows(reserve: RangeReserveState, storageKey: string) 
     setPickedState({ id, lane: laneOf(w) });
     setCadence(cadenceKeyOf(w.market));
   };
-  const empty = loading && priced.length === 0 ? <LoadingState shape="row" label={RANGE.band.waiting} /> : priced.length === 0 ? <p className="gw-empty">{nextOpenSec !== null ? RANGE.windows.none(formatLeft(nextOpenSec * 1000 - nowMs)) : RANGE.windows.noneLater}</p> : null;
+  const empty = loading && priced.length === 0 ? <LoadingState shape="row" label={RANGE.band.waiting} /> : error && priced.length === 0 ? <ErrorState diagnosis={error} /> : priced.length === 0 ? <p className="gw-empty">{nextOpenSec !== null ? RANGE.windows.none(formatLeft(nextOpenSec * 1000 - nowMs)) : RANGE.windows.noneLater}</p> : null;
   return { nowMs, windows, current, setPicked, empty, gapInSec };
 }
 

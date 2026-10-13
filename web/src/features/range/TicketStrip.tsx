@@ -43,7 +43,7 @@ export function TicketStrip({ multiplierMilli, sub, toWinBase, mode, onMode, amo
       <div className="ts-stake">
         <TextTabs<SolveMode> value={mode} onChange={onMode} label={ticket.solveLabel} tabs={[{ value: "fixStake", label: ticket.setStake }, { value: "fixPayout", label: ticket.setPayout }]} className="ts-modes" />
         <div className="ts-row">
-          <div className="ts-chips" role="group" aria-label={ticket.chips}>
+          <div className="ts-chips" role="group" aria-label={mode === "fixStake" ? ticket.stake : ticket.payout}>
             {CHIPS.map((c) => (
               <button key={c} type="button" className="ts-chip numbers" aria-pressed={amountText === c} onClick={() => onAmount(c)}>
                 ${c}

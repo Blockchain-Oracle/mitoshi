@@ -11,14 +11,14 @@
  * words (5m · 15m · 1h · Gap, from the live lanes) over the rows, and ⚡ "{asset} close streak" loads the soonest
  * Windows of the stock with the most live, Up, at $5 (`loadStreakPreset`); each row carries its asset's disc.
  */
-import type { Side } from "@cwf/core";
+import type { Diagnosis, Side } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import { ArrowDown, ArrowUp, Check, Zap } from "lucide-react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useMemo, useRef, useState } from "react";
 import { TextTabs } from "@/components/kit";
 import { Countdown } from "@/components/data";
-import { EmptyState, LoadingState } from "@/components/states";
+import { EmptyState, ErrorState, LoadingState } from "@/components/states";
 import { useFlyToTarget } from "@/components/ui/fly-to-target";
 import { cn } from "@/lib/utils";
 import { AssetDisc } from "../markets/hero/AssetDisc";
@@ -87,7 +87,7 @@ function Row({ w, nowMs }: { w: LegWindow; nowMs: number }) {
   );
 }
 
-export function WindowList({ windows, loading, nowMs, nextOpenText }: { windows: readonly LegWindow[]; loading: boolean; nowMs: number; nextOpenText: string }) {
+export function WindowList({ windows, loading, failure = null, nowMs, nextOpenText }: { windows: readonly LegWindow[]; loading: boolean; failure?: Diagnosis | null; nowMs: number; nextOpenText: string }) {
   const slip = useSlip();
   const all = useMemo(() => windows.filter((w) => w.model !== null), [windows]);
   const keys = [...new Set(all.map((w) => cadenceKeyOf(w.market)))];
@@ -104,7 +104,7 @@ export function WindowList({ windows, loading, nowMs, nextOpenText }: { windows:
     return best;
   }, [all]);
   if (loading && windows.length === 0) return <LoadingState shape="row" label={PARLAY.windows.loading} />;
-  if (windows.length === 0) return <EmptyState why={nextOpenText} />;
+  if (windows.length === 0) return failure ? <ErrorState diagnosis={failure} /> : <EmptyState why={nextOpenText} />;
   return (
     <div className="pw">
       <div className="pw-head">

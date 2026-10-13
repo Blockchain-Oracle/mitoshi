@@ -64,7 +64,6 @@ export const RANGE = {
     setStake: "Stake",
     setPayout: "Payout",
     solveLabel: "Set the stake or the payout",
-    chips: "Stake",
     chanceLine: (pct: string, side: "inside" | "outside") => `${pct}% ${side}`,
     pricingLine: "Pricing…",
   },

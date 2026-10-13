@@ -5,7 +5,7 @@
  * more left (`minTimeLeftSec`), on an asset the reserve can price (its σ and ticker, and a spot the guard verifies);
  * the rest listed apart with the reason — and the wallet's rounds.
  */
-import { isOk, statusOf, type Address, type EventMarket, type Reading } from "@cwf/core";
+import { isOk, statusOf, type Address, type Diagnosis, type EventMarket, type Reading } from "@cwf/core";
 import type { RangeReserveState, RangeRound } from "@cwf/core/range";
 import { MARKETS_POLL_MS } from "@cwf/core/constants";
 import { getRangeReserveState, listRangesOf, readRangeModels, type RangeModel } from "@cwf/markets/range";
@@ -41,6 +41,8 @@ export interface RangeWindows {
   /** Seconds until a trading Gap Window comes inside the reserve's horizon (its disabled chip), or null. */
   gapInSec: number | null;
   loading: boolean;
+  /** The lanes read failed with nothing to show (R4-5 review: it read as "No open Window"). */
+  error: Diagnosis | null;
 }
 
 /**
@@ -73,7 +75,7 @@ export function useRangeWindows(nowMs: number, minTimeLeftSec: number, maxHorizo
     const cadences = [...new Set(windows.filter((w) => w.model).map((w) => w.market.intervalSec))].sort((a, b) => a - b);
     const upcoming = markets.filter((m) => m.tradingStartSec > nowSec).map((m) => m.tradingStartSec);
     const farGaps = markets.filter((m) => m.lane === "gap" && nowSec > 0 && statusOf(m, nowSec) === "Trading" && m.expirySec - nowSec > maxHorizonSec).map((m) => m.expirySec - maxHorizonSec - nowSec);
-    return { windows, cadences, nextOpenSec: upcoming.length ? Math.min(...upcoming) : null, gapInSec: farGaps.length ? Math.min(...farGaps) : null, loading: reading === null || (series.length > 0 && models.isPending) };
+    return { windows, cadences, nextOpenSec: upcoming.length ? Math.min(...upcoming) : null, gapInSec: farGaps.length ? Math.min(...farGaps) : null, loading: reading === null || (series.length > 0 && models.isPending), error: reading && !isOk(reading) ? reading.error : null };
   }, [live, markets, nowSec, maxHorizonSec, models.data, models.isPending, reading, series.length]);
 }
 

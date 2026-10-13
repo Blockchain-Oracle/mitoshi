@@ -43,7 +43,11 @@
 .sb-chips { display: flex; gap: 4px; }
 .sb-chips .ts-chip { min-width: 40px; padding: 0 6px; }
 .sb-cta { min-width: 0; }
-@media (max-width: 359px) { .sb-act { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 359px) {
+  .sb-act { grid-template-columns: minmax(0, 1fr); }
+  /* R4-5 review: stacked, the bar is ~170 px tall (legs 44, chips 44, the hold 52), so 140 px left the last ticket under it */
+  .app-column:has(.pl-slipbar:not([style*="display: none"] *)) { padding-bottom: calc(var(--dock-clearance) + 188px); }
+}
 
 /* the list head: the cadence words and the ⚡ streak preset */
 .pw-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
