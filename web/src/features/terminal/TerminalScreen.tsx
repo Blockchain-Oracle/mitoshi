@@ -207,17 +207,27 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const [menuOpen, setMenuOpen] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
   // The phone's footer floats over the full-bleed chart: its height keeps the chart's pins, the depth card and the
-  // callouts clear of it (`--tm-foot`, terminal-phone.css).
+  // callouts clear of it (`--tm-foot`, terminal-phone.css). The band left above it — the stage's height before it went
+  // full-bleed — compacts the stack as R4-0's stage-height queries did (`data-band`; review fix, the stage is now taller).
   const sideRef = useRef<HTMLElement>(null);
   useEffect(() => {
     const el = sideRef.current;
-    if (!el || desktop) return;
+    const screen = el?.parentElement;
+    const stage = screen?.querySelector<HTMLElement>(".tm-stage");
+    if (!el || !screen || !stage || desktop) return;
     const root = document.documentElement.style;
-    const ro = new ResizeObserver(() => root.setProperty("--tm-foot", `${Math.round(el.getBoundingClientRect().height)}px`));
+    const ro = new ResizeObserver(() => {
+      const foot = Math.round(el.getBoundingClientRect().height);
+      root.setProperty("--tm-foot", `${foot}px`);
+      const band = screen.clientHeight - foot;
+      stage.dataset.band = band <= 260 || (band <= 380 && screen.clientWidth <= 340) ? "shortest" : band <= 380 ? "short" : "";
+    });
     ro.observe(el);
+    ro.observe(screen);
     return () => {
       ro.disconnect();
       root.removeProperty("--tm-foot");
+      delete stage.dataset.band;
     };
   }, [desktop]);
   const controls = <ChartControls handle={chartHandle} depthOn={depth} onDepth={setDepth} onRoom={() => drawer.show(DRAWERS.room)} onAlerts={() => drawer.show(DRAWERS.alerts)} onSensei={() => drawer.show(DRAWERS.sensei)} onMenu={setMenuOpen} />;

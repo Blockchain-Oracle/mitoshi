@@ -11,6 +11,12 @@
   .tm-screen .tm-stage .tm-stack-slot { top: calc((var(--tm-head, 0px) + 100cqh - var(--tm-foot, 52px)) / 2); }
   /* The footer's first row is the chart controls (Owarine's order); one row of four at 320 px. */
   .tm-side > .tm-controls { flex-wrap: nowrap; }
+  /* R4-0's short-chart stack (terminal-side.css, `@container tm-stage` 380 / 260 px), keyed to the band the full-bleed
+     chart shows above the footer (`data-band`, TerminalScreen): the stage itself is the whole screen now, so its own
+     height no longer says the chart is short (R4-3 review). */
+  .tm-screen .tm-stage[data-band="short"] .tm-stack { grid-template-columns: repeat(4, auto); }
+  .tm-screen .tm-stage[data-band="shortest"] .tm-stack { grid-template-columns: auto auto; }
+  .tm-screen .tm-stage[data-band="shortest"] .tm-stack > span:not(:first-child) > span { display: none; }
 }
 /* The mode words (Owarine's TextTabs) sit tight above UP/DOWN. */
 .tm-side .tm-modes .kit-tabs-list { gap: 16px; padding-bottom: 4px; }
