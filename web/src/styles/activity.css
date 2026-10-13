@@ -1,0 +1,19 @@
+/* `/activity` (R4-10, D-227) — Ported from Owarine 90a91d71:web/src/features/activity/activity.css on Mitoshi's tokens:
+ * the rows are /news's wire rows (news-wire.css: the wallet's marble in the mark slot, the kind as the tone's word); only
+ * the feed's tab bar and the signed-out block live here, on the same hairline ladder news.css sets on .news-page. */
+
+.act-list { margin: 16px 0 0; }
+
+.act-tabs {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px;
+  margin-top: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--news-hairline);
+}
+.act-tab { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--color-ink); box-shadow: inset 0 -3px 0 0 var(--color-accent); padding-bottom: 6px; }
+.act-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.act-meta { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-secondary); }
+.act-link { font-size: 13px; color: var(--color-accent); }
+.act-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.act-connect { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 24px; }
+.act-connect-title { font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--color-ink); }
+.act-quiet { margin-top: 16px; font-size: 14px; color: var(--color-ink-secondary); }
