@@ -3,6 +3,7 @@
 // and a drawing sparkline while the page loads — the terminal's own splash, app-wide. It lifts once the window has
 // loaded and 1.4 s have passed, or at 3.5 s; never on `/trade` (the terminal waits for its data with its own), never
 // again in the tab, never under reduced motion. CSS only (`styles/states.css`): no motion runtime in the first load.
+import { inAppShell } from "@/lib/app-shell";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { BRAND } from "@/lib/copy";
 import { markSplashDone } from "@/lib/splash";
@@ -13,7 +14,7 @@ const MAX_MS = 3_500;
 const KEY = "cwf.splash";
 const SPARK = "M4 36 L26 28 L50 32 L72 18 L98 24 L122 10 L156 13";
 /** Runs before the cover paints: a tab that already saw it, or the terminal, hides it with no flash (`states.css`). */
-const SEEN_SCRIPT = `try{if(sessionStorage.getItem("${KEY}")||location.pathname.indexOf("/trade")===0)document.documentElement.dataset.splashSeen="1"}catch(e){}`;
+const SEEN_SCRIPT = `try{if(sessionStorage.getItem("${KEY}")||location.pathname.indexOf("/trade")===0||/CWFShell\//.test(navigator.userAgent))document.documentElement.dataset.splashSeen="1"}catch(e){}`;
 
 export function Splash() {
   // Server and first client render agree (the HTML paints the cover while the page hydrates); a later load in the tab,
@@ -23,7 +24,7 @@ export function Splash() {
   useLayoutEffect(() => {
     try {
       const terminal = window.location.pathname.startsWith("/trade");
-      if (terminal || window.matchMedia("(prefers-reduced-motion: reduce)").matches || sessionStorage.getItem(KEY)) setState("off");
+      if (terminal || inAppShell() || window.matchMedia("(prefers-reduced-motion: reduce)").matches || sessionStorage.getItem(KEY)) setState("off");
     } catch {
       setState("off");
     }

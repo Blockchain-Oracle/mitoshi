@@ -132,7 +132,7 @@ export function Rail({ foot }: { foot?: ReactNode }) {
   return (
     <aside className="app-rail" aria-label={SHELL.railLabel}>
       <div className="rail-brand">
-        <Link href="/" aria-label={`${BRAND.name} home`} title={`${BRAND.name} home`} className="rail-mark">
+        <Link href="/markets" aria-label={`${BRAND.name} home`} title={`${BRAND.name} home`} className="rail-mark">
           <span className="rail-disc"><MitoshiMark /></span>
           <span className="rail-word">{BRAND.name.toUpperCase()}</span>
         </Link>

@@ -8,7 +8,7 @@
 @media (min-width: 640px) { .lp-wrap, .lp-nav, .lp-hero-grid, .lp-section { padding-inline: 32px; } }
 
 /* ── Nav: the seal and the name, three links, the theme, "Start trading" ─────────────────────────────────────── */
-.lp-nav { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 16px; }
+.lp-nav { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 16px; padding-top: max(16px, env(safe-area-inset-top)); }
 .lp-brand { display: flex; align-items: center; gap: 10px; font: 800 20px/1 var(--font-heading); letter-spacing: -0.03em; color: var(--color-ink); }
 .lp-nav-links { display: flex; align-items: center; gap: 4px; }
 .lp-nav-link { display: inline-flex; min-height: 44px; align-items: center; padding-inline: 12px; border-radius: var(--radius-full); font: 600 14px/1 var(--font-body); color: var(--color-ink); }

@@ -311,6 +311,9 @@ span.top-money, span.top-account { display: contents; }
 .dock-seal { justify-content: center; }
 .dock-seal-disc { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--radius-full); background: var(--accent-fill); color: var(--on-accent); }
 .dock-seal-disc svg { width: 21px; height: 26px; }
+/* Round 7 (Senryo's dock): the seal is Trade — lit on /trade, and it answers the finger. */
+.dock-seal[data-on] .dock-seal-disc { box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-fill) 28%, transparent), 0 0 18px color-mix(in oklab, var(--accent-fill) 55%, transparent); }
+@media (prefers-reduced-motion: no-preference) { .dock-seal-disc { transition: transform 100ms ease-out, box-shadow 170ms ease-out; } .dock-seal:active .dock-seal-disc { transform: scale(0.94); } }
 .health-chip { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border-radius: var(--radius-full); font: 500 13px/1 var(--font-body); color: var(--color-ink-secondary); }
 .health-chip:hover { background: var(--color-surface-2); color: var(--color-ink); }
 .health-dot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--color-ink-muted); }

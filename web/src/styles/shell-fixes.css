@@ -34,11 +34,15 @@
   .marquee-track [data-marquee-copy] { display: none; }
 }
 html[data-shell="app"] .grain { display: none; }
+/* Inside the phone app (round 7): no tap flash, no long-press callout or text selection on controls, no rubber band
+   past the page — it is an app, not a web page. Inputs keep selection. */
+html[data-shell="app"] { -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+html[data-shell="app"] :where(a, button, [role="button"], [role="tab"], img, svg) { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } .marquee-track [data-marquee-copy] { display: none; } }
 
 /* ── Back chevron below the top level (fix 5) and the skip link. ── */
 .header-lead { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.skip-link { position: fixed; left: 12px; top: calc(var(--safe-top) + 8px); z-index: var(--z-skip); padding: 10px 14px; border-radius: var(--radius-md); background: var(--vermilion); color: var(--white); transform: translateY(-200%); }
+.skip-link { position: fixed; left: 12px; top: calc(var(--safe-top) + 8px); z-index: var(--z-skip); padding: 10px 14px; border-radius: var(--radius-md); background: var(--vermilion); color: var(--white); transform: translateY(calc(-100% - var(--safe-top) - 24px)); }
 .skip-link:focus-visible { transform: none; }
 
 /* ── Header controls meet 44 px (the theme toggle was 34 px). ── */

@@ -84,11 +84,11 @@ export const NAV_ITEMS = {
 /** The six places, in rail order; keys 1–6 jump to them (Owarine `PLACES`). */
 export const RAIL_NAV: readonly NavItem[] = [NAV_ITEMS.trade, NAV_ITEMS.markets, NAV_ITEMS.portfolio, NAV_ITEMS.games, NAV_ITEMS.automate, NAV_ITEMS.leaderboard];
 
-/** The phone dock: Trade and Markets, the seal, Portfolio, then More (Owarine `DOCK`). */
-export const DOCK_NAV: readonly NavItem[] = [NAV_ITEMS.trade, NAV_ITEMS.markets, NAV_ITEMS.portfolio];
+/** The phone dock (round 7, Senryo `Dock`): Markets and Portfolio, the seal — Trade, the centre of the app — then Games and More. */
+export const DOCK_NAV: readonly NavItem[] = [NAV_ITEMS.markets, NAV_ITEMS.portfolio, NAV_ITEMS.games];
 
 /** The places the dock has no room for; More's phone grid lists them. */
-export const DOCK_OMITTED: readonly NavItem[] = RAIL_NAV.filter((p) => !DOCK_NAV.includes(p));
+export const DOCK_OMITTED: readonly NavItem[] = RAIL_NAV.filter((p) => !DOCK_NAV.includes(p) && p !== NAV_ITEMS.trade);
 
 /** Everything that is not a place, grouped (Owarine `MORE`). The first section is what most people open More for. */
 export const EVERYTHING_SECTIONS: readonly NavSection[] = [
@@ -136,7 +136,7 @@ export function parentOf(pathname: string): string {
   const hit = PARENTS.find(([prefix]) => pathname.startsWith(prefix));
   if (hit) return hit[1];
   const parts = pathname.split("/").filter(Boolean);
-  return parts.length <= 1 ? "/" : `/${parts.slice(0, -1).join("/")}`;
+  return parts.length <= 1 ? "/markets" : `/${parts.slice(0, -1).join("/")}`;
 }
 
 /** The top-level routes: below these, the top line shows a back chevron (ux-audit fix 5). */

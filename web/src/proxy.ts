@@ -6,6 +6,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { COUNTRY_HEADERS, encodePosture, GEOFENCE_PILLARS, postureOf, REGION_COOKIE, REGION_HEADER } from "@cwf/core";
 import { TRADE_COOKIE, tradeRedirect } from "./features/terminal/route";
+import { SHELL_UA } from "./lib/app-shell";
 import { canonicalRedirect } from "./lib/canonical-host";
 import { docsRedirect } from "./lib/docs-url";
 import { tickerHubRoute } from "./lib/ticker-href";
@@ -25,6 +26,14 @@ export function proxy(request: NextRequest): NextResponse {
     { appOrigin: process.env.APP_ORIGIN, rpId: process.env.PASSKEY_RP_ID },
   );
   if (moved) return NextResponse.redirect(moved.location, moved.status);
+  // The phone app opens on the product, never the marketing page (round 7, the owner's TestFlight review): its web view
+  // marks every request `CWFShell/` in the user agent (lib/app-shell.ts), and `/` answers Markets. 307, not 308, so a
+  // browser that once was the app keeps no permanent redirect.
+  if (request.nextUrl.pathname === "/" && SHELL_UA.test(request.headers.get("user-agent") ?? "")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/markets";
+    return NextResponse.redirect(url, 307);
+  }
   // /dev fixtures are internal: 404 in production unless explicitly enabled (the layout also calls notFound()).
   if (request.nextUrl.pathname.startsWith("/dev") && process.env.NODE_ENV === "production" && process.env.DEV_FIXTURES !== "1") {
     return new NextResponse(null, { status: 404 });

@@ -50,3 +50,16 @@ describe("proxy on /docs", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 });
+
+describe("proxy for the phone app", () => {
+  const app = (path: string) => proxy(new NextRequest(`${ORIGIN}${path}`, { headers: { host: "mitoshi.xyz", "user-agent": "Mozilla/5.0 (iPhone) AppleWebKit/605.1.15 CWFShell/1.0.1 (ios; testnet)" } }));
+  it("sends the app's / to Markets, never the marketing page", () => {
+    const res = app("/");
+    expect(res.status).toBe(307);
+    expect(res.headers.get("location")).toBe(`${ORIGIN}/markets`);
+  });
+  it("leaves the app's other pages and a browser's / alone", () => {
+    expect(app("/portfolio").headers.get("location")).toBeNull();
+    expect(answer("/").headers.get("location")).toBeNull();
+  });
+});

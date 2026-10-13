@@ -1,6 +1,7 @@
 // Ported from Masayume 68f7a09:web/src/app/layout.tsx — the design base (fonts, pre-paint theme, global styles) with
 // the ux-audit fixes: a `viewport` export with `viewportFit: "cover"` and the theme colour (safe areas, fix 5), and no
 // providers at the root (route groups carry their own, D-050).
+import { SHELL_INIT_SCRIPT } from "@/lib/app-shell";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { tokens } from "@cwf/tokens";
@@ -33,7 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`antialiased ${fontVariables}`} suppressHydrationWarning>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: SHELL_INIT_SCRIPT + THEME_INIT_SCRIPT }} />
         <div id="app-root">{children}</div>
         {/* Font second stage, field vitals and explainer dismissal: one idle-time chunk (D-071). */}
         <PageRuntime />

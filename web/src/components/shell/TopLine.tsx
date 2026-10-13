@@ -91,7 +91,7 @@ export function TopLine({ account }: { account?: ReactNode }) {
         <Suspense fallback={null}>
           <BackButton />
         </Suspense>
-        <Link href="/" aria-label={`${BRAND.name} home`} title={`${BRAND.name} home`} className="topline-mark">
+        <Link href="/markets" aria-label={`${BRAND.name} home`} title={`${BRAND.name} home`} className="topline-mark">
           <MitoshiMark />
         </Link>
         <span className="topline-phone"><ModeChip /></span>

@@ -36,7 +36,7 @@ const CHILD_OF_LIVE = new Set(["/launch/meme", "/launch/stablecoin", "/themes/cr
 describe("navigation registry", () => {
   it("keeps Owarine's six places (D-226: no Stocks place) and phone dock: Trade · Markets · [seal] · Portfolio · More", () => {
     expect(RAIL_NAV.map((i) => i.name)).toEqual(["Trade", "Markets", "Portfolio", "Games", "Automate", "Leaderboard"]);
-    expect(DOCK_NAV.map((i) => i.name)).toEqual(["Trade", "Markets", "Portfolio"]);
+    expect(DOCK_NAV.map((i) => i.name)).toEqual(["Markets", "Portfolio", "Games"]);
   });
 
   it("gives every More destination exactly one home, never a place again", () => {
