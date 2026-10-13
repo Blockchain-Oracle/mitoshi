@@ -1,11 +1,10 @@
 ---
 title: Deployed addresses
-description: Every contract Mitoshi deployed on Tempo testnet, straight from the deployment fragments the app itself reads.
+description: The contracts Mitoshi runs on Tempo testnet, straight from the deployment fragments the app itself reads.
 sources:
   - contracts/deployments/README.md
   - contracts/deployments/42431/engine.json
   - contracts/deployments/42431/vault2.json
-  - contracts/deployments/retired/README.md
   - packages/clients/src/deployments.ts
 ---
 
@@ -20,7 +19,5 @@ Predeployed by Tempo and used as-is: **pathUSD** `0x20C0000000000000000000000000
 ### Stock pools
 
 <StockPools />
-
-Contracts deployed for the retired stock bridge (D-231) stay on chain but out of the app; their record is `contracts/deployments/retired/`.
 
 Nothing is deployed on Tempo mainnet yet.

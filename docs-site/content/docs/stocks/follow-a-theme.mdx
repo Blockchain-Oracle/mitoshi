@@ -48,5 +48,5 @@ The agent keeps your account near the weights. Your holdings stay in your own ac
 **Create** walks four steps: **Stocks** (1 to 16, with weights and cash), **Envelope** (Careful ±3 %, Balanced ±7 % or Loose ±15 % around each target, and its hours — market, plus pre and after hours, or around the clock), **Name and fee**, and **Publish**, which you sign and pay for.
 
 <Callout title="On testnet today">
-Three themes are published, each named to the theme agent's ERC-8004 identity, agent #82, and followed. No rebalance can run: the guarded stock pools refuse every swap, and the stock sync they wait on left with the bridge (D-231). How it all works: [themes](/stocks/themes).
+Three themes are published, each named to the theme agent's ERC-8004 identity, agent #82, and followed. The guard reads every member as halted (unsynced), so no rebalance can run (D-231). How it all works: [themes](/stocks/themes).
 </Callout>

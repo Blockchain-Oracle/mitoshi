@@ -13,7 +13,6 @@ sources:
   - services/ops/src/actors/duel-settler
   - services/ops/src/actors/x-relay
   - web/src/features/status/StatusBoard.tsx
-  - docs/plan/decisions.md
   - packages/db/src/idx
   - infra
 ---
@@ -22,7 +21,7 @@ Ops is one Node process on Mitoshi's Coolify server, at `ops.mitoshi.xyz`. Every
 
 ## The actors
 
-Read from ops' `/health` on 13 October 2026 at 08:30 UTC (30 heartbeats, 29 live, 1 dry; `evidence/ops-health-2026-10-13.json`), less the bridge's three watchers, which left with the bridge (D-231):
+The actors ops runs today, one heartbeat each on `/health`; agent-rater is the only one dry:
 
 | Actor | Job |
 | --- | --- |

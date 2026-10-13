@@ -13,7 +13,6 @@ sources:
   - contracts/deployments/42431/pools.json
   - docs/plan/acceptance/S9.md
   - docs/plan/acceptance/R4-11.md
-  - docs/plan/decisions.md
 ---
 
 Mitoshi runs on Tempo, a payments-first Layer 1 incubated by Stripe and Paradigm. Each row says what a platform does for the product and where it stands on testnet.
@@ -22,7 +21,7 @@ Mitoshi runs on Tempo, a payments-first Layer 1 incubated by Stripe and Paradigm
 | --- | --- | --- |
 | **Tempo** | The chain: every contract, every dollar (pathUSD, a TIP-20 stablecoin) and every network fee. Passkeys are accounts, access keys carry limits the chain enforces, another account can pay a call's fee, and the ERC-8004 registries and MPP are built in. | Live on Moderato (chain 42431). Its faucet gives each new account test dollars. |
 | **RedStone** | The signed prints that settle every Window — three of five production signers — plus the fair-value guard's spot and the stock pools' reference. | Live. Its public gateways go dark in growing daily windows and stop on 29 October 2026; the authenticated ones wait on a key ([availability](/help/availability)). |
-| **Uniswap v4** | Graduated memecoins' pools; a pool per stock mirror behind Mitoshi's guard hook. | Replayed at mainnet's addresses on Moderato; a graduated memecoin trades in its pool. The stock pools refuse every swap: the bridge that fed their guard left the product (D-231). |
+| **Uniswap v4** | Graduated memecoins' pools; a pool per stock mirror behind Mitoshi's guard hook. | Replayed at mainnet's addresses on Moderato; a graduated memecoin trades in its pool. The stock pools refuse every swap. |
 
 The chart's live line comes from Coinbase (crypto) and Alpaca (stocks). It settles nothing.
 
