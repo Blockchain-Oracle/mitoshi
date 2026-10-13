@@ -21,9 +21,12 @@ export function tokenDailyLimit(maxDailyUsd: bigint, priceE18: bigint | null): b
   return priceE18 === null || priceE18 <= 0n ? 0n : ceilDiv(maxDailyUsd * E18 * 12n, priceE18 * 10n);
 }
 
-/** The key's daily pathUSD limit: the daily cap plus the creator's fee on it (buys approve amount + fee, D-101). */
+/** Headroom on the key's pathUSD limit for the network fees its own transactions pay (fractions of a cent each). */
+export const NETWORK_FEE_HEADROOM_USD = 1_000_000n;
+
+/** The key's daily pathUSD limit: the daily cap, the creator's fee on it (buys approve amount + fee, D-101) and fees. */
 export function pathUsdDailyLimit(maxDailyUsd: bigint, creatorFeeBps: number): bigint {
-  return maxDailyUsd + ceilDiv(maxDailyUsd * BigInt(creatorFeeBps), BPS);
+  return maxDailyUsd + ceilDiv(maxDailyUsd * BigInt(creatorFeeBps), BPS) + NETWORK_FEE_HEADROOM_USD;
 }
 
 /** Weights in bps of (Σ token value + cash, capped at the allocation); unpriced members make the drift unpriced. */
@@ -46,10 +49,19 @@ export function themeDrift(members: readonly DriftMember[], cashBalance: bigint,
  * The legs that bring every out-of-band token back to its target: sells first (they fund the buys), then buys while
  * cash lasts, each capped at `maxTradeUsd`, never a buy of a token the band forbids. Nothing when the drift is unpriced.
  */
-export function planRebalance(members: readonly DriftMember[], drift: ThemeDrift, opts: { pathUsd: string; maxTradeUsd: bigint; maxSlippageBps: number }): PlannedLeg[] {
+export function planRebalance(members: readonly DriftMember[], drift: ThemeDrift, opts: { pathUsd: string; maxTradeUsd: bigint; maxSlippageBps: number; dailyLeftUsd?: bigint }): PlannedLeg[] {
   if (!drift.priced || drift.totalUsd === 0n) return [];
   const floor = (v: bigint) => (v * (BPS - BigInt(opts.maxSlippageBps))) / BPS;
-  const cap = (v: bigint) => (v > opts.maxTradeUsd ? opts.maxTradeUsd : v);
+  // Each leg within the per-trade cap and, together, within what the follow's day has left (the router's DailyCap).
+  let left = opts.dailyLeftUsd ?? -1n;
+  const cap = (v: bigint) => {
+    let usd = v > opts.maxTradeUsd ? opts.maxTradeUsd : v;
+    if (left >= 0n) {
+      if (usd > left) usd = left;
+      left -= usd;
+    }
+    return usd;
+  };
   const sells: PlannedLeg[] = [];
   const buys: PlannedLeg[] = [];
   let cash = drift.cashUsd;

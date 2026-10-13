@@ -11,15 +11,13 @@
  * Opt-in (`OPS_ACTORS=…,theme-agent`); DRY_RUN or a missing secret plans and says so, never sends.
  */
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
-import { createWalletClient, erc20Abi, getAddress, http, parseAbi, type Address, type Hex, type PublicClient } from "viem";
+import { erc20Abi, getAddress, parseAbi, type Hex, type PublicClient } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { Account as TempoAccount } from "viem/tempo";
 import { planRebalance, themeDrift, type DriftMember } from "@cwf/core";
 import type { ThemeKeyStore } from "@cwf/db";
 import { themeRegistryAbi } from "@cwf/clients/abis/ThemeRegistry";
 import { themeRouterAbi } from "@cwf/clients/abis/ThemeRouter";
-import { buildRebalanceCalls, decisionIdOf, PATH_USD_ADDRESS, themesVenueOf } from "@cwf/markets/themes";
-import { sendBatch } from "@cwf/markets/tx/send";
+import { buildRebalanceCalls, decisionIdOf, PATH_USD_ADDRESS, sendThemeRebalance, themesVenueOf } from "@cwf/markets/themes";
 import type { PassResult } from "../../runtime";
 
 export const THEME_AGENT_EVERY_MS = 30_000;
@@ -106,7 +104,8 @@ export function themeAgentPass(d: ThemeAgentDeps): () => Promise<PassResult> {
         await say("a member has no usable reference price");
         continue;
       }
-      const legs = planRebalance(members, drift, { pathUsd: PATH_USD_ADDRESS, maxTradeUsd: f.caps.maxTradeUsd, maxSlippageBps: Math.min(t.maxSlippageBps, f.caps.maxSlippageBps) }).map((l) => ({ ...l, tokenIn: getAddress(l.tokenIn), tokenOut: getAddress(l.tokenOut) }));
+      const dailyLeftUsd = nowSec >= Number(f.dayStart) + 86_400 ? f.caps.maxDailyUsd : f.caps.maxDailyUsd - f.daySpentUsd;
+      const legs = planRebalance(members, drift, { pathUsd: PATH_USD_ADDRESS, maxTradeUsd: f.caps.maxTradeUsd, maxSlippageBps: Math.min(t.maxSlippageBps, f.caps.maxSlippageBps), dailyLeftUsd }).map((l) => ({ ...l, tokenIn: getAddress(l.tokenIn), tokenOut: getAddress(l.tokenOut) }));
       if (legs.length === 0) {
         await say("in band");
         continue;
@@ -116,11 +115,9 @@ export function themeAgentPass(d: ThemeAgentDeps): () => Promise<PassResult> {
         await say(`dry: ${legs.length} leg(s) planned`);
         continue;
       }
-      const account = TempoAccount.fromSecp256k1(unsealKey(d.secret, row.sealed), { access: follower });
-      const wallet = createWalletClient({ account, chain: d.client.chain!, transport: http(d.rpcUrl) });
       try {
-        const sent = await sendBatch(wallet as never, { calls, sponsored: false, nonce: { kind: "expiring", validForSec: 25 }, nowSec } as never);
-        await say(`${sent.receipt.status === "success" ? "rebalanced" : "reverted"} ${sent.hash}`);
+        const sent = await sendThemeRebalance({ chain: d.client.chain!, rpcUrl: d.rpcUrl, keyPrivateKey: unsealKey(d.secret, row.sealed), follower, calls, nowSec });
+        await say(`${sent.status === "success" ? "rebalanced" : "reverted"} ${sent.hash}`);
       } catch (e) {
         await say(`send failed: ${(e instanceof Error ? e.message : String(e)).split("\n")[0]!.slice(0, 160)}`);
       }

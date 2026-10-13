@@ -31,7 +31,7 @@ const must = <T>(r: { ok: true; value: T } | { ok: false; error: unknown }): T =
   return r.value;
 };
 
-const keyFile = join(homedir(), ".config", "cwf", "testnet", "theme-agent-r411.json");
+const keyFile = join(homedir(), ".config", "cwf", "testnet", themeId === 1n ? "theme-agent-r411.json" : `theme-agent-r411-${themeId}.json`);
 if (!existsSync(keyFile)) {
   const pk = generatePrivateKey();
   writeFileSync(keyFile, JSON.stringify({ privateKey: pk, address: privateKeyToAccount(pk).address }), { mode: 0o600 });

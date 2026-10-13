@@ -9,7 +9,7 @@ describe("theme drift and plan (S16a, R4-11)", () => {
   it("the key's daily limits: ceil(daily / price × 1.2) per token, the daily plus the fee in pathUSD", () => {
     expect(tokenDailyLimit(USD(50), P(250))).toBe(240_000n); // 0.24 of a $250 stock
     expect(tokenDailyLimit(USD(50), null)).toBe(0n);
-    expect(pathUsdDailyLimit(USD(50), 25)).toBe(50_125_000n);
+    expect(pathUsdDailyLimit(USD(50), 25)).toBe(51_125_000n); // + $1 of network-fee headroom
   });
 
   it("weights read over the allocation, and an out-of-band token is planned back to its target within the caps", () => {
@@ -26,6 +26,13 @@ describe("theme drift and plan (S16a, R4-11)", () => {
       { tokenIn: "0xB", tokenOut: PATH, amountIn: 300_000n, minAmountOut: 29_700_000n },
       { tokenIn: PATH, tokenOut: "0xA", amountIn: USD(40), minAmountOut: 396_000n },
     ]);
+  });
+
+  it("the legs together stay inside what the follow's day has left", () => {
+    const band = { minBps: 3_000, targetBps: 3_333, maxBps: 3_700, allowed: true };
+    const m: DriftMember[] = ["0xA", "0xB", "0xC"].map((token) => ({ token, balance: 0n, priceE18: P(10), band }));
+    const legs = planRebalance(m, themeDrift(m, USD(100), USD(100)), { pathUsd: PATH, maxTradeUsd: USD(20), maxSlippageBps: 100, dailyLeftUsd: USD(50) });
+    expect(legs.map((l) => l.amountIn)).toEqual([USD(20), USD(20), USD(10)]);
   });
 
   it("nothing is planned while a member has no reference price", () => {

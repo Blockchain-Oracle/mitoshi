@@ -4,7 +4,7 @@
  * (`@cwf/markets/themes`): the catalogue, the theme's bands and members with their StockReference prices, the spec
  * re-hashed from its on-chain data URI, and the eligible mirrors.
  *
- *   tsx scripts/drive/r4-11-theme.ts [--role deployer-themes]
+ *   tsx scripts/drive/r4-11-theme.ts [--role deployer-themes] [--symbols TSLA,PLTR,NFLX] [--name …] [--blurb …]
  */
 import { configureMarkets, parseMarketsEnv } from "@cwf/markets";
 import { bandAround, specPayload, type ThemeSpec } from "@cwf/core";
@@ -25,13 +25,14 @@ const must = <T>(r: { ok: true; value: T } | { ok: false; error: unknown }): T =
 
 const eligible = must(await listEligibleMirrors());
 console.log(`eligible mirrors: ${eligible.map((m) => `${m.symbol} ${m.refPriceE18 ?? "-"}`).join(", ")}`);
-const pick = ["TSLA", "PLTR", "NFLX"].map((s) => eligible.find((m) => m.symbol === s)).filter((m) => m !== undefined);
+const symbols = argv.includes("--symbols") ? argv[argv.indexOf("--symbols") + 1]!.split(",") : ["TSLA", "PLTR", "NFLX"];
+const pick = symbols.map((s) => eligible.find((m) => m.symbol === s)).filter((m) => m !== undefined);
 if (pick.length < 2) throw new Error("not enough eligible mirrors");
 const targets = pick.length === 3 ? [4_000, 3_000, 2_000] : [5_000, 4_000];
 const spec: ThemeSpec = {
   schema: 1,
-  name: "Builders' Stack",
-  blurb: "Cars, data and screens, rebalanced in bands.",
+  name: argv.includes("--name") ? argv[argv.indexOf("--name") + 1]! : "Builders' Stack",
+  blurb: argv.includes("--blurb") ? argv[argv.indexOf("--blurb") + 1]! : "Cars, data and screens, rebalanced in bands.",
   creatorFeeBps: 25,
   maxSlippageBps: 100,
   minIntervalSec: 3_600,
