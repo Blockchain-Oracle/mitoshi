@@ -75,18 +75,23 @@ export function CreatorStudio({ writes, trader, onYours }: { writes: CopyWrites;
   const needsIdentity = draft.identity && agentId === null;
   const name = draft.name.trim() || T.namePlaceholder;
 
-  // The wallet's saved draft (or a fresh face), once per wallet; `?copy=` puts the trader in a mirror.
+  // The wallet's saved draft (or a fresh face), once per wallet. Signing in mid-draft (at Publish) keeps the draft in
+  // hand rather than swapping in an older one saved under that wallet.
   useEffect(() => {
     const key = draftKey(writes.wallet);
     if (loaded.current === key) return;
+    const fromAnon = loaded.current === draftKey(null);
     loaded.current = key;
-    const saved = loadDraft(writes.wallet);
+    const saved = fromAnon ? null : loadDraft(writes.wallet);
     setDraft((d) => {
       const base = saved ?? d;
-      const next = { ...base, portraitSeed: base.portraitSeed || crypto.randomUUID() };
-      return trader ? { ...next, preset: "mirror", trader } : next;
+      return { ...base, portraitSeed: base.portraitSeed || crypto.randomUUID() };
     });
-  }, [writes.wallet, trader]);
+  }, [writes.wallet]);
+  // A profile's "Copy this trader" (`?copy=`): the mirror preset with that wallet in it.
+  useEffect(() => {
+    if (trader) setDraft((d) => ({ ...d, preset: "mirror", trader }));
+  }, [trader]);
   useEffect(() => {
     if (!loaded.current || published) return;
     try {
