@@ -7,6 +7,7 @@ import basketVectors from "@cwf/core/strategies/basket.vectors.json";
 import { TEMPO } from "@cwf/clients";
 import { evaluate } from "../relay/engine";
 import { POLICIES } from "../relay/policies";
+import { BASKET_AGENT_PATH, basketAgentRegistration } from "./basket-agent";
 import { encodeStrategyIntent } from "./encoders";
 import { strategyVenueOf } from "./deployment";
 
@@ -62,6 +63,15 @@ describe("strategy encoders (S9.3)", () => {
     expect(JSON.parse(Buffer.from(metadata.slice(2), "hex").toString("utf8")).spec).toEqual(spec);
     expect(envelope.market).toBe(`0x${"00".repeat(32)}`);
     expect(agentId).toBe(82n);
+  });
+
+  it("keeps agent #82's registration file at its on-chain agentURI path, describing the basket runner (D-231)", () => {
+    const file = basketAgentRegistration("https://mitoshi.xyz", 42431);
+    expect(BASKET_AGENT_PATH).toBe("/api/themes/agent/registration.json");
+    expect(file).toMatchObject({ active: true, registrations: [{ agentId: 82 }], services: [{ name: "web", endpoint: "https://mitoshi.xyz/themes" }] });
+    expect(file.description).toMatch(/basket/i);
+    expect(file.description).not.toMatch(/rebalanc|band|mirror/i);
+    expect(basketAgentRegistration("https://mitoshi.xyz", 4217).active).toBe(false);
   });
 
   it("refuses metadata over the registry's 8 KB before anything is signed", () => {
