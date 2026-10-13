@@ -123,6 +123,19 @@
 .as-row { display: flex; gap: 8px; width: 100%; }
 .as-ghost { flex: 1; min-height: 44px; color: rgb(255 255 255); border-color: rgba(255, 255, 255, 0.16); }
 .as-signin { min-height: 44px; font-size: 13px; color: var(--color-accent); }
+.as-earned { display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 9999px; background: color-mix(in srgb, var(--color-accent) 18%, transparent); animation: as-rise 360ms cubic-bezier(0.34, 1.56, 0.64, 1) 300ms both; }
+.as-earned-ring { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 9999px; background: var(--color-accent); color: var(--on-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 35%, transparent); }
+.as-earned-ring svg { width: 18px; height: 18px; }
+.as-earned-text { display: flex; flex-direction: column; align-items: flex-start; font-size: 13px; font-weight: 600; }
+.as-foot { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.as-grip { display: flex; align-items: center; gap: 8px; }
+.as-grip-k { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
+.as-grip-cells { display: flex; gap: 3px; padding: 3px; border: 2px solid rgba(255, 255, 255, 0.35); }
+.as-grip-cells span { width: 10px; height: 12px; background: rgba(255, 255, 255, 0.08); }
+.as-grip-cells span[data-on] { background: var(--profit); }
+.as-grip[data-warn] .as-grip-cells span[data-on] { background: var(--loss); }
+.as-grip[data-warn] .as-grip-cells { animation: as-blink 0.5s steps(2) infinite; }
+@keyframes as-blink { 50% { border-color: var(--loss); } }
 @keyframes as-pop { from { transform: scale(1.35); } }
 @keyframes as-count { from { opacity: 0; transform: scale(1.8); } 60% { opacity: 1; } }
 @keyframes as-fade { from { opacity: 0; } }

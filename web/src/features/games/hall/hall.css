@@ -69,6 +69,13 @@
   overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
 }
 .cab-rail::-webkit-scrollbar { display: none; }
+.cab-rail:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; border-radius: 20px; }
+.cab-wrap { display: flex; flex-direction: column; gap: 4px; }
+.cab-dots { display: flex; justify-content: center; gap: 2px; }
+.cab-dot { display: grid; place-items: center; width: 24px; height: 24px; }
+.cab-dot::before { content: ""; width: 6px; height: 6px; border-radius: 9999px; background: var(--gray-600); transition: width 200ms var(--ease), background 200ms var(--ease); }
+.cab-dot[aria-current]::before { width: 16px; background: var(--color-accent); }
+@media (min-width: 768px) { .cab-dots { display: none; } }
 @media (min-width: 768px) { .cab-rail { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; } }
 @media (min-width: 1024px) { .cab-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (min-width: 1440px) { .cab-rail { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

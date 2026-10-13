@@ -1,5 +1,5 @@
-/* Lucky — the machine (R4-9, D-227). The reels are Ported from Owarine 90a91d71:web/src/features/games/lucky/lucky.css
- * (`.lk-reel*`, `.lk-face*`, `.lk-cta`), on Mitoshi's tokens; the chips, the deal card and the proof are new, in the
+/* Lucky — the machine (R4-9, D-227). The cabinet and SPIN are Ported from Owarine 90a91d71:web/src/features/games/lucky/lucky.css
+ * (`.lk-cta`), on Mitoshi's tokens; the reels are components/ui/slot-reel; the chips, the deal card and the proof are new, in the
  * same grammar. The CRT face and the screws are stage.css's. */
 
 .lk-stage { display: flex; flex-direction: column; gap: 12px; max-width: 560px; margin-inline: auto; width: 100%; }
@@ -17,33 +17,29 @@
 @keyframes lk-chase { 50% { opacity: 0.35; background-position: 6px 0; } }
 
 .lk-reels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.lk-reel { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.lk-reel-k { font-family: var(--font-pixel); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray-500); text-align: center; }
-.lk-face {
-  position: relative; display: grid; place-items: center; gap: 6px; height: 112px; border-radius: 22px / 14px;
-  border: 1px solid var(--color-hairline); background: linear-gradient(180deg, color-mix(in srgb, var(--white) 6%, var(--color-canvas)), var(--color-canvas));
+/* The reels: one continuous strip each behind a deep window, a payline across the middle row, the landed row lit in
+ * its tone (components/ui/slot-reel.tsx). */
+.slot { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.slot-label { font-family: var(--font-pixel); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gray-500); text-align: center; }
+.slot-window {
+  position: relative; overflow: hidden; border-radius: 16px; border: 1px solid var(--color-hairline);
+  background: linear-gradient(180deg, var(--color-canvas), color-mix(in srgb, var(--white) 5%, var(--color-canvas)) 50%, var(--color-canvas));
+  box-shadow: inset 0 10px 14px -10px rgba(0, 0, 0, 0.7), inset 0 -10px 14px -10px rgba(0, 0, 0, 0.7);
 }
-@media (max-height: 640px) { .lk-face { height: 96px; } }
-.lk-face-art { display: grid; place-items: center; grid-area: 1 / 1; align-self: start; margin-top: 12px; }
-.lk-face-art svg, .lk-face-art .lk-asset-disc { width: 44px; height: 44px; }
-.lk-face-v {
-  grid-area: 1 / 1; align-self: end; margin-bottom: 12px; z-index: 4;
-  font-family: var(--font-pixel); font-size: 22px; line-height: 1; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400);
-  transition: color 200ms var(--ease), text-shadow 200ms var(--ease);
-}
-.lk-face-v--reach { font-size: 33px; }
-.lk-foot { position: absolute; inset: auto 0 0 0; height: 3px; z-index: 4; background: var(--gray-600); opacity: 0.35; transition: opacity 200ms var(--ease), background 200ms var(--ease); }
-.lk-reel[data-cycling="true"] .lk-face-art { filter: blur(1.5px); opacity: 0.7; }
-.lk-reel[data-locked="true"] .lk-face-v { color: var(--white); text-shadow: 0 0 16px currentColor; }
-.lk-reel[data-locked="true"] .lk-foot { opacity: 1; background: var(--white); }
-.lk-reel[data-locked="true"][data-tone="asset"] .lk-face-v, .lk-reel[data-locked="true"][data-tone="reach"] .lk-face-v { color: var(--color-accent); }
-.lk-reel[data-locked="true"][data-tone="asset"] .lk-foot, .lk-reel[data-locked="true"][data-tone="reach"] .lk-foot { background: var(--color-accent); }
-.lk-reel[data-locked="true"][data-tone="up"] .lk-face-v { color: var(--profit); }
-.lk-reel[data-locked="true"][data-tone="up"] .lk-foot { background: var(--profit); }
-.lk-reel[data-locked="true"][data-tone="down"] .lk-face-v { color: var(--loss); }
-.lk-reel[data-locked="true"][data-tone="down"] .lk-foot { background: var(--loss); }
-@keyframes lk-lock { 0% { transform: scale(1.06); } 100% { transform: none; } }
-.lk-reel[data-locked="true"] .lk-face { animation: lk-lock 240ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.slot-strip { display: flex; flex-direction: column; align-items: center; }
+.slot-row { display: grid; place-items: center; height: 40px; width: 100%; font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--gray-500); transition: color 200ms var(--ease), text-shadow 200ms var(--ease); }
+.slot-probe { position: absolute; visibility: hidden; }
+.slot-payline { position: absolute; left: 6px; right: 6px; top: 50%; height: 2px; translate: 0 -1px; background: color-mix(in srgb, var(--color-accent) 55%, transparent); pointer-events: none; }
+.slot-row[data-pay] { color: var(--white); text-shadow: 0 0 14px currentColor; }
+.slot[data-tone="asset"] .slot-row[data-pay], .slot[data-tone="reach"] .slot-row[data-pay] { color: var(--color-accent); }
+.slot[data-tone="up"] .slot-row[data-pay] { color: var(--profit); }
+.slot[data-tone="down"] .slot-row[data-pay] { color: var(--loss); }
+.slot[data-landed] .slot-window { animation: lk-lock 240ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes lk-lock { 0% { transform: scale(1.04); } 100% { transform: none; } }
+.lk-slot-face { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.lk-slot-disc { width: 22px; height: 22px; }
+.lk-slot-face--reach { font-size: 28px; }
+@media (max-width: 360px) { .slot-row { font-size: 18px; } .lk-slot-face--reach { font-size: 22px; } .lk-slot-disc { display: none; } }
 
 /* ── The stake chips and the SPIN ── */
 .lk-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
@@ -87,4 +83,4 @@
 .lk-kv dt { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-500); }
 .lk-kv dd { font-family: var(--font-data); font-size: 10px; line-height: 1.5; color: var(--gray-400); overflow-wrap: anywhere; }
 
-@media (prefers-reduced-motion: reduce) { .lk-lights, .lk-reel[data-locked="true"] .lk-face { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .lk-lights, .slot[data-landed] .slot-window { animation: none; } }

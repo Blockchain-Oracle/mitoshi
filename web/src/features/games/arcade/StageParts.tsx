@@ -4,7 +4,7 @@
 // top bar (score rolling on the kit Odometer, best, combo heat, then 44 px Sound, Pause and Exit), the 3-2-1-GO, the
 // pause plate and the game-over card (score, a NEW BEST stamp, where it ranked by the server's replay, the run's
 // numbers, Play again, Share, Exit). In the arena's ink; every control a 44 px button.
-import { Pause, Play, Share2, Volume2, VolumeX, X } from "lucide-react";
+import { Pause, Play, Share2, Trophy, Volume2, VolumeX, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Odometer } from "@/components/kit";
 import { toggleMute, useMuted } from "../audio";
@@ -19,6 +19,8 @@ export interface StageResult {
   note: string | null;
   tone: "refused" | null;
   stats: readonly { label: string; value: string }[];
+  /** The server's word that this run is the wallet's best on the board — only a replayed, recorded run earns it. */
+  earned: boolean;
 }
 
 export function StageTop({ score, combo, best, canPause, onPause, onExit }: { score: number; combo: string | null; best: number | null; canPause: boolean; onPause: () => void; onExit: () => void }) {
@@ -49,6 +51,27 @@ export function StageTop({ score, combo, best, canPause, onPause, onExit }: { sc
           <X aria-hidden />
         </button>
       </div>
+    </div>
+  );
+}
+
+const GRIP_SEGMENTS = 10;
+const GRIP_WARN = 0.25;
+
+/**
+ * Line Rider's grip as a segmented 8-bit bar in the HUD (21st.dev 13075 theorcdev/8-bit-xp-bar, revamped: ten pixel
+ * cells on the arena, profit while healthy, the loss colour and a blink under a quarter) — it lived only in the canvas.
+ */
+export function GripMeter({ grip }: { grip: number }) {
+  const lit = Math.ceil(Math.max(0, Math.min(1, grip)) * GRIP_SEGMENTS);
+  return (
+    <div className="as-grip" data-warn={grip < GRIP_WARN || undefined} role="meter" aria-label={ARCADE.stage.grip} aria-valuemin={0} aria-valuemax={GRIP_SEGMENTS} aria-valuenow={lit}>
+      <span className="as-grip-k">{ARCADE.stage.grip}</span>
+      <span className="as-grip-cells" aria-hidden>
+        {Array.from({ length: GRIP_SEGMENTS }, (_, i) => (
+          <span key={i} data-on={i < lit || undefined} />
+        ))}
+      </span>
     </div>
   );
 }
@@ -95,6 +118,19 @@ export function OverPlate({ title, result, signedIn, onSignIn, onAgain, onShare,
         <span className="as-dim as-card-eyebrow">{title}</span>
         <span className="as-score as-score--big">{ARCADE.fmt(result.score)}</span>
         {result.isBest ? <span className="as-stamp">{ARCADE.over.newBest}</span> : null}
+        {/* 21st.dev 13045 trophyso/achievement-unlocked, revamped to a badge on the card: the trophy ring and its date,
+            shown only once the server's replay has recorded the run as this wallet's best. */}
+        {result.earned ? (
+          <span className="as-earned">
+            <span className="as-earned-ring" aria-hidden>
+              <Trophy />
+            </span>
+            <span className="as-earned-text">
+              <span>{ARCADE.stage.earned}</span>
+              <span className="as-dim">{ARCADE.stage.earnedOn(new Date())}</span>
+            </span>
+          </span>
+        ) : null}
         <span className="as-dim" data-tone={result.tone ?? undefined} aria-live="polite">
           {result.note ?? ARCADE.over.checking}
         </span>

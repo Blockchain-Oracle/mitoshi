@@ -15,7 +15,7 @@ import { ARCADE } from "./copy";
 import { FlapCanvas, type FlapCue, type FlapHud } from "./FlapCanvas";
 import { RideCanvas, type RideCue, type RideHud } from "./RideCanvas";
 import { localSeed, type ArcadeRun, type RunEnd } from "./run";
-import { Countdown, OverPlate, PausePlate, StageTop, type StageResult } from "./StageParts";
+import { Countdown, GripMeter, OverPlate, PausePlate, StageTop, type StageResult } from "./StageParts";
 import type { PostAbility, PostOutcome } from "./useArcadeScore";
 
 type Phase = "countdown" | "playing" | "paused" | "over";
@@ -50,7 +50,7 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
   const [phase, setPhase] = useState<Phase>("countdown");
   const [count, setCount] = useState(COUNT_FROM);
   const [run, setRun] = useState<ArcadeRun | null>(null);
-  const [hud, setHud] = useState({ score: 0, combo: 1 });
+  const [hud, setHud] = useState({ score: 0, combo: 1, grip: 1 });
   const [result, setResult] = useState<StageResult | null>(null);
   const streak = useRef(0);
   const runId = useRef(0);
@@ -91,7 +91,7 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
         { label: ARCADE.stage.seed, value: end.seed },
       ];
       // A first run sets the best; only beating one is a new best (Senryo).
-      const card = (outcome: PostOutcome | null): StageResult => ({ score: end.score, isBest, stats, ...noteOf(ability, outcome) });
+      const card = (outcome: PostOutcome | null): StageResult => ({ score: end.score, isBest, stats, earned: outcome?.kind === "posted" && outcome.isBest, ...noteOf(ability, outcome) });
       setResult(card(null));
       setPhase("over");
       if (isBest) feedback("card-win");
@@ -101,8 +101,8 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
     [ability, best, feedback, game, onFinished, post, refresh],
   );
 
-  const onRideHud = useCallback((h: RideHud) => setHud({ score: h.score, combo: h.multiplier }), []);
-  const onFlapHud = useCallback((h: FlapHud) => setHud({ score: h.score, combo: 1 }), []);
+  const onRideHud = useCallback((h: RideHud) => setHud({ score: h.score, combo: h.multiplier, grip: h.grip }), []);
+  const onFlapHud = useCallback((h: FlapHud) => setHud({ score: h.score, combo: 1, grip: 1 }), []);
   const onRideCue = useCallback(
     (cue: RideCue) => {
       if (cue.kind === "milestone") {
@@ -143,7 +143,7 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
   const again = () => {
     feedback("tap");
     setResult(null);
-    setHud({ score: 0, combo: 1 });
+    setHud({ score: 0, combo: 1, grip: 1 });
     setCount(COUNT_FROM);
     setPhase("countdown");
   };
@@ -168,9 +168,12 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
       </div>
       <div className="as-hud">
         <StageTop score={hud.score} combo={combo} best={best} canPause={canPause && phase === "playing"} onPause={() => setPhase("paused")} onExit={onClose} />
-        <span className="as-dim as-hint">
-          {phase === "playing" || phase === "countdown" ? [words.control, tape ? ARCADE.stage.tapeOf(tape.feed, tape.fromSec, tape.toSec) : null].filter(Boolean).join(" · ") : ""}
-        </span>
+        <div className="as-foot">
+          {game === "line-rider" ? <GripMeter grip={hud.grip} /> : null}
+          <span className="as-dim as-hint">
+            {phase === "playing" || phase === "countdown" ? [words.control, tape ? ARCADE.stage.tapeOf(tape.feed, tape.fromSec, tape.toSec) : null].filter(Boolean).join(" · ") : ""}
+          </span>
+        </div>
       </div>
       {phase === "countdown" ? <Countdown n={count} /> : null}
       {phase === "paused" ? <PausePlate onResume={() => setPhase("playing")} onExit={onClose} /> : null}

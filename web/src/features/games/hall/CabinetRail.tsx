@@ -9,7 +9,7 @@ import type { GameId } from "@cwf/core/games";
 import { RANGE_NOT_DEPLOYED, type RangeReserveState } from "@cwf/core/range";
 import { useLanes } from "@cwf/markets/react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useCallback, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Sticker } from "@/components/kit";
 import { useRangeReserve } from "@/features/range/data";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -79,15 +79,45 @@ export function CabinetRail({ nowMs }: { nowMs: number }) {
   const live = lanes && isOk(lanes) && nowSec > 0 ? windowsLive(lanes.value, nowSec) : null;
   const range = rangeFact(reserve);
   const windowsText = live === null ? "…" : GAMES.card.windowsLive(live);
+  // 21st.dev 23559 ddoemonn/snap-carousel's affordances on a native snap rail (the drag is the browser's): the slide in
+  // view as dots, ←/→/Home/End from the keyboard, the position announced.
+  const rail = useRef<HTMLUListElement>(null);
+  const [index, setIndex] = useState(0);
+  const goTo = useCallback((i: number) => {
+    const el = rail.current;
+    const child = el?.children[Math.max(0, Math.min(ORDER.length - 1, i))] as HTMLElement | undefined;
+    if (el && child) el.scrollTo({ left: child.offsetLeft - el.offsetLeft, behavior: "smooth" });
+  }, []);
+  const onScroll = () => {
+    const el = rail.current;
+    const first = el?.children[0] as HTMLElement | undefined;
+    if (!el || !first) return;
+    const step = first.offsetWidth + Number.parseFloat(getComputedStyle(el).columnGap || "0");
+    setIndex(Math.round(el.scrollLeft / Math.max(1, step)));
+  };
+  const onKey = (e: KeyboardEvent<HTMLUListElement>) => {
+    const to = e.key === "ArrowRight" ? index + 1 : e.key === "ArrowLeft" ? index - 1 : e.key === "Home" ? 0 : e.key === "End" ? ORDER.length - 1 : null;
+    if (to === null || e.target !== e.currentTarget) return;
+    e.preventDefault();
+    goTo(to);
+  };
   const windowsFact = <span className="cab-fact">{windowsText}</span>;
 
   return (
-    <ul className="cab-rail" aria-label={GAMES.title}>
+    <div className="cab-wrap">
+    <ul ref={rail} className="cab-rail" aria-label={GAMES.title} aria-roledescription="carousel" tabIndex={0} onScroll={onScroll} onKeyDown={onKey}>
       {ORDER.map((id) => {
         if (id === "line-rider" || id === "candle-hop") return <Cabinet key={id} id={id} open fact={<ArcadeFact game={id} />} />;
         if (id === "range" || id === "moonshot") return <Cabinet key={id} id={id} open={range.open} fact={<span className="cab-fact">{range.fact || windowsText}</span>} />;
         return <Cabinet key={id} id={id} open fact={windowsFact} />;
       })}
     </ul>
+    <div className="cab-dots">
+      {ORDER.map((id, i) => (
+        <button key={id} type="button" className="cab-dot" aria-label={GAMES.card.goTo(i + 1, ORDER.length)} aria-current={i === index || undefined} onClick={() => goTo(i)} />
+      ))}
+    </div>
+    <span className="sr-only" aria-live="polite">{GAMES.card.goTo(index + 1, ORDER.length)}</span>
+    </div>
   );
 }

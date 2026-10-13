@@ -28,6 +28,9 @@ export const ARCADE = {
   /** The full-screen stage (R4-9, D-227; Senryo StageParts). */
   stage: {
     go: "GO",
+    grip: "Grip",
+    earned: "Your best on the board",
+    earnedOn: (d: Date) => `Earned ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
     sound: "Sound on",
     mute: "Mute",
     pause: "Pause",

@@ -22,6 +22,7 @@ export const GAMES = {
     windowsLive: (n: number) => (n === 1 ? "1 Window live" : `${n} Windows live`),
     top: (top: string, you: string | null) => (you === null ? `Top ${top}` : `Top ${top} · you ${you}`),
     noRuns: "No runs yet",
+    goTo: (n: number, total: number) => `${n} of ${total}`,
   },
 
   hall: {
