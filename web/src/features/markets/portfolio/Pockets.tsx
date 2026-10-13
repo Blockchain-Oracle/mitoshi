@@ -52,13 +52,13 @@ export function Pockets({ pockets, decimals, panels }: { pockets: PocketMoney[];
                 )}
               </article>
               <button type="button" className="pocket-chip" disabled={p.blockedReason !== null} aria-label={`${m.label} · ${HERO_MONEY.manage}`} onClick={() => manage(p.id)}>
-                <span className="pocket-icon"><m.icon aria-hidden className="size-4" /></span>
+                <span className="pocket-icon"><m.icon aria-hidden className="size-3.5" /></span>
                 <span className="pocket-chip-body">
                   <span className="pocket-chip-label">{m.label}</span>
                   <span className="numbers pocket-chip-amount">{amount(p)}</span>
                   {p.blockedReason ? <span className="pocket-chip-why">{p.blockedReason}</span> : null}
                 </span>
-                {p.blockedReason ? null : <ChevronRight aria-hidden className="size-4 shrink-0 text-ink-secondary" />}
+                {p.blockedReason ? null : <ChevronRight aria-hidden className="pocket-chip-chev size-4 shrink-0 text-ink-secondary" />}
               </button>
             </div>
           );

@@ -93,9 +93,11 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .money-hero-counts-inline { white-space: nowrap; }
 @media (min-width: 640px) { .money-hero-counts-inline { display: none; } }
 /* The pair sits as one even row and stacks cleanly at 320 (Owarine's PillButtons under the line). */
-.money-hero-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: 8px; margin-top: 16px; }
-.money-hero-actions .kit-pill { font-size: 16px; }
-@media (min-width: 640px) { .money-hero-actions { display: flex; flex-wrap: wrap; } }
+/* Side by side whenever both labels fit (375: "Add money" + "Trade →" on one row), each growing to fill; a label that
+   can't fit wraps to its own full-width row (320, or "Get test dollars") — never a fixed minimum that stacks at 375. */
+.money-hero-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.money-hero-actions .kit-pill { flex: 1 1 auto; padding: 0 20px; font-size: 16px; }
+@media (min-width: 640px) { .money-hero-actions .kit-pill { flex: 0 0 auto; padding: 0 28px; } }
 .money-hero .money-hero-white { background: var(--plate-ink); color: var(--plate-black); border-color: transparent; }
 .money-hero .money-hero-white:hover, .money-hero .money-hero-white:focus-visible { background: var(--plate-ink); opacity: 0.9; }
 .money-hero-dot { width: 12px; height: 12px; flex: none; border-radius: 50%; }
@@ -112,6 +114,8 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .money-hero-counts { display: none; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--plate-rule); font: 500 13px/1.2 var(--font-body); color: var(--plate-ink-soft); }
 @media (min-width: 400px) and (max-width: 639px) {
   .money-hero-legs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  /* A third of ~300 px at 400: "$123,456.78" fits its cell at 12 px, 14 px from ~470. */
+  .mh-leg-amount { min-width: 0; font-size: clamp(12px, 3vw, 14px); }
   .mh-leg { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "dot amt" "lab lab" "act act"; row-gap: 4px; column-gap: 6px; }
 }
 @media (min-width: 640px) {
@@ -142,13 +146,16 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .pocket-note.is-blocked { display: -webkit-box; }
 @media (min-width: 640px) { .pocket-note { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } }
 .pocket-chip { display: none; }
+/* Under 400 px two chips share ~256 px, so a chip is a small grid: the mark, the name and the chevron on top, the amount
+   under them across the chip's full width (side by side, the amount had ~36 px at 320 and spilled over the chevron). */
 @media (max-width: 399px) {
   .pocket { display: none; }
-  .pocket-chip { display: flex; align-items: center; gap: 10px; min-height: 64px; min-width: 0; padding: 10px 12px; border-radius: 16px; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); color: var(--color-ink); text-align: left; }
-  .pocket-chip .pocket-icon { width: 32px; height: 32px; }
-  .pocket-chip-body { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 4px; }
-  .pocket-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12px/1.2 var(--font-body); color: var(--color-ink-secondary); }
-  .pocket-chip-amount { font: 700 16px/1 var(--font-data); }
-  .pocket-chip-why { font: 400 11px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+  .pocket-chip { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "icon label chev" "amt amt amt" "why why why"; align-items: center; gap: 6px 8px; min-height: 64px; min-width: 0; padding: 10px 12px; border-radius: 16px; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); color: var(--color-ink); text-align: left; }
+  .pocket-chip .pocket-icon { grid-area: icon; width: 24px; height: 24px; }
+  .pocket-chip-body { display: contents; }
+  .pocket-chip-label { grid-area: label; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12px/1.2 var(--font-body); color: var(--color-ink-secondary); }
+  .pocket-chip-amount { grid-area: amt; min-width: 0; font: 700 clamp(14px, 4.6vw, 16px)/1 var(--font-data); }
+  .pocket-chip-why { grid-area: why; font: 400 11px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+  .pocket-chip-chev { grid-area: chev; }
 }
 .connect-card-icon { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 12px; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink); box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-surface-2) 40%, transparent); }
