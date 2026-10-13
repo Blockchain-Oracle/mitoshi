@@ -8,7 +8,7 @@ export const VAULT = {
     label: "Trading Balance",
     note: "Taps spend from here. Only you withdraw.",
   },
-  cells: { available: "Free", inBudget: "In tap-trading", open: "In open Windows", spentToday: "Spent today" },
+  cells: { available: "Free", inBudget: "In tap-trading", inStrategies: "In strategies", open: "In open Windows", spentToday: "Spent today" },
   amount: {
     label: "Amount",
     max: "Max",

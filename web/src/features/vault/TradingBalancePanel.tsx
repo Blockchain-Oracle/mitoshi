@@ -24,7 +24,7 @@ import { usePrivacy } from "@/lib/privacy";
 import { AmountField, amountProblem } from "./AmountField";
 import { LegacyBalance } from "./LegacyBalance";
 import { VAULT } from "./copy";
-import { tradingBalanceOf } from "./trading-balance";
+import { grantBudgetsOf, tradingBalanceOf } from "./trading-balance";
 import "@/styles/vault.css";
 
 const usd = (base: bigint) => `$${formatBaseUnits(base, 6, { minDp: 2, maxDp: 2 })}`;
@@ -61,6 +61,9 @@ export function TradingBalancePanel() {
   const snap = snapshot?.ok ? snapshot.value : null;
   const figure = snap ? tradingBalanceOf(snap) : free === null ? null : free + (grant?.budgetBase ?? 0n);
   const wallet = sheet?.ok ? sheet.value.spendableBase : null;
+  // The figure counts every live grant's budget (the vault invariant); a strategy's (the copy desk's) is named on its
+  // own tile, so Free + the budgets on the tiles always add up to the figure above them.
+  const otherBudgets = snap ? grantBudgetsOf(snap) - (grant?.budgetBase ?? 0n) : 0n;
   const openCost = bets?.ok ? bets.value.filter((b) => b.state === "open").reduce((s, b) => s + b.costUpBase + b.costDownBase, 0n) : null;
   const amountBase = parseDecimalToBaseUnits(text.trim(), 6) ?? 0n;
   const inProblem = amountProblem(text, wallet, VAULT.amount.overWallet, mask);
@@ -120,6 +123,7 @@ export function TradingBalancePanel() {
       <div className="vault-cells">
         <Tile label={VAULT.cells.available} value={free === null ? null : usd(free)} />
         <Tile label={VAULT.cells.inBudget} value={usd(grant?.budgetBase ?? 0n)} />
+        {otherBudgets > 0n ? <Tile label={VAULT.cells.inStrategies} value={usd(otherBudgets)} /> : null}
         <Tile label={VAULT.cells.spentToday} value={usd(grant ? spentTodayBase(grant, nowSec) : 0n)} />
         <Tile label={VAULT.cells.open} value={openCost === null ? null : usd(openCost)} />
       </div>
