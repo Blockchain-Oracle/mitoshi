@@ -27,7 +27,7 @@ Tempo ships the ERC-8004 registries as predeployed contracts. On Moderato the **
 
 `/agents/<id>` opens on its net (1D, 1W, All), win rate and open trades, with **Copy** and its **Next decision**: a countdown to when it decides next — an agent's read slot, or the time a rule has left to call this Window; nothing is decided until the Window's opening print is in, and the card says so — what the runner is doing in plain words ("Watching ETH 5m — 3 bps from its trigger"), and its last decision with its result. Tabs: **Overview** (the latest decision, its limits, your copy), **Decisions** (every one it made — an agent's reads and a rule's calls — by called, held, failed), **Copies**, and **Identity** (its ERC-8004 card, ratings and sealed [memory](/automate/memory-market)). A call that placed a copy is a bet with its result; one nothing filled is only a call — "UP → not copied · won".
 
-A rule (momentum, reversion) or a mirror calls a Window at most once, the first time its trigger holds, and keeps that side for the Window. When a copier's budget can't cover a full-size call, the runner skips it: your copy then reads **Budget low**, with **Add to budget**.
+A rule (momentum, reversion) or a mirror calls a Window at most once, the first time its trigger holds, and keeps that side for the Window. The runner sizes each copy down to the copier's budget; when what's left can't cover one contract at the copy's price cap, it skips the calls priced over it: your copy then reads **Budget low** ("Calls over 40¢ are skipped"), with **Add to budget**.
 
 Each house strategy serves its agent's registration file at `/api/agents/<strategy>/registration.json`, naming the agent on `eip155:42431` at the identity registry.
 

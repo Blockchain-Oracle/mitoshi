@@ -1,14 +1,28 @@
 // Ported from Owarine 90a91d71:web/src/features/strategies/{activity.ts,lifecycle.ts} (R4-6, D-227) — a copy's state
 // from the wallet's own consent and grant (never from the strategy's aggregate counts). The runner's last pass is worded
 // from its data (`features/agents/pulse.ts`, R6 #9), no longer recognised from its log line.
-import { utcDayOf, type VaultGrant } from "@cwf/core";
+import { oneUnit, USD_DECIMALS, utcDayOf, type VaultCaps, type VaultGrant } from "@cwf/core";
 import type { MinePayload, StrategyWire } from "./protocol";
 
 export type CopyState = "not-copying" | "inactive" | "paused" | "expired" | "replaced" | "runner-changed" | "unfunded" | "low" | "copying" | "fading";
 
-/** A live budget too small for one full-size call (R6 #9): the runner sizes the order down to it, and below one
- *  contract's price it fills nothing — the copy then looks live while every call is skipped. Top it up. */
-export const budgetLow = (grant: Pick<VaultGrant, "budgetBase" | "caps">) => grant.budgetBase > 0n && grant.budgetBase < grant.caps.maxStakePerTradeBase;
+/** The most one contract can cost a copy: its price cap, or $1 with none — a contract pays $1, and the venue's smallest
+ *  order is one (venue-spec grid: minLots × lotBase). */
+export const contractCeilingBase = (caps: Pick<VaultCaps, "maxPriceRaw">) => (caps.maxPriceRaw > 0n ? caps.maxPriceRaw : oneUnit(USD_DECIMALS));
+
+/**
+ * A live budget against one contract (R6 #9): spent ("unfunded"), short of one contract at its price cap ("low"), or
+ * enough (null). The runner sizes each call down to the budget (`runnerOrder`), so a low budget still fills a call
+ * priced at or under what's left and skips one priced over it — not every call, and a budget under the per-trade cap
+ * is not low while it covers a contract.
+ */
+export function budgetStateOf(grant: Pick<VaultGrant, "budgetBase" | "caps">): "unfunded" | "low" | null {
+  if (grant.budgetBase <= 0n) return "unfunded";
+  return grant.budgetBase < contractCeilingBase(grant.caps) ? "low" : null;
+}
+
+/** What's left, in whole cents: the most a contract can cost for a low budget to still fill it. */
+export const budgetCentsOf = (grant: Pick<VaultGrant, "budgetBase">) => Number((grant.budgetBase * 100n) / oneUnit(USD_DECIMALS));
 
 /** Registry consent alone is not permission to spend: the wallet's live grant must agree. */
 export function copyStateOf(card: Pick<StrategyWire, "active" | "runner">, sub: MinePayload["subscriptions"][number] | null, grant: VaultGrant | null, nowSec: number): CopyState {
@@ -17,9 +31,7 @@ export function copyStateOf(card: Pick<StrategyWire, "active" | "runner">, sub: 
   if (!grant || grant.grantId.toString() !== sub.grantId) return "replaced";
   if (grant.expiresAtSec <= nowSec) return "expired";
   if (grant.actor.toLowerCase() !== card.runner.toLowerCase()) return "runner-changed";
-  if (grant.budgetBase <= 0n) return "unfunded";
-  if (budgetLow(grant)) return "low";
-  return sub.mode === "fade" ? "fading" : "copying";
+  return budgetStateOf(grant) ?? (sub.mode === "fade" ? "fading" : "copying");
 }
 
 export const COPY_STATE_LABEL: Record<CopyState, string> = {

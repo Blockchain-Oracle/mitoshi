@@ -1,6 +1,6 @@
 import type { VaultGrant } from "@cwf/core";
 import { describe, expect, it } from "vitest";
-import { budgetLow, copyStateOf } from "./activity";
+import { budgetCentsOf, budgetStateOf, copyStateOf } from "./activity";
 import { winRateOf } from "./record";
 
 const RUNNER = "0xca7BFA5CBdC7135Ba178ca23cD2B12C123258B9a";
@@ -28,8 +28,20 @@ describe("a copy's state comes from this wallet's consent and grant", () => {
     expect(copyStateOf(card, sub(), grant({ grantId: 9n }), NOW)).toBe("replaced");
     expect(copyStateOf(card, sub(), grant({ expiresAtSec: NOW - 1 }), NOW)).toBe("expired");
     expect(copyStateOf(card, sub(), grant({ budgetBase: 0n }), NOW)).toBe("unfunded");
-    // $0.02 left against a $2 call: the runner skips it every time ("under the smallest order") — not "Copying".
+    // $0.02 left: under one contract at any price the runner would pay — it skips the call ("under the smallest order").
     expect(copyStateOf(card, sub(), grant({ budgetBase: 20_000n }), NOW)).toBe("low");
-    expect(budgetLow(grant({ budgetBase: 2_000_000n }))).toBe(false);
+  });
+
+  it("is low only when the budget can't cover one contract at its price cap — the runner sizes a call down to it", () => {
+    // $1.50 under a $2 per-trade cap still buys a contract at any price: not low.
+    expect(budgetStateOf(grant({ budgetBase: 1_500_000n }))).toBeNull();
+    // No price cap: a contract can cost up to $1.
+    expect(budgetStateOf(grant({ budgetBase: 990_000n }))).toBe("low");
+    // A 70¢ cap: $0.70 covers one; $0.40 covers calls up to 40¢.
+    const capped = (budgetBase: bigint) => grant({ budgetBase, caps: { maxStakePerTradeBase: 2_000_000n, maxDailySpendBase: 10_000_000n, maxOpenPositions: 1, maxPriceRaw: 700_000n, market: null } });
+    expect(budgetStateOf(capped(700_000n))).toBeNull();
+    expect(budgetStateOf(capped(400_000n))).toBe("low");
+    expect(budgetCentsOf(capped(400_000n))).toBe(40);
+    expect(budgetStateOf(grant({ budgetBase: 0n }))).toBe("unfunded");
   });
 });

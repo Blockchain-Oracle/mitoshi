@@ -2,7 +2,7 @@
 // Ported from Owarine 90a91d71:web/src/features/strategies/LiveDesk.tsx and features/desk/cockpit/LimitGauges.tsx (R4-6,
 // D-227) — Yours: the selected strategy as a desk. Its face and record; the copy's state from this wallet's own consent
 // and grant beside the runner's last pass in words (`pulse`, R6 #9 — never its log line), with the top-up when the
-// budget can't cover a full-size call; the copier's limits as gauges read off the live vault grant
+// budget can't cover one contract at its price cap; the copier's limits as gauges read off the live vault grant
 // (spent today against the daily cap, open against the most at once) with the budget left and its own result; and,
 // for its creator, the copiers, the fees earned and the seal-memory form.
 import { Masked } from "@/components/kit/Masked";

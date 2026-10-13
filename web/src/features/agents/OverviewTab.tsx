@@ -2,7 +2,7 @@
 // Ported from Owarine 90a91d71:web/src/features/desk/cockpit/{OverviewTab,LimitGauges}.tsx (R4-6, D-227) — the latest
 // decision as its card (it opens the Decisions tab), the strategy's on-chain limits as figures, and — when this wallet
 // copies it — its own copy's gauges off the live vault grant: spent today against the daily cap, open against the most,
-// and its top-up when the budget can't cover a full-size call (R6 #9).
+// and its top-up when the budget can't cover one contract at its price cap (R6 #9).
 import { Masked } from "@/components/kit/Masked";
 import { RadialGauge } from "@/components/kit/desk-kit";
 import { SHELL } from "@/lib/copy";
