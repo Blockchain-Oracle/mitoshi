@@ -13,6 +13,7 @@ export const THEMES = {
     priced: (n: number, of: number) => (n === of ? "Every member priced" : `${n} of ${of} priced`),
     noPrice: "No prices yet",
     cadence: (every: string, when: string) => `Rebalances ${every} · ${when}`,
+    paused: (when: string) => `Paused · market closed · trades in ${when}`,
     follow: "Follow",
     details: "Details",
     followers: (n: number) => `${n} ${n === 1 ? "follower" : "followers"}`,

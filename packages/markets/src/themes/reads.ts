@@ -37,6 +37,20 @@ export interface ThemeView {
   spec: ThemeSpec | null;
   members: ThemeMember[];
   cash: ThemeBand;
+  /** The oracle's session now (0 regular, 1 extended, 2 closed, 3 unknown) and whether this theme trades in it. */
+  sessionNow: number | null;
+  openNow: boolean | null;
+}
+
+const SESSION_ABI = [{ type: "function", name: "currentSession", stateMutability: "view", inputs: [], outputs: [{ type: "uint8" }] }] as const;
+
+async function sessionNow(client: Awaited<ReturnType<typeof getPublicClient>>, router: Address): Promise<number | null> {
+  try {
+    const oracle = await client.readContract({ address: router, abi: themeRouterAbi, functionName: "oracle" });
+    return Number(await client.readContract({ address: oracle, abi: SESSION_ABI, functionName: "currentSession" }));
+  } catch {
+    return null;
+  }
 }
 
 /** The stock mirrors this chain knows (`MirrorTSLA` … in the stocks fragment), symbol by address. */
@@ -57,7 +71,7 @@ const stockReference = (chainId: number): Address | null => {
   return a ? getAddress(a) : null;
 };
 
-async function readTheme(client: Awaited<ReturnType<typeof getPublicClient>>, v: NonNullable<ReturnType<typeof themesVenueOf>>, chainId: number, themeId: bigint): Promise<ThemeView> {
+async function readTheme(client: Awaited<ReturnType<typeof getPublicClient>>, v: NonNullable<ReturnType<typeof themesVenueOf>>, chainId: number, themeId: bigint, session: number | null): Promise<ThemeView> {
   const reg = { address: v.registry, abi: themeRegistryAbi } as const;
   const t = await client.readContract({ ...reg, functionName: "theme", args: [themeId] });
   const tokens = await client.readContract({ ...reg, functionName: "tokensOf", args: [themeId, t.version] });
@@ -89,6 +103,8 @@ async function readTheme(client: Awaited<ReturnType<typeof getPublicClient>>, v:
       return { token: getAddress(token), symbol: names.get(token.toLowerCase()) ?? token.slice(0, 8), band: band(bands[i]![1]), refPriceE18: r && r.priceE18 > 0n ? r.priceE18 : null, refObservedAtSec: r ? BigInt(r.observedAt) : null };
     }),
     cash: band(cash[1]),
+    sessionNow: session,
+    openNow: session === null ? null : ((t.sessionsMask >> session) & 1) === 1,
   };
 }
 
@@ -100,7 +116,8 @@ export async function listThemes(limit = 50): Promise<Reading<ThemeView[]>> {
     const count = await client.readContract({ address: v.registry, abi: themeRegistryAbi, functionName: "themeCount" });
     const ids: bigint[] = [];
     for (let id = count; id >= 1n && ids.length < limit; id--) ids.push(id);
-    return Promise.all(ids.map((id) => readTheme(client, v, chainId, id)));
+    const session = await sessionNow(client, v.router);
+    return Promise.all(ids.map((id) => readTheme(client, v, chainId, id, session)));
   });
 }
 
@@ -109,7 +126,7 @@ export async function getTheme(themeId: bigint): Promise<Reading<ThemeView | nul
     const { client, v, chainId } = await venue();
     if (!v) return null;
     const count = await client.readContract({ address: v.registry, abi: themeRegistryAbi, functionName: "themeCount" });
-    return themeId >= 1n && themeId <= count ? readTheme(client, v, chainId, themeId) : null;
+    return themeId >= 1n && themeId <= count ? readTheme(client, v, chainId, themeId, await sessionNow(client, v.router)) : null;
   });
 }
 
