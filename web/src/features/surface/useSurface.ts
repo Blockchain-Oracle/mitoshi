@@ -44,14 +44,17 @@ export interface FocalFigures {
 
 /** The guard's model UP for one Window at the latest signed spot (crypto Windows with a σ); null elsewhere. */
 export function useFairUp(market: EventMarket | null, modelled: boolean, spotE8: bigint | null, nowMs: number): bigint | null {
+  // One preview per 15 s bucket at the spot of that moment: keyed on the spot's cents, a ticking BTC feed asked the
+  // guard every second.
   const bucket = Math.floor(nowMs / 1000 / BUCKET_SEC);
-  const spotBucket = spotE8 === null ? "" : (spotE8 / 1_000_000n).toString();
   const open = market !== null && Math.floor(nowMs / 1000) < market.lockAtSec;
   const fair = useQuery({
-    queryKey: ["cwf", "surface", "fair", market?.marketId ?? null, spotBucket, bucket],
+    queryKey: ["cwf", "surface", "fair", market?.marketId ?? null, spotE8 !== null, bucket],
     queryFn: async () => (await previewLegFair([{ marketId: market!.marketId as MarketId, side: "up" }], [spotE8!]))[0]!,
     enabled: market !== null && modelled && spotE8 !== null && open,
     staleTime: 10_000,
+    // The same Window's last model stays up while the next bucket is asked (no "…" every 15 s); never another Window's.
+    placeholderData: (prev, prevQuery) => (prevQuery?.queryKey[3] === (market?.marketId ?? null) ? prev : undefined),
   });
   return fair.data ?? null;
 }
