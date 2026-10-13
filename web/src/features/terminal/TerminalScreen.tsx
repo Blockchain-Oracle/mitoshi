@@ -59,6 +59,7 @@ import { useDrawnBand } from "@/features/range/band-store";
 import { TICKET_RAIL_MIN_WIDTH } from "@/features/markets/data/useSelection";
 import dynamic from "next/dynamic";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
+import { TradeReceiptSheet } from "./ui/TradeReceiptSheet";
 import { History, LineChart, Settings } from "lucide-react";
 import "@/styles/terminal-side.css";
 
@@ -346,6 +347,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           <PositionsList positions={s.positions} bets={bets} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={null} onValue={onValue} onBetValue={book.onBetValue} />
         </SlideOverContent>
       </SlideOver>
+      <TradeReceiptSheet />
     </MotionScope>
   );
 }
