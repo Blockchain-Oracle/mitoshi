@@ -135,8 +135,12 @@ export const RECORD = {
   howTiers: "How tiers work",
   rule: "Trader at 5 decided Windows and 45% won, Whale at 15 and 55%, Oracle at 30 and 65%.",
   badges: "Badges",
-  unlockedCount: (n: number, total: number) => `${n} of ${total} unlocked`,
+  unlockedCount: (n: number, total: number) => `${n} of ${total} badges`,
   nextBadge: (name: string) => `Next: ${name}`,
+  /** The next tier's rule in the badge head (R6 money, S20: the reputation card folded in). */
+  tierNext: (tier: string, decided: number, pct: number) => `Next: ${tier} at ${decided} decided · ${pct}% won`,
+  progressOf: (have: number, need: number) => `${have.toLocaleString("en-US")} of ${need.toLocaleString("en-US")}`,
+  nextWord: "Next",
   unlocked: "Unlocked",
   locked: "Locked",
   pendingEarn: "Opens with Earn",

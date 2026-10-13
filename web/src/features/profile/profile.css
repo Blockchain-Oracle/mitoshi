@@ -1,41 +1,53 @@
 /* /u/[address] (R4-10, D-227) — Ported from Owarine 90a91d71:web/src/features/profile/profile.css on Mitoshi's tokens:
- * /news's frame (styles/news.css), the marble avatar beside a mono title, the figures in one row with the actions on
- * the right; Owarine's signal ink is Mitoshi's accent. */
+ * /news's frame (styles/news.css), the marble avatar beside a mono title; Owarine's signal ink is Mitoshi's accent.
+ * R6 money (S20, D-230): the ident row (marble, name, followers | Follow, Copy, …), one stat row — five equal cells from
+ * 640, P&L on its own line over a four-up row on a phone — the realised-P&L card, the badges, the sections. */
 
-.prf-ident { display: flex; align-items: center; gap: 16px; }
-.prf-avatar { flex-shrink: 0; border-radius: 9999px; box-shadow: 0 0 0 1px var(--news-hairline); }
-.prf-title { margin-bottom: 0; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: 28px; }
+.prf-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 24px; }
+.prf-ident { display: grid; min-width: 0; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "mark title" "mark followers"; align-items: center; column-gap: 14px; row-gap: 4px; }
+.prf-avatar { grid-area: mark; flex-shrink: 0; border-radius: 9999px; box-shadow: 0 0 0 1px var(--news-hairline); }
+.prf-title { grid-area: title; margin-bottom: 0; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: 28px; }
 @media (min-width: 768px) { .prf-title { font-size: 36px; } }
+.prf-followers { grid-area: followers; font: 500 13px/1.2 var(--font-body); color: var(--color-ink-secondary); }
 .prf-sub { display: block; margin-top: 4px; font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.02em; color: var(--color-ink-secondary); }
 .prf-bio { max-width: 36rem; margin-top: 8px; font-size: 14px; line-height: 1.55; color: var(--color-ink-secondary); }
 
-.prf-bar {
-  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px 24px;
-  margin-top: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--news-hairline);
+.prf-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+@media (max-width: 767px) {
+  .prf-actions { width: 100%; }
+  .prf-actions > [data-slot="pill-button"] { flex: 1 1 0; }
+  .prf-actions.page-action { padding-block: 8px; background: var(--color-stage); }
 }
+
+/* one stat row: five equal cells from 640; on a phone P&L leads on its own line, the other four share the next */
 .prf-stats {
-  display: flex; flex-wrap: wrap; gap: 32px; margin: 0; font-family: var(--font-mono); font-size: 11px;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-secondary); font-variant-numeric: tabular-nums;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin: 24px 0 0; padding: 16px 0; border-block: 1px solid var(--news-hairline);
+  font: 600 11px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-secondary); font-variant-numeric: tabular-nums;
 }
+.prf-stat { min-width: 0; }
 .prf-stat dd { margin: 8px 0 0; }
-.prf-stat .big {
-  font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -0.02em;
-  text-transform: none; color: var(--color-ink);
-}
+.prf-stat .big { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 var(--text-data-lg, 28px)/1 var(--font-data); letter-spacing: -0.01em; text-transform: none; color: var(--color-ink); }
 .prf-stat .big.is-up { color: var(--color-up); }
 .prf-stat .big.is-down { color: var(--color-down); }
-.prf-stats.small .big { font-size: 22px; }
-.prf-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-@media (max-width: 767px) { .prf-actions.page-action { padding-block: 8px; background: var(--color-stage); } }
+@media (max-width: 639px) {
+  .prf-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 10px; }
+  .prf-stat-lead { grid-column: 1 / -1; }
+  .prf-stat-lead .big { font-size: 34px; }
+  .prf-stat:not(.prf-stat-lead) .big { font-size: 16px; }
+}
+
+/* realised P&L over time (29532): a card, its title, the chart */
+.prf-curve { display: flex; flex-direction: column; gap: 8px; margin-top: 24px; padding: 16px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.prf-curve-title { font: 600 11px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-secondary); }
+.prf-curve-empty { margin-top: 24px; }
+.prf-page .bdg { margin-top: 24px; }
 
 .prf-section { margin-top: 32px; display: flex; flex-direction: column; gap: 16px; }
 .prf-quiet { margin: 0; font-size: 14px; color: var(--color-ink-secondary); }
-.prf-more { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 9999px; color: var(--color-ink-secondary); }
+.prf-more { display: grid; flex: none; place-items: center; width: 44px; height: 44px; border-radius: 9999px; color: var(--color-ink-secondary); }
 .prf-more:hover, .prf-more[data-popup-open] { background: var(--color-surface-2); color: var(--color-ink); }
 .prf-menu { width: min(14rem, calc(100vw - 1.5rem)); }
 
 @media (max-width: 640px) {
-  .prf-avatar { width: 32px; height: 32px; }
-  .prf-stats { gap: 24px; }
-  .prf-stat .big { font-size: 22px; }
+  .prf-avatar { width: 40px; height: 40px; }
 }

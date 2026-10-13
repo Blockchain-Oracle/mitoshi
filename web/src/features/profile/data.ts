@@ -8,6 +8,7 @@ import "server-only";
  */
 import { cacheLife } from "next/cache";
 import { rankTraders, winStreaks, type Address, type RankRound } from "@cwf/core";
+import { downsample } from "@cwf/db";
 import { readSettledRounds, type RoundRow } from "@cwf/db/idx";
 import { readBoard } from "@/features/leaderboard/board.server";
 import { db } from "@/server/db";
@@ -38,10 +39,20 @@ export interface Profile {
   rank: number | null;
   of: number;
   recent: ProfileRound[];
+  /** Realised P&L over time (R6 money, S20): the running sum by settled round, ≤ 240 points, the last exact. */
+  curve: { atSec: number; cumPnlBase: string }[];
   computedAtMs: number;
 }
 
 const RECENT = 12;
+const CURVE_POINTS = 240;
+
+/** The running realised P&L, one point per settled round in settle order, thinned to `max` with the last kept. Pure. */
+export function pnlCurve(rows: readonly { settledSec: number; pnlBase: bigint }[], max = CURVE_POINTS): { atSec: number; cumPnlBase: string }[] {
+  let sum = 0n;
+  const points = [...rows].sort((a, b) => a.settledSec - b.settledSec).map((r) => ((sum += r.pnlBase), { atSec: r.settledSec, cumPnlBase: sum.toString() }));
+  return downsample(points, max);
+}
 
 /** One cache entry per wallet, whatever the case of the address in the link. */
 export function readProfile(address: string): Promise<Profile> {
@@ -52,7 +63,7 @@ async function cachedProfile(owner: string): Promise<Profile> {
   "use cache";
   cacheLife("minutes");
   const who = demandAddresses();
-  const empty = { rounds: 0, wins: 0, losses: 0, pnlBase: "0", stakeBase: "0", roiBps: null, winRatePct: 0, bestStreak: 0, currentStreak: 0, rank: null, of: 0, recent: [] };
+  const empty = { rounds: 0, wins: 0, losses: 0, pnlBase: "0", stakeBase: "0", roiBps: null, winRatePct: 0, bestStreak: 0, currentStreak: 0, rank: null, of: 0, recent: [], curve: [] };
   if ([...who.house, ...who.vaults, ...who.products].includes(owner)) return { address: owner, house: true, ...empty, computedAtMs: Date.now() };
   const [rows, board] = await Promise.all([readSettledRounds(db(), { ...who, owner }), readBoard("all", "pnl", owner)]);
   const rounds: RankRound[] = rows.map((r) => ({ pnlBase: r.proceedsBase + r.payoutBase - r.stakeBase, stakeBase: r.stakeBase, outcome: r.outcome, settledAtMs: r.settledSec * 1000, expirySec: r.settledSec }));
@@ -77,6 +88,7 @@ async function cachedProfile(owner: string): Promise<Profile> {
       .sort((a, b) => b.settledSec - a.settledSec)
       .slice(0, RECENT)
       .map((r) => ({ market: r.market, symbol: r.symbol, cadenceSec: r.cadenceSec, outcome: r.outcome, pnlBase: String(r.proceedsBase + r.payoutBase - r.stakeBase), settledSec: r.settledSec })),
+    curve: pnlCurve(rows.map((r) => ({ settledSec: r.settledSec, pnlBase: r.proceedsBase + r.payoutBase - r.stakeBase }))),
     computedAtMs: Date.now(),
   };
 }

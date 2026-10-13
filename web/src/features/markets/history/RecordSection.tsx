@@ -12,7 +12,6 @@ import { recordOf } from "@/features/edge/record";
 import { HISTORY } from "../copy";
 import { BadgeGrid } from "./BadgeGrid";
 import { HistorySummary } from "./HistorySummary";
-import { ReputationPanel } from "./ReputationPanel";
 import "@/components/kit/kit.css";
 
 export function RecordSection({ history, openCount, address, index, retry }: { history: Reading<WalletHistory> | null; openCount: number | null; address: Address; index: string; retry: () => void }) {
@@ -35,8 +34,7 @@ export function RecordSection({ history, openCount, address, index, retry }: { h
           derived ? (
             <div className="flex flex-col gap-4">
               <HistorySummary history={read} edge={derived.edge} address={address} />
-              <ReputationPanel reputation={derived.reputation} />
-              <BadgeGrid badges={derived.badges} />
+              <BadgeGrid badges={derived.badges} reputation={derived.reputation} />
             </div>
           ) : null
         }

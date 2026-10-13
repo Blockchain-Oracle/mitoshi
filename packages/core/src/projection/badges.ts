@@ -8,6 +8,8 @@ export interface Badge {
   earned: boolean;
   /** Set when the badge's source is a capability that is not connected yet; it stays locked and says why. */
   pending: "earn" | null;
+  /** How far along it is (R6 money, S20: "2 of 3"), capped at `need`; absent where a badge has no count (LP). */
+  progress?: { have: number; need: number };
 }
 
 export interface BadgeInput {
@@ -37,12 +39,30 @@ export const BADGE_RULES = {
  * than dropped, because a missing badge looks like a badge you failed to earn.
  */
 export function computeBadges(input: BadgeInput): Badge[] {
-  const whaleFloor = BADGE_RULES.whaleUnits * oneUnit(input.decimals);
+  const one = oneUnit(input.decimals);
+  const whaleFloor = BADGE_RULES.whaleUnits * one;
+  const of = (have: number, need: number) => ({ have: Math.max(0, Math.min(have, need)), need });
+  const dollars = input.stakeBase > 0n ? input.stakeBase / one : 0n;
   return [
-    { id: "first_trade", earned: input.fillCount > 0, pending: null },
-    { id: "winning_streak", earned: input.currentWinStreak >= BADGE_RULES.streak, pending: null },
+    { id: "first_trade", earned: input.fillCount > 0, pending: null, progress: of(input.fillCount, 1) },
+    { id: "winning_streak", earned: input.currentWinStreak >= BADGE_RULES.streak, pending: null, progress: of(input.currentWinStreak, BADGE_RULES.streak) },
     { id: "lp_provider", earned: (input.lpSharesRaw ?? 0n) > 0n, pending: input.lpSharesRaw === null ? "earn" : null },
-    { id: "whale", earned: input.stakeBase >= whaleFloor, pending: null },
-    { id: "oracle", earned: input.decidedRounds >= BADGE_RULES.oracleRounds && input.winRate >= BADGE_RULES.oracleWinRate, pending: null },
+    { id: "whale", earned: input.stakeBase >= whaleFloor, pending: null, progress: of(Number(dollars > BADGE_RULES.whaleUnits ? BADGE_RULES.whaleUnits : dollars), Number(BADGE_RULES.whaleUnits)) },
+    {
+      id: "oracle",
+      earned: input.decidedRounds >= BADGE_RULES.oracleRounds && input.winRate >= BADGE_RULES.oracleWinRate,
+      pending: null,
+      progress: of(input.decidedRounds, BADGE_RULES.oracleRounds),
+    },
   ];
+}
+
+/** The badge to chase next: the unearned, connected badge furthest along (have / need), the earlier on a tie; null when none. */
+export function nextBadge(badges: readonly Badge[]): Badge | null {
+  let best: Badge | null = null;
+  for (const b of badges) {
+    if (b.earned || b.pending !== null || !b.progress) continue;
+    if (!best || b.progress.have / b.progress.need > best.progress!.have / best.progress!.need) best = b;
+  }
+  return best;
 }

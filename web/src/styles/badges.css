@@ -1,0 +1,34 @@
+/* The record's badges (R6 money, S20; D-230) — From 21st.dev 13023 trophyso/achievement-card on Mitoshi's tokens: one
+ * card, a head (the count, the next badge, the tier chip and what the next tier takes), then a row per badge. Earned
+ * wears the accent ring; the next one its progress bar; locked stays legible — secondary ink on surface-2 with the icon
+ * at 60 %, never a 45 %-opacity ghost (AA in both themes). Two columns of rows from 1024. */
+.bdg { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.bdg-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px 16px; padding: 14px 16px; border-bottom: 1px solid var(--color-hairline); }
+.bdg-head-main { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.bdg-count { font: 700 17px/1.2 var(--font-display); color: var(--color-ink); }
+.bdg-next { font: 500 13px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+.bdg-tier { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.bdg-tier-chip { padding: 3px 10px; border-radius: var(--radius-full); background: var(--color-surface-2); font: 700 12px/1.2 var(--font-body); color: var(--color-ink); }
+.bdg-tier-line { font: 500 12px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+@media (max-width: 479px) { .bdg-tier { align-items: flex-start; text-align: left; } }
+.bdg-list { display: grid; grid-template-columns: minmax(0, 1fr); margin: 0; padding: 0; list-style: none; }
+@media (min-width: 1024px) { .bdg-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.bdg-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px; border-bottom: 1px solid var(--color-hairline); }
+.bdg-item:last-child { border-bottom: 0; }
+@media (min-width: 1024px) { .bdg-item:nth-last-child(2):nth-child(odd) { border-bottom: 0; } }
+.bdg-icon { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--color-hairline); border-radius: 50%; background: var(--color-surface-2); color: var(--color-ink-secondary); }
+.bdg-icon svg { width: 18px; height: 18px; }
+.bdg-body { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.bdg-name { font: 600 14px/1.3 var(--font-body); color: var(--color-ink); }
+.bdg-desc { font: 400 12px/1.35 var(--font-body); color: var(--color-ink-secondary); }
+.bdg-state { font: 600 11px/1 var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-secondary); }
+.bdg-item[data-state="earned"] .bdg-icon { border-color: color-mix(in srgb, var(--color-accent) 45%, transparent); background: color-mix(in srgb, var(--color-accent) 10%, transparent); color: var(--color-accent); }
+.bdg-item[data-state="earned"] .bdg-state { color: var(--color-accent); }
+.bdg-item[data-state="next"] .bdg-icon { border-color: var(--color-border-strong); color: var(--color-ink); }
+.bdg-item[data-state="next"] .bdg-state { color: var(--color-ink); }
+.bdg-item[data-state="locked"] .bdg-icon svg { opacity: 0.6; }
+.bdg-progress { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.bdg-bar { flex: 1; height: 6px; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-3); }
+.bdg-bar > span { display: block; width: var(--bdg-share); min-width: 6px; height: 100%; border-radius: var(--radius-full); background: var(--color-accent); transition: width 300ms var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { .bdg-bar > span { transition: none; } }
+.bdg-of { flex: none; font: 600 12px/1 var(--font-data); color: var(--color-ink); }

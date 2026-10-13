@@ -4,6 +4,7 @@
 import type { Address } from "@cwf/core";
 import { useLanes } from "@cwf/markets/react";
 import { LoadingState } from "@/components/states";
+import { EmptyState } from "@/components/states/EmptyState";
 import { BetRow } from "@/features/markets/portfolio/BetRow";
 import { PositionValuers, usePortfolioPositions } from "@/features/markets/portfolio/usePortfolioPositions";
 import { useTerminalClose } from "@/features/terminal/useTerminalClose";
@@ -18,7 +19,7 @@ export function ProfileOpenCalls({ address }: { address: Address }) {
   const viewer = useWalletSession().address;
   const own = viewer !== null && viewer.toLowerCase() === address.toLowerCase();
   if (lanes === null) return <LoadingState shape="row" />;
-  if (book.groups.length === 0) return <p className="prf-quiet">{P.sections.open.empty}</p>;
+  if (book.groups.length === 0) return <EmptyState size="inline" why={P.sections.open.empty} nextAction={{ label: P.makeCall, href: "/trade/BTC" }} />;
   return (
     <>
       <PositionValuers positions={book.positions} onValue={book.onValue} />
