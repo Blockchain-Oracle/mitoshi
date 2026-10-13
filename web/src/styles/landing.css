@@ -13,6 +13,8 @@
 .lp-nav-links { display: flex; align-items: center; gap: 4px; }
 .lp-nav-link { display: inline-flex; min-height: 44px; align-items: center; padding-inline: 12px; border-radius: var(--radius-full); font: 600 14px/1 var(--font-body); color: var(--color-ink); }
 .lp-nav-link:hover { background: var(--color-surface-2); }
+/* Under 375 px the seal, the theme and "Start trading" fill the row: the name steps aside (the link keeps its label). */
+@media (max-width: 374px) { .lp-brand-name { display: none; } }
 
 /* ── Hero ─────────────────────────────────────────────────────────────────────────────────────────────────────── */
 .lp-hero { min-height: 100svh; }
@@ -44,6 +46,8 @@
 .lp-sticker--a { top: 10%; left: -22%; }
 .lp-sticker--b { top: 72%; right: -26%; }
 @media (max-width: 639px) { .lp-sticker { display: none; } }
+/* From 1024 the phone sits at the column's end: room on its right for the second sticker, which overhangs it by 26%. */
+@media (min-width: 1024px) { .lp-phone-col { margin-right: 4.5rem; } }
 
 /* ── The tape: every asset with Windows open, sliding past on the black plate ─────────────────────────────────── */
 .lp-tape { min-height: 56px; background: var(--plate-black); color: var(--color-cream); box-shadow: inset 0 1px 0 var(--plate-black-edge), inset 0 -1px 0 var(--plate-black-edge); }
@@ -101,10 +105,15 @@
 /* Proof: the copy and the index's counts beside the last settled Windows, each a cream receipt to its proof. */
 .lp-proof { display: grid; gap: 40px; }
 @media (min-width: 1024px) { .lp-proof { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); } }
-.lp-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.lp-stat { display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: var(--radius-lg); background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
+.lp-stats { display: grid; gap: 12px; }
+.lp-stat { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px; border-radius: var(--radius-lg); background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
+/* Three across from 640; on a phone one row each, the count beside its label, so a six-figure count never spills. */
+@media (min-width: 640px) {
+  .lp-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .lp-stat { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px; }
+}
 .lp-stat .lp-muted { font-size: 12px; }
-.lp-stat-value { font: 700 clamp(1.25rem, 2.6vw, 1.75rem)/1 var(--font-data); }
+.lp-stat-value { font: 700 clamp(1.25rem, 2vw, 1.75rem)/1 var(--font-data); }
 .lp-settled {
   display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius-xl);
   background: var(--color-cream); color: var(--color-cream-ink); transition: transform 200ms var(--ease-out);

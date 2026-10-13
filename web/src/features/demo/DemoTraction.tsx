@@ -1,7 +1,7 @@
 // The live figures on /demo (R4-13a, D-227; the role of Owarine 90a91d71's DemoPage `LiveNumbers`): the indexer's own
 // counts of Moderato's Windows — opened, settled on a print, open now — read per request and kept minutes in memory
 // (`landing/figures.ts`), each to /stats where they are recounted. Out of date at worst, never invented; when the index
-// can't be read the cards say so.
+// can't be read the cards say so. A list of links (a `<dl>` may hold only its terms and details, not links around them).
 import { connection } from "next/server";
 import Link from "next/link";
 import { landingFigures } from "@/features/landing/figures";
@@ -17,14 +17,16 @@ function Figures({ values }: { values: { opened: string; resolved: string; open:
     { label: L.open, value: values?.open },
   ];
   return (
-    <dl className="demo-figures">
+    <ul className="demo-figures">
       {items.map((item) => (
-        <Link key={item.label} href="/stats" className="demo-figure">
-          <dt className="demo-figure-label">{item.label}</dt>
-          <dd className="demo-figure-value">{item.value ?? L.reading}</dd>
-        </Link>
+        <li key={item.label}>
+          <Link href="/stats" className="demo-figure">
+            <span className="demo-figure-label">{item.label}</span>
+            <span className="demo-figure-value">{item.value ?? L.reading}</span>
+          </Link>
+        </li>
       ))}
-    </dl>
+    </ul>
   );
 }
 

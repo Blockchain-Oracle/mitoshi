@@ -47,6 +47,8 @@
 /* Live on testnet: the index's three counts, each to /stats. */
 .demo-figures { display: grid; gap: 12px; }
 @media (min-width: 640px) { .demo-figures { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.demo-figures > li { display: flex; }
+.demo-figures > li > .demo-figure { flex: 1; }
 .demo-figure { display: flex; min-height: 96px; flex-direction: column; gap: 4px; padding: 20px; border-radius: var(--radius-lg); background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
 .demo-figure:hover { box-shadow: inset 0 0 0 1px var(--color-accent); }
 .demo-figure-label { font: 500 14px/1.3 var(--font-body); color: var(--color-ink-secondary); }

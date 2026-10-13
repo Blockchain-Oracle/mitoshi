@@ -34,7 +34,7 @@ export function LandingNav() {
     <nav className="lp-nav">
       <Link href="/" className="lp-brand" aria-label={nav.home}>
         <Seal size="sm" />
-        <span>{BRAND.name}</span>
+        <span className="lp-brand-name">{BRAND.name}</span>
       </Link>
       <div className="lp-nav-links">
         <Link href="/markets" className="lp-nav-link max-sm:hidden">{nav.markets}</Link>
