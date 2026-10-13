@@ -8,6 +8,7 @@
 // moved to /portfolio's record. Every figure is the account's own: privacy mode (the balance eye) masks them all, the
 // chart's axis and table included (critic gap 15).
 import type { TraderEdge, WalletHistory } from "@cwf/core";
+import Link from "next/link";
 import { PortfolioChart } from "@/components/ui/portfolio-chart";
 import { RECORD_CHART } from "@/features/markets/copy";
 import { recordPoints } from "./record-points";
@@ -130,7 +131,9 @@ function Payoff({ report, decimals }: { report: TraderEdge; decimals: number }) 
       </dl>
       <div className="flex flex-col gap-2 rounded-md bg-surface-2 p-4">
         <span className="type-label-micro text-ink-secondary">{p.provenanceLabel}</span>
-        <p className="type-caption text-ink-secondary">{p.provenance}</p>
+        <p className="type-caption text-ink-secondary">
+          {p.provenance} <Link href="/docs/record" className="text-ink underline underline-offset-4">{p.proof}</Link>
+        </p>
         <dl className="flex flex-col gap-1 type-caption">
           {[p.source, p.method].map((m) => (
             <div key={m.label} className="flex flex-wrap gap-x-2">

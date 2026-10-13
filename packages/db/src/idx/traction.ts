@@ -66,19 +66,20 @@ export interface Traction {
   recent: TractionCall[];
 }
 
-export async function readTraction(sql: Sql, q: TractionQuery): Promise<Traction> {
+/** The fills with their two sides, each side resolved to a wallet (or a product): the CTE every figure reads. A
+ *  `symbol` narrows it to one ticker's Windows (the ticker hub's Calls, R4-10). */
+function sidesOf(sql: Sql, q: Pick<TractionQuery, "house" | "vaults" | "products">, symbol: string | null = null) {
   const house = q.house.map((a) => a.toLowerCase());
   const vaults = q.vaults.map((a) => a.toLowerCase());
   const products = q.products.map((a) => a.toLowerCase());
-  const since = q.nowSec - DAY_SEC;
-  // One CTE chain: the fills with their two sides, each side resolved to a wallet (or a product), then the aggregates.
-  const sides = sql`
+  const only = symbol === null ? sql`` : sql`where m.symbol = ${symbol}`;
+  return sql`
     with f as (
       select f.tx_hash, f.log_index, f.market, f.ts_sec, f.taker, f.maker, f.taker_kind, f.maker_kind, f.path, f.lots, f.price_ticks,
         coalesce(s.cash_unit, 1) as cash_unit,
         f.taker = any(${house as string[]}::text[]) as taker_house, f.maker = any(${house as string[]}::text[]) as maker_house,
         m.symbol, m.cadence_sec
-      from idx_fills f join idx_markets m on m.market = f.market left join idx_series s on s.series = m.series
+      from idx_fills f join idx_markets m on m.market = f.market left join idx_series s on s.series = m.series ${only}
     ),
     calls as (select * from f where not (taker_house and maker_house)),
     raw as (
@@ -108,6 +109,35 @@ export async function readTraction(sql: Sql, q: TractionQuery): Promise<Traction
         order by x.log_index limit 1
       ) e on true
     )`;
+}
+
+/** The newest call sides, every ticker's or one's (`symbol`), newest first. */
+async function recentSides(sql: Sql, q: Pick<TractionQuery, "house" | "vaults" | "products">, symbol: string | null, limit: number): Promise<TractionCall[]> {
+  const rows = await sql`${sidesOf(sql, q, symbol)}
+    select tx_hash, ts_sec::text, wallet, kind, symbol, cadence_sec, cash_base::text from sides
+    order by ts_sec desc, log_index desc, kind limit ${Math.max(1, Math.min(50, limit))}`;
+  return rows.map((r) => ({
+    txHash: String(r.tx_hash),
+    tsSec: Number(r.ts_sec),
+    wallet: (r.wallet as string | null) ?? null,
+    kind: Number(r.kind),
+    symbol: String(r.symbol),
+    cadenceSec: Number(r.cadence_sec),
+    cashBase: String(r.cash_base).split(".")[0]!,
+  }));
+}
+
+/** One ticker's newest calls (the hub's 02 Calls, R4-10, D-227): the same sides as `/stats`, narrowed to its Windows. */
+export function readTickerCalls(sql: Sql, q: Pick<TractionQuery, "house" | "vaults" | "products"> & { symbol: string; limit?: number }): Promise<TractionCall[]> {
+  return recentSides(sql, q, q.symbol, q.limit ?? 12);
+}
+
+export async function readTraction(sql: Sql, q: TractionQuery): Promise<Traction> {
+  const house = q.house.map((a) => a.toLowerCase());
+  const vaults = q.vaults.map((a) => a.toLowerCase());
+  const products = q.products.map((a) => a.toLowerCase());
+  const since = q.nowSec - DAY_SEC;
+  const sides = sidesOf(sql, q);
 
   const [totals] = await sql`${sides},
     firsts as (select wallet, min(ts_sec) as first_sec from sides where wallet is not null group by wallet)
@@ -121,9 +151,7 @@ export async function readTraction(sql: Sql, q: TractionQuery): Promise<Traction
       (select json_agg(json_build_object('day', d, 'n', n) order by d) from (select floor(first_sec / ${DAY_SEC})::int as d, count(*)::int as n from firsts group by 1) w) as new_by_day,
       (select json_agg(json_build_object('day', d, 'n', n) order by d) from (select floor(ts_sec / ${DAY_SEC})::int as d, count(*)::int as n from calls group by 1) c) as calls_by_day`;
 
-  const recent = await sql`${sides}
-    select tx_hash, ts_sec::text, wallet, kind, symbol, cadence_sec, cash_base::text from sides
-    order by ts_sec desc, log_index desc, kind limit ${Math.max(1, Math.min(50, q.recent ?? 12))}`;
+  const recent = await recentSides(sql, q, null, q.recent ?? 12);
 
   const [venue] = await sql`
     select (select count(*) from idx_markets where opened_tx is not null)::int as opened,
@@ -152,15 +180,7 @@ export async function readTraction(sql: Sql, q: TractionQuery): Promise<Traction
     windowsOpen: Number(v.open),
     prints: Number(v.prints),
     days: everyDay(t.new_by_day as DayCount[] | null, t.calls_by_day as DayCount[] | null, Math.floor(q.nowSec / DAY_SEC)),
-    recent: recent.map((r) => ({
-      txHash: String(r.tx_hash),
-      tsSec: Number(r.ts_sec),
-      wallet: (r.wallet as string | null) ?? null,
-      kind: Number(r.kind),
-      symbol: String(r.symbol),
-      cadenceSec: Number(r.cadence_sec),
-      cashBase: String(r.cash_base).split(".")[0]!,
-    })),
+    recent,
   };
 }
 

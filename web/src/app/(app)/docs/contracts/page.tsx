@@ -31,7 +31,7 @@ export default function Page() {
   return (
     <>
       <H1>Contracts on Moderato</H1>
-      <Lead>Every address Mitoshi&apos;s live product calls on Tempo testnet (chain 42431), each linked to the explorer.</Lead>
+      <Lead>Every address Mitoshi calls on Tempo testnet, linked to the explorer.</Lead>
       <P>The list is read from the same generated deployments file the app uses, so it can&apos;t drift from what the product calls. The stock pools, their guard, the launchpads and the bridge are deployed too; their screens are next.</P>
       <Table head={["Contract", "Address"]} rows={rows} />
     </>

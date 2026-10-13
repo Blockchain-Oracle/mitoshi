@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import { DOCS_EXTERNAL, DOCS_URL, docsUrl } from "./src/lib/docs-url";
 
 /**
  * Plan D-050 (D41): cached rendering, the React Compiler, partial prefetching, and no agent files written by
@@ -30,13 +29,8 @@ const config: NextConfig = {
     // D-226: no Stocks section — the listed stocks trade in Markets' 24/7 lanes; each ticker's hub is /tickers/<SYM>.
     { source: "/stocks", destination: "/markets", permanent: true },
     { source: "/stocks/:symbol", destination: "/tickers/:symbol", permanent: true },
-    // Only when the docs are another site: by default they are this app's own `/docs`.
-    ...(DOCS_EXTERNAL
-      ? [
-          { source: "/docs", destination: DOCS_URL, permanent: false },
-          { source: "/docs/:path*", destination: docsUrl(":path*"), permanent: false },
-        ]
-      : []),
+    // No /docs redirect (R4-10, D-227): the guides (DOCS_URL, an external site by default since 67cb549) are linked, and
+    // /docs stays the app's own Reference — /stats, /proof and Trader Edge link its /docs/record.
   ],
 };
 

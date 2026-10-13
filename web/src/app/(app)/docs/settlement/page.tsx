@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <>
       <H1>Prints and settlement</H1>
-      <Lead>A Window settles on two signed numbers: its opening print and its closing print. The live line on screen never settles anything.</Lead>
+      <Lead>A Window settles on two signed prints, its open and its close.</Lead>
       <H2>Signed prints</H2>
       <P>Prices come from RedStone as signed data packages. Mitoshi&apos;s price relay posts the packages for each Window&apos;s open and close on chain, and the engine&apos;s print verifier checks their signers itself — enough of RedStone&apos;s signers, close enough to the Window&apos;s boundary — before it records a print. Each position&apos;s details link to the proof of its prints.</P>
       <H2>Settlement</H2>
@@ -23,7 +23,7 @@ export default function Page() {
       <P>A payout your account&apos;s receive policy blocks is not lost: it waits as credit you can collect once the engine is allowed.</P>
       <H2>Checking a print yourself</H2>
       <P>A Window&apos;s proof page re-verifies its prints in your browser, with nothing from Mitoshi&apos;s servers: it reads the transaction that recorded the print from Tempo, takes the signed RedStone packages out of the engine&apos;s record call, and asks the on-chain print verifier for the price itself. The archive check gives the same verifier the packages Mitoshi archived from RedStone for that instant instead, apart from any transaction.</P>
-      <Note>On testnet, prints depend on RedStone&apos;s public gateways, which RedStone is switching off in daily windows; while one refuses, Windows wait for their prints (see <A href="/docs/testnet">testnet notes</A>).</Note>
+      <Note>Prints wait while RedStone&apos;s gateways refuse (<A href="/docs/testnet">testnet notes</A>).</Note>
     </>
   );
 }

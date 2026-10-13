@@ -12,6 +12,8 @@ export interface Notice {
   atSec: number;
   title: string;
   href: string | null;
+  /** The follower, the take's author: whose marble the row wears (absent on the wallet's own calls). */
+  actor?: string;
 }
 
 const POLL_MS = 15_000;

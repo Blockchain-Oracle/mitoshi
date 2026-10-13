@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <>
       <H1>Range, Moonshot, Parlay, Boost</H1>
-      <Lead>Four more ways to call a Window, each priced from where the book puts the market now and how much it usually moves in the time left. Each settles on the same signed print as UP and DOWN.</Lead>
+      <Lead>Four more ways to call a Window, settled on the same signed print.</Lead>
       <H2>Range</H2>
       <P>Call a band the close lands inside — or outside. A narrower band is less likely to catch the close, so it pays a bigger multiple. The full payout is set aside up front, so it can never come up short.</P>
       <H2>Moonshot</H2>
@@ -17,7 +17,7 @@ export default function Page() {
       <P>Several legs on one ticket. The chances multiply down, so the payout multiplies up — and it is all or nothing: one miss and the stake is lost. The winning payout is set aside before the ticket is accepted.</P>
       <H2>Boost</H2>
       <P>A leveraged UP or DOWN: the reserve fronts the rest of the position and is repaid first from a sale. Your loss is capped at your stake, and a boost can knock out before the Window closes.</P>
-      <Note>Range, Moonshot and Parlay price against the depth the maker vault quotes; when the book is too thin to price a ticket, it says so and takes nothing. Range and Moonshot ask your passkey on each call.</Note>
+      <Note>Too thin a book to price a ticket: it says so and takes nothing.</Note>
     </>
   );
 }

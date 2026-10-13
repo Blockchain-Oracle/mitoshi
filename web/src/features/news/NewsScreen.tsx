@@ -1,9 +1,13 @@
 // `/news` — Owarine 90a91d71 `features/news/{NewsScreen,NewsHead,NewsFeed}.tsx` (D-226) on Mitoshi's wire, read at
 // request time (`readWire()`: Finnhub for the stocks, Cointelegraph and Decrypt for the coins): the live mark, the head
 // (narrowed by `?symbol=`), one lead story at display size with its tone edge, marks and cashtags, a rule, then the
-// numbered wire rows. The 21st carousel is gone; the credit stays, one line.
-import { isTickerSymbol, type TickerSymbol } from "@cwf/core";
+// numbered wire rows. The 21st carousel is gone; the credit stays, one line. R4-10 (D-227): a ticker strip under the head,
+// Trade it on a narrowed head, and an empty wire that says when a source is down.
+import { isTickerSymbol, TICKER_SYMBOLS, type TickerSymbol } from "@cwf/core";
+import Link from "next/link";
 import { connection } from "next/server";
+import { pillButtonVariants } from "@/components/kit";
+import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { NEWS, timeAgo } from "./copy";
 import { articleSymbols, Cashtags, MarkCluster, NewsRow, Tone } from "./NewsRow";
 import { readWire, type Article } from "./wire";
@@ -16,14 +20,43 @@ function Meta({ article, now }: { article: Article; now: number }) {
   );
 }
 
+/** The head; narrowed to a ticker it carries THE action, Trade it (R4-10, D-227: `NEWS.trade` was never wired). */
 export function NewsHead({ symbol }: { symbol: TickerSymbol | null }) {
   return (
     <>
-      <h1 className="news-title">
-        {symbol ?? NEWS.heading} <span className="signal">{NEWS.headingAccent}</span>
-      </h1>
+      <div className="news-head-row">
+        <h1 className="news-title">
+          {symbol ?? NEWS.heading} <span className="signal">{NEWS.headingAccent}</span>
+        </h1>
+        {symbol ? (
+          <Link href={`/trade/${symbol}`} className={pillButtonVariants({ tone: "accent", size: "md" })} data-primary-action>
+            {NEWS.trade}
+          </Link>
+        ) : null}
+      </div>
       <div className="page-title-jp" lang="ja">{NEWS.headingJp}</div>
+      <TickerStrip symbol={symbol} />
     </>
+  );
+}
+
+/** Every listed ticker as a word with its mark, linking `?symbol=` — the kit's TextTabs look, as links (a word that goes to
+ *  another URL is a link with `aria-current`, not a tab); it scrolls sideways on a phone. */
+function TickerStrip({ symbol }: { symbol: TickerSymbol | null }) {
+  return (
+    <nav aria-label={NEWS.tickers} className="kit-tabs news-tickers">
+      <div className="kit-tabs-list">
+        <Link href="/news" className="kit-tab" aria-current={symbol === null ? "page" : undefined}>
+          {NEWS.all}
+        </Link>
+        {TICKER_SYMBOLS.map((s) => (
+          <Link key={s} href={`/news?symbol=${s}`} className="kit-tab news-ticker" aria-current={symbol === s ? "page" : undefined}>
+            <AssetDisc asset={s} className="news-ticker-mark" />
+            {s}
+          </Link>
+        ))}
+      </div>
+    </nav>
   );
 }
 
@@ -52,7 +85,8 @@ export async function NewsFeed({ symbol }: { symbol: string | null }) {
   const now = wire.readAtMs;
   const pinned = symbol && isTickerSymbol(symbol) ? symbol : null;
   const articles = pinned ? wire.articles.filter((a) => a.symbols.includes(pinned)) : wire.articles;
-  if (articles.length === 0) return <p className="news-quiet">{NEWS.quiet}</p>;
+  // A source that didn't answer is said so, never "quiet" (Owarine `newsQuietLine`).
+  if (articles.length === 0) return <p className="news-quiet">{wire.partial ? NEWS.partial : NEWS.quiet}</p>;
   const [lead, ...rest] = articles as [Article, ...Article[]];
   const leadSymbols = articleSymbols(lead.symbols);
   return (

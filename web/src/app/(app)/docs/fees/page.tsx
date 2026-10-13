@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <>
       <H1>Fees</H1>
-      <Lead>The price you see is the book&apos;s: Mitoshi adds no trading or settlement fee, and pays your taps&apos; network fees.</Lead>
+      <Lead>No trading or settlement fee; your taps&apos; network fees are paid.</Lead>
       <Table
         head={["Fee", "Who pays", "How much"]}
         rows={[
