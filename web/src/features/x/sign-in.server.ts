@@ -10,9 +10,21 @@ import { accessToken, authenticateUrl, authorizeUrl, exchangeCode, pkcePair, ran
 import { signSession, X_NATIVE_TTL_SEC, X_OAUTH_TTL_SEC } from "./session.server";
 import { isHandoffChallenge, isHandoffVerifier, X_DEFAULT_RETURN, type XReason } from "./protocol";
 
-/** A path on this site only: `/…`, never `//host` or a scheme. */
+const RETURN_BASE = "https://return.invalid";
+
+/**
+ * A path on this site only: `/…`, never `//host`, a scheme, a backslash or a control character — the URL parser drops
+ * tabs and newlines, so `/\t/evil.com` would otherwise resolve to `https://evil.com/` (review, D-227). What comes back
+ * is the path as the parser reads it, and only when it stays on this origin.
+ */
 export function safeReturn(raw: string | null | undefined): string {
-  return raw && raw.startsWith("/") && !raw.startsWith("//") && !raw.includes("\\") && raw.length <= 300 ? raw : X_DEFAULT_RETURN;
+  if (!raw || raw.length > 300 || !raw.startsWith("/") || raw.startsWith("//") || /[\\\s\u0000-\u001F\u007F]/.test(raw)) return X_DEFAULT_RETURN;
+  try {
+    const url = new URL(raw, RETURN_BASE);
+    return url.origin === RETURN_BASE ? `${url.pathname}${url.search}${url.hash}` : X_DEFAULT_RETURN;
+  } catch {
+    return X_DEFAULT_RETURN;
+  }
 }
 
 export interface BeginInput {

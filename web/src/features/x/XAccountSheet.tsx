@@ -6,6 +6,7 @@ import { formatBaseUnits, USD_DECIMALS } from "@cwf/core";
 import Link from "next/link";
 import { PillButton, pillButtonVariants } from "@/components/kit/PillButton";
 import { Masked } from "@/components/kit/Masked";
+import { shortAddress } from "@/providers/wallet/format";
 import { TFX, XCARD } from "./copy";
 import { XGlyph } from "./parts";
 import { useXGrant } from "./useXGrant";
@@ -32,6 +33,8 @@ export function XAccountSheet() {
           <Link href="/trade-from-x" className={pillButtonVariants({ tone: "ink", size: "md" })}>{XCARD.manage}</Link>
           <PillButton tone="ghost" size="md" disabled={link.busy !== ""} onClick={() => void link.unlink()}>{TFX.unlink}</PillButton>
         </div>
+      ) : link.linkedElsewhere ? (
+        <p className="xt-note">{TFX.otherAccount(shortAddress(link.linkedElsewhere))}</p>
       ) : xs ? (
         <PillButton tone="accent" size="md" disabled={link.busy !== ""} onClick={() => void link.link()}>{TFX.linkAs(xs.handle ?? xs.authorId)}</PillButton>
       ) : link.status?.configured ? (

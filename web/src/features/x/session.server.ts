@@ -42,11 +42,16 @@ export function readSession(secret: string, token: string | null | undefined, no
   }
 }
 
-/** One cookie value from a request's `cookie` header. */
+/** One cookie value from a request's `cookie` header; a malformed escape reads as no cookie, never a thrown 500. */
 export function cookieOf(req: Request, name: string): string | null {
   for (const part of (req.headers.get("cookie") ?? "").split(";")) {
     const at = part.indexOf("=");
-    if (at > 0 && part.slice(0, at).trim() === name) return decodeURIComponent(part.slice(at + 1).trim());
+    if (at <= 0 || part.slice(0, at).trim() !== name) continue;
+    try {
+      return decodeURIComponent(part.slice(at + 1).trim());
+    } catch {
+      return null;
+    }
   }
   return null;
 }

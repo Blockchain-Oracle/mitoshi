@@ -4,6 +4,7 @@
 // before a mention can spend. Sign-in at the end (D-224): linking asks for the Mitoshi account only when tapped, in the
 // action's words, and finishes once the account is there. In the app, X's sign-in runs in the system browser (SM2).
 import { xLinkMessage, xUnlinkMessage, type Address } from "@cwf/core";
+import { diagnose } from "@cwf/markets/errors";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { openExternal } from "@/lib/open-external";
@@ -24,10 +25,15 @@ export interface XLink {
   busy: XBusy;
   error: string;
   ok: string;
-  /** Signed in with X here, and this account isn't its route yet. */
+  /** Signed in with X here, and this account isn't its route yet (and can be: no other account holds it). */
   needsLink: boolean;
   /** The signed-in X account routes to this account. */
   linkedHere: boolean;
+  /**
+   * The signed-in X account routes to ANOTHER account: the server refuses to move it (only that account can unlink), so
+   * the screens offer signing in as it instead of a link the bind route would always refuse.
+   */
+  linkedElsewhere: Address | null;
   start: (returnTo: string) => Promise<void>;
   link: () => Promise<void>;
   unlink: () => Promise<void>;
@@ -67,6 +73,15 @@ export function clearHandoff(): void {
   }
 }
 
+/**
+ * The person closed the passkey or wallet prompt (or the browser refused one without a tap — the return from X signs
+ * on its own, and Safari wants a gesture: the Link button stays for that).
+ */
+function promptClosed(cause: unknown): boolean {
+  const e = (cause ?? {}) as { name?: unknown; message?: unknown };
+  return diagnose(cause).kind === "user-rejected" || /NotAllowedError|reject|denied|cancel/i.test(`${String(e.name ?? "")} ${String(e.message ?? "")}`);
+}
+
 async function post(path: string, body: unknown): Promise<{ ok?: boolean; reason?: string; boundAccount?: string; authorize?: string }> {
   const res = await fetch(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
   const json = (await res.json().catch(() => ({}))) as { ok?: boolean; reason?: string; boundAccount?: string; authorize?: string };
@@ -98,8 +113,10 @@ export function useXLink(): XLink {
 
   const xSession = status?.session ?? null;
   const binding = status?.binding ?? null;
-  const linkedHere = Boolean(account && binding && xSession && binding.authorId === xSession.authorId && binding.account.toLowerCase() === account.toLowerCase());
-  const needsLink = Boolean(xSession && !linkedHere);
+  const ownRoute = binding && xSession && binding.authorId === xSession.authorId ? binding : null;
+  const linkedHere = Boolean(account && ownRoute && ownRoute.account.toLowerCase() === account.toLowerCase());
+  const linkedElsewhere = account && ownRoute && !linkedHere ? ownRoute.account : null;
+  const needsLink = Boolean(xSession && !linkedHere && !linkedElsewhere);
 
   const start = useCallback(async (returnTo: string) => {
     setError("");
@@ -112,10 +129,11 @@ export function useXLink(): XLink {
       const verifier = randomVerifier();
       localStorage.setItem(HANDOFF_KEY, JSON.stringify({ verifier, returnTo }));
       const answer = await post("/api/x/start", { app: await s256(verifier), return: returnTo });
-      if (!answer.ok || !answer.authorize) throw new Error(xOAuthMessage(answer.reason ?? "server"));
-      openExternal(answer.authorize);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : xOAuthMessage("server"));
+      if (answer.ok && answer.authorize) openExternal(answer.authorize);
+      else setError(xOAuthMessage(answer.reason ?? "server"));
+    } catch {
+      // Storage blocked or the network down: the line X's own failures use, never the browser's raw text.
+      setError(xOAuthMessage("server"));
     } finally {
       setBusy("");
     }
@@ -123,22 +141,30 @@ export function useXLink(): XLink {
 
   const sign = useCallback(async (kind: "link" | "unlink") => {
     if (!account || !xSession) return;
+    const failed = kind === "link" ? X_REFUSE.linkFailed : X_REFUSE.unlinkFailed;
     setError("");
     setOk("");
     setBusy(kind);
     try {
       const issuedAtMs = Date.now();
       const fields = { network: webEnv.markets.network, authorId: xSession.authorId, account: account as Address, issuedAtMs };
-      const signature = await shell.signMessage(kind === "link" ? xLinkMessage(fields) : xUnlinkMessage(fields));
+      let signature: `0x${string}`;
+      try {
+        signature = await shell.signMessage(kind === "link" ? xLinkMessage(fields) : xUnlinkMessage(fields));
+      } catch (cause) {
+        // A closed passkey or wallet prompt says nothing; any other signer failure is our line, never its raw text.
+        if (!promptClosed(cause)) setError(failed);
+        return;
+      }
       const answer = await post(`/api/x/${kind === "link" ? "bind" : "unlink"}`, { account, issuedAtMs, signature });
       if (!answer.ok) {
-        throw new Error(answer.reason === X_REFUSE.linkedElsewhere && answer.boundAccount ? TFX.otherAccount(shortAddress(answer.boundAccount as Address)) : answer.reason || (kind === "link" ? X_REFUSE.linkFailed : X_REFUSE.unlinkFailed));
+        setError(answer.reason === X_REFUSE.linkedElsewhere && answer.boundAccount ? TFX.otherAccount(shortAddress(answer.boundAccount as Address)) : answer.reason || failed);
+        return;
       }
       setOk(kind === "unlink" ? TFX.unlinked : "");
       await refresh();
-    } catch (cause) {
-      const message = cause instanceof Error ? cause.message : String(cause);
-      setError(/reject|denied|cancel/i.test(message) ? "" : message);
+    } catch {
+      setError(failed);
     } finally {
       setBusy("");
     }
@@ -152,14 +178,14 @@ export function useXLink(): XLink {
       session.connectFor(TFX.linkIntent(xSession.handle ?? xSession.authorId));
       return;
     }
-    await sign("link");
-  }, [account, xSession, session, sign]);
+    if (needsLink) await sign("link");
+  }, [account, xSession, needsLink, session, sign]);
   useEffect(() => {
-    if (wantsLink.current && account && xSession && !linkedHere && busy === "") {
+    if (wantsLink.current && account && xSession && busy === "") {
       wantsLink.current = false;
-      void sign("link");
+      if (needsLink) void sign("link");
     }
-  }, [account, xSession, linkedHere, busy, sign]);
+  }, [account, xSession, needsLink, busy, sign]);
 
   // Back from X: `?x=1` finishes the link when an account is here; `?x=err` says why in words.
   const bounced = useRef(false);
@@ -176,5 +202,5 @@ export function useXLink(): XLink {
     window.history.replaceState(window.history.state, "", `${window.location.pathname}${params.size ? `?${params}` : ""}${window.location.hash}`);
   }, [q.isLoading, needsLink, account, sign]);
 
-  return { status, loading: q.isLoading, unreadable: q.isError && !status, busy, error, ok, needsLink, linkedHere, start, link, unlink: () => sign("unlink"), refresh };
+  return { status, loading: q.isLoading, unreadable: q.isError && !status, busy, error, ok, needsLink, linkedHere, linkedElsewhere, start, link, unlink: () => sign("unlink"), refresh };
 }

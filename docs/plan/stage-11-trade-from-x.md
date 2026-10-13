@@ -43,6 +43,19 @@
   turns cards off. Checked live: the card for the live fill, then an upload as @Mitoshi_app (media id, nothing posted).
 - **F-S11-07 — the env examples lacked the X names.** `infra/env/{web,ops}.testnet.example` (the names `coolify app env
   sync` follows) now list them; the web reads no `X_BEARER_TOKEN`, so it is ops-only in the matrix.
+- **F-S11-08 — adversarial review, fixed.** (1) Open redirect: the URL parser drops tabs and newlines, so
+  `/api/x/start?return=/%09/evil.com` passed the return-path guard (Owarine's has the same hole) and landed on
+  evil.com; `safeReturn` now refuses whitespace and control characters and keeps only a path that resolves on this
+  origin. (2) An X account linked to another Mitoshi account was offered "Link here instead", which the bind route
+  always refuses (only that account can unlink, Owarine's rule); the step now names that account and offers signing in
+  as it, and the return from X no longer starts a signature that can't succeed. (3) A call read more than one cadence
+  after it was posted (an outage, X's rate limit, a renewed session) was placed on whichever Window traded then; it is
+  refused `call-expired` ("Too late"). (4) A repost of a call — its author's own included — is a new post id and would
+  have traded again; reposts are skipped like the bot's replies. (5) Owarine's `canExecute` gate wasn't wired: a send
+  left `unknown` now holds the rest of its pass too, not only the next pass. (6) Cash out disappeared while the relay
+  was down or the grant expired; it now stays whenever the X grant holds money. (7) A closed passkey prompt showed the
+  browser's raw WebAuthn text, and other signer or network failures their raw messages; they now say nothing or the
+  route's own line. (8) A malformed cookie escape threw a 500 from the X routes.
 
 ## Handoff
 

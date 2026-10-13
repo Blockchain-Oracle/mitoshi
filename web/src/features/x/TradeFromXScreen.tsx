@@ -58,13 +58,18 @@ export function TradeFromXScreen() {
         <Step n={2} title={TFX.steps.link} state={stateOf(2)} past={step > 2}>
           {link.linkedHere ? (
             <span className="xt-done">{TFX.linked(me)}</span>
-          ) : (
+          ) : link.linkedElsewhere ? (
+            // Only the account it routes to can unlink it (the bind route refuses a move): sign in as that one.
             <>
-              {status?.binding && session.address && status.binding.account.toLowerCase() !== session.address.toLowerCase() ? <p className="xt-note">{TFX.otherAccount(shortAddress(status.binding.account))}</p> : null}
-              <PillButton tone="accent" size="lg" block disabled={link.busy !== ""} aria-busy={link.busy === "link"} onClick={() => void link.link()}>
-                {link.busy === "link" ? TFX.linking : status?.binding && session.address ? TFX.relink(me) : TFX.linkAs(me)}
+              <p className="xt-note">{TFX.otherAccount(shortAddress(link.linkedElsewhere))}</p>
+              <PillButton tone="accent" size="lg" block onClick={() => session.connectFor(TFX.signInAs(shortAddress(link.linkedElsewhere!)))}>
+                {TFX.signInAs(shortAddress(link.linkedElsewhere))}
               </PillButton>
             </>
+          ) : (
+            <PillButton tone="accent" size="lg" block disabled={link.busy !== ""} aria-busy={link.busy === "link"} onClick={() => void link.link()}>
+              {link.busy === "link" ? TFX.linking : TFX.linkAs(me)}
+            </PillButton>
           )}
         </Step>
         <Step n={3} title={TFX.steps.fund} state={stateOf(3)} past={step > 3}>

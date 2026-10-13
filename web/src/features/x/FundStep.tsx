@@ -1,7 +1,8 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/x/{CapabilityReceipt,XPermissionPanel}.tsx — S11 (D-227): the X balance
 // as one EXECUTOR grant. The CTA is the action with its amount ("Enable X trading · $5"); with no account it opens
-// sign-in for that order (D-224); the capability is one line, not a ledger. Renew covers expired and stale grants.
+// sign-in for that order (D-224); the capability is one line, not a ledger. Renew covers expired and stale grants; Cash
+// out stays whenever the grant holds money, the relay down included (review, D-227).
 import { formatBaseUnits, USD_DECIMALS, type Address } from "@cwf/core";
 import { useState } from "react";
 import { PillButton } from "@/components/kit/PillButton";
@@ -24,11 +25,11 @@ export function FundStep({ grant, executor, disabled }: { grant: XGrantState; ex
   const state = grant.permission(executor);
   const busy = grant.busy !== "";
 
-  if (!executor) return <p className="xt-note">{TFX.noExecutor}</p>;
-  if (grant.deployed === false) return <p className="xt-note">{TFX.noExecutor}</p>;
+  const held = grant.grant && grant.grant.budgetBase > 0n ? grant.grant.budgetBase : null;
 
   const fund = async () => {
     setSaid("");
+    if (!executor) return;
     if (!session.address) return session.connectFor(TFX.fundIntent(usd(amountBase)));
     const outcome = await grant.fund(amountBase, executor);
     if (outcome?.status === "confirmed") {
@@ -42,6 +43,26 @@ export function FundStep({ grant, executor, disabled }: { grant: XGrantState; ex
     const outcome = await grant.cashOut();
     if (outcome?.status === "confirmed") setSaid(TFX.cashedOut(usd(before)));
   };
+  // Stop anytime: whatever the relay says (down, another executor, an expired grant), money in X trading can come back.
+  const cashOutButton = (
+    <PillButton tone="ghost" size="md" disabled={busy || held === null} aria-busy={grant.busy === "cashout"} onClick={() => void cashOut()}>{TFX.cashOut}</PillButton>
+  );
+  const done = (
+    <>
+      {grant.tx.state.kind === "failed" ? <TxFailureCard state={grant.tx.state} onRetry={() => grant.tx.dispatch({ type: "reset" })} /> : null}
+      {said ? <p className="xt-ok" role="status">{said}</p> : null}
+    </>
+  );
+
+  if (!executor || grant.deployed === false) {
+    return (
+      <>
+        <p className="xt-note">{TFX.noExecutor}</p>
+        {held !== null ? <div className="xt-row">{cashOutButton}</div> : null}
+        {done}
+      </>
+    );
+  }
 
   const chips = (
     <div className="xt-chips" role="group" aria-label={TFX.balance}>
@@ -64,11 +85,14 @@ export function FundStep({ grant, executor, disabled }: { grant: XGrantState; ex
           {chips}
           <div className="xt-row">
             <PillButton tone="ink" size="md" disabled={disabled || busy} aria-busy={grant.busy === "fund"} onClick={() => void fund()}>{TFX.addCta(usd(amountBase))}</PillButton>
-            <PillButton tone="ghost" size="md" disabled={busy || grant.grant.budgetBase === 0n} aria-busy={grant.busy === "cashout"} onClick={() => void cashOut()}>{TFX.cashOut}</PillButton>
+            {cashOutButton}
           </div>
         </>
       ) : state === "expired" || state === "mismatch" || state === "update" ? (
-        <PillButton tone="accent" size="md" disabled={disabled || busy} aria-busy={grant.busy === "renew"} onClick={() => void grant.renew(executor)}>{TFX.renew}</PillButton>
+        <div className="xt-row">
+          <PillButton tone="accent" size="md" disabled={disabled || busy} aria-busy={grant.busy === "renew"} onClick={() => void grant.renew(executor)}>{TFX.renew}</PillButton>
+          {held !== null ? cashOutButton : null}
+        </div>
       ) : (
         <>
           {chips}
@@ -76,8 +100,7 @@ export function FundStep({ grant, executor, disabled }: { grant: XGrantState; ex
           <p className="xt-note">{TFX.can} {TFX.terms}</p>
         </>
       )}
-      {grant.tx.state.kind === "failed" ? <TxFailureCard state={grant.tx.state} onRetry={() => grant.tx.dispatch({ type: "reset" })} /> : null}
-      {said ? <p className="xt-ok" role="status">{said}</p> : null}
+      {done}
     </>
   );
 }

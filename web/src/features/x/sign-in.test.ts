@@ -131,5 +131,11 @@ describe("X sign-in (OAuth 2.0 + PKCE, state server-side)", () => {
     expect(safeReturn("//evil.com")).toBe("/trade-from-x");
     expect(safeReturn("https://evil.com")).toBe("/trade-from-x");
     expect(safeReturn("/claim")).toBe("/claim");
+    expect(safeReturn("/settings/account?tab=x#x")).toBe("/settings/account?tab=x#x");
+    // The URL parser drops tabs and newlines: each of these would land on evil.com.
+    for (const raw of ["/\t/evil.com", "/\n/evil.com", "/\r/evil.com/x", "/\\evil.com", "/ /evil.com"]) {
+      expect(safeReturn(raw)).toBe("/trade-from-x");
+      expect(new URL(safeReturn(raw), "https://testnet.mitoshi.xyz").host).toBe("testnet.mitoshi.xyz");
+    }
   });
 });
