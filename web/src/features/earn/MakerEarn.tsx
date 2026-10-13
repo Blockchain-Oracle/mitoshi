@@ -53,7 +53,7 @@ function Page({ vault }: { vault: MakerVaultState }) {
       action={(keypad) => (
         <ActionCard sheet={sheet} words={WORDS} writes={writes} signedIn={signedIn} signer={signerOf(session.kind)} walletBase={balance?.ok ? balance.value.spendableBase : null} held={held} unsettledExpired={unsettledExpired} onSignIn={session.connectFor} keypad={keypad} />
       )}
-      position={signedIn && hasPosition(held, ledgerValue) ? <SupplyPosition sheet={sheet} held={held} ledger={ledgerValue} /> : null}
+      position={signedIn && hasPosition(held, ledgerValue) ? <SupplyPosition sheet={sheet} held={held} ledger={ledgerValue} ledgerPending={ledger === null} /> : null}
       map={
         <ReadingBoundary reading={windows} shape="table">
           {(w) => <CapitalMap vault={vault} open={w.open} history={w.history} nowMs={nowMs} writes={writes} onSignIn={session.connectFor} />}

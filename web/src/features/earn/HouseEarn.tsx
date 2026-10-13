@@ -72,7 +72,7 @@ function Page({ kind, words, reading }: { kind: HouseKind; words: ReserveWords; 
       action={(keypad) => (
         <ActionCard sheet={sheet} words={words} writes={writes} signedIn={signedIn} signer={signerOf(session.kind)} walletBase={balance?.ok ? balance.value.spendableBase : null} held={held} onSignIn={session.connectFor} keypad={keypad} />
       )}
-      position={signedIn && hasPosition(held, ledgerValue) ? <SupplyPosition sheet={sheet} held={held} ledger={ledgerValue} /> : null}
+      position={signedIn && hasPosition(held, ledgerValue) ? <SupplyPosition sheet={sheet} held={held} ledger={ledgerValue} ledgerPending={ledger === null} /> : null}
       map={<ReserveBounds sheet={sheet} words={words} rows={reading.rows} capBps={reading.capBps} slots={reading.slots} />}
     />
   );

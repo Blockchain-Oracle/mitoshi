@@ -69,6 +69,8 @@ export const EARN = {
     realized: "Realized",
     shares: "Shares",
     at: (price: string) => `@ ${price}`,
+    /** The ledger can't be read: not known, never a bar that waits forever. */
+    unknown: "—",
   },
   windows: {
     capitalLabel: "Vault capital by asset",
