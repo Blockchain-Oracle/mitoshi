@@ -21,7 +21,8 @@ owner's direction. Where later sessions interpret, they check back against this.
 > that stocks now exist on Tempo."
 
 - **Real stock tokens on Tempo** — bridged/mirrored from a chain where they exist (Option A approved).
-  Users can **buy stocks** in the app.
+  Users can **buy stocks** in the app. *(Superseded 2026-10-13 by D-231: the bridge left the product; see the dated
+  section below.)*
 - **Themed strategies users scroll through** — "these AI stocks, these gold stocks…"; energy, finance,
   AI full stack, digital, gold (Glider's ecosystem as the reference for the shape).
 - **"You can use your AI agent to trade on these stocks… on Tempo."** An agent trades a theme's
@@ -48,7 +49,8 @@ owner's direction. Where later sessions interpret, they check back against this.
 ## 2026-09-29 — UI direction and standing instructions
 
 - **Owner answer 9 (D-009): keep Masayume's look, revamp the UX.** Masayume's identity (colours, type, nav, layout) and
-  every flow stay; new surfaces (stocks, bridge, reserves, themes, launch, settings, mobile) are built from 21st.dev
+  every flow stay; new surfaces (stocks, bridge, reserves, themes, launch, settings, mobile — the bridge and reserves
+  removed by D-231 on 2026-10-13) are built from 21st.dev
   components restyled to Masayume's tokens, and ported screens with weak UX are rebuilt from 21st components too.
 - **Standing instructions** (applied to every stage of the build plan): UX matters "1,000%"; search 21st.dev for the right
   component and revamp it — don't design components from imagination; "understand the libraries" means reading their docs
@@ -67,3 +69,11 @@ judges) can tell them apart — e.g. "calls" vs "themes". Owner to choose.
 
 Draft direction only: *stocks and prediction markets, now live on Tempo* — with the "first stocks on
 Tempo" claim and the on-chain agent receipts (MPP) as the two proofs. To be written after the architecture.
+
+## 2026-10-13 — D-231: no bridge; stocks are Windows
+
+The owner removed the Robinhood ↔ Base Sepolia ↔ Tempo bridge from the product (D-231). Option A is withdrawn: no stock
+token is held or swapped on Mitoshi. Pillar 2 is stocks you **call** on Tempo — nine US stocks as UP/DOWN Windows in NYSE
+hours, seven of them 24/7 on RedStone's 24/7 feeds, and the weekend Gap, each settled on RedStone's signed print. The
+true claim is "stock markets on Tempo", not "stock tokens on Tempo". Themes stay, rebuilt as baskets an agent trades as
+calls on their stocks' Windows. The bridge's contracts stay deployed on testnet, out of the app and the docs.

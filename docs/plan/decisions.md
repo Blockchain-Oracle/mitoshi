@@ -2108,6 +2108,56 @@ D-060's layout.
 5. **Returning users** sign in again on the new origin with the same passkey: the session cookie, one-tap keys and
    DEMO's paper balance belong to the old origin.
 
+### D-231 — the bridge is removed; stocks are Windows; themes become baskets on stock Windows (owner, 2026-10-13)
+
+The owner, after the round-6 live review: the Robinhood ↔ Base Sepolia ↔ Tempo bridge leaves the product. It never
+worked end to end — the Robinhood side was never deployed (it waited on test ETH since S14c), LayerZero testnet delivery
+took from 23 s to 7.7 days, and the owner doesn't want it. The plan and its live evidence:
+`r4-specs/bridge-removal-map.json` (`result.plan`, 18 steps). Owner rule: every visible feature works end to end, names
+its network where chains appear and uses real logos — or it is removed.
+
+1. **Removed from the app:** `/bridge`, `/reserves` (Backing) and their API routes (`/api/bridge`, `/api/bridge/<guid>`,
+   `/api/reserves`, `/api/index/stocks/events`); the More and ⌘K entries; Portfolio's In-flight section; the ticker
+   hub's Bridge and Reserves links; Add money's "Bring stock tokens from Robinhood" rail; the side-chain wallet (the
+   Robinhood Chain row in the account menu and Account & keys, the sign-in modal's link mode — wagmi's chains are
+   `[Tempo]` only); the multi-leg `settled` tx state; NFLX in the terminal's paused list (it was listed only as a bridge
+   ticker, D-107). Old links answer 308: `/bridge?t=<TSLA|AMZN|PLTR|AMD>` → `/tickers/<SYM>`, `/bridge` and `/reserves`
+   → `/markets` (removed, not moved: no `?note=moved`).
+2. **Removed from packages and ops:** `@cwf/core` `bridge`, `@cwf/markets/stocks` (and its `stocks/topology`,
+   `stocks-ops` exports), the `stocks` relay policy and `encodeBridgeIntent`, the side-chain exports, the Robinhood,
+   Base and LayerZero explorers and pinned constants; `@cwf/db`'s bridge and reserve stores (drop migrations
+   `bridge/0002`, `index/0008`; `0001_bridge.sql` and `0007_bridge_events.sql` stay — the log is append-only); the ops
+   actors **bridge-watch**, **reserve-watch** and **stock-sync**, the indexer's five `bridge <T>` followers, the
+   `stock-sync` role key and the `RH_RPC_HTTP_URL` / `BASE_SEPOLIA_RPC_HTTP_URL` env.
+3. **Contracts stay on chain, out of the app:** the Base Sepolia hop (84532), both LzPing probes and the five
+   TIP20MintBurnAdapter proxies move to `contracts/deployments/retired/` (codegen, invariants and the docs sync read only
+   numeric chain directories); their Solidity, scripts and tests, the `evm` Foundry profile and the side-chain RPC
+   endpoints go. Nothing is stranded: `totalDeferred` and `mintedNet` were 0 on every adapter and the Base contracts held
+   0 ETH. The Robinhood side (StockLockbox, StockSyncSender) was never deployed.
+4. **What stocks are now:** nine US stocks (AAPL, AMD, AMZN, GOOGL, META, MSFT, NVDA, PLTR, TSLA) as UP/DOWN Windows of
+   5, 15 and 60 minutes in NYSE hours, the same lanes 24/7 for seven of them on RedStone's `<T>---24_7` feeds (not AMD or
+   PLTR; the feeds pause around 04:00 ET), and the weekend Gap — each opened and settled on RedStone's signed print. The
+   chart's live line (Alpaca's IEX trades) settles nothing. No share or token changes hands. The claim is "stock markets
+   on Tempo", never "stock tokens on Tempo".
+5. **Themes stay, rebuilt** as `basket` strategies on the live StrategyRegistry that agent #82 trades as calls on their
+   members' regular and 24/7 Windows (map option B; A — house-minted stock tokens — breaks the no-paper-backing rule, C
+   cuts a feature the owner asked to revamp). The guarded v4 stock pools, the Mirrors, StockGuardHook/StockReference,
+   ThemeRegistry/ThemeRouter, theme-agent and reference-writer retire with that rebuild (package themes-basket, plan
+   steps 14–18); the house withdraws its ~$80k of bid-ladder positions (tokenIds 6–33) for maker depth.
+6. **Ship order (ops throws `unknown actor` for any `OPS_ACTORS` name it lacks):** first remove `bridge-watch`,
+   `reserve-watch` and `stock-sync` from the Coolify ops app's explicit `OPS_ACTORS` (27 names at the 2026-10-13 boot;
+   24 after) and from `OPS_DRY_ACTORS` if listed there, restart ops on the current image, then deploy ops (it applies
+   `bridge/0002` and `index/0008` at boot), web and the docs one at a time. `RH_RPC_HTTP_URL`,
+   `BASE_SEPOLIA_RPC_HTTP_URL` and `STOCK_SYNC_PRIVATE_KEY` were never set on the Coolify apps (checked 2026-10-13).
+
+Supersedes D-001 (stock-token source), D-020 (the bridge design) and D-080 (bridge gas); D-027 in part (the Robinhood
+Chain wallet of the two-wallet model); D-040 in part (bridge-completion pushes); D-105 §4–5 (the StockSync pauses) and
+D-107 (NFLX). Closes Q-009, Q-010 and Q-023, and the stock-token half of Q-008. The owner-actions rows for Robinhood
+faucet claims, test ETH and the LayerZero pathway request are closed as not needed.
+
+**Why:** a feature that can't run end to end is removed, not promised; the stocks pillar that is real today is the
+Windows.
+
 ## Open questions
 
 Defaults apply until answered; none is a scope cut.
@@ -2121,9 +2171,9 @@ Defaults apply until answered; none is a scope cut.
 | Q-005 | Settlement fee | Off (Agari) | S2.1 |
 | Q-006 | Open print before taker fills on chain (E-19) | Enforced | S2.1 |
 | Q-007 | 24/7 stock lane source; pre-IPO source | Provider 24/7 feeds labelled; pre-IPO paused honestly | S6 |
-| Q-008 | Geofence; personal eligibility + budget for mainnet Stock Tokens | US browse-only (+ CA/UK/CH for stocks); no mainnet stock purchase until answered | S1, S19 |
-| Q-009 | Testnet bridge route | Base Sepolia hop + request the direct pathway | S14c |
-| Q-010 | Robinhood pause → auto-pause the mirror | Display only | S14c |
+| Q-008 | Geofence; personal eligibility + budget for mainnet Stock Tokens (**the stock-token half closed 2026-10-13: D-231, no stock tokens**) | US browse-only (+ CA/UK/CH for stocks); no mainnet stock purchase until answered | S1, S19 |
+| Q-009 | Testnet bridge route (**closed 2026-10-13: D-231, the bridge is removed**) | Base Sepolia hop + request the direct pathway | S14c |
+| Q-010 | Robinhood pause → auto-pause the mirror (**closed 2026-10-13: D-231**) | Display only | S14c |
 | Q-011 | Data Streams subscriptions + testnet credentials; RedStone licence | RedStone primary; Streams-only names paused on testnet | S3, S6, S15b, S19 |
 | Q-012 | Indexer route | Own follower + Tempo Indexer API for analytics | S3.5 |
 | Q-013 | Idle-yield token | Honest "earns nothing" | S18 |
@@ -2136,7 +2186,7 @@ Defaults apply until answered; none is a scope cut.
 | Q-020 | Capped mainnet MPP wallet (USDC.e) for agents | None until approved (decisions labelled "unpaid") | S3.5, S9, S16a |
 | Q-021 | Also sponsor `EventVault.place` / `moveToPrivate` | Unchanged from Masayume's list (not sponsored) | S7 |
 | Q-022 | Engine deviations T01–T10 (A.7), incl. redeem auto-drains own orders, `UnknownRedStoneSigner` vector change, PD-2 knock-out rule for Boost | As designed | S2.1, S10c |
-| Q-023 | Mirror naming | "Bridged TSLA Stock Token (unofficial)" / `bTSLA`, own lettermark logo | S14c |
+| Q-023 | Mirror naming (**closed 2026-10-13: D-231**) | "Bridged TSLA Stock Token (unofficial)" / `bTSLA`, own lettermark logo | S14c |
 | Q-024 | StockGuard off-hours mode and bands | WIDEN (24/7 at pool price); 150/300/500 bps | S15b |
 | Q-025 | Theme creator fee cap | 50 bps | S16c |
 | Q-026 | ~~Hosting providers~~ answered by D-061 (Coolify) | Vercel, Fly, Neon, Upstash | S0 |

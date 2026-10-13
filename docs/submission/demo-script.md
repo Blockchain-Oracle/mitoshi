@@ -2,7 +2,7 @@
 
 One story, in the order a new user meets it. Screen notes are in [brackets]. Don't read them.
 Lines in (round brackets) are alternates: say one only when the screen shows that state.
-Just under 3 minutes: 539 spoken words at about 185 a minute (2:55), plus two two-second holds on the proof.
+Just under 3 minutes: 516 spoken words at about 185 a minute (2:47), plus two two-second holds on the proof.
 App: https://mitoshi.xyz · Docs: https://docs.mitoshi.xyz
 
 Checked against the code on `integration/t1` (f35d28d5) and the live app (web build 20261013142525) on
@@ -112,13 +112,9 @@ browser, from the chain. It matches. You don't have to trust me.
 ## 10 · STOCKS
 
    [Markets → NVDA (or TSLA). Point at the session cell ("Open · closes 16:00 ET") and the 24/7 chip. Tap UP once:
-   no prompt. Then More → Bridge (Robinhood → Tempo), and More → Themes. R6 #5 and #6: show Bridge and Themes only
-   once a bridge in and out is proven and the themes no longer read "Paused". Until then, cut the second paragraph.]
+   no prompt.]
 
 Same two buttons on stocks. NVIDIA, Tesla, Apple: in market hours, and around the clock.
-
-And stocks you can hold. Robinhood's stock tokens bridge to Tempo, and a theme is a basket an agent rebalances in
-your account.
 
 ## 11 · AGENTS
 
@@ -177,7 +173,6 @@ State read on 13 October 2026 at about 14:40 UTC.
 | 4 | #1: a countdown to the opening print; #4: no "pricing…" chip | Neither has shipped. A Window that waits for its print shows "Waiting for the opening print" with UP/DOWN disabled |
 | 6, 7, 8 | #2: the house quotes both sides with depth, and a thin book offers the size that fills | seed-maker quotes 38 of 76 open Windows. NVDA 5m showed UP "max $1.52". BTC 5m showed "No liquidity at this size" |
 | 7 | #3: "Getting a price…" made fast | Measured at 0.64 s p50 on 9 October (S23). The owner sees it slow now |
-| 10, second paragraph | #6: a bridge in and out; #5: themes fast and live | Bridge: "Robinhood side not live". Themes: all three read "Paused · stock prices halted" |
 | 11 | #9: real decision counts and a real countdown | #3 is fine: 20 decisions, the latest held with its reason. #2 reads "Decisions 0" and "NEXT READ 29865024:42" |
 | 12, phone | #8: /download with TestFlight and Play links | /download reads "iOS and Android builds are in progress" |
 | 13, 14 | #7: the docs on their own domain | docs.mitoshi.xyz answers 503 behind Traefik's default certificate. docs.testnet.mitoshi.xyz still serves |
@@ -204,11 +199,11 @@ whole journey.
 - **Start part 6 with 3 or more minutes left** on the BTC 5m Window, so it settles inside one cut. Part 7 needs an
   ETH 5m Window trading.
 - **For part 10, record in NYSE hours** (13:30–20:00 UTC), or on a stock's 24/7 lane outside its 04:00 ET pause. AMD
-  and PLTR have no 24/7 lane. NFLX is paused.
+  and PLTR have no 24/7 lane.
 - **House agent #3 has a decision from the last few minutes** (its Decisions tab).
 - **Use the dark theme and turn the terminal's music off** (⋯ → Music). Dismiss the "How the terminal works" tour
   once, before you record.
-- **Time the take.** If it runs past 3:00, cut part 10's second paragraph first, then part 4's last two sentences.
+- **Time the take.** If it runs past 3:00, cut part 4's last two sentences.
 
 ## Fallback proof, if a take fails
 

@@ -1,5 +1,8 @@
 # S14 — Stocks on Tempo: the bridge (14c wave 1; 14o after S3; 14w UI after S1, wired and gated after 14c.10, 14o, S4, S5; App. B.1–B.2)
 
+> **Removed from the product (D-231, 2026-10-13); kept as the record.** The contracts stay deployed on testnet
+> (`contracts/deployments/retired/`). The §14c.13 A LayerZero request is not to be sent.
+
 - [ ] 14c.1–2 Spike X1 (`src/lz/LzPing.sol`, dummy OFT round trip).
 - [x] 14c.3 `src/common/{BridgeTypes,BridgeRateLimiter,StockSyncCodec}.sol` + codec fuzz tests.
 - [x] 14c.4 `src/robinhood/StockLockbox.sol` + the B.6 lockbox tests. 14c.5 `src/robinhood/StockSyncSender.sol` (staticcall probes).

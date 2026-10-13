@@ -1,5 +1,13 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
+**2026-10-13, D-231 (owner): the bridge is removed.** The Robinhood ↔ Base Sepolia ↔ Tempo bridge, `/bridge`,
+`/reserves` (Backing), their API routes, the side-chain wallet, the stock sync and the ops actors bridge-watch,
+reserve-watch and stock-sync leave the product (branch `r6/r6-no-bridge`); old `/bridge` and `/reserves` links 308 to
+`/tickers/<SYM>` or `/markets`. The contracts stay on testnet, recorded in `contracts/deployments/retired/`. Stocks are
+UP/DOWN Windows on RedStone's signed prints, 24/7 for seven of them. Themes move to baskets an agent trades as calls on
+their stocks' Windows (package themes-basket). Ship order: trim `OPS_ACTORS` first (ops throws on an unknown name),
+then ops, web, docs one at a time — see `decisions.md` D-231.
+
 **2026-10-13, D-228 (owner): one address, `mitoshi.xyz` — the code half is on the trunk. The app at the apex
 (`www.` and the old `testnet.` 301 to it, `/.well-known/*` answers on every host), ops and the stream at `ops.` and
 `stream.mitoshi.xyz`, the guides at `docs.mitoshi.xyz`; the retired `*.testnet.` names only redirect. "Testnet" left
@@ -59,7 +67,7 @@ S6 steps 1–9 deployed, its gate runs over the weekend and Monday's session).
   (Parlay, Range + Moonshot, Boost, private desk live on Moderato; web tickets, `/parlay`, `/games/range`,
   `/games/moonshot`, the Public/Private ticket route + desk on Portfolio, `/surface`; D-165…D-177). Trunk gates at
   `2b5b053`: typecheck, invariants, codegen, tokens, vitest 1365 + db 8, `next build` 68/68, route budgets 54/54.
-- **S0 and S2 gates passed.** On the trunk (e1ab0d3): S2 engine, S3 venue ops (live on Coolify; gate: see below), S3.5 clients, S14c bridge (RH legs wait for testnet ETH), S15a v4 + encoder, S15b/c guard +
+- **S0 and S2 gates passed.** On the trunk (e1ab0d3): S2 engine, S3 venue ops (live on Coolify; gate: see below), S3.5 clients, S14c bridge (removed, D-231), S15a v4 + encoder, S15b/c guard +
   pools, S16c themes contracts (configured), S17a/b launchpads, S7 EventVault contracts, S1 up to 05990e6.
   **S7 merged (546a8ed, gate passed on Moderato); web
   and ops deployed (ops fffc58f 2026-09-30 ~13:50Z: vault index migration applied, vault crank live).** **S3 gate NOT
@@ -261,9 +269,9 @@ moment the owner has the key; the ops container checks `/livez`, so a RedStone o
 
 See `owner-actions.md` (open rows). **New (S13):** a model key for Sensei on the testnet web app (`ANTHROPIC_API_KEY`),
 and Coolify's image retention for the web and ops apps (the box filled its disk on 2026-10-10, F-S13-04). **First: RedStone's authenticated-gateway key (form in owner-actions, D-210) — the
-public gateways stop on 2026-10-29 and already refuse in daily windows.** Then: Robinhood testnet faucet claims (X11) and test ETH for the S14c legs; passkey runs on
+public gateways stop on 2026-10-29 and already refuse in daily windows.** Then: passkey runs on
 your own device (S1, S4 gate 2, S15, S16); the Cloudflare country header for the live geofence; the capped mainnet MPP
-wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §14c.13 A).
+wallet (Q-020). The bridge's asks (Robinhood faucet claims, test ETH, the LayerZero request) are closed: D-231.
 
 ## Next up
 
@@ -276,6 +284,6 @@ wallet (Q-020); the LayerZero pathway request (draft in `stage-14-bridge.md` §1
    Next, in order: S20's videos (footage and scripts are ready for the owner's voice) and the submission (due
    2026-10-12 23:59 PT); S5's remaining surfaces (`/portfolio/edge`, share cards, OG images, profile); S23g's
    leaderboard drawer on S5's data (now live); then the S23 gate's open list (above).
-4. The stages with no commits yet, per plan §7: S5, S6, S11, S12, S13, S14o/S14w, S15d/e, S16a, SM1–SM5, S18–S21 —
+4. The stages with no commits yet, per plan §7: S5, S6, S11, S12, S13, S15d/e, S16a, SM1–SM5, S18–S21 —
    with S20 (public story and submission; due 2026-10-12 23:59 PT) sequenced alongside, its captures shot on the
    revamped UI.
