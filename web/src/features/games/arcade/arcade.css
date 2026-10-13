@@ -54,27 +54,9 @@
 .ar-calm { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
 .ar-calm-label { font-size: 13px; font-weight: 600; color: var(--white); }
 .ar-calm-hint { font-family: var(--font-data); font-size: 11px; color: var(--gray-500); }
-.ar-honesty { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.04em; color: var(--gray-500); }
-.ar-board { display: flex; flex-direction: column; gap: 10px; border-radius: 14px; padding: 14px 16px; border: 1px solid var(--color-hairline); background: var(--color-surface-1); }
-.ar-board-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.ar-board-title { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white); font-stretch: 100%; }
-.ar-board-banner { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--signal-ink); }
-.ar-board-rows { display: flex; flex-direction: column; gap: 4px; list-style: none; padding: 0; margin: 0; }
-.ar-board-row {
-  display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 10px;
-  padding: 6px 0;
-  font-family: var(--font-mono); font-size: 13px; color: var(--gray-400);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-variant-numeric: tabular-nums; }
-[data-theme="light"] .ar-board-row { border-bottom-color: rgba(10, 10, 10, 0.08); }
-.ar-board-row:last-child { border-bottom: 0; }
-.ar-board-row[data-you] { color: var(--signal-ink); }
-.ar-board-place { color: var(--gray-500); font-variant-numeric: tabular-nums; }
-.ar-board-who { display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ar-board-tag { padding: 1px 6px; border-radius: 9999px; border: 1px solid rgba(255, 255, 255, 0.14); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-500); }
-[data-theme="light"] .ar-board-tag { border-color: rgba(10, 10, 10, 0.14); }
-.ar-board-score { font-variant-numeric: tabular-nums; color: var(--white); }
-.ar-board-row[data-you] .ar-board-score { color: var(--signal-ink); }
-.ar-board-foot { font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: var(--gray-500); font-variant-numeric: tabular-nums; }
+.ar-board { display: flex; flex-direction: column; gap: 10px; }
+.ar-board-title { font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); }
+.ar-board-foot { font-family: var(--font-data); font-size: 10px; line-height: 1.6; color: var(--gray-500); font-variant-numeric: tabular-nums; }
 .ar-board-empty { font-size: 12px; line-height: 1.6; color: var(--gray-400); }
 
 /* ── The stage (R4-9, D-227; Ported from Senryo:apps/web/src/features/games/arcade/arcade.css): the run on its own

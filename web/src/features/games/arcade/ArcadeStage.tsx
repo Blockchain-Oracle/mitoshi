@@ -76,8 +76,7 @@ export function ArcadeStage({ game }: { game: ArcadeGame }) {
           <Switch checked={calm} onCheckedChange={setCalm} aria-label={ARCADE.calm.label} />
         </label>
       </div>
-      <ArcadeBoard board={board} you={address} post={{ kind: "local", why: null }} ability={ability} />
-      <p className="ar-honesty">{ARCADE.honesty}</p>
+      <ArcadeBoard board={board} you={address} ability={ability} />
       {playing ? (
         <RunLayer
           game={game}
