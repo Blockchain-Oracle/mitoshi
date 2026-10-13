@@ -54,7 +54,7 @@ describe("arena encoders", () => {
     expect(fn(forSeat.calls[0]!.data).functionName).toBe("placePickFor");
   });
 
-  it("sends the cranks alone, to the arena", () => {
+  it("sends the cranks alone, to the arena; the reveal is the settler's and never asks the relay", () => {
     const card = toMarketId(`0x${"a1".repeat(32)}`);
     for (const intent of [
       { kind: "arena-reveal", matchId: MATCH, serverSeed: HASH, clientSeeds: [HASH], cards: [card] },
@@ -66,6 +66,7 @@ describe("arena encoders", () => {
       const e = encode(intent);
       expect(e.calls).toHaveLength(1);
       expect(e.calls[0]!.to.toLowerCase()).toBe(arena());
+      expect(e.sponsored, intent.kind).toBe(intent.kind !== "arena-reveal");
     }
   });
 
