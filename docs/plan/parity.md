@@ -186,7 +186,7 @@ These follow from the research and are applied row by row below. The architectur
 |---|---|---|---|---|---|---|---|
 | L-58 | Trade from X | M+A | Adapted | Executor = an access key (AG-22); grammar gains stock cashtags (A-3d) | Owner action: a new X account | K | Done — S11 gate on Moderato (2026-10-13): the mention text executed once through the account's EXECUTOR grant from the x-relay key (`0xf0d1…624a`, acceptance/S11.md); the first mention from X itself is an owner step |
 | L-59 | X recovery / claim | M | Adapted | EIP-191 wallet bind, 5-minute TTL | — | — | Done — S11: the bind verifies a passkey (WebAuthn) signature over the network-named link text, 5-minute TTL (acceptance/S11.md); `/claim` is Owarine's ClaimScreen |
-| L-60 | X relay | M | Adapted | Same actor | Add dry-run (A: none) | K | Done — S11: ops `x-relay`, dry until `X_RELAY_LIVE=1`, idempotent by post id, recovery from the stored hash; reads the bot's session (Rettiwt 7.1.4), the X API on credits |
+| L-60 | X relay | M | Adapted | Same actor | Add dry-run (A: none) | K | Done — S11: ops `x-relay`, dry until `X_RELAY_LIVE=1`, idempotent by post id, recovery from the stored hash; reads the bot's session (Rettiwt 7.1.4), the X API on credits; replies carry Owarine's receipt card (uploaded through the session, checked live) or the same text alone |
 
 ### 4.10 Games
 

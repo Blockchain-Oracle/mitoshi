@@ -52,3 +52,19 @@ AI_GATEWAY_API_KEY=
 AGENT_VIA=
 AGENT_MAX_CALLS_PER_HOUR=
 AGENT_TIMEOUT_MS=
+# x-relay (S11, D-227, opt-in: add it to OPS_ACTORS): the bot's handle and its ways in to X (the session first, the X API
+# with the bot's user context second); dry until X_RELAY_LIVE=1 with DRY_RUN=0; replies only with X_POSTING_ENABLED=1,
+# carrying the receipt card unless X_REPLY_IMAGES_ENABLED=0. The executor is X_EXECUTOR_PRIVATE_KEY, else the x-relay role key
+X_HANDLE=
+X_RETTIWT_API_KEY=
+X_API_KEY=
+X_API_KEY_SECRET=
+X_ACCESS_TOKEN=
+X_ACCESS_TOKEN_SECRET=
+X_BEARER_TOKEN=
+X_EXECUTOR_PRIVATE_KEY=
+X_RELAY_PRIVATE_KEY=
+X_RELAY_LIVE=
+X_POSTING_ENABLED=
+X_REPLY_IMAGES_ENABLED=
+X_POLL_MS=
