@@ -4,6 +4,8 @@ import "server-only";
  * its policy reads (TICKERS: a 24/7 stock lane reads the `---24_7` feed), and the verifier to ask (the generated
  * deployments of the configured network — never a hard-coded chain, R4-10). Read per request (the caller awaits
  * `connection()`); null when the index can't be read. `settledProofs` is the `/proof` feed: the newest settled Windows.
+ * A copied open (E-48) carries the print it copied — the previous Window's close at the same instant, with its record
+ * transaction — so the open is re-verified from that transaction (D-230 item 5: it read "can't check" on every Window).
  */
 import { indexReader } from "@cwf/db/idx";
 import { deployments } from "@cwf/clients";
@@ -18,6 +20,14 @@ export interface ProofPrint {
   signers: number;
   copied: boolean;
   recordedTsSec: number;
+  txHash: `0x${string}` | null;
+}
+
+/** The previous Window's close a copied open was taken from: the same instant, proven in its own record transaction. */
+export interface CopiedFrom {
+  market: `0x${string}`;
+  priceE8: string;
+  sourceTsSec: number;
   txHash: `0x${string}` | null;
 }
 
@@ -37,6 +47,19 @@ export interface ProofWindow {
   feed: string | null;
   verifier: `0x${string}` | null;
   prints: ProofPrint[];
+  /** For a copied open: the close it copied; null otherwise, or when the index doesn't hold it. */
+  copiedFrom: CopiedFrom | null;
+}
+
+type Reader = ReturnType<typeof indexReader>;
+
+/** The close of the Window before `market` on its Series — the one that expired at this Window's start. */
+async function copiedFromOf(r: Reader, series: string, startSec: number): Promise<CopiedFrom | null> {
+  const [prev] = await r.markets({ series, expiryFromSec: startSec, expiryToSec: startSec, limit: 1 });
+  if (!prev) return null;
+  const close = (await r.prints(String(prev.market))).find((p) => Number(p.which) === 1);
+  if (!close) return null;
+  return { market: String(prev.market) as `0x${string}`, priceE8: String(close.price_e8), sourceTsSec: Number(close.source_ts_sec), txHash: (close.tx_hash as `0x${string}` | null) ?? null };
 }
 
 const STOCK24 = 2;
@@ -47,6 +70,8 @@ export async function readProof(market: `0x${string}`): Promise<ProofWindow | "u
     const [m] = await r.markets({ market, limit: 1 });
     if (!m) return "unknown";
     const prints = await r.prints(market);
+    const copiedOpen = prints.some((p) => Number(p.which) === 0 && Boolean(p.copied));
+    const copiedFrom = copiedOpen && m.series ? await copiedFromOf(r, String(m.series), Number(m.trading_start_sec)) : null;
     const symbol = String(m.symbol);
     const ticker = (TICKERS as Record<string, { kind: string; redstoneFeedId: string | null; redstone24x7FeedId: string | null }>)[symbol as TickerSymbol];
     const basis = Number(m.basis);
@@ -75,6 +100,7 @@ export async function readProof(market: `0x${string}`): Promise<ProofWindow | "u
         recordedTsSec: Number(p.recorded_ts_sec),
         txHash: (p.tx_hash as `0x${string}` | null) ?? null,
       })),
+      copiedFrom,
     };
   } catch {
     return null;

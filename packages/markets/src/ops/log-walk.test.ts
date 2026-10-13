@@ -51,6 +51,9 @@ describe("adaptive eth_getLogs walk (recount, D-187)", () => {
     const error = await client.getLogs({ address: ADDRESS, fromBlock: 40_000n, toBlock: 49_999n }).catch((e: unknown) => e);
     expect(suggestedLogRange(error)).toEqual({ from: 40_000n, to: 46_665n });
     expect(suggestedLogRange(new Error("HTTP request failed. Status: 429"))).toBeNull();
+    // Alchemy's Moderato endpoint, verbatim (2026-10-13): a hex range in brackets.
+    const alchemy = { code: -32600, message: "You can make eth_getLogs requests with up to a 10000 block range. Based on your parameters, this block range should work: [0x25317c0, 0x2533ecf]" };
+    expect(suggestedLogRange(alchemy)).toEqual({ from: 39_000_000n, to: 39_009_999n });
   });
 
   it("covers every block once, in order, honouring the suggested ranges and growing back after", async () => {

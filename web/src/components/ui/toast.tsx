@@ -2,12 +2,16 @@
 // Ported from Masayume 68f7a09:web/src/components/ui/toast.tsx
 // S22 (D-190; revamp-parity RV-16): Tradash's toast grammar — top-centre at every width, a stack of three that peeks
 // downward, in from above, swiped up (or ✕) to dismiss; the same id replaces a toast in place (Base UI `update`).
+// R6 (D-230, T19): restyled on Mitoshi's tokens and type scale, not shadcn's — the plate is surface-3 (both themes come
+// from the surface tokens, no `bg-neutral-900` remap), the title body-strong ink, the line caption ink-secondary, the
+// action a kit pill and the close a 44 px target. A toast is for what happened elsewhere or later; the action you just
+// took confirms in place (TxCta morphs into its receipt).
 
 import * as React from "react"
 import { Toast as ToastPrimitive } from "@base-ui/react/toast"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { PillButton } from "@/components/kit/PillButton"
 import { XIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
 
 const toast = ToastPrimitive.createToastManager()
@@ -39,10 +43,9 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
       data-slot="toast"
       data-type={props.toast?.type}
       className={cn(
-        // Ported surface: rounded-xl, bg-neutral-900/90 + backdrop-blur-xl, type-tinted
-        // border (styles/toast.css). The neutral-900 utility is the reference's own, so
-        // yosuku/part-14.css remaps it on cream without a second light-mode rule here.
-        "toast-plate group/toast pointer-events-auto absolute inset-x-0 top-0 z-[calc(10-var(--toast-index))] w-full origin-top rounded-xl border border-border-strong bg-neutral-900/90 text-popover-foreground backdrop-blur-xl will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+        // Ported surface: rounded-xl, a translucent raised surface + backdrop-blur-xl, type-tinted border
+        // (styles/toast.css); surface-3 carries both themes.
+        "toast-plate group/toast pointer-events-auto absolute inset-x-0 top-0 z-[calc(10-var(--toast-index))] w-full origin-top rounded-xl border border-border-strong bg-surface-3/95 text-ink backdrop-blur-xl will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
         "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)+calc(var(--toast-index)*var(--gap))+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
         "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)+(var(--toast-index)*var(--peek))+(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_var(--ease-bounce),opacity_500ms,height_150ms]",
         "after:absolute after:bottom-full after:left-0 after:h-[calc(var(--gap)+var(--spacing)/4)] after:w-full after:content-['']",
@@ -83,7 +86,7 @@ function ToastTitle({ className, ...props }: ToastPrimitive.Title.Props) {
   return (
     <ToastPrimitive.Title
       data-slot="toast-title"
-      className={cn("text-sm font-medium", className)}
+      className={cn("type-body-strong text-ink", className)}
       {...props}
     />
   )
@@ -96,7 +99,7 @@ function ToastDescription({
   return (
     <ToastPrimitive.Description
       data-slot="toast-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("type-caption text-ink-secondary", className)}
       {...props}
     />
   )
@@ -104,7 +107,7 @@ function ToastDescription({
 
 function ToastAction({
   className,
-  render = <Button variant="outline" size="sm" />,
+  render = <PillButton tone="ink" size="sm" />,
   ...props
 }: ToastPrimitive.Action.Props) {
   return (
@@ -120,7 +123,7 @@ function ToastAction({
 function ToastClose({
   className,
   children,
-  render = <Button variant="ghost" size="icon-sm" />,
+  render = <button type="button" />,
   ...props
 }: ToastPrimitive.Close.Props) {
   return (
@@ -129,7 +132,7 @@ function ToastClose({
       aria-label="Close toast"
       render={render}
       className={cn(
-        "relative shrink-0 text-muted-foreground after:absolute after:-inset-2 after:content-[''] hover:text-foreground",
+        "-my-2 -me-2 grid size-touch shrink-0 place-items-center rounded-full text-ink-secondary transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-accent [&_svg]:size-4",
         className
       )}
       {...props}
@@ -191,8 +194,8 @@ function ToastIcon({ type }: { type: string | undefined }) {
   )
 }
 
-// From 21st.dev 24297 (Toast) — its position-derived swipe: toasts sit bottom-centre on phones (swipe down) and
-// bottom-right from `sm` up (swipe right or down), so the dismiss gesture follows where the toast is.
+// From 21st.dev 24297 cnippet-dev/toast — its position-derived swipe: the stack sits top-centre at every width (S22),
+// so it swipes up everywhere, and right too from `sm`, where there is room to fling it aside.
 // Tailwind v4's `sm` breakpoint (40rem), the one the viewport classes above switch on.
 const SM_QUERY = "(min-width: 40rem)"
 const subscribeSm = (onChange: () => void) => {

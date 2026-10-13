@@ -103,6 +103,7 @@ function staticTheme(): string {
   const lines: string[] = [];
   for (const [k, v] of Object.entries(tokens.shared)) lines.push(`  --color-${k}: ${v};`);
   for (const [name, t] of Object.entries(tokens.type)) {
+    if (name.startsWith("$")) continue;
     const spec = t as { size: string; lineHeight: string; letterSpacing?: string; weight: string };
     lines.push(`  --text-${name}: ${spec.size};`, `  --text-${name}--line-height: ${spec.lineHeight};`);
     if (spec.letterSpacing) lines.push(`  --text-${name}--letter-spacing: ${spec.letterSpacing};`);

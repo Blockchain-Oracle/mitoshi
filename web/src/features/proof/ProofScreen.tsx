@@ -32,9 +32,13 @@ function checksOf(w: ProofWindow, network: Network): ProofCheck[] {
   for (const [which, t] of [[0, w.tradingStartSec], [1, w.expirySec]] as const) {
     const name = PROOF.which[which]!;
     const p = w.prints.find((x) => x.which === which);
-    if (p?.copied) out.push({ id: `r${which}`, label: PROOF.row.record(name), kind: "copied" });
+    // A copied open (E-48) is the previous Window's close at the same instant: re-verify that close's own record
+    // transaction and hold it to this open's value (D-230 item 5) — then the archive at that instant, as for any print.
+    const from = p?.copied ? w.copiedFrom : null;
+    if (from?.txHash) out.push({ id: `r${which}`, label: PROOF.row.copiedRecord(name), kind: "record", expectedE8: p!.priceE8, input: { rpcUrl, txHash: from.txHash, market: from.market, which: 1, feed: w.feed, t: from.sourceTsSec, verifier: w.verifier } });
+    else if (p?.copied) out.push({ id: `r${which}`, label: PROOF.row.record(name), kind: "copied" });
     else if (p?.txHash) out.push({ id: `r${which}`, label: PROOF.row.record(name), kind: "record", expectedE8: p.priceE8, input: { rpcUrl, txHash: p.txHash, market: w.market, which, feed: w.feed, t: p.sourceTsSec, verifier: w.verifier } });
-    if (p && !p.copied) out.push({ id: `a${which}`, label: PROOF.row.archive(name), kind: "archive", expectedE8: p.priceE8, input: { rpcUrl, market: w.market, which, feed: w.feed, t: p.sourceTsSec, verifier: w.verifier } });
+    if (p) out.push({ id: `a${which}`, label: PROOF.row.archive(name), kind: "archive", expectedE8: p.priceE8, input: { rpcUrl, market: from?.market ?? w.market, which: from ? 1 : which, feed: w.feed, t: p.sourceTsSec, verifier: w.verifier } });
     // A settled Window missing a print (a void): what the archive held at that instant, and the verifier's answer.
     if (!p && w.state !== "open") out.push({ id: `a${which}`, label: PROOF.row.archive(name), kind: "archive", expectedE8: null, input: { rpcUrl, market: w.market, which, feed: w.feed, t, verifier: w.verifier } });
   }

@@ -89,13 +89,21 @@ function generate(fragments) {
   }
   files.set("deployments.ts", `${HEADER}export const deployments = ${JSON.stringify(deployments, null, 2)} as const;\n`);
   files.set("relay-targets.ts", `${HEADER}/** Contract addresses per chain and area; relay policies allowlist from here. */\nexport const relayTargets = ${JSON.stringify(relayTargets, null, 2)} as const;\n`);
+  // A tuple's canonical type is its components in parentheses, `tuple[]` → `(…)[]` (Solidity ABI spec, "Function
+  // Selector"): hashing the word "tuple" gave events with a struct parameter a topic0 no log carries (R6: the engine's
+  // OrderExecuted, 434,198 logs on Moderato, was never compared).
+  const canonicalType = (i) => (i.type.startsWith("tuple") ? `(${i.components.map(canonicalType).join(",")})${i.type.slice(5)}` : i.type);
   const events = {};
-  for (const [name, abi] of abis) events[name] = abi.filter((e) => e.type === "event").map((e) => `${e.name}(${e.inputs.map((i) => i.type).join(",")})`);
+  for (const [name, abi] of abis) events[name] = abi.filter((e) => e.type === "event").map((e) => `${e.name}(${e.inputs.map(canonicalType).join(",")})`);
   files.set("events.ts", `${HEADER}/** Event signatures per contract, for the indexer's sources. */\nexport const events = ${JSON.stringify(events, null, 2)} as const;\n`);
   // Indexer sources (plan C.4.1/C.4.3): per chain, every deployed contract with its deploy block and each event as a
   // full signature (`indexed` + names — the Tempo Indexer API / tidx `signature=` decodes columns from it) and topic0.
-  const param = (i) => `${i.type}${i.indexed ? " indexed" : ""}${i.name ? ` ${i.name}` : ""}`;
-  const canonical = (e) => `${e.name}(${e.inputs.map((i) => i.type).join(",")})`;
+  // Human-readable ABI: a tuple is its named components in parentheses (`(uint64 lots, …)[] result`). The Tempo API's
+  // `signature=` decodes no struct parameter in any spelling (2026-10-13: "Invalid parameter format" / "Unknown ABI
+  // type"), so such an event is counted by topic0 only; viem and abitype parse it.
+  const paramType = (i) => (i.type.startsWith("tuple") ? `(${i.components.map(param).join(", ")})${i.type.slice(5)}` : i.type);
+  const param = (i) => `${paramType(i)}${i.indexed ? " indexed" : ""}${i.name ? ` ${i.name}` : ""}`;
+  const canonical = (e) => `${e.name}(${e.inputs.map(canonicalType).join(",")})`;
   const indexer = {};
   for (const f of fragments) for (const [name, c] of Object.entries(f.contracts ?? {})) {
     const abi = abis.get(c.artifact.split(":")[1]);

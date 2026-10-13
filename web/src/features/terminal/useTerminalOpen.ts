@@ -4,12 +4,14 @@
 // cover the call, D-160 words when they don't), `deriveBlocker`, and `usePlaceBet` through `useTapSubmitter`. No demo.
 import { useFirstFunding } from "@/features/funding/first-fund-state";
 import type { EventMarket, Quote, Side } from "@cwf/core";
-import { blockerLabel, diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/copy";
+import { blockerLine, diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/copy";
 import type { MarketPhase } from "@cwf/core/lifecycle";
 import { belowMinStake, minStakeBase } from "@cwf/core/sizing";
-import { useBalanceSheet, useSigner } from "@cwf/markets/react";
+import { useBalanceSheet, useNextWindow, useSigner } from "@cwf/markets/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { emptyBookWhy, openedAtText, openingWaitLine, TAIL_SEC } from "@/features/markets/data/opening-wait";
 import { useTopOfBook } from "@/features/markets/data/useTopOfBook";
+import { usePrintsState } from "@/features/markets/session";
 import { deriveBlocker } from "@/features/markets/ticket/ticket-guards";
 import { useLaneGuard } from "@/features/markets/ticket/useLaneGuard";
 import { usePlaceBet } from "@/features/markets/ticket/usePlaceBet";
@@ -27,6 +29,7 @@ import { rememberEntry } from "./entries";
 import { forgetPending, rememberFill, rememberPending } from "./fresh-fills";
 import { centsOf, money, multipleOf, sideWord } from "./format";
 import { openTradeReceipt, RECEIPT } from "./receipt";
+import { replaceTradeParams } from "./useTerminalWindow";
 
 export interface SideView {
   quote: QuoteState;
@@ -39,13 +42,17 @@ export interface SideView {
   multiple: number | null;
   /** The first reason this side can't be tapped, in the CTA's words (null: tap away). */
   blocked: string | null;
+  /** What a tap on a blocked side offers instead (the next Window, when this one's book has run dry). */
+  instead: { label: string; onClick: () => void } | null;
 }
 
 const ENTRY_TOAST = "terminal-open";
 /** How long "Tap again to take it" holds the requoted price. */
 const REQUOTE_HOLD_MS = 15_000;
+/** A tap before its quote has landed is held this long and placed the moment it does (D-230 item 3). */
+const HOLD_TAP_MS = 6_000;
 
-export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: EventMarket; phase: MarketPhase | null; stakeBase: bigint; spot: number | null }) {
+export function useTerminalOpen({ market, phase, stakeBase, spot, openingUnread = false }: { market: EventMarket; phase: MarketPhase | null; stakeBase: bigint; spot: number | null; openingUnread?: boolean }) {
   const nowMs = useNowMs();
   const session = useWalletSession();
   const { address, hasSigner } = useSigner();
@@ -65,6 +72,16 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
   const guard = useLaneGuard(market);
   // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
   const funding = useFirstFunding();
+  // D-230: the wait for the opening print and an empty book say when and why, never a bare word.
+  const prints = usePrintsState();
+  const nowSec = Math.floor(nowMs / 1000);
+  const dry = (side: Side) => {
+    const r = (side === "up" ? quoteUp : quoteDown).reading;
+    return r !== null && r.ok && r.value === null;
+  };
+  const tailDry = phase === "trading" && nowSec >= market.lockAtSec - TAIL_SEC && (dry("up") || dry("down"));
+  const successor = useNextWindow(tailDry ? market : null);
+  const next = successor?.ok ? successor.value : null;
 
   const view = (side: Side): SideView => {
     const quote = side === "up" ? quoteUp : quoteDown;
@@ -89,10 +106,18 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
     };
     const topCents = side === "up" ? top.upCents : top.downCents;
     const multiple = quote.quote ? 10_000 / quote.quote.avgPriceBps : topCents ? 100 / topCents : null;
-    // The region hold reads in the terminal's own words (§8 live guards); the rest are the ticket's D-160 words.
-    const label = blocker === "region-restricted" ? TERMINAL.guards.region : blocker ? blockerLabel(blocker, ctx) : null;
+    // The region hold, the wait for the line and an empty book read in the terminal's own words (§8 live guards, D-230);
+    // the rest are the ticket's D-160 words.
+    const empty = blocker === "no-liquidity-at-size" ? emptyBookWhy(market, nowSec, openedAtText) : null;
+    const label =
+      blocker === "region-restricted" ? TERMINAL.guards.region
+      : blocker === "pending-opening-print" ? openingWaitLine({ startSec: market.tradingStartSec, nowSec, prints, unread: openingUnread })
+      : empty ? empty.text
+      : blocker ? blockerLine(blocker, ctx)
+      : null;
     const blocked = blocker && blocker !== "quoting" && blocker !== "placing" ? label : demo ? null : (route.fallback?.reason ?? null);
-    return { quote, route, multiple, blocked, stakeBase: capped ? q!.fillableStakeBase : stakeBase, capped };
+    const instead = empty?.closing && next ? { label: TERMINAL.buttons.nextWindow, onClick: () => replaceTradeParams({ w: next.marketId }) } : null;
+    return { quote, route, multiple, blocked, instead, stakeBase: capped ? q!.fillableStakeBase : stakeBase, capped };
   };
   const sides = { up: view("up"), down: view("down") };
   // A wallet tap that went through this wallet's access key (no prompt) earns the receipt's key line (R4-13a).
@@ -140,17 +165,25 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
     notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.failed, description: "diagnosis" in outcome ? `${diagnosisCopy(outcome.diagnosis.kind).headline} ${TERMINAL.toast.nothingTaken}` : TERMINAL.toast.nothingTaken });
   }, [outcome]);
 
+  // A tap that beat its quote (a stake just changed, the line just landed) is not lost: "Getting a price…" holds it and
+  // it is placed the moment the quote lands — or said why not, or after HOLD_TAP_MS asked again (D-230 item 3).
+  const [held, setHeld] = useState<{ side: Side; atMs: number } | null>(null);
+  const hold = useCallback((side: Side) => {
+    setHeld({ side, atMs: Date.now() });
+    notify.item({ id: ENTRY_TOAST, type: "loading", title: TERMINAL.toast.gettingPrice });
+  }, []);
+
   /** One tap: UP or DOWN at the stake, through the ticket's own lane; anything in the way is said, never sent. */
   const open = useCallback(
     (side: Side) => {
       const { sides: v, session: sess, market: m } = latest.current;
       const s = v[side];
       const stake = s.stakeBase;
-      if (s.blocked) return void notify.item({ id: ENTRY_TOAST, type: "warning", title: s.blocked });
+      if (s.blocked) return void notify.item({ id: ENTRY_TOAST, type: "warning", title: s.blocked, ...(s.instead ? { action: s.instead } : {}) });
       if (!sess.isConnected) {
         // DEMO: paper at the live quote — no signature, nothing on chain (Owarine 90a91d71 `useTerminalTrade` demo path).
         const q = s.quote.quote;
-        if (!q) return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.gettingPrice, timeout: 2_000 });
+        if (!q) return hold(side);
         const { spot: at } = latest.current;
         openPaper({
           id: `${m.marketId}:${side}:${Date.now()}`, marketId: m.marketId, asset: m.asset, intervalSec: m.intervalSec, expirySec: m.expirySec, side,
@@ -164,16 +197,38 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
       // button's quote, which may not have re-read the book yet.
       const again = bet.requoted && bet.requoted.side === side && bet.requoted.stakeBase === stake && Date.now() - bet.requoted.quotedAtMs < REQUOTE_HOLD_MS ? bet.requoted : null;
       const quote = again ?? s.quote.quote;
-      if (!quote) return void notify.item({ id: ENTRY_TOAST, title: TERMINAL.toast.gettingPrice, timeout: 2_000 });
+      if (!quote) return hold(side);
+      performance.mark("cwf:tap:quoted");
       const r = s.route.route;
       tapped.current = { side, quote, via: r && r.kind !== "wallet" ? "vault" : "wallet", market: m, armed: latest.current.armed };
       setLastSide(side);
       notify.item({ id: ENTRY_TOAST, type: "loading", title: TERMINAL.toast.opening(sideWord(side), m.asset) });
       void bet.place({ market: m, side, stakeBase: stake, displayedQuote: quote, route: s.route.route });
     },
-    [bet],
+    [bet, hold],
   );
 
-  return { sides, open, busy: bet.placing ? lastSide : null };
+  const heldReady = held ? sides[held.side].quote.quote !== null || sides[held.side].blocked !== null : false;
+  useEffect(() => {
+    if (!held) return;
+    if (heldReady) {
+      setHeld(null);
+      return void open(held.side);
+    }
+    const left = HOLD_TAP_MS - (Date.now() - held.atMs);
+    const timer = setTimeout(() => {
+      setHeld(null);
+      notify.item({ id: ENTRY_TOAST, type: "warning", title: TERMINAL.toast.noPrice, description: TERMINAL.toast.tapAgainPlain });
+    }, Math.max(0, left));
+    return () => clearTimeout(timer);
+  }, [held, heldReady, open]);
+
+  /** The button's tap: marked for the tap-latency driver (`cwf:tap:press` → `cwf:tap:quoted` → the lane's own marks). */
+  const press = useCallback((side: Side) => {
+    performance.mark("cwf:tap:press");
+    open(side);
+  }, [open]);
+
+  return { sides, open: press, busy: bet.placing ? lastSide : held ? held.side : null };
 }
 

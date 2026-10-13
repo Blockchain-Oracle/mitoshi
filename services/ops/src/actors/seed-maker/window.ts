@@ -24,35 +24,39 @@ export interface WindowCtx {
 
 export type WindowResult = { state: "quoting" | "resting" | "pulled" | "stopped" | "idle"; placed: Placed | null; note: string; txs: string[] };
 
-export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketView, lane: LaneQuote, placed: Placed | null, label: string): Promise<WindowResult> {
+type Call = Parameters<typeof sendOps>[1][number];
+export type Step = { what: string; call: Call };
+
+/**
+ * One Window's pass, read and decided but not sent (D-230): either its result outright, or the calls to send — in one
+ * transaction, in order — with the result once they land (`done`), and what to do if the chain refuses them together
+ * (`fallback`: one call at a time against the book as it stands after the cancel). The pass packs several Windows'
+ * steps into one transaction (`runtime/pack.ts`); `tendWindow` sends one Window's alone.
+ */
+export type WindowPlan =
+  | { result: WindowResult }
+  | { steps: Step[]; why: string; done: (hash: string) => WindowResult; fallback: (() => Promise<WindowResult>) | null };
+
+export async function planWindow(ctx: WindowCtx, series: SeriesView, m: MarketView, lane: LaneQuote, placed: Placed | null, label: string): Promise<WindowPlan> {
   const me = ctx.client.address as Address;
-  const txs: string[] = [];
   const trading = m.state === 0 && m.tradingStartSec <= ctx.nowSec && ctx.nowSec < m.lockAtSec;
-  if (!trading) return { state: "idle", placed: null, note: "not trading", txs };
+  const none = (state: WindowResult["state"], note: string, keep: Placed | null = null): WindowPlan => ({ result: { state, placed: keep, note, txs: [] } });
+  if (!trading) return none("idle", "not trading");
   const fair = lane.phase === "quote" ? lane.fairTicks : null;
   const halfSpreadTicks = lane.halfSpreadTicks ?? ctx.env.halfSpreadTicks;
-  if (fair !== null && placed && !needsRequote({ placed, fairTicks: fair, nowSec: ctx.nowSec, requoteTicks: ctx.env.requoteTicks, halfSpreadTicks, lockAtSec: m.lockAtSec })) return { state: "resting", placed, note: `fair ${fair}, resting`, txs };
-  if (!placed && lane.phase !== "quote") return { state: lane.phase === "stop" ? "stopped" : "pulled", placed: null, note: lane.why, txs };
-  if (!placed && fair === null) return { state: "idle", placed: null, note: lane.why, txs };
+  if (fair !== null && placed && !needsRequote({ placed, fairTicks: fair, nowSec: ctx.nowSec, requoteTicks: ctx.env.requoteTicks, halfSpreadTicks, lockAtSec: m.lockAtSec })) return none("resting", `fair ${fair}, resting`, placed);
+  if (!placed && lane.phase !== "quote") return none(lane.phase === "stop" ? "stopped" : "pulled", lane.why);
+  if (!placed && fair === null) return none("idle", lane.why);
   const clock = ctx.clockSec ?? (() => ctx.nowSec);
-  const send = async (what: string, calls: Parameters<typeof sendOps>[1]) => {
-    if (ctx.dryRun) return void ctx.log(`DRY ${what} ${label}`);
-    const sent = await sendOps(ctx.client, calls, ctx.clockSec ? { nowSec: ctx.clockSec() } : {});
-    txs.push(sent.hash);
-  };
   const [orders, [pos]] = await Promise.all([openOrdersOf(ctx.client, ctx.venue, m.marketId, me), positionsOf(ctx.client, ctx.venue, m.marketId, [me])]);
-  const cancel = async (why: string) => {
-    if (orders.length) await send(`cancelAll (${orders.length}) ${why}`, [cancelAllCall(ctx.venue.engine, m.marketId, 32, false)]);
-  };
+  const cancelStep = orders.length ? [{ what: `cancelAll (${orders.length})`, call: cancelAllCall(ctx.venue.engine, m.marketId, 32, false) }] : [];
+  const after = (state: WindowResult["state"], note: string): WindowPlan =>
+    cancelStep.length ? { steps: cancelStep, why: `${cancelStep[0]!.what} ${note}`, done: (hash) => ({ state, placed: null, note, txs: [hash] }), fallback: null } : none(state, note);
   if (lane.phase !== "quote") {
     // A stop near lock leaves what rests to expire at lock − 30 (no cancel fee); a pull cancels at once.
-    if (lane.phase === "pull") await cancel(lane.why);
-    return { state: lane.phase === "stop" ? "stopped" : "pulled", placed: null, note: lane.why, txs };
+    return lane.phase === "pull" ? after("pulled", lane.why) : none("stopped", lane.why);
   }
-  if (fair === null) {
-    await cancel("no fair yet");
-    return { state: "idle", placed: null, note: lane.why, txs };
-  }
+  if (fair === null) return after("idle", lane.why);
   // Paired inventory is a set: merge it back to cash (credit) so the escrow budget stays honest.
   const mergeLots = pos && pos.yesFree > 0n && pos.noFree > 0n ? (pos.yesFree < pos.noFree ? pos.yesFree : pos.noFree) : 0n;
   // The exit tail widens and shrinks only what it places: a pair already resting stays (requoting every Window that
@@ -70,7 +74,7 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
     const posts = lots === 0n || late ? [] : sides.flatMap(([side, ticks, kind]) => (ticks === null ? [] : [{ side, ticks, call: placeOrderCall(ctx.venue.engine, { market: m.marketId, kind, orderType: ORDER_TYPE.postOnly, priceTicks: ticks, lots, expireTsSec: expireSec, clientId: BigInt(ctx.nowSec), useCredit: true }) }]));
     return { pair, lots, expireSec, posts };
   };
-  const result = (plan: ReturnType<typeof planOn>, rested: boolean): WindowResult =>
+  const result = (plan: ReturnType<typeof planOn>, rested: boolean, txs: string[]): WindowResult =>
     plan.lots === 0n
       ? { state: "idle", placed: null, note: `fair ${fair}: no admissible size`, txs }
       : { state: "quoting", placed: rested ? { fairTicks: fair, expireSec: plan.expireSec, halfSpreadTicks: placeHalf } : null, note: `fair ${fair} → ${plan.pair.bidTicks ?? "-"} / ${plan.pair.askTicks ?? "-"} × ${plan.lots}`, txs };
@@ -79,34 +83,52 @@ export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketVi
   // transactions. The pair is priced against everyone's best but ours, which goes in the same transaction.
   const own = orders.map((o) => ({ isBid: o.kind === KIND.buyYes, ticks: o.priceTicks, lots: o.lots }));
   const plan = planOn(othersTop(await topOfBook(ctx.client, ctx.venue, m.marketId), own));
-  const steps = [
-    ...(orders.length ? [{ what: `cancelAll (${orders.length})`, call: cancelAllCall(ctx.venue.engine, m.marketId, 32, false) }] : []),
+  const steps: Step[] = [
+    ...cancelStep,
     ...(mergeLots > 0n ? [{ what: `mergeSet ${mergeLots}`, call: mergeSetCall(ctx.venue.engine, m.marketId, mergeLots, false) }] : []),
     ...plan.posts.map((p) => ({ what: `post ${p.side} ${plan.lots} @ ${p.ticks}`, call: p.call })),
   ];
-  if (!steps.length) return result(plan, false);
+  if (!steps.length) return { result: result(plan, false, []) };
   const why = placed ? `requote ${placed.fairTicks} → ${fair}` : "fresh quote";
+  // The pack would revert (a side crosses an order behind ours, or the clock ran out): one call at a time, each
+  // simulated, against the book as it stands after the cancel.
+  const fallback = plan.posts.length
+    ? async (): Promise<WindowResult> => {
+        const txs: string[] = [];
+        const send = async (call: Call) => void txs.push((await sendOps(ctx.client, [call], ctx.clockSec ? { nowSec: ctx.clockSec() } : {})).hash);
+        for (const x of steps.slice(0, steps.length - plan.posts.length)) await send(x.call);
+        const top = await topOfBook(ctx.client, ctx.venue, m.marketId);
+        const again = planOn({ bidTicks: top.bidTicks || null, askTicks: top.askTicks || null });
+        let rested = false;
+        for (const p of again.posts) {
+          try {
+            await send(p.call);
+            rested = true;
+          } catch (error) {
+            if (error instanceof OpsSendError && (error.errorName === "PostOnlyWouldCross" || error.errorName === "OrderAlreadyExpired")) ctx.log(`${p.side} ${p.ticks} ${label}: ${error.errorName}, skipped this pass`);
+            else throw error;
+          }
+        }
+        return result(again, rested, txs);
+      }
+    : null;
+  return { steps, why: `${why}: ${steps.map((x) => x.what).join("; ")} (fair ${fair}, exp ${plan.expireSec})`, done: (hash) => result(plan, plan.posts.length > 0, [hash]), fallback };
+}
+
+/** One Window's pass, sent on its own: its steps in one transaction, falling back to one call at a time on a refusal. */
+export async function tendWindow(ctx: WindowCtx, series: SeriesView, m: MarketView, lane: LaneQuote, placed: Placed | null, label: string): Promise<WindowResult> {
+  const plan = await planWindow(ctx, series, m, lane, placed, label);
+  if ("result" in plan) return plan.result;
+  if (ctx.dryRun) {
+    ctx.log(`DRY ${plan.why} ${label}`);
+    return plan.done("dry");
+  }
   try {
-    await send(`${why}: ${steps.map((x) => x.what).join("; ")} (fair ${fair}, exp ${plan.expireSec})`, steps.map((x) => x.call));
-    return result(plan, plan.posts.length > 0);
+    const sent = await sendOps(ctx.client, plan.steps.map((x) => x.call), ctx.clockSec ? { nowSec: ctx.clockSec() } : {});
+    return plan.done(sent.hash);
   } catch (error) {
-    if (!(error instanceof OpsSendError) || !plan.posts.length) throw error;
-    // The batch would revert — gas estimation refuses it before any fee (a side crosses an order behind ours, or the
-    // clock ran out): one call at a time, each simulated, against the book as it stands after the cancel.
+    if (!(error instanceof OpsSendError) || !plan.fallback) throw error;
     ctx.log(`${label}: one-transaction requote refused (${error.errorName ?? error.message}), one call at a time`);
+    return plan.fallback();
   }
-  for (const x of steps.slice(0, steps.length - plan.posts.length)) await send(`${x.what} ${why}`, [x.call]);
-  const top = await topOfBook(ctx.client, ctx.venue, m.marketId);
-  const again = planOn({ bidTicks: top.bidTicks || null, askTicks: top.askTicks || null });
-  let rested = false;
-  for (const p of again.posts) {
-    try {
-      await send(`post ${p.side} ${again.lots} @ ${p.ticks} (fair ${fair}, exp ${again.expireSec})`, [p.call]);
-      rested = true;
-    } catch (error) {
-      if (error instanceof OpsSendError && (error.errorName === "PostOnlyWouldCross" || error.errorName === "OrderAlreadyExpired")) ctx.log(`${p.side} ${p.ticks} ${label}: ${error.errorName}, skipped this pass`);
-      else throw error;
-    }
-  }
-  return result(again, rested);
 }

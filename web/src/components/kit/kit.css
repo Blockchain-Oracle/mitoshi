@@ -4,78 +4,7 @@
  * names and nothing re-types a colour. Owarine's sky and lime have no Mitoshi hue: sky is the recessed surface, lime the
  * profit green. Then each piece's rules, in the order of components/kit/index.ts. No motion runtime: every animation is
  * CSS (or the Web Animations API) and stands still under reduced motion. */
-:root {
-  --ow-canvas: var(--color-canvas);
-  --ow-card: var(--color-surface-1);
-  --ow-recessed: var(--color-surface-2);
-  --ow-hairline: var(--color-hairline);
-  --ow-ink: var(--color-ink);
-  --ow-muted: var(--color-ink-secondary);
-  --ow-helper: var(--color-ink-muted);
-  --ow-inverse: var(--color-stage);
-  --ow-pink: var(--color-accent-fill);
-  --ow-pink-pressed: var(--color-accent-fill-pressed);
-  --ow-pink-ink: var(--color-accent);
-  --ow-on-pink: var(--color-on-accent);
-  --ow-up: var(--color-up);
-  --ow-up-line: var(--color-chart-up);
-  --ow-down: var(--color-down);
-  --ow-down-line: var(--color-chart-down);
-  --ow-sky: var(--color-surface-2);
-  --ow-lime: var(--color-profit);
-  --ow-cream: var(--color-cream);
-  --ow-black: var(--plate-black);
-  --ow-white: var(--color-cream);
-  --ow-scrim: var(--color-scrim);
-  --ow-r-card: var(--radius-lg);
-  --ow-r-feature: var(--radius-xl);
-  --ow-r-sticker: var(--radius-md);
-  --ow-r-pill: var(--radius-full);
-  --ow-spring: var(--ease-drawer);
-  --ow-flip: 120ms;
-}
-/* The faces resolve where next/font's variables live, on <body> (styles/base.css, R4-0): declared on :root they
- * computed to nothing, and every `font:` shorthand that read them fell back to the parent's size and weight. */
-body {
-  --ow-font-display: var(--font-heading);
-  --ow-font-body: var(--font-body);
-  --ow-font-axis: var(--font-data);
-}
-
-/* ── PillButton: always a pill, never a shadow; accent is THE action on a screen (one per view) ──────────────────── */
-.kit-pill {
-  position: relative; display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 8px;
-  border: 1px solid transparent; border-radius: var(--ow-r-pill); font-family: var(--ow-font-body); font-weight: 700;
-  letter-spacing: -0.02em; line-height: 1; white-space: nowrap; user-select: none; outline: none; cursor: pointer;
-  transition: background-color var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out), transform 150ms var(--ease-out), opacity var(--duration-hover);
-  /* A pill is its size's height in any stack. In a column, height is the flex axis: the block's `flex: 1 1 0%` collapsed
-     52 px CTAs to their text (19–22 px) in sheet footers, the X steps and the done screens (F-S11-10). */
-  --kit-pill-h: var(--button-primary-height);
-  height: var(--kit-pill-h); min-height: var(--kit-pill-h); max-height: var(--kit-pill-h);
-}
-.kit-pill:active { transform: scale(0.97); }
-.kit-pill:disabled, .kit-pill[data-disabled], .kit-pill[aria-disabled="true"] { pointer-events: none; opacity: 0.4; }
-.kit-pill:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-.kit-pill svg { pointer-events: none; flex-shrink: 0; }
-.kit-pill--accent { background: var(--ow-pink); color: var(--ow-on-pink); }
-.kit-pill--accent:hover { background: var(--ow-pink-pressed); }
-.kit-pill--ink { background: var(--ow-ink); color: var(--ow-inverse); }
-.kit-pill--ink:hover { opacity: 0.9; }
-.kit-pill--white { background: var(--ow-card); color: var(--ow-ink); border-color: var(--ow-hairline); }
-.kit-pill--white:hover, .kit-pill--ghost:hover { background: var(--color-surface-3); }
-.kit-pill--ghost { background: var(--ow-recessed); color: var(--ow-ink); }
-.kit-pill--up { background: var(--button-up-fill); color: var(--button-up-ink); border-color: var(--button-up-border); }
-.kit-pill--down { background: var(--button-down-fill); color: var(--button-down-ink); border-color: var(--button-down-border); }
-.kit-pill--sm { --kit-pill-h: 36px; padding: 0 16px; font-size: 14px; }
-.kit-pill--sm::before { content: ""; position: absolute; inset: -4px; }
-.kit-pill--sm svg { width: 16px; height: 16px; }
-.kit-pill--md { --kit-pill-h: var(--button-primary-height); padding: 0 20px; font-size: 16px; }
-.kit-pill--md svg { width: 18px; height: 18px; }
-.kit-pill--lg { --kit-pill-h: var(--ticket-cta-height); padding: 0 28px; font-size: 17px; }
-.kit-pill--lg svg, .kit-pill--icon svg { width: 20px; height: 20px; }
-.kit-pill--icon { --kit-pill-h: var(--button-primary-height); width: var(--kit-pill-h); padding: 0; }
-/* Block: the full width, or an equal share of a row it shares with other pills (`flex: 1 1 0%`); its height stays pinned. */
-.kit-pill--block { width: 100%; min-width: 0; flex: 1 1 0%; }
+/* The `--ow-*` token table and PillButton's rules live in pill.css (imported by PillButton.tsx). */
 
 /* ── Card, FeatureCard, Eyebrow ───────────────────────────────────────────────────────────────────────────────── */
 .kit-card { border: 1px solid var(--ow-hairline); border-radius: var(--ow-r-card); background: var(--ow-card); color: var(--ow-ink); }

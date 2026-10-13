@@ -7,7 +7,8 @@
  * the CTA whose label IS the blocker, then the lifecycle's own named waits (D-052).
  */
 import type { OrderOutcome, Side, TxState } from "@cwf/core";
-import { blockerLabel, SUBMITTED_UNKNOWN, type BlockerContext, type BlockerKind } from "@cwf/core/copy";
+import { belowMinStake } from "@cwf/core";
+import { blockerCopy, SUBMITTED_UNKNOWN, type BlockerContext, type BlockerFix, type BlockerKind } from "@cwf/core/copy";
 import { formatBaseUnits } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import type { ReactNode } from "react";
@@ -65,9 +66,12 @@ export function AccountGate({ connected, availableBase, stakeBase, decimals, chi
           <p className="tk-gate-line">
             {TICKET.gate.holds(usd(availableBase ?? 0n))} {needBase !== null ? TICKET.gate.need(usd(needBase)) : TICKET.gate.empty}
           </p>
-          <div className="tk-gate-actions">
-            <button type="button" className="tk-gate-cta min-h-touch" onClick={openFunds}>{TICKET.gate.addMoney}</button>
-          </div>
+          {/* With nothing (or under the minimum) to stake, the CTA itself is Add money (R6): one action, not two. */}
+          {availableBase !== null && availableBase > 0n && !belowMinStake(availableBase, decimals) ? (
+            <div className="tk-gate-actions">
+              <button type="button" className="tk-gate-cta min-h-touch" onClick={openFunds}>{TICKET.gate.addMoney}</button>
+            </div>
+          ) : null}
         </div>
       )}
       {connected && chip ? <div className="tk-gate-row"><span />{chip}</div> : null}
@@ -113,12 +117,35 @@ export interface TicketCtaProps {
   signer: SignerKind;
   onConfirm: () => void;
   action?: (side: string) => string;
+  /** The blocker's why in the markets' own live words (D-230: the opening print's wait, an empty book), over the kit's. */
+  reason?: string | null;
+  /** The ticket's handler for the fixes only it can run (R6: "Use $1" sets $1; "Buy $3.40 — what fills" sets that). */
+  onFix?: (fix: BlockerFix) => void;
+  /** A one-tap fix the ticket made itself (the size that fills now): it IS the CTA, not a second control. */
+  fix?: { label: string; run: () => void };
+  /** The sign-in sheet's intent for a sign-in fix. */
+  intent?: string;
 }
 
-export function TicketCta({ blocker, ctx, tx, side, costBase, decimals, signer, onConfirm, action = TICKET.buy }: TicketCtaProps) {
+export function TicketCta({ blocker, ctx, tx, side, costBase, decimals, signer, onConfirm, action = TICKET.buy, reason = null, onFix, fix, intent }: TicketCtaProps) {
   const busy = tx.kind === "signing" || tx.kind === "submitted" || tx.kind === "unknown";
   const label = side && costBase !== null ? `${action(SIDE_WORD[side])} $${formatBaseUnits(costBase, decimals, { minDp: 2, maxDp: 2 })}` : TICKET.buyPlain;
-  // A blocker names itself; while a write runs, the lifecycle's words do (never a bare spinner).
-  const state: TxState = busy ? tx : blocker && blocker !== "placing" ? { kind: "blocked", reason: blockerLabel(blocker, ctx) } : tx.kind === "failed" || tx.kind === "confirmed" ? { kind: "idle" } : tx;
-  return <TxCta state={state} action={label} signer={signer} sponsored onConfirm={onConfirm} tone={side ?? "accent"} />;
+  // A blocker names itself — and, where it has one, its fix is the CTA (R6 D-230); while a write runs, the lifecycle's
+  // own words do (never a bare spinner).
+  const copy = blocker && blocker !== "placing" ? blockerCopy(blocker, ctx) : null;
+  const state: TxState = busy ? tx : copy ? { kind: "blocked", reason: copy.label } : tx.kind === "failed" || tx.kind === "confirmed" ? { kind: "idle" } : tx;
+  return (
+    <TxCta
+      state={state}
+      action={label}
+      signer={signer}
+      sponsored
+      onConfirm={onConfirm}
+      tone={side ?? "accent"}
+      blocker={copy ? { ...copy, reason: reason ?? copy.reason } : undefined}
+      onFix={onFix}
+      fix={fix}
+      intent={intent}
+    />
+  );
 }

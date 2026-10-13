@@ -18,15 +18,19 @@ import { useEffect, useRef, useState } from "react";
 import { useClockValue } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { HERO_HEAD, LANE_CARD, MARKETS } from "../copy";
+import { openingWaitShort } from "../data/opening-wait";
 import { useChartSeries } from "../data/useChartSeries";
 import type { TopOfBook } from "../data/useTopOfBook";
+import { usePrintsState } from "../session";
 import { AssetDisc } from "../hero/AssetDisc";
 import { usdLine } from "../units";
 import { CardSpark } from "./CardSpark";
 import { ListedCard } from "./ListedCard";
 
 /** The book's top arrives as plain values from the lane page's one subscription (D-184). */
-interface MarketCardProps extends TopOfBook {
+interface MarketCardProps extends Omit<TopOfBook, "failed"> {
+  /** The book's read failed (D-230): the strip says it can't read the book, never "no quotes". */
+  failed?: boolean;
   market: EventMarket;
   selected: boolean;
   onSelect: (marketId: MarketId, side?: Side) => void;
@@ -50,6 +54,13 @@ function useFlash(selected: boolean): boolean {
   return on;
 }
 
+/** A Window waiting for its opening print, on the strip: when it opened and a count, ticking as its own leaf (D-230). */
+function PendingStrip({ startSec }: { startSec: number }) {
+  const prints = usePrintsState();
+  const text = useClockValue((ms) => (ms > 0 ? openingWaitShort({ startSec, nowSec: Math.floor(ms / 1000), prints }) : null));
+  return <span>{text}</span>;
+}
+
 const price = (value: number | null, hydrating: boolean) => (value === null ? (hydrating ? LANE_CARD.priceLoading : HERO_HEAD.noPrice) : `${value}¢`);
 
 export function MarketCard(props: MarketCardProps) {
@@ -59,7 +70,7 @@ export function MarketCard(props: MarketCardProps) {
   return <LiveCard {...props} />;
 }
 
-function LiveCard({ market, selected, onSelect, onOpenRoom, upCents, downCents, hydrating }: MarketCardProps) {
+function LiveCard({ market, selected, onSelect, onOpenRoom, upCents, downCents, hydrating, failed = false }: MarketCardProps) {
   // The phase, not the second: the card re-renders when its Window changes phase; its countdown ticks as its own leaf (D-181).
   const p = useClockValue((nowMs) => (nowMs > 0 ? phase(market, nowMs) : null));
   const reduce = useReducedMotion() === true;
@@ -127,10 +138,10 @@ function LiveCard({ market, selected, onSelect, onOpenRoom, upCents, downCents, 
         </div>
         <div className="mc-strip">
           {closing ? (
-            <span>{p === "pendingOpeningPrint" ? LANE_CARD.pendingPrint : LANE_CARD.closing}</span>
+            p === "pendingOpeningPrint" ? <PendingStrip startSec={market.tradingStartSec} /> : <span>{LANE_CARD.closing}</span>
           ) : (
             <>
-              <span>{upCents !== null ? LANE_CARD.oddsLive : hydrating || downCents !== null ? LANE_CARD.oddsLoading : LANE_CARD.noQuotes}</span>
+              <span>{upCents !== null ? LANE_CARD.oddsLive : hydrating || downCents !== null ? LANE_CARD.oddsLoading : failed ? LANE_CARD.unread : LANE_CARD.noQuotes}</span>
               <span className="ramp">
                 <span>{HERO_HEAD.rampUp}</span>
                 <span className="bar">{upCents !== null && <span className="fill" style={{ width: `${upCents}%` }} />}</span>

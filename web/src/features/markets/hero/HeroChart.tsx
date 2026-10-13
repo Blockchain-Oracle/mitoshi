@@ -59,7 +59,7 @@ export function HeroChart({ market, openingRaw, lanes, activeKey, onPickLane, on
         </div>
       </div>
       <HeroChartFoot book={book} asset={market.asset} onOpenRoom={onOpenRoom} onOpenAlerts={onOpenAlerts} />
-      <HeroYesNo marketId={market.marketId} upCents={book.upCents} downCents={book.downCents} onSelect={onSelect} />
+      <HeroYesNo market={market} openingRaw={openingRaw} book={book} onSelect={onSelect} />
     </div>
   );
 }

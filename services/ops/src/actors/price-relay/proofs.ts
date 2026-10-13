@@ -13,7 +13,12 @@ import { redstoneNeed, SOURCE, type PrintSlot } from "./slots";
 
 /** The gateway keeps ≈ 24 h; from 23 h the archive is the source of a Gap's Friday print. */
 export const ARCHIVE_FROM_SEC = 23 * 3_600;
-export const REDSTONE_FETCH_AFTER_SEC = 10;
+/**
+ * First ask for T's packages at T + 3 s: the historical endpoint carried 2 of 5 signers at T + 0–3 s and all five from
+ * T + 4 s (measured 2026-10-13 on both public gateways); the boundary cache asks again every 2 s until it has them.
+ * It was T + 10 s, ten seconds of every Window spent waiting for nothing (D-230).
+ */
+export const REDSTONE_FETCH_AFTER_SEC = 3;
 
 export type ProofResult = { proof: Hex; note: string } | { wait: string } | { unavailable: string };
 

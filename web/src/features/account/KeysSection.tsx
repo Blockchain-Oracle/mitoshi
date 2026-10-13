@@ -12,7 +12,8 @@ import { TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { MotionScope } from "@/components/motion-scope";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { SkeletonSwap } from "@/components/ui/skeleton-swap";
+import { LoadingState } from "@/components/states/LoadingState";
+import { useHeldLoading } from "@/components/states/useHeldLoading";
 import { forgetWalletKey } from "@/providers/wallet/wallet-key-store";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
@@ -32,6 +33,8 @@ export function KeysSection({ account, network }: { account: Address; network: N
   const [pending, setPending] = useState<readonly string[]>([]);
   const nowSec = BigInt(Math.floor(Date.now() / 1_000));
   const data = keys.data;
+  // R6 (T18): the skeleton only if the read is slow (after 120 ms), then held ≥ 380 ms so it never blinks.
+  const held = useHeldLoading(data !== undefined);
   const all = data?.keys ?? [];
   const active = all.filter((k) => keyStatus(k, nowSec) === "active");
   const stopped = all.filter((k) => keyStatus(k, nowSec) !== "active");
@@ -71,7 +74,10 @@ export function KeysSection({ account, network }: { account: Address; network: N
             <button type="button" onClick={() => void keys.refetch()} className="min-h-touch rounded-md border border-border-strong px-4 type-body-strong text-ink">{K.retry}</button>
           </div>
         ) : (
-          <SkeletonSwap ready={data !== undefined} lines={4} label={K.loading}>
+          data === undefined || held ? (
+            <LoadingState shape="table" delayMs={120} label={K.loading} />
+          ) : (
+          <>
             {filter === "active" && deviceKeyPending && deviceKey ? (
               <div className="mb-3 flex flex-col gap-1 rounded-lg border border-dashed border-border-strong bg-surface-1 p-4" role="status">
                 <span className="type-body-strong text-ink">{K.thisDevice}</span>
@@ -88,7 +94,8 @@ export function KeysSection({ account, network }: { account: Address; network: N
                 ))}
               </ul>
             )}
-          </SkeletonSwap>
+          </>
+          )
         )}
         {tx.state.kind === "failed" ? <TxFailureCard state={tx.state} onRetry={() => tx.dispatch({ type: "reset" })} /> : null}
         {filter === "active" && active.length > 1 ? (

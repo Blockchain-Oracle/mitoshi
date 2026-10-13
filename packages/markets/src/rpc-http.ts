@@ -19,6 +19,9 @@ export const MULTICALL_CHUNK_BYTES = 8_192;
 export interface TempoHttpOptions {
   retryCount?: number;
   timeout?: number;
+  /** viem's cap on one answer (default 10 MiB). viem retries an answer over it like any other error, so a log walk
+   * that may fetch a full 20,000-log window raises it instead of downloading a refused body `retryCount` times. */
+  maxResponseBodySize?: number;
   /** Tests: the fetch the transport sends through. */
   fetchFn?: typeof fetch;
   /** Pace requests through this budget (ops: one per URL per process, D-134). */
@@ -31,5 +34,5 @@ export interface TempoHttpOptions {
 export function tempoHttp(url: string | undefined, options: TempoHttpOptions = {}): HttpTransport {
   const base = options.fetchFn ?? fetch;
   const fetchFn = options.budget ? budgetedFetch(options.budget, base, options.tier ?? 1) : options.fetchFn;
-  return http(url, { batch: false, retryCount: options.retryCount ?? 5, timeout: options.timeout ?? 30_000, ...(fetchFn ? { fetchFn } : {}) });
+  return http(url, { batch: false, retryCount: options.retryCount ?? 5, timeout: options.timeout ?? 30_000, ...(options.maxResponseBodySize ? { maxResponseBodySize: options.maxResponseBodySize } : {}), ...(fetchFn ? { fetchFn } : {}) });
 }

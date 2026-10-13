@@ -22,10 +22,13 @@ export const PLACING = "Placing…";
 export const SUBMITTED_UNKNOWN =
   "Submitted — waiting for the chain to answer. Your order is either in or it never left; we'll show you which.";
 
-/** The route error boundary's words — `reference/yosuku/app/error.tsx` verbatim; the disclosure label is ours. */
+/**
+ * The route error boundary's words — the headline is `reference/yosuku/app/error.tsx`'s; the body is cut to Owarine's
+ * word count (R6 T20: it ran 28 words); the disclosure label is ours.
+ */
 export const ERROR_BOUNDARY = {
   headline: "A quiet moment on the floor.",
-  body: "Something interrupted this view. Your funds and positions are safe on-chain. This is only the screen. Try again, or head back to the markets.",
+  body: "Only this screen broke. Your money is safe.",
   retry: "Try again",
   back: "Go to markets",
   technical: "Technical details",

@@ -1,15 +1,20 @@
 "use client";
 /** The /earn island (same shape as /games/range, §3.1, D-071): the screen loads with the late data layer, behind the one earn skeleton (R4-7, D-227). */
 import dynamic from "next/dynamic";
-import { LoadingState } from "@/components/states";
+import { LoadingState } from "@/components/states/LoadingState";
+import { Skeleton, T } from "@/components/states/shapes/bones";
+import "./earn.css";
 import { useDataReady } from "@/providers/data/context";
 import { EARN } from "./copy";
 
+/** R6 (T18): the page's own frame (its head, the four tabs) and the earn outline — the action card with its chip row. */
 function Placeholder() {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="skel h-8 w-48 rounded-md" />
-      <div className="skel h-touch w-64 rounded-md" />
+    <div className="earn-page">
+      <div className="ea-head"><T>Earn the spread.</T></div>
+      <div className="ea-tabs flex gap-5">
+        {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-11 w-13 rounded-md" />)}
+      </div>
       <LoadingState shape="earn" label={EARN.card.loading} />
     </div>
   );

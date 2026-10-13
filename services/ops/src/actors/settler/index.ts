@@ -6,15 +6,20 @@
  * (Windows past expiry or a deadline, terminal Windows with unredeemed holders or open orders); every send re-reads
  * the Window and each holder's position on chain first. One writer: the `settler` key. The EventVault's owners are
  * paid by its `crankSettle` worklist (`vault-crank.ts`, S7) inside the same send budget, after the engine's work.
+ * The pass's engine calls go out packed (D-230, `runtime/pack.ts`): a boundary's settles and sweeps were one transaction
+ * each on the print path's budget, and the house's fresh quotes waited behind them.
  */
 import type { Address, Hex } from "viem";
 import { engineLensAbi } from "@cwf/clients/abis/EngineLens";
 import { chainNowSec, createOpsClient, crankOptedOut, fetchMarkets, OpsSendError, positionsOf, redeemForCall, sendOps, settleCall, sweepExpiredCall, venueOf, voidExpiredCall, type MarketView } from "@cwf/markets/ops";
 import { errorText, runActor, roleKey, type VenueDeps } from "../../runtime";
+import { chainRefused, packUnits, sendPacked, type PackSender, type PackUnit } from "../../runtime/pack";
 import { decideSettle, PRINT_POLL_SEC, type SettleAction } from "./decide";
 import { vaultCranker } from "./vault-crank";
 
 const PASS_MS = 5_000;
+/** Engine calls a pass sends (packed, `MAX_CALLS_PER_TX` a transaction), then the vault crank's sends. */
+const MAX_CALLS_PER_PASS = 144;
 const MAX_SENDS_PER_PASS = 24;
 const REDEEM_GRACE_SEC = Number(process.env.SETTLER_REDEEM_GRACE_SEC) >= 0 && process.env.SETTLER_REDEEM_GRACE_SEC ? Number(process.env.SETTLER_REDEEM_GRACE_SEC) : 300;
 /** "Someone got there first" or "not yet": look again rather than count a failure. */
@@ -61,34 +66,33 @@ export function startSettler(deps: VenueDeps): { stop: () => void } {
     return owners.filter((_, i) => !outs[i] && Object.values(positions[i]!).some((v) => v !== 0n && v !== 0));
   };
 
-  const send = async (action: Exclude<SettleAction, { kind: "wait" } | { kind: "done" }>, m: MarketView, budget: { sends: number }): Promise<string> => {
+  type SendAction = Exclude<SettleAction, { kind: "wait" } | { kind: "done" }>;
+  type Item = { kind: SendAction["kind"]; market: Hex; call: Parameters<typeof sendOps>[1][number]; tag: string };
+  /** One Window's calls: a settle, void or sweep alone, or one unit per holder paid (each independent of the others). */
+  const unitsOf = (action: SendAction, m: MarketView): PackUnit<Item>[] => {
     const id = m.marketId as Hex;
-    const calls =
-      action.kind === "settle" ? [settleCall(venue.engine, id)]
-      : action.kind === "void" ? [voidExpiredCall(venue.engine, id)]
-      : action.kind === "sweep" ? [sweepExpiredCall(venue.engine, id, 32)]
-      : action.holders.map((h) => redeemForCall(venue.engine, id, h as Address));
     const tag = `${action.kind} ${id.slice(0, 10)} #${m.index}`;
-    if (dryRun) return `DRY ${tag}: ${action.why}`;
-    const out: string[] = [];
-    await Promise.all(calls.map(async (call) => {
-      if (budget.sends <= 0) return;
-      budget.sends--;
-      try {
-        const sent = await sendOps(client, [call]);
-        counts[action.kind] = (counts[action.kind] ?? 0) + 1;
-        recent = [{ action: action.kind, market: id, tx: sent.hash }, ...recent].slice(0, 20);
-        out.push(sent.hash.slice(0, 10));
-      } catch (error) {
-        const name = error instanceof OpsSendError ? error.errorName : null;
-        if (name && BENIGN.has(name)) out.push(name);
-        else {
-          counts.failed = (counts.failed ?? 0) + 1;
-          out.push(`failed: ${errorText(error).slice(0, 140)}`);
-        }
-      }
-    }));
-    return `${tag}: ${action.why} · ${out.join(", ")}`;
+    const item = (call: Item["call"], who = ""): PackUnit<Item> => ({ items: [{ kind: action.kind, market: id, call, tag: `${tag}${who}` }] });
+    if (action.kind === "settle") return [item(settleCall(venue.engine, id))];
+    if (action.kind === "void") return [item(voidExpiredCall(venue.engine, id))];
+    if (action.kind === "sweep") return [item(sweepExpiredCall(venue.engine, id, 32))];
+    return action.holders.map((h) => item(redeemForCall(venue.engine, id, h as Address), ` ${h.slice(0, 8)}`));
+  };
+  const sender: PackSender<Item> = {
+    send: async (items) => (await sendOps(client, items.map((i) => i.call))).hash,
+    refused: chainRefused,
+    landed: (i, hash, inTx) => {
+      counts[i.kind] = (counts[i.kind] ?? 0) + 1;
+      recent = [{ action: i.kind, market: i.market, tx: hash }, ...recent].slice(0, 20);
+      return `${i.tag} ✓ ${hash.slice(0, 10)}${inTx > 1 ? ` (${inTx} in tx)` : ""}`;
+    },
+    failed: (i, error) => {
+      const name = error instanceof OpsSendError ? error.errorName : null;
+      if (name && BENIGN.has(name)) return `${i.tag} ${name}`;
+      counts.failed = (counts.failed ?? 0) + 1;
+      return `${i.tag} failed: ${errorText(error).slice(0, 140)}`;
+    },
+    skipped: (i, after) => `${i.tag} waits for ${after.tag}`,
   };
 
   /** The Window's policy version's check source, read once per (Series, version). */
@@ -109,7 +113,7 @@ export function startSettler(deps: VenueDeps): { stop: () => void } {
     for (const market of await candidates(nowSec)) if (!work.has(market)) work.set(market, { market, checkAtSec: 0, done: false });
     const due = [...work.values()].filter((w) => !w.done && w.checkAtSec <= nowSec).slice(0, 200);
     const views = await fetchMarkets(client, venue, due.map((w) => w.market as Hex));
-    const budget = { sends: MAX_SENDS_PER_PASS };
+    const units: PackUnit<Item>[] = [];
     const notes: string[] = [];
     for (const [i, w] of due.entries()) {
       const m = views[i];
@@ -135,17 +139,22 @@ export function startSettler(deps: VenueDeps): { stop: () => void } {
         w.checkAtSec = Math.max(action.untilSec, nowSec + PRINT_POLL_SEC);
         continue;
       }
-      if (budget.sends <= 0) break;
-      notes.push(await send(action, m, budget));
+      const more = unitsOf(action, m);
+      if (units.length + more.length > MAX_CALLS_PER_PASS) break;
+      if (dryRun) notes.push(`DRY ${more.map((u) => u.items[0]!.tag).join(", ")}: ${action.why}`);
+      else units.push(...more);
       w.checkAtSec = nowSec + 3;
     }
+    const packs = packUnits(units);
+    notes.push(...(await sendPacked(packs, sender)));
+    const budget = { sends: Math.max(0, MAX_SENDS_PER_PASS - packs.length) };
     if (vault && budget.sends > 0) notes.push(await vault.pass(budget).catch((error) => `vault crank pass failed: ${errorText(error).slice(0, 140)}`));
     for (const [k, w] of work) if (w.done) work.delete(k);
     const next = [...work.values()].map((w) => w.checkAtSec).filter((s) => s > nowSec);
     return {
       why: `${work.size} Windows tracked · ${due.length} due · ${Object.entries(counts).map(([k, v]) => `${k} ${v}`).join(", ") || "nothing sent yet"}${vault ? ` · vault cranked ${vault.counts.cranked}` : " · vault crankSettle: vault not deployed"}${notes.length ? ` | ${notes.join(" | ")}` : ""}${dryRun ? " · DRY RUN" : ""}`,
-      detail: { tracked: work.size, counts: { ...counts }, recent, optedOut: [...optedOut], vault: vault ? { counts: { ...vault.counts }, recent: vault.recent } : "not deployed" },
-      nextDelayMs: budget.sends <= 0 ? 500 : next.length ? Math.max(1_000, Math.min(PASS_MS, (Math.min(...next) - nowSec) * 1000)) : PASS_MS,
+      detail: { tracked: work.size, txs: packs.length, counts: { ...counts }, recent, optedOut: [...optedOut], vault: vault ? { counts: { ...vault.counts }, recent: vault.recent } : "not deployed" },
+      nextDelayMs: units.length >= MAX_CALLS_PER_PASS || budget.sends <= 0 ? 500 : next.length ? Math.max(1_000, Math.min(PASS_MS, (Math.min(...next) - nowSec) * 1000)) : PASS_MS,
     };
   };
   deps.log(`settler ${client.address ?? "(no key)"}, claim grace ${REDEEM_GRACE_SEC} s`);

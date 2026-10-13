@@ -36,9 +36,18 @@ describe("tokens.json matches the ported Masayume styles (plan §2.2 check)", ()
     for (const [k, v] of Object.entries(tokens.surfaces.light)) expect(light[`ms-${k}`], k).toBe(v);
     const theme = varsOf(fixture, "@theme");
     for (const [k, v] of Object.entries(tokens.shared)) expect(theme[`color-${k}`]?.toUpperCase(), k).toBe(v.toUpperCase());
-    for (const [name, t] of Object.entries(tokens.type)) expect(theme[`text-${name}`], name).toBe(t.size);
+    // The ladder R6 added (S14) has no Masayume counterpart; every size the bridge had still matches it.
+    for (const [name, t] of Object.entries(tokens.type)) if (theme[`text-${name}`] !== undefined) expect(theme[`text-${name}`], name).toBe((t as { size: string }).size);
     for (const [k, v] of Object.entries(tokens.radius)) expect(theme[`radius-${k}`], k).toBe(v);
     expect(theme.spacing).toBe(tokens.spacing.base);
+  });
+
+  it("no type size sits under the 11 px floor (R6 S14)", () => {
+    for (const [name, t] of Object.entries(tokens.type)) {
+      if (name.startsWith("$")) continue;
+      const px = [...(t as { size: string }).size.matchAll(/(\d+(?:\.\d+)?)px/g)].map((m) => Number(m[1]));
+      for (const v of px) expect(v, name).toBeGreaterThanOrEqual(11);
+    }
   });
 
   it("the generated stylesheet is current", () => {

@@ -12,10 +12,41 @@ import type { SessionEvents } from "../runtime/session-events";
 const UPCOMING = 5;
 const RECENT = 5;
 
+/**
+ * Why prints stall, in the app's words: the price network refuses us, hasn't signed T yet, or can't be reached; or the
+ * print is in hand and Tempo's RPC keeps refusing the sends (`sending` — Mitoshi's backlog, never RedStone's).
+ */
+export type PrintStallKind = "refused" | "unsigned" | "unreachable" | "sending";
+
+export interface PrintsState {
+  /** Median seconds from a Window's start to its opening print, over the relay's last opens; null before any. */
+  openLagSec: number | null;
+  /** Due prints stuck for over 20 s (on the price network, or on sends Tempo refuses): since when and why; null while they land. */
+  stall: { sinceSec: number; kind: PrintStallKind } | null;
+}
+
+/** A source stall's kind, from the price network's last word (the relay's `stall.reason`). */
+export function stallKind(reason: string): Exclude<PrintStallKind, "sending"> {
+  if (/public_gateway_rejected|HTTP 40[13]|HTTP 429|blocked|resting/i.test(reason)) return "refused";
+  if (/signers|not signed|no gateway data/i.test(reason)) return "unsigned";
+  return "unreachable";
+}
+
+/** The price relay's word on the prints (`price-relay` heartbeat detail), for the app's "waiting for the line" state. */
+export function printsState(detail: Record<string, unknown> | undefined): PrintsState {
+  const lag = detail?.openLagSec as { p50?: unknown } | null | undefined;
+  const stall = detail?.stall as { sinceSec?: unknown; kind?: unknown; reason?: unknown } | null | undefined;
+  return {
+    openLagSec: typeof lag?.p50 === "number" ? lag.p50 : null,
+    stall: stall && typeof stall.sinceSec === "number" ? { sinceSec: stall.sinceSec, kind: stall.kind === "sending" ? "sending" : stallKind(String(stall.reason ?? "")) } : null,
+  };
+}
+
 export function sessionBody(input: { sessions: SessionService | null; halts: HaltBoardStore | null; events: SessionEvents | null }, nowSec = Math.floor(Date.now() / 1000)) {
   const calendar = input.sessions?.calendar() ?? null;
   const status = input.sessions?.status(nowSec) ?? null;
   const roller = heartbeats().find((b) => b.actor === "window-roller");
+  const relay = heartbeats().find((b) => b.actor === "price-relay");
   return {
     nowSec,
     status,
@@ -36,5 +67,7 @@ export function sessionBody(input: { sessions: SessionService | null; halts: Hal
     /** Report dates 14 days ahead; null until the first fetch ("unknown", never "none"). */
     earnings: input.events?.earnings() ?? null,
     skips: (input.events?.skips() ?? []).filter((k) => k.date >= addDays(etDateOf(nowSec), -3)),
+    /** D-230: how long the opening print usually takes, and whether prints are stalled on the price network. */
+    prints: printsState(relay?.detail),
   };
 }

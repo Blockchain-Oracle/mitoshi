@@ -57,18 +57,10 @@
 [data-theme="light"] .bg-black { background-color: #F4EEE3; }
 [data-theme="light"] .bg-white { background-color: #141210; }
 
-/* dark neutral surfaces → raised cream cards (solid + translucent variants) */
-[data-theme="light"] .bg-neutral-950,
-[data-theme="light"] .bg-neutral-900,
+/* dark neutral surfaces → raised cream cards. R6 (D-230): the `bg-neutral-9xx` remaps went with their last user (the
+   toast plate now reads the surface tokens, which carry the light theme themselves). */
 [data-theme="light"] .market-card,
 [data-theme="light"] .bg-bg { background-color: #FBF7EE; }
-[data-theme="light"] .bg-neutral-800 { background-color: #F6F0E4; }
-[data-theme="light"] .bg-neutral-900\/95,
-[data-theme="light"] .bg-neutral-900\/90,
-[data-theme="light"] .bg-neutral-900\/80,
-[data-theme="light"] .bg-neutral-900\/70,
-[data-theme="light"] .bg-neutral-900\/60,
-[data-theme="light"] .bg-neutral-900\/50 { background-color: rgba(251,247,238,0.94); }
 
 /* translucent bg-bg opacity utilities (e.g. the strategies sticky filter bar):
    the /opacity variants compile to color-mix over --color-bg, which is NOT theme-

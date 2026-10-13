@@ -49,7 +49,7 @@ export function RailPlaceholder({ waiting, allHours, failure = null }: { waiting
       ) : (
         <>
           <span className="tk-amount-label">{TICKET.title}</span>
-          <p className="type-body text-ink">{failure ? diagnosisCopy(failure.kind).headline : MARKETS.noLiveWindows.why}</p>
+          <p className="type-body text-ink">{failure ? diagnosisCopy(failure.kind, "read").headline : MARKETS.noLiveWindows.why}</p>
           <MarketSessionChip allHours={allHours} />
         </>
       )}

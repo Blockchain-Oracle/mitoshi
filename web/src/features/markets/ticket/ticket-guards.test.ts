@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ok, type Quote } from "@cwf/core";
-import { blockerLabel } from "@cwf/core/copy";
+import { blockerLabel, blockerLine } from "@cwf/core/copy";
 import { commonBlocker, deriveBlocker, laneBlocker, type LaneGuardInput, type TicketBlockerInput } from "./ticket-guards";
 
 const quote = (over: Partial<Quote> = {}): Quote => ({
@@ -45,8 +45,10 @@ describe("session and lane blockers (S6, Agari's laneBlocker)", () => {
     expect(deriveBlocker({ ...base, lane: lane({ halt }) })).toBe("halted");
     expect(laneBlocker("upcoming", lane({ halt }))).toBe("halted");
     expect(laneBlocker("locked", lane({ halt }))).toBeNull();
-    expect(blockerLabel("halted", { haltStale: false })).toBe("Trading halted — no new calls");
-    expect(blockerLabel("halted", { haltStale: true })).toBe("Signed price stale — no new calls");
+    // R6 (D-230): the pill says the block in ≤ 6 words; the caption (or the one-line form) says why.
+    expect(blockerLabel("halted", { haltStale: false })).toBe("Trading halted");
+    expect(blockerLine("halted", { haltStale: false })).toBe("Trading halted · No new calls");
+    expect(blockerLine("halted", { haltStale: true })).toBe("Signed price stale · No new calls");
   });
   it("a paused lane holds a Window waiting on its open; a corporate action is named as such", () => {
     expect(laneBlocker("upcoming", lane({ laneState: "paused: corporate action (TSLA split 2026-10-12)" }))).toBe("corporate-action");
@@ -57,7 +59,8 @@ describe("session and lane blockers (S6, Agari's laneBlocker)", () => {
     expect(laneBlocker("finalized", lane({ sessionOpen: false }))).toBe("session-closed");
     expect(laneBlocker("finalized", lane({ basis: "stock24", sessionOpen: false }))).toBeNull();
     expect(laneBlocker("finalized", lane({ sessionOpen: null }))).toBeNull();
-    expect(blockerLabel("session-closed", { opensText: "Mon 14:30 (09:30 ET)" })).toBe("Market closed — opens Mon 14:30 (09:30 ET)");
+    expect(blockerLabel("session-closed", { opensText: "Mon 14:30 (09:30 ET)" })).toBe("Market closed");
+    expect(blockerLine("session-closed", { opensText: "Mon 14:30 (09:30 ET)" })).toBe("Market closed · Opens Mon 14:30 (09:30 ET)");
   });
   it("without session facts nothing is claimed", () => {
     expect(deriveBlocker({ ...base, lane: null })).toBeNull();
