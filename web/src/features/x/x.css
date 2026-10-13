@@ -27,9 +27,6 @@
 .xt-ok { font-size: 13px; color: var(--color-profit); }
 .xt-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .xt-x { width: 16px; height: 16px; }
-/* The kit's block pill is `flex: 1 1 0%` (pills sharing a row); every block CTA here sits in a column stack, where that
-   zero basis collapsed the 52 px CTA to its text — 22 px on the deployed /trade-from-x and /claim (F-S11-10). */
-.xt .kit-pill--block { flex: none; }
 
 /* Fund: the amount chips, the CTA, the one-line capability. */
 .xt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
