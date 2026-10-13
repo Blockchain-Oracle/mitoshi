@@ -200,6 +200,27 @@
   .wm-m-looking { display: flex; flex-direction: column; gap: 12px; margin-top: 42px; padding: 0 36px; text-align: center; }
   .wm-action--small { height: auto; padding: 5px 10px; border-width: 0; }
 
+  /* The phone sign-in (R4-8, D-227; `SignInPhone`): the order line under the title, the passkey actions large in the
+   * thumb zone, a "Wallets" label over the tile strip, the passkey note at the foot. */
+  .wm-m-intent { margin: 2px 0 0; padding: 0 56px; text-align: center; font: 500 14px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+  .wm-m-primary { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px 24px; }
+  .wm-m-btn {
+    display: flex; height: 52px; align-items: center; justify-content: center; gap: 10px; border-radius: var(--radius-full);
+    background: var(--color-surface-2); color: var(--color-ink); font: 700 16px/1 var(--font-body); transition: transform 125ms var(--ease);
+  }
+  .wm-m-btn:active { transform: scale(0.98); }
+  .wm-m-btn:disabled { opacity: 0.5; }
+  .wm-m-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .wm-m-btn svg { width: 20px; height: 20px; flex: none; }
+  .wm-m-btn--accent { background: var(--accent-fill); color: var(--on-accent); }
+  .wm-m-btn .wm-spinner { width: 20px; height: 20px; color: var(--on-accent); }
+  .wm-m-primary + .wm-m-divider { margin-bottom: 16px; }
+  .wm-m-label { margin: 0; padding: 0 20px 4px; font: 700 14px/1.2 var(--font-body); color: var(--color-ink-secondary); }
+  .wm-m-none { margin: 0; padding: 6px 20px 20px; font: 500 14px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+  .wm-m-tile:disabled { opacity: 0.6; }
+  .wm-m-tile .wm-glyph-icon svg { width: 26px; height: 26px; }
+  .wm-m-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; padding: 4px 20px 0; }
+
   .wm-profile-id { gap: 16px; }
   .wm-avatar { width: 82px; height: 82px; font-size: 45px; margin-top: 24px; }
   .wm-profile-name { font-size: 20px; }

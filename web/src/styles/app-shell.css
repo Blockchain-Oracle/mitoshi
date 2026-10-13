@@ -198,9 +198,6 @@ span.top-money, span.top-account { display: contents; }
 @media (max-width: 360px) { .dock-pill { left: 6px; transform: translateX(calc(var(--dock-i, 0) * (var(--dock-w) + 2px))); } }
 .dock-pill[data-on] { opacity: 1; }
 
-/* ── the island: the page paints its own top edge; the rail and the dock stay ──────────────────────────────────── */
-@media (min-width: 768px) { .app-shell--island .page-island { padding-left: calc(var(--spacing-rail-compact) + var(--spacing-rail-inset) * 2); } }
-@media (min-width: 1280px) { .app-shell--island .page-island { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
 
 /* ── a Sign in tapped before the wallet runtime has loaded: answered at once ──────────────────────────────────── */
 .sign-in-pending {

@@ -36,17 +36,19 @@
   --hiw-formula: rgba(20, 18, 16, 0.04);
 }
 
-/* fixed inset-0 pointer-events-none */
-.hiw-glows { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+/* fixed inset-0 pointer-events-none — scoped to the page inside the stage (critic gap 24, R4-8 D-227): fixed, it
+   painted the canvas around the stage. */
+.hiw { position: relative; }
+.hiw-glows { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
 /* absolute w-[400px] h-[400px] blur-[120px] rounded-full — top-right mint, bottom-left blue */
 .hiw-glow-mint, .hiw-glow-blue { position: absolute; width: 400px; height: 400px; border-radius: 9999px; filter: blur(120px); }
 .hiw-glow-mint { top: 0; right: 0; background: var(--hiw-glow-mint); }
 .hiw-glow-blue { bottom: 0; left: 0; background: var(--hiw-glow-blue); }
 
-/* pt-28 pb-20 relative z-10 — the shell already clears 92px of the reference's 112px */
-.hiw-main { position: relative; z-index: 10; padding: 20px 0 80px; }
-/* max-w-[1000px] mx-auto px-6 */
-.hiw-wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+/* pt-28 pb-20 relative z-10 — the stage is the one inset (D-226; R4-8): no top padding or side gutter of its own */
+.hiw-main { position: relative; z-index: 10; padding: 0 0 80px; }
+/* max-w-[1000px] mx-auto */
+.hiw-wrap { max-width: 1000px; margin: 0 auto; }
 
 /* flex items-center gap-2 text-gray-500 hover:text-white mb-10 text-xs font-bold uppercase tracking-widest group */
 .hiw-back { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 40px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gray-500); transition: color 200ms var(--ease); }

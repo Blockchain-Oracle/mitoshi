@@ -9,6 +9,5 @@ export { default as Marquee } from "./Marquee";
 export { default as MitoshiMark } from "./MitoshiMark";
 export { default as SectionHead } from "./SectionHead";
 export { default as ThemeToggle } from "./ThemeToggle";
-export { IslandChrome } from "./IslandChrome";
 export { ShellChrome } from "./ShellChrome";
 export { SiteHeader } from "./SiteHeader";

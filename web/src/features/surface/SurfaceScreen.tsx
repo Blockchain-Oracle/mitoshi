@@ -54,7 +54,7 @@ export function SurfaceScreen() {
   const head = (key: SortKey) => ({ sortDirection: sort.key === key ? sort.dir : null, onSort: () => setSort((s) => ({ key, dir: s.key === key && s.dir === "asc" ? "desc" : "asc" })) });
 
   return (
-    <div className="sf mx-auto flex w-full max-w-(--content-wide) flex-col gap-6 px-gutter py-8">
+    <div className="sf mx-auto flex w-full max-w-(--content-wide) flex-col gap-6">
       <header className="flex flex-col gap-2">
         <span className="type-label-micro text-ink-secondary">{SURFACE.eyebrow}</span>
         <h1 className="type-display text-ink">{SURFACE.title}</h1>
