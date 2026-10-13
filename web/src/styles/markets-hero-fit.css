@@ -40,6 +40,10 @@
   .mh-foot-actions { gap: 2px; }
   .mh-foot-actions .mh-room { min-width: 44px; justify-content: center; }
   .mh-foot-actions .mh-room-word { display: none; }
+  /* A 320 px phone's panel is 268 px: three 44 px icons and the ramp need ~256 px of its 240 — the ramp's bar and the
+     gap give the 16 px back, so the cents are never clipped (R4-3 review). */
+  .hero-chart-foot { column-gap: 8px; }
+  .hero-chart-foot .ramp .bar { width: 32px; }
 }
 
 /* Price/Depth (R4-3, D-227): a quiet chip on the canvas's top-left corner, in the cadence tabs' mono caps — the right

@@ -112,10 +112,10 @@ function WordListedCard({ markets, onSelect }: { markets: readonly EventMarket[]
         </div>
       )}
       <div className="wq-actions">
-        <button type="button" className="wq-btn yes" onClick={() => onSelect(market.marketId, "up")}>
+        <button type="button" className="wq-btn yes" onClick={() => onSelect(market.marketId, "up")} aria-label={`${MARKETS.up} · ${market.asset} · ${formatCadence(market.intervalSec)}`}>
           <span className="wq-side">{MARKETS.up}</span>
         </button>
-        <button type="button" className="wq-btn no" onClick={() => onSelect(market.marketId, "down")}>
+        <button type="button" className="wq-btn no" onClick={() => onSelect(market.marketId, "down")} aria-label={`${MARKETS.down} · ${market.asset} · ${formatCadence(market.intervalSec)}`}>
           <span className="wq-side">{MARKETS.down}</span>
         </button>
       </div>
