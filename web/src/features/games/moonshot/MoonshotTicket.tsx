@@ -29,6 +29,8 @@ import { RANGE } from "../../range/copy";
 import { rangeKeys } from "../../range/data";
 import { usdBand } from "../../range/format";
 import { useRangeWrites } from "../../range/useRangeWrites";
+import { callShareInput } from "../../share/call-share";
+import { SharePill } from "../../share/SharePill";
 import { MOONSHOT } from "./copy";
 
 const ADDS = [1, 5, 20] as const;
@@ -70,6 +72,7 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
     if (!q || !model?.feed || blocker) return;
     void writes.open({ band: q.rangeBand, feed: model.feed, maxPayoutBase: q.quote.maxPayoutBase, maxStakeBase: mulBpsCeil(q.quote.stakeBase, 10_000 + RANGE_STAKE_HEADROOM_BPS), bandText: target });
   };
+  const placedStakeBase = writes.outcome?.status === "confirmed" ? writes.outcome.stakeBase : null;
   return (
     <div className="flex flex-col gap-4">
       <p className="type-caption text-ink-secondary">{MOONSHOT.aim.must}</p>
@@ -105,6 +108,7 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
         <div role="status" className="rg-receipt">
           <p className="type-body-strong">{RANGE.outcome.placed(writes.outcome.roundId?.toString() ?? "", target, usd(writes.outcome.stakeBase), q ? usd(q.quote.maxPayoutBase) : "")}</p>
           <a href={txUrl(writes.outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption underline">{MOONSHOT.ticket.viewTx}</a>
+          <SharePill input={() => callShareInput({ call: `${market.asset} MOONSHOT`, band: `${market.asset} ${target}`, stake: placedStakeBase === null ? "" : usd(placedStakeBase), toWin: q ? usd(q.quote.maxPayoutBase) : "", expirySec: market.expirySec, intervalSec: market.intervalSec, path: "/games/moonshot", file: `moonshot-${market.asset.toLowerCase()}` })} />
         </div>
       ) : null}
       {writes.outcome?.status === "requote" ? <p role="alert" className="rg-note rg-note--warn">{RANGE.outcome.requote(usd(writes.outcome.stakeBase))}</p> : null}

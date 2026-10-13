@@ -2,11 +2,15 @@ import "server-only";
 // Ported from Agari 4c0278ad:web/src/features/landing/og/{site-image,ticker-image,market-image}.tsx and their data
 // reads: the site card, a terminal's card (`/trade/<symbol>`) and a Window's card (`/proof/<market>`, the shareable
 // Window link since `/markets/<id>` hands off to the terminal, D-192). Each reads the index within the preview budget
-// and renders without the data rather than fail.
+// and renders without the data rather than fail. R4-13a (D-227): the ticker card also previews `/tickers/<symbol>`, and
+// a wallet's record previews `/u/<address>`.
 import { isTickerSymbol, TICKERS, type TickerSymbol } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import { indexReader } from "@cwf/db/idx";
 import { ImageResponse } from "next/og";
+import { formatBaseUnits } from "@cwf/core/units";
+import { isAddress } from "viem";
+import { readProfile } from "@/features/profile/data";
 import { readProof, type ProofWindow } from "@/features/proof/data";
 import { db } from "@/server/db";
 import { OG_COPY } from "./copy";
@@ -107,6 +111,32 @@ export async function windowImage(market: string): Promise<ImageResponse> {
           <div style={{ display: "flex", marginTop: 24, fontSize: 32, color: OG.soft }}>{read === "unknown" || !valid ? V.unknown : V.unread}</div>
         </div>
       )}
+    </OgFrame>,
+    { ...OG_SIZE, fonts },
+  );
+}
+
+/** `/u/<address>/opengraph-image`: the short address, its settled P&L, its record and its place on the board. */
+export async function profileImage(raw: string): Promise<ImageResponse> {
+  const P = OG_COPY.profile;
+  const valid = isAddress(raw);
+  const [fonts, p] = await Promise.all([ogFonts(), valid ? withinBudget(readProfile(raw)) : Promise.resolve(null)]);
+  const pnl = p ? BigInt(p.pnlBase) : 0n;
+  const pnlText = `${pnl < 0n ? "−" : "+"}$${formatBaseUnits(pnl < 0n ? -pnl : pnl, 6, { minDp: 2, maxDp: 2 })}`;
+  const line = !valid ? P.invalid : !p ? P.unread : p.house ? P.house : p.rounds === 0 ? P.none : P.record(p.rounds, Math.round(p.winRatePct));
+  return new ImageResponse(
+    <OgFrame eyebrow={P.eyebrow}>
+      <div style={{ display: "flex", flex: 1, flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ ...HEADLINE, color: OG.ink }}>{valid ? `${raw.slice(0, 6)}…${raw.slice(-4)}` : "—"}</div>
+        {p && !p.house && p.rounds > 0 ? (
+          <div style={{ display: "flex", alignItems: "baseline", gap: 24, marginTop: 24 }}>
+            <div style={{ ...QUESTION, color: pnl < 0n ? OG.soft : OG.vermilion }}>{pnlText}</div>
+            <div style={{ display: "flex", fontSize: 30, color: OG.soft }}>{P.pnl}</div>
+          </div>
+        ) : null}
+        <div style={{ display: "flex", marginTop: 24, fontSize: 32, color: OG.soft }}>{line}</div>
+        {p && p.rank !== null ? <div style={{ display: "flex", marginTop: 10, fontSize: 30, color: OG.ink }}>{P.rank(p.rank, p.of)}</div> : null}
+      </div>
     </OgFrame>,
     { ...OG_SIZE, fonts },
   );

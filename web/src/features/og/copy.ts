@@ -32,4 +32,16 @@ export const OG_COPY = {
     /** The index was slow or down when the card was drawn: say what the page holds, not that the Window is missing. */
     unread: "Both signed prints and its verdict, re-verifiable in your browser.",
   },
+  /** `/u/<address>` (R4-13a, D-227): the wallet's settled record, as its profile shows it. */
+  profile: {
+    alt: "A Mitoshi trader's record: settled Windows, win rate and P&L.",
+    eyebrow: "Record",
+    pnl: "P&L, settled",
+    record: (rounds: number, winRatePct: number) => `${rounds} Window${rounds === 1 ? "" : "s"} settled · ${winRatePct}% won`,
+    rank: (rank: number, of: number) => `#${rank} of ${of} on the board`,
+    none: "No settled Window yet.",
+    house: "A house key: it makes markets, so it has no record.",
+    invalid: "Not a wallet address.",
+    unread: "Its record, every Window with its proof.",
+  },
 } as const;

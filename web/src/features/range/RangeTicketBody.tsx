@@ -27,6 +27,9 @@ import { useNowMs } from "@/lib/clock";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
 import { feedKeyOf } from "../markets/units";
+import { formatCadence } from "@cwf/core/copy";
+import { callShareInput } from "../share/call-share";
+import { SharePill } from "../share/SharePill";
 import { formatMultiplier, usd } from "../parlay/format";
 import { fetchSpots } from "../parlay/useParlayQuote";
 import { publishBand } from "./band-store";
@@ -110,6 +113,7 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
   };
   const insidePct = quote ? Number((quote.probRaw * 10_000n) / 1_000_000n) / 100 : null;
 
+  const placedStakeBase = writes.outcome?.status === "confirmed" ? writes.outcome.stakeBase : null;
   return (
     <div className="rg flex flex-col gap-4">
       <p className="type-caption text-ink-secondary">{RANGE.band.mustFinish(market.asset, side)}</p>
@@ -169,6 +173,7 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
           <p className="type-body-strong">{RANGE.outcome.placed(writes.outcome.roundId?.toString() ?? "", bandText, usd(writes.outcome.stakeBase), quote ? usd(quote.maxPayoutBase) : "")}</p>
           <a href={txUrl(writes.outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption underline">{RANGE.outcome.viewReceipt}</a>
           <button type="button" className="min-h-touch type-body-strong underline" onClick={writes.reset}>{RANGE.outcome.another}</button>
+          <SharePill input={() => callShareInput({ call: `${market.asset} RANGE · ${formatCadence(market.intervalSec).toUpperCase()}`, band: `${market.asset} ${bandText}`, stake: placedStakeBase === null ? "" : usd(placedStakeBase), toWin: quote ? usd(quote.maxPayoutBase) : "", expirySec: market.expirySec, intervalSec: market.intervalSec, path: `/trade/${market.asset}`, file: `range-${market.asset.toLowerCase()}` })} />
         </div>
       ) : null}
       {writes.outcome?.status === "requote" ? <p role="alert" className="rg-note rg-note--warn">{RANGE.outcome.requote(usd(writes.outcome.stakeBase))}</p> : null}

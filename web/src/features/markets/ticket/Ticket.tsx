@@ -154,7 +154,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
       {booked || scheduled || pending ? (
         <CallCard
           card={{
-            asset: market.asset, side: booked?.side ?? pending?.side ?? side ?? "up", lineRaw: t.openingRaw, stakeBase: booked?.costBase ?? cardQuote?.maxCostBase ?? 0n, contractsRaw: booked?.contractsRaw ?? cardQuote?.contractsRaw ?? 0n, decimals,
+            asset: market.asset, intervalSec: market.intervalSec, side: booked?.side ?? pending?.side ?? side ?? "up", lineRaw: t.openingRaw, stakeBase: booked?.costBase ?? cardQuote?.maxCostBase ?? 0n, contractsRaw: booked?.contractsRaw ?? cardQuote?.contractsRaw ?? 0n, decimals,
             tradingStartSec: market.tradingStartSec, expirySec: market.expirySec, txHash: booked?.txHash ?? scheduled?.txHash ?? pending?.txHash ?? null, placedAtMs: placedAtMs || clockNow(),
             resting: !booked && !pending, pending: pending !== null,
           }}

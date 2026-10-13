@@ -23,6 +23,8 @@ import { OrderSummary } from "@/components/ui/order-summary";
 import { AmountField, QuickAdds } from "@/components/ui/prediction-ticket";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useWalletSession } from "@/lib/wallet-session";
+import { callShareInput } from "../share/call-share";
+import { SharePill } from "../share/SharePill";
 import { PARLAY } from "./copy";
 import type { LegWindow } from "./data";
 import { formatMultiplier, formatProbPct, usd, utilizationPct } from "./format";
@@ -132,6 +134,7 @@ export function ParlaySlip({ reserve, windows }: { reserve: ParlayReserveState; 
           <p className="type-body-strong text-ink">{PARLAY.outcome.placed(outcome.parlayId?.toString() ?? "", slip.legs.length, usd(outcome.stakeBase), quote ? usd(quote.maxPayoutBase) : "")}</p>
           <a href={txUrl(outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption text-cream-ink underline">{PARLAY.outcome.viewReceipt}</a>
           <button type="button" className="min-h-touch type-body-strong text-ink underline" onClick={() => { writes.reset(); slip.clear(); }}>{PARLAY.outcome.another}</button>
+          <SharePill input={() => callShareInput({ call: `PARLAY · ${slip.legs.length} LEGS`, band: slip.legs.map((l) => `${l.laneKey.split("|")[0]} ${l.side.toUpperCase()}`).join(" + "), stake: usd(outcome.stakeBase), toWin: quote ? usd(quote.maxPayoutBase) : "", expirySec: Math.max(...legs.map((l) => l.expirySec)), path: "/parlay", file: `parlay-${outcome.parlayId?.toString() ?? "slip"}` })} />
         </div>
       ) : null}
       {outcome?.status === "requote" ? <p role="alert" className="ps-note ps-note--warn">{PARLAY.outcome.requote(usd(outcome.stakeBase))}</p> : null}
