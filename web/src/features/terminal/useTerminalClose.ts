@@ -153,12 +153,15 @@ export function useTerminalClose() {
             const partial = sold < p.heldRaw;
             const costShare = p.heldRaw > 0n ? (p.costBase * sold) / p.heldRaw : p.costBase;
             const pnl = outcome.booked.proceedsBase - costShare;
-            closeFeedback(Number(pnl));
+            // A cost the index hasn't caught up with ("Updating") is not zero (D-227): say what Close paid, no P&L on it.
+            const known = p.costStale !== true;
+            closeFeedback(known ? Number(pnl) : 0);
             if (!partial) forgetEntry(p.entryKey, p.side);
             void invalidateAfterWrite(queryClient, { wallet, marketId: p.marketId });
             const title = partial ? TERMINAL.close.reduced(p.asset) : why === "trail" ? TERMINAL.trail.hit(p.asset) : why === "tp" ? TERMINAL.exits.tpHit(p.asset) : why === "sl" ? TERMINAL.exits.slHit(p.asset) : TERMINAL.close.closed(p.asset);
             if (!partial && why !== "close") clearExits(p);
-            return void notify.item({ id, title, description: why !== "close" && !partial ? TERMINAL.close.lockedIn(money(pnl, true)) : TERMINAL.close.realized(money(pnl, true), money(outcome.booked.proceedsBase)) });
+            const paid = money(outcome.booked.proceedsBase);
+            return void notify.item({ id, title, description: !known ? TERMINAL.close.paid(paid) : why !== "close" && !partial ? TERMINAL.close.lockedIn(money(pnl, true)) : TERMINAL.close.realized(money(pnl, true), paid) });
           }
           case "requote": {
             const next = outcome.exit;

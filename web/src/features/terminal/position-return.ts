@@ -13,14 +13,14 @@ export const isPriced = (s: PositionStatus): boolean => s === "priced" || s === 
 /** Add, Reduce and TP/SL need a book that takes a sale. */
 export const canTrade = (s: PositionStatus): boolean => s === "priced" || s === "partial";
 
-/** The row's status line ("" when the figures say it all). */
-export function statusText(s: PositionStatus, expirySec: number, fillablePct: number | null, settled: "resolved" | "voided" | null): string {
+/** The row's status line ("" when the figures say it all); a settled row says whether its payout is anything. */
+export function statusText(s: PositionStatus, expirySec: number, fillablePct: number | null, settled: "resolved" | "voided" | null, valueBase: bigint | null = null): string {
   const t = TERMINAL.positions;
   switch (s) {
     case "partial":
       return t.sellable(fillablePct ?? 0);
     case "settled":
-      return settled === "voided" ? t.voided : t.resolved;
+      return settled === "voided" ? t.voided : valueBase === 0n ? t.resolvedLost : t.resolved;
     case "locked":
       return t.status.locked(clockText(expirySec));
     case "settling":

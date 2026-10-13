@@ -66,7 +66,7 @@ export function BetRow({ legs, values, wallet, closer }: { legs: readonly Termin
   const pnl = sum(vs.map((v) => (v && isPriced(v.status) ? v.pnlBase : null)));
   // No number: why (locked, no bids, updating), from the first leg without one.
   const unpriced = vs.find((v) => v === null || v.valueBase === null);
-  const why = unpriced ? statusText(unpriced.status, p.expirySec, unpriced.fillablePct, unpriced.settled) : "";
+  const why = unpriced ? statusText(unpriced.status, p.expirySec, unpriced.fillablePct, unpriced.settled, unpriced.valueBase) : "";
   return (
     <li className="bets-row">
       <span className={cn("type-label-micro shrink-0", settling ? "text-ink" : "text-ink-secondary")}>

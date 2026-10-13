@@ -1,7 +1,8 @@
 // D-227's money rules, every example worked by hand in dollars (6 decimals: 1_000_000n = $1).
 import { describe, expect, it } from "vitest";
 import { avgTicksOf, boostPayoutBase, boostWorth, combinedSpotFor, costShareOf, paperClose, paysMultiple, positionValueBase, settledPayoutBase, settledWorth, walkTicksOf, walkWorth } from "./position-value";
-import { roiBpsOf, totalsOf, type Valued } from "./positions-totals";
+import { statusText } from "./position-return";
+import { collectOutsideBase, roiBpsOf, totalsOf, vaultOwedBase, type Valued } from "./positions-totals";
 
 const $ = (dollars: number) => BigInt(Math.round(dollars * 1e6));
 
@@ -101,5 +102,38 @@ describe("the Window's combined break-even", () => {
     expect(be).toBeCloseTo(62_010, 1);
     expect(combinedSpotFor([a, () => null], $(9), 62_000, "up")).toBeNull();
     expect(combinedSpotFor([], $(9), 62_000, "up")).toBeNull();
+  });
+});
+
+describe("what an answered Window still owes the Trading Balance (D-227)", () => {
+  const bet = (o: { state: "open" | "resolved" | "voided"; upRaw?: bigint; downRaw?: bigint; winningOutcome?: 0 | 1 | null }) => ({ upRaw: 0n, downRaw: 0n, winningOutcome: null, ...o });
+  it("is the held contracts at the known payout until the crank: won $1 each, void half, lost nothing, open none", () => {
+    // 4 Up won ($4) + a hedge on a void (3 Up + 2 Down → $2.50) + 6 Down lost ($0) + an open Window (its row counts it).
+    const bets = [
+      bet({ state: "resolved", upRaw: $(4), winningOutcome: 0 }),
+      bet({ state: "voided", upRaw: $(3), downRaw: $(2) }),
+      bet({ state: "resolved", downRaw: $(6), winningOutcome: 0 }),
+      bet({ state: "open", upRaw: $(9) }),
+    ];
+    expect(vaultOwedBase(bets)).toBe($(6.5));
+    // Cranked: nothing held, nothing owed (the balance has it).
+    expect(vaultOwedBase([bet({ state: "resolved", winningOutcome: 0 })])).toBe(0n);
+  });
+
+  it("counts what waits to be collected once: an answered Window a wallet row still shows is left to the row", () => {
+    const A = "0xaa", B = "0xbb";
+    // $1.00 won on A, $0.50 void on B, $0.20 credit alone on an open Window (never a row's): $1.70 in all.
+    const sheet = { collectBase: $(1.7), collectByMarket: [{ marketId: A, amountBase: $(1) }, { marketId: B, amountBase: $(0.5) }] } as never;
+    expect(collectOutsideBase(sheet, [])).toBe($(1.7));
+    // The list hasn't caught up with A's answer: its row (at cost) stands for it, the payout waits for the next read.
+    expect(collectOutsideBase(sheet, [{ via: "wallet", marketId: "0xAA" as never }])).toBe($(0.7));
+    // A Trading Balance row on A is the vault's, not the wallet's claim.
+    expect(collectOutsideBase(sheet, [{ via: "vault", marketId: A as never }])).toBe($(1.7));
+  });
+
+  it("says a settled row that pays nothing lost, never \"paying\"", () => {
+    expect(statusText("settled", 0, null, "resolved", $(6))).toBe("Settled · paying");
+    expect(statusText("settled", 0, null, "resolved", 0n)).toBe("Settled · lost");
+    expect(statusText("settled", 0, null, "voided", $(1))).toBe("Void · half back");
   });
 });

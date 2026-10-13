@@ -131,7 +131,10 @@ Trading Balance + Boost, sold-out Windows included) feeds the PnL card, History,
 parlays and Range rounds sit in the list at fair value; voids read neutral. Proven on Moderato (acceptance/R4-1.md):
 three drives — a wallet Reduce, a wallet Reduce + re-entry, a Trading Balance two taps + partial Close + re-entry — and
 a thin book (a wallet holding and a 2× Boost larger than the bids, the Boost's partial close, the wallet's Close there):
-the app's figures equal the chain's to the base unit. The ops exit keeper changed (`decide.ts`): ops needs a deploy.
+the app's figures equal the chain's to the base unit. Spec check: a Window that has its answer now stays in equity at its
+payout until it is paid (the wallet's collect read with its balance in one block; the Trading Balance's until its crank),
+proven on two live hedges through lock, answer and the settler's payout; Close all skips rows no book can take; a
+settled row that pays nothing reads "Settled · lost". The ops exit keeper changed (`decide.ts`): ops needs a deploy.
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on

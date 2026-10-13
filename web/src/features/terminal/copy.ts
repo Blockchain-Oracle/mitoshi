@@ -299,6 +299,8 @@ export const TERMINAL = {
   positions: {
     boost: (x: number) => `Boost ${Number.isInteger(x) ? x : x.toFixed(1)}×`,
     resolved: "Settled · paying",
+    // A Window that answered against the held side pays it nothing: never "paying".
+    resolvedLost: "Settled · lost",
     voided: "Void · half back",
     // D-227 row statuses (Owarine 90a91d71 `returnStatusText`, at its length or less).
     status: {

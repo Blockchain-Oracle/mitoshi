@@ -13,11 +13,14 @@ import { sameValue, totalsOf, type Valued } from "./positions-totals";
 import type { TerminalPosition } from "./terminal-positions";
 import type { TerminalState } from "./useTerminalState";
 import type { useTerminalClose } from "./useTerminalClose";
+import type { PositionStatus } from "./position-return";
 import type { PositionValue } from "./usePositionValue";
 import { useTrailToggle } from "./useTrail";
 import type { useTerminalBets } from "./parlay/useTerminalBets";
 
 type Closer = ReturnType<typeof useTerminalClose>;
+
+const SHUT: ReadonlySet<PositionStatus> = new Set(["locked", "settling", "settled", "no-bids"]);
 
 const sameBet = (a: Valued | undefined, b: Valued) => !!a && a.status === b.status && a.pnlBase === b.pnlBase && a.roiCostBase === b.roiCostBase && a.equityBase === b.equityBase;
 
@@ -32,10 +35,13 @@ export function useTerminalBook(s: TerminalState, closer: Closer, masked: boolea
   const closeEach = async (rows: readonly TerminalPosition[]) => {
     for (const p of rows) await closer.close(p, values.get(p.id)?.exit ?? null);
   };
+  // Close all sells what a book still takes (Owarine 90a91d71 `canTrade`): a locked, settling or settled row pays at its
+  // close and a row with no bids has nothing to sell into — each would only warn.
+  const sellable = s.positions.filter((p) => !SHUT.has(values.get(p.id)?.status ?? "reading"));
   const closeAll = async () => {
     setClosingAll(true);
     try {
-      await closeEach(s.positions);
+      await closeEach(sellable);
     } finally {
       setClosingAll(false);
     }
@@ -73,7 +79,7 @@ export function useTerminalBook(s: TerminalState, closer: Closer, masked: boolea
   const trailActive = () => active.forEach((p, i) => (p.trailStop !== null) === trailing && toggleTrail(p, activeValues[i] ?? null));
 
   return {
-    values, onValue, onBetValue, totals, closingAll, closeAll,
+    values, onValue, onBetValue, totals, closingAll, closeAll, closable: sellable.length,
     active: { rows: active, values: activeValues, lead, leadValue, eligible, trailing, busy: active.some((p) => closer.busy === p.id), locked: activeValues.length > 0 && activeValues.every((v) => v?.locked === true), close: closeActive, trail: trailActive },
   };
 }
