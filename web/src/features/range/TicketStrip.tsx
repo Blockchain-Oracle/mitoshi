@@ -30,7 +30,7 @@ export function TicketStrip({ multiplierMilli, sub, toWinBase, mode, onMode, amo
       <div className={cn("ts-pays", stale && "is-stale")}>
         <div className="ts-left">
           <span className="ts-k">{ticket.pays}</span>
-          <strong className="ts-mult numbers">{multiplierMilli !== null ? `×${(multiplierMilli / 1000).toFixed(2)}` : "—"}</strong>
+          <strong className="ts-mult numbers">{multiplierMilli !== null ? <>×<Odometer value={multiplierMilli / 1000} kind="plain" decimals={2} /></> : "—"}</strong>
           <span className="ts-sub">{sub}</span>
         </div>
         <div className="ts-right">

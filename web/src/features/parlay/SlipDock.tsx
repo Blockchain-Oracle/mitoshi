@@ -72,7 +72,7 @@ function SlipBar({ t, windows, onOpen }: { t: ParlayTicket; windows: readonly Le
           <span className="sb-one">{PARLAY.slip.addOneMore}</span>
         ) : (
           <span className="sb-pays">
-            <span className="sb-mult numbers">{shown ? `${PARLAY.slip.paysShort} ×${(shown.multiplierMilli / 1000).toFixed(2)}` : PARLAY.cta.pricing}</span>
+            <span className="sb-mult numbers">{shown ? <>{PARLAY.slip.paysShort} ×<Odometer value={shown.multiplierMilli / 1000} kind="plain" decimals={2} /></> : PARLAY.cta.pricing}</span>
             {shown ? (
               <span className="sb-win">
                 {PARLAY.slip.toWin} <Odometer value={Number(shown.maxPayoutBase) / UNIT} kind="usd" />

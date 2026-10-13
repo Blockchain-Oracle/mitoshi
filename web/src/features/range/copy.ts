@@ -50,6 +50,7 @@ export const RANGE = {
     rail: "Windows",
     cadence: "Cadence",
     gap: "Gap",
+    gapLater: (when: string) => `Opens to bands in ${when}`,
     allHours: "24/7",
     none: (next: string) => `No open Window · next in ${next}`,
     noneLater: "No open Window",

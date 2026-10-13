@@ -17,9 +17,11 @@ import { RANGE } from "./copy";
 import type { BandWindow } from "./data";
 
 export const cadenceKeyOf = (m: EventMarket): string => (m.lane === "gap" ? "gap" : formatCadence(m.intervalSec));
+/** "3d", "20h" — when a Gap Window comes inside the reserve's horizon. */
+const formatDays = (sec: number) => (sec >= 86_400 ? `${Math.ceil(sec / 86_400)}d` : `${Math.max(1, Math.ceil(sec / 3_600))}h`);
 const cadenceLabel = (key: string) => (key === "gap" ? RANGE.windows.gap : key);
 
-export function WindowPicker({ windows, pickedId, onPick }: { windows: readonly BandWindow[]; pickedId: MarketId | null; onPick: (id: MarketId) => void }) {
+export function WindowPicker({ windows, pickedId, onPick, gapInSec = null }: { windows: readonly BandWindow[]; pickedId: MarketId | null; onPick: (id: MarketId) => void; gapInSec?: number | null }) {
   const priced = windows.filter((w) => w.model !== null);
   const keys = [...new Set(priced.map((w) => cadenceKeyOf(w.market)))];
   const picked = priced.find((w) => w.market.marketId === pickedId) ?? null;
@@ -69,6 +71,12 @@ export function WindowPicker({ windows, pickedId, onPick }: { windows: readonly 
               </button>
             );
           })}
+          {gapInSec !== null && !keys.includes("gap") ? (
+            <button type="button" disabled className="gw-chip" title={RANGE.windows.gapLater(formatDays(gapInSec))}>
+              <span className="gw-sym">{RANGE.windows.gap}</span>
+              <span className="gw-tag">{formatDays(gapInSec)}</span>
+            </button>
+          ) : null}
         </div>
       </ScrollRail>
     </div>

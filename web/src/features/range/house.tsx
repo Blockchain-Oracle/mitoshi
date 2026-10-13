@@ -25,7 +25,7 @@ const laneOf = (w: BandWindow) => `${w.market.asset}|${w.market.lane}|${w.market
 
 export function useHouseWindows(reserve: RangeReserveState, storageKey: string) {
   const nowMs = useNowMs();
-  const { windows, nextOpenSec, loading } = useRangeWindows(nowMs, reserve.params.minTimeLeftSec, reserve.params.maxHorizonSec);
+  const { windows, nextOpenSec, gapInSec, loading } = useRangeWindows(nowMs, reserve.params.minTimeLeftSec, reserve.params.maxHorizonSec);
   const [picked, setPickedState] = useState<{ id: MarketId; lane: string } | null>(null);
   const [cadence, setCadence] = usePersistedState<string>(`cwf:${storageKey}:cadence`, "", KEY_CODEC);
   const priced = windows.filter((w) => w.model !== null);
@@ -43,7 +43,7 @@ export function useHouseWindows(reserve: RangeReserveState, storageKey: string) 
     setCadence(cadenceKeyOf(w.market));
   };
   const empty = loading && priced.length === 0 ? <LoadingState shape="row" label={RANGE.band.waiting} /> : priced.length === 0 ? <p className="gw-empty">{nextOpenSec !== null ? RANGE.windows.none(formatLeft(nextOpenSec * 1000 - nowMs)) : RANGE.windows.noneLater}</p> : null;
-  return { nowMs, windows, current, setPicked, empty };
+  return { nowMs, windows, current, setPicked, empty, gapInSec };
 }
 
 export function HouseHead({ title, kind, reserve, writes, how, infoTitle }: { title: string; kind: RoundKind; reserve: RangeReserveState; writes: ReturnType<typeof useRangeWrites>; how: readonly string[]; infoTitle: string }) {

@@ -38,6 +38,8 @@ export interface RangeWindows {
   cadences: number[];
   /** When the next Window opens on any lane (for the empty line), or null when none is listed. */
   nextOpenSec: number | null;
+  /** Seconds until a trading Gap Window comes inside the reserve's horizon (its disabled chip), or null. */
+  gapInSec: number | null;
   loading: boolean;
 }
 
@@ -70,8 +72,9 @@ export function useRangeWindows(nowMs: number, minTimeLeftSec: number, maxHorizo
     });
     const cadences = [...new Set(windows.filter((w) => w.model).map((w) => w.market.intervalSec))].sort((a, b) => a - b);
     const upcoming = markets.filter((m) => m.tradingStartSec > nowSec).map((m) => m.tradingStartSec);
-    return { windows, cadences, nextOpenSec: upcoming.length ? Math.min(...upcoming) : null, loading: reading === null || (series.length > 0 && models.isPending) };
-  }, [live, markets, nowSec, models.data, models.isPending, reading, series.length]);
+    const farGaps = markets.filter((m) => m.lane === "gap" && nowSec > 0 && statusOf(m, nowSec) === "Trading" && m.expirySec - nowSec > maxHorizonSec).map((m) => m.expirySec - maxHorizonSec - nowSec);
+    return { windows, cadences, nextOpenSec: upcoming.length ? Math.min(...upcoming) : null, gapInSec: farGaps.length ? Math.min(...farGaps) : null, loading: reading === null || (series.length > 0 && models.isPending) };
+  }, [live, markets, nowSec, maxHorizonSec, models.data, models.isPending, reading, series.length]);
 }
 
 export function useRangeRounds(wallet: Address | null): Reading<RangeRound[]> | null {
