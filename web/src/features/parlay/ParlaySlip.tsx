@@ -32,7 +32,7 @@ export function ParlayCta({ t }: { t: ParlayTicket }) {
   if (t.busy || t.writes.fetchingSpots) return <TxCta state={t.writes.tx} action={t.writes.fetchingSpots ? PARLAY.cta.fetchingSpots : PARLAY.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />;
   if (t.blocker || !t.quote) return <button type="button" disabled aria-disabled className="ts-blocked">{t.blocker ?? PARLAY.cta.pricing}</button>;
   return (
-    <HoldToConfirm className="w-full" confirmLabel={t.signedOut ? RANGE.cta.signingIn : PARLAY.cta.placing} onConfirm={t.place}>
+    <HoldToConfirm className="ts-hold w-full" confirmLabel={t.signedOut ? RANGE.cta.signingIn : PARLAY.cta.placing} onConfirm={t.place}>
       {PARLAY.cta.place(usd(t.quote.stakeBase), usd(t.quote.maxPayoutBase))}
     </HoldToConfirm>
   );

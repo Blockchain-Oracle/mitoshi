@@ -171,7 +171,7 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
         ) : blocker || !q ? (
           <button type="button" disabled aria-disabled className="ts-blocked">{blocker ?? MOONSHOT.ticket.pricing}</button>
         ) : (
-          <HoldToConfirm className="w-full" confirmLabel={signedOut ? RANGE.cta.signingIn : MOONSHOT.ticket.placing} onConfirm={fire}>
+          <HoldToConfirm className="ts-hold w-full" confirmLabel={signedOut ? RANGE.cta.signingIn : MOONSHOT.ticket.placing} onConfirm={fire}>
             {MOONSHOT.ticket.place2(usd(q.quote.stakeBase), usd(q.quote.maxPayoutBase))}
           </HoldToConfirm>
         )}

@@ -123,7 +123,7 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
           ) : blocker || !quote ? (
             <button type="button" disabled aria-disabled className="ts-blocked">{blocker ?? RANGE.cta.pricing}</button>
           ) : (
-            <HoldToConfirm className="w-full" confirmLabel={signedOut ? RANGE.cta.signingIn : RANGE.cta.placing} onConfirm={place}>
+            <HoldToConfirm className="ts-hold w-full" confirmLabel={signedOut ? RANGE.cta.signingIn : RANGE.cta.placing} onConfirm={place}>
               {RANGE.cta.place(usd(quote.stakeBase), usd(quote.maxPayoutBase))}
             </HoldToConfirm>
           )}

@@ -145,7 +145,9 @@
 .ts-cap { font-size: 12px; color: var(--color-ink-secondary); }
 .ts-cap button { color: var(--color-accent); text-decoration: underline; min-height: 32px; }
 .ts-blocked { width: 100%; min-height: var(--ticket-cta-height, 52px); padding: 0 16px; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); background: var(--color-surface-2); font-weight: 600; color: var(--color-ink-secondary); cursor: not-allowed; }
-.ts-micro { text-align: center; font-size: 11px; color: var(--color-ink-muted); }
+.ts-micro { text-align: center; font-size: 11px; line-height: 1.3; color: var(--color-ink-muted); }
+/* The hold and its blocker are one height (the ticket CTA's 52), so the block doesn't jump when the hold appears. */
+.ts-hold { min-height: var(--ticket-cta-height); }
 .ts .slide-over-foot .ts-micro, .slide-over-foot .ts-micro { margin-top: 4px; }
 
 /* Moonshot: the aim pad (2 × 5 on a phone, Owarine's vertical ladder from 768) and the distance gauge */
@@ -199,6 +201,22 @@
   .gw-chip:not(:disabled):not(.is-on):hover, .bc-preset:not([aria-pressed="true"]):hover, .ts-chip:not([aria-pressed="true"]):hover,
   .ms-rung:not(:disabled):not([aria-checked="true"]):hover, .bc-nudge:hover, .gh-chip:not(.is-accent):hover, .gh-info:hover { border-color: var(--color-border-strong); color: var(--color-ink); }
   .bc-side:not([aria-checked="true"]):hover, .bc-recenter:hover { color: var(--color-ink); }
+}
+/* R4-5 review (D-227): on a phone the board and the action share one screen. Measured from these rules, the sticky
+   action (~253 px) covered the presets and Inside / Outside at 375 × 812 (the content to the sides' foot ~479 px, the
+   kit's cadence words alone 50 px). A tighter rhythm, nothing removed: the cadence words 32 px tall (a 44 px hit), a
+   32 px distribution, 8 / 6 px gaps, the action's padding and label leading trimmed. */
+@media (max-width: 767px) {
+  .game-page { gap: 8px; }
+  .game-page .rg, .bc { gap: 6px; }
+  .gw { gap: 4px; }
+  .gw-tabs .kit-tab { position: relative; min-height: 32px; font-size: 14px; }
+  .gw-tabs .kit-tab::after { content: ""; position: absolute; inset: -6px 0; }
+  .bc-slider .band-bars { height: 32px; }
+  .bc-slider .band-root { padding: 0; }
+  .bc-foot { padding-top: 0; padding-bottom: 0; }
+  .ts { gap: 6px; padding: 8px 10px; }
+  .ts-k, .ts-sub { line-height: 1.25; }
 }
 /* From 1024 the band and the action block sit side by side; the action is sticky beside the board, not above a dock */
 @media (min-width: 1024px) {
