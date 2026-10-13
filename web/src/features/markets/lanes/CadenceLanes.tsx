@@ -14,6 +14,7 @@ import { EmptyState, ReadingBoundary } from "@/components/states";
 import { useMarketSession } from "@/features/markets/session";
 import { SESSION } from "@/features/markets/session/copy";
 import { useSessionPhrase } from "@/lib/when";
+import { ScrollRail } from "@/components/kit";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNowMs } from "@/lib/clock";
 import { usePager } from "@/lib/use-pager";
@@ -69,14 +70,18 @@ export function CadenceLanes({ state, selectedMarketId, onSelect, onOpenRoom }: 
         return (
           <div className="flex flex-col gap-4">
             <Tabs value={state.activeKey ?? undefined} onValueChange={(v) => state.pin(v as LaneTabKey)}>
-              <TabsList variant="line" className="h-touch w-full justify-start overflow-x-auto group-data-horizontal/tabs:h-touch" aria-label={MARKETS.laneGroup}>
-                {tabs.map((tab) => (
-                  <TabsTrigger key={tab.key} value={tab.key} className="type-body-strong min-h-touch flex-none px-3">
-                    {laneTabLabel(tab.key)}
-                    <span className="numbers type-label-micro text-ink-muted" aria-label={MARKETS.live(tab.count)}>{tab.count}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+              {/* Eight lanes outrun a phone: the kit rail scrolls them with an edge fade where more wait (markets spec
+                  needs21st[1], R4-3 review), as the ticker picker below. */}
+              <ScrollRail label={MARKETS.laneGroup}>
+                <TabsList variant="line" className="h-touch min-w-full justify-start group-data-horizontal/tabs:h-touch" aria-label={MARKETS.laneGroup}>
+                  {tabs.map((tab) => (
+                    <TabsTrigger key={tab.key} value={tab.key} className="type-body-strong min-h-touch flex-none px-3">
+                      {laneTabLabel(tab.key)}
+                      <span className="numbers type-label-micro text-ink-muted" aria-label={MARKETS.live(tab.count)}>{tab.count}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </ScrollRail>
             </Tabs>
             {tickers.length > 1 || state.ticker !== null ? (
               <TickerPicker tickers={tickers} paused={paused} intervalSec={lane?.intervalSec ?? 0} ticker={state.ticker} onPick={state.pinTicker} />

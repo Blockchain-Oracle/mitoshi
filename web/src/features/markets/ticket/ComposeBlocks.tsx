@@ -12,6 +12,7 @@ import { minStakeBase } from "@cwf/core/sizing";
 import { formatBaseUnits, oneUnit } from "@cwf/core/units";
 import { useId } from "react";
 import { Button } from "@/components/ui/button";
+import { BOOST } from "@/features/boost/copy";
 import { cn } from "@/lib/utils";
 import { TICKET, TICKET_PENDING } from "../copy";
 import { SIDE_CLASSES, SIDE_WORD, SIDES } from "../side-styles";
@@ -40,7 +41,6 @@ export function SideSegments({ side, onSelect, prices }: { side: Side | null; on
           key={option}
           role="radio"
           aria-checked={side === option}
-          aria-pressed={side === option}
           variant="outline"
           size="lg"
           onClick={() => onSelect(option)}
@@ -72,7 +72,7 @@ export function LeverageChips({ value, onChange, maxMultiple, lockedReason }: Le
         const label = `${multiple}×`;
         const reason = multiple === 1 ? null : (lockedReason ?? (maxMultiple !== null && multiple > maxMultiple ? TICKET_PENDING.leverageCapped(label, `${maxMultiple}×`) : null));
         return (
-          <button key={multiple} type="button" className="tk-lev" aria-pressed={value === multiple} disabled={reason !== null} title={reason ?? (multiple > 1 ? TICKET_PENDING.boostHint : undefined)} onClick={() => onChange(multiple)}>
+          <button key={multiple} type="button" className="tk-lev" aria-pressed={value === multiple} disabled={reason !== null} title={reason ?? (multiple > 1 ? BOOST.hint : undefined)} onClick={() => onChange(multiple)}>
             {label}
           </button>
         );

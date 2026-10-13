@@ -29,6 +29,12 @@ export function boostCells(boost: BoostTicket): ReadoutCells {
   return q ? { cost: usd(q.stakeBase), ret: usd(q.winIfRightBase), loss: usd(q.stakeBase) } : { cost: null, ret: null, loss: null };
 }
 
+/** Why there is no Boost quote yet, in the CTA's words — "Sizing the boost…" while the reserve is still being read, not
+ *  the reserve's refusal (`useBoostTicket` names a missing reserve state "Quote unavailable" before its first read). */
+export function boostWhy(boost: BoostTicket): string {
+  return boost.loading ? BOOST.cta.pricing : (boost.blocker ?? BOOST.cta.pricing);
+}
+
 export function BoostCta({ boost, writes, multiple }: { boost: BoostTicket; writes: BoostWrites; multiple: number }) {
   const session = useWalletSession();
   const busy = writes.tx.kind === "signing" || writes.tx.kind === "submitted" || writes.tx.kind === "unknown";
@@ -40,10 +46,10 @@ export function BoostCta({ boost, writes, multiple }: { boost: BoostTicket; writ
     );
   }
   if (busy || writes.fetchingSpot) return <TxCta state={writes.tx} action={writes.fetchingSpot ? BOOST.cta.fetchingSpot : BOOST.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />;
-  if (boost.blocker || !boost.quote) {
+  if (boost.loading || boost.blocker || !boost.quote) {
     return (
       <button type="button" disabled aria-disabled className="min-h-touch w-full cursor-not-allowed rounded-md border border-hairline bg-surface-2 px-4 type-body-strong text-ink-secondary">
-        {boost.blocker ?? BOOST.cta.pricing}
+        {boostWhy(boost)}
       </button>
     );
   }

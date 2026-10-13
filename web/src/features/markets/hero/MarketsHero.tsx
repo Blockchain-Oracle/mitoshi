@@ -6,8 +6,9 @@
  * the hero's own boxes (`.hero-chart` and, from `lg`, the framed rail), so nothing shifts when the Window lands. No crop
  * marks (R4-0): inside the stage they drew a bracket over the chart head; the stage's edge is the frame.
  */
-import type { EventMarket, MarketId, Side } from "@cwf/core";
+import type { Diagnosis, EventMarket, MarketId, Side } from "@cwf/core";
 import { isOk } from "@cwf/core";
+import { diagnosisCopy } from "@cwf/core/copy";
 import type { ReactNode } from "react";
 import { EmptyState, ErrorState, LoadingState } from "@/components/states";
 import { MARKETS, TICKET } from "../copy";
@@ -37,9 +38,10 @@ function HeroPlaceholder({ lanes, resolving }: { lanes: LanesState; resolving: b
 
 /**
  * The rail with no Window to call (Owarine 90a91d71 `TicketPlaceholderView`, D-086): the ticket's own framed panel,
- * saying what the ticket would say and when the market runs — or the ticket's skeleton while the venue is read.
+ * saying what the ticket would say and when the market runs — or the ticket's skeleton while the venue is read. A failed
+ * read says that it failed (R4-3 review), never "No live Windows", which nobody has read.
  */
-export function RailPlaceholder({ waiting, allHours }: { waiting: boolean; allHours: boolean }) {
+export function RailPlaceholder({ waiting, allHours, failure = null }: { waiting: boolean; allHours: boolean; failure?: Diagnosis | null }) {
   return (
     <RailFrame>
       {waiting ? (
@@ -47,7 +49,7 @@ export function RailPlaceholder({ waiting, allHours }: { waiting: boolean; allHo
       ) : (
         <>
           <span className="tk-amount-label">{TICKET.title}</span>
-          <p className="type-body text-ink">{MARKETS.noLiveWindows.why}</p>
+          <p className="type-body text-ink">{failure ? diagnosisCopy(failure.kind).headline : MARKETS.noLiveWindows.why}</p>
           <MarketSessionChip allHours={allHours} />
         </>
       )}

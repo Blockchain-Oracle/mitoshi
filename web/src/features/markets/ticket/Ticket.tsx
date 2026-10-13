@@ -30,7 +30,7 @@ import { CALL, TICKET, TICKET_PENDING } from "../copy";
 import { CallCard } from "../calls/CallCard";
 import { useTopOfBook } from "../data/useTopOfBook";
 import { AmountBlock, BetModes, RouteToggle, SideSegments, type BetMode } from "./ComposeBlocks";
-import { BoostCta, BoostOutcome, boostCells } from "./BoostBlocks";
+import { BoostCta, BoostOutcome, boostCells, boostWhy } from "./BoostBlocks";
 import { BOOST } from "@/features/boost/copy";
 import { useBoostTicket } from "@/features/boost/useBoostTicket";
 import { useBoostWrites } from "@/features/boost/useBoostWrites";
@@ -191,7 +191,7 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
           <ReadoutStrip
             cells={boosted ? boostCells(boost) : cellsOf(displayed, decimals)}
             live={boosted ? boost.quote !== null : displayed !== null}
-            caption={boosted ? (boost.quote ? TICKET.liveOdds : (boost.blocker ?? BOOST.cta.pricing)) : caption}
+            caption={boosted ? (boost.quote ? TICKET.liveOdds : boostWhy(boost)) : caption}
             chance={!boosted && displayed ? TICKET.chance(Math.round(displayed.avgPriceBps / 100)) : null}
             note={boosted ? BOOST.knockout(multiple) : null}
           />

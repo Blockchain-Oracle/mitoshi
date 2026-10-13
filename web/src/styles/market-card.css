@@ -87,14 +87,15 @@
 /* Rendering on approach (D-183), as the word board's cards: below the hero on every phone, each card skips style,
    layout and paint while off screen (its countdown and price roll still update the DOM) and keeps its height. */
 /* A card's laid-out height, phone and md+: the off-screen size below and the loading skeleton's (`LoadingState` "cards"). */
-/* R4-3: the Room strip (≈ 46 px with its margin) is part of every card now. */
+/* R4-3: the Room strip is part of every card now — its 44 px target (`.mc-room` below) and part-06's 12 px margin under
+   it, 56 px on top of the 342 / 475 px card (the review's arithmetic; the first estimate counted 46). */
 :root {
-  --market-card-height: 388px;
+  --market-card-height: 398px;
 }
 
 @media (min-width: 48rem) {
   :root {
-    --market-card-height: 521px;
+    --market-card-height: 531px;
   }
 }
 

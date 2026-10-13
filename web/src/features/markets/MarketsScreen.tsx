@@ -90,7 +90,7 @@ function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
   const ticket = selection.market ? (
     <TicketDock market={selection.market} side={selection.side} sessionId={selection.sessionId} />
   ) : (
-    <RailPlaceholder waiting={lanes.reading === null || selection.resolving} allHours={allHours} />
+    <RailPlaceholder waiting={lanes.reading === null || selection.resolving} allHours={allHours} failure={failure} />
   );
 
   return (

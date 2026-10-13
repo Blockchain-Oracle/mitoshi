@@ -11,6 +11,10 @@
   .markets-hero .hero-yesno.page-action { padding-bottom: 8px; background: var(--color-ground); }
 }
 .tk-add, .tk-lev, .tk-mode { min-height: 44px; }
+/* R4-3 review (D-227): `+1 +5 +20` and "Leverage 1× 2× 3×" need ~327 px on one row — more than the 360 px rail's 320 px
+ * of content (1024–1279) and a 320 px phone's sheet; there the chips take a second row, still on the right. */
+.tk-amount-row { flex-wrap: wrap; row-gap: 8px; }
+.tk-amount-row > .tk-levs { margin-left: auto; }
 .pager { display: flex; align-items: center; justify-content: space-between; gap: calc(var(--spacing) * 3); }
 /* 22249's spark readout on the lane card. */
 .mc-spark { position: relative; }

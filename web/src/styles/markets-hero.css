@@ -152,14 +152,6 @@
   white-space: nowrap;
 }
 
-/* Settles on RedStone — Owarine's `SourceLine className="pair-meta"`, under the question. */
-.mh-source {
-  display: block;
-  margin-top: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* text-vermilion — the line itself is the one coloured word in the headline. */
 .mh-question-line {
   color: var(--vermilion);

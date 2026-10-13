@@ -91,7 +91,6 @@ export const TICKET_PENDING = {
   leverageCapped: (multiple: string, max: string) => `${multiple} is over the reserve's ${max} cap`,
   leverageListed: "Boost opens with the Window",
   leveragePrivate: "Private bets are 1×",
-  boostHint: "The reserve fronts the rest. Max loss is your stake.",
 } as const;
 
 /** The Call (Masayume 68f7a09:web/src/features/share/copy.ts `SHARE.call`, keep-list E.7) — an open position, no result implied. */

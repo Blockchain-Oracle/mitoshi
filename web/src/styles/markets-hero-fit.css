@@ -43,20 +43,21 @@
 }
 
 /* Price/Depth (R4-3, D-227): a quiet chip on the canvas's top-left corner, in the cadence tabs' mono caps — the right
-   edge belongs to the price axis and the CLOSES label. */
+   edge belongs to the price axis and the CLOSES label. It ends above the plot's top (26 px, WindowChart): the chart
+   writes OPEN at y 30 a third of the way in, under the chip on a phone panel (R4-3 review). */
 .mh-view {
   position: absolute;
-  top: 8px;
+  top: 3px;
   left: 8px;
   z-index: 2;
   display: inline-flex;
-  padding: 2px;
+  padding: 1px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 9999px;
   background: rgba(5, 5, 5, 0.6);
 }
 .mh-view-btn {
-  min-height: 28px;
+  min-height: 20px;
   padding: 0 10px;
   border-radius: 9999px;
   font-family: var(--font-mono);
@@ -70,7 +71,7 @@
 .mh-view-btn[aria-pressed="true"] { color: var(--vermilion); background: rgba(255, 255, 255, 0.06); }
 /* A 44 px target without a 44 px chip. */
 .mh-view-btn { position: relative; }
-.mh-view-btn::after { content: ""; position: absolute; inset: -8px -2px; }
+.mh-view-btn::after { content: ""; position: absolute; inset: -12px -2px; }
 [data-theme="light"] .mh-view { border-color: rgba(20, 18, 16, 0.12); background: rgba(251, 247, 238, 0.8); }
 [data-theme="light"] .mh-view-btn { color: rgba(20, 18, 16, 0.6); }
 [data-theme="light"] .mh-view-btn:hover { color: #141210; }

@@ -52,7 +52,6 @@ export const SENSEI = {
     whatHref: "/privacy#sensei-ai",
     not: "Never your address, keys, name or email.",
     kept: "Mitoshi doesn't store it.",
-    later: "Stop sharing any time from Sensei's footer.",
     agree: "Agree and ask",
     decline: "Not now",
     declined: "Sensei stays off. Nothing was sent.",
