@@ -1,28 +1,62 @@
 "use client";
 // The filled tap's receipt sheet (R4-13a, D-227; critic portPlan step 5): the cream TxReceipt — what was staked, the
 // Window, the contracts, what it wins if it lands, the transaction on Tempo's explorer — and, when a key signed it, the
-// KeyUsedReceipt line. The Trading Balance key's line carries its live grant: what is left of today's cap and when it
-// expires. The wallet's access key names itself only (its spend is the chain keychain's, which this screen doesn't read).
+// KeyUsedReceipt line with that key's live terms. The Trading Balance key: what is left of today's cap from its vault
+// grant, and the grant's expiry. The wallet's access key: what the chain's AccountKeychain says it may still spend this
+// period (`useKeyRemaining`, the same read the terminal caps a tap by), against the daily limit and expiry it was
+// authorized with on this device. A figure not read yet is left out, never guessed.
+import type { Address } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import { formatBaseUnits, formatUtc, secToMs } from "@cwf/core/units";
+import { useKeyRemaining, useSigner } from "@cwf/markets/react";
 import { KeyUsedReceipt, TxReceipt } from "@/components/tx";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { useSessionView } from "@/features/session";
 import { webEnv } from "@/lib/env";
+import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
+import { readWalletKey } from "@/providers/wallet/wallet-key-store";
 import { money } from "../format";
 import { RECEIPT, useTradeReceipt } from "../receipt";
 
 const DAY_SEC = 86_400;
+const utc = (sec: number) => formatUtc(secToMs(sec), { withSeconds: false, withDate: true });
 
-export function TradeReceiptSheet() {
-  const [r, close] = useTradeReceipt();
+/** The Trading Balance's session key: its vault grant's cap, what today's taps spent of it, and its expiry. */
+function SessionKeyLine() {
   const session = useSessionView();
-  if (!r) return null;
-  const grant = r.key === "session" ? session.grant : null;
+  const grant = session.grant;
   const nowSec = Math.floor(Date.now() / 1000);
   const spent = grant && grant.spentDay === Math.floor(nowSec / DAY_SEC) ? grant.spentTodayBase : 0n;
   const cap = grant?.caps.maxDailySpendBase ?? null;
   const left = grant && cap !== null ? (cap > spent ? cap - spent : 0n) : null;
+  return (
+    <KeyUsedReceipt
+      keyLabel={RECEIPT.keys.session}
+      leftText={left !== null ? money(left) : null}
+      limitText={cap !== null ? money(cap) : null}
+      expiresText={grant ? utc(grant.expiresAtSec) : null}
+    />
+  );
+}
+
+/** This wallet's access key: the keychain's remaining limit, read from the chain, against the terms it was armed with. */
+function WalletKeyLine({ address }: { address: Address | null }) {
+  const armed = address ? readWalletKey(TEMPO_CHAIN_ID, address) : null;
+  const left = useKeyRemaining(address, armed?.keyId ?? null);
+  return (
+    <KeyUsedReceipt
+      keyLabel={RECEIPT.keys.wallet}
+      leftText={left?.ok ? money(left.value.remaining) : null}
+      limitText={armed ? money(armed.limitBase) : null}
+      expiresText={armed ? utc(armed.expirySec) : null}
+    />
+  );
+}
+
+export function TradeReceiptSheet() {
+  const [r, close] = useTradeReceipt();
+  const { address } = useSigner();
+  if (!r) return null;
   return (
     <SlideOver open onOpenChange={(o) => { if (!o) close(); }}>
       <SlideOverContent title={RECEIPT.title}>
@@ -40,14 +74,7 @@ export function TradeReceiptSheet() {
               { label: RECEIPT.toWin, value: money(r.contractsRaw, false, r.decimals) },
             ]}
           />
-          {r.key ? (
-            <KeyUsedReceipt
-              keyLabel={RECEIPT.keys[r.key]}
-              leftText={left !== null ? money(left) : null}
-              limitText={cap !== null ? money(cap) : null}
-              expiresText={grant ? formatUtc(secToMs(grant.expiresAtSec), { withSeconds: false, withDate: true }) : null}
-            />
-          ) : null}
+          {r.key === "session" ? <SessionKeyLine /> : r.key === "wallet" ? <WalletKeyLine address={address} /> : null}
         </div>
       </SlideOverContent>
     </SlideOver>
