@@ -1,0 +1,68 @@
+/* Which world you are in (R4-8, D-227) — Ported from Owarine 90a91d71:web/src/styles/owarine.css `[data-mode]` and
+ * styles/shell.css's flood, on Mitoshi tokens. `html[data-mode]` comes from the session alone (`EnvironmentMode`):
+ * `demo` signed out (paper dollars) keeps today's ground; `testnet` signed in (Tempo Moderato test dollars) tints the
+ * canvas and the rail vermilion, the stage keeps its ground, and the mode pill is vermilion at full strength. A change
+ * floods out from the control that made it (`environment.ts`). Both themes: the tints mix into each theme's own ground. */
+:root { --mode-pill: var(--color-ink); --mode-pill-ink: var(--color-stage); }
+html[data-mode="testnet"] {
+  --color-canvas: color-mix(in srgb, var(--vermilion) 7%, var(--bg));
+  --color-rail: color-mix(in srgb, var(--vermilion) 10%, var(--ms-surface-2));
+  --mode-pill: var(--accent-fill);
+  --mode-pill-ink: var(--on-accent);
+}
+/* The canvas around the stage is the world's (the phone's browser bar follows it, `syncThemeColor`). */
+html[data-mode], html[data-mode] body { background: var(--color-canvas); }
+.app-rail { transition: background-color 520ms var(--ease-out); }
+
+/* A change of world floods out from the control that made it (roy-chain's D100 flood); `environment.ts` sets the
+ * origin and the class for the length of the transition only. */
+html.mode-flooding::view-transition-old(root),
+html.mode-flooding::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.mode-flooding::view-transition-new(root) { animation: mode-flood 520ms cubic-bezier(0.65, 0, 0.35, 1); }
+@keyframes mode-flood {
+  from { clip-path: circle(0 at var(--flood-x, 50%) var(--flood-y, 50%)); }
+  to { clip-path: circle(150vmax at var(--flood-x, 50%) var(--flood-y, 50%)); }
+}
+/* View transitions do not inherit the reduced-motion rules. */
+@media (prefers-reduced-motion: reduce) {
+  html.mode-flooding::view-transition-group(*), html.mode-flooding::view-transition-old(*), html.mode-flooding::view-transition-new(*) { animation: none !important; }
+}
+
+/* ── the mode plate (R4-8, D-227; Owarine 90a91d71 `NetworkPlate` / `NetworkStamp`): which world you are in, as a
+ * ticket torn from the rail — DEMO in ink, TESTNET in vermilion. `--mode-pill` follows `html[data-mode]`. ── */
+.mode-plate, .mode-stamp-tile { color: var(--mode-pill-ink); background: var(--mode-pill); outline: none; transition: background-color 520ms var(--ease-out), color 520ms var(--ease-out); }
+.mode-plate:focus-visible, .mode-stamp-tile:focus-visible { box-shadow: 0 0 0 2px var(--color-rail), 0 0 0 4px var(--color-accent); }
+.mode-plate { position: relative; display: none; width: 100%; align-items: center; padding: 10px 12px 10px 0; border-radius: 1.25rem; text-align: left; }
+.mode-plate-stub { display: grid; width: 56px; flex: none; place-items: center; }
+.mode-plate-perf { position: relative; width: 2px; flex: none; align-self: stretch; border-left: 2px dashed color-mix(in srgb, currentColor 35%, transparent); }
+.mode-plate-perf::before, .mode-plate-perf::after { content: ""; position: absolute; left: -7px; width: 12px; height: 12px; border-radius: var(--radius-full); background: var(--color-rail); transition: background-color 520ms var(--ease-out); }
+.mode-plate-perf::before { top: -16px; }
+.mode-plate-perf::after { bottom: -16px; }
+.mode-plate-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; padding-left: 12px; }
+.mode-plate-label { overflow: hidden; font: 800 20px/1.1 var(--font-heading); letter-spacing: 0.02em; text-overflow: ellipsis; white-space: nowrap; }
+.mode-plate-line { display: flex; align-items: center; gap: 6px; overflow: hidden; font: 600 12px/1.2 var(--font-body); opacity: 0.8; white-space: nowrap; }
+.mode-plate-arrow { width: 16px; height: 16px; flex: none; opacity: 0.5; transition: opacity var(--duration-hover), translate var(--duration-hover); }
+.mode-plate:hover .mode-plate-arrow { opacity: 1; translate: 2px -2px; }
+.mode-ping { position: relative; display: grid; width: 8px; height: 8px; flex: none; place-items: center; }
+.mode-ping::before { content: ""; position: absolute; inset: 0; border-radius: var(--radius-full); background: currentColor; opacity: 0.4; animation: mode-ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite; }
+.mode-ping::after { content: ""; position: relative; width: 6px; height: 6px; border-radius: var(--radius-full); background: currentColor; }
+@keyframes mode-ping { 75%, 100% { scale: 2; opacity: 0; } }
+.mode-stamp-tile { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 1rem; }
+.mode-stamp {
+  display: grid; width: 36px; height: 36px; flex: none; place-items: center; border: 2px solid currentColor; border-radius: 0.7rem; rotate: -6deg;
+  font: 700 18px/1 var(--font-stamp); animation: mode-stamp 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.mode-stamp-tile .mode-stamp { width: 32px; height: 32px; font-size: 16px; }
+/* The seal lands like a stamp: pressed down, a small overshoot, settled (Owarine kit.css `ow-seal-stamp`). */
+@keyframes mode-stamp { 0% { scale: 1.6; opacity: 0; } 55% { scale: 0.92; opacity: 1; } 100% { scale: 1; opacity: 1; } }
+@media (min-width: 1280px) { .rail-plate { display: flex; } .rail-stamp { display: none; } }
+@media (prefers-reduced-motion: reduce) { .mode-stamp, .mode-ping::before { animation: none; } }
+
+/* The phone's mode chip (Owarine `ModeChip`; R4-8): the world's hanko and word on the mode-pill colour, not a button. */
+.mode-chip { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--radius-full); background: var(--mode-pill); color: var(--mode-pill-ink); font: 800 11px/1 var(--font-data); letter-spacing: 0.08em; white-space: nowrap; transition: background-color 520ms var(--ease-out), color 520ms var(--ease-out); }
+.mode-chip-kanji { font: 700 13px/1 var(--font-stamp); letter-spacing: 0; }
+/* The narrowest phones keep the hanko and say the word to a screen reader only (R4-0, D-227). */
+@media (max-width: 360px) {
+  .mode-chip { padding: 0 8px; }
+  .mode-chip-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}

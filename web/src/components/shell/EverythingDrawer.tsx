@@ -1,18 +1,21 @@
 "use client";
 // More (D-226) — Owarine 90a91d71 `components/shell/app/MoreSheet.tsx`'s anatomy on Mitoshi's drawer (a bottom sheet
-// under 768 px, the wide right drawer above): the search row, the places the phone dock has no room for as a 3-up grid,
-// then every page that is not a place, grouped, as tiles (icon disc, name, one line). Opened from the rail, the dock and
-// `?d=everything`. The external Docs link goes through `open-external` so the app's web view never navigates away; a
-// link drops the URL param first so Back from the new page doesn't reopen the drawer.
+// under 768 px, the wide right drawer above, D-190): the search pill, the places the phone dock has no room for as a
+// 3-up inverted grid, then every page that is not a place, grouped, as tiles (icon disc, name, one line), and the small
+// print. Opened from the rail, the dock and `?d=everything`. R4-8 (D-227): the search pill opens the whole ⌘K palette
+// (places, live markets, every page) — Owarine's `OPEN_SEARCH_EVENT` — so a phone reaches it; it used to filter More's
+// own tiles only. A page not connected yet says "Soon" (critic gap 18). The external Docs link goes through
+// `open-external`; a link drops the URL param first so Back from the new page doesn't reopen the drawer.
 import { Search } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
-import { SHELL } from "@/lib/copy";
-import { dropDrawerParam } from "@/lib/drawer-param";
+import { isPendingHref } from "@/lib/capabilities";
+import { FOOTER, SHELL } from "@/lib/copy";
+import { closeDrawer, dropDrawerParam } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { externalClick } from "@/lib/open-external";
-import { DOCK_OMITTED, EVERYTHING_SECTIONS, isActiveNavItem, searchNav, type NavItem } from "./header/nav-items";
+import { openSearch } from "@/lib/search-event";
+import { DOCK_OMITTED, EVERYTHING_SECTIONS, isActiveNavItem, type NavItem } from "./header/nav-items";
 import ThemeToggle from "./ThemeToggle";
 
 export interface EverythingDrawerProps {
@@ -27,7 +30,11 @@ function Tile({ item, active }: { item: NavItem; active: boolean }) {
     <>
       <span className="more-tile-disc"><Icon aria-hidden /></span>
       <span className="more-tile-copy">
-        <span className="more-tile-name">{item.name}{item.beta ? <sup>beta</sup> : null}</span>
+        <span className="more-tile-name">
+          {item.name}
+          {item.beta ? <sup>beta</sup> : null}
+          {isPendingHref(item.href) ? <span className="nav-soon">{SHELL.soon}</span> : null}
+        </span>
         <span className="more-tile-line">{item.description}</span>
       </span>
     </>
@@ -42,37 +49,35 @@ function Tile({ item, active }: { item: NavItem; active: boolean }) {
 }
 
 export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDrawerProps) {
-  const [query, setQuery] = useState("");
-  useEffect(() => setQuery(""), [pathname, open]);
-  const sections = useMemo(
-    () => EVERYTHING_SECTIONS.map((s) => ({ ...s, items: searchNav(s.items, query) })).filter((s) => s.items.length > 0),
-    [query],
-  );
-
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
       <SlideOverContent title={SHELL.moreTitle} size="lg" fields>
         <div className="more-body">
-          <label className="more-search" role="search">
-            <span className="sr-only">{SHELL.searchLabel}</span>
-            <Search aria-hidden />
-            <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder={SHELL.searchPlaceholder} autoComplete="off" enterKeyHint="go" />
-          </label>
-          {query === "" ? (
-            <nav className="more-places" aria-label={SHELL.railNav}>
-              {DOCK_OMITTED.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link key={item.id} href={item.href} className="more-place" aria-current={isActiveNavItem(pathname, item) ? "page" : undefined} onClick={() => { tapFeedback(); dropDrawerParam(); }}>
-                    <Icon aria-hidden />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          ) : null}
-          {sections.length === 0 ? <p className="more-empty" role="status">{SHELL.searchEmpty(query)}</p> : null}
-          {sections.map((section) => (
+          <button
+            type="button"
+            className="more-search"
+            aria-haspopup="dialog"
+            onClick={() => {
+              tapFeedback();
+              closeDrawer();
+              openSearch();
+            }}
+          >
+            <Search aria-hidden strokeWidth={2.5} />
+            <span>{SHELL.searchPlaceholder}</span>
+          </button>
+          <nav className="more-places" aria-label={SHELL.railNav}>
+            {DOCK_OMITTED.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link key={item.id} href={item.href} className="more-place" aria-current={isActiveNavItem(pathname, item) ? "page" : undefined} onClick={() => { tapFeedback(); dropDrawerParam(); }}>
+                  <Icon aria-hidden />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+          {EVERYTHING_SECTIONS.map((section) => (
             <section className="more-section" key={section.id} aria-labelledby={`more-${section.id}`}>
               <h2 id={`more-${section.id}`} className="more-section-title">{section.name}</h2>
               <div className="more-grid">
@@ -82,9 +87,10 @@ export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDra
               </div>
             </section>
           ))}
-          <div className="more-foot">
-            <ThemeToggle />
-          </div>
+          <footer className="more-credit">
+            <p>{FOOTER.disclosure}</p>
+            <span className="more-foot"><ThemeToggle /></span>
+          </footer>
         </div>
       </SlideOverContent>
     </SlideOver>

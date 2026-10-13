@@ -27,32 +27,42 @@
 }
 
 /* Everything on a phone (P6, D-224; Owarine `MoreSheet`): the undocked places as a 3-up grid over the sections, and the
- * theme toggle in the foot (the top line has no room for it there). Both hidden from 768 px (app-shell.css). */
+ * theme toggle in the foot (the top line has no room for it there). Both hidden from 768 px (app-shell.css). R4-8
+ * (D-227): the places are INVERTED tiles (ink ground, stage ink), as Owarine's black ones. */
 .more-places { display: none; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.more-place { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border-radius: 0.75rem; background: var(--color-rail); color: var(--color-ink); font-size: 13px; font-weight: 700; }
-.more-place[aria-current="page"] { outline: 2px solid var(--color-accent); outline-offset: -2px; }
-.more-place svg { width: 22px; height: 22px; stroke-width: 1.9; }
-.more-foot { display: none; justify-content: center; padding-bottom: env(safe-area-inset-bottom, 0px); }
+.more-place { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border-radius: 16px; background: var(--color-ink); color: var(--color-stage); font: 700 14px/1.2 var(--font-body); outline: none; }
+.more-place[aria-current="page"] { box-shadow: inset 0 0 0 2px var(--color-accent); }
+.more-place:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); }
+.more-place svg { width: 22px; height: 22px; stroke-width: 2; }
+.more-foot { display: none; }
 
-/* ── More (D-226; Owarine `MoreSheet`): a pill search row, the 3-up places, sections of tiles. ── */
+/* ── More (D-226; Owarine `MoreSheet`): the search pill (it opens ⌘K, R4-8), the 3-up places, sections of tiles, the
+ * small print. ── */
 .more-body { display: flex; flex-direction: column; gap: 24px; padding-bottom: 8px; }
-.more-search { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 16px; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink-secondary); }
-.more-search:focus-within { box-shadow: 0 0 0 2px var(--color-accent); }
+.more-search { display: flex; width: 100%; height: 48px; flex: none; align-items: center; gap: 10px; padding: 0 16px; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink-secondary); font: 400 15px/1 var(--font-body); text-align: left; outline: none; transition: color 160ms var(--ease); }
+.more-search:hover { color: var(--color-ink); }
+.more-search:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); }
 .more-search svg { flex: none; width: 18px; height: 18px; }
-.more-search input { flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: var(--color-ink); font-size: 16px; outline: none; /* ≥ 16 px: iOS never zooms (§2.5) */ }
-.more-search input::placeholder { color: var(--color-ink-secondary); }
-.more-empty { padding: 4px; color: var(--color-ink-secondary); font-size: 13px; }
 .more-section { display: flex; flex-direction: column; gap: 8px; }
-.more-section-title { padding: 0 4px; color: var(--color-ink-secondary); font: 700 11px/1.2 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; }
+.more-section-title { padding: 0 4px; color: var(--color-ink-secondary); font: 700 12px/1.2 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; }
 .more-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 @media (min-width: 640px) { .more-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.more-tile { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: var(--radius-lg); background: color-mix(in srgb, var(--color-surface-2) 60%, transparent); color: var(--color-ink); outline: none; transition: background-color 160ms var(--ease); }
+.more-tile { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 16px; background: color-mix(in srgb, var(--color-surface-2) 60%, transparent); color: var(--color-ink); outline: none; transition: background-color 160ms var(--ease); }
 .more-tile:hover, .more-tile[aria-current="page"] { background: var(--color-surface-2); }
 .more-tile:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); }
 .more-tile-disc { display: grid; flex: none; width: 36px; height: 36px; place-items: center; border-radius: var(--radius-full); background: var(--color-surface-1); }
 .more-tile-disc svg { width: 18px; height: 18px; }
 .more-tile[aria-current="page"] .more-tile-disc { color: var(--color-accent); }
 .more-tile-copy { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
-.more-tile-name { font: 700 14px/1.25 var(--font-body); }
-.more-tile-name sup { margin-left: 4px; color: var(--color-accent); font: 600 9px/1 var(--font-data); text-transform: uppercase; }
-.more-tile-line { display: -webkit-box; overflow: hidden; color: var(--color-ink-secondary); font-size: 12px; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.more-tile-name { display: flex; align-items: center; gap: 6px; font: 700 14px/1.25 var(--font-body); }
+.more-tile-name sup { margin-left: -2px; color: var(--color-accent); font: 600 9px/1 var(--font-data); text-transform: uppercase; }
+.more-tile-line { display: -webkit-box; overflow: hidden; color: var(--color-ink-secondary); font-size: 13px; line-height: 1.4; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.more-credit { display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding-top: 16px; border-top: 1px solid var(--color-hairline); color: var(--color-ink-secondary); font: 400 13px/1.45 var(--font-body); }
+.more-credit .more-foot { justify-content: center; padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* A listed page whose surface is not connected yet (critic gap 18, R4-8 D-227): reachable, and it says so — a small die-
+ * cut "Soon" on More's tiles, ⌘K's rows and the rail's sub-items. */
+.nav-soon {
+  display: inline-flex; flex: none; align-items: center; height: 18px; padding: 0 6px; border-radius: var(--radius-sm); background: var(--color-surface-2);
+  box-shadow: inset 0 0 0 1px var(--color-hairline); color: var(--color-ink-secondary); font: 600 10px/1 var(--font-data); letter-spacing: 0.06em; text-transform: uppercase; rotate: -3deg;
+}

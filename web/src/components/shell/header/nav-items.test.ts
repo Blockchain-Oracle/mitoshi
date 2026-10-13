@@ -1,11 +1,11 @@
 // Ported from Masayume 68f7a09:web/src/components/shell/header/nav-items.test.ts, plus the route-coverage contract
 // against the real app directory (Agari 03b30ab nav-items.test.ts): every navigable route has a page and a nav home,
 // every page is reachable, and every pending page is registered.
-import { readdirSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { PENDING } from "../../../lib/capabilities";
+import { PENDING, PENDING_ROUTES } from "../../../lib/capabilities";
 import { DOCS_EXTERNAL, DOCS_URL } from "../../../lib/docs-url";
 import { DOCS_NAV } from "../../../features/docs/nav";
 import { DOCK_NAV, EVERYTHING_SECTIONS, isActiveNavItem, isTopLevel, NAVIGABLE_ROUTE_PATHS, NAV_ITEMS, parentOf, RAIL_NAV, searchNav, type NavItem } from "./nav-items";
@@ -98,6 +98,19 @@ describe("route coverage (fidelity list 14)", () => {
     const linkedFrom = new Set([...Object.values(PENDING).flatMap((p) => (p.links ?? []).map((l) => l.href)), ...DOCS_NAV.flatMap((s) => s.pages.map((p) => p.href))]);
     const orphans = routes.filter((r) => !r.includes("[") && !navigable.has(r) && !OFF_NAV.has(r) && !linkedFrom.has(r));
     expect(orphans).toEqual([]);
+  });
+
+  it("marks Soon exactly the pages that render PendingRoute (critic gap 18, R4-8 D-227)", () => {
+    const rendered = new Set<string>();
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir)) {
+        const abs = join(dir, entry);
+        if (statSync(abs).isDirectory()) walk(abs);
+        else if (entry === "page.tsx") for (const m of readFileSync(abs, "utf8").matchAll(/<PendingRoute route="([^"]+)"/g)) rendered.add(m[1]!);
+      }
+    };
+    walk(APP_DIR);
+    expect([...PENDING_ROUTES].sort()).toEqual([...rendered].sort());
   });
 
   it("registers every pending capability against a real page, and nothing else", () => {

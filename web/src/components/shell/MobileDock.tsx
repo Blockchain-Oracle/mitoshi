@@ -3,26 +3,31 @@
 // starc007/dock via Baku, glass removed) — the phone's rail: a floating capsule in the rail colour, the four places and
 // Everything, a pill under the active item. Changed (D-198): lucide icons; the pill moves by a CSS transform (no
 // motion runtime in the first load) instead of a `layoutId`; Everything opens the right-edge drawer (owner rule, no
-// bottom sheet). The path is read inside Suspense.
+// bottom sheet). The path is read inside Suspense. R4-8 (D-227), Owarine 90a91d71 `PhoneDock` + kit `FloatingDock`:
+// More is lit — the pill springs to it — while More is open or the page is no docked place (/games, /leaderboard,
+// /earn… lit nothing), the docked place unlights while More is open, and More says whether it is open.
 import { LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense, type CSSProperties } from "react";
 import { BRAND, SHELL } from "@/lib/copy";
 import MitoshiMark from "./MitoshiMark";
-import { openDrawer } from "@/lib/drawer-param";
+import { openDrawer, useDrawerParam } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { DOCK_NAV, isActiveNavItem } from "./header/nav-items";
 
 const EVERYTHING_DRAWER = "everything";
 
-function Dock({ pathname }: { pathname: string | null }) {
-  const active = DOCK_NAV.findIndex((item) => isActiveNavItem(pathname, item));
+function Dock({ pathname, moreOpen = false }: { pathname: string | null; moreOpen?: boolean }) {
+  const docked = DOCK_NAV.findIndex((item) => isActiveNavItem(pathname, item));
+  const moreLit = moreOpen || (docked < 0 && pathname !== null && pathname !== "/");
+  const active = moreLit ? -1 : docked;
+  // The seal sits in the middle slot, so places after it shift one slot right; More is the last slot.
+  const slot = moreLit ? DOCK_NAV.length + 1 : active >= SEAL_AT ? active + 1 : Math.max(active, 0);
   return (
     <nav aria-label={SHELL.mobileNav} className="app-dock">
       <ul className="dock-list">
-        {/* The seal sits in the middle slot, so places after it shift one slot right. */}
-        <li aria-hidden className="dock-pill" data-on={active >= 0 ? "" : undefined} style={{ "--dock-i": active >= SEAL_AT ? active + 1 : Math.max(active, 0) } as CSSProperties} />
+        <li aria-hidden className="dock-pill" data-on={active >= 0 || moreLit ? "" : undefined} style={{ "--dock-i": slot } as CSSProperties} />
         {DOCK_NAV.flatMap((item, i) => {
           const Icon = item.icon;
           const on = i === active;
@@ -41,6 +46,9 @@ function Dock({ pathname }: { pathname: string | null }) {
             type="button"
             className="dock-item"
             aria-haspopup="dialog"
+            aria-expanded={moreOpen}
+            aria-current={moreLit && !moreOpen ? "page" : undefined}
+            data-lit={moreLit ? "" : undefined}
             aria-label={SHELL.moreTitle}
             onClick={() => {
               tapFeedback();
@@ -69,7 +77,8 @@ function SealSlot() {
 }
 
 function DockWithPath() {
-  return <Dock pathname={usePathname()} />;
+  const { open } = useDrawerParam();
+  return <Dock pathname={usePathname()} moreOpen={open === EVERYTHING_DRAWER} />;
 }
 
 export function MobileDock() {

@@ -6,8 +6,10 @@
 // command palette and the shortcuts modal are lazy islands. Static: nothing scrolls or rotates (WCAG 2.2.2). R4-0
 // (D-227): the chevron steps back through the app's own history, else to the page's registered parent (`PARENTS`) —
 // dropping a segment opened a 404 from /tickers/*, /u/*, /proof/* and /settings/*. The palette's chunk loads on idle,
-// so the first ⌘K opens at once (as EverythingHost preloads its drawer).
-import { ChevronLeft, CircleHelp, Search } from "lucide-react";
+// so the first ⌘K opens at once (as EverythingHost preloads its drawer). R4-8 (D-227), to Owarine 90a91d71
+// `components/shell/app/TopBar.tsx`: no `?` button (the key still opens the list) and no theme toggle (the rail's foot
+// and More's foot carry it); the search trigger is labelled from 768 px; the phone's seal is the vermilion disc.
+import { ChevronLeft, Search } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -20,7 +22,6 @@ import MitoshiMark from "./MitoshiMark";
 import { HealthChip } from "./HealthChip";
 import { ModeChip } from "./ModeChip";
 import { shortcutBlocked } from "./Rail";
-import ThemeToggle from "./ThemeToggle";
 import { isTopLevel, parentOf } from "./header/nav-items";
 
 const loadPalette = () => import("@/components/ui/command-palette");
@@ -100,31 +101,17 @@ export function TopLine({ account }: { account?: ReactNode }) {
         <button
           type="button"
           className="topline-search topline-wide"
-          aria-label={SHELL.commandHint}
+          aria-label={SHELL.searchPlaceholder}
           aria-keyshortcuts="Meta+K Control+K /"
           onClick={() => {
             tapFeedback();
             setPalette(true);
           }}
         >
-          <Search aria-hidden />
+          <Search aria-hidden strokeWidth={2.5} />
           <span className="topline-search-label">{SHELL.searchPlaceholder}</span>
           <kbd aria-hidden className="topline-kbd">⌘K</kbd>
         </button>
-        <button
-          type="button"
-          className="topline-icon"
-          aria-label={SHELL.shortcutsOpen}
-          title={SHELL.shortcutsOpen}
-          aria-keyshortcuts="?"
-          onClick={() => {
-            tapFeedback();
-            setKeys(true);
-          }}
-        >
-          <CircleHelp aria-hidden />
-        </button>
-        <span className="topline-wide"><ThemeToggle /></span>
         {account}
       </div>
       {palette !== null ? <CommandPalette open={palette} onOpenChange={setPalette} /> : null}

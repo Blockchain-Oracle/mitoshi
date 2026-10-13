@@ -11,7 +11,7 @@ const input = "w-full rounded-lg border border-hairline bg-surface-1 px-3 text-b
 
 export function ContactForm({ sent, error }: { sent: boolean; error: string | null }) {
   return (
-    <section className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-gutter py-16 sm:py-24">
+    <section className="mx-auto flex w-full max-w-2xl flex-col gap-8">
       <div className="flex flex-col items-center gap-3 text-center">
         <span aria-hidden className="grid size-10 place-items-center rounded-full bg-surface-2 text-ink"><Mail className="size-5" /></span>
         <h1 className="type-display text-ink">{C.title}</h1>
