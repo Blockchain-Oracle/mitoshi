@@ -44,4 +44,15 @@ export const OG_COPY = {
     invalid: "Not a wallet address.",
     unread: "Its record, every Window with its proof.",
   },
+  /** `/agents/<id>` (R4-13a, D-227): the agent's name and its settled record, as its page shows it. */
+  agent: {
+    alt: "A Mitoshi agent: its name, its settled record and its copiers.",
+    eyebrow: (id: string | null) => (id ? `Agent #${id}` : "Agent"),
+    net: "P&L, settled",
+    record: (settled: number, wins: number, losses: number) => `${settled} settled trade${settled === 1 ? "" : "s"} · ${wins} won · ${losses} lost`,
+    copiers: (n: number) => `${n} copier${n === 1 ? "" : "s"}`,
+    none: "No settled trades yet.",
+    invalid: "Not an agent link.",
+    unread: "Its record, decisions and feedback.",
+  },
 } as const;
