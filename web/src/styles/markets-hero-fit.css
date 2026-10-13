@@ -25,7 +25,7 @@
 /* The foot (R4-3, D-227; Owarine 90a91d71 HeroChartFoot): one row — Room · Alert (· Sensei on a phone) on the left, the
    UP ramp on the right. Price/Depth left the foot for a chip on the canvas's corner, so the foot no longer wraps to a
    second row on phones; under 380 px the Room and the Alert are their icons alone (their titles name them). */
-.hero-chart-foot { column-gap: 14px; flex-wrap: nowrap; }
+.hero-chart-foot { column-gap: 14px; flex-wrap: nowrap; padding-block: 0; }
 .mh-foot-actions { flex-wrap: nowrap; }
 .mh-foot-actions .mh-room { white-space: nowrap; min-height: 44px; }
 .hero-chart-foot .ramp { flex: none; }
