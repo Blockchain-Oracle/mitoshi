@@ -253,6 +253,27 @@ contract RangeReserveSeamTest is RangeTestBase {
         vm.stopPrank();
     }
 
+    // ------------------------------------------------------------------ R4-5 (D-227): σ falls back to the guard's
+
+    /// An asset with a ticker and no reserve σ (a stock) prices on the guard's σ for the Window's Series; a measured
+    /// reserve σ, where set, still wins.
+    function test_sigma_fallsBackToTheGuardsSeriesSigma() public {
+        (int256 low, int256 high) = band(30);
+        reserve.setVolatility(BTC, 0);
+        vm.expectRevert(abi.encodeWithSelector(IRangeReserve.NoVolatility.selector, BTC));
+        reserve.previewOpen(marketA, BTC, INSIDE, low, high, PAYOUT);
+        guard.setSigma(lens.marketRef(marketA).seriesId, 9_000);
+        (,,, IRangeReserve.Basis memory b) = reserve.previewOpen(marketA, BTC, INSIDE, low, high, PAYOUT);
+        assertEq(b.sigmaE8, 9_000, "the guard's Series sigma");
+        (,, uint64 shown) = reserve.previewBasis(marketA, BTC);
+        assertEq(shown, 9_000);
+        (uint256 id,) = openAs(opener, INSIDE, low, high, PAYOUT);
+        assertEq(reserve.basisOf(id).sigmaE8, 9_000, "the round keeps the sigma it was priced on");
+        reserve.setVolatility(BTC, 6_200);
+        (,,, b) = reserve.previewOpen(marketA, BTC, INSIDE, low, high, PAYOUT);
+        assertEq(b.sigmaE8, 6_200, "a measured reserve sigma wins");
+    }
+
     // ------------------------------------------------------------------ construction: the venue is structural
 
     function test_constructor_checksCollateralLensGuardAndOptsOut() public {

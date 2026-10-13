@@ -43,7 +43,7 @@ export const relayTargets = {
       "0x0c894dB5057E18F5C9E09C72faAc0b6098613CD8"
     ],
     "range": [
-      "0xf19342733Bb451503f3806b0d44CC58A3D345052"
+      "0xebBDfAbDffC0D894Cd61BeAd2308E48F16985A05"
     ],
     "stocks": [
       "0x535aFE496eAEE0736570Cc4Abe2db7D18CF41023",
