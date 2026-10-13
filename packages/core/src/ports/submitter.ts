@@ -9,6 +9,7 @@ import type { ParlayIntent } from "../parlay/types";
 import type { RangeIntent } from "../range/types";
 import type { MakerIntent } from "../maker/types";
 import type { LaunchIntent } from "../launch/intents";
+import type { ThemeIntent } from "../themes/intents";
 import type { LeverageIntent } from "../leverage/types";
 import type { PrivateIntent } from "../private/types";
 import type { StrategyIntent } from "../strategies/types";
@@ -171,6 +172,7 @@ export type TxIntent =
   | RangeIntent
   | MakerIntent
   | LaunchIntent
+  | ThemeIntent
   | LeverageIntent
   | PrivateIntent
   | ArenaIntent;
@@ -197,6 +199,10 @@ export function isMakerIntent(intent: TxIntent): intent is MakerIntent {
 
 export function isLaunchIntent(intent: TxIntent): intent is LaunchIntent {
   return intent.kind.startsWith("launch-");
+}
+
+export function isThemeIntent(intent: TxIntent): intent is ThemeIntent {
+  return intent.kind.startsWith("theme-");
 }
 
 export function isLeverageIntent(intent: TxIntent): intent is LeverageIntent {

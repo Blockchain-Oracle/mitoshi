@@ -68,6 +68,7 @@ export const themesPolicy = {
   pillar: "stocks" as const,
   entry: ["follow"] as readonly string[],
   maxGas: 22_000_000n,
+  keychainBatch: { keychain: KEYCHAIN, match: (calls: readonly { to: Address; data: Hex }[]) => matchThemesBatch(calls, "root") },
 } satisfies RelayPolicy & { keychain: Address; batches: readonly Shape[] };
 
 const isTip20 = (a: string) => a.toLowerCase().startsWith("0x20c0");

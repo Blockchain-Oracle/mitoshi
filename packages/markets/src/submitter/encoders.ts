@@ -18,6 +18,7 @@ import { encodeStrategyIntent } from "../strategies/encoders";
 import { encodeVaultIntent } from "../vault/calls";
 import { encodeMakerIntent } from "../maker/calls";
 import { encodeLaunchIntent } from "../launch/encoders";
+import { encodeThemeIntent } from "../themes/encoders";
 
 /** The relay area a call set belongs to; the relay policy for that area decides sponsorship. */
 /** The relay sponsors at most 8 calls per transaction (C.3.3). */
@@ -98,7 +99,7 @@ export function encodeTransfer(intent: TxIntent, ctx: EncodeContext): EncodeResu
   return { ok: true, value: { area: "wallet", calls: [{ to: intent.token, data }], sponsored: false, summary: `send ${intent.amountBase} of ${intent.token} to ${intent.to}` } };
 }
 
-export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeKeyBackup, encodeAgentIntent, encodeNoop, encodeTransfer, encodeEngineIntent, encodeVaultIntent, encodeMakerIntent, encodeLaunchIntent, encodeStrategyIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent, encodePrivateIntent];
+export const DEFAULT_ENCODERS: readonly IntentEncoder[] = [encodeKeyRevoke, encodeKeyBackup, encodeAgentIntent, encodeNoop, encodeTransfer, encodeEngineIntent, encodeVaultIntent, encodeMakerIntent, encodeLaunchIntent, encodeThemeIntent, encodeStrategyIntent, encodeParlayIntent, encodeRangeIntent, encodeLeverageIntent, encodePrivateIntent];
 
 /** The first encoder that claims the intent; an unclaimed intent's area is not deployed on this chain yet. */
 export async function encodeIntent(intent: TxIntent, ctx: EncodeContext, encoders: readonly IntentEncoder[] = DEFAULT_ENCODERS): Promise<EncodeResult> {

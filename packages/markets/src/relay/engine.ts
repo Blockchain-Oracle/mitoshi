@@ -108,9 +108,20 @@ export async function evaluate(config: EngineConfig, request: RelayRequest, ctx:
   let area: RelayPolicy | null = null;
   const approvals: Approval[] = [];
   const seen: { policy: RelayPolicy; fn: string }[] = [];
+  // A keychain call rides only inside an area's whole-transaction shape (themes' follow, D-100): the full list must match it.
+  const keychainArea = (to: Address) => config.policies.find((p) => p.keychainBatch && lower(p.keychainBatch.keychain) === lower(to)) ?? null;
   for (const call of request.calls) {
     if (call.value !== 0n) return refuse("value", "no native value on Tempo");
     if (!call.to) return refuse("create", "contract creation is never sponsored");
+    const direct = policyOf(config.policies, call.to);
+    const directFn = direct ? functionNameOf(direct.abi, call.data) : null;
+    const owner = direct && directFn && direct.sponsor.includes(directFn.name) ? null : keychainArea(call.to);
+    if (owner) {
+      const shape = owner.keychainBatch!.match(request.calls.map((c) => ({ to: c.to!, data: c.data })));
+      if (!shape || (area && area.area !== owner.area)) return refuse("target", `${call.to} is sponsored only inside a ${owner.area} shape`);
+      area ??= owner;
+      continue;
+    }
     const approval = approvalOf(call);
     if (approval === "bad") return refuse("selector", `only approve is sponsored on ${call.to}`);
     if (approval !== "not-approve") {

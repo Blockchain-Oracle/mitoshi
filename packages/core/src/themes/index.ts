@@ -40,3 +40,6 @@ export function normalizeWeights(scores: readonly { symbol: string; score: bigin
 export function isValidCreatorFee(bps: number): boolean {
   return Number.isInteger(bps) && bps >= 0 && bps <= CREATOR_FEE_CAP_BPS;
 }
+
+export * from "./spec";
+export * from "./intents";
