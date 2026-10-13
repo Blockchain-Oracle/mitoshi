@@ -59,7 +59,7 @@ function Row({ p, v, writes, nowSec }: { p: LeveragePosition; v: PositionValue |
       invested={invested}
       pnl={pnl}
       pct={pct}
-      why={v ? statusText(v.status, p.expirySec, v.fillablePct, v.settled) || undefined : undefined}
+      why={v ? statusText(v.status, p.expirySec, v.fillablePct, v.settled, v.valueBase) || undefined : undefined}
       avgIn={centsOf(Number(p.entryPriceRaw / 1_000n))}
       labels={{ worth: live ? B.card.worth : B.card.paid, avgIn: B.card.avgIn, invested: B.card.invested }}
       meta={

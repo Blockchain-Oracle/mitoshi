@@ -10,6 +10,7 @@
 import type { Address, Reading } from "@cwf/core";
 import { isOk } from "@cwf/core";
 import { keys, useAccountHistory, useBalanceSheet, useClaimables, useLiveMarketData, usePositions, useVaultBets } from "@cwf/markets/react";
+import { useOwed } from "@/features/terminal/useOwed";
 import { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import { usePrivateBudget } from "@/features/private/usePrivate";
 import { openFunds } from "@/lib/funds-event";
@@ -59,6 +60,7 @@ function Ledger({ wallet }: { wallet: Address }) {
   const vaultBets = useVaultBets(wallet);
   const claimables = useClaimables(wallet);
   const book = usePortfolioPositions(wallet);
+  const owed = useOwed(wallet, book.positions);
   const closer = useTerminalClose();
   const critical = [sheet, positions, claimables];
   const criticalSettled = critical.every((r) => r !== null);
@@ -81,9 +83,11 @@ function Ledger({ wallet }: { wallet: Address }) {
     decimals: value?.decimals ?? 6,
     dollarsBase: value ? value.spendableBase + (value.vaultBase ?? 0n) : 0n,
     readyBase: value?.spendableBase ?? 0n,
-    // Every position at what it counts for (D-227): the part the book takes at what Close pays, the rest at cost.
-    positionsBase: book.totals.equityBase,
-    collectBase: rows.reduce((sum, r) => sum + r.netPayoutBase, 0n),
+    // Every position at what it counts for (D-227): the part the book takes at what Close pays, the rest at cost; a
+    // Trading Balance Window that has its answer at its payout until the settler cranks it into the balance.
+    positionsBase: book.totals.equityBase + owed.vaultBase,
+    // Read with the wallet's balance (D-227), so a payout the settler just made is never in both legs at once.
+    collectBase: value ? owed.collectBase : rows.reduce((sum, r) => sum + r.netPayoutBase, 0n),
     // Engine credit is already inside the collect leg (a redeem pays it); only resting-order escrow is named apart.
     pools: value?.orderEscrowBase ? [{ id: "escrow", label: PLATE.pools.escrow.label, amountBase: value.orderEscrowBase }] : [],
     // Every leg read (the balance sheet, both homes' positions, claimables), so the figure never sums a leg still at 0 (R4-0).

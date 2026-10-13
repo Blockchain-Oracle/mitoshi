@@ -4,7 +4,7 @@
  * provider and the order lane read one generation of a Window. Series facts never change once registered, so they are
  * cached for the process (persisted-read allowlist, C.2.2 `getBookParams`).
  */
-import { getAddress, type Abi, type Address, type Hex } from "viem";
+import { erc20Abi, getAddress, type Abi, type Address, type Hex } from "viem";
 import { engineLensAbi } from "@cwf/clients/abis/EngineLens";
 import { plainQuestion } from "@cwf/core/copy";
 import { printSourceOf, tickerById, toMarketId, USD_DECIMALS, type EventMarket, type MarketId, type MarketState, type OnchainSnapshot, type OutcomeIdx, type PrintView, type BookLevel } from "@cwf/core";
@@ -274,14 +274,29 @@ export interface EnginePosition {
   openOrders: number;
 }
 
+const positionsFrom = (ids: readonly MarketId[], rows: readonly Raw[]): EnginePosition[] =>
+  rows.map((p, i) => ({
+    marketId: ids[i]!, credit: BigInt(p.credit!), lockedCash: BigInt(p.lockedCash!), yesFree: BigInt(p.yesFree!), noFree: BigInt(p.noFree!),
+    yesLocked: BigInt(p.yesLocked!), noLocked: BigInt(p.noLocked!), openOrders: Number(p.openOrders),
+  }));
+
 export async function readPositions(holder: Address, ids: readonly MarketId[]): Promise<EnginePosition[]> {
   if (ids.length === 0) return [];
   const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
   const rows = (await client.readContract({ address: venue.lens, abi: engineLensAbi, functionName: "positionsOf", args: [holder, [...ids]] })) as unknown as Raw[];
-  return rows.map((p, i) => ({
-    marketId: ids[i]!, credit: BigInt(p.credit!), lockedCash: BigInt(p.lockedCash!), yesFree: BigInt(p.yesFree!), noFree: BigInt(p.noFree!),
-    yesLocked: BigInt(p.yesLocked!), noLocked: BigInt(p.noLocked!), openOrders: Number(p.openOrders),
-  }));
+  return positionsFrom(ids, rows);
+}
+
+/**
+ * The holder's collateral balance and its engine positions in one aggregate call, so one block (D-227): a payout the
+ * settler sends between two separate reads would sit in neither figure, or in both.
+ */
+export async function readBalanceAndPositions(holder: Address, ids: readonly MarketId[]): Promise<{ balanceBase: bigint; positions: EnginePosition[] }> {
+  const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
+  const balance = { address: venue.collateral, abi: erc20Abi, functionName: "balanceOf", args: [holder] } as const;
+  if (ids.length === 0) return { balanceBase: await client.readContract(balance), positions: [] };
+  const [balanceBase, rows] = await client.multicall({ allowFailure: false, contracts: [balance, { address: venue.lens, abi: engineLensAbi, functionName: "positionsOf", args: [holder, [...ids]] }] });
+  return { balanceBase, positions: positionsFrom(ids, rows as unknown as Raw[]) };
 }
 
 export interface OpenOrderView {

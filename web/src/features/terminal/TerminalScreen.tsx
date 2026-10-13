@@ -242,7 +242,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             <EquityPill equity={equity} address={s.address} masked={masked} onOpen={() => drawer.show(DRAWERS.account)} onSignIn={session.connect} />
           </div>
           <div className="tm-side-list">
-            <UnrealizedCard totals={totals} count={count} closable={s.positions.length} closing={closingAll} onCloseAll={() => void closeAll()} />
+            <UnrealizedCard totals={totals} count={count} closable={book.closable} closing={closingAll} onCloseAll={() => void closeAll()} />
             <PositionsList positions={s.positions} bets={bets} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={onTrailHit} onValue={onValue} onBetValue={book.onBetValue} />
           </div>
           {count > 0 ? <ViewPositionPill count={count} roiPct={totalRoiBps === null ? null : totalRoiBps / 100} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
@@ -331,7 +331,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
       ) : null}
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>
         <SlideOverContent title={TERMINAL.positions.title}>
-          <UnrealizedCard totals={totals} count={count} closable={s.positions.length} closing={closingAll} onCloseAll={() => void closeAll()} />
+          <UnrealizedCard totals={totals} count={count} closable={book.closable} closing={closingAll} onCloseAll={() => void closeAll()} />
           <PositionsList positions={s.positions} bets={bets} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={null} onValue={onValue} onBetValue={book.onBetValue} />
         </SlideOverContent>
       </SlideOver>
