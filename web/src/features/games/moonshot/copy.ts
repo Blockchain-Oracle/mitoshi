@@ -1,5 +1,6 @@
 // Ported from Masayume 68f7a09:web/src/features/games/moonshot/copy.ts — facts adapted to Tempo (the engine's signed
-// close print, the range reserve's model, no fees on the CTA line).
+// close print, the range reserve's model, no fees on the CTA line). R4-5 (D-227): Owarine's word counts — no eyebrow or
+// section descriptions, the how cards a line each in the ⓘ sheet, the footnote the shared "Payout set aside" line.
 import { RANGE_NOT_DEPLOYED, type MoonshotDirection } from "@cwf/core/range";
 
 /**
@@ -11,17 +12,15 @@ import { RANGE_NOT_DEPLOYED, type MoonshotDirection } from "@cwf/core/range";
  */
 export const MOONSHOT = {
   title: "Moonshot",
-  eyebrow: "Call the side · dial the reach",
-  sections: {
-    aim: { number: "01", title: "Take aim", desc: "Pick a Window, call long or short, and dial how far the print has to travel. Further pays more." },
-    rounds: { number: "02", title: "Your rounds", desc: "Each round settles on the Window's closing print. Claim the instant it lands." },
-    how: { number: "03", title: "How a moonshot pays" },
+  roundsTitle: "Your moonshots",
+  infoTitle: "How Moonshot pays",
+  /** The ⓘ sheet (R4-5, D-227: the three how cards, a line each). */
+  how: ["The reach is the multiple.", "One level, one print.", "Payout set aside up front."],
+  gauge: {
+    label: (needs: string, now: string) => `Needs ${needs} from the opening print${now ? `, now ${now}` : ""}`,
+    opened: (print: string) => `opened ${print}`,
+    needs: (needs: string, now: string | null) => (now === null ? `needs ${needs}` : `needs ${needs} · now ${now}`),
   },
-  how: [
-    { n: "①", t: "The reach is the multiple", d: "×5 means the house solves a level the print has to finish past for the round to pay five times your stake. Further out is less likely, and pays more." },
-    { n: "②", t: "One level, one print", d: "Long wins if the Window closes at or above the level; short if it closes at or below it. The Window's signed print decides — the same one its Up/Down settles on." },
-    { n: "③", t: "The same house, aimed one way", d: "The level comes from where the book sits and how much the asset moves in the time left: the Range model with one edge open. The full payout is set aside up front." },
-  ],
   notDeployed: {
     eyebrow: "Moonshot",
     title: "Moonshot",
@@ -30,8 +29,6 @@ export const MOONSHOT = {
   },
   aim: {
     label: "Aim",
-    /** Pips' first-run line, in the ladder's own terms. */
-    must: "Up is long, down is short. Further out pays more.",
     ladder: "Reach — up for long, down for short",
     long: "Long",
     short: "Short",
@@ -74,14 +71,15 @@ export const MOONSHOT = {
     capRung: (multiple: number, cap: string, symbol: string) => `Payout on ×${multiple} is capped at ${cap} ${symbol}.`,
     capContract: (cap: string, symbol: string) => `Payout up to ${cap} ${symbol}, the reserve's cap.`,
     /** A payout typed over the rung's cap is not sent to the chain; one tap sets it to the cap. */
-    overCap: (multiple: number, cap: string, symbol: string) => `×${multiple} pays at most ${cap} ${symbol}`,
+    overCap: (multiple: number, cap: string) => `×${multiple} pays at most ${cap}`,
+    overCapShort: "Over this rung's cap",
+    signInFor: (target: string, stake: string) => `to fire ${target} · ${stake}`,
     useCap: "Set to the cap",
     /** "Set stake" hit the cap: the contract charges the cap's stake, not the stake typed. */
     cappedStake: (stake: string, cap: string, symbol: string) => `The cap is reached: ${stake} ${symbol} buys the full ${cap}, and the rest of your stake stays in your wallet.`,
     locks: (amount: string, symbol: string) => `This round locks ${amount} ${symbol} of the house's money.`,
     expiryRoom: (room: string, cap: string, symbol: string) => `This expiry can still lock ${room} of ${cap} ${symbol}.`,
     expiryReading: "Reading the expiry's budget…",
-    footnote: "The full payout is set aside up front. No fees to pay: your stake leaves your wallet, the network fee is covered.",
     place2: (stake: string, payout: string) => `Hold to fire ${stake} → ${payout}`,
     direction: "Direction",
     level: "The level it must finish past",
@@ -92,7 +90,6 @@ export const MOONSHOT = {
     tryAgain: "Try again",
     viewTx: "View the transaction",
     toast: (target: string, stake: string, payout: string, symbol: string) => `Moonshot placed. ${target}: ${stake} to ${payout} ${symbol} if it lands.`,
-    requote: (stake: string, symbol: string) => `The basis moved — this call now costs ${stake} ${symbol}. Confirm again to place it at the new price.`,
   },
   slip: {
     connected: "No moonshots yet. Take aim above",

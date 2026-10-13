@@ -1,11 +1,14 @@
 "use client";
 /**
  * The Range ticket (Ported from Masayume 68f7a09:web/src/features/range/{RangeTicket,BandControl,RangeBuilder}.tsx and
- * `useRangeTicket.ts`): the band around the live price — presets, the two-thumb slider over the model's distribution
- * (21st 31347 + 32784, `BandSlider`) — the side, the amount (16240 chips), the chain's quote in the 29356 totals, and
- * the 23527 hold. Used as the markets ticket's Range mode (inside only, as the reference) and on /games/range (inside
- * or outside). Every blocker is the CTA's label (D-045); a stale book (D-119, 2σ from the signed spot) is named.
- * R4-2 (D-227): in a phone sheet the hold sits in the pinned footer (`SheetFooter`); on a page or the rail, in place.
+ * `useRangeTicket.ts`): the band around the market, the side, the amount, the chain's quote and the 23527 hold. Used as
+ * the markets ticket's Range mode (inside only, as the reference) and on /games/range (inside or outside). Every blocker
+ * is the CTA's label (D-045); a stale book (D-119, 2σ from the signed spot) is named.
+ * R4-5 (D-227): Owarine 90a91d71's composition — BandCard (anchored band, nudges, spans, inside-now chip) then the
+ * TicketStrip action block (Pays ×N, To win, stake chips, the hold, one micro line); the reserve, basis and "at most"
+ * lines moved to the page's ⓘ sheet. No churn: a tick never changes the band, and a requote keeps the figures and the
+ * hold (only a new blocker replaces it). Signed out, the CTA still reads the order; the hold opens sign-in for it.
+ * In a phone sheet the hold sits in the pinned footer (`SheetFooter`, R4-2); on a page or the rail, in place.
  * R4-3 (D-227): the footnote and the requote are the shared short lines (`TX.payoutSetAside`, `TX.requote`).
  */
 import { FUNDING } from "@/features/funding/copy";
@@ -15,52 +18,45 @@ import { bandProbE6, RANGE_STAKE_HEADROOM_BPS, type RangeReserveState, type Rang
 import { mulBpsCeil, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import type { RangeModel } from "@cwf/markets/range";
-import { useAssetPrice, useBalanceSheet } from "@cwf/markets/react";
-import { useQuery } from "@tanstack/react-query";
+import { useBalanceSheet } from "@cwf/markets/react";
 import { useEffect, useMemo, useState } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
-import { BandSlider } from "@/components/ui/band-slider";
 import { SheetFooter } from "@/components/ui/overlay-footer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
-import { OrderSummary } from "@/components/ui/order-summary";
-import { AmountField, QuickAdds } from "@/components/ui/prediction-ticket";
-import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useNowMs } from "@/lib/clock";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
-import { feedKeyOf } from "../markets/units";
-import { formatMultiplier, usd } from "../parlay/format";
-import { fetchSpots } from "../parlay/useParlayQuote";
+import { usd } from "../parlay/format";
+import { BandCard } from "./BandCard";
 import { publishBand } from "./band-store";
+import { capacityLabel, refusalLabel } from "./blockers";
 import { RANGE } from "./copy";
-import { usdBand, usdOnGrid, usdToPrint, utilizationPct } from "./format";
-import { RANGE_PRESETS, type RangePresetKey } from "./presets";
+import { usdBand, usdOnGrid, usdToPrint } from "./format";
+import { TicketStrip, type SolveMode } from "./TicketStrip";
 import { useRangeDraft } from "./useRangeDraft";
 import { useRangeQuote } from "./useRangeQuote";
+import { useRangeSpot } from "./useRangeSpot";
 import { useRangeWrites } from "./useRangeWrites";
 
 const BUCKETS = 24;
-const ADDS = [1, 5, 20] as const;
 
 export function RangeTicketBody({ market, model, reserve, allowOutside = false, drawOnChart = false }: { market: EventMarket; model: RangeModel | null; reserve: RangeReserveState; allowOutside?: boolean; drawOnChart?: boolean }) {
   const nowMs = useNowMs();
   const session = useWalletSession();
   const sheet = useBalanceSheet(session.address);
-  const price = useAssetPrice(feedKeyOf(market), nowMs);
-  // The live price from the stream; when the stream has none (between ticks, or no ops stream), the signed RedStone
-  // median the open's own proof comes from — the same real price, never a placeholder.
-  const signed = useQuery({ queryKey: ["cwf", "range", "spot", model?.feed ?? ""], queryFn: async () => (await fetchSpots([model!.feed!])).get(model!.feed!)!.medianE8, enabled: model?.feed != null && !(price?.ok && price.value), refetchInterval: 15_000 });
-  const spotE8 = price?.ok && price.value ? price.value.priceRaw : (signed.data ?? null);
+  // The live price from the stream, else the signed RedStone median the open's own proof comes from (`useRangeSpot`).
+  const spotE8 = useRangeSpot(market, model?.feed ?? null, nowMs);
   const draft = useRangeDraft(spotE8 === null ? null : spotE8 / 1_000_000n, market.intervalSec);
   const [side, setSide] = useState<RangeSide>("inside");
-  const [mode, setMode] = useState<"fixStake" | "fixPayout">("fixStake");
+  const [mode, setMode] = useState<SolveMode>("fixStake");
   const [amountText, setAmountText] = useState("5");
   const writes = useRangeWrites(session.address);
   const amountBase = parseDecimalToBaseUnits(amountText || "0", USD_DECIMALS) ?? 0n;
   const band = draft.lowPrint !== null && draft.highPrint !== null ? { marketId: market.marketId, asset: market.asset, side, lowPrint: draft.lowPrint, highPrint: draft.highPrint } : null;
   const q = useRangeQuote({ band, expirySec: market.expirySec, mode: mode === "fixStake" ? { kind: "fixStake", stakeBase: amountBase } : { kind: "fixPayout", maxPayoutBase: amountBase }, params: reserve.params, spotE8, enabled: model !== null && !reserve.paused });
   const quote = q.quote;
+  const shown = q.shown;
 
   useEffect(() => {
     if (!drawOnChart) return;
@@ -81,95 +77,59 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
   }, [q.basis, draft.axis, draft.decimals, market.expirySec]);
 
   const spendable = sheet?.ok ? sheet.value.spendableBase : null;
+  const signedOut = !session.isConnected;
   // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
   const funding = useFirstFunding();
+  // Only a verdict replaces the hold; a requote in flight keeps it (the last quote's figures stay on screen).
   const blocker = ((): string | null => {
-    if (!session.isConnected) return RANGE.cta.signIn;
-    if (funding && (spendable === null || amountBase > spendable)) return FUNDING.firstFund.funding;
+    if (!signedOut && funding && (spendable === null || amountBase > spendable)) return FUNDING.firstFund.funding;
     if (reserve.paused) return RANGE.cta.paused;
     if (!model) return RANGE.windows.noModel(market.asset);
     if (spotE8 === null || band === null) return RANGE.cta.waiting;
     if (amountBase === 0n) return RANGE.cta.enterAmount;
     if (q.driftE4 !== null && q.driftE4 > BigInt(reserve.params.maxDriftE4)) return RANGE.cta.stale;
-    if (q.error) {
-      const n = q.error.errorName;
-      if (n === "ThinBook") return RANGE.cta.thin;
-      if (n === "WideBook") return RANGE.cta.wide;
-      if (n === "WindowDecided") return RANGE.cta.decided;
-      if (n === "LongShot") return RANGE.cta.longShot;
-      if (n === "NearCertain") return RANGE.cta.nearCertain;
-      if (n === "TooLate") return RANGE.cta.tooLate;
-      if (n === "StaleBasis") return RANGE.cta.stale;
-      if (q.error.kind === "reserve-cap") return RANGE.cta.reserveCap;
-      return RANGE.cta.unavailable;
-    }
-    if (q.loading || !quote) return RANGE.cta.pricing;
-    if (q.capacity) return RANGE.cta.reserveCap;
-    if (spendable !== null && spendable < quote.stakeBase) return RANGE.cta.topUp;
+    if (q.error) return refusalLabel(q.error);
+    if (!quote) return RANGE.cta.pricing;
+    const cap = capacityLabel(q.capacity);
+    if (cap) return cap;
+    if (!signedOut && spendable !== null && spendable < quote.stakeBase) return RANGE.cta.topUp;
     return null;
   })();
   const busy = writes.tx.kind === "signing" || writes.tx.kind === "submitted" || writes.tx.kind === "unknown";
   const bandText = band ? `${usdBand(band.lowPrint)}–${usdBand(band.highPrint)}` : "";
   const place = () => {
     if (!quote || !band || !model?.feed || blocker) return;
+    if (signedOut) return session.connectFor(RANGE.cta.signInFor(usd(quote.stakeBase), bandText));
     void writes.open({ band, feed: model.feed, maxPayoutBase: quote.maxPayoutBase, maxStakeBase: mulBpsCeil(quote.stakeBase, 10_000 + RANGE_STAKE_HEADROOM_BPS), bandText });
   };
-  const insidePct = quote ? Number((quote.probRaw * 10_000n) / 1_000_000n) / 100 : null;
+  const pct = shown ? (Number((shown.probRaw * 10_000n) / 1_000_000n) / 100).toFixed(0) : null;
 
   return (
-    <div className="rg flex flex-col gap-4">
-      <p className="type-caption text-ink-secondary">{RANGE.band.mustFinish(market.asset, side)}</p>
-      {allowOutside ? (
-        <SegmentedControl<RangeSide> label={RANGE.band.sideLabel} value={side} onValueChange={setSide} options={[{ value: "inside", label: RANGE.band.inside }, { value: "outside", label: RANGE.band.outside }]} />
-      ) : null}
-      <SegmentedControl<RangePresetKey> label={RANGE.band.width} value={draft.preset} onValueChange={draft.setPreset} options={RANGE_PRESETS.map((p) => ({ value: p.key, label: RANGE.band.presets[p.key] }))} />
-      {draft.axis && draft.lowUsd !== null && draft.highUsd !== null ? (
-        <BandSlider
-          min={draft.axis.min}
-          max={draft.axis.max}
-          step={draft.unit}
-          value={[draft.lowUsd, draft.highUsd]}
-          onChange={([lo, hi]) => draft.setEdges(lo, hi)}
-          bars={bars}
-          format={(v) => usdOnGrid(v, draft.decimals)}
-          label={RANGE.band.bars(market.asset)}
-          lowLabel={RANGE.band.low}
-          highLabel={RANGE.band.high}
-          marker={draft.spotUsd}
-          markerLabel={draft.spotUsd !== null ? `${RANGE.band.now(market.asset)} ${usdOnGrid(draft.spotUsd, draft.decimals)}` : undefined}
-        />
-      ) : (
-        <p role="status" className="type-caption text-ink-secondary">{RANGE.band.waiting}</p>
-      )}
-      <SegmentedControl<"fixStake" | "fixPayout"> label={RANGE.ticket.setStake} value={mode} onValueChange={setMode} options={[{ value: "fixStake", label: RANGE.ticket.setStake }, { value: "fixPayout", label: RANGE.ticket.setPayout }]} />
-      <div className="flex flex-col gap-2">
-        <AmountField value={amountText} onChange={setAmountText} label={mode === "fixStake" ? RANGE.ticket.stake : RANGE.ticket.total} />
-        <QuickAdds adds={ADDS} label={RANGE.ticket.quickAdds} onAdd={(n) => setAmountText(String((Number.parseInt(amountText || "0", 10) || 0) + n))} />
-      </div>
-      <OrderSummary
-        title={RANGE.ticket.summary}
-        rows={[
-          { label: RANGE.ticket.chance, value: insidePct !== null ? `${insidePct.toFixed(2)}%` : null, ...(q.basis ? { note: RANGE.ticket.basis(usdBand(q.basis.openingPrint), (Number(q.basis.centerQE6) / 10_000).toFixed(1)) } : {}) },
-          { label: RANGE.ticket.pays, value: quote ? formatMultiplier(quote.multiplierMilli) : null },
-          { label: RANGE.ticket.stake, value: quote ? usd(quote.stakeBase) : null, ...(quote ? { note: RANGE.ticket.atMost(usd(mulBpsCeil(quote.stakeBase, 10_000 + RANGE_STAKE_HEADROOM_BPS))) } : {}) },
-          { label: RANGE.ticket.house, value: quote ? usd(quote.maxPayoutBase - quote.stakeBase) : null, tone: "muted" },
-        ]}
-        total={{ label: RANGE.ticket.total, value: quote ? usd(quote.maxPayoutBase) : null, tone: "profit" }}
-      />
-      <SheetFooter>
-        {!session.isConnected ? (
-          <button type="button" onClick={session.connect} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{RANGE.cta.signIn}</button>
-        ) : busy || writes.fetchingSpot ? (
-          <TxCta state={writes.tx} action={writes.fetchingSpot ? RANGE.cta.fetchingSpot : RANGE.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
-        ) : blocker ? (
-          <button type="button" disabled aria-disabled className="min-h-touch w-full cursor-not-allowed rounded-md border border-hairline bg-surface-2 px-4 type-body-strong text-ink-secondary">{blocker}</button>
-        ) : (
-          <HoldToConfirm className="w-full" confirmLabel={RANGE.cta.placing} onConfirm={place}>
-            {RANGE.cta.place(usd(quote!.stakeBase), usd(quote!.maxPayoutBase))}
-          </HoldToConfirm>
-        )}
-        {session.isConnected && !blocker && !busy ? <p className="text-center type-caption text-ink-secondary">{TX.noFees}</p> : null}
-      </SheetFooter>
+    <div className="rg flex flex-col gap-3">
+      <BandCard asset={market.asset} intervalSec={market.intervalSec} draft={draft} bars={bars} side={side} onSide={allowOutside ? setSide : undefined} openingPrint={q.basis?.openingPrint ?? (market.openingPriceRaw !== null ? market.openingPriceRaw / 1_000_000n : null)} />
+      <TicketStrip
+        multiplierMilli={shown?.multiplierMilli ?? null}
+        sub={pct !== null ? RANGE.ticket.chanceLine(pct, side) : RANGE.ticket.pricingLine}
+        toWinBase={shown?.maxPayoutBase ?? null}
+        mode={mode}
+        onMode={setMode}
+        amountText={amountText}
+        onAmount={setAmountText}
+        stale={quote === null && shown !== null}
+      >
+        <SheetFooter>
+          {busy || writes.fetchingSpot ? (
+            <TxCta state={writes.tx} action={writes.fetchingSpot ? RANGE.cta.fetchingSpot : RANGE.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
+          ) : blocker || !quote ? (
+            <button type="button" disabled aria-disabled className="ts-blocked">{blocker ?? RANGE.cta.pricing}</button>
+          ) : (
+            <HoldToConfirm className="ts-hold w-full" confirmLabel={signedOut ? RANGE.cta.signingIn : RANGE.cta.placing} onConfirm={place}>
+              {RANGE.cta.place(usd(quote.stakeBase), usd(quote.maxPayoutBase))}
+            </HoldToConfirm>
+          )}
+          <p className="ts-micro">{TX.payoutSetAside}</p>
+        </SheetFooter>
+      </TicketStrip>
       {writes.outcome?.status === "confirmed" ? (
         <div role="status" className="rg-receipt">
           <p className="type-body-strong">{RANGE.outcome.placed(writes.outcome.roundId?.toString() ?? "", bandText, usd(writes.outcome.stakeBase), quote ? usd(quote.maxPayoutBase) : "")}</p>
@@ -179,11 +139,6 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
       ) : null}
       {writes.outcome?.status === "requote" ? <p role="alert" className="rg-note rg-note--warn">{TX.requote(usd(writes.outcome.stakeBase))}</p> : null}
       {writes.tx.kind === "failed" ? <TxFailureCard state={writes.tx} onRetry={writes.reset} explorerHref={writes.outcome?.status === "failed" && writes.outcome.txHash ? txUrl(writes.outcome.txHash, webEnv.markets.network) : null} /> : null}
-      <p className="rg-foot">
-        {TX.payoutSetAside}
-        <br />
-        {RANGE.ticket.reserve(usd(reserve.liquidBase), utilizationPct(reserve.utilizationBps))}
-      </p>
     </div>
   );
 }

@@ -6,12 +6,11 @@ import { useDataReady } from "@/providers/data/context";
 import { MOONSHOT } from "./copy";
 import "@/styles/parlay.css";
 import "@/styles/range.css";
-import "@/styles/prediction-ticket.css";
 
 function Placeholder() {
   return (
-    <div className="container px-gutter pl-page lg:px-gutter-desktop">
-      <LoadingState shape="page" label={MOONSHOT.ticket.pricing} />
+    <div className="game-page">
+      <LoadingState shape="game" label={MOONSHOT.ticket.pricing} />
     </div>
   );
 }

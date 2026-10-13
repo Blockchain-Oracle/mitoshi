@@ -1,5 +1,5 @@
 {
-  "_doc": "The engine venue every deploy ensures (S2.11; engine spec A.1.7/A.2; engine-gas.md). Read by contracts/script/{DeployEngine,RegisterSeries}.s.sol and by the app. Amounts are base units of 6-dp pathUSD; times are seconds. Ported from Agari 03b30ab packages/markets/src/deploy/venue-spec.ts (LAUNCH_GRID), seats/bonds dropped (A.1.6), slots \u2192 seconds. S3 (D-091) adds the nine RedStone stock names: Regular 5m/15m/60m, the weekend Gap (open admission until lock) and the 24/7 lane on `<T>---24_7` at 5m/15m/60m; SPCX waits for Data Streams (Q-011).",
+  "_doc": "The engine venue every deploy ensures (S2.11; engine spec A.1.7/A.2; engine-gas.md). Read by contracts/script/{DeployEngine,RegisterSeries}.s.sol and by the app. Amounts are base units of 6-dp pathUSD; times are seconds. Ported from Agari 03b30ab packages/markets/src/deploy/venue-spec.ts (LAUNCH_GRID), seats/bonds dropped (A.1.6), slots \u2192 seconds. S3 (D-091) adds the nine RedStone stock names: Regular 5m/15m/60m, the weekend Gap (open admission until lock) and the 24/7 lane on `<T>---24_7` at 5m/15m/60m; SPCX waits for Data Streams (Q-011). R4-5 (D-227): BTC/ETH/SOL also at 15m and 60m on the crypto24 lane (WINDOW_CADENCES_SEC).",
   "collateral": "0x20C0000000000000000000000000000000000000",
   "grid": {
     "lotBase": 1000,
@@ -71,6 +71,54 @@
       "ticker": 103,
       "basis": 2,
       "cadenceSec": 300,
+      "redstoneFeed": "SOL"
+    },
+    {
+      "key": "BTC-15m",
+      "symbol": "BTC",
+      "ticker": 101,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "BTC"
+    },
+    {
+      "key": "BTC-60m",
+      "symbol": "BTC",
+      "ticker": 101,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "BTC"
+    },
+    {
+      "key": "ETH-15m",
+      "symbol": "ETH",
+      "ticker": 102,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "ETH"
+    },
+    {
+      "key": "ETH-60m",
+      "symbol": "ETH",
+      "ticker": 102,
+      "basis": 2,
+      "cadenceSec": 3600,
+      "redstoneFeed": "ETH"
+    },
+    {
+      "key": "SOL-15m",
+      "symbol": "SOL",
+      "ticker": 103,
+      "basis": 2,
+      "cadenceSec": 900,
+      "redstoneFeed": "SOL"
+    },
+    {
+      "key": "SOL-60m",
+      "symbol": "SOL",
+      "ticker": 103,
+      "basis": 2,
+      "cadenceSec": 3600,
       "redstoneFeed": "SOL"
     },
     {

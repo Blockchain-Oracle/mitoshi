@@ -20,6 +20,36 @@
       "clock": "calendar"
     },
     {
+      "key": "BTC-15m",
+      "sigmaBps": 5000,
+      "clock": "calendar"
+    },
+    {
+      "key": "BTC-60m",
+      "sigmaBps": 5000,
+      "clock": "calendar"
+    },
+    {
+      "key": "ETH-15m",
+      "sigmaBps": 6500,
+      "clock": "calendar"
+    },
+    {
+      "key": "ETH-60m",
+      "sigmaBps": 6500,
+      "clock": "calendar"
+    },
+    {
+      "key": "SOL-15m",
+      "sigmaBps": 8000,
+      "clock": "calendar"
+    },
+    {
+      "key": "SOL-60m",
+      "sigmaBps": 8000,
+      "clock": "calendar"
+    },
+    {
       "key": "TSLA-5m",
       "sigmaBps": 4500,
       "clock": "trading"

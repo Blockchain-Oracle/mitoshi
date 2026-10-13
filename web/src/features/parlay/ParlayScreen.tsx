@@ -1,19 +1,22 @@
 "use client";
 /**
  * `/parlay` (Ported from Masayume 68f7a09:web/src/features/parlay/ParlayScreen.tsx — `reference/yosuku/app/parlay/
- * page.tsx`): the hero, §01 the builder (the live Windows beside the slip — E.4's composition), §02 your tickets,
- * §03 how a parlay pays. A reserve that isn't deployed on this network says so; a paused reserve still settles and pays.
+ * page.tsx`): the live Windows beside the slip (E.4's composition), then your tickets. A reserve that isn't deployed
+ * on this network says so; a paused reserve still settles and pays.
+ * R4-5 (D-227): the 40 px GameHead ("Tickets · n" or "Claim $X" in a sheet, ⓘ how it pays) replaces the hero and the
+ * section heads; below 1024 the SlipBar carries the hold above the dock, so building and placing is one screen.
  */
 import { isOk, type ParlayReserveState } from "@cwf/core";
 import { readParlayOwed, type ParlayTicketView } from "@cwf/markets/parlay";
 import { useReadingQuery } from "@cwf/markets/react";
-import { SectionHead } from "@/components/shell";
+import { formatLeft } from "@/components/kit";
 import { EmptyState, ReadingBoundary } from "@/components/states";
 import { useNowMs } from "@/lib/clock";
 import { useWalletSession } from "@/lib/wallet-session";
 import { PARLAY } from "./copy";
-import { parlayKeys, useParlayReserve, useParlayWindows } from "./data";
-import { usd } from "./format";
+import { parlayKeys, useParlayReserve, useParlayTickets, useParlayWindows } from "./data";
+import { GameHead } from "../range/GameHead";
+import { usd, utilizationPct } from "./format";
 import { SlipDock } from "./SlipDock";
 import { SlipProvider } from "./slip-state";
 import { Tickets } from "./Tickets";
@@ -37,53 +40,45 @@ function Owed({ wallet }: { wallet: string }) {
 function Page({ reserve }: { reserve: ParlayReserveState }) {
   const nowMs = useNowMs();
   const session = useWalletSession();
-  const { windows, loading } = useParlayWindows(nowMs);
+  const { windows, loading, failure, nextOpenSec: nextOpen } = useParlayWindows(nowMs);
   const writes = useParlayWrites(session.address);
-  const { sections } = PARLAY;
+  const tickets = useParlayTickets(session.address);
+  const mine = tickets && isOk(tickets) ? tickets.value : [];
+  const claimBase = mine.filter((t) => t.status === "won").reduce((sum, t) => sum + t.maxPayoutBase, 0n);
   const onSettle = (t: ParlayTicketView, i: number) => void writes.settleLeg(t.parlayId, i, t.legs[i]!.marketId);
   const onClaim = (t: ParlayTicketView) => void writes.claim(t.parlayId, t.maxPayoutBase);
+  const list = (
+    <>
+      {session.address ? <Owed wallet={session.address} /> : null}
+      <Tickets wallet={session.address} nowMs={nowMs} busy={writes.busy} onSettle={onSettle} onClaim={onClaim} onSignIn={session.connect} />
+    </>
+  );
   return (
     <SlipProvider windows={windows} maxLegs={reserve.params.maxLegs}>
-      <div className="pl-hero">
-        <span className="pl-eyebrow">{PARLAY.eyebrow}</span>
-        <h1 className="page-title">
-          {PARLAY.title}
-          <span className="accent">.</span>
-        </h1>
+      <GameHead
+        title={PARLAY.title}
+        chip={claimBase > 0n ? PARLAY.tickets.claim(usd(claimBase)) : PARLAY.head.tickets(mine.length)}
+        chipAccent={claimBase > 0n}
+        sheetTitle={PARLAY.sections.tickets.title}
+        sheet={list}
+        infoTitle={PARLAY.info.title}
+        how={PARLAY.how}
+        facts={
+          <>
+            <p className="numbers">{PARLAY.reserve(usd(reserve.liquidBase), utilizationPct(reserve.utilizationBps))}</p>
+            <p>{PARLAY.info.priced}</p>
+          </>
+        }
+      />
+      <div className="pl-grid">
+        <div className="pl-windows">
+          <WindowList windows={windows} loading={loading} failure={failure} nowMs={nowMs} nextOpenText={nextOpen !== null ? PARLAY.windows.none(formatLeft(nextOpen * 1000 - nowMs)) : PARLAY.windows.noneLater} />
+        </div>
+        <SlipDock reserve={reserve} windows={windows} />
       </div>
-
-      <section className="pl-block" aria-label={sections.build.title}>
-        <SectionHead number={sections.build.number} title={sections.build.title} desc={sections.build.desc} />
-        <div className="pl-block-body pl-grid">
-          <div className="pl-windows">
-            <h2 className="type-label-micro text-ink-secondary">{PARLAY.windows.title}</h2>
-            <p className="type-caption text-ink-secondary">{PARLAY.windows.desc}</p>
-            <WindowList windows={windows} loading={loading} nowMs={nowMs} />
-          </div>
-          <SlipDock reserve={reserve} windows={windows} />
-        </div>
-      </section>
-
-      <section className="pl-block" aria-label={sections.tickets.title}>
-        <SectionHead number={sections.tickets.number} title={sections.tickets.title} desc={sections.tickets.desc} />
-        <div className="pl-block-body">
-          {session.address ? <Owed wallet={session.address} /> : null}
-          <Tickets wallet={session.address} nowMs={nowMs} busy={writes.busy} onSettle={onSettle} onClaim={onClaim} onSignIn={session.connect} />
-        </div>
-      </section>
-
-      <section className="pl-block" aria-label={sections.how.title}>
-        <SectionHead number={sections.how.number} title={sections.how.title} />
-        <div className="pl-block-body pl-how">
-          {PARLAY.how.map((c) => (
-            <div key={c.n} className="pl-how-card">
-              <div className="pl-how-n" aria-hidden>{c.n}</div>
-              <h3 className="pl-how-t">{c.t}</h3>
-              <p className="pl-how-d">{c.d}</p>
-            </div>
-          ))}
-          <p className="pl-how-d pl-trophy">{PARLAY.trophy}</p>
-        </div>
+      <section className="game-below" aria-label={PARLAY.sections.tickets.title}>
+        <h2 className="game-below-title">{PARLAY.sections.tickets.title}</h2>
+        {list}
       </section>
     </SlipProvider>
   );
@@ -92,8 +87,8 @@ function Page({ reserve }: { reserve: ParlayReserveState }) {
 export function ParlayScreen() {
   const reading = useParlayReserve();
   return (
-    <div className="container px-gutter pl-page lg:px-gutter-desktop">
-      <ReadingBoundary reading={reading} shape="plate">
+    <div className="game-page pl-page">
+      <ReadingBoundary reading={reading} shape="game">
         {(reserve) => (reserve ? <Page reserve={reserve} /> : <EmptyState why={PARLAY.notDeployed.why} detail={PARLAY.notDeployed.body} />)}
       </ReadingBoundary>
     </div>
