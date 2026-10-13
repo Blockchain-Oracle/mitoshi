@@ -7,12 +7,15 @@
 // URL (`?d=pocket-trading` · `?d=pocket-private`, D-190): Back closes it. Under 400 px each tile is one tappable chip.
 import { ChevronRight, LockKeyhole, Vault, type LucideIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { Masked, PillButton, SlideOver, SlideOverContent } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { PillButton } from "@/components/kit/PillButton";
+import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { money as usd } from "@/features/terminal/format";
 import { closeDrawer, openDrawer, useOpenDrawerName } from "@/lib/drawer-param";
 import { cn } from "@/lib/utils";
 import { HERO_MONEY } from "../copy";
 import type { PocketId, PocketMoney } from "./useMoney";
+import "@/components/kit/kit.css";
 
 const URL_KEY: Record<PocketId, string> = { vault: "pocket-trading", private: "pocket-private" };
 

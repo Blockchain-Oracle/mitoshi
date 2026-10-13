@@ -9,12 +9,13 @@
 import { DOLLAR_KEYPAD } from "@cwf/core/input";
 import { formatBaseUnits } from "@cwf/core/units";
 import { useId } from "react";
-import { Keypad } from "@/components/kit";
+import { Keypad } from "@/components/kit/Keypad";
 import { amountProblem } from "@/features/vault/AmountField";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
 import { EARN } from "./copy";
 import { DECIMALS } from "./format";
+import "@/components/kit/kit.css";
 
 export interface AmountRowProps {
   value: string;

@@ -10,7 +10,7 @@ import { invalidateLaunch, useMemeTemplates } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { pillButtonVariants } from "@/components/kit";
+import { pillButtonVariants } from "@/components/kit/PillButton";
 import { Sparkline } from "@/components/kit/desk-kit";
 import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { ImageDropzone, type UploadedLogo } from "@/components/ui/image-dropzone";
@@ -23,6 +23,7 @@ import { bpsText, coinText, parseAmount, priceText, usdText } from "./format";
 import { LogoDisc } from "./LogoDisc";
 import { useNameFlag } from "./useNameFlag";
 import "@/styles/launch.css";
+import "@/components/kit/kit.css";
 
 const M = LAUNCH.meme;
 const SLIPPAGE_BPS = 100;

@@ -6,11 +6,12 @@ import { useThemeActivity, useThemes } from "@cwf/markets/react";
 import type { ThemeView } from "@cwf/markets/themes";
 import Link from "next/link";
 import { Layers } from "lucide-react";
-import { pillButtonVariants } from "@/components/kit";
+import { pillButtonVariants } from "@/components/kit/PillButton";
 import { EmptyState } from "@/components/kit/desk-kit";
 import { THEMES } from "./copy";
 import { ThemeCard } from "./ThemeCard";
 import "@/styles/themes.css";
+import "@/components/kit/kit.css";
 
 export function ThemesScreen() {
   const themes = useThemes();

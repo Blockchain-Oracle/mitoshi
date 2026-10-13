@@ -5,9 +5,10 @@
 import type { EventMarket, MarketId } from "@cwf/core";
 import { formatCadence } from "@cwf/core";
 import { formatClock, remainingSec } from "@cwf/core/units";
-import { ScrollRail } from "@/components/kit";
+import { ScrollRail } from "@/components/kit/ScrollRail";
 import { cn } from "@/lib/utils";
 import { SURFACE } from "./copy";
+import "@/components/kit/kit.css";
 
 export function SurfaceChips({ assets, asset, onAsset, windows, focalId, onFocal, nowMs }: { assets: readonly string[]; asset: string | null; onAsset: (a: string) => void; windows: readonly EventMarket[]; focalId: MarketId | null; onFocal: (id: MarketId) => void; nowMs: number }) {
   return (

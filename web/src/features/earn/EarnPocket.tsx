@@ -10,11 +10,13 @@
 import type { Address } from "@cwf/core";
 import { ChevronRight, Coins } from "lucide-react";
 import Link from "next/link";
-import { Masked, PillButton } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { PillButton } from "@/components/kit/PillButton";
 import { money } from "@/features/terminal/format";
 import { EARN } from "./copy";
 import { useEarnWorth } from "./shares";
 import { DECIMALS } from "./format";
+import "@/components/kit/kit.css";
 
 export { useEarnWorth };
 

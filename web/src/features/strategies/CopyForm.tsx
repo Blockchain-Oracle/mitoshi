@@ -6,7 +6,7 @@
 // the reason when blocked, and signed out opens sign-in for this very copy (sign-in at the end, D-224).
 import type { SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
-import { Masked } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
 import { TxCta } from "@/components/tx";
 import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ import type { StrategyWire } from "./protocol";
 import type { CopyWrites } from "./useCopyWrites";
 import "./copy-form.css";
 import "./desk.css";
+import "@/components/kit/kit.css";
 
 const min = (a: bigint, b: bigint) => (a < b ? a : b);
 

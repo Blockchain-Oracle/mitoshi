@@ -9,13 +9,14 @@
 // inline knock-out ticket has room.
 import type { EventMarket, Side } from "@cwf/core";
 import dynamic from "next/dynamic";
-import { TextTabs } from "@/components/kit";
+import { TextTabs } from "@/components/kit/TextTabs";
 import { LoadingState } from "@/components/states";
 import { tapFeedback } from "@/lib/feedback";
 import { TERMINAL } from "../copy";
 import { useIsDesktop } from "../useIsDesktop";
 import "@/styles/prediction-ticket.css";
 import "@/styles/ticket.css";
+import "@/components/kit/kit.css";
 
 const RangeTicketMode = dynamic(() => import("@/features/range/RangeTicketMode").then((m) => m.RangeTicketMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
 const BoostTicketMode = dynamic(() => import("@/features/boost/BoostTicketMode").then((m) => m.BoostTicketMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });

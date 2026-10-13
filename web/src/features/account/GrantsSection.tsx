@@ -10,15 +10,17 @@ import { shortHex } from "@cwf/core/units";
 import { useVaultSnapshot } from "@cwf/markets/react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Masked } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
 import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { MotionScope } from "@/components/motion-scope";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
-import { HoldToConfirm, PillButton } from "@/components/kit";
+import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
+import { PillButton } from "@/components/kit/PillButton";
 import { exitAllowanceText, leftNowBase, usd } from "@/features/session/caps";
 import { useSessionActions, useSessionView } from "@/features/session/context";
 import { ACCOUNT_PAGE } from "./copy";
 import { whenText } from "./KeyRow";
+import "@/components/kit/kit.css";
 
 const G = ACCOUNT_PAGE.grants;
 

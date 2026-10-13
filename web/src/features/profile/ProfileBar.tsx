@@ -9,12 +9,13 @@ import { Menu } from "@base-ui/react/menu";
 import { Check, Copy, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { pillButtonVariants, PillButton } from "@/components/kit";
+import { pillButtonVariants, PillButton } from "@/components/kit/PillButton";
 import { ReportDialog } from "@/features/social/report-dialog-lazy";
 import { useProfile } from "@/features/social/useProfile";
 import { useWalletSession } from "@/lib/wallet-session";
 import { notify } from "@/lib/toast";
 import { PROFILE as P } from "./copy";
+import "@/components/kit/kit.css";
 
 export interface BarStat {
   label: string;

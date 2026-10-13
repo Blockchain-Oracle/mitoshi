@@ -16,7 +16,7 @@ import { formatCadence } from "@cwf/core/copy";
 import { ArrowDown, ArrowUp, Check, Zap } from "lucide-react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useMemo, useRef, useState } from "react";
-import { TextTabs } from "@/components/kit";
+import { TextTabs } from "@/components/kit/TextTabs";
 import { Countdown } from "@/components/data";
 import { EmptyState, ErrorState, LoadingState } from "@/components/states";
 import { useFlyToTarget } from "@/components/ui/fly-to-target";
@@ -27,6 +27,7 @@ import { cadenceKeyOf, cadenceKeysOf } from "../range/WindowPicker";
 import { PARLAY } from "./copy";
 import type { LegWindow } from "./data";
 import { useSlip } from "./slip-state";
+import "@/components/kit/kit.css";
 
 /** The visible slip target: the rail's leg count from `lg`, the dock button below it. */
 function slipTarget(): Element | null {

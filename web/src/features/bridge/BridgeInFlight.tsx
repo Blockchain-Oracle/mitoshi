@@ -7,13 +7,14 @@
 import type { Address } from "@cwf/core";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { SectionHeader } from "@/components/kit";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { BRIDGE } from "./copy";
 import { sd } from "./format";
 import { useBridgeApi, type BridgeApi } from "./api";
 import "./bridge.css";
+import "@/components/kit/kit.css";
 
 const OPEN = new Set(["pending", "in-flight", "stuck", "deferred"]);
 const Tracker = dynamic(() => import("./DrawerTracker").then((m) => m.DrawerTracker), { ssr: false });

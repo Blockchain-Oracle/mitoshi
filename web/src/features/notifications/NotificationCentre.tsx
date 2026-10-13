@@ -6,7 +6,7 @@
 // seen (the rail's badge clears); the store and its poll are S13's.
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { pillButtonVariants, PillButton } from "@/components/kit";
+import { pillButtonVariants, PillButton } from "@/components/kit/PillButton";
 import { AccountAvatar } from "@/components/shell/header/AccountAvatar";
 import { notificationState, requestNotificationPermission, type NotificationState } from "@/features/alerts/notifications";
 import { timeAgo } from "@/features/news/copy";
@@ -19,6 +19,7 @@ import { markSeen, useNotices, type Notice } from "./store";
 import "@/styles/news.css";
 import "@/styles/news-wire.css";
 import "@/styles/activity.css";
+import "@/components/kit/kit.css";
 
 /** The face in the mark slot: the follower's for a follow, the author's for a take, yours for your own calls. */
 const seedOf = (n: Notice, me: string) => n.actor ?? (n.href?.startsWith("/u/") ? n.href.slice(3) : me);

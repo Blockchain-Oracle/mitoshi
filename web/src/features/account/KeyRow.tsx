@@ -8,10 +8,11 @@ import { keyStatus } from "@cwf/markets/key-status";
 import { shortHex } from "@cwf/core/units";
 import { txUrl, type Network } from "@cwf/core";
 import type { ReactNode } from "react";
-import { PillButton } from "@/components/kit";
+import { PillButton } from "@/components/kit/PillButton";
 import { dollars } from "@/providers/wallet/format";
 import { ACCOUNT_PAGE } from "./copy";
 import s from "./key-details.module.css";
+import "@/components/kit/kit.css";
 
 const K = ACCOUNT_PAGE.keys;
 const TOKENS: Record<string, string> = {

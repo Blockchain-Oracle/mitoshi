@@ -15,7 +15,8 @@ import { marketDeepLink } from "@cwf/core/urls";
 import { Vault } from "lucide-react";
 import Link from "next/link";
 import { Countdown } from "@/components/data";
-import { Masked, PillButton } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { PillButton } from "@/components/kit/PillButton";
 import { livePnlText, money } from "@/features/terminal/format";
 import { canTrade, isPriced, statusText } from "@/features/terminal/position-return";
 import type { TerminalPosition } from "@/features/terminal/terminal-positions";
@@ -28,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { CASH_OUT, HISTORY, PORTFOLIO } from "../copy";
 import { AssetDisc } from "../hero/AssetDisc";
 import { SIDE_WORD } from "../side-styles";
+import "@/components/kit/kit.css";
 
 const sum = (xs: readonly (bigint | null)[]): bigint | null => (xs.some((x) => x === null) ? null : xs.reduce<bigint>((a, x) => a + x!, 0n));
 

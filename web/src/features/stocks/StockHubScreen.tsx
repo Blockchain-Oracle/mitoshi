@@ -15,7 +15,8 @@ import { useLanes, usePriceHistory } from "@cwf/markets/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, use, useMemo } from "react";
-import { Odometer, SectionHeader } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { Hash } from "@/components/data";
 import { LoadingState } from "@/components/states";
 import { Sparkline } from "@/components/ui/sparkline";
@@ -36,6 +37,7 @@ import { STOCKS } from "./copy";
 import { HubCalls } from "./HubCalls";
 import type { StockHubProps } from "./StockHubPage";
 import { useNextReport } from "./useNextReport";
+import "@/components/kit/kit.css";
 
 const WINDOWS = 6;
 const CARD_BOOK_POLL_MS = 15_000;

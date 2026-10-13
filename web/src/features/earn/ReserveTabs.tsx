@@ -8,9 +8,10 @@
 import type { ReserveKind } from "@cwf/core";
 import { useSearchParams } from "next/navigation";
 import { useCallback } from "react";
-import { TextTabs } from "@/components/kit";
+import { TextTabs } from "@/components/kit/TextTabs";
 import { EARN } from "./copy";
 import { isReserveKind, RESERVES, RESERVE_TABS } from "./reserves";
+import "@/components/kit/kit.css";
 
 export const RESERVE_PARAM = "r";
 

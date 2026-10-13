@@ -4,7 +4,7 @@
 // and grant beside the runner's last report (folded); the copier's limits as gauges read off the live vault grant
 // (spent today against the daily cap, open against the most at once) with the budget left and its own result; and,
 // for its creator, the copiers, the fees earned and the seal-memory form.
-import { Masked } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
 import { RadialGauge, StatusDot } from "@/components/kit/desk-kit";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
@@ -20,6 +20,7 @@ import { RecordCard } from "./RecordCard";
 import type { CopyWrites } from "./useCopyWrites";
 import "./desk.css";
 import "../agents/cockpit.css";
+import "@/components/kit/kit.css";
 
 const D = {
   limits: "Your limits",

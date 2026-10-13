@@ -3,7 +3,7 @@
 import { isAddress } from "viem";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { TokenScreen } from "@/features/launch/TokenScreen";
+import { TokenIsland } from "@/features/launch/islands";
 import { DataGate } from "@/providers/data/DataGate";
 import Loading from "./loading";
 
@@ -19,7 +19,7 @@ async function Token({ params }: { params: Params }) {
   if (!isAddress(token)) return <p className="lp-note">No launch at this address.</p>;
   return (
     <DataGate fallback={<Loading />}>
-      <TokenScreen token={token as `0x${string}`} />
+      <TokenIsland token={token as `0x${string}`} />
     </DataGate>
   );
 }

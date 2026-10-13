@@ -3,9 +3,25 @@
 import { keypadDisplay } from "@cwf/core/input";
 import { ArrowRight, History, Settings, ShieldCheck } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { Card, CountdownRing, Eyebrow, FeatureCard, GroupedItem, GroupedList, GroupedToggle, HoldToConfirm, InfiniteSlider, Keypad, Masked, Odometer, PillButton, pillButtonVariants, PrivacyToggle, ScrollRail, SectionHeader, Seal, ShareCharm, Sticker, SwipeToConfirm, TextTabPanel, TextTabs, type FeatureTone, type PillTone } from "@/components/kit";
+import { Card, Eyebrow, FeatureCard, type FeatureTone } from "@/components/kit/Card";
+import { CountdownRing } from "@/components/kit/CountdownRing";
+import { GroupedItem, GroupedList, GroupedToggle } from "@/components/kit/GroupedList";
+import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
+import { InfiniteSlider } from "@/components/kit/InfiniteSlider";
+import { Keypad } from "@/components/kit/Keypad";
+import { Masked, PrivacyToggle } from "@/components/kit/Masked";
+import { Odometer } from "@/components/kit/Odometer";
+import { PillButton, pillButtonVariants, type PillTone } from "@/components/kit/PillButton";
+import { ScrollRail } from "@/components/kit/ScrollRail";
+import { SectionHeader } from "@/components/shell/SectionHeader";
+import { Seal } from "@/components/kit/Seal";
+import { ShareCharm } from "@/components/kit/ShareCharm";
+import { Sticker } from "@/components/kit/Sticker";
+import { SwipeToConfirm } from "@/components/kit/SwipeToConfirm";
+import { TextTabPanel, TextTabs } from "@/components/kit/TextTabs";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { nowMs } from "@/lib/clock";
+import "@/components/kit/kit.css";
 
 const TONES: PillTone[] = ["accent", "ink", "white", "ghost", "up", "down"];
 const FEATURE_TONES: FeatureTone[] = ["accent", "profit", "surface", "cream", "black", "white"];

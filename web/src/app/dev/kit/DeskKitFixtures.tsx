@@ -4,9 +4,11 @@ import { formatBaseUnits } from "@cwf/core/units";
 import { Bot, Check, CircleSlash, Inbox } from "lucide-react";
 import { useState } from "react";
 import { EquitySparkline } from "@/components/data/EquitySparkline";
-import { CapitalBar, PillButton } from "@/components/kit";
+import { CapitalBar } from "@/components/kit/CapitalBar";
+import { PillButton } from "@/components/kit/PillButton";
 import { Donut, EmptyState, LogoStack, NumberTicker, PartitionBar, RadialGauge, RadioCards, Slider, Sparkline, StatusDot, StepProgress, TabsPanel, Timeline, TimelineDay, TimelineNode, UnderlineTabs, type Slice } from "@/components/kit/desk-kit";
 import { Fixture } from "./KitFixtures";
+import "@/components/kit/kit.css";
 
 const SLICES: Slice[] = [
   { id: "idle", label: "Idle", value: 6, color: "var(--color-surface-3)" },

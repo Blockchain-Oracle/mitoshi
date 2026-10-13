@@ -6,11 +6,13 @@ import type { Address, TxIntent } from "@cwf/core";
 import type { MemeLaunch } from "@cwf/markets/launch";
 import { invalidateLaunch, useMemeClaims, useMemePosition } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { GroupedList, PillButton } from "@/components/kit";
+import { GroupedList } from "@/components/kit/GroupedList";
+import { PillButton } from "@/components/kit/PillButton";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { useWalletSession } from "@/lib/wallet-session";
 import { LAUNCH } from "./copy";
 import { coinText, usdText } from "./format";
+import "@/components/kit/kit.css";
 
 const K = LAUNCH.token;
 

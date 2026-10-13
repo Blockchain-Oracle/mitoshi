@@ -11,7 +11,7 @@ import { formatCadence, statusOf, type MarketId } from "@cwf/core";
 import type { MakerWindowRow } from "@cwf/markets/maker";
 import { ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
-import { PillButton } from "@/components/kit";
+import { PillButton } from "@/components/kit/PillButton";
 import { Countdown, UtcTime } from "@/components/data";
 import { TxFailureCard, type TxRunner } from "@/components/tx";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
@@ -20,6 +20,7 @@ import { EARN } from "./copy";
 import { CapMeter, contracts, InventoryBar } from "./InventoryBar";
 import { money2, signed2 } from "./format";
 import type { RowAction } from "./useEarnWrites";
+import "@/components/kit/kit.css";
 
 export interface WindowRowProps {
   row: MakerWindowRow;

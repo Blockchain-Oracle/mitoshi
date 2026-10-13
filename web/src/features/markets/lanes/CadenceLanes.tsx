@@ -14,7 +14,7 @@ import { EmptyState, ReadingBoundary } from "@/components/states";
 import { useMarketSession } from "@/features/markets/session";
 import { SESSION } from "@/features/markets/session/copy";
 import { useSessionPhrase } from "@/lib/when";
-import { ScrollRail } from "@/components/kit";
+import { ScrollRail } from "@/components/kit/ScrollRail";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNowMs } from "@/lib/clock";
 import { usePager } from "@/lib/use-pager";
@@ -27,6 +27,7 @@ import { MarketCard } from "./MarketCard";
 import { PausedCard } from "./PausedCard";
 import { pausedInLane } from "./paused";
 import { TickerPicker } from "./TickerPicker";
+import "@/components/kit/kit.css";
 
 const PAGE_SIZE = 8;
 /** A card in a long list polls its book slowly; the stream refreshes it on every book event. */

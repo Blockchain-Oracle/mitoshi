@@ -13,7 +13,7 @@ import { keys, useAccountHistory, useLiveMarketData } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import { useCallback } from "react";
-import { SectionHeader } from "@/components/kit";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { MotionScope } from "@/components/motion-scope";
 import { ErrorState, LoadingState } from "@/components/states";
 import { useBoostWrites } from "@/features/boost/useBoostWrites";
@@ -33,6 +33,7 @@ import { MoneyHero } from "./MoneyHero";
 import { Pockets } from "./Pockets";
 import { useMoney } from "./useMoney";
 import { PositionValuers } from "./usePortfolioPositions";
+import "@/components/kit/kit.css";
 
 // The private balance (S10d): its moves, tiles and the account's private bets — its own island.
 const PrivateBalancePanel = dynamic(() => import("@/features/private/PrivateBalancePanel").then((m) => m.PrivateBalancePanel), { ssr: false, loading: () => <LoadingState shape="row" /> });

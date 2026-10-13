@@ -6,12 +6,13 @@
  * saying why. On the kit's ScrollRail (From 21st.dev 10484 moumensoliman/scroll-fade-effect, R4-2), so a phone sees an
  * edge fade where more tickers wait. The pin survives a cadence switch and a reload, and the hero follows it.
  */
-import { ScrollRail } from "@/components/kit";
+import { ScrollRail } from "@/components/kit/ScrollRail";
 import { cn } from "@/lib/utils";
 import { MARKETS } from "../copy";
 import { AssetDisc } from "../hero/AssetDisc";
 import { pausedCopy } from "./paused";
 import "./ticker-picker.css";
+import "@/components/kit/kit.css";
 
 interface TickerPickerProps {
   tickers: readonly string[];

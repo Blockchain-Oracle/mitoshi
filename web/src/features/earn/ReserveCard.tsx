@@ -9,11 +9,12 @@
  */
 import { oneUnit, type ReserveSheet } from "@cwf/core";
 import type { CSSProperties } from "react";
-import { Odometer } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
 import { PendingRoute } from "@/components/shell/CapabilityPending";
 import { EARN } from "./copy";
 import { bpsOf, bpsPct, forView, money2, parState, sharePriceDeltaPct } from "./format";
 import type { ReserveWords } from "./reserves";
+import "@/components/kit/kit.css";
 
 interface ReserveCardProps {
   sheet: ReserveSheet;

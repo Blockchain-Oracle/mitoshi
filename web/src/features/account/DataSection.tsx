@@ -8,13 +8,15 @@
 import { deletionMessage, networkFrom, UNDO_WINDOW_MS, type Address } from "@cwf/core";
 import { TriangleAlert } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
-import { GroupedToggle, HoldToConfirm } from "@/components/kit";
+import { GroupedToggle } from "@/components/kit/GroupedList";
+import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { useAiConsent, withdrawAiConsent } from "@/features/sensei/consent";
 import { useSocialSession } from "@/features/social/session";
 import { webEnv } from "@/lib/env";
 import { notify } from "@/lib/toast";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { DATA } from "./data-copy";
+import "@/components/kit/kit.css";
 
 const PROVIDER = { anthropic: "Anthropic (Claude)", openai: "OpenAI", google: "Google (Gemini)" } as Record<string, string>;
 const nonce = () => Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => b.toString(16).padStart(2, "0")).join("");

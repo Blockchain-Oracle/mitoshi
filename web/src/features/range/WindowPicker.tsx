@@ -10,11 +10,14 @@
 import { formatCadence } from "@cwf/core/copy";
 import type { EventMarket, MarketId } from "@cwf/core";
 import { useRef, type KeyboardEvent } from "react";
-import { CountdownRing, ScrollRail, TextTabs } from "@/components/kit";
+import { CountdownRing } from "@/components/kit/CountdownRing";
+import { ScrollRail } from "@/components/kit/ScrollRail";
+import { TextTabs } from "@/components/kit/TextTabs";
 import { cn } from "@/lib/utils";
 import { AssetDisc } from "../markets/hero/AssetDisc";
 import { RANGE } from "./copy";
 import type { BandWindow } from "./data";
+import "@/components/kit/kit.css";
 
 export const cadenceKeyOf = (m: EventMarket): string => (m.lane === "gap" ? "gap" : formatCadence(m.intervalSec));
 /** The cadences these Windows run on, shortest first and the Gap last — a fixed order, not the soonest close's (R4-5

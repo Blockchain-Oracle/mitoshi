@@ -9,7 +9,7 @@
 import { isOk, type ParlayReserveState } from "@cwf/core";
 import { readParlayOwed, type ParlayTicketView } from "@cwf/markets/parlay";
 import { useReadingQuery } from "@cwf/markets/react";
-import { formatLeft } from "@/components/kit";
+import { formatLeft } from "@/components/kit/CountdownRing";
 import { EmptyState, ReadingBoundary } from "@/components/states";
 import { useNowMs } from "@/lib/clock";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -22,6 +22,7 @@ import { SlipProvider } from "./slip-state";
 import { Tickets } from "./Tickets";
 import { useParlayWrites } from "./useParlayWrites";
 import { WindowList } from "./WindowList";
+import "@/components/kit/kit.css";
 
 function Owed({ wallet }: { wallet: string }) {
   const reading = useReadingQuery([...parlayKeys.all, "owed", wallet], () => readParlayOwed(wallet as `0x${string}`), { pollMs: 30_000 });

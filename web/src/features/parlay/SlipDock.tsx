@@ -11,7 +11,7 @@ import type { ParlayReserveState } from "@cwf/core";
 import { USD_DECIMALS } from "@cwf/core";
 import { Layers } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Odometer } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
 import { LoadingState } from "@/components/states";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ import type { LegWindow } from "./data";
 import { ParlayCta, ParlaySlip, ParlaySlipOf } from "./ParlaySlip";
 import { useSlip } from "./slip-state";
 import { useParlayTicket, type ParlayTicket } from "./useParlayTicket";
+import "@/components/kit/kit.css";
 
 const RAIL_QUERY = "(min-width: 64rem)";
 const UNIT = 10 ** USD_DECIMALS;

@@ -4,10 +4,11 @@
 import { formatCadence } from "@cwf/core/copy";
 import Link from "next/link";
 import { connection } from "next/server";
-import { SectionHeader } from "@/components/kit";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { PROOF } from "./copy";
 import { settledProofs, type ProofFeedRow } from "./data";
+import "@/components/kit/kit.css";
 
 const usd = (e8: string | null) => (e8 === null ? "—" : `$${(Number(e8) / 1e8).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
 const utc = (sec: number) => new Date(sec * 1000).toISOString().replace("T", " ").slice(0, 16);

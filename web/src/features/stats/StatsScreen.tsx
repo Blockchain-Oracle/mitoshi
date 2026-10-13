@@ -7,11 +7,12 @@ import { addressUrl, formatBaseUnits, txUrl, USD_DECIMALS, type Network } from "
 import { formatCadence } from "@cwf/core/copy";
 import Link from "next/link";
 import { connection } from "next/server";
-import { SectionHeader } from "@/components/kit";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { webEnv } from "@/lib/env";
 import { STATS } from "./copy";
 import { readStats } from "./data";
 import { GrowthCurve } from "./GrowthCurve";
+import "@/components/kit/kit.css";
 
 const DAY_MS = 86_400_000;
 const usd = (base: string) => `$${formatBaseUnits(BigInt(base), USD_DECIMALS, { maxDp: 2, minDp: 2 })}`;

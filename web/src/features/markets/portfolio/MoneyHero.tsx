@@ -7,11 +7,13 @@
 // added (FR-5). Every amount wears the privacy mask; "—" and a skeleton until every leg has read, never a $0.00 flash.
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Masked, PillButton } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { PillButton } from "@/components/kit/PillButton";
 import { money as usd } from "@/features/terminal/format";
 import { cn } from "@/lib/utils";
 import { HERO_MONEY } from "../copy";
 import type { Money } from "./useMoney";
+import "@/components/kit/kit.css";
 
 const LEGS = [
   { key: "dollars", tone: "mh-leg-dollars", label: HERO_MONEY.legs.dollars },

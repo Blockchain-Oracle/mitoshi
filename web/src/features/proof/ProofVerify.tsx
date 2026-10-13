@@ -6,10 +6,11 @@
 // check). viem and the archive read load on the press, not with the page.
 import { RefreshCwIcon } from "lucide-react";
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
-import { PillButton } from "@/components/kit";
+import { PillButton } from "@/components/kit/PillButton";
 import type { ArchiveInput } from "./archive-verify";
 import { PROOF } from "./copy";
 import type { ReverifyInput } from "./reverify";
+import "@/components/kit/kit.css";
 
 export type ProofCheck =
   | { id: string; label: string; kind: "record"; input: ReverifyInput; expectedE8: string }

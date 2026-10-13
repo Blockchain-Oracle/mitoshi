@@ -6,9 +6,10 @@
 import { Accordion } from "@base-ui/react/accordion";
 import { BookOpen, ChevronDown, Coins, FileText, Rocket, type LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { Sticker } from "@/components/kit";
+import { Sticker } from "@/components/kit/Sticker";
 import { DOCS_URL } from "@/lib/docs-url";
 import { DOCS_NAV } from "./nav";
+import "@/components/kit/kit.css";
 
 const ICON: Record<string, LucideIcon> = { "Get started": Rocket, Trade: BookOpen, Settle: Coins, Reference: FileText };
 const HOME = {

@@ -8,7 +8,7 @@
  */
 import type { Diagnosis, Reading, WalletHistory } from "@cwf/core";
 import { useState } from "react";
-import { SectionHeader } from "@/components/kit";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { EmptyState, ErrorState, LoadingState } from "@/components/states";
 import type { useBoostWrites } from "@/features/boost/useBoostWrites";
 import type { useTerminalClose } from "@/features/terminal/useTerminalClose";
@@ -20,6 +20,7 @@ import { HistoryRows } from "../history/HistoryRows";
 import { Pager } from "../Pager";
 import { BetRow } from "./BetRow";
 import type { BetGroup } from "./usePortfolioPositions";
+import "@/components/kit/kit.css";
 
 type Tab = "open" | "history";
 const PAGE = 8;

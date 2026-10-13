@@ -6,11 +6,12 @@
 import { isTickerSymbol, TICKER_SYMBOLS, type TickerSymbol } from "@cwf/core";
 import Link from "next/link";
 import { connection } from "next/server";
-import { pillButtonVariants } from "@/components/kit";
+import { pillButtonVariants } from "@/components/kit/PillButton";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { NEWS, timeAgo } from "./copy";
 import { articleSymbols, Cashtags, MarkCluster, NewsRow, Tone } from "./NewsRow";
 import { readWire, type Article } from "./wire";
+import "@/components/kit/kit.css";
 
 function Meta({ article, now }: { article: Article; now: number }) {
   return (

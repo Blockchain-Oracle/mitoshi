@@ -9,12 +9,13 @@ import { quoteMemeBuy, quoteMemeSell, withSlippage, type MemeLaunch } from "@cwf
 import { invalidateLaunch, invalidateAfterWrite, useBalanceSheet, useMemePosition, usePoolQuote } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { SlideOver, SlideOverContent } from "@/components/kit";
+import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { SwapTicket, type SwapAsset } from "@/components/ui/swap-ticket";
 import { useWalletSession } from "@/lib/wallet-session";
 import { LAUNCH } from "./copy";
 import { bpsText, DECIMALS, parseAmount } from "./format";
+import "@/components/kit/kit.css";
 
 const T = LAUNCH.trade;
 const SLIPPAGE_BPS = 100;

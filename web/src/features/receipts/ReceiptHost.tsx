@@ -2,13 +2,15 @@
 // The sheet the Receipt action opens (R4-4, D-227; critic gap 21): `TxReceipt` (the cream stub) with who signed it, the
 // fee, and the key's limit when a key spent — in the kit sheet (`?d=receipt`, Back closes it). Mounted once, beside the
 // funds host; it renders nothing until a receipt is opened.
-import { Masked, SlideOver, SlideOverContent } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { KeyUsedReceipt, TxReceipt } from "@/components/tx";
 import { webEnv } from "@/lib/env";
 import { closeDrawer, useOpenDrawerName } from "@/lib/drawer-param";
 import { usePrivacy } from "@/lib/privacy";
 import { WRITE_RECEIPT } from "./copy";
 import { RECEIPT_KEY, receiptTitle, useWriteReceipt } from "./write-receipt";
+import "@/components/kit/kit.css";
 
 export function ReceiptHost() {
   const receipt = useWriteReceipt();

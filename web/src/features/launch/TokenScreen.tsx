@@ -11,7 +11,8 @@ import type { MemeLaunch, TimedMemeTrade as MemeTrade } from "@cwf/markets/launc
 import { useMemeLaunch, useMemeTrades } from "@cwf/markets/react";
 import { Flag } from "lucide-react";
 import { useState } from "react";
-import { PillButton, TextTabs, TextTabPanel } from "@/components/kit";
+import { PillButton } from "@/components/kit/PillButton";
+import { TextTabs, TextTabPanel } from "@/components/kit/TextTabs";
 import { Sparkline } from "@/components/kit/desk-kit";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { ReportDialog } from "@/features/social/report-dialog-lazy";
@@ -23,6 +24,7 @@ import { StablecoinView } from "./StablecoinView";
 import { TokenYou } from "./TokenYou";
 import { TradeSheet } from "./TradeSheet";
 import "@/styles/launch.css";
+import "@/components/kit/kit.css";
 
 const K = LAUNCH.token;
 type Tab = "trades" | "holders" | "you" | "safety";

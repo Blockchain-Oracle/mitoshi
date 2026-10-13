@@ -12,7 +12,7 @@ import { useClaimables } from "@cwf/markets/react";
 import { ArrowDownToLine, ArrowUpFromLine, CircleHelp, Download, History, Medal, MessageSquare, Settings, ShieldAlert, SlidersHorizontal, Trophy, Wallet } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState, type CSSProperties } from "react";
-import { GroupedItem as Item, GroupedList as Group } from "@/components/kit";
+import { GroupedItem as Item, GroupedList as Group } from "@/components/kit/GroupedList";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { Modal } from "@/components/ui/modal";
 import { CollectPlate } from "@/features/markets/claims/CollectPlate";
@@ -37,6 +37,7 @@ import { InstallDrawer } from "./InstallDrawer";
 import { ReplayDrawer } from "./ReplayDrawer";
 import type { Episode } from "../replay";
 import { SendPanel } from "./SendPanel";
+import "@/components/kit/kit.css";
 
 const TradingBalancePanel = dynamic(() => import("@/features/vault/TradingBalancePanel").then((m) => m.TradingBalancePanel), { ssr: false });
 // What a previous Trading Balance still holds (S24.2), self-hiding when it holds nothing.

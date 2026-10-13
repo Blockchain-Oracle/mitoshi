@@ -7,11 +7,13 @@
  */
 import { ArrowRight, Wallet } from "lucide-react";
 import Link from "next/link";
-import { Masked, PillButton } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { PillButton } from "@/components/kit/PillButton";
 import { useDemoState } from "@/features/terminal/demo";
 import { money } from "@/features/terminal/format";
 import { useWalletSession } from "@/lib/wallet-session";
 import { HERO_MONEY, PLATE } from "../copy";
+import "@/components/kit/kit.css";
 
 function ConnectCard({ onSignIn }: { onSignIn: () => void }) {
   return (

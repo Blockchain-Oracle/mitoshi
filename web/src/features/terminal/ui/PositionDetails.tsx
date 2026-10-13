@@ -12,7 +12,7 @@ import { useMarket, useOpeningPrice } from "@cwf/markets/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { Odometer } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { SHELL } from "@/lib/copy";
 import { tapFeedback } from "@/lib/feedback";
@@ -26,6 +26,7 @@ import type { PositionValue } from "../usePositionValue";
 import { AddModal } from "./AddModal";
 import { avgTicksOf } from "../position-value";
 import { PositionGone } from "./PositionGone";
+import "@/components/kit/kit.css";
 
 const REDUCE = [25n, 50n, 75n, 100n] as const;
 const ShareModal = dynamic(() => import("@/features/share/ShareModal").then((m) => m.ShareModal), { ssr: false });

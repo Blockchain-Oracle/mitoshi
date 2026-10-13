@@ -10,7 +10,8 @@
 import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { useBalanceSheet, useVaultBets, useVaultSnapshot } from "@cwf/markets/react";
 import { useState } from "react";
-import { Masked, PillButton } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { PillButton } from "@/components/kit/PillButton";
 import { LoadingState } from "@/components/states";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { notifyReceipt } from "@/features/receipts/write-receipt";
@@ -26,6 +27,7 @@ import { LegacyBalance } from "./LegacyBalance";
 import { VAULT } from "./copy";
 import { grantBudgetsOf, tradingBalanceOf } from "./trading-balance";
 import "@/styles/vault.css";
+import "@/components/kit/kit.css";
 
 const usd = (base: bigint) => `$${formatBaseUnits(base, 6, { minDp: 2, maxDp: 2 })}`;
 

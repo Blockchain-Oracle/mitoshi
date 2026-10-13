@@ -9,7 +9,7 @@ import { formatCadence } from "@cwf/core/copy";
 import { marketDeepLink, txUrl } from "@cwf/core/urls";
 import { Vault } from "lucide-react";
 import Link from "next/link";
-import { Masked } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
 import { money } from "@/features/terminal/format";
 import { webEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ import { HISTORY } from "../copy";
 import { HistoryShare } from "../portfolio/HistoryShare";
 import { SIDE_WORD } from "../side-styles";
 import { timeAgo } from "./time-ago";
+import "@/components/kit/kit.css";
 
 /** UP, DOWN, or both — what was held at the close, or what was traded when it closed out early. */
 function sidesLabel(round: SettledRound): string {

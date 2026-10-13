@@ -9,7 +9,7 @@ import type { TractionCall } from "@cwf/db/idx";
 import { MessageCircle } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { pillButtonVariants } from "@/components/kit";
+import { pillButtonVariants } from "@/components/kit/PillButton";
 import { LoadingState } from "@/components/states";
 import type { Article } from "@/features/news/wire";
 import { openDrawer } from "@/lib/drawer-param";
@@ -19,6 +19,7 @@ import "@/styles/market-card.css";
 import "@/styles/news.css";
 import "@/styles/news-wire.css";
 import "./stocks.css";
+import "@/components/kit/kit.css";
 
 export interface HubHeadlines {
   /** The ticker's headlines from the server's read; null when the wire couldn't be read. */
