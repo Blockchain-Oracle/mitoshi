@@ -8,6 +8,8 @@
 // shows no figure, only the error with Retry.
 import { addressUrl, type Address } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
+import { tempoReadClient } from "@cwf/markets";
+import { readMakerSharesWith } from "@cwf/markets/maker";
 import { connection } from "next/server";
 import { SectionHeader } from "@/components/shell/SectionHeader";
 import { AccountAvatar } from "@/components/shell/header/AccountAvatar";
@@ -18,6 +20,7 @@ import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { NewsRow } from "@/features/news/NewsRow";
 import { money, moneyTone } from "@/features/terminal/format";
 import { webEnv } from "@/lib/env";
+import { serverEnv } from "@/server/env";
 import { people } from "@/server/social";
 import { PROFILE as P } from "./copy";
 import { readProfile, type Profile } from "./data";
@@ -33,6 +36,7 @@ import "@/components/kit/kit.css";
 
 const when = (sec: number) => new Date(sec * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 const roi = (bps: number | null) => (bps === null ? P.dash : `${bps > 0 ? "+" : bps < 0 ? "−" : ""}${Math.abs(bps / 100).toFixed(1)}%`);
+const LP_WAIT_MS = 1_500;
 const TONE = { win: "positive", loss: "negative", void: "neutral", closed: "neutral" } as const;
 
 /** One row of figures: P&L leads (its own line on a phone), then ROI, win rate, rounds and rank. */
@@ -92,13 +96,20 @@ function Settled({ p }: { p: Profile }) {
   );
 }
 
+/** The LP badge's word from the chain (the maker vault's shares), as Portfolio reads it: a slow or failed read is 0 — locked. */
+async function lpShares(address: Address): Promise<bigint> {
+  const env = serverEnv();
+  const read = readMakerSharesWith(tempoReadClient(env.network, env.rpcHttpUrl), address).catch(() => 0n);
+  return Promise.race([read, new Promise<bigint>((done) => setTimeout(() => done(0n), LP_WAIT_MS))]);
+}
+
 export async function ProfileScreen({ address }: { address: Address }) {
   await connection();
-  const [p, named] = await Promise.all([readProfile(address).catch(() => null), people().profiles([address]).catch(() => new Map())]);
+  const [p, named, lpSharesRaw] = await Promise.all([readProfile(address).catch(() => null), people().profiles([address]).catch(() => new Map()), lpShares(address)]);
   const person = named.get(address.toLowerCase()) ?? null;
   const display: string | null = person?.displayName ?? null;
   const ranked = p !== null && !p.house;
-  const record = ranked ? recordOf({ wins: p.wins, losses: p.losses, currentWinStreak: p.currentStreak, fillCount: p.rounds, stakeBase: BigInt(p.stakeBase), decimals: 6 }) : null;
+  const record = ranked ? recordOf({ wins: p.wins, losses: p.losses, currentWinStreak: p.currentStreak, fillCount: p.rounds, stakeBase: BigInt(p.stakeBase), decimals: 6, lpSharesRaw }) : null;
   const tail = address.slice(-4);
   const head = `${address.slice(0, 6)}…`;
   const ident = (

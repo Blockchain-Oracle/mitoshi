@@ -5,7 +5,7 @@
  * the lens in one round — and a supplier's shares with what they are worth today. Every figure is the contract's; a
  * network without the vault answers `null` inside the reading.
  */
-import { zeroAddress, type Address, type Hex } from "viem";
+import { zeroAddress, type Address, type Hex, type PublicClient } from "viem";
 import { marketMakerVaultAbi } from "@cwf/clients/abis/MarketMakerVault";
 import { toMarketId, USD_DECIMALS, type EventMarket, type MarketId, type Reading } from "@cwf/core";
 import { deployedOf, type MakerParams, type MakerVaultState, type MakerWindowView } from "@cwf/core/maker";
@@ -169,6 +169,13 @@ export async function getMakerSharesOf(wallet: Address): Promise<Reading<{ share
     })) as unknown as [bigint, bigint, bigint];
     return { shares, worthBase: supplyShares === 0n ? 0n : (shares * totalValue) / supplyShares };
   });
+}
+
+/** One wallet's maker-vault shares on a caller's client (a server render — the profile's LP badge); 0 with no vault. */
+export async function readMakerSharesWith(client: PublicClient, wallet: Address): Promise<bigint> {
+  const deployment = makerVenueOf(client.chain!.id);
+  if (!deployment) return 0n;
+  return (await client.readContract({ address: deployment.marketMakerVault, abi: marketMakerVaultAbi, functionName: "sharesOf", args: [wallet] })) as bigint;
 }
 
 /** Whether the engine has resolved or voided one Window, so the vault's `settle` would land rather than revert. */
