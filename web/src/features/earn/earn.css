@@ -1,125 +1,120 @@
-/* `/earn` — Owarine 90a91d71 `features/earn/earn-page.css` on Mitoshi's tokens (D-222: Owarine's surface treatments,
-   Mitoshi's brand). The `.earn-*` surfaces are Yosuku's own (`styles/yosuku/part-17.css`); these are the page's named
-   rules. The hero is the editorial `.page-hero` without the old fixed-header offset. */
+/* `/earn` (R4-7, D-227) — Owarine 90a91d71 `features/earn/earn-page.css`'s page rebuilt on Owarine's redesigned money
+   screens: the black money card (`.money-hero`, styles/ledger-plate.css), the vault field (`features/vault/vault.css`:
+   Max inside the pill, the reason in the loss tone) and the kit's position card. One column the stage insets; no page
+   padding, no max-width (the stage sets the width). The capital map and the limits are in `earn-map.css`. */
 
-.ea-page { position: relative; }
+/* the idle hatch: on the action card too, which the phone sheet portals out of `.earn-page` */
+.earn-page, .ea-action { --ea-idle: repeating-linear-gradient(135deg, var(--color-surface-3) 0 4px, var(--color-surface-2) 4px 8px); }
+.earn-page { display: flex; min-width: 0; flex-direction: column; gap: 12px; }
+@media (min-width: 640px) { .earn-page { gap: 16px; } }
+/* the action dock floats above the phone dock once the card scrolls away: the page's end clears it */
+@media (max-width: 767px) { .earn-page { padding-bottom: 64px; } }
 
-/* the hero under the S22 shell: no header to clear */
-.ea-hero.page-hero { padding: 32px 0 28px; border-bottom-color: var(--color-hairline); }
-.ea-hero .page-title { font-size: clamp(2.6rem, 6.4vw, 5.2rem); }
-@media (max-width: 767px) { .ea-hero.page-hero { padding: 20px 0 20px; } }
-.ea-blurb { margin-top: 20px; max-width: 34rem; font-size: 13px; line-height: 1.5; color: var(--color-ink-secondary); }
+/* the head: one line, the tab's word in the accent */
+.ea-head { margin: 0; font: 700 24px/1.2 var(--font-display); letter-spacing: -0.02em; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 768px) { .ea-head { font-size: 32px; } }
+.ea-tabs { margin-top: -4px; }
+/* a phone: the tab words sit under the head with the 44 px rows touching it, and the bar right under them — the
+   action's button stays on the first screen (≤ 480 px at 375×667, the earn spec's fold) */
+@media (max-width: 767px) { .ea-tabs { margin-top: -12px; } .ea-tabs .kit-tabs-list { padding-bottom: 0; } }
 
-/* the live panel */
-.ea-panel { position: relative; padding: 24px; }
-@media (min-width: 768px) { .ea-panel { padding: 32px; } }
-.ea-panel-inner { position: relative; }
-.ea-loading { position: relative; padding: 12px 0; font-family: var(--font-mono); font-size: 12px; line-height: 16px; color: var(--color-ink-secondary); }
-.ea-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
-.ea-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-secondary); }
-.ea-tag--brand { letter-spacing: 0.18em; }
-.ea-price-row { display: flex; align-items: flex-end; gap: 12px; }
-.ea-price { font-family: var(--font-display); font-size: clamp(2.8rem, 5vw, 3.5rem); font-weight: 800; line-height: 0.88; letter-spacing: -0.025em; color: var(--color-ink); }
-.ea-price-unit { margin-left: 4px; vertical-align: baseline; font-family: var(--font-mono); font-size: 0.9rem; font-weight: 400; letter-spacing: normal; color: var(--color-ink-secondary); }
-.ea-chip { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 4px; padding: 4px 10px; border-radius: 9999px; font-family: var(--font-mono); font-size: 11px; color: var(--color-profit); }
-.ea-since { margin-top: 10px; font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-ink-secondary); }
-.ea-hair { margin: 24px 0; }
-.ea-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-.ea-k { display: block; margin-bottom: 6px; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-ink-secondary); }
-.ea-v { font-family: var(--font-mono); font-size: 15px; color: var(--color-ink); }
-.ea-v--accent { margin-bottom: 8px; color: var(--color-accent); }
-.ea-meter-fill { width: max(4px, var(--ea-fill, 0%)); }
+/* one DOM, three layouts: stacked < 768; card | action 768–1023; card + §02 | sticky action column ≥ 1024 */
+.ea-layout { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "action" "pos" "map"; gap: 12px; align-items: start; }
+@media (min-width: 640px) { .ea-layout { gap: 16px; } }
+.ea-side { display: contents; }
+.ea-a-card { grid-area: card; min-width: 0; }
+.ea-a-action { grid-area: action; min-width: 0; }
+.ea-a-pos { grid-area: pos; min-width: 0; }
+.ea-a-map { grid-area: map; min-width: 0; }
+@media (min-width: 768px) and (max-width: 1023px) {
+  .ea-layout { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "card action" "pos pos" "map map"; align-items: stretch; }
+  .ea-a-card > .ea-rc { height: 100%; }
+  .ea-a-pos, .ea-a-map { align-self: start; }
+}
+@media (min-width: 1024px) {
+  .ea-layout { grid-template-columns: minmax(0, 1fr) 22rem; grid-template-areas: "card side" "map side"; }
+  .ea-side { grid-area: side; display: flex; flex-direction: column; gap: 16px; position: sticky; top: var(--stage-sticky-top); }
+}
 
-/* the measure */
-.ea-main { max-width: 64rem; margin: 0 auto; padding-top: 24px; padding-bottom: 64px; }
-@media (min-width: 768px) { .ea-main { padding-top: 40px; } }
+/* ── the reserve card: the money card's black slab, compact on a phone ─────────────────────────────────────────── */
+.ea-rc.money-hero { display: flex; flex-direction: column; padding: 16px; }
+@media (min-width: 640px) { .ea-rc.money-hero { padding: 24px; } }
+.ea-rc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.ea-rc-price { display: flex; min-width: 0; flex-wrap: wrap; align-items: baseline; column-gap: 6px; row-gap: 4px; }
+@media (min-width: 640px) { .ea-rc-price { column-gap: 8px; } }
+.ea-rc-figure { font: 700 32px/1 var(--font-data); letter-spacing: -0.02em; color: #fff; }
+@media (min-width: 640px) { .ea-rc-figure { font-size: 44px; } }
+.ea-rc-unit { font: 500 13px/1 var(--font-body); color: rgba(255, 255, 255, 0.6); }
+.ea-rc-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: var(--radius-full); background: color-mix(in srgb, var(--chart-up) 18%, transparent); font: 700 12px/1.2 var(--font-data); color: var(--chart-up); }
+.ea-rc-tri { width: 8px; height: 8px; }
+.ea-rc-status { flex: none; padding: 4px 10px; border-radius: var(--radius-full); background: rgba(255, 255, 255, 0.12); font: 700 12px/1.2 var(--font-body); color: #fff; }
+.ea-rc-caption { font: 500 12px/1.3 var(--font-body); color: rgba(255, 255, 255, 0.6); white-space: nowrap; }
+.ea-rc-legs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 10px 0 0; }
+.ea-rc-leg { min-width: 0; }
+.ea-rc-leg-label { display: flex; align-items: center; gap: 6px; font: 500 12px/1.2 var(--font-body); color: rgba(255, 255, 255, 0.7); white-space: nowrap; }
+.ea-rc-dot { width: 8px; height: 8px; }
+.ea-rc-dot[data-leg="value"] { background: #fff; }
+.ea-rc-dot[data-leg="idle"] { background: rgba(255, 255, 255, 0.4); }
+.ea-rc-dot[data-leg="committed"] { background: var(--color-accent); }
+/* three legs on a 320 phone are ~82 px each: the figure steps down to 12 px there, so "$12,345.67" stays on one line */
+.ea-rc-leg-amount { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; margin: 4px 0 0; font: 700 clamp(12px, 3.7vw, 14px)/1.2 var(--font-data); color: #fff; overflow-wrap: anywhere; }
+.ea-rc-leg-pct { font-size: 12px; font-weight: 600; color: var(--color-accent); }
+@media (min-width: 640px) { .ea-rc-leg-amount { font-size: 17px; } .ea-rc-dot { width: 12px; height: 12px; } }
+.money-hero-bar.ea-rc-bar { height: 8px; margin-top: 10px; }
+@media (min-width: 640px) { .money-hero-bar.ea-rc-bar { height: 12px; margin-top: auto; } .ea-rc-legs { margin: 12px 0 20px; } }
+.ea-rc-seg { width: calc(var(--ea-share) * 1%); min-width: 4px; transition: width 350ms var(--ease-out); }
+.ea-rc-seg[data-leg="idle"] { background: rgba(255, 255, 255, 0.4); }
+.ea-rc-seg[data-leg="committed"] { background: var(--color-accent); }
 
-.ea-paused { margin-bottom: 20px; padding: 12px 16px; border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent); background: color-mix(in srgb, var(--color-accent) 6%, transparent); border-radius: var(--radius-md); }
-.ea-paused-title { margin-bottom: 4px; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); }
-.ea-paused-body { max-width: 42rem; font-size: 13px; line-height: 1.375; color: var(--color-ink-secondary); }
+/* ── the action card: switch, amount, quick amounts, one button ───────────────────────────────────────────────── */
+.ea-action { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+@media (min-width: 640px) { .ea-action { gap: 12px; padding: 16px; } }
+.ea-action--sheet { padding: 0; border: 0; background: none; }
+.ea-switch { width: 100%; }
+.ea-amount { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.ea-amount-pill { display: flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 4px 0 16px; border: 1px solid var(--color-border-strong); border-radius: var(--radius-full); background: var(--color-surface-2); }
+@media (min-width: 640px) { .ea-amount-pill { min-height: 52px; } }
+.ea-amount-pill:focus-within { border-color: var(--color-accent); }
+.ea-amount-pill[data-problem] { border-color: var(--color-loss); }
+.ea-amount-unit { font: 600 20px/1 var(--font-data); color: var(--color-ink-secondary); }
+.ea-amount-input { flex: 1; min-width: 0; border: 0; background: transparent; font: 700 22px/1.2 var(--font-data); color: var(--color-ink); outline: none; }
+.ea-amount-input[data-empty] { color: var(--color-ink-muted); }
+.ea-amount-max { flex: none; min-height: 44px; padding: 0 14px; border-radius: var(--radius-full); background: var(--color-surface-3); font: 700 13px/1 var(--font-body); color: var(--color-ink); cursor: pointer; }
+.ea-amount-max:hover:not(:disabled) { background: var(--color-hairline); }
+.ea-amount-max:disabled { color: var(--color-ink-muted); cursor: not-allowed; }
+.ea-amount-note { min-height: 16px; padding: 0 16px; font: 500 12px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+.ea-amount-note[data-problem] { color: var(--color-loss); }
+.ea-keypad { margin-top: 4px; }
+.ea-quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.ea-quick-chip { position: relative; height: 36px; border-radius: var(--radius-full); background: var(--color-surface-2); font: 600 13px/1 var(--font-data); color: var(--color-ink-secondary); cursor: pointer; transition: background-color var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out); }
+.ea-quick-chip::before { content: ""; position: absolute; inset: -4px 0; }
+.ea-quick-chip:hover { color: var(--color-ink); background: var(--color-surface-3); }
+.ea-quick-chip[aria-pressed="true"] { background: var(--color-ink); color: var(--color-stage); }
+/* the shortest phones keep the button on the first screen: the quick amounts give way */
+@media (max-height: 640px) and (max-width: 767px) { .ea-quick { display: none; } }
+.ea-cta { width: 100%; }
+.ea-cta button { border-radius: var(--radius-full); }
+.ea-mini .kit-capital-bar { height: 6px; }
+.ea-mini .kit-capital-chip { min-height: 28px; font-size: 12px; }
+.ea-micro { margin: 0; font: 500 12px/1.4 var(--font-body); color: var(--color-ink-secondary); }
 
-/* §01 the two cards */
-.ea-cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; margin-bottom: 40px; }
-@media (min-width: 768px) { .ea-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.ea-card { padding: 24px; }
-.ea-field-head { display: flex; min-width: 0; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-.ea-field-head .ea-k { margin-bottom: 0; font-size: 10px; color: var(--color-ink-muted); }
-.ea-wallet { flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); font-size: 10px; color: var(--color-ink-muted); }
-.ea-field { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 8px 8px 8px 16px; border-radius: 12px; }
-.ea-input { flex: 1; min-width: 0; background: transparent; font-family: var(--font-mono); font-size: 24px; line-height: 32px; color: inherit; }
-.ea-input:focus:not(:focus-visible) { outline: none; }
-.ea-input-unit { font-family: var(--font-mono); font-size: 20px; line-height: 20px; color: var(--color-ink-secondary); }
-.ea-max { min-height: 44px; padding: 0 10px; border-radius: 8px; background: transparent; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-accent); cursor: pointer; transition: color 150ms var(--ease); }
-.ea-max:hover:not(:disabled) { color: var(--color-ink); }
-.ea-max:disabled { opacity: 0.5; cursor: not-allowed; }
-.ea-quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
-.ea-quick-chip { min-height: 44px; padding: 8px 0; border-radius: 8px; background: transparent; font-family: var(--font-mono); font-size: 12px; line-height: 16px; color: var(--color-ink-secondary); cursor: pointer; transition: color 150ms var(--ease), border-color 150ms var(--ease), background 150ms var(--ease); }
-.ea-quick-chip:hover { color: var(--color-ink); }
-.ea-quick-chip--on { border: 1px solid color-mix(in srgb, var(--color-accent) 50%, transparent); background: color-mix(in srgb, var(--color-accent) 15%, transparent); color: var(--color-ink); }
-/* the CTA: the TxLifecycle button at the card's measure */
-.ea-supply { width: 100%; max-width: 320px; margin: 0 auto; }
-.ea-supply button { border-radius: 9999px; }
+/* ── your position: the kit's position card, with the shares cell ────────────────────────────────────────────── */
+.ea-pos-paper { flex-wrap: wrap; }
+.ea-pos-paper-label { font: 500 12px/1.2 var(--font-body); color: var(--color-ink-secondary); }
+.ea-pos-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* under 360 a third of the card is narrower than a rolling five-figure amount (it can't wrap): two columns there */
+@media (max-width: 359px) { .ea-pos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ea-pos-at { display: block; font: 500 11px/1.3 var(--font-data); color: var(--color-ink-secondary); }
+.ea-pos-skel { display: inline-block; width: 64px; height: 12px; border-radius: var(--radius-md); }
+.ea-up { color: var(--chart-up); }
+.ea-down { color: var(--chart-down); }
 
-.ea-position-title { margin-bottom: 16px; font-size: 10px; color: var(--color-ink-muted); }
-.ea-empty { padding: 40px 0; text-align: center; font-family: var(--font-mono); font-size: 12px; line-height: 16px; color: var(--color-ink-secondary); }
-.ea-position-value { font-family: var(--font-display); font-size: 36px; line-height: 40px; font-weight: 800; letter-spacing: -0.025em; color: var(--color-ink); }
-.ea-position-sub { margin: 4px 0 20px; font-family: var(--font-mono); font-size: 11px; color: var(--color-ink-secondary); }
-.ea-withdraw { display: block; width: 100%; max-width: 320px; min-height: 44px; margin: 0 auto; padding: 12px 0; border-radius: 9999px; background: transparent; font-family: var(--font-mono); font-size: 12px; line-height: 16px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-accent); cursor: pointer; }
-.ea-withdraw:hover:not(:disabled) { color: var(--color-ink); }
-.ea-withdraw:disabled { opacity: 0.5; cursor: not-allowed; }
-.ea-note { margin-top: 12px; text-align: center; font-size: 12px; line-height: 1.5; color: var(--color-ink-secondary); }
-
-/* A-2c: realized and on-paper under the position — the money that has come back, and what today's share price says */
-.ea-earned { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--color-hairline); }
-.ea-earned .ea-k { margin-bottom: 4px; }
-.ea-earned-v { font-size: 12px; line-height: 1.45; color: var(--color-ink-secondary); }
-.ea-earned-v--up { font-family: var(--font-mono); color: var(--color-profit); }
-.ea-earned-v--down { font-family: var(--font-mono); color: var(--color-loss); }
-
-/* §02 the table, on the slip's surface */
-.ea-table-wrap { overflow-x: auto; margin-bottom: 40px; border: 1px solid var(--color-hairline); border-radius: 16px; background: var(--color-surface-1); }
-.ea-table { width: 100%; border-collapse: collapse; }
-.ea-th { padding: 12px 16px; border-bottom: 1px solid var(--color-hairline); text-align: left; font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-ink-secondary); }
-.ea-td { padding: 12px 16px; border-top: 1px solid var(--color-hairline); vertical-align: top; font-family: var(--font-mono); font-size: 12px; color: var(--color-ink); }
-.ea-td--num { text-align: right; white-space: nowrap; }
-.ea-td:first-child { white-space: nowrap; }
-.ea-td-sub { color: var(--color-ink-secondary); }
-.ea-row-btn { margin-left: 8px; min-height: 36px; }
-
-/* the reserve tabs under the hero — the leaderboard's own tab row, in a hairline band at §01's measure */
-.ea-tabs { max-width: 64rem; margin: 0 auto; padding-block: 20px 0; }
-.ea-tabs .asset-tabs { overflow-x: auto; scroll-padding-inline: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--color-hairline); scrollbar-width: none; }
-.ea-tabs .asset-tabs::-webkit-scrollbar { display: none; }
-.ea-tabs .asset-tab { flex: none; min-height: 44px; white-space: nowrap; }
-
-/* §02 on a house reserve — the deployed contract's own parameters, on the table's surface */
-.ea-bounds { margin-bottom: 40px; padding: 8px 16px 16px; border: 1px solid var(--color-hairline); border-radius: 16px; background: var(--color-surface-1); }
-.ea-bound-rows { display: block; }
-.ea-bound { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 14px 0; border-top: 1px solid var(--color-hairline); }
-.ea-bound:first-child { border-top: 0; }
-@media (min-width: 640px) { .ea-bound { grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 16px; align-items: baseline; } }
-.ea-bound-k { margin-bottom: 0; }
-.ea-bound-v { display: flex; flex-direction: column; gap: 4px; margin: 0; }
-.ea-bound-n { font-family: var(--font-mono); font-size: 15px; color: var(--color-ink); }
-.ea-bound-note { font-size: 12px; line-height: 1.5; color: var(--color-ink-secondary); }
-/* the one sentence a supplier is owed: how the money is lost here */
-.ea-risk { margin-top: 16px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent); font-size: 13px; line-height: 1.5; color: var(--color-ink); }
-
-/* §02 "Where the capital is" (D-226): the total deployed first; one card per Window under 768 px, the table above. */
-.ea-capital { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
-.ea-capital .ea-table-wrap { margin-bottom: 0; }
-.ea-capital-total { color: var(--color-ink-secondary); font-size: 13px; }
-.ea-capital-total .numbers { color: var(--color-ink); font: 700 20px/1 var(--font-data); margin-right: 6px; }
-.ea-wcards { display: flex; flex-direction: column; gap: 8px; list-style: none; margin: 0; padding: 0; }
-.ea-wcard { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
-.ea-wcard-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.ea-wcard-name { font: 700 14px/1.2 var(--font-body); color: var(--color-ink); white-space: nowrap; }
-.ea-wcard-state { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 11px/1.2 var(--font-data); color: var(--color-ink-secondary); }
-.ea-wcard-figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
-.ea-wcard-figs dt { font: 600 9px/1.2 var(--font-data); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-secondary); }
-.ea-wcard-figs dd { margin: 4px 0 0; font: 600 13px/1.2 var(--font-data); color: var(--color-ink); }
-.ea-wcard-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--font-data); font-size: 11px; }
-.ea-wcard-actions { display: flex; gap: 6px; }
-.ea-wcard-actions .ea-row-btn { margin-left: 0; }
-@media (max-width: 767px) { .ea-capital .ea-table-wrap { display: none; } }
-@media (min-width: 768px) { .ea-wcards { display: none; } }
+/* ── the phone dock once the action scrolls away (the parlay slip's `.pl-dock`, styles/parlay.css) ─────────────── */
+.ea-dock { position: fixed; z-index: var(--z-float); left: 50%; bottom: var(--dock-strip-offset); width: min(26rem, calc(100vw - 1.25rem)); transform: translateX(-50%); }
+.ea-dock-btn {
+  display: flex; align-items: center; justify-content: center; width: 100%; height: 52px; padding: 0 16px; border-radius: var(--radius-full);
+  background: var(--accent-fill); color: var(--on-accent); box-shadow: 0 8px 24px rgb(0 0 0 / 0.35); font: 700 15px/1 var(--font-display); cursor: pointer;
+}
+/* where the phone dock ends, measured: the action counts as on screen only above it */
+.ea-dock-probe { position: fixed; left: 0; bottom: 0; width: 0; height: var(--dock-strip-offset); visibility: hidden; pointer-events: none; }
+.ea-dock-btn:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
