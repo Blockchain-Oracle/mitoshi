@@ -11,7 +11,7 @@
 | Before S3.5 | Approve and fund the capped mainnet MPP wallet (Q-020) | Open |
 | S1, S4 (NYSE date), S15, S16, R4-0 | Passkey checks on your own device. R4-0 (2026-10-12): sign in with a passkey on a 375 × 667 phone, open /trade/BTC and check the account reads "Passkey" and the full one-tap card leaves the settings stack clear of the chart controls (agents can only sign in with a browser-wallet test session) | Open |
 | S1 gate (geofence) | Put a country header in front of Coolify for the live domains: proxy `mitoshi.xyz` (and the testnet host) through Cloudflare so requests carry `cf-ipcountry`. Coolify stamps none; without it the geofence answers "open" everywhere (Q-008 not enforced live) | Open |
-| Before S11 | X account for trade-from-X | Open |
+| Before S11 (and R4-11 `/claim`) | X account for trade-from-X: an X developer app (OAuth 2.0 client id + secret, callback `https://testnet.mitoshi.xyz/api/x/callback`) and the bot account the relay posts from. `/claim` (Owarine's ClaimScreen and receipt card) is a pending page until S11's x-relay and `/api/x/*` can run on it (R4-11, 2026-10-13) | Open |
 | S14c day 1 | Send the LayerZero direct-pathway request — draft ready in `stage-14-bridge.md` §14c.13 A (rewritten 2026-10-12, R4-12: the Base → Moderato leg works — 23 s — so it asks only about the 7.7-day verification and the direct 40451 ↔ 40444 pathway; the hop works without it) | Open |
 | Before S19 | Chainlink Data Streams subscription + testnet credentials (Q-011); eligibility/budget for mainnet Stock Tokens (Q-008); Safes (Q-016) | Open |
 | After S0.11 | Retire the laptop RedStone archiver once the overlap check passes | Open |
