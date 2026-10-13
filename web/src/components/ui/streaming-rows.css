@@ -1,0 +1,16 @@
+/* The streaming rows (From 21st.dev 29368 rmahammad/streaming-data-rows, R6 money S02): 44 px hairline rows, micro
+ * headers, numbers in the data face; a row that arrives while the table is open slides 8 px and fades from the accent
+ * wash over 1.2 s. Reduced motion: it simply appears. */
+.srows { width: 100%; border-collapse: collapse; table-layout: fixed; font: 500 13px/1.2 var(--font-body); color: var(--color-ink); }
+.srows th { padding: 0 6px 8px; border-bottom: 1px solid var(--color-hairline); font: 600 10px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-secondary); text-align: left; white-space: nowrap; }
+.srows th[data-width="chip"] { width: 4.25rem; }
+.srows td { height: 44px; padding: 0 6px; border-bottom: 1px solid var(--color-hairline); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.srows [data-align="end"] { text-align: right; }
+.srows tr:last-child td { border-bottom: 0; }
+.srows tr[data-fresh] { animation: srows-in 1200ms var(--ease-out) both; }
+@keyframes srows-in {
+  from { background: var(--color-accent-wash); transform: translateY(-8px); }
+  20% { transform: translateY(0); }
+  to { background: transparent; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) { .srows tr[data-fresh] { animation: none; } }

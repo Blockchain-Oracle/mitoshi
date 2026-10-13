@@ -21,16 +21,23 @@ export const bpsText = (bps: bigint | number) => `${(Number(bps) / 100).toFixed(
 /** Parse a typed pathUSD or coin amount into base units; null when it isn't a number. */
 export const parseAmount = (text: string): bigint | null => parseDecimalToBaseUnits(text.trim().replace(/,/g, "") || "x", DECIMALS);
 
+/** "3 d", "5 h", "12 m", "now" — how old a launch or a trade is (R6 money). */
+export function ageText(sec: number, nowSec: number): string {
+  const s = Math.max(0, nowSec - sec);
+  if (s < 60) return "now";
+  if (s < 3_600) return `${Math.floor(s / 60)} m`;
+  if (s < 86_400) return `${Math.floor(s / 3_600)} h`;
+  return `${Math.floor(s / 86_400)} d`;
+}
+
+/** A 1e18 price as a number, for drawing only (candles, sparklines). */
+export const priceNum = (priceE18: bigint | string): number => Number(BigInt(priceE18)) / 1e18;
+
+/** A column's dollars: cents under $1,000, whole dollars above ("$1,204"). */
+export const usdShort = (base: bigint | string): string => {
+  const b = BigInt(base);
+  return b >= 1_000_000_000n ? `$${formatBaseUnits(b, DECIMALS, { minDp: 0, maxDp: 0 })}` : usdText(b);
+};
+
 /** Market cap at the curve price: supply × price. */
 export const capBase = (totalSupply: bigint, priceE18: bigint) => (totalSupply * priceE18) / E18;
-
-/** The move against the last trade at least 24 h old, or since the first trade when the coin is younger; null without. */
-export function changeText(priceE18: bigint, trades: readonly { priceE18: bigint; atSec: number | null }[], nowSec: number): { text: string; up: boolean; since: "24h" | "launch" } | null {
-  const timed = trades.filter((t) => t.atSec !== null);
-  if (timed.length === 0) return null;
-  const old = [...timed].reverse().find((t) => t.atSec! <= nowSec - 86_400);
-  const ref = old ?? timed[0]!;
-  if (ref.priceE18 <= 0n) return null;
-  const bps = Number(((priceE18 - ref.priceE18) * 10_000n) / ref.priceE18);
-  return { text: `${bps >= 0 ? "+" : "−"}${(Math.abs(bps) / 100).toFixed(2)}%`, up: bps >= 0, since: old ? "24h" : "launch" };
-}

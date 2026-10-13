@@ -2,11 +2,14 @@
 // The "You" tab of `/launch/[token]` (S17; R4-11, D-227): what the signed-in account holds of the coin, its value at the
 // curve price and what selling it all pays now; then the claims rows — launchpad fees, the leftover after graduation,
 // the locker's pool fees — each shown only when the chain says something is owed, each one sponsored transaction.
+// R6 money (T07 + T16, D-230): it waits as a row's outline; holding none says so with the way to buy.
 import type { Address, TxIntent } from "@cwf/core";
 import type { MemeLaunch } from "@cwf/markets/launch";
 import { invalidateLaunch, useMemeClaims, useMemePosition } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { GroupedList } from "@/components/kit/GroupedList";
+import { EmptyState } from "@/components/states/EmptyState";
+import { LoadingState } from "@/components/states/LoadingState";
 import { PillButton } from "@/components/kit/PillButton";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -16,7 +19,7 @@ import "@/components/kit/kit.css";
 
 const K = LAUNCH.token;
 
-export function TokenYou({ m }: { m: MemeLaunch }) {
+export function TokenYou({ m, onBuy }: { m: MemeLaunch; onBuy?: () => void }) {
   const session = useWalletSession();
   const address = session.address as Address | null;
   const position = useMemePosition(m.token, address);
@@ -38,7 +41,7 @@ export function TokenYou({ m }: { m: MemeLaunch }) {
   if (isLeftoverReceiver && m.graduation && m.graduation.leftover > 0n) rows.push({ label: K.claimLeftover, detail: coinText(m.graduation.leftover), intent: { kind: "launch-claim-leftover", token: m.token } });
   return (
     <div className="lp-you">
-      {position === null ? <p className="lp-note">{K.reading}</p> : !p || p.coin === 0n ? <p className="lp-note">{K.youNone}</p> : (
+      {position === null ? <LoadingState shape="row" /> : !p || p.coin === 0n ? <EmptyState size="inline" why={K.youNone} nextAction={onBuy ? { label: K.buySym(m.meta.symbol), onClick: onBuy } : undefined} /> : (
         <div className="lp-you-hold">
           <span className="numbers type-body-strong text-ink">{K.youHold(`${coinText(p.coin)} $${m.meta.symbol}`, usdText(p.valueAtCurve))}</span>
           {p.exitQuote !== null ? <span className="numbers type-caption text-ink-secondary">{K.exit(usdText(p.exitQuote))}</span> : null}

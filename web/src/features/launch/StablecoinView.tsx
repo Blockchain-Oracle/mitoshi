@@ -1,8 +1,14 @@
 "use client";
 // A launched stablecoin's page (S17a; R4-11, D-227): its supply and cap, its DEX flip orders (read from the DEX's own
-// events) and its FeeAMM pool — what lets it pay network fees — straight from the chain. No launch at the address says so.
+// events) and its FeeAMM pool — what lets it pay network fees — straight from the chain. R6 money (T07 + T16, D-230): it
+// waits as the token page's outline, a failed read says so with Retry, and no launch at the address is the VOID ticket.
 import type { Address } from "@cwf/core";
-import { useStablecoinLaunch } from "@cwf/markets/react";
+import { launchKeys, useStablecoinLaunch } from "@cwf/markets/react";
+import { useQueryClient } from "@tanstack/react-query";
+import { ErrorState } from "@/components/states/ErrorState";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { launchToken } from "@/components/states/shapes/launch";
+import { LaunchVoid } from "./LaunchVoid";
 import { GroupedList } from "@/components/kit/GroupedList";
 import { LAUNCH } from "./copy";
 import { coinText, usdText } from "./format";
@@ -14,12 +20,13 @@ const S = K.stable;
 
 export function StablecoinView({ token }: { token: Address }) {
   const s = useStablecoinLaunch(token);
-  if (s === null) return <section className="lp-page"><p role="status" className="lp-note">{K.reading}</p></section>;
-  if (!s.ok) return <section className="lp-page"><p role="alert" className="lp-note">{K.failed}</p></section>;
-  if (!s.value) return <section className="lp-page"><p className="lp-note">{K.missing}</p></section>;
+  const queryClient = useQueryClient();
+  if (s === null) return <LoadingFrame shape="launch-token" className="lp-token-page">{launchToken()}</LoadingFrame>;
+  if (!s.ok) return <section className="lp-token-page"><ErrorState diagnosis={s.error} retry={() => void queryClient.invalidateQueries({ queryKey: launchKeys.stablecoin(token) })} /></section>;
+  if (!s.value) return <LaunchVoid />;
   const v = s.value;
   return (
-    <section className="lp-page lp-token">
+    <section className="lp-token-page lp-stable">
       <header className="lp-token-head">
         <LogoDisc uri={v.logoURI} symbol={v.symbol} size="lg" />
         <span className="lp-row-id">

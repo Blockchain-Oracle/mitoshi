@@ -11,5 +11,5 @@ export { useClaimables, useLiveMarketData, usePinnedVerdict } from "./live-data"
 export { useLegacyVaultSnapshots, useVaultBets, useVaultHoldings, useVaultSnapshot } from "./vault-reads";
 export { bookDepthQuery, useAssetPrice, useBookDepth, useBookDepths, useExitQuote, useHoldings, useLanes, useMarket, useNextWindow, useOnchain, useOpenOrders, useOpeningPrice, usePortReading, usePositions, usePriceHistory, useAccountHistory, useResolution, useSeriesGrid, useStakeQuote, useWalletHistory, type RestingOrderView } from "./window-reads";
 export { earnHistoryKeys, useReserveHistory, useReserveLaunchedAt } from "./earn-history";
-export { invalidateLaunch, launchKeys, useLaunches, useMemeClaims, useMemeLaunch, useMemePosition, useMemeTemplates, useMemeTrades, usePoolQuote, useStablecoinLaunch } from "./launch-reads";
+export { invalidateLaunch, launchKeys, useLaunchBoard, useLaunchFeed, useMemeClaims, useMemeLaunch, useMemePosition, useMemeTemplates, usePoolQuote, useStablecoinLaunch } from "./launch-reads";
 export { invalidateThemes, themeKeys, useEligibleMirrors, useTheme, useThemeActivity, useLatestThemeRebalance, useThemeFollow, useThemeHoldings, useThemes, useThemeUnscoped } from "./theme-reads";

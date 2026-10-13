@@ -3,29 +3,57 @@
  * kit (pills, TextTabs, grouped rows) carries the grammar. The page adds no inset of its own — the stage pads (D-226). */
 .lp-page { display: flex; width: 100%; max-width: 48rem; flex-direction: column; gap: 16px; margin-inline: auto; }
 .lp-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.lp-head-text { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
 .lp-head-actions { display: flex; gap: 8px; }
-.lp-note { padding: 12px 0; font-size: 13px; color: var(--color-ink-secondary); }
-.lp-list { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
-.lp-list > [role="listitem"] + [role="listitem"] { border-top: 1px solid var(--color-hairline); }
-.lp-row { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "disc id price" "disc progress progress"; align-items: center; gap: 4px 12px; min-height: 64px; padding: 10px 14px; color: var(--color-ink); }
-.lp-row::before { content: ""; position: absolute; inset: 8px auto 8px 0; width: 3px; border-radius: 9999px; background: var(--color-accent); opacity: 0; transition: opacity 140ms ease; }
-.lp-row:hover { background: var(--color-surface-2); }
-.lp-row:hover::before, .lp-row:focus-visible::before { opacity: 1; }
-.lp-row:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
-.lp-row > .lp-logo { grid-area: disc; }
-.lp-row-id { grid-area: id; display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.lp-row-id { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
 .lp-row-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 600; color: var(--color-ink); }
-.lp-row-sym { font-family: var(--font-data); font-size: 12px; color: var(--color-ink-secondary); }
-.lp-row-progress { grid-area: progress; min-width: 0; }
-.lp-row-meta { font-size: 12px; color: var(--color-ink-secondary); }
-.lp-row-price { grid-area: price; justify-self: end; font-size: 14px; font-weight: 600; }
-.lp-row > .lp-spark { display: none; }
-.lp-row > .lp-chip { grid-area: price; justify-self: end; }
-@media (min-width: 640px) {
-  .lp-row { grid-template-columns: auto minmax(0, 1fr) minmax(0, 12rem) 96px 7rem; grid-template-areas: "disc id progress spark price"; }
-  .lp-row > .lp-spark { display: block; grid-area: spark; width: 96px; height: 28px; }
+.lp-row-price { justify-self: end; font-size: 14px; font-weight: 600; }
+.lp-row-sym { display: inline-flex; min-width: 0; align-items: center; gap: 6px; font-family: var(--font-data); font-size: 12px; color: var(--color-ink-secondary); }
+
+/* ── the board (R6 money, S08): the stage's wide measure; head stats, controls, then rows — a table from 1024, cards
+   on a phone (From 21st.dev 20110 ssychui/market-watchlist: the hovered row's accent rail) ─────────────────────── */
+.lp-board-page, .lp-board-wrap { display: flex; width: 100%; max-width: var(--content-wide); flex-direction: column; gap: 16px; margin-inline: auto; }
+.lp-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.lp-stat { display: flex; min-width: 0; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.lp-stat dt { font: 600 11px/1 var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-secondary); }
+.lp-stat dd { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 18px/1.1 var(--font-data); color: var(--color-ink); }
+@media (min-width: 1024px) { .lp-stat dd { font-size: 22px; } }
+.lp-stat-link { color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-accent); text-underline-offset: 4px; }
+.lp-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; }
+.lp-board-tabs { min-width: 0; flex: 1 1 16rem; }
+.lp-test-switch { display: inline-flex; min-height: 44px; align-items: center; gap: 10px; font: 500 13px/1.2 var(--font-body); color: var(--color-ink-secondary); cursor: pointer; }
+.lp-test-tag { padding: 1px 6px; border-radius: var(--radius-full); background: color-mix(in srgb, var(--color-warning) 16%, transparent); font: 700 10px/1.4 var(--font-body); letter-spacing: 0.04em; color: var(--color-warning); text-transform: uppercase; }
+.lp-board { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.lp-board-list { margin: 0; padding: 0; list-style: none; }
+.lp-board-list > li + li { border-top: 1px solid var(--color-hairline); }
+.lp-board-bone { display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 12px 14px; border-top: 1px solid var(--color-hairline); }
+.lp-board-bone:first-child { border-top: 0; }
+/* a phone's card: logo · name/$SYM · market cap; the curve; the caption line */
+.lp-brow { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "disc id cap" "disc curve curve" "disc line line"; align-items: center; gap: 6px 12px; min-height: 76px; padding: 12px 14px; color: var(--color-ink); }
+.lp-brow::before { content: ""; position: absolute; inset: 10px auto 10px 0; width: 3px; border-radius: var(--radius-full); background: var(--color-accent); opacity: 0; transition: opacity 140ms var(--ease-out); }
+.lp-brow:hover { background: var(--color-surface-2); }
+.lp-brow:hover::before, .lp-brow:focus-visible::before { opacity: 1; }
+.lp-brow:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.lp-brow > .lp-logo { grid-area: disc; align-self: start; }
+.lp-brow-id { grid-area: id; display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.lp-brow-cap { grid-area: cap; justify-self: end; font: 700 15px/1.2 var(--font-data); }
+.lp-brow-curve { grid-area: curve; min-width: 0; }
+.lp-brow-progress { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; font: 600 12px/1 var(--font-data); color: var(--color-ink-secondary); }
+.lp-brow-line { grid-area: line; font: 500 12px/1.3 var(--font-data); color: var(--color-ink-secondary); }
+.lp-brow-rank, .lp-brow-vol, .lp-brow-holders, .lp-brow-age, .lp-brow-spark, .lp-brow-price, .lp-brow-head { display: none; }
+@media (min-width: 1024px) {
+  .lp-brow { grid-template-columns: 2rem 36px minmax(10rem, 1.6fr) repeat(4, minmax(4.5rem, 0.7fr)) minmax(8rem, 1.1fr) 96px minmax(6rem, 0.8fr); grid-template-areas: none; min-height: 64px; gap: 0 14px; padding: 10px 16px; }
+  .lp-brow > * { grid-area: auto !important; }
+  .lp-brow-rank, .lp-brow-vol, .lp-brow-holders, .lp-brow-age, .lp-brow-spark, .lp-brow-price { display: block; }
+  .lp-brow-head { display: grid; min-height: 36px; border-bottom: 1px solid var(--color-hairline); font: 600 10px/1 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-secondary); }
+  .lp-brow-head:hover { background: none; }
+  .lp-brow-head::before { display: none; }
+  .lp-brow-rank { font-size: 12px; color: var(--color-ink-muted); }
+  .lp-brow-cap, .lp-brow-vol, .lp-brow-holders, .lp-brow-age, .lp-brow-price { justify-self: end; font: 600 14px/1.2 var(--font-data); text-align: right; }
+  .lp-brow-head > .lp-brow-cap, .lp-brow-head > .lp-brow-vol, .lp-brow-head > .lp-brow-holders, .lp-brow-head > .lp-brow-age, .lp-brow-head > .lp-brow-price { font: inherit; }
+  .lp-brow-spark .lp-spark { display: block; width: 96px; height: 28px; }
+  .lp-brow-line { display: none; }
 }
+
 .lp-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border: 1px solid var(--color-hairline); border-radius: 9999px; font-size: 11px; font-weight: 600; color: var(--color-ink-secondary); white-space: nowrap; }
 .lp-chip[data-stage="graduated"] { border-color: color-mix(in srgb, var(--color-up) 40%, transparent); color: var(--color-up); }
 .lp-chip[data-stage="complete"] { border-color: color-mix(in srgb, var(--color-warning) 40%, transparent); color: var(--color-warning); }
@@ -77,57 +105,72 @@
 .lp-stepper li { padding: 2px 10px; border: 1px solid var(--color-hairline); border-radius: 9999px; font-size: 12px; color: var(--color-ink-muted); }
 .lp-stepper li[data-done] { border-color: color-mix(in srgb, var(--color-up) 40%, transparent); color: var(--color-up); }
 
-/* Phones: the price and its move take their own line under the name, so a long name or "+12.34% since launch" never
- * squeezes the other to a sliver at 320; from 480 they sit on the right of one row. */
-.lp-token-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "disc id icon" "price price price"; align-items: center; gap: 4px 12px; }
+/* ── the token page (R6 money, S02): the stage's wide measure; from 1024 the chart and tabs (2fr) beside a sticky
+   22 rem column with the trade card and the facts (Coinbase, Kraken); on a phone head, graduation, chart, facts, the
+   Buy · Sell bar above the dock, tabs. ─────────────────────────────────────────────────────────────────────────────── */
+.lp-token-page { display: flex; width: 100%; max-width: var(--content-wide); flex-direction: column; gap: 16px; margin-inline: auto; }
+.lp-token-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (min-width: 1024px) { .lp-token-grid { grid-template-columns: minmax(0, 2fr) 22rem; } }
+.lp-token-main { display: flex; min-width: 0; flex-direction: column; gap: 16px; }
+.lp-token-side { position: sticky; top: var(--stage-sticky-top); display: flex; flex-direction: column; gap: 12px; }
+/* the head: logo · name over $SYM and creator · price and move · Report, then the graduation bar across */
+.lp-token-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "disc id icon" "price price price" "grad grad grad"; align-items: center; gap: 6px 12px; }
 .lp-token-head > .lp-logo { grid-area: disc; }
 .lp-token-head > .lp-row-id { grid-area: id; }
 .lp-token-head > .lp-icon { grid-area: icon; }
-.lp-token-price { grid-area: price; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 20px; font-weight: 700; color: var(--color-ink); }
+.lp-token-grad { grid-area: grad; min-width: 0; padding-top: 4px; }
+.lp-token-price { grid-area: price; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font: 700 22px/1.1 var(--font-data); color: var(--color-ink); }
 @media (min-width: 480px) {
-  .lp-token-head { grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "disc id price icon"; }
-  .lp-token-price { flex-direction: column; align-items: flex-end; gap: 0; }
+  .lp-token-head { grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "disc id price icon" "grad grad grad grad"; }
+  .lp-token-price { flex-direction: column; align-items: flex-end; gap: 2px; }
 }
-.lp-change { font-size: 12px; font-weight: 600; color: var(--color-down); }
+.lp-creator { color: var(--color-ink-secondary); text-decoration: underline dotted; text-underline-offset: 3px; }
+.lp-change { font: 600 12px/1.2 var(--font-data); color: var(--color-down); }
 .lp-change[data-up] { color: var(--color-up); }
-.lp-icon { display: grid; width: 44px; height: 44px; flex: none; place-items: center; border-radius: 9999px; color: var(--color-ink-secondary); }
+.lp-icon { display: grid; width: 44px; height: 44px; flex: none; place-items: center; border-radius: var(--radius-full); color: var(--color-ink-secondary); }
 .lp-icon:hover { background: var(--color-surface-2); color: var(--color-ink); }
-.lp-chart { display: grid; min-height: 180px; place-items: center; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
-.lp-chart-line { width: 100%; height: 180px; }
-.lp-stage { font-size: 13px; font-weight: 600; color: var(--color-ink-secondary); }
-.lp-stage[data-stage="graduated"] { color: var(--color-up); }
-.lp-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr)); gap: 8px; }
-.lp-facts > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-surface-2); }
-.lp-facts dt { font-size: 11px; color: var(--color-ink-secondary); }
-.lp-facts dd { overflow-wrap: anywhere; font-size: 14px; font-weight: 600; color: var(--color-ink); }
+/* the chart: interval chips over a 220 px pane (320 from 1024), every state at the same height */
+.lp-chart { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.lp-chart-head { display: flex; justify-content: flex-end; }
+.lp-chart-box { position: relative; height: 240px; }
+@media (min-width: 1024px) { .lp-chart-box { height: 340px; } }
+.lp-cc { height: 100%; }
+.lp-cc .cc-box { flex: 1; min-height: 0; }
+.lp-chart-wait { display: flex; height: 100%; flex-direction: column; justify-content: space-between; padding: 16px 0; }
+.lp-chart-rule { height: 1px; background: var(--color-hairline); animation: lp-pulse 1.4s ease-in-out infinite; }
+.lp-chart-state { display: flex; height: 100%; align-items: center; justify-content: center; }
+.lp-chart-bone { height: 260px; }
+@media (min-width: 1024px) { .lp-chart-bone { height: 380px; } }
+/* the facts: 2 × 2 */
+.lp-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.lp-facts > div { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-surface-2); }
+.lp-facts dt { font: 600 11px/1 var(--font-body); color: var(--color-ink-secondary); }
+.lp-facts dd { overflow-wrap: anywhere; font: 700 15px/1.2 var(--font-data); color: var(--color-ink); }
+/* the phone's Buy · Sell bar, sticky above the dock (page-action) */
 .lp-action { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 0; background: var(--color-ground); }
-.lp-trades { display: flex; flex-direction: column; }
-/* A tape row: side, pathUSD, coin, trader. Phones stack pathUSD over the coin so four columns never crowd 320. */
-.lp-trade { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "side usd who" "side coin who"; align-items: center; gap: 0 10px; min-height: 44px; padding-block: 6px; border-bottom: 1px solid var(--color-hairline); font-size: 13px; }
-.lp-trade > :nth-child(1) { grid-area: side; }
-.lp-trade > :nth-child(2) { grid-area: usd; }
-.lp-trade > :nth-child(3) { grid-area: coin; font-size: 12px; }
-.lp-trade > :nth-child(4) { grid-area: who; }
-@media (min-width: 480px) {
-  .lp-trade { grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto; grid-template-areas: "side usd coin who"; padding-block: 0; }
-  .lp-trade > :nth-child(3) { font-size: 13px; }
-}
+/* the desktop trade card */
+.lp-trade-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.lp-trade-card-head { display: flex; flex-direction: column; gap: 2px; }
+/* the tape and the holders */
+.lp-tape { margin-top: 8px; }
+.lp-wait { display: flex; justify-content: center; padding: 20px 0; }
 .lp-link { color: var(--color-ink-secondary); text-decoration: underline dotted; text-underline-offset: 4px; }
-.lp-holders { display: flex; flex-direction: column; gap: 6px; }
-.lp-holder { display: grid; grid-template-columns: 7rem 1fr 4rem; align-items: center; gap: 10px; min-height: 32px; font-size: 13px; }
-.lp-holder > :last-child { text-align: right; }
-.lp-holder-bar { display: block; height: 6px; overflow: hidden; border-radius: 9999px; background: var(--color-surface-2); }
-.lp-holder-bar > span { display: block; height: 100%; border-radius: 9999px; background: var(--color-accent-fill); }
-.lp-safety { display: flex; flex-direction: column; gap: 8px; padding: 4px 0; font-size: 13px; color: var(--color-ink); }
+.lp-holders { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+.lp-holders-count { margin: 0; font: 600 13px/1.2 var(--font-data); color: var(--color-ink-secondary); }
+.lp-holder-list { margin: 0; padding: 0; list-style: none; }
+.lp-holder { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr) 4rem; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid var(--color-hairline); font-size: 13px; }
+.lp-holder:last-child { border-bottom: 0; }
+.lp-holder-who { display: inline-flex; min-width: 0; align-items: center; gap: 6px; color: var(--color-ink); }
+.lp-holder-tag { padding: 1px 6px; border-radius: var(--radius-full); background: var(--color-surface-2); font: 600 10px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+.lp-holder-pct { text-align: right; }
+.lp-holder-bar { display: block; height: 6px; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-2); }
+.lp-holder-bar > span { display: block; width: var(--lp-share); min-width: 2px; height: 100%; border-radius: var(--radius-full); background: var(--color-accent-fill); }
+.lp-safety { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; font-size: 13px; color: var(--color-ink); }
 .lp-safety li { padding-left: 14px; border-left: 2px solid var(--color-up); }
-.lp-you { display: flex; flex-direction: column; gap: 14px; padding: 4px 0; }
+.lp-you { display: flex; flex-direction: column; gap: 14px; padding: 8px 0; }
 .lp-you-hold { display: flex; flex-direction: column; gap: 4px; }
-.lp-skel { display: block; border-radius: var(--radius-md); background: var(--color-surface-2); animation: lp-pulse 1.4s ease-in-out infinite; }
-.lp-skel--disc { width: 48px; height: 48px; border-radius: 9999px; }
-.lp-skel--line { width: 60%; height: 14px; }
-.lp-skel--pill { height: 52px; border-radius: 9999px; }
 @keyframes lp-pulse { 50% { opacity: 0.55; } }
-@media (prefers-reduced-motion: reduce) { .lp-skel { animation: none; } .lp-row::before { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .lp-chart-rule { animation: none; } .lp-brow::before { transition: none; } }
 
 /* The wizard's Back / Continue strip, sticky above the dock on phones (`.page-action`): it needs the ground behind it. */
 .lp-wizard .wizard-nav { padding-block: 8px; background: var(--color-ground); }
