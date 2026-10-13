@@ -3,7 +3,7 @@
 // terminal can show, rendered by the same views over canned clocks — the Window chip's cell, the halt banner over
 // UP/DOWN and the session blockers under them — for the UX gate (widths, themes) without waiting for a real Monday.
 import { HALT_REASONS } from "@cwf/core";
-import { blockerLabel } from "@cwf/core/copy";
+import { blockerLine } from "@cwf/core/copy";
 import { HaltNoticeView } from "@/features/terminal/ui/HaltNotice";
 import { SessionCellView } from "@/features/terminal/ui/SessionCell";
 import { TradeButtons } from "@/features/terminal/ui/TradeButtons";
@@ -44,7 +44,7 @@ export function SessionFixtures() {
       <section aria-labelledby="blockers" className="flex flex-col gap-3">
         <h2 id="blockers" className="type-body-strong">UP/DOWN carry the session blocker</h2>
         {BLOCKERS.map((b, i) => {
-          const note = blockerLabel(b.kind, b.ctx);
+          const note = blockerLine(b.kind, b.ctx);
           return (
             <div key={i} className="max-w-sm">
               <TradeButtons mode="flat" onUp={noop} onDown={noop} busy={null} upSub={null} downSub={null} upNote={note} downNote={note} />

@@ -4,7 +4,7 @@
 // cover the call, D-160 words when they don't), `deriveBlocker`, and `usePlaceBet` through `useTapSubmitter`. No demo.
 import { useFirstFunding } from "@/features/funding/first-fund-state";
 import type { EventMarket, Quote, Side } from "@cwf/core";
-import { blockerLabel, diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/copy";
+import { blockerLine, diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/copy";
 import type { MarketPhase } from "@cwf/core/lifecycle";
 import { belowMinStake, minStakeBase } from "@cwf/core/sizing";
 import { useBalanceSheet, useNextWindow, useSigner } from "@cwf/markets/react";
@@ -113,7 +113,7 @@ export function useTerminalOpen({ market, phase, stakeBase, spot, openingUnread 
       blocker === "region-restricted" ? TERMINAL.guards.region
       : blocker === "pending-opening-print" ? openingWaitLine({ startSec: market.tradingStartSec, nowSec, prints, unread: openingUnread })
       : empty ? empty.text
-      : blocker ? blockerLabel(blocker, ctx)
+      : blocker ? blockerLine(blocker, ctx)
       : null;
     const blocked = blocker && blocker !== "quoting" && blocker !== "placing" ? label : demo ? null : (route.fallback?.reason ?? null);
     const instead = empty?.closing && next ? { label: TERMINAL.buttons.nextWindow, onClick: () => replaceTradeParams({ w: next.marketId }) } : null;

@@ -1,12 +1,8 @@
-// The route's loading boundary (R4-13a, D-227; plan §3.2 per-segment loading): the games islands' own placeholder (a
-// container with the page shape), drawn here without importing the islands — the arcade routes under /games carry this
-// boundary too, so it stays as light as the group's.
-import { LoadingState } from "@/components/states/LoadingState";
+// The route's loading boundary (R4-13a, D-227; plan §3.2 per-segment loading). R6 (T18, D-230): /games waits as its own
+// hall (the cabinet and the carousel), and every play and list route under it has a boundary of its own, so the hall
+// never stands in for a game.
+import { HallLoading } from "@/features/games/hall/HallLoading";
 
 export default function Loading() {
-  return (
-    <div className="container">
-      <LoadingState shape="page" label="Loading" />
-    </div>
-  );
+  return <HallLoading />;
 }

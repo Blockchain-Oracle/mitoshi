@@ -1,8 +1,11 @@
 export { TX } from "./copy";
 export { KeyUsedReceipt, type KeyUsedReceiptProps } from "./KeyUsedReceipt";
-export { ctaLabel, signerOfKind, signingLabel, TxCta, type SignerKind, type TxCtaProps } from "./TxCta";
+export { ctaLabel, signerOfKind, signingLabel, txProgress, TxCta, type SignerKind, type TxCtaProps } from "./TxCta";
 export { TxChips } from "./TxChips";
 export { TxFailureCard } from "./TxFailureCard";
+export { TxMorph } from "./TxMorph";
+export { TxPlaced, type TxPlacedProps } from "./TxPlaced";
 export { TxReceipt, type TxReceiptProps } from "./TxReceipt";
+export { TxSteps, txStepsOf } from "./TxSteps";
 export { TypedConfirm } from "./TypedConfirm";
 export { useTxLifecycle, type TxRunner } from "./useTxLifecycle";

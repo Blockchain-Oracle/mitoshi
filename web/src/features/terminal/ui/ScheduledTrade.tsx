@@ -5,7 +5,7 @@
 // (D-227): one line before the action — "Opens 14:35 · fills at your price" with the − 50¢ + stepper inline; the price
 // chips moved to the settings sheet ("Scheduled price"), and the price is remembered there.
 import { restingQuote, type EventMarket, type Side } from "@cwf/core";
-import { blockerLabel } from "@cwf/core/copy";
+import { blockerLine } from "@cwf/core/copy";
 import { useSeriesGrid, useSigner } from "@cwf/markets/react";
 import { Minus, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -35,7 +35,7 @@ export function ScheduledTrade({ market, stakeBase }: { market: EventMarket; sta
   // A halt, a paused lane or a corporate skip holds a Window before its open too (S6): said under both buttons.
   const guard = useLaneGuard(market);
   const laneKind = laneBlocker("upcoming", guard.lane);
-  const held = laneKind ? blockerLabel(laneKind, guard.ctx) : null;
+  const held = laneKind ? blockerLine(laneKind, guard.ctx) : null;
 
   useEffect(() => {
     const outcome = bet.state.outcome;

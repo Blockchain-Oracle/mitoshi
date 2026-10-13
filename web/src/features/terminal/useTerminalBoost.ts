@@ -4,7 +4,7 @@
 // fair-value check, the void bound, its caps, named before anything is signed) and its own write lane (`useBoostWrites`:
 // a fresh signed spot, then one passkey prompt, Q-032's default). The outcome is said in the terminal's toast.
 import type { EventMarket, Side } from "@cwf/core";
-import { blockerLabel, diagnosisCopy } from "@cwf/core/copy";
+import { blockerLine, diagnosisCopy } from "@cwf/core/copy";
 import type { MarketPhase } from "@cwf/core/lifecycle";
 import { useEffect, useRef, useState } from "react";
 import { BOOST } from "@/features/boost/copy";
@@ -26,7 +26,7 @@ export function useTerminalBoost({ market, phase, stakeBase, multiple, enabled }
   // The session and the lane (S6) hold a Boost as they hold a plain call: a halt or a paused lane is named first.
   const guard = useLaneGuard(market);
   const laneKind = phase ? laneBlocker(phase, guard.lane) : null;
-  const held = laneKind ? blockerLabel(laneKind, guard.ctx) : null;
+  const held = laneKind ? blockerLine(laneKind, guard.ctx) : null;
   const writes = useBoostWrites(session.address);
   const on = multiple > 1;
   const up = useBoostTicket({ market, side: "up", stakeBase, multiple, enabled: on && enabled });

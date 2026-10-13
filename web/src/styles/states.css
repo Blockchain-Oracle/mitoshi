@@ -70,3 +70,26 @@ html[data-splash-seen] .app-splash { display: none; }
 .skel-money-pills { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: 8px; margin-top: 16px; }
 .skel-money-pill { height: var(--ticket-cta-height); border-radius: var(--radius-full); background: var(--plate-rule); }
 @media (min-width: 640px) { .skel-money-pills { display: flex; } .skel-money-pill { width: 10rem; } }
+
+/* R6 (D-230, T18): a text bone is the page's own words, invisible, in the page's own type — so the bar is exactly the
+ * box the text will take. The settled page's classes frame it (`components/states/shapes/*`). */
+.skel-text { display: inline-block; max-width: 100%; vertical-align: top; border-radius: var(--radius-sm); color: transparent; -webkit-text-fill-color: transparent; text-shadow: none; user-select: none; }
+/* The markets hero's chart box: four hairlines and the dashed opening line, under the sweep. */
+.skel-chart-grid { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-evenly; overflow: hidden; }
+.skel-chart-grid > span { display: block; height: 1px; background: var(--color-hairline); }
+.skel-chart-grid::after {
+  content: ""; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-ink) 6%, transparent), transparent);
+  animation: skel-sweep 1.5s ease-in-out infinite;
+}
+.skel-chart-open { position: absolute; inset: 58% 0 auto; height: 0; border-top: 1px dashed var(--color-ink-muted); opacity: 0.6; }
+.hero-chart-canvas:has(> .skel-chart-grid) { position: relative; }
+.skel-chips { display: flex; gap: 8px; min-width: 0; overflow: hidden; }
+/* A bone that borrows a control's class (`.hyn`, `.mh-room`, `.tk-pp`) keeps its box, never its look. */
+.skel.hyn, .skel.mh-room, .skel.tk-pp, .skel.tk-add, .skel.tk-lev { border: 0; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .skel-chart-grid::after { display: none; } }
+/* Under the first-load splash the sweep holds still: one wait, not two (T22). */
+html[data-splash] .skel::after, html[data-splash] .skel-chart-grid::after { animation-play-state: paused; }
+/* LoadingFrame's no-flash delay: hidden (its box still reserved) until `--skel-delay` has passed. */
+.skel-delay { animation: skel-delay var(--skel-delay, 0ms) step-end; }
+@keyframes skel-delay { 0%, 100% { visibility: hidden; } }

@@ -1,0 +1,167 @@
+/* The states kit (R6, D-230): one frame for empty and error, the blocked CTA whose fix is the action, the write CTA in
+ * flight (its side's tone kept, a phase bar and a sweep), the steps under it, the morph into the receipt, the named
+ * wait and the signed-out preview. CSS only — no motion runtime in a kit file — on Mitoshi's tokens; durations from the
+ * tokens (120 hover · 180 state · 240–280 morph) on `--ease-out`; opacity and transform only; every animation stands
+ * still under reduced motion (the state change stays, instantly). Type comes from the `type-*` utilities in the markup. */
+
+/* ── StateFrame: EmptyState and ErrorState (From 21st.dev 18266 uiable/empty-background · 19376 olewandowski1/
+ *    empty-states-4). The outer box is the container; the panel sizes to its frame and never overflows it. ────────── */
+.state { container-type: inline-size; min-width: 0; max-width: 100%; }
+.state-box {
+  display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 0; padding: 20px;
+  border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1);
+  text-align: center; overflow-wrap: anywhere;
+}
+.state-box > * { min-width: 0; max-width: 100%; }
+@container (min-width: 30rem) { .state-box { padding: 32px; } }
+.state[data-size="page"] .state-box { justify-content: center; min-height: min(22rem, 60svh); }
+.state-tile {
+  display: grid; place-items: center; width: 40px; height: 40px; flex: none; border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md); background: var(--color-surface-2); color: var(--color-ink-secondary);
+}
+.state-tile svg { width: 20px; height: 20px; }
+.state[data-tone="warning"] .state-tile { color: var(--color-warning); }
+.state-copy { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 26rem; }
+.state-title { color: var(--color-ink); text-wrap: balance; }
+.state-line { max-width: 20rem; color: var(--color-ink-secondary); text-wrap: pretty; }
+.state-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+@container (max-width: 20rem) {
+  .state-actions { flex-direction: column; align-self: stretch; }
+  .state-actions > * { width: 100%; }
+}
+.state-tech { align-self: stretch; color: var(--color-ink-muted); text-align: left; }
+.state-tech summary { display: flex; align-items: center; justify-content: center; min-height: 44px; cursor: pointer; }
+.state-tech pre { margin: 4px 0 0; overflow-x: auto; white-space: pre-wrap; color: var(--color-ink-secondary); }
+/* Inline: a list's own "nothing yet" inside its section — no tile, no panel, the action at the end of the line. */
+.state[data-size="inline"] .state-box {
+  flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding: 12px 0; border: 0;
+  background: none; text-align: left;
+}
+.state[data-size="inline"] .state-copy { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; max-width: none; }
+.state[data-size="inline"] .state-line { max-width: none; }
+.state[data-size="inline"] .state-actions { justify-content: flex-start; }
+/* Strip: one line for the shell's connection strip (icon · title · line · Retry). */
+.state[data-size="strip"] .state-box {
+  flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 4px 10px;
+  padding: 8px 12px; border-radius: var(--radius-md); text-align: left;
+}
+.state[data-size="strip"] .state-tile { width: 24px; height: 24px; border: 0; background: none; }
+.state[data-size="strip"] .state-tile svg { width: 16px; height: 16px; }
+.state[data-size="strip"] .state-copy { flex: 1 1 12rem; flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; max-width: none; }
+.state[data-size="strip"] .state-line { max-width: none; }
+.state[data-size="strip"] .state-tech { display: none; }
+
+/* ── Faces: two labels in one grid cell, the outgoing one fading and blurring out as the next comes in (From 21st.dev
+ *    23536 ddoemonn/loading-button), so a CTA's words change without its box moving. ─────────────────────────────── */
+.faces { display: grid; min-width: 0; max-width: 100%; }
+.faces > .face { grid-area: 1 / 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.face[data-in] { animation: face-in var(--duration-state) var(--ease-out) both; }
+.face[data-out] { animation: face-out var(--duration-state) var(--ease-out) both; pointer-events: none; }
+@keyframes face-in { from { opacity: 0; filter: blur(2px); transform: translateY(3px); } }
+@keyframes face-out { to { opacity: 0; filter: blur(2px); transform: translateY(-3px); } }
+
+/* ── BlockedCta: the fix IS the action; the blocked face only where no fix exists — readable, never 40 % grey. ──── */
+.bcta { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.bcta-caption { min-height: calc(var(--text-caption) * var(--text-caption--line-height)); color: var(--color-ink-secondary); text-align: center; text-wrap: balance; }
+/* The blocked and busy pill faces live with the pill (components/kit/pill.css), after its disabled rule. */
+
+/* ── TxCta in flight (From 21st.dev 36528 ibrandify/save-with-progress): the side's tone stays at full opacity, a
+ *    phase bar on the bottom edge (1/3 signing · 2/3 sent · 3/3 confirmed) and a soft sweep while busy. ───────────── */
+.txcta { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.txcta-pill { overflow: hidden; isolation: isolate; }
+.txcta-bar {
+  position: absolute; inset: auto 0 0 0; height: 3px; background: currentColor; opacity: 0.55; transform-origin: left;
+  transform: scaleX(var(--tx-progress, 0)); transition: transform var(--duration-pill) var(--ease-out), opacity var(--duration-pill);
+}
+.txcta-pill[data-done] .txcta-bar { opacity: 0; transition-delay: 600ms; }
+.txcta-pill[aria-busy="true"]::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, currentColor 16%, transparent), transparent);
+  animation: txcta-sweep 1.4s ease-in-out infinite;
+}
+.txcta-pill[data-slow]::after { animation-duration: 2.8s; }
+@keyframes txcta-sweep { to { transform: translateX(100%); } }
+.txcta-caption { display: flex; min-height: 20px; align-items: center; justify-content: center; color: var(--color-ink-secondary); text-align: center; }
+.txcta-undo { margin-inline-start: 8px; color: var(--color-ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── Task steps (From 21st.dev 23569 ddoemonn/task-steps): the marks pop in by CSS keyframe — an m.* outside a motion
+ *    scope stays at its `initial`, which is how a done check never appeared (R6 R3). `compact` is the TxCta row. ── */
+.tsteps-list { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.tsteps[data-layout="row"] .tsteps-list { flex-direction: row; flex-wrap: wrap; gap: 4px 14px; }
+.tsteps-row { display: flex; min-height: 28px; align-items: center; gap: 8px; color: var(--color-ink-muted); }
+.tsteps-row[data-status="done"] { color: var(--color-ink-secondary); }
+.tsteps-row[data-status="active"] { font-weight: 600; color: var(--color-ink); }
+.tsteps-row[data-status="error"] { font-weight: 600; color: var(--color-down); }
+.tsteps-label { min-width: 0; }
+.tsteps-meta { margin-inline-start: auto; font-family: var(--font-data); color: var(--color-ink-muted); }
+.tsteps[data-layout="row"] .tsteps-meta { margin-inline-start: 2px; }
+.tsteps-mark { display: grid; flex: none; place-items: center; width: 16px; height: 16px; border-radius: 5px; }
+.tsteps-mark[data-status="done"] { background: var(--color-accent-wash); color: var(--color-accent); }
+.tsteps-mark[data-status="error"] { background: var(--color-loss-wash); color: var(--color-down); }
+.tsteps-mark[data-status="skipped"] { background: var(--color-surface-2); color: var(--color-ink-muted); }
+.tsteps-icon { display: grid; place-items: center; animation: tsteps-pop var(--duration-state) var(--ease-bounce) both; }
+@keyframes tsteps-pop { from { opacity: 0; transform: scale(0.6); } }
+.tsteps-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--color-ink-disabled); }
+.tsteps-spin { width: 12px; height: 12px; border: 2px solid var(--color-hairline); border-top-color: var(--color-accent); border-radius: 9999px; animation: tsteps-spin 0.8s linear infinite; }
+@keyframes tsteps-spin { to { transform: rotate(360deg); } }
+.tsteps[data-size="compact"] .tsteps-list { flex-direction: row; flex-wrap: nowrap; justify-content: center; gap: 4px 12px; }
+.tsteps[data-size="compact"] .tsteps-row { min-height: 20px; gap: 5px; }
+.tsteps[data-size="compact"] .tsteps-mark { width: 12px; height: 12px; border-radius: 4px; }
+.tsteps[data-size="compact"] .tsteps-mark svg { width: 9px; height: 9px; }
+.tsteps[data-size="compact"] .tsteps-spin { width: 10px; height: 10px; border-width: 1.5px; }
+
+/* ── The morph into the receipt: the CTA block fades out (160 ms), the receipt fades in with a 4 px rise (220 ms,
+ *    60 ms late), and the box's height eases from one to the other (measured in TxMorph). ──────────────────────── */
+.tx-morph { display: grid; min-width: 0; }
+.tx-morph > * { grid-area: 1 / 1; min-width: 0; }
+.tx-morph[data-animating] { overflow: hidden; transition: height 240ms var(--ease-out); }
+.tx-morph-from[data-leaving] { animation: tx-morph-out 160ms var(--ease-out) both; pointer-events: none; }
+.tx-morph-to { outline: none; }
+.tx-morph-to[data-entering] { animation: tx-morph-in 220ms var(--ease-out) 60ms both; }
+@keyframes tx-morph-out { to { opacity: 0; } }
+@keyframes tx-morph-in { from { opacity: 0; transform: translateY(4px); } }
+
+/* ── TxPlaced: the default receipt stub for a host without its own (the cream Receipt grammar, compacted). ───────── */
+.tx-placed { display: flex; flex-direction: column; gap: 10px; }
+.tx-placed-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.tx-placed-actions > * { flex: 1 1 8rem; }
+
+/* ── WaitingText (From 21st.dev 12338 serafimcloud/text-shimmer): the words shimmer ink-muted → ink (12338's numbers:
+ *    250 % size, linear, 2 s); the elapsed seconds after 3 s in tabular mono; static under reduced motion. ───────── */
+.wait { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; min-width: 0; }
+.wait-shimmer {
+  display: inline-block; color: transparent; background-image: linear-gradient(90deg, var(--color-ink-muted) 0 40%, var(--color-ink) 50%, var(--color-ink-muted) 60% 100%);
+  background-size: 250% 100%; background-repeat: no-repeat; background-position: 100% center;
+  -webkit-background-clip: text; background-clip: text; animation: wait-sweep 2s linear infinite;
+}
+@keyframes wait-sweep { from { background-position: 100% center; } to { background-position: 0% center; } }
+.wait-elapsed { color: var(--color-ink-secondary); font-variant-numeric: tabular-nums; }
+.wait-late { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-width: 0; padding: 12px; border: 1px solid var(--color-hairline); border-radius: var(--radius-md); background: var(--color-surface-1); }
+.wait-late-copy { display: flex; flex: 1 1 10rem; flex-direction: column; gap: 2px; min-width: 0; }
+.wait-late-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ── SignedOutPreview (From 21st.dev 19377 shadcnui-blocks/empty-state-04): the page's own layout with real demo or
+ *    public data, inert and masked into the foot; one sign-in. The marquee is dropped (restrained motion). ───────── */
+.so-preview { position: relative; display: flex; flex-direction: column; min-width: 0; }
+.so-preview-body {
+  max-height: min(26rem, 52svh); overflow: hidden; pointer-events: none; user-select: none;
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent); mask-image: linear-gradient(to bottom, black 55%, transparent);
+}
+@media (min-width: 1024px) { .so-preview-body { max-height: min(30rem, 56svh); } }
+.so-preview-foot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: -3rem; padding: 0 0 8px; text-align: center; }
+@media (min-width: 1024px) { .so-preview-foot { align-items: flex-start; text-align: left; } }
+.so-preview-chip {
+  display: inline-flex; align-items: center; min-height: 24px; padding: 0 10px; border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-full); background: var(--color-surface-1); color: var(--color-ink-secondary);
+}
+.so-preview-title { color: var(--color-ink); text-wrap: balance; }
+
+@media (prefers-reduced-motion: reduce) {
+  .face[data-in], .face[data-out], .tsteps-icon, .tx-morph-from[data-leaving], .tx-morph-to[data-entering] { animation: none; }
+  .face[data-out] { display: none; }
+  .tx-morph[data-animating] { transition: none; }
+  .txcta-bar { transition: none; }
+  .txcta-pill[aria-busy="true"]::after { display: none; }
+  .tsteps-spin { animation: none; }
+  .wait-shimmer { animation: none; background: none; color: var(--color-ink-secondary); }
+}

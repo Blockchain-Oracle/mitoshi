@@ -136,7 +136,7 @@ export function WordMarketBoard({ laneSet: allLanes, ticker, failure, onSelect }
   const shown = groups.filter((g) => g.key !== LISTED_HORIZON.key).flatMap((group) => group.markets);
   const tops = useDeferredValue(useTopsOfBook(shown, WORD_BOOK_POLL_MS));
   const topById = new Map(shown.map((m, i) => [m.marketId, tops[i]] as const));
-  if (laneSet === null && failure) return <div className="words-empty">{diagnosisCopy(failure.kind).body}</div>;
+  if (laneSet === null && failure) return <div className="words-empty">{diagnosisCopy(failure.kind, "read").body}</div>;
   if (laneSet === null || minuteMs === 0) return <div className="words-empty">{WORD_BOARD.reading}</div>;
   if (groups.length === 0) return <div className="words-empty">{WORD_BOARD.between}</div>;
   const closed = session !== null && !session.open;
