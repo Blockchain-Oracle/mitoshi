@@ -3,7 +3,9 @@
    (Owarine drew them with motion): stroke dashes and flex-grow transition, the first paint animates from empty, and
    reduced motion shows the end state at once. */
 
-.dkit-ticker { font-variant-numeric: tabular-nums; }
+/* NumberTicker is the kit Odometer, whose `.odometer` rules live in kit.css — a page that imports only the desk kit
+   doesn't load them, so the ticker carries the same face here (the numbers law, D-058). */
+.dkit-ticker { display: inline-flex; white-space: nowrap; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
 
 /* Underline tabs (21st #24956) */
 .dkit-tabs { display: flex; flex-direction: column; gap: 20px; }
