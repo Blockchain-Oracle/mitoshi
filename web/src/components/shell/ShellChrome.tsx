@@ -16,7 +16,7 @@ export interface ShellChromeProps {
   children: ReactNode;
   /** The header's right edge: "Open the app". */
   account?: ReactNode;
-  /** Global notices mounted above every page: the session banner, BootNotice, the wrong-network banner. */
+  /** Global notices mounted above every page: the session banner, the wrong-network banner. */
   notices?: ReactNode;
 }
 

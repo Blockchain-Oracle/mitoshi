@@ -1,0 +1,32 @@
+/* The connection strip (R6 shell S04/T04; components/shell/ConnectionStrip.tsx): the top line's second row, 32 px
+   open and 0 closed (grid rows 0fr ↔ 1fr), a 10 % wash of the state's tone over the stage, no card. */
+.cs { flex: 1 0 100%; order: 10; display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows var(--duration-state, 200ms) var(--ease-out), opacity var(--duration-state, 200ms) var(--ease-out); }
+.cs[data-open] { grid-template-rows: 1fr; opacity: 1; }
+.cs-inner { min-height: 0; overflow: hidden; }
+.cs-row {
+  display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 12px; margin-top: 6px; border-radius: 10px;
+  background: color-mix(in oklab, var(--color-warning) 10%, var(--color-stage)); color: var(--color-ink);
+  font: 500 13px/1.2 var(--font-body);
+}
+.cs[data-state="offline"] .cs-row { background: color-mix(in oklab, var(--color-loss) 10%, var(--color-stage)); }
+.cs-glyph { width: 14px; height: 14px; flex: none; color: var(--color-loss); }
+.cs-dot { position: relative; width: 8px; height: 8px; flex: none; border-radius: var(--radius-full); background: var(--color-warning); }
+.cs-dot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: inherit; animation: cs-ripple 1.6s ease-out infinite; }
+.cs-text { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cs-shimmer {
+  --cs-spread: 2.25rem;
+  background: linear-gradient(90deg, transparent calc(50% - var(--cs-spread)), var(--color-ink), transparent calc(50% + var(--cs-spread))) 100% center / 250% 100% no-repeat, linear-gradient(var(--color-ink-secondary), var(--color-ink-secondary));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: cs-shimmer 2s linear infinite;
+}
+.cs-count { flex: none; font: 500 12px/1 var(--font-data); font-variant-numeric: tabular-nums; color: var(--color-ink-secondary); }
+.cs-retry { position: relative; flex: none; color: var(--color-accent); font: 600 13px/1 var(--font-body); }
+.cs-retry::before { content: ""; position: absolute; inset: -12px -6px; }
+@media (max-width: 340px) { .cs-count { display: none; } }
+@keyframes cs-shimmer { from { background-position: 100% center, 0 0; } to { background-position: 0% center, 0 0; } }
+@keyframes cs-ripple { from { transform: scale(1); opacity: 0.5; } to { transform: scale(2.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .cs { transition: none; }
+  .cs-dot::after { animation: none; }
+  .cs-shimmer { animation: none; background: none; color: var(--color-ink-secondary); }
+}

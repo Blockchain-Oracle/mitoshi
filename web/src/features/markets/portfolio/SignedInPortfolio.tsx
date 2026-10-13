@@ -15,7 +15,7 @@ import dynamic from "next/dynamic";
 import { useCallback } from "react";
 import { SectionHeader } from "@/components/shell/SectionHeader";
 import { MotionScope } from "@/components/motion-scope";
-import { ErrorState, LoadingState } from "@/components/states";
+import { LoadingState } from "@/components/states";
 import { useBoostWrites } from "@/features/boost/useBoostWrites";
 import { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import { BOOST_KEYS } from "@/features/terminal/terminal-positions";
@@ -35,6 +35,7 @@ import { PositionValuers } from "./usePortfolioPositions";
 import "@/components/kit/kit.css";
 import { LoadingFrame } from "@/components/states/LoadingFrame";
 import { portfolio as portfolioShape } from "@/components/states/shapes/money";
+import { ReadFailure } from "@/components/states/ReadFailure";
 
 // The private balance (S10d): its moves, tiles and the account's private bets — its own island.
 const PrivateBalancePanel = dynamic(() => import("@/features/private/PrivateBalancePanel").then((m) => m.PrivateBalancePanel), { ssr: false, loading: () => <LoadingState shape="row" /> });
@@ -75,7 +76,7 @@ function Ledger({ wallet }: { wallet: Address }) {
   const retryHistory = useCallback(() => void queryClient.invalidateQueries({ queryKey: keys.history(wallet) }), [queryClient, wallet]);
 
   const outage = outageOf([sheet, positions, claimables]);
-  if (outage) return <ErrorState diagnosis={outage} retry={() => void queryClient.invalidateQueries()} />;
+  if (outage) return <ReadFailure diagnosis={outage} retry={() => void queryClient.invalidateQueries()} shape="page" />;
   // Nothing read yet: the page's outline, not a card of dashes.
   if (sheet === null) return <LoadingFrame shape="portfolio">{portfolioShape()}</LoadingFrame>;
 

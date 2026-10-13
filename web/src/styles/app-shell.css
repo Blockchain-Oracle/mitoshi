@@ -85,7 +85,7 @@
 @media (min-width: 1280px) { .app-column { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
 .app-shell .appstrip { position: relative; top: auto; margin: 0 -12px; height: auto; }
 
-.app-topline { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--spacing-topline); padding: max(10px, env(safe-area-inset-top, 0px)) 0 10px; }
+.app-topline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 8px; min-height: var(--spacing-topline); padding: max(10px, env(safe-area-inset-top, 0px)) 0 10px; }
 .topline-lead, .topline-tools { display: flex; min-width: 0; align-items: center; gap: 6px; }
 /* R4-8 review (D-227): beside the rail the lead keeps its size and the search gives way (its label ellipsises) — a
  * sub-page's back chevron and a seven-figure test balance overflowed 768–1023 px. */

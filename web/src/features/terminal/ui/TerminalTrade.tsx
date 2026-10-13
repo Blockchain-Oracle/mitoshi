@@ -8,11 +8,14 @@ import { useEffect } from "react";
 import { openingWaitLine } from "@/features/markets/data/opening-wait";
 import { usePrintsState } from "@/features/markets/session";
 import { useClockValue } from "@/lib/clock";
+import { useOfflineBlocker } from "@/lib/connection";
 import { TERMINAL } from "../copy";
 import { money, multipleOf } from "../format";
 import { useTerminalBoost } from "../useTerminalBoost";
 import { useTerminalOpen } from "../useTerminalOpen";
 import { TradeButtons } from "./TradeButtons";
+
+const noop = () => undefined;
 
 /** `multiple` is what a dollar pays (1000 ÷ ask ticks); `multipleOf` takes the ask, so it goes back through 1000 ÷. */
 const paysText = (multiple: number | null, cappedTo: string | null = null) =>
@@ -20,6 +23,7 @@ const paysText = (multiple: number | null, cappedTo: string | null = null) =>
 
 export function TerminalTrade({ market, phase, openingUnread = false, stakeBase, spot, boostX, onPays, picked: pickedBy = null }: { market: EventMarket; phase: MarketPhase | null; openingUnread?: boolean; stakeBase: bigint; spot: number | null; boostX: number; onPays: (text: string) => void; /** A side Sensei's read picked (round 7). */ picked?: Side | null }) {
   const t = useTerminalOpen({ market, phase, stakeBase, spot, openingUnread });
+  const offline = useOfflineBlocker();
   // A Boost set in the stack (RV-41): UP/DOWN open it, with its own refusals under each button.
   const b = useTerminalBoost({ market, phase, stakeBase, multiple: boostX, enabled: phase === "trading" });
   const pair = paysPair(t.sides.up.multiple, t.sides.down.multiple);
@@ -30,6 +34,8 @@ export function TerminalTrade({ market, phase, openingUnread = false, stakeBase,
   // A Boost waits for the line like a plain call, said the same way (D-230); the plain pair says it through its notes.
   const prints = usePrintsState();
   const waiting = useClockValue((ms) => (phase === "pendingOpeningPrint" && ms > 0 ? openingWaitLine({ startSec: market.tradingStartSec, nowSec: Math.floor(ms / 1000), prints, unread: openingUnread }) : null));
+  // Offline, no send can land (R6 shell T04): the pair stays, off, saying so; a failing read alone does not block.
+  if (offline) return <TradeButtons mode="flat" disabled onUp={noop} onDown={noop} busy={null} upSub={null} downSub={null} upNote={null} downNote={null} why={offline} />;
   if (b.on) {
     return (
       <TradeButtons mode="flat" onUp={() => b.open("up")} onDown={() => b.open("down")} busy={b.busy} upSub={TERMINAL.boost.sub(boostX)} downSub={TERMINAL.boost.sub(boostX)} upNote={b.blocked.up} downNote={b.blocked.down} why={waiting} />

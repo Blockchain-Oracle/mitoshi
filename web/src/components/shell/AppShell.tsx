@@ -20,7 +20,7 @@ export interface AppShellProps {
   railFoot?: ReactNode;
   /** The top line's right edge: money where the rail is compact or hidden, the account on phones. */
   account?: ReactNode;
-  /** Global notices under the top line: the session banner, BootNotice, the wrong-network banner, the live region. */
+  /** Global notices under the top line: the session banner, the wrong-network banner, the live region. */
   notices?: ReactNode;
 }
 

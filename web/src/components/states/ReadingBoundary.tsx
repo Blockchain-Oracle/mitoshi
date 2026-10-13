@@ -2,9 +2,9 @@
 import { isOk, type Reading, type StaleReason } from "@cwf/core";
 import type { ReactNode } from "react";
 import { EmptyState, type NextAction } from "./EmptyState";
-import { ErrorState } from "./ErrorState";
 import { LoadingState, type LoadingShape } from "./LoadingState";
 import { StaleTick } from "./StaleTick";
+import { ReadFailure } from "./ReadFailure";
 
 export interface ReadingMeta {
   stale: boolean;
@@ -40,7 +40,7 @@ export function ReadingBoundary<T>({
   children,
 }: ReadingBoundaryProps<T>) {
   if (reading === null) return placeholder ?? <LoadingState shape={shape} className={className} />;
-  if (!isOk(reading)) return <ErrorState diagnosis={reading.error} retry={retry} className={className} />;
+  if (!isOk(reading)) return <ReadFailure diagnosis={reading.error} retry={retry} shape={shape} placeholder={placeholder} className={className} />;
   if (empty && isEmpty?.(reading.value)) return <EmptyState why={empty.why} nextAction={empty.nextAction} className={className} />;
 
   const meta: ReadingMeta = { stale: reading.stale, asOfMs: reading.asOfMs, staleReason: reading.staleReason };

@@ -10,13 +10,14 @@ import type { Diagnosis, EventMarket, MarketId, Side } from "@cwf/core";
 import { isOk } from "@cwf/core";
 import { diagnosisCopy } from "@cwf/core/copy";
 import type { ReactNode } from "react";
-import { EmptyState, ErrorState, LoadingState } from "@/components/states";
+import { EmptyState, LoadingState } from "@/components/states";
 import { MARKETS, TICKET } from "../copy";
 import type { LaneTabKey } from "../data/lane-view";
 import type { LanesState } from "../data/useLanesState";
 import { MarketSessionChip } from "../session/MarketSessionChip";
 import { HeroChart } from "./HeroChart";
 import { RailFrame } from "./RailFrame";
+import { ReadFailure } from "@/components/states/ReadFailure";
 
 export interface MarketsHeroProps {
   market: EventMarket | null;
@@ -32,7 +33,7 @@ export interface MarketsHeroProps {
 
 function HeroPlaceholder({ lanes, resolving }: { lanes: LanesState; resolving: boolean }) {
   if (lanes.reading === null || resolving) return <LoadingState shape="chart" label={MARKETS.loadingWindows} />;
-  if (!isOk(lanes.reading)) return <ErrorState diagnosis={lanes.reading.error} retry={lanes.retry} />;
+  if (!isOk(lanes.reading)) return <ReadFailure diagnosis={lanes.reading.error} retry={lanes.retry} shape="chart" />;
   return <EmptyState why={MARKETS.noLiveWindows.why} />;
 }
 

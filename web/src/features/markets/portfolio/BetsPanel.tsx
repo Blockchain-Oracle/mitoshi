@@ -9,7 +9,7 @@
 import type { Diagnosis, Reading, WalletHistory } from "@cwf/core";
 import { useState } from "react";
 import { SectionHeader } from "@/components/shell/SectionHeader";
-import { EmptyState, ErrorState, LoadingState } from "@/components/states";
+import { EmptyState, LoadingState } from "@/components/states";
 import type { useBoostWrites } from "@/features/boost/useBoostWrites";
 import type { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import type { PositionValue } from "@/features/terminal/usePositionValue";
@@ -21,6 +21,7 @@ import { Pager } from "../Pager";
 import { BetRow } from "./BetRow";
 import type { BetGroup } from "./usePortfolioPositions";
 import "@/components/kit/kit.css";
+import { ReadFailure } from "@/components/states/ReadFailure";
 
 type Tab = "open" | "history";
 const PAGE = 8;
@@ -40,7 +41,7 @@ export interface OpenBets {
 function OpenList({ open }: { open: OpenBets }) {
   const pager = usePager(open.groups, PAGE);
   if (open.count === null) return <LoadingState shape="row" />;
-  const failed = open.failed ? <ErrorState diagnosis={open.failed.diagnosis} retry={open.failed.retry} /> : null;
+  const failed = open.failed ? <ReadFailure diagnosis={open.failed.diagnosis} retry={open.failed.retry} shape="row" /> : null;
   if (open.groups.length === 0) return failed ?? <EmptyState size="inline" why={PORTFOLIO.noBets} nextAction={{ label: PORTFOLIO.firstCall, href: "/trade/BTC" }} />;
   return (
     <div className="bets-fill">

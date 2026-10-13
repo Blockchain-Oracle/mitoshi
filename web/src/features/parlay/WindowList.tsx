@@ -18,7 +18,7 @@ import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useMemo, useRef, useState } from "react";
 import { TextTabs } from "@/components/kit/TextTabs";
 import { Countdown } from "@/components/data";
-import { EmptyState, ErrorState, LoadingState } from "@/components/states";
+import { EmptyState, LoadingState } from "@/components/states";
 import { useFlyToTarget } from "@/components/ui/fly-to-target";
 import { cn } from "@/lib/utils";
 import { AssetDisc } from "../markets/hero/AssetDisc";
@@ -28,6 +28,7 @@ import { PARLAY } from "./copy";
 import type { LegWindow } from "./data";
 import { useSlip } from "./slip-state";
 import "@/components/kit/kit.css";
+import { ReadFailure } from "@/components/states/ReadFailure";
 
 /** The visible slip target: the rail's leg count from `lg`, the dock button below it. */
 function slipTarget(): Element | null {
@@ -105,7 +106,7 @@ export function WindowList({ windows, loading, failure = null, nowMs, nextOpenTe
     return best;
   }, [all]);
   if (loading && windows.length === 0) return <LoadingState shape="row" label={PARLAY.windows.loading} />;
-  if (windows.length === 0) return failure ? <ErrorState diagnosis={failure} /> : <EmptyState why={nextOpenText} />;
+  if (windows.length === 0) return failure ? <ReadFailure diagnosis={failure} shape="row" /> : <EmptyState why={nextOpenText} />;
   return (
     <div className="pw">
       <div className="pw-head">

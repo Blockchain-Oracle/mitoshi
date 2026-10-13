@@ -44,6 +44,15 @@ export const SHELL = {
   soundOn: "Sound on",
   soundOff: "Sound off",
   about: "About Mitoshi",
+  /** One connection notice (R6 shell S04/T04; Senryo's offline copy's tone): the top line's strip and the blocked sends. */
+  connection: {
+    offline: (at: string) => `Offline — prices paused ${at}`,
+    reconnecting: "Prices reconnecting…",
+    retrying: "Retrying…",
+    retry: "Retry",
+    blocked: "You're offline",
+    announce: { offline: "Offline. Prices paused.", reconnecting: "Prices reconnecting.", live: "Prices live again." },
+  },
   /** The palette's keycaps (R6 shell S05; Senryo `useModCombo`): ⌘ K on Apple, Ctrl K elsewhere. */
   searchKey: { apple: ["⌘", "K"], other: ["Ctrl", "K"] } as const,
   searchEmpty: "Nothing matches that.",
@@ -91,7 +100,7 @@ export const SHELL = {
   legalNav: "App, docs and legal",
   /** The rail foot's short way to /download (D-230); its title says it in full. */
   railApp: "App",
-  health: { healthy: "All systems live", waiting: "Waiting", degraded: "Running degraded", unreachable: "Status unreachable", unread: "Checking…" },
+  health: { healthy: "All systems live", waiting: "Waiting", degraded: "Running degraded", unreachable: "Status unreachable", unread: "Checking…", offline: "Offline", reconnecting: "Reconnecting" },
   /** The chip's worst tone alone ("2 behind"), the words /status tallies with (T15). */
   healthTally: { bad: "down", warn: "behind", wait: "waiting" },
   /** The top line's health chip names the chain; the network itself is said once, by the mode plate (D-228). */

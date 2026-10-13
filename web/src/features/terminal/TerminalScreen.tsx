@@ -70,6 +70,8 @@ import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { TradeReceiptSheet } from "./ui/TradeReceiptSheet";
 import { History, LineChart, Settings } from "lucide-react";
 import "@/styles/terminal-side.css";
+import { ConnectionStrip } from "@/components/shell/ConnectionStrip";
+import { useArmToast } from "./useArmToast";
 
 // The Markets hero's depth view, loaded when first shown (a lazy island).
 const HeroDepth = dynamic(() => import("@/features/markets/hero/HeroDepth"), { ssr: false });
@@ -104,23 +106,8 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   // Signed in but neither one-tap path on: every tap would prompt. The card says so and arms in one passkey prompt. A
   // browser wallet signs each call itself and can never arm (D-140), so it gets no card with a dead button (R4-0).
   const needsArm = session.isConnected && sessionView.status !== "not-passkey" && !tapArmed && sessionView.status !== "armed";
-  // R4-3 (D-227): after the first passkey-prompted open, one toast a session — "One-tap is off · Turn on" — whose action
-  // opens the arm modal itself (`TapArmModal`, no hidden trigger). A fresh fill (`usePendingFills`) is a trade this tab
-  // just opened.
   const [armOpen, setArmOpen] = useState(false);
-  const fillsSeen = useRef(pendingFills.length);
-  useEffect(() => {
-    const grew = pendingFills.length > fillsSeen.current;
-    fillsSeen.current = pendingFills.length;
-    if (!grew || !needsArm) return;
-    try {
-      if (window.sessionStorage.getItem(ARM_TOAST_KEY)) return;
-      window.sessionStorage.setItem(ARM_TOAST_KEY, "1");
-    } catch {
-      // No session storage (a private window): the toast still says it once per mount.
-    }
-    notify.item({ id: "terminal-one-tap", title: TERMINAL.arm.toastTitle, action: { label: TERMINAL.arm.toastAction, onClick: () => setArmOpen(true) } });
-  }, [pendingFills.length, needsArm]);
+  useArmToast(pendingFills.length, needsArm, useCallback(() => setArmOpen(true), []));
   const desktop = useIsDesktop();
   const sessionWord = useSessionWord(symbol, s.win.lane?.basis ?? null);
   const chartHandle = useRef<ChartHandle | null>(null);
@@ -275,6 +262,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
                 <EarningsCell symbol={symbol} market={market ?? null} />
               </div>
             </div>
+            <ConnectionStrip />
             {s.win.lane?.basis === "stock24" ? <span className="tm-glass tm-note tm-note-feed tm-desk">{TERMINAL.feed.lane247(symbol)}</span> : offHours ? <span className="tm-glass tm-note tm-note-feed tm-desk">{TERMINAL.feed.offHoursNote}</span> : null}
           </div>
         </section>
@@ -386,7 +374,6 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
 }
 
 const noop = () => {};
-const ARM_TOAST_KEY = "cwf.terminal.oneTapToast";
 
 /** Why a symbol lists no Window right now (the state table, stage-23 "Window rule"). */
 function noWindowNote(ticker: { redstoneFeedId: string | null; redstone24x7FeedId: string | null; kind: string } | null, nyse: MarketSession | null, nowSec: number): string {

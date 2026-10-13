@@ -8,7 +8,7 @@ import type { MarketId } from "@cwf/core";
 import type { RangeReserveState } from "@cwf/core/range";
 import { useState } from "react";
 import { formatLeft } from "@/components/kit/CountdownRing";
-import { ErrorState, LoadingState } from "@/components/states";
+import { LoadingState } from "@/components/states";
 import { useNowMs } from "@/lib/clock";
 import { usePersistedState } from "@/lib/persisted";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -20,6 +20,7 @@ import { RangeRounds, useRoundsSummary, type RoundKind } from "./RangeRounds";
 import type { useRangeWrites } from "./useRangeWrites";
 import { cadenceKeyOf } from "./WindowPicker";
 import "@/components/kit/kit.css";
+import { ReadFailure } from "@/components/states/ReadFailure";
 
 const KEY_CODEC = { parse: (raw: string) => raw, serialize: (v: string) => v };
 const laneOf = (w: BandWindow) => `${w.market.asset}|${w.market.lane}|${w.market.intervalSec}`;
@@ -49,7 +50,7 @@ export function useHouseWindows(reserve: RangeReserveState, storageKey: string) 
     setLastLane(laneOf(w));
     setCadence(cadenceKeyOf(w.market));
   };
-  const empty = loading && priced.length === 0 ? <LoadingState shape="row" label={RANGE.band.waiting} /> : error && priced.length === 0 ? <ErrorState diagnosis={error} /> : priced.length === 0 ? <p className="gw-empty">{nextOpenSec !== null ? RANGE.windows.none(formatLeft(nextOpenSec * 1000 - nowMs)) : RANGE.windows.noneLater}</p> : null;
+  const empty = loading && priced.length === 0 ? <LoadingState shape="row" label={RANGE.band.waiting} /> : error && priced.length === 0 ? <ReadFailure diagnosis={error} shape="row" /> : priced.length === 0 ? <p className="gw-empty">{nextOpenSec !== null ? RANGE.windows.none(formatLeft(nextOpenSec * 1000 - nowMs)) : RANGE.windows.noneLater}</p> : null;
   return { nowMs, windows, current, setPicked, empty, gapInSec };
 }
 

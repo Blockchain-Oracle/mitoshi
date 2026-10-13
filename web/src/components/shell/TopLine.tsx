@@ -19,6 +19,7 @@ import { tapFeedback } from "@/lib/feedback";
 import { onIdle } from "@/lib/idle";
 import { OPEN_SEARCH_EVENT } from "@/lib/search-event";
 import MitoshiMark from "./MitoshiMark";
+import { ConnectionStrip } from "./ConnectionStrip";
 import { HealthChip } from "./HealthChip";
 import { ModeChip } from "./ModeChip";
 import { shortcutBlocked } from "./Rail";
@@ -130,6 +131,7 @@ export function TopLine({ account }: { account?: ReactNode }) {
         </span>
         {account}
       </div>
+      <ConnectionStrip />
       {palette !== null ? <CommandPalette open={palette} onOpenChange={setPalette} /> : null}
       {keys !== null ? <ShortcutsModal open={keys} onOpenChange={setKeys} /> : null}
     </header>

@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { SHELL } from "@/lib/copy";
+import { useConnection } from "@/lib/connection";
 import { worstTally } from "@/features/status/grade";
 import type { StatusRow } from "@/features/status/probes";
 
@@ -37,11 +38,14 @@ export function HealthChip({ className }: { className?: string }) {
       clearInterval(t);
     };
   }, []);
+  // The page's own failures first (R6 shell S04/T04): offline, then a failing read, then the /status verdict.
+  const connection = useConnection();
+  const shown: Chip = !connection.online ? { state: "bad", word: SHELL.health.offline } : connection.failing ? { state: "warn", word: SHELL.health.reconnecting } : chip;
   return (
-    <Link href="/status" className={`health-chip ${className ?? ""}`} data-state={chip.state} title={chip.word}>
+    <Link href="/status" className={`health-chip ${className ?? ""}`} data-state={shown.state} title={shown.word}>
       <span aria-hidden className="health-dot" />
       <span className="health-net">{SHELL.network}</span>
-      <span className="health-word">· {chip.word}</span>
+      <span className="health-word">· {shown.word}</span>
     </Link>
   );
 }
