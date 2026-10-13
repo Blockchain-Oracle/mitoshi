@@ -81,6 +81,23 @@ export function initTheme(): Theme {
   return theme;
 }
 
+/** Pages outside the app shell (D-226: the landing and the pitch; the dev pages): no world is painted there. */
+const SHELL_LESS = /^\/(?:(?:pitch|dev)(?:\/|$)|$)/;
+/** wagmi's persisted store (`cookieStorage`, `wagmi.store`) names a current connection: a session will restore. */
+const STORED_SESSION = /(?:^|;\s*)wagmi\.store=[^;]*"current":"/;
+
+/**
+ * The world the first paint guesses (R4-8, D-227; Ported from Owarine 90a91d71:web/src/lib/theme.ts, whose init script
+ * reads the stored seat): `testnet` when wagmi kept a current connection, `demo` otherwise, nothing outside the shell.
+ * `EnvironmentMode` corrects the guess at once on the session's first settled answer, so a returning account paints
+ * its own world on the first frame instead of demo and then testnet.
+ */
+export function guessMode(pathname: string, cookie: string): "demo" | "testnet" | null {
+  if (SHELL_LESS.test(pathname)) return null;
+  return STORED_SESSION.test(cookie) ? "testnet" : "demo";
+}
+
 // Blocking snippet injected before the app renders so the correct theme paints on the
-// FIRST frame — no flash of dark. Kept tiny and dependency-free; mirrors resolveTheme().
-export const THEME_INIT_SCRIPT = `(()=>{try{var t=localStorage.getItem('${STORAGE_KEY}');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}try{var c=getComputedStyle(document.body).backgroundColor;if(/^rgb\\(/.test(c))document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute('content',c)});}catch(e){}try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('${EXPLAINED_PREFIX}')===0&&localStorage.getItem(k)==='1')document.documentElement.classList.add('cwf-explained-'+k.slice(${EXPLAINED_PREFIX.length}));}}catch(e){}})();`;
+// FIRST frame — no flash of dark. Kept tiny and dependency-free; mirrors resolveTheme() and guessMode(); the phone
+// bar takes the ground as syncThemeColor() does (a testnet canvas computes as `color(srgb …)`).
+export const THEME_INIT_SCRIPT = `(()=>{try{var t=localStorage.getItem('${STORAGE_KEY}');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}try{if(!/${SHELL_LESS.source}/.test(location.pathname))document.documentElement.setAttribute('data-mode',/${STORED_SESSION.source}/.test(document.cookie)?'testnet':'demo');}catch(e){}try{var c=getComputedStyle(document.body).backgroundColor,s=/^color\\(srgb ([\\d.]+) ([\\d.]+) ([\\d.]+)/.exec(c);if(s)c='#'+[1,2,3].map(function(i){return ('0'+Math.round(Math.min(1,+s[i])*255).toString(16)).slice(-2)}).join('');if(/^rgb\\(|^#/.test(c))document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute('content',c)});}catch(e){}try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('${EXPLAINED_PREFIX}')===0&&localStorage.getItem(k)==='1')document.documentElement.classList.add('cwf-explained-'+k.slice(${EXPLAINED_PREFIX.length}));}}catch(e){}})();`;

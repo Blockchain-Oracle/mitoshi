@@ -38,8 +38,9 @@ function flood(to: EnvironmentMode): void {
 }
 
 /**
- * Keeps `<html data-mode>` on the session while the shell is mounted. While a session is still restoring (`settling`)
- * nothing changes, so a returning account never flashes the demo colours; the first settled answer paints at once; a
+ * Keeps `<html data-mode>` on the session while the shell is mounted. The first paint already has it (the theme init
+ * script's `guessMode` reads wagmi's stored connection). While a session is still restoring (`settling`) nothing
+ * changes, so a returning account never flashes the demo colours; the first settled answer corrects the guess at once; a
  * later change — signing in or out — floods. Leaving the shell (the landing) takes the attribute off.
  */
 export function useEnvironment(mode: EnvironmentMode, settling: boolean): void {

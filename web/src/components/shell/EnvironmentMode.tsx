@@ -3,7 +3,8 @@
 // server frame, so the session's world is set from here — testnet once signed in, demo otherwise. It holds while a
 // session may still be restoring: the wallet runtime arrives after first paint and its placeholder reads "signed out",
 // so with a remembered connection (wagmi's cookie) the world waits for the restore's answer (or a cap) — a returning
-// account never paints demo and floods back on every load. Renders nothing.
+// account never paints demo and floods back on every load; the first frame already carries the init script's guess
+// (`guessMode`, lib/theme.ts). Renders nothing.
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useWalletSession } from "@/lib/wallet-session";
 import { hasStoredConnection } from "@/providers/wallet/WalletShellProvider";
