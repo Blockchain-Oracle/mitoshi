@@ -68,7 +68,7 @@
 /* font-display font-[700] text-[13px] w-28 truncate */
 .strat-row-name { font-family: var(--font-heading); font-weight: 700; font-size: 13px; width: 7rem; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-stretch: 100%; }
 /* px-5 py-8 text-center font-mono text-[11px] uppercase tracking-[0.2em] text-white/30 */
-.strat-rows-empty { padding: 32px 20px; text-center: center; text-align: center; font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: color-mix(in srgb, var(--color-ink) 30%, transparent); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.strat-rows-empty { padding: 32px 20px; text-align: center; font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: color-mix(in srgb, var(--color-ink) 30%, transparent); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
 /* the empty archive: border border-white/[0.08] bg-white/[0.02] p-16 text-center */
 .strat-empty { border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); background: color-mix(in srgb, var(--color-ink) 2%, transparent); padding: 64px; text-align: center; }
 /* studio: preset card rounded-xl border p-4 */
