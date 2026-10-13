@@ -18,10 +18,11 @@ export const ANDROID_PACKAGE = "xyz.mitoshi.app.testnet";
 /**
  * SHA-256 of every certificate that signs the Android app. The EAS keystore (@0xabu/mitoshi-testnet, made 2026-10-12)
  * signs the app bundle and the preview APKs. Google Play re-signs what it installs with its own app-signing key, whose
- * SHA-256 the Play Console shows under App integrity once the app exists there (docs/plan/owner-actions.md).
+ * SHA-256 the Play Console shows under App integrity (the second entry, read there 2026-10-13, D-230).
  */
 export const ANDROID_CERT_SHA256: readonly string[] = [
   "A1:FF:55:DC:A0:81:24:6A:BA:34:F0:09:25:28:53:59:3B:6C:1F:49:F5:73:AA:E9:0C:E8:6B:E6:D4:E9:E0:63",
+  "20:56:23:C6:09:BC:76:FD:44:85:F8:FD:42:1B:56:17:0C:5E:14:36:0B:BC:82:6F:8F:4B:29:56:58:C3:EA:A7",
 ];
 
 const APP_ID = `${APPLE_TEAM_ID}.${APP_BUNDLE_ID}`;
