@@ -4,3 +4,4 @@ export * from "./encoders";
 export * from "./reads";
 export * from "./rebalance";
 export * from "./agent-send";
+export * from "./agent";

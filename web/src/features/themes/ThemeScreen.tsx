@@ -3,16 +3,20 @@
 // with a status dot and the members' LogoStack, TextTabs Overview · Holdings · Activity · Rules, the allocation as a
 // Donut with a PartitionBar, the activity as a Timeline) onto a theme read from the chain: targets and bands from the
 // registry, member prices from StockReference, followers and rebalances from the router's events. Follow is a sticky
-// pill above the dock that opens the follow sheet (the arm grammar of CopyDrawer).
+// pill above the dock that opens the follow sheet (the arm grammar of CopyDrawer). Rules name the theme's ERC-8004
+// agent (its registration file); a creator whose theme names none sets the theme agent there (`theme-set-agent`).
 import { useTheme, useThemeActivity, useThemeFollow } from "@cwf/markets/react";
-import type { ThemeView } from "@cwf/markets/themes";
-import { txUrl } from "@cwf/core";
+import { invalidateThemes } from "@cwf/markets/react";
+import { THEME_AGENT_PATH, themeAgentOf, type ThemeView } from "@cwf/markets/themes";
+import { NETWORKS, txUrl } from "@cwf/core";
+import { useQueryClient } from "@tanstack/react-query";
 import { shortHex } from "@cwf/core/units";
 import { ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
 import { PillButton, TextTabs, TextTabPanel } from "@/components/kit";
 import { Donut, LogoStack, PartitionBar, Sparkline, StatusDot, Timeline, TimelineNode } from "@/components/kit/desk-kit";
 import { webEnv } from "@/lib/env";
+import { signerOfKind as signerOf, TxCta, useTxLifecycle } from "@/components/tx";
 import { useWalletSession } from "@/lib/wallet-session";
 import { THEMES } from "./copy";
 import { FollowSheet } from "./FollowSheet";
@@ -101,7 +105,29 @@ function Rules({ t }: { t: ThemeView }) {
     [R.fee, pct(t.creatorFeeBps)], [R.slippage, pct(t.maxSlippageBps)], [R.interval, everyText(t.minIntervalSec)], [R.refAge, `${Math.round(t.maxRefAgeSec / 3_600)} h`],
     [R.sessions, sessionsText(t.sessionsMask)], [R.version, `v${t.version}`], [R.creator, shortHex(t.creator)], [R.spec, shortHex(t.specHash)],
   ];
-  return <dl className="th-rules">{rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd className="numbers">{v}</dd></div>)}</dl>;
+  return (
+    <>
+      <dl className="th-rules">
+        {rows.map(([k, v]) => <div key={k}><dt>{k}</dt><dd className="numbers">{v}</dd></div>)}
+        <div><dt>{R.agent}</dt><dd className="numbers">{t.agentId > 0n ? <a className="th-link" href={THEME_AGENT_PATH} target="_blank" rel="noreferrer">#{t.agentId.toString()}</a> : R.noAgent}</dd></div>
+      </dl>
+      <NameAgent t={t} />
+    </>
+  );
+}
+
+/** The creator names the theme agent on a theme that names none (self-paid `ThemeRegistry.setAgent`). */
+function NameAgent({ t }: { t: ThemeView }) {
+  const session = useWalletSession();
+  const queryClient = useQueryClient();
+  const tx = useTxLifecycle();
+  const agent = themeAgentOf(NETWORKS[webEnv.markets.network]);
+  if (!agent || t.agentId > 0n || !session.address || session.address.toLowerCase() !== t.creator.toLowerCase()) return null;
+  const run = async () => {
+    const o = await tx.run({ kind: "theme-set-agent", themeId: t.themeId, agentId: agent.agentId });
+    if (o?.status === "confirmed") await invalidateThemes(queryClient);
+  };
+  return <div className="th-rules-action"><TxCta state={tx.state} action={T.rules.nameAgent(agent.agentId.toString())} signer={signerOf(session.kind)} onConfirm={() => void run()} /></div>;
 }
 
 function View({ t, openFollow }: { t: ThemeView; openFollow: boolean }) {

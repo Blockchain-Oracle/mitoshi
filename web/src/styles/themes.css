@@ -57,6 +57,7 @@
 .th-rules > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-surface-2); }
 .th-rules dt { font-size: 11px; color: var(--color-ink-secondary); }
 .th-rules dd { font-size: 14px; font-weight: 600; color: var(--color-ink); }
+.th-rules-action { padding-top: 8px; }
 
 .th-follow { display: flex; flex-direction: column; gap: 14px; }
 .th-field { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
