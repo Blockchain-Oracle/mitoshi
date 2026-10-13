@@ -7,6 +7,7 @@
  * scheduled call at the user's own price that rests until the bell (Agari 03b30ab ScheduleTicket, D-088). After a fill
  * the body is The Call; "Place another" keeps the stake (D-048).
  */
+import { useFirstFunding } from "@/features/funding/first-fund-state";
 import type { EventMarket, Quote, Side } from "@cwf/core";
 import { belowMinStake, restingQuote } from "@cwf/core";
 import { diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/copy";
@@ -58,6 +59,8 @@ export interface TicketProps {
 export function Ticket({ market, side: urlSide, head }: TicketProps) {
   const nowMs = useNowMs();
   const session = useWalletSession();
+  // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
+  const funding = useFirstFunding();
   const tapArmed = useTapArmed();
   const { address, hasSigner } = useSigner();
   const t = useTicket({ market, side: urlSide, wallet: address, nowMs });
@@ -105,6 +108,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
     quote: quoteState.reading,
     quoting: quoteState.pending,
     quoteStale: quoteState.stale,
+    funding,
   };
   // Signed out, the ticket composes as if signed in (pick a side, enter an amount), and the one CTA then opens sign-in
   // for that order: wallet connect is a signing step at the end, never a wall before value (D-224).

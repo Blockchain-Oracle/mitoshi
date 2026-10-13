@@ -2,6 +2,7 @@
 // Ported in shape from Owarine ecb7565b:web/src/features/terminal/useTerminalTrade.ts (`open`) — on Mitoshi's ticket
 // machinery, unchanged: `useQuote` per side, `useTicketRoute` (the Trading Balance's session key when armed and its caps
 // cover the call, D-160 words when they don't), `deriveBlocker`, and `usePlaceBet` through `useTapSubmitter`. No demo.
+import { useFirstFunding } from "@/features/funding/first-fund-state";
 import type { EventMarket, Quote, Side } from "@cwf/core";
 import { blockerLabel, diagnosisCopy, formatCadence, type BlockerContext } from "@cwf/core/copy";
 import type { MarketPhase } from "@cwf/core/lifecycle";
@@ -60,6 +61,8 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
   const regionHeld = readRegionPosture().markets === "restricted";
   // The session and the lane (S6): a halt, a paused lane or a closed market is named before anything else.
   const guard = useLaneGuard(market);
+  // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
+  const funding = useFirstFunding();
 
   const view = (side: Side): SideView => {
     const quote = side === "up" ? quoteUp : quoteDown;
@@ -72,7 +75,7 @@ export function useTerminalOpen({ market, phase, stakeBase, spot }: { market: Ev
     const blocker = deriveBlocker({
       connected: session.isConnected || demo, connecting: session.isConnecting, rightChain: session.isRightChain || demo, hasSigner: hasSigner || demo, regionHeld, phase,
       placing: bet.placing, side, availableBase: spend, stakeBase, decimals: market.decimals, quote: reading, quoting: quote.pending, quoteStale: quote.stale,
-      lane: guard.lane,
+      lane: guard.lane, funding: funding && !demo,
     });
     const ctx: BlockerContext = {
       ...guard.ctx,

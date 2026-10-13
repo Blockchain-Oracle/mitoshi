@@ -7,6 +7,8 @@
  * or outside). Every blocker is the CTA's label (D-045); a stale book (D-119, 2σ from the signed spot) is named.
  * R4-2 (D-227): in a phone sheet the hold sits in the pinned footer (`SheetFooter`); on a page or the rail, in place.
  */
+import { FUNDING } from "@/features/funding/copy";
+import { useFirstFunding } from "@/features/funding/first-fund-state";
 import { USD_DECIMALS, type EventMarket } from "@cwf/core";
 import { bandProbE6, RANGE_STAKE_HEADROOM_BPS, type RangeReserveState, type RangeSide } from "@cwf/core/range";
 import { mulBpsCeil, parseDecimalToBaseUnits } from "@cwf/core/units";
@@ -78,8 +80,11 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
   }, [q.basis, draft.axis, draft.decimals, market.expirySec]);
 
   const spendable = sheet?.ok ? sheet.value.spendableBase : null;
+  // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
+  const funding = useFirstFunding();
   const blocker = ((): string | null => {
     if (!session.isConnected) return RANGE.cta.signIn;
+    if (funding && (spendable === null || amountBase > spendable)) return FUNDING.firstFund.funding;
     if (reserve.paused) return RANGE.cta.paused;
     if (!model) return RANGE.windows.noModel(market.asset);
     if (spotE8 === null || band === null) return RANGE.cta.waiting;

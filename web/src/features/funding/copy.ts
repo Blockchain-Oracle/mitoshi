@@ -52,6 +52,8 @@ export const FUNDING = {
   },
   /** The server-side funding of a brand-new account, when it didn't land. */
   firstFund: {
+    landed: (amount: string) => `+${amount} test dollars`,
+    funding: "Funding your account…",
     failed: "Test dollars didn't arrive.",
     addMoney: "Add money",
   },
