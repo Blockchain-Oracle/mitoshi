@@ -1,4 +1,4 @@
-# The docs site — Next.js 16 + Fumadocs, served by `next start` on 3000 behind Coolify at docs.testnet.mitoshi.xyz.
+# The docs site — Next.js 16 + Fumadocs, served by `next start` on 3000 behind Coolify at docs.mitoshi.xyz.
 # Ported from Owarine 90a91d71:docs-site/Dockerfile (D-227). Build context: this directory (Coolify base directory
 # `/docs-site`), so the app's source is not in the image; every address and receipt the guides cite is checked by
 # `pnpm check:content` in the repository before it ships.

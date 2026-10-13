@@ -5,11 +5,11 @@ function origin(value: string | undefined, fallback: string) {
   if (!['https:', 'http:'].includes(url.protocol)) throw new Error('Site origins must use HTTP or HTTPS.');
   return url.origin;
 }
-// Local previews can override these origins; ordinary guide links open the hosted testnet product.
+// Local previews can override these origins; ordinary guide links open the hosted product (D-228).
 export const site = {
   name: 'Mitoshi',
-  docs: origin(process.env.NEXT_PUBLIC_DOCS_URL, 'https://docs.testnet.mitoshi.xyz'),
-  app: origin(process.env.NEXT_PUBLIC_APP_URL, 'https://testnet.mitoshi.xyz'),
+  docs: origin(process.env.NEXT_PUBLIC_DOCS_URL, 'https://docs.mitoshi.xyz'),
+  app: origin(process.env.NEXT_PUBLIC_APP_URL, 'https://mitoshi.xyz'),
   explorer: 'https://explore.testnet.tempo.xyz',
   // Public, revision-pinned source notes. Null while the repository is private.
   source: null as string | null,

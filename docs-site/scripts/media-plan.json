@@ -1,6 +1,6 @@
 {
-  "$comment": "The guides' captures and walkthroughs, recorded from the deployed testnet product by scripts/record-media.mjs and published by scripts/publish-media.mjs (D-227). Alt text and chapter text describe the procedure, which the recorder enforces step by step; a step that fails leaves its clip unpublished. Each item names the app files that draw its screen (`sources`, plus `shared` for the shell and tokens); `pnpm check:content` lists the commits that touched them after an item was recorded, which is when to record it again.",
-  "origin": "https://testnet.mitoshi.xyz",
+  "$comment": "The guides' captures and walkthroughs, recorded from the deployed product by scripts/record-media.mjs and published by scripts/publish-media.mjs (D-227). Alt text and chapter text describe the procedure, which the recorder enforces step by step; a step that fails leaves its clip unpublished. Each item names the app files that draw its screen (`sources`, plus `shared` for the shell and tokens); `pnpm check:content` lists the commits that touched them after an item was recorded, which is when to record it again.",
+  "origin": "https://mitoshi.xyz",
   "shared": ["web/src/components/shell", "web/src/styles/tokens.css", "web/src/styles/tokens.generated.css", "web/src/styles/base.css", "web/src/styles/app-shell.css", "web/src/styles/shell.css", "web/src/styles/shell-fixes.css", "web/src/styles/navigation.css"],
   "viewports": {
     "phone": { "width": 390, "height": 844, "mobile": true },

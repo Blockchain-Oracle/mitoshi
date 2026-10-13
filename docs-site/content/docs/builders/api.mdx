@@ -21,7 +21,7 @@ These are the app's own routes, not a versioned public API: they can change with
 
 **Reading answers.** Money is in base units — pathUSD has 6 decimals — as decimal strings; keep them integers. `…Sec` is seconds, `…Ms` milliseconds. A 503 means a source couldn't be read, never "nothing happened"; an area not deployed on the network answers a named 404 (`not-deployed`).
 
-## Public reads — `testnet.mitoshi.xyz`
+## Public reads — `mitoshi.xyz`
 
 | Route | Answers |
 | --- | --- |
@@ -77,7 +77,7 @@ Most need a session: a passkey sign-in is one; a wallet signs one message for a 
 | `POST /api/sensei` · `/api/contact` | Ask Sensei; write to Mitoshi. |
 | `POST /api/relay` | The fee relay's JSON-RPC, for calls its policies allow ([the relay](/architecture/relay-and-keys)). |
 
-## Ops — `ops.testnet.mitoshi.xyz`
+## Ops — `ops.mitoshi.xyz`
 
 GET only.
 
@@ -91,4 +91,4 @@ GET only.
 | `/exits/keeper` | The key an EXIT grant should name, and its vault. |
 | `/index/recount?through=` · `/halts/log` | What the index holds through a block — slow, it counts the whole index; the halt watcher's log. |
 
-The live stream is `stream.testnet.mitoshi.xyz/v1/stream`: public topics are open; your own topic takes a ticket.
+The live stream is `stream.mitoshi.xyz/v1/stream`: public topics are open; your own topic takes a ticket.

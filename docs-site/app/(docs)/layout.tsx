@@ -5,7 +5,7 @@ import { source } from '@/lib/source';
 import { Header, EmptySlot } from '@/components/header';
 
 function SidebarFooter() {
-  return <div className="sidebar-footer"><p className="sidebar-note">Tempo testnet · Moderato (42431).<br />Testnet dollars have no value.</p></div>;
+  return <div className="sidebar-footer"><p className="sidebar-note">Tempo Moderato (42431).<br />Test dollars have no value.</p></div>;
 }
 
 const grid = {

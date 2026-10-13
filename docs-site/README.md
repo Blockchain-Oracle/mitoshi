@@ -1,13 +1,13 @@
 # Mitoshi Docs
 
-Step-by-step guides to [Mitoshi](https://testnet.mitoshi.xyz) 見通し — prediction markets and stocks on Tempo: making a
+Step-by-step guides to [Mitoshi](https://mitoshi.xyz) 見通し — prediction markets and stocks on Tempo: making a
 call, Windows and lanes, signed prints and settlement, the terminal, the Trading Balance and exits, Earn, Range ·
 Moonshot · Parlay · Boost, strategies and agents, games, trading from X, stocks, themes and launches on Tempo, the phone
 app, who can move your money, and the architecture behind each path, with the deployed addresses on Moderato and dated
 evidence.
 
 **Checked against:** app revision `11d85e0` (`site.revision` in `lib/site.ts`) on 13 October 2026. The site lives in the
-app's repository at `docs-site/` and is built for `https://docs.testnet.mitoshi.xyz`. Ported from Owarine
+app's repository at `docs-site/` and is built for `https://docs.mitoshi.xyz` (D-228). Ported from Owarine
 90a91d71:docs-site (Fumadocs on Next 16) in Mitoshi's brand (D-227).
 
 ## Start with the right guide
@@ -41,8 +41,9 @@ pnpm check          # content checks, typecheck, build
 ```
 
 The docs render without a running app, wallet, database or key. `NEXT_PUBLIC_APP_URL` (default
-`https://testnet.mitoshi.xyz`) sets where app links go; `NEXT_PUBLIC_DOCS_URL` (default
-`https://docs.testnet.mitoshi.xyz`) sets canonical URLs.
+`https://mitoshi.xyz`) sets where app links go; `NEXT_PUBLIC_DOCS_URL` (default
+`https://docs.mitoshi.xyz`) sets canonical URLs and, read at build time, where the retired `docs.testnet.mitoshi.xyz`
+redirects (`next.config.mjs`).
 
 `pnpm check` runs `scripts/check-content.mjs` against the app in the parent directory: docs links and navigation, app
 routes (`<AppLink>`), every transaction hash against the acceptance records and the demo's receipts, every address
@@ -64,7 +65,7 @@ not an ancestor of `HEAD`, and lists the app commits since it — the list to re
 ```sh
 pnpm exec playwright install chromium   # once
 pnpm media:record --probe                # every page, link and step against the live product; no pixels kept
-pnpm media:record                        # headless Chromium at 2×, signed out, https://testnet.mitoshi.xyz only
+pnpm media:record                        # headless Chromium at 2×, signed out, https://mitoshi.xyz only
 pnpm media:publish                       # copies captures byte for byte, encodes walkthroughs (ffmpeg), hashes all
 ```
 
@@ -81,5 +82,5 @@ every admin and role read on chain, the public routes' answers, and the media pr
 
 ## Deploy
 
-`Dockerfile` builds and serves on port 3000 (`next start`). On Coolify: base directory `/docs-site`, port 3000, domain
-`docs.testnet.mitoshi.xyz` (the `*.testnet` record already points at the server).
+`Dockerfile` builds and serves on port 3000 (`next start`). On Coolify: base directory `/docs-site`, port 3000, domains
+`docs.mitoshi.xyz` (needs a `docs` A record at Namecheap) and `docs.testnet.mitoshi.xyz`, which only redirects.

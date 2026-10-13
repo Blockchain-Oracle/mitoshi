@@ -11,7 +11,7 @@ const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains', 
 export const metadata: Metadata = {
   metadataBase: new URL(site.docs),
   title: { default: 'Mitoshi Docs — prediction markets and stocks on Tempo', template: '%s · Mitoshi Docs' },
-  description: 'Guides to Mitoshi on Tempo testnet: sign up with a passkey, call a Window UP or DOWN, and see how prints, settlement, the house and the keepers fit together.',
+  description: 'Guides to Mitoshi on Tempo: sign up with a passkey, call a Window UP or DOWN, and see how prints, settlement, the house and the keepers fit together.',
   icons: { icon: '/icon.svg' },
 };
 const searchLinks: [string, string][] = [['Quickstart', '/start/quickstart'], ['Windows and lanes', '/trading/windows'], ['How it fits together', '/architecture/overview']];

@@ -18,7 +18,7 @@ export function WelcomeActions() {
   );
 }
 const journeys = [
-  { label: 'Trade', title: 'Make your first call', description: 'Sign up with a passkey, take testnet dollars and tap UP or DOWN on a live Window.', href: '/start/quickstart', icon: CandlestickChart },
+  { label: 'Trade', title: 'Make your first call', description: 'Sign up with a passkey, take test dollars and tap UP or DOWN on a live Window.', href: '/start/quickstart', icon: CandlestickChart },
   { label: 'Automate', title: 'Copy a strategy or an agent', description: 'One transaction to copy, one to stop, with caps the vault enforces.', href: '/automate/overview', icon: Sparkles },
   { label: 'Stocks', title: 'See stocks on Tempo', description: 'Stock Windows today; bridged Robinhood Stock Tokens, pools and reserves.', href: '/stocks/overview', icon: Layers3 },
   { label: 'Architecture', title: 'See how it fits together', description: 'The engine, the signed prints, the keepers, the indexer and the relay.', href: '/architecture/overview', icon: Network },
@@ -50,9 +50,9 @@ export function ProductMap() {
       </nav>
       <div className={`map-connector ${mapStyles.connector}`} aria-hidden="true" />
       <Link className={`map-foundation ${mapStyles.foundation}`} href="/help/availability">
-        <span className={mapStyles.foundationLabel}>Runs on Tempo testnet</span>
+        <span className={mapStyles.foundationLabel}>Runs on Tempo</span>
         <span className={mapStyles.foundationParts}>
-          <span>Testnet dollars <b aria-hidden="true">·</b> real books and settlement</span>
+          <span>Test dollars <b aria-hidden="true">·</b> real books and settlement</span>
           <span>Mainnet: planned, not deployed</span>
         </span>
         <ArrowRight size={18} className={mapStyles.foundationArrow} aria-hidden="true" />

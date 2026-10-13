@@ -1,6 +1,7 @@
 // Ported from Owarine 90a91d71:docs-site/app/opengraph-image.tsx (D-227): the share image, rendered at build time with
 // the Mitoshi mark's own geometry (web/src/components/shell/MitoshiMark.tsx) on the dark ground.
 import { ImageResponse } from 'next/og';
+import { site } from '@/lib/site';
 
 export const alt = 'Mitoshi Docs — prediction markets and stocks on Tempo';
 export const size = { width: 1200, height: 630 };
@@ -34,7 +35,7 @@ export default function OpenGraphImage() {
         <div style={{ display: 'flex', gap: 12 }}>
           {['Make a call', 'Windows and prints', 'The architecture'].map((label) => <span key={label} style={{ display: 'flex', fontSize: 18, border: `1px solid ${LINE}`, borderRadius: 24, padding: '10px 20px', background: '#0A0A0A' }}>{label}</span>)}
         </div>
-        <span style={{ color: MUTED, fontSize: 18 }}>Tempo testnet</span>
+        <span style={{ color: MUTED, fontSize: 18 }}>{new URL(site.docs).host}</span>
       </div>
     </div>,
     size,
