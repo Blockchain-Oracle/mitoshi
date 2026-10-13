@@ -80,3 +80,10 @@ export function useBoard(game: "line-rider" | "candle-hop", address: string | nu
 }
 
 export const shortHex = (address: string): string => (address.length > 10 ? `${address.slice(0, 4)}…${address.slice(-2)}` : address);
+
+/** A real-price tape for the attract loops (`/api/games/arcade/tape`); null until it answers or when it has none. */
+export function usePreviewTape(): readonly number[] | null {
+  const q = useQuery({ queryKey: ["games", "arcade", "tape"], queryFn: () => json<{ points: number[] }>("/api/games/arcade/tape"), staleTime: 300_000, retry: 1 });
+  const points = q.data?.points;
+  return points && points.length > 1 ? points : null;
+}

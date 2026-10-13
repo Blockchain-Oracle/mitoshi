@@ -14,13 +14,14 @@ import { Sticker } from "@/components/kit";
 import { useRangeReserve } from "@/features/range/data";
 import { useWalletSession } from "@/lib/wallet-session";
 import { ARCADE } from "../arcade/copy";
+import { AttractCanvas } from "../arcade/AttractCanvas";
 import { GameScene } from "../art/scenes";
 import { gameEntry } from "../catalog";
 import { GAMES } from "../copy";
 import { useGames } from "../GamesProvider";
 import { ECON_TONE } from "../GamesRail";
 import { windowsLive } from "../lanes";
-import { useBoard } from "./data";
+import { useBoard, usePreviewTape } from "./data";
 
 const ORDER: readonly GameId[] = ["line-rider", "candle-hop", "lucky", "range", "moonshot", "duel", "practice"];
 
@@ -41,8 +42,8 @@ function ArcadeFact({ game }: { game: "line-rider" | "candle-hop" }) {
   return <span className="cab-fact">{GAMES.card.top(ARCADE.fmt(top.score), board.me ? ARCADE.fmt(board.me.best) : null)}</span>;
 }
 
-function Cabinet({ id, fact, open }: { id: GameId; fact: ReactNode; open: boolean }) {
-  const { feedback } = useGames();
+function Cabinet({ id, fact, open, tape }: { id: GameId; fact: ReactNode; open: boolean; tape?: readonly number[] | null }) {
+  const { feedback, reducedMotion } = useGames();
   const entry = gameEntry(id);
   const built = entry.readiness.kind === "built";
   const playable = built && open;
@@ -50,7 +51,8 @@ function Cabinet({ id, fact, open }: { id: GameId; fact: ReactNode; open: boolea
     <li className="cab" data-off={playable ? undefined : ""}>
       <span className="cab-lights" aria-hidden />
       <div className="cab-screen">
-        <GameScene game={id} />
+        {/* The arcade cabinets play themselves on a real-price tape; the rest (and reduced motion) show their scene. */}
+        {(id === "line-rider" || id === "candle-hop") && !reducedMotion ? <AttractCanvas game={id} tape={tape ?? null} /> : <GameScene game={id} />}
       </div>
       <div className="cab-foot">
         <div className="cab-id">
@@ -78,6 +80,7 @@ export function CabinetRail({ nowMs }: { nowMs: number }) {
   const nowSec = Math.floor(nowMs / 1_000);
   const live = lanes && isOk(lanes) && nowSec > 0 ? windowsLive(lanes.value, nowSec) : null;
   const range = rangeFact(reserve);
+  const tape = usePreviewTape();
   const windowsText = live === null ? "…" : GAMES.card.windowsLive(live);
   // 21st.dev 23559 ddoemonn/snap-carousel's affordances on a native snap rail (the drag is the browser's): the slide in
   // view as dots, ←/→/Home/End from the keyboard, the position announced.
@@ -107,7 +110,7 @@ export function CabinetRail({ nowMs }: { nowMs: number }) {
     <div className="cab-wrap">
     <ul ref={rail} className="cab-rail" aria-label={GAMES.title} aria-roledescription="carousel" tabIndex={0} onScroll={onScroll} onKeyDown={onKey}>
       {ORDER.map((id) => {
-        if (id === "line-rider" || id === "candle-hop") return <Cabinet key={id} id={id} open fact={<ArcadeFact game={id} />} />;
+        if (id === "line-rider" || id === "candle-hop") return <Cabinet key={id} id={id} open tape={tape} fact={<ArcadeFact game={id} />} />;
         if (id === "range" || id === "moonshot") return <Cabinet key={id} id={id} open={range.open} fact={<span className="cab-fact">{range.fact || windowsText}</span>} />;
         return <Cabinet key={id} id={id} open fact={windowsFact} />;
       })}

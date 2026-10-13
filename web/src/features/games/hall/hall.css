@@ -87,7 +87,7 @@
 .cab[data-off] { opacity: 0.72; }
 .cab:not([data-off]):hover { border-color: color-mix(in srgb, var(--color-accent) 45%, transparent); transform: translateY(-2px); }
 .cab-lights { left: 24px; right: 24px; top: 2px; opacity: 0.5; }
-.cab-screen { aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
+.cab-screen { position: relative; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); }
 .cab-foot { display: flex; flex-direction: column; gap: 8px; }
 .cab-id { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .cab-name { font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

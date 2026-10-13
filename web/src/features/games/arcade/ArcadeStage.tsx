@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { useWalletSession } from "@/lib/wallet-session";
 import { GameScene } from "../art/scenes";
+import { AttractCanvas } from "./AttractCanvas";
 import { useGames } from "../GamesProvider";
 import { ArcadeBoard } from "./ArcadeBoard";
 import { ARCADE } from "./copy";
@@ -60,7 +61,7 @@ export function ArcadeStage({ game }: { game: ArcadeGame }) {
   return (
     <div className="gm-page ar-cabinet">
       <div className="ar-attract">
-        <GameScene game={game} />
+        {reducedMotion || playing ? <GameScene game={game} /> : <AttractCanvas game={game} tape={board?.tape?.points ?? null} />}
         <button type="button" className="du-cta ar-play" onClick={play} data-primary-action>
           <Play aria-hidden className="ar-play-icon" />
           {ARCADE.title.play}
