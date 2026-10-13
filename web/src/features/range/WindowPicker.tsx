@@ -2,16 +2,15 @@
 /**
  * The Window a round sits on (R4-5, D-227; Ported from Owarine 90a91d71:web/src/features/range/WindowPicker.tsx — every
  * live Window, soonest first, no cut to four): the cadences as TextTabs (5m · 15m · 1h · Gap, only those with a priced
- * Window live) over a sideways rail of chips (the kit's ScrollRail, 21st 10484: edge fades, a named region) — the
+ * Window live; the last one is remembered by the page) over a sideways rail of chips (the kit's ScrollRail, 21st 10484: edge fades, a named region) — the
  * asset's disc, its ticker (a 24/7 lane marked) and the time left on a small ring — acting as one radiogroup whose
- * arrow keys move the pick (the roving focus of 21st.dev 35042 kuratlielia/chip-group, single-select, no morph). The last cadence is remembered. Shared by Range
+ * arrow keys move the pick (the roving focus of 21st.dev 35042 kuratlielia/chip-group, single-select, no morph). Shared by Range
  * and Moonshot; an asset the reserve can't price is a disabled chip with its reason as the title.
  */
 import { formatCadence } from "@cwf/core/copy";
 import type { EventMarket, MarketId } from "@cwf/core";
 import { useRef, type KeyboardEvent } from "react";
 import { CountdownRing, ScrollRail, TextTabs } from "@/components/kit";
-import { usePersistedState } from "@/lib/persisted";
 import { cn } from "@/lib/utils";
 import { AssetDisc } from "../markets/hero/AssetDisc";
 import { RANGE } from "./copy";
@@ -19,18 +18,15 @@ import type { BandWindow } from "./data";
 
 export const cadenceKeyOf = (m: EventMarket): string => (m.lane === "gap" ? "gap" : formatCadence(m.intervalSec));
 const cadenceLabel = (key: string) => (key === "gap" ? RANGE.windows.gap : key);
-const KEY_CODEC = { parse: (raw: string) => raw, serialize: (v: string) => v };
 
-export function WindowPicker({ windows, pickedId, onPick, storageKey }: { windows: readonly BandWindow[]; pickedId: MarketId | null; onPick: (id: MarketId) => void; storageKey: string }) {
+export function WindowPicker({ windows, pickedId, onPick }: { windows: readonly BandWindow[]; pickedId: MarketId | null; onPick: (id: MarketId) => void }) {
   const priced = windows.filter((w) => w.model !== null);
   const keys = [...new Set(priced.map((w) => cadenceKeyOf(w.market)))];
-  const [saved, setSaved] = usePersistedState<string>(`cwf:${storageKey}:cadence`, "", KEY_CODEC);
   const picked = priced.find((w) => w.market.marketId === pickedId) ?? null;
-  const cadence = picked ? cadenceKeyOf(picked.market) : keys.includes(saved) ? saved : (keys[0] ?? "");
+  const cadence = picked ? cadenceKeyOf(picked.market) : (keys[0] ?? "");
   const chips = windows.filter((w) => cadenceKeyOf(w.market) === cadence);
   const rail = useRef<HTMLDivElement>(null);
   const choose = (key: string) => {
-    setSaved(key);
     const first = priced.find((w) => cadenceKeyOf(w.market) === key);
     if (first) onPick(first.market.marketId);
   };

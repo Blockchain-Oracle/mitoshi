@@ -20,11 +20,11 @@ import { MoonshotTicket } from "./MoonshotTicket";
 function Page({ reserve }: { reserve: RangeReserveState }) {
   const session = useWalletSession();
   const writes = useRangeWrites(session.address);
-  const { nowMs, windows, current, setPicked, empty } = useHouseWindows(reserve);
+  const { nowMs, windows, current, setPicked, empty } = useHouseWindows(reserve, "moonshot");
   return (
     <>
       <HouseHead title={MOONSHOT.title} kind="moonshot" reserve={reserve} writes={writes} how={MOONSHOT.how} infoTitle={MOONSHOT.infoTitle} />
-      <WindowPicker windows={windows} pickedId={current?.market.marketId ?? null} onPick={setPicked} storageKey="moonshot" />
+      <WindowPicker windows={windows} pickedId={current?.market.marketId ?? null} onPick={setPicked} />
       {empty}
       {current ? <MoonshotTicket key={current.market.marketId} market={current.market} model={current.model} reserve={reserve} /> : null}
       <section className="game-below" aria-label={MOONSHOT.roundsTitle}>
