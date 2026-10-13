@@ -1,0 +1,58 @@
+/* Ported from Owarine 90a91d71:web/src/features/strategies/copy-form.css (R4-6, D-227) — the copy drawer's form: fields
+ * that say why, a money strip, the runner kept apart from "you are copying"; plus the plan as Now → After rows. */
+.copy-field-row { position: relative; display: flex; align-items: center; }
+.copy-field-row .strat-input { padding-right: 60px; font-size: 14px; height: 42px; }
+.copy-field-max { position: absolute; right: 6px; height: 28px; padding: 0 10px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent); background: var(--color-surface-2); font-family: var(--font-data); font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink); cursor: pointer; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.copy-field-max:hover:not(:disabled) { border-color: var(--color-ink); }
+.copy-field-max:disabled { opacity: 0.4; cursor: not-allowed; }
+.strat-input.copy-field-bad, .strat-input.copy-field-bad:focus { border-color: var(--color-loss); box-shadow: 0 0 0 3px var(--color-loss-wash); }
+.copy-field-error { display: block; margin: 6px 0 4px; font-family: var(--font-body); font-size: 12px; letter-spacing: 0; text-transform: none; color: var(--color-loss); }
+
+.copy-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: 12px; background: var(--color-hairline); }
+.copy-strip > div { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; background: var(--market-card-surface, var(--color-surface-1)); min-width: 0; }
+.copy-strip span { font-family: var(--font-data); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.copy-strip b { font-family: var(--font-data); font-size: 13px; font-weight: 600; color: var(--color-ink); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.copy-strip small { font-size: 10.5px; color: var(--color-ink-muted); }
+.copy-strip > div[data-tone="bad"] b { color: var(--color-loss); }
+@media (max-width: 420px) { .copy-strip { grid-template-columns: 1fr 1fr; } .copy-strip > div:last-child { grid-column: 1 / -1; } }
+
+.copy-add { border: 1px dashed var(--color-hairline); border-radius: 12px; padding: 10px 12px; }
+.copy-add-toggle { border: 0; background: none; padding: 0; font-size: 13px; font-weight: 600; color: var(--color-accent); cursor: pointer; }
+.copy-add-body { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px; margin-top: 10px; }
+.copy-add-body .vault-amount { flex: 1 1 200px; }
+.copy-add-body .desk-pill { height: 44px; }
+
+.desk-btn-primary[data-blocked] { opacity: 0.55; cursor: not-allowed; }
+.copy-blocked { margin-top: 8px; font-size: 12.5px; line-height: 1.5; color: var(--color-warning); }
+
+.copy-you { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 6px 12px 6px 10px; border-radius: 9999px; border: 1px solid color-mix(in srgb, var(--color-profit) 45%, transparent); background: var(--color-profit-wash); font-size: 13px; font-weight: 600; color: var(--color-profit); }
+.copy-you > span { width: 8px; height: 8px; border-radius: 9999px; background: var(--color-profit); }
+
+.copy-runner { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid var(--color-hairline); border-radius: 12px; background: var(--color-surface-2); color: var(--color-ink); }
+.copy-runner-eyebrow { font-family: var(--font-data); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.copy-runner strong { font-size: 14px; }
+.copy-runner p { font-size: 0.8rem; line-height: 1.6; color: var(--color-ink-secondary); }
+
+
+/* The plan: what the one signature does, as rows (Owarine ControlCard's Now → After), never sentences. */
+.copy-plan { display: flex; flex-direction: column; border: 1px solid var(--color-hairline); border-radius: 12px; overflow: hidden; }
+.copy-plan > div { display: flex; justify-content: space-between; gap: 12px; padding: 9px 12px; font-size: 12.5px; }
+.copy-plan > div + div { border-top: 1px solid var(--color-hairline); }
+.copy-plan dt { color: var(--color-ink-muted); }
+.copy-plan dd { font-family: var(--font-data); color: var(--color-ink); text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.copy-plan [data-tone="warn"] dd { color: var(--color-warning); }
+.copy-limits { font-family: var(--font-data); font-size: 12px; color: var(--color-ink-secondary); font-variant-numeric: tabular-nums; }
+.copy-share { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.copy-footer-cta[data-shake] { animation: copy-shake 360ms ease; }
+@keyframes copy-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(5px); } }
+@media (prefers-reduced-motion: reduce) { .copy-footer-cta[data-shake] { animation: none; } }
+.copy-manage-figure { font-family: var(--font-heading); font-size: 26px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+/* The sealed memory card (21st locked-content idea on the record card's frame): a lock, the title, its price line. */
+.mem-card { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--color-accent) 30%, var(--color-hairline)); border-radius: 12px; background: color-mix(in srgb, var(--color-accent) 4%, transparent); }
+.mem-card-head { display: flex; align-items: center; gap: 10px; }
+.mem-card-lock { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 9999px; background: var(--color-accent-wash); color: var(--color-accent); }
+.mem-card-lock svg { width: 16px; height: 16px; }
+.mem-card-title { font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: var(--color-ink); overflow-wrap: anywhere; }
+.mem-card-meta { font-family: var(--font-data); font-size: 11px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+.mem-card-body { white-space: pre-wrap; font-size: 13px; line-height: 1.55; color: var(--color-ink-secondary); }
+.mem-card-veil { height: 44px; border-radius: 8px; background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--color-ink) 10%, transparent) 0 8px, transparent 8px 14px); filter: blur(2px); }

@@ -21,6 +21,7 @@ const W = {
   place: (rank: number, of: number) => `#${rank} of ${of} on the all-time board`,
   unranked: "Not on the board yet",
   explorer: "View on the explorer",
+  copyTrader: "Copy this trader →",
   house: "This is one of Mitoshi's own keys (the house's maker, taker or a product contract). The house is never ranked, so it has no record here.",
   unreadable: "This record can't be read right now. Nothing changed; try again in a minute.",
   none: "No settled Windows yet. A record starts when a Window this wallet called settles.",
@@ -93,6 +94,8 @@ export async function ProfileScreen({ address }: { address: Address }) {
     <div className="mx-auto flex w-full max-w-(--content-wide) flex-col gap-8 px-gutter py-10 lg:px-gutter-desktop">
       <ProfileHeader address={address} name={display ?? short} meta={display ? [short, ...meta] : meta} action={{ label: W.explorer, href: addressUrl(address, webEnv.markets.network) }} />
       <ProfileSocial address={address} />
+      {/* R4-6 (D-227; Owarine 90a91d71 ProfileScreen): a mirror strategy of this wallet, in the studio, prefilled. */}
+      {p && !p.house && <Link href={`/strategies?copy=${address}`} className="inline-flex min-h-touch items-center self-start rounded-full border border-hairline px-4 type-body-strong text-ink hover:bg-surface-2">{W.copyTrader}</Link>}
       {!p ? (
         <p className="rounded-lg border border-hairline bg-surface-1 p-4 type-body text-ink-secondary">{W.unreadable}</p>
       ) : p.house ? (
