@@ -87,6 +87,18 @@ export function topicsOf(e: { name: string; market: string | null; data: Record<
       add("subscriber");
       out.push("strategies");
       break;
+    // The launchpads (index/0010, R6 money): the token's page hears everything about it; the board, every change.
+    case "MemecoinRecorded":
+    case "StablecoinRecorded":
+    case "LaunchCreated":
+    case "Trade":
+    case "Completed":
+    case "Graduated":
+    case "Swap":
+    case "Transfer":
+      if (typeof e.data.token === "string") out.push(`launch:${e.data.token.toLowerCase()}`);
+      out.push("launches");
+      break;
   }
   for (const u of users) out.push(`user:${u}`);
   return out;

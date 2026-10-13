@@ -12,7 +12,7 @@ import type { Bus, BusEvent } from "../runtime/bus";
 export const PING_MS = 15_000;
 const MAX_TOPICS = 32;
 /** Public topic names (`ticks`: the display feed, S23a, never replayed); `market:<0x…32 bytes>` and `symbol:<TICKER>` are parameterised. */
-const PUBLIC = new Set(["prices", "ticks", "markets", "fills", "prints", "verdicts", "halts", "session", "activity", "rooms", "takes", "strategies"]);
+const PUBLIC = new Set(["prices", "ticks", "markets", "fills", "prints", "verdicts", "halts", "session", "activity", "rooms", "takes", "strategies", "launches"]);
 
 /** Topics published with `bus.emit` (never in the replay ring): a replaying client still gets their snapshot. */
 const EPHEMERAL = new Set(["ticks"]);
@@ -31,7 +31,7 @@ export function grantTopics(raw: string | null, ticket: string | null, secret: s
   if (topics.length > MAX_TOPICS) return { topics, error: `at most ${MAX_TOPICS} topics` };
   const user = ticket && secret ? verifyStreamTicket(secret, ticket, nowSec) : null;
   for (const t of topics) {
-    if (PUBLIC.has(t) || /^market:0x[0-9a-f]{64}$/.test(t) || /^symbol:[A-Z]{2,6}$/.test(t)) continue;
+    if (PUBLIC.has(t) || /^market:0x[0-9a-f]{64}$/.test(t) || /^symbol:[A-Z]{2,6}$/.test(t) || /^launch:0x[0-9a-f]{40}$/.test(t)) continue;
     const m = /^user:(0x[0-9a-fA-F]{40})$/.exec(t);
     if (!m) return { topics, error: `unknown topic ${t}` };
     if (!secret) return { topics, error: "per-user topics are not enabled on this deployment" };

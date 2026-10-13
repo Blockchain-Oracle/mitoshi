@@ -14,6 +14,7 @@ export * from "./strategy-runner";
 export * from "./x-relay";
 export * from "./exits";
 export * from "./reserves";
+export * from "./launch";
 export * from "../prices/redstone";
 export * from "../prices/redstone-gateways";
 export * from "../prices/attested";

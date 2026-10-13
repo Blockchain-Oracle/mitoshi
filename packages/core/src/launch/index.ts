@@ -7,6 +7,7 @@
  */
 export * from "./currencyGuard";
 export * from "./intents";
+export * from "./feed";
 export const STABLECOIN_CURRENCY = "USD";
 
 /** A token symbol the launch form accepts: 2–11 upper-case letters or digits, starting with a letter. */
