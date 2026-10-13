@@ -25,10 +25,10 @@
 | `TIDX_URL`, `TIDX_BASIC_AUTH` (self-hosted tidx), `INDEXER_VIA_MPP` | — | ✓ | optional (D-086) | optional; MPP after Q-020 |
 | `APNS_KEY_P8`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `FCM_SERVICE_ACCOUNT` | — | ✓ | SM2 | — |
 | `WALLETCONNECT_PROJECT_ID` | ✓ | — | ✓ | ✓ |
-| `X_OAUTH2_CLIENT_ID`, `X_OAUTH2_CLIENT_SECRET`, `X_SESSION_SECRET`, `X_REDIRECT_URI` (S11) | ✓ | — | app "mitoshi-testnet"; `https://testnet.mitoshi.xyz/api/x/callback` | its own X app; `https://mitoshi.xyz/api/x/callback` |
-| `NEXT_PUBLIC_X_HANDLE` (S11; the bot a mention addresses) | ✓ (build-time) | — | `Mitoshi_app` | the mainnet bot |
-| `X_HANDLE`, `X_RETTIWT_API_KEY`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET` (S11) | — | ✓ | `Mitoshi_app` | the mainnet bot |
-| `X_API_KEY`, `X_API_KEY_SECRET` (S11; the OAuth 1.0a consumer pair) | ✓ | ✓ | ✓ | ✓ |
-| `X_BEARER_TOKEN` (S11; app-only reads, the relay's last way in) | — | ✓ | ✓ (402 until credits) | ✓ |
-| `X_EXECUTOR_PRIVATE_KEY` (S11; else the `x-relay` role key), `X_RELAY_LIVE=1` (signs; with `DRY_RUN=0`), `X_POSTING_ENABLED=1` (receipt replies, live only), `X_REPLY_IMAGES_ENABLED` (the receipt card with each reply; on unless `0`), `X_POLL_MS` (default 20 s) | — | ✓ (`OPS_ACTORS` gains `x-relay`) | ✓ | ✓ |
+| `X_OAUTH2_CLIENT_ID`, `X_OAUTH2_CLIENT_SECRET`, `X_SESSION_SECRET`, `X_REDIRECT_URI` (S11) | ✓ | — | app "mitoshi-testnet"; `https://testnet.mitoshi.xyz/api/x/callback` (set 2026-10-13, runtime-only) | its own X app; `https://mitoshi.xyz/api/x/callback` |
+| `NEXT_PUBLIC_X_HANDLE` (S11; the bot a mention addresses) | ✓ (build-time) | — | `Mitoshi_app` (set 2026-10-13) | the mainnet bot |
+| `X_HANDLE`, `X_RETTIWT_API_KEY`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET` (S11) | — | ✓ | `Mitoshi_app` (set 2026-10-13) | the mainnet bot |
+| `X_API_KEY`, `X_API_KEY_SECRET` (S11; the OAuth 1.0a consumer pair) | ✓ | ✓ | ✓ (both apps, 2026-10-13) | ✓ |
+| `X_BEARER_TOKEN` (S11; app-only reads, the relay's last way in) | — | ✓ | ✓ (402 until credits; set 2026-10-13) | ✓ |
+| `X_EXECUTOR_PRIVATE_KEY` (S11; else the `x-relay` role key `X_RELAY_PRIVATE_KEY`), `X_RELAY_LIVE=1` (signs; with `DRY_RUN=0`), `X_POSTING_ENABLED=1` (receipt replies, live only), `X_REPLY_IMAGES_ENABLED` (the receipt card with each reply; on unless `0`), `X_POLL_MS` (default 20 s) | — | ✓ (`OPS_ACTORS` gains `x-relay`) | ✓ (2026-10-13: `X_RELAY_PRIVATE_KEY`, `X_RELAY_LIVE=1`, `X_POSTING_ENABLED=1`; cards and poll at their defaults) | ✓ |
 | `CWF_REGION_OVERRIDE`, `DEV_FIXTURES` | ✓ | — | optional | never |
