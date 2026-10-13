@@ -11,7 +11,7 @@ import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
 import { cn } from "@/lib/utils";
 import { pulseOf } from "../agents/pulse";
-import { COPY_STATE_LABEL, copyStateOf, spentTodayOf } from "./activity";
+import { COPY_STATE_LABEL, copyStateOf, copyToneOf, spentTodayOf } from "./activity";
 import { AgentPortrait } from "./AgentPortrait";
 import { usd, usdSigned } from "./format";
 import { instinctOf, strategyIdentity } from "./identity";
@@ -49,7 +49,6 @@ export function LiveDesk({ card, writes, onManage }: { card: StrategyWire; write
   const isCreator = writes.wallet !== null && writes.wallet.toLowerCase() === card.creator.toLowerCase();
   const fills = writes.myFills.filter((f) => f.strategyId === card.strategyId);
   const net = fills.reduce((s, f) => s + (f.pnlBase === null ? 0n : BigInt(f.pnlBase)), 0n);
-  const live = state === "copying" || state === "fading";
   const pulse = pulseOf(card, nowMs);
   const spent = grant ? spentTodayOf(grant, nowSec) : 0n;
   // Privacy mode (the balance eye, R4-4 critic gap 15): spent today, the budget left, the copier's result and the fees
@@ -67,7 +66,7 @@ export function LiveDesk({ card, writes, onManage }: { card: StrategyWire; write
         </div>
         <RecordCard record={card.record} />
         <div className="desk-pulse border-accent">
-          <StatusDot tone={live ? "live" : state === "not-copying" ? "quiet" : "warn"}>
+          <StatusDot tone={copyToneOf(state)}>
             <span className="desk-status text-ink">{COPY_STATE_LABEL[state]}</span>
           </StatusDot>
           <p className="desk-pulse-line">{pulse.line}{card.health.lastTickMs !== null ? ` · ${ago(card.health.lastTickMs, nowMs)}` : ""}</p>

@@ -1,6 +1,6 @@
 import type { VaultGrant } from "@cwf/core";
 import { describe, expect, it } from "vitest";
-import { budgetCentsOf, budgetStateOf, copyStateOf } from "./activity";
+import { budgetCentsOf, budgetStateOf, copyStateOf, copyToneOf } from "./activity";
 import { winRateOf } from "./record";
 
 const RUNNER = "0xca7BFA5CBdC7135Ba178ca23cD2B12C123258B9a";
@@ -30,6 +30,10 @@ describe("a copy's state comes from this wallet's consent and grant", () => {
     expect(copyStateOf(card, sub(), grant({ budgetBase: 0n }), NOW)).toBe("unfunded");
     // $0.02 left: under one contract at any price the runner would pay — it skips the call ("under the smallest order").
     expect(copyStateOf(card, sub(), grant({ budgetBase: 20_000n }), NOW)).toBe("low");
+    // One state for the dot and the top-up under it: never green over a budget warning.
+    expect(copyToneOf("low")).toBe("warn");
+    expect(copyToneOf("unfunded")).toBe("warn");
+    expect(copyToneOf("copying")).toBe("live");
   });
 
   it("is low only when the budget can't cover one contract at its price cap — the runner sizes a call down to it", () => {

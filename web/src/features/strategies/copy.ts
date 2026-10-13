@@ -111,9 +111,6 @@ export const COPY = {
   },
   manage: {
     receiptLabel: "Strategy",
-    live: "Copying",
-    fading: "Fading",
-    notLive: "Paused · budget not live",
     pnl: "Your result",
     noFills: "No trades for you yet.",
     sample: (settled: number, open: number) => `${plural(settled, "settled", "settled")}${open > 0 ? ` · ${open} open` : ""}`,

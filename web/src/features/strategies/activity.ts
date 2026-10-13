@@ -2,6 +2,7 @@
 // from the wallet's own consent and grant (never from the strategy's aggregate counts). The runner's last pass is worded
 // from its data (`features/agents/pulse.ts`, R6 #9), no longer recognised from its log line.
 import { oneUnit, USD_DECIMALS, utcDayOf, type VaultCaps, type VaultGrant } from "@cwf/core";
+import type { DotTone } from "@/components/kit/desk-kit";
 import type { MinePayload, StrategyWire } from "./protocol";
 
 export type CopyState = "not-copying" | "inactive" | "paused" | "expired" | "replaced" | "runner-changed" | "unfunded" | "low" | "copying" | "fading";
@@ -37,6 +38,9 @@ export function copyStateOf(card: Pick<StrategyWire, "active" | "runner">, sub: 
 export const COPY_STATE_LABEL: Record<CopyState, string> = {
   "not-copying": "Not copying", inactive: "Closed", paused: "Paused", expired: "Budget expired", replaced: "Budget replaced", "runner-changed": "Runner changed", unfunded: "Budget used up", low: "Budget low", copying: "Copying", fading: "Fading",
 };
+
+/** The state's dot: live only while every call can be copied — a low or spent budget warns, like the top-up below it. */
+export const copyToneOf = (state: CopyState): DotTone => (state === "copying" || state === "fading" ? "live" : state === "not-copying" ? "quiet" : "warn");
 
 /** Today's spend on a grant (0 once the UTC day has turned). */
 export const spentTodayOf = (grant: VaultGrant, nowSec: number) => (grant.spentDay === utcDayOf(nowSec) ? grant.spentTodayBase : 0n);
