@@ -12,7 +12,7 @@ const config = Constants.expoConfig;
 const web = (config?.extra?.web ?? {}) as Partial<WebExtra>;
 
 /** The site the app opens (app.identity.json `webOrigin`). */
-export const WEB_ORIGIN = web.origin ?? "https://testnet.mitoshi.xyz";
+export const WEB_ORIGIN = web.origin ?? "https://mitoshi.xyz";
 /** The passkey relying party (app.identity.json `passkeyRpId`); it and its subdomains are Mitoshi's hosts. */
 export const RP_ID = web.rpId ?? "mitoshi.xyz";
 /** `mitoshi` (app.identity.json `scheme`): `mitoshi://markets/BTC` opens /markets/BTC. */

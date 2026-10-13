@@ -1,30 +1,36 @@
-# Mitoshi Testnet — the phone app
+# Mitoshi — the phone app
 
-The testnet site (`https://testnet.mitoshi.xyz`) in one native web view, built with Expo SDK 57 (D-227). The web is
-already phone-first, so the app adds only what a browser tab can't do: a native splash held until the page paints,
-the status bar following the page's theme, Android Back through the page's history, other sites in the system browser,
-page downloads through the share sheet, an offline screen that retries by itself, and passkeys inside the web view.
+The site (`https://mitoshi.xyz`, D-228; the Moderato testnet build until mainnet) in one native web view, built with
+Expo SDK 57 (D-227). The web is already phone-first, so the app adds only what a browser tab can't do: a native splash
+held until the page paints, the status bar following the page's theme, Android Back through the page's history, other
+sites in the system browser, page downloads through the share sheet, an offline screen that retries by itself, and
+passkeys inside the web view.
 The web sees the app in its user agent (`CWFShell/<version> (<ios|android>; testnet)`) and as `window.ReactNativeWebView`.
 
 ## Identity
 
-Names and ids live in `app.identity.json` (Q-027): "Mitoshi Testnet", slug `mitoshi-testnet`, bundle id and package
-`xyz.mitoshi.app.testnet`, scheme `mitoshi`, EAS project `@0xabu/mitoshi-testnet`. Icons and splash marks are rendered
-from `web/src/app/icon.svg` by `scripts/icons.sh`.
+Names and ids live in `app.identity.json` (Q-027): the name "Mitoshi" (D-228), slug `mitoshi-testnet`, bundle id and
+package `xyz.mitoshi.app.testnet`, scheme `mitoshi`, EAS project `@0xabu/mitoshi-testnet`. The ids keep `testnet`: the
+EAS project, the signing credentials and the registered bundle id are bound to them, and no one sees them. Icons and
+splash marks are rendered from `web/src/app/icon.svg` by `scripts/icons.sh`.
+
+The app's version is `version` in `app.config.js` (1.0.1 since the move to `mitoshi.xyz`); EAS keeps the build numbers
+(`appVersionSource: remote`) and the production profile increments them on every build.
 
 ## Passkeys
 
 Mitoshi's passkeys use the rpId `mitoshi.xyz`.
 
-- **iOS:** the app carries `webcredentials:mitoshi.xyz` (and `applinks:testnet.mitoshi.xyz`). WKWebView offers passkeys
-  only after Apple has read `https://mitoshi.xyz/.well-known/apple-app-site-association`.
+- **iOS:** the app carries `webcredentials:mitoshi.xyz`, `applinks:mitoshi.xyz` and `applinks:testnet.mitoshi.xyz`
+  (old links still open the app). WKWebView offers passkeys only after Apple has read
+  `https://mitoshi.xyz/.well-known/apple-app-site-association`.
 - **Android:** `modules/webview-webauthn` turns on WebView WebAuthn (`WEB_AUTHENTICATION_SUPPORT_FOR_APP`). Credential
   Manager then checks `https://mitoshi.xyz/.well-known/assetlinks.json`. Its ceremonies carry the origin
   `android:apk-key-hash:…`, which the web's ceremony handler accepts on testnet (`web/src/lib/app-links.ts`).
 
-The web serves both files (`web/src/app/.well-known/*`). They must also answer on the apex `mitoshi.xyz`: add
-`https://mitoshi.xyz` to the Coolify web app's domains. Its DNS already points at the box. The proxy serves only
-`/.well-known/*` there and sends everything else to the testnet host.
+The web serves both files (`web/src/app/.well-known/*`) on `mitoshi.xyz`, where the app lives, and on
+`testnet.mitoshi.xyz`, which redirects every other path to `mitoshi.xyz` (`web/src/lib/canonical-host.ts`). Android's
+App Links list both hosts too.
 
 ## Build and ship
 

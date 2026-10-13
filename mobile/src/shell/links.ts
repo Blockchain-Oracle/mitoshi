@@ -9,7 +9,7 @@ export interface Parts {
   rest: string;
 }
 
-// A browser ends the host at `\` as at `/`, and the user info at the last `@`: `https://evil.com\@testnet.mitoshi.xyz`
+// A browser ends the host at `\` as at `/`, and the user info at the last `@`: `https://evil.com\@mitoshi.xyz`
 // is evil.com, so it must never read as ours.
 const URL_RE = /^([a-z][a-z0-9+.-]*):(?:\/\/([^/?#\\]*))?([^?#]*)(.*)$/i;
 
@@ -19,7 +19,7 @@ export function parseUrl(url: string): Parts | null {
   return { scheme: m[1]!.toLowerCase(), host: (m[2] ?? "").toLowerCase().replace(/^.*@/, ""), path: m[3] ?? "", rest: m[4] ?? "" };
 }
 
-/** Mitoshi's own hosts: the passkey rpId apex and every subdomain of it (testnet., stream., a docs host). */
+/** Mitoshi's own hosts: the passkey rpId apex (the site, D-228) and every subdomain of it (the old testnet., stream., docs.). */
 export function isOurHost(host: string, rpId: string): boolean {
   const h = host.replace(/:\d+$/, "");
   return h === rpId || h.endsWith(`.${rpId}`);
@@ -41,8 +41,8 @@ export function routeOf(url: string, rpId: string): Route {
 }
 
 /**
- * The first page to open: a universal/App Link (`https://testnet.mitoshi.xyz/markets/…`) or `mitoshi://markets/…`
- * opens that path on `origin`; anything else opens the site's root.
+ * The first page to open: a universal/App Link (`https://mitoshi.xyz/markets/…`, or the old `https://testnet.mitoshi.xyz/…`)
+ * or `mitoshi://markets/…` opens that path on `origin`; anything else opens the site's root.
  */
 export function startUrl(link: string | null, origin: string, rpId: string, scheme: string): string {
   const p = link ? parseUrl(link) : null;

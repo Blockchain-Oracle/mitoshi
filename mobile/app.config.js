@@ -2,8 +2,10 @@
 // is the responsive site in one web view). Ported from Owarine 90a91d71:mobile/app.config.js — every identifier the
 // stores, EAS and the passkey association see comes from app.identity.json, so a rename touches that one file.
 //   - displayName, slug, owner, scheme, bundleId / androidPackage: what the stores, EAS and deep links see (Q-027);
-//   - webOrigin: the site the web view loads; passkeyRpId: the passkey relying party (D-060), which must list this app
-//     in its /.well-known/apple-app-site-association (webcredentials) and /.well-known/assetlinks.json (get_login_creds);
+//   - webOrigin: the site the web view loads (https://mitoshi.xyz, D-228); legacyLinkHosts: older hosts whose links still
+//     open the app (testnet.mitoshi.xyz redirects to the apex and serves the same association files);
+//   - passkeyRpId: the passkey relying party (D-060), which must list this app in its
+//     /.well-known/apple-app-site-association (webcredentials) and /.well-known/assetlinks.json (get_login_creds);
 //   - easProjectId: written once by `eas init`; while it is null the config names no EAS project.
 // Colours come from the token source (packages/tokens), the same values the web paints, so the splash, the root view
 // and the web view's first frame are one colour (no white flash).
@@ -15,12 +17,16 @@ const LIGHT = tokens.palette.light.bg;
 /** The icon's ink ground (web/src/app/icon.svg; the light palette's text colour). */
 const INK = tokens.palette.light.white;
 const webHost = new URL(id.webOrigin).host;
+/** Hosts whose https links open the app: the site's own first, then the older ones (D-228). */
+const linkHosts = [...new Set([webHost, ...(id.legacyLinkHosts ?? [])])];
+/** Hosts that hold the passkey association: the rpId and the site's host (one name since D-228). */
+const credentialHosts = [...new Set([id.passkeyRpId, webHost])];
 
 module.exports = () => ({
   name: id.displayName,
   slug: id.slug,
   owner: id.owner,
-  version: "1.0.0",
+  version: "1.0.1",
   orientation: "portrait",
   icon: "./assets/icon.png",
   scheme: id.scheme,
@@ -32,8 +38,8 @@ module.exports = () => ({
     // ITSAppUsesNonExemptEncryption = false: the app uses only the OS's own TLS.
     config: { usesNonExemptEncryption: false },
     // webcredentials: the passkey rpId (WKWebView offers passkeys only for an associated rpId) and the web host;
-    // applinks: https links to the web host open the app on that screen.
-    associatedDomains: [`webcredentials:${id.passkeyRpId}`, `webcredentials:${webHost}`, `applinks:${webHost}`],
+    // applinks: https links to the web host (and the older hosts) open the app on that screen.
+    associatedDomains: [...credentialHosts.map((h) => `webcredentials:${h}`), ...linkHosts.map((h) => `applinks:${h}`)],
   },
   android: {
     package: id.androidPackage,
@@ -56,7 +62,7 @@ module.exports = () => ({
       {
         action: "VIEW",
         autoVerify: true,
-        data: [{ scheme: "https", host: webHost }],
+        data: linkHosts.map((host) => ({ scheme: "https", host })),
         category: ["BROWSABLE", "DEFAULT"],
       },
     ],
