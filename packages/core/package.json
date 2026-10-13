@@ -7,6 +7,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./venue-spec.json": "./src/market/venue-spec.json",
+    "./strategies/basket.vectors.json": "./src/strategies/basket.vectors.json",
     "./stocks/guard": "./src/stocks/guard.ts",
     "./stocks/session": "./src/stocks/session.ts",
     "./prices/redstone": "./src/prices/redstonePayload.ts",

@@ -1,0 +1,55 @@
+{
+  "_doc": "Basket (theme) spec vectors, D-231: the three themes republished from 0xb0A5…8D6 naming agent #82 — each spec, its encodeSpec bytes (what specHash is keccak256 over; @cwf/markets checks the hash), its describeSpec words — then specs the parser refuses, call sizes, and which series a basket trades.",
+  "themes": [
+    {
+      "name": "Builders' Stack",
+      "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 6000 }, { "symbol": "PLTR", "weightBps": 4000 }], "rule": { "preset": "momentum", "lookback": 6, "thresholdBps": 10 }, "lanes": "regular" },
+      "encoded": "{\"p\":\"basket\",\"m\":[[\"TSLA\",6000],[\"PLTR\",4000]],\"l\":\"regular\",\"r\":{\"p\":\"momentum\",\"lb\":6,\"th\":10}}",
+      "specHash": "0xce24cf1d3ab08be923281aeb63102496cf26dc06751f1ccaf6a1e6d38297c40d",
+      "describe": "Calls TSLA 60% and PLTR 40% on their market-hours Windows. Once a price moves 0.1% from its opening print, it bets with the move. Each call is sized by the stock's weight."
+    },
+    {
+      "name": "Chips & Clouds",
+      "spec": { "preset": "basket", "members": [{ "symbol": "AMD", "weightBps": 4500 }, { "symbol": "AMZN", "weightBps": 3500 }, { "symbol": "PLTR", "weightBps": 2000 }], "rule": { "preset": "reversion", "lookback": 4, "thresholdBps": 12 }, "lanes": "regular" },
+      "encoded": "{\"p\":\"basket\",\"m\":[[\"AMD\",4500],[\"AMZN\",3500],[\"PLTR\",2000]],\"l\":\"regular\",\"r\":{\"p\":\"reversion\",\"lb\":4,\"th\":12}}",
+      "specHash": "0x56b59eefb23365b291429c61bbb4ae9b0d0360a94d0f61cf104fd6eb0dfd94d6",
+      "describe": "Calls AMD 45%, AMZN 35% and PLTR 20% on their market-hours Windows. Once a price moves 0.12% from its opening print, it bets against the move. Each call is sized by the stock's weight."
+    },
+    {
+      "name": "Around the Clock",
+      "spec": { "preset": "basket", "members": [{ "symbol": "AMZN", "weightBps": 4000 }, { "symbol": "TSLA", "weightBps": 3000 }, { "symbol": "NVDA", "weightBps": 3000 }], "rule": { "preset": "agent", "persona": "A patient desk trader on AMZN, TSLA and NVDA's hourly Windows, in market hours and on RedStone's 24/7 feed. Reads the opening print, the move since and both books. Sits out unless the tape and the book agree.", "posture": "balanced", "cadences": [3600] }, "lanes": "both" },
+      "encoded": "{\"p\":\"basket\",\"m\":[[\"AMZN\",4000],[\"TSLA\",3000],[\"NVDA\",3000]],\"l\":\"both\",\"r\":{\"p\":\"agent\",\"persona\":\"A patient desk trader on AMZN, TSLA and NVDA's hourly Windows, in market hours and on RedStone's 24/7 feed. Reads the opening print, the move since and both books. Sits out unless the tape and the book agree.\",\"po\":\"balanced\",\"c\":[3600]}}",
+      "specHash": "0xbcca13dd1e0c742171ccf9042b07e2f59cb1eba16f7de86f34a3e92b2ca39809",
+      "describe": "Calls AMZN 40%, TSLA 30% and NVDA 30% on their market-hours and 24/7 Windows. On each stock's 1h Windows it reads the print once, a quarter of the way in, and asks the model for up, down or hold. Balanced: it holds under 65% confidence, over 85¢ a side, or after 4 straight losses. Each call is sized by the stock's weight."
+    }
+  ],
+  "refused": [
+    { "why": "NFLX has no Windows and no signed source", "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 5000 }, { "symbol": "NFLX", "weightBps": 5000 }], "rule": { "preset": "momentum", "lookback": 6, "thresholdBps": 10 }, "lanes": "regular" } },
+    { "why": "PLTR has no RedStone 24/7 feed", "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 5000 }, { "symbol": "PLTR", "weightBps": 5000 }], "rule": { "preset": "momentum", "lookback": 6, "thresholdBps": 10 }, "lanes": "both" } },
+    { "why": "SPCX has no RedStone feed", "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 5000 }, { "symbol": "SPCX", "weightBps": 5000 }], "rule": { "preset": "momentum", "lookback": 6, "thresholdBps": 10 }, "lanes": "regular" } },
+    { "why": "weights sum to 99.99%", "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 5000 }, { "symbol": "NVDA", "weightBps": 4999 }], "rule": { "preset": "momentum", "lookback": 6, "thresholdBps": 10 }, "lanes": "regular" } },
+    { "why": "a member under 5%", "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 9600 }, { "symbol": "NVDA", "weightBps": 400 }], "rule": { "preset": "momentum", "lookback": 6, "thresholdBps": 10 }, "lanes": "regular" } },
+    { "why": "one stock is not a basket", "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 10000 }], "rule": { "preset": "momentum", "lookback": 6, "thresholdBps": 10 }, "lanes": "regular" } },
+    { "why": "the same stock twice", "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 5000 }, { "symbol": "TSLA", "weightBps": 5000 }], "rule": { "preset": "momentum", "lookback": 6, "thresholdBps": 10 }, "lanes": "regular" } },
+    { "why": "an agent on a 4h cadence no stock lane runs", "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 5000 }, { "symbol": "NVDA", "weightBps": 5000 }], "rule": { "preset": "agent", "persona": "Reads.", "posture": "guarded", "cadences": [14400] }, "lanes": "regular" } },
+    { "why": "a mirror is no basket rule", "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 5000 }, { "symbol": "NVDA", "weightBps": 5000 }], "rule": { "preset": "mirror", "trader": "0x00000000000000000000000000000000000000a1", "withinSec": 120 }, "lanes": "regular" } },
+    { "why": "an unknown lane", "spec": { "preset": "basket", "members": [{ "symbol": "TSLA", "weightBps": 5000 }, { "symbol": "NVDA", "weightBps": 5000 }], "rule": { "preset": "momentum", "lookback": 6, "thresholdBps": 10 }, "lanes": "gap" } }
+  ],
+  "stakes": [
+    { "capBase": "5000000", "weightBps": 6000, "stakeBase": "3000000" },
+    { "capBase": "5000000", "weightBps": 3333, "stakeBase": "1666500" },
+    { "capBase": "2000000", "weightBps": 2000, "stakeBase": "400000" },
+    { "capBase": "1", "weightBps": 4000, "stakeBase": "0" },
+    { "capBase": "0", "weightBps": 6000, "stakeBase": "0" }
+  ],
+  "trades": [
+    { "theme": 0, "series": { "symbol": "TSLA", "lane": "regular", "cadenceSec": 300 }, "trades": true },
+    { "theme": 0, "series": { "symbol": "TSLA", "lane": "stock24", "cadenceSec": 300 }, "trades": false },
+    { "theme": 0, "series": { "symbol": "TSLA", "lane": "gap", "cadenceSec": 604800 }, "trades": false },
+    { "theme": 0, "series": { "symbol": "NVDA", "lane": "regular", "cadenceSec": 300 }, "trades": false },
+    { "theme": 2, "series": { "symbol": "NVDA", "lane": "stock24", "cadenceSec": 3600 }, "trades": true },
+    { "theme": 2, "series": { "symbol": "NVDA", "lane": "regular", "cadenceSec": 3600 }, "trades": true },
+    { "theme": 2, "series": { "symbol": "NVDA", "lane": "stock24", "cadenceSec": 300 }, "trades": false },
+    { "theme": 2, "series": { "symbol": "BTC", "lane": "crypto24", "cadenceSec": 3600 }, "trades": false }
+  ]
+}

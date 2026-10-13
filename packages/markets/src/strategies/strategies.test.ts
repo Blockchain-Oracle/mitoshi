@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { decodeFunctionData, erc20Abi, keccak256, maxUint256, toBytes, type Address } from "viem";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { strategyRegistryAbi } from "@cwf/clients/abis/StrategyRegistry";
-import { OPEN_POSTURE, type StrategyIntent, type StrategyMetadata, type TxIntent } from "@cwf/core";
+import { OPEN_POSTURE, type BasketSpec, type StrategyIntent, type StrategyMetadata, type TxIntent } from "@cwf/core";
+import basketVectors from "@cwf/core/strategies/basket.vectors.json";
 import { TEMPO } from "@cwf/clients";
 import { evaluate } from "../relay/engine";
 import { POLICIES } from "../relay/policies";
@@ -51,6 +52,16 @@ describe("strategy encoders (S9.3)", () => {
     expect(JSON.parse(Buffer.from(metadata.slice(2), "hex").toString("utf8")).spec).toEqual(SPEC);
     expect(envelope.market).toBe(`0x${"7c".repeat(32)}`);
     expect([fee, agentId]).toEqual([1_000_000n, 6n]);
+  });
+
+  it.each(basketVectors.themes)("publishes theme $name with the vectors' spec hash, any Window, and agent #82 (D-231)", (t) => {
+    const spec = t.spec as BasketSpec;
+    const v = encode({ kind: "strategy-publish", runner: RUNNER, spec, metadata: { name: t.name, description: "", spec }, envelope: { ...CAPS, series: null }, feeBase: 0n, agentId: 82n });
+    const [, specHash, metadata, envelope, , agentId] = decodeAt(v.calls)[0]!.args as [Address, string, `0x${string}`, { market: string }, bigint, bigint];
+    expect(specHash).toBe(t.specHash);
+    expect(JSON.parse(Buffer.from(metadata.slice(2), "hex").toString("utf8")).spec).toEqual(spec);
+    expect(envelope.market).toBe(`0x${"00".repeat(32)}`);
+    expect(agentId).toBe(82n);
   });
 
   it("refuses metadata over the registry's 8 KB before anything is signed", () => {

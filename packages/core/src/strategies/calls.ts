@@ -20,6 +20,8 @@ const pct = (bps: number) => `${(Math.abs(bps) / 100).toFixed(2).replace(/\.?0+$
  */
 export function ruleCallWhy(spec: StrategySpec, asset: string | null, side: Side, moveBps: number | null): string {
   const name = asset ?? "The price";
+  // A theme (D-231) calls each member's Window with its own rule's words.
+  if (spec.preset === "basket") return ruleCallWhy(spec.rule, asset, side, moveBps);
   if (spec.preset === "mirror") return `${shortTrader(spec.trader)} is net ${side.toUpperCase()} on this Window; it takes the same side.`;
   if (spec.preset === "agent") return `It called ${side.toUpperCase()}.`;
   const rose = spec.preset === "momentum" ? side === "up" : side === "down";
@@ -29,6 +31,7 @@ export function ruleCallWhy(spec: StrategySpec, asset: string | null, side: Side
 
 /** The ruling recorded beside a rule's call. */
 export function ruleCallReason(spec: StrategySpec, decision: Pick<Decision, "side" | "moveBps" | "thresholdBps">): string {
+  if (spec.preset === "basket") return ruleCallReason(spec.rule, decision);
   if (spec.preset === "mirror") return "the trader took a side";
   return `${pct(decision.moveBps)} move, past its ${pct(decision.thresholdBps)} trigger`;
 }

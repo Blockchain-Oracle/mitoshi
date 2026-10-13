@@ -2,11 +2,13 @@
 // + Agari 03b30ab:packages/core/src/strategies/types.ts (`MirrorSpec`, `sideForSubscriber`); S9 (D-218, D-219): the
 // record carries the ERC-8004 agent id, the metadata hash and the envelope's series scope; a subscription is `follow`
 // or `fade`; the intents gain the one-batch copy and stop.
+import type { StockSymbol } from "../market/tickers";
 import type { MarketId, OutcomeIdx, SeriesId, Side } from "../types/market";
 import type { Address, Hex } from "../types/primitives";
 import type { VaultCaps } from "../vault/types";
 
-/** A creator's strategy expressed as DATA the fixed runner evaluates — never code (reference `StrategySpec`). */
+/** A creator's strategy expressed as DATA the fixed runner evaluates — never code (reference `StrategySpec`). The
+ *  strategy studio's four; a theme's `basket` is published from the themes studio (D-231). */
 export type PresetKey = "momentum" | "reversion" | "agent" | "mirror";
 
 /** How hard the gate leans on an agent's call: the confidence floor, the price cap, the breaker. */
@@ -48,7 +50,31 @@ export interface MirrorSpec {
   withinSec: number;
 }
 
-export type StrategySpec = OracleFollowSpec | AgentSpec | MirrorSpec;
+/** Which Windows of each member a basket trades: market hours, RedStone's 24/7 feed, or both (D-231). */
+export type BasketLanes = "regular" | "stock24" | "both";
+
+/** How a basket calls each member's Window: a rule on the opening print, or an agent's read. */
+export type BasketRule = OracleFollowSpec | AgentSpec;
+
+/** One stock in a basket and its share of every call, in basis points (the members sum to 10,000). */
+export interface BasketMember {
+  symbol: StockSymbol;
+  weightBps: number;
+}
+
+/**
+ * A theme (D-231): a weighted stock basket the runner trades as UP/DOWN calls on each member's own Windows — the lanes
+ * it names, the rule it names — each call sized by that member's weight. Data, so the registry is unchanged; no share
+ * or token changes hands.
+ */
+export interface BasketSpec {
+  preset: "basket";
+  members: BasketMember[];
+  rule: BasketRule;
+  lanes: BasketLanes;
+}
+
+export type StrategySpec = OracleFollowSpec | AgentSpec | MirrorSpec | BasketSpec;
 
 /** A subscriber's consent: the runner's side (`follow`) or the other side (`fade`, A-1c) — the registry's `Mode`. */
 export type SubscriptionMode = "follow" | "fade";
