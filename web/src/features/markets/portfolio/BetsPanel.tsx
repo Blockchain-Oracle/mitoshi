@@ -51,7 +51,8 @@ function OpenList({ open, wallet }: { open: OpenBets; wallet: Address }) {
 function HistoryList({ history }: { history: WalletHistory }) {
   const usd = (b: bigint, d: number) => `$${formatBaseUnits(b < 0n ? -b : b, d, { minDp: 2, maxDp: 2 })}`;
   const entries: JournalEntry[] = history.rounds.map((r) => ({
-    id: `${r.source}:${r.marketId}`,
+    // Two Boosts (or both Trading Balances) on one Window are two rounds: the open time keeps their keys apart.
+    id: `${r.source}:${r.marketId}:${r.openedAtMs}`,
     atMs: r.settledAtMs ?? r.expirySec * 1000,
     asset: `${r.asset} · ${formatCadence(r.intervalSec)}`,
     side: r.sidesTraded.map((o) => SIDE_WORD[OUTCOME_TO_SIDE[o]]).join(" + "),
