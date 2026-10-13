@@ -37,5 +37,3 @@ export function localSeed(): string {
   return seedFromBytes(bytes);
 }
 
-/** The seed the idle screen draws with, fixed so the still frame is the same one every visit. */
-export const IDLE_SEED = "1d1e5eed";

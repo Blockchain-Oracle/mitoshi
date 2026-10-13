@@ -6,6 +6,7 @@
  */
 export * from "./field";
 export * from "./flap";
+export * from "./hop";
 export * from "./replay";
 export * from "./ride";
 export * from "./rng";

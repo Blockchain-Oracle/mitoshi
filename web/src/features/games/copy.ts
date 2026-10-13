@@ -73,7 +73,7 @@ export const GAMES = {
     range: ["Pick a Window and a band.", "Closes inside: the house pays the multiple.", "Payout set aside; claim when it lands."],
     moonshot: ["Pick a side and a reach.", "Further pays more.", "Range's model, one edge open."],
     "line-rider": ["Sled the real chart: rises climb, drops fall, gaps open.", "Hold to press, let go to hop; lean ← → to flip.", "Seeded run, replayed by the server before it scores · no stake."],
-    "candle-hop": ["Tap to lift through the candle gaps.", "One clipped candle ends it.", "Seeded run, replayed by the server before it scores · no stake."],
+    "candle-hop": ["Fly the real candles: each pair is a print, up or down.", "Tap to lift; a body, a wick or the floor ends it.", "Seeded run, replayed by the server before it scores · no stake."],
   } as Record<string, readonly string[]>,
 
   settings: {

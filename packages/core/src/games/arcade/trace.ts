@@ -2,6 +2,7 @@
 import { FIELD_W, MAX_RUN_TICKS, msToTicks, STEP_HZ, TARGET_Q_MAX, type ArcadeGame } from "./field";
 import { FLAP, FLAP_MAX_SPEED } from "./flap";
 import { RIDE } from "./ride";
+import { HOP, HOP_MAX_SPEED } from "./hop";
 import { SLED } from "./sled-world";
 
 /**
@@ -95,8 +96,21 @@ export function sledScoreCeiling(sec: number): number {
   return Math.ceil(perSec * (sec + (comboGrowth * sec * sec) / 0.5)) + 1;
 }
 
-/** `sled`: Line Rider's v3 engine (the sled) bounds its score by `sledScoreCeiling` rather than the pip's ceiling. */
-export function envelopeCheck(game: ArcadeGame, durationMs: number, trace: unknown, score: number, sled = false): EnvelopeVerdict {
+/** Field px from Candle Hop v3's first candle's spawn until its body has passed the coin (Senryo `FIELD_RUNWAY`). */
+const HOP_RUNWAY = FIELD_W + FIELD_W * HOP.leadFrac - (HOP.coinX - HOP.hitR - HOP.bodyW / 2);
+
+/** The most a v3 hop can score in `sec` seconds: nothing on the runway, then one candle per spacing at the top speed. */
+export function hopScoreCeiling(sec: number): number {
+  const flying = sec - HOP_RUNWAY / HOP_MAX_SPEED;
+  if (flying <= 0) return 0;
+  return Math.ceil((flying * HOP_MAX_SPEED) / HOP.spacing1) + 1;
+}
+
+/**
+ * `v3`: the engines on Mitoshi's v3 boards — Line Rider's sled (`sledScoreCeiling`) and Candle Hop's canyon
+ * (`hopScoreCeiling`) — rather than the v1 pip and flyer the recorded fixtures were made on.
+ */
+export function envelopeCheck(game: ArcadeGame, durationMs: number, trace: unknown, score: number, v3 = false): EnvelopeVerdict {
   const shape = validateTrace(game, trace);
   if (shape) return { ok: false, why: shape };
   if (!Number.isInteger(durationMs) || durationMs <= 0) return { ok: false, why: "a run has a positive length" };
@@ -105,7 +119,7 @@ export function envelopeCheck(game: ArcadeGame, durationMs: number, trace: unkno
   if (ticks > MAX_RUN_TICKS) return { ok: false, why: "the run is longer than the replay budget" };
   if (lastTickOf(trace as ArcadeTrace, game) >= ticks) return { ok: false, why: "the trace has inputs after the run ended" };
   const sec = ticks / STEP_HZ;
-  const ceiling = game === "line-rider" ? (sled ? sledScoreCeiling(sec) : rideScoreCeiling(sec)) : flapScoreCeiling(sec);
+  const ceiling = game === "line-rider" ? (v3 ? sledScoreCeiling(sec) : rideScoreCeiling(sec)) : v3 ? hopScoreCeiling(sec) : flapScoreCeiling(sec);
   if (score > ceiling) return { ok: false, why: "no run of that length can score that" };
   return { ok: true, ticks };
 }

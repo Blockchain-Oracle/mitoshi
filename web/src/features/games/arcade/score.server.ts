@@ -2,7 +2,7 @@ import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 import {
   envelopeCheck,
-  FLAP_ENGINE_VERSION,
+  HOP_ENGINE_VERSION,
   isArcadeSeed,
   MAX_RUN_TICKS,
   replayArcade,
@@ -29,8 +29,8 @@ import type { BoardWire, ScoreAcceptedWire } from "./wire";
  * and accepts only a score it reproduced to the tick. It cannot prove a browser wasn't scripted, and doesn't claim
  * to: the label is "server-checked · not on-chain".
  */
-/** Line Rider is the sled (v3, R4-9); Candle Hop the flyer on its tape (v2). */
-export const ENGINE_VERSION: Readonly<Record<ArcadeGame, number>> = { "line-rider": SLED_ENGINE_VERSION, "candle-hop": FLAP_ENGINE_VERSION };
+/** v3 (R4-9, ported from Senryo): Line Rider is the sled, Candle Hop the candle canyon — both on the issued tape. */
+export const ENGINE_VERSION: Readonly<Record<ArcadeGame, number>> = { "line-rider": SLED_ENGINE_VERSION, "candle-hop": HOP_ENGINE_VERSION };
 
 /** The board a title shows and the rank an over plate names come from the same ten rows. */
 export const BOARD_LIMIT = 10;
@@ -104,7 +104,7 @@ export async function acceptScore(claim: ScoreClaim, wallet: string | null, ip: 
   const engineVersion = ENGINE_VERSION[claim.game];
   if (claim.engineVersion !== engineVersion) return { ok: false, status: 409, error: "that run was played on another engine build" };
 
-  const envelope = envelopeCheck(claim.game, claim.durationMs, claim.trace, claim.score, claim.game === "line-rider");
+  const envelope = envelopeCheck(claim.game, claim.durationMs, claim.trace, claim.score, true);
   if (!envelope.ok) return { ok: false, status: 422, error: envelope.why };
 
   // Engine v2: the run is replayed on the tape issued with its seed; a seed never issued here is not rankable.

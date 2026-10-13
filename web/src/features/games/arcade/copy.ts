@@ -20,7 +20,7 @@ export const ARCADE = {
     },
     "candle-hop": {
       title: "Candle Hop",
-      line: "Hop the real chart's gaps",
+      line: "Fly the real candles",
       control: "Tap or Space to hop",
     },
   } satisfies Record<ArcadeGame, { title: string; line: string; control: string }>,

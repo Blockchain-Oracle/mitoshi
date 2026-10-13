@@ -12,7 +12,8 @@ import { startBgm, stopBgm } from "../audio";
 import { useGames } from "../GamesProvider";
 import { countSfx, hopCrashSfx, hopScoreSfx, milestoneSfx, regainSfx, rideCrashSfx, rideStartSfx } from "./arcade-sfx";
 import { ARCADE } from "./copy";
-import { FlapCanvas, type FlapCue, type FlapHud } from "./FlapCanvas";
+import { HopCanvas } from "./HopCanvas";
+import type { HopCue } from "./hop/hop-run";
 import { SledCanvas, type SledHud } from "./SledCanvas";
 import type { SledCue } from "./sled/sled-scene";
 import { localSeed, type ArcadeRun, type RunEnd } from "./run";
@@ -107,7 +108,7 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
   );
 
   const onSledHud = useCallback((h: SledHud) => setHud({ score: h.score, combo: h.combo, grip: h.charge }), []);
-  const onFlapHud = useCallback((h: FlapHud) => setHud({ score: h.score, combo: 1, grip: 1 }), []);
+  const onHopHud = useCallback((score: number) => setHud({ score, combo: 1, grip: 0 }), []);
   // The sled's moments in Mitoshi's synthesized cues (Senryo's feel table, mapped).
   const onSledCue = useCallback(
     (cue: SledCue) => {
@@ -125,8 +126,8 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
     },
     [feedback],
   );
-  const onFlapCue = useCallback(
-    (cue: FlapCue) => {
+  const onHopCue = useCallback(
+    (cue: HopCue) => {
       if (cue === "flap") feedback("tap");
       else if (cue === "score") hopScoreSfx(streak.current++);
       else {
@@ -172,11 +173,12 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
 
   return createPortal(
     <div className="as-layer gm-stage-layer" data-phase={phase} data-reduced-motion={reducedMotion ? "true" : "false"}>
-      <div className={`ar-screen as-screen${game === "line-rider" ? " as-screen--full" : ""}`} data-phase={phase === "playing" ? "playing" : "title"}>
+      {/* Both v3 engines own the whole box: the sled its camera, the canyon its letterbox. */}
+      <div className="ar-screen as-screen as-screen--full" data-phase={phase === "playing" ? "playing" : "title"}>
         {game === "line-rider" ? (
           <SledCanvas run={run} paused={paused} reduced={reducedMotion} onHud={onSledHud} onEnd={onEnd} onCue={onSledCue} />
         ) : (
-          <FlapCanvas run={run} paused={paused} reduced={reducedMotion} onHud={onFlapHud} onEnd={onEnd} onCue={onFlapCue} />
+          <HopCanvas run={run} paused={paused} reduced={reducedMotion} onHud={onHopHud} onEnd={onEnd} onCue={onHopCue} />
         )}
       </div>
       <div className="as-hud">
