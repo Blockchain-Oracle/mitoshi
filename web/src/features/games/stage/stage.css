@@ -133,6 +133,24 @@
 .st-eyebrow { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.22em; text-transform: uppercase; color: color-mix(in srgb, var(--signal-ink) 80%, transparent); }
 .st-question { font-family: var(--font-display); font-weight: 800; font-size: 26px; line-height: 1.05; letter-spacing: -0.02em; color: var(--white); font-stretch: 100%; }
 .st-question-pending { color: var(--gray-500); }
+/* Practice's watch (R6 games §4.2.2): one full, still ring at the quote box's right edge, centred on the question. */
+.st-band--quote:has(.st-watch-ring) { padding-right: 64px; }
+.st-watch-ring { position: absolute; right: 12px; top: 50%; translate: 0 -50%; width: 44px; height: 44px; color: var(--color-accent); }
+.st-watch-ring .kit-ring-left { font: 600 var(--text-data-sm, 12px) / 1 var(--font-data); color: var(--white); }
+
+/* The deal's skeleton (§4.2.5): the strip, the card and the calls at the dealt deck's sizes. */
+.dsk { display: flex; flex-direction: column; gap: 12px; }
+.dsk-strip { display: grid; grid-template-columns: 1.7fr repeat(4, 1fr); gap: 6px; }
+.dsk-tile { height: 64px; border-radius: 12px; }
+.dsk-card { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 16px; background: var(--color-surface-1); border: 1px solid var(--color-hairline); }
+.dsk-title { height: 28px; border-radius: 8px; }
+.dsk-line { height: 48px; border-radius: 8px; }
+.dsk-quote { height: 88px; border-radius: 10px; }
+.dsk-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dsk-pill { height: 56px; border-radius: 10px; }
+.dsk-calls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dsk-call { height: 56px; border-radius: 9999px; }
+@media (min-width: 768px) { .dsk-tile { height: 72px; } }
 .st-clock {
   display: flex; align-items: center; gap: 6px; margin-top: 2px;
   font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;

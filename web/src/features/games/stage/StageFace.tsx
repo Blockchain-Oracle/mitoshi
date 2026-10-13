@@ -4,6 +4,7 @@ import type { DeckCard } from "@cwf/core/games";
 import { formatClock } from "@cwf/core/units";
 import { Clock } from "lucide-react";
 import type { ReactNode } from "react";
+import { CountdownRing as RingFace } from "@/components/data/CountdownRing";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { BearMark, BullMark, CoinMark } from "../art/PixelArt";
 import { STAGE } from "./copy";
@@ -39,6 +40,12 @@ export interface StageFaceProps {
   line?: ReactNode;
   /** First-run coach stamps on the card's two edges ("↑ higher in 30 s", "↓ lower"). */
   coach?: { up: string; down: string } | null;
+  /**
+   * What the quote box counts (R6 games §4.2.2): `window` — the Window's own close (Duel: its cards settle on it);
+   * `watch` — Practice's question, "in 30 s?", as one full ring that starts with the swipe; no Window clock and no
+   * cadence chip on that card (Practice scores on the feed, not the Window).
+   */
+  clock?: { kind: "window" } | { kind: "watch"; sec: number };
 }
 
 /**
@@ -48,7 +55,7 @@ export interface StageFaceProps {
  * side's odds on each. The countdown is always the Window's real expiry, whatever the mode scores on: a
  * card is a claim on a specific live Window and a player has to be able to see how much of it is left.
  */
-export function StageFace({ card, place, eyebrow, question, pills, nowMs, line, coach }: StageFaceProps) {
+export function StageFace({ card, place, eyebrow, question, pills, nowMs, line, coach, clock = { kind: "window" } }: StageFaceProps) {
   const remainingSec = card.expirySec - Math.floor((nowMs ?? Date.now()) / 1_000);
   const urgency = clockUrgency(remainingSec);
   return (
@@ -58,7 +65,7 @@ export function StageFace({ card, place, eyebrow, question, pills, nowMs, line, 
           <AssetDisc asset={card.asset} className="st-asset-disc" />
           {STAGE.pair(card.asset)}
         </span>
-        <span className="st-cadence">{cadenceLabel(card.intervalSec)}</span>
+        {clock.kind === "window" ? <span className="st-cadence">{cadenceLabel(card.intervalSec)}</span> : null}
         <span className="st-title-place">
           {place.position}/{place.total}
         </span>
@@ -89,10 +96,19 @@ export function StageFace({ card, place, eyebrow, question, pills, nowMs, line, 
         <span className="st-quote-inset" aria-hidden />
         <p className="st-eyebrow">{eyebrow}</p>
         <p className="st-question">{question}</p>
-        <p className="st-clock" role="timer" data-urgency={urgency.level} data-pulse={urgency.pulse || undefined}>
-          <Clock aria-hidden />
-          {nowMs === 0 ? STAGE.clockPending : remainingSec <= 0 ? STAGE.settling : STAGE.settlesIn(formatClock(remainingSec))}
-        </p>
+        {clock.kind === "watch" ? (
+          // Full and still until the swipe; the card's tile in the deck strip runs it from there.
+          <span className="st-watch-ring" aria-hidden>
+            <RingFace fraction={1} className="size-full">
+              <span className="kit-ring-left">{`${clock.sec}s`}</span>
+            </RingFace>
+          </span>
+        ) : (
+          <p className="st-clock" role="timer" data-urgency={urgency.level} data-pulse={urgency.pulse || undefined}>
+            <Clock aria-hidden />
+            {nowMs === 0 ? STAGE.clockPending : remainingSec <= 0 ? STAGE.settling : STAGE.settlesIn(formatClock(remainingSec))}
+          </p>
+        )}
       </div>
 
       <div className="st-pills">

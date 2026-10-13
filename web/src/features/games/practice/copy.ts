@@ -20,17 +20,32 @@ export const PRACTICE = {
 
   versus: { you: "You", coin: "Coin" },
 
+  /** The deck strip (R6 games §4.2.3) and its tiles' accessible names. */
+  strip: {
+    label: "Your deck",
+    now: "Now",
+    noPrice: "No price",
+    tile: {
+      upcoming: (t: string, n: number, of: number) => `${t}, card ${n} of ${of}`,
+      active: (t: string, n: number, of: number) => `${t}, card ${n} of ${of}, now`,
+      racing: (t: string, you: "up" | "down", coin: "up" | "down", left: number | null) => `${t}, you ${you}, coin ${coin}${left === null ? "" : `, ${left} seconds left`}`,
+      scored: (t: string, r: "won" | "lost" | "flat") => `${t}, ${r}`,
+      unscored: (t: string) => `${t}, no price`,
+    },
+  },
+
+  /** The deal's states (§4.2.5): a named wait over the deck's own skeleton, then the honest late state. */
+  wait: {
+    dealing: "Dealing",
+    late: "Windows didn't load",
+    price: "Waiting for the price",
+    priceLate: "Price feed is late",
+    lineRider: "Play Line Rider",
+  },
+
   deal: {
-    dealing: "Dealing from the live Windows…",
-    none: {
-      title: "No Window yet",
-      body: "No Window long enough yet. Next one soon.",
-      closedBody: "US stocks closed. No 24/7 Window has 2 min left — next roll soon.",
-    },
-    offline: {
-      title: "Venue unreadable",
-      body: "Live Windows and prices are reads; nothing was signed.",
-    },
+    none: { title: "No Window long enough", body: "Next one soon", closedTitle: "US stocks closed", closedBody: "No 24/7 Window has 2 min left" },
+    offline: { title: "Windows didn't load", body: "Nothing was signed." },
   },
 
   watch: {

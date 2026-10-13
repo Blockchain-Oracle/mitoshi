@@ -62,6 +62,8 @@ export interface SwipeDeckProps {
   /** The active card's per-side odds. Null (or a null pct) draws the calls without a figure. */
   odds?: DeckOdds | null;
   renderFace: (card: DeckCard, place: DeckPlace) => ReactNode;
+  /** `none` when the mode draws its own deck strip (Practice, R6 games §4.2.3); the position is still announced. */
+  strip?: "pips" | "none";
   /** Rendered under the calls in place of the default hint — the mode's own sentence, when it has one. */
   hint?: ReactNode;
 }
@@ -106,7 +108,7 @@ function cadenceLabel(intervalSec: number): string {
 
 const NO_ODDS: SideOdds = { pct: null, locked: false };
 
-export function SwipeDeck({ cards, active, playedSide, onPick, busy = false, refusal = null, odds = null, renderFace, hint }: SwipeDeckProps) {
+export function SwipeDeck({ cards, active, playedSide, onPick, busy = false, refusal = null, odds = null, renderFace, hint, strip = "pips" }: SwipeDeckProps) {
   const { reducedMotion, feedback } = useGames();
   const [thrown, setThrown] = useState<Pick | null>(null);
   const [lockedHint, setLockedHint] = useState<Pick | null>(null);
@@ -218,16 +220,20 @@ export function SwipeDeck({ cards, active, playedSide, onPick, busy = false, ref
 
   return (
     <div className="st-stage">
-      <div className="st-progress">
-        <div className="st-pips" aria-hidden>
-          {cards.map((card) => {
-            const side = playedSide(card.index);
-            const state = side ? `st-pip--${side}` : card.index === active?.index ? "st-pip--active" : "";
-            return <span key={card.index} className={`st-pip ${state}`} />;
-          })}
+      {strip === "pips" ? (
+        <div className="st-progress">
+          <div className="st-pips" aria-hidden>
+            {cards.map((card) => {
+              const side = playedSide(card.index);
+              const state = side ? `st-pip--${side}` : card.index === active?.index ? "st-pip--active" : "";
+              return <span key={card.index} className={`st-pip ${state}`} />;
+            })}
+          </div>
+          <span className="st-progress-label">{STAGE.cardOf(place.position, place.total)}</span>
         </div>
-        <span className="st-progress-label">{STAGE.cardOf(place.position, place.total)}</span>
-      </div>
+      ) : (
+        <p className="sr-only">{STAGE.cardOf(place.position, place.total)}</p>
+      )}
 
       <div className="st-deck" ref={deckRef}>
         {behind.map((card, depth) =>
