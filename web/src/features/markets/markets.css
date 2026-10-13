@@ -39,7 +39,8 @@
  * foot, so the action is in view at 1024 × 768. */
 @media (width >= 64rem) {
   .mh-rail { position: sticky; top: var(--stage-sticky-top); }
-  .mh-rail .tk-ticket--rail { max-height: calc(100dvh - 2 * var(--stage-sticky-top) - 24px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+  /* The frame's first-load top is the top line, the stage's inset and its padding; the fold is counted from there. */
+  .mh-rail .tk-ticket--rail { max-height: calc(100dvh - var(--spacing-topline) - var(--spacing-rail-inset) - var(--spacing-stage-pad) - 16px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
   .mh-rail .tk-cta-dock { position: sticky; bottom: -20px; margin-bottom: -20px; padding-bottom: 20px; padding-top: 8px; background: var(--ticket-surface); }
 }
 /* The side segments carry their live cents (Owarine `SideSegments` + Mitoshi's book price, R4-3). */
