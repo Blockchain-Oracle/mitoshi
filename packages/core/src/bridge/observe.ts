@@ -12,7 +12,11 @@ import { routeOf } from "./route";
 import type { BridgeLeg, LegStatus } from "./index";
 import type { DeferReason } from "./types";
 
-export type BridgeRowStatus = "pending" | "in-flight" | "stuck" | "deferred" | "delivered" | "failed" | "reverted";
+/**
+ * A transfer's record status. `deferred` stays followed until the holder's credit is empty again (`released`: claimed
+ * or sent back); `returned` is a hop that sent the tokens back to the source chain; the other end states stop there.
+ */
+export type BridgeRowStatus = "pending" | "in-flight" | "stuck" | "deferred" | "released" | "delivered" | "returned" | "failed" | "reverted";
 
 /** One leg as last seen; times are block seconds. */
 export interface LegRecord {
@@ -44,11 +48,16 @@ export interface LegObservation {
 }
 
 export interface TransferObservation {
-  /** The source transaction's receipt; null while the chain has none. */
-  src: "success" | "reverted" | null;
+  /**
+   * The source transaction's receipt; null while the chain has none. `unrelated`: it landed but is not this bridge's
+   * send (no `OFTSent` from the route's source contract, or another sender or amount than the one recorded).
+   */
+  src: "success" | "reverted" | "unrelated" | null;
   legs: LegObservation[];
   /** The hop sent the tokens back to the sender instead of on (an invalid compose instruction). */
   bounced: boolean;
+  /** After a deferral: the credit the holder still has held now (0 once claimed or sent back); null when unread. */
+  heldNow?: bigint | null;
 }
 
 export interface TransferView {
@@ -80,11 +89,15 @@ function record(prev: LegRecord | undefined, obs: LegObservation | undefined, co
 /** How long a recorded hash may go unseen (no receipt, no LayerZero message) before it is dropped. */
 export const NEVER_SEEN_MS = 30 * 60_000;
 
-const STATUS_OF: Record<TrackerPhase, BridgeRowStatus> = { wallet: "pending", sent: "in-flight", hop: "in-flight", slow: "in-flight", fuel: "stuck", deferred: "deferred", delivered: "delivered", nothing: "reverted" };
+const STATUS_OF: Record<TrackerPhase, BridgeRowStatus> = {
+  wallet: "pending", sent: "in-flight", hop: "in-flight", slow: "in-flight", fuel: "stuck", deferred: "deferred", released: "released",
+  delivered: "delivered", nothing: "reverted", returned: "returned", failed: "failed",
+};
 
 export function advanceTransfer(row: TransferView, obs: TransferObservation, eta: BridgeEta | null, nowMs: number): BridgeAdvance {
   const route = routeOf(row.direction, row.network);
   if (obs.src === "reverted") return { status: "reverted", phase: "nothing", legs: [], lastError: "the source transaction reverted; nothing moved" };
+  if (obs.src === "unrelated") return { status: "failed", phase: "nothing", legs: [], lastError: "not this bridge's send: no matching OFTSent in the source transaction" };
   // A hash no chain ever confirmed (a dropped or invented transaction) stops being followed after a while.
   if (obs.src === null && !obs.legs[0]?.msg && nowMs - row.createdAtMs > NEVER_SEEN_MS) return { status: "failed", phase: "nothing", legs: [], lastError: "the source transaction never appeared on chain" };
   const legs: LegRecord[] = [];
@@ -95,9 +108,11 @@ export function advanceTransfer(row: TransferView, obs: TransferObservation, eta
     legs.push(record(row.legs[i], obs.legs[i], plan.compose, i === 0 ? row.srcTx : null));
   }
   const core: BridgeLeg[] = legs.map((l) => ({ guid: l.guid as `0x${string}` | null, status: l.status, stuck: l.stuck }));
-  if (obs.bounced) return { status: "failed", phase: "slow", legs, lastError: "the hop sent it back to the sender on the source chain" };
-  if (core.some((l) => l.status === "failed")) return { status: "failed", phase: "slow", legs, lastError: "LayerZero refused the message" };
+  if (obs.bounced) return { status: "returned", phase: "returned", legs, lastError: "the hop sent it back to the sender on the source chain" };
+  if (core.some((l) => l.status === "failed")) return { status: "failed", phase: "failed", legs, lastError: "LayerZero refused the message" };
   const phase = trackerPhase({ route, legs: core, srcTx: row.srcTx as `0x${string}`, srcReverted: false, startedAtMs: row.createdAtMs, nowMs, eta });
+  // A held credit the holder has since claimed or sent back: nothing is held any more.
+  if (phase === "deferred" && obs.heldNow === 0n) return { status: "released", phase: "released", legs, lastError: null };
   const stuck = core.some((l) => l.status === "stuck");
   const status: BridgeRowStatus = stuck && phase !== "deferred" ? "stuck" : STATUS_OF[phase];
   if (phase !== "delivered") return { status, phase, legs, lastError: null };

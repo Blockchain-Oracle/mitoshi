@@ -4,7 +4,8 @@
 -- bridge_messages: one row per transfer, written by `/api/bridge` the moment the source wallet returns its hash (before
 -- the receipt) and advanced by ops `bridge-watch` from LayerZero Scan and the chains. `legs` is the route's legs in
 -- order (`{guid, status, stuck, srcTx, srcAtSec, verifiedAtSec, dstTx, dstAtSec}`); `guid1`/`guid2` index them for
--- lookup. `duration_sec` (source block → final delivery) feeds the medians the route line shows.
+-- lookup. `duration_sec` (source block → final delivery) feeds the medians the route line shows. A `deferred` row stays
+-- followed until the holder's credit is empty again (`released`); `returned` is a hop that sent the tokens back.
 create table if not exists bridge_messages (
   id               bigserial primary key,
   network          text      not null check (network in ('testnet', 'mainnet')),
@@ -15,7 +16,7 @@ create table if not exists bridge_messages (
   sender           text      not null,
   recipient        text      not null,
   amount_sd        numeric   not null,
-  status           text      not null default 'pending' check (status in ('pending', 'in-flight', 'stuck', 'deferred', 'delivered', 'failed', 'reverted')),
+  status           text      not null default 'pending' check (status in ('pending', 'in-flight', 'stuck', 'deferred', 'released', 'delivered', 'returned', 'failed', 'reverted')),
   phase            text      not null default 'sent',
   legs             jsonb     not null default '[]'::jsonb,
   guid1            text,
@@ -28,7 +29,7 @@ create table if not exists bridge_messages (
   duration_sec     integer,
   unique (src_chain_id, src_tx)
 );
-create index if not exists bridge_messages_open_idx on bridge_messages (updated_at_ms) where status in ('pending', 'in-flight', 'stuck');
+create index if not exists bridge_messages_open_idx on bridge_messages (updated_at_ms) where status in ('pending', 'in-flight', 'stuck', 'deferred');
 create index if not exists bridge_messages_sender_idx on bridge_messages (sender, created_at_ms desc);
 create index if not exists bridge_messages_recipient_idx on bridge_messages (recipient, created_at_ms desc);
 create index if not exists bridge_messages_guid1_idx on bridge_messages (guid1);

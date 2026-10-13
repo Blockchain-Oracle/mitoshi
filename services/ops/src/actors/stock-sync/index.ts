@@ -26,9 +26,11 @@ export function startStockSync(deps: VenueDeps): { stop: () => void } {
     if (!bridgeTopology(network).sender) return { why: "idle: StockSyncSender is not deployed on Robinhood Chain yet (owner-actions S14c test ETH)" };
     let delivered = 0;
     for (const open of store ? await store.open(network) : []) {
-      const [m] = await scanByTx(network, open.srcTx);
-      if (m?.status === "DELIVERED") {
-        await store!.mark(open.id, "delivered", null, Date.now(), (m.dstAtSec ?? Math.floor(Date.now() / 1000)) * 1000);
+      // Two legs: Robinhood → the Base forwarder, whose receive sends it on to Tempo. Delivered once the onward one is.
+      const [first] = await scanByTx(network, open.srcTx);
+      const [onward] = first?.status === "DELIVERED" && first.dstTx ? await scanByTx(network, first.dstTx) : [];
+      if (onward?.status === "DELIVERED") {
+        await store!.mark(open.id, "delivered", null, Date.now(), (onward.dstAtSec ?? Math.floor(Date.now() / 1000)) * 1000);
         delivered += 1;
       }
     }

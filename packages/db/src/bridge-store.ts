@@ -48,7 +48,7 @@ export interface BridgeStore {
   find(key: string): Promise<BridgeMessageRow | null>;
   /** Transfers an address sent or receives, newest first. */
   listFor(address: string, limit?: number): Promise<BridgeMessageRow[]>;
-  /** Rows bridge-watch still follows (pending, in flight, stuck), oldest update first. */
+  /** Rows bridge-watch still follows (pending, in flight, stuck, held until released), oldest update first. */
   open(limit?: number): Promise<BridgeMessageRow[]>;
   advance(id: number, next: BridgeAdvance, nowMs: number): Promise<void>;
   /** A pass that could not read the row (kept for the next one). */
@@ -71,7 +71,7 @@ const toRow = (r: Row): BridgeMessageRow => ({
   createdAtMs: Number(r.created_at_ms), updatedAtMs: Number(r.updated_at_ms), deliveredAtMs: r.delivered_at_ms === null ? null : Number(r.delivered_at_ms), durationSec: r.duration_sec,
 });
 
-const OPEN = ["pending", "in-flight", "stuck"] as const;
+const OPEN = ["pending", "in-flight", "stuck", "deferred"] as const;
 
 export function createPgBridgeStore(sql: Sql): BridgeStore {
   const json = (v: unknown) => sql.json(v as Parameters<typeof sql.json>[0]);

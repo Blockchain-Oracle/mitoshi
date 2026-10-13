@@ -31,6 +31,18 @@ describe("a transfer from LZ Scan and receipts (bridge-watch and the tracker, R4
     expect(advanceTransfer(row, { src: "reverted", legs: [], bounced: false }, null, 1)).toMatchObject({ status: "reverted", phase: "nothing", legs: [] });
     expect(advanceTransfer(row, { src: null, legs: [{ msg: null, deferral: null }], bounced: false }, null, 31 * 60_000)).toMatchObject({ status: "failed", phase: "nothing" });
     expect(advanceTransfer(row, { src: null, legs: [{ msg: null, deferral: null }], bounced: false }, null, 29 * 60_000).status).toBe("in-flight");
-    expect(advanceTransfer(row, { src: "success", legs: [{ msg: hopDone, deferral: null }], bounced: true }, null, 1).status).toBe("failed");
+    expect(advanceTransfer(row, { src: "success", legs: [{ msg: hopDone, deferral: null }], bounced: true }, null, 1)).toMatchObject({ status: "returned", phase: "returned" });
+    expect(advanceTransfer(row, { src: "success", legs: [{ msg: msg({ status: "APPLICATION_BURNED" }), deferral: null }], bounced: false }, null, 1)).toMatchObject({ status: "failed", phase: "failed" });
+  });
+
+  it("drops a hash that is not this bridge's send, and releases a held credit once the holder's is empty", () => {
+    expect(advanceTransfer(row, { src: "unrelated", legs: [], bounced: false }, null, 1)).toMatchObject({ status: "failed", phase: "nothing", legs: [] });
+    const onward = msg({ guid: "0x02", srcEid: 40245, dstEid: 40444, status: "DELIVERED", dstStatus: "SUCCEEDED", dstTx: "0xd2", dstAtSec: 200 });
+    const legs = [{ msg: hopDone, deferral: null }, { msg: onward, deferral: "receive-policy" as const }];
+    expect(advanceTransfer(row, { src: "success", legs, bounced: false, heldNow: 5_000_000n }, null, 1)).toMatchObject({ status: "deferred", phase: "deferred" });
+    expect(advanceTransfer(row, { src: "success", legs, bounced: false, heldNow: null }, null, 1)).toMatchObject({ status: "deferred", phase: "deferred" });
+    const released = advanceTransfer(row, { src: "success", legs, bounced: false, heldNow: 0n }, null, 1);
+    expect(released).toMatchObject({ status: "released", phase: "released" });
+    expect(released.legs[1]!.deferReason).toBe("receive-policy");
   });
 });

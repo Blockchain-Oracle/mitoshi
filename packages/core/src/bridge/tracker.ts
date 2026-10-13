@@ -15,9 +15,12 @@ import type { BridgeRoute } from "./route";
  * - `deferred`: the destination held the credit (claim it, or send it back)
  * - `fuel`: the hop's compose is stored because the Base float can't pay the next leg (ops tops up and retries)
  * - `slow`: past the measured p95, or a verified message the executor could not run yet
- * - `nothing`: the source transaction reverted; nothing moved
+ * - `nothing`: the source transaction reverted (or never landed, or was not this bridge's send); nothing moved
+ * - `released`: a held credit was claimed or sent back since (the holder's credit is empty again)
+ * - `returned`: the hop refused the instruction and sent the tokens back to the source chain
+ * - `failed`: LayerZero ended the message (burned, skipped, malformed)
  */
-export type TrackerPhase = "wallet" | "sent" | "hop" | "delivered" | "deferred" | "fuel" | "slow" | "nothing";
+export type TrackerPhase = "wallet" | "sent" | "hop" | "delivered" | "deferred" | "fuel" | "slow" | "nothing" | "released" | "returned" | "failed";
 
 export interface BridgeEta {
   medianSec: number;

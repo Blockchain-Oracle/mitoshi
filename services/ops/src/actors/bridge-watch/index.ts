@@ -2,9 +2,11 @@
  * bridge-watch (S14 14o; D-227 R4-12): every 10 s while transfers are open, it follows each one the web recorded in
  * `bridge_messages` — leg 1's guid from LayerZero Scan by the source hash, the hop's onward leg by the compose
  * transaction on Base, a deferral in the delivery receipt (adapter `CreditDeferred` / lockbox `UnlockDeferred`) — and
- * stamps sent, verified and delivered per leg, so the ETA is a median of real transfers. A compose stored because the
- * Base float was empty is re-run (`EndpointV2.lzCompose`) once its composer can pay, with the stock-sync role key on
- * Base (testnet; DRY_RUN never sends). Every minute it reads the hop floats and says when one is under 5 hops.
+ * stamps sent, verified and delivered per leg, so the ETA is a median of real transfers. A hash whose receipt has no
+ * matching `OFTSent` (another sender, amount or contract) ends as nothing moved; a held credit is followed until the
+ * holder's credit is empty again (released). A compose stored because the Base float was empty is re-run
+ * (`EndpointV2.lzCompose`) once its composer can pay, with the stock-sync role key on Base (testnet; DRY_RUN never
+ * sends). Every minute it reads the hop floats and says when one is under 5 hops.
  * Needs DATABASE_URL; reads only otherwise.
  */
 import { advanceTransfer, etaOf, isBridgeTicker } from "@cwf/core";
@@ -32,7 +34,7 @@ export function startBridgeWatch(deps: VenueDeps): { stop: () => void } {
 
   const follow = async (row: BridgeMessageRow, floatOf: (composer: string) => HopFloat | undefined): Promise<string | null> => {
     if (!isBridgeTicker(row.ticker)) return `unknown ticker ${row.ticker}`;
-    const obs = await observeTransfer(clients, { direction: row.direction, ticker: row.ticker, srcTx: row.srcTx as `0x${string}` });
+    const obs = await observeTransfer(clients, { direction: row.direction, ticker: row.ticker, srcTx: row.srcTx as `0x${string}`, amountSD: row.amountSD, sender: row.sender });
     const first = obs.legs[0]?.msg ?? null;
     let note: string | null = null;
     // A stored compose (empty float): re-run it once the composer can pay the onward leg.

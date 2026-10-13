@@ -40,7 +40,7 @@ const num = (v: unknown): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-/** The earliest block time among the DVNs that verified (the required set is one DVN on testnet). */
+/** When verification completed: the latest block time among the DVNs that verified (one required DVN on testnet). */
 function verifiedAt(dvns: Json | null): number | null {
   const times = Object.values(dvns ?? {}).map((d) => num(obj(d)?.blockTimestamp)).filter((t): t is number => t !== null);
   return times.length ? Math.max(...times) : null;

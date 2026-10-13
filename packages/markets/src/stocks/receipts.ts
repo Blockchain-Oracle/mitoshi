@@ -17,6 +17,27 @@ export async function receiptStatus(client: PublicClient, tx: Hex): Promise<"suc
   }
 }
 
+export interface SourceSend {
+  status: "success" | "reverted";
+  /** The route's source contract's `OFTSent` in that transaction (who sent, what left in its local units), or null. */
+  sent: { from: Address; amountSentLD: bigint } | null;
+}
+
+/**
+ * A source transaction's outcome and the bridge send inside it — the lockbox's (in) or the adapter's (out) `OFTSent`;
+ * null while the chain has no receipt. A recorded hash with no such event is not a transfer of this stock.
+ */
+export async function sourceSend(client: PublicClient, tx: Hex, contract: Address): Promise<SourceSend | null> {
+  let receipt;
+  try {
+    receipt = await client.getTransactionReceipt({ hash: tx });
+  } catch {
+    return null;
+  }
+  const [log] = parseEventLogs({ abi: stockLockboxAbi, eventName: "OFTSent", logs: receipt.logs.filter((l) => l.address.toLowerCase() === contract.toLowerCase()) });
+  return { status: receipt.status, sent: log ? { from: log.args.fromAddress, amountSentLD: log.args.amountSentLD } : null };
+}
+
 export interface Deferral {
   to: Address;
   amount: bigint;

@@ -56,7 +56,7 @@ async function follow(direction: BridgeDirection, srcTx: Hex): Promise<BridgeAdv
     const said = `${next.phase} · ${legs.map((l) => `${l.status}${l.guid ? ` ${l.guid.slice(0, 10)}` : ""}`).join(" → ")}`;
     if (said !== last) console.log(`  [${Math.round((Date.now() - started) / 1000)} s] ${said}`);
     last = said;
-    if (["delivered", "reverted", "failed", "deferred"].includes(next.status)) return next;
+    if (["delivered", "deferred", "released", "returned", "reverted", "failed"].includes(next.status)) return next;
     if (Date.now() - started > GIVE_UP_MS) throw new Error(`gave up after ${GIVE_UP_MS / 60_000} min: ${said}`);
     await new Promise((r) => setTimeout(r, POLL_MS));
   }
@@ -121,6 +121,9 @@ async function main() {
     const c = castBatch(claim.value.calls, { signer: { walletFile: held.file } });
     const got = await mirrorOf(held.address);
     row("gate: claimDeferred", `\`${c.transactionHash}\` status ${c.status}; bTSLA ${got}`, got === ONE_SD ? "pass" : "fail");
+    // The tracker reads the claim back: the held credit is empty again, so the transfer reads "released".
+    const after = await follow("in", dTx);
+    row("tracker after the claim", `${dTx}: ${after.status} · ${after.phase}`, after.status === "released" ? "pass" : `fail (${after.status})`);
   }
 
   // 4. Reserves after.
