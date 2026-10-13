@@ -201,6 +201,14 @@ TicketStrip, the hold above the dock); the parlay slip bar carries the hold. Thr
 sweep's overlaps are the sticky action over the band, which clears at the scroll end). Web and ops deploys triggered
 (ops for the new reserve in the indexer sources). Open: a signed-in hold on the web on testnet — not driven in this
 merge (no wallet on the dev server).
+R4-8 (Palette and shell) merged at `d3236fc`: Owarine's ⌘K palette with a live Trade group (`useLanes` takes
+`enabled`), More's search pill opens it, the top line (no ? or theme; the money chip with its +), the rail's mode plate
+and stamp (練 DEMO / 試 TESTNET, Noto Serif JP subsets regenerated), rail/dock/account menu restyled (dock item 52 px
+token), the phone sign-in sheet, /trade-from-x in the app shell, the first frame paints a returning account's world.
+Checks clean (tokens:check clean; 71 routes within budget, /markets 227.1 KB with css 52.4 / 55 KB, /trade/[symbol]
+232.1 KB); /markets at 375 and 1440 clean (phone sweep empty; the desktop sweep's two hits are the hero countdown's digit
+roller and Sensei's collapsed label, not the shell). Open: a signed-in pass (account menu, the phone sign-in sheet's
+Create/Connect, the TESTNET stamp) on testnet — not driven in this merge (no wallet on the dev server).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
