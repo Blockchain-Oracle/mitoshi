@@ -21,8 +21,10 @@ const META: Record<PocketId, { icon: LucideIcon; label: string; note: string }> 
   private: { icon: LockKeyhole, ...HERO_MONEY.pockets.private },
 };
 
-export function Pockets({ pockets, decimals, panels }: { pockets: PocketMoney[]; decimals: number; panels: Record<PocketId, ReactNode> }) {
+/** `children`: tiles that are their own island (R4-7's Earn pocket, a link to /earn) — they sit in the same grid. */
+export function Pockets({ pockets, decimals, panels, children }: { pockets: PocketMoney[]; decimals: number; panels: Record<PocketId, ReactNode>; children?: ReactNode }) {
   const named = useOpenDrawerName();
+  const tiles = pockets.length + (children ? 1 : 0);
   const open = pockets.find((p) => URL_KEY[p.id] === named && p.blockedReason === null) ?? null;
   // The last pocket opened stays in the sheet while it animates closed, so its title and body never blank out.
   const [shown, setShown] = useState<PocketId | null>(null);
@@ -35,7 +37,7 @@ export function Pockets({ pockets, decimals, panels }: { pockets: PocketMoney[];
   return (
     <section className="flex flex-col gap-3" aria-labelledby="pockets-title">
       <h2 id="pockets-title" className="type-title text-ink">{HERO_MONEY.pocketsTitle}</h2>
-      <div className={cn("pockets-grid", pockets.length === 1 && "is-single")}>
+      <div className={cn("pockets-grid", tiles === 1 && "is-single", tiles === 3 && "is-triple")}>
         {pockets.map((p) => {
           const m = META[p.id];
           return (
@@ -63,6 +65,7 @@ export function Pockets({ pockets, decimals, panels }: { pockets: PocketMoney[];
             </div>
           );
         })}
+        {children}
       </div>
       <SlideOver open={open !== null} onOpenChange={(o) => !o && closeDrawer()}>
         <SlideOverContent title={current ? META[current].label : HERO_MONEY.pocketsTitle} size="lg" fields>

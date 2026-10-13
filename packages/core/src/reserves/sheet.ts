@@ -144,3 +144,16 @@ export function supplierPosition(sheet: ReserveSheet, shares: bigint, worthBase:
   const idleShares = (shares * idleBase) / worthBase;
   return { shares, worthBase, idleBase, idleShares, committedBase: worthBase - idleBase };
 }
+
+/**
+ * The shares to send for a partial withdrawal of `amountBase` (R4-7, D-227; Mitoshi's Trading Balance already takes a
+ * partial amount, E.5 S7). Floored like `supplierPosition`, so the program pays at most what was asked and never
+ * refuses for liquidity: `amount × shares ÷ worth`, capped at the shares idle capital covers. An amount at or over what
+ * is idle sends exactly `idleShares` (Max), and nothing asked or nothing idle sends none.
+ */
+export function withdrawSharesFor(position: SupplierPosition, amountBase: bigint): bigint {
+  if (amountBase <= 0n || position.idleShares <= 0n || position.worthBase <= 0n) return 0n;
+  if (amountBase >= position.idleBase) return position.idleShares;
+  const shares = (amountBase * position.shares) / position.worthBase;
+  return shares < position.idleShares ? shares : position.idleShares;
+}

@@ -5,10 +5,13 @@
 // grant's budget (the vault invariant: wallet + engine credit = Σ available + private + Σ grant budgets) — the private
 // balance (named on its tile, never summed), what waits to be collected (the sheet's, read in the same block as the
 // balance, plus a Boost payout the receive policy held), and every open position at what Close pays (the terminal's
-// value engine, `usePortfolioPositions`). `ready` once every leg has answered, so the figure never sums a leg still at 0.
+// value engine, `usePortfolioPositions`). Earn (R4-7) is named under the figure, never in it. `ready` once every leg has
+// answered, so the figure never sums a leg still at 0.
 import type { Address } from "@cwf/core";
 import { listLeveragePositionsOf, readBoostOwed } from "@cwf/markets/leverage";
 import { useBalanceSheet, useClaimables, usePositions, useReadingQuery, useVaultBets, useVaultSnapshot } from "@cwf/markets/react";
+import { EARN } from "@/features/earn/copy";
+import { useEarnWorth } from "@/features/earn/EarnPocket";
 import { useSessionView } from "@/features/session/context";
 import { BOOST_KEYS } from "@/features/terminal/terminal-positions";
 import { useOwed } from "@/features/terminal/useOwed";
@@ -59,6 +62,7 @@ export function useMoney(wallet: Address) {
   const privateStatus = usePrivateStatus();
   const boosts = useReadingQuery([...BOOST_KEYS, "positions", wallet], () => listLeveragePositionsOf(wallet), { pollMs: 10_000 });
   const boostOwed = useReadingQuery([...BOOST_KEYS, "owed", wallet], () => readBoostOwed(wallet), { pollMs: 30_000 });
+  const earn = useEarnWorth(wallet);
   const book = usePortfolioPositions(wallet);
   const owed = useOwed(wallet, book.positions);
 
@@ -98,7 +102,11 @@ export function useMoney(wallet: Address) {
     collectBase,
     totalBase: sumMoney({ walletBase, tradingBase, positionsBase, collectBase }),
     readyBase: walletBase,
-    pools: value?.orderEscrowBase ? [{ id: "escrow", label: PLATE.pools.escrow.label, amountBase: value.orderEscrowBase }] : [],
+    pools: [
+      ...(value?.orderEscrowBase ? [{ id: "escrow", label: PLATE.pools.escrow.label, amountBase: value.orderEscrowBase }] : []),
+      // R4-7: money supplied to the vault and the reserves is yours but not in the figure (FR-5).
+      ...(earn && earn.totalBase > 0n ? [{ id: "earn", label: EARN.pocket.label, amountBase: earn.totalBase }] : []),
+    ],
     pockets,
     openCount: sourcesRead ? book.groups.length : null,
     boostOwedBase,

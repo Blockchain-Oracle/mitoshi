@@ -1,9 +1,9 @@
 "use client";
 /**
  * The signed-in Portfolio (split from `PortfolioScreen`, D-183), in Owarine 90a91d71's order (P2, D-223; R4-4, D-227):
- * the money card, the pockets (Trading Balance, Private where it exists) with their controls in a sheet, 01 your bets
- * (every home: the wallet, the Trading Balance, Boosts), 02 what waits to collect (only when there is any), then the
- * record and the Trader Edge link. One money reading (`useMoney`) feeds the card, the tiles, the sheets and the rows,
+ * the money card, the pockets (Trading Balance, Private where it exists, R4-7's Earn tile) with their controls in a
+ * sheet, 01 your bets (every home: the wallet, the Trading Balance, Boosts), then in flight and what waits to collect
+ * (each only when there is any), then the record and the Trader Edge link. One money reading (`useMoney`) feeds the card, the tiles, the sheets and the rows,
  * so they can't disagree; positions are valued and closed as the terminal values and closes them. Its own island,
  * loaded once a wallet is there. One inset: the stage pads; this page adds none.
  */
@@ -20,6 +20,7 @@ import { useBoostWrites } from "@/features/boost/useBoostWrites";
 import { BridgeInFlight, useBridgeInFlight } from "@/features/bridge/BridgeInFlight";
 import { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import { BOOST_KEYS } from "@/features/terminal/terminal-positions";
+import { EarnPocket } from "@/features/earn/EarnPocket";
 import { TradingBalancePanel } from "@/features/vault/TradingBalancePanel";
 import { openFunds } from "@/lib/funds-event";
 import { CLAIM, HERO_MONEY } from "../copy";
@@ -100,7 +101,9 @@ function Ledger({ wallet }: { wallet: Address }) {
         decimals={money.decimals}
         pockets={money.pockets}
         panels={{ vault: <TradingBalancePanel />, private: <PrivateBalancePanel wallet={wallet} /> }}
-      />
+      >
+        <EarnPocket wallet={wallet} />
+      </Pockets>
       <BetsPanel
         index="01"
         open={{ groups: book.groups, values: book.values, closer, boosts: boostWrites, count: money.openCount, failed: failedHome && !failedHome.ok ? { diagnosis: failedHome.error, retry: retryOpen } : null }}
