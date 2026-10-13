@@ -18,6 +18,7 @@ export const HALTS = {
   noRecord: "before the log",
   noHalt: "no halt",
   none: "No halt in 30 days.",
+  noneLogged: "No halt in the log.",
   legend: { clear: "No halt", stale: "Signed price stale", halted: "Trading halted", none: "Before the log" },
   history: (n: number) => `Every halt · ${n}`,
   checked: (at: string) => `Checked ${at} UTC`,

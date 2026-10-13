@@ -105,7 +105,8 @@ export function HaltsBoard({ board }: { board: Board | null }) {
           <TickerItem key={r.symbol} row={r} nowSec={board.nowSec} episodes={board.episodes} />
         ))}
         <SystemItem value="history" glyph={<History aria-hidden className="size-4.5 text-ink" />} name={HALTS.history(board.episodes.length)} summary={HALTS.sub} summaryTone="good">
-          <ol className="flex flex-col gap-1.5 py-3">
+          {board.episodes.length === 0 ? <p className="py-3 type-caption text-ink-secondary">{HALTS.noneLogged}</p> : null}
+          <ol className="flex flex-col gap-1.5 py-3 empty:hidden">
             {board.episodes.map((e) => (
               <li key={`${e.asset}-${e.startSec}`} className="type-caption text-ink-secondary">
                 <b className="text-ink">{dayWords(etDateOf(e.startSec))} · {e.asset.replace(/-24$/, "")}</b> · {episodeLine(e, board.nowSec)}

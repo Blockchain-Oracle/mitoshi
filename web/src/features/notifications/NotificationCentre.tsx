@@ -20,8 +20,8 @@ import "@/styles/news.css";
 import "@/styles/news-wire.css";
 import "@/styles/activity.css";
 
-/** The face in the mark slot: the follower's for a follow, yours for your own calls. */
-const seedOf = (n: Notice, me: string) => (n.href?.startsWith("/u/") ? n.href.slice(3) : me);
+/** The face in the mark slot: the follower's for a follow, the author's for a take, yours for your own calls. */
+const seedOf = (n: Notice, me: string) => n.actor ?? (n.href?.startsWith("/u/") ? n.href.slice(3) : me);
 const TONE: Record<Notice["kind"], Sentiment> = { filled: "neutral", won: "positive", lost: "negative", void: "neutral", follower: "neutral", take: "neutral" };
 
 /** Whether this device announces lifecycle events; a toast shows in the tab either way. */
