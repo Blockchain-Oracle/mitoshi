@@ -239,6 +239,20 @@ run stage) — both sheets load on first open, the run is an island prefetched a
 55/55; build clean. Quick look /games at 375 × 667 and 1440 × 900: PLAY on the first phone screen, the 4-column grid;
 no page overflow (sweep hits are Lucky's reel cells, clipped); the settings and how-to sheets and the run stage open from their islands. Open: `duel-settler` is not in testnet ops' explicit
 OPS_ACTORS, so paired duels don't settle until it's added; the duel season (prize pool, SEASON_* env) is the owner's.
+R4-13b (Final pass A: copy and the whole-app look) at `a5f8b74`: copy.json's 80 cuts and 11 bugs and critic.json's 13
+cuts walked against the trunk — all in but these, applied now: Add funds → Add money, the funding welcome without its
+eyebrow, the vault's receive-policy refusal on `TX.receiveBlocked`, Moonshot's not-deployed body, Sensei's server "off"
+line, "(SM2)" off /native-auth, the strategies head's eyebrow. Look: all 68 page routes (/dev skipped) at 375 × 667 and
+1440 × 900, 320 × 568 for /markets, /trade/BTC, /portfolio and the games — dark with the sweep and a screenshot each,
+light with the sweep and a contrast check, and the data routes again on testnet (the local index is unreachable).
+Fixed: /privacy and /terms ran 140 px off a phone and logged 26 key warnings; every docs page logged a hydration
+mismatch (the contents rail set heading ids first); /download's install button and /contact's Send sat below the first
+phone screen; the games rail cut the name to "D…" and ran its settings icon off a 320 phone; /stats wore the landing's
+`.stats` band ("ON-CHAIN · LIVE · FROM TOKYO" and 96 px of padding); the reels hint sat on UP/DOWN at 1440; "Rounds · 0"
+and "Activity →" broke over two lines; the reserves row read "Locked Not live yet"; /status read "Every check fresh."
+under "Keepers unreachable"; contract addresses were cut mid-hex; the terminal's "Connecting…" was 1.9:1 on cream.
+Checks: web tsc, invariants, the touched tests 40/40, build, 74 routes within budget. Open: none blocked. Seen, not
+changed: /download's phone and /demo's poster are older captures (a Stocks tab in the rail).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
