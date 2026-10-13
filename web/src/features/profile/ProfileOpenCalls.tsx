@@ -6,6 +6,7 @@ import { useLanes } from "@cwf/markets/react";
 import { LoadingState } from "@/components/states";
 import { BetRow } from "@/features/markets/portfolio/BetRow";
 import { PositionValuers, usePortfolioPositions } from "@/features/markets/portfolio/usePortfolioPositions";
+import { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import { useWalletSession } from "@/lib/wallet-session";
 import { PROFILE as P } from "./copy";
 import "@/styles/history.css";
@@ -13,6 +14,7 @@ import "@/styles/history.css";
 export function ProfileOpenCalls({ address }: { address: Address }) {
   const lanes = useLanes();
   const book = usePortfolioPositions(address);
+  const closer = useTerminalClose();
   const viewer = useWalletSession().address;
   const own = viewer !== null && viewer.toLowerCase() === address.toLowerCase();
   if (lanes === null) return <LoadingState shape="row" />;
@@ -22,7 +24,7 @@ export function ProfileOpenCalls({ address }: { address: Address }) {
       <PositionValuers positions={book.positions} onValue={book.onValue} />
       <ul className="bets-list">
         {book.groups.map((g) => (
-          <BetRow key={g.key} legs={g.legs} values={book.values} wallet={address} readOnly={!own} />
+          <BetRow key={g.key} legs={g.legs} values={book.values} wallet={address} closer={own ? closer : undefined} readOnly={!own} />
         ))}
       </ul>
     </>
