@@ -52,7 +52,7 @@ describe("the arm's terms and the CTA's fallback reasons", () => {
     expect(fallbackOf({ kind: "stake", spendBase: 6_000_000n, capBase: 5_000_000n }, g)).toEqual({ reason: "Over your $5 per tap — lower the stake", fix: null });
     expect(fallbackOf({ kind: "price", sidePriceRaw: 990_000n, capRaw: 950_000n }, g)).toEqual({ reason: "Dearer than your 95¢ cap", fix: null });
     expect(fallbackOf({ kind: "positions", wouldBe: 5, cap: 4 }, g).fix).toBeNull();
-    expect(fallbackOf({ kind: "expired", expiresAtSec: NOW - 1 }, g)).toEqual({ reason: "Tap-trading expired — renew", fix: "renew" });
+    expect(fallbackOf({ kind: "expired", expiresAtSec: NOW - 1 }, g)).toEqual({ reason: "One-tap expired — renew", fix: "renew" });
   });
 });
 
