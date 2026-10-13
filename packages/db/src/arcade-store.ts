@@ -67,6 +67,11 @@ export interface ArcadeStore {
   issueTape(seed: string, game: ArcadeGameId, tape: ArcadeTapeRow): Promise<boolean>;
   /** The tape a seed was issued with; null when the seed was never issued here. */
   tape(seed: string): Promise<(ArcadeTapeRow & { game: ArcadeGameId }) | null>;
+  /**
+   * Takes a seed for one score (Senryo's rule): its tape when it was issued here for `game`, not yet taken and younger
+   * than `maxAgeSec`, marking it taken in the same statement; null otherwise.
+   */
+  takeTape(seed: string, game: ArcadeGameId, maxAgeSec: number): Promise<ArcadeTapeRow | null>;
 }
 
 type RunDb = { game: ArcadeGameId; wallet: string; score: number; engine_version: number; duration_ms: number; seed: string | null; calm: boolean; created_at: Date };
@@ -128,6 +133,14 @@ export function createPgArcadeStore(sql: Sql): ArcadeStore {
         select game, feed, from_sec::text, to_sec::text, points, moves from arcade_tapes where seed = ${seed}`;
       const r = rows[0];
       return r ? { game: r.game, feed: r.feed, fromSec: Number(r.from_sec), toSec: Number(r.to_sec), points: r.points, moves: r.moves } : null;
+    },
+    async takeTape(seed, game, maxAgeSec) {
+      const rows = await sql<{ feed: string; from_sec: string; to_sec: string; points: number[]; moves: number[] }[]>`
+        update arcade_tapes set taken_at = now()
+        where seed = ${seed} and game = ${game} and taken_at is null and created_at > now() - make_interval(secs => ${maxAgeSec})
+        returning feed, from_sec::text, to_sec::text, points, moves`;
+      const r = rows[0];
+      return r ? { feed: r.feed, fromSec: Number(r.from_sec), toSec: Number(r.to_sec), points: r.points, moves: r.moves } : null;
     },
     async byWallet(wallet, limit) {
       const rows = await sql<RunDb[]>`

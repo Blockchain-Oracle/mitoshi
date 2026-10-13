@@ -55,14 +55,19 @@ export function useArcadeScore(game: ArcadeGame) {
           body: JSON.stringify({ game, seed: end.seed, engineVersion: board.engineVersion, durationMs: end.durationMs, score: end.score, calm: end.calm, trace: end.trace }),
         });
         const body = (await response.json()) as ScoreAcceptedWire & { error?: string };
-        if (!response.ok) return { kind: "refused", why: body.error ?? `the server answered ${response.status}` };
+        if (!response.ok) {
+          // The seed may be spent now (one score per seed): the next run takes a fresh one.
+          void refresh();
+          return { kind: "refused", why: body.error ?? `the server answered ${response.status}` };
+        }
         setBoard(body.board);
         return { kind: "posted", rank: body.rank, isBest: body.isBest };
       } catch (cause) {
+        void refresh();
         return { kind: "refused", why: String((cause as Error)?.message ?? "the post did not go through").slice(0, 120) };
       }
     },
-    [board, game, social],
+    [board, game, social, refresh],
   );
 
   return { board, refresh, post, ability };

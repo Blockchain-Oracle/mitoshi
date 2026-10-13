@@ -4,6 +4,7 @@ import {
   envelopeCheck,
   HOP_ENGINE_VERSION,
   isArcadeSeed,
+  MAX_RUN_SEC,
   MAX_RUN_TICKS,
   replayArcade,
   SLED_ENGINE_VERSION,
@@ -67,6 +68,11 @@ export function freshSeed(): string {
 export const RANK_LIMIT = 50;
 
 const ISSUE_TRIES = 4;
+/**
+ * A seed is good for one score, within the longest run plus time to start it and to sign in at the end (Senryo's
+ * `SEED_GRACE_SEC`, widened for sign-in-at-the-end).
+ */
+const SEED_GRACE_SEC = 1_800;
 
 /**
  * A seed for the next run with the tape it rides (engine v2): drawn, the tape cut from the index's prints, both kept so
@@ -75,8 +81,9 @@ const ISSUE_TRIES = 4;
 async function issueRun(scores: ArcadeStore, game: ArcadeGame): Promise<Pick<BoardWire, "seed" | "tape">> {
   for (let i = 0; i < ISSUE_TRIES; i++) {
     const seed = freshSeed();
-    const tape = await cutTape(seed, Math.floor(Date.now() / 1_000)).catch(() => null);
-    if (!tape) return { seed, tape: null };
+    const nowSec = Math.floor(Date.now() / 1_000);
+    // An index that did not answer issues the seed bare (the seed's own line), so the run still posts.
+    const tape = await cutTape(seed, nowSec).catch(() => ({ feed: "", fromSec: nowSec, toSec: nowSec, points: [], moves: [] }));
     if (await scores.issueTape(seed, game, tape)) return { seed, tape: tape.points.length ? tape : null };
   }
   return { seed: freshSeed(), tape: null };
@@ -107,9 +114,10 @@ export async function acceptScore(claim: ScoreClaim, wallet: string | null, ip: 
   const envelope = envelopeCheck(claim.game, claim.durationMs, claim.trace, claim.score, true);
   if (!envelope.ok) return { ok: false, status: 422, error: envelope.why };
 
-  // Engine v2: the run is replayed on the tape issued with its seed; a seed never issued here is not rankable.
-  const issued = await scores.tape(claim.seed);
-  if (!issued || issued.game !== claim.game) return { ok: false, status: 422, error: "that run's seed was not issued by this board" };
+  // Engine v2: the run is replayed on the tape issued with its seed, which the check takes (one score per seed); a seed
+  // never issued here, already posted or expired is not rankable.
+  const issued = await scores.takeTape(claim.seed, claim.game, MAX_RUN_SEC + SEED_GRACE_SEC);
+  if (!issued) return { ok: false, status: 422, error: "that run's seed was not issued here, was posted, or expired" };
   const replay = replayArcade(claim.game, claim.seed, claim.trace, { calm: claim.calm, ...(issued.points.length ? { tape: issued.points } : {}), ...(issued.moves.length ? { moves: issued.moves } : {}) });
   if (!replay.ended) return { ok: false, status: 422, error: "the run never ended" };
   if (replay.score !== claim.score) return { ok: false, status: 422, error: "the replay does not reproduce that score" };
