@@ -51,7 +51,10 @@
 .slide-over-popup[data-ending-style] { transform: translateX(calc(100% + var(--spacing-drawer-inset) + 4px)); }
 .slide-over-popup[data-swiping] { transition-duration: 0ms; user-select: none; }
 .slide-over-popup[data-ending-style] { transition-duration: calc(var(--drawer-swipe-strength, 1) * var(--duration-drawer-out)); transition-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+/* `instant` replaces an identical server-rendered cover (the terminal's first tour): the scrim is already up, so it must
+ * not fade in from nothing either, or the page under it blinks through on a phone. */
 .slide-over-popup.is-instant[data-starting-style] { transform: none; transition: none; }
+.slide-over-backdrop.is-instant[data-starting-style] { opacity: 1; transition: none; }
 
 .slide-over-content { position: relative; display: flex; min-height: 0; min-width: 0; flex: 1; flex-direction: column; }
 .slide-over-head {

@@ -1,9 +1,9 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/components/kit/PositionCard.tsx (R4-1, folded into the kit by R4-2; D-227) —
-// UGLYCASH's position card on Mitoshi's
-// tokens: what it is worth now (rolling), the P&L that tones with its sign, the average entry and what is in. "Worth now"
-// is what Close pays — the exit, not a mid-price. Money arrives as numbers for the view (bigints upstream); the P&L is
-// the caller's when the book prices only part of it (like for like), else worth − invested.
+// UGLYCASH's position card on Mitoshi's tokens: what it is worth now (rolling), the P&L that tones with its sign, the
+// average entry and what is in. "Worth now" is what Close pays — the exit, not a mid-price. Money arrives as numbers for
+// the view (bigints upstream); the P&L is the caller's when the book prices only part of it (like for like), else
+// worth − invested.
 import type { ReactNode } from "react";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";

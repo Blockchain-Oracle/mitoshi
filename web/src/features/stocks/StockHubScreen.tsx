@@ -14,7 +14,7 @@ import { useLanes } from "@cwf/markets/react";
 import { MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Hash } from "@/components/data";
 import SectionHead from "@/components/shell/SectionHead";
 import { tickerMarkets } from "@/features/markets/data/lane-view";
@@ -29,6 +29,7 @@ import { articleSymbols, Cashtags, MarkCluster, NewsRow } from "@/features/news/
 import { useCommittedSpot } from "@/features/terminal/live";
 import { RoomDrawer } from "@/features/terminal/ui/RoomDrawer";
 import { useClockValue } from "@/lib/clock";
+import { closeDrawer, openDrawer, useOpenDrawerName } from "@/lib/drawer-param";
 import { webEnv } from "@/lib/env";
 import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
 import { STOCKS } from "./copy";
@@ -108,7 +109,8 @@ export function StockHubScreen({ symbol, articles, headlinesOff, readAtMs }: Sto
   const ticker = TICKERS[symbol];
   const spot = useCommittedSpot(symbol);
   const report = useNextReport(symbol);
-  const [room, setRoom] = useState(false);
+  // The Room lives in the URL (`?d=room`, D-190; R4-2, D-227): Back closes it instead of leaving the hub.
+  const room = useOpenDrawerName() === "room";
   const price = spot.priceE8 !== null ? usd2(spot.priceE8) : STOCKS.dash;
   return (
     <div className="container stk-page stk-hub">
@@ -137,7 +139,7 @@ export function StockHubScreen({ symbol, articles, headlinesOff, readAtMs }: Sto
         </dl>
         <p className="stk-source">{ticker.redstoneFeedId ? STOCKS.source : STOCKS.noSource}</p>
         <div className="stk-actions page-action">
-          <button type="button" className="stk-room" onClick={() => setRoom(true)}>
+          <button type="button" className="stk-room" onClick={() => openDrawer("room")}>
             <MessageCircle aria-hidden className="size-4" />
             {STOCKS.room(symbol)}
             <span className="stk-room-meta">{STOCKS.roomQualifier}</span>
@@ -188,7 +190,7 @@ export function StockHubScreen({ symbol, articles, headlinesOff, readAtMs }: Sto
         <TokenCard symbol={symbol} />
       </section>
 
-      <RoomDrawer open={room} onOpenChange={setRoom} symbol={symbol} window={null} />
+      <RoomDrawer open={room} onOpenChange={(o) => (o ? openDrawer("room") : closeDrawer())} symbol={symbol} window={null} />
     </div>
   );
 }

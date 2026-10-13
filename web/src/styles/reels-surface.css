@@ -19,10 +19,11 @@
 .reels-surface .reel-take { position: absolute; }
 .reels-surface .reel-hint { position: absolute; }
 /* Phones: the position pill sits above the card and the swipe hint between the card and the dock, so neither covers the
- * card's clock or its UP button; from tablets there is no dock. */
+ * card's clock or its UP button; from tablets there is no dock. Both clear the dock by its one token (R4-2, D-227), so a
+ * phone's home indicator lifts them with it: the hint 16 px over the dock, the card 52 px (the hint's row) over that. */
 @media (max-width: 767px) {
-  .reels-surface .reel-slot { padding: 40px 12px 132px; }
-  .reels-surface .reel-hint { bottom: 96px; }
+  .reels-surface .reel-slot { padding: 40px 12px calc(var(--dock-clearance) + 52px); }
+  .reels-surface .reel-hint { bottom: calc(var(--dock-clearance) + 16px); }
   .reels-surface .reel-count { top: 10px; right: 50%; translate: 50% 0; }
 }
 @media (min-width: 768px) {

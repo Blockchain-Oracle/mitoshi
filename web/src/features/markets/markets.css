@@ -3,10 +3,11 @@
  * scrolling on tickets and drawers") — the old sticky dock inside the scrolling body is gone. */
 .tk-cta-dock { display: flex; flex-direction: column; gap: calc(var(--spacing) * 2); }
 /* R4-2 (D-227), the fold budget against 100svh: with the browser's bars shown a 568 px phone keeps ~450 px, so the hero's
- * UP/DOWN stick above the dock while the hero is on screen (`.page-action`). The panel clips instead of hiding its
- * overflow, so it is no scroll container and the row sticks to the page. */
+ * UP/DOWN stick above the dock while the hero is on screen (`.page-action`). The panel and the hero section around it
+ * (`.page-hero` hides its overflow, yosuku/part-04) clip instead, so neither is a scroll container and the row sticks to
+ * the page — a `hidden` ancestor would hold it in place. */
 @media (max-width: 767px) {
-  .markets-hero .hero-chart { overflow: clip; }
+  .markets-hero.page-hero, .markets-hero .hero-chart { overflow: clip; }
   .markets-hero .hero-yesno.page-action { padding-bottom: 8px; background: var(--color-ground); }
 }
 .tk-add, .tk-lev, .tk-mode { min-height: 44px; }

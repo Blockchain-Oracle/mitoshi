@@ -42,7 +42,7 @@ function Toast({ className, ...props }: ToastPrimitive.Root.Props) {
         // Ported surface: rounded-xl, bg-neutral-900/90 + backdrop-blur-xl, type-tinted
         // border (styles/toast.css). The neutral-900 utility is the reference's own, so
         // yosuku/part-14.css remaps it on cream without a second light-mode rule here.
-        "toast-plate group/toast pointer-events-auto absolute inset-x-0 top-0 z-[calc(1000-var(--toast-index))] w-full origin-top rounded-xl border border-border-strong bg-neutral-900/90 text-popover-foreground backdrop-blur-xl will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+        "toast-plate group/toast pointer-events-auto absolute inset-x-0 top-0 z-[calc(10-var(--toast-index))] w-full origin-top rounded-xl border border-border-strong bg-neutral-900/90 text-popover-foreground backdrop-blur-xl will-change-transform outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
         "[--gap:0.75rem] [--height:var(--toast-frontmost-height,var(--toast-height))] [--offset-y:calc(var(--toast-offset-y)+calc(var(--toast-index)*var(--gap))+var(--toast-swipe-movement-y))] [--peek:0.75rem] [--scale:calc(max(0,1-(var(--toast-index)*0.1)))] [--shrink:calc(1-var(--scale))]",
         "h-(--height) [transform:translateX(var(--toast-swipe-movement-x))_translateY(calc(var(--toast-swipe-movement-y)+(var(--toast-index)*var(--peek))+(var(--shrink)*var(--height))))_scale(var(--scale))] [transition:transform_500ms_var(--ease-bounce),opacity_500ms,height_150ms]",
         "after:absolute after:bottom-full after:left-0 after:h-[calc(var(--gap)+var(--spacing)/4)] after:w-full after:content-['']",

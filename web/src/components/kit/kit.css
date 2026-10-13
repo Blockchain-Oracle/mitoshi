@@ -136,6 +136,7 @@ body {
 .kit-capital-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border-radius: var(--ow-r-pill); background: var(--ow-recessed); font: 500 12px/1 var(--ow-font-body); color: var(--ow-muted); }
 button.kit-capital-chip { position: relative; cursor: pointer; }
 button.kit-capital-chip::before { content: ""; position: absolute; inset: -6px 0; }
+button.kit-capital-chip:hover { color: var(--ow-ink); background: var(--color-surface-3); }
 button.kit-capital-chip[aria-pressed="true"] { background: var(--ow-ink); color: var(--ow-inverse); }
 button.kit-capital-chip:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .kit-capital-dot { width: 8px; height: 8px; border-radius: var(--ow-r-pill); }

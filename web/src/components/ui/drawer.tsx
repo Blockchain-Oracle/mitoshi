@@ -38,16 +38,22 @@ export function SlideOver({ onOpenChange, urlKey, open, modal = true, children, 
 export const SlideOverTrigger = BaseDrawer.Trigger;
 export const SlideOverClose = BaseDrawer.Close;
 
-/** The open overlay's pinned footer, for `SheetFooter` (null outside a sheet or a modal). */
-export const OverlayFooterSlot = createContext<HTMLElement | null>(null);
+/**
+ * The open overlay's pinned footer, for `SheetFooter`: undefined outside a sheet or a modal, null inside one until its
+ * footer has mounted (the first pass), then the footer's node.
+ */
+export const OverlayFooterSlot = createContext<HTMLElement | null | undefined>(undefined);
 
 /**
  * A body's own action bar (the ticket's CTA dock, a sheet's Confirm): inside a sheet or a modal it renders in the pinned
- * footer, outside the scroll and above a phone's keyboard; anywhere else (the ticket on the rail) in place.
+ * footer, outside the scroll and above a phone's keyboard; anywhere else (the ticket on the rail) in place. Inside an
+ * overlay it waits the one synchronous pass for the footer's node rather than mounting in the body and moving (which
+ * ran its effects twice and dropped focus from a CTA the sheet had just focused).
  */
 export function SheetFooter({ children }: { children: ReactNode }) {
   const slot = useContext(OverlayFooterSlot);
-  return slot ? createPortal(children, slot) : <>{children}</>;
+  if (slot === undefined) return <>{children}</>;
+  return slot ? createPortal(children, slot) : null;
 }
 
 /** Before a link inside the sheet (or a modal) navigates, drop `?d=` so Back from the new page doesn't reopen it (D-190). */
@@ -102,7 +108,7 @@ export function SlideOverContent({ title, description, eyebrow, hideHeading = fa
   ) : headerLeft;
   const portal = (
     <BaseDrawer.Portal keepMounted={keepMounted}>
-      <BaseDrawer.Backdrop className={cn("slide-over-backdrop", layer === "modal" && "on-modal")} />
+      <BaseDrawer.Backdrop className={cn("slide-over-backdrop", layer === "modal" && "on-modal", instant && "is-instant")} />
       <BaseDrawer.Viewport className={cn("slide-over-viewport", layer === "modal" && "on-modal")}>
         <BaseDrawer.Popup className={cn("slide-over-popup", instant && "is-instant", className)} data-size={size} data-base-ui-swipe-ignore={dismissible ? undefined : ""}>
           <span aria-hidden className="slide-over-grab" />

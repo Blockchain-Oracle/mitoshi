@@ -193,7 +193,8 @@ export const rules = [
     scopes: ["web/src"],
     exts: [".css", ".tsx"],
     exclude: ["web/src/styles/tokens.css"],
-    pattern: /z-index:\s*(1[1-9]|[2-9]\d|\d{3,})\b|zIndex:\s*(1[1-9]|[2-9]\d|\d{3,})\b|\bz-(20|30|40|50|\[\d{2,}\])/,
+    // A Tailwind arbitrary value counts too, inside a calc (`z-[calc(1000-…)]` slipped the first cut).
+    pattern: /z-index:\s*(1[1-9]|[2-9]\d|\d{3,})\b|zIndex:\s*(1[1-9]|[2-9]\d|\d{3,})\b|\bz-(20|30|40|50|\[(calc\()?(1[1-9]|[2-9]\d|\d{3,})\b)/,
   },
   {
     id: "time-suffix",
