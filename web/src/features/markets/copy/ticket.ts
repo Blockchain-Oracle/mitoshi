@@ -12,11 +12,11 @@ export const TICKET = {
   balance: (amountText: string) => `Balance ${amountText}`,
   minimum: (floorText: string) => `Minimum ${floorText}.`,
   chips: "Quick amounts",
-  remembered: (amountText: string) => `Your last stake, ${amountText}, is ready.`,
+  /** Owarine's `.tk-amount-unit` after the figure (R4-3, D-227). */
+  unit: "USD",
   currentCost: "Current cost",
   ret: "Return",
   maxLoss: "Max loss",
-  toWin: "To win",
   liveOdds: "Live market odds",
   enterAmount: "Enter an amount to quote",
   gettingQuote: "Getting live quote…",
@@ -25,7 +25,6 @@ export const TICKET = {
   partial: (fillableText: string) => `Fills up to ${fillableText}; the rest stays.`,
   quoteFailed: (why: string) => `Quote failed: ${why}`,
   chance: (pct: number) => `${pct}% chance`,
-  avgPrice: (cents: number) => `Avg. price ${cents}¢`,
   buy: (side: string) => `Buy ${side} for`,
   buyPlain: "Buy",
   /** Why the sign-in opened, under its title (D-224): "to place UP · $25.00". */
@@ -58,7 +57,7 @@ export const TICKET = {
   openCallPlain: "Open your call",
   /** A Listed Window (pre-open, D-088): the call rests at the confirmed limit until the open print lands. */
   scheduled: {
-    note: (opens: string) => `Opens ${opens}. Fills at your price then; cancel any time before.`,
+    note: (opens: string) => `Opens ${opens} · fills at your price`,
     cta: (side: string) => `Schedule ${side} for`,
     rested: "Scheduled — resting until the open.",
     cancel: "Cancel scheduled call",
@@ -79,7 +78,7 @@ export const TICKET = {
  */
 export const TICKET_PENDING = {
   modeLabel: "Bet type",
-  modeDirection: "Up / Down",
+  modeDirection: "Up/Down",
   modeRange: "Range",
   modeBoost: "Boost",
   routeLabel: "Place this bet",
@@ -88,6 +87,11 @@ export const TICKET_PENDING = {
   rangePending: "Range needs the RangeReserve — not deployed yet.",
   leverageLabel: "Leverage",
   leveragePending: (multiple: string) => `${multiple} needs the leverage reserve — not deployed yet.`,
+  /** Why 2×/3× can't be chosen here (Owarine `lockedReason`, R4-3 D-227). */
+  leverageCapped: (multiple: string, max: string) => `${multiple} is over the reserve's ${max} cap`,
+  leverageListed: "Boost opens with the Window",
+  leveragePrivate: "Private bets are 1×",
+  boostHint: "The reserve fronts the rest. Max loss is your stake.",
 } as const;
 
 /** The Call (Masayume 68f7a09:web/src/features/share/copy.ts `SHARE.call`, keep-list E.7) — an open position, no result implied. */

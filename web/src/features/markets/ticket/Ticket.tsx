@@ -1,8 +1,11 @@
 "use client";
 /**
- * The Ticket — Masayume's composer, block for block (Ported from Masayume 68f7a09:web/src/features/markets/ticket/
- * Ticket.tsx, `Ticket624Drawer.tsx` L847–1277): mode · side · the amount block · the three-column strip and its
- * caption · the account gates · the CTA · the footnote. On Tempo one call is one transaction
+ * The Ticket — Owarine's composer, block for block (Ported from Owarine 90a91d71:web/src/features/markets/ticket/
+ * Ticket.tsx, R4-3 D-227; first from Masayume 68f7a09, `Ticket624Drawer.tsx` L847–1277): mode · side · the amount block
+ * with the 1×/2×/3× chips · the three-column strip and its caption · the account gates · Public/Private · the CTA · the
+ * footnote. Every bet it composes — a plain order, a Boost, a private bet — feeds the same strip and the same button
+ * row, so leverage or the route change the numbers and never the shape (a band is Range's own body). The rail wears
+ * `.tk-ticket--rail` (border, surface, 20 px), the drawer `--drawer`. On Tempo one call is one transaction
  * (`[approve(engine, exact), placeOrder(IOC)]`, sponsored): no second signature, no fee line. A Listed Window takes a
  * scheduled call at the user's own price that rests until the bell (Agari 03b30ab ScheduleTicket, D-088). After a fill
  * the body is The Call; "Place another" keeps the stake (D-048).
@@ -23,12 +26,14 @@ import { nowMs as clockNow, useNowMs } from "@/lib/clock";
 import { readRegionPosture } from "@/lib/region-mark";
 import { useWalletSession } from "@/lib/wallet-session";
 import { useTapArmed } from "@/providers/wallet/tap-session";
-import { CALL, TICKET } from "../copy";
+import { CALL, TICKET, TICKET_PENDING } from "../copy";
 import { CallCard } from "../calls/CallCard";
-import { ToWin } from "@/components/ui/prediction-ticket";
 import { useTopOfBook } from "../data/useTopOfBook";
 import { AmountBlock, BetModes, RouteToggle, SideSegments, type BetMode } from "./ComposeBlocks";
-import "@/styles/prediction-ticket.css";
+import { BoostCta, BoostOutcome, boostCells } from "./BoostBlocks";
+import { BOOST } from "@/features/boost/copy";
+import { useBoostTicket } from "@/features/boost/useBoostTicket";
+import { useBoostWrites } from "@/features/boost/useBoostWrites";
 import { DEFAULT_PRICE_CENTS, PriceControl } from "./PriceControl";
 import { AccountGate, OutcomeNote, ReadoutStrip, TicketCta, type ReadoutCells } from "./StatusBlocks";
 import { SIDE_WORD } from "../side-styles";
@@ -39,7 +44,6 @@ import { useTicket } from "./useTicket";
 
 /** The Range mode body loads on first use (a lazy island, plan 3.1): the band slider, its quote and its lane. */
 const PrivateTicketMode = dynamic(() => import("@/features/private/PrivateTicketMode").then((m) => m.PrivateTicketMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
-const BoostTicketMode = dynamic(() => import("@/features/boost/BoostTicketMode").then((m) => m.BoostTicketMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
 const RangeTicketMode = dynamic(() => import("@/features/range/RangeTicketMode").then((m) => m.RangeTicketMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
 
 const usd = (b: bigint, decimals: number) => `$${formatBaseUnits(b, decimals, { minDp: 2, maxDp: 2 })}`;
@@ -53,9 +57,11 @@ export interface TicketProps {
   side: Side | null;
   /** The drawer's own head (below `lg`); the rail sits beside the hero, which already names the Window. */
   head?: ReactNode;
+  /** Where it renders: framed beside the hero (`rail`), or the phone's sheet (`drawer`). */
+  variant?: "rail" | "drawer";
 }
 
-export function Ticket({ market, side: urlSide, head }: TicketProps) {
+export function Ticket({ market, side: urlSide, head, variant = "rail" }: TicketProps) {
   const nowMs = useNowMs();
   const session = useWalletSession();
   const tapArmed = useTapArmed();
@@ -147,9 +153,17 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
   const another = () => bet.reset();
   const [betMode, setBetMode] = useState<BetMode>("direction");
   const [route, setRoute] = useState<"public" | "private">("public");
+  // 1× is the plain order; 2×/3× a Boost the reserve fronts (Owarine's LeverageChips) — read only once one is chosen.
+  const [multiple, setMultiple] = useState(1);
+  const priv = route === "private";
+  const boosted = multiple > 1 && !priv && !listed;
+  const boost = useBoostTicket({ market, side, stakeBase, multiple, enabled: boosted });
+  const boostWrites = useBoostWrites(address);
+  const leverage = { value: boosted ? multiple : 1, onChange: setMultiple, maxMultiple: boost.state ? boost.maxMultiple : null, lockedReason: listed ? TICKET_PENDING.leverageListed : priv ? TICKET_PENDING.leveragePrivate : null };
+  const routeToggle = <RouteToggle route={route} onRoute={setRoute} />;
 
   return (
-    <section aria-label={TICKET.title} className="tk-ticket flex flex-col gap-3">
+    <section aria-label={TICKET.title} className={`tk-ticket ${variant === "drawer" ? "tk-ticket--drawer" : "tk-ticket--rail"}`}>
       {head}
       {booked || scheduled || pending ? (
         <CallCard
@@ -169,19 +183,27 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
       ) : (
         <>
           <BetModes mode={betMode} onMode={setBetMode} />
-          {betMode === "direction" ? <RouteToggle route={route} onRoute={setRoute} /> : null}
-          {betMode === "range" ? <RangeTicketMode market={market} /> : betMode === "boost" ? <BoostTicketMode market={market} side={side} /> : route === "private" ? <PrivateTicketMode market={market} side={side} /> : <>
+          {betMode === "range" ? <RangeTicketMode market={market} /> : <>
           <SideSegments side={side} onSelect={t.selectSide} prices={{ up: priceText(top.upCents), down: priceText(top.downCents) }} />
           {listed ? <PriceControl priceCents={priceCents} onChange={setPriceCents} side={side} /> : null}
-          <AmountBlock value={t.stakeText} onChange={t.setStakeText} stakeBase={stakeBase} onStakeBase={t.setStakeBase} balanceBase={spendBase} decimals={decimals} belowMin={stakeBase > 0n && belowMinStake(stakeBase, decimals)} remembered={t.remembered} costBase={displayed?.expectedCostBase ?? null} />
-          <ReadoutStrip cells={cellsOf(displayed, decimals)} live={displayed !== null} caption={caption} chance={displayed ? TICKET.chance(Math.round(displayed.avgPriceBps / 100)) : null} />
+          <AmountBlock value={t.stakeText} onChange={t.setStakeText} stakeBase={stakeBase} onStakeBase={t.setStakeBase} balanceBase={priv ? null : spendBase} decimals={decimals} belowMin={stakeBase > 0n && belowMinStake(stakeBase, decimals)} leverage={leverage} costBase={boosted ? (boost.quote?.stakeBase ?? null) : (displayed?.expectedCostBase ?? null)} />
+          {priv ? <PrivateTicketMode market={market} side={side} stakeBase={stakeBase} beforeCta={routeToggle} /> : <>
+          <ReadoutStrip
+            cells={boosted ? boostCells(boost) : cellsOf(displayed, decimals)}
+            live={boosted ? boost.quote !== null : displayed !== null}
+            caption={boosted ? (boost.quote ? TICKET.liveOdds : (boost.blocker ?? BOOST.cta.pricing)) : caption}
+            chance={!boosted && displayed ? TICKET.chance(Math.round(displayed.avgPriceBps / 100)) : null}
+            note={boosted ? BOOST.knockout(multiple) : null}
+          />
           <AccountGate connected={session.isConnected} availableBase={spendBase} stakeBase={stakeBase} decimals={decimals} chip={<TapTradingChip />} />
+          {routeToggle}
           {t.advancedFrom ? <p role="status" className="type-caption text-ink-secondary">{TICKET.advanced(formatCadence(t.advancedFrom.intervalSec), formatCadence(market.intervalSec))}</p> : null}
-          <OutcomeNote tx={bet.state.tx} outcome={bet.state.outcome} decimals={decimals} onDismiss={bet.reset} />
+          {boosted ? <BoostOutcome writes={boostWrites} /> : <OutcomeNote tx={bet.state.tx} outcome={bet.state.outcome} decimals={decimals} onDismiss={bet.reset} />}
           <SheetFooter>
           <div className="tk-cta-dock">
-            <ToWin label={TICKET.toWin} amount={displayed ? formatBaseUnits(displayed.payoutIfRightBase, decimals, { group: false, minDp: 2, maxDp: 2 }) : null} note={displayed ? TICKET.avgPrice(Math.round(displayed.avgPriceBps / 100)) : null} />
-            {tb.fallback && !blocker ? (
+            {boosted ? (
+              <BoostCta boost={boost} writes={boostWrites} multiple={multiple} />
+            ) : tb.fallback && !blocker ? (
               <SessionFallbackCta route={tb} walletKeyArmed={tapArmed} tone={side ?? "accent"} />
             ) : (
               <TicketCta
@@ -196,9 +218,10 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
                 action={listed ? TICKET.scheduled.cta : TICKET.buy}
               />
             )}
-            <p className="tk-foot">{tb.viaBalance ? SESSION.footnote : tapArmed ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
+            <p className="tk-foot">{boosted ? BOOST.footnote : tb.viaBalance ? SESSION.footnote : tapArmed ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
           </div>
           </SheetFooter>
+          </>}
           </>}
         </>
       )}
