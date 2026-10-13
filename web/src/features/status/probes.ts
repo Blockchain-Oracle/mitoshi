@@ -43,7 +43,7 @@ interface Actor {
 
 /** The keepers a reader of the product meets, in the order a Window meets them. */
 const ROWS: readonly [string, string, StatusGroup][] = [
-  ["chain-head", "Tempo testnet", "Chain"],
+  ["chain-head", "Tempo chain", "Chain"],
   ["indexer", "Indexer", "Chain"],
   ["spot-feed", "Signed prices (RedStone)", "Prices"],
   ["price-relay", "Opening and closing prints", "Prices"],

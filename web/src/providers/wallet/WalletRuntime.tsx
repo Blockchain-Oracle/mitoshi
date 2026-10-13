@@ -17,6 +17,7 @@ import { capsOf, kindOf } from "./connector-kind";
 import { getWagmiConfig, TEMPO_CHAIN } from "./wagmi-config";
 import { useWalletKey } from "./useWalletKey";
 import type { TempoAccount, WalletShell } from "./wallet-shell-context";
+import { hasStoredConnection } from "@/lib/stored-session";
 
 const SignInModal = dynamic(() => import("./SignInModal"), { ssr: false });
 
@@ -49,12 +50,15 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
   const { disconnectAsync } = useDisconnect();
   const { switchChainAsync } = useSwitchChain();
   const { signMessageAsync } = useSignMessage();
-  const [restoring, setRestoring] = useState(true);
+  // Only a stored session restores (R6 shell T14): a signed-out visitor's first tap mounts this runtime and must never
+  // read as "restoring" — that flipped the plate to TESTNET and blanked Sign in for up to the cap.
+  const [restoring, setRestoring] = useState(() => hasStoredConnection(document.cookie));
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerIntent, setPickerIntent] = useState<string | null>(null);
 
   // Restore a remembered connection after hydration, never longer than the cap (Agari's 3 s window).
   useEffect(() => {
+    if (!hasStoredConnection(document.cookie)) return;
     let done = false;
     const timer = setTimeout(() => !done && setRestoring(false), RESTORE_CAP_MS);
     void reconnectAsync().finally(() => {

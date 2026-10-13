@@ -15,6 +15,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState, type ComponentType } from "react";
 import { ACCOUNT_MENU, BANNER, CONNECT, SHELL } from "@/lib/copy";
 import { onIdle } from "@/lib/idle";
+import { hasStoredConnection } from "@/lib/stored-session";
 import { useWalletSession } from "@/lib/wallet-session";
 import { cn } from "@/lib/utils";
 import { ACCOUNT } from "@/providers/wallet/copy";
@@ -27,7 +28,6 @@ import { useSessionView } from "@/features/session/context";
 // exists, compact in the top line (the full pill with its one-tap fix lives on the ticket and Portfolio).
 const AllowancePill = dynamic(() => import("@/features/session/AllowancePill").then((m) => m.AllowancePill), { ssr: false });
 
-const DemoMoneyTile = dynamic(() => import("./MoneyPill").then((m) => m.DemoMoneyTile), { ssr: false });
 const DemoMoneyPill = dynamic(() => import("./MoneyPill").then((m) => m.DemoMoneyPill), { ssr: false });
 
 // The money pill's balance read loads with the session (the same pill, "—", shows until it does).
@@ -59,7 +59,8 @@ export function HeaderAccount({ placement = "top" }: { placement?: AccountPlacem
   useEffect(() => (session.address ? onIdle(load) : undefined), [session.address, load]);
   const rail = placement === "rail";
 
-  if (session.isConnecting) {
+  // Only a returning account mid-restore holds the seat; a signed-out visitor always sees Sign in (T14).
+  if (session.isConnecting && hasStoredConnection(document.cookie)) {
     return <span className={cn("btn btn-primary invisible", rail ? "rail-account" : "top-account")} aria-hidden="true">{CONNECT.connect}</span>;
   }
   if (!session.isConnected || !session.address) {
@@ -69,12 +70,9 @@ export function HeaderAccount({ placement = "top" }: { placement?: AccountPlacem
         <span className="sign-in-label">{CONNECT.connect}</span>
       </button>
     );
-    // DEMO (D-223): the rail shows the paper balance over the way in, as Owarine's demo rail does.
+    // DEMO (D-223): the paper balance sits on the rail's plate (S23), so the foot is the one way in.
     return rail ? (
-      <>
-        <span className="rail-money"><DemoMoneyTile /></span>
-        {signIn}
-      </>
+      signIn
     ) : (
       <>
         <span className="top-money"><DemoMoneyPill /></span>

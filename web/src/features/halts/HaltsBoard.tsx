@@ -5,7 +5,6 @@
 // From 21st.dev 5693 preetsuthar17/system-status-block's plain cells, one image whose label names its halted days.
 import { ET_WEEKDAY_SHORT, etDateOf, formatEtClock, haltLabel, weekdayOfDate } from "@cwf/core";
 import { History } from "lucide-react";
-import Link from "next/link";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { BoardBanner, BoardStack, SystemItem, type BoardTone } from "@/features/status/BoardParts";
 import type { BoardRow, DayTone } from "./board";
@@ -78,7 +77,7 @@ function TickerItem({ row, nowSec, episodes }: { row: BoardRow; nowSec: number; 
 
 export function HaltsBoard({ board }: { board: Board | null }) {
   if (!board) {
-    return <BoardBanner tone="bad" eyebrow={HALTS.eyebrow} verdict={HALTS.unreadable} sub={HALTS.sub} figureLabel={HALTS.watched} figure="—" tally={[]} pulse={[]} aside={<Back />} />;
+    return <BoardBanner tone="bad" eyebrow={HALTS.eyebrow} verdict={HALTS.unreadable} sub={HALTS.sub} figureLabel={HALTS.watched} figure="—" tally={[]} pulse={[]} />;
   }
   const tones = board.rows.map(toneOf);
   const n = (t: BoardTone) => tones.filter((x) => x === t).length;
@@ -98,7 +97,6 @@ export function HaltsBoard({ board }: { board: Board | null }) {
         figure={`${board.rows.length - n("off")} / ${board.rows.length}`}
         tally={(["bad", "warn", "good", "off"] as const).map((t) => ({ tone: t, n: n(t), word: HALTS.tally[t] }))}
         pulse={board.rows.map((r, i) => ({ id: r.symbol, label: r.symbol, tone: tones[i] ?? "off" }))}
-        aside={<Back />}
       />
       <BoardStack open={open} label={HALTS.title}>
         {board.rows.map((r) => (
@@ -125,8 +123,3 @@ export function HaltsBoard({ board }: { board: Board | null }) {
   );
 }
 
-function Back() {
-  return (
-    <Link href="/status" className="self-start type-caption text-accent underline-offset-4 hover:underline">{HALTS.back}</Link>
-  );
-}

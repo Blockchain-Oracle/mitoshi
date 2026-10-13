@@ -7,7 +7,7 @@
 // (`guessMode`, lib/theme.ts). Renders nothing.
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useWalletSession } from "@/lib/wallet-session";
-import { hasStoredConnection } from "@/providers/wallet/WalletShellProvider";
+import { hasStoredConnection } from "@/lib/stored-session";
 import { useEnvironment } from "./environment";
 
 /** Past this, a restore that never answered (no runtime, a locked wallet) settles as it stands. */

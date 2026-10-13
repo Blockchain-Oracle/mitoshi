@@ -93,7 +93,6 @@
   .topline-mark { display: none; }
   .topline-lead { flex: none; }
   .topline-tools { flex: 1 1 auto; justify-content: flex-end; }
-  .topline-search { flex: 0 1 auto; min-width: 0; }
 }
 .topline-icon { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--radius-full); color: var(--color-ink-secondary); }
 .topline-icon:hover { color: var(--color-ink); background: var(--color-surface-2); }
@@ -104,13 +103,21 @@
   border: 1px solid var(--color-hairline); background: var(--color-stage); color: var(--color-ink-secondary); font: 400 14px/1 var(--font-body);
 }
 .topline-search:hover { color: var(--color-ink); border-color: var(--color-border-strong); }
-.topline-search-label, .topline-kbd { display: none; }
-/* Labelled from 768 px, 288 px wide (Owarine `CommandPalette` trigger `md:w-72`; R4-8 — 768–1023 had an unlabeled icon). */
+.topline-search-label, .topline-keys { display: none; }
+/* Labelled from 768 px (Owarine `TopBar`'s 288×40 pill; R6 shell S05, 21st 24899 shadcnspace/kbd-04's anatomy: icon ·
+   label · keycaps inside the right edge): 200–288 px beside the rail's icons, 288 from 1024. The whole pill is the hit. */
 @media (min-width: 768px) {
-  .topline-search { width: 288px; height: 40px; padding: 0 14px; border-color: transparent; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
-  .topline-search-label { display: inline; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .topline-kbd { display: inline; margin-left: auto; padding: 2px 6px; border-radius: 6px; background: var(--color-surface-2); color: var(--color-ink-secondary); font: 600 12px/1.2 var(--font-body); }
+  .topline-search { flex: 0 1 288px; min-width: 200px; height: 40px; padding: 0 8px 0 14px; border-color: transparent; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); transition: background-color var(--duration-hover) ease, color var(--duration-hover) ease, transform 80ms ease-out; }
+  .topline-search:hover { background: var(--color-surface-2); color: var(--color-ink); }
+  .topline-search:active { transform: scale(0.99); }
+  .topline-search:focus-visible { box-shadow: inset 0 0 0 1px var(--color-hairline), 0 0 0 2px var(--color-accent); }
+  .topline-search svg { width: 16px; height: 16px; flex: none; }
+  .topline-search-label { display: inline; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topline-keys { display: inline-flex; gap: 3px; margin-left: auto; flex: none; }
+  .topline-kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 6px; background: var(--color-surface-2); box-shadow: inset 0 0 0 1px var(--color-hairline), 0 1px 0 var(--color-hairline); color: var(--color-ink-secondary); font: 600 11px/1 var(--font-data); }
 }
+@media (min-width: 1024px) { .topline-search { flex: none; width: 288px; } }
+@media (prefers-reduced-motion: reduce) { .topline-search:active { transform: none; } }
 .sign-in-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 /* R4-0 (D-227): Sign in meets the 44 px floor (the `.btn` was 35 px) with its icon; at ≤ 380 px it is the icon alone
    (Owarine `.ow-seat-cta--bar`), so the phone's top line fits beside the mark, the mode and the balance. */

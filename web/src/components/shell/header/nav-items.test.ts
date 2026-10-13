@@ -61,7 +61,10 @@ describe("navigation registry", () => {
     expect(isActiveNavItem("/u/0xabc", NAV_ITEMS.leaderboard)).toBe(true);
     expect(isActiveNavItem("/trade/BTC", NAV_ITEMS.trade)).toBe(true);
     expect(isActiveNavItem("/trade-from-x", NAV_ITEMS.trade)).toBe(false);
-    expect(isActiveNavItem("/portfolio/edge", NAV_ITEMS.portfolio)).toBe(false);
+    // R6 shell S23: the edge report and the settings are Portfolio's own pages, so Portfolio stays lit there (not More).
+    expect(isActiveNavItem("/portfolio/edge", NAV_ITEMS.portfolio)).toBe(true);
+    expect(isActiveNavItem("/settings/account", NAV_ITEMS.portfolio)).toBe(true);
+    expect(isActiveNavItem("/portfolios", NAV_ITEMS.portfolio)).toBe(false);
     expect(isTopLevel("/markets")).toBe(true);
     expect(isTopLevel("/games/duel")).toBe(false);
   });

@@ -41,6 +41,15 @@ html.mode-flooding::view-transition-new(root) { animation: mode-flood 520ms cubi
 .mode-plate-copy { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; padding-left: 12px; }
 .mode-plate-label { overflow: hidden; font: 800 20px/1.1 var(--font-heading); letter-spacing: 0.02em; text-overflow: ellipsis; white-space: nowrap; }
 .mode-plate-line { display: flex; align-items: center; gap: 6px; overflow: hidden; font: 600 12px/1.2 var(--font-body); opacity: 0.8; white-space: nowrap; }
+/* Signed out the plate holds the paper balance (S23): the word small over the figure, the eye at its right. */
+.mode-plate-label.is-small { font-size: 13px; letter-spacing: 0.08em; }
+.mode-plate.is-demo { padding-right: 8px; }
+.mode-plate.is-demo .mode-plate-stub { width: 44px; }
+.mode-plate.is-demo .mode-plate-copy { padding-left: 10px; }
+.mode-plate-money { overflow: hidden; font: 700 16px/1.15 var(--font-data); font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
+.mode-plate-eye { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: var(--radius-full); color: currentColor; opacity: 0.7; }
+.mode-plate-eye:hover { opacity: 1; background: color-mix(in srgb, currentColor 12%, transparent); }
+.mode-plate-eye svg { width: 16px; height: 16px; }
 .mode-plate-arrow { width: 16px; height: 16px; flex: none; opacity: 0.5; transition: opacity var(--duration-hover), translate var(--duration-hover); }
 .mode-plate:hover .mode-plate-arrow { opacity: 1; translate: 2px -2px; }
 .mode-ping { position: relative; display: grid; width: 8px; height: 8px; flex: none; place-items: center; }

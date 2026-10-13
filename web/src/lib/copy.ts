@@ -40,6 +40,8 @@ export const SHELL = {
   openApp: "Open the app",
   searchLabel: "Search destinations",
   searchPlaceholder: "Search markets and pages",
+  /** The palette's keycaps (R6 shell S05; Senryo `useModCombo`): ⌘ K on Apple, Ctrl K elsewhere. */
+  searchKey: { apple: ["⌘", "K"], other: ["Ctrl", "K"] } as const,
   searchEmpty: "Nothing matches that.",
   /** The ⌘K palette (Owarine 90a91d71 `CommandPalette`; R4-8, D-227): sr-only title and description, the field's hint. */
   commandTitle: "Go to",

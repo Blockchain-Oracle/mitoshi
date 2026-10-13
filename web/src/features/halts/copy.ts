@@ -2,7 +2,6 @@
 export const HALTS = {
   title: "Trading halts",
   eyebrow: "Halts board",
-  back: "← Status",
   unreadable: "Halt log unreachable.",
   noneNow: "No halts",
   someNow: (symbols: string[]) => `Halted: ${symbols.join(", ")}`,
@@ -11,7 +10,7 @@ export const HALTS = {
   watched: "Watched",
   tally: { bad: "halted", warn: "stale", good: "clear", off: "unwatched" } as const,
   clear: "Clear",
-  unwatched: "Not watched on testnet",
+  unwatched: "Not watched",
   now: (label: string, feed: "regular" | "24/7", since: string) => `${label}${feed === "24/7" ? " · 24/7" : ""} · since ${since}`,
   last: (day: string) => `Last: ${day}`,
   strip: (symbol: string, days: string[]) => (days.length ? `${symbol}, last 30 days: halts on ${days.join(", ")}` : `${symbol}, last 30 days: no halts`),

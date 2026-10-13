@@ -54,6 +54,19 @@ function BackButton() {
   );
 }
 
+/** ⌘ K on Apple, Ctrl K elsewhere, decided on the client (the server renders ⌘ K). */
+function SearchKeys() {
+  const [apple, setApple] = useState(true);
+  useEffect(() => setApple(/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)), []);
+  return (
+    <span aria-hidden className="topline-keys" suppressHydrationWarning>
+      {(apple ? SHELL.searchKey.apple : SHELL.searchKey.other).map((k) => (
+        <kbd key={k} className="topline-kbd">{k}</kbd>
+      ))}
+    </span>
+  );
+}
+
 export function TopLine({ account }: { account?: ReactNode }) {
   const [palette, setPalette] = useState<boolean | null>(null);
   const [keys, setKeys] = useState<boolean | null>(null);
@@ -98,20 +111,23 @@ export function TopLine({ account }: { account?: ReactNode }) {
         <span className="topline-wide"><HealthChip className="topline-network" /></span>
       </div>
       <div className="topline-tools">
-        <button
-          type="button"
-          className="topline-search topline-wide"
-          aria-label={SHELL.searchPlaceholder}
-          aria-keyshortcuts="Meta+K Control+K /"
-          onClick={() => {
-            tapFeedback();
-            setPalette(true);
-          }}
-        >
-          <Search aria-hidden strokeWidth={2.5} />
-          <span className="topline-search-label">{SHELL.searchPlaceholder}</span>
-          <kbd aria-hidden className="topline-kbd">⌘K</kbd>
-        </button>
+        {/* The wrapper hides it on phones; on the button itself `display: contents` stripped its box (S05). */}
+        <span className="topline-wide">
+          <button
+            type="button"
+            className="topline-search"
+            aria-label={SHELL.searchPlaceholder}
+            aria-keyshortcuts="Meta+K Control+K /"
+            onClick={() => {
+              tapFeedback();
+              setPalette(true);
+            }}
+          >
+            <Search aria-hidden strokeWidth={2.5} />
+            <span className="topline-search-label">{SHELL.searchPlaceholder}</span>
+            <SearchKeys />
+          </button>
+        </span>
         {account}
       </div>
       {palette !== null ? <CommandPalette open={palette} onOpenChange={setPalette} /> : null}

@@ -6,20 +6,28 @@
 // testnet, pressed again whenever the world changes. The full rail carries the plate (a ticket torn from the rail: the
 // stamp on a stub, a perforation, the name and the money); the icon rail carries the stamp alone. Replaces the static
 // TESTNET pill.
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { SHELL } from "@/lib/copy";
 import { webEnv } from "@/lib/env";
+import { setPrivacy, usePrivacy } from "@/lib/privacy";
+import { useDemoState } from "@/features/terminal/demo";
+import { dollars } from "@/providers/wallet/format";
+import { hasStoredConnection } from "@/lib/stored-session";
 import { cn } from "@/lib/utils";
 import { useWalletSession } from "@/lib/wallet-session";
 import type { EnvironmentMode } from "./environment";
 
 /** The world the shell is in: the session decides. A session still restoring reads as the testnet it most likely is (a
  *  returning account never flashes DEMO); `EnvironmentMode` holds the canvas until it settles. */
+const noSubscribe = () => () => undefined;
+
 export function useShellMode(): EnvironmentMode {
   const session = useWalletSession();
-  return session.isConnected || session.isConnecting ? "testnet" : "demo";
+  // A connect the visitor started keeps DEMO until it lands; only a returning account's restore reads as testnet (T14).
+  const stored = useSyncExternalStore(noSubscribe, () => hasStoredConnection(document.cookie), () => false);
+  return session.isConnected || (session.isConnecting && stored) ? "testnet" : "demo";
 }
 
 export function modeWords(mode: EnvironmentMode) {
@@ -54,10 +62,36 @@ function Pass({ mode, className, children }: { mode: EnvironmentMode; className:
   );
 }
 
+/**
+ * Signed out (R6 shell S23; Mercury's demo selector, Owarine's DEMO plate): the plate carries the paper balance — DEMO
+ * over $10,000.00 with the privacy eye — and is no button: Sign in lives once, at the rail's foot.
+ */
+function DemoPlate({ className }: { className?: string }) {
+  const demo = useDemoState();
+  const hidden = usePrivacy();
+  const words = modeWords("demo");
+  return (
+    <div className={cn("mode-plate is-demo", className)} data-mode="demo" title={words.line}>
+      <span className="mode-plate-stub">
+        <ModeStampMark mode="demo" />
+      </span>
+      <span aria-hidden className="mode-plate-perf" />
+      <span className="mode-plate-copy">
+        <span className="mode-plate-label is-small">{words.label}</span>
+        <span className="mode-plate-money numbers">{hidden ? SHELL.masked : dollars(BigInt(demo.balanceBase))}</span>
+      </span>
+      <button type="button" className="mode-plate-eye" aria-pressed={hidden} aria-label={hidden ? SHELL.privacyShow : SHELL.privacyHide} title={hidden ? SHELL.privacyShow : SHELL.privacyHide} onClick={() => setPrivacy(!hidden)}>
+        {hidden ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
+      </button>
+    </div>
+  );
+}
+
 /** The full rail's pass (≥ 1280 px). The notches are cut in the rail's own colour, so it reads as torn from the rail. */
 export function ModePlate({ className }: { className?: string }) {
   const mode = useShellMode();
   const words = modeWords(mode);
+  if (mode === "demo") return <DemoPlate className={className} />;
   return (
     <Pass mode={mode} className={cn("mode-plate", className)}>
       <span className="mode-plate-stub">

@@ -76,8 +76,3 @@ export function DemoMoneyPill() {
   return <MoneyPillView total={BigInt(demo.balanceBase)} onAdd={null} title={SHELL.demoLabel} />;
 }
 
-/** Signed out: DEMO's paper dollars (D-223; Owarine's "Demo credits 10,000.00"), with no + — paper is not topped up. */
-export function DemoMoneyTile() {
-  const demo = useDemoState();
-  return <MoneyTile total={BigInt(demo.balanceBase)} label={SHELL.demoLabel} onAdd={null} />;
-}

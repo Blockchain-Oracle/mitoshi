@@ -31,7 +31,7 @@ const item = (i: NavItem) => i;
 export const NAV_ITEMS = {
   trade: item({ id: "trade", name: "Trade", href: "/trade", description: "One tap Up or Down on a live chart.", icon: CandlestickChart, keywords: "terminal chart up down tap btc", match: { paths: ["/trade"] } }),
   markets: item({ id: "markets", name: "Markets", href: "/markets", description: "Every live Window, coin and stock.", icon: ChartLine, keywords: "windows up down calls crypto stocks equities shares tsla nvda", match: { paths: ["/markets", "/tickers"] } }),
-  portfolio: item({ id: "portfolio", name: "Portfolio", href: "/portfolio", description: "Your money, positions and record.", icon: WalletCards, match: { paths: ["/portfolio"], exact: true } }),
+  portfolio: item({ id: "portfolio", name: "Portfolio", href: "/portfolio", description: "Your money, positions and record.", icon: WalletCards, match: { paths: ["/portfolio", "/settings"] } }),
   games: item({ id: "games", name: "Games", href: "/games", description: "Play every market-powered game.", icon: Gamepad2 }),
   automate: item({ id: "automate", name: "Automate", href: "/strategies", description: "Strategies and agents that trade for you.", icon: Sparkles, keywords: "strategies agents copy bots", match: { paths: ["/strategies", "/agents"] } }),
   leaderboard: item({ id: "leaderboard", name: "Leaderboard", href: "/leaderboard", description: "The strongest verified records.", icon: Trophy, keywords: "rank ranking profile", match: { paths: ["/leaderboard", "/u"] } }),

@@ -19,13 +19,10 @@ import { TapSubmitterContext } from "./tap-session";
 import { SIGNED_OUT, WalletShellContext, type WalletShell } from "./wallet-shell-context";
 import { SHELL } from "@/lib/copy";
 import { useDataReady } from "../data/context";
+import { hasStoredConnection } from "@/lib/stored-session";
 
 const WalletRuntime = dynamic<WalletRuntimeProps>(() => import("./WalletRuntime"), { ssr: false });
 
-/** wagmi's cookie storage names the last connector used; with it there may be a connection to restore at once. */
-export function hasStoredConnection(cookie: string): boolean {
-  return /(?:^|;\s*)wagmi\.recentConnectorId=/.test(cookie);
-}
 
 // Not `focusin`: a modal that focuses itself on load (the terminal's first-visit tour) is no visitor's intent, and it
 // pulled the ~1 MB runtime and its six wallet/Stripe frames into `/trade`'s first seconds (long tasks 1.3 s at 4× CPU,

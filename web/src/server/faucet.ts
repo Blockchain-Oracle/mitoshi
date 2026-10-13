@@ -57,7 +57,7 @@ export async function claimFunds(input: { wallet: Address; auth: FaucetAuth; ipH
   } catch (error) {
     // The faucet itself refused or didn't answer: nothing was sent.
     await s.saveClaim({ ...base, txHashes: [], status: "failed" });
-    return { ok: false, status: 502, code: "fund_failed", message: `The testnet faucet did not answer: ${error instanceof Error ? error.message.split("\n")[0] : "unknown error"}` };
+    return { ok: false, status: 502, code: "fund_failed", message: `The faucet did not answer: ${error instanceof Error ? error.message.split("\n")[0] : "unknown error"}` };
   }
   // Answer "funded" once the transfers are included (~0.5 s on Tempo), so the balance the client refetches right after
   // is the funded one. The transfers are sent either way: a receipt wait that times out (a slow RPC, 2026-10-09 — the

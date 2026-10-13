@@ -3,7 +3,7 @@
 // in the board's own type, sized by each board's usual words (invisible; never shown). Before R6 both waited in the markets hero's shape.
 import { Skeleton, T } from "./bones";
 
-function Banner({ dots, verdict, sub, link = false }: { dots: number; verdict: string; sub: string; link?: boolean }) {
+function Banner({ dots, verdict, sub }: { dots: number; verdict: string; sub: string }) {
   return (
     <section className="relative overflow-hidden rounded-3xl bg-surface-1 p-6 ring-1 ring-hairline sm:p-8" data-bone="verdict">
       <div className="flex flex-wrap items-start justify-between gap-6">
@@ -11,7 +11,6 @@ function Banner({ dots, verdict, sub, link = false }: { dots: number; verdict: s
           <span className="flex items-center gap-2"><Skeleton className="size-5 rounded-full" /><T className="type-label-micro">Mitoshi status</T></span>
           <div className="type-display"><T>{verdict}</T></div>
           <p className="type-body"><T>{sub}</T></p>
-          {link ? <T className="self-start type-caption">← Status</T> : null}
         </div>
         <div className="flex flex-col items-start gap-1 sm:items-end">
           <T className="type-label-micro">Tempo block</T>
@@ -58,7 +57,7 @@ export const status = () => (
 
 export const halts = () => (
   <div className="flex flex-col gap-8">
-    <Banner dots={13} verdict="No halts" sub="Every watched price, the last 30 days." link />
+    <Banner dots={13} verdict="No halts" sub="Every watched price, the last 30 days." />
     <Rows n={6} />
   </div>
 );
