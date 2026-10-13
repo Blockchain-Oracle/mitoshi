@@ -66,7 +66,7 @@ export const GAMES = {
     lucky: ["Reels draw a live Window, a side and a reach.", "You see the real quote; pull the lever to place it.", "Settles like any call · the draw is checkable."],
     range: ["Pick a Window and a band.", "Closes inside: the house pays the multiple.", "Payout set aside; claim when it lands."],
     moonshot: ["Pick a side and a reach.", "Further pays more.", "Range's model, one edge open."],
-    "line-rider": ["Ride the real print line.", "Hug it to build a combo; drift drains your grip.", "Seeded run, replayed by the server before it scores · no stake."],
+    "line-rider": ["Sled the real chart: rises climb, drops fall, gaps open.", "Hold to press, let go to hop; lean ← → to flip.", "Seeded run, replayed by the server before it scores · no stake."],
     "candle-hop": ["Tap to lift through the candle gaps.", "One clipped candle ends it.", "Seeded run, replayed by the server before it scores · no stake."],
   } as Record<string, readonly string[]>,
 

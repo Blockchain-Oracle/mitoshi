@@ -83,6 +83,8 @@
   position: fixed; inset: 0; z-index: var(--z-modal); height: 100dvh; background: rgb(5 5 5); color: rgb(255 255 255);
   overscroll-behavior: contain; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
 }
+/* The sled has its own camera: its screen is the whole layer, not the letterboxed 16:9 field. */
+.as-screen--full.ar-screen.as-screen { inset: 0; top: 0; left: 0; translate: none; width: 100%; height: 100%; aspect-ratio: auto; }
 .as-screen.ar-screen { position: absolute; top: 50%; left: 50%; translate: -50% -50%; width: min(100vw, calc(100dvh * 16 / 9)); max-width: none; aspect-ratio: 16 / 9; border: 0; }
 .as-hud {
   position: absolute; inset: 0; z-index: 5; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between;
@@ -132,10 +134,10 @@
 .as-grip-k { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
 .as-grip-cells { display: flex; gap: 3px; padding: 3px; border: 2px solid rgba(255, 255, 255, 0.35); }
 .as-grip-cells span { width: 10px; height: 12px; background: rgba(255, 255, 255, 0.08); }
-.as-grip-cells span[data-on] { background: var(--profit); }
-.as-grip[data-warn] .as-grip-cells span[data-on] { background: var(--loss); }
-.as-grip[data-warn] .as-grip-cells { animation: as-blink 0.5s steps(2) infinite; }
-@keyframes as-blink { 50% { border-color: var(--loss); } }
+.as-grip-cells span[data-on] { background: var(--color-accent); }
+.as-grip[data-full] .as-grip-cells span[data-on] { background: var(--profit); }
+.as-grip[data-full] .as-grip-cells { animation: as-blink 0.5s steps(2) infinite; }
+@keyframes as-blink { 50% { border-color: var(--profit); } }
 @keyframes as-pop { from { transform: scale(1.35); } }
 @keyframes as-count { from { opacity: 0; transform: scale(1.8); } 60% { opacity: 1; } }
 @keyframes as-fade { from { opacity: 0; } }

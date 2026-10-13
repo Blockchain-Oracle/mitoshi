@@ -21,7 +21,7 @@ import { GAMES } from "../copy";
 import { useGames } from "../GamesProvider";
 import { ECON_TONE } from "../GamesRail";
 import { windowsLive } from "../lanes";
-import { useBoard, usePreviewTape } from "./data";
+import { useBoard, usePreviewTape, type PreviewTape } from "./data";
 
 const ORDER: readonly GameId[] = ["line-rider", "candle-hop", "lucky", "range", "moonshot", "duel", "practice"];
 
@@ -42,7 +42,7 @@ function ArcadeFact({ game }: { game: "line-rider" | "candle-hop" }) {
   return <span className="cab-fact">{GAMES.card.top(ARCADE.fmt(top.score), board.me ? ARCADE.fmt(board.me.best) : null)}</span>;
 }
 
-function Cabinet({ id, fact, open, tape }: { id: GameId; fact: ReactNode; open: boolean; tape?: readonly number[] | null }) {
+function Cabinet({ id, fact, open, tape }: { id: GameId; fact: ReactNode; open: boolean; tape?: PreviewTape | null }) {
   const { feedback, reducedMotion } = useGames();
   const entry = gameEntry(id);
   const built = entry.readiness.kind === "built";

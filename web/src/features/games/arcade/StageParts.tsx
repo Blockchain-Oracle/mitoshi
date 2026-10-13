@@ -56,16 +56,15 @@ export function StageTop({ score, combo, best, canPause, onPause, onExit }: { sc
 }
 
 const GRIP_SEGMENTS = 10;
-const GRIP_WARN = 0.25;
 
 /**
- * Line Rider's grip as a segmented 8-bit bar in the HUD (21st.dev 13075 theorcdev/8-bit-xp-bar, revamped: ten pixel
- * cells on the arena, profit while healthy, the loss colour and a blink under a quarter) — it lived only in the canvas.
+ * The sled's hop charge as a segmented 8-bit bar in the HUD (21st.dev 13075 theorcdev/8-bit-xp-bar, revamped: ten pixel
+ * cells on the arena, filling while you press into the line, profit when full — let go for the biggest hop).
  */
 export function GripMeter({ grip }: { grip: number }) {
   const lit = Math.ceil(Math.max(0, Math.min(1, grip)) * GRIP_SEGMENTS);
   return (
-    <div className="as-grip" data-warn={grip < GRIP_WARN || undefined} role="meter" aria-label={ARCADE.stage.grip} aria-valuemin={0} aria-valuemax={GRIP_SEGMENTS} aria-valuenow={lit}>
+    <div className="as-grip" data-full={grip >= 1 || undefined} role="meter" aria-label={ARCADE.stage.grip} aria-valuemin={0} aria-valuemax={GRIP_SEGMENTS} aria-valuenow={lit}>
       <span className="as-grip-k">{ARCADE.stage.grip}</span>
       <span className="as-grip-cells" aria-hidden>
         {Array.from({ length: GRIP_SEGMENTS }, (_, i) => (

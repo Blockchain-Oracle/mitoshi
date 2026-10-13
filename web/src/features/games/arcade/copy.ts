@@ -15,8 +15,8 @@ export const ARCADE = {
   games: {
     "line-rider": {
       title: "Line Rider",
-      line: "Ride the real chart",
-      control: "Drag, scroll or hold ↑ ↓",
+      line: "Sled the real chart",
+      control: "Hold to press · let go to hop · lean ← →",
     },
     "candle-hop": {
       title: "Candle Hop",
@@ -28,7 +28,7 @@ export const ARCADE = {
   /** The full-screen stage (R4-9, D-227; Senryo StageParts). */
   stage: {
     go: "GO",
-    grip: "Grip",
+    grip: "Charge",
     earned: "Your best on the board",
     earnedOn: (d: Date) => `Earned ${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`,
     sound: "Sound on",
@@ -51,7 +51,7 @@ export const ARCADE = {
   hud: {
     score: "Score",
     best: "Best",
-    combo: (mult: number) => `×${mult.toFixed(1)}`,
+    combo: (mult: number) => `×${Number.isInteger(mult) ? mult : mult.toFixed(1)}`,
   },
 
   title: {

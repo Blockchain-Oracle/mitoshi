@@ -46,7 +46,10 @@ export interface ArcadeTapeRow {
   feed: string;
   fromSec: number;
   toSec: number;
+  /** Levels 0..1000 over the tape's range (the canyon). */
   points: number[];
+  /** Print-to-print changes in tenths of a basis point (the sled's terrain). */
+  moves: number[];
 }
 
 export interface ArcadeStore {
@@ -115,16 +118,16 @@ export function createPgArcadeStore(sql: Sql): ArcadeStore {
     },
     async issueTape(seed, game, tape) {
       const rows = await sql<{ seed: string }[]>`
-        insert into arcade_tapes (seed, game, feed, from_sec, to_sec, points)
-        values (${seed}, ${game}, ${tape.feed}, ${tape.fromSec}, ${tape.toSec}, ${sql.json(tape.points)})
+        insert into arcade_tapes (seed, game, feed, from_sec, to_sec, points, moves)
+        values (${seed}, ${game}, ${tape.feed}, ${tape.fromSec}, ${tape.toSec}, ${sql.json(tape.points)}, ${sql.json(tape.moves)})
         on conflict (seed) do nothing returning seed`;
       return rows.length > 0;
     },
     async tape(seed) {
-      const rows = await sql<{ game: ArcadeGameId; feed: string; from_sec: string; to_sec: string; points: number[] }[]>`
-        select game, feed, from_sec::text, to_sec::text, points from arcade_tapes where seed = ${seed}`;
+      const rows = await sql<{ game: ArcadeGameId; feed: string; from_sec: string; to_sec: string; points: number[]; moves: number[] }[]>`
+        select game, feed, from_sec::text, to_sec::text, points, moves from arcade_tapes where seed = ${seed}`;
       const r = rows[0];
-      return r ? { game: r.game, feed: r.feed, fromSec: Number(r.from_sec), toSec: Number(r.to_sec), points: r.points } : null;
+      return r ? { game: r.game, feed: r.feed, fromSec: Number(r.from_sec), toSec: Number(r.to_sec), points: r.points, moves: r.moves } : null;
     },
     async byWallet(wallet, limit) {
       const rows = await sql<RunDb[]>`

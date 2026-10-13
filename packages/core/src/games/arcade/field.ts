@@ -52,6 +52,11 @@ export interface ArcadeRunConfig {
    * stored for the seed, so the run it checks is the run that was played.
    */
   tape?: readonly number[];
+  /**
+   * Line Rider's sled terrain (v3, ported from Senryo): the same prints as moves — each print's change from the one
+   * before, in tenths of a basis point. The sled normalises them over their own mean, so a calm tape still rides.
+   */
+  moves?: readonly number[];
 }
 
 /** A tape point's scale: 0 is the tape's low, TAPE_Q its high. */

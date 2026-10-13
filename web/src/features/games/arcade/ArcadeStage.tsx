@@ -61,7 +61,7 @@ export function ArcadeStage({ game }: { game: ArcadeGame }) {
   return (
     <div className="gm-page ar-cabinet">
       <div className="ar-attract">
-        {reducedMotion || playing ? <GameScene game={game} /> : <AttractCanvas game={game} tape={board?.tape?.points ?? null} />}
+        {reducedMotion || playing ? <GameScene game={game} /> : <AttractCanvas game={game} tape={board?.tape ?? null} />}
         <button type="button" className="du-cta ar-play" onClick={play} data-primary-action>
           <Play aria-hidden className="ar-play-icon" />
           {ARCADE.title.play}

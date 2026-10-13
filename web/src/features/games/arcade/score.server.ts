@@ -6,7 +6,7 @@ import {
   isArcadeSeed,
   MAX_RUN_TICKS,
   replayArcade,
-  RIDE_ENGINE_VERSION,
+  SLED_ENGINE_VERSION,
   seedFromBytes,
   ticksToMs,
   traceCanonical,
@@ -29,7 +29,8 @@ import type { BoardWire, ScoreAcceptedWire } from "./wire";
  * and accepts only a score it reproduced to the tick. It cannot prove a browser wasn't scripted, and doesn't claim
  * to: the label is "server-checked · not on-chain".
  */
-export const ENGINE_VERSION: Readonly<Record<ArcadeGame, number>> = { "line-rider": RIDE_ENGINE_VERSION, "candle-hop": FLAP_ENGINE_VERSION };
+/** Line Rider is the sled (v3, R4-9); Candle Hop the flyer on its tape (v2). */
+export const ENGINE_VERSION: Readonly<Record<ArcadeGame, number>> = { "line-rider": SLED_ENGINE_VERSION, "candle-hop": FLAP_ENGINE_VERSION };
 
 /** The board a title shows and the rank an over plate names come from the same ten rows. */
 export const BOARD_LIMIT = 10;
@@ -103,13 +104,13 @@ export async function acceptScore(claim: ScoreClaim, wallet: string | null, ip: 
   const engineVersion = ENGINE_VERSION[claim.game];
   if (claim.engineVersion !== engineVersion) return { ok: false, status: 409, error: "that run was played on another engine build" };
 
-  const envelope = envelopeCheck(claim.game, claim.durationMs, claim.trace, claim.score);
+  const envelope = envelopeCheck(claim.game, claim.durationMs, claim.trace, claim.score, claim.game === "line-rider");
   if (!envelope.ok) return { ok: false, status: 422, error: envelope.why };
 
   // Engine v2: the run is replayed on the tape issued with its seed; a seed never issued here is not rankable.
   const issued = await scores.tape(claim.seed);
   if (!issued || issued.game !== claim.game) return { ok: false, status: 422, error: "that run's seed was not issued by this board" };
-  const replay = replayArcade(claim.game, claim.seed, claim.trace, issued.points.length ? { calm: claim.calm, tape: issued.points } : { calm: claim.calm });
+  const replay = replayArcade(claim.game, claim.seed, claim.trace, { calm: claim.calm, ...(issued.points.length ? { tape: issued.points } : {}), ...(issued.moves.length ? { moves: issued.moves } : {}) });
   if (!replay.ended) return { ok: false, status: 422, error: "the run never ended" };
   if (replay.score !== claim.score) return { ok: false, status: 422, error: "the replay does not reproduce that score" };
   if (Math.abs(replay.ticks - envelope.ticks) > 1) return { ok: false, status: 422, error: "the replay does not reproduce that length" };

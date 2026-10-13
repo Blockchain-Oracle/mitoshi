@@ -3,6 +3,8 @@ import { MAX_RUN_TICKS, type ArcadeGame, type ArcadeRunConfig } from "./field";
 import { createFlapState, stepFlap } from "./flap";
 import { createRideState, RIDE_START_Q, rideScoreOf, stepRide } from "./ride";
 import { createRng } from "./rng";
+import { sledScoreOf, stepSled } from "./sled";
+import { createSledState } from "./sled-world";
 import type { FlapTrace, RideTrace } from "./trace";
 
 /**
@@ -54,6 +56,23 @@ export function replayFlap(seed: string, trace: FlapTrace, config: ArcadeRunConf
   return { score: state.score, ticks: state.tick, ended: state.over };
 }
 
+/** Line Rider v3, the sled (ported from Senryo `replayRide`, R4-9): the code holds from its tick until the next pair; it opens at 0. */
+export function replaySled(seed: string, trace: RideTrace, config: ArcadeRunConfig): ReplayResult {
+  const rng = createRng(seed);
+  const state = createSledState(rng, config);
+  let cursor = 0;
+  let code = 0;
+  while (!state.over && state.tick < MAX_RUN_TICKS) {
+    while (cursor < trace.length && (trace[cursor] as number) === state.tick) {
+      code = trace[cursor + 1] as number;
+      cursor += 2;
+    }
+    stepSled(state, code, rng, config);
+  }
+  return { score: sledScoreOf(state), ticks: state.tick, ended: state.over };
+}
+
+/** The server's replay: Line Rider is the sled (v3); Candle Hop the flyer. */
 export function replayArcade(game: ArcadeGame, seed: string, trace: readonly number[], config: ArcadeRunConfig): ReplayResult {
-  return game === "line-rider" ? replayRide(seed, trace, config) : replayFlap(seed, trace, config);
+  return game === "line-rider" ? replaySled(seed, trace, config) : replayFlap(seed, trace, config);
 }

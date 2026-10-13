@@ -13,7 +13,8 @@ import { useGames } from "../GamesProvider";
 import { countSfx, hopCrashSfx, hopScoreSfx, milestoneSfx, regainSfx, rideCrashSfx, rideStartSfx } from "./arcade-sfx";
 import { ARCADE } from "./copy";
 import { FlapCanvas, type FlapCue, type FlapHud } from "./FlapCanvas";
-import { RideCanvas, type RideCue, type RideHud } from "./RideCanvas";
+import { SledCanvas, type SledHud } from "./SledCanvas";
+import type { SledCue } from "./sled/sled-scene";
 import { localSeed, type ArcadeRun, type RunEnd } from "./run";
 import { Countdown, GripMeter, OverPlate, PausePlate, StageTop, type StageResult } from "./StageParts";
 import type { PostAbility, PostOutcome } from "./useArcadeScore";
@@ -26,7 +27,7 @@ export interface RunLayerProps {
   game: ArcadeGame;
   seed: string | null;
   /** The real-price tape issued with the seed (engine v2), and what it is of — shown under the run. */
-  tape: { feed: string; fromSec: number; toSec: number; points: readonly number[] } | null;
+  tape: { feed: string; fromSec: number; toSec: number; points: readonly number[]; moves: readonly number[] } | null;
   calm: boolean;
   best: number | null;
   ability: PostAbility;
@@ -67,7 +68,11 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
         streak.current = 0;
         runId.current += 1;
         // The issued tape rides only with its own seed; a local seed plays the seed's line.
-        setRun(seed && tape ? { id: runId.current, seed, calm, tape: tape.points } : { id: runId.current, seed: seed ?? localSeed(), calm });
+        setRun(
+          seed && tape
+            ? { id: runId.current, seed, calm, tape: tape.points, moves: tape.moves, tapeMeta: { feed: tape.feed, fromSec: tape.fromSec, toSec: tape.toSec } }
+            : { id: runId.current, seed: seed ?? localSeed(), calm },
+        );
         setPhase("playing");
       }, COUNT_MS);
       return () => window.clearTimeout(t);
@@ -101,14 +106,22 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
     [ability, best, feedback, game, onFinished, post, refresh],
   );
 
-  const onRideHud = useCallback((h: RideHud) => setHud({ score: h.score, combo: h.multiplier, grip: h.grip }), []);
+  const onSledHud = useCallback((h: SledHud) => setHud({ score: h.score, combo: h.combo, grip: h.charge }), []);
   const onFlapHud = useCallback((h: FlapHud) => setHud({ score: h.score, combo: 1, grip: 1 }), []);
-  const onRideCue = useCallback(
-    (cue: RideCue) => {
-      if (cue.kind === "milestone") {
-        milestoneSfx(cue.mult);
+  // The sled's moments in Mitoshi's synthesized cues (Senryo's feel table, mapped).
+  const onSledCue = useCallback(
+    (cue: SledCue) => {
+      if (cue.kind === "hop") feedback("tap");
+      else if (cue.kind === "gap") hopScoreSfx(cue.n - 1);
+      else if (cue.kind === "land") {
+        regainSfx();
+        if (cue.hard) feedback("confirm");
+      } else if (cue.kind === "combo" || cue.kind === "milestone") milestoneSfx(cue.kind === "combo" ? cue.combo * 2 : cue.m);
+      else if (cue.kind === "flip") {
+        milestoneSfx(8 + cue.n);
         feedback("confirm");
-      } else regainSfx();
+      }
+      // The crash's own cue is the end's (`onEnd`).
     },
     [feedback],
   );
@@ -155,13 +168,13 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
     else void navigator.clipboard?.writeText(`${text} ${url}`).catch(() => undefined);
   };
   const paused = phase === "paused" || phase === "over";
-  const combo = game === "line-rider" && hud.combo >= 2 ? ARCADE.hud.combo(hud.combo) : null;
+  const combo = game === "line-rider" && hud.combo > 1 ? ARCADE.hud.combo(hud.combo) : null;
 
   return createPortal(
     <div className="as-layer gm-stage-layer" data-phase={phase} data-reduced-motion={reducedMotion ? "true" : "false"}>
-      <div className="ar-screen as-screen" data-phase={phase === "playing" ? "playing" : "title"}>
+      <div className={`ar-screen as-screen${game === "line-rider" ? " as-screen--full" : ""}`} data-phase={phase === "playing" ? "playing" : "title"}>
         {game === "line-rider" ? (
-          <RideCanvas run={run} paused={paused} reduced={reducedMotion} onHud={onRideHud} onEnd={onEnd} onCue={onRideCue} />
+          <SledCanvas run={run} paused={paused} reduced={reducedMotion} onHud={onSledHud} onEnd={onEnd} onCue={onSledCue} />
         ) : (
           <FlapCanvas run={run} paused={paused} reduced={reducedMotion} onHud={onFlapHud} onEnd={onEnd} onCue={onFlapCue} />
         )}
