@@ -3,7 +3,7 @@ import { isAllHoursLane, type LaneSet } from "@cwf/core";
 /**
  * The after-hours fact, read from the lanes (R4-9, D-227; bugs 0 and 1 of the copy spec): while the NYSE is shut the
  * 24/7 lanes — crypto and the stocks with a 24/7 feed — still run. Counts the Windows trading on them now, so the line
- * says what the venue actually has instead of Canton's asset list.
+ * says what the venue actually has.
  */
 export function allDayLive(lanes: LaneSet, nowSec: number): number {
   return lanes.lanes

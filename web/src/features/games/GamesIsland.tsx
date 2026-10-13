@@ -8,6 +8,8 @@ import { useDataReady } from "@/providers/data/context";
 const Wait = () => <div className="container"><LoadingState shape="page" label="Loading" /></div>;
 const Hub = dynamic(() => import("./GamesHub").then((m) => m.GamesHub), { ssr: false, loading: Wait });
 const Practice = dynamic(() => import("./practice/PracticeStage").then((m) => m.PracticeStage), { ssr: false, loading: Wait });
+const Rank = dynamic(() => import("./rank/GamesRank").then((m) => m.GamesRank), { ssr: false, loading: Wait });
+const History = dynamic(() => import("./history/GamesHistory").then((m) => m.GamesHistory), { ssr: false, loading: Wait });
 const Lucky = dynamic(() => import("./lucky/LuckyStage").then((m) => m.LuckyStage), { ssr: false, loading: Wait });
 
 export function GamesHubIsland() {
@@ -20,4 +22,13 @@ export function PracticeIsland() {
 
 export function LuckyIsland() {
   return useDataReady() ? <Lucky /> : <Wait />;
+}
+
+/** Rank and History read through the query client the late data layer carries (R4-9, D-227). */
+export function RankIsland() {
+  return useDataReady() ? <Rank /> : <Wait />;
+}
+
+export function HistoryIsland() {
+  return useDataReady() ? <History /> : <Wait />;
 }

@@ -4,7 +4,7 @@
 // deal — `selectPracticeDeck(...)[0]` over the venue's lanes — with its disc and cadence, a CountdownRing to its close
 // (Ported from Owarine 90a91d71:web/src/components/kit/CountdownRing.tsx, R4-2), the price rolling on the Odometer, the
 // crowd's lean (hidden when there is no reading) and a 52 px PLAY. The "continue" plate became a chip in its corner;
-// the after-hours line is read from the lanes, not a Canton asset list.
+// the after-hours line is read from the lanes.
 import { isOk } from "@cwf/core";
 import { isTickerSymbol } from "@cwf/core/market";
 import { selectPracticeDeck, type PracticeCandidate } from "@cwf/core/games";
