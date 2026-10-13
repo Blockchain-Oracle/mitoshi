@@ -10,6 +10,10 @@ export default withMDX({
   reactStrictMode: true,
   agentRules: false,
   devIndicators: false,
-  redirects: async () =>
-    docs.host === RETIRED ? [] : [{ source: '/:path*', has: [{ type: 'host', value: RETIRED }], destination: `${docs.origin}/:path*`, statusCode: 301 }],
+  redirects: async () => [
+    ...(docs.host === RETIRED ? [] : [{ source: '/:path*', has: [{ type: 'host', value: RETIRED }], destination: `${docs.origin}/:path*`, statusCode: 301 }]),
+    // D-231: the bridge and reserves guides were removed with the bridge; old links land on the stocks overview.
+    { source: '/stocks/bridge', destination: '/stocks/overview', permanent: true },
+    { source: '/stocks/reserves', destination: '/stocks/overview', permanent: true },
+  ],
 });
