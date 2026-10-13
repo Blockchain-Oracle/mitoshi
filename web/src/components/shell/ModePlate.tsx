@@ -6,14 +6,12 @@
 // testnet, pressed again whenever the world changes. The full rail carries the plate (a ticket torn from the rail: the
 // stamp on a stub, a perforation, the name and the money); the icon rail carries the stamp alone. Replaces the static
 // TESTNET pill.
-import { ArrowUpRight, Eye, EyeOff } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useSyncExternalStore, type ReactNode } from "react";
 import { SHELL } from "@/lib/copy";
 import { webEnv } from "@/lib/env";
-import { setPrivacy, usePrivacy } from "@/lib/privacy";
-import { useDemoState } from "@/features/terminal/demo";
-import { dollars } from "@/providers/wallet/format";
 import { hasStoredConnection } from "@/lib/stored-session";
 import { cn } from "@/lib/utils";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -22,6 +20,9 @@ import type { EnvironmentMode } from "./environment";
 /** The world the shell is in: the session decides. A session still restoring reads as the testnet it most likely is (a
  *  returning account never flashes DEMO); `EnvironmentMode` holds the canvas until it settles. */
 const noSubscribe = () => () => undefined;
+// The plate's figure and eye load after first paint (the demo store stays out of every route's first load).
+const DemoPlateFigure = dynamic(() => import("./DemoPlateMoney").then((m) => m.DemoPlateFigure), { ssr: false, loading: () => <span className="mode-plate-money" /> });
+const DemoPlateEye = dynamic(() => import("./DemoPlateMoney").then((m) => m.DemoPlateEye), { ssr: false, loading: () => <span className="mode-plate-eye" /> });
 
 export function useShellMode(): EnvironmentMode {
   const session = useWalletSession();
@@ -67,8 +68,6 @@ function Pass({ mode, className, children }: { mode: EnvironmentMode; className:
  * over $10,000.00 with the privacy eye — and is no button: Sign in lives once, at the rail's foot.
  */
 function DemoPlate({ className }: { className?: string }) {
-  const demo = useDemoState();
-  const hidden = usePrivacy();
   const words = modeWords("demo");
   return (
     <div className={cn("mode-plate is-demo", className)} data-mode="demo" title={words.line}>
@@ -78,11 +77,9 @@ function DemoPlate({ className }: { className?: string }) {
       <span aria-hidden className="mode-plate-perf" />
       <span className="mode-plate-copy">
         <span className="mode-plate-label is-small">{words.label}</span>
-        <span className="mode-plate-money numbers">{hidden ? SHELL.masked : dollars(BigInt(demo.balanceBase))}</span>
+        <DemoPlateFigure />
       </span>
-      <button type="button" className="mode-plate-eye" aria-pressed={hidden} aria-label={hidden ? SHELL.privacyShow : SHELL.privacyHide} title={hidden ? SHELL.privacyShow : SHELL.privacyHide} onClick={() => setPrivacy(!hidden)}>
-        {hidden ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
-      </button>
+      <DemoPlateEye />
     </div>
   );
 }

@@ -90,6 +90,8 @@ export const SHELL = {
   /** The rail foot's short way to /download (D-230); its title says it in full. */
   railApp: "App",
   health: { healthy: "All systems live", waiting: "Waiting", degraded: "Running degraded", unreachable: "Status unreachable", unread: "Checking…" },
+  /** The chip's worst tone alone ("2 behind"), the words /status tallies with (T15). */
+  healthTally: { bad: "down", warn: "behind", wait: "waiting" },
   /** The top line's health chip names the chain; the network itself is said once, by the mode plate (D-228). */
   network: "Tempo",
   /** The rail's money tile (O-10). */

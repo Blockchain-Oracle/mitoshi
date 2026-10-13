@@ -4,7 +4,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { SHELL } from "@/lib/copy";
-import { STATUS } from "@/features/status/copy";
 import { worstTally } from "@/features/status/grade";
 import type { StatusRow } from "@/features/status/probes";
 
@@ -17,7 +16,7 @@ function chipOf(b: { overall?: string; rows?: Pick<StatusRow, "tone">[] } | null
   if (!b?.overall || !(b.overall in SHELL.health)) return { state: "unreachable", word: SHELL.health.unreachable };
   if (b.overall === "healthy" || b.overall === "unreachable") return { state: b.overall, word: SHELL.health[b.overall] };
   const worst = worstTally(b.rows ?? []);
-  return worst ? { state: worst.tone, word: `${worst.n} ${STATUS.tally[worst.tone]}` } : { state: b.overall as Overall, word: SHELL.health[b.overall as Overall] };
+  return worst ? { state: worst.tone, word: `${worst.n} ${SHELL.healthTally[worst.tone]}` } : { state: b.overall as Overall, word: SHELL.health[b.overall as Overall] };
 }
 
 export function HealthChip({ className }: { className?: string }) {
