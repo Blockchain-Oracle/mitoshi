@@ -52,6 +52,8 @@ export const RANGE = {
     gap: "Gap",
     gapLater: (when: string) => `Opens to bands in ${when}`,
     allHours: "24/7",
+    /** The session switch (R6 games §4.3.2): one chip per asset, the lane picked here when both are live. */
+    session: { label: "Session", regular: "NYSE", stock24: "24/7", only24: "24/7 session" },
     none: (next: string) => `No open Window · next in ${next}`,
     noneLater: "No open Window",
     noModel: (asset: string) => `${asset}: no price yet`,

@@ -232,3 +232,11 @@
   .game-page .rg > :not(.bc):not(.ms-board) { grid-column: 2; }
   .game-page .rg > .game-action { top: calc(var(--stage-sticky-top) + 12px); bottom: auto; }
 }
+
+/* R6 games §4.3.2: the chip's ring is a progress arc alone (its inner text only for assistive tech), the time beside it
+   at the 12 px decide token, accent in the last tenth; the session switch and the 24/7-only line under the rail. */
+.gw-ring .kit-ring-left { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.gw-left { font: 600 var(--text-data-sm, 12px) / 1 var(--font-data); color: var(--color-ink); font-variant-numeric: tabular-nums; }
+.gw-left[data-urgent] { color: var(--color-accent); }
+.gw-lane { margin-top: 8px; }
+.gw-session { margin: 8px 0 0; font: 500 var(--text-data-sm, 12px) / 1.2 var(--font-body); color: var(--color-ink-secondary); }

@@ -3,14 +3,16 @@
  * The Window a round sits on (R4-5, D-227; Ported from Owarine 90a91d71:web/src/features/range/WindowPicker.tsx — every
  * live Window, soonest first, no cut to four): the cadences as TextTabs (5m · 15m · 1h · Gap, only those with a priced
  * Window live; the last one is remembered by the page) over a sideways rail of chips (the kit's ScrollRail, 21st 10484: edge fades, a named region) — the
- * asset's disc, its ticker (a 24/7 lane marked) and the time left on a small ring — acting as one radiogroup whose
+ * asset's disc, its ticker and the time left beside a small ring (R6 games §4.3.2: one chip per asset, the session
+ * picked by `LaneSwitch` under the rail) — acting as one radiogroup whose
  * arrow keys move the pick (the roving focus of 21st.dev 35042 kuratlielia/chip-group, single-select, no morph). Shared by Range
  * and Moonshot; an asset the reserve can't price is a disabled chip with its reason as the title.
  */
 import { formatCadence } from "@cwf/core/copy";
 import type { EventMarket, MarketId } from "@cwf/core";
 import { useRef, type KeyboardEvent } from "react";
-import { CountdownRing } from "@/components/kit/CountdownRing";
+import { CountdownRing, formatLeft } from "@/components/kit/CountdownRing";
+import { useNowMs } from "@/lib/clock";
 import { ScrollRail } from "@/components/kit/ScrollRail";
 import type { ReactNode } from "react";
 import { TextTabs } from "@/components/kit/TextTabs";
@@ -18,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { AssetDisc } from "../markets/hero/AssetDisc";
 import { RANGE } from "./copy";
 import type { BandWindow } from "./data";
+import { LaneSwitch } from "./LaneSwitch";
 import "@/components/kit/kit.css";
 
 export const cadenceKeyOf = (m: EventMarket): string => (m.lane === "gap" ? "gap" : formatCadence(m.intervalSec));
@@ -34,7 +37,15 @@ export function WindowPicker({ windows, pickedId, onPick, gapInSec = null, aside
   const keys = cadenceKeysOf(priced);
   const picked = priced.find((w) => w.market.marketId === pickedId) ?? null;
   const cadence = picked ? cadenceKeyOf(picked.market) : (keys[0] ?? "");
-  const chips = windows.filter((w) => cadenceKeyOf(w.market) === cadence);
+  const inCadence = windows.filter((w) => cadenceKeyOf(w.market) === cadence);
+  // One chip per asset (R6 games §4.3.2): the picked Window for the picked asset, else its NYSE lane, else its 24/7 one.
+  const byAsset = new Map<string, BandWindow[]>();
+  for (const w of inCadence) byAsset.set(w.market.asset, [...(byAsset.get(w.market.asset) ?? []), w]);
+  const chips = [...byAsset.values()].map(
+    (ws) => ws.find((w) => w.market.marketId === pickedId) ?? ws.find((w) => w.model && w.market.lane === "regular") ?? ws.find((w) => w.model) ?? ws[0]!,
+  );
+  const twin = picked ? (inCadence.find((w) => w.model && w.market.asset === picked.market.asset && w.market.lane !== picked.market.lane)?.market ?? null) : null;
+  const nowMs = useNowMs();
   const rail = useRef<HTMLDivElement>(null);
   const choose = (key: string) => {
     const first = priced.find((w) => cadenceKeyOf(w.market) === key);
@@ -51,7 +62,6 @@ export function WindowPicker({ windows, pickedId, onPick, gapInSec = null, aside
     onPick(next.market.marketId);
     rail.current?.querySelector<HTMLElement>(`[data-id="${next.market.marketId}"]`)?.focus();
   };
-  const allHoursTwin = (m: EventMarket) => m.lane === "stock24" && chips.some((w) => w.market.asset === m.asset && w.market.lane === "regular");
   return (
     <div className="gw">
       <div className="gw-tabs-row">
@@ -77,8 +87,8 @@ export function WindowPicker({ windows, pickedId, onPick, gapInSec = null, aside
               >
                 <AssetDisc asset={m.asset} className="gw-disc" />
                 <span className="gw-sym">{m.asset}</span>
-                {allHoursTwin(m) ? <span className="gw-tag">{RANGE.windows.allHours}</span> : null}
                 <CountdownRing startMs={m.tradingStartSec * 1000} endMs={m.lockAtSec * 1000} size="sm" className="gw-ring" />
+                <span className="gw-left numbers" data-urgent={leftFraction(m, nowMs) < 0.1 || undefined} aria-hidden>{nowMs > 0 ? formatLeft(m.lockAtSec * 1000 - nowMs) : null}</span>
               </button>
             );
           })}
@@ -90,6 +100,13 @@ export function WindowPicker({ windows, pickedId, onPick, gapInSec = null, aside
           ) : null}
         </div>
       </ScrollRail>
+      {picked ? <LaneSwitch picked={picked.market} twin={twin} onPick={onPick} /> : null}
     </div>
   );
+}
+
+/** How much of the Window's trading time is left, 0–1 (the time beside the ring turns accent in the last tenth). */
+function leftFraction(m: EventMarket, nowMs: number): number {
+  const span = Math.max(1, (m.lockAtSec - m.tradingStartSec) * 1000);
+  return nowMs > 0 ? Math.max(0, m.lockAtSec * 1000 - nowMs) / span : 1;
 }
