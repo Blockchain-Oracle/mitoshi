@@ -11,7 +11,8 @@ import { FluentArt } from "@/components/kit/SkyCollage";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import type { FluentName } from "@/lib/art/fluent";
 import { formatCadence } from "@cwf/core/copy";
-import { landingBoard, printUsd, type BoardAsset } from "./board";
+import { landingBoard, type BoardAsset } from "./board";
+import { printUsd } from "./print-usd";
 import { WORDS } from "./words";
 
 /** A band of every asset with Windows open, its last signed opening print and its shortest Window, sliding past. */

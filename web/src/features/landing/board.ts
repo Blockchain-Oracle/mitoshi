@@ -100,12 +100,3 @@ export async function landingBoard(): Promise<LandingBoard | null> {
     return null;
   }
 }
-
-/** A signed print in dollars, exact from its 8-decimal integer: "$67,120.45". */
-export function printUsd(e8: string): string {
-  const v = BigInt(e8);
-  const cents = (v + 500_000n) / 1_000_000n;
-  const whole = cents / 100n;
-  const frac = (cents % 100n).toString().padStart(2, "0");
-  return `$${whole.toLocaleString("en-US")}.${frac}`;
-}

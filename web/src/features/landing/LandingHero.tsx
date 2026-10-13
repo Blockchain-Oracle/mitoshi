@@ -74,7 +74,7 @@ export function LandingHero() {
             <Link href={START} className="kit-pill kit-pill--accent kit-pill--lg" data-primary-action>
               {hero.start} <ArrowRight aria-hidden />
             </Link>
-            <Link href={START} className="kit-pill kit-pill--white kit-pill--lg">{hero.paper}</Link>
+            <Link href={START} className="kit-pill kit-pill--ghost kit-pill--lg">{hero.paper}</Link>
           </div>
         </div>
         <div className="lp-phone-col">
