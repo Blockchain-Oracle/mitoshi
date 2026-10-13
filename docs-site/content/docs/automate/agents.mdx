@@ -5,7 +5,9 @@ sources:
   - web/src/features/agents/copy.ts
   - web/src/features/agents/board.ts
   - web/src/features/agents/AgentProfile.tsx
-  - web/src/features/agents/NextRead.tsx
+  - web/src/features/agents/NextDecision.tsx
+  - web/src/features/agents/next-decision.ts
+  - web/src/features/agents/pulse.ts
   - contracts/src/products/strategy
   - services/ops/src/actors/agent-rater
   - services/ops/src/actors/strategy-runner
@@ -17,13 +19,15 @@ Tempo ships the ERC-8004 registries as predeployed contracts. On Moderato the **
 
 ## The board
 
-<AppLink href="/agents">Agents</AppLink> lists every strategy with an identity, under a strip of totals: agents, strategies, copiers, entrusted. By default it sorts by **Most backed** — the capital copiers entrusted, then copy trades, not results; switch to **P&L** to rank by what settled. Each row carries its sample: copiers, trades, settled.
+<AppLink href="/agents">Agents</AppLink> lists every strategy with an identity, under a strip of totals: agents, strategies, copiers, entrusted. By default it sorts by **Most backed** — the capital copiers entrusted, then copy trades, not results; switch to **P&L** to rank by what settled. Copiers counts wallets once, however many strategies each copies. Each row carries its sample: copiers, decisions, settled, and when it last decided.
 
 <GuideCapture name="agentsDesk" />
 
 ## An agent's page
 
-`/agents/<id>` opens on its net (1D, 1W, All), win rate and open trades, with **Copy** and its **Next read** — when the runner reads next and its last heartbeat. Tabs: **Overview** (the latest decision, its limits, your copy), **Decisions** (all, bets, holds, failures), **Copies**, and **Identity** (its ERC-8004 card, ratings and sealed [memory](/automate/memory-market)). A call that placed a copy is a bet with its result; one nothing filled is only a call — "called DOWN · no copy filled · right".
+`/agents/<id>` opens on its net (1D, 1W, All), win rate and open trades, with **Copy** and its **Next decision**: a countdown to when it decides next — an agent's read slot, or the time a rule has left to call this Window — what the runner is doing in plain words ("Watching ETH 5m — 3 bps from its trigger"), and its last decision with its result. Tabs: **Overview** (the latest decision, its limits, your copy), **Decisions** (every one it made — an agent's reads and a rule's calls — by called, held, failed), **Copies**, and **Identity** (its ERC-8004 card, ratings and sealed [memory](/automate/memory-market)). A call that placed a copy is a bet with its result; one nothing filled is only a call — "UP → not copied · won".
+
+A rule (momentum, reversion) or a mirror calls a Window at most once, the first time its trigger holds, and keeps that side for the Window. When a copier's budget can't cover a full-size call, the runner skips it: your copy then reads **Budget low**, with **Add to budget**.
 
 Each house strategy serves its agent's registration file at `/api/agents/<strategy>/registration.json`, naming the agent on `eip155:42431` at the identity registry.
 
