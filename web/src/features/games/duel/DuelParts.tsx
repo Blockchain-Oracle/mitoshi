@@ -44,7 +44,7 @@ export function DuelEntry({ tier, onTier, onFind, busy, error }: { tier: StakeTi
   );
 }
 
-export function DuelQueue({ queue, me, onLeave }: { queue: Extract<DuelQueueWire, { status: "waiting" }>; me: string; onLeave: () => void }) {
+export function DuelQueue({ queue, me, nextDealSec, onLeave }: { queue: Extract<DuelQueueWire, { status: "waiting" }>; me: string; nextDealSec: number | null; onLeave: () => void }) {
   const tier = STAKE_TIERS.find((t) => t.id === queue.tier);
   return (
     <section className="du-queue" aria-label={DUEL.queue.title} aria-live="polite">
@@ -65,7 +65,7 @@ export function DuelQueue({ queue, me, onLeave }: { queue: Extract<DuelQueueWire
       <h2 className="du-title">{DUEL.queue.title}</h2>
       <p className="du-note">
         {queue.refusal ? DUEL.queue.noDeck(queue.refusal) : null}
-        {queue.nextDealSec !== null ? ` · ${DUEL.queue.deckIn(queue.nextDealSec)}` : null}
+        {nextDealSec !== null ? ` · ${DUEL.queue.deckIn(nextDealSec)}` : null}
       </p>
       <button type="button" className="du-ghost" onClick={onLeave}>
         {DUEL.queue.leave}

@@ -93,30 +93,36 @@ function pairedWire(m: DuelMatchRow, wallet: string): DuelPairedWire {
   };
 }
 
-/** Every live 5-minute Window that fills the per-card stake on both sides right now, as deck candidates. */
-async function candidates(capBase: bigint): Promise<{ list: DeckCandidate[]; policy: DeckPolicy; nowSec: number } | null> {
+/**
+ * Every live 5-minute Window with the arena's headroom left that fills the per-card stake on both sides right now (the
+ * deck's candidates), and every live 5-minute Window at all (the schedule `nextDealableSec` projects the next deck from).
+ */
+async function candidates(capBase: bigint): Promise<{ list: DeckCandidate[]; schedule: DeckCandidate[]; policy: DeckPolicy; nowSec: number } | null> {
   const port = createMarketsProvider();
   const lanes = await port.listLiveLanes();
   if (!isOk(lanes)) return null;
   const nowSec = Math.floor(port.nowMs() / 1_000);
-  const markets = lanes.value.lanes.flatMap((l) => l.markets).filter((m) => m.intervalSec === INTERVAL_5M_SEC && m.tradingStartSec <= nowSec && m.lockAtSec - nowSec >= DEAL_HEADROOM_SEC);
+  const live = lanes.value.lanes.flatMap((l) => l.markets).filter((m) => m.intervalSec === INTERVAL_5M_SEC && m.tradingStartSec <= nowSec && nowSec < m.lockAtSec);
+  // The card's life is counted to its lock: the arena checks `lockAt` at the reveal and at every pick.
+  const asCandidate = (m: (typeof live)[number], trading: boolean): DeckCandidate => ({ marketId: m.marketId, asset: m.asset, intervalSec: m.intervalSec, expirySec: m.lockAtSec, trading, spreadRaw: 0n, depthRaw: 0n });
   const list = await Promise.all(
-    markets.map(async (m): Promise<DeckCandidate> => {
-      const ref = { marketId: m.marketId, decimals: m.decimals, intervalSec: m.intervalSec };
-      const [up, down] = await Promise.all([port.freshQuoteStake(ref, "up", capBase), port.freshQuoteStake(ref, "down", capBase)]);
-      const fills = isOk(up) && isOk(down) && up.value !== null && down.value !== null && !up.value.partial && !down.value.partial;
-      // The card's life is counted to its lock: the arena checks `lockAt` at the reveal and at every pick.
-      return { marketId: m.marketId, asset: m.asset, intervalSec: m.intervalSec, expirySec: m.lockAtSec, trading: fills, spreadRaw: 0n, depthRaw: 0n };
-    }),
+    live
+      .filter((m) => m.lockAtSec - nowSec >= DEAL_HEADROOM_SEC)
+      .map(async (m) => {
+        const ref = { marketId: m.marketId, decimals: m.decimals, intervalSec: m.intervalSec };
+        const [up, down] = await Promise.all([port.freshQuoteStake(ref, "up", capBase), port.freshQuoteStake(ref, "down", capBase)]);
+        const fills = isOk(up) && isOk(down) && up.value !== null && down.value !== null && !up.value.partial && !down.value.partial;
+        return asCandidate(m, fills);
+      }),
   );
-  const policy: DeckPolicy = { supportedAssets: [...new Set(markets.map((m) => m.asset))], maxSpreadRaw: 0n, minDepthRaw: 0n, horizonSec: INTERVAL_5M_SEC, minHeadroomSec: DEAL_HEADROOM_SEC, cadences: [INTERVAL_5M_SEC] };
-  return { list, policy, nowSec };
+  const policy: DeckPolicy = { supportedAssets: [...new Set(live.map((m) => m.asset))], maxSpreadRaw: 0n, minDepthRaw: 0n, horizonSec: INTERVAL_5M_SEC, minHeadroomSec: DEAL_HEADROOM_SEC, cadences: [INTERVAL_5M_SEC] };
+  return { list, schedule: live.map((m) => asCandidate(m, true)), policy, nowSec };
 }
 
-/** Joins the queue at a tier, and pairs with whoever waits longest there when a deck can be dealt now. */
 /** The app's Tempo chain (Moderato on testnet). */
 const chainId = (): number => tempoChain(webEnv.markets.network).id;
 
+/** Joins the queue at a tier, and pairs with whoever waits longest there when a deck can be dealt now. */
 export async function enterQueue(input: { wallet: Address; tier: StakeTierId; clientSeed: Bytes32; origin: string }): Promise<Outcome<DuelQueueWire>> {
   const duels = duelStore();
   const key = deckKey();
@@ -140,7 +146,7 @@ export async function enterQueue(input: { wallet: Address; tier: StakeTierId; cl
   if (!dealt || !selection || !selection.ok) {
     await duels.release(opponent.wallet);
     await duels.release(input.wallet);
-    const next = dealt ? nextDealableSec(dealt.list.map((c) => ({ ...c, trading: true })), dealt.policy, dealt.nowSec, 300) : null;
+    const next = dealt ? nextDealableSec(dealt.schedule, dealt.policy, dealt.nowSec, 300) : null;
     return waiting(dealt ? "no deck right now" : "the venue could not be read", next);
   }
 
@@ -197,7 +203,6 @@ export async function leaveQueue(wallet: Address): Promise<void> {
 }
 
 const FINISHED = new Set(["finalized", "refunded"]);
-
 
 /** One match: what was committed, what the chain says now, and — once both pots are in — the reveal material. */
 export async function readMatch(input: { matchId: Bytes32; wallet: Address | null; origin: string }): Promise<Outcome<DuelMatchWire>> {

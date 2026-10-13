@@ -27,6 +27,8 @@ import { useDuelMatch, useDuelQueue, useDuelWrite } from "./useDuel";
 import "./duel.css";
 
 const PRE_PICK = new Set(["pending", "waiting", "activeUnrevealed"]);
+/** How often a waiting player asks to be paired again when no next deck was projected. */
+const RETRY_MS = 15_000;
 
 /** The cranks anyone may send for a match right now, in the order the arena accepts them. */
 export function cranksFor(m: DuelMatchWire, address: string | null, nowMs: number, write: ReturnType<typeof useDuelWrite>["write"]): Crank[] {
@@ -174,6 +176,22 @@ export function DuelStage() {
   const [finding, setFinding] = useState(false);
   const nowMs = useNowMs();
   const m = match.data ?? null;
+  // While waiting, stay in line and ask again — at the next deck the server projected, else every 15 s — so two
+  // players who both arrived before a deck existed are paired the moment one can be dealt. The projection is kept as a
+  // moment (the queue's plain polls don't carry it), so the countdown runs between asks.
+  const waitingTier = queue?.status === "waiting" ? queue.tier : null;
+  const queuedAt = queue?.status === "waiting" ? queue.queuedAt : null;
+  const projected = queue?.status === "waiting" ? queue.nextDealSec : null;
+  const [dealAtMs, setDealAtMs] = useState<number | null>(null);
+  useEffect(() => {
+    if (!waitingTier) setDealAtMs(null);
+    else if (projected !== null) setDealAtMs(Date.now() + projected * 1_000);
+  }, [waitingTier, projected, queuedAt]);
+  useEffect(() => {
+    if (!waitingTier) return;
+    const id = window.setTimeout(() => void find(waitingTier), dealAtMs !== null ? Math.max(2_000, dealAtMs - Date.now()) : RETRY_MS);
+    return () => window.clearTimeout(id);
+  }, [waitingTier, dealAtMs, queuedAt, find]);
   useImmersive(m?.status === "picking");
   useEffect(() => () => stopBgm(), []);
   // The match chord when the queue pairs you; the duel's own sting when the pot is decided.
@@ -206,7 +224,7 @@ export function DuelStage() {
     <div className="gm-page du-stage">
       {!paired ? (
         queue?.status === "waiting" ? (
-          <DuelQueue queue={queue} me={address ?? ""} onLeave={() => void leave()} />
+          <DuelQueue queue={queue} me={address ?? ""} nextDealSec={dealAtMs !== null && nowMs > 0 ? Math.max(0, Math.round((dealAtMs - nowMs) / 1_000)) : null} onLeave={() => void leave()} />
         ) : (
           <DuelEntry tier={tier} onTier={setTier} onFind={() => void onFind()} busy={finding} error={error} />
         )
