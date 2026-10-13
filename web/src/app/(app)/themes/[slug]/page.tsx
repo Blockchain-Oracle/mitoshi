@@ -3,6 +3,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ThemeScreen } from "@/features/themes/ThemeScreen";
+import { DataGate } from "@/providers/data/DataGate";
 import Loading from "./loading";
 
 type Params = Promise<{ slug: string }>;
@@ -16,7 +17,11 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 async function Theme({ params, searchParams }: { params: Params; searchParams: Search }) {
   const [{ slug }, { follow }] = await Promise.all([params, searchParams]);
   if (!/^\d{1,18}$/.test(slug)) return <p className="th-note">No theme with this number.</p>;
-  return <ThemeScreen themeId={BigInt(slug)} openFollow={follow === "1"} />;
+  return (
+    <DataGate fallback={<Loading />}>
+      <ThemeScreen themeId={BigInt(slug)} openFollow={follow === "1"} />
+    </DataGate>
+  );
 }
 
 export default function ThemePage({ params, searchParams }: { params: Params; searchParams: Search }) {

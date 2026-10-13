@@ -4,6 +4,7 @@ import { isAddress } from "viem";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { TokenScreen } from "@/features/launch/TokenScreen";
+import { DataGate } from "@/providers/data/DataGate";
 import Loading from "./loading";
 
 type Params = Promise<{ token: string }>;
@@ -16,7 +17,11 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 async function Token({ params }: { params: Params }) {
   const { token } = await params;
   if (!isAddress(token)) return <p className="lp-note">No launch at this address.</p>;
-  return <TokenScreen token={token as `0x${string}`} />;
+  return (
+    <DataGate fallback={<Loading />}>
+      <TokenScreen token={token as `0x${string}`} />
+    </DataGate>
+  );
 }
 
 export default function LaunchTokenPage({ params }: { params: Params }) {

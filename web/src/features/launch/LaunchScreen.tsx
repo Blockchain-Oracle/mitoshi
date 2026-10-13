@@ -22,7 +22,7 @@ export function LaunchScreen() {
   const shown = rows.filter((r) => (tab === "all" ? true : tab === "meme" ? r.kind === "memecoin" : tab === "stable" ? r.kind === "stablecoin" : r.meme?.stage === "graduated"));
   return (
     <section className="lp-page">
-      <header className="lp-head">
+      <header className="lp-top">
         <div className="lp-head-text">
           <h1 className="type-display text-ink">{LAUNCH.title}</h1>
           <p className="type-body text-ink-secondary">{LAUNCH.line}</p>

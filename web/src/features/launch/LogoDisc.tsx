@@ -18,7 +18,7 @@ export function hostedLogo(uri: string): string | null {
 export function LogoDisc({ uri, symbol, size = "md", className }: { uri: string; symbol: string; size?: "sm" | "md" | "lg"; className?: string }) {
   const src = hostedLogo(uri);
   return (
-    <span className={cn("lp-disc", className)} data-size={size} aria-hidden>
+    <span className={cn("lp-logo", className)} data-size={size} aria-hidden>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {src ? <img src={src} alt="" /> : <span>{symbol.slice(0, 2)}</span>}
     </span>

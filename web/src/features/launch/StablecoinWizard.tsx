@@ -88,7 +88,7 @@ export function StablecoinWizard() {
         {progress ? (
           <>
             <p className="numbers type-caption text-ink-secondary">{S.progress(done, progress.length)}</p>
-            <ol className="lp-steps">{progress.map((p) => <li key={p.step} data-done={p.done ? "" : undefined}>{p.step}</li>)}</ol>
+            <ol className="lp-stepper">{progress.map((p) => <li key={p.step} data-done={p.done ? "" : undefined}>{p.step}</li>)}</ol>
           </>
         ) : null}
         <Link href={`/launch/${launched}`} className={pillButtonVariants({ tone: "accent", size: "lg", block: true })}>{LAUNCH.meme.open}</Link>
