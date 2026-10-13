@@ -14,7 +14,7 @@ const MAX_MS = 3_500;
 const KEY = "cwf.splash";
 const SPARK = "M4 36 L26 28 L50 32 L72 18 L98 24 L122 10 L156 13";
 /** Runs before the cover paints: a tab that already saw it, or the terminal, hides it with no flash (`states.css`). */
-const SEEN_SCRIPT = `try{if(sessionStorage.getItem("${KEY}")||location.pathname.indexOf("/trade")===0||/CWFShell\//.test(navigator.userAgent))document.documentElement.dataset.splashSeen="1"}catch(e){}`;
+const SEEN_SCRIPT = `try{if(sessionStorage.getItem("${KEY}")||location.pathname.indexOf("/trade")===0||/CWFShell\\//.test(navigator.userAgent))document.documentElement.dataset.splashSeen="1"}catch(e){}`;
 
 export function Splash() {
   // Server and first client render agree (the HTML paints the cover while the page hydrates); a later load in the tab,
