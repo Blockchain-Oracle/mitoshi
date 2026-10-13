@@ -5,7 +5,8 @@
  * `OpsSendError.code`). A receipt with status reverted is an error too. Ported in role from Agari
  * 03b30ab:packages/markets/src/ops/send.ts (`sendOps`).
  */
-import { BaseError, ContractFunctionRevertedError, decodeErrorResult, type Hex, type TransactionReceipt } from "viem";
+import { BaseError, ContractFunctionRevertedError, decodeErrorResult, type Address, type Hex, type TransactionReceipt } from "viem";
+import { prepareTransactionRequest } from "viem/actions";
 import { eventsEngineAbi } from "@cwf/clients/abis/EventsEngine";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
@@ -13,7 +14,7 @@ import { fairValueGuardAbi } from "@cwf/clients/abis/FairValueGuard";
 import { strategyRegistryAbi } from "@cwf/clients/abis/StrategyRegistry";
 import { EXPIRING_NONCE_MAX_SEC } from "@cwf/core";
 import type { Call } from "../tx/batch";
-import { sendBatch } from "../tx/send";
+import { buildSendParameters, sendBatch } from "../tx/send";
 import { chainNowSec, type OpsClient } from "./client";
 
 export class OpsSendError extends Error {
@@ -103,4 +104,20 @@ export async function sendOps(client: OpsClient, calls: readonly Call[], options
   }
   if (receipt.status !== "success") throw new OpsSendError(`reverted in block ${receipt.blockNumber}`, null, receipt.transactionHash);
   return { hash: receipt.transactionHash, receipt };
+}
+
+/**
+ * A send's dry run (D-230): the transaction `sendOps` would send, filled as the chain fills it (every call executed,
+ * gas estimated) from `from` — never signed, never sent, so it needs no key and can't clash with the live sender's
+ * nonces. Resolves with the gas; a refusal throws `OpsSendError` with the engine error's name, as `sendOps` does.
+ */
+export async function simulateOps(client: OpsClient, calls: readonly Call[], from: Address, nowSec: number): Promise<{ gas: bigint }> {
+  const { parameters } = buildSendParameters({ calls, sponsored: false, nonce: { kind: "expiring", validForSec: Math.min(OPS_VALID_FOR_SEC, EXPIRING_NONCE_MAX_SEC) }, nowSec });
+  try {
+    const filled = (await prepareTransactionRequest(client.public as never, { ...parameters, account: from, chain: client.chain } as never)) as { gas?: bigint };
+    return { gas: filled.gas ?? 0n };
+  } catch (error) {
+    const name = engineErrorName(error);
+    throw new OpsSendError(`simulation reverted${name ? `: ${name}` : `: ${short(error)}`}`, name);
+  }
 }

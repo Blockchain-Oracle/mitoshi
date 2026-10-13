@@ -1,12 +1,14 @@
 // Ported from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:services/ops/src/actors/price-relay/boundary-cache.ts (RedStone part; Pyth removed).
 /**
- * One gateway fetch per boundary for everything that needs it: refetched every 3 s while a feed still lacks a signer
- * until T + 60, every 30 s after that until T + 300 (a late fifth package lets a primary record before its strict
- * window ends), then frozen. Kept a day.
+ * One gateway fetch per boundary for everything that needs it: refetched every 2 s while a feed still lacks a signer
+ * until T + 30, every 3 s until T + 60, every 30 s after that until T + 300 (a late fifth package lets a primary record
+ * before its strict window ends), then frozen. Kept a day.
  */
 import { feedAt } from "@cwf/markets/ops";
 import { fetchRedstoneAt, type GatewayResponse, type RedstoneSources } from "../../prices/redstone-gateway";
 
+const EARLY_REFETCH_MS = 2_000;
+const EARLY_SEC = 30;
 const REFETCH_MS = 3_000;
 const LATE_REFETCH_MS = 30_000;
 const STRICT_MAX_SEC = 300;
@@ -26,7 +28,8 @@ export class BoundaryCache {
     const entry = this.byT.get(tSec) ?? { response: null, lastTryMs: 0, frozen: false, inflight: null, error: null };
     this.byT.set(tSec, entry);
     if (entry.frozen || entry.inflight) return entry.inflight ?? entry.response;
-    const every = entry.response && entry.response.fetchedAtMs / 1000 >= tSec + 60 ? LATE_REFETCH_MS : REFETCH_MS;
+    const age = entry.response ? entry.response.fetchedAtMs / 1000 - tSec : 0;
+    const every = age >= 60 ? LATE_REFETCH_MS : age >= EARLY_SEC ? REFETCH_MS : EARLY_REFETCH_MS;
     if (entry.response && Date.now() - entry.lastTryMs < every) return entry.response;
     entry.lastTryMs = Date.now();
     entry.inflight = fetchRedstoneAt(tSec, this.sources.gateways)

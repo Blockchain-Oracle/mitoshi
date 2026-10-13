@@ -5,8 +5,10 @@
  * two pairs for failover, sent as `x-api-key`, at most one request a second per key. Server-side only: a browser asks
  * our own proxy (`/api/prices/redstone-payload`), never a gateway with a key.
  *
- * `REDSTONE_GATEWAYS` (a secret): JSON `[{"url":"…","apiKey":"…"}, …]`. Without it, `REDSTONE_GATEWAY_URLS` (comma
- * separated, no key) or the public pair — which works only outside RedStone's rejection windows, until 2026-10-29.
+ * Every gateway the process knows, in order (D-230): `REDSTONE_GATEWAYS` (a secret: JSON `[{"url":"…","apiKey":"…"}, …]`),
+ * then `REDSTONE_GATEWAY_URLS` (comma separated, no key), then the public pair — which answers outside RedStone's
+ * rejection windows until 2026-10-29 (`REDSTONE_PUBLIC_FALLBACK=0` leaves it out). A refusing gateway rests briefly
+ * and the next one answers, so the moment a key lands it carries every read, and until then nothing stalls on one host.
  * The packages, signers and data service are the same either way; only the transport changes.
  */
 import { REDSTONE_GATEWAY, redstoneHistoricalUrl, redstoneLatestUrl } from "./redstone";
@@ -35,20 +37,24 @@ export const REDSTONE_KEY_INTERVAL_MS = 1_000;
 
 const clean = (url: string) => url.trim().replace(/\/+$/, "");
 
-/** The configured gateways, authenticated first; throws on a malformed `REDSTONE_GATEWAYS` rather than run without it. */
+/** Every gateway, authenticated first, then plain URLs, then the public pair; throws on a malformed `REDSTONE_GATEWAYS`
+ * rather than run without it. A URL listed twice is asked once (its first, keyed entry). */
 export function redstoneGatewaysFromEnv(env: Record<string, string | undefined> = process.env): RedstoneGateway[] {
+  const out: RedstoneGateway[] = [];
+  const add = (g: RedstoneGateway) => void (out.some((x) => x.url === g.url) || out.push(g));
   const json = env.REDSTONE_GATEWAYS?.trim();
   if (json) {
     const parsed = JSON.parse(json) as unknown;
     if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("REDSTONE_GATEWAYS must be a non-empty JSON array of {url, apiKey}");
-    return parsed.map((g, i) => {
+    parsed.forEach((g, i) => {
       const { url, apiKey } = (g ?? {}) as { url?: unknown; apiKey?: unknown };
       if (typeof url !== "string" || !/^https:\/\//.test(url)) throw new Error(`REDSTONE_GATEWAYS[${i}].url must be an https URL`);
-      return { url: clean(url), apiKey: typeof apiKey === "string" && apiKey.trim() ? apiKey.trim() : null };
+      add({ url: clean(url), apiKey: typeof apiKey === "string" && apiKey.trim() ? apiKey.trim() : null });
     });
   }
-  const urls = (env.REDSTONE_GATEWAY_URLS ?? "").split(",").map(clean).filter(Boolean);
-  return urls.length ? urls.map((url) => ({ url, apiKey: null })) : [...PUBLIC_REDSTONE_GATEWAYS];
+  for (const url of (env.REDSTONE_GATEWAY_URLS ?? "").split(",").map(clean).filter(Boolean)) add({ url, apiKey: null });
+  if (env.REDSTONE_PUBLIC_FALLBACK?.trim() !== "0" || out.length === 0) PUBLIC_REDSTONE_GATEWAYS.forEach(add);
+  return out;
 }
 
 /** A gateway as logs and `/health` may show it: its origin and whether it is keyed — never the key. */
@@ -65,11 +71,15 @@ async function keySlot(apiKey: string): Promise<void> {
   if (at > now) await new Promise((r) => setTimeout(r, at - now));
 }
 
-// A gateway that refuses (403 — RedStone's switch-off window, or its CDN blocking a host that kept asking — or 429) is
-// left alone for a minute, doubling to ten, in this process: every reader shares the module, so a refusal stops the
-// whole process asking instead of each actor retrying into a block (2026-10-08: the ops host stayed blocked by the
-// CDN after the public window ended). The first answer resets it.
-export const REDSTONE_COOLDOWN_MS = { first: 60_000, max: 600_000 } as const;
+// A gateway that refuses is left alone in this process — every reader shares the module, so a refusal stops the whole
+// process asking instead of each actor retrying into a block — and the first answer resets it. How long depends on
+// why (D-230): RedStone's switch-off window (`public_gateway_rejected`) ends on a schedule asking can't move, so it is
+// probed every 30 s, doubling to two minutes — at ten minutes the prints came back up to ten minutes after the window
+// closed (10-12 07:05, 10-13 05:41), two 5-minute Windows lost each time. Its CDN's block ("Request blocked", or a
+// 429) is a host that kept asking (2026-10-08: the ops host stayed blocked after the window ended), so it rests a
+// minute, doubling to ten.
+export const REDSTONE_COOLDOWN_MS = { first: 30_000, max: 120_000 } as const;
+export const REDSTONE_BLOCK_COOLDOWN_MS = { first: 60_000, max: 600_000 } as const;
 const cooling = new Map<string, { untilMs: number; backoffMs: number; reason: string }>();
 
 /** Forgets every cooldown (tests). */
@@ -97,7 +107,8 @@ async function fetchFirst(gateways: readonly RedstoneGateway[], urlOf: (gateway:
       const code = /"error"\s*:\s*"([a-z_]+)"/.exec(text)?.[1];
       const reason = `HTTP ${res.status}${code ? ` ${code}` : /Request blocked/.test(text) ? " blocked by the CDN" : ""}`;
       if (res.status === 403 || res.status === 429) {
-        const backoffMs = cool ? Math.min(REDSTONE_COOLDOWN_MS.max, cool.backoffMs * 2) : REDSTONE_COOLDOWN_MS.first;
+        const rest = code === "public_gateway_rejected" ? REDSTONE_COOLDOWN_MS : REDSTONE_BLOCK_COOLDOWN_MS;
+        const backoffMs = cool ? Math.min(rest.max, Math.max(rest.first, cool.backoffMs * 2)) : rest.first;
         cooling.set(g.url, { untilMs: Date.now() + backoffMs, backoffMs, reason });
       }
       last = `${reason} from ${name}`;
