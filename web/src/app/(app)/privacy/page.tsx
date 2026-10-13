@@ -36,7 +36,7 @@ export default function Page() {
           <>Reported posts are read by a moderator, who may hide them. Hidden posts stay stored until you delete your data.</>,
         ]}
       />
-      <H2>Sensei and AI</H2>
+      <H2 id="sensei-ai">Sensei and AI</H2>
       <P>Sensei sends nothing until you agree, and the agreement names who receives your question. When you ask, Mitoshi&apos;s server sends that provider your question, the conversation so far (up to 12 turns) and the figures on your screen: prices, the Window&apos;s line and each side&apos;s price, your open positions as amounts, your settled record and upcoming earnings dates. Never your address, keys, name or email. Mitoshi doesn&apos;t store the conversation; it stays in your browser tab. You can stop sharing from Sensei or from Settings → Account.</P>
       <H2>On your device only</H2>
       <P>Price alerts, notification choices, the AI agreement and display settings are kept in your browser&apos;s storage. Mitoshi&apos;s servers never see them.</P>

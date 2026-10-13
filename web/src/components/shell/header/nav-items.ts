@@ -49,7 +49,7 @@ export const NAV_ITEMS = {
   themes: item({ id: "themes", name: "Themes", href: "/themes", description: "Follow a basket an agent rebalances.", icon: Palette, keywords: "baskets follow stocks" }),
   launch: item({ id: "launch", name: "Launch", href: "/launch", description: "Launch a stablecoin or a memecoin.", icon: Rocket, keywords: "token create memecoin stablecoin" }),
   bridge: item({ id: "bridge", name: "Bridge", href: "/bridge", description: "Stocks, Robinhood ⇄ Tempo.", icon: ArrowLeftRight, keywords: "robinhood layerzero transfer stocks" }),
-  reserves: item({ id: "reserves", name: "Reserves", href: "/reserves", description: "Every bridged stock, backed.", icon: ShieldCheck, keywords: "proof backing stocks" }),
+  reserves: item({ id: "reserves", name: "Backing", href: "/reserves", description: "Every bridged stock, backed.", icon: ShieldCheck, keywords: "proof backing stocks" }),
   surface: item({ id: "surface", name: "Market Surface", href: "/surface", description: "The market's shape at a glance.", icon: ScanSearch }),
   sensei: item({ id: "sensei", name: "Sensei", href: "/markets?sensei=1", description: "Ask the market assistant.", icon: MessageSquare, keywords: "assistant ai help", match: { paths: [] } }),
   xTrade: item({ id: "x-trade", name: "X-trade", href: "/trade-from-x", description: "Turn a post into a bounded trade.", icon: XLogo }),

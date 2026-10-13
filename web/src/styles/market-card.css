@@ -78,21 +78,24 @@
 }
 
 /* One card per Window rather than the reference's fixed three cadences, so the
-   grid fills instead of forcing a three-up row that goes empty or overflows. */
+   grid fills instead of forcing a three-up row that goes empty or overflows.
+   R4-3 (D-227): 272 px, so every tablet stage (≥ 560 px) is two-up and 1440 three-up. */
 .markets-grid-live {
-  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(272px, 100%), 1fr));
 }
 
 /* Rendering on approach (D-183), as the word board's cards: below the hero on every phone, each card skips style,
    layout and paint while off screen (its countdown and price roll still update the DOM) and keeps its height. */
 /* A card's laid-out height, phone and md+: the off-screen size below and the loading skeleton's (`LoadingState` "cards"). */
+/* R4-3: the Room strip is part of every card now — its 44 px target (`.mc-room` below) and part-06's 12 px margin under
+   it, 56 px on top of the 342 / 475 px card (the review's arithmetic; the first estimate counted 46). */
 :root {
-  --market-card-height: 342px;
+  --market-card-height: 398px;
 }
 
 @media (min-width: 48rem) {
   :root {
-    --market-card-height: 475px;
+    --market-card-height: 531px;
   }
 }
 
@@ -103,9 +106,13 @@
 
 /* O-5 (D-222), from Owarine 90a91d71: a 24/7 lane's kind chip beside the cadence, and a listed Window's card. */
 .mc-kind { margin-left: 6px; padding: 2px 6px; border: 1px solid var(--color-hairline); border-radius: var(--radius-full); font: 600 9px/1.2 var(--font-data); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-secondary); white-space: nowrap; }
-.mc-listed { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 160px; padding: 12px 8px; text-align: center; }
-.mc-listed-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent); }
-.mc-foot .mc-schedule { grid-column: 1 / -1; justify-content: space-between; }
+/* R4-3 (D-227): the card that is the hero wears the accent ring (Owarine part-06 `.flash` marks the moment it becomes it). */
+.market-card[aria-current="true"] { border-color: color-mix(in srgb, var(--vermilion) 55%, transparent); }
+/* A pending card (listed, paused) fills the card's height like the live one beside it. */
+.market-card-pending { display: flex; flex-direction: column; }
+.market-card-pending .mc-pending { flex: 1; }
+.market-card-pending .mc-room { margin-top: auto; }
+.mc-room { min-height: 44px; }
 
 /* The head at phone widths (D-226): the asset side may shrink (its kind chip truncates) so the countdown always shows;
    under 380 px the kind chip gives way entirely — the lane tab already says 24/7. */
@@ -114,3 +121,8 @@
 .mc-head .mc-kind { overflow: hidden; text-overflow: ellipsis; }
 .mc-head .mc-countdown { flex: none; }
 @media (max-width: 379px) { .mc-head .mc-kind { display: none; } }
+/* part-06 paints the pending slot with white alphas only; on cream they vanish (Owarine 90a91d71 ticker-picker.css). */
+[data-theme="light"] .market-card.market-card-pending {
+  border-color: rgba(10, 10, 10, 0.16);
+  background: rgba(10, 10, 10, 0.015);
+}

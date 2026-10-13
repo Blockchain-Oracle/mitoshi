@@ -9,14 +9,9 @@ export const SESSION = {
   since: (at: string) => `since ${at}`,
   roundTheClock: "24/7 market",
   roundTheClockAria: (asset: string) => `${asset} · its 24/7 feed trades around the clock`,
-  /** /markets' empty Regular lane outside the session: "Weekend · reopens Mon 14:30 (09:30 ET). Regular Windows run in NYSE hours; the 24/7 lanes and the weekend Gap trade outside them." */
-  regularClosed: (phrase: string) => `${phrase}. Regular Windows run in NYSE hours; the 24/7 lanes and the weekend Gap trade outside them.`,
-  /** The halt banner's line, by who stopped the price (the title is core's `haltLabel`). */
-  haltBody: {
-    "exchange-halt": (asset: string, since: string) => `The exchange paused ${asset} at ${since}. No new calls until it resumes; an open Window settles on its signed close, or voids if no print can be recorded — both sides then pay 0.5.`,
-    "datastreams-closed": (asset: string, since: string) => `Chainlink reports ${asset}'s market closed since ${since}. No new calls until it reopens; an open Window settles on its signed close, or voids — both sides then pay 0.5.`,
-    "datastreams-stale": (asset: string, since: string) => `Chainlink hasn't signed a fresh ${asset} price since ${since}. No new calls until it does; a Window whose print can't be recorded voids — both sides pay 0.5.`,
-    "redstone-stale": (asset: string, since: string) => `RedStone hasn't signed a fresh ${asset} price since ${since}. No new calls until it does; a Window whose print can't be recorded voids — both sides pay 0.5.`,
-    "redstone-signers": (asset: string, since: string) => `Too few of RedStone's signers have signed ${asset} since ${since}. No new calls until enough do; a Window whose print can't be recorded voids — both sides pay 0.5.`,
-  },
+  /** /markets' empty Regular lane outside the session (R4-3, D-227: the copy spec's length): "Weekend · reopens Mon 14:30
+   *  (09:30 ET). 24/7 lanes are open." */
+  regularClosed: (phrase: string) => `${phrase}. 24/7 lanes are open.`,
+  /** The halt banner's one body (R4-3: the title, core's `haltLabel`, already names the cause). */
+  haltBody: (since: string) => `No new calls since ${since}. Open Windows settle, or void at half.`,
 } as const;
