@@ -46,17 +46,23 @@
 /* ── The cabinet (R4-9, D-227; Senryo ArcadeScreen): the scene with a big Play, the line, best + calm, the board ── */
 .ar-cabinet { display: flex; flex-direction: column; gap: 12px; max-width: 720px; margin-inline: auto; width: 100%; }
 .ar-attract { position: relative; aspect-ratio: 16 / 9; border-radius: 20px; overflow: hidden; border: 1px solid var(--color-hairline); }
-.ar-play { position: absolute; inset: 0; margin: auto; width: fit-content; min-height: 64px; padding: 0 32px; font-family: var(--font-pixel); font-size: 33px; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; gap: 12px; box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6); }
+/* The attract plate (R6 games §4.5): the scene dims under a scrim and keeps moving; Play, the best and the scoring line
+   sit centred on an overlay layer — Play is fit to its word, 56 px tall, never stretched across the scene. */
+.ar-attract-scrim { position: absolute; inset: 0; background: color-mix(in srgb, var(--color-canvas) 45%, transparent); pointer-events: none; }
+.ar-attract-plate { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 6px; pointer-events: none; }
+.ar-attract-plate > * { pointer-events: auto; }
+.ar-play { width: fit-content; block-size: 56px; padding: 0 28px; font-family: var(--font-pixel); font-size: var(--text-stamp, 28px); font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; gap: 12px; box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6); }
+.ar-plate-best { font: 600 var(--text-data-sm, 12px) / 1.2 var(--font-data); color: var(--white); font-variant-numeric: tabular-nums; }
+.ar-plate-free { font: 500 var(--text-data-sm, 12px) / 1.2 var(--font-data); color: var(--gray-400); }
 .ar-play-icon { width: 24px; height: 24px; fill: currentColor; }
 .ar-line { font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); }
 .ar-cab-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.ar-best { font-family: var(--font-data); font-size: 14px; color: var(--gray-400); font-variant-numeric: tabular-nums; }
 .ar-calm { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
 .ar-calm-label { font-size: 13px; font-weight: 600; color: var(--white); }
-.ar-calm-hint { font-family: var(--font-data); font-size: 11px; color: var(--gray-500); }
+.ar-calm-hint { font-family: var(--font-data); font-size: var(--text-data-sm, 12px); color: var(--gray-500); }
 .ar-board { display: flex; flex-direction: column; gap: 10px; }
 .ar-board-title { font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); }
-.ar-board-foot { font-family: var(--font-data); font-size: 10px; line-height: 1.6; color: var(--gray-500); font-variant-numeric: tabular-nums; }
+.ar-board-foot { font-family: var(--font-data); font-size: var(--text-data-sm, 12px); line-height: 1.6; color: var(--gray-500); font-variant-numeric: tabular-nums; }
 .ar-board-empty { font-size: 12px; line-height: 1.6; color: var(--gray-400); }
 
 /* ── The stage (R4-9, D-227; Ported from Senryo:apps/web/src/features/games/arcade/arcade.css): the run on its own

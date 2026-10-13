@@ -71,14 +71,21 @@ export function ArcadeStage({ game }: { game: ArcadeGame }) {
     <div className="gm-page ar-cabinet">
       <div className="ar-attract">
         {reducedMotion || playing ? <GameScene game={game} /> : <AttractCanvas game={game} tape={board?.tape ?? null} />}
-        <button type="button" className="du-cta ar-play" onClick={play} data-primary-action>
-          <Play aria-hidden className="ar-play-icon" />
-          {ARCADE.title.play}
-        </button>
+        {/* The attract plate (R6 games §4.5; From 21st.dev 13945 theorcdev/8bit-main-menu — Start over High Scores): a
+            scrim that dims the moving scene, then Play fit to its word, your best and how it's scored, centred. The
+            Play used to be absolutely inset with no height, a 270 px slab over the scene. */}
+        <span className="ar-attract-scrim" aria-hidden />
+        <div className="ar-attract-plate">
+          <button type="button" className="du-cta ar-play" onClick={play} data-primary-action>
+            <Play aria-hidden className="ar-play-icon" />
+            {ARCADE.title.play}
+          </button>
+          <span className="ar-plate-best numbers">{best === null ? ARCADE.title.noBest : ARCADE.title.best(ARCADE.fmt(best))}</span>
+          <span className="ar-plate-free">{ARCADE.title.free}</span>
+        </div>
       </div>
       <p className="ar-line">{words.line}</p>
       <div className="ar-cab-row">
-        <span className="ar-best">{best === null ? ARCADE.title.noBest : ARCADE.title.best(ARCADE.fmt(best))}</span>
         <label className="ar-calm">
           <span className="ar-calm-label">{ARCADE.calm.label}</span>
           <span className="ar-calm-hint">{ARCADE.calm.hint}</span>

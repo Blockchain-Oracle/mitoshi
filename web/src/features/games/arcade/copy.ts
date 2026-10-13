@@ -58,6 +58,8 @@ export const ARCADE = {
     play: "Play",
     best: (score: string) => `Best ${score}`,
     noBest: "No run yet",
+    /** Under Play on the attract plate (R6 games §4.5). */
+    free: "Free · server-checked",
   },
 
   over: {
