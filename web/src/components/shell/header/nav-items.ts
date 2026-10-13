@@ -48,7 +48,7 @@ export const NAV_ITEMS = {
   short: item({ id: "short", name: "Short", href: "/trade/BTC?mode=boost&pick=down", description: "Call DOWN with Boost; the reserve fronts the rest.", icon: TrendingDown, keywords: "short sell fall down boost leverage", match: { paths: [] } }),
   parlay: item({ id: "parlay", name: "Parlay", href: "/parlay", description: "Combine several market outcomes.", icon: ChartNoAxesCombined }),
   earn: item({ id: "earn", name: "Earn", href: "/earn", description: "Supply the maker vault and the house reserves.", icon: Coins, keywords: "vault yield maker reserve supply" }),
-  themes: item({ id: "themes", name: "Themes", href: "/themes", description: "Follow a basket an agent rebalances.", icon: Palette, keywords: "baskets follow stocks" }),
+  themes: item({ id: "themes", name: "Themes", href: "/themes", description: "Stock baskets an agent trades.", icon: Palette, keywords: "baskets follow stocks calls" }),
   launch: item({ id: "launch", name: "Launch", href: "/launch", description: "Launch a stablecoin or a memecoin.", icon: Rocket, keywords: "token create memecoin stablecoin" }),
   surface: item({ id: "surface", name: "Market Surface", href: "/surface", description: "The market's shape at a glance.", icon: ScanSearch }),
   sensei: item({ id: "sensei", name: "Sensei", href: "/markets?sensei=1", description: "Ask the market assistant.", icon: MessageSquare, keywords: "assistant ai help", match: { paths: [] } }),

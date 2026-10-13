@@ -1,6 +1,6 @@
 // Ported from Masayume 68f7a09:packages/core/src/index.ts — plus Agari's auth/orders/reserves (03b30ab) and the
-// pillar-2 modules (stocks, themes, launch). Games, copy, faucet and the testing fixtures are subpath imports
-// (`@cwf/core/games`, `@cwf/core/copy`, …), as in Masayume.
+// pillar-2 launch module (D-231 retired `stocks` and `themes`: a theme is a `basket` strategy). Games, copy, faucet and
+// the testing fixtures are subpath imports (`@cwf/core/games`, `@cwf/core/copy`, …), as in Masayume.
 export * from "./auth";
 export * from "./claims";
 export * from "./constants";
@@ -23,8 +23,6 @@ export * from "./strategies";
 export * from "./surface";
 export * from "./vault";
 export * from "./x";
-export * from "./stocks";
-export * from "./themes";
 export * from "./tx";
 export * from "./launch";
 // S17b (integration/t1): the bonding-curve maths and its shared TS<->Solidity vectors. `NETWORKS`/`networkFrom` come

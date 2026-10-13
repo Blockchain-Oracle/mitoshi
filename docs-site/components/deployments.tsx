@@ -4,7 +4,7 @@ import deployments from '@/lib/deployments.json';
 import { ArrowUpRight } from 'lucide-react';
 
 type Contract = { address: string; deployBlock: number | null; txHash: string | null; history: { address: string; retiredAtUtc: string | null }[] };
-type Area = { commit: string | null; deployedAtUtc: string | null; contracts: Record<string, Contract>; pools?: Record<string, { mirror: string; poolId: string; fee: number | null; status: string; positions: number }> };
+type Area = { commit: string | null; deployedAtUtc: string | null; contracts: Record<string, Contract> };
 type Chain = { name: string; areas: Record<string, Area> };
 
 const CHAINS = deployments as unknown as Record<string, Chain>;
@@ -21,11 +21,8 @@ const AREAS: Record<string, string> = {
   parlay: 'Parlay (house reserve)',
   leverage: 'Boost (house reserve)',
   private: 'The private desk',
-  strategies: 'Strategies and agents',
-  stocks: 'Stock mirrors, their views and the sync receiver',
-  guard: 'The stock pools’ price guard',
-  v4: 'Uniswap v4, replayed from Tempo mainnet',
-  themes: 'Themes',
+  strategies: 'Strategies, agents and themes',
+  v4: 'Uniswap v4, replayed from Tempo mainnet (graduated memecoins’ pools)',
   launch: 'Launchpads',
 };
 
@@ -53,20 +50,5 @@ export function Deployments({ chain = '42431', areas }: { chain?: string; areas?
         );
       })}
     </div>
-  );
-}
-
-export function StockPools() {
-  const pools = CHAINS['42431']?.areas.pools?.pools ?? {};
-  return (
-    <section className="ledger not-prose" aria-label="Stock pools on Uniswap v4">
-      <header><span>pathUSD pools on Uniswap v4, behind the price guard</span><small>pools · {CHAINS['42431']?.areas.pools?.commit ?? '—'}</small></header>
-      {Object.entries(pools).map(([ticker, p]) => (
-        <div className="ledger-row" key={ticker}>
-          <span><b>{ticker}</b><small>{p.status === 'initialized' ? `initialized · ${p.positions} house positions · fee ${(p.fee ?? 0) / 10_000} %` : 'registered, not initialized'}</small></span>
-          <span><code title={p.poolId}>{short(p.poolId)}</code></span>
-        </div>
-      ))}
-    </section>
   );
 }

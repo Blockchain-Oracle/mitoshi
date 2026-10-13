@@ -6,17 +6,13 @@
 // composer bound to the Window on screen (UX fix 10). R4-11 (D-227): off-hours the closed-session card leads, and a
 // copied agent's latest traded Window is woven in once (Owarine 90a91d71's desk card).
 // R4-2 (D-227): the open composer is `?d=take`, so Back closes it instead of leaving the feed with a half-typed take.
-import { useLanes, useLatestThemeRebalance } from "@cwf/markets/react";
+import { useLanes } from "@cwf/markets/react";
 import { ChevronDown, ChevronUp, Feather } from "lucide-react";
 import { useDeferredValue, useMemo, useRef, useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { TakeComposer } from "@/features/social/TakesPanel";
 import { useTakes } from "@/features/social/useTakes";
 import { useMarketSession } from "@/features/markets/session";
-import type { StrategyDetailPayload } from "@/features/strategies/protocol";
-import { useMyStrategies } from "@/features/strategies/useStrategies";
-import { useWalletSession } from "@/lib/wallet-session";
-import { useQuery } from "@tanstack/react-query";
 import { useNowMs } from "@/lib/clock";
 import { useSessionPhrase } from "@/lib/when";
 import { closeDrawer, openDrawer, useOpenDrawerName } from "@/lib/drawer-param";
@@ -24,10 +20,11 @@ import { REELS } from "./copy";
 import { ReelCard } from "./ReelCard";
 import { ReelHolding } from "./ReelHolding";
 import { isClosing, useReelRounds } from "./rounds";
-import { StrategyReelCard, type StrategyReelDecision } from "./StrategyReelCard";
+import { StrategyReelCard } from "./StrategyReelCard";
 import { TakeReelCard } from "./TakeReelCard";
 import { ThemeReelCard } from "./ThemeReelCard";
 import { useActiveReel } from "./useActiveReel";
+import { useCopiedDecisions } from "./useCopiedDecisions";
 import { useReelPosition } from "./useReelPosition";
 import { reelKey, weaveReel, type ReelItem } from "./weave";
 
@@ -54,10 +51,7 @@ export function ReelsScreen() {
   const rounds = useReelRounds(laneSet, nowMs);
   const feed = useTakes({});
   const takes = useMemo(() => feed.takes.filter((t) => !t.local), [feed.takes]);
-  const agent = useCopiedAgentDecision();
-  const { address } = useWalletSession();
-  const latest = useLatestThemeRebalance(address);
-  const themeItem = latest?.ok ? latest.value : null;
+  const { agent, theme: themeItem } = useCopiedDecisions();
   const reel = useMemo(() => weaveReel(rounds, takes, agent, themeItem), [rounds, takes, agent, themeItem]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -129,25 +123,4 @@ export function ReelsScreen() {
       ) : null}
     </div>
   );
-}
-
-/** The latest Window a copied agent traded (its runner's record), for the reel's agent card; null without one. */
-function useCopiedAgentDecision(): StrategyReelDecision | null {
-  const { address } = useWalletSession();
-  const mine = useMyStrategies(address);
-  const strategyId = mine.data?.subscriptions.find((s) => s.active)?.strategyId ?? null;
-  const detail = useQuery({
-    queryKey: ["cwf", "strategies", "detail", strategyId],
-    enabled: strategyId !== null,
-    queryFn: async (): Promise<StrategyDetailPayload | null> => {
-      const res = await fetch(`/api/strategies/${strategyId}`, { cache: "no-store" });
-      return res.ok ? ((await res.json()) as StrategyDetailPayload) : null;
-    },
-    staleTime: 60_000,
-  });
-  return useMemo(() => {
-    const d = detail.data;
-    const notable = d?.decisions.find((x) => x.gate === "trade");
-    return d && notable ? { strategyId: d.strategy.strategyId, name: d.strategy.name, decision: notable } : null;
-  }, [detail.data]);
 }

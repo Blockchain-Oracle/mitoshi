@@ -21,7 +21,7 @@ export async function holdRuleCalls(input: { store: StrategyStore; strategy: Ind
     const side = c.decision.side;
     if (!side) continue;
     const recorded = await store.recordCall({
-      strategyId: s.strategyId, marketId: c.window.marketId, runner, model: ruleModelOf(spec.preset), why: ruleCallWhy(spec, assetOf(c.window.spotSymbol), side, spec.preset === "mirror" ? null : c.decision.moveBps),
+      strategyId: s.strategyId, marketId: c.window.marketId, runner, model: ruleModelOf(spec.preset === "basket" ? spec.rule.preset : spec.preset), why: ruleCallWhy(spec, assetOf(c.window.spotSymbol), side, spec.preset === "mirror" ? null : c.decision.moveBps),
       gateReason: ruleCallReason(spec, c.decision), side, decidedAtMs: nowMs, dryRun,
     });
     if (recorded) {
@@ -43,7 +43,8 @@ export async function backfillCalls(store: StrategyStore, strategies: readonly I
   let added = 0;
   for (const s of strategies) {
     const meta = s.metadata ? parseStrategyMetadata(s.metadata) : null;
-    if (!meta || meta.spec.preset === "agent") continue;
+    // A theme (D-231) recorded every call from its first pass; there is nothing before it to recover.
+    if (!meta || meta.spec.preset === "agent" || meta.spec.preset === "basket") continue;
     const spec = meta.spec;
     const byMarket = new Map<string, Awaited<ReturnType<StrategyStore["listFills"]>>>();
     for (const f of await store.listFills({ strategyId: s.strategyId, limit: 1_000 })) byMarket.set(f.marketId, [...(byMarket.get(f.marketId) ?? []), f]);

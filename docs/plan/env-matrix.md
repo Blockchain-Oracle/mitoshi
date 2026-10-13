@@ -17,7 +17,6 @@
 | `DRY_RUN`, `OPS_ACTORS`, `OPS_HTTP_PORT=8080`, `OPS_STUCK_PASS_MS` | — | ✓ | ✓ | ✓ |
 | `MPP_PAYER_PRIVATE_KEY`, `MPP_ROOT_ADDRESS` | — | ✓ | ✓ (roles `mpp-payer` / `mpp-root`, Moderato pathUSD, D-085) | after Q-020 |
 | `MPP_MAINNET_APPROVED`, `MPP_MAX_PER_REQUEST_BASE`, `MPP_MAX_PER_DAY_BASE` | — | ✓ | caps optional | `MPP_MAINNET_APPROVED=1` only with the owner's go (Q-020) |
-| `THEME_KEYS_SECRET` (64 hex; `theme-agent`) | — | ✓ | ✓ (2026-10-13) | KMS-wrapped |
 | `LAUNCH_KEEPER_PRIVATE_KEY` (`launch-keeper`; else `KEEPER_PRIVATE_KEY`) | — | ✓ | unset: the `keeper` key | ✓ |
 | AI provider keys: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` (either one switches the brain on; Claude first when both), or `AI_GATEWAY_API_KEY`, or `AI_BASE_URL` + `AI_API_KEY`; `AI_MODEL` names another model (D-221) | ✓ (Sensei; `SENSEI_MODEL`, `SENSEI_VIA`) | ✓ (agents; `AGENT_VIA`, `AGENT_MAX_CALLS_PER_HOUR`, `AGENT_TIMEOUT_MS`) | ✓ (2026-10-11: `OPENAI_API_KEY` → `openai/gpt-6-sol`) | ✓ |
 | `DATASTREAMS_API_KEY`, `DATASTREAMS_API_SECRET` | ✓ | ✓ | after Q-011 | ✓ |

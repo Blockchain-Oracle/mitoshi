@@ -15,7 +15,6 @@ sources:
   - contracts/src/products/leverage/LeverageReserve.sol
   - contracts/src/products/private/PrivateDesk.sol
   - contracts/src/products/strategy/StrategyRegistry.sol
-  - contracts/src/themes/ThemeRouter.sol
   - contracts/src/products/arena/ArenaGateway.sol
   - contracts/src/products/arena/ArenaMatches.sol
   - contracts/src/products/arena/GameArena.sol
@@ -47,10 +46,9 @@ Every power here is enforced by a contract on Tempo testnet, not by Mitoshi's se
 | **You** | Everything on your account: trade, withdraw, revoke any key or grant. | — |
 | **One-tap key** · 24 h | Buy on the engine with up to $25 of new approvals a day; sell, cancel and redeem what your account holds there. | Transfer, approve anyone else, call another contract. |
 | **SESSION grant** · a key on your device | Buy from its budget inside its per-tap, daily, open-Window and price caps; sell what your Trading Balance holds. | Withdraw or send money. Sale proceeds stay in your Trading Balance. |
-| **STRATEGY grant** · the runner the strategy names | Buy inside the strategy's envelope and your budget. The contract also lets it sell what your Trading Balance holds; Mitoshi's house runner only buys. | Withdraw or send money. |
+| **STRATEGY grant** · the runner a strategy or a theme names | Buy inside the strategy's envelope and your budget (a theme's call takes its stock's weight of your per-call cap). The contract also lets it sell what your Trading Balance holds; Mitoshi's house runner only buys. | Withdraw or send money. |
 | **EXECUTOR grant** · Mitoshi's X relay | Buy on the Window your post on X names, from the X balance you funded, on up to 8 open Windows. The contract also lets it sell what your Trading Balance holds; the relay only buys. | Withdraw or send money, or spend past the X balance. |
 | **EXIT grant** · Mitoshi's exit keeper | Sell what your Trading Balance holds, at or above the fair-value floor. | Buy, withdraw, or sell under the floor. |
-| **Theme agent key** · per followed theme | Rebalance your holdings through the theme router, inside each token's daily limit. | Transfer, or approve anyone but the router. |
 | **The private desk** | Spend your private balance up to the allowance you set; carry bets and payouts through its pool. | Withdraw your balance — only you can, to yourself. |
 | **The relay** | Pay your call's network fee. | Change your call or spend from your account. |
 | **Mitoshi's keepers** | Open Windows, post prints, settle and pay winners, quote Earn's vault inside its public limits, settle duels, act through the grants and keys you gave. | Anything else. |

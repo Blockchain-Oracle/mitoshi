@@ -7,9 +7,7 @@ sources:
   - services/ops/src/runtime
   - services/ops/src/actors/indexer
   - services/ops/src/actors/indexer-recount
-  - services/ops/src/actors/theme-agent
   - services/ops/src/actors/launch-keeper
-  - services/ops/src/actors/reference-writer
   - services/ops/src/actors/duel-settler
   - services/ops/src/actors/x-relay
   - web/src/features/status/StatusBoard.tsx
@@ -37,11 +35,9 @@ The actors ops runs today, one heartbeat each on `/health`; agent-rater is the o
 | earn-quoter | The maker vault's quotes on the crypto Windows. |
 | exit-keeper | Sells armed exits through EXIT grants, at the floor. |
 | leverage-keeper | Settles and knocks out boosts. |
-| strategy-runner | Places for copiers through STRATEGY grants; runs house agent #3's model. |
+| strategy-runner | Places for copiers through STRATEGY grants; runs house agent #3's model, and the themes: each stock's Windows, every call sized by its weight. |
 | agent-rater | One ERC-8004 rating per agent per completed day. **Dry** until the owner releases it. |
-| theme-agent | Issues each theme follower's key, sealed, and rebalances inside the bands. |
 | launch-keeper | Graduates a memecoin once its curve completes. |
-| reference-writer | Keeps the stock pools' reference price and session fresh from RedStone. |
 | duel-settler | Cranks duels: closes the picks, settles each card, awards the pot. |
 | x-relay | Reads mentions of the X bot through its own session and places each call through its account's EXECUTOR grant ([trade from X](/x/trade-from-x)). |
 | indexer-recount | Every hour, counts each contract's logs in the Tempo Indexer API against the chain's own, over the blocks the index holds, and lists the blocks it lacks. |

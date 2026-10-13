@@ -78,6 +78,8 @@ export const AGENTS = {
     ratingCount: (n: number) => plural(n, "rating"),
     memory: "Sealed memory",
     notFound: "No such agent.",
+    theme: "This one is a theme.",
+    openTheme: "Open the theme",
   },
   /** The runner's last pass in words (`pulse.ts`) — never its raw log line. */
   pulse: {

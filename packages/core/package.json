@@ -7,11 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./venue-spec.json": "./src/market/venue-spec.json",
-    "./stocks/guard": "./src/stocks/guard.ts",
-    "./stocks/session": "./src/stocks/session.ts",
+    "./strategies/basket.vectors.json": "./src/strategies/basket.vectors.json",
     "./prices/redstone": "./src/prices/redstonePayload.ts",
-    "./stocks/housePlan": "./src/stocks/housePlan.ts",
-    "./stocks/liquidity": "./src/stocks/liquidity.ts",
     "./*": "./src/*/index.ts"
   },
   "scripts": {

@@ -3,19 +3,17 @@
  * The ticker hub's live parts — Ported from Owarine 90a91d71:web/src/features/ticker-hub/TickerHubScreen.tsx on
  * Mitoshi's data (P5, D-224; R4-10, D-227). The session chip reads the lanes: a coin and a stock with a 24/7 Window
  * trading say so (the owner's "stocks say closed while their 24/7 price moves"); a stock without one shows NYSE's hours.
- * The facts bar: the spot rolling on the Odometer beside a six-hour sparkline, the next report (a stock), the Mirror token
- * where S15 minted one, and the price source. Then 01 its Windows (the lane cards), 02 Calls (fills and takes), 03 Headlines. Nothing invented: every figure is a read.
+ * The facts bar: the spot rolling on the Odometer beside a six-hour sparkline, the next report (a stock) and the price
+ * source (D-231 retired the Mirror token row with the stock pools). Then 01 its Windows (the lane cards), 02 Calls (fills
+ * and takes), 03 Headlines. Nothing invented: every figure is a read.
  */
 import { TICKERS, type LaneSet, type TickerSymbol } from "@cwf/core";
 import { phase } from "@cwf/core/lifecycle";
-import { addressUrl } from "@cwf/core/urls";
-import { deploymentOf } from "@cwf/markets";
 import { useLanes, usePriceHistory } from "@cwf/markets/react";
 import { useRouter } from "next/navigation";
 import { Suspense, use, useMemo } from "react";
 import { Odometer } from "@/components/kit/Odometer";
 import { SectionHeader } from "@/components/shell/SectionHeader";
-import { Hash } from "@/components/data";
 import { LoadingState } from "@/components/states";
 import { Sparkline } from "@/components/ui/sparkline";
 import { tickerMarkets } from "@/features/markets/data/lane-view";
@@ -29,8 +27,6 @@ import { useCommittedSpot } from "@/features/terminal/live";
 import { RoomDrawer } from "@/features/terminal/ui/RoomDrawer";
 import { useClockValue } from "@/lib/clock";
 import { closeDrawer, openDrawer, useOpenDrawerName } from "@/lib/drawer-param";
-import { webEnv } from "@/lib/env";
-import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
 import { STOCKS } from "./copy";
 import { HubCalls } from "./HubCalls";
 import type { StockHubProps } from "./StockHubPage";
@@ -80,7 +76,6 @@ export function HubFacts({ symbol }: { symbol: TickerSymbol }) {
   const basis = useBasis(symbol);
   const spot = useCommittedSpot(symbol);
   const report = useNextReport(symbol);
-  const mirror = stock ? (deploymentOf("stocks", TEMPO_CHAIN_ID)?.[`Mirror${symbol}`]?.address ?? null) : null;
   return (
     <div className="stk-facts">
       <dl className="stk-stats">
@@ -95,14 +90,6 @@ export function HubFacts({ symbol }: { symbol: TickerSymbol }) {
           <div className="stk-stat stk-stat-long">
             <dt>{STOCKS.report}</dt>
             <dd>{report.text}</dd>
-          </div>
-        )}
-        {mirror && (
-          <div className="stk-stat stk-stat-long">
-            <dt>{STOCKS.token}</dt>
-            <dd>
-              <Hash value={mirror} href={addressUrl(mirror, webEnv.markets.network)} lead={6} tail={4} className="numbers" />
-            </dd>
           </div>
         )}
       </dl>

@@ -68,23 +68,6 @@ export const events = {
     "SigmaSet(bytes32,uint64)",
     "SpotSourceSet(uint16,address,bytes32)"
   ],
-  "StockGuardHook": [
-    "GuardSet(bytes32,(uint16,uint16,uint16,uint32,uint32,uint32,uint32,uint8,bool))",
-    "OwnershipTransferStarted(address,address)",
-    "OwnershipTransferred(address,address)",
-    "PoolRegistered(bytes32,address)"
-  ],
-  "StockReference": [
-    "FeedsSet(address,bytes32,bytes32)",
-    "HaltedSet(address,bool)",
-    "MarketStatusSeen(uint8,uint64)",
-    "ReferenceIgnored(address,uint64,uint64,uint8)",
-    "ReferenceWritten(address,uint256,uint64,uint8)",
-    "RoleAdminChanged(bytes32,bytes32,bytes32)",
-    "RoleGranted(bytes32,address,address)",
-    "RoleRevoked(bytes32,address,address)",
-    "SessionSet(uint8,uint64)"
-  ],
   "LaunchRegistry": [
     "CodeReserved(string)",
     "CurveLaunchpadSet(address)",
@@ -193,36 +176,6 @@ export const events = {
     "SupplyRedeemed(address,uint256,uint256,uint256)",
     "VolatilitySet(string,uint64)"
   ],
-  "ITIP20": [
-    "Approval(address,address,uint256)",
-    "Burn(address,uint256)",
-    "BurnBlocked(address,uint256)",
-    "LogoURIUpdated(address,string)",
-    "Mint(address,uint256)",
-    "NextQuoteTokenSet(address,address)",
-    "PauseStateUpdate(address,bool)",
-    "QuoteTokenUpdate(address,address)",
-    "RewardDistributed(address,uint256)",
-    "RewardRecipientSet(address,address)",
-    "SupplyCapUpdate(address,uint256)",
-    "Transfer(address,address,uint256)",
-    "TransferPolicyUpdate(address,uint64)",
-    "TransferWithMemo(address,address,uint256,bytes32)"
-  ],
-  "ScaledUIView": [
-    "UIMultiplierUpdateCancelled(uint256,uint256)",
-    "UIMultiplierUpdated(uint256,uint256,uint256)"
-  ],
-  "StockSyncReceiver": [
-    "AutoPauseAttempted(address,bool)",
-    "AutoPauseSet(bool)",
-    "MultiplierSynced(address,uint128,uint128,uint64,uint128)",
-    "OwnershipTransferred(address,address)",
-    "PeerSet(uint32,bytes32)",
-    "StatusSynced(address,uint8,uint128)",
-    "SyncIgnored(bytes32,address,uint8)",
-    "TokenBound(address,address,address)"
-  ],
   "StrategyRegistry": [
     "Deactivated(uint256)",
     "Published(uint256,address,address,bytes32,bytes32,uint256,(uint128,uint128,uint32,uint64,bytes32),uint128)",
@@ -230,27 +183,6 @@ export const events = {
     "Subscribed(uint256,address,uint256,uint8,uint128,uint32)",
     "Unsubscribed(uint256,address,uint32)",
     "Updated(uint256,bytes32,bytes32,uint128,uint32)"
-  ],
-  "ThemeRegistry": [
-    "AgentSet(uint64,uint256)",
-    "Delisted(uint64,bool)",
-    "GuardSet(address)",
-    "OwnershipTransferStarted(address,address)",
-    "OwnershipTransferred(address,address)",
-    "ThemePublished(uint64,address,uint32,bytes32,string)",
-    "TokenPoolSet(address,bytes32,(address,address,uint24,int24,address))"
-  ],
-  "ThemeRouter": [
-    "CapsUpdated(address,uint64,(uint64,uint64,uint64,uint64,uint16,uint16,uint32))",
-    "FeesClaimed(address,uint256)",
-    "Followed(address,uint64,uint32,address,(uint64,uint64,uint64,uint64,uint16,uint16,uint32))",
-    "OracleSet(address)",
-    "OwnershipTransferStarted(address,address)",
-    "OwnershipTransferred(address,address)",
-    "ProofSelectorSet(bytes4,bool)",
-    "ProofTargetSet(address)",
-    "Rebalanced(address,uint64,bytes32,uint32,address,uint256,uint256)",
-    "Unfollowed(address,uint64)"
   ],
   "IPoolManager": [
     "Approval(address,address,uint256,uint256)",

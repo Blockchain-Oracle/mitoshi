@@ -8,8 +8,7 @@
 | `DEPLOYER` key | local `~/.config/cwf/<network>/deployer.json`; mainnet via the owner's hardware wallet / Safe | forge scripts |
 | `MPP_PAYER_PRIVATE_KEY`, `MPP_ROOT_ADDRESS` | Coolify ops (testnet: roles `mpp-payer`/`mpp-root` in `~/.config/cwf/testnet/`; mainnet after Q-020) | MPP payer (TIP-1011 access key on the root), brain `via: 'mpp'`, paid data |
 | `MPP_SECRET_KEY` (≥ 32 bytes, `openssl rand -base64 32`; runtime-only) | Coolify web (per network) | mppx server: HMAC-binds the Memory Market's paid-read challenges (S9.9b) |
-| `THEME_KEYS_SECRET` (64 hex, `openssl rand -hex 32`; testnet ops: generated 2026-10-13, runtime-only, never shown — rotating it orphans every sealed key, so followers re-follow) | Coolify ops (testnet); KMS on mainnet | `theme-agent`: seals each follower's theme key (AES-256-GCM) in `theme_agent_keys` |
-| `KEEPER_PRIVATE_KEY` (the `keeper` role `0x6Ed3…ad0C`; `LAUNCH_KEEPER_PRIVATE_KEY` unset on testnet, so `launch-keeper` falls back to it) | Coolify ops (testnet); locally `~/.config/cwf/testnet/keeper.json` | `leverage-keeper`, `exit-keeper`, `launch-keeper` (expiring nonces), `reference-writer` (the one sequential-nonce sender on this key) |
+| `KEEPER_PRIVATE_KEY` (the `keeper` role `0x6Ed3…ad0C`; `LAUNCH_KEEPER_PRIVATE_KEY` unset on testnet, so `launch-keeper` falls back to it) | Coolify ops (testnet); locally `~/.config/cwf/testnet/keeper.json` | `leverage-keeper`, `exit-keeper`, `launch-keeper` (expiring nonces). D-231 retired `reference-writer` and, with `theme-agent`, its `THEME_KEYS_SECRET` (unset it on the ops app) |
 | `OPS_INTERNAL_TOKEN`, `STREAM_TICKET_SECRET` (testnet ops: generated 2026-09-29, runtime-only; the web's `/api/stream/ticket` needs the same value), `ROOM_TOKEN_SECRET`, `SOCIAL_SESSION_SECRET` | Coolify web + ops | internal auth, stream tickets, rooms, social session |
 | `DATABASE_URL` | Coolify web + ops | Coolify Postgres per network |
 | `REDIS_URL` | Coolify web + ops | Coolify Redis (passkey challenges, sessions) |
@@ -19,7 +18,7 @@
 | `FINNHUB_API_KEY`, `ALPACA_*`, `DATASTREAMS_API_KEY/SECRET` | Coolify web + ops (testnet ops: the owner's Alpaca + Finnhub keys, the same ones Agari uses, set 2026-09-29 runtime-only; testnet web: `FINNHUB_API_KEY` copied app to app from ops 2026-10-10 for `/news`, runtime-only, never shown) | data providers (calendar, halts, earnings) |
 | `TEMPO_INDEXER_API_KEY` (Tempo API console key, `tempo-api-key` header) | Coolify ops (testnet: the owner's sandbox key from `~/.config/mitoshi/indexer.env`, 0600; set 2026-10-13 runtime-only, literal, never shown) | `indexer-recount` (D-086) |
 | `TIDX_URL`, `TIDX_BASIC_AUTH` | Coolify ops (when a self-hosted tidx is chosen, D-086) | indexer recount |
-| RPC provider URLs (`TEMPO_RPC_*`) | Coolify web + ops + GitHub Actions | chain reads. D-231 retired the bridge's `RH_RPC_HTTP_URL` and `BASE_SEPOLIA_RPC_HTTP_URL` from web and ops; the nightly fork suite's `RH_RPC_HTTP_URL` (CrwdMultiplier, which falls back to a public RPC) goes with the stock guard's tests |
+| RPC provider URLs (`TEMPO_RPC_*`) | Coolify web + ops + GitHub Actions | chain reads. D-231 retired the bridge's `RH_RPC_HTTP_URL` and `BASE_SEPOLIA_RPC_HTTP_URL` from web and ops; the nightly fork suite no longer reads `RH_RPC_HTTP_URL` or `RH_TESTNET_RPC_HTTP_URL` (CrwdMultiplier left with the stock guard's tests): delete both GitHub secrets |
 | APNs `.p8` + key ID + team ID, FCM service account | Coolify ops | notifier (SM2) |
 | Reown project ID | Coolify web | WalletConnect |
 | EAS token, Android upload keystore (EAS-managed) | GitHub Actions / EAS | mobile builds |

@@ -1,6 +1,6 @@
 /**
  * RedStone gateway JSON → the `RedStonePrintVerifier` wire payload (engine spec A.5.1), shared by the ops actors that
- * push RedStone proofs (S15b `reference-writer`: `StockReference.pushRedStone` → `verifySpot`). Pure: no I/O, no Buffer.
+ * push RedStone proofs and the web's payload route and proof page. Pure: no I/O, no Buffer.
  * Ported from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:packages/markets/src/prices/redstone.ts via
  * `scripts/drive/lib/redstone-payload.ts` (S2). Every integer on the wire is big-endian; each package is single-feed with
  * a 32-byte value (142 B).

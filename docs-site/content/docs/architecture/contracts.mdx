@@ -41,12 +41,12 @@ How the engine is built:
 | **RangeReserve** · **ParlayReserve** · **LeverageReserve** | The house reserves behind Range and Moonshot, Parlay, and Boost. RangeReserve was redeployed on 13 October to price every Series on its own or the guard's volatility. |
 | **PrivateDesk** | Link-private bets from a separate balance. |
 | **GameArena** | [Duels](/games/duel-and-lucky): each player's pot, a committed deck, every pick as a real order it holds on the engine, and the award. Ported from Masayume's arena. |
-| **StrategyRegistry** | Strategies, their envelopes, fees, runners and ERC-8004 ids. Never touches money. |
+| **StrategyRegistry** | Strategies and themes, their envelopes, fees, runners and ERC-8004 ids. Never touches money. |
 
 ## Pillar two
 
-Stock mirrors, the sync receiver, the scaled views, **StockReference** and **StockGuardHook**, the replayed Uniswap v4, **ThemeRegistry** and **ThemeRouter**, and the launchpads (**LaunchRegistry**, **CurveLaunchpad**, **LiquidityLocker**). See [stocks and tokens](/stocks/overview).
+The launchpads (**LaunchRegistry**, **CurveLaunchpad**, **LiquidityLocker**) and the replayed Uniswap v4 their graduates trade on. Stocks are Windows on the engine, and a theme is a strategy on **StrategyRegistry**; the stock mirrors, their guard and pools, and the first themes' registry and router are retired (D-231, `contracts/deployments/retired/`). See [stocks and tokens](/stocks/overview).
 
 ## Verified source
 
-The first Trading Balance, the maker vault, Parlay, Range, Boost, the private desk, StrategyRegistry, the themes contracts, LaunchRegistry, LiquidityLocker and CurveLaunchpad were verified on Tempo's Sourcify (contracts.tempo.xyz) as they were deployed; the acceptance records note each match. The engine, EventVaultV2 and the stock contracts have no such record.
+The first Trading Balance, the maker vault, Parlay, Range, Boost, the private desk, StrategyRegistry, LaunchRegistry, LiquidityLocker and CurveLaunchpad were verified on Tempo's Sourcify (contracts.tempo.xyz) as they were deployed; the acceptance records note each match. The engine and EventVaultV2 have no such record.

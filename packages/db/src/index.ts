@@ -31,7 +31,6 @@ export { createPgSocialPosts, type NewTake, type ReactionSummary, type ReactionT
 export { createPgPasskeyBackups, type PasskeyBackup, type PasskeyBackupStore } from "./passkey-backups";
 export { CONTACT_TOPICS, createPgContact, type ContactMessage, type ContactStore, type ContactTopic } from "./contact";
 export { createPgLaunchLogos, type LaunchLogo, type LaunchLogoStore, type LogoType } from "./launch-logos";
-export { createPgThemeKeys, type ThemeKeyRow, type ThemeKeyStore } from "./theme-keys";
 export { exportSocialData, type SocialExport } from "./social-export";
 export { createPgSocialModeration, REPORT_REASONS, type DeletedRows, type ReportReason, type ReportRow, type ReportTarget, type SocialModerationStore } from "./social-moderation";
 export { createPgXStore, readReceiptDetails, type XAuthorizeRow, type XLinkRecord, type XStore } from "./x-store";

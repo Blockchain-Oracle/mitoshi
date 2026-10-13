@@ -13,7 +13,6 @@ export const STOCKS = {
   room: (symbol: string) => `$${symbol} room`,
   roomQualifier: "bettors only",
   trade: "Trade it →",
-  token: "Token",
   sparkLabel: (symbol: string) => `${symbol}, the last six hours`,
   windows: { number: "01", title: "Windows", empty: "No Window on this ticker right now." },
   calls: {

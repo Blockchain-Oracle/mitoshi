@@ -21,11 +21,9 @@ jobs:
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: v1.8.3
-      - name: Fork suites (Moderato, Tempo mainnet read-only, Robinhood testnet)
+      - name: Fork suites (Moderato, Tempo mainnet read-only)
         working-directory: contracts
         env:
           TEMPO_RPC_HTTP_URL: ${{ secrets.TEMPO_RPC_HTTP_URL }}
-          RH_RPC_HTTP_URL: ${{ secrets.RH_RPC_HTTP_URL }}
-          RH_TESTNET_RPC_HTTP_URL: ${{ secrets.RH_TESTNET_RPC_HTTP_URL }}
         run: |
           if [ -d test/fork ]; then forge test --match-path "test/fork/**"; else echo "no fork suites yet (S2 adds them)"; fi

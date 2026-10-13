@@ -8,8 +8,11 @@ export type BoardSort = "inherited" | "pnl";
 
 const cmp = (a: bigint, b: bigint) => (a === b ? 0 : a > b ? -1 : 1);
 
+/** The desk's strategies without the themes (D-231: a basket strategy lives on /themes, with its calls and its mix). */
+export const notThemes = (strategies: readonly StrategyWire[]): StrategyWire[] => strategies.filter((s) => s.spec?.preset !== "basket");
+
 export function rankAgents(strategies: readonly StrategyWire[], sort: BoardSort): StrategyWire[] {
-  const agents = strategies.filter((s) => s.agentId !== null);
+  const agents = notThemes(strategies).filter((s) => s.agentId !== null);
   return [...agents].sort((a, b) =>
     sort === "pnl"
       ? cmp(BigInt(a.record.netBase), BigInt(b.record.netBase)) || b.record.settled - a.record.settled || Number(BigInt(a.strategyId) - BigInt(b.strategyId))

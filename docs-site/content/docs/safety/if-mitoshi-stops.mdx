@@ -12,7 +12,6 @@ sources:
   - contracts/src/products/private/PrivateDesk.sol
   - contracts/src/products/arena/ArenaMatches.sol
   - contracts/src/products/arena/GameArena.sol
-  - contracts/src/themes/ThemeRouter.sol
   - packages/markets/src/server/auth-handler.ts
   - web/src/server/env.ts
   - docs/plan/env-matrix.md
@@ -41,7 +40,7 @@ Contract addresses are on [deployments](/architecture/deployments); the explorer
 | Boost | `settle(positionId)` after the Window; `close(positionId, minProceeds)` before it | Anyone; `close` you |
 | Private desk | `withdraw(amount)` — your unspent balance | You |
 | A duel | `lockPicks(matchId)` after the pick window, `settleCard(matchId, card)` per card, `finalize(matchId)`, then `claimCredit(you)`; `refundUnjoined` or `refundUnrevealed` if it never started | Anyone |
-| A followed theme | Nothing to get out: the holdings sit in your own account. `unfollow(themeId)` stops the agent | You |
+| A followed theme or a strategy copy | Its calls are Trading Balance positions: settle and withdraw as above. `revoke(grantId)` on the Trading Balance stops the runner; `unsubscribe(strategyId)` on the StrategyRegistry ends the consent | You |
 
 Your ids are also listed on chain: `roundsOf`, `parlaysOf` and `positionsOf` page through an owner's tickets.
 

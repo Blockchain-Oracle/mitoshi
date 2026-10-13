@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { usd } from "../strategies/format";
 import { useStrategies } from "../strategies/useStrategies";
 import { AgentRow } from "./AgentRow";
-import { rankAgents, type BoardSort } from "./board";
+import { notThemes, rankAgents, type BoardSort } from "./board";
 import { AGENTS as A } from "./copy";
 import "../strategies/strategies.css";
 import "../strategies/builder.css";
@@ -29,7 +29,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 export function AgentsScreen() {
   const [sort, setSort] = useState<BoardSort>("inherited");
   const reading = useStrategies();
-  const strategies = reading.data?.strategies ?? [];
+  const strategies = notThemes(reading.data?.strategies ?? []);
   const ranked = rankAgents(strategies, sort);
   const nowMs = Date.now();
   return (

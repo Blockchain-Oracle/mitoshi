@@ -102,9 +102,9 @@ function relayPolicyCoverage(rule, ctx) {
   for (const chain of readdirSync(deployments).filter((d) => /^\d+$/.test(d))) {
     for (const f of readdirSync(join(deployments, chain)).filter((f) => f.endsWith(".json") && !f.endsWith(".pending.json"))) areas.add(f.replace(/\.json$/, ""));
   }
-  // `stocks` (D-231): what is left of the fragment — the Mirrors, their views and the sync receiver — takes no app write;
-  // the bridge's sponsored exits went with the bridge.
-  const exempt = new Set(["v4", "pools", "stocks"]);
+  // `v4` is the Uniswap v4 replay the launchpad's graduation calls directly. D-231 moved `stocks`, `guard`, `pools` and
+  // `themes` to contracts/deployments/retired/ (no app write reads them), so only `v4` is exempt.
+  const exempt = new Set(["v4"]);
   for (const area of areas) {
     if (exempt.has(area)) continue;
     const policy = join(ctx.root, `packages/markets/src/relay/policies/${area}.ts`);

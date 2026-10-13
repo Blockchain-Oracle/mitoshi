@@ -1,0 +1,115 @@
+/* `/themes/[slug]` (R6, D-230 revamp; D-231 on baskets) on Mitoshi's tokens: the head, the weighted-mix chart (21st
+ * 30538), the mix ring whose legend is the stocks (21st 20086 + 8704), the calls (21st 27124's journal), the facts as
+ * bordered cells (21st 29195) and the follow sheet's head. From 1024 px the action and the key facts sit in a sticky
+ * side column; below it the action is a strip above the dock (`.th-dock`), so it is on the first screen at every width. */
+.th-detail { gap: 16px; }
+.th-detail-head { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.th-detail-head .dkit-logos { flex: none; }
+.th-detail-title { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 4px; }
+.th-detail-name { overflow: hidden; font-family: var(--font-heading); font-size: clamp(24px, 6vw, 34px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; text-overflow: ellipsis; color: var(--color-ink); }
+.th-detail-tag { overflow: hidden; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; color: var(--color-ink-muted); }
+.th-detail-blurb { max-width: 62ch; margin: 0; font-size: 14px; line-height: 1.5; color: var(--color-ink-secondary); }
+.th-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.th-detail-main, .th-detail-side { display: flex; min-width: 0; flex-direction: column; gap: 16px; }
+@media (min-width: 1024px) {
+  .th-detail-grid { grid-template-columns: minmax(0, 1fr) 21rem; align-items: start; }
+  .th-detail-side { position: sticky; top: var(--stage-sticky-top); }
+}
+
+.th-section { display: flex; min-width: 0; flex-direction: column; gap: 14px; padding: 16px; border: 1px solid var(--color-hairline); border-radius: var(--radius-xl); background: var(--color-surface-1); }
+@media (min-width: 720px) { .th-section { padding: 20px; } }
+.th-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.th-section-title { font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--color-ink); }
+.th-section-count { font-family: var(--font-data); font-size: 12px; color: var(--color-ink-muted); }
+
+/* The action: in the side card from 1024 px; below it a strip that sticks above the dock. */
+.th-follow-card { gap: 14px; }
+.th-follow-cta { display: none; }
+.th-follow-line { margin: 0; font-size: 13px; line-height: 1.5; color: var(--color-ink-secondary); }
+.th-dock { position: sticky; bottom: var(--dock-strip-offset); z-index: var(--z-sticky); padding: 8px 0; background: linear-gradient(to bottom, transparent, var(--color-ground) 35%); }
+@media (min-width: 1024px) {
+  .th-follow-cta { display: block; }
+  .th-dock { display: none; }
+}
+
+/* The weighted-mix chart (MixChart). */
+.th-chart { display: flex; min-width: 0; flex-direction: column; gap: 10px; }
+.th-chart-head { display: flex; flex-direction: column; gap: 4px; }
+.th-chart-figure { font-size: clamp(30px, 8vw, 40px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; color: var(--color-ink); }
+.th-chart-when { font-size: 12px; color: var(--color-ink-muted); }
+.th-chart-plot { position: relative; height: 11.25rem; margin-top: 8px; cursor: crosshair; touch-action: pan-y; border-radius: var(--radius-md); outline: none; }
+.th-chart-plot:focus-visible { outline: var(--focus-ring); outline-offset: 4px; }
+@media (min-width: 720px) { .th-chart-plot { height: 13.75rem; } }
+.th-chart-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.th-chart-extreme { position: absolute; font-size: 11px; font-weight: 500; white-space: nowrap; color: var(--color-ink-muted); pointer-events: none; }
+.th-chart-extreme[data-at="high"] { margin-top: -20px; }
+.th-chart-extreme[data-at="low"] { margin-top: 6px; }
+.th-chart-cross { position: absolute; inset-block: 0; width: 0; border-left: 1px dashed var(--color-ink-muted); pointer-events: none; }
+.th-chart-dot { position: absolute; width: 9px; height: 9px; border-radius: var(--radius-full); box-shadow: 0 0 0 2px var(--color-surface-1); transform: translate(-50%, -50%); pointer-events: none; }
+.th-chart-empty { display: grid; height: 11.25rem; margin: 8px 0 0; padding: 16px; place-items: center; border: 1px dashed var(--color-hairline); border-radius: var(--radius-md); font-size: 13px; line-height: 1.5; text-align: center; color: var(--color-ink-muted); }
+.th-chart-axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-ink-muted); }
+.th-chart-axis.is-empty { display: none; }
+.th-chart-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.th-ranges { width: 100%; max-width: 16rem; }
+.th-chart-caveat { margin: 0; font-size: 11.5px; line-height: 1.45; color: var(--color-ink-muted); }
+
+/* The mix: the ring and the stocks that are its legend. */
+.th-alloc { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 16px; }
+@media (min-width: 560px) { .th-alloc { grid-template-columns: 9.25rem minmax(0, 1fr); align-items: center; justify-items: stretch; } }
+.th-ring { position: relative; width: 148px; height: 148px; }
+.th-ring-svg { display: block; width: 100%; height: 100%; transform: rotate(-90deg); }
+.th-ring-track { stroke: var(--color-hairline); }
+.th-ring-arc { transition: opacity 200ms ease; }
+.th-ring-arc[data-dim] { opacity: 0.22; }
+.th-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; pointer-events: none; }
+.th-ring-caption { font-size: 11px; color: var(--color-ink-muted); }
+.th-holdings { display: flex; width: 100%; min-width: 0; flex-direction: column; }
+.th-holding { display: grid; width: 100%; min-height: 56px; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 4px; border-bottom: 1px solid var(--color-hairline); text-align: left; transition: opacity 200ms ease; }
+.th-holdings > li:last-child .th-holding { border-bottom: 0; }
+.th-holding[data-dim] { opacity: 0.35; }
+.th-holding:focus-visible { outline: var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-md); }
+.th-holding-disc { display: grid; width: 34px; height: 34px; place-items: center; border-radius: var(--radius-full); background: var(--color-surface-2); outline: 2px solid var(--th-ring); outline-offset: 2px; }
+.th-holding-mark { display: grid; width: 100%; height: 100%; place-items: center; overflow: hidden; border-radius: var(--radius-full); font-size: 14px; font-weight: 700; color: var(--color-ink); }
+.th-holding-mark .asset-mark { width: 100%; height: 100%; }
+.th-holding-name, .th-holding-weight { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.th-holding-weight { align-items: flex-end; }
+.th-holding-sym { font-family: var(--font-data); font-size: 14px; font-weight: 700; color: var(--color-ink); }
+.th-holding-sub { overflow: hidden; font-size: 12px; white-space: nowrap; text-overflow: ellipsis; color: var(--color-ink-muted); }
+.th-holding-pct { font-size: 15px; font-weight: 700; color: var(--color-ink); }
+.th-holding-call { font-size: 11.5px; color: var(--color-ink-muted); }
+
+/* The calls: 21st 27124's trade journal on a phone's width — when, the Window, the side, the result. */
+.th-calls { display: flex; flex-direction: column; }
+.th-calls-head, .th-call { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; }
+.th-calls-head { padding: 0 2px 8px; border-bottom: 1px solid var(--color-hairline); font-size: 10.5px; color: var(--color-ink-muted); }
+.th-calls-head > :nth-child(n + 2) { text-align: right; }
+.th-call { min-height: 56px; padding: 8px 2px; border-bottom: 1px solid var(--color-hairline); }
+.th-call:last-child { border-bottom: 0; }
+.th-call-what { display: flex; min-width: 0; align-items: center; gap: 10px; }
+.th-call-disc { display: grid; width: 28px; height: 28px; flex: none; place-items: center; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-2); font-size: 12px; font-weight: 700; }
+.th-call-disc .asset-mark { width: 100%; height: 100%; }
+.th-call-text { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.th-call-label { overflow: hidden; font-family: var(--font-data); font-size: 13px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; color: var(--color-ink); }
+.th-call-when { overflow: hidden; font-size: 11.5px; white-space: nowrap; text-overflow: ellipsis; color: var(--color-ink-muted); }
+.th-side-chip { display: inline-block; padding: 2px 8px; border-radius: var(--radius-sm); font-family: var(--font-data); font-size: 11px; font-weight: 700; }
+.th-side-chip[data-side="up"] { background: color-mix(in srgb, var(--color-up) 12%, transparent); color: var(--color-up); }
+.th-side-chip[data-side="down"] { background: color-mix(in srgb, var(--color-down) 12%, transparent); color: var(--color-down); }
+.th-result { display: inline-flex; justify-self: end; align-items: center; gap: 5px; padding: 2px 8px; border: 1px solid var(--color-hairline); border-radius: var(--radius-full); font-size: 11px; font-weight: 600; color: var(--color-ink-secondary); }
+.th-result svg { width: 11px; height: 11px; }
+.th-result[data-outcome="won"] { border-color: color-mix(in srgb, var(--color-up) 25%, transparent); background: color-mix(in srgb, var(--color-up) 10%, transparent); color: var(--color-up); }
+.th-result[data-outcome="lost"] { border-color: color-mix(in srgb, var(--color-down) 25%, transparent); background: color-mix(in srgb, var(--color-down) 10%, transparent); color: var(--color-down); }
+.th-result[data-outcome="open"] > i { width: 5px; height: 5px; border-radius: var(--radius-full); background: var(--color-up); }
+
+/* The facts as bordered cells: hairlines from the grid's gap, so any count of columns draws clean. */
+.th-cells { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-hairline); }
+@media (min-width: 600px) and (max-width: 1023px) { .th-cells:not(.th-cells--key) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.th-cell { display: flex; min-width: 0; flex-direction: column; gap: 4px; padding: 12px 14px; background: var(--color-surface-1); }
+.th-cell dt { font-size: 11.5px; color: var(--color-ink-muted); }
+.th-cell dd { margin: 0; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; color: var(--color-ink); }
+
+/* The follow sheet's head (FollowSheet): the stocks, the name and its state, one line. */
+.th-sheet-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.th-sheet-name { overflow: hidden; font-family: var(--font-heading); font-size: 20px; font-weight: 800; letter-spacing: -0.01em; white-space: nowrap; text-overflow: ellipsis; color: var(--color-ink); }
+.th-sheet-line { margin: 0; font-size: 13px; line-height: 1.5; color: var(--color-ink-secondary); }
+
+@media (prefers-reduced-motion: reduce) { .th-ring-arc, .th-holding { transition: none; } }

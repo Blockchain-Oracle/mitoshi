@@ -60,6 +60,8 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
     : <EmptyState why={C.notFound} nextAction={{ label: C.back, href: "/agents" }} />;
   const d = detail.data;
   const s = d.strategy;
+  // A theme (D-231) is a basket strategy with its own page: its calls, its mix and its follow.
+  if (s.spec?.preset === "basket") return <EmptyState why={C.theme} nextAction={{ label: C.openTheme, href: `/themes/${s.strategyId}` }} />;
   const { name } = strategyIdentity(s);
   const copying = writes.mine.some((m) => m.strategyId === s.strategyId && m.active);
   const card = catalogue.data?.strategies.find((x) => x.strategyId === s.strategyId) ?? s;

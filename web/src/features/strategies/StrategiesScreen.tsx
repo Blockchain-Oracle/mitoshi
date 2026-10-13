@@ -46,7 +46,8 @@ export function StrategiesScreen({ view, onView: setView }: { view: View; onView
   const copyingOf = (id: string): "none" | "follow" | "fade" => writes.mine.find((m) => m.strategyId === id && m.active)?.mode ?? "none";
   const wallet = writes.wallet?.toLowerCase() ?? null;
   const own = useMemo(() => strategies.filter((s) => s.creator.toLowerCase() === wallet || writes.mine.some((m) => m.strategyId === s.strategyId)), [strategies, wallet, writes.mine]);
-  const visible = view === "yours" ? own : strategies.filter((s) => s.active || copyingOf(s.strategyId) !== "none");
+  // The catalogue leaves the themes to /themes (D-231); a theme the wallet published or follows stays in Yours.
+  const visible = view === "yours" ? own : strategies.filter((s) => s.spec?.preset !== "basket" && (s.active || copyingOf(s.strategyId) !== "none"));
   const featured = own.find((s) => s.strategyId === selected) ?? own[0] ?? null;
   const card = strategies.find((s) => s.strategyId === openId) ?? null;
   const open = (id: string, tab?: DrawerTab) => {

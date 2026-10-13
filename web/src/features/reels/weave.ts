@@ -1,18 +1,18 @@
 // Ported from Agari 03b30ab:web/src/features/takes/weave.ts (S13 step 9) — Windows and takes as one stream: market,
 // take, market, take… then whichever list has a tail. Starting on a live Window keeps the first card actionable.
 // R4-11 (D-227): a third kind, Owarine 90a91d71:web/src/features/takes/weave.ts's desk decision — the copied agent's
-// latest notable decision, woven in once at the fifth card (never pinned at the top). A theme rebalance joins it later.
+// latest notable decision, woven in once at the fifth card (never pinned at the top); a followed theme's latest call
+// (D-231) four cards later.
 import type { EventMarket } from "@cwf/core";
 import type { Take } from "@/features/social/useTakes";
 import type { StrategyReelDecision } from "./StrategyReelCard";
-import type { ThemeReelRebalance } from "./ThemeReelCard";
 
-export type ReelItem = { kind: "market"; market: EventMarket } | { kind: "take"; take: Take } | { kind: "agent"; agent: StrategyReelDecision } | { kind: "theme"; theme: ThemeReelRebalance };
+export type ReelItem = { kind: "market"; market: EventMarket } | { kind: "take"; take: Take } | { kind: "agent"; agent: StrategyReelDecision } | { kind: "theme"; theme: StrategyReelDecision };
 
 /** Where the agent's card sits: after the first few cards, so the reel still opens on a live Window. */
 export const AGENT_AT = 4;
 
-export function weaveReel(rounds: readonly EventMarket[], takes: readonly Take[], agent: StrategyReelDecision | null = null, theme: ThemeReelRebalance | null = null): ReelItem[] {
+export function weaveReel(rounds: readonly EventMarket[], takes: readonly Take[], agent: StrategyReelDecision | null = null, theme: StrategyReelDecision | null = null): ReelItem[] {
   const out: ReelItem[] = [];
   for (let i = 0; i < Math.max(rounds.length, takes.length); i += 1) {
     const market = rounds[i];
@@ -29,4 +29,4 @@ export function weaveReel(rounds: readonly EventMarket[], takes: readonly Take[]
 }
 
 export const reelKey = (item: ReelItem): string =>
-  item.kind === "market" ? item.market.marketId : item.kind === "take" ? `take-${item.take.id}` : item.kind === "agent" ? `agent-${item.agent.strategyId}-${item.agent.decision.decidedAtMs}` : `theme-${item.theme.txHash}`;
+  item.kind === "market" ? item.market.marketId : item.kind === "take" ? `take-${item.take.id}` : item.kind === "agent" ? `agent-${item.agent.strategyId}-${item.agent.decision.decidedAtMs}` : `theme-${item.theme.strategyId}-${item.theme.decision.decidedAtMs}`;
