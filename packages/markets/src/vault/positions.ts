@@ -101,7 +101,8 @@ async function listBetsIn(client: Awaited<ReturnType<typeof getPublicClient>>, d
       if (!w) return null;
       const t = tallyOf(rows[3 * i] as Tally);
       const held = { upRaw: rows[3 * i + 1] as bigint, downRaw: rows[3 * i + 2] as bigint };
-      const cost = w.snapshot.state === "open" ? await openCostOf(owner, id, d, t, held) : { upBase: 0n, downBase: 0n };
+      // Whatever is still held has a cost, an answered Window's too until it is cranked (its row reads "Staked").
+      const cost = await openCostOf(owner, id, d, t, held);
       return {
         vault: contract.address,
         marketId: id, asset: w.market.asset, intervalSec: w.market.intervalSec, expirySec: w.market.expirySec, lockAtSec: w.market.lockAtSec, decimals: w.market.decimals,

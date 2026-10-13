@@ -2,7 +2,9 @@
 // figure, its %, the View-position pill and the PnL card's ROI sum P&L and cost over priced rows only (a row with no
 // exit to price it is counted apart, never as 0 against its full cost); equity sums every row's `equityBase` (the part
 // the book takes at its value, the rest at cost, a settled Window at its payout). Integers throughout.
+import type { BalanceSheet, VaultBet } from "@cwf/core";
 import { isPriced } from "./position-return";
+import { settledPayoutBase } from "./position-value";
 import type { TerminalPosition } from "./terminal-positions";
 import type { PositionValue } from "./usePositionValue";
 
@@ -43,6 +45,29 @@ export function totalsOf(positions: readonly Pick<TerminalPosition, "id" | "cost
     } else unpriced += 1;
   }
   return { pnlBase: priced > 0 ? pnl : null, costBase: cost, unpriced, equityBase: equity, realizedBase: realized, realizedCostBase: realizedCost };
+}
+
+/**
+ * What the Trading Balance is owed on Windows that have their answer but are not paid into it yet (the settler cranks
+ * each one, D-155): the contracts still held at the known payout — a dollar a winning contract, half on a void, nothing
+ * for a losing side. The Window has left the open rows, so equity counts this until the balance holds it.
+ */
+export function vaultOwedBase(bets: readonly Pick<VaultBet, "state" | "upRaw" | "downRaw" | "winningOutcome">[]): bigint {
+  let owed = 0n;
+  for (const b of bets) {
+    if (b.state === "open") continue;
+    owed += settledPayoutBase("up", b.upRaw, b.state, b.winningOutcome) + settledPayoutBase("down", b.downRaw, b.state, b.winningOutcome);
+  }
+  return owed;
+}
+
+/**
+ * What waits to be collected outside the rows on screen (D-227): the balance sheet's figure less any answered Window a
+ * wallet row still shows — the list is its own poll, so for a moment a row and its payout can both be there.
+ */
+export function collectOutsideBase(sheet: Pick<BalanceSheet, "collectBase" | "collectByMarket">, rows: readonly Pick<TerminalPosition, "via" | "marketId">[]): bigint {
+  const shown = new Set(rows.filter((r) => r.via === "wallet").map((r) => r.marketId.toLowerCase()));
+  return sheet.collectByMarket.reduce((sum, c) => (shown.has(c.marketId.toLowerCase()) ? sum - c.amountBase : sum), sheet.collectBase);
 }
 
 /** ROI in basis points over what the priced rows cost; null with no cost. */

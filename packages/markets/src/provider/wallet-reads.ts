@@ -4,14 +4,14 @@
  * balance is then read head-fresh from the lens (`positionsOf`), so money on screen is never an indexer figure.
  * Replaces Masayume 68f7a09:packages/markets/src/provider/{positions,claimables,history,balances}.ts.
  */
-import { erc20Abi, getAbiItem, getAddress, type Address } from "viem";
+import { getAbiItem, getAddress, type Address } from "viem";
 import { eventsEngineAbi } from "@cwf/clients/abis/EventsEngine";
 import { eventVaultAbi } from "@cwf/clients/abis/EventVault";
 import { vaultDeploymentOf } from "../vault/read";
 import { buildLedgers, heldCostOf, ledgerHasActivity, oneUnit, realizedOf, roundSettledAtMs, settleRound, USD_DECIMALS, type BalanceSheet, type ClaimableRow, type Holdings, type LedgerFill, type LedgerSide, type MarketId, type OnchainSnapshot, type OpenPosition, type Reading, type RoundMarket, type SettledRound, type WalletHistory } from "@cwf/core";
 import { deploymentOf } from "../deployments";
 import { getLogClient, getPublicClient } from "../runtime/read-runtime";
-import { engineMayPay, engineVenue, readPositions, readWindows, type EnginePosition, type WindowFacts } from "../engine/lens";
+import { engineMayPay, engineVenue, readBalanceAndPositions, readPositions, readWindows, type EnginePosition, type WindowFacts } from "../engine/lens";
 import { claimablesOf } from "../engine/claims";
 import { PAIR_TICKS } from "../engine/calls";
 import { engineReading } from "./engine-reads";
@@ -151,21 +151,29 @@ export const listWalletHistory = (wallet: Address): Promise<Reading<WalletHistor
   });
 
 /**
- * pathUSD in the wallet, engine credit per Window, cash locked behind resting orders, and the Trading Balance
- * (`EventVault.accountOf`) where the vault is deployed — each labelled, nothing silently summed (FR-5).
+ * pathUSD in the wallet, engine credit per Window, cash locked behind resting orders, the Trading Balance
+ * (`EventVault.accountOf`) where the vault is deployed, and what waits to be collected — each labelled, nothing
+ * silently summed (FR-5).
  */
 export const getBalanceSheet = (wallet: Address): Promise<Reading<BalanceSheet>> =>
   engineReading(`balance:${lower(wallet)}`, async () => {
-    const [client, venue] = await Promise.all([getPublicClient(), engineVenue()]);
+    const client = await getPublicClient();
     // The current Trading Balance (v2 once deployed, S24.2); a previous one's leftover shows on its own card.
     const vault = vaultDeploymentOf(client.chain.id)?.eventVault ?? null;
-    const [spendableBase, ids, vaultAccount] = await Promise.all([
-      client.readContract({ address: venue.collateral, abi: erc20Abi, functionName: "balanceOf", args: [wallet] }),
+    const [ids, vaultAccount] = await Promise.all([
       walletMarketIds(wallet, true),
       vault ? client.readContract({ address: vault, abi: eventVaultAbi, functionName: "accountOf", args: [wallet] }) : Promise.resolve(null),
     ]);
-    const positions = await readPositions(wallet, ids);
+    // The balance and the positions in one block (D-227): the settler's payout lands in one figure, never both or neither.
+    const [{ balanceBase: spendableBase, positions }, windows] = await Promise.all([readBalanceAndPositions(wallet, ids), readWindows(ids)]);
     const engineCreditByMarket = positions.filter((p) => p.credit > 0n).map((p) => ({ marketId: p.marketId, amountBase: p.credit }));
+    // What waits to be collected, from the same reads as the balance (D-227): equity never drops a Window at its answer
+    // and gets it back at the payout, nor counts it twice once paid.
+    const sources = positions.flatMap((p) => {
+      const w = windows.get(p.marketId);
+      return w ? [{ market: w.market, lotBase: w.series.lotBase, position: p }] : [];
+    });
+    const claims = claimablesOf(sources, true);
     return {
       decimals: USD_DECIMALS,
       spendableBase,
@@ -173,6 +181,8 @@ export const getBalanceSheet = (wallet: Address): Promise<Reading<BalanceSheet>>
       engineCreditBase: engineCreditByMarket.reduce((s, c) => s + c.amountBase, 0n),
       engineCreditByMarket,
       vaultBase: vaultAccount ? (vaultAccount as { available: bigint }).available : null,
+      collectBase: claims.reduce((s, r) => s + r.netPayoutBase, 0n),
+      collectByMarket: claims.filter((r) => r.kind === "win" || r.kind === "void").map((r) => ({ marketId: r.marketId, amountBase: r.netPayoutBase })),
     };
   });
 

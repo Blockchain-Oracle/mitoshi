@@ -46,7 +46,7 @@ function PositionRow({ p, current, busy, onClose, onOpen, onTrailHit, onValue }:
   const avg = avgTicksOf(p);
   const pays = paysMultiple(p);
   const shut = v.status === "locked" || v.status === "settling";
-  const note = statusText(v.status, p.expirySec, v.fillablePct, v.settled);
+  const note = statusText(v.status, p.expirySec, v.fillablePct, v.settled, v.valueBase);
   const sub = `${cadenceOf(p.intervalSec)} · pays ${pays === null ? "—" : `${pays.toFixed(2)}×`}`;
   const hide = (text: string) => (masked ? SHELL.masked : text);
   return (
