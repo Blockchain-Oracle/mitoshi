@@ -1,12 +1,15 @@
 "use client";
 
 import type { ArcadeGame } from "@cwf/core/games/arcade";
+import dynamic from "next/dynamic";
 import { SHARE } from "@/features/share/copy";
-import { SharePill } from "@/features/share/SharePill";
 import type { ShareInput } from "@/features/share/useShareCard";
 import { gameEntry } from "../catalog";
 import { ARCADE } from "./copy";
 import type { RunEnd } from "./run";
+
+/** The game-over Share pill loads with the game-over, not with the arcade (R4-13a: the route stays under its budget). */
+const SharePill = dynamic(() => import("@/features/share/SharePill").then((m) => m.SharePill), { ssr: false, loading: () => null });
 
 /**
  * Pips's two plates over the field, in the field's own ink: the title — the name, the pitch, the best,
