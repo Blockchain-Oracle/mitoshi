@@ -51,7 +51,9 @@ export const SHELL = {
   commandTitle: "Go to",
   commandDesc: "Jump to any market or page in Mitoshi",
   commandPlaceholder: "Where to? BTC, Tesla, Leaderboard…",
-  commandGroups: { places: "Go to", trade: "Trade", stocks: "Stocks" },
+  commandGroups: { recent: "Recent", places: "Go to", live: "Live now", assets: "Assets", pages: "Pages" },
+  /** ⌘K's hint bar and the phone's chip (R6 shell S24): an asset trades on ↵ and opens its hub on ⌘↵. */
+  commandHints: { trade: "Trade", hub: "Hub", open: "Open", close: "Close" },
   /** A listed destination whose surface is not connected yet (critic gap 18): reachable, marked. */
   soon: "Soon",
   moreLabel: "More",
