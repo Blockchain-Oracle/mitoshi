@@ -27,7 +27,9 @@ export function Pockets({ pockets, decimals, panels, children }: { pockets: Pock
   const tiles = pockets.length + (children ? 1 : 0);
   const open = pockets.find((p) => URL_KEY[p.id] === named && p.blockedReason === null) ?? null;
   // The last pocket opened stays in the sheet while it animates closed, so its title and body never blank out.
+  // Opened from the URL too (Back, Forward, a shared link), not only by Manage: whatever is open is what stays shown.
   const [shown, setShown] = useState<PocketId | null>(null);
+  if (open && open.id !== shown) setShown(open.id);
   const current = open?.id ?? shown;
   const manage = (id: PocketId) => {
     setShown(id);

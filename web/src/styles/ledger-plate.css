@@ -108,8 +108,11 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .mh-leg-label { grid-area: lab; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 12px/1.3 var(--font-body); color: var(--plate-ink-soft); }
 .mh-leg-amount { grid-area: amt; font: 700 14px/1 var(--font-data); }
 /* The inline Collect: a 36 px light pill with a 44 px hit area. */
-.mh-leg-act { grid-area: act; position: relative; justify-self: start; height: 36px; margin-top: 6px; padding: 0 16px; border-radius: var(--radius-full); background: var(--plate-ink); color: var(--plate-black); font: 700 14px/36px var(--font-body); transition: opacity 180ms var(--ease); }
+/* Its own <dd> (a <dl> row holds only dt/dd), placed in the leg's "act" cell. */
+.mh-leg-actcell { grid-area: act; justify-self: start; }
+.mh-leg-act { position: relative; height: 36px; margin-top: 6px; padding: 0 16px; border-radius: var(--radius-full); background: var(--plate-ink); color: var(--plate-black); font: 700 14px/36px var(--font-body); transition: opacity 180ms var(--ease); }
 .mh-leg-act::before { content: ""; position: absolute; inset: -4px; }
+.mh-leg-act:hover:not(:disabled) { opacity: 0.9; }
 .mh-leg-act:disabled { opacity: 0.6; }
 .money-hero-counts { display: none; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--plate-rule); font: 500 13px/1.2 var(--font-body); color: var(--plate-ink-soft); }
 @media (min-width: 400px) and (max-width: 639px) {
@@ -161,5 +164,6 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
   .pocket-chip-amount { grid-area: amt; min-width: 0; font: 700 clamp(14px, 4.6vw, 16px)/1 var(--font-data); }
   .pocket-chip-why { grid-area: why; font: 400 11px/1.3 var(--font-body); color: var(--color-ink-secondary); }
   .pocket-chip-chev { grid-area: chev; }
+  .pocket-chip:hover:not(:disabled) { background: var(--color-surface-2); }
 }
 .connect-card-icon { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 12px; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink); box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-surface-2) 40%, transparent); }

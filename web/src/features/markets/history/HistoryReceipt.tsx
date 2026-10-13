@@ -51,9 +51,10 @@ function ReceiptBody({ round }: { round: SettledRound }) {
   );
 }
 
-export function HistoryReceipt({ round, onClose }: { round: SettledRound | null; onClose: () => void }) {
+/** `round` is the last one opened: it stays in the sheet while `open` animates it closed. */
+export function HistoryReceipt({ round, open, onClose }: { round: SettledRound | null; open: boolean; onClose: () => void }) {
   return (
-    <SlideOver open={round !== null} onOpenChange={(open) => !open && onClose()}>
+    <SlideOver open={open && round !== null} onOpenChange={(o) => !o && onClose()}>
       <SlideOverContent title={round?.outcome === "closed" ? HISTORY.closedTitle : HISTORY.receiptTitle} description={round ? `${round.asset} · ${HISTORY.outcome[round.outcome] ?? round.outcome}` : undefined}>
         {round ? <ReceiptBody key={`${round.source}:${round.marketId}:${round.openedAtMs}`} round={round} /> : null}
       </SlideOverContent>

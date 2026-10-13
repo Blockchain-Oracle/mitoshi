@@ -18,7 +18,8 @@ const isEmpty = (value: WalletHistory) => value.rounds.length === 0;
 
 export function HistoryRows({ history, retry }: { history: Reading<WalletHistory> | null; retry: () => void }) {
   const nowMs = useNowMs();
-  const [receiptFor, setReceiptFor] = useState<SettledRound | null>(null);
+  // The last round opened stays in the sheet while it animates closed (Owarine's `shown`), so it never blanks out.
+  const [receipt, setReceipt] = useState<{ round: SettledRound; open: boolean } | null>(null);
   const rounds = history?.ok ? history.value.rounds : NO_ROUNDS;
   const pager = usePager(rounds, PAGE_SIZE);
   return (
@@ -28,11 +29,11 @@ export function HistoryRows({ history, retry }: { history: Reading<WalletHistory
           {!value.complete ? <p className="type-caption text-warning">{HISTORY.partial}</p> : null}
           <ul className="bets-list">
             {pager.slice.map((round) => (
-              <HistoryRow key={`${round.source}:${round.marketId}:${round.openedAtMs}`} round={round} nowMs={nowMs} onReceipt={setReceiptFor} />
+              <HistoryRow key={`${round.source}:${round.marketId}:${round.openedAtMs}`} round={round} nowMs={nowMs} onReceipt={(r) => setReceipt({ round: r, open: true })} />
             ))}
           </ul>
           <Pager pager={pager} />
-          <HistoryReceipt round={receiptFor} onClose={() => setReceiptFor(null)} />
+          <HistoryReceipt round={receipt?.round ?? null} open={receipt?.open ?? false} onClose={() => setReceipt((r) => (r ? { ...r, open: false } : null))} />
         </div>
       )}
     </ReadingBoundary>

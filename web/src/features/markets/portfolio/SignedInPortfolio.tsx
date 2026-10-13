@@ -113,7 +113,7 @@ function Ledger({ wallet }: { wallet: Address }) {
       <BridgeInFlight rows={inFlight} index={inFlightIndex} />
       {showCollect ? (
         <section className="flex flex-col gap-3" aria-labelledby="collect-title">
-          <SectionHeader id="collect-title" index={collectIndex} title={HERO_MONEY.collectTitle} aside={<span className="type-caption text-ink-secondary">{CLAIM.waiting(rows.length)}</span>} />
+          <SectionHeader id="collect-title" index={collectIndex} title={HERO_MONEY.collectTitle} aside={rows.length > 0 ? <span className="type-caption text-ink-secondary">{CLAIM.waiting(rows.length)}</span> : null} />
           <CollectPlate wallet={wallet} rows={rows} bare collector={collector} boostOwed={{ amountBase: money.boostOwedBase, busy: boostWrites.busy === "owed", collect: () => void boostWrites.claimOwed() }} />
         </section>
       ) : null}

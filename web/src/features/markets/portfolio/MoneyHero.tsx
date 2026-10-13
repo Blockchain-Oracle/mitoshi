@@ -79,9 +79,11 @@ export function MoneyHero({ money, settled, onAdd, collect }: { money: Money; se
               <dt className="mh-leg-label">{leg.label}</dt>
               <dd className="numbers mh-leg-amount">{amount(parts[leg.key])}</dd>
               {leg.key === "collect" && collect && ready && money.collectBase > 0n ? (
-                <button type="button" className="mh-leg-act" disabled={collect.busy} aria-busy={collect.busy} onClick={collect.run}>
-                  {collect.busy ? HERO_MONEY.collecting : HERO_MONEY.collect}
-                </button>
+                <dd className="mh-leg-actcell">
+                  <button type="button" className="mh-leg-act" disabled={collect.busy} aria-busy={collect.busy} onClick={collect.run}>
+                    {collect.busy ? HERO_MONEY.collecting : HERO_MONEY.collect}
+                  </button>
+                </dd>
               ) : null}
             </div>
           ))}
