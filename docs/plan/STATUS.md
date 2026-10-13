@@ -4,7 +4,7 @@
 MOBILE and DOCS (web deploy of `6aaeae1`, ops and docs of `813b924`; the last code change is `a5f8b74`). Live check
 07:15Z: nine routes at 375 × 667 and 1440 × 900 with no console errors and ticking prices, ops /health 29/29 ok, the
 docs site and the apex's passkey association files serve (the plan's "Done so far"). Docs: live; its 17 captures and 2
-walkthroughs are being recorded on the deployed site. Mobile: EAS builds made; TestFlight and Play wait on the store
+walkthroughs recorded on the deployed site, published with hashes and redeployed (`01491f4`, 07:46Z; live files match). Mobile: EAS builds made; TestFlight and Play wait on the store
 records. Waits on the owner (owner-actions): the App Store Connect and Play Console records, Robinhood testnet ETH
 (bridge Handoff, stock sync, theme rebalance), the passkey phone check, RedStone's API key before 2026-10-29, the
 indexer key, the Reown project ID, the duel season. Next: S11 (X).**
