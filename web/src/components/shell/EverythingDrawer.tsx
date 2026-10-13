@@ -51,7 +51,7 @@ export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDra
 
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={SHELL.moreTitle} className="is-wide">
+      <SlideOverContent title={SHELL.moreTitle} size="lg" fields>
         <div className="more-body">
           <label className="more-search" role="search">
             <span className="sr-only">{SHELL.searchLabel}</span>

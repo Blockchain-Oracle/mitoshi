@@ -16,6 +16,7 @@ import { useBalanceSheet, useSeriesGrid, useSigner } from "@cwf/markets/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { LoadingState } from "@/components/states";
+import { SheetFooter } from "@/components/ui/drawer";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { SESSION, SessionFallbackCta, TapTradingChip, useTicketRoute } from "@/features/session";
 import { nowMs as clockNow, useNowMs } from "@/lib/clock";
@@ -177,6 +178,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
           <AccountGate connected={session.isConnected} availableBase={spendBase} stakeBase={stakeBase} decimals={decimals} chip={<TapTradingChip />} />
           {t.advancedFrom ? <p role="status" className="type-caption text-ink-secondary">{TICKET.advanced(formatCadence(t.advancedFrom.intervalSec), formatCadence(market.intervalSec))}</p> : null}
           <OutcomeNote tx={bet.state.tx} outcome={bet.state.outcome} decimals={decimals} onDismiss={bet.reset} />
+          <SheetFooter>
           <div className="tk-cta-dock">
             <ToWin label={TICKET.toWin} amount={displayed ? formatBaseUnits(displayed.payoutIfRightBase, decimals, { group: false, minDp: 2, maxDp: 2 }) : null} note={displayed ? TICKET.avgPrice(Math.round(displayed.avgPriceBps / 100)) : null} />
             {tb.fallback && !blocker ? (
@@ -196,6 +198,7 @@ export function Ticket({ market, side: urlSide, head }: TicketProps) {
             )}
             <p className="tk-foot">{tb.viaBalance ? SESSION.footnote : tapArmed ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>
           </div>
+          </SheetFooter>
           </>}
         </>
       )}

@@ -5,7 +5,8 @@
  * `HoldToConfirm`), inside the rail from `lg` or the right-edge slide-over below it (`SlipDock`). Ported from Masayume
  * 68f7a09:web/src/features/parlay/ParlayTicket.tsx (the multiplier, the solver, the breakdown, the place ladder, the
  * footnotes) with the ux-audit fixes: the CTA names its blocker instead of greying out (D-045), every wait is named,
- * a failure says whether money moved, and a requote asks again at the new figure.
+ * a failure says whether money moved, and a requote asks again at the new figure. R4-2 (D-227): in the slide-over the
+ * place control sits in the pinned footer (`SheetFooter`), above a phone's keyboard; on the rail, in place.
  */
 import { oneUnit, parseDecimalToBaseUnits, mulBpsCeil } from "@cwf/core/units";
 import { USD_DECIMALS, type ParlayMode, type ParlayReserveState } from "@cwf/core";
@@ -16,6 +17,7 @@ import { txUrl } from "@cwf/core/urls";
 import { useMemo } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
+import { SheetFooter } from "@/components/ui/drawer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { OrderSummary } from "@/components/ui/order-summary";
 import { AmountField, QuickAdds } from "@/components/ui/prediction-ticket";
@@ -110,18 +112,20 @@ export function ParlaySlip({ reserve, windows }: { reserve: ParlayReserveState; 
         total={{ label: PARLAY.slip.payoutTotal, value: quote ? usd(quote.maxPayoutBase) : null, tone: "profit" }}
       />
 
-      {!session.isConnected ? (
-        <button type="button" onClick={() => session.connectFor(PARLAY.cta.signInFor)} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{PARLAY.cta.signIn}</button>
-      ) : busy || writes.fetchingSpots ? (
-        <TxCta state={writes.tx} action={writes.fetchingSpots ? PARLAY.cta.fetchingSpots : PARLAY.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
-      ) : blocker ? (
-        <button type="button" disabled aria-disabled className="min-h-touch w-full cursor-not-allowed rounded-md border border-hairline bg-surface-2 px-4 type-body-strong text-ink-secondary">{blocker}</button>
-      ) : (
-        <HoldToConfirm className="w-full" confirmLabel={PARLAY.cta.placing} onConfirm={place}>
-          {PARLAY.cta.place(usd(quote!.stakeBase), usd(quote!.maxPayoutBase))}
-        </HoldToConfirm>
-      )}
-      {session.isConnected && !blocker && !busy ? <p className="text-center type-caption text-ink-secondary">{TX.noFees}</p> : null}
+      <SheetFooter>
+        {!session.isConnected ? (
+          <button type="button" onClick={() => session.connectFor(PARLAY.cta.signInFor)} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{PARLAY.cta.signIn}</button>
+        ) : busy || writes.fetchingSpots ? (
+          <TxCta state={writes.tx} action={writes.fetchingSpots ? PARLAY.cta.fetchingSpots : PARLAY.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
+        ) : blocker ? (
+          <button type="button" disabled aria-disabled className="min-h-touch w-full cursor-not-allowed rounded-md border border-hairline bg-surface-2 px-4 type-body-strong text-ink-secondary">{blocker}</button>
+        ) : (
+          <HoldToConfirm className="w-full" confirmLabel={PARLAY.cta.placing} onConfirm={place}>
+            {PARLAY.cta.place(usd(quote!.stakeBase), usd(quote!.maxPayoutBase))}
+          </HoldToConfirm>
+        )}
+        {session.isConnected && !blocker && !busy ? <p className="text-center type-caption text-ink-secondary">{TX.noFees}</p> : null}
+      </SheetFooter>
 
       {outcome?.status === "confirmed" ? (
         <div role="status" className="ps-receipt">

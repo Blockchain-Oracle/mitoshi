@@ -69,7 +69,7 @@ export function SlipLegs({ windows, figures, refusal }: { windows: readonly LegW
                   {w ? `${w.market.asset} ${formatCadence(w.market.intervalSec)}` : PARLAY.slip.legLeft(i + 1)}
                 </span>
                 <span className="ps-leg-prob numbers">{f?.priceRaw != null ? formatCents(f.priceRaw) : "—"}</span>
-                <button type="button" onClick={() => slip.remove(leg.key)} aria-label={PARLAY.slip.remove(i + 1)} className="ps-remove size-touch">
+                <button type="button" onClick={() => slip.remove(leg.key)} aria-label={PARLAY.slip.remove(i + 1)} title={PARLAY.slip.remove(i + 1)} className="ps-remove size-touch">
                   <X aria-hidden className="size-4" />
                 </button>
               </div>

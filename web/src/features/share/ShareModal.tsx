@@ -12,6 +12,7 @@ import { usePrivacy } from "@/lib/privacy";
 import { livePnlText, money, moneyTone } from "@/features/terminal/format";
 import { SHARE } from "./copy";
 import { renderSharePng, saveSharePng } from "./share-png";
+import { SheetFooter } from "@/components/ui/drawer";
 
 /** What a card is about: an open position (Mark, valued by what Close pays) or a closed trade (Exit). */
 export interface ShareSubject {
@@ -92,6 +93,7 @@ export function ShareModal({ subject, open, onOpenChange }: { subject: ShareSubj
               <span role="status" className="type-caption text-ink-secondary">{SHARE.drawing}</span>
             )}
           </div>
+          <SheetFooter>
           <div className="grid w-full grid-cols-2 gap-2">
             <button
               type="button"
@@ -115,6 +117,7 @@ export function ShareModal({ subject, open, onOpenChange }: { subject: ShareSubj
               {SHARE.onX}
             </a>
           </div>
+          </SheetFooter>
         </div>
       )}
     </Modal>

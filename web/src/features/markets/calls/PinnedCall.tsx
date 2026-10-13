@@ -27,7 +27,7 @@ export function PinnedCall({ wallet, call, onDismiss }: { wallet: Address; call:
   const opening = useOpeningPrice(call.marketId);
   const rows: ClaimableRow[] | null = claimables && isOk(claimables) ? claimables.value.filter((r) => r.marketId === call.marketId) : null;
   const dismiss = isFinal(view) || (view === null && nowMs > call.expirySec * 1000) ? (
-    <button type="button" onClick={onDismiss} className="grid size-touch place-items-center self-end rounded-md text-ink-secondary hover:bg-surface-2" aria-label={`${CALL.dismiss} · ${call.asset}`}>
+    <button type="button" onClick={onDismiss} className="grid size-touch place-items-center self-end rounded-md text-ink-secondary hover:bg-surface-2" aria-label={`${CALL.dismiss} · ${call.asset}`} title={`${CALL.dismiss} · ${call.asset}`}>
       <X aria-hidden className="size-4" />
     </button>
   ) : null;

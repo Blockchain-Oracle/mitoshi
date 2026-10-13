@@ -52,7 +52,7 @@
 .demo-bar {
   position: sticky;
   top: calc(var(--appstrip) + 92px);
-  z-index: 50;
+  z-index: var(--z-sticky);
   backdrop-filter: blur(8px);
   background: color-mix(in srgb, var(--bg) 70%, transparent);
   border-bottom: 1px solid var(--demo-hair-06);

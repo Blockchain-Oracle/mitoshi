@@ -4,6 +4,8 @@
 // the header, the live meter (spot, drift, time left, the Window's tape), the thread with Sensei's mark, follow-up chips,
 // the Window to act on once there is a read (a side opens the ticket with it chosen), starters on the first turn, the
 // composer and the not-advice line. The CSS is Owarine's (`yosuku/part-02.css` .sensei-drawer…, `part-03.css`).
+// R4-2 (D-227): on a phone the aside fits what the keyboard leaves while the composer has focus (`useKeyboardInset`),
+// so the input and Send stay above it; ✕ keeps a 44 px hit area.
 import { computeDrift, formatCadence, type EventMarket, type Side } from "@cwf/core";
 import { formatClock } from "@cwf/core/units";
 import { useEffect, useRef, useState } from "react";
@@ -14,6 +16,7 @@ import { useChartSeries } from "@/features/markets/data/useChartSeries";
 import { useTopOfBook } from "@/features/markets/data/useTopOfBook";
 import { usd2 } from "@/features/markets/units";
 import { useClockValue } from "@/lib/clock";
+import { useKeyboardInset } from "@/lib/keyboard-inset";
 import { cn } from "@/lib/utils";
 import { notify } from "@/lib/toast";
 import { consentCovers, grantAiConsent, useAiConsent, withdrawAiConsent } from "./consent";
@@ -82,7 +85,7 @@ function SenseiTradeCard({ market, onAct }: { market: EventMarket; onAct: (side:
       <div className="st-head">
         <span>{SENSEI.trade.head}</span>
         <div className="st-headright">
-          <button type="button" className="st-hide" onClick={() => setHidden(true)} aria-label={SENSEI.trade.hide}>✕</button>
+          <button type="button" className="st-hide" onClick={() => setHidden(true)} aria-label={SENSEI.trade.hide} title={SENSEI.trade.hide}>✕</button>
         </div>
       </div>
       <div className="st-list">
@@ -129,6 +132,8 @@ export function SenseiSheet({ open, onClose, read, market, openingRaw, onAct }: 
   const [pending, setPending] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
+  useKeyboardInset(asideRef, open);
   useEffect(() => void readStatus().then(setStatus), []);
 
   const agreed = consentCovers(consent, provider);
@@ -159,7 +164,7 @@ export function SenseiSheet({ open, onClose, read, market, openingRaw, onAct }: 
   return (
     <>
       <button type="button" className={cn("sensei-drawer-scrim", open && "show")} aria-label={SENSEI.close} tabIndex={-1} aria-hidden={!open} onClick={onClose} />
-      <aside className={cn("sensei-drawer", open && "open")} role="dialog" aria-label={SENSEI.title} aria-modal={open} aria-hidden={!open}>
+      <aside ref={asideRef} className={cn("sensei-drawer", open && "open")} role="dialog" aria-label={SENSEI.title} aria-modal={open} aria-hidden={!open}>
         <header className="sensei-drawer-head">
           <div>
             <div className="sd-eyebrow">{SENSEI.eyebrow}</div>
@@ -168,7 +173,7 @@ export function SenseiSheet({ open, onClose, read, market, openingRaw, onAct }: 
             </div>
           </div>
           <div className="sd-head-right">
-            <button type="button" className="sd-close" onClick={onClose} aria-label={SENSEI.close}>✕</button>
+            <button type="button" className="sd-close" onClick={onClose} aria-label={SENSEI.close} title={SENSEI.close}>✕</button>
           </div>
         </header>
 

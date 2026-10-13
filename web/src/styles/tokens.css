@@ -14,6 +14,12 @@
   --z-modal: 100;
   --z-popover: 105;
   --z-toast: 110;
+  /* R4-2 (D-227): the whole scale lives here — `pnpm invariants` (layer-scale) rejects a numeric z-index above 10
+   * anywhere else; a component's own stack (a card's grain over its body) uses 1–10 inside an isolated box. Above the
+   * toasts: the decorative full-screen layers that take no pointer (grain, the urgent wash, the scroll progress), then
+   * the skip link, which must show over everything once focused. */
+  --z-fx: 115;
+  --z-skip: 120;
 
   /* ticket */
   --ticket-surface: var(--color-surface-1);
@@ -50,6 +56,10 @@
   --receipt-ink: var(--color-cream-ink);
   --receipt-hairline: var(--color-cream-hairline);
   --receipt-strip: var(--color-accent);
+  /* Profit and loss on the cream receipt in either theme: the light palette's inks (tokens.json palette.light), the
+   * same ones the share image draws with (features/share/share-png.ts). */
+  --receipt-up: #2E6B4F;
+  --receipt-down: #C2381F;
   --receipt-radius: var(--radius-md);
   --receipt-shadow: 0 18px 40px -18px rgb(0 0 0 / 0.6), 0 6px 14px -8px rgb(0 0 0 / 0.45);
 
@@ -113,10 +123,17 @@
 
   /* chrome — DESIGN Layout & Elevation */
   --ticker-height: 32px;
-  --pill-nav-offset: calc(env(safe-area-inset-bottom, 0px) + var(--spacing) * 4);
-  --pill-nav-clearance: calc(env(safe-area-inset-bottom, 0px) + var(--spacing) * 16);
-  --claim-pill-offset: calc(var(--pill-nav-clearance) + var(--spacing) * 2);
-  --toast-offset: calc(var(--pill-nav-clearance) + var(--spacing) * 2);
+  /* The phone dock's clearance (R4-2, D-227; Owarine's one --dock-h): the dock sits max(12 px, the home indicator) up,
+   * its list pads 6 px above and below a 56 px item. Everything that must clear it — the column's foot, the terminal's
+   * stage, a sticky action strip (`.page-action`), a floating dock (`.pl-dock`) — reads this one name; 0 from 768 px,
+   * where the dock is gone. `--dock-strip-offset` is where a strip above the dock sits (8 px of air). */
+  --dock-clearance: calc(var(--spacing-dock-item-h) + 12px + max(12px, env(safe-area-inset-bottom, 0px)));
+  --dock-strip-offset: calc(var(--dock-clearance) + 8px);
+  --toast-offset: var(--dock-strip-offset);
+  /* Owarine's black money card on Mitoshi (R4-2): pure black reads as a hole on the near-black dark stage, so it carries
+   * the strong border there; on cream it is the ink plate and needs none. */
+  --plate-black: #000000;
+  --plate-black-edge: var(--color-border-strong);
   --glow-live: 0 0 24px color-mix(in srgb, var(--color-accent) 16%, transparent);
   --focus-ring: 2px solid var(--color-accent);
   --content-reading: 640px;
@@ -134,7 +151,13 @@
   --nav-overlay-background: rgb(0 0 0 / 0.72);
 }
 
+@media (min-width: 768px) {
+  :root { --dock-clearance: 0px; --dock-strip-offset: calc(16px + env(safe-area-inset-bottom, 0px)); }
+}
+
 [data-theme="light"] {
+  --plate-black: var(--color-cream-ink);
+  --plate-black-edge: transparent;
   --nav-panel-background: rgb(251 247 238 / 0.99);
   --nav-panel-border: rgb(20 18 16 / 0.12);
   --nav-divider: rgb(20 18 16 / 0.09);

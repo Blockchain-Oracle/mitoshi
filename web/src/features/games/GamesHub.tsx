@@ -32,7 +32,7 @@ export function GamesHub() {
   const status = (entry: GameEntry): CardStatus => {
     const base: CardStatus = entry.id === "range" || entry.id === "moonshot" ? rangeStatus(reserve) : entry.readiness.kind === "built" ? { kind: "live" } : { kind: "pending", dependency: entry.readiness.dependency };
     // Every mode that plays a Window runs on the 24/7 lanes alone while the stock market is shut; arcade never touches one.
-    return closed && base.kind === "live" && entry.descriptor.group !== "arcade" ? { kind: "after-hours", note: GAMES.card.afterHours(session?.label ?? "") } : base;
+    return closed && base.kind === "live" && entry.descriptor.group !== "arcade" ? { kind: "after-hours" } : base;
   };
 
   return (
@@ -55,11 +55,12 @@ export function GamesHub() {
         </Link>
       )}
 
-      {(["prediction", "duel", "arcade"] as const).map((group) => {
+      {(["prediction", "duel", "arcade"] as const).map((group, i) => {
         const head = GAMES.sections[group];
         return (
           <section key={group} className="gm-section" aria-label={head.title}>
             <SectionHead number={head.number} title={head.title} desc={head.desc} />
+            {i === 0 && closed ? <p className="gm-card-waiting gm-after-hours">{GAMES.card.afterHours}</p> : null}
             <div className="gm-grid">
               {gameEntriesInGroup(group).map((entry) => (
                 <GameCard key={entry.id} entry={entry} status={status(entry)} presence={null} />

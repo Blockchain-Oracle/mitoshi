@@ -2,6 +2,7 @@
 // The account drawer's Withdraw (S23g; Tradash's Withdraw, Owarine's `SendPanel` in shape): pathUSD from the wallet to
 // any Tempo address, one unsponsored transfer the account's own passkey signs — never a one-tap key (money leaving the
 // account always asks). Amounts are integer base units; the address is checked before anything is signed.
+// R4-2 (D-227): Send sits in the account sheet's pinned footer, above a phone's keyboard.
 import { TEMPO } from "@cwf/clients";
 import { diagnosisCopy } from "@cwf/core/copy";
 import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
@@ -10,6 +11,7 @@ import { invalidateAfterWrite, useSubmitter } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { isAddress, type Address } from "viem";
+import { SheetFooter } from "@/components/ui/drawer";
 import { webEnv } from "@/lib/env";
 import { notify } from "@/lib/toast";
 import { TERMINAL } from "../copy";
@@ -62,9 +64,11 @@ export function SendPanel({ wallet, balanceBase, onDone }: { wallet: Address; ba
       </label>
       {problem ? <p role="alert" className="tm-field-hint tm-warn">{problem}</p> : null}
       <p className="tm-field-hint">{TERMINAL.send.fee}</p>
-      <button type="button" className="tm-btn tm-btn-cta" disabled={!addressOk || amountBase <= 0n || over || busy || !submitter} onClick={() => void send()}>
-        {busy ? TERMINAL.send.sending : TERMINAL.send.cta(money(amountBase))}
-      </button>
+      <SheetFooter>
+        <button type="button" className="tm-btn tm-btn-cta" disabled={!addressOk || amountBase <= 0n || over || busy || !submitter} onClick={() => void send()}>
+          {busy ? TERMINAL.send.sending : TERMINAL.send.cta(money(amountBase))}
+        </button>
+      </SheetFooter>
     </div>
   );
 }

@@ -151,6 +151,8 @@ export function HoldToConfirm({ onConfirm, children, confirmLabel, duration = 1_
       type="button"
       aria-disabled={disabled || committed}
       aria-describedby={hintId}
+      // Inside a phone sheet a drift during the hold must not read as a swipe to dismiss (R4-2, D-227).
+      data-base-ui-swipe-ignore=""
       {...bind}
       style={{ touchAction: "manipulation", WebkitTouchCallout: "none" }}
       className={cn(

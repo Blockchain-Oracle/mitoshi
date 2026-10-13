@@ -38,7 +38,7 @@ html[data-shell="app"] .grain { display: none; }
 
 /* ── Back chevron below the top level (fix 5) and the skip link. ── */
 .header-lead { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.skip-link { position: fixed; left: 12px; top: calc(var(--safe-top) + 8px); z-index: 10000; padding: 10px 14px; border-radius: var(--radius-md); background: var(--vermilion); color: var(--white); transform: translateY(-200%); }
+.skip-link { position: fixed; left: 12px; top: calc(var(--safe-top) + 8px); z-index: var(--z-skip); padding: 10px 14px; border-radius: var(--radius-md); background: var(--vermilion); color: var(--white); transform: translateY(-200%); }
 .skip-link:focus-visible { transform: none; }
 
 /* ── Header controls meet 44 px (the theme toggle was 34 px). ── */

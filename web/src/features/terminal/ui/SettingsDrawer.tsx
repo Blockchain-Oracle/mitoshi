@@ -37,7 +37,7 @@ export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase
   const paysIfRight = (x: string | undefined) => (Number.isFinite(multiple(x)) ? money(BigInt(Math.round(Number(stakeBase) * multiple(x)))) : "—");
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={TERMINAL.settings.title}>
+      <SlideOverContent title={TERMINAL.settings.title} fields>
         <div className="tm-sheet">
           <Section title={TERMINAL.settings.size} right={maxBase === null ? TERMINAL.settings.balanceUnavailable : TERMINAL.settings.available(money(maxBase))}>
             <input

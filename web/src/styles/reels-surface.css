@@ -13,16 +13,17 @@
 }
 @media (min-width: 1280px) { .app-column:has(.reels-surface:not([style*="display: none"])) { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
 
-.reels-surface { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; }
+.reels-surface { position: relative; isolation: isolate; display: flex; flex: 1; min-width: 0; min-height: 0; }
 /* The feed fills the stage instead of the viewport under a header that no longer exists. */
 .reels-surface .feed-snap { position: absolute; inset: 0; }
 .reels-surface .reel-take { position: absolute; }
 .reels-surface .reel-hint { position: absolute; }
 /* Phones: the position pill sits above the card and the swipe hint between the card and the dock, so neither covers the
- * card's clock or its UP button; from tablets there is no dock. */
+ * card's clock or its UP button; from tablets there is no dock. Both clear the dock by its one token (R4-2, D-227), so a
+ * phone's home indicator lifts them with it: the hint 16 px over the dock, the card 52 px (the hint's row) over that. */
 @media (max-width: 767px) {
-  .reels-surface .reel-slot { padding: 40px 12px 132px; }
-  .reels-surface .reel-hint { bottom: 96px; }
+  .reels-surface .reel-slot { padding: 40px 12px calc(var(--dock-clearance) + 52px); }
+  .reels-surface .reel-hint { bottom: calc(var(--dock-clearance) + 16px); }
   .reels-surface .reel-count { top: 10px; right: 50%; translate: 50% 0; }
 }
 @media (min-width: 768px) {
@@ -32,13 +33,13 @@
 
 /* "3 of 18" (21st 23559's position, as a quiet pill) and the desktop previous/next pair. */
 .reel-count {
-  position: absolute; z-index: 20; top: max(12px, env(safe-area-inset-top, 0px)); right: 16px; padding: 6px 10px;
+  position: absolute; z-index: 2; top: max(12px, env(safe-area-inset-top, 0px)); right: 16px; padding: 6px 10px;
   border-radius: var(--radius-full); background: rgb(var(--reel-ink-rgb) / 0.08); color: rgb(var(--reel-ink-rgb) / 0.7);
   font: 600 12px/1 var(--font-data); font-variant-numeric: tabular-nums;
 }
 .reel-steps { display: none; }
 @media (min-width: 1024px) {
-  .reel-steps { position: absolute; z-index: 20; right: 16px; bottom: 24px; display: flex; flex-direction: column; gap: 8px; }
+  .reel-steps { position: absolute; z-index: 2; right: 16px; bottom: 24px; display: flex; flex-direction: column; gap: 8px; }
   .reel-steps button {
     display: grid; width: 44px; height: 44px; place-items: center; border-radius: var(--radius-full);
     border: 1px solid rgb(var(--reel-ink-rgb) / 0.12); background: rgb(var(--reel-ink-rgb) / 0.04); color: rgb(var(--reel-ink-rgb) / 0.85);
