@@ -7,7 +7,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { Sql } from "@cwf/db";
 import { indexReader } from "@cwf/db/idx";
-import { isTickerSymbol, NETWORKS } from "@cwf/core";
+import { isTickerSymbol, NETWORKS, X_RELAY_STOPPED, type XRelayStatus } from "@cwf/core";
 import type { SessionService } from "../calendar/session-service";
 import type { DisplayRuntime } from "../display/runtime";
 import type { SpotFeed } from "../prices/spot";
@@ -107,6 +107,13 @@ export function startHttp(input: HttpInputs): Promise<{ close(): Promise<void> }
         const d = (beat?.detail ?? {}) as { keeper?: string; vault?: string | null };
         const live = !!beat && !beat.dryRun && !!d.keeper && d.keeper !== "0x0000000000000000000000000000000000000000";
         return json(200, { keeper: live ? d.keeper : null, vault: d.vault ?? null }, "public, max-age=30");
+      }
+      case "/x/relay": {
+        // S11 (D-227): the x-relay's own account of itself — the executor an EXECUTOR grant must name, how it reads
+        // mentions (or why it can't), dry or live, posting or not. Public facts only; the web's /api/x/status reads it.
+        const beat = heartbeats().find((h) => h.actor === "x-relay");
+        const status = (beat?.detail as { status?: XRelayStatus } | undefined)?.status;
+        return json(200, status ? { ...status, updatedAtMs: beat?.lastOkMs ?? beat?.lastPassMs ?? null, lastWhy: beat?.lastWhy ?? null } : X_RELAY_STOPPED, "no-store");
       }
       case "/v1/stream":
         return void serveStream(req, res, { bus: input.bus, snapshot: input.snapshot, secret: input.env.streamTicketSecret, cors }).catch((e) => input.log(`stream: ${errorText(e)}`));

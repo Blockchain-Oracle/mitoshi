@@ -1,7 +1,8 @@
 // The phone app's passkey origin and association files (D-227, MOBILE): the origin must match what Android's
 // Credential Manager writes into clientDataJSON byte for byte, or every Android passkey ceremony is refused.
 import { describe, expect, it } from "vitest";
-import { ANDROID_PACKAGE, ANDROID_PASSKEY_ORIGINS, apkKeyHashOrigin, appleAppSiteAssociation, assetLinks } from "./app-links";
+import { readFileSync } from "node:fs";
+import { ANDROID_PACKAGE, ANDROID_PASSKEY_ORIGINS, APP_LINK_SCHEME, apkKeyHashOrigin, appleAppSiteAssociation, assetLinks } from "./app-links";
 
 describe("apkKeyHashOrigin", () => {
   it("is base64url of the certificate's SHA-256, unpadded", () => {
@@ -21,6 +22,13 @@ describe("apkKeyHashOrigin", () => {
 
   it("refuses anything that isn't a SHA-256 fingerprint", () => {
     expect(() => apkKeyHashOrigin("5D:6E:98:AF")).toThrow();
+  });
+});
+
+describe("the app's identity", () => {
+  it("names the scheme the app registers (the X sign-in handoff returns on it, S11)", () => {
+    const identity = JSON.parse(readFileSync(new URL("../../../mobile/app.identity.json", import.meta.url), "utf8")) as { scheme: string };
+    expect(APP_LINK_SCHEME).toBe(identity.scheme);
   });
 });
 

@@ -128,6 +128,8 @@ export const PARENTS: readonly (readonly [prefix: string, href: string])[] = [
   ["/u/", "/leaderboard"],
   ["/proof/", "/proof"],
   ["/settings/", "/portfolio"],
+  // S11 (A-3e, D-227): a share-to-sign link forwards to the terminal; its back chevron goes to Markets.
+  ["/go/", "/markets"],
 ];
 
 /** The page above a nested route: its registered parent, else the path one segment up. */

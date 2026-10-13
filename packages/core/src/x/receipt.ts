@@ -1,4 +1,4 @@
-// Ported from Masayume 68f7a09:packages/core/src/x/receipt.ts
+// Ported from Masayume 68f7a09:packages/core/src/x/receipt.ts — `lane` and `dryRun` added (S11, D-227).
 import type { Side } from "../types/market";
 import type { XRefusalReason } from "./parse";
 
@@ -13,7 +13,9 @@ export type XRefusalCode =
   | "quote-unavailable" | "no-liquidity" | "price-moved" | "permission-denied"
   | "insufficient-funds" | "execution-unavailable" | "unconfirmed"
   | "grant-update-required" | "position-limit" | "price-limit" | "execution-paused"
-  | "market-data-unavailable" | "window-entry-closed" | "window-not-started" | "opening-price-pending";
+  | "market-data-unavailable" | "window-entry-closed" | "window-not-started" | "opening-price-pending"
+  /** S11 review (D-227): read more than one cadence after it was posted — the Window it meant has closed. */
+  | "call-expired";
 
 /** Optional for receipts written before booked amounts and resolved market details were retained. */
 export interface XReceiptDetails {
@@ -35,6 +37,9 @@ export interface XReceiptDetails {
   journalState?: "recorded" | "sent" | "confirmed" | "failed" | "unknown" | null;
   recoveryFromBlock?: string | null;
   expectedNonce?: number | null;
+  /** S11 (D-227): the lane the Window was found on, and whether the relay only planned it (dry run: nothing signed). */
+  lane?: string | null;
+  dryRun?: boolean | null;
 }
 
 /** A receipt links the instruction to the grant, the Window, the transaction and the beneficiary. */

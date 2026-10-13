@@ -20,3 +20,12 @@ OPENAI_API_KEY=
 AI_MODEL=
 SENSEI_MODEL=
 SENSEI_VIA=
+# Sign in with X and link (S11, D-227): the OAuth 2.0 client (OAuth 1.0a as the fallback), the X session cookie's key, and
+# the bot a mention addresses (build-time)
+X_OAUTH2_CLIENT_ID=
+X_OAUTH2_CLIENT_SECRET=
+X_API_KEY=
+X_API_KEY_SECRET=
+X_REDIRECT_URI=
+X_SESSION_SECRET=
+NEXT_PUBLIC_X_HANDLE=

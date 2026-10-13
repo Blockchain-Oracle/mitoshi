@@ -44,8 +44,8 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
  * say they wait). Navigation keeps them listed and reachable and marks them "Soon" — never hidden. A slice that ships
  * one of these surfaces drops it here; `nav-items.test.ts` fails while this set and the pages disagree.
  */
-export const PENDING_ROUTES: ReadonlySet<string> = new Set([
-  "/claim", "/native-auth", "/trade-from-x",
+export const PENDING_ROUTES: ReadonlySet<string> = new Set<string>([
+  // S11 (D-227) shipped /trade-from-x, /claim and /native-auth: nothing waits now.
 ]);
 
 /** Whether a nav destination still lands on a pending page (its path, query dropped). */

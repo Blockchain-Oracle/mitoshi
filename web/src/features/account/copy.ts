@@ -94,6 +94,8 @@ export const ACCOUNT_PAGE = {
     none: "None linked",
     link: "Link a wallet",
   },
+  /** S11 (D-227): the linked X account (Trade from X). */
+  x: "X account",
   feedback: {
     title: "Sound & Vibration",
     rows: [

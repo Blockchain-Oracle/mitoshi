@@ -28,11 +28,14 @@ import { GrantsSection, useGrantCounts } from "./GrantsSection";
 import { KeysSection } from "./KeysSection";
 import { useKeyCounts } from "./useKeys";
 import { useBackupCount, useBackupNeeded } from "./useBackupNeeded";
+import { XAccountSheet, xRowDetail } from "@/features/x/XAccountSheet";
+import { useXLink } from "@/features/x/useXLink";
+import { XGlyph } from "@/features/x/parts";
 import "@/styles/account.css";
 import "@/components/kit/kit.css";
 
 const P = ACCOUNT_PAGE;
-type Drill = "backup" | "keys" | "grants" | "linked" | "delete";
+type Drill = "backup" | "keys" | "grants" | "linked" | "x" | "delete";
 
 export function AccountSettings() {
   const session = useWalletSession();
@@ -77,8 +80,9 @@ function SignedIn({ address, kind }: { address: Address; kind: TempoAccountKind 
   const exportData = useDataExport();
   const backups = useBackupCount(kind === "passkey");
   const nudge = useBackupNeeded(kind === "passkey", hasMoney);
+  const x = useXLink();
   const close = (open: boolean) => (open ? undefined : setDrill(null));
-  const titles: Record<Drill, string> = { backup: BACKUP.title, keys: P.keys.title, grants: P.grants.title, linked: P.linked.title, delete: DATA.delete.title };
+  const titles: Record<Drill, string> = { backup: BACKUP.title, keys: P.keys.title, grants: P.grants.title, linked: P.linked.title, x: P.x, delete: DATA.delete.title };
 
   return (
     <>
@@ -89,6 +93,7 @@ function SignedIn({ address, kind }: { address: Address; kind: TempoAccountKind 
         <GroupedItem icon={KeyRound} label={P.keys.title} detail={keys === null ? "…" : String(keys)} onClick={() => setDrill("keys")} />
         <GroupedItem icon={Wallet} label={P.grants.title} detail={grants === null ? "…" : String(grants)} onClick={() => setDrill("grants")} />
         <GroupedItem icon={Link2} label={P.linked.title} detail={shell.robinhood ? shortAddress(shell.robinhood.address) : P.linked.none} onClick={() => setDrill("linked")} />
+        <GroupedItem icon={XGlyph as never} label={P.x} detail={x.loading ? "…" : xRowDetail(x)} onClick={() => setDrill("x")} />
       </GroupedList>
       <GroupedList title={P.groups.data}>
         <AiSharingRow />
@@ -102,6 +107,7 @@ function SignedIn({ address, kind }: { address: Address; kind: TempoAccountKind 
           {drill === "keys" && ready ? <KeysSection account={address} network={network} /> : null}
           {drill === "grants" && ready ? <GrantsSection account={address} network={network} /> : null}
           {drill === "linked" ? <LinkedBody /> : null}
+          {drill === "x" ? <XAccountSheet /> : null}
           {drill === "delete" ? <DeleteSheetBody address={address} /> : null}
         </SlideOverContent>
       </SlideOver>

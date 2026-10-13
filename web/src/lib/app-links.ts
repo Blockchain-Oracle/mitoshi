@@ -9,6 +9,8 @@
 // (mitoshi.xyz, D-060) as well as the app host (testnet.mitoshi.xyz, for App Links), with no redirect.
 
 export const APPLE_TEAM_ID = "86C6ZFJ6V6";
+/** The app's link scheme (mobile/app.identity.json `scheme`): `mitoshi://native-auth?code=` hands an X sign-in back. */
+export const APP_LINK_SCHEME = "mitoshi";
 export const APP_BUNDLE_ID = "xyz.mitoshi.app.testnet";
 export const ANDROID_PACKAGE = "xyz.mitoshi.app.testnet";
 

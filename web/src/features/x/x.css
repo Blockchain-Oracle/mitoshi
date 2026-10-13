@@ -1,0 +1,85 @@
+/* Trade from X, /claim and the X card (S11, D-227) — ported from Owarine 90a91d71:web/src/features/x/{x,x-card,
+   x-instruction}.css (the step spine, the instruction builder, the claim ticket) onto Mitoshi's tokens: a phone-first
+   column, the active step's action on the first screen, 44 px targets. */
+.xt { display: flex; width: 100%; max-width: 40rem; flex-direction: column; gap: 16px; margin-inline: auto; }
+.xt-head { display: flex; flex-direction: column; gap: 4px; }
+.xt-lede { font-size: 14px; color: var(--color-ink-secondary); }
+.xt-lede strong { color: var(--color-ink); font-weight: 600; }
+
+/* The spine: a node per step, a line that fills once the flow is past it. */
+.xt-steps { display: flex; flex-direction: column; }
+.xt-step { position: relative; display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding-bottom: 12px; }
+.xt-step:last-child { padding-bottom: 0; }
+.xt-step::before { content: ""; position: absolute; top: 30px; bottom: 2px; left: 13px; width: 2px; border-radius: 2px; background: var(--color-hairline); }
+.xt-step[data-past]::before { background: var(--color-accent); }
+.xt-step:last-child::before { display: none; }
+.xt-node { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid var(--color-hairline); border-radius: 9999px; background: var(--color-surface-1); font-family: var(--font-data); font-size: 12px; font-weight: 700; color: var(--color-ink-secondary); }
+.xt-step[data-state="active"] .xt-node { border-color: var(--color-accent); color: var(--color-accent); }
+.xt-step[data-state="done"] .xt-node { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-on-accent); }
+.xt-node svg { width: 14px; height: 14px; }
+.xt-body { display: flex; min-width: 0; flex-direction: column; gap: 8px; padding: 2px 0 4px; }
+.xt-step-title { font-size: 15px; font-weight: 600; line-height: 24px; color: var(--color-ink); }
+.xt-step[data-state="idle"] .xt-step-title { color: var(--color-ink-muted); }
+.xt-done { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--color-ink-secondary); }
+.xt-done strong { font-weight: 600; color: var(--color-ink); }
+.xt-note { font-size: 13px; color: var(--color-ink-secondary); }
+.xt-err { font-size: 13px; color: var(--color-loss); }
+.xt-ok { font-size: 13px; color: var(--color-profit); }
+.xt-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.xt-x { width: 16px; height: 16px; }
+
+/* Fund: the amount chips, the CTA, the one-line capability. */
+.xt-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.xt-chip { min-height: 44px; min-width: 56px; padding: 0 14px; border: 1px solid var(--color-hairline); border-radius: 9999px; background: var(--color-surface-1); font-family: var(--font-data); font-size: 14px; font-weight: 600; color: var(--color-ink); }
+.xt-chip[aria-pressed="true"] { border-color: var(--color-ink); background: var(--color-ink); color: var(--color-surface-1); }
+.xt-chip:disabled { opacity: 0.4; }
+.xt-balance { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.xt-balance-figure { font-family: var(--font-data); font-size: 22px; font-weight: 700; color: var(--color-ink); }
+
+/* The relay's own word. */
+.xt-relay { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--color-ink-secondary); }
+.xt-relay-dot { width: 8px; height: 8px; flex: none; border-radius: 9999px; background: var(--color-ink-muted); }
+.xt-relay[data-ok] .xt-relay-dot { background: var(--color-profit); }
+.xt-relay[data-paused] .xt-relay-dot { background: var(--color-warning); }
+
+/* The instruction builder. */
+.xi { display: flex; flex-direction: column; gap: 12px; padding: 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); scroll-margin-top: 80px; }
+.xi-title { font-size: 15px; font-weight: 600; color: var(--color-ink); }
+.xi-assets { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin-inline: -4px; padding: 2px 4px; }
+.xi-assets::-webkit-scrollbar { display: none; }
+.xi-asset { display: inline-flex; min-height: 44px; flex: none; align-items: center; gap: 6px; padding: 0 12px 0 6px; border: 1px solid var(--color-hairline); border-radius: 9999px; font-size: 14px; font-weight: 600; color: var(--color-ink); }
+.xi-asset[aria-pressed="true"] { border-color: var(--color-ink); }
+.xi-disc { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 9999px; }
+.xi-disc.generic { background: var(--color-surface-2); font-size: 11px; font-weight: 700; }
+.xi-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.xi-cadences { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.xi-amount { display: flex; flex-wrap: wrap; gap: 8px; }
+.xi-post { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: var(--radius-md); background: var(--color-surface-2); }
+.xi-post code { font-family: var(--font-data); font-size: 14px; color: var(--color-ink); overflow-wrap: anywhere; }
+.xi-post code b { color: var(--color-accent); }
+
+/* Receipts. */
+.xr-list { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.xr-row { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-bottom: 1px solid var(--color-hairline); }
+.xr-row:last-child { border-bottom: 0; }
+.xr-status { font-size: 13px; font-weight: 700; color: var(--color-ink); }
+.xr-row[data-status="filled"] .xr-status { color: var(--color-profit); }
+.xr-row[data-status="refused"] .xr-status, .xr-row[data-status="reverted"] .xr-status { color: var(--color-loss); }
+.xr-words { font-family: var(--font-data); font-size: 13px; color: var(--color-ink-secondary); overflow-wrap: anywhere; }
+.xr-meta { font-size: 12px; color: var(--color-ink-muted); }
+.xr-meta a { color: var(--color-ink); text-decoration: underline dotted; text-underline-offset: 3px; }
+
+/* /claim: the ticket beside the steps (Owarine's ClaimReceiptCard), stacked on a phone. */
+.xc { display: grid; gap: 20px; }
+@media (min-width: 900px) { .xc { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; } }
+.xc-ticket { position: relative; display: flex; flex-direction: column; gap: 10px; overflow: hidden; padding: 18px; border: 1px solid var(--claim-plate-border); border-radius: var(--claim-plate-radius); background: var(--claim-plate-surface); }
+.xc-ticket-head { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: var(--color-ink-secondary); }
+.xc-pill { padding: 2px 8px; border: 1px solid var(--color-hairline); border-radius: 9999px; font-size: 11px; }
+.xc-ticket[data-done] .xc-pill { border-color: var(--color-profit); color: var(--color-profit); }
+.xc-figure { font-family: var(--font-data); font-size: 30px; font-weight: 700; color: var(--color-ink); }
+.xc-sub { font-size: 13px; color: var(--color-ink-secondary); }
+.xc-bars { display: flex; gap: 2px; height: 22px; opacity: 0.5; }
+.xc-bars span { display: block; height: 100%; background: var(--color-ink); }
+.xc-foot { display: flex; justify-content: space-between; font-size: 11px; color: var(--color-ink-muted); }
+
+.xt-foot { font-size: 12px; color: var(--color-ink-muted); }
