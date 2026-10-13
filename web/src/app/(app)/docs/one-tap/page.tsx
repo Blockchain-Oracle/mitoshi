@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <>
       <H1>One-tap trading</H1>
-      <Lead>One more biometric arms a key; after that every tap inside its limits signs itself and the fee is paid for you.</Lead>
+      <Lead>One biometric arms a key; then every tap signs itself.</Lead>
       <H2>Turn on one-tap</H2>
       <P>The terminal offers it once you are signed in with a passkey (&ldquo;Turn on one-tap&rdquo;). Your passkey signs once to publish an access key on Tempo. The key can only place, cancel and redeem calls on the market engine and approve pathUSD to it, up to a daily dollar limit, and it expires after 24 hours. Your passkey keeps every other power.</P>
       <H2>Tap from a Trading Balance</H2>
@@ -23,7 +23,7 @@ export default function Page() {
       />
       <H2>Stop it</H2>
       <P>Every key and grant is listed in Settings, where Stop revokes it on chain. Stopping a Trading Balance session returns its unspent budget to the Trading Balance; positions it opened stay yours.</P>
-      <Note>Skip one-tap and nothing changes but the prompt: every trade asks your passkey. See <A href="/docs/fees">fees</A> for who pays what.</Note>
+      <Note>Skip it and every trade asks your passkey. <A href="/docs/fees">Fees</A>.</Note>
     </>
   );
 }

@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <>
       <H1>The terminal</H1>
-      <Lead>The whole app is one screen at <A href="/trade/BTC">/trade/BTC</A>: the line, the Window on screen, and two buttons. Everything else opens over it.</Lead>
+      <Lead>One screen at <A href="/trade/BTC">/trade/BTC</A>: the line, the Window, two buttons.</Lead>
       <H2>On screen</H2>
       <Table
         head={["Part", "What it shows"]}

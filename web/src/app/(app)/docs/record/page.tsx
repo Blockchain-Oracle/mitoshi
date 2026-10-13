@@ -8,9 +8,9 @@ export default function Page() {
   return (
     <>
       <H1>The record and its proof</H1>
-      <Lead>Every number Mitoshi shows about trading is read from the chain, and the ones that settle money can be checked in your own browser.</Lead>
+      <Lead>Every number is read from the chain; the ones that settle money you can check.</Lead>
       <H2>Proof of a Window</H2>
-      <P>Each Window has a proof page (a position&apos;s details link to it): its verdict, its settlement transaction, and both prints with their signers and the transaction that recorded them. &ldquo;Re-verify in this browser&rdquo; reads that transaction from Tempo, takes the signed RedStone packages out of it, and asks the on-chain print verifier for the price itself — the page says whether it matches what the engine recorded. Nothing comes from Mitoshi&apos;s servers in that check. &ldquo;Check against the archive&rdquo; runs the same verifier on the packages Mitoshi archived from RedStone for that instant, apart from the transaction; for a Window that never got a print it shows what the archive held and why the verifier refused it — too few signers at that instant, for example.</P>
+      <P>Each Window has a <A href="/proof">proof page</A> (a position&apos;s details link to it): both prints with their signers and the transactions that recorded them, its outcome, its settlement and its timeline. One press of &ldquo;Re-verify&rdquo; runs two checks per print in your browser. The record check reads the print&apos;s transaction from Tempo (<code>eth_getTransactionByHash</code>), takes the signed RedStone packages out of its <code>recordPrint</code> call, and asks the on-chain print verifier for the price again (<code>eth_call verifyPrint</code>) — nothing comes from Mitoshi&apos;s servers. The archive check runs the same verifier on the packages Mitoshi archived from RedStone for that instant, apart from the transaction; for a Window that never got a print it shows what the archive held and why the verifier refused it — too few signers at that instant, for example. Each answer reads matches, differs or can&apos;t check.</P>
       <H2>Proof of demand</H2>
       <P><A href="/stats">Stats</A> counts the wallets that made a call, straight from the engine&apos;s fills: the calls, what changed hands, what was paid out, the growth by day, the venue&apos;s own counts and the latest calls with their receipts. It reads Mitoshi&apos;s index of the engine&apos;s events, refreshed every few minutes, and an independent replay of the chain recounts the same index.</P>
       <Ul
@@ -27,7 +27,7 @@ export default function Page() {
       <P><A href="/portfolio/edge">Trader Edge</A> turns your own settled Windows into a record: net result and return, win rate, profit factor, average Window, deepest slide, when in the day you do best, your payoff shape, your tier and badges, and a CSV of every settled Window at full precision. It is calculated in your browser from your fills and the settlement rule.</P>
       <H2>Sharing</H2>
       <P>A position&apos;s details have Share: a card with the call, its P&amp;L, its return or both, the price, and the terminal&apos;s link with a QR code, drawn in your browser. Download saves it (or opens your phone&apos;s share sheet); Share on X opens a post. Every terminal and every proof page also has its own link preview.</P>
-      <Note>Tiers and badge thresholds are inherited from the app Mitoshi&apos;s interface descends from; no tier pays a bonus or changes a fee.</Note>
+      <Note>No tier pays a bonus or changes a fee.</Note>
     </>
   );
 }

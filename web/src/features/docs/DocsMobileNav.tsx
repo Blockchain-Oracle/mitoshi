@@ -21,7 +21,7 @@ export function DocsMobileNav() {
           setWanted(true);
           setOpen(true);
         }}
-        className="inline-flex min-h-touch items-center gap-2 self-start rounded-full border border-hairline px-4 type-body-strong text-ink lg:hidden"
+        className="inline-flex min-h-touch items-center gap-2 rounded-full border border-hairline bg-stage px-4 type-body-strong text-ink lg:hidden"
       >
         <ListIcon aria-hidden className="size-4" /> Contents
       </button>

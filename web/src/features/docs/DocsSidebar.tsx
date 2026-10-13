@@ -30,7 +30,7 @@ export function DocsSidebar({ onNavigate }: { onNavigate?: () => void }) {
       {sections.length === 0 ? <p className="px-3 type-caption text-ink-secondary">No page matches.</p> : null}
       {sections.map((s) => (
         <div key={s.title} className="flex flex-col gap-1">
-          <p className="sticky top-0 z-10 bg-ground px-3 py-2 type-label-micro text-ink-secondary">{s.title}</p>
+          <p className="sticky top-0 z-10 bg-stage px-3 py-2 type-label-micro text-ink-secondary">{s.title}</p>
           {s.pages.map((p) => {
             const active = path === p.href;
             return (
