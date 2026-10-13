@@ -152,7 +152,6 @@ span.top-money, span.top-account { display: contents; }
 /* A records page adds no vertical inset of its own (R4-10, D-227; Owarine `shell.css`: `.page-shell` padding 0): news
  * 48/96, the hub 32/64 and the status frame's top were 40–64 px of dead space above a phone's head. */
 .app-stage .news-page, .app-stage .stk-page, .app-stage .status-page { padding-top: 0; padding-bottom: 24px; }
-.app-stage .crop.tl, .app-stage .crop.tr { top: 8px; }
 /* A page's primary action strip (R4-2, D-227; plan "one fold budget against 100svh"): where a phone's fold can't hold
  * the action with the browser's bars shown, the action sticks above the dock while its section is on screen — one strip
  * per page. Desktop leaves it in the flow. */
