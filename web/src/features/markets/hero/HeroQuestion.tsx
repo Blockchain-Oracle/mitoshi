@@ -5,6 +5,7 @@
 // $182.37?" and its distance agree near the line. D-230: while the line is pending, a count in its place (the usual lag
 // left, then how long it has waited), never a bare "Waiting for the opening print."; the reason is under UP/DOWN.
 import { neededMove } from "@cwf/core";
+import { streamEverOpened } from "@cwf/markets/stream";
 import { useClockValue } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { HERO, HERO_HEAD } from "../copy";
@@ -17,6 +18,12 @@ function PendingDistance({ startSec }: { startSec: number }) {
   const prints = usePrintsState();
   const text = useClockValue((ms) => (ms > 0 && ms >= startSec * 1000 ? openingWaitShort({ startSec, nowSec: Math.floor(ms / 1000), prints }, HERO.pendingDistance) : null));
   return text ? <span className="mh-distance-pending">{text}</span> : null;
+}
+
+/** A cold start reads the price for a few seconds (the stream's first connect): it says so, not "No live price." (R7). */
+function NoPrice() {
+  const opened = useClockValue(() => streamEverOpened());
+  return <span className="mh-distance-pending">{opened ? HERO.noLivePrice : HERO.readingPrice}</span>;
 }
 
 export function HeroQuestion({ asset, startSec, openingRaw, currentRaw }: { asset: string; startSec: number; openingRaw: bigint | null; currentRaw: bigint | null }) {
@@ -40,7 +47,7 @@ export function HeroQuestion({ asset, startSec, openingRaw, currentRaw }: { asse
         {openingRaw === null ? (
           <PendingDistance startSec={startSec} />
         ) : currentRaw === null || move === null ? (
-          <span className="mh-distance-pending">{HERO.noLivePrice}</span>
+          <NoPrice />
         ) : (
           <span className={cn("mh-distance-value", winning ? "above" : "below")}>
             {winning ? `${usdLine(currentRaw - openingRaw, openingRaw)} ${HERO_HEAD.aboveLine}` : `${HERO_HEAD.needs} +${usdLine(move.upNeedsRaw, openingRaw)} ${HERO_HEAD.needsForUp}`}

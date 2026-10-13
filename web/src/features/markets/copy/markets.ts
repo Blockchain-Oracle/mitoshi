@@ -102,6 +102,8 @@ export const HERO = {
     late: (_at: string, waited: string) => `Waiting ${waited} for the opening price`,
   },
   noLivePrice: "No live price.",
+  /** Before the price stream has ever opened (the first seconds of a cold start): reading, not missing. */
+  readingPrice: "Reading the price…",
   depthTitle: "Top of book",
   buyUp: "Buy UP",
   buyDown: "Buy DOWN",
