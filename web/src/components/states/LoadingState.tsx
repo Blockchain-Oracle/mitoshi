@@ -94,7 +94,7 @@ function TabBones({ n }: { n: number }) {
   );
 }
 
-export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards" | "page" | "hero" | "tiles" | "table" | "podium" | "strategy-grid" | "studio" | "agents-board" | "cockpit";
+export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards" | "page" | "hero" | "tiles" | "table" | "podium" | "strategy-grid" | "studio" | "agents-board" | "cockpit" | "earn";
 
 const SHAPES: Record<LoadingShape, () => ReactNode> = {
   line: () => <Skeleton className="h-4 w-2/3 rounded-md" />,
@@ -268,6 +268,20 @@ const SHAPES: Record<LoadingShape, () => ReactNode> = {
         <Skeleton className="h-40 w-full rounded-lg max-lg:hidden" />
       </div>
       <Skeleton className="h-10 w-full rounded-md" />
+    </div>
+  ),
+  // /earn (R4-7, D-227): the black reserve card, the action card and the first Window rows, in the page's own grid.
+  earn: () => (
+    <div className="skel-earn">
+      <Skeleton className="skel-earn-card rounded-xl" />
+      <div className="skel-card skel-earn-action">
+        <Skeleton className="h-touch w-full rounded-md" />
+        <Skeleton className="h-touch w-full rounded-md" />
+        <Skeleton className="h-(--ticket-cta-height) w-full rounded-full" />
+      </div>
+      <div className="skel-card skel-earn-rows gap-0 py-1">
+        {[0, 1, 2].map((i) => <RowBones key={i} />)}
+      </div>
     </div>
   ),
   // The leaderboard: the head, the filters, three on the podium, the first rows.

@@ -1,87 +1,113 @@
 /**
- * `/earn` — Owarine 90a91d71 `features/earn/copy.ts` (`EARN`) at its counts (D-224); Mitoshi's words only where Tempo
- * differs: an account and dollars instead of a seat and credits, a passkey instead of a seat, test dollars from the faucet.
+ * `/earn` — Owarine 90a91d71 `features/earn/copy.ts` (`EARN`) cut to Owarine's money-screen counts (R4-7, D-227: earn
+ * spec copyCuts, copy spec step 7). Mitoshi's words only where Tempo differs: an account and dollars instead of a seat
+ * and credits, test dollars from the faucet. A figure says what a sentence used to.
  */
+import { TX } from "@/components/tx/copy";
+
 export const EARN = {
-  /** The hero: "Earn the *spread*." The accented word is the tab's (`reserves.ts`). */
+  /** The head: "Earn the *spread*." The accented word is the tab's (`reserves.ts`). */
   title: "Earn the",
   tabsLabel: "Reserve",
-  panel: {
-    /** Tempo: the vault quotes only while the ops earn-quoter key is its maker; with none set it says so. */
-    noMaker: "Maker off · no new quotes",
+  card: {
+    label: "Reserve",
+    loading: "Reading the reserve",
+    /** Tempo: the vault quotes only while the ops earn-quoter key is its maker. */
+    noMaker: "Maker off",
+    paused: "Paused",
     perShare: "/ share",
-    sinceLaunch: "Up from 1.0000 at launch",
-    belowLaunch: (noun: string) => `Below 1.0000 — the ${noun} is carrying a loss`,
-    utilization: "Utilization",
-    loading: "loading the vault…",
+    fromPar: "from 1.0000",
+    atPar: "at par",
+    belowPar: "below 1.0000",
+    value: "Value",
+    idle: "Idle",
   },
   sections: {
-    supply: { number: "01" },
-    windows: { number: "02", title: "Where the capital is" },
+    capital: { number: "02", title: "Where the capital is" },
+    bounds: { number: "02", title: "What bounds the risk" },
   },
-  paused: {
-    title: "New deposits are paused",
-    body: "The vault's admin has paused new supply. Anything you already supplied is untouched: settlement, merges and withdrawals keep running, and you can withdraw what is idle any time.",
-    reserveBody: "The reserve's admin has paused new supply. Anything you already supplied is untouched: live positions settle as they always would, and you can withdraw what no position is holding, any time.",
+  action: {
+    label: "Supply or withdraw",
+    supply: "Supply",
+    withdraw: "Withdraw",
+    /** The phone dock once the card scrolls away. */
+    dock: "Supply · Withdraw",
   },
+  pad: { group: "Amount keypad", del: "Delete", point: "Point" },
   supply: {
-    amount: "Amount",
+    amount: "Amount to supply",
     wallet: (balance: string) => `account ${balance}`,
-    walletPending: "account …",
-    walletReading: "Reading your account balance…",
+    walletReading: "Reading your account…",
     max: "Max",
     button: (amount: string) => `Supply ${amount}`,
     /** The sign-in modal's title when the CTA opens it (D-224: the CTA is the action). */
     signInFor: (amount: string) => `to supply ${amount}`,
-    paused: "Paused",
+    paused: "Supply paused",
     enterAmount: "Enter an amount",
-    noFunds: "Nothing in your account. Get test dollars first.",
+    noFunds: "Get test dollars first",
     over: (held: string) => `Your account holds ${held}`,
     done: "Supplied.",
   },
-  position: {
-    title: "Your position",
-    connect: "Sign in to see it.",
-    empty: "Nothing here yet.",
-    shares: (shares: string, price: string) => `${shares} shares · at ${price} / share`,
-    /** A-2c: realized only. Money already paid back above cost, then what today's share price adds on paper. */
-    realizedLabel: "Realized",
-    unrealizedLabel: "On paper",
-    realized: (amount: string) => `${amount} realized`,
-    realizedNone: "Nothing realized yet — a withdrawal returns what you supplied before it returns a profit.",
-    unrealized: (amount: string) => `${amount} on paper at today's share price`,
-    unrealizedFlat: "Level with what is still in, at today's share price.",
-    unrealizedDown: (amount: string) => `${amount} below what is still in, at today's share price`,
-    ledgerReading: "Reading what you supplied…",
-    withdrawAll: "Withdraw all",
-    withdrawIdle: (amount: string) => `Withdraw ${amount} idle`,
-    settling: "Settling a closed Window first…",
-    printPending: "Waiting for a closed Window's print…",
-    printLate: "That Window's closing print hasn't landed yet. Try again in a minute.",
-    unsettledNote: "A Window has closed but is not settled yet. Withdrawing settles it first — anyone may.",
-    receivePolicy: "Your account's receive policy blocks this payment, so nothing moved. Allow the reserve in your policy and withdraw again.",
+  withdraw: {
+    amount: "Amount to withdraw",
+    idle: (idle: string) => `idle ${idle}`,
+    over: (idle: string) => `Only ${idle} is idle`,
+    button: (amount: string) => `Withdraw ${amount}`,
+    withdrawable: "Withdrawable",
+    unsettled: "Settles a closed Window first.",
+    settling: "Settling a closed Window…",
+    printPending: "Waiting for a Window's print…",
+    printLate: "That Window's print hasn't landed. Retry in a minute.",
+    receivePolicy: TX.receiveBlocked,
     done: "Withdrawn to your account.",
   },
+  position: {
+    title: "Your position",
+    worth: "Worth now",
+    onPaper: "On paper",
+    costIn: "In",
+    realized: "Realized",
+    shares: "Shares",
+    at: (price: string) => `@ ${price}`,
+    /** The ledger can't be read: not known, never a bar that waits forever. */
+    unknown: "—",
+  },
   windows: {
-    empty: "The vault holds nothing on any Window. It quotes the live crypto Windows while the maker is on.",
-    window: "Window",
+    capitalLabel: "Vault capital by asset",
+    live: "Live",
+    settled: "Settled",
+    liveCount: (n: number) => `${n} live`,
+    settleAll: (n: number) => `Settle ${n}`,
     deployed: "Deployed",
-    inventory: "Holding",
-    state: "State",
-    result: "Result",
-    resting: "quotes resting",
-    paired: (pairs: string) => `${pairs} sets paired · merge`,
-    oneSided: (side: string, qty: string) => `${qty} ${side} unpaired`,
-    closed: "closed · settle",
-    printPending: "closed · print pending",
-    settled: "settled",
+    idle: "Idle",
+    other: "Other",
+    cap: (pct: string) => `cap ${pct}`,
+    empty: "No live Windows.",
+    emptySettled: "None settled yet.",
+    noMaker: "Maker off",
+    inventory: (up: string, down: string) => `${up} UP · ${down} DN`,
+    inventoryLabel: "Inventory",
+    printPending: "print pending",
+    locked: "locked",
+    resting: "resting",
     merge: "Merge",
     settle: "Settle",
+    signInMerge: "to merge",
+    signInSettle: "to settle",
     busy: "Sending…",
     quotes: (n: number) => `${n} quote${n === 1 ? "" : "s"}`,
-    total: (open: number) => `deployed on ${open} live Window${open === 1 ? "" : "s"}`,
     reading: "…",
+    open: (label: string) => `${label} — the Window's book`,
+    book: { out: "Out", back: "Back", merged: "Merged", paid: "Paid", opened: "Opened" },
   },
+  bounds: {
+    free: "Free",
+    capitalLabel: "Reserve capital",
+    slots: (open: number, max: number) => `Slots ${open} of ${max}`,
+    about: (label: string) => `About ${label}`,
+  },
+  /** Portfolio's Earn pocket and its line under the money figure (FR-5). */
+  pocket: { label: "Earn", note: "Supplied to the vault and reserves.", open: "Open" },
   notDeployed: {
     title: "Earn",
     /** A house reserve not deployed on the network the app is pointed at (the vault's own case is the registered pending page). */
