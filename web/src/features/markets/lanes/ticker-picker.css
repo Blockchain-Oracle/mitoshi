@@ -1,0 +1,10 @@
+/* Ported from Owarine 90a91d71:web/src/features/markets/lanes/ticker-picker.css (R4-3, D-227): the picker is the
+ * leaderboard's `.asset-tabs` (yosuku part-08) on the kit rail; only what those rules can't know is here — thirteen
+ * tickers outrunning a phone, a 44 px target, the paused tab, and the pending card on cream. */
+.tkp { --kit-gap: 18px; }
+.tkp .asset-tab { flex: none; min-height: 44px; white-space: nowrap; }
+.tkp .asset-tab[data-paused="true"]:not(.active) { color: var(--gray-600); }
+[data-theme="light"] .tkp .asset-tab { color: rgba(20, 18, 16, 0.6); }
+[data-theme="light"] .tkp .asset-tab.active,
+[data-theme="light"] .tkp .asset-tab:hover { color: #141210; }
+[data-theme="light"] .asset-tab .glyph { border-color: rgba(20, 18, 16, 0.2); }

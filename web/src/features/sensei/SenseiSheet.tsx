@@ -8,7 +8,7 @@
 // so the input and Send stay above it; ✕ keeps a 44 px hit area.
 import { computeDrift, formatCadence, type EventMarket, type Side } from "@cwf/core";
 import { formatClock } from "@cwf/core/units";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import MitoshiMark from "@/components/shell/MitoshiMark";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { CardSpark } from "@/features/markets/lanes/CardSpark";
@@ -122,9 +122,11 @@ export interface SenseiSheetProps {
   openingRaw: bigint | null;
   /** Where a side goes once Sensei has read (Markets opens the ticket); absent, no trade card. */
   onAct?: (marketId: EventMarket["marketId"], side: Side) => void;
+  /** Context chips under the head (R4-3: the terminal's crowd and earnings cells, off its phone header). */
+  cells?: ReactNode;
 }
 
-export function SenseiSheet({ open, onClose, read, market, openingRaw, onAct }: SenseiSheetProps) {
+export function SenseiSheet({ open, onClose, read, market, openingRaw, onAct, cells }: SenseiSheetProps) {
   const [status, setStatus] = useState<SenseiStatus | null | "loading">("loading");
   const consent = useAiConsent();
   const provider = status !== "loading" && status?.on ? status.provider : null;
@@ -177,6 +179,7 @@ export function SenseiSheet({ open, onClose, read, market, openingRaw, onAct }: 
           </div>
         </header>
 
+        {cells ? <div className="sd-cells">{cells}</div> : null}
         <SenseiMeter market={market} openingRaw={openingRaw} />
 
         <div ref={scrollRef} className="sensei-drawer-msgs">

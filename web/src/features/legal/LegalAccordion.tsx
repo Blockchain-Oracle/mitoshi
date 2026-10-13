@@ -1,10 +1,11 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/legal/LegalScreen.tsx's accordion (R4-13a, D-227): one card per section —
 // its glyph, title and one-line gist — opening to its points. Panels are `hidden="until-found"`, so the browser's find
-// still reaches every line. On Mitoshi's tokens (`styles/legal.css`).
+// still reaches every line. A link to a section (`/privacy#sensei-ai`, Sensei's consent) opens that card too, so it
+// never lands on a closed one. On Mitoshi's tokens (`styles/legal.css`).
 import { Accordion } from "@base-ui/react/accordion";
 import { ChevronDown } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export interface LegalSection {
   id: string;
@@ -17,8 +18,18 @@ export interface LegalSection {
 }
 
 export function LegalAccordion({ sections }: { sections: readonly LegalSection[] }) {
+  const [open, setOpen] = useState<string[]>(sections.length > 0 ? [sections[0]!.id] : []);
+  useEffect(() => {
+    const linked = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      if (sections.some((s) => s.id === id)) setOpen((o) => (o.includes(id) ? o : [...o, id]));
+    };
+    linked();
+    window.addEventListener("hashchange", linked);
+    return () => window.removeEventListener("hashchange", linked);
+  }, [sections]);
   return (
-    <Accordion.Root multiple defaultValue={sections.length > 0 ? [sections[0]!.id] : []} className="legal-list">
+    <Accordion.Root multiple value={open} onValueChange={(v) => setOpen(v as string[])} className="legal-list">
       {sections.map((section) => (
         <Accordion.Item key={section.id} value={section.id} id={section.id} className="legal-item">
           <Accordion.Header>

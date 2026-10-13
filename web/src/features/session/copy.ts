@@ -10,7 +10,7 @@ export const SESSION = {
   title: "Tap from a Trading Balance",
   // The arm: one sentence + one button (E.7 / ux-audit §10).
   lead: (budget: string) => `Set aside ${budget} and every tap signs with no prompt.`,
-  facts: (perTap: string, daily: string, hours: string) => `Spends only that balance: up to ${perTap} a tap, ${daily} a day, for ${hours}. Never withdraws.`,
+  facts: (perTap: string, daily: string, hours: string) => `${perTap} a tap · ${daily} a day · ${hours}. Never withdraws.`,
   fees: "Taps are free. Arming is one passkey confirmation.",
   skip: "Skip it, and every call simply asks your passkey instead.",
   cta: (budget: string) => `Set aside ${budget}`,

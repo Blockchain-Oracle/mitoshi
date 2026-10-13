@@ -1,7 +1,9 @@
 "use client";
 // The AI data-sharing consent (S13 step 8; D34, App Review 5.1.2(i)): before the first question, who receives it and
-// what goes with it, named from the server's own configuration; nothing is sent until "Agree and ask".
+// what goes with it, named from the server's own configuration; nothing is sent until "Agree and ask". R4-3 (D-227): title,
+// lead, recipients, two short lines and a "What's sent" link to /privacy's list, then the buttons (copy spec, step 3).
 import { ShieldCheck } from "lucide-react";
+import Link from "next/link";
 import { SENSEI } from "./copy";
 
 export function SenseiConsent({ recipients, onAgree, onDecline }: { recipients: readonly string[]; onAgree: () => void; onDecline: () => void }) {
@@ -18,9 +20,11 @@ export function SenseiConsent({ recipients, onAgree, onDecline }: { recipients: 
           <li key={r} className="type-body-strong text-ink">{r}</li>
         ))}
       </ul>
-      <p className="type-caption text-ink-secondary">{c.what}</p>
-      <p className="type-caption text-ink-secondary">{c.not}</p>
-      <p className="type-caption text-ink-secondary">{c.kept} {c.later}</p>
+      <p className="type-caption text-ink-secondary">
+        {c.what}{" "}
+        <Link href={c.whatHref} className="text-ink underline underline-offset-2">{c.whatLink} →</Link>
+      </p>
+      <p className="type-caption text-ink-secondary">{c.not} {c.kept}</p>
       <div className="flex flex-wrap gap-2 pt-1">
         <button type="button" onClick={onAgree} className="min-h-touch flex-1 rounded-full bg-accent-fill px-4 type-body-strong text-on-accent">{c.agree}</button>
         <button type="button" onClick={onDecline} className="min-h-touch rounded-full border border-hairline px-4 type-body-strong text-ink">{c.decline}</button>

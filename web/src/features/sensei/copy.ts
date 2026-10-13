@@ -5,7 +5,7 @@ import type { SenseiMessage } from "./protocol";
 
 export const SENSEI_INTRO: SenseiMessage = {
   role: "assistant",
-  content: "I'm Sensei. I read the Window on your screen with you and give you a straight call: UP, DOWN, or sit it out. I read and recommend; you place the call.",
+  content: "I read the Window with you: UP, DOWN or sit out. You place the call.",
 };
 
 export const SENSEI_STARTERS = ["Read this Window", "Up or down on the next close?", "Is this a coin flip?", "How are my positions doing?"] as const;
@@ -35,7 +35,7 @@ export const SENSEI = {
   copy: "Copy the answer",
   copied: "Copied",
   checking: "Checking whether Sensei is on…",
-  off: "Sensei isn't switched on here yet: no model is configured on this server. Everything else on Mitoshi works without it.",
+  off: "Sensei is off on this server.",
   offline: "Sensei can't be reached right now. Try again in a moment.",
   network: "Network error. Try again.",
   stopped: "Stopped.",
@@ -45,11 +45,13 @@ export const SENSEI = {
   tooLong: (max: number) => `Keep it under ${max.toLocaleString("en-US")} characters.`,
   consent: {
     title: "Before you ask",
-    lead: "Sensei is an AI model. To answer, Mitoshi's server sends your question to:",
-    what: "With it go the conversation so far (up to 12 turns) and the figures on your screen: prices, the Window's line and each side's price, your open positions as amounts, your settled record, and upcoming earnings dates.",
-    not: "Never sent: your address, your keys, your name or your email.",
-    kept: "Mitoshi doesn't store the conversation; it stays in this tab. The provider handles it under its API terms.",
-    later: "Stop sharing any time from Sensei's footer.",
+    // R4-3 (D-227), copy spec: title, lead, recipients, two short lines, a "What's sent" link — the full list is /privacy's.
+    lead: "Your question goes to:",
+    what: "Plus this chat and the figures on screen.",
+    whatLink: "What's sent",
+    whatHref: "/privacy#sensei-ai",
+    not: "Never your address, keys, name or email.",
+    kept: "Mitoshi doesn't store it.",
     agree: "Agree and ask",
     decline: "Not now",
     declined: "Sensei stays off. Nothing was sent.",

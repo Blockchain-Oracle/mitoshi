@@ -257,7 +257,7 @@
   background: rgba(255,255,255,0.012);
   color: var(--gray-500); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em;
 }
-@media (max-width: 1023px) {
+@media (width < 64rem) { /* R4-3 (D-227): range syntax, the rail query's 64rem — no gap at 1023.x px */
   .markets-hero .hero-grid.hero-grid-mini { grid-template-columns: 1fr; gap: 16px; }
   .markets-hero .hero-grid-mini .hero-chart { min-height: 400px; }
   .markets-hero .hero-grid-mini .hero-chart-canvas { min-height: 230px !important; }
