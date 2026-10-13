@@ -1,6 +1,7 @@
 // Ported from Owarine 90a91d71:web/src/components/kit/PillButton.tsx (R4-2, D-227) — UGLYCASH's buttons on Mitoshi's
 // tokens: always a pill, never a shadow. Accent (vermilion) is THE action on a screen, one per view; ink is the default
-// action; white sits on the stage; ghost sits on a card; up and down wear the ticket's UP/DOWN washes. `sm` is 36 px
+// action; white sits on the stage; ghost sits on a card; up and down wear the ticket's UP/DOWN washes; up-fill and down-fill are the ticket CTA's solid sides (R6: the write CTA
+// keeps them in flight). `sm` is 36 px
 // with a 44 px hit area, `md` 48, `lg` the ticket CTA's 52. Pressing sinks the pill slightly (not under reduced motion).
 // `pillButtonVariants` gives a Link the same look.
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
@@ -10,7 +11,7 @@ import "./pill.css";
 
 export const pillButtonVariants = cva("kit-pill", {
   variants: {
-    tone: { accent: "kit-pill--accent", ink: "kit-pill--ink", white: "kit-pill--white", ghost: "kit-pill--ghost", up: "kit-pill--up", down: "kit-pill--down" },
+    tone: { accent: "kit-pill--accent", ink: "kit-pill--ink", white: "kit-pill--white", ghost: "kit-pill--ghost", up: "kit-pill--up", down: "kit-pill--down", "up-fill": "kit-pill--up-fill", "down-fill": "kit-pill--down-fill" },
     size: { sm: "kit-pill--sm", md: "kit-pill--md", lg: "kit-pill--lg", icon: "kit-pill--icon" },
     block: { true: "kit-pill--block", false: "" },
   },

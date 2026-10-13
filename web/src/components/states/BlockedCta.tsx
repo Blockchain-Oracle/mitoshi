@@ -76,7 +76,7 @@ export function BlockedCta({ blocker, tone = "accent", onFix, fix, intent, size 
         <PillButton
           type="button"
           data-primary-action=""
-          tone={live.side ? tone : "accent"}
+          tone={live.side && tone !== "accent" ? (tone === "up" ? "up-fill" : "down-fill") : "accent"}
           size={size}
           block
           aria-describedby={reason ? captionId : undefined}

@@ -71,6 +71,11 @@ body {
 .kit-pill--ghost { background: var(--ow-recessed); color: var(--ow-ink); }
 .kit-pill--up { background: var(--button-up-fill); color: var(--button-up-ink); border-color: var(--button-up-border); }
 .kit-pill--down { background: var(--button-down-fill); color: var(--button-down-ink); border-color: var(--button-down-border); }
+/* The ticket CTA's solid sides (R6, D-230): THE action wears its side at full strength, unlike the washed pickers above it. */
+.kit-pill--up-fill { background: var(--color-profit); color: var(--color-cream-ink); }
+.kit-pill--down-fill { background: var(--color-loss); color: var(--color-cream-ink); }
+.kit-pill--up-fill:hover { background: color-mix(in srgb, var(--color-profit) 90%, var(--color-cream-ink)); }
+.kit-pill--down-fill:hover { background: color-mix(in srgb, var(--color-loss) 90%, var(--color-cream-ink)); }
 .kit-pill--sm { --kit-pill-h: 36px; padding: 0 16px; font-size: 14px; }
 .kit-pill--sm::before { content: ""; position: absolute; inset: -4px; }
 .kit-pill--sm svg { width: 16px; height: 16px; }

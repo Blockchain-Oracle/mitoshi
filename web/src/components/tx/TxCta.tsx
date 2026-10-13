@@ -122,7 +122,7 @@ export function TxCta({ state, action, signer, sponsored = false, onConfirm, ton
   }
   const live = canConfirm(state);
   const busy = state.kind === "signing" || state.kind === "submitted" || state.kind === "unknown" || state.kind === "scheduled";
-  const pillTone = state.kind === "failed" ? "ink" : tone;
+  const pillTone = state.kind === "failed" ? "ink" : tone === "up" ? "up-fill" : tone === "down" ? "down-fill" : "accent";
   const face = state.kind === "scheduled" ? <ScheduledFace runAtMs={state.runAtMs} /> : done && state.kind === "confirmed" ? TX.confirmedDone : ctaLabel(state, action, signer);
   const inFlight = steps && (busy || state.kind === "confirmed" || state.kind === "settled") && state.kind !== "scheduled";
   const caption: ReactNode =

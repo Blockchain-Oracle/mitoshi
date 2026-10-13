@@ -8,7 +8,8 @@ export { localClock, StaleTick } from "./StaleTick";
 // revamped, same props + optional new ones
 export { ActionPill, EmptyState, StateFrame, type NextAction, type EmptyStateProps } from "./EmptyState";
 export { ErrorState, type ErrorStateProps } from "./ErrorState";
-export { LoadingState, type LoadingShape, type LoadingStateProps } from "./LoadingState";
+export { LoadingFrame, LoadingState, type LoadingShape, type LoadingStateProps } from "./LoadingState";
+export { useHeldLoading } from "./useHeldLoading";
 // new
 export { BlockedCta, useFixRunner, type BlockedCtaProps, type BlockedTone, type HostFix } from "./BlockedCta";
 export { Faces } from "./Faces";

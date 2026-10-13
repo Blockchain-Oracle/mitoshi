@@ -6,7 +6,7 @@
 import type { MarketId } from "@cwf/core";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import { LoadingState } from "@/components/states";
+import { LoadingState } from "@/components/states/LoadingState";
 import { useDataReady } from "@/providers/data/context";
 import { MARKETS } from "./copy";
 import { RailFrame } from "./hero/RailFrame";
@@ -26,9 +26,10 @@ import "@/styles/alerts.css";
 import "./markets.css";
 
 /**
- * The page's own outline while the data layer boots (D-226; R4-3 D-227, loading parity): the hero's real boxes — the
- * `.hero-chart` panel and, from `lg`, the framed rail — with their skeletons inside, so the boxes are the same before and
- * after the island lands and no floor height is reserved; then the lane's cards.
+ * The page's own outline while the data layer boots (D-226; R4-3 D-227, loading parity; R6 T08, D-230): the hero card
+ * IS the placeholder — its head, a chart box at the settled width with its grid and opening line, the UP/DOWN pair and
+ * the foot, in the card's own classes (no `.mh-hero-empty` centring, which collapsed the old chart bone to 0 px) — and,
+ * from `lg` only, the ticket rail's own blocks. Phones draw one card, as the settled hero does. Then the lane's cards.
  */
 function Placeholder() {
   return (
@@ -36,11 +37,9 @@ function Placeholder() {
       <section className="page-hero markets-hero">
         <div className="container">
           <div className="hero-grid hero-grid-mini">
-            <div className="hero-chart mh-hero-empty">
-              <LoadingState shape="chart" label={MARKETS.loadingWindows} />
-            </div>
+            <LoadingState shape="markets-hero" layout="contents" label={MARKETS.loadingWindows} />
             <RailFrame>
-              <LoadingState shape="ticket" />
+              <LoadingState shape="markets-rail" layout="contents" label={MARKETS.loadingWindows} />
             </RailFrame>
           </div>
         </div>
