@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { indexerSources } from "@cwf/clients";
-import { keccak256, toBytes } from "viem";
+import { parseAbiItem, toEventSelector, type AbiEvent } from "viem";
 import { createIndexerClient, indexerQueryUrl, rowsFromRaw, TEMPO_INDEXER_BASE_URL } from "./client";
 import { indexerClientFromEnv } from "./env";
 import type { RecountSource } from "./recount";
@@ -48,12 +48,15 @@ describe("env", () => {
 });
 
 describe("generated indexer sources", () => {
-  it("carry each event's full signature and a topic0 equal to keccak of its canonical form", () => {
+  it("carry each event as a parseable signature whose selector is its topic0, structs expanded", () => {
     const sources = indexerSources[42431] as readonly RecountSource[];
     expect(sources.length).toBeGreaterThan(0);
     for (const s of sources) for (const e of s.events) {
-      const canonical = `${e.name}(${e.signature.slice(e.name.length + 1, -1).split(", ").filter(Boolean).map((p) => p.split(" ")[0]).join(",")})`;
-      expect(e.topic0).toBe(keccak256(toBytes(canonical)));
+      expect(e.signature).not.toMatch(/\btuple\b/);
+      expect(e.topic0).toBe(toEventSelector(parseAbiItem(`event ${e.signature}`) as AbiEvent));
     }
+    // The engine's OrderExecuted carries a struct: the topic its 434,198 Moderato logs have (R6).
+    const engine = sources.find((s) => s.contract === "EventsEngine")!;
+    expect(engine.events.find((e) => e.name === "OrderExecuted")!.topic0).toBe("0xa669f01e54311b4f70f92a8c0e1fd805ee3972bd969a0585de051ddbf215ef04");
   });
 });

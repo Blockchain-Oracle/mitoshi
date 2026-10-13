@@ -11,7 +11,7 @@ export const events = {
     "MatchFinalized(bytes32,address,int256,int256,uint256)",
     "MatchJoined(bytes32,address,uint128,uint64)",
     "MatchRefunded(bytes32,uint8,uint256)",
-    "ParamsUpdated(tuple)",
+    "ParamsUpdated((uint32,uint32,uint32,uint8,uint8,uint32))",
     "PausedSet(bool)",
     "PickFilled(bytes32,address,bytes32,uint8,uint8,uint256,uint256,uint256)",
     "PicksLocked(bytes32,uint8,address)",
@@ -30,7 +30,7 @@ export const events = {
     "Fill(bytes32,uint48,address,address,uint128,uint8,uint8,uint8,uint16,uint64,uint64)",
     "ModeSet(uint8)",
     "NodesReserved(uint32,uint32)",
-    "OrderExecuted(bytes32,uint48,address,uint8,uint8,uint8,uint16,uint64,uint40,uint64,tuple,uint64)",
+    "OrderExecuted(bytes32,uint48,address,uint8,uint8,uint8,uint16,uint64,uint40,uint64,(uint64,uint64,uint64,uint64,uint64,uint64,uint64,uint64,uint64,uint128,uint8,uint8,uint8,uint8,uint8),uint64)",
     "OrderReduced(bytes32,uint48,address,uint128,uint64,uint64)",
     "OrderRemoved(bytes32,uint48,address,uint128,uint8,uint16,uint64,uint8)",
     "OrdersCancelled(bytes32,uint48,address,uint8,uint32,uint32,uint64)",
@@ -56,7 +56,7 @@ export const events = {
   ],
   "MatchLib": [
     "Fill(bytes32,uint48,address,address,uint128,uint8,uint8,uint8,uint16,uint64,uint64)",
-    "OrderExecuted(bytes32,uint48,address,uint8,uint8,uint8,uint16,uint64,uint40,uint64,tuple,uint64)",
+    "OrderExecuted(bytes32,uint48,address,uint8,uint8,uint8,uint16,uint64,uint40,uint64,(uint64,uint64,uint64,uint64,uint64,uint64,uint64,uint64,uint64,uint128,uint8,uint8,uint8,uint8,uint8),uint64)",
     "OrderReduced(bytes32,uint48,address,uint128,uint64,uint64)",
     "OrderRemoved(bytes32,uint48,address,uint128,uint8,uint16,uint64,uint8)",
     "OrdersCancelled(bytes32,uint48,address,uint8,uint32,uint32,uint64)"
@@ -69,7 +69,7 @@ export const events = {
     "SpotSourceSet(uint16,address,bytes32)"
   ],
   "StockGuardHook": [
-    "GuardSet(bytes32,tuple)",
+    "GuardSet(bytes32,(uint16,uint16,uint16,uint32,uint32,uint32,uint32,uint8,bool))",
     "OwnershipTransferStarted(address,address)",
     "OwnershipTransferred(address,address)",
     "PoolRegistered(bytes32,address)"
@@ -125,7 +125,7 @@ export const events = {
     "Exited(uint256,address,uint8,uint256,uint256,uint256,uint256,address)",
     "Opened(uint256,address,bytes32,uint8,uint32,uint256,uint256,uint256,uint256,uint256)",
     "OwedClaimed(address,uint256)",
-    "ParamsUpdated(tuple)",
+    "ParamsUpdated((uint32,uint16,uint16,uint16,uint256,uint256,uint256,uint256,uint32,uint32,uint32,uint256))",
     "PausedSet(bool)",
     "PayoutHeld(address,uint256,uint256)",
     "Supplied(address,uint256,uint256,uint256)",
@@ -133,7 +133,7 @@ export const events = {
     "Swept(uint256)"
   ],
   "LzPingTempo": [
-    "EnforcedOptionSet(tuple[])",
+    "EnforcedOptionSet((uint32,uint16,bytes)[])",
     "OwnershipTransferred(address,address)",
     "PeerSet(uint32,bytes32)",
     "PingLanded(bytes32,uint32,uint64,uint64,uint64)",
@@ -143,7 +143,7 @@ export const events = {
     "AdminChanged(address)",
     "MakerChanged(address)",
     "Merged(bytes32,uint256,uint256,address)",
-    "ParamsUpdated(tuple)",
+    "ParamsUpdated((uint16,uint256,uint256,uint256,uint256,uint256,uint32,uint32))",
     "PausedSet(bool)",
     "Pulled(bytes32,uint256,uint256,address)",
     "Quoted(bytes32,uint256,uint256,uint256,uint256,uint128,uint128)",
@@ -158,7 +158,7 @@ export const events = {
     "LegPriced(uint256,uint8,bytes32,uint8,uint256,uint64)",
     "LegResolved(uint256,uint8,bytes32,uint8,address)",
     "OwedClaimed(address,uint256)",
-    "ParamsUpdated(tuple)",
+    "ParamsUpdated((uint16,uint16,uint16,uint8,uint256,uint256,uint256,uint256,uint32,uint256))",
     "ParlayClaimed(uint256,address,uint256,address)",
     "ParlayLost(uint256,address,uint256,uint8)",
     "ParlayOpened(uint256,address,uint8,uint256,uint256,uint256,uint64)",
@@ -176,7 +176,7 @@ export const events = {
     "Credited(address,bytes32,uint256)",
     "Deposited(address,uint256,uint256)",
     "DeskChanged(address)",
-    "ParamsUpdated(tuple)",
+    "ParamsUpdated((uint256,uint256,uint32))",
     "PausedSet(bool)",
     "SlotFunded(bytes32,uint256)",
     "SlotMinted(bytes32,bytes32,uint8,uint256,uint256)",
@@ -189,7 +189,7 @@ export const events = {
     "AdminChanged(address)",
     "AssetTickerSet(string,uint16)",
     "OwedClaimed(address,uint256)",
-    "ParamsUpdated(tuple)",
+    "ParamsUpdated((uint16,uint16,uint256,uint256,uint32,uint32,uint256,uint256,uint32,uint32,uint32,uint256,uint256,uint32,uint32))",
     "PausedSet(bool)",
     "PayoutHeld(address,uint256,uint256)",
     "RangeBasis(uint256,int256,uint256,uint64,uint32,int64,int32)",
@@ -204,7 +204,7 @@ export const events = {
     "CreditDeferred(address,uint32,uint256,uint8)",
     "DeferredClaimed(address,uint256)",
     "DeferredSent(address,bytes32,uint32,uint256)",
-    "EnforcedOptionSet(tuple[])",
+    "EnforcedOptionSet((uint32,uint16,bytes)[])",
     "GuardianSet(address)",
     "Initialized(uint64)",
     "MsgInspectorSet(address)",
@@ -248,7 +248,7 @@ export const events = {
   ],
   "StrategyRegistry": [
     "Deactivated(uint256)",
-    "Published(uint256,address,address,bytes32,bytes32,uint256,tuple,uint128)",
+    "Published(uint256,address,address,bytes32,bytes32,uint256,(uint128,uint128,uint32,uint64,bytes32),uint128)",
     "RunnerChanged(uint256,address)",
     "Subscribed(uint256,address,uint256,uint8,uint128,uint32)",
     "Unsubscribed(uint256,address,uint32)",
@@ -261,12 +261,12 @@ export const events = {
     "OwnershipTransferStarted(address,address)",
     "OwnershipTransferred(address,address)",
     "ThemePublished(uint64,address,uint32,bytes32,string)",
-    "TokenPoolSet(address,bytes32,tuple)"
+    "TokenPoolSet(address,bytes32,(address,address,uint24,int24,address))"
   ],
   "ThemeRouter": [
-    "CapsUpdated(address,uint64,tuple)",
+    "CapsUpdated(address,uint64,(uint64,uint64,uint64,uint64,uint16,uint16,uint32))",
     "FeesClaimed(address,uint256)",
-    "Followed(address,uint64,uint32,address,tuple)",
+    "Followed(address,uint64,uint32,address,(uint64,uint64,uint64,uint64,uint16,uint16,uint32))",
     "OracleSet(address)",
     "OwnershipTransferStarted(address,address)",
     "OwnershipTransferred(address,address)",
@@ -299,7 +299,7 @@ export const events = {
     "Credited(address,address,uint256,uint256)",
     "Deposited(address,uint256,uint256)",
     "Executed(address,bytes32,uint256,uint8,bool,uint256,uint256,address,uint64)",
-    "GrantCreated(uint256,address,address,uint8,tuple,uint64,uint256)",
+    "GrantCreated(uint256,address,address,uint8,(uint128,uint128,uint32,uint64,bytes32),uint64,uint256)",
     "GrantFunded(uint256,uint256,uint256)",
     "GrantRevoked(uint256,address,uint256)",
     "PrivateCredited(address,address,uint256,uint256)",
@@ -314,7 +314,7 @@ export const events = {
     "Deposited(address,uint256,uint256)",
     "Executed(address,bytes32,uint256,uint8,bool,uint256,uint256,address,uint64)",
     "ExitGranted(uint256,address,address,bytes32,uint64,uint16,uint16)",
-    "GrantCreated(uint256,address,address,uint8,tuple,uint64,uint256)",
+    "GrantCreated(uint256,address,address,uint8,(uint128,uint128,uint32,uint64,bytes32),uint64,uint256)",
     "GrantFunded(uint256,uint256,uint256)",
     "GrantRevoked(uint256,address,uint256)",
     "PrivateCredited(address,address,uint256,uint256)",
@@ -325,7 +325,7 @@ export const events = {
     "Withdrawn(address,uint256,uint256)"
   ],
   "LzPing": [
-    "EnforcedOptionSet(tuple[])",
+    "EnforcedOptionSet((uint32,uint16,bytes)[])",
     "OwnershipTransferred(address,address)",
     "PeerSet(uint32,bytes32)",
     "PingLanded(bytes32,uint32,uint64,uint64,uint64)",
@@ -339,7 +339,7 @@ export const events = {
     "OwnershipTransferred(address,address)"
   ],
   "StockSyncForwarder": [
-    "EnforcedOptionSet(tuple[])",
+    "EnforcedOptionSet((uint32,uint16,bytes)[])",
     "EthWithdrawn(address,uint256)",
     "ForwardDeferred(bytes32,bytes)",
     "Forwarded(bytes32,bytes32,uint256)",
@@ -349,7 +349,7 @@ export const events = {
   ],
   "TransitOFT": [
     "Approval(address,address,uint256)",
-    "EnforcedOptionSet(tuple[])",
+    "EnforcedOptionSet((uint32,uint16,bytes)[])",
     "MsgInspectorSet(address)",
     "OFTReceived(bytes32,uint32,address,uint256)",
     "OFTSent(bytes32,uint32,address,uint256,uint256)",
@@ -359,7 +359,7 @@ export const events = {
     "Transfer(address,address,uint256)"
   ],
   "StockLockbox": [
-    "EnforcedOptionSet(tuple[])",
+    "EnforcedOptionSet((uint32,uint16,bytes)[])",
     "GuardianSet(address)",
     "LocksPaused(bool,address)",
     "MinLockSet(uint256)",
@@ -375,7 +375,7 @@ export const events = {
     "UnlockDeferred(address,uint32,uint256,bytes)"
   ],
   "StockSyncSender": [
-    "EnforcedOptionSet(tuple[])",
+    "EnforcedOptionSet((uint32,uint16,bytes)[])",
     "OwnershipTransferred(address,address)",
     "PeerSet(uint32,bytes32)",
     "Synced(bytes32,uint32,uint64,uint256)",
@@ -391,13 +391,13 @@ export const events = {
     "InboundNonceSkipped(uint32,bytes32,address,uint64)",
     "LibraryRegistered(address)",
     "LzComposeAlert(address,address,address,bytes32,uint16,uint256,uint256,bytes,bytes,bytes)",
-    "LzReceiveAlert(address,address,tuple,bytes32,uint256,uint256,bytes,bytes,bytes)",
+    "LzReceiveAlert(address,address,(uint32,bytes32,uint64),bytes32,uint256,uint256,bytes,bytes,bytes)",
     "LzTokenSet(address)",
     "PacketBurnt(uint32,bytes32,address,uint64,bytes32)",
-    "PacketDelivered(tuple,address)",
+    "PacketDelivered((uint32,bytes32,uint64),address)",
     "PacketNilified(uint32,bytes32,address,uint64,bytes32)",
     "PacketSent(bytes,bytes,address)",
-    "PacketVerified(tuple,address,bytes32)",
+    "PacketVerified((uint32,bytes32,uint64),address,bytes32)",
     "ReceiveLibrarySet(address,uint32,address)",
     "ReceiveLibraryTimeoutSet(address,uint32,address,uint256)",
     "SendLibrarySet(address,uint32,address)"
