@@ -41,8 +41,8 @@ export const NAV_ITEMS = {
   lucky: item({ id: "lucky", name: "Lucky", href: "/games/lucky", description: "Let the reel find a live market call.", icon: Dices, match: { paths: ["/games/lucky"], exact: true } }),
   range: item({ id: "range", name: "Range", href: "/games/range", description: "Pick the band where price should finish.", icon: Layers3, match: { paths: ["/games/range"], exact: true } }),
   moonshot: item({ id: "moonshot", name: "Moonshot", href: "/games/moonshot", description: "Aim for a distant price target.", icon: Rocket, match: { paths: ["/games/moonshot"], exact: true } }),
-  lineRider: item({ id: "line-rider", name: "Line Rider", href: "/games/line-rider", description: "Ride the line and build a combo.", icon: ChartNoAxesCombined, match: { paths: ["/games/line-rider"], exact: true } }),
-  candleHop: item({ id: "candle-hop", name: "Candle Hop", href: "/games/candle-hop", description: "Hop through a candlestick run.", icon: Mountain, match: { paths: ["/games/candle-hop"], exact: true } }),
+  lineRider: item({ id: "line-rider", name: "Line Rider", href: "/games/line-rider", description: "Sled the real chart.", icon: ChartNoAxesCombined, match: { paths: ["/games/line-rider"], exact: true } }),
+  candleHop: item({ id: "candle-hop", name: "Candle Hop", href: "/games/candle-hop", description: "Fly the real candles.", icon: Mountain, match: { paths: ["/games/candle-hop"], exact: true } }),
 
   // Owarine 90a91d71's /short as a way into the terminal (R4-13a, D-227): Boost on DOWN, the same deployed reserve.
   short: item({ id: "short", name: "Short", href: "/trade/BTC?mode=boost&pick=down", description: "Call DOWN with Boost; the reserve fronts the rest.", icon: TrendingDown, keywords: "short sell fall down boost leverage", match: { paths: [] } }),
@@ -71,8 +71,8 @@ export const NAV_ITEMS = {
   activity: item({ id: "activity", name: "Activity", href: "/activity", description: "Your fills, verdicts and payouts.", icon: Activity, keywords: "notifications feed social inbox" }),
   edge: item({ id: "edge", name: "Trader Edge", href: "/portfolio/edge", description: "Your trading edge report.", icon: ChartCandlestick }),
   stats: item({ id: "stats", name: "Stats", href: "/stats", description: "Protocol and market activity.", icon: BarChart3 }),
-  gamesRank: item({ id: "games-rank", name: "Game ranks", href: "/games/rank", description: "Arcade boards and streaks.", icon: Trophy, match: { paths: ["/games/rank"], exact: true } }),
-  gamesHistory: item({ id: "games-history", name: "Games history", href: "/games/history", description: "Your runs and draws.", icon: History, match: { paths: ["/games/history"], exact: true } }),
+  gamesRank: item({ id: "games-rank", name: "Game ranks", href: "/games/rank", description: "Boards, streaks and the duel ladder.", icon: Trophy, match: { paths: ["/games/rank"], exact: true } }),
+  gamesHistory: item({ id: "games-history", name: "Games history", href: "/games/history", description: "Your runs, draws and duels.", icon: History, match: { paths: ["/games/history"], exact: true } }),
   status: item({ id: "status", name: "Status", href: "/status", description: "Every service Mitoshi runs on, live.", icon: Activity }),
   halts: item({ id: "halts", name: "Trading halts", href: "/status/halts", description: "Halts on the listed stocks.", icon: CirclePause, keywords: "halt luld paused stock" }),
   proofs: item({ id: "proofs", name: "Print proofs", href: "/proof", description: "Every settled Window, re-verifiable.", icon: BadgeCheck, keywords: "proof prints redstone verify settled" }),

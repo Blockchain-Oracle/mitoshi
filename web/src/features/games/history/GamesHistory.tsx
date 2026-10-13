@@ -2,8 +2,8 @@
 
 // /games/history (R4-9, D-227; Owarine 90a91d71 app/games/history = DuelHistory + LuckyHistory, each from its own record):
 // your replayed arcade runs, newest first — game, score, where it ranks on its board now, the seed it was drawn from and
-// when — from `GET /api/games/arcade/runs`; then your Lucky draws (`/api/games/lucky/history`). Duels join with the
-// arena. Signed out it is one line that opens sign-in.
+// when — from `GET /api/games/arcade/runs`; then your duels (`/api/games/duel/history`) and your Lucky draws
+// (`/api/games/lucky/history`). Signed out it is one line that opens sign-in.
 import { useQuery } from "@tanstack/react-query";
 import { useWalletSession } from "@/lib/wallet-session";
 import { ARCADE } from "../arcade/copy";
