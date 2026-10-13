@@ -1,14 +1,16 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/desk/activity/{ActivityTimeline,CheckCard}.tsx (R4-6, D-227) — an
-// agent's decisions as a timeline (the desk kit's Timeline, 21st #28276 / #29318): filter chips with counts (All · Bet ·
-// Held · Failed), a head per day, each decision a node in its tone with a card — the time, a badge for its outcome or
-// ruling, "UP · 0.72 → sent UP · 1 filled", the why clamped to two lines. A card opens the whole decision.
+// agent's decisions as a timeline (the desk kit's Timeline, 21st #28276 / #29318): filter chips with counts (All ·
+// Called · Held · Failed — every decision it made, not the page's latest; R6 #9), a head per day, each decision a node
+// in its tone with a card — the time, a badge for its outcome or ruling, "UP · 0.72 → sent UP · 1 filled" (a rule's
+// call has no confidence), the why clamped to two lines. A card opens the whole decision.
+import { isRuleModel } from "@cwf/core";
 import { Ban, Check, CircleDashed, OctagonAlert } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { EmptyState, Timeline, TimelineDay, TimelineNode, type NodeTone } from "@/components/kit/desk-kit";
 import { DecisionDetail, callOf, rulingOf, DECISION } from "../strategies/DecisionDetail";
 import { ago } from "../strategies/names";
-import type { DecisionDetailWire, FillWire } from "../strategies/protocol";
+import type { DecisionDetailWire, DecisionsWire, FillWire } from "../strategies/protocol";
 import { AGENTS } from "./copy";
 import "./activity.css";
 
@@ -27,29 +29,27 @@ export function DecisionCard({ d, nowMs, onOpen }: { d: DecisionDetailWire; nowM
     <button type="button" className="act-check w-full text-left" data-tone={tone} onClick={onOpen} aria-label={`${DECISION.open}: ${callOf(d)}`}>
       <span className="act-check-head">
         <span className="act-time">{timeOf(d.decidedAtMs)}</span>
-        <span className="act-badge" data-tone={tone}>{d.outcome && d.side ? DECISION.outcome[d.outcome] : kindOf(d)}</span>
+        <span className="act-badge" data-tone={tone}>{d.outcome && d.side ? DECISION.outcome[d.outcome] : C.filters[kindOf(d)]}</span>
         <span className="act-meta">{ago(d.decidedAtMs, nowMs)}{d.label ? ` · ${d.label}` : ""}</span>
       </span>
       <span className="act-line-lead block px-0.5"><b className="act-figure">{callOf(d)}</b> → {rulingOf(d)}</span>
-      <span className="act-line-rest line-clamp-2 block px-0.5">“{d.why}”</span>
+      <span className="act-line-rest line-clamp-2 block px-0.5">{isRuleModel(d.model) ? d.why : `“${d.why}”`}</span>
     </button>
   );
 }
 
-export function DecisionTimeline({ decisions, fills, agentName }: { decisions: readonly DecisionDetailWire[]; fills: readonly FillWire[]; agentName: string }) {
+export function DecisionTimeline({ decisions, counts: total, fills, agentName }: { decisions: readonly DecisionDetailWire[]; counts: Pick<DecisionsWire, "total" | "bets" | "held" | "failed">; fills: readonly FillWire[]; agentName: string }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [openId, setOpenId] = useState<string | null>(null);
-  const counts = useMemo(() => {
-    const c: Record<Filter, number> = { all: decisions.length, bet: 0, held: 0, failed: 0 };
-    for (const d of decisions) c[kindOf(d)] += 1;
-    return c;
-  }, [decisions]);
+  // The chips count every decision it made; the timeline lists the latest the page read.
+  const counts = useMemo<Record<Filter, number>>(() => ({ all: Math.max(total.total, decisions.length), bet: total.bets, held: total.held, failed: total.failed }), [total, decisions.length]);
   const shown = filter === "all" ? decisions : decisions.filter((d) => kindOf(d) === filter);
   const nowMs = Date.now();
-  if (decisions.length === 0) return <EmptyState icon={<CircleDashed />} title={C.noDecisions} />;
+  if (decisions.length === 0) return <EmptyState icon={<CircleDashed />} title={C.noDecisions} body={C.noDecisionsWhy} />;
   let lastDay = "";
   return (
     <div className="act">
+      {counts.all > decisions.length && <p className="act-shown">{C.shown(decisions.length, counts.all)}</p>}
       <div className="act-filters" role="group" aria-label={C.tabs.decisions}>
         {(["all", "bet", "held", "failed"] as const).filter((f) => f === "all" || counts[f] > 0).map((f) => (
           <button key={f} type="button" className="act-filter" aria-pressed={filter === f} onClick={() => setFilter(f)}>

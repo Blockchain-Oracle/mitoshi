@@ -1,7 +1,9 @@
 "use client";
-// Ported from Owarine 90a91d71:web/src/features/strategies/AgentMemory.tsx (R4-6, D-227) — an agent's last reads, one row
-// each: when and which Window, the outcome, "UP · 0.72 → sent UP · 1 filled" (or held), the why clamped to two lines and
-// the gate's reason when it held. A row opens the whole decision (DecisionDetail).
+// Ported from Owarine 90a91d71:web/src/features/strategies/AgentMemory.tsx (R4-6, D-227) — a strategy's last decisions
+// (an agent's reads, a rule's calls — R6 #9), one row each: when and which Window, the outcome, "UP · 0.72 → sent UP ·
+// 1 filled" (or held), the why clamped to two lines and the gate's reason when it held. A row opens the whole decision
+// (DecisionDetail).
+import { isRuleModel } from "@cwf/core";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { DECISION, DecisionDetail, callOf, rulingOf } from "./DecisionDetail";
@@ -24,19 +26,20 @@ function MemoryRow({ d, nowMs, onOpen }: { d: DecisionWire; nowMs: number; onOpe
         <span className={cn(d.gate === "failed" ? "text-ink/50" : "text-ink")}>{callOf(d)}</span>
         <span className={cn(d.gate === "trade" ? "text-accent" : "text-ink/50")}>→ {rulingOf(d)}</span>
       </span>
-      <span className="mt-1 line-clamp-2 block text-xs leading-snug text-ink-secondary">“{d.why}”</span>
+      <span className="mt-1 line-clamp-2 block text-xs leading-snug text-ink-secondary">{isRuleModel(d.model) ? d.why : `“${d.why}”`}</span>
       {d.gate !== "trade" && d.gateReason && <span className="strat-mono-10 mt-0.5 line-clamp-1 block text-ink/35">{d.gateReason}</span>}
     </button>
   );
 }
 
-export function AgentMemory({ decisions, model, agentName, fills }: { decisions: readonly (DecisionWire | DecisionDetailWire)[]; model: string | null; agentName: string; fills: readonly FillWire[] }) {
+/** `heading`: an agent's "Model · …", a rule's name; `total` every decision it made (the rows are the latest). */
+export function AgentMemory({ decisions, heading, total, agentName, fills }: { decisions: readonly (DecisionWire | DecisionDetailWire)[]; heading: string; total: number; agentName: string; fills: readonly FillWire[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const open = decisions.find((d) => d.marketId === openId) ?? null;
   const nowMs = Date.now();
   return (
     <div className="flex flex-col">
-      <p className="strat-mono-10 truncate text-ink/40">{model ? DECISION.model(model) : DECISION.noModel}</p>
+      <p className="strat-mono-10 truncate text-ink/40">{heading}{total > decisions.length ? ` · ${DECISION.latest(decisions.length, total)}` : ""}</p>
       {decisions.length === 0 ? (
         <p className="strat-mono-11 mt-2 text-ink-muted">{DECISION.empty}</p>
       ) : (

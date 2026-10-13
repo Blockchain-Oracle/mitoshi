@@ -2,7 +2,8 @@
 // The drawer's "Your copy" tab (R4-6, D-227; Owarine 90a91d71 CopyDrawer's manage state): the copier's own result as one
 // figure (its settled fills, as the chain settled them), live or paused, switch follow ↔ fade (free: already subscribed,
 // D-219.3) and stop behind Hold to stop (`stopIntent`: the grant is revoked only when no other copy shares it). A paused
-// copy renews through the same form as a new one, and can be stopped from here (its footer is the renewal).
+// copy renews through the same form as a new one, and can be stopped from here (its footer is the renewal). A live copy
+// whose budget can't cover a full-size call says so, with its top-up (`TopUpCopy`, R6 #9).
 import type { SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
 import { Masked } from "@/components/kit/Masked";
@@ -13,6 +14,7 @@ import { StatusDot } from "@/components/kit/desk-kit";
 import { cn } from "@/lib/utils";
 import { COPY } from "./copy";
 import { stopIntent } from "./copy-plan";
+import { TopUpCopy } from "./TopUpCopy";
 import { strategyIdentity } from "./identity";
 import { usdSigned } from "./format";
 import type { MinePayload, StrategyWire } from "./protocol";
@@ -62,6 +64,7 @@ export function ManageCopy({ card, sub, writes, renew, onStopped }: { card: Stra
           </>
         )}
       </div>
+      {live && <TopUpCopy writes={writes} name={strategyIdentity(card).name} failure={false} />}
       {!live && card.active && (
         <div className="flex flex-col gap-3">
           <span className="desk-eyebrow text-ink/40">{M.renew}</span>

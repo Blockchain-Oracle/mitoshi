@@ -2,6 +2,7 @@
 // Ported from Owarine 90a91d71:web/src/features/strategies/DryReadPanel.tsx (R4-6, D-227) — what one test read saw and
 // said: the Window, its opening print, the move so far and both books, the call, the gate's ruling, the model by name.
 // A deployment with no model key says so (the route's line); nothing here is ever made up.
+import { formatClock } from "@cwf/core";
 import { cn } from "@/lib/utils";
 import type { DryRead } from "./dry-read-session";
 import type { AgentPreviewResponse } from "./protocol";
@@ -18,7 +19,8 @@ export const DRY = {
   gate: "The gate",
   noAnswer: (why: string) => `No answer · ${why}`,
   outside: "outside its read slot",
-  clock: (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`,
+  /** The one countdown format (core `formatClock`: h:mm:ss past an hour, never negative). */
+  clock: formatClock,
 };
 
 const cents = (v: number | null) => (v === null ? "—" : `${v}¢`);

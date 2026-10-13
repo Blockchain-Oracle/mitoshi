@@ -12,7 +12,8 @@ const strategy = (id: string, over: Partial<StrategyWire["envelope"]> = {}, runn
   envelope: { maxStakePerTradeBase: "5000000", maxDailySpendBase: "50000000", maxOpenPositions: 3, maxPriceRaw: "900000", series: null, seriesLabel: null, ...over },
   feeBase, active: true, subscribers: 0, createdAtSec: 0, revision: 0,
   record: { fills: 0, settled: 0, wins: 0, losses: 0, voids: 0, netBase: "0", stakedBase: "0", curve: [], lastActiveSec: 0, distinctSubscribers: 0, open: 0, copyTrades: 0, entrustedBase: "0" },
-  health: { kind: "alive", lastTickMs: null, intervalMs: null, why: null }, agent: null, feedback: { count: 0, mean: null }, memory: null,
+  health: { kind: "alive", lastTickMs: null, intervalMs: null, why: null, state: null }, agent: null, decisions: { total: 0, bets: 0, held: 0, failed: 0, lastAtMs: null, recent: [] },
+  feedback: { count: 0, mean: null }, memory: null,
 });
 const grant = (over: Partial<VaultGrant> = {}, caps: Partial<VaultGrant["caps"]> = {}): VaultGrant => ({
   grantId: 8n, owner: "0x1ef9d7ec85393f9b68dca8980d266b574cc2ac18", actor: RUNNER, kind: "strategy", revoked: false, expiresAtSec: NOW + 86_400, spentDay: 0, spentTodayBase: 0n,

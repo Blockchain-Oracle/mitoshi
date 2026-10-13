@@ -117,6 +117,12 @@ export async function readSubscribers(sql: Sql, registry: string, strategyId: st
   return rows.map(fromSubscription);
 }
 
+/** How many distinct wallets copy any strategy on the registry right now (one wallet copying three counts once). */
+export async function readCopierCount(sql: Sql, registry: string): Promise<number> {
+  const [r] = await sql<{ n: string }[]>`select count(distinct subscriber) as n from idx_subscriptions where registry = ${registry.toLowerCase()} and active`;
+  return Number(r?.n ?? 0);
+}
+
 /** An agent's ERC-8004 feedback, newest first, revoked included (marked). */
 export async function readAgentFeedback(sql: Sql, agentId: string, limit = 50): Promise<AgentFeedback[]> {
   const rows = await sql<{ client: string; feedback_index: string; value: string; value_decimals: number; tag1: string; tag2: string; feedback_uri: string; revoked: boolean; tx_hash: string; at_sec: string }[]>`

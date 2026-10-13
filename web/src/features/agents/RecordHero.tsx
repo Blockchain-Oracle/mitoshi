@@ -43,7 +43,8 @@ export function RecordHero({ record }: { record: RecordWire }) {
           )}
         </div>
       </div>
-      <PortfolioChart points={points} status="ready" labels={LABELS} />
+      {/* Headless: the plate above states the net, so the chart doesn't repeat it (R6 #9 — the cockpit read "NET" twice). */}
+      <PortfolioChart points={points} status="ready" labels={LABELS} headless />
       <div className="cp-hero-foot">
         <div className="cp-stat"><span className="cp-stat-label">{H.winRate}</span><span className="cp-stat-value">{rate === null ? "—" : `${rate}%`}</span></div>
         <div className="cp-stat"><span className="cp-stat-label">{H.settled}</span><span className="cp-stat-value">{record.settled}</span></div>

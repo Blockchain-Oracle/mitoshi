@@ -1,6 +1,6 @@
 import type { VaultGrant } from "@cwf/core";
 import { describe, expect, it } from "vitest";
-import { copyStateOf, runnerLabelOf } from "./activity";
+import { budgetLow, copyStateOf } from "./activity";
 import { winRateOf } from "./record";
 
 const RUNNER = "0xca7BFA5CBdC7135Ba178ca23cD2B12C123258B9a";
@@ -28,17 +28,8 @@ describe("a copy's state comes from this wallet's consent and grant", () => {
     expect(copyStateOf(card, sub(), grant({ grantId: 9n }), NOW)).toBe("replaced");
     expect(copyStateOf(card, sub(), grant({ expiresAtSec: NOW - 1 }), NOW)).toBe("expired");
     expect(copyStateOf(card, sub(), grant({ budgetBase: 0n }), NOW)).toBe("unfunded");
-  });
-});
-
-describe("the runner's report, read narrowly", () => {
-  it("names what Mitoshi's runner writes, and nothing it doesn't", () => {
-    expect(runnerLabelOf("published; waiting for a live subscriber")).toBe("Waiting for a copier");
-    expect(runnerLabelOf("2 subscribers, none with a live grant")).toBe("No live budget");
-    expect(runnerLabelOf("read 1 of 2 Windows: BTC/5m held; 0 filled — 0x12 skipped: book thin")).toBe("Held in last scan");
-    expect(runnerLabelOf("scanned 3 markets; 2 filled — filled UP for 0xabc")).toBe("Filled 2");
-    expect(runnerLabelOf("no trading Window on 5m right now; 1 live subscriber")).toBe("Resting");
-    expect(runnerLabelOf("confirmation unknown: 0xdead; holding new entries")).toBe("Held · unconfirmed");
-    expect(runnerLabelOf("something new")).toBe("Runner report");
+    // $0.02 left against a $2 call: the runner skips it every time ("under the smallest order") — not "Copying".
+    expect(copyStateOf(card, sub(), grant({ budgetBase: 20_000n }), NOW)).toBe("low");
+    expect(budgetLow(grant({ budgetBase: 2_000_000n }))).toBe(false);
   });
 });

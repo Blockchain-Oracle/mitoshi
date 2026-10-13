@@ -1,7 +1,7 @@
 // Ported from Agari 03b30ab:web/src/features/strategies/protocol.ts (types only: the routes are ours and read the index,
 // so no zod reaches the client bundle) — the strategy carries its ERC-8004 agent, series scope and feedback (S9).
 /** Wire shapes of `/api/strategies` and `/api/strategies/mine`: base units travel as decimal strings, never floats. */
-import type { AgentWindowOutcome, RunnerHealthKind, StrategySpec, SubscriptionMode } from "@cwf/core";
+import type { AgentWindowOutcome, RunnerBeat, RunnerHealthKind, StrategySpec, SubscriptionMode } from "@cwf/core";
 
 export interface EnvelopeWire {
   maxStakePerTradeBase: string;
@@ -13,7 +13,8 @@ export interface EnvelopeWire {
   seriesLabel: string | null;
 }
 
-/** One Window an agent read, as the card shows it; the outcome is the Window's own settlement. */
+/** One decision on one Window — an agent's read, or a rule's call (`model` "rule/<preset>", no confidence) — as the
+ *  card shows it; the outcome is the Window's own settlement. */
 export interface DecisionWire {
   marketId: string;
   decidedAtMs: number;
@@ -27,6 +28,15 @@ export interface DecisionWire {
   model: string;
   label: string | null;
   outcome: AgentWindowOutcome | null;
+}
+
+export interface DecisionsWire {
+  total: number;
+  bets: number;
+  held: number;
+  failed: number;
+  lastAtMs: number | null;
+  recent: DecisionWire[];
 }
 
 export interface RecordWire {
@@ -69,8 +79,13 @@ export interface StrategyWire {
   revision: number;
   /** The record of its own calls (follow fills); fades are the subscribers' bets against it. */
   record: RecordWire;
-  health: { kind: RunnerHealthKind; lastTickMs: number | null; intervalMs: number | null; why: string | null };
-  agent: { model: string | null; decisions: DecisionWire[] } | null;
+  /** The runner's last pass: `why` is the ops log's line (never shown raw), `state` what it did as data (null before
+   *  strategies/0005), which the app words (`features/agents/pulse`). */
+  health: { kind: RunnerHealthKind; lastTickMs: number | null; intervalMs: number | null; why: string | null; state: RunnerBeat | null };
+  /** An agent's model (its latest read's); null for a rule or a mirror. */
+  agent: { model: string | null } | null;
+  /** Every decision it has made (dry runs never), by ruling, when it last decided, and its latest few, newest first. */
+  decisions: DecisionsWire;
   /** ERC-8004 feedback on its agent (non-revoked): how many, and their mean as a decimal string. */
   feedback: { count: number; mean: string | null };
   /** A sealed memory subscribers can read (L-56): its title and length only — the body is served by the gated routes.
@@ -108,6 +123,8 @@ export interface StrategiesPayload {
   houseRunner: string | null;
   /** What a strategy may be scoped to: every series the index knows. */
   series: SeriesWire[];
+  /** Distinct wallets copying any strategy now (one wallet copying three counts once). */
+  copiers: number;
   strategies: StrategyWire[];
   fills: FillWire[];
   computedAtMs: number;
@@ -128,8 +145,9 @@ export interface DecisionDetailWire extends DecisionWire {
 /** `/api/strategies/[id]`: everything an agent's page shows beyond its card. */
 export interface StrategyDetailPayload {
   strategy: StrategyWire;
-  /** The runner's last words for it, newest first. */
-  heartbeats: { atMs: number; why: string }[];
+  /** The runner's last passes for it, newest first. */
+  heartbeats: { atMs: number; why: string; state: RunnerBeat | null }[];
+  /** Its latest decisions, newest first (the count is `strategy.decisions.total`). */
   decisions: DecisionDetailWire[];
   fills: FillWire[];
   feedback: { client: string; value: string; valueDecimals: number; tag1: string; tag2: string; revoked: boolean; txHash: string; atSec: number }[];

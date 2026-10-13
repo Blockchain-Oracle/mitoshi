@@ -124,5 +124,7 @@ export const COPY = {
     stopConfirm: "Stopping",
   },
   done: { copied: "Copying.", stopped: "Stopped.", switched: "Switched." },
+  /** A budget too small for one full-size call (R6 #9): the runner skips its calls until it is topped up. */
+  topUp: { title: (left: string) => `Budget low · ${left} left`, why: "Its calls are skipped until you add to it.", cta: (amount: string) => `Add ${amount} to budget`, done: "Budget added." },
   runner: (a: string) => `Runner ${a.slice(0, 6)}…${a.slice(-4)}`,
 };

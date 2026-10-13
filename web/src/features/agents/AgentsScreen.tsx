@@ -2,8 +2,8 @@
 // Ported from Owarine 90a91d71:web/src/features/strategies/AgentsScreen.tsx (R4-6, D-227) on Mitoshi's registry and
 // rankAgents (board.ts, Q-001's inherited order): the board under AgentsHead (the title and entry links, drawn by
 // AgentsPage from the first paint, with the not-advice line) — the stat strip (Agents · Strategies · Copiers · Entrusted,
-// from the same read), the order as two tabs (Most backed · P&L) and one AgentRow per ERC-8004 agent. The stage is the
-// one inset.
+// from the same read; Copiers are distinct wallets, not subscriptions summed — R6 #9), the order as two tabs (Most
+// backed · P&L) and one AgentRow per ERC-8004 agent. The stage is the one inset.
 import Link from "next/link";
 import { useState } from "react";
 import { LoadingState } from "@/components/states/LoadingState";
@@ -47,7 +47,7 @@ export function AgentsScreen() {
           <div className="agents-stats">
             <Stat label={A.stats.agents} value={String(ranked.length)} />
             <Stat label={A.stats.strategies} value={String(strategies.length)} />
-            <Stat label={A.stats.copiers} value={String(ranked.reduce((n, s) => n + s.subscribers, 0))} />
+            <Stat label={A.stats.copiers} value={String(reading.data.copiers)} />
             <Stat label={A.stats.entrusted} value={usd(ranked.reduce((n, s) => n + BigInt(s.record.entrustedBase), 0n))} />
           </div>
           <div className="strat-tabbar-row border-b border-hairline" role="group" aria-label={A.sortLabel}>

@@ -4,11 +4,14 @@
  * `chart-engine` (installed once, E.4), revamped per D-044: the mock generators and fixtures are deleted (real-data
  * rule), `--spectrum-chart-*` map to Masayume's profit/loss/surface tokens (`styles/chart-engine.css`, no literals
  * here), keyframes live in that sheet, the loading / empty / error states speak the app's words and the screen-reader
- * table and keyboard index are kept. Floats exist only here, at the drawing boundary.
+ * table and keyboard index are kept. Floats exist only here, at the drawing boundary. The sheet is imported here, by the
+ * classes' owner (R6 #9): a page that drew a chart without /markets' hero (an agent's record, opened directly) had no
+ * `--spectrum-chart-*` colours and an unstyled range control ("1D1WAll").
  */
 import * as React from "react";
 import { useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
+import "@/styles/chart-engine.css";
 
 export const chartVarsClassName = "chart-engine";
 export const UP = "var(--spectrum-chart-up)";

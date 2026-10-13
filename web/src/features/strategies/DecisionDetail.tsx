@@ -1,10 +1,11 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/strategies/{DecisionDetail.tsx,decision-copy.ts} (R4-6, D-227) — one
-// agent decision, whole: the Window, the read (model, call, the why in full, and what paid for it — Mitoshi's MPP
-// receipts, or "unpaid · testnet", D-218.4), the gate's ruling, the copies it placed (this strategy's fills on that
-// Window) and how it settled. A centred dialog on desktop, a bottom sheet on a phone, on Base UI's Dialog.
+// decision, whole: the Window, the read (model, call, the why in full, and what paid for it — Mitoshi's MPP receipts, or
+// "unpaid · testnet", D-218.4) or, for a rule's call (R6 #9), the rule and its trigger — nothing is paid for a rule —
+// the ruling, the copies it placed (this strategy's fills on that Window) and how it settled. A centred dialog on
+// desktop, a bottom sheet on a phone, on Base UI's Dialog.
 import { Dialog } from "@base-ui/react/dialog";
-import { txUrl } from "@cwf/core";
+import { isRuleModel, txUrl } from "@cwf/core";
 import { XIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -22,9 +23,11 @@ export const DECISION = {
   close: "Close",
   model: (m: string) => `Model · ${m}`,
   noModel: "Model · not reported",
+  latest: (n: number, total: number) => `latest ${n} of ${total}`,
   empty: "No reads yet.",
-  sections: { window: "The Window", read: "The read", gate: "The gate", trades: "Copies placed", settlement: "Settlement" },
-  rows: { window: "Window", decided: "Decided", call: "Call", model: "Model", paid: "Paid", ruling: "Ruling", outcome: "Outcome" },
+  sections: { window: "The Window", read: "The read", call: "The call", gate: "The gate", trigger: "Its trigger", trades: "Copies placed", settlement: "Settlement" },
+  rows: { window: "Window", decided: "Decided", call: "Call", model: "Model", rule: "Rule", paid: "Paid", ruling: "Ruling", outcome: "Outcome" },
+  rules: { momentum: "Momentum", reversion: "Mean reversion", mirror: "Copy a trader" } as Record<string, string>,
   unpaid: "unpaid · testnet",
   paid: (amount: string, host: string) => `${amount} · ${host}`,
   noTrades: "Nothing placed on this Window.",
@@ -35,10 +38,14 @@ export const DECISION = {
   outcome: { won: "won", lost: "lost", void: "void", open: "open" } as Record<string, string>,
   noAnswer: "no answer",
   held: "held",
+  copied: (n: number) => `copied for ${n}`,
+  notCopied: "not copied",
 } as const;
 
 export const callOf = (d: DecisionWire) => (d.verdictSide === "none" ? DECISION.noAnswer : `${d.verdictSide.toUpperCase()}${d.confidence !== null ? ` · ${d.confidence.toFixed(2)}` : ""}`);
-export const rulingOf = (d: DecisionWire) => (d.gate === "trade" && d.side ? `sent ${d.side.toUpperCase()}${d.filled > 0 ? ` · ${d.filled} filled` : ""}` : DECISION.held);
+/** An agent's gate ruling ("sent UP · 1 filled"); a rule's call is its side already, so only whether it was copied. */
+export const rulingOf = (d: DecisionWire) =>
+  isRuleModel(d.model) ? (d.filled > 0 ? DECISION.copied(d.filled) : DECISION.notCopied) : d.gate === "trade" && d.side ? `sent ${d.side.toUpperCase()}${d.filled > 0 ? ` · ${d.filled} filled` : ""}` : DECISION.held;
 const when = (ms: number) => new Date(ms).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" });
 const receiptsOf = (d: DecisionWire | DecisionDetailWire) => ("receipts" in d ? d.receipts : undefined);
 
@@ -60,19 +67,21 @@ export function DecisionDetail({ decision, agentName, fills, onClose }: { decisi
 function Body({ d, agentName, fills }: { d: DecisionWire | DecisionDetailWire; agentName: string; fills: readonly FillWire[] }) {
   const receipts = receiptsOf(d);
   const network = webEnv.markets.network;
+  const rule = isRuleModel(d.model);
+  const preset = d.model.slice("rule/".length);
   return (
     <>
       <p className="strat-meta mb-1.5 text-accent">{DECISION.eyebrow} · {agentName}</p>
       <Dialog.Title className="decision-title">{d.label ?? shortAddress(d.marketId)}</Dialog.Title>
       {d.outcome && <p className={cn("decision-outcome", `decision-outcome--${d.outcome}`)}>{DECISION.outcome[d.outcome]}</p>}
-      <Section title={DECISION.sections.read}>
+      <Section title={rule ? DECISION.sections.call : DECISION.sections.read}>
         <Row label={DECISION.rows.decided} value={when(d.decidedAtMs)} />
         <Row label={DECISION.rows.call} value={callOf(d)} />
-        <Row label={DECISION.rows.model} value={d.model} />
-        {receipts !== undefined && <Row label={DECISION.rows.paid} value={receipts ? receipts.map((r) => DECISION.paid(usd(BigInt(r.amountBase)), r.host)).join(", ") : DECISION.unpaid} />}
-        <Dialog.Description className="decision-why">“{d.why}”</Dialog.Description>
+        {rule ? <Row label={DECISION.rows.rule} value={DECISION.rules[preset] ?? preset} /> : <Row label={DECISION.rows.model} value={d.model} />}
+        {!rule && receipts !== undefined && <Row label={DECISION.rows.paid} value={receipts ? receipts.map((r) => DECISION.paid(usd(BigInt(r.amountBase)), r.host)).join(", ") : DECISION.unpaid} />}
+        <Dialog.Description className="decision-why">{rule ? d.why : `“${d.why}”`}</Dialog.Description>
       </Section>
-      <Section title={DECISION.sections.gate}>
+      <Section title={rule ? DECISION.sections.trigger : DECISION.sections.gate}>
         <Row label={DECISION.rows.ruling} value={rulingOf(d)} accent={d.gate === "trade"} />
         {d.gateReason && <p className="decision-note">{d.gateReason}</p>}
       </Section>

@@ -1,7 +1,7 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/strategies/CopyDrawer.tsx (R4-6, D-227) on Mitoshi's SlideOver: the
 // portrait and name with the runner's state, one line on what it does, the record card, then tabs — Copy (or Your copy),
-// Decisions · N for an agent, Memory when it has one. The action is pinned in the sheet's footer on every tab: Copy ·
+// Decisions · N (an agent's reads or a rule's calls, R6 #9), Memory when it has one. The action is pinned in the sheet's footer on every tab: Copy ·
 // $10 (or Hold to stop on a live copy). The last card stays mounted until the close animation completes, so the sheet
 // never snaps away. R4-2: `?d=copy` (Back closes it); it holds fields, so a phone sheet drags only from its grab bar.
 import { useEffect, useState } from "react";
@@ -10,6 +10,7 @@ import { TxFailureCard } from "@/components/tx";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { notify } from "@/lib/toast";
 import { AgentMemory } from "./AgentMemory";
+import { DECISION } from "./DecisionDetail";
 import { AgentPortrait } from "./AgentPortrait";
 import { COPY, STRATEGIES } from "./copy";
 import { CopyCta, CopyForm, useCopyForm } from "./CopyForm";
@@ -58,7 +59,7 @@ function DrawerBody({ card, strategies, writes, fills, initialTab, onClose }: { 
   const e = card.envelope;
   const items = [
     { value: "copy" as const, label: sub ? COPY.tabs.yours : COPY.tabs.copy },
-    ...(card.agent ? [{ value: "decisions" as const, label: COPY.tabs.decisions, count: card.agent.decisions.length }] : []),
+    ...(card.decisions.total > 0 || card.agent ? [{ value: "decisions" as const, label: COPY.tabs.decisions, count: card.decisions.total }] : []),
     ...(card.memory ? [{ value: "memory" as const, label: COPY.tabs.memory }] : []),
   ];
   const done = (said: string) => {
@@ -97,9 +98,9 @@ function DrawerBody({ card, strategies, writes, fills, initialTab, onClose }: { 
               <p className="desk-note text-ink-muted">{COPY.blocked.inactive}</p>
             )}
           </TabsPanel>
-          {card.agent && (
+          {(card.decisions.total > 0 || card.agent) && (
             <TabsPanel value="decisions" className="pt-4">
-              <AgentMemory decisions={card.agent.decisions} model={card.agent.model} agentName={name} fills={fills} />
+              <AgentMemory decisions={card.decisions.recent} heading={card.agent ? (card.agent.model ? DECISION.model(card.agent.model) : DECISION.noModel) : (DECISION.rules[card.spec?.preset ?? ""] ?? COPY.tabs.decisions)} total={card.decisions.total} agentName={name} fills={fills} />
             </TabsPanel>
           )}
           {card.memory && (

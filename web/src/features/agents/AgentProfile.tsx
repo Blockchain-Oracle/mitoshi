@@ -1,9 +1,11 @@
 "use client";
 // `/agents/[id]` (S9.8; L-54, AG-1, AG-16) as Owarine 90a91d71's desk cockpit (features/desk/DeskPage.tsx; R4-6, D-227):
-// the head with its toolbar (Copy, More: Report · Block · Share), the record as the plate beside the next read, then
-// tabs — Overview (the latest decision, its limits, your copy's), Decisions · N (the timeline; each opens in full with
-// what paid for it, an MPP receipt or "unpaid · testnet", D-218.4), Copies · N and Identity (the ERC-8004 card, its
-// registry, ratings, sealed memory). Copy opens the desk's drawer. The stage is the one inset.
+// the head with its toolbar (Copy, More: Report · Block · Share), the record as the plate beside the next decision (a
+// real countdown, the runner's pass in words, the last decision — R6 #9, D-230), then tabs — Overview (the latest
+// decision, its limits, your copy's), Decisions · N (every decision it made, an agent's reads and a rule's calls; each
+// opens in full, an agent's with what paid for it, an MPP receipt or "unpaid · testnet", D-218.4), Copies · N and
+// Identity (the ERC-8004 card, its registry, ratings, sealed memory). Copy opens the desk's drawer. The stage is the one
+// inset.
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
@@ -22,7 +24,7 @@ import { CockpitHeader } from "./CockpitHeader";
 import { AGENTS } from "./copy";
 import { DecisionTimeline } from "./DecisionTimeline";
 import { IdentityTab } from "./IdentityTab";
-import { NextRead } from "./NextRead";
+import { NextDecision } from "./NextDecision";
 import { OverviewTab } from "./OverviewTab";
 import { RecordHero } from "./RecordHero";
 import { FillRows } from "./FillRows";
@@ -79,7 +81,7 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
   };
   const items = [
     { value: "overview" as const, label: C.tabs.overview },
-    { value: "decisions" as const, label: C.tabs.decisions, count: d.decisions.length },
+    { value: "decisions" as const, label: C.tabs.decisions, count: s.decisions.total },
     { value: "copies" as const, label: C.tabs.copies, count: d.fills.length },
     { value: "identity" as const, label: C.tabs.identity },
   ];
@@ -90,11 +92,11 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
       <CockpitHeader s={s} copying={copying} onCopy={() => setCopyOpen(true)} onReport={() => setReporting(true)} onBlock={() => void block()} onShare={() => void share()} />
       <div className="cp-top">
         <RecordHero record={s.record} />
-        <NextRead s={s} />
+        <NextDecision s={s} decisions={d.decisions} onOpenDecisions={() => setTab("decisions")} />
       </div>
       <UnderlineTabs value={tab} onChange={setTab} items={items} label={C.tabsLabel}>
         <TabsPanel value="overview" className="pt-4"><OverviewTab detail={d} writes={writes} onOpenDecisions={() => setTab("decisions")} /></TabsPanel>
-        <TabsPanel value="decisions" className="pt-4"><DecisionTimeline decisions={d.decisions} fills={d.fills} agentName={name} /></TabsPanel>
+        <TabsPanel value="decisions" className="pt-4"><DecisionTimeline decisions={d.decisions} counts={s.decisions} fills={d.fills} agentName={name} /></TabsPanel>
         <TabsPanel value="copies" className="pt-4"><FillRows fills={d.fills} /></TabsPanel>
         <TabsPanel value="identity" className="pt-4"><IdentityTab detail={d} wallet={writes.wallet} copying={copying} onCopy={() => setCopyOpen(true)} /></TabsPanel>
       </UnderlineTabs>

@@ -1,7 +1,8 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/strategies/LiveDesk.tsx and features/desk/cockpit/LimitGauges.tsx (R4-6,
 // D-227) — Yours: the selected strategy as a desk. Its face and record; the copy's state from this wallet's own consent
-// and grant beside the runner's last report (folded); the copier's limits as gauges read off the live vault grant
+// and grant beside the runner's last pass in words (`pulse`, R6 #9 — never its log line), with the top-up when the
+// budget can't cover a full-size call; the copier's limits as gauges read off the live vault grant
 // (spent today against the daily cap, open against the most at once) with the budget left and its own result; and,
 // for its creator, the copiers, the fees earned and the seal-memory form.
 import { Masked } from "@/components/kit/Masked";
@@ -9,7 +10,8 @@ import { RadialGauge, StatusDot } from "@/components/kit/desk-kit";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
 import { cn } from "@/lib/utils";
-import { COPY_STATE_LABEL, copyStateOf, runnerLabelOf, spentTodayOf } from "./activity";
+import { pulseOf } from "../agents/pulse";
+import { COPY_STATE_LABEL, copyStateOf, spentTodayOf } from "./activity";
 import { AgentPortrait } from "./AgentPortrait";
 import { usd, usdSigned } from "./format";
 import { instinctOf, strategyIdentity } from "./identity";
@@ -17,6 +19,7 @@ import { SealMemory } from "./MemorySection";
 import { ago } from "./names";
 import type { StrategyWire } from "./protocol";
 import { RecordCard } from "./RecordCard";
+import { TopUpCopy } from "./TopUpCopy";
 import type { CopyWrites } from "./useCopyWrites";
 import "./desk.css";
 import "../agents/cockpit.css";
@@ -33,7 +36,6 @@ const D = {
   fees: "Fees earned",
   manage: "Manage →",
   review: "Copy →",
-  report: (age: string) => `Runner report · ${age}`,
 };
 const share = (part: bigint, whole: bigint) => (whole <= 0n ? 0 : Number((part * 10_000n) / whole) / 100);
 
@@ -48,6 +50,7 @@ export function LiveDesk({ card, writes, onManage }: { card: StrategyWire; write
   const fills = writes.myFills.filter((f) => f.strategyId === card.strategyId);
   const net = fills.reduce((s, f) => s + (f.pnlBase === null ? 0n : BigInt(f.pnlBase)), 0n);
   const live = state === "copying" || state === "fading";
+  const pulse = pulseOf(card, nowMs);
   const spent = grant ? spentTodayOf(grant, nowSec) : 0n;
   // Privacy mode (the balance eye, R4-4 critic gap 15): spent today, the budget left, the copier's result and the fees
   // earned are the account's own money — the dots; the caps are settings and the gauges' shares stay.
@@ -67,11 +70,9 @@ export function LiveDesk({ card, writes, onManage }: { card: StrategyWire; write
           <StatusDot tone={live ? "live" : state === "not-copying" ? "quiet" : "warn"}>
             <span className="desk-status text-ink">{COPY_STATE_LABEL[state]}</span>
           </StatusDot>
-          <details className="cp-report mt-2">
-            <summary>{runnerLabelOf(card.health.why)}{card.health.lastTickMs !== null ? ` · ${ago(card.health.lastTickMs, nowMs)}` : ""}</summary>
-            {card.health.why && <p>{card.health.why}</p>}
-          </details>
+          <p className="desk-pulse-line">{pulse.line}{card.health.lastTickMs !== null ? ` · ${ago(card.health.lastTickMs, nowMs)}` : ""}</p>
         </div>
+        {sub && <TopUpCopy writes={writes} name={name} />}
         {grant && (
           <div className="flex flex-col gap-3">
             <p className="desk-eyebrow text-ink/40">{D.limits}</p>
