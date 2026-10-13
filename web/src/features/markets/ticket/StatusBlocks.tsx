@@ -13,8 +13,10 @@ import { txUrl } from "@cwf/core/urls";
 import type { ReactNode } from "react";
 import { Hash } from "@/components/data";
 import { TxCta, TxFailureCard, type SignerKind } from "@/components/tx";
+import { SHELL } from "@/lib/copy";
 import { webEnv } from "@/lib/env";
 import { openFunds } from "@/lib/funds-event";
+import { usePrivacy } from "@/lib/privacy";
 import { TICKET } from "../copy";
 import { SIDE_WORD } from "../side-styles";
 
@@ -48,7 +50,9 @@ export function ReadoutStrip({ cells, live, caption, chance }: { cells: ReadoutC
 
 /** The top-up gate and the tap-trading chip. No sign-in wall here: signed out, the CTA itself opens sign-in for the order (D-224). */
 export function AccountGate({ connected, availableBase, stakeBase, decimals, chip }: { connected: boolean; availableBase: bigint | null; stakeBase: bigint; decimals: number; chip: ReactNode }) {
-  const usd = (b: bigint) => `$${formatBaseUnits(b, decimals, { minDp: 2, maxDp: 2 })}`;
+  // Privacy mode (the balance eye): what the account holds — and the shortfall, which gives it away — are the dots.
+  const hidden = usePrivacy();
+  const usd = (b: bigint) => (hidden ? SHELL.masked : `$${formatBaseUnits(b, decimals, { minDp: 2, maxDp: 2 })}`);
   const short = connected && availableBase !== null && (availableBase === 0n || (stakeBase > 0n && stakeBase > availableBase));
   const needBase = availableBase !== null && stakeBase > availableBase ? stakeBase - availableBase : null;
   return (

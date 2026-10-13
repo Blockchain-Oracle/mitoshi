@@ -27,6 +27,8 @@ export interface CopyPlanInput {
   availableBase: bigint | null;
   /** The wallet's own pathUSD; null while it is read. */
   walletBase: bigint | null;
+  /** Privacy mode (the balance eye): a refusal says the wallet is short without printing what it holds. */
+  hideWallet?: boolean;
   mode: SubscriptionMode;
   /** "share" uses the live grant; "new" sets a fresh budget. Ignored when sharing is not possible. */
   choice: "share" | "new";
@@ -103,11 +105,11 @@ export function planCopy(i: CopyPlanInput): CopyPlan {
   let perTradeError: string | null = null;
   if (route === "new") {
     if (i.budgetText.trim() !== "" && parseUsdToBase(i.budgetText) === null) budgetError = COPY.form.notANumber;
-    else if (i.walletBase !== null && depositBase + feeBase > i.walletBase) budgetError = COPY.form.walletShort(i.walletBase, depositBase + feeBase);
+    else if (i.walletBase !== null && depositBase + feeBase > i.walletBase) budgetError = COPY.form.walletShort(i.hideWallet ? null : i.walletBase, depositBase + feeBase);
     if (i.perTradeText.trim() !== "" && parseUsdToBase(i.perTradeText) === null) perTradeError = COPY.form.notANumber;
     else if (perTradeBase > maxPerTrade) perTradeError = COPY.form.aboveStrategy(maxPerTrade);
     else if (budgetBase > 0n && perTradeBase > budgetBase) perTradeError = COPY.form.aboveBudget;
-  } else if (i.walletBase !== null && feeBase > i.walletBase) budgetError = COPY.form.walletShort(i.walletBase, feeBase);
+  } else if (i.walletBase !== null && feeBase > i.walletBase) budgetError = COPY.form.walletShort(i.hideWallet ? null : i.walletBase, feeBase);
 
   const blockedBy =
     !i.signedIn ? COPY.blocked.signIn

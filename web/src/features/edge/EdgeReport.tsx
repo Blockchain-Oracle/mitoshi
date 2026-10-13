@@ -5,12 +5,15 @@
 // draws from the same rounds, so the two can't disagree); the `edge-*` palette gives way to Mitoshi's tokens. R4-4
 // (D-227): the chart runs headless (the net figure is said once), the time-of-day rows hold their bar at 320 px, the
 // metrics sit two-up on a phone, the source and method sit in the provenance box, and the reputation, badges and CSV
-// moved to /portfolio's record.
+// moved to /portfolio's record. Every figure is the account's own: privacy mode (the balance eye) masks them all, the
+// chart's axis and table included (critic gap 15).
 import type { TraderEdge, WalletHistory } from "@cwf/core";
 import { PortfolioChart } from "@/components/ui/portfolio-chart";
 import { RECORD_CHART } from "@/features/markets/copy";
 import { recordPoints } from "./record-points";
 import { money as moneyText, moneyTone } from "@/features/terminal/format";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { EDGE } from "./copy";
 
 type Tone = "gain" | "loss" | "flat";
@@ -20,10 +23,15 @@ const INK: Record<Tone, string> = { gain: "text-up", loss: "text-down", flat: "t
 const MIN_BAR_PCT = 4;
 
 /** `+$1.20` / `−$0.40` / `$0.00`, rounded to the cent as the terminal and the record's curve round (`terminal/format`). */
-const money = (v: bigint, decimals: number, signed = true): string => moneyText(signed ? v : v < 0n ? -v : v, signed, decimals);
+const moneyOf = (v: bigint, decimals: number, signed = true): string => moneyText(signed ? v : v < 0n ? -v : v, signed, decimals);
+type Fmt = typeof moneyOf;
+/** The report is the account's own money: with privacy mode on (the balance eye) every figure is the dots. */
+function useMoneyFmt(): Fmt {
+  return usePrivacy() ? () => SHELL.masked : moneyOf;
+}
 const pct = (v: number) => (Math.abs(v) < 0.05 ? "0.0" : `${v > 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}`);
 
-function readout(report: TraderEdge, decimals: number): string {
+function readout(report: TraderEdge, decimals: number, money: Fmt): string {
   const w = EDGE.report.readout;
   const r = report.readout;
   switch (r.kind) {
@@ -51,6 +59,7 @@ function Metric({ label, value, note, tone = "flat" }: { label: string; value: s
 }
 
 function Windows({ report, decimals }: { report: TraderEdge; decimals: number }) {
+  const money = useMoneyFmt();
   const w = EDGE.report.windows;
   const timed = report.windows.reduce((s, x) => s + x.count, 0);
   const maxAbs = report.windows.reduce((m, x) => {
@@ -99,6 +108,7 @@ function Windows({ report, decimals }: { report: TraderEdge; decimals: number })
 }
 
 function Payoff({ report, decimals }: { report: TraderEdge; decimals: number }) {
+  const money = useMoneyFmt();
   const p = EDGE.report.payoff;
   const rows: [string, string][] = [
     [p.averageWin, report.averageWinBase === null ? p.noWins : money(report.averageWinBase, decimals)],
@@ -136,6 +146,8 @@ function Payoff({ report, decimals }: { report: TraderEdge; decimals: number }) 
 
 export function EdgeReport({ history, report, onRetry }: { history: WalletHistory; report: TraderEdge; onRetry: () => void }) {
   const { decimals } = history;
+  const money = useMoneyFmt();
+  const hidden = usePrivacy();
   const tone = toneOf(report.netBase, decimals);
   const m = EDGE.report.metrics;
   return (
@@ -151,12 +163,12 @@ export function EdgeReport({ history, report, onRetry }: { history: WalletHistor
             </div>
             <span className="type-caption text-ink-secondary tabular-nums">{EDGE.report.sample(report.settledRounds, report.openRounds)}</span>
           </div>
-          <PortfolioChart points={recordPoints(history)} status="ready" labels={RECORD_CHART} onRetry={onRetry} headless />
+          <PortfolioChart points={recordPoints(history)} status="ready" labels={RECORD_CHART} onRetry={onRetry} headless mask={hidden ? SHELL.masked : undefined} />
         </section>
         <aside className="flex flex-col justify-between gap-4 rounded-lg border border-accent/30 bg-accent/10 p-5" aria-labelledby="edge-readout">
           <div className="flex flex-col gap-2">
             <span id="edge-readout" className="type-label-micro text-ink-secondary">{EDGE.report.readoutLabel}</span>
-            <p className="type-title text-ink">{readout(report, decimals)}</p>
+            <p className="type-title text-ink">{readout(report, decimals, money)}</p>
           </div>
           <p className="type-caption text-ink-secondary">{EDGE.report.readoutFoot}</p>
         </aside>

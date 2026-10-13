@@ -73,7 +73,8 @@ export const COPY = {
       { value: "share", label: "Use my copy budget" },
       { value: "new", label: "Set a new budget" },
     ] as const,
-    share: (left: bigint, perTrade: bigint) => `Shares your live copy budget: ${usd(left)} left, ${usd(perTrade)} a trade. Nothing moves.`,
+    /** `left` is null in privacy mode: the line keeps its sense without the figure. */
+    share: (left: bigint | null, perTrade: bigint) => `Shares your live copy budget${left === null ? "" : `: ${usd(left)} left`}, ${usd(perTrade)} a trade. Nothing moves.`,
   },
   form: {
     budget: "Budget",
@@ -81,7 +82,7 @@ export const COPY = {
     perTrade: "Most per trade",
     perTradeHelp: (max: bigint) => `Up to ${usd(max)} — the strategy's own ceiling.`,
     notANumber: "Enter an amount like 10 or 2.50.",
-    walletShort: (have: bigint, need: bigint) => `Your wallet has ${usd(have)}; this needs ${usd(need)}.`,
+    walletShort: (have: bigint | null, need: bigint) => (have === null ? `This needs ${usd(need)}, more than your wallet holds.` : `Your wallet has ${usd(have)}; this needs ${usd(need)}.`),
     aboveStrategy: (max: bigint) => `This strategy allows at most ${usd(max)} a trade.`,
     aboveBudget: "Can't be more than the budget.",
   },

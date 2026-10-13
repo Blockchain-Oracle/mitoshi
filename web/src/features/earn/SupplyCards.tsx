@@ -35,6 +35,9 @@ export function SupplyCard({ signedIn, signer, sheet, walletBase, tx, onSupply, 
   const [amount, setAmount] = useState("");
   const { decimals, paused } = sheet;
   const wallet = walletBase ?? 0n;
+  // Privacy mode: the account's figure is the dots, and the quick chips stop being quarters of it (the last one was it).
+  const hidden = usePrivacy();
+  const held = hidden ? SHELL.masked : money2(wallet, decimals);
   const base = parseDecimalToBaseUnits(amount.trim() || "0", decimals) ?? 0n;
   const blocker = paused
     ? EARN.paused.title
@@ -47,7 +50,7 @@ export function SupplyCard({ signedIn, signer, sheet, walletBase, tx, onSupply, 
           : wallet <= 0n
             ? supply.noFunds
             : base > wallet
-              ? supply.over(money2(wallet, decimals))
+              ? supply.over(held)
               : null;
   const confirm = () => {
     if (!signedIn) return onSignIn(supply.signInFor(money2(base, decimals)));
@@ -58,7 +61,7 @@ export function SupplyCard({ signedIn, signer, sheet, walletBase, tx, onSupply, 
     <div className="earn-card ea-card">
       <div className="ea-field-head">
         <span className="ea-k">{supply.amount}</span>
-        <span className="ea-wallet numbers">{signedIn ? (walletBase === null ? supply.walletPending : supply.wallet(money2(wallet, decimals))) : null}</span>
+        <span className="ea-wallet numbers">{signedIn ? (walletBase === null ? supply.walletPending : supply.wallet(held)) : null}</span>
       </div>
       <div className="earn-field ea-field">
         <span className="ea-input-unit" aria-hidden>$</span>
@@ -68,7 +71,7 @@ export function SupplyCard({ signedIn, signer, sheet, walletBase, tx, onSupply, 
         </button>
       </div>
       <div className="ea-quick">
-        {quickAmounts(signedIn ? wallet : 0n, decimals).map((a) => (
+        {quickAmounts(signedIn && !hidden ? wallet : 0n, decimals).map((a) => (
           <button key={a} type="button" onClick={() => setAmount(a)} className={cn("ea-quick-chip numbers", amount === a ? "ea-quick-chip--on" : "earn-chip")}>
             {a}
           </button>
