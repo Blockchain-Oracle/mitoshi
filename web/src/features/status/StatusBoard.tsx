@@ -12,7 +12,8 @@ import type { StatusGroup, StatusReport, StatusRow } from "./probes";
 import { STATUS_POLL_MS, useStatus } from "./useStatus";
 
 const GLYPH: Record<StatusGroup, LucideIcon> = { Chain: Boxes, Prices: LineChart, Windows: Activity, Payouts: HandCoins, Markets: CalendarClock, Fees: Wallet };
-const HALTS_ROW = "halt-watch";
+/** Checks that open a board of their own: the halts board, and the settled prints' proofs. */
+const LINKS: Record<string, string> = { "halt-watch": "/status/halts", "price-relay": "/proof" };
 
 function summaryOf(rows: StatusRow[]): { text: string; tone: BoardTone } {
   const n = (t: BoardTone) => rows.filter((r) => r.tone === t).length;
@@ -65,7 +66,7 @@ function Systems({ rows }: { rows: StatusRow[] }) {
               return (
                 <SystemItem key={name} value={name} glyph={<Glyph aria-hidden className="size-4.5 text-ink" />} name={name} summary={summary.text} summaryTone={summary.tone} dots={list.map((r) => r.tone)}>
                   {list.map((r) => (
-                    <CheckLine key={r.id} tone={r.tone} label={r.label} figure={r.figure} detail={r.detail} href={r.id === HALTS_ROW ? "/status/halts" : undefined} />
+                    <CheckLine key={r.id} tone={r.tone} label={r.label} figure={r.figure} detail={r.detail} href={LINKS[r.id]} />
                   ))}
                 </SystemItem>
               );
