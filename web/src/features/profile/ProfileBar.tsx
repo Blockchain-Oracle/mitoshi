@@ -7,9 +7,8 @@
 // dock while the row is on screen (`page-action`).
 import { MoreHorizontal } from "lucide-react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { pillButtonVariants, PillButton } from "@/components/kit/PillButton";
+import { Pill, PillLink } from "@/components/kit/Pill";
 import { ReportDialog } from "@/features/social/report-dialog-lazy";
 import { useProfile } from "@/features/social/useProfile";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -54,14 +53,14 @@ export function ProfileBar({ address, ident, explorerHref }: { address: string; 
       </div>
       <div className={own ? "prf-actions" : "prf-actions page-action"}>
         {!own && profile ? (
-          <PillButton tone={profile.viewerFollows ? "ghost" : "accent"} size="md" aria-pressed={!!profile.viewerFollows} data-primary-action onClick={() => void follow(!profile.viewerFollows).then((e) => e && notify.item({ id: "follow", type: "warning", title: e }))}>
+          <Pill tone={profile.viewerFollows ? "ghost" : "accent"} size="md" aria-pressed={!!profile.viewerFollows} data-primary-action onClick={() => void follow(!profile.viewerFollows).then((e) => e && notify.item({ id: "follow", type: "warning", title: e }))}>
             {profile.viewerFollows ? P.following : P.follow}
-          </PillButton>
+          </Pill>
         ) : null}
         {!own ? (
-          <Link href={`/strategies?view=create&copy=${address}`} className={pillButtonVariants({ tone: "ink", size: "md" })}>
+          <PillLink href={`/strategies?view=create&copy=${address}`} tone="ink" size="md">
             {P.copyTrader}
-          </Link>
+          </PillLink>
         ) : null}
         <More own={own} explorerHref={explorerHref} onCopy={copy} onReport={() => setReporting(true)} onBlock={() => void block()} />
       </div>

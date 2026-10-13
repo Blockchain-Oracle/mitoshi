@@ -3,10 +3,22 @@
 // card: a title row over a series chart), drawn by the installed 29532 arihantcodes/portfolio-chart with its range
 // selector (7D · 30D · All), the readout on scrub and the screen-reader table: the running sum of realised P&L by
 // settled round from the index (`data.ts` `pnlCurve`). It's a public record, so the balance eye doesn't mask it. No
-// round yet: why and the next step; one round: its point and a line saying so.
+// round yet: why and the next step; one round: its point and a line saying so. The chart (and its number roller) loads
+// after first paint behind its own outline — the range chips and the plot box — so `/u/<address>` keeps its budget.
+import dynamic from "next/dynamic";
 import { EmptyState } from "@/components/states/EmptyState";
-import { PortfolioChart } from "@/components/ui/portfolio-chart";
+import { Skeleton } from "@/components/states/shapes/bones";
 import { PROFILE as P } from "./copy";
+
+const PortfolioChart = dynamic(() => import("@/components/ui/portfolio-chart").then((m) => m.PortfolioChart), {
+  ssr: false,
+  loading: () => (
+    <div className="flex flex-col gap-3" aria-hidden>
+      <Skeleton className="ml-auto h-8 w-36 rounded-full" />
+      <Skeleton className="h-55 w-full rounded-lg" />
+    </div>
+  ),
+});
 
 const DECIMALS = 6;
 

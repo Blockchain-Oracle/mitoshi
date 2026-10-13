@@ -25,7 +25,6 @@ export const NOTICES = {
   empty: "Nothing this week.",
   trade: "Trade →",
   word: { filled: "Fill", won: "Won", lost: "Lost", void: "Void", follower: "Follower", take: "Take" },
-  badge: (n: number) => `${n} new`,
 } as const;
 
 export const NOTICE_SETTINGS = {
