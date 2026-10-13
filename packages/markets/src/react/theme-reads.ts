@@ -5,7 +5,7 @@
  */
 import type { Address, Reading } from "@cwf/core";
 import type { QueryClient } from "@tanstack/react-query";
-import { getFollow, getTheme, getThemeActivity, getThemeHoldings, listEligibleMirrors, listThemes, type ThemeActivity, type ThemeView } from "../themes/reads";
+import { getFollow, getLatestRebalanceFor, getTheme, getThemeActivity, getThemeHoldings, listEligibleMirrors, listThemes, type ThemeActivity, type ThemeView } from "../themes/reads";
 import { useReadingQuery } from "./useReadingQuery";
 
 const LIST_POLL_MS = 30_000;
@@ -46,4 +46,9 @@ export function useThemeFollow(who: Address | null, id: bigint | null) {
 
 export function useThemeHoldings(who: Address | null, id: bigint | null) {
   return useReadingQuery(themeKeys.holdings(who, id), () => getThemeHoldings(who!, id!), { enabled: who !== null && id !== null, pollMs: LIST_POLL_MS });
+}
+
+/** The follower's latest theme rebalance (the reel's card); polled slowly, an event walk. */
+export function useLatestThemeRebalance(who: Address | null) {
+  return useReadingQuery(["cwf", "themes", "latest", who?.toLowerCase() ?? null], () => getLatestRebalanceFor(who!), { enabled: who !== null, staleTimeMs: 120_000, pollMs: 120_000 });
 }

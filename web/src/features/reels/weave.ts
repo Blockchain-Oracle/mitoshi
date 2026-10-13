@@ -5,13 +5,14 @@
 import type { EventMarket } from "@cwf/core";
 import type { Take } from "@/features/social/useTakes";
 import type { StrategyReelDecision } from "./StrategyReelCard";
+import type { ThemeReelRebalance } from "./ThemeReelCard";
 
-export type ReelItem = { kind: "market"; market: EventMarket } | { kind: "take"; take: Take } | { kind: "agent"; agent: StrategyReelDecision };
+export type ReelItem = { kind: "market"; market: EventMarket } | { kind: "take"; take: Take } | { kind: "agent"; agent: StrategyReelDecision } | { kind: "theme"; theme: ThemeReelRebalance };
 
 /** Where the agent's card sits: after the first few cards, so the reel still opens on a live Window. */
 export const AGENT_AT = 4;
 
-export function weaveReel(rounds: readonly EventMarket[], takes: readonly Take[], agent: StrategyReelDecision | null = null): ReelItem[] {
+export function weaveReel(rounds: readonly EventMarket[], takes: readonly Take[], agent: StrategyReelDecision | null = null, theme: ThemeReelRebalance | null = null): ReelItem[] {
   const out: ReelItem[] = [];
   for (let i = 0; i < Math.max(rounds.length, takes.length); i += 1) {
     const market = rounds[i];
@@ -19,9 +20,13 @@ export function weaveReel(rounds: readonly EventMarket[], takes: readonly Take[]
     if (market) out.push({ kind: "market", market });
     if (take) out.push({ kind: "take", take });
   }
-  if (!agent || out.length === 0) return out;
-  const at = Math.min(AGENT_AT, out.length);
-  return [...out.slice(0, at), { kind: "agent", agent }, ...out.slice(at)];
+  if (out.length === 0) return out;
+  // The agent's card at the fifth slot, the theme's four cards later — each once, never at the top.
+  const woven: ReelItem[] = agent ? [...out.slice(0, Math.min(AGENT_AT, out.length)), { kind: "agent", agent }, ...out.slice(Math.min(AGENT_AT, out.length))] : out;
+  if (!theme) return woven;
+  const at = Math.min(AGENT_AT * 2, woven.length);
+  return [...woven.slice(0, at), { kind: "theme", theme }, ...woven.slice(at)];
 }
 
-export const reelKey = (item: ReelItem): string => (item.kind === "market" ? item.market.marketId : item.kind === "take" ? `take-${item.take.id}` : `agent-${item.agent.strategyId}-${item.agent.decision.decidedAtMs}`);
+export const reelKey = (item: ReelItem): string =>
+  item.kind === "market" ? item.market.marketId : item.kind === "take" ? `take-${item.take.id}` : item.kind === "agent" ? `agent-${item.agent.strategyId}-${item.agent.decision.decidedAtMs}` : `theme-${item.theme.txHash}`;

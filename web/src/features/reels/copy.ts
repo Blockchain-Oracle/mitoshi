@@ -30,6 +30,14 @@ export const REELS = {
   take: "Take",
   postTake: "Post a take on this Window",
   composerTitle: (asset: string) => `Take on ${asset}`,
+  theme: {
+    title: (usd: string) => `Your theme rebalanced ${usd}`,
+    meta: (id: string) => `Theme #${id} · the agent's key, no prompt`,
+    badge: "your theme",
+    line: "Back inside its bands.",
+    proof: "on the explorer ↗",
+    cta: "See the theme →",
+  },
   agent: {
     title: (name: string) => `${name} called it`,
     side: (side: string) => `Bought ${side}`,

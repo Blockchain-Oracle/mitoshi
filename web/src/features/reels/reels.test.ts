@@ -22,7 +22,7 @@ describe("the reel's Windows", () => {
 });
 
 describe("the weave", () => {
-  const label = (i: ReturnType<typeof weaveReel>[number]) => (i.kind === "market" ? i.market.asset : i.kind === "take" ? `take ${i.take.id}` : "agent");
+  const label = (i: ReturnType<typeof weaveReel>[number]) => (i.kind === "market" ? i.market.asset : i.kind === "take" ? `take ${i.take.id}` : i.kind);
   it("starts on a Window and alternates, then the longer list's tail", () => {
     const t = (id: string) => ({ id }) as Take;
     const kinds = weaveReel([m("BTC", NOW + 300), m("ETH", NOW + 400)], [t("1"), t("2"), t("3")]).map(label);
@@ -36,5 +36,7 @@ describe("the weave", () => {
     expect(long).toEqual(["BTC", "take 1", "ETH", "take 2", "agent", "SOL", "take 3"]);
     expect(weaveReel([m("BTC", NOW + 300)], [], agent).map(label)).toEqual(["BTC", "agent"]);
     expect(weaveReel([], [], agent)).toEqual([]);
+    const theme = { themeId: 1n, notionalUsd: 1n, fee: 0n, txHash: "0x1" } as never;
+    expect(weaveReel([m("BTC", NOW + 300), m("ETH", NOW + 400)], [t("1"), t("2")], agent, theme).map(label)).toEqual(["BTC", "take 1", "ETH", "take 2", "agent", "theme"]);
   });
 });

@@ -6,7 +6,7 @@
 // composer bound to the Window on screen (UX fix 10). R4-11 (D-227): off-hours the closed-session card leads, and a
 // copied agent's latest traded Window is woven in once (Owarine 90a91d71's desk card).
 // R4-2 (D-227): the open composer is `?d=take`, so Back closes it instead of leaving the feed with a half-typed take.
-import { useLanes } from "@cwf/markets/react";
+import { useLanes, useLatestThemeRebalance } from "@cwf/markets/react";
 import { ChevronDown, ChevronUp, Feather } from "lucide-react";
 import { useDeferredValue, useMemo, useRef, useState } from "react";
 import { Modal } from "@/components/ui/modal";
@@ -26,6 +26,7 @@ import { ReelHolding } from "./ReelHolding";
 import { isClosing, useReelRounds } from "./rounds";
 import { StrategyReelCard, type StrategyReelDecision } from "./StrategyReelCard";
 import { TakeReelCard } from "./TakeReelCard";
+import { ThemeReelCard } from "./ThemeReelCard";
 import { useActiveReel } from "./useActiveReel";
 import { useReelPosition } from "./useReelPosition";
 import { reelKey, weaveReel, type ReelItem } from "./weave";
@@ -54,7 +55,10 @@ export function ReelsScreen() {
   const feed = useTakes({});
   const takes = useMemo(() => feed.takes.filter((t) => !t.local), [feed.takes]);
   const agent = useCopiedAgentDecision();
-  const reel = useMemo(() => weaveReel(rounds, takes, agent), [rounds, takes, agent]);
+  const { address } = useWalletSession();
+  const latest = useLatestThemeRebalance(address);
+  const themeItem = latest?.ok ? latest.value : null;
+  const reel = useMemo(() => weaveReel(rounds, takes, agent, themeItem), [rounds, takes, agent, themeItem]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const composing = useOpenDrawerName() === TAKE_DRAWER;
@@ -86,8 +90,10 @@ export function ReelsScreen() {
                 <ReelCard market={item.market} near={isNear(index)} closing={isClosing(item.market, nowMs)} />
               ) : item.kind === "take" ? (
                 <TakeReelCard take={item.take} nowMs={minuteMs} />
-              ) : (
+              ) : item.kind === "agent" ? (
                 <StrategyReelCard item={item.agent} nowMs={minuteMs} />
+              ) : (
+                <ThemeReelCard item={item.theme} />
               )}
             </section>
           ))}

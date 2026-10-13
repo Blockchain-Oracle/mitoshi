@@ -198,3 +198,24 @@ export async function getThemeHoldings(follower: Address, themeId: bigint): Prom
     return Promise.all(tokens.map(async (token) => ({ token: getAddress(token), balance: await client.readContract({ address: token, abi: erc20Abi, functionName: "balanceOf", args: [follower] }) })));
   });
 }
+
+/** A follower's latest rebalance across every theme (the reel's theme card), from the router's indexed event; null if none. */
+export async function getLatestRebalanceFor(follower: Address): Promise<Reading<{ themeId: bigint; notionalUsd: bigint; fee: bigint; decisionId: Hex; txHash: Hex; blockNumber: bigint } | null>> {
+  return withReading(`themeLatest:${follower.toLowerCase()}`, async () => {
+    const client = await getLogClient();
+    const v = themesVenueOf(client.chain.id);
+    if (!v) return null;
+    const head = await client.getBlockNumber();
+    for (let to = head; to >= v.deployBlock; to -= LOG_WINDOW) {
+      const from = to - LOG_WINDOW + 1n > v.deployBlock ? to - LOG_WINDOW + 1n : v.deployBlock;
+      const logs = await client.getContractEvents({ address: v.router, abi: themeRouterAbi, eventName: "Rebalanced", args: { follower }, fromBlock: from, toBlock: to });
+      const last = logs.at(-1);
+      if (last) {
+        const a = last.args as { themeId: bigint; notionalUsd: bigint; fee: bigint; decisionId: Hex };
+        return { themeId: a.themeId, notionalUsd: a.notionalUsd, fee: a.fee, decisionId: a.decisionId, txHash: last.transactionHash!, blockNumber: last.blockNumber! };
+      }
+      if (from === v.deployBlock) break;
+    }
+    return null;
+  });
+}
