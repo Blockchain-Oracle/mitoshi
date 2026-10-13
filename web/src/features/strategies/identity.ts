@@ -16,6 +16,7 @@ export function instinctOf(card: Pick<StrategyWire, "spec" | "envelope">): strin
   if (!s) return market;
   if (s.preset === "agent") return `AI · ${s.posture} · ${market}`;
   if (s.preset === "mirror") return `mirror · ${shortAddress(s.trader)} · ${market}`;
+  if (s.preset === "basket") return `theme · ${s.members.map((m) => m.symbol).join(", ")}`;
   return `${s.preset} · ${market}`;
 }
 
