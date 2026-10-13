@@ -203,6 +203,8 @@
   /* The phone sign-in (R4-8, D-227; `SignInPhone`): the order line under the title, the passkey actions large in the
    * thumb zone, a "Wallets" label over the tile strip, the passkey note at the foot. */
   .wm-m-intent { margin: 2px 0 0; padding: 0 56px; text-align: center; font: 500 14px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+  /* Round 7: one quiet line under the passkey buttons, and a failure's reassurance. */
+  .wm-m-hint { margin: 10px 0 0; padding: 0 24px; text-align: center; font: 500 13px/1.35 var(--font-body); color: var(--color-ink-secondary); }
   .wm-m-primary { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px 24px; }
   .wm-m-btn {
     display: flex; height: 52px; align-items: center; justify-content: center; gap: 10px; border-radius: var(--radius-full);

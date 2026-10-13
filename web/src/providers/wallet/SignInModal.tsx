@@ -18,15 +18,16 @@ import { diagnosisCopy } from "@/lib/copy";
 import { cn } from "@/lib/utils";
 import { ACCOUNT, SIGN_IN, WALLET_MODAL as T } from "./copy";
 import { useWalletChoices, type ConnectOutcome } from "./useWalletChoices";
-import { SignInPhone } from "./SignInPhone";
+import { passkeyFailure } from "./passkey-errors";
+import { SignInPhone, SignInPhoneFailure } from "./SignInPhone";
 import { ActionButton, BackButton, CloseButton, Spinner, usePhoneLayout, WalletDialog, WalletIcon } from "./wallet-modal-parts";
 import { useWalletShell } from "./wallet-shell-context";
 
 type Step =
-  | { kind: "choose" }
+  | { kind: "choose"; hint?: string }
   | { kind: "learn" }
   | { kind: "waiting"; label: string }
-  | { kind: "failed"; headline: string; body: string; technical: string; retry: () => void };
+  | { kind: "failed"; headline: string; body: string; action: string; next: () => void };
 
 export interface SignInModalProps {
   open: boolean;
@@ -50,13 +51,25 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       if (created) window.dispatchEvent(new CustomEvent(ACCOUNT_CREATED_EVENT, { detail: { forOrder: shell.pickerIntent !== null } }));
       return;
     }
+    // A cancel (or no passkey on this phone — WebAuthn won't say which) returns quietly; after a passkey sign-in, one
+    // line points at creating an account.
     if (result.aborted) {
-      setStep({ kind: "choose" });
+      setStep({ kind: "choose", ...(label === SIGN_IN.waiting.passkey && !created ? { hint: SIGN_IN.noneChosen } : {}) });
       return;
     }
+    const retry = () => void run(label, attempt, created);
+    const passkey = passkeyFailure(result.error);
+    if (passkey) {
+      const f = SIGN_IN.failures[passkey];
+      const next = passkey === "exists" ? () => void run(SIGN_IN.waiting.passkey, () => choices.signInPasskey()) : passkey === "unsupported" ? () => setStep({ kind: "choose" }) : retry;
+      setStep({ kind: "failed", headline: f.headline, body: f.body, action: f.action, next });
+      return;
+    }
+    // Anything else (the network, the server): the diagnosis in words; the raw reason goes to the console, not the sheet.
     const diagnosis = diagnose(result.error);
+    console.warn("sign-in failed:", diagnosis.technical);
     const copy = diagnosisCopy(diagnosis.kind);
-    setStep({ kind: "failed", headline: copy.headline, body: copy.body, technical: diagnosis.technical, retry: () => void run(label, attempt, created) });
+    setStep({ kind: "failed", headline: copy.headline, body: copy.body, action: SIGN_IN.retry, next: retry });
   }
 
   const connectRow = (connector: Connector) => (
@@ -77,10 +90,13 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
 
   return (
     <WalletDialog open={open} onOpenChange={close} compact>
-      {phone && (step.kind === "choose" || step.kind === "waiting") ? (
+      {phone && step.kind === "failed" ? (
+        <SignInPhoneFailure headline={step.headline} body={step.body} action={step.action} onAction={step.next} onBack={() => setStep({ kind: "choose" })} />
+      ) : phone && (step.kind === "choose" || step.kind === "waiting") ? (
         <SignInPhone
           choices={choices}
           intent={shell.pickerIntent}
+          hint={step.kind === "choose" ? (step.hint ?? null) : null}
           busy={step.kind === "waiting" ? step.label : null}
           run={(label, attempt, created) => void run(label, attempt, created)}
           onLearn={() => setStep({ kind: "learn" })}
@@ -156,13 +172,8 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
                       <p className="type-body-strong text-ink">{step.headline}</p>
                       <p className="type-body text-ink-secondary">{step.body}</p>
                       <p className="type-body-strong text-ink">{SIGN_IN.nothingTaken}</p>
-                      {/* The raw reason, behind a disclosure like every failure card (§2.5): what support needs, never the headline. */}
-                      <details className="type-caption text-ink-secondary">
-                        <summary className="min-h-touch cursor-pointer py-2">{SIGN_IN.technical}</summary>
-                        <p className="numbers break-words">{step.technical}</p>
-                      </details>
                       <div className="flex gap-2">
-                        <button type="button" onClick={step.retry} className="min-h-touch rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{SIGN_IN.retry}</button>
+                        <button type="button" onClick={step.next} className="min-h-touch rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{step.action}</button>
                         <button type="button" onClick={() => setStep({ kind: "choose" })} className="min-h-touch rounded-md border border-border-strong px-4 type-body-strong text-ink">{SIGN_IN.back}</button>
                       </div>
                     </div>

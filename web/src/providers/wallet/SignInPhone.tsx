@@ -3,7 +3,8 @@
 // its bottom sheet; R4-8, D-227) on the ported `.wm-m-*` frame: the centred title and the order this sign-in is for,
 // then the passkey actions first and large in the thumb zone — "Create account" (vermilion) and "I have a passkey" —
 // a divider, the wallets as a strip of app tiles (a spinner ring on the one connecting), and "New to passkeys?". Below
-// 768 px only; the waiting and failed steps stay SignInModal's, shared with the desktop list.
+// 768 px only; the waiting step stays SignInModal's, shared with the desktop list. Round 7: a failure has its own phone
+// frame (`SignInPhoneFailure`) and a quiet hint can sit under the passkey buttons.
 import { Dialog } from "@base-ui/react/dialog";
 import { Fingerprint, KeyRound, Wallet } from "lucide-react";
 import type { Connector } from "wagmi";
@@ -15,13 +16,15 @@ export interface SignInPhoneProps {
   choices: WalletChoices;
   /** The order this sign-in is for ("to place UP · $25.00"), or null. */
   intent: string | null;
+  /** One quiet line under the passkey buttons (after a passkey sign-in that came back with none), or null. */
+  hint?: string | null;
   /** What is being waited on (a passkey prompt or a wallet), or null. */
   busy: string | null;
   run: (label: string, attempt: () => Promise<ConnectOutcome>, created?: boolean) => void;
   onLearn: () => void;
 }
 
-export function SignInPhone({ choices, intent, busy, run, onLearn }: SignInPhoneProps) {
+export function SignInPhone({ choices, intent, hint = null, busy, run, onLearn }: SignInPhoneProps) {
   const wallets = [choices.tempoWallet, ...choices.injected, choices.walletConnect].filter((c): c is Connector => c !== null);
   const passkeyBusy = busy === SIGN_IN.waiting.passkey;
   return (
@@ -51,6 +54,7 @@ export function SignInPhone({ choices, intent, busy, run, onLearn }: SignInPhone
         </button>
       </div>
 
+      {hint ? <p className="wm-m-hint" role="status">{hint}</p> : null}
       <div className="wm-m-divider" />
       <p className="wm-m-label">{T.groups.wallets}</p>
       {wallets.length === 0 ? (
@@ -90,6 +94,39 @@ export function SignInPhone({ choices, intent, busy, run, onLearn }: SignInPhone
           {T.learnMore}
         </button>
       </div>
+    </div>
+  );
+}
+
+/**
+ * A sign-in that failed, in the phone sheet's own frame (round 7: it used the desktop step on phones): what happened in
+ * one line, what to do in another, the one action that fixes it, and Back. Never the raw error.
+ */
+export function SignInPhoneFailure({ headline, body, action, onAction, onBack }: { headline: string; body: string; action: string; onAction: () => void; onBack: () => void }) {
+  return (
+    <div className="wm-mobile" role="alert">
+      <div className="wm-m-head">
+        <div className="wm-m-head-row">
+          <Dialog.Title render={<h1 />} className="wm-m-title">
+            {headline}
+          </Dialog.Title>
+          <div className="wm-m-close">
+            <div>
+              <CloseButton phone />
+            </div>
+          </div>
+        </div>
+        <p className="wm-m-intent">{body}</p>
+      </div>
+      <div className="wm-m-primary">
+        <button type="button" className="wm-m-btn wm-m-btn--accent" onClick={onAction}>
+          {action}
+        </button>
+        <button type="button" className="wm-m-btn" onClick={onBack}>
+          {SIGN_IN.back}
+        </button>
+      </div>
+      <p className="wm-m-hint">{SIGN_IN.nothingTaken}</p>
     </div>
   );
 }

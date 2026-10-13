@@ -10,8 +10,15 @@ export const SIGN_IN = {
   waiting: { passkey: "Waiting for your passkey…", wallet: (name: string) => `Opening ${name}…` },
   retry: "Try again",
   back: "Back",
-  technical: "Technical details",
   nothingTaken: "Nothing was taken.",
+  /** After a passkey sign-in that came back with none (a cancel, or no passkey on this phone): one quiet line. */
+  noneChosen: "No passkey chosen. New here? Create an account.",
+  /** The passkey failures a person can act on (round 7, passkey-errors.ts), each with the one thing to do next. */
+  failures: {
+    exists: { headline: "Your passkey is already here", body: "Sign in with it instead.", action: "Sign in" },
+    unsupported: { headline: "This phone can't save a passkey", body: "Use a wallet, or update the phone.", action: "Back" },
+    blocked: { headline: "Passkeys can't start here", body: "Open mitoshi.xyz in Safari or Chrome.", action: "Try again" },
+  },
 } as const;
 
 /**
