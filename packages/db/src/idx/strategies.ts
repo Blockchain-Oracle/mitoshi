@@ -198,3 +198,13 @@ export async function readSeriesList(sql: Sql): Promise<{ series: string; symbol
   const rows = await sql<{ series: string; symbol: string | null; cadence_sec: number; basis: number }[]>`select series, symbol, cadence_sec, basis from idx_series order by symbol, cadence_sec, basis`;
   return rows.map((r) => ({ series: r.series, symbol: r.symbol, cadenceSec: r.cadence_sec, basis: r.basis }));
 }
+
+/** One symbol's stored spot ticks (`price_ticks`, written by the ops spot feed), oldest first — the studio's test read
+ *  samples a Window from these exactly as the runner samples its in-memory feed (R4-6). RedStone only: what settles. */
+export async function readSpotTicks(sql: Sql, symbol: string, fromSec: number, toSec: number): Promise<{ publishSec: number; priceE8: bigint }[]> {
+  const rows = await sql<{ t: string; p: string }[]>`
+    select publish_sec::text as t, price_e8::text as p from price_ticks
+    where symbol = ${symbol} and source = 'redstone' and publish_sec between ${fromSec} and ${toSec}
+    order by publish_sec limit 2000`;
+  return rows.map((r) => ({ publishSec: Number(r.t), priceE8: BigInt(r.p.split(".")[0]!) }));
+}
