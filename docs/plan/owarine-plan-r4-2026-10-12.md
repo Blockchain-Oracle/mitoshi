@@ -147,3 +147,6 @@ wallet row and a Trading Balance row on one Window and side share one TP/SL entr
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
 the slice's routes; a real flow on testnet where money moves (P&L checked against chain reads); deploy web (and ops
 when the keeper changes).
+Fold budgets (R4-2): count a phone's fold against `100svh` with the browser's bars shown (a 568 px phone keeps ~450 px),
+not the device height — check in DevTools with the browser-UI height or on a phone; clamps use `svh`/`dvh` only, and an
+action the budget can't hold sticks above the dock (`.page-action`). Every new piece comes from `@/components/kit`.

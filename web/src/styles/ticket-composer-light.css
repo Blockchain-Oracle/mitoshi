@@ -71,7 +71,3 @@
 [data-theme="light"] .tk-foot {
   color: rgba(20, 18, 16, 0.4);
 }
-[data-theme="light"] .tk-drawer-close:hover {
-  background: rgba(20, 18, 16, 0.05);
-  color: #141210;
-}

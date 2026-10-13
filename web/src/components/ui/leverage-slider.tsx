@@ -21,7 +21,7 @@ export interface LeverageSliderProps {
 export function LeverageSlider({ value, onChange, max, label, valueText, refused = {}, className }: LeverageSliderProps) {
   const stops = Array.from({ length: max }, (_, i) => i + 1);
   return (
-    <div className={cn("lev-slider", className)}>
+    <div className={cn("lev-slider", className)} data-base-ui-swipe-ignore="">
       <Slider.Root value={value} min={1} max={max} step={1} onValueChange={(v) => onChange(v as number)} className="lev-root" aria-label={label}>
         <Slider.Control className="lev-control">
           <Slider.Track className="lev-track">

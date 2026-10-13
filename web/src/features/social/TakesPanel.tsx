@@ -4,9 +4,10 @@
 // when the author has a call there, reactions, and Tail / Fade (the terminal on that Window with the same side, or the
 // other one, picked; nothing trades from the feed). The composer is bound to the Window on screen (UX fix 10).
 import Link from "next/link";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { captionParts } from "@cwf/core/social";
 import { formatCadence } from "@cwf/core/copy";
+import { SheetFooter } from "@/components/ui/drawer";
 import { notify } from "@/lib/toast";
 import { SOCIAL } from "./copy";
 import { REACTIONS } from "./reactions";
@@ -76,8 +77,13 @@ export interface TakeWindow {
   expirySec: number;
 }
 
-/** The composer bound to one Window (UX fix 10): a side, a caption, one post; the caption survives a failed post. */
-export function TakeComposer({ window, post, signedIn, onPosted }: { window: TakeWindow; post: ReturnType<typeof useTakes>["post"]; signedIn: string | null; onPosted?: () => void }) {
+/**
+ * The composer bound to one Window (UX fix 10): a side, a caption, one post; the caption survives a failed post. `pinned`
+ * (the composer is the whole sheet, as on /reels) puts Post in the sheet's footer, over a phone's keyboard (R4-2, D-227);
+ * it stays tied to the form by `form=`.
+ */
+export function TakeComposer({ window, post, signedIn, onPosted, pinned = false }: { window: TakeWindow; post: ReturnType<typeof useTakes>["post"]; signedIn: string | null; onPosted?: () => void; pinned?: boolean }) {
+  const formId = useId();
   const [side, setSide] = useState<"up" | "down" | null>(null);
   const [caption, setCaption] = useState("");
   const [busy, setBusy] = useState(false);
@@ -91,8 +97,9 @@ export function TakeComposer({ window, post, signedIn, onPosted }: { window: Tak
     if (out.ok) (setCaption(""), setSide(null), onPosted?.());
     else notify.item({ id: "take-post", type: "warning", title: out.message });
   };
+  const action = <button type="submit" form={formId} disabled={!side || busy} className="min-h-touch rounded-full bg-accent-fill px-4 type-body-strong text-on-accent disabled:opacity-50">{signedIn ? words.post : SOCIAL.room.signIn}</button>;
   return (
-    <form className="flex flex-col gap-2" onSubmit={(e) => (e.preventDefault(), void submit())} aria-label={words.compose}>
+    <form id={formId} className="flex flex-col gap-2" onSubmit={(e) => (e.preventDefault(), void submit())} aria-label={words.compose}>
       <p className="type-caption text-ink-secondary">{words.on(window.asset, formatCadence(window.intervalSec))}</p>
       <div role="radiogroup" aria-label={words.side} className="flex gap-2">
         {(["up", "down"] as const).map((s) => (
@@ -102,7 +109,7 @@ export function TakeComposer({ window, post, signedIn, onPosted }: { window: Tak
         ))}
       </div>
       <textarea value={caption} onChange={(e) => setCaption(e.target.value.slice(0, CAPTION_MAX))} rows={2} aria-label={words.caption} placeholder={words.caption} className="resize-none rounded-md border border-hairline bg-surface-1 p-2 text-base text-ink" />
-      <button type="submit" disabled={!side || busy} className="min-h-touch rounded-full bg-accent-fill px-4 type-body-strong text-on-accent disabled:opacity-50">{signedIn ? words.post : SOCIAL.room.signIn}</button>
+      {pinned ? <SheetFooter>{action}</SheetFooter> : action}
     </form>
   );
 }

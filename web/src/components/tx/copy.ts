@@ -8,13 +8,13 @@ export const TX = {
   confirmed: "Confirmed",
   settled: (delivered: number, legs: number) => (legs > 1 ? `Delivered ${delivered} of ${legs}` : "Delivered"),
   unknown: "Waiting for the chain to answer",
-  unknownBody: "It is either in or it never left; we'll show you which. Nothing is retried on its own.",
+  unknownBody: "Waiting on the chain. Nothing is re-sent.",
   scheduled: (sec: number) => `Starting in ${sec}s`,
   undo: "Undo",
   moneyMoved: {
     no: "Nothing was taken.",
     yes: "Money moved — your receipt shows where.",
-    unknown: "We're checking whether it landed. Nothing is retried on its own.",
+    unknown: "Waiting on the chain. Nothing is re-sent.",
   },
   retry: "Try again",
   technical: "Technical details",
@@ -29,4 +29,11 @@ export const TX = {
     manage: "Manage keys",
   },
   explorer: "View on the explorer",
+  // The shared short lines every ticket and receipt says the same way (R4-2, D-227; Owarine 90a91d71 vault/copy.ts is
+  // the model): one line each, at Owarine's word count.
+  payoutSetAside: "Payout set aside up front · no fees.",
+  receiveBlocked: "Your receive policy blocks this. Nothing moved.",
+  held: (amount: string) => `${amount} held — collect once your policy allows.`,
+  requote: (cost: string) => `Price moved: now ${cost}. Hold again to place.`,
+  voidReturned: "Voided — your stake is back.",
 } as const;

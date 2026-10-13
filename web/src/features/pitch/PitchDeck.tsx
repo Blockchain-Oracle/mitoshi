@@ -94,10 +94,10 @@ export function PitchDeck() {
         </div>
       </div>
 
-      <button type="button" onClick={() => go(-1)} className="pitch-nav pitch-nav-prev" aria-label={PITCH.prev}>
+      <button type="button" onClick={() => go(-1)} className="pitch-nav pitch-nav-prev" aria-label={PITCH.prev} title={PITCH.prev}>
         <ArrowLeftIcon size={17} />
       </button>
-      <button type="button" onClick={() => go(1)} className="pitch-nav pitch-nav-next" aria-label={PITCH.next}>
+      <button type="button" onClick={() => go(1)} className="pitch-nav pitch-nav-next" aria-label={PITCH.next} title={PITCH.next}>
         <ArrowRightIcon size={17} />
       </button>
     </div>

@@ -95,6 +95,7 @@ export function Sparkline({ points, baselineE8, format, formatTime, label, class
       role="group"
       aria-label={summary}
       style={{ touchAction: "pan-y" }}
+      data-base-ui-swipe-ignore=""
       onFocus={() => setHover((h) => h ?? drawn.length - 1)}
       onBlur={() => setHover(null)}
       onKeyDown={(e) => {

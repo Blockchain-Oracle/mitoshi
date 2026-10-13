@@ -4,13 +4,15 @@
 // curve (`PnlCard`), Add money (the faucet on testnet), Withdraw (`SendPanel`), the Trading Balance's own panel (in and
 // out), Activity (the money moves, `ActivityView`; trades are Trade history's), Collect for
 // anything settled and still held, the one-tap card, the Trading and App groups, and Sign out behind a centred confirm.
-// No demo, no reset (D-191).
+// No demo, no reset (D-191). R4-2 (D-227): a drill-in's way back is the sheet head's back arrow (Owarine 90a91d71
+// `AccountSheet.tsx` → `Sheet onBack`), not a button in the body; only the steps with fields (Withdraw, the Trading
+// Balance) hold the phone sheet to its grab bar — the menu still drags down from anywhere.
 import type { Address } from "@cwf/core";
 import { useClaimables } from "@cwf/markets/react";
-import { ArrowDownToLine, ArrowUpFromLine, ChevronLeft, ChevronRight, CircleHelp, Download, History, Medal, MessageSquare, Settings, ShieldAlert, SlidersHorizontal, Trophy, Wallet } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, CircleHelp, Download, History, Medal, MessageSquare, Settings, ShieldAlert, SlidersHorizontal, Trophy, Wallet } from "lucide-react";
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { GroupedItem as Item, GroupedList as Group } from "@/components/kit";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { Modal } from "@/components/ui/modal";
 import { CollectPlate } from "@/features/markets/claims/CollectPlate";
@@ -46,31 +48,6 @@ const LeagueView = dynamic(() => import("./LeagueView").then((m) => m.LeagueView
 
 export type AccountView = "menu" | "send" | "balance" | "history" | "activity" | "leaderboard" | "league";
 
-function Item({ icon: Icon, label, detail, onClick, href }: { icon: typeof History; label: string; detail?: string; onClick?: () => void; href?: string }) {
-  const body = (
-    <>
-      <Icon aria-hidden className="tm-item-icon" />
-      <span className="tm-item-label">{label}</span>
-      {detail ? <span className="tm-item-detail">{detail}</span> : null}
-      <ChevronRight aria-hidden className="tm-item-chevron" />
-    </>
-  );
-  return href ? (
-    <Link href={href} className="tm-item" onClick={tapFeedback}>{body}</Link>
-  ) : (
-    <button type="button" className="tm-item" onClick={() => (tapFeedback(), onClick?.())}>{body}</button>
-  );
-}
-
-function Group({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="tm-group">
-      <span className="tm-group-title">{title}</span>
-      <div className="tm-group-body">{children}</div>
-    </div>
-  );
-}
-
 export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBase, totals, onSettings, initialView = "menu" }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -104,12 +81,7 @@ export function AccountDrawer({ open, onOpenChange, wallet, equityBase, walletBa
   return (
     <>
       <SlideOver open={open} onOpenChange={onOpenChange}>
-        <SlideOverContent title={titles[view]}>
-          {view !== "menu" ? (
-            <button type="button" className="tm-back" onClick={() => (tapFeedback(), setView("menu"))}>
-              <ChevronLeft aria-hidden className="size-4" /> {TERMINAL.account.back}
-            </button>
-          ) : null}
+        <SlideOverContent title={titles[view]} fields={view === "send" || view === "balance"} onBack={view !== "menu" ? () => (tapFeedback(), setView("menu")) : undefined}>
           {view === "send" ? <SendPanel wallet={wallet} balanceBase={walletBase} onDone={() => setView("menu")} /> : null}
           {view === "balance" ? <TradingBalancePanel /> : null}
           {view === "history" ? <HistoryView wallet={wallet} onReplay={(episode, finalPnl) => setReplay({ episode, finalPnl })} /> : null}

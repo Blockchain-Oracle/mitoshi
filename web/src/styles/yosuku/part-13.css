@@ -271,7 +271,7 @@
   white-space: normal;
   width: max-content;
   max-width: 260px;
-  z-index: 9100;
+  z-index: var(--z-popover);
   pointer-events: none;
   animation: tooltipFade 150ms var(--ease);
   backdrop-filter: blur(12px);

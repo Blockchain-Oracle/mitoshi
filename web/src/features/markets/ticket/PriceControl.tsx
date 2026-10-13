@@ -27,10 +27,10 @@ export function PriceControl({ priceCents, onChange, side }: { priceCents: numbe
         <span className="tk-amount-balance">{S.pays}</span>
       </div>
       <div className="tk-amount-field">
-        <button type="button" className="tk-add min-h-touch" aria-label={S.stepDown} disabled={priceCents <= 1} onClick={() => step(-1)}>−</button>
+        <button type="button" className="tk-add min-h-touch" aria-label={S.stepDown} title={S.stepDown} disabled={priceCents <= 1} onClick={() => step(-1)}>−</button>
         <input inputMode="numeric" autoComplete="off" value={text} onChange={(e) => type(e.target.value)} onBlur={() => setText(String(priceCents))} className="tk-amount-input" aria-label={S.priceAria(side ? SIDE_WORD[side] : "")} />
         <span className="tk-amount-unit">¢</span>
-        <button type="button" className="tk-add min-h-touch" aria-label={S.stepUp} disabled={priceCents >= 99} onClick={() => step(1)}>+</button>
+        <button type="button" className="tk-add min-h-touch" aria-label={S.stepUp} title={S.stepUp} disabled={priceCents >= 99} onClick={() => step(1)}>+</button>
       </div>
       <div className="tk-amount-row">
         <div role="group" aria-label={S.priceChips} className="tk-adds">

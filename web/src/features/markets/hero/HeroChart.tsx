@@ -14,6 +14,7 @@ import type { EventMarket, Lane, MarketId, Side } from "@cwf/core";
 import { Bell, MessageCircle, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
+import { closeDrawer, openDrawer, useOpenDrawerName } from "@/lib/drawer-param";
 import { SENSEI } from "@/features/sensei/copy";
 import { SENSEI_OPEN_EVENT } from "@/features/sensei/SenseiDock";
 import { DEPTH, HERO, HERO_HEAD, MARKETS } from "../copy";
@@ -44,7 +45,10 @@ const cents = (c: number | null) => (c === null ? HERO_HEAD.noPrice : `${c}¢`);
 export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: HeroChartProps) {
   const series = useChartSeries(market);
   const [view, setView] = useState<"price" | "depth">("price");
-  const [drawer, setDrawer] = useState<"room" | "alerts" | null>(null);
+  // The Room and Alerts sheets live in the URL (`?d=room` · `?d=alerts`, D-190; R4-2): Back closes them.
+  const named = useOpenDrawerName();
+  const drawer = named === "room" || named === "alerts" ? named : null;
+  const setDrawer = (next: "room" | "alerts" | null) => (next ? openDrawer(next) : closeDrawer());
   const book = useTopOfBook(market);
   const latestRaw = series?.ok ? (series.value.latest?.valueRaw ?? null) : null;
   const source = market.printSource ? (HERO.sources[market.printSource] ?? HERO.sourceUnknown) : HERO.sourceUnknown;
@@ -105,7 +109,7 @@ export function HeroChart({ market, openingRaw, lanes, onPickLane, onSelect }: H
           <span className="mh-ramp-cents">{cents(book.upCents)}</span>
         </span>
       </div>
-      <div className="hero-yesno" data-primary-action="">
+      <div className="hero-yesno page-action" data-primary-action="">
         <button type="button" className="hyn hyn-yes" aria-label={`${HERO_HEAD.betUp} · ${cents(book.upCents)}`} onClick={() => onSelect(market.marketId, "up")}>
           <span className="hyn-label">{MARKETS.up}</span>
           <span className="hyn-price">{cents(book.upCents)}</span>

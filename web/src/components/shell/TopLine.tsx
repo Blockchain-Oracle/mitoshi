@@ -47,7 +47,7 @@ function BackButton() {
   }, [pathname]);
   if (isTopLevel(pathname)) return null;
   return (
-    <button type="button" className="topline-icon topline-back" aria-label={SHELL.back} onClick={() => (canGoBackInApp() ? router.back() : router.push(parentOf(pathname)))}>
+    <button type="button" className="topline-icon topline-back" aria-label={SHELL.back} title={SHELL.back} onClick={() => (canGoBackInApp() ? router.back() : router.push(parentOf(pathname)))}>
       <ChevronLeft aria-hidden />
     </button>
   );
@@ -90,7 +90,7 @@ export function TopLine({ account }: { account?: ReactNode }) {
         <Suspense fallback={null}>
           <BackButton />
         </Suspense>
-        <Link href="/" aria-label={`${BRAND.name} home`} className="topline-mark">
+        <Link href="/" aria-label={`${BRAND.name} home`} title={`${BRAND.name} home`} className="topline-mark">
           <MitoshiMark />
         </Link>
         <span className="topline-phone"><ModeChip /></span>
@@ -115,6 +115,7 @@ export function TopLine({ account }: { account?: ReactNode }) {
           type="button"
           className="topline-icon"
           aria-label={SHELL.shortcutsOpen}
+          title={SHELL.shortcutsOpen}
           aria-keyshortcuts="?"
           onClick={() => {
             tapFeedback();

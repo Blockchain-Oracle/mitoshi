@@ -61,7 +61,7 @@ export function BandSlider({ min, max, step, value, onChange, minSteps = 1, bars
   const x = (v: number) => ((v - min) / span) * VIEW_W;
   const barW = bars.length > 1 ? (VIEW_W / bars.length) * 0.7 : 20;
   return (
-    <div className={cn("band-slider", className)}>
+    <div className={cn("band-slider", className)} data-base-ui-swipe-ignore="">
       <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="none" className="band-bars" role="img" aria-label={label}>
         <defs>
           {Array.from({ length: LEVELS + 1 }, (_, level) => (

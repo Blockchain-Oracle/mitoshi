@@ -63,7 +63,7 @@ export function GameSettingsSheet() {
     >
       <button type="button" className="du-modal-scrim" aria-label={GAMES.settings.close} tabIndex={-1} onClick={close} />
       <div className="du-modal gm-settings-modal">
-        <button type="button" className="du-modal-close" onClick={close} aria-label={GAMES.settings.close}>
+        <button type="button" className="du-modal-close" onClick={close} aria-label={GAMES.settings.close} title={GAMES.settings.close}>
           ✕
         </button>
         <h2 id="gm-settings-title" className="gm-plate-title gm-howto-title">

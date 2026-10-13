@@ -62,7 +62,7 @@ body:has(.reels-surface:not([style*="display: none"]):not([style*="display: none
   pointer-events: none;
   position: absolute;
   inset: 0;
-  z-index: 30;
+  z-index: 3;
   opacity: 0.05;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
@@ -76,7 +76,7 @@ body:has(.reels-surface:not([style*="display: none"]):not([style*="display: none
   left: 0;
   right: 0;
   top: 0;
-  z-index: 20;
+  z-index: 2;
   height: 1px;
   background: linear-gradient(to right, transparent, color-mix(in srgb, var(--vermilion) 50%, transparent), transparent);
 }
