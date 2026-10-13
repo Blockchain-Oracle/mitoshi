@@ -35,8 +35,8 @@ export default function Page() {
       <P>
         A <b>corporate action</b> (a split, a token multiplier change) pauses the Windows it would cut through; the Window chip and UP/DOWN say
         &ldquo;Paused: corporate action&rdquo;. An upcoming earnings report is named beside the session, and on the Window that sits on it the line
-        warns that prices can gap — a warning, never a block. NFLX is bridged to Tempo testnet but no signed price source carries it, and no attested
-        source for pre-IPO companies exists on Tempo yet: both are listed as paused rather than hidden.
+        warns that prices can gap — a warning, never a block. No attested source for pre-IPO companies exists on Tempo yet: they are listed as
+        paused rather than hidden.
       </P>
       <H2>A Window&apos;s life</H2>
       <Ol

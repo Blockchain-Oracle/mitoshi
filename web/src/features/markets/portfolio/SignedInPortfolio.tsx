@@ -2,8 +2,8 @@
 /**
  * The signed-in Portfolio (split from `PortfolioScreen`, D-183), in Owarine 90a91d71's order (P2, D-223; R4-4, D-227):
  * the money card, the pockets (Trading Balance, Private where it exists, R4-7's Earn tile) with their controls in a
- * sheet, 01 your bets (every home: the wallet, the Trading Balance, Boosts), then in flight and what waits to collect
- * (each only when there is any), then the record and the Trader Edge link. One money reading (`useMoney`) feeds the card, the tiles, the sheets and the rows,
+ * sheet, 01 your bets (every home: the wallet, the Trading Balance, Boosts), then what waits to collect (only when
+ * there is any), then the record and the Trader Edge link. One money reading (`useMoney`) feeds the card, the tiles, the sheets and the rows,
  * so they can't disagree; positions are valued and closed as the terminal values and closes them. Its own island,
  * loaded once a wallet is there. One inset: the stage pads; this page adds none.
  */
@@ -17,7 +17,6 @@ import { SectionHeader } from "@/components/shell/SectionHeader";
 import { MotionScope } from "@/components/motion-scope";
 import { ErrorState, LoadingState } from "@/components/states";
 import { useBoostWrites } from "@/features/boost/useBoostWrites";
-import { BridgeInFlight, useBridgeInFlight } from "@/features/bridge/BridgeInFlight";
 import { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import { BOOST_KEYS } from "@/features/terminal/terminal-positions";
 import { EarnPocket } from "@/features/earn/EarnPocket";
@@ -65,7 +64,6 @@ function Ledger({ wallet }: { wallet: Address }) {
   const boostWrites = useBoostWrites(wallet);
   const collector = useCollect(wallet);
   const history = useAccountHistory(wallet, sheet !== null);
-  const inFlight = useBridgeInFlight(wallet);
   useLiveMarketData({ wallet });
   const retryOpen = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: keys.positions(wallet) });
@@ -84,10 +82,9 @@ function Ledger({ wallet }: { wallet: Address }) {
   const settled = history?.ok ? history.value.rounds.length : null;
   const failedHome = [positions, vaultBets, boosts].find((r) => r !== null && !r.ok);
   const showCollect = rows.length > 0 || money.boostOwedBase > 0n;
-  // Sections number at runtime: 01 bets, then in flight and collect (each only when there is any), then the record.
-  const inFlightIndex = pad(2);
-  const collectIndex = pad(inFlight.length > 0 ? 3 : 2);
-  const recordIndex = pad(2 + (inFlight.length > 0 ? 1 : 0) + (showCollect ? 1 : 0));
+  // Sections number at runtime: 01 bets, then collect (only when there is any), then the record.
+  const collectIndex = pad(2);
+  const recordIndex = pad(2 + (showCollect ? 1 : 0));
   const runCollect = () => {
     if (live.length > 0) void collector.collect(live);
     else if (money.boostOwedBase > 0n) void boostWrites.claimOwed();
@@ -111,7 +108,6 @@ function Ledger({ wallet }: { wallet: Address }) {
         history={history}
         retryHistory={retryHistory}
       />
-      <BridgeInFlight rows={inFlight} index={inFlightIndex} />
       {showCollect ? (
         <section className="flex flex-col gap-3" aria-labelledby="collect-title">
           <SectionHeader id="collect-title" className="section-head-fit" index={collectIndex} title={HERO_MONEY.collectTitle} aside={rows.length > 0 ? <span className="type-caption text-ink-secondary">{CLAIM.waiting(rows.length)}</span> : null} />

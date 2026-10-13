@@ -29,6 +29,11 @@ const config: NextConfig = {
     // D-226: no Stocks section — the listed stocks trade in Markets' 24/7 lanes; each ticker's hub is /tickers/<SYM>.
     { source: "/stocks", destination: "/markets", permanent: true },
     { source: "/stocks/:symbol", destination: "/tickers/:symbol", permanent: true },
+    // D-231: the bridge and its Backing page left the product. Old links land on the stock's hub or on Markets (removed,
+    // not moved, so no `?note=moved`).
+    { source: "/bridge", has: [{ type: "query", key: "t", value: "(?<sym>TSLA|AMZN|PLTR|AMD)" }], destination: "/tickers/:sym", permanent: true },
+    { source: "/bridge", destination: "/markets", permanent: true },
+    { source: "/reserves", destination: "/markets", permanent: true },
     // No /docs redirect (R4-10, D-227): the guides (DOCS_URL, an external site by default since 67cb549) are linked, and
     // /docs stays the app's own Reference — /stats, /proof and Trader Edge link its /docs/record.
   ],

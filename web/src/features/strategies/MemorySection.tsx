@@ -52,7 +52,7 @@ export function MemoryReader({ card, wallet, copying, onCopy }: { card: Strategy
   if (!card.memory) return <p className="desk-note text-ink-muted">{M.none}</p>;
 
   const read = async () => {
-    if (!wallet) return shell.openPicker("tempo", `${M.read} ${name}`);
+    if (!wallet) return shell.openPicker(`${M.read} ${name}`);
     setBusy(true);
     setStatus(M.reading);
     try {
@@ -73,7 +73,7 @@ export function MemoryReader({ card, wallet, copying, onCopy }: { card: Strategy
   };
 
   const buy = async () => {
-    if (!wallet) return shell.openPicker("tempo", `${M.buy(price)} · ${name}`);
+    if (!wallet) return shell.openPicker(`${M.buy(price)} · ${name}`);
     setBusy(true);
     setStatus(M.paying);
     try {

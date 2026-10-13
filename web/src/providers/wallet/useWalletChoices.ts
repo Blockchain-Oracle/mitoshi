@@ -16,7 +16,7 @@ export interface WalletChoices {
   walletConnect: Connector | null;
   createPasskey(name: string): Promise<ConnectOutcome>;
   signInPasskey(): Promise<ConnectOutcome>;
-  connect(connector: Connector, chainId?: number): Promise<ConnectOutcome>;
+  connect(connector: Connector): Promise<ConnectOutcome>;
 }
 
 function outcome(error: unknown): ConnectOutcome {
@@ -41,9 +41,9 @@ export function useWalletChoices(): WalletChoices {
   }, [connectors]);
 
   const connect = useCallback(
-    async (connector: Connector, chainId: number = TEMPO_CHAIN.id): Promise<ConnectOutcome> => {
+    async (connector: Connector): Promise<ConnectOutcome> => {
       try {
-        await connectAsync({ connector, chainId });
+        await connectAsync({ connector, chainId: TEMPO_CHAIN.id });
         return { ok: true };
       } catch (error) {
         return outcome(error);

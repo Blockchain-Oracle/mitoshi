@@ -38,8 +38,6 @@ export function ctaLabel(state: TxState, action: string, signer: SignerKind): st
       return TX.unknown;
     case "confirmed":
       return TX.confirmed;
-    case "settled":
-      return TX.settled(state.delivered, state.legs);
     case "failed":
       return TX.retry;
     default:

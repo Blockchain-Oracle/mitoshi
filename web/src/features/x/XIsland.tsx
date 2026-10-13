@@ -1,7 +1,7 @@
 "use client";
 // S11 (D-227): the X screens load after first paint (§3.1, D-071), so the routes' first load carries none of them; a
 // page-shaped placeholder holds the place — as /settings/account's island does (R4-11). They read through TanStack
-// Query, whose client arrives with the late data layer, so each waits for `useDataReady()` as /earn and /bridge do: a
+// Query, whose client arrives with the late data layer, so each waits for `useDataReady()` as /earn does: a
 // screen whose chunk landed first threw "No QueryClient set" into the error page (the ship's live check, F-S11-09).
 import dynamic from "next/dynamic";
 import type { ComponentType } from "react";

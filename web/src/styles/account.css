@@ -11,7 +11,6 @@
 .acct-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
 .acct-summary-line { display: flex; flex-wrap: wrap; gap: 6px; font-size: 13px; color: var(--color-ink-secondary); }
 .acct-summary-stop { flex: none; }
-.acct-linked { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .acct-tag { margin-left: 8px; padding: 1px 8px; border: 1px solid var(--color-hairline); border-radius: 9999px; font-size: 11px; font-weight: 500; color: var(--color-ink-secondary); }
 .acct-grants { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
 .acct-grant { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--color-hairline); }

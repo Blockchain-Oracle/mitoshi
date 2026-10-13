@@ -26,7 +26,6 @@ export const FUNDING = {
     qr: "QR",
     qrHide: "Hide QR",
     qrLabel: "Your address as a QR code, to receive pathUSD on Tempo",
-    bridge: "Bring stock tokens from Robinhood →",
   },
   errors: {
     cooldown: "Already funded today.",

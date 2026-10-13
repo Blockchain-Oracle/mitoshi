@@ -6,7 +6,7 @@
 // prompt and the modal closes on it; the server funds the new account from the shell (`FirstFund`) and the welcome card
 // says so. A choice shows a named wait or a failure with its retry. Below 768 px the panel is the bottom sheet (D-222);
 // R4-8 (D-227): there it holds Owarine's phone picker (`SignInPhone`: the passkey actions large in the thumb zone, the
-// wallets as app tiles), the named wait on the tile itself; the failed and learn steps are shared. Robinhood keeps the list.
+// wallets as app tiles), the named wait on the tile itself; the failed and learn steps are shared.
 // Loaded on first open (lazy island).
 import { Dialog } from "@base-ui/react/dialog";
 import { diagnose } from "@cwf/markets/errors";
@@ -18,7 +18,6 @@ import { diagnosisCopy } from "@/lib/copy";
 import { cn } from "@/lib/utils";
 import { ACCOUNT, SIGN_IN, WALLET_MODAL as T } from "./copy";
 import { useWalletChoices, type ConnectOutcome } from "./useWalletChoices";
-import { SIDE_CHAINS } from "./wagmi-config";
 import { SignInPhone } from "./SignInPhone";
 import { ActionButton, BackButton, CloseButton, Spinner, usePhoneLayout, WalletDialog, WalletIcon } from "./wallet-modal-parts";
 import { useWalletShell } from "./wallet-shell-context";
@@ -38,7 +37,6 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const shell = useWalletShell();
   const choices = useWalletChoices();
   const [step, setStep] = useState<Step>({ kind: "choose" });
-  const robinhood = shell.pickerMode === "robinhood";
   const phone = usePhoneLayout();
 
   // `created`: a brand-new passkey account; the shell funds it once the modal is gone.
@@ -61,12 +59,12 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     setStep({ kind: "failed", headline: copy.headline, body: copy.body, technical: diagnosis.technical, retry: () => void run(label, attempt, created) });
   }
 
-  const connectRow = (connector: Connector, chainId?: number) => (
+  const connectRow = (connector: Connector) => (
     <Row
       key={connector.uid}
       icon={connector.icon ? <WalletIcon src={connector.icon} size={28} /> : <GlyphIcon><Wallet className="size-4" /></GlyphIcon>}
       name={connector.name}
-      onClick={() => void run(SIGN_IN.waiting.wallet(connector.name), () => choices.connect(connector, chainId))}
+      onClick={() => void run(SIGN_IN.waiting.wallet(connector.name), () => choices.connect(connector))}
     />
   );
 
@@ -79,7 +77,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
 
   return (
     <WalletDialog open={open} onOpenChange={close} compact>
-      {phone && !robinhood && (step.kind === "choose" || step.kind === "waiting") ? (
+      {phone && (step.kind === "choose" || step.kind === "waiting") ? (
         <SignInPhone
           choices={choices}
           intent={shell.pickerIntent}
@@ -95,39 +93,26 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
                 <div className="wm-list-head-spacer" />
                 <div className="wm-list-title">
                   <Dialog.Title render={<h1 />} className="wm-t18">
-                    {robinhood ? SIGN_IN.robinhood.title : SIGN_IN.title}
+                    {SIGN_IN.title}
                   </Dialog.Title>
                   {/* The order this sign-in is for (the video's rule, D-224): "to place UP · $25.00". */}
-                  {!robinhood && shell.pickerIntent ? <p className="wm-t14m wm-intent">{shell.pickerIntent}</p> : null}
+                  {shell.pickerIntent ? <p className="wm-t14m wm-intent">{shell.pickerIntent}</p> : null}
                 </div>
                 <div className="wm-list-close">
                   <CloseButton />
                 </div>
               </div>
               <div className="wm-scroll">
-                {robinhood ? (
-                  <>
-                    <p className="wm-t14m px-1.5 pt-2">{SIGN_IN.robinhood.body}</p>
-                    <Group name={T.groups.wallets}>
-                      {choices.injected.map((c) => connectRow(c, SIDE_CHAINS[0]!.id))}
-                      {choices.walletConnect ? connectRow(choices.walletConnect, SIDE_CHAINS[0]!.id) : null}
-                      {choices.injected.length === 0 && !choices.walletConnect ? <p className="wm-t14m px-1.5">{SIGN_IN.robinhood.none}</p> : null}
-                    </Group>
-                  </>
-                ) : (
-                  <>
-                    <Group name={T.groups.passkey(ACCOUNT.network[shell.network])} accent>
-                      <Row icon={<GlyphIcon accent><Fingerprint className="size-4" /></GlyphIcon>} name={T.rows.create} disabled={!choices.passkey} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.createPasskey(""), true)} />
-                      <Row icon={<GlyphIcon><KeyRound className="size-4" /></GlyphIcon>} name={T.rows.signIn} disabled={!choices.passkey} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.signInPasskey())} />
-                    </Group>
-                    <Group name={T.groups.wallets}>
-                      {choices.tempoWallet ? connectRow(choices.tempoWallet) : null}
-                      {choices.injected.map((c) => connectRow(c))}
-                      {choices.walletConnect ? connectRow(choices.walletConnect) : null}
-                      {!choices.tempoWallet && choices.injected.length === 0 && !choices.walletConnect ? <p className="wm-t14m px-1.5">{SIGN_IN.noInjected}</p> : null}
-                    </Group>
-                  </>
-                )}
+                <Group name={T.groups.passkey(ACCOUNT.network[shell.network])} accent>
+                  <Row icon={<GlyphIcon accent><Fingerprint className="size-4" /></GlyphIcon>} name={T.rows.create} disabled={!choices.passkey} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.createPasskey(""), true)} />
+                  <Row icon={<GlyphIcon><KeyRound className="size-4" /></GlyphIcon>} name={T.rows.signIn} disabled={!choices.passkey} onClick={() => void run(SIGN_IN.waiting.passkey, () => choices.signInPasskey())} />
+                </Group>
+                <Group name={T.groups.wallets}>
+                  {choices.tempoWallet ? connectRow(choices.tempoWallet) : null}
+                  {choices.injected.map((c) => connectRow(c))}
+                  {choices.walletConnect ? connectRow(choices.walletConnect) : null}
+                  {!choices.tempoWallet && choices.injected.length === 0 && !choices.walletConnect ? <p className="wm-t14m px-1.5">{SIGN_IN.noInjected}</p> : null}
+                </Group>
               </div>
               <div className="wm-divider" />
               <div className="wm-foot">

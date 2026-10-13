@@ -8,7 +8,7 @@ import { describe, expect, it } from "vitest";
 import { PENDING, PENDING_ROUTES } from "../../../lib/capabilities";
 import { DOCS_EXTERNAL, DOCS_URL } from "../../../lib/docs-url";
 import { DOCS_NAV } from "../../../features/docs/nav";
-import { DOCK_NAV, EVERYTHING_SECTIONS, isActiveNavItem, isTopLevel, NAVIGABLE_ROUTE_PATHS, NAV_ITEMS, parentOf, RAIL_NAV, searchNav, type NavItem } from "./nav-items";
+import { DOCK_NAV, EVERYTHING_ITEMS, EVERYTHING_SECTIONS, isActiveNavItem, isTopLevel, NAVIGABLE_ROUTE_PATHS, NAV_ITEMS, parentOf, RAIL_NAV, searchNav, type NavItem } from "./nav-items";
 
 const APP_DIR = fileURLToPath(new URL("../../../app", import.meta.url));
 
@@ -74,8 +74,11 @@ describe("navigation registry", () => {
 
   it("searches More by name, description and keywords", () => {
     expect(searchNav(EVERYTHING_SECTIONS.flatMap((s) => s.items), "revoke").map((i) => i.id)).toEqual(["account"]);
-    expect(searchNav([NAV_ITEMS.bridge], "robinhood")).toHaveLength(1);
-    expect(searchNav([NAV_ITEMS.bridge], "zzz")).toHaveLength(0);
+    expect(searchNav([NAV_ITEMS.earn], "yield")).toHaveLength(1);
+    expect(searchNav([NAV_ITEMS.earn], "zzz")).toHaveLength(0);
+    // D-231: the bridge left the product, so nothing in More answers to it.
+    expect(searchNav(EVERYTHING_ITEMS, "robinhood")).toHaveLength(0);
+    expect(searchNav(EVERYTHING_ITEMS, "bridge")).toHaveLength(0);
   });
 });
 

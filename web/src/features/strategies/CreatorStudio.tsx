@@ -173,7 +173,7 @@ export function CreatorStudio({ writes, trader, onYours }: { writes: CopyWrites;
   const action = step < 4 ? (
     <button type="button" onClick={advance} className="strat-confirm">{step === 3 && draft.preset === "agent" && !tested ? T.nextUntested : T.next}</button>
   ) : !writes.signedIn ? (
-    <button type="button" data-primary-action="" className="strat-confirm" onClick={() => shell.openPicker("tempo", `${T.publish.cta(false)} ${name}`)}>{needsIdentity ? T.publish.identityCta : T.publish.cta(draft.identity)}</button>
+    <button type="button" data-primary-action="" className="strat-confirm" onClick={() => shell.openPicker(`${T.publish.cta(false)} ${name}`)}>{needsIdentity ? T.publish.identityCta : T.publish.cta(draft.identity)}</button>
   ) : blockers[3] ? (
     <button type="button" className="strat-confirm" data-blocked="" aria-disabled onClick={() => setProblem(blockers[3])}>{T.publish.cta(draft.identity)}</button>
   ) : needsIdentity ? (
