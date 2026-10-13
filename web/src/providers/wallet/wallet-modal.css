@@ -255,3 +255,18 @@
 .wm-badge--tile { display: inline-block; margin-top: 4px; padding: 2px 6px; font-size: 10px; }
 .wm-nowallet { margin: 0; padding: 4px 6px; font: 500 14px/1.4 var(--font-body); color: var(--color-ink-secondary); }
 .wm-nowallet a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 2px; }
+
+/* The instant frame's bones (R6 shell T13; 23557's timing: shown after 120 ms so a fast runtime never flashes them). */
+.wm-skel { display: block; border-radius: 8px; background: var(--color-surface-2); animation: wm-skel-in 0ms linear 120ms both, wm-skel-pulse 1.2s ease-in-out 120ms infinite; }
+.wm-skel--icon { width: 28px; height: 28px; flex: none; border-radius: 8px; }
+.wm-skel--line { width: 112px; height: 12px; }
+.wm-skel-row { display: flex; align-items: center; gap: 12px; pointer-events: none; }
+.wm-skel--tile { width: 60px; height: 60px; border-radius: 16px; }
+.wm-skel--name { width: 48px; height: 10px; margin: 8px auto 0; }
+.wm-skel-tile { pointer-events: none; }
+@keyframes wm-skel-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes wm-skel-pulse { 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) { .wm-skel { animation: wm-skel-in 0ms linear 120ms both; } }
+/* The real sheet replacing the frame opens in place: no second entrance. */
+.wm-popup.is-instant, .wm-backdrop.is-instant { animation: none; }
+.wm-mobile .wm-nowallet { padding: 0 20px 12px; }

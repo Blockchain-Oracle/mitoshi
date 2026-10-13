@@ -20,20 +20,23 @@ export function WalletDialog({
   open,
   onOpenChange,
   compact = false,
+  instant = false,
   children,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   compact?: boolean;
+  /** It replaces the instant frame already on screen (T13): no entrance. */
+  instant?: boolean;
   children: ReactNode;
 }) {
   const popupRef = useRef<HTMLDivElement>(null);
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Backdrop className="wm-backdrop" />
+        <Dialog.Backdrop className={cn("wm-backdrop", instant && "is-instant")} />
         <Dialog.Viewport className="wm-viewport">
-          <Dialog.Popup ref={popupRef} initialFocus={popupRef} className="wm-popup">
+          <Dialog.Popup ref={popupRef} initialFocus={popupRef} className={cn("wm-popup", instant && "is-instant")}>
             <div className={cn("wm-panel", compact && "wm-panel--compact")}>{children}</div>
           </Dialog.Popup>
         </Dialog.Viewport>
@@ -144,4 +147,36 @@ export function NoWallet({ className }: { className?: string }) {
       </a>
     </p>
   );
+}
+
+/** A group of the list: its name over its rows. */
+export function Group({ name, accent = false, children }: { name: string; accent?: boolean; children: ReactNode }) {
+  return (
+    <>
+      <div className="wm-group">
+        <span className={cn("wm-t14b", accent ? "wm-accent" : "wm-group-muted")}>{name}</span>
+      </div>
+      <div className="wm-rows">{children}</div>
+    </>
+  );
+}
+
+/** One row of the list (Owarine `WalletRow`): the icon, the name and a badge at the right (S16). */
+export function Row({ icon, name, badge = null, disabled = false, onClick }: { icon: ReactNode; name: string; badge?: string | null; disabled?: boolean; onClick: () => void }) {
+  return (
+    <button type="button" disabled={disabled} className="wm-row wm-touch wm-shrink disabled:opacity-50" onClick={onClick}>
+      <span className="wm-row-inner">
+        {icon}
+        <span className="min-w-0 flex-1">
+          <span className="wm-row-name">{name}</span>
+        </span>
+        {badge ? <span className="wm-badge">{badge}</span> : null}
+      </span>
+    </button>
+  );
+}
+
+/** A 28 px tile for a row with no connector artwork: the passkey (accent) or a generic wallet. */
+export function GlyphIcon({ accent = false, children }: { accent?: boolean; children: ReactNode }) {
+  return <span aria-hidden className={cn("wm-icon wm-icon--28 wm-glyph-icon", accent && "is-accent")}>{children}</span>;
 }

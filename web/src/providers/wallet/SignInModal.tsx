@@ -11,7 +11,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { diagnose } from "@cwf/markets/errors";
 import { Fingerprint, KeyRound, Wallet } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { Connector } from "wagmi";
 import { ACCOUNT_CREATED_EVENT } from "@/features/funding";
 import { diagnosisCopy } from "@/lib/copy";
@@ -20,7 +20,8 @@ import { ACCOUNT, SIGN_IN, WALLET_MODAL as T } from "./copy";
 import { useWalletChoices, type ConnectOutcome } from "./useWalletChoices";
 import { passkeyFailure } from "./passkey-errors";
 import { SignInPhone, SignInPhoneFailure } from "./SignInPhone";
-import { ActionButton, BackButton, CloseButton, NoWallet, Spinner, usePhoneLayout, WalletDialog, WalletIcon } from "./wallet-modal-parts";
+import { ActionButton, BackButton, CloseButton, GlyphIcon, Group, NoWallet, Row, Spinner, usePhoneLayout, WalletDialog, WalletIcon } from "./wallet-modal-parts";
+import { frameShowing, SIGN_IN_MOUNTED_EVENT } from "./sign-in-frame-state";
 import { useWalletShell } from "./wallet-shell-context";
 
 type Step =
@@ -35,6 +36,9 @@ export interface SignInModalProps {
 }
 
 export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
+  // Mounted over the instant frame (T13): open in its place, then let it go.
+  const [instant] = useState(frameShowing);
+  useEffect(() => void window.dispatchEvent(new Event(SIGN_IN_MOUNTED_EVENT)), []);
   const shell = useWalletShell();
   const choices = useWalletChoices();
   const [step, setStep] = useState<Step>({ kind: "choose" });
@@ -93,7 +97,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   };
 
   return (
-    <WalletDialog open={open} onOpenChange={close} compact>
+    <WalletDialog open={open} onOpenChange={close} compact instant={instant}>
       {phone && step.kind === "failed" ? (
         <SignInPhoneFailure headline={step.headline} body={step.body} action={step.action} onAction={step.next} onBack={() => setStep({ kind: "choose" })} />
       ) : phone && (step.kind === "choose" || step.kind === "waiting") ? (
@@ -190,37 +194,6 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
       )}
     </WalletDialog>
   );
-}
-
-function Group({ name, accent = false, children }: { name: string; accent?: boolean; children: ReactNode }) {
-  return (
-    <>
-      <div className="wm-group">
-        <span className={cn("wm-t14b", accent ? "wm-accent" : "wm-group-muted")}>{name}</span>
-      </div>
-      <div className="wm-rows">{children}</div>
-    </>
-  );
-}
-
-/** One row of the list (Owarine `WalletRow`): the icon, the name and a badge at the right (S16). */
-function Row({ icon, name, badge = null, disabled = false, onClick }: { icon: ReactNode; name: string; badge?: string | null; disabled?: boolean; onClick: () => void }) {
-  return (
-    <button type="button" disabled={disabled} className="wm-row wm-touch wm-shrink disabled:opacity-50" onClick={onClick}>
-      <span className="wm-row-inner">
-        {icon}
-        <span className="min-w-0 flex-1">
-          <span className="wm-row-name">{name}</span>
-        </span>
-        {badge ? <span className="wm-badge">{badge}</span> : null}
-      </span>
-    </button>
-  );
-}
-
-/** A 28 px tile for a row with no connector artwork: the passkey (accent) or a generic wallet. */
-function GlyphIcon({ accent = false, children }: { accent?: boolean; children: ReactNode }) {
-  return <span aria-hidden className={cn("wm-icon wm-icon--28 wm-glyph-icon", accent && "is-accent")}>{children}</span>;
 }
 
 function Feature({ art, title, body }: { art: string; title: string; body: string }) {

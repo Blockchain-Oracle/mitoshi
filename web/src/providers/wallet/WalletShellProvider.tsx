@@ -5,7 +5,8 @@
  * island that publishes its state here. It loads right after the data layer when this browser has a wallet connection
  * to restore, and otherwise on the visitor's first interaction (D-152): a signed-out visitor who only reads never pays
  * for evaluating it (it was ~0.65 s of main-thread blocking at 4× CPU on /markets). Until it arrives the shell reads
- * signed out (as the server rendered it); a "Sign in" tapped in that window is queued and opens as soon as it loads.
+ * signed out (as the server rendered it); a "Sign in" tapped in that window opens the instant frame (`SignInFrame`, R6
+ * shell T13) at once, and the real sheet takes its place as soon as the runtime loads.
  * S22: the tap is answered at once — a small "Getting sign-in ready…" status shows until the runtime opens the modal
  * (2026-10-08: on a slow link the ~1 MB runtime took 8–25 s, and the tap looked dead).
  */
@@ -17,11 +18,13 @@ import { webEnv } from "@/lib/env";
 import type { PendingOpen, WalletRuntimeProps } from "./WalletRuntime";
 import { TapSubmitterContext } from "./tap-session";
 import { SIGNED_OUT, WalletShellContext, type WalletShell } from "./wallet-shell-context";
-import { SHELL } from "@/lib/copy";
 import { useDataReady } from "../data/context";
 import { hasStoredConnection } from "@/lib/stored-session";
+import { onIdle } from "@/lib/idle";
+import { SIGN_IN_MOUNTED_EVENT } from "./sign-in-frame-state";
 
 const WalletRuntime = dynamic<WalletRuntimeProps>(() => import("./WalletRuntime"), { ssr: false });
+const SignInFrame = dynamic(() => import("./SignInFrame"), { ssr: false });
 
 
 // Not `focusin`: a modal that focuses itself on load (the terminal's first-visit tour) is no visitor's intent, and it
@@ -46,7 +49,17 @@ function useRuntimeWanted(): [boolean, () => void] {
 
 export function WalletShellProvider({ children }: { children: ReactNode }) {
   const pending = useRef<PendingOpen>(null);
-  const [queued, setQueued] = useState(false);
+  // A Sign in tapped before the runtime lands opens the instant frame (T13) until the real sheet mounts over it.
+  const [frame, setFrame] = useState<{ intent: string | null } | null>(null);
+  useEffect(() => {
+    const done = () => setFrame(null);
+    window.addEventListener(SIGN_IN_MOUNTED_EVENT, done);
+    const stop = onIdle(() => void import("./SignInFrame"));
+    return () => {
+      window.removeEventListener(SIGN_IN_MOUNTED_EVENT, done);
+      stop?.();
+    };
+  }, []);
   const [runtimeShell, setRuntimeShell] = useState<WalletShell | null>(null);
   const [session, setSession] = useState<SubmitterSession | null>(null);
   const [tap, setTap] = useState<SubmitterSession | null>(null);
@@ -60,7 +73,7 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
       network: webEnv.markets.network,
       openPicker: (intent = null) => {
         pending.current = { kind: "picker", intent };
-        setQueued(true);
+        setFrame({ intent });
         want();
       },
       createPasskey: async () => ({ ok: false as const, aborted: false, error: new Error("wallet not loaded") }),
@@ -78,7 +91,6 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
   const takePending = useCallback(() => {
     const p = pending.current;
     pending.current = null;
-    setQueued(false);
     return p;
   }, []);
 
@@ -88,11 +100,18 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
         <TapSubmitterContext.Provider value={tap?.submitter ?? null}>{children}</TapSubmitterContext.Provider>
       </SubmitterSessionValue>
       {dataReady && wanted ? <WalletRuntime publish={setRuntimeShell} publishSession={setSession} publishTap={setTap} takePending={takePending} /> : null}
-      {queued && !runtimeShell ? (
-        <p className="sign-in-pending" role="status">
-          <span aria-hidden className="sign-in-pending-dot" />
-          {SHELL.signInPending}
-        </p>
+      {frame ? (
+        <SignInFrame
+          open
+          intent={frame.intent}
+          network={webEnv.markets.network}
+          onOpenChange={(next) => {
+            if (next) return;
+            // Closed before the real sheet came: the queued open is dropped too.
+            setFrame(null);
+            pending.current = null;
+          }}
+        />
       ) : null}
     </WalletShellContext.Provider>
   );

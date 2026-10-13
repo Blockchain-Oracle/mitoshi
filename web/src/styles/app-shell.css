@@ -210,17 +210,6 @@ span.top-money, span.top-account { display: contents; }
 .dock-pill[data-on] { opacity: 1; }
 
 
-/* ── a Sign in tapped before the wallet runtime has loaded: answered at once ──────────────────────────────────── */
-.sign-in-pending {
-  position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: var(--z-toast); transform: translateX(-50%);
-  display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: var(--radius-full);
-  border: 1px solid var(--color-hairline); background: var(--color-stage); color: var(--color-ink); font: 500 14px/1.2 var(--font-body);
-  box-shadow: 0 12px 32px -12px var(--color-scrim);
-}
-.sign-in-pending-dot { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--color-accent); animation: sign-in-pulse 900ms var(--ease-out) infinite alternate; }
-@keyframes sign-in-pulse { from { opacity: 0.35; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .sign-in-pending-dot { animation: none; } }
-
 /* ── the keyboard map ──────────────────────────────────────────────────────────────────────────────────────────── */
 .shortcut-list { display: flex; flex-direction: column; }
 .shortcut-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--color-hairline); }

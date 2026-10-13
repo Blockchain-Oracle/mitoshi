@@ -108,7 +108,6 @@ export const SHELL = {
     testnet: { label: "TESTNET", kanji: "試", line: "Test dollars", hint: "Tempo testnet: test dollars, nothing of value. Open the network's status." },
   },
   addMoney: "Add money",
-  signInPending: "Getting sign-in ready…",
 } as const;
 
 /** `?note=` lines a redirect carries (routing law: nothing 404s silently; a moved route says so). */
