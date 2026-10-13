@@ -8,7 +8,6 @@ const usd = (base: bigint) => `$${formatBaseUnits(base, USD_DECIMALS, { minDp: 2
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 export const STRATEGIES = {
-  eyebrow: "AGENTS · TEMPO TESTNET",
   title: "Give your strategy a life.",
   views: [
     { value: "create", label: "Create" },

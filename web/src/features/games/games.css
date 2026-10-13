@@ -117,6 +117,15 @@
 .gm-rail-icon:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent); }
 /* At 320 the mode name gives way (it ellipsizes), never a target: the icons stay 44 px. */
 @media (max-width: 360px) { .gm-rail-inner { gap: 6px; } .gm-rail-mode { font-size: 18px; } .gm-rail-right { gap: 0; } }
+/* R4-13: on a phone the name read "D…" / "Candle …" beside its sticker and three icons. Under 480 px the mute shortcut
+   leaves the row (Sound and Music are in the settings sheet), the name drops to 18 px and the sticker to its compact
+   cut; at 360 and under the sticker leaves the row too — the hub's card and the play screen carry who pays. */
+@media (max-width: 480px) {
+  .gm-rail-mute { display: none; }
+  .gm-rail-mode { font-size: 18px; }
+  .gm-rail .gm-rail-econ[data-size="sm"] { padding: 4px 7px 3px; font-size: 11px; }
+}
+@media (max-width: 360px) { .gm-rail .gm-rail-econ { display: none; } }
 .gm-rail-resume {
   display: inline-flex; align-items: center; gap: 6px; min-height: 32px;
   padding: 0 10px; border-radius: 9999px;

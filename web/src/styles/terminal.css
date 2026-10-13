@@ -62,6 +62,8 @@
 .tm-asset-price svg { width: 16px; height: 16px; color: var(--color-ink-secondary); }
 .tm-asset-name { overflow: hidden; color: var(--color-ink-secondary); font: 500 11px/1.2 var(--font-body); text-overflow: ellipsis; white-space: nowrap; }
 .tm-asset-name[data-stale] { color: var(--color-warning); }
+/* The one warning token is a light amber; on cream "Connecting…" read at 1.9:1 (R4-13). Light mixes it toward ink. */
+[data-theme="light"] .tm-asset-name[data-stale] { color: color-mix(in oklab, var(--color-warning) 55%, var(--color-ink)); }
 /* The lanes scroll; the countdown beside them stays put (R4-0: seven stock lanes scrolled it off a phone). */
 .tm-window { display: inline-flex; align-self: flex-start; max-width: 100%; align-items: center; gap: 4px; padding: 4px; overflow: hidden; border-radius: var(--radius-full); }
 .tm-lanes { display: flex; min-width: 0; gap: 4px; overflow-x: auto; scrollbar-width: none; }

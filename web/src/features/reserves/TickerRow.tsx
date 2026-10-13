@@ -41,12 +41,12 @@ export function TickerRow({ t, network, nowSec }: { t: TickerReserve; network: N
   const Mark = state === "pass" ? Check : state === "fail" ? TriangleAlert : Minus;
   return (
     <li className="rsv-row" data-state={state} data-open={open || undefined}>
-      <button type="button" className="rsv-row-head" aria-expanded={open} aria-controls={id} aria-label={`b${t.ticker} · ${RESERVES.rowSummary(locked, sd(c.onTempo))} · ${RESERVES.inFlight} ${inFlight} · ${RESERVES.held} ${held} · ${stateText}`} onClick={() => setOpen((o) => !o)}>
+      <button type="button" className="rsv-row-head" aria-expanded={open} aria-controls={id} aria-label={`b${t.ticker} · ${RESERVES.rowSummary(c.locked === null ? null : locked, sd(c.onTempo))} · ${RESERVES.inFlight} ${inFlight} · ${RESERVES.held} ${held} · ${stateText}`} onClick={() => setOpen((o) => !o)}>
         <span className="rsv-cell rsv-ticker">
           <AssetDisc asset={t.ticker} className="rsv-disc" />
           <span className="rsv-sym">b{t.ticker}</span>
         </span>
-        <span className="rsv-cell rsv-summary numbers">{RESERVES.rowSummary(locked, sd(c.onTempo))}</span>
+        <span className="rsv-cell rsv-summary numbers">{RESERVES.rowSummary(c.locked === null ? null : locked, sd(c.onTempo))}</span>
         <span className="rsv-cell rsv-col numbers">{locked}</span>
         <span className="rsv-cell rsv-col numbers">{sd(c.onTempo)}</span>
         <span className="rsv-cell rsv-col numbers">{inFlight}</span>

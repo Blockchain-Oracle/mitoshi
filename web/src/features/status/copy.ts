@@ -6,6 +6,8 @@ export const STATUS = {
   verdict: { healthy: "All systems live", degraded: "Running degraded", unreachable: "Keepers unreachable" } satisfies Record<StatusReport["overall"], string>,
   slowest: (part: string, figure: string) => `Slowest: ${part} · ${figure}`,
   allFresh: "Every check fresh.",
+  /** The verdict "Keepers unreachable" with no row behind (R4-13: it read "Every check fresh." under it). */
+  noAnswer: "No answer from the keepers.",
   head: "Tempo block",
   noHead: "—",
   tally: { bad: "down", warn: "behind", good: "live" } satisfies Record<Tone, string>,

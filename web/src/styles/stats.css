@@ -3,7 +3,9 @@
  * (the row is the receipt link; the wallet sits above it) and one footnote. Owarine's profit is Mitoshi's up, its signal
  * the accent; the grays are the ink ladder. Imported by the page, so only `/stats` carries it. */
 
-.stats {
+/* The root is `.stats-page` (R4-13): a bare `.stats` also matched the landing band in yosuku/part-11 — its border, 96 px
+ * of padding and an "ON-CHAIN · LIVE · FROM TOKYO" line above the head. */
+.stats-page {
   --stats-card: var(--color-surface-1);
   --stats-hairline: rgba(255, 255, 255, 0.07);
   --stats-divider: rgba(255, 255, 255, 0.05);
@@ -12,7 +14,7 @@
   flex-direction: column;
   gap: 40px;
 }
-[data-theme="light"] .stats {
+[data-theme="light"] .stats-page {
   --stats-hairline: rgba(30, 27, 27, 0.11);
   --stats-divider: rgba(30, 27, 27, 0.08);
   --stats-row-hover: rgba(30, 27, 27, 0.03);

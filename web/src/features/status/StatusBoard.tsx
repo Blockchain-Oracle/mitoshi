@@ -91,7 +91,7 @@ export function StatusBoard({ initial }: { initial: StatusReport }) {
         tone={tone}
         eyebrow={STATUS.eyebrow}
         verdict={STATUS.verdict[report.overall]}
-        sub={slowest ? STATUS.slowest(slowest.label, slowest.figure) : STATUS.allFresh}
+        sub={slowest ? STATUS.slowest(slowest.label, slowest.figure) : report.overall === "unreachable" ? STATUS.noAnswer : STATUS.allFresh}
         figureLabel={STATUS.head}
         figure={report.head === null ? STATUS.noHead : report.head.toLocaleString("en-US")}
         tally={(["bad", "warn", "good"] as const).map((t) => ({ tone: t, n: report.rows.filter((r) => r.tone === t).length, word: STATUS.tally[t] }))}

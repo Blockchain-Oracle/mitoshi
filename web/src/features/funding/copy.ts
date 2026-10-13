@@ -49,8 +49,7 @@ export const FUNDING = {
   },
   /** Owarine's `CreditWelcome`: a title and one button, gone in eight seconds. */
   welcome: {
-    eyebrow: "You're funded",
-    title: "Test dollars are in your account",
+    title: "You're funded",
     titleWith: (held: string) => `${held} in your account`,
     cta: "Let's go",
     close: "Close",

@@ -59,7 +59,7 @@ export function senseiTurnContext(request: SenseiRequest, adviceAsked: boolean):
 
 /** Every way a question can fail, in Sensei's own register. */
 export const SENSEI_ERRORS = {
-  notConfigured: "Sensei isn't switched on here yet: no model is configured on the server.",
+  notConfigured: "Sensei is off on this server.",
   consent: "Agree to what Sensei shares first.",
   consentStale: "Sensei's provider changed. Read who receives your question and agree again.",
   badKey: (provider: string) => `Sensei's ${provider || "model"} credential was rejected. That's a configuration problem, not you.`,

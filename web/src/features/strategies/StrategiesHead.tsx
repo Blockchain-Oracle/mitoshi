@@ -13,10 +13,8 @@ export function StrategiesHead({ view, onView }: { view: StrategiesView; onView?
   return (
     <>
       <header className="strat-head-row">
-        <div>
-          <p className="strat-meta mb-3 text-accent">{S.eyebrow}</p>
-          <h1 className="strat-h1">{S.title}</h1>
-        </div>
+        {/* No eyebrow over the title (copy spec, R4-13): "Testnet" lives in the page's one disclosure line. */}
+        <h1 className="strat-h1">{S.title}</h1>
         <Link href="/agents" className="strat-board-link">{S.board}</Link>
       </header>
       <nav className="agent-entry" aria-label={S.viewsLabel}>

@@ -30,13 +30,13 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/games/candle-hop": { eyebrow: "Games", title: "Candle Hop", body: "Hop the candles; score-only.", dependency: "the arcade" },
   "/trade-from-x": { eyebrow: "X-trade", title: "Trade from a post", body: "A post becomes a bounded trade.", dependency: "the X relay" },
   "/claim": { eyebrow: "X recovery", title: "Recover a trade from X", body: "Claim a trade an X post made for you.", dependency: "the X relay" },
-  "/status": { eyebrow: "Status", title: "Is everything running?", body: "Chain, indexer, oracle and relay health.", dependency: "the status probes" },
+  "/status": { eyebrow: "Status", title: "Status", body: "Every part of Mitoshi, read just now.", dependency: "the status probes" },
   "/proof/[market]": { eyebrow: "Proof", title: "Don't trust it. Click it.", body: "Both prints, their signers, verified in your browser.", dependency: "the print verifiers and the proof page" },
   "/how-it-works": { eyebrow: "How it works", title: "From a call to a receipt", body: "Passkeys, dollars, Windows and verdicts.", dependency: "the public story" },
   "/demo": { eyebrow: "Demo", title: "The whole product, walked through", body: "Sign-up to a paid verdict, walked through.", dependency: "the public story" },
   "/pitch": { eyebrow: "Pitch", title: "Why Mitoshi", body: "The thesis in a few slides.", dependency: "the public story" },
   "/settings/account": { eyebrow: "Account & keys", title: "See and stop every key", body: "Every key and grant, each revocable here.", dependency: "the account trust surface" },
-  "/native-auth": { eyebrow: "App sign-in", title: "Finishing sign-in in the app", body: "The app hands your sign-in back here.", dependency: "the native app handoff (SM2)" },
+  "/native-auth": { eyebrow: "App sign-in", title: "Finishing sign-in in the app", body: "The app hands your sign-in back here.", dependency: "the native app handoff" },
 };
 
 /**

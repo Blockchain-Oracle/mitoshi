@@ -60,3 +60,9 @@
 /* .dl-points { border-top: 1px solid rgba(255,255,255,0.08) } is invisible on cream:
    part-14's border-white/[0.08] light value. */
 [data-theme="light"] .dl-points { border-top-color: rgba(20, 18, 16, 0.11); }
+
+/* Ours (R4-13, the action on the first phone screen): the reference stacks the phone above the copy under 860 px, which
+   pushed the title and the install button below a 375 × 667 phone's first screen. The copy leads; the phone follows. */
+@media (max-width: 860px) {
+  .dl-hero > .dl-stage { order: 0; }
+}

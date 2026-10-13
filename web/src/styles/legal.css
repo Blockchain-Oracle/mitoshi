@@ -1,6 +1,7 @@
 /* /privacy and /terms (R4-13a, D-227; Ported from Owarine 90a91d71:web/src/features/legal/LegalScreen.tsx — its Tailwind
  * on --ow-* tokens, here on Mitoshi's). In the app shell: the stage pads, the page adds no inset. */
-.legal { display: grid; gap: 32px; padding-block: 8px 24px; }
+/* One column that may shrink (R4-13): the implicit `auto` track took the nowrap gists' width and ran 140 px off a phone. */
+.legal { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px; padding-block: 8px 24px; }
 @media (min-width: 1024px) { .legal { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 48px; padding-block: 16px 48px; } }
 .legal-head { display: flex; flex-direction: column; gap: 20px; }
 @media (min-width: 1024px) { .legal-head { position: sticky; top: var(--stage-sticky-top, 1.5rem); align-self: start; } }

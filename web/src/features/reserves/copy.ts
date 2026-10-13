@@ -41,7 +41,8 @@ export const RESERVES = {
   check: "Check",
   ticker: "Ticker",
   notLive: "Not live yet",
-  rowSummary: (locked: string, onTempo: string) => `${RESERVES.locked} ${locked} · ${RESERVES.onTempo} ${onTempo}`,
+  /** `locked` null: the lockbox isn't live, so the row says that rather than "Locked Not live yet" (R4-13). */
+  rowSummary: (locked: string | null, onTempo: string) => `${locked === null ? RESERVES.notLive : `${RESERVES.locked} ${locked}`} · ${RESERVES.onTempo} ${onTempo}`,
   status: { pass: "Checks pass", fail: "A check failed" },
   partialStatus: (why: PartialWhy) => (why.robinhood ? "Robinhood side not live" : why.base ? "Base hop unread" : "Issuers not scanned"),
   facts: {

@@ -2,11 +2,16 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ExternalLink } from "@/components/shell/ExternalLink";
+import { headingSlug } from "./slug";
 
 /** On a phone the Contents pill sits on the title's row (R4-10), so the title leaves it room. */
 export const H1 = ({ children }: { children: ReactNode }) => <h1 className="type-display text-ink max-sm:pr-14 sm:max-lg:pr-36">{children}</h1>;
 export const Lead = ({ children }: { children: ReactNode }) => <p className="type-body text-ink-secondary">{children}</p>;
-export const H2 = ({ children, id }: { children: ReactNode; id?: string }) => <h2 id={id} className="mt-4 type-title text-ink">{children}</h2>;
+/** A string heading carries its anchor from the server, so the contents rail never edits a heading before the page
+ * hydrates (R4-13: DocsToc's `h.id = …` ran first and React reported a hydration mismatch on every docs page). */
+export const H2 = ({ children, id }: { children: ReactNode; id?: string }) => (
+  <h2 id={id ?? (typeof children === "string" ? headingSlug(children) : undefined)} className="mt-4 type-title text-ink">{children}</h2>
+);
 export const P = ({ children }: { children: ReactNode }) => <p className="type-body text-ink">{children}</p>;
 export const Ul = ({ items }: { items: readonly ReactNode[] }) => (
   <ul className="flex list-disc flex-col gap-2 pl-5 type-body text-ink">{items.map((item, i) => <li key={i}>{item}</li>)}</ul>

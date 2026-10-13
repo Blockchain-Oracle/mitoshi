@@ -93,7 +93,7 @@ export function GamesRail() {
             <button type="button" className="gm-rail-icon" onClick={() => { setHowToWanted(true); setHowTo(true); }} aria-label={GAMES.howToWords.open} title={GAMES.howToWords.open}>
               <CircleHelp aria-hidden />
             </button>
-            <button type="button" className="gm-rail-icon" onClick={toggleMute} aria-pressed={muted} aria-label={muted ? GAMES.rail.sound : GAMES.rail.mute} title={muted ? GAMES.rail.sound : GAMES.rail.mute}>
+            <button type="button" className="gm-rail-icon gm-rail-mute" onClick={toggleMute} aria-pressed={muted} aria-label={muted ? GAMES.rail.sound : GAMES.rail.mute} title={muted ? GAMES.rail.sound : GAMES.rail.mute}>
               {muted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}
             </button>
             <SettingsButton onOpen={() => { feedback("tap"); setSettingsOpen(true); }} />

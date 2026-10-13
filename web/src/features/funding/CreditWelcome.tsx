@@ -3,6 +3,7 @@
 // first credit, auto-dismissed after eight seconds (a moment, not a wall). Now on the shared centred `Modal` with the
 // badge's spring under `m.*` (LazyMotion) and reduced motion honoured by `MotionConfig`. R4-4 (D-227; critic gap 10):
 // the title names what the account holds now, as the chain reads it (masked in privacy mode), once that read lands.
+// R4-13 (critic copy cut 11): no eyebrow — the title says it, the line under it the amount.
 import { Sparkles } from "lucide-react";
 import { m } from "motion/react";
 import { useBalanceSheet } from "@cwf/markets/react";
@@ -29,8 +30,8 @@ export default function CreditWelcome({ open, onOpenChange }: { open: boolean; o
     <Modal
       open={open}
       onOpenChange={onOpenChange}
-      eyebrow={FUNDING.welcome.eyebrow}
-      title={held ? FUNDING.welcome.titleWith(held) : FUNDING.welcome.title}
+      title={FUNDING.welcome.title}
+      description={held ? FUNDING.welcome.titleWith(held) : undefined}
       footer={
         <button type="button" onClick={() => onOpenChange(false)} className="inline-flex h-(--ticket-cta-height) w-full items-center justify-center rounded-md bg-accent-fill px-5 type-body-strong text-on-accent">
           {FUNDING.welcome.cta}
