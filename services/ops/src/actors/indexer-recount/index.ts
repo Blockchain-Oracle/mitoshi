@@ -21,11 +21,19 @@ export const INDEXER_RECOUNT_EVERY_MS = 60 * 60_000;
 
 /** One `eth_getLogs` per 10,000 blocks: Alchemy's range cap, and under the public RPC's 20,000-log cap on Moderato. */
 const WALK_BLOCKS = 10_000n;
+/**
+ * A full 20,000-log answer is ~14 MB, over viem's 10 MiB default, and viem retries an over-size answer like any other
+ * error (rpc-http.test.ts), so each refusal cost retryCount + 1 downloads of 10 MB — six at ops' default of 5 — before
+ * the walk could halve the window. The first live run (2026-10-13) spent ~40 s per dense 20,000-block tile on them.
+ */
+export const WALK_TRANSPORT = { retryCount: 2, maxResponseBodySize: 32 * 1024 * 1024 } as const;
+/** Network retries per window: short, so one item stays well inside ops' 10-minute stuck-pass watchdog. */
+const WALK_TRANSIENT_RETRIES = 2;
 
 export function indexerRecountPass(env: OpsEnv, sql: Sql): () => Promise<PassResult> {
   const chainId = NETWORKS[env.network];
-  const rpc = createOpsClient({ network: env.network, rpcUrl: env.tempoRpcUrl, tier: 2 }).public;
-  const walk = rpcLogWalk(rpc, { initialBlocks: WALK_BLOCKS, maxBlocks: WALK_BLOCKS });
+  const rpc = createOpsClient({ network: env.network, rpcUrl: env.tempoRpcUrl, tier: 2, ...WALK_TRANSPORT }).public;
+  const walk = rpcLogWalk(rpc, { initialBlocks: WALK_BLOCKS, maxBlocks: WALK_BLOCKS, transientRetries: WALK_TRANSIENT_RETRIES });
   const configured = indexerClientFromEnv(process.env, (row) => insertMppReceipt(sql, row).then(() => undefined));
   const sources = ((indexerSources as Record<string, readonly RecountSource[]>)[String(chainId)] ?? []) as readonly RecountSource[];
   return async () => {

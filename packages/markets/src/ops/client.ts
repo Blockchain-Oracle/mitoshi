@@ -36,6 +36,9 @@ export interface OpsClientInput {
   budget?: RpcBudget;
   /** Queue place in the shared budget: 0 the print path (relay, roller, settler), 1 the house, 2 bookkeeping. */
   tier?: RpcTier;
+  /** Transport retries (default 5) and answer size cap (viem's 10 MiB): a log walk lowers one and raises the other. */
+  retryCount?: number;
+  maxResponseBodySize?: number;
 }
 
 /** Below the public RPC's measured ≈ 36 units/s per IP (D-134). */
@@ -51,7 +54,12 @@ export function createOpsClient(input: OpsClientInput): OpsClient {
   // All actors share one request budget per URL, the container's IP limit (D-134); 0 turns pacing off.
   const url = input.rpcUrl || TEMPO_RPC_HTTP[input.network];
   const units = input.unitsPerSec ?? opsUnitsPerSec();
-  const transport = tempoHttp(url, { ...(input.fetchFn ? { fetchFn: input.fetchFn } : {}), ...(units > 0 ? { budget: input.budget ?? sharedRpcBudget(url, units), tier: input.tier ?? 1 } : {}) });
+  const transport = tempoHttp(url, {
+    ...(input.fetchFn ? { fetchFn: input.fetchFn } : {}),
+    ...(units > 0 ? { budget: input.budget ?? sharedRpcBudget(url, units), tier: input.tier ?? 1 } : {}),
+    ...(input.retryCount !== undefined ? { retryCount: input.retryCount } : {}),
+    ...(input.maxResponseBodySize ? { maxResponseBodySize: input.maxResponseBodySize } : {}),
+  });
   const pub = createPublicClient({ chain: { ...chain, contracts: { ...chain.contracts, multicall3: { address: UTILITIES.multicall3 as Address } } }, transport, batch: { multicall: { wait: 10, batchSize: MULTICALL_CHUNK_BYTES } } }) as unknown as PublicClient;
   const account = input.privateKey ? privateKeyToAccount(input.privateKey) : null;
   const wallet = account ? createWalletClient({ account, chain, transport }) : null;

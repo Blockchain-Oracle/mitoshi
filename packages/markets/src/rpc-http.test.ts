@@ -67,6 +67,20 @@ describe("the ops transport against the public RPC's limits", () => {
     await expect(client.public.getBlockNumber({ cacheTime: 0 })).resolves.toBe(16n);
     expect(rpc.seen.limited).toBe(3);
   });
+
+  it("downloads an over-size answer once per retry, so a log walk raises the cap and lowers the retries (R6)", async () => {
+    // 2 MB of logs: over a 1 MB cap, under a 4 MB one.
+    const body = JSON.stringify({ jsonrpc: "2.0", id: 0, result: "x".repeat(2_000_000) });
+    let http = 0;
+    const fetchFn: typeof fetch = async () => (http++, new Response(body, { headers: { "content-type": "application/json" } }));
+    const walkClient = (maxResponseBodySize: number, retryCount: number) => createOpsClient({ network: "testnet", rpcUrl: "https://rpc.test", fetchFn, unitsPerSec: 0, retryCount, maxResponseBodySize }).public;
+    const ask = (c: ReturnType<typeof walkClient>) => c.request({ method: "eth_getLogs", params: [{ fromBlock: "0x0", toBlock: "0x1" }] } as never);
+    await expect(ask(walkClient(1_000_000, 2))).rejects.toThrow(/exceeded the size limit/);
+    expect(http).toBe(3);
+    http = 0;
+    await expect(ask(walkClient(4_000_000, 2))).resolves.toHaveLength(2_000_000);
+    expect(http).toBe(1);
+  });
 });
 
 describe("fetchMarkets (D-131)", () => {

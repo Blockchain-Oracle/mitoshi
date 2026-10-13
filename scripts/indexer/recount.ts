@@ -12,7 +12,7 @@
 import { NETWORKS, networkFrom } from "@cwf/core";
 import { indexerSources } from "@cwf/clients";
 import { commitRecount, createSql, loadRecountTiles, runMigrations } from "@cwf/db";
-import { tempoReadClient } from "@cwf/markets";
+import { createOpsClient } from "@cwf/markets/ops";
 import { formatRange, indexerClientFromEnv, recountPass, rpcLogWalk, type RecountSource, type TileState } from "@cwf/markets/server";
 
 const arg = (name: string) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : undefined);
@@ -21,7 +21,8 @@ const chainId = NETWORKS[network];
 const configured = indexerClientFromEnv();
 if (!configured.client) throw new Error(configured.reason);
 const indexer = configured.client;
-const rpc = tempoReadClient(network, process.env.TEMPO_RPC_HTTP_URL);
+// The ops actor's transport: no shared budget here, a 32 MiB answer cap, two retries (see indexer-recount/index.ts).
+const rpc = createOpsClient({ network, rpcUrl: process.env.TEMPO_RPC_HTTP_URL, unitsPerSec: 0, retryCount: 2, maxResponseBodySize: 32 * 1024 * 1024 }).public;
 const walk = rpcLogWalk(rpc, { initialBlocks: 10_000n, maxBlocks: 10_000n, onRefused: (a, b, why) => console.log(`  rpc refused ${a}-${b}: ${why.split("\n")[0]}`) });
 const floor = arg("--from-block") ? BigInt(arg("--from-block")!) : null;
 const passes = Number(arg("--passes") ?? 50);
