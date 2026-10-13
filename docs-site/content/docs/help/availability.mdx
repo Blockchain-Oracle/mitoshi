@@ -7,9 +7,11 @@ sources:
   - docs/plan/owarine-plan-r4-2026-10-12.md
   - web/src/lib/capabilities.ts
   - web/src/features/games/catalog.ts
+  - contracts/deployments/42431/range.json
+  - docs/plan/acceptance/S24.md
 ---
 
-Checked against app revision `1ab5eca` on 12 October 2026. Mitoshi runs on **Tempo testnet (Moderato)** only; nothing is deployed on Tempo mainnet.
+Checked against app revision `6a6fb7f` on 13 October 2026. Mitoshi runs on **Tempo testnet (Moderato)** only; nothing is deployed on Tempo mainnet.
 
 ## Live on testnet
 
@@ -36,7 +38,7 @@ The native iOS and Android app is specified and not built; the web app installs 
 
 ## Being built now
 
-Round 4 (D-227) runs slice by slice on the trunk. P&L correctness (R4-1) is built and checked against the chain, and deploys with the next web release. Next: a shared component kit, Markets, Portfolio, Range · Moonshot · Parlay, Automate, Earn, the palette and shell, games (a full-screen arcade stage, Lucky and Duel), records, account · launch · themes, the bridge and reserves, and the landing. These guides are pinned to a revision; the docs build lists every app change since, to review.
+P&L correctness is built and checked against the chain, and ships with the next web release. Next: a shared component kit, Markets, Portfolio, Range · Moonshot · Parlay, Automate, Earn, the palette and shell, games (a full-screen arcade stage, Lucky and Duel), records, account · launch · themes, the bridge and reserves, and the landing. These guides are pinned to a revision; the docs build lists every app change since, to review.
 
 ## Waiting on the owner
 
@@ -54,7 +56,7 @@ Round 4 (D-227) runs slice by slice on the trunk. P&L correctness (R4-1) is buil
 
 - **Test money.** pathUSD from the faucet, once a day per account, with no value.
 - **24/7 stock lanes** pause around 04:00 ET daily; AMD and PLTR have none. NFLX and pre-IPO names are listed as paused.
-- **Fair-value models** exist for BTC, ETH and SOL five-minute Windows on testnet, so Range, Moonshot, Parlay, Boost and keeper exits run there.
+- **Range and Moonshot** price BTC, ETH and SOL: the Range reserve has a volatility for those three. Parlay, Boost and keeper exits price every series through the fair-value guard.
 - **The public RPC** is shared and rate-limited; a busy minute can slow reads.
 - **The private desk** is deployed and fork-tested; no private bet through the browser is recorded yet.
-- **Settlement gate.** The venue's 24-hour gate (S3) is not marked passed: most of its voids came from RedStone's public-gateway windows. A fresh 24-hour window spanning a 04:00 ET is still to run.
+- **Settlement run.** The venue's 24-hour settlement run has not passed: most of its voids came from RedStone's public-gateway windows. A fresh 24 hours spanning a 04:00 ET is still to run.

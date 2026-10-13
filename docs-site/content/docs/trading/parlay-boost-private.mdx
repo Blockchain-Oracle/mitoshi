@@ -9,7 +9,11 @@ sources:
   - packages/core/src/private/protocol.ts
   - web/src/features/boost/copy.ts
   - web/src/features/private/copy.ts
+  - web/src/features/parlay/data.ts
+  - web/src/features/boost/useBoostTicket.ts
   - docs/plan/acceptance/S10.md
+  - docs/plan/acceptance/S24.md
+  - docs/plan/acceptance/R4-1.md
 ---
 
 ## Parlay
@@ -19,7 +23,7 @@ Two or three legs on one ticket at <AppLink href="/parlay">Parlay</AppLink>, or 
 - **ParlayReserve** prices each leg off the Window's book — refusing a leg priced more than 5¢ under the fair-value guard's model — with a floor for legs that settle at the same instant.
 - The winning payout is locked before the ticket is accepted. A book too thin for it is refused by name, before any prompt.
 - Legs resolve in close order, by anyone. Each ticket asks your passkey.
-- Legs need a fair-value model, so on testnet they are the BTC, ETH and SOL five-minute Windows.
+- Legs need the fair-value guard's model, which covers every series, crypto and stocks.
 
 <GuideCapture name="parlayDesk" />
 
@@ -29,7 +33,7 @@ A leveraged UP or DOWN from the terminal's **Boost** mode or chips. **LeverageRe
 
 - **Your loss is capped at your stake.** A boost has a knock-out line and can be knocked out before the Window closes; Mitoshi's leverage keeper settles and knocks out positions, and both actions pay the owner.
 - It refuses to open a boost that would start under its knock-out line, one priced above the market model, or one a void would leave the reserve short on.
-- Boost opens on the crypto five-minute lanes. Each boost asks your passkey, and it closes from its own row.
+- Boost opens on any Window the guard prices, stocks included. Each boost asks your passkey, and it closes from its own row.
 
 ## Private
 

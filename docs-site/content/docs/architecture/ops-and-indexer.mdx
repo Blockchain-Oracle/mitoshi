@@ -45,7 +45,7 @@ Three more exist and are not running on testnet: **reference-writer** (keeps the
 
 The indexer follows the engine, the three Trading Balance vaults, the strategy registry and the ERC-8004 reputation registry, block by block, into Postgres — Windows, orders, fills, prints, settlements, vault executions and grants. At 22:06 UTC on 12 October it had seen 60,381 Windows opened and 60,320 resolved (`evidence/ops-health-2026-10-12.json`). Web reads it for Markets, Portfolio, Stats, the leaderboard and profiles.
 
-**Recount.** A separate replay — a GitHub workflow, `recount.yml` — walks the engine's and every vault's logs and compares totals with the index. The S5 gate passed with the recount equal to the index, total for total and Window for Window, through block 39,012,040.
+**Recount.** A separate replay — a GitHub workflow, `recount.yml` — walks the engine's and every vault's logs and compares totals with the index. Through block 39,012,040 the recount equalled the index, total for total and Window for Window.
 
 ## The stream
 

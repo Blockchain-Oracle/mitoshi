@@ -21,7 +21,7 @@ Content: 45 pages, 81 docs links, 46 app links, 24 media, 25 receipts, 5 address
   capture rangePhone (content/docs/trading/range-and-moonshot.mdx) — probe 2026-10-12: ready
   capture terminalDesk (content/docs/trading/terminal.mdx) — probe 2026-10-12: ready
   capture terminalPhone (content/docs/trading/terminal.mdx) — probe 2026-10-12: ready
-✓ source 1ab5eca, navigation, links, routes, media, receipts, addresses and deployments
+✓ source 6a6fb7f, navigation, links, routes, media, receipts, addresses and deployments
 $ next typegen && tsc --noEmit
 Generating route types...
 ✓ Types generated successfully
@@ -30,23 +30,23 @@ $ next build
 ✓ Running next.config.mjs took 63ms
 
   Creating an optimized production build ...
-✓ Compiled successfully in 4.7s
+✓ Compiled successfully in 8.5s
   Running TypeScript ...
-  Finished TypeScript in 2.6s ...
+  Finished TypeScript in 3.3s ...
   Collecting page data using 9 workers ...
   Generating static pages using 9 workers (0/98) ...
   Generating static pages using 9 workers (24/98) 
   Generating static pages using 9 workers (48/98) 
   Generating static pages using 9 workers (73/98) 
-✓ Generating static pages using 9 workers (98/98) in 1167ms
+✓ Generating static pages using 9 workers (98/98) in 1157ms
   Finalizing page optimization ...
 
 Route (app)
 ┌ ○ /_not-found
 ├   /[[...slug]]
 │ ├ ● /
-│ ├ ● /builders/local-setup
-│ ├ ● /builders/source-map
+│ ├ ● /architecture/built-on
+│ ├ ● /architecture/contracts
 │ └ ● [+42 more paths]
 ├ ƒ /api/search
 ├ ○ /llms-full.txt
@@ -54,8 +54,8 @@ Route (app)
 ├ ○ /opengraph-image
 ├   /raw/[[...slug]]
 │ ├ ● /raw
-│ ├ ● /raw/automate/agents
-│ ├ ● /raw/automate/copy-strategies
+│ ├ ● /raw/architecture/built-on
+│ ├ ● /raw/architecture/contracts
 │ └ ● [+42 more paths]
 ├ ○ /robots.txt
 └ ○ /sitemap.xml

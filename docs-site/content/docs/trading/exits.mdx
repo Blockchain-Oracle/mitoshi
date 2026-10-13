@@ -5,6 +5,7 @@ sources:
   - web/src/app/(app)/docs/exits/page.tsx
   - contracts/src/products/vault/VaultExits.sol
   - contracts/src/fair/FairValueGuard.sol
+  - packages/core/src/fair/guard-spec.json
   - services/ops/src/actors/exit-keeper
   - packages/core/src/exits/rules.ts
   - web/src/features/terminal/copy.ts
@@ -31,7 +32,7 @@ On a [Trading Balance](/trading/trading-balance) position, **one passkey confirm
 
 - **The floor.** Every keeper sale's limit must be at or above the Window's fair value at a signed RedStone spot, less the wider of 15 % of it or 10¢ — the allowance the app grants. The contract refuses anything wider than 20 % or 15¢, and a sale under the floor reverts.
 - **No bid, no sale.** If no bid meets the floor, the keeper waits and tries again until the Window locks, rather than sell lower. The terminal shows its last reason ("Keeper waiting: …").
-- **Where it applies.** The floor comes from the fair-value guard, which on testnet has a volatility for the BTC, ETH and SOL five-minute Windows. It refuses to price a Window it has no model for, and with no floor the keeper cannot sell.
+- **Where it applies.** The floor comes from the fair-value guard, which has a volatility and a signed spot for every series, crypto and stocks. It refuses to price a Window it has no model for, and with no floor the keeper cannot sell.
 - **The house's side.** The house keeps its exit side quoted until about 30 seconds before a Window locks.
 
 Every EXIT grant lasts 30 days and is listed in <AppLink href="/settings/account">Account & keys</AppLink>; **Stop** revokes it on chain.

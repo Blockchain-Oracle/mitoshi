@@ -34,20 +34,20 @@ Each stage of the build records its live runs in `docs/plan/acceptance/S<n>.md`:
 | 2026-10-10 | UP on TSLA off NYSE hours, the 24/7 15-minute Window, one tap | <Tx hash="0x1c724ecc9c553d32a9499f0ec083b846e6791716f4171e572afd13b603309feb" /> |
 | 2026-10-10 | The same position closed in one tap at what the line showed | <Tx hash="0xd7333b4d015980064e0dab6ca423779c1ca5548aeb433123b570c98bce5f61fd" /> |
 
-Tap to position, median over the S23 run: **0.64 s** (the row shows at signing; the receipt follows).
+Tap to position, median over the terminal's acceptance run: **0.64 s** (the row shows at signing; the receipt follows).
 
 ## P&L
 
 | When (UTC) | What ran | Where |
 | --- | --- | --- |
 | 2026-10-12 | A wallet buys, Reduces and re-enters; a Trading Balance taps twice, closes part and re-enters. The app's open cost, realised P&L and what CLOSE pays equal the receipts and balances to the base unit | `acceptance/R4-1.md` |
-| 2026-10-12 | A thin book: a wallet holding of 15 and a 2× Boost of 12 against bids for 9. "60 % sellable" and "75 % sellable", P&L on that part, the Boost's partial close (the front repaid first) and its last close, and the wallet's Close on what filled — the app's figures equal the chain's to the base unit | `acceptance/R4-1.md` |
+| 2026-10-12 | A thin book on TSLA's 24/7 hour Window: a wallet holding of 15 and a 2× Boost of 12 against bids for 9. "60 % sellable" and "75 % sellable", P&L on that part, the Boost's partial close (the front repaid first) and its last close, and the wallet's Close on what filled — the app's figures equal the chain's to the base unit | `acceptance/R4-1.md` |
 
 ## Trading Balance and exits
 
 | When (UTC) | What ran | Receipt |
 | --- | --- | --- |
-| 2026-09-30 | A tap from a Trading Balance with no prompt, relay-paid — the first of three in the S7 gate | <Tx hash="0x37298dd43da4b2ce360838ae6b3c2cffc83d511f9f3c49e008078dc5957a5349" /> |
+| 2026-09-30 | A tap from a Trading Balance with no prompt, relay-paid — the first of three in the Trading Balance's acceptance run | <Tx hash="0x37298dd43da4b2ce360838ae6b3c2cffc83d511f9f3c49e008078dc5957a5349" /> |
 | 2026-10-09 | One biometric grants the keeper its EXIT permission | <Tx hash="0x251b4ce1af654617c239f8970749d3bfa24d61795a8b33b1089a332002694f51" /> |
 | 2026-10-09 | The stop-loss sold by the keeper 20.6 s after it triggered, tab closed | <Tx hash="0xa5ddbcea7fd0ce01bd5159c939f219784effd52217d4392f3286326d9c1436aa" /> |
 

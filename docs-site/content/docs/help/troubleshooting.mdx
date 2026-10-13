@@ -7,6 +7,7 @@ sources:
   - web/src/features/earn/copy.ts
   - web/src/features/sensei/copy.ts
   - web/src/app/api/faucet/route.ts
+  - packages/core/src/fair/guard-spec.json
 ---
 
 | You see | What it means | Do |
@@ -19,7 +20,7 @@ sources:
 | "This wallet already got test funds today." | The faucet's daily cooldown. | Add money says when you can claim again. |
 | "Turn on one-tap first" | A trail needs one-tap to sell without a prompt. | Turn on one-tap, or set a TP / SL from the Trading Balance. |
 | "Keeper waiting: …" | No bid meets your exit's floor yet. | It retries until the Window locks; it never sells lower. |
-| "This Window has no fair-value model yet" (Boost), "… can't be priced into a parlay yet" | Boost and Parlay need the fair-value model; on testnet it covers BTC, ETH and SOL five-minute Windows. | Pick one of those. |
+| "This Window has no fair-value model yet" (Boost), "… can't be priced into a parlay yet" | The fair-value guard has no volatility or signed spot for that series. | Pick another Window. |
 | "The book is too thin…" | Not enough resting depth to price the ticket. | Try a smaller size or another Window; nothing was taken. |
 | "Your account's receive policy blocks this payment" | A Tempo receive policy refused the transfer, so nothing moved. | Allow the vault or reserve in your policy and try again. |
 | "Maker off · no new quotes" | The maker vault has no maker set. | Earn still settles and withdraws; quotes resume when it is set. |
