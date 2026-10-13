@@ -3,7 +3,7 @@
 // the head with its toolbar (Copy, More: Report · Block · Share), the record as the plate beside the next decision (a
 // real countdown, the runner's pass in words, the last decision — R6 #9, D-230), then tabs — Overview (the latest
 // decision, its limits, your copy's), Decisions · N (every decision it made, an agent's reads and a rule's calls; each
-// opens in full, an agent's with what paid for it, an MPP receipt or "unpaid · testnet", D-218.4), Copies · N (every copy
+// opens in full, an agent's with what paid for it, an MPP receipt or "unpaid", D-218.4), Copies · N (every copy
 // trade, the latest listed) and
 // Identity (the ERC-8004 card, its registry, ratings, sealed memory). Copy opens the desk's drawer. The stage is the one
 // inset.

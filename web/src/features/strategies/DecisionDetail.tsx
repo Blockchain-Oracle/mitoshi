@@ -1,9 +1,10 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/strategies/{DecisionDetail.tsx,decision-copy.ts} (R4-6, D-227) — one
 // decision, whole: the Window, the read (model, call, the why in full, and what paid for it — Mitoshi's MPP receipts, or
-// "unpaid · testnet", D-218.4) or, for a rule's call (R6 #9), the rule and its trigger — nothing is paid for a rule —
-// the ruling in words (`gate-words`, never the gate's raw line), the copies it placed (this strategy's fills on that
-// Window) and how it settled. A centred dialog on desktop, a bottom sheet on a phone, on Base UI's Dialog.
+// "unpaid", D-218.4; the network is named only on the mode plate, D-228) or, for a rule's call (R6 #9), the rule and
+// its trigger — nothing is paid for a rule — the ruling in words (`gate-words`, never the gate's raw line), the copies
+// it placed (this strategy's fills on that Window) and how it settled. A centred dialog on desktop, a bottom sheet on a
+// phone, on Base UI's Dialog.
 import { Dialog } from "@base-ui/react/dialog";
 import { isRuleModel, txUrl } from "@cwf/core";
 import { XIcon } from "lucide-react";
@@ -29,7 +30,7 @@ export const DECISION = {
   sections: { window: "The Window", read: "The read", call: "The call", gate: "The gate", trigger: "Its trigger", trades: "Copies placed", settlement: "Settlement" },
   rows: { window: "Window", decided: "Decided", call: "Call", model: "Model", rule: "Rule", paid: "Paid", ruling: "Ruling", outcome: "Outcome" },
   rules: { momentum: "Momentum", reversion: "Mean reversion", mirror: "Copy a trader" } as Record<string, string>,
-  unpaid: "unpaid · testnet",
+  unpaid: "unpaid",
   paid: (amount: string, host: string) => `${amount} · ${host}`,
   noTrades: "Nothing placed on this Window.",
   /** The runner says it filled, but those fills aren't in what this view read (the catalogue carries the latest only). */

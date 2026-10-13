@@ -138,7 +138,7 @@ export interface MinePayload {
   computedAtMs: number;
 }
 
-/** One decision on the agent's page, with what it cost: its MPP receipts (null: unpaid — testnet reads, D-218.4). */
+/** One decision on the agent's page, with what it cost: its MPP receipts (null: unpaid — the model hosts charge on mainnet only, D-218.4). */
 export interface DecisionDetailWire extends DecisionWire {
   receipts: { host: string; amountBase: string; currency: string; reference: string | null; atMs: number }[] | null;
 }
