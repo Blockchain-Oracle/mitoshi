@@ -7,7 +7,7 @@
 // lifts it and the draft never hides under the keys.
 import { MoreHorizontal, SmilePlus } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { addressHue } from "@/lib/address-hue";
 import { notify } from "@/lib/toast";
 import { SOCIAL } from "./copy";
