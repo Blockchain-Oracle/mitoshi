@@ -47,6 +47,7 @@ export const RANGE = {
   },
   windows: {
     label: "Window",
+    rail: "Windows",
     cadence: "Cadence",
     gap: "Gap",
     allHours: "24/7",
@@ -92,7 +93,6 @@ export const RANGE = {
   },
   outcome: {
     placed: (id: string, band: string, stake: string, payout: string) => `Range #${id} placed · ${band} · ${stake} to win ${payout}`,
-    requote: (stake: string) => `Now ${stake} · hold again`,
     viewReceipt: "View the transaction",
     another: "Call another",
   },

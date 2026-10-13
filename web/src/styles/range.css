@@ -69,11 +69,11 @@
 
 /* the Window picker: cadence words over a sideways chip rail (scroll-snap), a radiogroup */
 .gw { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.gw-rail { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; padding: 2px; margin: -2px; }
-.gw-rail::-webkit-scrollbar { display: none; }
+.gw-rail { padding: 2px; margin: -2px; }
+.gw-group { display: flex; gap: 8px; }
 .gw-chip {
   flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px 0 8px; border-radius: var(--radius-full);
-  border: 1px solid var(--color-hairline); background: var(--color-surface-1); color: var(--color-ink); scroll-snap-align: start;
+  border: 1px solid var(--color-hairline); background: var(--color-surface-1); color: var(--color-ink);
   font-family: var(--font-heading); font-weight: 700; font-size: 14px; transition: border-color 160ms var(--ease), background 160ms var(--ease);
 }
 .gw-chip.is-on { border-color: var(--color-accent); background: var(--color-accent-wash); }

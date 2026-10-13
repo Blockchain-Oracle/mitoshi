@@ -13,6 +13,7 @@ import { USD_DECIMALS, type ParlayReserveState } from "@cwf/core";
 import { oneUnit } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import { TxCta, TxFailureCard } from "@/components/tx";
+import { TX } from "@/components/tx/copy";
 import { SheetFooter } from "@/components/ui/drawer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { webEnv } from "@/lib/env";
@@ -58,7 +59,7 @@ function Slip({ t, windows }: { t: ParlayTicket; windows: readonly LegWindow[] }
           <button type="button" className="min-h-touch type-body-strong text-ink underline" onClick={() => { writes.reset(); slip.clear(); }}>{PARLAY.outcome.another}</button>
         </div>
       ) : null}
-      {outcome?.status === "requote" ? <p role="alert" className="ps-note ps-note--warn">{PARLAY.outcome.requote(usd(outcome.stakeBase))}</p> : null}
+      {outcome?.status === "requote" ? <p role="alert" className="ps-note ps-note--warn">{TX.requote(usd(outcome.stakeBase))}</p> : null}
       {writes.tx.kind === "failed" ? <TxFailureCard state={writes.tx} onRetry={writes.reset} explorerHref={outcome?.status === "failed" && outcome.txHash ? txUrl(outcome.txHash, webEnv.markets.network) : null} /> : null}
     </div>
   );

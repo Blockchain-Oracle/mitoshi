@@ -90,7 +90,6 @@ export const MOONSHOT = {
     tryAgain: "Try again",
     viewTx: "View the transaction",
     toast: (target: string, stake: string, payout: string, symbol: string) => `Moonshot placed. ${target}: ${stake} to ${payout} ${symbol} if it lands.`,
-    requote: (stake: string, symbol: string) => `The basis moved — this call now costs ${stake} ${symbol}. Confirm again to place it at the new price.`,
   },
   slip: {
     connected: "No moonshots yet. Take aim above",

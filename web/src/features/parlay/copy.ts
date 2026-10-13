@@ -94,7 +94,6 @@ export const PARLAY = {
   },
   outcome: {
     placed: (id: string, n: number, stake: string, payout: string) => `Parlay #${id} placed · ${n} legs · ${stake} to win ${payout}`,
-    requote: (stake: string) => `Now ${stake} · hold again`,
     nothingTaken: "Nothing was taken.",
     viewReceipt: "View the transaction",
     another: "Build another",

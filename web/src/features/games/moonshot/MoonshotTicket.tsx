@@ -167,7 +167,7 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
           <a href={txUrl(writes.outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption underline">{MOONSHOT.ticket.viewTx}</a>
         </div>
       ) : null}
-      {writes.outcome?.status === "requote" ? <p role="alert" className="rg-note rg-note--warn">{RANGE.outcome.requote(usd(writes.outcome.stakeBase))}</p> : null}
+      {writes.outcome?.status === "requote" ? <p role="alert" className="rg-note rg-note--warn">{TX.requote(usd(writes.outcome.stakeBase))}</p> : null}
       {writes.tx.kind === "failed" ? <TxFailureCard state={writes.tx} onRetry={writes.reset} /> : null}
     </div>
   );
