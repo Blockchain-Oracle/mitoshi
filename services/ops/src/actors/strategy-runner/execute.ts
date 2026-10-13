@@ -4,9 +4,11 @@
 // owner's settled Windows, S7).
 import type { Address, Hex } from "viem";
 import { formatBaseUnits, sideForSubscriber, type Decision, type SkipKind } from "@cwf/core";
-import type { StrategyAttemptStore } from "@cwf/db";
+import type { StrategyAttemptStore, StrategyStore } from "@cwf/db";
 import { OPS_VALID_FOR_SEC, OpsSendError, preflight, runnerFillOf, runnerOrder, sendOps, type OpsClient, type RunnerVenue, type RunnerWindow, type SubscriberState } from "@cwf/markets/ops";
 import type { YesBook } from "@cwf/markets/ops";
+import { tallySkips } from "./calls";
+import type { Candidate } from "./decide";
 
 export type ExecutionResult =
   | { status: "filled"; txHash: Hex; side: "up" | "down"; cashDeltaBase: bigint; tokenDeltaRaw: bigint }
@@ -66,6 +68,56 @@ export async function executeForSubscriber(input: {
     await attempts.finish(key, "unknown", null, `${reason}; not resending`).catch(() => undefined);
     return { status: "unknown", reason };
   }
+}
+
+/** One pass's execution of a strategy's calls, over every Window it executed. */
+export interface CallsRun {
+  filled: number;
+  /** Why each copier it could not fill was skipped (one already in its Window included; `tallySkips` drops those). */
+  skips: SkipKind[];
+  notes: string[];
+  /** A send whose confirmation is unknown: the pass stopped there, and no decision row was marked. */
+  unknown: string | null;
+}
+
+/**
+ * Every call × every live copier, then each Window's decision row marked with that Window's own counts: the copies
+ * filled on it and the copiers it could not fill. A pass over two Windows never stamps one's counts on the other (it
+ * used to mark each with the whole pass's totals, and `greatest(filled, …)` kept the inflated count).
+ */
+export async function executeCalls(input: {
+  strategyId: string; candidates: readonly Candidate[]; subs: readonly SubscriberState[]; dryRun: boolean;
+  store: Pick<StrategyStore, "markDecisionExecution">;
+  execute: (sub: SubscriberState, call: Candidate) => Promise<ExecutionResult>;
+  onFilled?: (sub: SubscriberState, call: Candidate, fill: Extract<ExecutionResult, { status: "filled" }>) => void;
+}): Promise<CallsRun> {
+  const run: CallsRun = { filled: 0, skips: [], notes: [], unknown: null };
+  const windows: { marketId: string; filled: number; skips: SkipKind[] }[] = [];
+  for (const call of input.candidates) {
+    const w = { marketId: call.window.marketId, filled: 0, skips: [] as SkipKind[] };
+    windows.push(w);
+    for (const sub of input.subs) {
+      const r = await input.execute(sub, call);
+      if (r.status === "filled") {
+        w.filled += 1;
+        run.filled += 1;
+        input.onFilled?.(sub, call, r);
+        run.notes.push(`filled ${r.side.toUpperCase()} for ${sub.owner.slice(0, 8)} ${r.txHash.slice(0, 10)}`);
+        continue;
+      }
+      run.notes.push(`${sub.owner.slice(0, 8)} ${r.status}: ${r.reason}`);
+      if (r.status === "unknown") return { ...run, unknown: r.reason };
+      if (r.status === "skipped" || r.status === "refused") {
+        w.skips.push(r.code);
+        run.skips.push(r.code);
+      }
+    }
+  }
+  for (const w of windows) {
+    const missed = Object.values(tallySkips(w.skips)).reduce((a, b) => a + b, 0);
+    await input.store.markDecisionExecution(input.strategyId, w.marketId, w.filled, missed, input.dryRun);
+  }
+  return run;
 }
 
 /**

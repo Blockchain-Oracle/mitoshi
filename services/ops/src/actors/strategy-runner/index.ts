@@ -22,7 +22,7 @@ import { settlementReader } from "./agent-record";
 import { backfillCalls, holdRuleCalls, tallySkips } from "./calls";
 import { scanOracleFollow, type Scan } from "./decide";
 import { scanMirror } from "./mirror-scan";
-import { executeForSubscriber, recoverAttempts } from "./execute";
+import { executeCalls, executeForSubscriber, recoverAttempts } from "./execute";
 
 const DEFAULT_INTERVAL_MS = 30_000;
 const SPOT_MAX_AGE_SEC = 30;
@@ -89,32 +89,20 @@ export function startStrategyRunner(deps: Pick<VenueDeps, "env" | "log" | "sql" 
     if (candidates.length === 0) return heartbeat(id, `${scan.why}; ${states.length} live subscriber${states.length === 1 ? "" : "s"}`, beat(0, []), scan);
     const markets = candidates.map((c) => c.window.marketId);
     const [books, held] = await Promise.all([readBooks(client, rv!, markets), readHoldings(client, rv!, states.flatMap((st) => markets.map((m) => ({ owner: st.owner, marketId: m }))))]);
-    let filled = 0;
-    const notes: string[] = [];
-    const skips: SkipKind[] = [];
-    for (const { window, decision } of candidates) {
-      for (const sub of states) {
-        const r = await executeForSubscriber({
-          client, rv: rv!, attempts: attempts!, strategyId: id, sub, window, decision, book: books.get(window.marketId.toLowerCase()) ?? null,
-          held: held.get(`${sub.owner.toLowerCase()}:${window.marketId.toLowerCase()}`) ?? { up: 0n, down: 0n }, nowSec, nowMs, dryRun,
-        });
-        if (r.status === "filled") {
-          filled += 1;
-          counts.filled += 1;
-          deps.bus.publish(`user:${sub.owner.toLowerCase()}`, "strategy-fill", { strategyId: s.strategyId, marketId: window.marketId, side: r.side, mode: sub.mode, txHash: r.txHash });
-          notes.push(`filled ${r.side.toUpperCase()} for ${sub.owner.slice(0, 8)} ${r.txHash.slice(0, 10)}`);
-        } else {
-          notes.push(`${sub.owner.slice(0, 8)} ${r.status}: ${r.reason}`);
-          if (r.status === "unknown") return heartbeat(id, `confirmation unknown: ${r.reason}; holding new entries`, { kind: "idle", idle: "unconfirmed", copiers: states.length }, scan);
-          if (r.status === "skipped" || r.status === "refused") skips.push(r.code);
-        }
-      }
-    }
-    const tally = tallySkips(skips);
-    for (const [k, n] of Object.entries(tally) as [SkipKind, number][]) counts.skipped[k] = (counts.skipped[k] ?? 0) + n;
-    const missed = Object.values(tally).reduce((a, b) => a + b, 0);
-    for (const { window } of candidates) await store!.markDecisionExecution(s.strategyId, window.marketId, filled, missed, dryRun);
-    return heartbeat(id, `${scan.why}; ${filled} filled${notes.length ? ` — ${notes.slice(0, 4).join("; ")}` : ""}${dryRun ? " (dry run)" : ""}`, beat(filled, skips), scan);
+    const run = await executeCalls({
+      strategyId: s.strategyId, candidates, subs: states, dryRun, store: store!,
+      execute: (sub, { window, decision }) => executeForSubscriber({
+        client, rv: rv!, attempts: attempts!, strategyId: id, sub, window, decision, book: books.get(window.marketId.toLowerCase()) ?? null,
+        held: held.get(`${sub.owner.toLowerCase()}:${window.marketId.toLowerCase()}`) ?? { up: 0n, down: 0n }, nowSec, nowMs, dryRun,
+      }),
+      onFilled: (sub, { window }, r) => {
+        counts.filled += 1;
+        deps.bus.publish(`user:${sub.owner.toLowerCase()}`, "strategy-fill", { strategyId: s.strategyId, marketId: window.marketId, side: r.side, mode: sub.mode, txHash: r.txHash });
+      },
+    });
+    if (run.unknown !== null) return heartbeat(id, `confirmation unknown: ${run.unknown}; holding new entries`, { kind: "idle", idle: "unconfirmed", copiers: states.length }, scan);
+    for (const [k, n] of Object.entries(tallySkips(run.skips)) as [SkipKind, number][]) counts.skipped[k] = (counts.skipped[k] ?? 0) + n;
+    return heartbeat(id, `${scan.why}; ${run.filled} filled${run.notes.length ? ` — ${run.notes.slice(0, 4).join("; ")}` : ""}${dryRun ? " (dry run)" : ""}`, beat(run.filled, run.skips), scan);
   };
 
   const pass = async () => {

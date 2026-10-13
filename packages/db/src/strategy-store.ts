@@ -189,8 +189,9 @@ export function createPgStrategyStore(sql: Sql) {
       return rows.map((r) => ({ strategyId: r.strategy_id, total: Number(r.total), bets: Number(r.bets), held: Number(r.held), failed: Number(r.failed), lastAtMs: r.last_at ? r.last_at.getTime() : null }));
     },
 
-    /** After the execution loop: how many subscribers the decision reached, and how many that pass could not fill. A live
-     *  fill already set `filled` to the Window's filled attempts (`recordFill`); this only ever raises it. */
+    /** After a pass executed this Window: the copies it filled on this Window and the copiers it could not fill here —
+     *  this Window's own counts, never the pass's totals. A live fill already set `filled` to the Window's filled
+     *  attempts (`recordFill`); this only ever raises it. */
     async markDecisionExecution(strategyId: string, marketId: string, filled: number, skipped: number, dryRun = false): Promise<void> {
       await sql`update strategy_decisions set filled = greatest(filled, ${filled}), skipped = ${skipped}
         where strategy_id = ${strategyId} and market_id = ${marketId.toLowerCase()} and dry_run = ${dryRun}`;
