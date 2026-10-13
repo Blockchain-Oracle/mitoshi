@@ -6,6 +6,7 @@
  * (reserved before the model call, so a restart never asks twice). Amounts are decimal strings, never floats; ids and
  * addresses are lowercased at the write.
  */
+import { parseRunnerBeat, type RunnerBeat } from "@cwf/core";
 import type { Sql } from "./index";
 
 export interface HeartbeatRecord {
@@ -17,8 +18,10 @@ export interface HeartbeatRecord {
   scanned: number;
   closestBps: number | null;
   dryRun: boolean;
+  /** What the pass did, as data (strategies/0005); null on older rows. */
+  state: RunnerBeat | null;
 }
-export type NewHeartbeat = Omit<HeartbeatRecord, "tickAtMs">;
+export type NewHeartbeat = Omit<HeartbeatRecord, "tickAtMs" | "state"> & { state?: RunnerBeat | null };
 
 export interface StrategyFillRecord {
   txHash: string;
@@ -58,14 +61,29 @@ export interface StrategyDecisionRecord {
 }
 export type NewStrategyDecision = Omit<StrategyDecisionRecord, "id" | "decidedAtMs" | "filled" | "skipped">;
 
-type HeartbeatRow = { runner: string; strategy_id: string; tick_at: Date; interval_ms: number; why: string; scanned: number; closest_bps: number | null; dry_run: boolean };
+/** A rule's or a mirror's call on a Window (`@cwf/core` ruleModelOf): recorded as ruled, once. */
+export type NewStrategyCall = Pick<StrategyDecisionRecord, "strategyId" | "marketId" | "runner" | "model" | "why" | "gateReason" | "dryRun"> & { side: "up" | "down"; decidedAtMs: number; filled?: number };
+
+/** How many decisions one strategy has made (dry runs never count), by ruling, and when it last decided. */
+export interface DecisionCounts {
+  strategyId: string;
+  total: number;
+  bets: number;
+  held: number;
+  failed: number;
+  lastAtMs: number | null;
+}
+
+type HeartbeatRow = { runner: string; strategy_id: string; tick_at: Date; interval_ms: number; why: string; scanned: number; closest_bps: number | null; dry_run: boolean; state: unknown };
 type FillRow = { tx_hash: string; strategy_id: string; grant_id: string; owner: string; market_id: string; side: "up" | "down"; mode: "follow" | "fade"; cash_delta: string; token_delta: string; at_sec: string; dry_run: boolean };
 type DecisionRow = {
   id: string; strategy_id: string; market_id: string; runner: string; decided_at: Date; model: string; prompt_hash: string; verdict_side: DecisionVerdictSide; confidence: number | null;
   why: string; gate: DecisionGate; gate_reason: string; side: "up" | "down" | null; filled: number; skipped: number; dry_run: boolean;
 };
 
-const toHeartbeat = (r: HeartbeatRow): HeartbeatRecord => ({ runner: r.runner, strategyId: r.strategy_id, tickAtMs: r.tick_at.getTime(), intervalMs: r.interval_ms, why: r.why, scanned: r.scanned, closestBps: r.closest_bps, dryRun: r.dry_run });
+const toHeartbeat = (r: HeartbeatRow): HeartbeatRecord => ({
+  runner: r.runner, strategyId: r.strategy_id, tickAtMs: r.tick_at.getTime(), intervalMs: r.interval_ms, why: r.why, scanned: r.scanned, closestBps: r.closest_bps, dryRun: r.dry_run, state: parseRunnerBeat(r.state),
+});
 const toFill = (r: FillRow): StrategyFillRecord => ({ txHash: r.tx_hash, strategyId: r.strategy_id, grantId: r.grant_id, owner: r.owner, marketId: r.market_id, side: r.side, mode: r.mode, cashDelta: r.cash_delta, tokenDelta: r.token_delta, atSec: Number(r.at_sec), dryRun: r.dry_run });
 const toDecision = (r: DecisionRow): StrategyDecisionRecord => ({
   id: Number(r.id), strategyId: r.strategy_id, marketId: r.market_id, runner: r.runner, decidedAtMs: r.decided_at.getTime(), model: r.model, promptHash: r.prompt_hash, verdictSide: r.verdict_side,
@@ -76,14 +94,14 @@ export function createPgStrategyStore(sql: Sql) {
   return {
     async recordHeartbeat(beat: NewHeartbeat): Promise<void> {
       await sql`
-        insert into runner_heartbeats (runner, strategy_id, interval_ms, why, scanned, closest_bps, dry_run)
-        values (${beat.runner.toLowerCase()}, ${beat.strategyId}, ${beat.intervalMs}, ${beat.why}, ${beat.scanned}, ${beat.closestBps}, ${beat.dryRun})`;
+        insert into runner_heartbeats (runner, strategy_id, interval_ms, why, scanned, closest_bps, dry_run, state)
+        values (${beat.runner.toLowerCase()}, ${beat.strategyId}, ${beat.intervalMs}, ${beat.why}, ${beat.scanned}, ${beat.closestBps}, ${beat.dryRun}, ${beat.state ? sql.json(beat.state as never) : null})`;
     },
 
     /** The latest heartbeat per strategy. */
     async latestHeartbeats(): Promise<HeartbeatRecord[]> {
       const rows = await sql<HeartbeatRow[]>`
-        select distinct on (strategy_id) runner, strategy_id, tick_at, interval_ms, why, scanned, closest_bps, dry_run
+        select distinct on (strategy_id) runner, strategy_id, tick_at, interval_ms, why, scanned, closest_bps, dry_run, state
         from runner_heartbeats order by strategy_id, tick_at desc`;
       return rows.map(toHeartbeat);
     },
@@ -91,7 +109,7 @@ export function createPgStrategyStore(sql: Sql) {
     /** The runner's last words for one strategy, newest first — the live why/why-not feed. */
     async recentHeartbeats(strategyId: string, limit: number): Promise<HeartbeatRecord[]> {
       const rows = await sql<HeartbeatRow[]>`
-        select runner, strategy_id, tick_at, interval_ms, why, scanned, closest_bps, dry_run
+        select runner, strategy_id, tick_at, interval_ms, why, scanned, closest_bps, dry_run, state
         from runner_heartbeats where strategy_id = ${strategyId} order by tick_at desc limit ${limit}`;
       return rows.map(toHeartbeat);
     },
@@ -151,7 +169,28 @@ export function createPgStrategyStore(sql: Sql) {
       return rows.length === 1;
     },
 
-    /** After the execution loop: how many subscribers the decision reached, and how many it skipped. */
+    /** A rule's call, recorded once per Window (the first pass its trigger holds); false when the Window already has one. */
+    async recordCall(c: NewStrategyCall): Promise<boolean> {
+      const rows = await sql`
+        insert into strategy_decisions (strategy_id, market_id, runner, decided_at, model, prompt_hash, verdict_side, why, gate, gate_reason, side, filled, dry_run)
+        values (${c.strategyId}, ${c.marketId.toLowerCase()}, ${c.runner.toLowerCase()}, ${new Date(c.decidedAtMs)}, ${c.model}, '', ${c.side}, ${c.why}, 'trade', ${c.gateReason}, ${c.side},
+          ${c.filled ?? 0}, ${c.dryRun})
+        on conflict (strategy_id, market_id, dry_run) do nothing returning id`;
+      return rows.length === 1;
+    },
+
+    /** Every strategy's decision counts (or one's), dry runs excluded. */
+    async decisionCounts(strategyId: string | null = null): Promise<DecisionCounts[]> {
+      const rows = await sql<{ strategy_id: string; total: string; bets: string; held: string; failed: string; last_at: Date | null }[]>`
+        select strategy_id, count(*) as total, count(*) filter (where gate = 'trade') as bets, count(*) filter (where gate = 'held') as held,
+          count(*) filter (where gate = 'failed') as failed, max(decided_at) as last_at
+        from strategy_decisions where dry_run = false and gate <> 'pending' ${strategyId ? sql`and strategy_id = ${strategyId}` : sql``}
+        group by strategy_id`;
+      return rows.map((r) => ({ strategyId: r.strategy_id, total: Number(r.total), bets: Number(r.bets), held: Number(r.held), failed: Number(r.failed), lastAtMs: r.last_at ? r.last_at.getTime() : null }));
+    },
+
+    /** After the execution loop: how many subscribers the decision reached, and how many that pass could not fill. A live
+     *  fill already set `filled` to the Window's filled attempts (`recordFill`); this only ever raises it. */
     async markDecisionExecution(strategyId: string, marketId: string, filled: number, skipped: number, dryRun = false): Promise<void> {
       await sql`update strategy_decisions set filled = greatest(filled, ${filled}), skipped = ${skipped}
         where strategy_id = ${strategyId} and market_id = ${marketId.toLowerCase()} and dry_run = ${dryRun}`;

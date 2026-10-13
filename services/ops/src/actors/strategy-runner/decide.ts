@@ -15,6 +15,8 @@ export interface Scan {
   scanned: number;
   closestBps: number | null;
   why: string;
+  /** Set when the scan could not read at all (an agent with no model configured). */
+  idle?: "no-brain";
 }
 
 /** The latest spot for a symbol no older than the feed's freshness bound, or null. */

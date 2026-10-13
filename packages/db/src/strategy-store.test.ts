@@ -59,4 +59,24 @@ describe.skipIf(!url)("strategy store (runner records)", () => {
     expect(fill).toMatchObject({ side: "down", mode: "fade", owner: OWNER.toLowerCase() });
     expect((await store.decisionOf("3", MARKET, false))?.filled).toBe(1);
   });
+
+  it("records a rule's call once per Window, counts every strategy's decisions and keeps a beat's state", async () => {
+    const store = createPgStrategyStore(sql);
+    const call = { strategyId: "2", marketId: MARKET, runner: RUNNER, model: "rule/reversion", why: "ETH fell 0.08% from its opening print; it bets on a pullback.", gateReason: "0.08% move, past its 0.05% trigger", side: "up" as const, decidedAtMs: 1_791_700_000_000, dryRun: false };
+    expect(await store.recordCall(call)).toBe(true);
+    expect(await store.recordCall({ ...call, side: "down" })).toBe(false);
+    expect(await store.decisionOf("2", MARKET, false)).toMatchObject({ gate: "trade", side: "up", verdictSide: "up", confidence: null, model: "rule/reversion", decidedAtMs: 1_791_700_000_000 });
+    await store.recordCall({ ...call, marketId: `0x${"ef".repeat(32)}`, decidedAtMs: 1_791_700_300_000, filled: 2 });
+    await store.recordCall({ ...call, marketId: `0x${"ee".repeat(32)}`, dryRun: true });
+    const counts = await store.decisionCounts();
+    expect(counts.find((c) => c.strategyId === "2")).toEqual({ strategyId: "2", total: 2, bets: 2, held: 0, failed: 0, lastAtMs: 1_791_700_300_000 });
+    expect((await store.decisionCounts("3"))[0]).toMatchObject({ total: 2, bets: 1, failed: 1 });
+
+    const state = { kind: "scan" as const, copiers: 1, windows: 1, closestBps: null, calls: 1, filled: 0, skipped: { budget: 1 } };
+    await store.recordHeartbeat({ runner: RUNNER, strategyId: "2", intervalMs: 30_000, why: "scanned 1 Window", scanned: 1, closestBps: null, dryRun: false, state });
+    await store.recordHeartbeat({ runner: RUNNER, strategyId: "1", intervalMs: 30_000, why: "older shape", scanned: 0, closestBps: null, dryRun: false });
+    const beats = await store.latestHeartbeats();
+    expect(beats.find((b) => b.strategyId === "2")?.state).toEqual(state);
+    expect(beats.find((b) => b.strategyId === "1")?.state).toBeNull();
+  });
 });

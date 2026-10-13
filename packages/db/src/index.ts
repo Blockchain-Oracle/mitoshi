@@ -19,7 +19,7 @@ export { createPgArcadeStore, type ArcadeBoardRow, type ArcadeGameId, type Arcad
 export { createPgVitalsStore, VITAL_METRICS, type VitalMetric, type VitalSample, type VitalSummary, type VitalsStore } from "./vitals-store";
 export { insertMppReceipt, receiptsForDecision, type MppReceiptInsert, type MppReceiptRecord } from "./mpp";
 export { createPgMppStore, type PgMppStore } from "./mpp-store";
-export { createPgStrategyStore, type DecisionGate, type DecisionVerdictSide, type HeartbeatRecord, type NewHeartbeat, type NewStrategyDecision, type StrategyDecisionRecord, type StrategyFillRecord, type StrategyStore } from "./strategy-store";
+export { createPgStrategyStore, type DecisionCounts, type DecisionGate, type DecisionVerdictSide, type HeartbeatRecord, type NewHeartbeat, type NewStrategyCall, type NewStrategyDecision, type StrategyDecisionRecord, type StrategyFillRecord, type StrategyStore } from "./strategy-store";
 export { createPgStrategyAttempts, type AttemptKey, type NewStrategyAttempt, type StrategyAttempt, type StrategyAttemptState, type StrategyAttemptStore } from "./strategy-attempts";
 export { createPgSealedMemory, type SealedMemoryIndexRow, type SealedMemoryStore } from "./strategy-memory";
 export { agentRegistrationByStrategy, setAgentRegistrationUri, upsertAgentRegistration, type AgentRegistrationRow } from "./agents";

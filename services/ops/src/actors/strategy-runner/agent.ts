@@ -3,7 +3,7 @@
 // books quoted at the envelope's stake; the read is reserved in the store before the call and MPP receipts, when the
 // model is paid on Tempo, are scoped to the decision (`decisionIdOf`).
 import { decideAgentWindow, missingCredentialHint, promptHashOf, resolveModel, type ResolvedModel } from "@cwf/brain";
-import { agentPrompt, decisionIdOf, decisionSlot, formatCadence, gateAgentVerdict, type AgentSpec, type VaultCaps } from "@cwf/core";
+import { agentPrompt, decisionIdOf, decisionSlot, formatCadence, gateAgentVerdict, isRuleModel, type AgentSpec, type VaultCaps } from "@cwf/core";
 import { insertMppReceipt, type Sql, type StrategyStore } from "@cwf/db";
 import type { IndexedStrategy } from "@cwf/db/idx";
 import { type RunnerWindow, type YesBook } from "@cwf/markets/ops";
@@ -43,7 +43,8 @@ export function agentBootLine(state: AgentState): string {
 /** The sliding hour's reads survive a restart: they are rows. */
 export async function warmAgentState(state: AgentState, store: StrategyStore, nowMs: number): Promise<void> {
   const rows = await store.listDecisions(null, 500, true);
-  state.callsAtMs = rows.map((r) => r.decidedAtMs).filter((at) => nowMs - at < HOUR_MS);
+  // Only model reads spend the budget; a rule's recorded call (`rule/<preset>`) costs nothing.
+  state.callsAtMs = rows.filter((r) => !isRuleModel(r.model)).map((r) => r.decidedAtMs).filter((at) => nowMs - at < HOUR_MS);
 }
 
 /** Up to 12 spot points across the Window so far, and an EMA over them (moved to @cwf/markets/strategies, R4-6). */
@@ -70,7 +71,7 @@ export interface AgentScanDeps {
 export async function scanAgent(deps: AgentScanDeps, s: IndexedStrategy, spec: AgentSpec, windows: readonly RunnerWindow[], nowMs: number): Promise<Scan> {
   const { agent, store } = deps;
   const id = BigInt(s.strategyId);
-  if (!agent.brain) return { candidates: [], scanned: 0, closestBps: null, why: `agent brain not configured — set ${agent.missing} on the runner; holding` };
+  if (!agent.brain) return { candidates: [], scanned: 0, closestBps: null, why: `agent brain not configured — set ${agent.missing} on the runner; holding`, idle: "no-brain" };
   const brain = agent.brain;
   const nowSec = Math.floor(nowMs / 1000);
   const mine = windows.filter((w) => spec.cadences.includes(w.cadenceSec));
