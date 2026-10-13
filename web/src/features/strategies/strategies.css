@@ -18,15 +18,11 @@
 @media (prefers-reduced-motion: reduce) { .strat-sigil-paper svg { animation: none; } }
 /* w-1.5 h-1.5 rounded-full bg-signal animate-pulse */
 .strat-live-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--color-accent-fill); animation: desk-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: var(--color-on-accent); }
-/* nameplate: mt-7 pb-7 border-b border-white/15; h1 font-display font-[800] text-[1.9rem] md:text-[2.6rem] xl:text-[3rem] leading-[1.0] tracking-tight */
+/* nameplate: mt-7 pb-7 border-b border-white/15 (`.strat-h1`, `.strat-meta`, the head row and the not-advice line live in
+   head.css, which loads with each route's first paint so the head stands before the island). */
 .strat-nameplate { margin-top: 28px; padding-bottom: 28px; border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent); }
-.strat-h1 { font-family: var(--font-heading); font-weight: 800; font-size: 1.9rem; line-height: 1; letter-spacing: -0.025em; max-width: 48rem; color: var(--color-ink); font-stretch: 100%; }
-@media (min-width: 768px) { .strat-h1 { font-size: 2.6rem; } }
-@media (min-width: 1280px) { .strat-h1 { font-size: 3rem; } }
 /* section headers: font-display font-[800] text-[19px] tracking-tight */
 .strat-h2 { font-family: var(--font-heading); font-weight: 800; font-size: 19px; letter-spacing: -0.025em; color: var(--color-ink); font-stretch: 100%; }
-/* font-mono text-[10px] uppercase tracking-[0.14em] */
-.strat-meta { font-family: var(--font-data); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
 /* font-mono text-[9px] uppercase tracking-[0.18em] */
 .strat-micro { font-family: var(--font-data); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
 /* font-mono text-[11px] uppercase tracking-[0.22em] */
@@ -151,11 +147,6 @@
 .strat-pause:hover { border-color: color-mix(in srgb, var(--color-ink) 30%, transparent); }
 .strat-pause:disabled { opacity: 0.5; }
 
-/* The nameplate's head row: the h1 with the board pill beside it; the closing not-advice line. */
-.strat-head-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.strat-board-link { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 9999px; border: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-ink-secondary); transition: color 0.2s, border-color 0.2s; }
-.strat-board-link:hover { color: var(--color-ink); border-color: var(--color-ink-muted); }
-.strat-advice { font-family: var(--font-data); font-size: 10px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
 /* The archive's sticky tab bar under the shell's top line (Owarine: sticky top-(--stage-sticky-top) z-20, blurred). */
 .strat-tabbar { position: sticky; top: var(--stage-sticky-top); z-index: var(--z-sticky); margin: 0 -4px; padding: 12px 4px 0; border-bottom: 1px solid var(--color-hairline); background: color-mix(in srgb, var(--color-canvas) 85%, transparent); backdrop-filter: blur(12px); }
 .strat-tabbar-row { display: flex; align-items: center; gap: 20px; overflow-x: auto; scrollbar-width: none; }

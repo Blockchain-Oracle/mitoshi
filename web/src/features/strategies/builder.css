@@ -1,8 +1,5 @@
-/* Ported from Owarine 90a91d71:web/src/features/strategies/builder.css (R4-6, D-227) — the workspace pills, the creator
- * studio's four-step shell with its preview aside, and Yours' strategy picker, on Mitoshi's tokens. */
-.agent-entry { display: flex; flex-wrap: wrap; gap: .65rem; }
-.agent-entry button { border: 1px solid var(--color-hairline); padding: .8rem 1rem; font-family: var(--font-data); font-size: .75rem; color: var(--color-ink); background: transparent; border-radius: .4rem; font-variant-numeric: tabular-nums; }
-.agent-entry button[aria-pressed="true"] { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent-fill) 7%, transparent); }
+/* Ported from Owarine 90a91d71:web/src/features/strategies/builder.css (R4-6, D-227) — the creator studio's four-step
+ * shell with its preview aside and Yours' strategy picker, on Mitoshi's tokens (the workspace pills are in head.css). */
 .agent-builder { }
 .agent-builder-heading { display: flex; align-items: start; justify-content: space-between; gap: 1.5rem; }
 .agent-builder-heading > p { max-width: 24rem; }
@@ -29,7 +26,7 @@
 .copy-progress a { overflow-wrap: anywhere; }
 .copy-progress p { font-size: .8rem; line-height: 1.6; }
 .copy-progress button { margin-top: .75rem; }
-.agent-entry button:focus-visible, .agent-steps button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.agent-steps button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
 @media (max-width: 850px) { .agent-builder-grid { grid-template-columns: minmax(0, 1fr); } .agent-builder-preview { position: static; } }
 @media (max-width: 540px) { .agent-builder-heading { display: block; } .agent-builder-heading > p { margin-top: 1rem; } .agent-steps { gap: .5rem; } .agent-steps button { font-size: .65rem; } .agent-builder-actions { gap: .5rem; } }
 
@@ -54,9 +51,6 @@
 @media (prefers-reduced-motion: reduce) { .strat-picker-menu { animation: none; } }
 
 
-.agent-entry button, .agent-entry a { min-height: 44px; display: inline-flex; align-items: center; }
-.agent-entry a { border: 1px solid var(--color-hairline); padding: .8rem 1rem; font-family: var(--font-data); font-size: .75rem; color: var(--color-ink); border-radius: .4rem; }
-.agent-entry a:hover { border-color: var(--color-ink-muted); }
 .agent-steps button:disabled { cursor: default; }
 /* Phones: the preview is one line above the step, the actions stay above the dock (Never scroll to the action). */
 .agent-preview-strip { display: none; }

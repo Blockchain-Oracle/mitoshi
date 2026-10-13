@@ -1,10 +1,9 @@
 "use client";
-// Ported from Owarine 90a91d71:web/src/features/strategies/StrategiesScreen.tsx (R4-6, D-227) — the nameplate with the
-// board pill, the three workspace pills (Create · Copy a strategy · Your strategies; Create first), then the creator
-// studio (kept mounted, so a draft and its published state survive a switch), or the archive grid with Yours' picker
-// and live desk above it, the recent copy trades and the not-advice line. `?view=`, `?strategy=<id>` and
-// `?copy=<address>` (Create on the mirror preset, that trader in it) are read once after mount. The stage is the inset.
-import Link from "next/link";
+// Ported from Owarine 90a91d71:web/src/features/strategies/StrategiesScreen.tsx (R4-6, D-227) — the body under the
+// nameplate and the workspace pills (StrategiesHead, which StrategiesPage draws from the first paint and which owns the
+// view): the creator studio (kept mounted, so a draft and its published state survive a switch), or the archive grid with
+// Yours' picker and live desk above it and the recent copy trades. `?strategy=<id>` (that card's drawer) and
+// `?copy=<address>` (the mirror preset, that trader in it) are read once after mount. The stage is the inset.
 import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/states/EmptyState";
 import { LoadingState } from "@/components/states/LoadingState";
@@ -14,6 +13,7 @@ import { STRATEGIES as S } from "./copy";
 import { CreatorStudio } from "./CreatorStudio";
 import { LiveDesk } from "./LiveDesk";
 import { RecentCopyTrades } from "./RecentCopyTrades";
+import type { StrategiesView as View } from "./StrategiesHead";
 import { StrategyGrid } from "./StrategyGrid";
 import { StrategyPicker } from "./StrategyPicker";
 import { useCopyWrites } from "./useCopyWrites";
@@ -21,28 +21,19 @@ import { useStrategies } from "./useStrategies";
 import "./strategies.css";
 import "./builder.css";
 
-type View = (typeof S.views)[number]["value"];
-
-export function StrategiesScreen() {
+export function StrategiesScreen({ view, onView: setView }: { view: View; onView: (v: View) => void }) {
   const reading = useStrategies();
   const writes = useCopyWrites();
   const shell = useWalletShell();
-  const [view, setView] = useState<View>("create");
   const [openId, setOpenId] = useState<string | null>(null);
   const [drawerTab, setDrawerTab] = useState<DrawerTab | undefined>(undefined);
   const [selected, setSelected] = useState<string | null>(null);
   const [trader, setTrader] = useState<string | null>(null);
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
-    const v = q.get("view");
     const id = q.get("strategy");
     const copy = q.get("copy");
-    if (v === "copy" || v === "yours" || v === "create") setView(v);
-    else if (id) setView("copy");
-    if (copy) {
-      setView("create");
-      setTrader(copy);
-    }
+    if (copy) setTrader(copy);
     if (id && /^\d+$/.test(id)) {
       setOpenId(id);
       setSelected(id);
@@ -63,27 +54,14 @@ export function StrategiesScreen() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="strat-head-row">
-        <div>
-          <p className="strat-meta mb-3 text-accent">{S.eyebrow}</p>
-          <h1 className="strat-h1">{S.title}</h1>
-        </div>
-        <Link href="/agents" className="strat-board-link">{S.board}</Link>
-      </header>
-      <nav className="agent-entry" aria-label={S.viewsLabel}>
-        {S.views.map((v) => (
-          <button key={v.value} type="button" aria-pressed={view === v.value} onClick={() => setView(v.value)}>{v.label}</button>
-        ))}
-      </nav>
-
+    <>
       <div hidden={view !== "create"}>
         <CreatorStudio writes={writes} trader={trader} onYours={(id) => { setSelected(id); setView("yours"); }} />
       </div>
 
       {view !== "create" && (
         reading.isPending ? (
-          <LoadingState shape="tiles" label={S.loading} />
+          <LoadingState shape="strategy-grid" label={S.loading} />
         ) : reading.isError && !payload ? (
           <div role="alert" className="strat-empty flex flex-col items-center gap-3">
             <p className="strat-h2">{S.error}</p>
@@ -115,8 +93,7 @@ export function StrategiesScreen() {
           </>
         )
       )}
-      <p className="strat-advice">{S.advice}</p>
       <CopyDrawer card={card} strategies={strategies} writes={writes} fills={payload?.fills ?? []} tab={drawerTab} open={card !== null} onOpenChange={(o) => !o && setOpenId(null)} />
-    </div>
+    </>
   );
 }

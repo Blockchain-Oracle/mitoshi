@@ -12,6 +12,7 @@ import { strategyIdentity } from "../strategies/identity";
 import type { StrategyWire } from "../strategies/protocol";
 import { HEALTH_TONE } from "../strategies/StrategyCard";
 import { AGENTS } from "./copy";
+import "../strategies/head.css";
 
 const C = AGENTS.cockpit;
 

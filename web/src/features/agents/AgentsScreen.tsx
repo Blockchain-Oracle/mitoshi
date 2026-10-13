@@ -1,8 +1,9 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/strategies/AgentsScreen.tsx (R4-6, D-227) on Mitoshi's registry and
-// rankAgents (board.ts, Q-001's inherited order): the title, the entry links into /strategies, the stat strip (Agents ·
-// Strategies · Copiers · Entrusted, from the same read), the order as two tabs (Most backed · P&L) and one AgentRow per
-// ERC-8004 agent; it ends on the not-advice line. The stage is the one inset.
+// rankAgents (board.ts, Q-001's inherited order): the board under AgentsHead (the title and entry links, drawn by
+// AgentsPage from the first paint, with the not-advice line) — the stat strip (Agents · Strategies · Copiers · Entrusted,
+// from the same read), the order as two tabs (Most backed · P&L) and one AgentRow per ERC-8004 agent. The stage is the
+// one inset.
 import Link from "next/link";
 import { useState } from "react";
 import { LoadingState } from "@/components/states/LoadingState";
@@ -31,13 +32,7 @@ export function AgentsScreen() {
   const ranked = rankAgents(strategies, sort);
   const nowMs = Date.now();
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="strat-h1">{A.title}</h1>
-      <nav className="agent-entry" aria-label={A.entryLabel}>
-        <Link href="/strategies">{A.entry.create}</Link>
-        <Link href="/strategies?view=copy">{A.entry.copy}</Link>
-        <Link href="/strategies?view=yours">{A.entry.yours}</Link>
-      </nav>
+    <>
       {reading.isPending ? (
         <LoadingState shape="agents-board" label={A.loading} />
       ) : reading.isError && !reading.data ? (
@@ -72,7 +67,6 @@ export function AgentsScreen() {
           )}
         </>
       )}
-      <p className="strat-advice">{A.advice}</p>
-    </div>
+    </>
   );
 }
