@@ -292,6 +292,13 @@ body.urgent::before {
   transform: translateX(104%); transition: transform 420ms cubic-bezier(.22,1,.36,1);
 }
 [data-theme="light"] .sensei-drawer { background: #f7f1e6; border-left-color: rgba(20,18,16,0.1); }
+/* Round 7 (the owner's TestFlight review; Senryo's sheets): on a phone Sensei is a bottom sheet over the dock, on the
+   theme's own ground, not a side panel. */
+@media (max-width: 767px) {
+  .sensei-drawer { top: auto; left: 0; right: 0; width: 100%; height: min(88dvh, calc(100dvh - var(--safe-top, 0px) - 24px)); bottom: var(--keyboard-inset, 0px); border-left: 0; border-radius: 22px 22px 0 0; background: var(--color-ground); box-shadow: 0 -24px 60px -30px rgba(0,0,0,0.5); transform: translateY(104%); transition: transform 480ms cubic-bezier(0.32, 0.72, 0, 1); padding-bottom: var(--safe-bottom, 0px); }
+  [data-theme="light"] .sensei-drawer { background: var(--color-ground); }
+  .sensei-drawer.open { transform: translateY(0); }
+}
 .sensei-drawer.open { transform: translateX(0); }
 .sensei-drawer-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.07); }
 [data-theme="light"] .sensei-drawer-head { border-bottom-color: rgba(20,18,16,0.08); }

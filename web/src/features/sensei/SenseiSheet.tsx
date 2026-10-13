@@ -9,6 +9,7 @@
 import { computeDrift, formatCadence, type EventMarket, type Side } from "@cwf/core";
 import { formatClock } from "@cwf/core/units";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import MitoshiMark from "@/components/shell/MitoshiMark";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { CardSpark } from "@/features/markets/lanes/CardSpark";
@@ -163,100 +164,104 @@ export function SenseiSheet({ open, onClose, read, market, openingRaw, onAct, ce
   const showChips = !busy && pending === null && chat.messages.length > 1 && last?.role === "assistant" && !last.failed;
   const hasRead = chat.messages.some((m, i) => i > 0 && m.role === "assistant" && !m.failed && m.content);
 
-  return (
+  // Round 7: into <body>, so no transformed or clipping ancestor (the bordered stage) can trap the fixed drawer — on a
+  // phone it opened half off-screen.
+  if (typeof document === "undefined") return null;
+  return createPortal(
     <>
-      <button type="button" className={cn("sensei-drawer-scrim", open && "show")} aria-label={SENSEI.close} tabIndex={-1} aria-hidden={!open} onClick={onClose} />
-      <aside ref={asideRef} className={cn("sensei-drawer", open && "open")} role="dialog" aria-label={SENSEI.title} aria-modal={open} aria-hidden={!open}>
-        <header className="sensei-drawer-head">
-          <div>
-            <div className="sd-eyebrow">{SENSEI.eyebrow}</div>
-            <div className="sd-title">
-              {SENSEI.title} <span className="sd-beta">{SENSEI.beta}</span>
-            </div>
-          </div>
-          <div className="sd-head-right">
-            <button type="button" className="sd-close" onClick={onClose} aria-label={SENSEI.close} title={SENSEI.close}>✕</button>
-          </div>
-        </header>
-
-        {cells ? <div className="sd-cells">{cells}</div> : null}
-        <SenseiMeter market={market} openingRaw={openingRaw} />
-
-        <div ref={scrollRef} className="sensei-drawer-msgs">
-          {chat.messages.map((m, i) => {
-            const writing = i === chat.messages.length - 1 && m.role === "assistant" && busy;
-            return (
-              <div key={i} className={cn("sd-row", m.role)}>
-                {m.role === "assistant" ? (
-                  <span className="sd-ava" aria-hidden>
-                    <MitoshiMark className="sd-ava-mark" />
-                  </span>
-                ) : null}
-                <div className={cn("sd-msg", m.role)}>
-                  {writing && chat.status === "waiting" ? (
-                    <span className="sensei-dots" aria-label={SENSEI.typing}><i /><i /><i /></span>
-                  ) : (
-                    <span className="whitespace-pre-wrap">{m.content}{writing ? <span className="sd-caret" aria-hidden /> : null}</span>
-                  )}
-                </div>
+        <button type="button" className={cn("sensei-drawer-scrim", open && "show")} aria-label={SENSEI.close} tabIndex={-1} aria-hidden={!open} onClick={onClose} />
+        <aside ref={asideRef} className={cn("sensei-drawer", open && "open")} role="dialog" aria-label={SENSEI.title} aria-modal={open} aria-hidden={!open}>
+          <header className="sensei-drawer-head">
+            <div>
+              <div className="sd-eyebrow">{SENSEI.eyebrow}</div>
+              <div className="sd-title">
+                {SENSEI.title} <span className="sd-beta">{SENSEI.beta}</span>
               </div>
-            );
-          })}
-          {status === "loading" ? <p role="status" className="sensei-drawer-foot">{SENSEI.checking}</p> : null}
-          {status !== "loading" && !on ? <p className="sensei-drawer-foot">{status === null ? SENSEI.offline : SENSEI.off}</p> : null}
-          {pending !== null && on && !agreed ? (
-            <SenseiConsent
-              recipients={status.recipients}
-              onAgree={() => {
-                grantAiConsent(status.provider!);
-                const q = pending;
-                setPending(null);
-                void chat.ask(q, read());
-              }}
-              onDecline={() => (setPending(null), notify.item({ id: "sensei-consent", title: SENSEI.consent.declined }))}
-            />
-          ) : null}
-          {showChips ? (
-            <div className="sd-chips">
-              {chipsFor(last.content).map((chip) => (
-                <button key={chip} type="button" className="sd-chip" onClick={() => ask(chip)}>{chip}</button>
+            </div>
+            <div className="sd-head-right">
+              <button type="button" className="sd-close" onClick={onClose} aria-label={SENSEI.close} title={SENSEI.close}>✕</button>
+            </div>
+          </header>
+  
+          {cells ? <div className="sd-cells">{cells}</div> : null}
+          <SenseiMeter market={market} openingRaw={openingRaw} />
+  
+          <div ref={scrollRef} className="sensei-drawer-msgs">
+            {chat.messages.map((m, i) => {
+              const writing = i === chat.messages.length - 1 && m.role === "assistant" && busy;
+              return (
+                <div key={i} className={cn("sd-row", m.role)}>
+                  {m.role === "assistant" ? (
+                    <span className="sd-ava" aria-hidden>
+                      <MitoshiMark className="sd-ava-mark" />
+                    </span>
+                  ) : null}
+                  <div className={cn("sd-msg", m.role)}>
+                    {writing && chat.status === "waiting" ? (
+                      <span className="sensei-dots" aria-label={SENSEI.typing}><i /><i /><i /></span>
+                    ) : (
+                      <span className="whitespace-pre-wrap">{m.content}{writing ? <span className="sd-caret" aria-hidden /> : null}</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+            {status === "loading" ? <p role="status" className="sensei-drawer-foot">{SENSEI.checking}</p> : null}
+            {status !== "loading" && !on ? <p className="sensei-drawer-foot">{status === null ? SENSEI.offline : SENSEI.off}</p> : null}
+            {pending !== null && on && !agreed ? (
+              <SenseiConsent
+                recipients={status.recipients}
+                onAgree={() => {
+                  grantAiConsent(status.provider!);
+                  const q = pending;
+                  setPending(null);
+                  void chat.ask(q, read());
+                }}
+                onDecline={() => (setPending(null), notify.item({ id: "sensei-consent", title: SENSEI.consent.declined }))}
+              />
+            ) : null}
+            {showChips ? (
+              <div className="sd-chips">
+                {chipsFor(last.content).map((chip) => (
+                  <button key={chip} type="button" className="sd-chip" onClick={() => ask(chip)}>{chip}</button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+  
+          {hasRead && market && onAct ? <SenseiTradeCard market={market} onAct={(side) => (onAct(market.marketId, side), onClose())} /> : null}
+  
+          {chat.messages.length <= 1 && pending === null && on ? (
+            <div className="sensei-drawer-starters">
+              {SENSEI_STARTERS.map((starter) => (
+                <button key={starter} type="button" className="sd-starter" onClick={() => ask(starter)}>{starter}</button>
               ))}
             </div>
           ) : null}
-        </div>
-
-        {hasRead && market && onAct ? <SenseiTradeCard market={market} onAct={(side) => (onAct(market.marketId, side), onClose())} /> : null}
-
-        {chat.messages.length <= 1 && pending === null && on ? (
-          <div className="sensei-drawer-starters">
-            {SENSEI_STARTERS.map((starter) => (
-              <button key={starter} type="button" className="sd-starter" onClick={() => ask(starter)}>{starter}</button>
-            ))}
-          </div>
-        ) : null}
-
-        <form
-          className="sensei-drawer-input"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (busy) return chat.stop();
-            ask(input);
-            setInput("");
-          }}
-        >
-          <input value={input} onChange={(event) => setInput(event.target.value)} placeholder={SENSEI.placeholder} aria-label={SENSEI.placeholder} disabled={!on || pending !== null} />
-          <button type="submit" disabled={!on || pending !== null || (!busy && !input.trim())}>{busy ? SENSEI.stopShort : SENSEI.send}</button>
-        </form>
-        <p className="sensei-drawer-foot">
-          {SENSEI.notAdvice}
-          {agreed && on ? (
-            <>
-              {" "}{SENSEI.shared(status.recipients.join(", then "))}{" "}
-              <button type="button" className="underline" onClick={() => (withdrawAiConsent(), notify.item({ id: "sensei-consent", title: SENSEI.turnedOff }))}>{SENSEI.turnOff}</button>
-            </>
-          ) : null}
-        </p>
-      </aside>
-    </>
+  
+          <form
+            className="sensei-drawer-input"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (busy) return chat.stop();
+              ask(input);
+              setInput("");
+            }}
+          >
+            <input value={input} onChange={(event) => setInput(event.target.value)} placeholder={SENSEI.placeholder} aria-label={SENSEI.placeholder} disabled={!on || pending !== null} />
+            <button type="submit" disabled={!on || pending !== null || (!busy && !input.trim())}>{busy ? SENSEI.stopShort : SENSEI.send}</button>
+          </form>
+          <p className="sensei-drawer-foot">
+            {SENSEI.notAdvice}
+            {agreed && on ? (
+              <>
+                {" "}{SENSEI.shared(status.recipients.join(", then "))}{" "}
+                <button type="button" className="underline" onClick={() => (withdrawAiConsent(), notify.item({ id: "sensei-consent", title: SENSEI.turnedOff }))}>{SENSEI.turnOff}</button>
+              </>
+            ) : null}
+          </p>
+        </aside>
+      </>,
+    document.body,
   );
 }
