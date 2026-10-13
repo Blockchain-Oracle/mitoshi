@@ -6,6 +6,7 @@
  * `LaunchRegistry.isReservedCode`; `currencyGuard.ts` (S17a) mirrors it so the form refuses before a signature.
  */
 export * from "./currencyGuard";
+export * from "./intents";
 export const STABLECOIN_CURRENCY = "USD";
 
 /** A token symbol the launch form accepts: 2–11 upper-case letters or digits, starting with a letter. */
