@@ -222,12 +222,23 @@ R4-11 (Account · launch · themes · surface · claim) merged at `027de1a` (the
 branch's earlier copy; stash dropped). Fixed: /launch and /themes crashed with no QueryClient (now behind DataGate) and
 failed the build's prerender; launch's lp-head/lp-disc/lp-steps collided with the landing's; /launch* and /themes* out
 of the Soon set. /launch reads two real launches, /themes three themes. /launch*, /themes*, /settings/* load their screens as
-islands. Open: migrations (ops applies them on start) launch/0001 and themes/0001 and the ops env (THEME_KEYS_SECRET, theme-agent, launch-keeper, reference-writer
-in OPS_ACTORS); /claim blocked on S11; the theme agent's first rebalance blocked on the stock sync (S14c).
+islands. Done 2026-10-13 04:42Z: testnet ops env (THEME_KEYS_SECRET; theme-agent, launch-keeper, reference-writer in
+OPS_ACTORS; launch-keeper on the `keeper` key) — ops applied launch/0001 and themes/0001 on start, /health lists the three
+live and ok. Open: /claim blocked on S11; the theme agent's first rebalance blocked on the stock sync (S14c).
 Batch checks: web tsc, core/markets/db/ops/scripts typecheck, invariants clean; changed tests 58/58; build clean;
 perf:budgets failed on 20 routes, fixed after the first push (`kit` barrel → direct imports with kit.css; R4-11's
 screens and the profile's takes and … menu as islands): 74 routes within budget (/u/[address] 229.1 KB, arcade 246.1 KB). Quick look at 375 × 667 and 1440 × 900: /tickers/BTC, /, /settings/account,
 /launch.
+R4-9 (Games) merged at `ac6dfe6` (clean): the hall (marquee of real fills and replayed runs, the next Window's featured
+cabinet, self-playing cabinets, streaks, achievements), Beat the coin, immersive play on the 44 px rail, Line Rider v3
+and Candle Hop v3 on a server-issued RedStone tape, Lucky settled from the chain (arena on 42431; db games/0003–0005,
+applied by ops on start), the duel queue and `duel-settler`, Rank and History on real records. Fixed: 11 /games routes
+over budget (286–308 KB: the settings and how-to sheets brought Base UI's dialog into the games layout, the arcade its
+run stage) — both sheets load on first open, the run is an island prefetched at idle: 74 routes within budget (/games
+234.5 KB, arcade 247.6 KB). Checks: web tsc, core/markets/db/clients/ops typecheck, invariants clean; changed tests
+55/55; build clean. Quick look /games at 375 × 667 and 1440 × 900: PLAY on the first phone screen, the 4-column grid;
+no page overflow (sweep hits are Lucky's reel cells, clipped); the settings and how-to sheets and the run stage open from their islands. Open: `duel-settler` is not in testnet ops' explicit
+OPS_ACTORS, so paired duels don't settle until it's added; the duel season (prize pool, SEASON_* env) is the owner's.
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on

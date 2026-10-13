@@ -305,9 +305,10 @@ export function useBgmVolume(): number {
 
 // ── dialogs ──
 
-/** For a sheet or dialog driven by an `open` prop: the open and close chirps on transitions, silent at mount. */
+/** For a sheet or dialog driven by an `open` prop: the open and close chirps on transitions (a sheet mounted open chirps). */
 export function useModalSfx(open: boolean): void {
-  const previous = useRef(open);
+  // From closed: the sheets are islands mounted on their first open, which sounds too.
+  const previous = useRef(false);
   useEffect(() => {
     if (previous.current === open) return;
     previous.current = open;

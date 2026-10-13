@@ -2,6 +2,7 @@
 
 import type { ArcadeGame } from "@cwf/core/games/arcade";
 import { Play } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -10,9 +11,12 @@ import { AttractCanvas } from "./AttractCanvas";
 import { useGames } from "../GamesProvider";
 import { ArcadeBoard } from "./ArcadeBoard";
 import { ARCADE } from "./copy";
-import { RunLayer } from "./RunLayer";
 import { useArcadeScore } from "./useArcadeScore";
 import "./arcade.css";
+
+// The run (3-2-1-GO, the HUD, the cards, sharing) is an island: fetched while the cabinet idles, mounted on Play.
+const loadRunLayer = () => import("./RunLayer").then((m) => m.RunLayer);
+const RunLayer = dynamic(loadRunLayer, { ssr: false, loading: () => null });
 
 /**
  * `/games/line-rider` and `/games/candle-hop` — the cabinet (R4-9, D-227; ported from
@@ -42,6 +46,11 @@ export function ArcadeStage({ game }: { game: ArcadeGame }) {
   const [playing, setPlaying] = useState(false);
   const [calm, setCalm] = useState(false);
   const [sessionBest, setSessionBest] = useState<number | null>(null);
+
+  useEffect(() => {
+    const t = window.setTimeout(() => void loadRunLayer(), 1500);
+    return () => window.clearTimeout(t);
+  }, []);
 
   // Reduced motion offers the calmer ramp; it stays a choice the player can flip either way.
   useEffect(() => {
