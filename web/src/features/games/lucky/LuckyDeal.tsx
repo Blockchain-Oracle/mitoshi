@@ -9,6 +9,7 @@ import { impliedMultipleHundredths } from "@cwf/core/games";
 import { formatBaseUnits, formatClock } from "@cwf/core/units";
 import { isOk, type Address } from "@cwf/core";
 import { useLanes } from "@cwf/markets/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
 import { SwipeToConfirm } from "@/components/kit";
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
@@ -33,6 +34,7 @@ export function LuckyDeal({ deal, wallet, onAgain }: { deal: LuckyDealWire; wall
   const quote = useQuote({ market: market!, side: deal.draw.side, stakeBase, nowMs, enabled: market !== null });
   const bet = usePlaceBet(wallet, { quiet: true });
   const reported = useRef(false);
+  const qc = useQueryClient();
 
   // Report the lane's answer once, against this draw's row.
   const outcome = bet.state.outcome;
@@ -40,9 +42,13 @@ export function LuckyDeal({ deal, wallet, onAgain }: { deal: LuckyDealWire; wall
     if (!outcome || reported.current) return;
     if (outcome.status === "requote") return;
     reported.current = true;
-    if (outcome.status === "confirmed") reportPlaced(deal.drawId, { status: "confirmed", txHash: outcome.booked.txHash, costBase: outcome.booked.costBase.toString(), quantityRaw: outcome.booked.contractsRaw.toString(), refusal: null });
-    else reportPlaced(deal.drawId, { status: outcome.status === "unknown" ? "unknown" : "refused", txHash: "txHash" in outcome ? (outcome.txHash ?? null) : null, costBase: null, quantityRaw: null, refusal: outcome.status });
-  }, [outcome, deal.drawId]);
+    const done =
+      outcome.status === "confirmed"
+        ? reportPlaced(deal.drawId, { status: "confirmed", txHash: outcome.booked.txHash, costBase: outcome.booked.costBase.toString(), quantityRaw: outcome.booked.contractsRaw.toString(), refusal: null })
+        : reportPlaced(deal.drawId, { status: outcome.status === "unknown" ? "unknown" : "refused", txHash: "txHash" in outcome ? (outcome.txHash ?? null) : null, costBase: null, quantityRaw: null, refusal: outcome.status });
+    // The row is open now: the machine's settle watch starts from this read.
+    void done.then(() => qc.invalidateQueries({ queryKey: ["games", "lucky", "history"] }));
+  }, [outcome, deal.drawId, qc]);
 
   const remainingSec = market ? market.lockAtSec - Math.floor(nowMs / 1_000) : 0;
   const live = quote.quote;

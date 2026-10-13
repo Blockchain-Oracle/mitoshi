@@ -45,6 +45,12 @@ export const LUCKY = {
     mismatch: "Recomputed here · the draw does NOT match",
   },
   streak: (n: number, best: number) => `Streak ${n} · best ${best}`,
+  settled: {
+    verdict: { won: "You won", lost: "Lost", void: "Void · refunded", "cashed-out": "Cashed out" },
+    streak: "Streak",
+    best: (n: number) => `best ${n}`,
+    history: "History",
+  },
   history: {
     won: "Won",
     lost: "Lost",

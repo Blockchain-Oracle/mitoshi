@@ -79,6 +79,9 @@ export function useLuckyDraw() {
   return { phase, deal, error, spin, landed, reset };
 }
 
-export function reportPlaced(drawId: string, body: { status: "confirmed" | "refused" | "unknown"; txHash: Hex | null; costBase: string | null; quantityRaw: string | null; refusal: string | null }): void {
-  void post("/api/games/lucky/placed", { drawId, ...body }).catch(() => undefined);
+export function reportPlaced(drawId: string, body: { status: "confirmed" | "refused" | "unknown"; txHash: Hex | null; costBase: string | null; quantityRaw: string | null; refusal: string | null }): Promise<void> {
+  return post("/api/games/lucky/placed", { drawId, ...body }).then(
+    () => undefined,
+    () => undefined,
+  );
 }

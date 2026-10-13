@@ -39,7 +39,24 @@
 .lk-slot-face { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .lk-slot-disc { width: 22px; height: 22px; }
 .lk-slot-face--reach { font-size: 28px; }
-@media (max-width: 360px) { .slot-row { font-size: 18px; } .lk-slot-face--reach { font-size: 22px; } .lk-slot-disc { display: none; } }
+/* The asset face: the ticker over its last half hour (a static line, toned by its move). */
+.lk-slot-face--asset { flex-direction: column; gap: 3px; }
+.lk-slot-line { display: block; width: 56px; height: 10px; overflow: visible; }
+.lk-slot-line polyline { fill: none; stroke: var(--gray-500); stroke-width: 1.5; vector-effect: non-scaling-stroke; stroke-linejoin: round; stroke-linecap: round; }
+.lk-slot-line[data-trend="up"] polyline { stroke: var(--profit); }
+.lk-slot-line[data-trend="down"] polyline { stroke: var(--loss); }
+.slot-row:not([data-pay]) .lk-slot-line { opacity: 0.5; }
+@media (max-width: 360px) { .slot-row { font-size: 18px; } .lk-slot-face--reach { font-size: 22px; } .lk-slot-disc { display: none; } .lk-slot-line { width: 44px; height: 8px; } }
+
+/* ── The settle moment (LuckySettled): the verdict, the draw, the streak ── */
+.lk-settled-body { position: relative; display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; }
+.lk-settled-draw { font-family: var(--font-data); font-size: 13px; color: var(--gray-400); font-variant-numeric: tabular-nums; }
+.lk-settled-streak { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.lk-settled-label { font-family: var(--font-data); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-500); }
+.lk-settled-figure { font-family: var(--font-pixel); font-size: 48px; line-height: 1; color: var(--white); }
+.lk-settled-body[data-result="won"] .lk-settled-figure { color: var(--profit); }
+.lk-settled-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.lk-settled-link { display: grid; place-items: center; min-height: 44px; font-size: 13px; color: var(--gray-400); }
 
 /* ── The stake chips and the SPIN ── */
 .lk-chips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }

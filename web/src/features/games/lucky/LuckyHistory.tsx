@@ -12,7 +12,7 @@ import type { LuckyHistoryWire } from "./lucky-wire";
 const when = (iso: string) => new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
 /** A wallet's draws, reconciled against the chain on read; shared by History and the machine's streak line. */
-export function useLuckyHistory(address: string | null) {
+export function useLuckyHistory(address: string | null, refetchInterval: number | false = false) {
   return useQuery({
     queryKey: ["games", "lucky", "history", address],
     queryFn: async () => {
@@ -22,6 +22,7 @@ export function useLuckyHistory(address: string | null) {
     },
     enabled: address !== null,
     retry: 1,
+    refetchInterval,
   });
 }
 

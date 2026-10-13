@@ -14,6 +14,7 @@ import { LUCKY } from "./copy";
 import { LuckyDeal } from "./LuckyDeal";
 import { useLuckyHistory } from "./LuckyHistory";
 import { LuckyReels } from "./LuckyReels";
+import { LuckySettled } from "./LuckySettled";
 import type { LuckyDealWire } from "./lucky-wire";
 import { reelSpin } from "./reel-sfx";
 import { useLuckyDraw, verifyDeal } from "./useLuckyDraw";
@@ -107,6 +108,7 @@ export function LuckyStage() {
       )}
 
       {draw.deal && address && (draw.phase === "dealt" || draw.phase === "refused") ? <Proof deal={draw.deal} wallet={address} /> : null}
+      {address ? <LuckySettled address={address} onAgain={draw.reset} /> : null}
     </div>
   );
 }
