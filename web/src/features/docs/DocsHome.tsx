@@ -7,7 +7,8 @@ import { Accordion } from "@base-ui/react/accordion";
 import { BookOpen, ChevronDown, Coins, FileText, Rocket, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { Sticker } from "@/components/kit";
-import { DOCS_NAV, DOCS_SITE } from "./nav";
+import { DOCS_URL } from "@/lib/docs-url";
+import { DOCS_NAV } from "./nav";
 
 const ICON: Record<string, LucideIcon> = { "Get started": Rocket, Trade: BookOpen, Settle: Coins, Reference: FileText };
 const HOME = {
@@ -15,7 +16,7 @@ const HOME = {
   sticker: "TESTNET",
   lede: "Mitoshi on Tempo testnet. Test dollars only.",
   facts: ["Passkey sign-in", "pathUSD", "Signed RedStone prints"],
-  site: "Full docs ↗",
+  site: "The full guides ↗",
 } as const;
 
 export function DocsHome() {
@@ -32,7 +33,7 @@ export function DocsHome() {
             <li key={fact} className="inline-flex h-8 items-center rounded-full bg-surface-1 px-3.5 type-caption font-bold text-ink ring-1 ring-hairline">{fact}</li>
           ))}
         </ul>
-        <a href={DOCS_SITE} target="_blank" rel="noopener noreferrer" className="w-fit type-caption font-bold text-accent underline-offset-4 hover:underline">{HOME.site}</a>
+        <a href={DOCS_URL} target="_blank" rel="noopener noreferrer" className="w-fit type-caption font-bold text-accent underline-offset-4 hover:underline">{HOME.site}</a>
       </header>
 
       <Accordion.Root multiple defaultValue={[DOCS_NAV[0]!.title]} className="flex flex-col gap-3">

@@ -15,9 +15,6 @@ export interface DocsSection {
   pages: readonly DocsPage[];
 }
 
-/** The full docs site, built beside the app. */
-export const DOCS_SITE = "https://docs.testnet.mitoshi.xyz";
-
 export const DOCS_NAV: readonly DocsSection[] = [
   {
     title: "Get started",

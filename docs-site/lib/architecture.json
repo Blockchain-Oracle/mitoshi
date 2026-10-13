@@ -1,0 +1,360 @@
+{
+  "venue": {
+    "title": "A Window on Tempo, from tap to payout",
+    "subtitle": "Your passkey or a capped key signs; ops keeps the clock and the prints moving; the engine decides and pays.",
+    "note": "Tempo testnet (Moderato) with testnet pathUSD. Live checks are dated in Evidence. The relay and the keepers are Mitoshi's servers: they can stall, but they cannot move your money or change a result.",
+    "sources": [
+      "contracts/src/engine/EventsEngine.sol",
+      "contracts/src/engine/libs/ResolveLib.sol",
+      "contracts/src/engine/verifiers",
+      "packages/markets/src/relay/policies",
+      "web/src/server/relay.ts",
+      "services/ops/src/actors/window-roller",
+      "services/ops/src/actors/price-relay",
+      "services/ops/src/actors/settler",
+      "services/ops/src/actors/indexer",
+      "web/src/features/proof"
+    ],
+    "rows": [
+      {
+        "label": "01 · Your account",
+        "nodes": [
+          {
+            "title": "Passkey account",
+            "subtitle": "WebAuthn, verified by Tempo",
+            "detail": "Sign-up creates a passkey; your Tempo account comes from it, and Tempo checks its WebAuthn signatures natively. Mitoshi keeps only the public key and the credential id.",
+            "authority": "Only your passkey withdraws, revokes keys or changes the account."
+          },
+          {
+            "title": "One-tap key or grant",
+            "subtitle": "Access key · Trading Balance SESSION",
+            "detail": "Either an access key limited to the engine and pathUSD approvals, with a daily dollar limit and a 24-hour expiry, or a SESSION grant on your Trading Balance with per-tap and daily caps.",
+            "authority": "Can buy and close inside its caps. Never withdraws, never sends money elsewhere."
+          },
+          {
+            "title": "The relay",
+            "subtitle": "/api/relay, fee sponsorship",
+            "detail": "Co-signs as the fee payer for calls its per-contract policies allow, inside budgets kept in Postgres, and stops when the fee payer's balance runs low.",
+            "authority": "Pays network fees. It cannot change a call or spend from your account."
+          },
+          {
+            "title": "EventsEngine",
+            "subtitle": "placeOrder, immediate-or-cancel",
+            "detail": "Each Window has its own on-chain order book. A tap takes what rests on the book, immediate-or-cancel, and the position lands in the same transaction.",
+            "authority": "No function takes a payout address. The engine checks price, size and the Window's state on every order."
+          }
+        ],
+        "arrows": [
+          "signed tap",
+          "sponsored tx",
+          "IOC order"
+        ]
+      },
+      {
+        "label": "02 · Venue operation",
+        "nodes": [
+          {
+            "title": "Window roller",
+            "subtitle": "66 series, one clock",
+            "detail": "Opens the next Window of each series: BTC, ETH and SOL every five minutes, nine stocks at 5, 15 and 60 minutes in NYSE hours and on RedStone's 24/7 feeds, and the weekend Gap.",
+            "authority": "Holds the roller role: lists Windows. It cannot price, resolve or pay."
+          },
+          {
+            "title": "Price relay",
+            "subtitle": "RedStone packages on chain",
+            "detail": "Fetches RedStone's signed data packages for each Window's open and close and posts them to the engine. A separate archive actor keeps RedStone's packages for every boundary.",
+            "authority": "Anyone may post a package; only the verifier decides whether it counts."
+          },
+          {
+            "title": "Print verifier",
+            "subtitle": "3 of 5 signers, near the boundary",
+            "detail": "RedStonePrintVerifier recovers the signers of each package on chain and admits a print only with at least three of RedStone's five production signers, close enough to the Window's boundary.",
+            "authority": "Refuses a package short of signers or off the boundary. No operator override."
+          },
+          {
+            "title": "Settler",
+            "subtitle": "settle · void · redeemFor",
+            "detail": "Once both prints are in, it settles the Window; with no print by the deadline it voids it at half. Then it pays each winning position to its owner.",
+            "authority": "Settling is permissionless and pays only by the recorded prints."
+          }
+        ],
+        "arrows": [
+          "open Window",
+          "signed packages",
+          "recorded prints"
+        ]
+      },
+      {
+        "label": "03 · Read and prove",
+        "nodes": [
+          {
+            "title": "Indexer",
+            "subtitle": "Engine, vaults, strategies",
+            "detail": "Follows the engine, the three Trading Balance vaults, the strategy registry and ERC-8004 feedback into Postgres, block by block, with a live cursor.",
+            "authority": "Read-only on chain. It cannot change a result."
+          },
+          {
+            "title": "Recount",
+            "subtitle": "Replay against the index",
+            "detail": "Replays the engine's and the vaults' logs and compares every total with the index, Window by Window; the S5 gate passed with stats equal to the recount.",
+            "authority": "A check, not a source: a mismatch is a finding."
+          },
+          {
+            "title": "The app's reads",
+            "subtitle": "Index, EngineLens, the stream",
+            "detail": "Markets, Portfolio, Stats and the leaderboard read the index and the engine's lens; prices and fills reach the terminal over one live stream.",
+            "authority": "A page is a view of chain evidence; the transaction is the receipt."
+          },
+          {
+            "title": "Proof page",
+            "subtitle": "Re-verify in your browser",
+            "detail": "Reads the print's transaction from Tempo, takes the signed packages out of it and asks the on-chain verifier for the price, then compares it with what the engine recorded.",
+            "authority": "Nothing in that check comes from Mitoshi's servers."
+          }
+        ],
+        "arrows": [
+          "events",
+          "checked totals",
+          "display"
+        ]
+      }
+    ]
+  },
+  "exits": {
+    "title": "Exits that run with the app closed",
+    "subtitle": "You grant a sell-only permission once; the keeper decides when; the vault decides the lowest price.",
+    "note": "Live on Moderato since 2026-10-09: a stop-loss sold by the keeper 20.6 s after it triggered, with the tab closed. An exit fills only against a bid that is there.",
+    "sources": [
+      "contracts/src/products/vault/EventVaultV2.sol",
+      "contracts/src/products/vault/VaultExits.sol",
+      "contracts/src/fair/FairValueGuard.sol",
+      "services/ops/src/actors/exit-keeper",
+      "web/src/app/api/exits",
+      "services/ops/src/actors/seed-maker"
+    ],
+    "rows": [
+      {
+        "label": "01 · Your authority",
+        "nodes": [
+          {
+            "title": "Trading Balance",
+            "subtitle": "EventVaultV2, yours alone",
+            "detail": "A vault you own on Tempo that holds money and positions for you. Deposits and withdrawals are yours; proceeds of every sale land back in it.",
+            "authority": "Only the owner withdraws. Intake is never fee-sponsored."
+          },
+          {
+            "title": "EXIT grant",
+            "subtitle": "One biometric, sell-only",
+            "detail": "Names Mitoshi's keeper as the actor that may sell positions this Trading Balance holds. No budget, no buys, no withdrawals; it lasts 30 days.",
+            "authority": "placeFor refuses it. It can only sell through exitFor, at or above the floor."
+          },
+          {
+            "title": "Your trigger",
+            "subtitle": "Take-profit · stop-loss · trail",
+            "detail": "Set from the terminal on what CLOSE pays. A trail arms once the price is the trailing distance past break-even and only moves your way.",
+            "authority": "The keeper refuses a trigger on a grant that is not yours."
+          },
+          {
+            "title": "Stop",
+            "subtitle": "Settings → revoke on chain",
+            "detail": "Every key and grant is listed in Settings; Stop revokes it in one transaction the relay pays for.",
+            "authority": "Revocation is the owner's alone and takes effect on chain."
+          }
+        ],
+        "arrows": [
+          "owner's balance",
+          "trigger stored",
+          "revocable"
+        ]
+      },
+      {
+        "label": "02 · The keeper",
+        "nodes": [
+          {
+            "title": "exit-keeper",
+            "subtitle": "Ops actor, keeper role",
+            "detail": "Watches every armed trigger on the live feed and the Window's book, with or without your tab open; an armed trail survives an ops restart.",
+            "authority": "Decides when to sell. It cannot buy, withdraw or sell below the floor."
+          },
+          {
+            "title": "Fair-value floor",
+            "subtitle": "FairValueGuard at a signed spot",
+            "detail": "The sale's limit must be at or above the Window's fair value at a signed RedStone spot, less the wider of 15 % of it or 10¢ — the allowance the app grants; the contract caps them at 20 % and 15¢.",
+            "authority": "Enforced by the vault on every exitFor, from a signed proof, never a preview."
+          },
+          {
+            "title": "exitFor",
+            "subtitle": "Sell into the Window's book",
+            "detail": "Sells the position immediate-or-cancel into the book at the limit. If no bid meets the floor, nothing fills and the keeper tries again rather than sell lower.",
+            "authority": "A sale under the floor reverts BelowFairFloor."
+          },
+          {
+            "title": "Proceeds",
+            "subtitle": "Back to the Trading Balance",
+            "detail": "What the sale fetched lands in the owner's Trading Balance, as every sale's proceeds do. The terminal shows a sale made with the app closed on the next visit.",
+            "authority": "Money never leaves the owner's vault account."
+          }
+        ],
+        "arrows": [
+          "armed trigger",
+          "floor proof",
+          "IOC sale"
+        ]
+      },
+      {
+        "label": "03 · The book under it",
+        "nodes": [
+          {
+            "title": "House maker",
+            "subtitle": "seed-maker",
+            "detail": "Quotes both sides of every live Window around the fair value carried by its measured basis, with one-transaction requotes.",
+            "authority": "Its quotes are real orders: they can be taken or not."
+          },
+          {
+            "title": "Exit tail",
+            "subtitle": "Both sides to lock − 30 s",
+            "detail": "The house keeps its exit side quoted until about 30 seconds before a Window locks: half size from lock − 61 s, nothing new from lock − 45 s.",
+            "authority": "A promise of the house's quoting, not a guarantee of a fill."
+          },
+          {
+            "title": "Maker vault",
+            "subtitle": "Earn's depth",
+            "detail": "The maker vault quotes the crypto Windows with its suppliers' money; Range, Moonshot and Parlay price against that rested depth.",
+            "authority": "Suppliers carry its inventory risk; the vault's admin can pause new supply only."
+          },
+          {
+            "title": "Settlement",
+            "subtitle": "If nothing sold",
+            "detail": "A position no exit sold settles like any other: $1 a winning contract, nothing a losing one, half on a void.",
+            "authority": "Settled by the recorded prints only."
+          }
+        ],
+        "arrows": [
+          "quotes",
+          "depth",
+          "settle"
+        ]
+      }
+    ]
+  },
+  "stocks": {
+    "title": "Stocks on Tempo",
+    "subtitle": "Robinhood Stock Tokens locked on their chain, mirrored on Tempo, traded in guarded pools and themed baskets.",
+    "note": "Tempo-side contracts are deployed on Moderato. A LayerZero message from Moderato reached Base Sepolia in 20 s; the way back waits on LayerZero's testnet verifier, and the Robinhood-side lockboxes on testnet ETH (owner action). The bridge, reserves and themes screens are not built yet.",
+    "sources": [
+      "contracts/src/robinhood/StockLockbox.sol",
+      "contracts/src/transit/HopComposer.sol",
+      "contracts/src/stocks/TIP20MintBurnAdapter.sol",
+      "contracts/src/stocks/StockSyncReceiver.sol",
+      "contracts/src/stocks/ScaledUIView.sol",
+      "contracts/src/stocks/StockReference.sol",
+      "contracts/src/stocks/hooks/StockGuardHook.sol",
+      "contracts/src/themes/ThemeRouter.sol",
+      "contracts/deployments/42431/stocks.json"
+    ],
+    "rows": [
+      {
+        "label": "01 · Robinhood Chain",
+        "nodes": [
+          {
+            "title": "Stock Token",
+            "subtitle": "Robinhood's own ERC-20",
+            "detail": "The real tokenized share on Robinhood Chain, with its UI multiplier for splits and dividends (ERC-8056).",
+            "authority": "Robinhood's token: its pauses and policies apply."
+          },
+          {
+            "title": "StockLockbox",
+            "subtitle": "OFT adapter, immutable",
+            "detail": "Locks the token to send it, releases it on the way back; one per ticker, with a guardian that can pause new locks but never unlocks.",
+            "authority": "A forged over-release reverts and stays stuck — by design."
+          },
+          {
+            "title": "StockSyncSender",
+            "subtitle": "Multiplier and status",
+            "detail": "Anyone can sync a token's multiplier, pending change and pause flags to Tempo as a full snapshot.",
+            "authority": "Reads Robinhood's contracts; writes nothing there."
+          },
+          {
+            "title": "Testnet hop",
+            "subtitle": "Base Sepolia transit",
+            "detail": "On testnet LayerZero has no direct Robinhood ↔ Tempo path, so a transit OFT and a composer on Base Sepolia forward each send and each sync.",
+            "authority": "Holds tokens only in flight; an underfunded hop waits and can be retried."
+          }
+        ],
+        "arrows": [
+          "lock",
+          "LayerZero",
+          "forward"
+        ]
+      },
+      {
+        "label": "02 · Tempo",
+        "nodes": [
+          {
+            "title": "Mint/burn adapter",
+            "subtitle": "TIP20MintBurnAdapter",
+            "detail": "Mints the mirror on arrival and burns it on the way out. A mint the token would refuse (pause, policy, cap, receive policy) is deferred and claimable, never lost.",
+            "authority": "The only issuer of its mirror. Upgradeable behind a proxy: on testnet its admin is the deployer key; a Safe is planned for mainnet."
+          },
+          {
+            "title": "Mirror TIP-20",
+            "subtitle": "bTSLA, bAMZN, bPLTR, bNFLX, bAMD",
+            "detail": "A Tempo-native token per share, with a supply cap, and a ScaledUIView that shows balances in shares after the multiplier.",
+            "authority": "Supply moves only by the adapter's mint and burn."
+          },
+          {
+            "title": "StockReference",
+            "subtitle": "The share's price",
+            "detail": "Takes RedStone payloads (three of five signers) and Chainlink Data Streams reports where credentials exist (not on testnet yet); a keeper flag carries the market session.",
+            "authority": "Permissionless writes; only newer verified prices count."
+          },
+          {
+            "title": "StockGuardHook",
+            "subtitle": "Uniswap v4, flags 0x20C0",
+            "detail": "Keeps every guarded pathUSD pool inside a band around the reference: refuses swaps when halted, paused, unsynced or stale, and checks the price after every swap.",
+            "authority": "Never blocks adding or removing liquidity, so exits stay open."
+          }
+        ],
+        "arrows": [
+          "mint",
+          "price",
+          "guard"
+        ]
+      },
+      {
+        "label": "03 · Use and prove",
+        "nodes": [
+          {
+            "title": "Stock pools",
+            "subtitle": "pathUSD / mirror, 0.3 %",
+            "detail": "Four pools initialized with house liquidity ladders (TSLA, AMZN, PLTR, AMD); NFLX is registered and not initialized.",
+            "authority": "Ordinary v4 pools behind the guard."
+          },
+          {
+            "title": "Themes",
+            "subtitle": "ThemeRegistry · ThemeRouter",
+            "detail": "A theme is a basket a creator publishes. Following it authorizes an access key for the theme's agent, scoped to the router with a daily limit per token; the agent's rebalances buy through the guarded pools.",
+            "authority": "The key can only call the router and approve tokens to it; any other approval is refused on chain."
+          },
+          {
+            "title": "Reserves",
+            "subtitle": "Locked there, supply here",
+            "detail": "Each lockbox's outstanding balance per destination against the mirror's supply on Tempo: the proof every mirror is backed.",
+            "authority": "A read of both chains, not a promise."
+          },
+          {
+            "title": "Stock Windows",
+            "subtitle": "Live today",
+            "detail": "Separately, the prediction market already trades nine stocks' prices in Windows settled on RedStone; no token is needed for that.",
+            "authority": "Settled by the engine like every Window."
+          }
+        ],
+        "arrows": [
+          "swap",
+          "basket",
+          "check"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+---
+title: One-tap trading
+description: One more biometric arms a key; after that every tap inside its limits signs itself and the fee is paid for you.
+sources:
+  - packages/markets/src/keys/wallet-key.ts
+  - web/src/features/tap-trading/copy.ts
+  - web/src/features/session/copy.ts
+  - contracts/src/products/vault/IEventVault.sol
+  - packages/markets/src/relay/policies/engine.ts
+  - docs/plan/acceptance/S23.md
+---
+
+There are two ways to tap with no prompt. Both are capped on chain, both are listed in <AppLink href="/settings/account">Account & keys</AppLink>, and neither can withdraw.
+
+## The one-tap key (passkey accounts)
+
+**Turn on one-tap** asks your passkey once to publish a Tempo access key. The key is made in this browser and never leaves it. It may only:
+
+- place, cancel and redeem orders on the market engine, and
+- approve pathUSD to the engine — up to **$25 of new approvals a day** —
+
+and it expires after **24 hours**, renewable in one tap. Your passkey keeps every other power: a transfer, an approval to anyone else or a call to another contract signed by the key is refused on chain.
+
+## Tap-trading from a Trading Balance (any account)
+
+Set aside a budget in your [Trading Balance](/trading/trading-balance). One passkey confirmation deposits it and grants a key made on this device a **SESSION** grant: buy UP or DOWN on any live Window, from the Trading Balance only, up to a per-tap and a daily cap, for **6 hours, 24 hours or 7 days**. Presets are $1, $5 and $10 taps. Daily caps reset at 00:00 UTC.
+
+The grant never withdraws, never sends money anywhere and never spends past its caps. It can also sell what your Trading Balance holds — that's how CLOSE works without a prompt — and the money lands in your balance. Stopping it returns the unspent budget to the Trading Balance; positions it opened stay yours. [The worst case](/safety/worst-case).
+
+## What a tap costs
+
+| | Who pays |
+| --- | --- |
+| A tap's network fee | Mitoshi's [relay](/architecture/relay-and-keys), in pathUSD, for calls inside its policy |
+| Arming the Trading Balance | You, once — a fraction of a cent |
+| Withdrawing from the Trading Balance | The relay |
+
+Your position shows the moment the key has signed and sent the trade — "Confirming on Tempo…" — and the receipt swaps in what the engine booked. On testnet the median from press to position was **0.64 s** ([evidence](/help/evidence)).
+
+<Callout>
+Skip one-tap and nothing changes but the prompt: every trade asks your passkey.
+</Callout>

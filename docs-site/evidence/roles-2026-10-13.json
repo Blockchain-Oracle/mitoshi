@@ -1,0 +1,19 @@
+{
+  "readAt": "2026-10-13T01:41:57Z",
+  "chainId": 42431,
+  "block": 39348596,
+  "rpc": "https://rpc.moderato.tempo.xyz",
+  "method": "eth_call at the latest block with Foundry cast; the EIP-1967 implementation slot read with cast storage; the passkey rpId from POST https://testnet.mitoshi.xyz/api/auth/login/options; the exit keeper from https://ops.testnet.mitoshi.xyz/exits/keeper; the fee payer from https://testnet.mitoshi.xyz/api/relay/status.",
+  "engine": { "address": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a", "admin": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e", "treasury": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e", "rollerIsRoller": { "address": "0xD6B237CcA5a3b0eAE9A66e4a5B4DFc8de8A3be46", "isRoller": true }, "eip1967Implementation": "0x0000000000000000000000000000000000000000000000000000000000000000" },
+  "tradingBalance": { "address": "0xdbb3Fa8667351Df47f54b1d8ea9B44B28b9C2040", "eip1967Implementation": "0x0000000000000000000000000000000000000000000000000000000000000000", "note": "EventVaultV2 has no admin function." },
+  "earn": { "address": "0xa31F6B5a585fF331cC13Fd1c6FAa282024Ca32a6", "admin": "0xE41f5FEb2bc3040B82bA22dc6F62b824037e1A8d", "maker": "0x51d3F6367FDCaBE7f1eFbbc04d0D960bc8eede9a", "paused": false, "eip1967Implementation": "0x0000000000000000000000000000000000000000000000000000000000000000" },
+  "range": { "address": "0xf19342733Bb451503f3806b0d44CC58A3D345052", "admin": "0x5DFC4211902A8EE7932286861e2D8C66841441E8", "paused": false },
+  "parlay": { "address": "0x57baD0Beb33C8f8557Dc7430F90Ba166587f3939", "admin": "0x5DFC4211902A8EE7932286861e2D8C66841441E8", "paused": false },
+  "boost": { "address": "0x1c623E5539351C01FB193f962C7502cCcFd9206D", "admin": "0x5DFC4211902A8EE7932286861e2D8C66841441E8", "paused": false },
+  "privateDesk": { "address": "0x0c894dB5057E18F5C9E09C72faAc0b6098613CD8", "admin": "0x5DFC4211902A8EE7932286861e2D8C66841441E8", "desk": "0x9540cDCD69636229Be905225979a7e5BAA044cb9", "paused": false },
+  "fairValueGuard": { "address": "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1", "owner": "0xF368eE3b38bC3682A4f55Fd03778123269B69Fe5" },
+  "redstoneVerifier": { "address": "0x38Ad9Fe54b3b271f737CdC231d7B85b1616A1377", "threshold": 3, "signers": "0xdEB22f54738d54976C4c0fe5ce6d408E40d88499,0xDD682daEC5A90dD295d14DA4b0bec9281017b5bE,0x51Ce04Be4b3E32572C4Ec9135221d0691Ba7d202,0x9c5AE89C4Af6aA32cE58588DBaF90d18a855B6de,0x8BB8F32Df04c8b654987DAaeD53D6B6091e3B774" },
+  "exitKeeper": {"keeper":"0x6Ed3a4b6E42B2C45211074F8D7BA58dbB2FAad0C","vault":"0xdbb3Fa8667351Df47f54b1d8ea9B44B28b9C2040"},
+  "relayFeePayer": "0x3D7791BAa66d34804f1769955fBf83AC576AC5f1",
+  "passkeyRpId": "mitoshi.xyz"
+}

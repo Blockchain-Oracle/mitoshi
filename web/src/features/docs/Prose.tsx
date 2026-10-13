@@ -1,6 +1,7 @@
 // The docs' typography: a handful of server components over Mitoshi's type tokens, so a page reads as plain structure.
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ExternalLink } from "@/components/shell/ExternalLink";
 
 /** On a phone the Contents pill sits on the title's row (R4-10), so the title leaves it room. */
 export const H1 = ({ children }: { children: ReactNode }) => <h1 className="type-display text-ink max-lg:pr-32">{children}</h1>;
@@ -19,7 +20,8 @@ export const Note = ({ children }: { children: ReactNode }) => (
 );
 export const A = ({ href, children }: { href: string; children: ReactNode }) =>
   href.startsWith("http") ? (
-    <a href={href} target="_blank" rel="noopener noreferrer" className="text-ink underline underline-offset-4">{children}</a>
+    // Through the shell's bridge, so the native app opens it in its browser rather than leaving the page (fix 5).
+    <ExternalLink href={href} className="text-ink underline underline-offset-4">{children}</ExternalLink>
   ) : (
     <Link href={href} className="text-ink underline underline-offset-4">{children}</Link>
   );
