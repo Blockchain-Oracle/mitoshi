@@ -17,8 +17,8 @@ sources:
 
 | Piece | What it is |
 | --- | --- |
-| **StrategyRegistry** | The contract that holds each strategy: its envelope, its fee, its runner and, optionally, its ERC-8004 identity. It never touches money. |
-| **A STRATEGY grant** | What copying gives the strategy's runner on your Trading Balance: place for you, inside both sets of limits. Nothing else. |
+| **StrategyRegistry** | The contract that holds each strategy: its envelope, its fee, its runner and, optionally, its ERC-8004 identity. The only money it moves is a subscription fee, from you straight to the creator. |
+| **A STRATEGY grant** | What copying gives the strategy's runner on your Trading Balance: buy for you inside both sets of limits, and sell what the Trading Balance holds — the contract puts no floor on a sale. It can't withdraw ([the worst case](/safety/worst-case)). |
 | **The runner** | The key that places trades for every live copier. The house runner is the ops `strategy-runner`; a creator can run their own with the same code. |
 | **An agent** | A strategy with an ERC-8004 identity on Tempo's identity registry, so its record and ratings follow one public id. |
 

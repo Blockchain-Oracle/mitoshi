@@ -1,0 +1,49 @@
+---
+title: If Mitoshi stops
+description: Your money sits in contracts on Tempo, not with Mitoshi. What keeps working with no Mitoshi server, the call that gets each kind of money out, and the one catch for passkeys.
+sources:
+  - contracts/src/engine/EventsEngine.sol
+  - contracts/src/engine/libs/ResolveLib.sol
+  - contracts/src/products/vault/EventVault.sol
+  - contracts/src/products/maker/MarketMakerVault.sol
+  - contracts/src/products/range/RangeReserve.sol
+  - contracts/src/products/parlay/ParlayReserve.sol
+  - contracts/src/products/leverage/LeverageReserve.sol
+  - contracts/src/products/private/PrivateDesk.sol
+  - packages/markets/src/server/auth-handler.ts
+  - web/src/server/env.ts
+  - docs/plan/env-matrix.md
+---
+
+Mitoshi's servers open Windows, post prints, quote and pay winners. If they stopped, no new Window would open — and everything already in a contract stays yours, with no Mitoshi key needed to get it out.
+
+## What keeps working
+
+- **Settlement.** Anyone can post a Window's signed RedStone print and settle it. If no print arrives before the Window's deadline, anyone can void it: both sides get **$0.50** a contract.
+- **Payouts.** Anyone can pay a winner — the engine's `redeemFor`, Range's and Parlay's `claim`, Boost's `settle` — and the money goes only to the owner.
+- **Your Trading Balance.** Anyone can credit a settled Window into it (`crankSettle`); only you can withdraw.
+
+## Getting each kind of money out
+
+Contract addresses are on [deployments](/architecture/deployments); the explorer shows your transactions and their ids.
+
+| Where it is | Call | Who may call |
+| --- | --- | --- |
+| A wallet position on the engine | `redeem(marketId)` once settled; `withdrawCredit(marketId, amount)`; `cancelAll(marketId, max, true)` for resting orders | You — `redeemFor(marketId, you)` by anyone |
+| Trading Balance | `crankSettle(you, marketId)`, then `withdraw(amount)` | Anyone, then you |
+| Earn | `settle(marketId)` for each Window past expiry, then `withdraw(shares)` | Anyone, then you |
+| A house reserve — Range, Parlay, Boost | `withdraw(shares)`, from what isn't locked against live tickets | You |
+| Range · Moonshot | `settle(roundId)`, then `claim(roundId)`; `voidStale(roundId)` if the engine never answered | Anyone |
+| Parlay | `resolveLeg(parlayId, legIdx)` per leg, then `claim(parlayId)` | Anyone |
+| Boost | `settle(positionId)` after the Window; `close(positionId, minProceeds)` before it | Anyone; `close` you |
+| Private desk | `withdraw(amount)` — your unspent balance | You |
+
+Your ids are also listed on chain: `roundsOf`, `parlaysOf` and `positionsOf` page through an owner's tickets.
+
+## The catches
+
+- **A passkey belongs to its site.** Mitoshi's passkeys are made for `mitoshi.xyz`, and a browser lets only pages on that domain ask one to sign. Without them, payouts anyone can push still reach a passkey account, but a withdrawal needs your signature. An account from Tempo Wallet or a browser wallet signs through that wallet, without Mitoshi.
+- **A private bet's payout** waits in its slot until the desk carries it home: the chain names no owner on a slot. Money you deposited and haven't bet is always yours to withdraw.
+- **Earn's withdrawal** waits until every Window past expiry is settled — anyone can settle them — and pays from what isn't locked in live Windows.
+
+See [who can move what](/safety/who-can-do-what) and [the worst case](/safety/worst-case).

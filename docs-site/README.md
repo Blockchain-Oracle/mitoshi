@@ -2,10 +2,10 @@
 
 Step-by-step guides to [Mitoshi](https://testnet.mitoshi.xyz) 見通し — prediction markets and stocks on Tempo: making a
 call, Windows and lanes, signed prints and settlement, the terminal, the Trading Balance and exits, Earn, Range ·
-Moonshot · Parlay · Boost, strategies and agents, games, stocks on Tempo, and the architecture behind each path, with the
-deployed addresses on Moderato and dated evidence.
+Moonshot · Parlay · Boost, strategies and agents, games, stocks on Tempo, who can move your money, and the architecture
+behind each path, with the deployed addresses on Moderato and dated evidence.
 
-**Checked against:** app revision `6a6fb7f` (`site.revision` in `lib/site.ts`) on 13 October 2026. The site lives in the
+**Checked against:** app revision `2c92568` (`site.revision` in `lib/site.ts`) on 13 October 2026. The site lives in the
 app's repository at `docs-site/` and is built for `https://docs.testnet.mitoshi.xyz`. Ported from Owarine
 90a91d71:docs-site (Fumadocs on Next 16) in Mitoshi's brand (D-227).
 
@@ -17,10 +17,12 @@ app's repository at `docs-site/` and is built for `https://docs.testnet.mitoshi.
 | Understand Windows and lanes | [Windows](content/docs/trading/windows.mdx) |
 | See how a Window settles, and check it | [Settlement](content/docs/trading/settlement.mdx), [Proof](content/docs/trading/proof.mdx) |
 | Exits with the app closed | [Exits](content/docs/trading/exits.mdx) |
+| Who can move your money, and if Mitoshi stops | [Safety](content/docs/safety/who-can-do-what.mdx) |
 | Copy a strategy or an agent | [Automate](content/docs/automate/overview.mdx) |
 | Stocks on Tempo | [Overview](content/docs/stocks/overview.mdx) |
 | How it fits together | [Architecture](content/docs/architecture/overview.mdx) |
 | Every deployed address | [Deployments](content/docs/architecture/deployments.mdx) |
+| The app's HTTP routes | [API](content/docs/builders/api.mdx) |
 | What has run live, with receipts | [Evidence](content/docs/help/evidence.mdx) |
 | What is live, next, or waiting | [Availability](content/docs/help/availability.mdx) |
 

@@ -32,7 +32,7 @@ Budgets are kept in Postgres; the last verdicts show on <AppLink href="/status">
 
 Tempo accounts can authorize **access keys** with limits and scopes enforced by the chain (TIP-1011).
 
-- **The one-tap key** may call the engine's `placeOrder`, `cancelOrders`, `cancelAll`, `redeem` and `withdrawCredit`, and approve pathUSD to the engine only, with **$25 of new approvals a day** for **24 hours**. The limit counts each increase of the engine's allowance, so it bounds what the key can ever move. Anything else it signs is refused `CallNotAllowed`.
+- **The one-tap key** may call the engine's `placeOrder`, `cancelOrders`, `cancelAll`, `redeem` and `withdrawCredit`, and approve pathUSD to the engine only, with **$25 of new approvals a day** for **24 hours**. The limit counts each approval, so it bounds what the key can spend; selling what the account already holds on the engine needs no approval. Anything else it signs is refused `CallNotAllowed`.
 - **A backup passkey** is an admin key on the account, added from Account & keys and confirmed with the first passkey. It signs in alone as the same account.
 - **A theme follow** authorizes the theme agent's key, scoped to the theme router.
 
