@@ -110,6 +110,9 @@ export function isSpec(value: unknown): value is StrategySpec {
   return isOracleFollowSpec(v) || isAgentSpec(v) || isMirrorSpec(v);
 }
 
+/** The longest portrait seed a strategy's metadata keeps (Owarine's bound). */
+export const PORTRAIT_SEED_MAX = 128;
+
 export function encodeStrategyMetadata(meta: StrategyMetadata): string {
   return JSON.stringify(meta);
 }
@@ -124,6 +127,7 @@ export function parseStrategyMetadata(raw: string): StrategyMetadata | null {
       description: typeof v.description === "string" ? v.description : "",
       spec: v.spec,
       ...(typeof v.playbook === "string" && v.playbook ? { playbook: v.playbook } : {}),
+      ...(typeof v.portraitSeed === "string" && v.portraitSeed.length > 0 && v.portraitSeed.length <= PORTRAIT_SEED_MAX ? { portraitSeed: v.portraitSeed } : {}),
     };
   } catch {
     return null;

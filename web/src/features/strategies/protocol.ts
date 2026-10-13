@@ -54,6 +54,10 @@ export interface StrategyWire {
   agentId: string | null;
   name: string;
   description: string;
+  /** The metadata's portrait seed (R4-6); null: the app draws from `mitoshi-strategy:<id>`. */
+  portraitSeed: string | null;
+  /** Every subscription fee its copiers paid its creator, summed (base units; R4-6, the creator's desk). */
+  feesEarnedBase: string;
   /** Null when the published metadata carries no readable spec (shown, never guessed). */
   spec: StrategySpec | null;
   specText: string | null;
@@ -130,4 +134,20 @@ export interface StrategyDetailPayload {
   fills: FillWire[];
   feedback: { client: string; value: string; valueDecimals: number; tag1: string; tag2: string; revoked: boolean; txHash: string; atSec: number }[];
   computedAtMs: number;
+}
+
+/** `/api/strategies/preview` (R4-6, the studio's test read): one real model call on a live Window, nothing sent. */
+export interface AgentPreviewRequest {
+  persona: string;
+  posture: "guarded" | "balanced" | "active";
+  cadences: number[];
+  stakeBase: string;
+}
+export interface AgentPreviewResponse {
+  market: { marketId: string; label: string; elapsedSec: number; leftSec: number; inSlot: boolean };
+  read: { openingText: string; moveBps: number; upCents: number | null; downCents: number | null };
+  verdict: { side: "up" | "down" | "hold"; confidence: number; why: string } | null;
+  failure: string | null;
+  gate: { side: "up" | "down" | null; reason: string };
+  model: string;
 }

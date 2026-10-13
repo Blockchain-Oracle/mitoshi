@@ -1,0 +1,173 @@
+/* Ported from Owarine 90a91d71:web/src/features/strategies/strategies.css (R4-6, D-227) — the /strategies and /agents
+ * anatomy (portraits, cards, tabs, rows, the board) on Mitoshi's tokens: Owarine's signal is the vermilion accent, its
+ * display face Sora (`--font-heading`), its mono JetBrains (`--font-data`). `.strat-card` and `.strat-sigil` themselves
+ * live in styles/yosuku/part-17.css. Owarine's `.strat-accent-N` is not ported (its first hue is invalid and nothing reads
+ * `--agent-accent`). */
+/* h-9 w-9 / h-14 w-14 sigil tiles; the paper tile behind the drawn persona is var(--color-cream) in the reference's image URL,
+   and the persona itself (DiceBear notionists, drawn in AgentPortrait.tsx) fills the tile. It breathes: a slow bob
+   with a hair of tilt, phased per agent (--idle-phase) so a grid never moves in unison, and a nod when its card is
+   hovered. Still under reduced motion. */
+.strat-sigil--small { height: 36px; width: 36px; }
+.strat-sigil--row { height: 44px; width: 44px; }
+.strat-sigil--card { height: 56px; width: 56px; }
+.strat-sigil-paper { background: var(--color-cream); display: block; height: 100%; width: 100%; }
+.strat-sigil-paper svg { display: block; width: 100%; height: 100%; transform-origin: 50% 92%; animation: strat-idle 3.6s ease-in-out infinite; animation-delay: var(--idle-phase, 0s); }
+.strat-sigil:hover .strat-sigil-paper svg, a:hover .strat-sigil-paper svg, button:hover .strat-sigil-paper svg, .strat-row:hover .strat-sigil-paper svg { animation: strat-nod 0.7s ease-in-out 1; }
+@keyframes strat-idle { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-3%) rotate(-2deg); } }
+@keyframes strat-nod { 0% { transform: rotate(0deg); } 30% { transform: rotate(6deg) scale(1.05); } 65% { transform: rotate(-4deg) scale(1.05); } 100% { transform: rotate(0deg); } }
+@media (prefers-reduced-motion: reduce) { .strat-sigil-paper svg { animation: none; } }
+/* w-1.5 h-1.5 rounded-full bg-signal animate-pulse */
+.strat-live-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--color-accent-fill); animation: desk-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: var(--color-on-accent); }
+/* nameplate: mt-7 pb-7 border-b border-white/15 (`.strat-h1`, `.strat-meta`, the head row and the not-advice line live in
+   head.css, which loads with each route's first paint so the head stands before the island). */
+.strat-nameplate { margin-top: 28px; padding-bottom: 28px; border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent); }
+/* section headers: font-display font-[800] text-[19px] tracking-tight */
+.strat-h2 { font-family: var(--font-heading); font-weight: 800; font-size: 19px; letter-spacing: -0.025em; color: var(--color-ink); font-stretch: 100%; }
+/* font-mono text-[9px] uppercase tracking-[0.18em] */
+.strat-micro { font-family: var(--font-data); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+/* font-mono text-[11px] uppercase tracking-[0.22em] */
+.strat-rail-title { font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+/* font-mono text-[10.5px] / text-[10px] / text-[11px] / text-[12px] plain mono runs */
+.strat-mono-10 { font-family: var(--font-data); font-size: 10px; font-variant-numeric: tabular-nums; }
+.strat-mono-11 { font-family: var(--font-data); font-size: 11px; font-variant-numeric: tabular-nums; }
+.strat-mono-12 { font-family: var(--font-data); font-size: 12px; font-variant-numeric: tabular-nums; }
+/* archive toggle: rounded-full border border-white/12 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-white/65 */
+.strat-toggle { flex-shrink: 0; border-radius: 9999px; border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent); padding: 8px 16px; font-family: var(--font-data); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: color-mix(in srgb, var(--color-ink) 65%, transparent); background: transparent; cursor: pointer; transition: color 0.2s, border-color 0.2s; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.strat-toggle:hover { border-color: color-mix(in srgb, var(--color-ink) 25%, transparent); color: var(--color-ink); }
+/* tabs: px-1 pb-2 font-mono text-[11px] uppercase tracking-[0.12em] border-b-2 */
+.strat-tab { flex-shrink: 0; padding: 0 4px 8px; font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid transparent; color: color-mix(in srgb, var(--color-ink) 40%, transparent); background: transparent; cursor: pointer; transition: color 0.2s; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.strat-tab:hover { color: var(--color-ink); }
+.strat-tab--on { color: var(--color-ink); border-bottom-color: var(--color-accent); }
+/* card: h3 font-display font-[800] text-[19px] leading-tight tracking-tight truncate */
+.strat-card-name { font-family: var(--font-heading); font-weight: 800; font-size: 19px; line-height: 1.25; letter-spacing: -0.025em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-stretch: 100%; }
+/* mt-1 font-mono text-[10.5px] text-white/45 */
+.strat-card-instinct { margin-top: 4px; font-family: var(--font-data); font-size: 10.5px; color: color-mix(in srgb, var(--color-ink) 45%, transparent); font-variant-numeric: tabular-nums; }
+/* shrink-0 mt-0.5 font-mono text-[11px] text-white/70 border border-white/12 rounded-full px-2.5 py-1 whitespace-nowrap */
+.strat-card-cap { flex-shrink: 0; margin-top: 2px; font-family: var(--font-data); font-size: 11px; color: color-mix(in srgb, var(--color-ink) 70%, transparent); border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent); border-radius: 9999px; padding: 4px 10px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* mt-6 min-h-[42px] */
+.strat-card-move { margin-top: 24px; min-height: 42px; }
+/* font-display font-[800] text-[30px] leading-none tabular-nums */
+.strat-card-net { font-family: var(--font-heading); font-weight: 800; font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; font-stretch: 100%; }
+.strat-card-net--gain { color: var(--color-profit); }
+.strat-card-net--loss { color: var(--color-loss); }
+/* inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.16em] rounded-full px-2.5 py-1 */
+.strat-card-tag { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-data); font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; border-radius: 9999px; padding: 4px 10px; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.strat-card-tag--quiet { padding: 0; color: color-mix(in srgb, var(--color-ink) 35%, transparent); }
+/* h-1 w-1 rounded-full bg-white/30 */
+.strat-card-tag-dot { height: 4px; width: 4px; border-radius: 9999px; background: color-mix(in srgb, var(--color-ink) 30%, transparent); }
+/* recent rows: border border-white/[0.08] bg-bg divide-y divide-white/[0.05] */
+.strat-rows { border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); background: var(--color-canvas); overflow: hidden; }
+.strat-rows > * + * { border-top: 1px solid color-mix(in srgb, var(--color-ink) 5%, transparent); }
+/* flex items-center gap-3 px-5 py-3 hover:bg-white/[0.02] */
+.strat-row { display: flex; align-items: center; gap: 12px; padding: 12px 20px; transition: background 0.2s; }
+.strat-row:hover { background: color-mix(in srgb, var(--color-ink) 2%, transparent); }
+/* font-display font-[700] text-[13px] w-28 truncate */
+.strat-row-name { font-family: var(--font-heading); font-weight: 700; font-size: 13px; width: 7rem; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-stretch: 100%; }
+/* px-5 py-8 text-center font-mono text-[11px] uppercase tracking-[0.2em] text-white/30 */
+.strat-rows-empty { padding: 32px 20px; text-align: center; font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: color-mix(in srgb, var(--color-ink) 30%, transparent); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+/* the empty archive: border border-white/[0.08] bg-white/[0.02] p-16 text-center */
+.strat-empty { border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); background: color-mix(in srgb, var(--color-ink) 2%, transparent); padding: 64px; text-align: center; }
+/* studio: preset card rounded-xl border p-4 */
+.strat-choice { position: relative; text-align: left; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); padding: 16px; background: transparent; cursor: pointer; transition: border-color 0.2s; }
+.strat-choice:hover { border-color: color-mix(in srgb, var(--color-ink) 20%, transparent); }
+.strat-choice--on { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 6%, transparent); }
+.strat-choice--off { border-color: color-mix(in srgb, var(--color-ink) 6%, transparent); opacity: 0.6; cursor: not-allowed; }
+/* font-display font-[700] text-[15px] / text-[14px] */
+.strat-choice-title { font-family: var(--font-heading); font-weight: 700; font-size: 15px; font-stretch: 100%; }
+/* text-[12px] text-gray-400 leading-snug mt-2 */
+.strat-choice-body { font-size: 12px; color: var(--color-ink-secondary); line-height: 1.375; margin-top: 8px; }
+/* the four L-corners that ignite signal on hover */
+.strat-corner { pointer-events: none; position: absolute; width: 8px; height: 8px; opacity: 0; transition: opacity 0.2s; border-color: var(--color-accent); }
+.strat-choice:hover .strat-corner, .strat-preview:hover .strat-corner { opacity: 1; }
+.strat-corner--tl { left: 6px; top: 6px; border-left: 1px solid; border-top: 1px solid; }
+.strat-corner--tr { right: 6px; top: 6px; border-right: 1px solid; border-top: 1px solid; }
+.strat-corner--bl { left: 6px; bottom: 6px; border-left: 1px solid; border-bottom: 1px solid; }
+.strat-corner--br { right: 6px; bottom: 6px; border-right: 1px solid; border-bottom: 1px solid; }
+/* chips: flex-1 py-1.5 rounded font-mono text-[11px] border */
+.strat-chip { flex: 1; padding: 6px 0; border-radius: 4px; font-family: var(--font-data); font-size: 11px; border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); color: color-mix(in srgb, var(--color-ink) 50%, transparent); background: transparent; cursor: pointer; transition: border-color 0.2s; font-variant-numeric: tabular-nums; }
+.strat-chip:hover { border-color: color-mix(in srgb, var(--color-ink) 20%, transparent); }
+.strat-chip--on { border-color: var(--color-accent); color: var(--color-accent); background: color-mix(in srgb, var(--color-accent) 6%, transparent); }
+/* INPUT: w-full px-3 py-2 rounded bg-white/[0.03] border border-white/[0.08] focus:border-white/20 font-mono text-[12px] */
+.strat-input { width: 100%; padding: 8px 12px; border-radius: 4px; background: color-mix(in srgb, var(--color-ink) 3%, transparent); border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); font-family: var(--font-data); font-size: 12px; outline: none; transition: border-color 0.2s; color: inherit; font-variant-numeric: tabular-nums; }
+.strat-input:focus { border-color: color-mix(in srgb, var(--color-ink) 20%, transparent); }
+.strat-textarea { min-height: 96px; resize: vertical; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+/* preview: rounded-xl border border-white/[0.1] bg-bg p-5 */
+.strat-preview { position: relative; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent); background: var(--color-canvas); padding: 20px; overflow: hidden; }
+/* LedgerStat: px-3 py-3; label font-mono text-[9px] uppercase tracking-[0.18em]; value font-mono text-sm tabular-nums */
+.strat-ledger-stat { padding: 12px; }
+.strat-ledger-stat + .strat-ledger-stat { border-left: 1px solid color-mix(in srgb, var(--color-ink) 6%, transparent); }
+.strat-ledger-value { font-family: var(--font-data); font-size: 14px; font-variant-numeric: tabular-nums; }
+/* sensei link: rounded-full border border-signal/40 bg-signal/[0.07] px-4 py-2 text-[12.5px] font-semibold text-signal */
+/* absolute right-4 top-4 rounded-full p-2 text-gray-600 */
+.strat-drawer-close { position: absolute; right: 16px; top: 16px; border-radius: 9999px; padding: 8px; color: var(--color-ink-muted); background: transparent; cursor: pointer; transition: color 0.2s, background 0.2s; }
+.strat-drawer-close:hover { background: color-mix(in srgb, var(--color-ink) 5%, transparent); color: var(--color-ink); }
+.strat-drawer-close svg { width: 16px; height: 16px; }
+/* h2 font-display font-[800] text-xl truncate */
+.strat-drawer-name { font-family: var(--font-heading); font-weight: 800; font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-ink); font-stretch: 100%; }
+/* border-l-2 border-signal pl-4 mb-5 */
+.strat-drawer-rule { border-left: 2px solid var(--color-accent); padding-left: 16px; margin-bottom: 20px; }
+.strat-drawer-rule--quiet { border-left-color: color-mix(in srgb, var(--color-ink) 15%, transparent); }
+/* text-[12.5px] text-white/70 leading-snug */
+.strat-drawer-body { font-size: 12.5px; color: color-mix(in srgb, var(--color-ink) 70%, transparent); line-height: 1.375; }
+.strat-drawer-body strong { color: var(--color-ink); font-weight: 600; }
+/* agents: Stat card border border-white/[0.08] rounded bg-bg p-5; value font-display text-3xl font-extrabold tracking-tight tabular-nums */
+.agents-stat { border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); border-radius: 4px; background: var(--color-canvas); padding: 20px; }
+.agents-stat-value { font-family: var(--font-heading); font-size: 30px; font-weight: 800; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; color: var(--color-ink); font-stretch: 100%; }
+/* row: border border-white/[0.08] rounded bg-bg p-5 hover:bg-white/[0.02]; top: borderLeft 2px signal */
+.agents-row { border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); border-radius: 4px; background: var(--color-canvas); padding: 20px; transition: background 0.2s; }
+.agents-row:hover { background: color-mix(in srgb, var(--color-ink) 2%, transparent); }
+.agents-row--top { border-left: 2px solid var(--color-accent); }
+/* rank: font-mono text-3xl font-bold tabular-nums text-gray-700 w-12 leading-none */
+.agents-rank { font-family: var(--font-data); font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--color-ink-disabled); width: 48px; flex-shrink: 0; line-height: 1; font-stretch: 75%; }
+/* w-11 h-11 border border-white/10 rounded-full font-jp text-lg text-gray-300 */
+/* font-mono text-[9px] tracking-[0.2em] uppercase px-1.5 py-0.5 rounded; color signal; border 1px solid signal-d */
+.agents-top-badge { font-family: var(--font-data); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; color: var(--color-accent); border: 1px solid var(--color-accent-fill-pressed); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+/* font-mono text-lg font-bold tabular-nums */
+.agents-figure { font-family: var(--font-data); font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.agents-figure--v { color: var(--color-accent); }
+/* font-mono text-[9px] tracking-[0.16em] uppercase text-gray-500 mb-1 */
+.agents-label { font-family: var(--font-data); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-muted); margin-bottom: 4px; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+/* the how panel: border border-white/[0.08] rounded bg-bg p-5 */
+.agents-panel { border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); border-radius: 4px; background: var(--color-canvas); padding: 20px; }
+
+/* The studio's dry read: one model call's reading, inside the signal rule the playbook box uses */
+.strat-dry { margin-top: 14px; border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--color-accent) 4%, transparent); padding: 12px 16px; }
+.strat-dry-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+/* The drawer's agent memory: one Window per row, ruled like the recent copy-trades */
+.strat-memory-row { padding: 10px 0; border-top: 1px solid color-mix(in srgb, var(--color-ink) 6%, transparent); }
+
+/* The studio's and drawer's buttons on Mitoshi's pill grammar: the accent is the one action, the quiet pill the rest. */
+.strat-sensei { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border-radius: 9999px; border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent); background: color-mix(in srgb, var(--color-accent) 7%, transparent); padding: 8px 16px; font-size: 13px; font-weight: 600; color: var(--color-accent); transition: background 0.2s; cursor: pointer; }
+.strat-sensei:hover { background: color-mix(in srgb, var(--color-accent) 14%, transparent); }
+.strat-sensei:disabled { opacity: 0.5; cursor: not-allowed; }
+.strat-confirm { width: 100%; min-height: 48px; border-radius: 9999px; padding: 12px 20px; font-weight: 700; transition: background 0.2s, opacity 0.2s; border: 0; cursor: pointer; background: var(--color-accent-fill); color: var(--color-on-accent); }
+.strat-confirm:hover { background: var(--color-accent-fill-pressed); }
+.strat-confirm[data-blocked], .strat-confirm:disabled { opacity: 0.55; cursor: not-allowed; }
+.strat-pause { width: 100%; min-height: 44px; padding: 12px 0; border-radius: 9999px; font-size: 14px; font-weight: 600; border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent); color: var(--color-ink); background: transparent; cursor: pointer; transition: border-color 0.2s; }
+.strat-pause:hover { border-color: color-mix(in srgb, var(--color-ink) 30%, transparent); }
+.strat-pause:disabled { opacity: 0.5; }
+
+/* The archive's sticky tab bar under the shell's top line (Owarine: sticky top-(--stage-sticky-top) z-20, blurred). */
+.strat-tabbar { position: sticky; top: var(--stage-sticky-top); z-index: var(--z-sticky); margin: 0 -4px; padding: 12px 4px 0; border-bottom: 1px solid var(--color-hairline); background: color-mix(in srgb, var(--color-canvas) 85%, transparent); backdrop-filter: blur(12px); }
+.strat-tabbar-row { display: flex; align-items: center; gap: 20px; overflow-x: auto; scrollbar-width: none; }
+.strat-tabbar-row::-webkit-scrollbar { display: none; }
+.strat-tab { min-height: 36px; }
+.strat-tab-count { margin-left: 6px; color: var(--color-ink-muted); }
+/* A card's quiet tag and its runner dot (a StatusDot sits inside). */
+.strat-card-tag--line { padding: 0; color: var(--color-ink-muted); }
+.strat-card-foot { font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
+.strat-card-foot[data-on] { color: var(--color-accent); }
+/* The board's figure cells: 2-up on phones, a row from 768. */
+.agents-cells { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (min-width: 768px) { .agents-cells { display: flex; flex-shrink: 0; align-items: center; gap: 32px; } .agents-cells > div { text-align: right; } }
+.agents-figure-sub { margin-left: 4px; font-family: var(--font-data); font-size: 11px; font-weight: 400; color: var(--color-ink-muted); }
+.agents-row:hover .agents-name { color: var(--color-accent); }
+.agents-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 768px) { .agents-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 400px) { .agents-stat { padding: 14px; } .agents-stat-value { font-size: 22px; } }
+/* A long total (Entrusted) wraps inside its tile rather than pushing the 2 × 2 strip past a phone's edge. */
+.agents-stat { min-width: 0; }
+.agents-stat-value { overflow-wrap: anywhere; }
+@media (max-width: 640px) { .strat-empty { padding: 32px 16px; } }
+/* A phone's recent row: tighter, so the name keeps room beside the P&L, the age and the arrow at 320. */
+@media (max-width: 400px) { .strat-row { padding: 12px 14px; gap: 8px; } }

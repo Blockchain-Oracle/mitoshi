@@ -54,7 +54,10 @@ export function useCopyWrites() {
     walletBase,
     mine: mine.data?.subscriptions ?? [],
     myFills: mine.data?.fills ?? [],
-    mineReady: !wallet || mine.isSuccess,
+    /** The wallet's consents have been read (or the read failed, which Yours then shows as its own error state). */
+    mineReady: !wallet || !mine.isPending,
+    mineFailed: wallet !== null && mine.isError && !mine.data,
+    refetchMine: () => void mine.refetch(),
   };
 }
 

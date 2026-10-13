@@ -2,9 +2,10 @@
 // From 21st.dev 31599 aadarshm/agent-id (the draggable identity card on an elastic ribbon), revamped: the card is the
 // agent's ERC-8004 identity — its name, its id on the registry, its runner and model — on Mitoshi's tokens, no gradients,
 // no remote fonts or avatars; the barcode is drawn from the agent's on-chain id (deterministic, the source's bar
-// algorithm), the ribbon follows the card, and the drag springs back (arrow keys nudge it; Escape resets).
+// algorithm), the ribbon follows the card, and the drag springs back (arrow keys nudge it; Escape resets). R4-6 (D-227):
+// it sits in the cockpit's Identity tab, and on a coarse pointer it doesn't drag at all (pan-y scrolls the page).
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react";
-import { useMemo, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
 
 /** The source's bar pattern, seeded by the value (same value → same bars). */
 export function barcodeBars(value: string): { dark: boolean; width: number }[] {
@@ -25,13 +26,26 @@ export interface AgentIdCardProps {
   runner: string;
   model: string | null;
   kind: string;
-  hint: string;
 }
 
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 
-export function AgentIdCard({ name, agentId, registry, runner, model, kind, hint }: AgentIdCardProps) {
-  const reduce = useReducedMotion();
+/** A coarse pointer (a phone) scrolls through the card instead of dragging it (R4-6, automate bug 3). */
+function useCoarsePointer(): boolean {
+  const [coarse, setCoarse] = useState(false);
+  useEffect(() => {
+    const q = window.matchMedia("(pointer: coarse)");
+    const on = () => setCoarse(q.matches);
+    on();
+    q.addEventListener("change", on);
+    return () => q.removeEventListener("change", on);
+  }, []);
+  return coarse;
+}
+
+export function AgentIdCard({ name, agentId, registry, runner, model, kind }: AgentIdCardProps) {
+  const coarse = useCoarsePointer();
+  const reduce = useReducedMotion() || coarse;
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const sx = useSpring(x, { stiffness: 320, damping: 18, mass: 0.6 });
@@ -67,7 +81,7 @@ export function AgentIdCard({ name, agentId, registry, runner, model, kind, hint
       <motion.div
         role="group"
         tabIndex={0}
-        aria-label={`${name} — ERC-8004 agent #${agentId}. ${hint}`}
+        aria-label={`${name} — ERC-8004 agent #${agentId}`}
         onKeyDown={onKey}
         drag={!reduce}
         dragSnapToOrigin
@@ -82,7 +96,7 @@ export function AgentIdCard({ name, agentId, registry, runner, model, kind, hint
           y.set(0);
         }}
         style={reduce ? undefined : { x: sx, y: sy, rotate }}
-        className="-mt-2 flex w-full cursor-grab touch-none flex-col gap-4 rounded-xl border border-hairline bg-surface-1 p-5 shadow-md outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"
+        className={reduce ? "-mt-2 flex w-full touch-pan-y flex-col gap-4 rounded-xl border border-hairline bg-surface-1 p-5 shadow-md outline-none focus-visible:ring-2 focus-visible:ring-ring" : "-mt-2 flex w-full cursor-grab touch-none flex-col gap-4 rounded-xl border border-hairline bg-surface-1 p-5 shadow-md outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing"}
       >
         <div className="mx-auto h-1.5 w-12 rounded-full bg-surface-2" aria-hidden />
         <div className="flex items-baseline justify-between gap-3">
@@ -113,7 +127,6 @@ export function AgentIdCard({ name, agentId, registry, runner, model, kind, hint
           ).el}
         </svg>
       </motion.div>
-      <p className="mt-2 type-caption text-ink-muted">{hint}</p>
     </div>
   );
 }
