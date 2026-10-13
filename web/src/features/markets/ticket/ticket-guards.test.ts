@@ -25,6 +25,13 @@ describe("ticket blockers (the CTA names its blocker, D-045)", () => {
     expect(deriveBlocker({ ...base, quote: ok(quote({ partial: true }), 0) })).toBe("over-book");
     expect(deriveBlocker({ ...base, quoteStale: true })).toBe("stale-quote");
   });
+  it("a new account's first funding names the wait, not a shortfall, and steps aside once the stake is backed (R4-4)", () => {
+    expect(deriveBlocker({ ...base, availableBase: 0n, funding: true })).toBe("funding");
+    expect(deriveBlocker({ ...base, availableBase: null, funding: true })).toBe("funding");
+    expect(deriveBlocker({ ...base, stakeBase: 200_000_000n, funding: true })).toBe("funding");
+    expect(deriveBlocker({ ...base, funding: true })).toBeNull();
+    expect(blockerLabel("funding")).toBe("Funding your account…");
+  });
   it("a Listed Window takes a scheduled call (D-088) only where the caller allows it", () => {
     expect(commonBlocker({ ...base, phase: "upcoming" })).toBe("upcoming");
     expect(commonBlocker({ ...base, phase: "upcoming" }, { upcoming: true })).toBeNull();

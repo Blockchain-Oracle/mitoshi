@@ -14,7 +14,10 @@ import { invalidateAfterWrite, useSubmitter } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useReducer, useRef, useState } from "react";
 import { announce } from "@/components/states/LiveRegion";
+import { WRITE_RECEIPT } from "@/features/receipts/copy";
+import { accountSigner, notifyReceipt } from "@/features/receipts/write-receipt";
 import { notify } from "@/lib/toast";
+import { useWalletSession } from "@/lib/wallet-session";
 import { usd } from "../parlay/format";
 import { fetchSpots, SpotsUnavailableError } from "../parlay/useParlayQuote";
 import { RANGE } from "./copy";
@@ -24,6 +27,7 @@ export type RangeOpenOutcome = { status: "confirmed"; txHash: Hex; roundId: bigi
 
 export function useRangeWrites(wallet: Address | null) {
   const submitter = useSubmitter();
+  const account = useWalletSession().kind;
   const queryClient = useQueryClient();
   const [tx, dispatch] = useReducer(reduceTx, TX_IDLE);
   const [outcome, setOutcome] = useState<RangeOpenOutcome | null>(null);
@@ -67,7 +71,8 @@ export function useRangeWrites(wallet: Address | null) {
           const stakeBase = booked?.stakeBase ?? fresh.value.stakeBase;
           setOutcome({ status: "confirmed", txHash: result.txHash, roundId: booked?.roundId ?? null, stakeBase });
           const line = RANGE.outcome.placed(booked ? String(booked.roundId) : "", req.bandText, usd(stakeBase), usd(req.maxPayoutBase));
-          notify.neutral(line);
+          // The success receipt (R4-4, D-227; critic gap 21): the toast names the bet, its Receipt opens the stub.
+          notifyReceipt({ title: line, figure: usd(stakeBase), figureLabel: WRITE_RECEIPT.staked, txHash: result.txHash, atMs: Date.now(), signer: accountSigner(account), sponsored: true });
           announce(line);
         } else if (result.status === "unknown") {
           setOutcome({ status: "failed", diagnosis: result.diagnosis, txHash: result.txHash ?? null });
@@ -87,7 +92,7 @@ export function useRangeWrites(wallet: Address | null) {
         await refresh();
       }
     },
-    [submitter, wallet, refresh],
+    [submitter, wallet, refresh, account],
   );
 
   const crank = useCallback(

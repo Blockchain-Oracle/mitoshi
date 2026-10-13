@@ -11,6 +11,8 @@ import { formatBaseUnits } from "@cwf/core/units";
 import { useId } from "react";
 import { Keypad } from "@/components/kit";
 import { amountProblem } from "@/features/vault/AmountField";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { EARN } from "./copy";
 import { DECIMALS } from "./format";
 
@@ -32,7 +34,9 @@ const usd = (base: bigint) => `$${formatBaseUnits(base, DECIMALS, { minDp: 2, ma
 
 export function AmountRow({ value, onChange, maxBase, label, over, hint, keypad = false, onMax }: AmountRowProps) {
   const id = useId();
-  const problem = amountProblem(value, maxBase, over);
+  // Privacy mode (the balance eye): the hint and the refusal name the account's figure as the dots.
+  const mask = usePrivacy() ? SHELL.masked : undefined;
+  const problem = amountProblem(value, maxBase, over, mask);
   const fill = () => {
     if (maxBase === null) return;
     onChange(formatBaseUnits(maxBase, DECIMALS, { minDp: 0, maxDp: keypad ? DOLLAR_KEYPAD.maxDecimals : DECIMALS, group: false }));
@@ -66,7 +70,7 @@ export function AmountRow({ value, onChange, maxBase, label, over, hint, keypad 
         </button>
       </div>
       <span id={`${id}-note`} role={problem ? "alert" : undefined} className="ea-amount-note" data-problem={problem ? "" : undefined}>
-        {problem ?? (maxBase !== null ? hint(usd(maxBase)) : " ")}
+        {problem ?? (maxBase !== null ? hint(mask ?? usd(maxBase)) : " ")}
       </span>
       {keypad ? <Keypad value={value} onChange={onChange} rules={DOLLAR_KEYPAD} labels={EARN.pad} className="ea-keypad" /> : null}
     </div>

@@ -25,6 +25,8 @@ import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { useNowMs } from "@/lib/clock";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
+import { FUNDING } from "@/features/funding/copy";
+import { useFirstFunding } from "@/features/funding/first-fund-state";
 import { useDebounced } from "../../markets/ticket/useDebounced";
 import { feedKeyOf } from "../../markets/units";
 import { usd } from "../../parlay/format";
@@ -107,6 +109,8 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
   });
   const spendable = sheet?.ok ? sheet.value.spendableBase : null;
   const signedOut = !session.isConnected;
+  // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
+  const funding = useFirstFunding();
   const strike = shown ? (call.direction === "long" ? shown.band.lowPrint : shown.band.highPrint) : null;
   const opening = shown?.openingPrint ?? (market.openingPriceRaw !== null ? market.openingPriceRaw / 1_000_000n : null);
 
@@ -119,6 +123,7 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
     if (!q) return MOONSHOT.ticket.pricing;
     const cap = capacityLabel(capacity.data ?? null);
     if (cap) return cap;
+    if (!signedOut && funding && (spendable === null || spendable < q.quote.stakeBase)) return FUNDING.firstFund.funding;
     if (!signedOut && spendable !== null && spendable < q.quote.stakeBase) return RANGE.cta.topUp;
     return null;
   })();

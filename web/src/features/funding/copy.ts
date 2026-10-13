@@ -23,6 +23,10 @@ export const FUNDING = {
     close: "Close add money",
     connectFirst: "Sign in first.",
     signIn: "Sign in",
+    qr: "QR",
+    qrHide: "Hide QR",
+    qrLabel: "Your address as a QR code, to receive pathUSD on Tempo",
+    bridge: "Bring stock tokens from Robinhood →",
   },
   errors: {
     cooldown: "Already funded today.",
@@ -47,11 +51,14 @@ export const FUNDING = {
   welcome: {
     eyebrow: "You're funded",
     title: "Test dollars are in your account",
+    titleWith: (held: string) => `${held} in your account`,
     cta: "Let's go",
     close: "Close",
   },
   /** The server-side funding of a brand-new account, when it didn't land. */
   firstFund: {
+    landed: (amount: string) => `+${amount} test dollars`,
+    funding: "Funding your account…",
     failed: "Test dollars didn't arrive.",
     addMoney: "Add money",
   },

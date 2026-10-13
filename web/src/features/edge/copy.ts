@@ -6,15 +6,13 @@ export const EDGE = {
   intro: {
     eyebrow: "Trader Edge",
     title: "Know your edge.",
-    lede: "Your settled Windows: what pays, what costs, when you trade best.",
-    source: { label: "Source", value: "Mitoshi's engine on Tempo testnet" },
-    method: { label: "Method", value: "Your fills and the settlement rule, in your browser" },
+    lede: "What pays, what costs, when you trade best.",
   },
   states: {
     connect: {
       eyebrow: "Your record",
       title: "See the trader your history reveals.",
-      copy: "Sign in with the account you trade with. The report is calculated from its fills on chain, with no journal to upload.",
+      copy: "Sign in. The report builds from your fills.",
       action: "Sign in",
     },
     reading: "Reading your trading history",
@@ -34,7 +32,7 @@ export const EDGE = {
     roiUnavailable: "Return unavailable",
     sample: (settled: number, open: number) => `${settled} settled · ${open} open`,
     readoutLabel: "Mitoshi readout",
-    readoutFoot: "Patterns become more useful with a larger sample. This describes your record; it doesn't promise the next Window.",
+    readoutFoot: "A record, not a forecast.",
     readout: {
       moreRounds: (needed: number) => `${needed} more settled ${needed === 1 ? "Window" : "Windows"} will reveal your first useful pattern.`,
       bestWindow: (label: string, net: string, count: number) => `${label} is your strongest time so far: ${net} across ${count} settled ${count === 1 ? "Window" : "Windows"}.`,
@@ -51,7 +49,7 @@ export const EDGE = {
     },
     windows: {
       title: "When you perform best",
-      copy: "Results grouped by your device's local time. Only settled Windows count.",
+      copy: "By your local time.",
       unreadable: "Close times couldn't be read for this history. Your totals above are still complete.",
       labels: {
         "late-night": { label: "Late night", range: "00:00–05:59" },
@@ -73,9 +71,9 @@ export const EDGE = {
       noWins: "No wins yet",
       noLosses: "No losses yet",
       provenanceLabel: "How this is verified",
-      provenance:
-        "Calculated in your browser from your fills on Mitoshi's engine as the index holds them, settled by the engine's own rule. Redeeming a position doesn't erase it from this record, and every Window has a proof page with both of its prints.",
+      provenance: "Computed in your browser from your fills. Every Window has a proof page.",
+      source: { label: "Source", value: "Mitoshi's engine on Tempo testnet" },
+      method: { label: "Method", value: "Your fills and the settlement rule" },
     },
-    footer: "This report measures settled Windows because a Window is what settles. Every figure is a fill, or the settlement rule applied to one — never an estimate.",
   },
 } as const;

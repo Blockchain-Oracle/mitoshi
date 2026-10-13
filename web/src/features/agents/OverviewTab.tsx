@@ -2,7 +2,10 @@
 // Ported from Owarine 90a91d71:web/src/features/desk/cockpit/{OverviewTab,LimitGauges}.tsx (R4-6, D-227) — the latest
 // decision as its card (it opens the Decisions tab), the strategy's on-chain limits as figures, and — when this wallet
 // copies it — its own copy's gauges off the live vault grant: spent today against the daily cap, open against the most.
+import { Masked } from "@/components/kit";
 import { RadialGauge } from "@/components/kit/desk-kit";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { spentTodayOf } from "../strategies/activity";
 import { centsOf, usdCap, usd } from "../strategies/format";
 import type { StrategyDetailPayload } from "../strategies/protocol";
@@ -21,6 +24,8 @@ export function OverviewTab({ detail, writes, onOpenDecisions }: { detail: Strat
   const grant = sub && writes.grant && writes.grant.grantId.toString() === sub.grantId && !writes.grant.revoked ? writes.grant : null;
   const nowSec = Math.floor(Date.now() / 1000);
   const spent = grant ? spentTodayOf(grant, nowSec) : 0n;
+  // Privacy mode (the balance eye, R4-4 critic gap 15): this copy's spent today and budget left are the dots.
+  const own = usePrivacy() ? () => SHELL.masked : usd;
   return (
     <div className="cp-overview">
       <div className="cp-col">
@@ -45,11 +50,11 @@ export function OverviewTab({ detail, writes, onOpenDecisions }: { detail: Strat
           <section className="cp-card" aria-label={C.yours}>
             <span className="cp-stat-label">{C.yours}</span>
             <div className="cp-gauges">
-              <Gauge label="Spent today" value={share(spent, grant.caps.maxDailySpendBase)} center={`${Math.round(share(spent, grant.caps.maxDailySpendBase))}%`} line={`${usd(spent)} / ${usd(grant.caps.maxDailySpendBase)}`} />
+              <Gauge label="Spent today" value={share(spent, grant.caps.maxDailySpendBase)} center={`${Math.round(share(spent, grant.caps.maxDailySpendBase))}%`} line={`${own(spent)} / ${usd(grant.caps.maxDailySpendBase)}`} />
               <Gauge label="Open" value={grant.caps.maxOpenPositions > 0 ? (grant.openPositions / grant.caps.maxOpenPositions) * 100 : 0} center={`${grant.openPositions}/${grant.caps.maxOpenPositions}`} line={`${usd(grant.caps.maxStakePerTradeBase)} / trade`} />
             </div>
             <div className="cp-figures">
-              <div className="cp-figure"><span className="cp-stat-label">Budget left</span><b>{usd(grant.budgetBase)}</b></div>
+              <div className="cp-figure"><span className="cp-stat-label">Budget left</span><b><Masked>{usd(grant.budgetBase)}</Masked></b></div>
               <div className="cp-figure"><span className="cp-stat-label">Resets</span><b>00:00 UTC</b></div>
             </div>
           </section>

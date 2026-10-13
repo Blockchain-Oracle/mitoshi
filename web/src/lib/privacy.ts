@@ -36,6 +36,11 @@ const subscribe = (l: () => void) => {
   return () => listeners.delete(l);
 };
 
+/** The same flag outside React (a toast fired from a write's callback, R4-4): true while balances are hidden. */
+export function isPrivacyOn(): boolean {
+  return typeof window !== "undefined" && read();
+}
+
 /** True while balances are hidden. The server render shows them (no storage there); the client corrects at once. */
 export function usePrivacy(): boolean {
   return useSyncExternalStore(subscribe, read, () => false);

@@ -11,6 +11,8 @@ import { USD_DECIMALS, type ParlayMode, type ParlayReserveState } from "@cwf/cor
 import { parseRefusal } from "@cwf/markets/parlay";
 import { useBalanceSheet } from "@cwf/markets/react";
 import { useMemo } from "react";
+import { FUNDING } from "@/features/funding/copy";
+import { useFirstFunding } from "@/features/funding/first-fund-state";
 import { useWalletSession } from "@/lib/wallet-session";
 import { PARLAY } from "./copy";
 import type { LegWindow } from "./data";
@@ -38,6 +40,8 @@ export function useParlayTicket(reserve: ParlayReserveState, windows: readonly L
   const refusal = parseRefusal(q.error);
   const spendable = sheet?.ok ? sheet.value.spendableBase : null;
   const signedOut = !session.isConnected;
+  // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
+  const funding = useFirstFunding();
 
   const blocker = ((): string | null => {
     if (reserve.paused) return PARLAY.cta.paused;
@@ -54,6 +58,7 @@ export function useParlayTicket(reserve: ParlayReserveState, windows: readonly L
     if (q.spotsDown) return PARLAY.cta.spotsDown;
     if (q.fair?.blockedLeg != null) return PARLAY.cta.belowFairShort(q.fair.blockedLeg + 1);
     if (!q.fair) return PARLAY.cta.pricing;
+    if (!signedOut && funding && (spendable === null || spendable < quote.stakeBase)) return FUNDING.firstFund.funding;
     if (!signedOut && spendable !== null && spendable < quote.stakeBase) return PARLAY.cta.topUp;
     return null;
   })();

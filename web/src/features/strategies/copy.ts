@@ -72,7 +72,8 @@ export const COPY = {
     `${usdCap(perTrade)} / trade · ${usdCap(daily)} / day · ${open} open${priceRaw > 0n ? ` · ≤ ${centsOf(priceRaw)}` : ""}`,
   direction: { label: "Direction", follow: "Follow", fade: "Fade" },
   strip: { label: "Your money", wallet: "Wallet", balance: "Trading Balance", takes: "This takes" },
-  share: { use: (left: bigint) => `Use my budget · ${usdCap(left)} left`, fresh: "New budget" },
+  /** `left` is null in privacy mode: the pill keeps its words without the figure. */
+  share: { use: (left: bigint | null) => (left === null ? "Use my budget" : `Use my budget · ${usdCap(left)} left`), fresh: "New budget" },
   rows: {
     deposit: "Wallet → Balance",
     runner: "Runner",
@@ -92,7 +93,7 @@ export const COPY = {
     perTrade: "Per trade",
     max: "Max",
     notANumber: "Enter an amount like 10 or 2.50.",
-    walletShort: (have: bigint, need: bigint) => `Your wallet has ${usd(have)}; this needs ${usd(need)}.`,
+    walletShort: (have: bigint | null, need: bigint) => (have === null ? `This needs ${usd(need)}, more than your wallet holds.` : `Your wallet has ${usd(have)}; this needs ${usd(need)}.`),
     aboveStrategy: (max: bigint) => `This strategy allows at most ${usd(max)} a trade.`,
     aboveBudget: "Can't be more than the budget.",
   },
@@ -105,10 +106,12 @@ export const COPY = {
     busy: "Working…",
     inactive: "This strategy is closed to new copiers",
     checking: "Checking your balances…",
+    funding: "Funding your account…",
     noBudget: "Enter a budget",
     noPerTrade: "Enter the most per trade",
   },
   manage: {
+    receiptLabel: "Strategy",
     live: "Copying",
     fading: "Fading",
     notLive: "Paused · budget not live",
