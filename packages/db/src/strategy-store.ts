@@ -196,13 +196,25 @@ export function createPgStrategyStore(sql: Sql) {
         where strategy_id = ${strategyId} and market_id = ${marketId.toLowerCase()} and dry_run = ${dryRun}`;
     },
 
-    /** Newest first; all strategies when `strategyId` is null. A rehearsal is never shown as memory unless asked for. */
-    async listDecisions(strategyId: string | null, limit: number, includeDryRun = false): Promise<StrategyDecisionRecord[]> {
+    /** Newest first; all strategies when `strategyId` is null. A rehearsal is never shown as memory unless asked for.
+     *  `readsOnly`: an agent's model reads only, never a rule's recorded call (`rule/<preset>`) — the read budget's view. */
+    async listDecisions(strategyId: string | null, limit: number, includeDryRun = false, readsOnly = false): Promise<StrategyDecisionRecord[]> {
       const rows = await sql<DecisionRow[]>`
         select * from strategy_decisions where gate <> 'pending'
           ${strategyId ? sql`and strategy_id = ${strategyId}` : sql``}
           ${includeDryRun ? sql`` : sql`and dry_run = false`}
+          ${readsOnly ? sql`and model not like 'rule/%'` : sql``}
         order by decided_at desc limit ${limit}`;
+      return rows.map(toDecision);
+    },
+
+    /** Each strategy's latest `perStrategy` decisions (dry runs never), newest first — a busy strategy can't crowd a quiet
+     *  one off its card the way one global "latest N" did. */
+    async latestDecisionsPerStrategy(perStrategy: number): Promise<StrategyDecisionRecord[]> {
+      const rows = await sql<DecisionRow[]>`
+        select id, strategy_id, market_id, runner, decided_at, model, prompt_hash, verdict_side, confidence, why, gate, gate_reason, side, filled, skipped, dry_run from (
+          select *, row_number() over (partition by strategy_id order by decided_at desc) as rn from strategy_decisions where gate <> 'pending' and dry_run = false
+        ) ranked where rn <= ${perStrategy} order by decided_at desc`;
       return rows.map(toDecision);
     },
 

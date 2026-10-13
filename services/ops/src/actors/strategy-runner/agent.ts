@@ -42,8 +42,8 @@ export function agentBootLine(state: AgentState): string {
 
 /** The sliding hour's reads survive a restart: they are rows. */
 export async function warmAgentState(state: AgentState, store: StrategyStore, nowMs: number): Promise<void> {
-  const rows = await store.listDecisions(null, 500, true);
   // Only model reads spend the budget; a rule's recorded call (`rule/<preset>`) costs nothing.
+  const rows = await store.listDecisions(null, 500, true, true);
   state.callsAtMs = rows.filter((r) => !isRuleModel(r.model)).map((r) => r.decidedAtMs).filter((at) => nowMs - at < HOUR_MS);
 }
 

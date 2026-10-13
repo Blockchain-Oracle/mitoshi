@@ -20,7 +20,6 @@ import { serverEnv } from "@/server/env";
 import type { DecisionDetailWire, DecisionsWire, DecisionWire, FillWire, MinePayload, StrategiesPayload, StrategyDetailPayload, StrategyWire } from "./protocol";
 
 const FILL_LIMIT = 500;
-const DECISION_LIMIT = 200;
 const DECISIONS_PER_CARD = 8;
 /** The agent page's Decisions tab: its latest this many (the tab's count is the whole total). */
 const DECISIONS_PER_PAGE = 60;
@@ -108,7 +107,7 @@ export async function readStrategies(): Promise<StrategiesPayload> {
   const sql = db();
   const store = createPgStrategyStore(sql);
   const [rows, fillRows, beats, decisionRows, counts, seriesRows, sealedRows, copiers] = await Promise.all([
-    readIndexedStrategies(sql, { registry: venue.strategyRegistry }), store.listFills({ strategyId: null, limit: FILL_LIMIT }), store.latestHeartbeats(), store.listDecisions(null, DECISION_LIMIT),
+    readIndexedStrategies(sql, { registry: venue.strategyRegistry }), store.listFills({ strategyId: null, limit: FILL_LIMIT }), store.latestHeartbeats(), store.latestDecisionsPerStrategy(DECISIONS_PER_CARD),
     store.decisionCounts(), readSeriesList(sql), createPgSealedMemory(sql).index(), readCopierCount(sql, venue.strategyRegistry),
   ]);
   const fills = fillRows.map(toFill);
@@ -117,7 +116,7 @@ export async function readStrategies(): Promise<StrategiesPayload> {
   const decisionsBy = new Map<string, DecisionWire[]>();
   for (const d of decisionRows) {
     const list = decisionsBy.get(d.strategyId) ?? [];
-    if (list.length < DECISIONS_PER_CARD) list.push(decisionWire(d, facts));
+    list.push(decisionWire(d, facts));
     decisionsBy.set(d.strategyId, list);
   }
   return {

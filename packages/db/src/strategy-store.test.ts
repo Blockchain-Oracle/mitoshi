@@ -68,6 +68,10 @@ describe.skipIf(!url)("strategy store (runner records)", () => {
     expect(await store.decisionOf("2", MARKET, false)).toMatchObject({ gate: "trade", side: "up", verdictSide: "up", confidence: null, model: "rule/reversion", decidedAtMs: 1_791_700_000_000 });
     await store.recordCall({ ...call, marketId: `0x${"ef".repeat(32)}`, decidedAtMs: 1_791_700_300_000, filled: 2 });
     await store.recordCall({ ...call, marketId: `0x${"ee".repeat(32)}`, dryRun: true });
+    expect((await store.listDecisions(null, 50, false, true)).every((d) => !d.model.startsWith("rule/"))).toBe(true);
+    const latest = await store.latestDecisionsPerStrategy(1);
+    expect(latest.map((d) => d.strategyId).sort()).toEqual(["2", "3"]);
+    expect(latest.find((d) => d.strategyId === "2")?.decidedAtMs).toBe(1_791_700_300_000);
     const counts = await store.decisionCounts();
     expect(counts.find((c) => c.strategyId === "2")).toEqual({ strategyId: "2", total: 2, bets: 2, held: 0, failed: 0, lastAtMs: 1_791_700_300_000 });
     expect((await store.decisionCounts("3"))[0]).toMatchObject({ total: 2, bets: 1, failed: 1 });
