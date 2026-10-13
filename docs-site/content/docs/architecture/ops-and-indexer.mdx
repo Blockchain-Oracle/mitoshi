@@ -51,7 +51,7 @@ Read from ops' `/health` on 13 October 2026 at 08:30 UTC (30 heartbeats, 29 live
 | bridge-watch | Follows each recorded bridge transfer leg by leg through LayerZero Scan. |
 | reserve-watch | Snapshots every ticker's backing every 5 minutes; alerts if a check fails or anyone but the adapter can mint. |
 | stock-sync | Pushes Robinhood multipliers and pauses to Tempo. Idle until its sender is deployed on Robinhood Chain. |
-| indexer-recount | An hourly recount against the Tempo Indexer API or a self-hosted tidx. Idle: no indexer configured yet. |
+| indexer-recount | Every hour, counts each contract's logs in the Tempo Indexer API against the chain's own, over the blocks the index holds, and lists the blocks it lacks. |
 | halt-watch | The halt board from RedStone freshness and Alpaca's tradable flag. |
 | calendar · earnings | NYSE sessions and holidays; upcoming earnings. |
 | funds-watch | Watches every role key's pathUSD against a floor and tops a low one up from Moderato's faucet (mainnet only reports). |

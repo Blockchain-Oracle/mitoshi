@@ -3,9 +3,10 @@ import { indexerSources } from "@cwf/clients";
 import { keccak256, toBytes } from "viem";
 import { createIndexerClient, indexerQueryUrl, rowsFromRaw, TEMPO_INDEXER_BASE_URL } from "./client";
 import { indexerClientFromEnv } from "./env";
-import { recount, type LocalCounter, type RecountSource } from "./recount";
+import type { RecountSource } from "./recount";
 
-// HTTP is stubbed here for request shape and parsing only; the live runs are in acceptance/S3.5.md.
+// HTTP is stubbed here for request shape and parsing only; the recount itself is in recount.test.ts, live runs in
+// acceptance/S3.5.md.
 const ok = (columns: string[], rows: unknown[][]) => new Response(JSON.stringify({ ok: true, columns, rows, row_count: rows.length, engine: "tiered" }), { headers: { "content-type": "application/json" } });
 
 afterEach(() => vi.unstubAllGlobals());
@@ -54,34 +55,5 @@ describe("generated indexer sources", () => {
       const canonical = `${e.name}(${e.signature.slice(e.name.length + 1, -1).split(", ").filter(Boolean).map((p) => p.split(" ")[0]).join(",")})`;
       expect(e.topic0).toBe(keccak256(toBytes(canonical)));
     }
-  });
-});
-
-describe("recount", () => {
-  const source: RecountSource = { area: "launch", contract: "LaunchRegistry", address: "0x9b664B9B73497Aa140EdA23a81fCC3db279c50b7", deployBlock: 100, events: [{ name: "A", signature: "A()", topic0: "0x01" }, { name: "B", signature: "B()", topic0: "0x02" }] };
-  const indexer = (counts: Record<string, number>, covered = true) =>
-    createIndexerClient(42431, {
-      kind: "mpp",
-      session: {
-        fetch: async (u) => {
-          const sql = new URL(String(u)).searchParams.get("sql")!;
-          if (sql.startsWith("SELECT max(num)")) return ok(["head"], [[200]]);
-          if (sql.includes("FROM blocks WHERE")) return ok(["n"], [[covered ? 99 : 5]]);
-          const topic = /selector = '(0x[0-9a-f]+)'/.exec(sql)![1]!;
-          return ok(["n"], [[counts[topic] ?? 0]]);
-        },
-      },
-    });
-  const local: LocalCounter = async ({ topic0 }) => ({ count: topic0 === "0x01" ? 4n : 7n, source: "rpc" });
-  it("compares each event over the same closed range and names the mismatch", async () => {
-    const r = await recount({ chainId: 42431, indexer: indexer({ "0x01": 4, "0x02": 6 }), sources: [source], local, headBlock: 250n });
-    expect(r.toBlock).toBe(198n);
-    expect(r.rows.map((x) => [x.event, x.indexerCount, x.localCount, x.match])).toEqual([["A", 4n, 4n, true], ["B", 6n, 7n, false]]);
-    expect(r.mismatches).toHaveLength(1);
-  });
-  it("reports a contract the indexer does not cover yet instead of comparing it", async () => {
-    const r = await recount({ chainId: 42431, indexer: indexer({}, false), sources: [source], local, headBlock: 250n });
-    expect(r.rows).toEqual([]);
-    expect(r.uncovered).toEqual([{ contract: "LaunchRegistry", fromBlock: 100n, toBlock: 198n }]);
   });
 });

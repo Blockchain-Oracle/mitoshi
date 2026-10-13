@@ -6,13 +6,15 @@
  *  - `self-hosted` → our own tidx (`TIDX_URL`, e.g. a tidx following Moderato; same `/query` contract)
  *  - `mpp`         → the Tempo API paid per query through an MPP **session** (the API offers only session; X10)
  *
- * The first two go through `tidx.ts` (`Tidx.create(...).fetch`: retries on 408/429/5xx, typed standard columns);
- * tidx.ts calls the global `fetch`, so the paid route builds the same request and pays through the session manager.
- * Server-only when `mpp` is used (the session holds a key).
- * Docs: tempo docs api/indexer + api/indexer-api; tidx.ts README/source; tidx README "Event Tables".
+ * The first two go through `tidx.ts` (`Tidx.create(...).fetch`, typed standard columns) with its own retries off: the
+ * pacer (`./pacer`, R6) owns retries, because tidx.ts retries a 429 after 200 ms whatever `Retry-After` says. Every
+ * answer's `RateLimit-*` headers reach the pacer. tidx.ts calls the global `fetch`, so the paid route builds the same
+ * request and pays through the session manager. Server-only when `mpp` is used (the session holds a key).
+ * Docs: tempo docs api/indexer + api/indexer-api + api/rate-limits; tidx.ts README/source; tidx README "Event Tables".
  */
 import { Tidx } from "tidx.ts";
 import type { MppSession } from "../mpp/payer";
+import { rateLimitFromHeaders, retryAfterMsFrom, type IndexerPacer, type RateLimitInfo } from "./pacer";
 
 export const TEMPO_INDEXER_BASE_URL = "https://api.tempo.xyz/v1/indexer";
 
@@ -37,12 +39,26 @@ export interface IndexerClient {
   chainId: number;
   via: IndexerAuth["kind"];
   baseUrl: string;
+  /**
+   * The engine that holds full history: the hosted API's ClickHouse archive (its PostgreSQL keeps a hot window only,
+   * tidx README "Tiered Storage"); unset for a self-hosted tidx, whose operator decides. One store for every query of
+   * a recount, so coverage and counts never come from two tiers.
+   */
+  archiveEngine?: "clickhouse";
+  /** Set when queries are paced under the key's rate limit (`./pacer`); its stats go to `/health`. */
+  pacer?: IndexerPacer;
   query: (q: IndexerQuery) => Promise<IndexerResult>;
 }
 
 export class IndexerQueryError extends Error {
   override readonly name = "IndexerQueryError";
-  constructor(message: string, readonly status: number | null) {
+  constructor(
+    message: string,
+    readonly status: number | null,
+    /** From `Retry-After` on a 429. */
+    readonly retryAfterMs: number | null = null,
+    readonly rate: RateLimitInfo | null = null,
+  ) {
     super(message);
   }
 }
@@ -66,19 +82,33 @@ export function rowsFromRaw(raw: unknown): Record<string, unknown>[] {
   return body.rows.map((row) => Object.fromEntries(body.columns!.map((c, i) => [c, row[i]])));
 }
 
-export function createIndexerClient(chainId: number, auth: IndexerAuth): IndexerClient {
+export interface IndexerClientOptions {
+  /** Pace every query under the key's rate limit (`./pacer`); unpaced when absent. */
+  pacer?: IndexerPacer;
+}
+
+export function createIndexerClient(chainId: number, auth: IndexerAuth, options: IndexerClientOptions = {}): IndexerClient {
+  const pacer = options.pacer;
+  const paced = (raw: (q: IndexerQuery) => Promise<IndexerResult>) => (pacer ? (q: IndexerQuery) => pacer.run(() => raw(q)) : raw);
+  const observe = (headers: Headers) => pacer?.observe(rateLimitFromHeaders(headers));
+  const failure = (message: string, response: Response) =>
+    new IndexerQueryError(message, response.status, response.status === 429 ? retryAfterMsFrom(response.headers, Date.now()) : null, rateLimitFromHeaders(response.headers));
+
   if (auth.kind === "mpp") {
     const baseUrl = auth.baseUrl ?? TEMPO_INDEXER_BASE_URL;
     return {
       chainId,
       via: "mpp",
       baseUrl,
-      async query(q) {
+      archiveEngine: "clickhouse",
+      ...(pacer ? { pacer } : {}),
+      query: paced(async (q) => {
         const response = await auth.session.fetch(indexerQueryUrl(baseUrl, chainId, q));
+        observe(response.headers);
         const text = await response.text();
-        if (!response.ok) throw new IndexerQueryError(`indexer answered ${response.status}: ${text.slice(0, 300)}`, response.status);
+        if (!response.ok) throw failure(`indexer answered ${response.status}: ${text.slice(0, 300)}`, response);
         return { rows: rowsFromRaw(JSON.parse(text)), via: "mpp" };
-      },
+      }),
     };
   }
   const baseUrl = auth.kind === "api-key" ? (auth.baseUrl ?? TEMPO_INDEXER_BASE_URL) : auth.baseUrl;
@@ -88,30 +118,29 @@ export function createIndexerClient(chainId: number, auth: IndexerAuth): Indexer
     ...(auth.kind === "api-key" ? { headers: { "tempo-api-key": auth.apiKey } } : {}),
     ...(auth.kind === "self-hosted" && auth.basicAuth ? { basicAuth: auth.basicAuth } : {}),
   });
+  // Every answer, success or error, carries the quota headers; tidx.ts hands each response to its listeners.
+  if (pacer) tidx.on("response", (response) => observe(response.headers));
   return {
     chainId,
     via: auth.kind,
     baseUrl,
-    async query(q) {
+    ...(auth.kind === "api-key" ? { archiveEngine: "clickhouse" as const } : {}),
+    ...(pacer ? { pacer } : {}),
+    query: paced(async (q) => {
       try {
-        const result = await tidx.fetch({ query: q.sql, ...(q.signatures ? { signatures: q.signatures.map((s) => `event ${s.replace(/^event\s+/i, "")}`) as never } : {}), ...(q.engine ? { engine: q.engine } : {}), retryCount: 3 });
+        const result = await tidx.fetch({ query: q.sql, ...(q.signatures ? { signatures: q.signatures.map((s) => `event ${s.replace(/^event\s+/i, "")}`) as never } : {}), ...(q.engine ? { engine: q.engine } : {}), retryCount: pacer ? 1 : 3 });
         return { rows: result.rows as Record<string, unknown>[], via: auth.kind };
       } catch (error) {
-        const status = (error as { status?: number }).status ?? null;
-        throw new IndexerQueryError(error instanceof Error ? error.message : String(error), status);
+        const response = (error as { response?: Response }).response;
+        if (response instanceof Response) throw failure(error instanceof Error ? error.message : String(error), response);
+        throw new IndexerQueryError(error instanceof Error ? error.message : String(error), (error as { status?: number }).status ?? null);
       }
-    },
+    }),
   };
 }
 
 /** The indexer's head: the highest block it holds for this chain. */
 export async function indexerHead(client: IndexerClient): Promise<bigint> {
-  const { rows } = await client.query({ sql: "SELECT max(num) AS head FROM blocks" });
+  const { rows } = await client.query({ sql: "SELECT max(num) AS head FROM blocks", ...(client.archiveEngine ? { engine: client.archiveEngine } : {}) });
   return BigInt(String(rows[0]?.head ?? 0));
-}
-
-/** Whether the indexer holds every block in `[from, to]` (a self-hosted tidx may still be backfilling). */
-export async function indexerCovers(client: IndexerClient, fromBlock: bigint, toBlock: bigint): Promise<boolean> {
-  const { rows } = await client.query({ sql: `SELECT count(*) AS n FROM blocks WHERE num >= ${fromBlock} AND num <= ${toBlock}` });
-  return BigInt(String(rows[0]?.n ?? 0)) === toBlock - fromBlock + 1n;
 }
