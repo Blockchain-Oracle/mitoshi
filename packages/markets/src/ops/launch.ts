@@ -92,7 +92,11 @@ export async function fetchLaunchpadEvents(client: OpsClient, launchpad: Address
   return out;
 }
 
-/** What the registry records about a new token, read once: its TIP-20 facts and, for a memecoin, its template's threshold. */
+/**
+ * What the registry records about a new token, read once: its TIP-20 facts and, for a memecoin, its template's threshold
+ * and full supply — the curve mints as it sells, so the TIP-20 `totalSupply` is only what is out at the read, and a
+ * market cap on it would disagree with the token page's (price × the template's supply, as pump.fun counts it).
+ */
 async function tokenMeta(client: OpsClient, launchpad: Address, token: Address, memecoin: boolean) {
   const read = <T>(p: Promise<T>) => p.catch(() => null);
   const [name, symbol, decimals, totalSupply, logoURI] = await Promise.all([
@@ -104,15 +108,17 @@ async function tokenMeta(client: OpsClient, launchpad: Address, token: Address, 
   ]);
   let configId: number | null = null;
   let thresholdQuote: bigint | null = null;
+  let supply = memecoin ? null : totalSupply;
   if (memecoin) {
     const l = await read(client.public.readContract({ address: launchpad, abi: curveLaunchpadAbi, functionName: "getLaunch", args: [token] }));
     if (l && l.state !== 0) {
       configId = l.configId;
       const c = await read(client.public.readContract({ address: launchpad, abi: curveLaunchpadAbi, functionName: "getConfig", args: [l.configId] }));
       thresholdQuote = c?.migrationQuoteThreshold ?? null;
+      supply = c?.totalSupply ?? null;
     }
   }
-  return { name, symbol, decimals, totalSupply, logoURI, configId, thresholdQuote };
+  return { name, symbol, decimals, totalSupply: supply, logoURI, configId, thresholdQuote };
 }
 
 /** The registry's records in a window, each with its token's metadata (`launchpad` reads a memecoin's template). */

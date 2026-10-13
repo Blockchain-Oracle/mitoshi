@@ -102,6 +102,8 @@ function MemeView({ m }: { m: MemeLaunch }) {
 
 export function TokenScreen({ token }: { token: Address }) {
   const meme = useMemeLaunch(token);
+  // The feed starts beside the chain read, not after it (same query as MemeView's): the chart lands with the head.
+  useLaunchFeed(token);
   const queryClient = useQueryClient();
   if (meme === null) return <LoadingFrame shape="launch-token" className="lp-token-page">{launchToken()}</LoadingFrame>;
   // A failed read is not "no memecoin here": say so with Retry (the read also polls) instead of trying the stablecoin view.

@@ -1,7 +1,7 @@
 /**
  * The launchpads' index, proved against the chain (R6 money, S02 + S08; D-230): runs only the indexer's four launch
  * followers (`services/ops/src/actors/indexer/launch.ts`) from the launch area's deploy block to head into
- * DATABASE_URL, then checks each launch's holders against the chain: the indexed balances sum to the supply, and the
+ * DATABASE_URL, then checks each launch's holders against the chain: the indexed balances sum to the minted supply, and the
  * top holder's matches `balanceOf`. Reads only on chain; writes only the index tables (run `pnpm db:migrate` first).
  *   DATABASE_URL=postgres://… pnpm --filter @cwf/scripts exec tsx drive/r7-launch-index.ts
  */
@@ -34,9 +34,10 @@ for (const { token, total_supply } of tokens) {
   const [sum] = await sql<{ s: string }[]>`select coalesce(sum(balance_raw), 0)::text as s from idx_launch_balances where token = ${token}`;
   const top = feed.holders.top[0];
   const chain = top ? await client.public.readContract({ address: token, abi: erc20Abi, functionName: "balanceOf", args: [top.holder as Address] }) : null;
+  const minted = await client.public.readContract({ address: token, abi: erc20Abi, functionName: "totalSupply" });
   console.log(JSON.stringify({
     token, name: feed.launch?.name, stage: feed.launch?.stage, trades: feed.trades.length, holders: feed.holders.count,
-    supplyIndexed: sum?.s, supply: total_supply, topHolder: top?.holder, topLabel: top?.label, topIndexed: top?.balanceRaw, topChain: chain?.toString(), indexedTo: feed.indexedTo,
+    supplyIndexed: sum?.s, supplyChain: minted.toString(), fullSupply: total_supply, topHolder: top?.holder, topLabel: top?.label, topIndexed: top?.balanceRaw, topChain: chain?.toString(), indexedTo: feed.indexedTo,
   }));
 }
 await sql.end();

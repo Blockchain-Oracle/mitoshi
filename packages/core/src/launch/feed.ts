@@ -76,7 +76,9 @@ export interface LaunchBoardRowWire {
   stage: LaunchStage;
   progressBps: number;
   priceE18: string | null;
+  /** Price × `totalSupply`: a memecoin's whole supply at the last price, as the token page and pump.fun count it. */
   mcapBase: string | null;
+  /** A memecoin's full supply (its template's, not what the curve has minted so far); a stablecoin's at launch. */
   totalSupply: string | null;
   vol24hBase: string;
   trades24h: number;
