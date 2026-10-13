@@ -14,7 +14,7 @@ import { useState } from "react";
 import { EmptyState, LoadingState } from "@/components/states";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { LeverageSlider } from "@/components/ui/leverage-slider";
 import { OrderSummary } from "@/components/ui/order-summary";

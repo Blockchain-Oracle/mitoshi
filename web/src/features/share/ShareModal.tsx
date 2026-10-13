@@ -12,7 +12,7 @@ import { usePrivacy } from "@/lib/privacy";
 import { livePnlText, money, moneyTone } from "@/features/terminal/format";
 import { SHARE } from "./copy";
 import { renderSharePng, saveSharePng } from "./share-png";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 
 /** What a card is about: an open position (Mark, valued by what Close pays) or a closed trade (Exit). */
 export interface ShareSubject {

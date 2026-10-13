@@ -23,10 +23,10 @@
 | Games | 33159 adrielzimbril/handle-reel · 13045/12997 trophyso achievements · 10759 radar-effect | per-game chunks; hub 23525 filter-grid · 30672 leaderboard-table · arcade shell 31359 + 29357 · lobby steps 23569 |
 | Social | 26900 comment-thread · 2652 social-post-card + 23646 context menu · 23559/23568 reels · 781 profile header · 28490 activity · 31661 message-thread + 12399 input-bar | optimistic posting, reactions |
 | Stocks | 22252 ssychui/market-watchlist + 19171 ticker · 29424 stocks dashboard (holdings) | 22256 price-target fan only with a real analyst source |
-| Bridge | 29371 rmahammad/processing-timeline + 16251 starc007/multi-chain-swap | stepper + tracker (E.3); + 23569 task-steps · 31642 capacity + 29280 timer · 23529 copy · 19949 pending |
+| Bridge | 16251 starc007/be-ui-multi-chain-swap (one card) + 23569 ddoemonn/task-steps (legs) | one card + tracker (E.3; R4-12, D-227); 36185 astralyxdev/rate-limit-meter capacity · 19949 diceui/pending wallet-wait · 28469 ncdai/copy-button guid · elapsed on the shared `useNowMs`. 29371 and 29280 no longer resolve and 31642 is now "Usage Dashboard" (`21st get`, 2026-10-12) |
 | Themes | 8414 interactive-broker-card · 20086 sectors-donut + 26545 partition-bar · 26652 base-alert-dialog | arm-modal grammar for follow |
 | Launch | 23576 wizard · 23549 progress-bar · 30538 curve | typed currency confirm; token page facts 25162 · holders 20086 |
-| Proof, status, news | 7870 stats-card · 26906 openstatus status-bar + 24943 incident timeline · 20087 news-card | no wallet stack on these routes; reserves add 31642 ratio meter · 25162 key-value-list · 25163 audit-log |
+| Proof, status, news | 7870 stats-card · 26906 openstatus status-bar + 24943 incident timeline · 20087 news-card | no wallet stack on these routes; reserves (R4-12) add 26545 partition-bar · 25162 key-value-list · 26906 status-bar · 25163 audit-log · 23569 re-check steps |
 | Settings, report, download | 25081 v-form-12 · 26523 field-02 · 31359 wensity/dialog (Base UI) + 28339 reasons · 8291 app-download-section + 8280 app-store-button (QR from the existing `qrcode-generator`) | hold-to-confirm for revoke-all and deletion |
 | Funding / faucet | 28357 v-group-13 · 29246 two-factor-1 (QR and copy only) · 29280 cooldown · 23569 · 6492 receipt | no user signature on testnet |
 | Shared primitives | 23529 copy-button · 23574 value-flash · 23569 task-steps · 19949 pending | used across surfaces |
@@ -85,8 +85,8 @@ position. Account: D44. Concepts behind "How this works" (§2.1.4).
 - **Token page:** 25162 facts + 30538 curve + 23549 graduation + 27122 ticket + 27124/23561 trades + 20086 holders +
   28490 activity.
 - **Report/block:** 31359 dialog + 28339 reasons on Base UI RadioGroup + 23646 entry + 26652 block confirm + toast.
-- **Bridge states:** 29371 + 16251, plus 31642 capacity + 29280 reset timer, 25162 + 23529 guid tracker, 23569 inline
-  status, 19949 wallet-wait (Slot → `useRender`), 6492 receipt.
+- **Bridge states (R4-12):** 16251 card → after the source hash the route map + 23569 legs, 36185 capacity, 28469 guid
+  copy, 19949 wallet-wait (its pending rule as a hook, no Slot), the shared clock for elapsed; 29371/29280/31642 retired.
 - **Chart helper:** 29968, 28470 and 29532 share one `chart-engine` file shipped by the registry (not printed by `21st
   get`): install once as `ui/chart-engine.tsx`, delete its mock-data generators (real-data rule), map `--spectrum-chart-*`
   to tokens; keep its loading/empty/error states, screen-reader table and keyboard range selector.

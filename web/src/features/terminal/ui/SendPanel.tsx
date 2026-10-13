@@ -11,7 +11,7 @@ import { invalidateAfterWrite, useSubmitter } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { isAddress, type Address } from "viem";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { webEnv } from "@/lib/env";
 import { notify } from "@/lib/toast";
 import { TERMINAL } from "../copy";

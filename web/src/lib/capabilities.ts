@@ -22,8 +22,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/themes": { eyebrow: "Themes", title: "Baskets that rebalance themselves", body: "Baskets an agent rebalances for you.", dependency: "the theme router and agent", links: [{ href: "/themes/create", label: "Create a theme" }] },
   "/themes/[slug]": { eyebrow: "Themes", title: "One theme", body: "Weights, rebalances, follow or unfollow.", dependency: "the theme router and agent" },
   "/themes/create": { eyebrow: "Themes", title: "Create a theme", body: "Pick tickers, an envelope and your fee.", dependency: "the theme router and agent" },
-  "/bridge": { eyebrow: "Bridge", title: "Move stock tokens to Tempo", body: "Stock tokens from Robinhood Chain to Tempo.", dependency: "the bridge adapters and lockboxes" },
-  "/reserves": { eyebrow: "Reserves", title: "Every bridged token, backed", body: "Locked there versus supply here, per ticker.", dependency: "the bridge adapters and lockboxes" },
   "/launch": { eyebrow: "Launch", title: "Launch a token", body: "A stablecoin or a memecoin, in one confirmation.", dependency: "the launchpads", links: [{ href: "/launch/stablecoin", label: "Launch a stablecoin" }, { href: "/launch/meme", label: "Launch a memecoin" }] },
   "/launch/stablecoin": { eyebrow: "Launch", title: "Launch a stablecoin", body: "One confirmation creates the token and its pair.", dependency: "the launch registry" },
   "/launch/meme": { eyebrow: "Launch", title: "Launch a memecoin", body: "A bonding curve that graduates to a pool.", dependency: "the curve launchpad" },
