@@ -28,7 +28,8 @@ function pageRoutes(dir = APP_DIR): string[] {
 /** Pages that live outside the nav on purpose: the landing, legal/contact (footer), the app handoff, dev fixtures,
  *  `/short` — Owarine's address kept as a redirect to the terminal's Short, which More's "Short" links directly (R4-13a) —
  *  and `/settings`, a redirect to the account for the back chevron on /settings/* (R4-11). */
-const OFF_NAV = new Set(["/", "/privacy", "/terms", "/contact", "/native-auth", "/short", "/settings"]);
+// /welcome: the phone app's first screen, reached only by the proxy (round 7).
+const OFF_NAV = new Set(["/", "/privacy", "/terms", "/contact", "/native-auth", "/short", "/settings", "/welcome"]);
 
 /** Live pages reached from their parent's create pills, not from the nav (R4-11: /launch and /themes link them). */
 const CHILD_OF_LIVE = new Set(["/launch/meme", "/launch/stablecoin", "/themes/create"]);
