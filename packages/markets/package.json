@@ -27,6 +27,7 @@
     "./range": "./src/range/index.ts",
     "./leverage": "./src/leverage/index.ts",
     "./maker": "./src/maker/index.ts",
+    "./earn": "./src/earn/history.ts",
     "./private": "./src/private/index.ts",
     "./arena": "./src/arena/index.ts",
     "./stream-ticket": "./src/server/stream-ticket.ts",
