@@ -2,3 +2,4 @@
 export * from "./keyAuth";
 export * from "./encoders";
 export * from "./reads";
+export * from "./rebalance";

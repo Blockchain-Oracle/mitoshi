@@ -42,6 +42,8 @@ INDEXER_VIA_MPP=
 KEEPER_PRIVATE_KEY=
 # launch-keeper (S17b, R4-11, opt-in: add it to OPS_ACTORS): graduates Complete memecoins; signs with this key, else KEEPER_PRIVATE_KEY
 LAUNCH_KEEPER_PRIVATE_KEY=
+# theme-agent (S16a, R4-11, opt-in: add it to OPS_ACTORS): 64 hex chars (openssl rand -hex 32), ops only; seals each follower's theme key
+THEME_KEYS_SECRET=
 # agent brain (S9, D-221): any one model key; AI_MODEL names another model (default: Claude with its key, else openai/gpt-6-sol)
 ANTHROPIC_API_KEY=
 OPENAI_API_KEY=
