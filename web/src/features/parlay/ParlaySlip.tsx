@@ -14,7 +14,7 @@ import { parseRefusal } from "@cwf/markets/parlay";
 import { useBalanceSheet } from "@cwf/markets/react";
 import { webEnv } from "@/lib/env";
 import { txUrl } from "@cwf/core/urls";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
 import { SheetFooter } from "@/components/ui/overlay-footer";
@@ -76,8 +76,11 @@ export function ParlaySlip({ reserve, windows }: { reserve: ParlayReserveState; 
   })();
 
   const busy = writes.tx.kind === "signing" || writes.tx.kind === "submitted" || writes.tx.kind === "unknown";
+  // The slip as placed (R4-13a, D-227): its legs and latest close, for the receipt's Share card while the slip moves on.
+  const [placedSlip, setPlacedSlip] = useState<{ legs: number; band: string; expirySec: number } | null>(null);
   const place = () => {
     if (!quote || blocker) return;
+    setPlacedSlip({ legs: slip.legs.length, band: slip.legs.map((l) => `${l.laneKey.split("|")[0]} ${l.side.toUpperCase()}`).join(" + "), expirySec: Math.max(...legs.map((l) => l.expirySec)) });
     void writes.open({ legs, maxPayoutBase: quote.maxPayoutBase, maxStakeBase: mulBpsCeil(quote.stakeBase, 10_000 + STAKE_HEADROOM_BPS), spots: q.spots });
   };
   const houseBase = quote ? quote.maxPayoutBase - quote.stakeBase : null;
@@ -131,10 +134,10 @@ export function ParlaySlip({ reserve, windows }: { reserve: ParlayReserveState; 
 
       {outcome?.status === "confirmed" ? (
         <div role="status" className="ps-receipt">
-          <p className="type-body-strong text-ink">{PARLAY.outcome.placed(outcome.parlayId?.toString() ?? "", slip.legs.length, usd(outcome.stakeBase), quote ? usd(quote.maxPayoutBase) : "")}</p>
+          <p className="type-body-strong text-ink">{PARLAY.outcome.placed(outcome.parlayId?.toString() ?? "", placedSlip?.legs ?? slip.legs.length, usd(outcome.stakeBase), usd(outcome.payoutBase))}</p>
           <a href={txUrl(outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption text-cream-ink underline">{PARLAY.outcome.viewReceipt}</a>
           <button type="button" className="min-h-touch type-body-strong text-ink underline" onClick={() => { writes.reset(); slip.clear(); }}>{PARLAY.outcome.another}</button>
-          <SharePill input={() => callShareInput({ call: `PARLAY · ${slip.legs.length} LEGS`, band: slip.legs.map((l) => `${l.laneKey.split("|")[0]} ${l.side.toUpperCase()}`).join(" + "), stake: usd(outcome.stakeBase), toWin: quote ? usd(quote.maxPayoutBase) : "", expirySec: Math.max(...legs.map((l) => l.expirySec)), path: "/parlay", file: `parlay-${outcome.parlayId?.toString() ?? "slip"}` })} />
+          {placedSlip ? <SharePill input={() => callShareInput({ call: `PARLAY · ${placedSlip.legs} LEGS`, band: placedSlip.band, stake: usd(outcome.stakeBase), toWin: usd(outcome.payoutBase), expirySec: placedSlip.expirySec, path: "/parlay", file: `parlay-${outcome.parlayId?.toString() ?? "slip"}` })} /> : null}
         </div>
       ) : null}
       {outcome?.status === "requote" ? <p role="alert" className="ps-note ps-note--warn">{PARLAY.outcome.requote(usd(outcome.stakeBase))}</p> : null}

@@ -20,7 +20,9 @@ import { fetchSpots, SpotsUnavailableError } from "../parlay/useParlayQuote";
 import { RANGE } from "./copy";
 import { rangeKeys } from "./data";
 
-export type RangeOpenOutcome = { status: "confirmed"; txHash: Hex; roundId: bigint | null; stakeBase: bigint } | { status: "requote"; stakeBase: bigint } | { status: "failed"; diagnosis: Diagnosis; txHash: Hex | null };
+/** A confirmed open carries the terms it was booked on (R4-13a, D-227): the ticket stays live under its receipt, so the
+ *  receipt and its Share card read the payout, band and close placed, never the quote the ticket has moved on to. */
+export type RangeOpenOutcome = { status: "confirmed"; txHash: Hex; roundId: bigint | null; stakeBase: bigint; payoutBase: bigint; bandText: string; expirySec: number | null } | { status: "requote"; stakeBase: bigint } | { status: "failed"; diagnosis: Diagnosis; txHash: Hex | null };
 
 export function useRangeWrites(wallet: Address | null) {
   const submitter = useSubmitter();
@@ -37,7 +39,7 @@ export function useRangeWrites(wallet: Address | null) {
   }, [queryClient, wallet]);
 
   const open = useCallback(
-    async (req: { band: RangeBand; feed: string; maxPayoutBase: bigint; maxStakeBase: bigint; bandText: string }) => {
+    async (req: { band: RangeBand; feed: string; maxPayoutBase: bigint; maxStakeBase: bigint; bandText: string; expirySec?: number }) => {
       if (inFlight.current || !submitter || !wallet) return;
       inFlight.current = true;
       setOutcome(null);
@@ -65,7 +67,7 @@ export function useRangeWrites(wallet: Address | null) {
           dispatch({ type: "receipt", txHash: result.txHash, status: "success" });
           const booked = await readRangeOpened(result.txHash).catch(() => null);
           const stakeBase = booked?.stakeBase ?? fresh.value.stakeBase;
-          setOutcome({ status: "confirmed", txHash: result.txHash, roundId: booked?.roundId ?? null, stakeBase });
+          setOutcome({ status: "confirmed", txHash: result.txHash, roundId: booked?.roundId ?? null, stakeBase, payoutBase: req.maxPayoutBase, bandText: req.bandText, expirySec: req.expirySec ?? null });
           const line = RANGE.outcome.placed(booked ? String(booked.roundId) : "", req.bandText, usd(stakeBase), usd(req.maxPayoutBase));
           notify.neutral(line);
           announce(line);

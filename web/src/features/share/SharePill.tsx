@@ -2,13 +2,15 @@
 // The Share pill (R4-13a, D-227; Owarine 90a91d71's ShareCallButton and ShareTradeButton in one): a 36 px kit pill with a
 // 44 px hit area that draws the card and shares it (`useShareCard`). While amounts are hidden the card would print them,
 // so the pill gives way to "Amounts are hidden." and a Show that turns privacy mode off right there — the top line's eye
-// is not on a phone (bug 14).
+// is not on a phone (bug 14). The pill is the kit's, so it brings the kit's sheet: the call card, verdict, history,
+// Range, Moonshot, Parlay and arcade routes load no other kit piece, and without it the pill drew as a bare button.
 import { Share2 } from "lucide-react";
 import { setPrivacy, usePrivacy } from "@/lib/privacy";
 import { tapFeedback } from "@/lib/feedback";
 import { cn } from "@/lib/utils";
 import { SHARE } from "./copy";
 import { useShareCard, type ShareInput } from "./useShareCard";
+import "@/components/kit/kit.css";
 import "./share.css";
 
 export function MaskedShare({ className }: { className?: string }) {

@@ -29,7 +29,7 @@ import { RANGE } from "../../range/copy";
 import { rangeKeys } from "../../range/data";
 import { usdBand } from "../../range/format";
 import { useRangeWrites } from "../../range/useRangeWrites";
-import { callShareInput } from "../../share/call-share";
+import { rangeShare } from "../../range/range-share";
 import { SharePill } from "../../share/SharePill";
 import { MOONSHOT } from "./copy";
 
@@ -70,9 +70,9 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
   const target = q && strike !== null ? MOONSHOT.ticket.target(direction, usdBand(strike)) : "";
   const fire = () => {
     if (!q || !model?.feed || blocker) return;
-    void writes.open({ band: q.rangeBand, feed: model.feed, maxPayoutBase: q.quote.maxPayoutBase, maxStakeBase: mulBpsCeil(q.quote.stakeBase, 10_000 + RANGE_STAKE_HEADROOM_BPS), bandText: target });
+    void writes.open({ band: q.rangeBand, feed: model.feed, maxPayoutBase: q.quote.maxPayoutBase, maxStakeBase: mulBpsCeil(q.quote.stakeBase, 10_000 + RANGE_STAKE_HEADROOM_BPS), bandText: target, expirySec: market.expirySec });
   };
-  const placedStakeBase = writes.outcome?.status === "confirmed" ? writes.outcome.stakeBase : null;
+  const placed = writes.outcome?.status === "confirmed" ? writes.outcome : null;
   return (
     <div className="flex flex-col gap-4">
       <p className="type-caption text-ink-secondary">{MOONSHOT.aim.must}</p>
@@ -104,11 +104,11 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
         </HoldToConfirm>
       )}
       {session.isConnected && !blocker && !busy ? <p className="text-center type-caption text-ink-secondary">{TX.noFees}</p> : null}
-      {writes.outcome?.status === "confirmed" ? (
+      {placed ? (
         <div role="status" className="rg-receipt">
-          <p className="type-body-strong">{RANGE.outcome.placed(writes.outcome.roundId?.toString() ?? "", target, usd(writes.outcome.stakeBase), q ? usd(q.quote.maxPayoutBase) : "")}</p>
-          <a href={txUrl(writes.outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption underline">{MOONSHOT.ticket.viewTx}</a>
-          <SharePill input={() => callShareInput({ call: `${market.asset} MOONSHOT`, band: `${market.asset} ${target}`, stake: placedStakeBase === null ? "" : usd(placedStakeBase), toWin: q ? usd(q.quote.maxPayoutBase) : "", expirySec: market.expirySec, intervalSec: market.intervalSec, path: "/games/moonshot", file: `moonshot-${market.asset.toLowerCase()}` })} />
+          <p className="type-body-strong">{RANGE.outcome.placed(placed.roundId?.toString() ?? "", placed.bandText, usd(placed.stakeBase), usd(placed.payoutBase))}</p>
+          <a href={txUrl(placed.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption underline">{MOONSHOT.ticket.viewTx}</a>
+          <SharePill input={() => rangeShare(placed, market, "moonshot", "/games/moonshot")} />
         </div>
       ) : null}
       {writes.outcome?.status === "requote" ? <p role="alert" className="rg-note rg-note--warn">{RANGE.outcome.requote(usd(writes.outcome.stakeBase))}</p> : null}
