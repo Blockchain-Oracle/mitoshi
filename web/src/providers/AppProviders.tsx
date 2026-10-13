@@ -17,6 +17,8 @@ import { WalletShellProvider } from "./wallet/WalletShellProvider";
 const PriceCache = dynamic(() => import("@/features/prices/PriceCache"), { ssr: false });
 // "Your Window settled", app-wide (D-048): watches only the calls this device placed; nothing when signed out.
 const SettledToasts = dynamic(() => import("@/features/markets/calls/SettledToasts"), { ssr: false });
+// A write's Receipt action opens this sheet (R4-4, D-227): lazy, nothing renders until a receipt is opened.
+const ReceiptHost = dynamic(() => import("@/features/receipts/ReceiptHost").then((m) => m.ReceiptHost), { ssr: false });
 
 function WhenDataReady({ children }: { children: ReactNode }) {
   return useDataReady() ? children : null;
@@ -37,6 +39,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
           <WhenDataReady>
             <PriceCache />
             <SettledToasts />
+            <ReceiptHost />
           </WhenDataReady>
         </TradingBalanceProvider>
       </WalletShellProvider>

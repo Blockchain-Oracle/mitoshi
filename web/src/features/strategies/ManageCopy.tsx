@@ -5,12 +5,15 @@
 // copy renews through the same form as a new one, and can be stopped from here (its footer is the renewal).
 import type { SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
+import { Masked } from "@/components/kit";
+import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { TxFailureCard } from "@/components/tx";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { StatusDot } from "@/components/kit/desk-kit";
 import { cn } from "@/lib/utils";
 import { COPY } from "./copy";
 import { stopIntent } from "./copy-plan";
+import { strategyIdentity } from "./identity";
 import { usdSigned } from "./format";
 import type { MinePayload, StrategyWire } from "./protocol";
 import type { CopyWrites } from "./useCopyWrites";
@@ -35,13 +38,17 @@ export function ManageCopy({ card, sub, writes, renew, onStopped }: { card: Stra
   const act = async (intent: Parameters<CopyWrites["run"]>[0], ok: string) => {
     setSaid(null);
     const outcome = await writes.run(intent);
-    if (outcome?.status === "confirmed") setSaid(ok);
+    if (outcome?.status === "confirmed") {
+      setSaid(ok);
+      // The success receipt (R4-4, D-227; critic gap 21): what changed, for which strategy, and who signed it.
+      notifyReceipt({ title: ok, figure: strategyIdentity(card).name, figureIsMoney: false, figureLabel: COPY.manage.receiptLabel, txHash: outcome.txHash, atMs: Date.now(), signer: writes.signer === "passkey" ? "passkey" : "wallet", sponsored: true });
+    }
   };
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <StatusDot tone={live ? "live" : "warn"}>{live ? (sub.mode === "fade" ? M.fading : M.live) : M.notLive}</StatusDot>
-        {BigInt(sub.feesPaidBase) > 0n && <span className="desk-note text-ink-muted">{M.feePaid(BigInt(sub.feesPaidBase))}</span>}
+        {BigInt(sub.feesPaidBase) > 0n && <span className="desk-note text-ink-muted"><Masked>{M.feePaid(BigInt(sub.feesPaidBase))}</Masked></span>}
       </div>
       <div className="flex flex-col gap-1">
         <span className="desk-eyebrow text-ink/40">{M.pnl}</span>
@@ -49,7 +56,7 @@ export function ManageCopy({ card, sub, writes, renew, onStopped }: { card: Stra
           <span className="desk-note text-ink-secondary">{M.noFills}</span>
         ) : (
           <>
-            <span className={cn("copy-manage-figure", net > 0n ? "text-profit" : net < 0n ? "text-loss" : "text-ink")}>{usdSigned(net)}</span>
+            <span className={cn("copy-manage-figure", net > 0n ? "text-profit" : net < 0n ? "text-loss" : "text-ink")}><Masked>{usdSigned(net)}</Masked></span>
             <span className="desk-note text-ink-muted">{M.sample(settled.length, fills.length - settled.length)}</span>
           </>
         )}

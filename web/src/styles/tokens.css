@@ -132,8 +132,17 @@
   --toast-offset: var(--dock-strip-offset);
   /* Owarine's black money card on Mitoshi (R4-2): pure black reads as a hole on the near-black dark stage, so it carries
    * the strong border there; on cream it is the ink plate and needs none. */
-  --plate-black: #000000;
+  /* R4-4 (critic bug 10): pure black was a hole on the #0A0A0A stage; the dark plate is surface-1 with the strong edge. */
+  --plate-black: var(--color-surface-1);
   --plate-black-edge: var(--color-border-strong);
+  /* What sits on the plate (dark in both themes): ink, its two softer steps, the rule; the money card's leg stickers. */
+  --plate-ink: #ffffff;
+  --plate-ink-soft: rgb(255 255 255 / 0.7);
+  --plate-ink-muted: rgb(255 255 255 / 0.6);
+  --plate-rule: rgb(255 255 255 / 0.14);
+  --leg-dollars: var(--color-accent);
+  --leg-positions: #7dd3fc;
+  --leg-collect: #bef264;
   --glow-live: 0 0 24px color-mix(in srgb, var(--color-accent) 16%, transparent);
   --focus-ring: 2px solid var(--color-accent);
   --content-reading: 640px;

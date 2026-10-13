@@ -6,9 +6,13 @@
 // the reason when blocked, and signed out opens sign-in for this very copy (sign-in at the end, D-224).
 import type { SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
+import { Masked } from "@/components/kit";
 import { TxCta } from "@/components/tx";
+import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { cn } from "@/lib/utils";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
+import { useFirstFunding } from "@/features/funding/first-fund-state";
+import { usePrivacy } from "@/lib/privacy";
 import { COPY } from "./copy";
 import { COPY_TERM_SEC, planCopy } from "./copy-plan";
 import { usd, usdInput } from "./format";
@@ -27,8 +31,11 @@ export function useCopyForm(card: StrategyWire, strategies: readonly StrategyWir
   const [budgetText, setBudget] = useState("10");
   const [perTradeText, setPerTrade] = useState(usdInput(min(maxPerTrade, 2_000_000n)));
   const busy = writes.tx.state.kind !== "idle" && writes.tx.state.kind !== "failed" && writes.tx.state.kind !== "confirmed";
+  const hidden = usePrivacy();
+  // A brand-new account's first test dollars are landing: the CTA says so rather than reading short (R4-4, gap 10).
+  const funding = useFirstFunding();
   const plan = planCopy({
-    strategy: card, strategies, mine: writes.mine, grant: writes.grant, availableBase: writes.availableBase, walletBase: writes.walletBase,
+    strategy: card, strategies, mine: writes.mine, grant: writes.grant, availableBase: writes.availableBase, walletBase: writes.walletBase, hideWallet: hidden, funding,
     mode, choice, budgetText, perTradeText, nowSec: Math.floor(Date.now() / 1000), busy, signedIn: writes.signedIn,
   });
   const canShare = writes.grant !== null && plan.shareBlocked === null && writes.grant.actor.toLowerCase() === card.runner.toLowerCase();
@@ -67,19 +74,22 @@ export function DirectionPills({ value, onChange, locked }: { value: Subscriptio
 export function CopyForm({ card, form, writes }: { card: StrategyWire; form: CopyFormModel; writes: CopyWrites }) {
   const { plan } = form;
   const takes = plan.depositBase + plan.feeBase;
+  // Privacy mode (the balance eye, R4-4 critic gap 15): the wallet, the Trading Balance and the budget left are the
+  // account's own money; what this copy takes is its price.
+  const hidden = usePrivacy();
   return (
     <div className="flex flex-col gap-4">
       <DirectionPills value={form.mode} onChange={form.setMode} />
       {writes.signedIn && (
         <div className="copy-strip" aria-label={COPY.strip.label}>
-          <div><span>{COPY.strip.wallet}</span><b>{writes.walletBase === null ? "—" : usd(writes.walletBase)}</b></div>
-          <div><span>{COPY.strip.balance}</span><b>{writes.availableBase === null ? "—" : usd(writes.availableBase)}</b></div>
+          <div><span>{COPY.strip.wallet}</span><b>{writes.walletBase === null ? "—" : <Masked>{usd(writes.walletBase)}</Masked>}</b></div>
+          <div><span>{COPY.strip.balance}</span><b>{writes.availableBase === null ? "—" : <Masked>{usd(writes.availableBase)}</Masked>}</b></div>
           <div data-tone={plan.budgetError && plan.budgetError !== COPY.form.notANumber ? "bad" : undefined}><span>{COPY.strip.takes}</span><b>{usd(takes)}</b></div>
         </div>
       )}
       {form.canShare && writes.grant && (
         <div className="copy-share" role="radiogroup" aria-label={COPY.form.budget}>
-          <button type="button" role="radio" aria-checked={plan.route === "share"} className="strat-direction-pill" onClick={() => form.setChoice("share")}>{COPY.share.use(writes.grant.budgetBase)}</button>
+          <button type="button" role="radio" aria-checked={plan.route === "share"} className="strat-direction-pill" onClick={() => form.setChoice("share")}>{hidden ? COPY.share.use(null) : COPY.share.use(writes.grant.budgetBase)}</button>
           <button type="button" role="radio" aria-checked={plan.route === "new"} className="strat-direction-pill" onClick={() => form.setChoice("new")}>{COPY.share.fresh}</button>
         </div>
       )}
@@ -126,7 +136,11 @@ export function CopyCta({ card, form, writes, onDone }: { card: StrategyWire; fo
   const send = async () => {
     if (!plan.intent) return;
     const outcome = await writes.run(plan.intent);
-    if (outcome?.status === "confirmed") onDone();
+    if (outcome?.status !== "confirmed") return;
+    // The success receipt (R4-4, D-227; critic gap 21), as the manage tab's switch and stop: what started, for which
+    // strategy, who signed it. Copying is self-paid (capital intake, D-219).
+    notifyReceipt({ title: COPY.done.copied, figure: strategyIdentity(card).name, figureIsMoney: false, figureLabel: COPY.manage.receiptLabel, txHash: outcome.txHash, atMs: Date.now(), signer: writes.signer === "passkey" ? "passkey" : "wallet", sponsored: false });
+    onDone();
   };
   return <TxCta state={writes.tx.state} action={form.cta} signer={writes.signer} sponsored={false} onConfirm={() => void send()} />;
 }

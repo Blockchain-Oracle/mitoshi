@@ -44,7 +44,8 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     if (result.ok) {
       setStep({ kind: "choose" });
       onOpenChange(false);
-      if (created) window.dispatchEvent(new Event(ACCOUNT_CREATED_EVENT));
+      // Signed in to place an order (`pickerIntent`): the funding says so in a toast, never a modal over the order (R4-4).
+      if (created) window.dispatchEvent(new CustomEvent(ACCOUNT_CREATED_EVENT, { detail: { forOrder: shell.pickerIntent !== null } }));
       return;
     }
     if (result.aborted) {

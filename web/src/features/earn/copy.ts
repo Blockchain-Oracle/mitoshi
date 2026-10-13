@@ -47,6 +47,8 @@ export const EARN = {
     noFunds: "Get test dollars first",
     over: (held: string) => `Your account holds ${held}`,
     done: "Supplied.",
+    receipt: (amount: string) => `Supplied · ${amount}`,
+    receiptLabel: "Supplied to the reserve",
   },
   withdraw: {
     amount: "Amount to withdraw",
@@ -60,6 +62,8 @@ export const EARN = {
     printLate: "That Window's print hasn't landed. Retry in a minute.",
     receivePolicy: TX.receiveBlocked,
     done: "Withdrawn to your account.",
+    receiptLabel: "Shares withdrawn",
+    sharesUnit: "shares",
   },
   position: {
     title: "Your position",

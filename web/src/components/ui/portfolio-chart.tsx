@@ -35,10 +35,16 @@ const HEIGHT = 220;
 const DD_SHARE = 0.26;
 const GAP = 12;
 
-const money = (v: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+const usd = (v: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
 const day = (ms: number) => new Date(ms).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
-export function PortfolioChart({ points, status, labels, onRetry, className }: { points: readonly ValuePoint[]; status: ChartStatus; labels: PortfolioChartLabels; onRetry?: () => void; className?: string }) {
+/**
+ * `headless` keeps the range selector and the curve only (R4-4, D-227): where the page already states the net figure.
+ * `mask` (privacy mode's dots) stands in for every dollar figure — the axis, the readout, the label and the table — so
+ * the shape stays and no amount reaches the DOM.
+ */
+export function PortfolioChart({ points, status, labels, onRetry, className, headless = false, mask }: { points: readonly ValuePoint[]; status: ChartStatus; labels: PortfolioChartLabels; onRetry?: () => void; className?: string; headless?: boolean; mask?: string }) {
+  const money = mask ? () => mask : usd;
   const reduce = usePrefersReducedMotion();
   const [wrapRef, width] = useElementWidth<HTMLDivElement>();
   const svgRef = React.useRef<SVGSVGElement | null>(null);
@@ -85,11 +91,11 @@ export function PortfolioChart({ points, status, labels, onRetry, className }: {
 
   return (
     <div ref={wrapRef} className={cn("flex w-full flex-col", chartVarsClassName, className)}>
-      <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
-        <div>
+      <div className={cn("mb-3 flex flex-wrap items-start justify-between gap-3", headless && "justify-end")}>
+        <div className={headless ? "sr-only" : undefined}>
           <span className="type-label-micro text-ink-secondary">{labels.title}</span>
           <div className={cn("mt-1 type-data-lg", up ? "text-profit" : "text-loss")} aria-live="polite">
-            {active ? <NumberFlow locales="en-US" value={active.value} format={{ style: "currency", currency: "USD", signDisplay: "always", minimumFractionDigits: 2, maximumFractionDigits: 2 }} /> : "—"}
+            {active && mask ? mask : active ? <NumberFlow locales="en-US" value={active.value} format={{ style: "currency", currency: "USD", signDisplay: "always", minimumFractionDigits: 2, maximumFractionDigits: 2 }} /> : "—"}
           </div>
           <div className="mt-1 flex flex-wrap gap-x-3 type-caption numbers text-ink-secondary">
             <span>{active ? day(active.tMs) : ""}</span>
