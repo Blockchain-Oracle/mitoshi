@@ -1,34 +1,35 @@
 "use client";
-// Sensei's drawer (D-226) — Owarine 90a91d71 `features/sensei/SenseiDrawer.tsx` and `SenseiTradeCards.tsx`, on Mitoshi's
-// streamed thread (`useSenseiChat`), its consent (S13, before the first question) and the figures read at ask time:
-// the header, the live meter (spot, drift, time left, the Window's tape), the thread with Sensei's mark, follow-up chips,
-// the Window to act on once there is a read (a side opens the ticket with it chosen), starters on the first turn, the
-// composer and the not-advice line. The CSS is Owarine's (`yosuku/part-02.css` .sensei-drawer…, `part-03.css`).
-// R4-2 (D-227): on a phone the aside fits what the keyboard leaves while the composer has focus (`useKeyboardInset`),
-// so the input and Send stay above it; ✕ keeps a 44 px hit area.
-import { computeDrift, formatCadence, type EventMarket, type Side } from "@cwf/core";
+// Sensei (round 7, the owner's TestFlight review: "I don't like the way you did the Sensei AI"). Was Owarine's desktop
+// chat drawer (D-226) — eyebrow, meter and spark, a thread, starters, a trade card, a consent wall before the first
+// question — squeezed onto a phone. Now the app's own sheet (`SlideOver`: drag to dismiss, the keyboard lifts the
+// composer, a right drawer from 768 px) built around one action and one answer:
+//   · the Window in one line — price, how far from the line, time left;
+//   · one big "Read BTC 5m", the sharing said beside it the first time (tapping it is the agreement: no wall), two
+//     other questions under it;
+//   · the answer as a card: the lean (Leans UP / Leans DOWN / Sit this one out) from the prompt's protocol line
+//     (`lean.ts`), the why under it, and the two sides with their prices — on Markets a side opens the ticket, on the
+//     terminal it is picked on the chart; Sensei never places a call;
+//   · follow-ups as chips; the composer pinned in the sheet's foot with the not-advice line.
+import { formatCadence, type EventMarket, type Side } from "@cwf/core";
 import { formatClock } from "@cwf/core/units";
+import { ArrowUp, Square } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
 import MitoshiMark from "@/components/shell/MitoshiMark";
-import { AssetDisc } from "@/features/markets/hero/AssetDisc";
-import { CardSpark } from "@/features/markets/lanes/CardSpark";
+import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { useChartSeries } from "@/features/markets/data/useChartSeries";
 import { useTopOfBook } from "@/features/markets/data/useTopOfBook";
+import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { usd2 } from "@/features/markets/units";
 import { useClockValue } from "@/lib/clock";
-import { useKeyboardInset } from "@/lib/keyboard-inset";
+import { haptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
-import { notify } from "@/lib/toast";
-import { consentCovers, grantAiConsent, useAiConsent, withdrawAiConsent } from "./consent";
-import { chipsFor, SENSEI, SENSEI_STARTERS } from "./copy";
+import { consentCovers, grantAiConsent, useAiConsent } from "./consent";
+import { chipsFor, SENSEI, SENSEI_INTRO, SENSEI_STARTERS } from "./copy";
+import { splitLean, type Lean } from "./lean";
 import type { SenseiContext, SenseiStatus } from "./protocol";
-import { SenseiConsent } from "./SenseiConsent";
 import { useSenseiChat } from "./useSenseiChat";
-
-/** The drift window and its flat band, as Owarine's snapshot reads them. */
-const DRIFT_WINDOW_MIN = 5;
-const FLAT_BAND_FRACTION = 0.00005;
+import "@/styles/sensei.css";
 
 let statusOnce: Promise<SenseiStatus | null> | null = null;
 const readStatus = () =>
@@ -37,79 +38,79 @@ const readStatus = () =>
     .catch(() => null)
     .then((s) => (s === null && (statusOnce = null), s)));
 
-/** The pinned strip every reply sits under: price, drift, time left, tape. */
-function SenseiMeter({ market, openingRaw }: { market: EventMarket | null; openingRaw: bigint | null }) {
+const windowName = (m: EventMarket | null) => (m ? `${m.asset} ${formatCadence(m.intervalSec)}` : null);
+
+/** The Window in one line: the price, how far it sits from the line, the time left. */
+function WindowLine({ market, openingRaw }: { market: EventMarket | null; openingRaw: bigint | null }) {
   const series = useChartSeries(market);
-  const points = series?.ok ? series.value.points : [];
-  const latestRaw = points.at(-1)?.valueRaw ?? null;
-  const band = latestRaw === null ? 1n : BigInt(Math.max(1, Math.round(Number(latestRaw) * FLAT_BAND_FRACTION)));
-  const drift = latestRaw === null ? null : computeDrift(points, DRIFT_WINDOW_MIN, band);
+  const latestRaw = (series?.ok ? series.value.points.at(-1)?.valueRaw : null) ?? null;
   const nowSec = useClockValue((ms) => Math.floor(ms / 1000));
   const left = market && nowSec > 0 ? Math.max(0, market.expirySec - nowSec) : null;
-  const urgent = left !== null && left <= 60;
+  const gap = latestRaw !== null && openingRaw !== null ? latestRaw - openingRaw : null;
+  if (!market) return null;
   return (
-    <div className={cn("sensei-meter", `sd-dir-${drift?.direction ?? "flat"}`, urgent && "urgent")}>
-      <div className="sm-read">
-        <span className="sm-spot">{latestRaw === null ? SENSEI.meter.reading : usd2(latestRaw)}</span>
-        {drift ? (
-          <>
-            <span className="sm-tri" aria-hidden />
-            <span className="sm-drift">{drift.direction === "flat" ? SENSEI.meter.flat : `${drift.moveRaw > 0n ? "+" : "−"}${usd2(drift.moveRaw)}`}</span>
-            <span className="sm-window">{SENSEI.meter.minutes(drift.spanMin)}</span>
-          </>
-        ) : null}
-        <span className="sm-spacer" />
-        {left !== null ? (
-          <span className="sm-time">
-            <span className="sm-time-num">{formatClock(left)}</span>
-            <span className="sm-time-lab">{SENSEI.meter.left}</span>
-          </span>
-        ) : null}
-      </div>
-      <div className="sm-chart-wrap sm-chart-inset">
-        <div className="mc-spark">
-          <CardSpark points={points} openingRaw={openingRaw} />
-        </div>
-      </div>
+    <div className={cn("sn-window", gap !== null && (gap > 0n ? "is-over" : gap < 0n ? "is-under" : null), left !== null && left <= 60 && "is-urgent")}>
+      <AssetDisc asset={market.asset} className="sn-window-disc" />
+      <span className="sn-window-name">{windowName(market)}</span>
+      <span className="sn-window-price">{latestRaw === null ? SENSEI.meter.reading : usd2(latestRaw)}</span>
+      {gap !== null ? (
+        <span className="sn-window-gap">
+          {gap === 0n ? SENSEI.meter.on : `${gap > 0n ? "▲" : "▼"} ${usd2(gap)} ${gap > 0n ? SENSEI.meter.over : SENSEI.meter.under}`}
+        </span>
+      ) : null}
+      {left !== null ? <span className="sn-window-left">{formatClock(left)} {SENSEI.meter.left}</span> : null}
     </div>
   );
 }
 
-/** Act on the read without leaving the drawer: a side hands the Window to the one ticket with that side chosen. */
-function SenseiTradeCard({ market, onAct }: { market: EventMarket; onAct: (side: Side) => void }) {
-  const [hidden, setHidden] = useState(false);
+/** The read: the lean as the head, the why, the two sides to act on. */
+function ReadCard({ lean, body, writing, market, onAct }: { lean: Lean; body: string; writing: boolean; market: EventMarket | null; onAct?: (side: Side) => void }) {
   const book = useTopOfBook(market);
-  if (hidden) return null;
-  const cents = (c: number | null) => (c === null ? "—" : `${c}¢`);
+  const price = (c: number | null) => (c === null ? "—" : `${c}¢`);
   return (
-    <div className="sensei-trade">
-      <div className="st-head">
-        <span>{SENSEI.trade.head}</span>
-        <div className="st-headright">
-          <button type="button" className="st-hide" onClick={() => setHidden(true)} aria-label={SENSEI.trade.hide} title={SENSEI.trade.hide}>✕</button>
+    <article className={cn("sn-read", `is-${lean}`)}>
+      <header className="sn-read-head">
+        <span className="sn-read-lean">{SENSEI.lean[lean]}</span>
+        {market ? <span className="sn-read-window">{windowName(market)}</span> : null}
+      </header>
+      <p className="sn-read-why">
+        {body}
+        {writing ? <span className="sn-caret" aria-hidden /> : null}
+      </p>
+      {onAct && market && lean !== "sit" && !writing ? (
+        <div className="sn-read-act">
+          {(["up", "down"] as const).map((side) => (
+            <button key={side} type="button" className={cn("sn-side", side, side === lean && "is-lean")} onClick={() => (haptic("tap"), onAct(side))}>
+              <span>{SENSEI.act[side]}</span>
+              <span className="sn-side-price">{price(side === "up" ? book.upCents : book.downCents)}</span>
+            </button>
+          ))}
         </div>
-      </div>
-      <div className="st-list">
-        <div className="st-card">
-          <div className="st-cardhead">
-            <span className="st-asset inline-flex items-center gap-2">
-              <AssetDisc asset={market.asset} className="lane-chip-mark" />
-              {market.asset} <b>{formatCadence(market.intervalSec)}</b>
-            </span>
-          </div>
-          <div className="st-sides">
-            {(["up", "down"] as const).map((side) => (
-              <button key={side} type="button" className={cn("st-side", side)} onClick={() => onAct(side)}>
-                <span className="st-sidetop">
-                  <span className="st-sidelabel">{side === "up" ? SENSEI.trade.up : SENSEI.trade.down}</span>
-                  <span className="st-sideprob">{cents(side === "up" ? book.upCents : book.downCents)}</span>
-                </span>
-                <span className="st-sidepay">{SENSEI.trade.pays}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      ) : null}
+    </article>
+  );
+}
+
+function Answer({ content, writing, waiting, failed, market, onAct }: { content: string; writing: boolean; waiting: boolean; failed?: true; market: EventMarket | null; onAct?: (side: Side) => void }) {
+  const split = splitLean(content);
+  if (failed) return <p className="sn-failed">{content}</p>;
+  if (waiting || (writing && split.pending)) {
+    return (
+      <span className="sn-dots" role="status" aria-label={SENSEI.typing}>
+        <i />
+        <i />
+        <i />
+      </span>
+    );
+  }
+  if (split.lean) return <ReadCard lean={split.lean} body={split.body} writing={writing} market={market} onAct={onAct} />;
+  return (
+    <div className="sn-answer">
+      <MitoshiMark className="sn-answer-mark" />
+      <p>
+        {split.body}
+        {writing ? <span className="sn-caret" aria-hidden /> : null}
+      </p>
     </div>
   );
 }
@@ -121,9 +122,9 @@ export interface SenseiSheetProps {
   read: () => SenseiContext;
   market: EventMarket | null;
   openingRaw: bigint | null;
-  /** Where a side goes once Sensei has read (Markets opens the ticket); absent, no trade card. */
+  /** What a side on the read does: Markets opens the ticket with it chosen, the terminal picks it on the chart. */
   onAct?: (marketId: EventMarket["marketId"], side: Side) => void;
-  /** Context chips under the head (R4-3: the terminal's crowd and earnings cells, off its phone header). */
+  /** Context chips under the Window line (the terminal's crowd and next report). */
   cells?: ReactNode;
 }
 
@@ -132,136 +133,112 @@ export function SenseiSheet({ open, onClose, read, market, openingRaw, onAct, ce
   const consent = useAiConsent();
   const provider = status !== "loading" && status?.on ? status.provider : null;
   const chat = useSenseiChat(provider);
-  const [pending, setPending] = useState<string | null>(null);
   const [input, setInput] = useState("");
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const asideRef = useRef<HTMLElement>(null);
-  useKeyboardInset(asideRef, open);
+  const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => void readStatus().then(setStatus), []);
 
-  const agreed = consentCovers(consent, provider);
   const on = status !== "loading" && status !== null && status.on;
+  const agreed = consentCovers(consent, provider);
   const busy = chat.status !== "idle";
+  // The sharing is said beside the read until it is agreed; asking is the agreement (round 7: no consent wall).
   const ask = (q: string) => {
     const text = q.trim();
-    if (!text || busy || !on) return;
-    if (agreed) void chat.ask(text, read());
-    else setPending(text);
+    if (!text || busy || !on || !provider) return;
+    if (!agreed) grantAiConsent(provider);
+    haptic("tick");
+    void chat.ask(text, read());
   };
 
   useEffect(() => {
-    if (open) scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [chat.messages, chat.status, open, pending]);
+    if (open) endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+  }, [chat.messages, chat.status, open]);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => event.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  const thread = chat.messages.filter((m) => m !== SENSEI_INTRO);
+  const last = thread.at(-1);
+  const lastSplit = last?.role === "assistant" && !last.failed ? splitLean(last.content) : null;
+  const name = windowName(market);
+  const act = onAct && market ? (side: Side) => onAct(market.marketId, side) : undefined;
 
-  const last = chat.messages.at(-1);
-  const showChips = !busy && pending === null && chat.messages.length > 1 && last?.role === "assistant" && !last.failed;
-  const hasRead = chat.messages.some((m, i) => i > 0 && m.role === "assistant" && !m.failed && m.content);
+  return (
+    <SlideOver open={open} onOpenChange={(o) => !o && onClose()}>
+      <SlideOverContent
+        title={
+          <span className="sn-title">
+            {SENSEI.title}
+            <span className="sn-beta">{SENSEI.beta}</span>
+          </span>
+        }
+        fields
+        bodyClassName="sn-body"
+        footer={
+          <>
+            <form
+              className="sn-compose"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (busy) return chat.stop();
+                ask(input);
+                setInput("");
+              }}
+            >
+              <input value={input} onChange={(event) => setInput(event.target.value)} placeholder={SENSEI.placeholder} aria-label={SENSEI.placeholder} disabled={!on} enterKeyHint="send" />
+              <button type="submit" className="sn-send" disabled={!on || (!busy && !input.trim())} aria-label={busy ? SENSEI.stop : SENSEI.send}>
+                {busy ? <Square aria-hidden className="size-3.5" fill="currentColor" /> : <ArrowUp aria-hidden className="size-4" />}
+              </button>
+            </form>
+            <p className="sn-foot">{SENSEI.notAdvice}</p>
+          </>
+        }
+      >
+        <WindowLine market={market} openingRaw={openingRaw} />
+        {cells ? <div className="sn-cells">{cells}</div> : null}
 
-  // Round 7: into <body>, so no transformed or clipping ancestor (the bordered stage) can trap the fixed drawer — on a
-  // phone it opened half off-screen.
-  if (typeof document === "undefined") return null;
-  return createPortal(
-    <>
-        <button type="button" className={cn("sensei-drawer-scrim", open && "show")} aria-label={SENSEI.close} tabIndex={-1} aria-hidden={!open} onClick={onClose} />
-        <aside ref={asideRef} className={cn("sensei-drawer", open && "open")} role="dialog" aria-label={SENSEI.title} aria-modal={open} aria-hidden={!open}>
-          <header className="sensei-drawer-head">
-            <div>
-              <div className="sd-eyebrow">{SENSEI.eyebrow}</div>
-              <div className="sd-title">
-                {SENSEI.title} <span className="sd-beta">{SENSEI.beta}</span>
-              </div>
-            </div>
-            <div className="sd-head-right">
-              <button type="button" className="sd-close" onClick={onClose} aria-label={SENSEI.close} title={SENSEI.close}>✕</button>
-            </div>
-          </header>
-  
-          {cells ? <div className="sd-cells">{cells}</div> : null}
-          <SenseiMeter market={market} openingRaw={openingRaw} />
-  
-          <div ref={scrollRef} className="sensei-drawer-msgs">
-            {chat.messages.map((m, i) => {
-              const writing = i === chat.messages.length - 1 && m.role === "assistant" && busy;
-              return (
-                <div key={i} className={cn("sd-row", m.role)}>
-                  {m.role === "assistant" ? (
-                    <span className="sd-ava" aria-hidden>
-                      <MitoshiMark className="sd-ava-mark" />
-                    </span>
-                  ) : null}
-                  <div className={cn("sd-msg", m.role)}>
-                    {writing && chat.status === "waiting" ? (
-                      <span className="sensei-dots" aria-label={SENSEI.typing}><i /><i /><i /></span>
-                    ) : (
-                      <span className="whitespace-pre-wrap">{m.content}{writing ? <span className="sd-caret" aria-hidden /> : null}</span>
-                    )}
-                  </div>
+        {thread.length === 0 ? (
+          <section className="sn-start">
+            <p className="sn-lead">{SENSEI_INTRO.content}</p>
+            {status === "loading" ? <p role="status" className="sn-note">{SENSEI.checking}</p> : null}
+            {status !== "loading" && !on ? <p className="sn-note">{status === null ? SENSEI.offline : SENSEI.off}</p> : null}
+            {on ? (
+              <>
+                <button type="button" className="sn-read-btn" onClick={() => ask(name ? SENSEI.read(name) : SENSEI.readAny)}>
+                  {name ? SENSEI.read(name) : SENSEI.readAny}
+                </button>
+                {!agreed ? (
+                  <p className="sn-sharing">
+                    {SENSEI.sharing(status.recipients.join(", then "))}{" "}
+                    <Link href={SENSEI.consent.whatHref}>{SENSEI.consent.whatLink}</Link>
+                  </p>
+                ) : null}
+                <div className="sn-chips">
+                  {SENSEI_STARTERS.map((starter) => (
+                    <button key={starter} type="button" className="sn-chip" onClick={() => ask(starter)}>{starter}</button>
+                  ))}
                 </div>
+              </>
+            ) : null}
+          </section>
+        ) : (
+          <div className="sn-thread">
+            {thread.map((m, i) => {
+              const isLast = i === thread.length - 1;
+              return m.role === "user" ? (
+                <p key={i} className="sn-q">{m.content}</p>
+              ) : (
+                <Answer key={i} content={m.content} failed={m.failed} writing={isLast && busy} waiting={isLast && chat.status === "waiting"} market={market} onAct={act} />
               );
             })}
-            {status === "loading" ? <p role="status" className="sensei-drawer-foot">{SENSEI.checking}</p> : null}
-            {status !== "loading" && !on ? <p className="sensei-drawer-foot">{status === null ? SENSEI.offline : SENSEI.off}</p> : null}
-            {pending !== null && on && !agreed ? (
-              <SenseiConsent
-                recipients={status.recipients}
-                onAgree={() => {
-                  grantAiConsent(status.provider!);
-                  const q = pending;
-                  setPending(null);
-                  void chat.ask(q, read());
-                }}
-                onDecline={() => (setPending(null), notify.item({ id: "sensei-consent", title: SENSEI.consent.declined }))}
-              />
-            ) : null}
-            {showChips ? (
-              <div className="sd-chips">
-                {chipsFor(last.content).map((chip) => (
-                  <button key={chip} type="button" className="sd-chip" onClick={() => ask(chip)}>{chip}</button>
+            {!busy && lastSplit && on ? (
+              <div className="sn-chips">
+                {chipsFor(lastSplit.body, lastSplit.lean).map((chip) => (
+                  <button key={chip} type="button" className="sn-chip" onClick={() => ask(chip)}>{chip}</button>
                 ))}
+                {name ? <button type="button" className="sn-chip" onClick={() => ask(SENSEI.readAgain(name))}>{SENSEI.readAgain(name)}</button> : null}
               </div>
             ) : null}
           </div>
-  
-          {hasRead && market && onAct ? <SenseiTradeCard market={market} onAct={(side) => (onAct(market.marketId, side), onClose())} /> : null}
-  
-          {chat.messages.length <= 1 && pending === null && on ? (
-            <div className="sensei-drawer-starters">
-              {SENSEI_STARTERS.map((starter) => (
-                <button key={starter} type="button" className="sd-starter" onClick={() => ask(starter)}>{starter}</button>
-              ))}
-            </div>
-          ) : null}
-  
-          <form
-            className="sensei-drawer-input"
-            onSubmit={(event) => {
-              event.preventDefault();
-              if (busy) return chat.stop();
-              ask(input);
-              setInput("");
-            }}
-          >
-            <input value={input} onChange={(event) => setInput(event.target.value)} placeholder={SENSEI.placeholder} aria-label={SENSEI.placeholder} disabled={!on || pending !== null} />
-            <button type="submit" disabled={!on || pending !== null || (!busy && !input.trim())}>{busy ? SENSEI.stopShort : SENSEI.send}</button>
-          </form>
-          <p className="sensei-drawer-foot">
-            {SENSEI.notAdvice}
-            {agreed && on ? (
-              <>
-                {" "}{SENSEI.shared(status.recipients.join(", then "))}{" "}
-                <button type="button" className="underline" onClick={() => (withdrawAiConsent(), notify.item({ id: "sensei-consent", title: SENSEI.turnedOff }))}>{SENSEI.turnOff}</button>
-              </>
-            ) : null}
-          </p>
-        </aside>
-      </>,
-    document.body,
+        )}
+        <div ref={endRef} />
+      </SlideOverContent>
+    </SlideOver>
   );
 }

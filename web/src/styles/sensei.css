@@ -1,0 +1,106 @@
+/* Sensei's sheet (round 7, features/sensei/SenseiSheet.tsx): the app's own SlideOver carries it (grab bar, drag, the
+   keyboard-lifted foot); this is what sits inside — the Window line, one read button, the read as a card, the thread
+   and the composer. Tokens only; both themes. */
+.sn-title { display: inline-flex; align-items: center; gap: 8px; }
+.sn-beta {
+  padding: 2px 7px; border-radius: var(--radius-full); border: 1px solid var(--color-hairline);
+  font: 500 10px/1.4 var(--font-data); letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-secondary);
+}
+.sn-body { display: flex; flex-direction: column; gap: 14px; }
+
+/* The Window in one line. */
+.sn-window {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 10px 12px;
+  border-radius: var(--radius-lg); background: var(--color-surface-2); font: 500 13px/1.3 var(--font-body); color: var(--color-ink-secondary);
+}
+.sn-window-disc { width: 20px; height: 20px; flex: none; }
+.sn-window-name { font-weight: 600; color: var(--color-ink); }
+.sn-window-price { font: 600 13px/1.3 var(--font-data); color: var(--color-ink); font-variant-numeric: tabular-nums; }
+.sn-window-gap { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.sn-window.is-over .sn-window-gap { color: var(--color-up); }
+.sn-window.is-under .sn-window-gap { color: var(--color-down); }
+.sn-window-left { margin-left: auto; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.sn-window.is-urgent .sn-window-left { color: var(--color-accent); }
+.sn-cells { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* The first screen: one read. */
+.sn-start { display: flex; flex-direction: column; gap: 12px; padding-top: 4px; }
+.sn-lead { font: 400 15px/1.45 var(--font-body); color: var(--color-ink-secondary); }
+.sn-note { font: 500 14px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+.sn-read-btn {
+  min-height: 52px; border-radius: var(--radius-full); background: var(--accent-fill); color: var(--on-accent);
+  font: 600 16px/1 var(--font-body); transition: transform 100ms ease-out;
+}
+.sn-read-btn:active { transform: scale(0.98); }
+.sn-sharing { font: 400 12px/1.45 var(--font-body); color: var(--color-ink-secondary); }
+.sn-sharing a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 2px; }
+.sn-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.sn-chip {
+  min-height: 36px; padding: 0 14px; border-radius: var(--radius-full); border: 1px solid var(--color-hairline);
+  font: 500 13px/1 var(--font-body); color: var(--color-ink); background: transparent;
+}
+.sn-chip:active { background: var(--color-surface-2); }
+
+/* The thread. */
+.sn-thread { display: flex; flex-direction: column; gap: 12px; }
+.sn-q {
+  align-self: flex-end; max-width: 85%; padding: 9px 14px; border-radius: 18px 18px 4px 18px;
+  background: var(--color-surface-2); font: 500 14px/1.4 var(--font-body); color: var(--color-ink); white-space: pre-wrap;
+}
+.sn-answer { display: flex; gap: 10px; align-items: flex-start; }
+.sn-answer p { font: 400 15px/1.5 var(--font-body); color: var(--color-ink); white-space: pre-wrap; }
+.sn-answer-mark { flex: none; width: 22px; height: 22px; margin-top: 1px; color: var(--color-accent); }
+.sn-failed { font: 500 13px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+
+/* The read as a card: the lean is the head. */
+.sn-read {
+  --lean: var(--color-ink-secondary);
+  display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px;
+  border-radius: var(--radius-xl); border: 1px solid var(--color-hairline);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--lean) 10%, transparent), transparent 70%), var(--color-surface-1);
+}
+.sn-read.is-up { --lean: var(--color-up); }
+.sn-read.is-down { --lean: var(--color-down); }
+.sn-read-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.sn-read-lean { font: 700 22px/1.1 var(--font-heading); letter-spacing: -0.01em; color: var(--lean); }
+.sn-read.is-sit .sn-read-lean { color: var(--color-ink); }
+.sn-read-window { font: 500 12px/1 var(--font-data); letter-spacing: 0.06em; color: var(--color-ink-secondary); }
+.sn-read-why { font: 400 15px/1.5 var(--font-body); color: var(--color-ink); white-space: pre-wrap; }
+.sn-read-act { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 2px; }
+.sn-side {
+  display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border-radius: var(--radius-full);
+  font: 700 15px/1 var(--font-data); letter-spacing: 0.08em; border: 1.5px solid currentColor; background: transparent;
+  transition: transform 100ms ease-out;
+}
+.sn-side:active { transform: scale(0.97); }
+.sn-side.up { color: var(--color-up); }
+.sn-side.down { color: var(--color-down); }
+.sn-side.is-lean { background: color-mix(in oklab, currentColor 16%, transparent); }
+.sn-side-price { font-weight: 500; letter-spacing: 0; opacity: 0.85; }
+
+.sn-caret { display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -0.15em; background: currentColor; animation: sn-blink 1s steps(1) infinite; }
+.sn-dots { display: inline-flex; gap: 5px; padding: 10px 2px; }
+.sn-dots i { width: 7px; height: 7px; border-radius: var(--radius-full); background: var(--color-ink-secondary); animation: sn-dot 1.1s ease-in-out infinite; }
+.sn-dots i:nth-child(2) { animation-delay: 0.15s; }
+.sn-dots i:nth-child(3) { animation-delay: 0.3s; }
+
+/* The composer, pinned in the sheet's foot. */
+.sn-compose {
+  display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 16px;
+  border-radius: var(--radius-full); border: 1px solid var(--color-hairline); background: var(--color-surface-2);
+}
+.sn-compose:focus-within { border-color: var(--color-border-strong); }
+.sn-compose input { flex: 1; min-width: 0; min-height: 40px; background: transparent; border: 0; outline: none; font: 400 16px/1.2 var(--font-body); color: var(--color-ink); }
+.sn-compose input::placeholder { color: var(--color-ink-muted); }
+.sn-send {
+  flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-full);
+  background: var(--accent-fill); color: var(--on-accent); transition: opacity 160ms;
+}
+.sn-send:disabled { opacity: 0.35; }
+.sn-foot { padding-top: 8px; text-align: center; font: 400 11px/1.3 var(--font-body); color: var(--color-ink-muted); }
+
+@keyframes sn-blink { 50% { opacity: 0; } }
+@keyframes sn-dot { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) {
+  .sn-caret, .sn-dots i { animation: none; }
+}

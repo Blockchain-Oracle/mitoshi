@@ -1,7 +1,7 @@
 "use client";
 // The trade buttons on the Window on screen (S23c): mounted only when there is a Window, since the ticket's hooks
 // (`useQuote`, `useTicketRoute`) take one. Pays × from the live quote, else the top of the book.
-import type { EventMarket } from "@cwf/core";
+import type { EventMarket, Side } from "@cwf/core";
 import type { MarketPhase } from "@cwf/core/lifecycle";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
@@ -18,14 +18,14 @@ import { TradeButtons } from "./TradeButtons";
 const paysText = (multiple: number | null, cappedTo: string | null = null) =>
   multiple && Number.isFinite(multiple) ? `${TERMINAL.buttons.pays(multipleOf(1000 / multiple))}${cappedTo ? ` · ${TERMINAL.buttons.max(cappedTo)}` : ""}` : null;
 
-export function TerminalTrade({ market, phase, openingUnread = false, stakeBase, spot, boostX, onPays }: { market: EventMarket; phase: MarketPhase | null; openingUnread?: boolean; stakeBase: bigint; spot: number | null; boostX: number; onPays: (text: string) => void }) {
+export function TerminalTrade({ market, phase, openingUnread = false, stakeBase, spot, boostX, onPays, picked: pickedBy = null }: { market: EventMarket; phase: MarketPhase | null; openingUnread?: boolean; stakeBase: bigint; spot: number | null; boostX: number; onPays: (text: string) => void; /** A side Sensei's read picked (round 7). */ picked?: Side | null }) {
   const t = useTerminalOpen({ market, phase, stakeBase, spot, openingUnread });
   // A Boost set in the stack (RV-41): UP/DOWN open it, with its own refusals under each button.
   const b = useTerminalBoost({ market, phase, stakeBase, multiple: boostX, enabled: phase === "trading" });
   const pair = paysPair(t.sides.up.multiple, t.sides.down.multiple);
   // Tail / Fade from a take (S13): `?pick=up|down` arrives with the take's side, or its opposite, highlighted.
   const pickParam = useSearchParams().get("pick");
-  const picked = pickParam === "up" || pickParam === "down" ? pickParam : null;
+  const picked = pickParam === "up" || pickParam === "down" ? pickParam : pickedBy;
   useEffect(() => onPays(pair), [pair, onPays]);
   // A Boost waits for the line like a plain call, said the same way (D-230); the plain pair says it through its notes.
   const prints = usePrintsState();

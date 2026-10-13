@@ -1,5 +1,5 @@
 "use client";
-// Sensei (S13 step 8; Owarine's drawer since D-226, `features/sensei/SenseiSheet`) over the market on screen. The
+// Sensei (S13 step 8; the app's sheet since round 7, `features/sensei/SenseiSheet`) over the market on screen. The
 // figures a question carries are read the moment it is asked: the spot, the Window on screen with its line and each
 // side's price from the book, the NYSE session for a stock, the open positions with what Close pays, the settled
 // record (Sensei's brake reads a losing run) and the stock's next report. Mounted only while open, so its reads cost
@@ -77,15 +77,10 @@ function SenseiBody({ open, onClose, ...p }: Omit<SenseiDrawerProps, "onOpenChan
 }
 
 export function SenseiDrawer({ open, onOpenChange, ...rest }: SenseiDrawerProps) {
-  // Mounted closed for a frame so the drawer slides in (Owarine's transform transition) rather than appearing.
-  // Its reads (the wallet's record, the session) cost nothing until Sensei is first opened.
-  const [shown, setShown] = useState(false);
+  // Mounted on first open, so its reads (the wallet's record, the session) cost nothing before; then kept, so it slides
+  // out and its thread stays.
   const [mounted, setMounted] = useState(open);
-  useEffect(() => {
-    if (open) setMounted(true);
-    const id = requestAnimationFrame(() => setShown(open));
-    return () => cancelAnimationFrame(id);
-  }, [open]);
+  useEffect(() => void (open && setMounted(true)), [open]);
   if (!mounted) return null;
-  return <SenseiBody {...rest} open={open && shown} onClose={() => onOpenChange(false)} />;
+  return <SenseiBody {...rest} open={open} onClose={() => onOpenChange(false)} />;
 }

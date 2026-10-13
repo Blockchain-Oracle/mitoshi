@@ -11,7 +11,7 @@
 // controls mount once per breakpoint, `useIsDesktop`); the header is two rows (the session folds into the Window chip,
 // crowd and earnings ride in Sensei's head); no one-tap card above the buttons — after the first prompted trade one
 // toast a session offers it, and the switch lives in the trade settings; Markets · History · Settings is desktop's.
-import { isStockSymbol, type TickerSymbol } from "@cwf/core";
+import { isStockSymbol, type Side, type TickerSymbol } from "@cwf/core";
 import { usePathname } from "next/navigation";
 import { holdStreamAwake } from "@cwf/markets/stream";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -126,6 +126,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const chartHandle = useRef<ChartHandle | null>(null);
   const market = s.market;
   const [pays, setPays] = useState("—");
+  const [senseiPick, setSenseiPick] = useState<{ marketId: string; side: Side } | null>(null); // Sensei's read lights a side
   const closer = useTerminalClose();
   // Each row reports what Close pays for it; the totals, the equity and the chart's PnL row read them (D-197, D-227).
   const bets = useTerminalBets(s.address);
@@ -154,9 +155,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   // In a frame (the landing's phone) the tour never opens: that phone shows the app; the tour belongs to a real visit.
   const tourOpen = settingsState !== null && !settingsState.tutorialSeen && window.self === window.top;
   const settled = settingsState !== null;
-  useEffect(() => {
-    if (settled) onTourSettled?.();
-  }, [settled, onTourSettled]);
+  useEffect(() => void (settled && onTourSettled?.()), [settled, onTourSettled]);
   const endTour = (choice: "start" | "later" | "skip") => {
     setTradeSettings({ tutorialSeen: true });
     if (choice === "start" && !session.isConnected) session.connect();
@@ -315,7 +314,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           ) : market && s.phase === "upcoming" ? (
             <ScheduledTrade market={market} stakeBase={s.stakeBase} />
           ) : market ? (
-            <TerminalTrade market={market} phase={s.phase} openingUnread={s.openingUnread} stakeBase={s.stakeBase} spot={s.spot.price} boostX={s.settings.boostX} onPays={setPays} />
+            <TerminalTrade market={market} phase={s.phase} openingUnread={s.openingUnread} stakeBase={s.stakeBase} spot={s.spot.price} boostX={s.settings.boostX} onPays={setPays} picked={senseiPick?.marketId === market.marketId ? senseiPick.side : null} />
           ) : (
             // No Window listed: the pair stays, off, with why (Owarine `TradeButtons` `why`).
             <TradeButtons mode="flat" disabled onUp={noop} onDown={noop} busy={null} upSub={null} downSub={null} upNote={null} downNote={null} why={s.win.loading ? null : s.win.failure ? TERMINAL.noWindow.unreachable : laneGapNext !== null ? TERMINAL.noWindow.gap0400(clockText(laneGapNext)) : noWindowNote(s.ticker, nyse, s.nowSec)} />
@@ -371,7 +370,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           <ExitsDrawer p={detail} value={detail ? (values.get(detail.id) ?? null) : null} open={drawer.open === DRAWERS.exits && detailId !== null} onOpenChange={(o) => !o && drawer.close()} />
           <RoomDrawer open={drawer.open === DRAWERS.room} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} window={market ? { marketId: market.marketId, asset: market.asset, intervalSec: market.intervalSec, expirySec: market.expirySec } : null} />
           <AlertsDrawer open={drawer.open === DRAWERS.alerts} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} />
-          <SenseiDrawer open={drawer.open === DRAWERS.sensei} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} market={market} spot={s.spot.price} openingRaw={s.openingRaw} positions={s.positions} values={values} address={s.address} />
+          <SenseiDrawer open={drawer.open === DRAWERS.sensei} onOpenChange={(o) => !o && drawer.close()} symbol={symbol} market={market} spot={s.spot.price} openingRaw={s.openingRaw} positions={s.positions} values={values} address={s.address} onAct={(marketId, side) => (setSenseiPick({ marketId: String(marketId), side }), drawer.close())} />
         </>
       ) : null}
       <SlideOver open={drawer.open === DRAWERS.positions} onOpenChange={(o) => !o && drawer.close()}>

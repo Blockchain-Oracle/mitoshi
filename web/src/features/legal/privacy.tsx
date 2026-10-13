@@ -31,11 +31,11 @@ export const PRIVACY_SECTIONS: readonly LegalSection[] = [
   },
   {
     // `sensei-ai`: Sensei's consent links here ("/privacy#sensei-ai", features/sensei/copy.ts); the card opens on it.
-    id: "sensei-ai", title: "Sensei and AI", gist: "Nothing is sent until you agree to the provider it names.", icon: <Bot />,
+    id: "sensei-ai", title: "Sensei and AI", gist: "Nothing is sent until you ask; the provider is named beside the button.", icon: <Bot />,
     points: [
       <>When you ask, the server sends that provider your question, up to 12 turns of the conversation and the figures on your screen: prices, the Window&apos;s line and prices, your positions as amounts, your settled record, earnings dates.</>,
       <>Never your address, keys, name or email. The conversation isn&apos;t stored; it stays in your tab.</>,
-      <>Stop sharing from Sensei or from Settings → Account.</>,
+      <>Stop sharing from Settings → Account.</>,
     ],
   },
   {
