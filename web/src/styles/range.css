@@ -133,8 +133,10 @@
 .ts-sub { font-family: var(--font-data); font-size: 11px; color: var(--color-ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ts-win { font-family: var(--font-data); font-weight: 600; font-size: 20px; color: var(--color-up); }
 .ts-stake { display: flex; flex-direction: column; gap: 4px; }
-.ts-modes .kit-tab { position: relative; min-height: 32px; font-size: 13px; }
-.ts-modes .kit-tab::after { content: ""; position: absolute; inset: -6px 0; }
+/* 32 px words in a 44 px row: the kit's list scrolls sideways, so it clips vertically too and a hit area hung above the
+   tab was cut off (38 px); 6 px of list padding above the word (the bar's 6 below) makes the whole 44 px row the hit. */
+.ts-modes .kit-tab { min-height: 32px; font-size: 13px; }
+.ts-modes .kit-tabs-list { padding-top: 6px; }
 .ts-row { display: flex; align-items: center; gap: 6px; }
 .ts-chips { display: flex; gap: 4px; flex: 1; min-width: 0; }
 .ts-chip { flex: 1; min-height: 44px; min-width: 0; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 13px; color: var(--color-ink); }
@@ -204,14 +206,14 @@
 }
 /* R4-5 review (D-227): on a phone the board and the action share one screen. Measured from these rules, the sticky
    action (~253 px) covered the presets and Inside / Outside at 375 × 812 (the content to the sides' foot ~479 px, the
-   kit's cadence words alone 50 px). A tighter rhythm, nothing removed: the cadence words 32 px tall (a 44 px hit), a
+   kit's cadence words alone 50 px). A tighter rhythm, nothing removed: the cadence words in a 44 px row (the hit), a
    32 px distribution, 8 / 6 px gaps, the action's padding and label leading trimmed. */
 @media (max-width: 767px) {
   .game-page { gap: 8px; }
   .game-page .rg, .bc { gap: 6px; }
   .gw { gap: 4px; }
-  .gw-tabs .kit-tab { position: relative; min-height: 32px; font-size: 14px; }
-  .gw-tabs .kit-tab::after { content: ""; position: absolute; inset: -6px 0; }
+  .gw-tabs .kit-tab { min-height: 32px; font-size: 14px; }
+  .gw-tabs .kit-tabs-list { padding-top: 6px; }
   .bc-slider .band-bars { height: 32px; }
   .bc-slider .band-root { padding: 0; }
   .bc-foot { padding-top: 0; padding-bottom: 0; }
