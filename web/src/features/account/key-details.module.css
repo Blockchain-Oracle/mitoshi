@@ -1,0 +1,22 @@
+/* Ported from Owarine 90a91d71:web/src/features/session/SessionDetails.module.css (R4-11, D-227): a key's limits as a
+ * two-column tile grid, its details on a 96 px label column, Revoke full width with one note under it. */
+.key { display: flex; min-width: 0; flex-direction: column; gap: 16px; padding: 16px 0; }
+.key + .key { border-top: 1px solid var(--color-hairline); }
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.title { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.pill { flex: none; padding: 2px 8px; border: 1px solid var(--color-hairline); border-radius: 9999px; font-size: 11px; color: var(--color-ink-secondary); }
+.pill[data-active] { border-color: var(--color-border-strong); color: var(--color-ink); }
+.limits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 16px; margin: 0; padding: 16px; border: 1px solid var(--color-hairline); border-radius: 12px; background: var(--color-surface-2); }
+.limit { display: grid; min-width: 0; gap: 6px; align-content: start; }
+.limit .value { font-size: 16px; font-weight: 600; }
+.details { margin: 0; }
+.row { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: baseline; gap: 6px 16px; padding: 12px 0; }
+.row + .row { border-top: 1px solid var(--color-hairline); }
+.row:first-child { padding-top: 0; }
+.row:last-child { padding-bottom: 0; }
+.label { color: var(--color-ink-secondary); font-size: 12px; }
+.value { min-width: 0; margin: 0; color: var(--color-ink); font-size: 14px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.link { text-decoration: underline dotted; text-underline-offset: 4px; }
+.history summary { display: flex; min-height: 44px; align-items: center; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--color-ink); }
+.history ol { display: flex; flex-direction: column; }
+.history li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--color-hairline); font-size: 12px; color: var(--color-ink-secondary); }

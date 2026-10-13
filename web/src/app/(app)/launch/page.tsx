@@ -1,9 +1,8 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// `/launch` (S17; R4-11, D-227): every launch the registry records, read client-side from the chain.
+import { LaunchScreen } from "@/features/launch/LaunchScreen";
 
-export const metadata = { title: pendingFor("/launch").title };
+export const metadata = { title: "Launch", description: "Launch a coin in one confirmation." };
 
 export default function LaunchPage() {
-  return <PendingRoute route="/launch" />;
+  return <LaunchScreen />;
 }

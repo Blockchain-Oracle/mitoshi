@@ -1,7 +1,7 @@
 import { decodeFunctionData, getAddress } from "viem";
 import { Abis, Addresses } from "viem/tempo";
 import { describe, expect, it } from "vitest";
-import { APPROVE_SELECTOR, REBALANCE_SELECTOR, themeKeyAuthorization, themeKeyAuthorizeCall, themeKeyScopes, themeKeySetAllowedCallsChunks } from "./keyAuth";
+import { APPROVE_SELECTOR, followTxTokenScopes, REBALANCE_SELECTOR, splitFollowTokens, themeKeyAuthorization, themeKeyAuthorizeCall, themeKeyScopes, themeKeySetAllowedCallsChunks } from "./keyAuth";
 
 const router = getAddress("0xc9123C1D460BCb20ce6C856f9EC6eE431D1D4007");
 const tokens = ["0x20c000000000000000000000a81E861906820FB7", "0x20c00000000000000000000086081D645cF16774"].map((t) => getAddress(t));
@@ -56,5 +56,14 @@ describe("theme key authorization (B.4.3)", () => {
       { address: router, selector: REBALANCE_SELECTOR },
       ...[getAddress(Addresses.pathUsd), ...tokens].map((address) => ({ address, selector: APPROVE_SELECTOR, recipients: [router] })),
     ]);
+  });
+
+  it("a split follow keeps its first tx under the follow cap: every limit, router + pathUSD and the scopes that fit (D-100)", () => {
+    expect([1, 5, 6, 10, 16].map(followTxTokenScopes)).toEqual([1, 5, 5, 4, 3]);
+    const sixteen = Array.from({ length: 16 }, (_, i) => i);
+    const s = splitFollowTokens(sixteen);
+    expect(s.first).toEqual([0, 1, 2]);
+    expect(s.chunks.map((c) => c.length)).toEqual([5, 5, 3]);
+    expect(splitFollowTokens([0, 1, 2, 3, 4]).chunks).toEqual([]);
   });
 });

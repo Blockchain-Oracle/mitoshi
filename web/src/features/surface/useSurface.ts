@@ -1,87 +1,69 @@
 "use client";
 /**
- * The surface's reads (S10e): the live lanes → the assets and each asset's Windows (nearest close first, the
- * reference's selection rule, Masayume 68f7a09:web/src/features/surface/useSurfaceSelection.ts), and per row the book,
- * the signed spot, the path since the open (ops history, bucketed so the key moves every 15 s, with the live spot as
- * its last point) and the guard's model where the Series has one.
+ * The surface's reads (S10e; R4-11, D-227) — Ported from Owarine 90a91d71:web/src/features/surface/useSurfaceSelection.ts
+ * and useFocalBook.ts on Mitoshi's hooks: the asset defaults to the soonest-closing Window's, the focal Window is kept by
+ * id (it falls to the next when it closes), and the focal Window's book, Series grid, signed spot and the guard's model
+ * are read once each. The model's memo keys on the spot and a 15 s bucket, never the clock's every second (the table
+ * re-rendered every row every second before, R4-11 bug).
  */
-import { isOk, laneLabel, type BookDepth, type EventMarket, type Hex, type MarketId } from "@cwf/core";
+import { isOk, laneLabel, type BookDepth, type EventMarket, type Hex, type MarketId, type Reading } from "@cwf/core";
 import { previewLegFair, readFairModels } from "@cwf/markets/parlay";
-import { useAssetPrice, useBookDepth, useLanes, usePriceHistory } from "@cwf/markets/react";
+import { useAssetPrice, useBookDepth, useLanes, useSeriesGrid } from "@cwf/markets/react";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import type { SparkPoint } from "@/components/ui/sparkline";
 import { feedKeyOf } from "../markets/units";
 
-export interface SurfaceWindow {
-  market: EventMarket;
-  label: string;
-}
+/** The guard models a Series only with its σ set and a spot source for its ticker (the reserves refuse the rest). */
+const isModelled = (m: { sigmaE8: bigint; feed: string | null } | undefined) => m !== undefined && m.sigmaE8 > 0n && m.feed !== null;
 
 export function useSurfaceSelection() {
   const reading = useLanes();
-  const windows = useMemo<SurfaceWindow[]>(() => {
-    if (!reading || !isOk(reading)) return [];
-    return reading.value.lanes.flatMap((lane) => lane.markets.map((m) => ({ market: m, label: laneLabel(lane.basis, m.intervalSec) }))).sort((a, b) => a.market.expirySec - b.market.expirySec);
-  }, [reading]);
-  const assets = useMemo(() => [...new Set(windows.map((w) => w.market.asset))], [windows]);
+  const all = useMemo<EventMarket[]>(() => (reading && isOk(reading) ? reading.value.lanes.flatMap((lane) => lane.markets).sort((a, b) => a.expirySec - b.expirySec) : []), [reading]);
+  const labels = useMemo(() => new Map(reading && isOk(reading) ? reading.value.lanes.flatMap((l) => l.markets.map((m) => [m.marketId, laneLabel(l.basis, m.intervalSec)] as const)) : []), [reading]);
+  const assets = useMemo(() => [...new Set(all.map((m) => m.asset))], [all]);
   const [chosen, setChosen] = useState<string | null>(null);
   const asset = chosen !== null && assets.includes(chosen) ? chosen : (assets[0] ?? null);
-  const rows = useMemo(() => windows.filter((w) => w.market.asset === asset), [windows, asset]);
-  const seriesIds = useMemo(() => [...new Set(rows.map((w) => w.market.seriesId as Hex))], [rows]);
+  const windows = useMemo(() => all.filter((m) => m.asset === asset), [all, asset]);
+  const [focalId, setFocal] = useState<MarketId | null>(null);
+  const focal = windows.find((m) => m.marketId === focalId) ?? windows[0] ?? null;
+  const seriesIds = useMemo(() => [...new Set(windows.map((m) => m.seriesId as Hex))], [windows]);
   const models = useQuery({ queryKey: ["cwf", "surface", "models", seriesIds.join(",")], queryFn: () => readFairModels(seriesIds), enabled: seriesIds.length > 0, staleTime: 5 * 60_000 });
-  return { reading, assets, asset, setAsset: setChosen, rows, models: models.data ?? null };
-}
-
-export interface RowFigures {
-  book: BookDepth | null;
-  bookFailed: boolean;
-  upAskBps: number | null;
-  upBidBps: number | null;
-  spreadBps: number | null;
-  bidDepthRaw: bigint;
-  askDepthRaw: bigint;
-  spotE8: bigint | null;
-  fairUpE6: bigint | null;
-  path: SparkPoint[];
+  const modelled = (m: EventMarket) => isModelled(models.data?.get(m.seriesId.toLowerCase()));
+  const setAsset = (a: string) => (setChosen(a), setFocal(null));
+  return { reading, assets, asset, setAsset, windows, focal, setFocal, labels, modelled };
 }
 
 const BUCKET_SEC = 15;
 
-export function useRowFigures(market: EventMarket, modelled: boolean, nowMs: number): RowFigures {
-  const depth = useBookDepth(market, { depth: 20, pollMs: 20_000 });
-  const feed = feedKeyOf(market);
-  const price = useAssetPrice(feed, nowMs);
-  const spotE8 = price?.ok && price.value ? price.value.priceRaw : null;
-  const nowSec = Math.floor(nowMs / 1000);
-  const toSec = Math.min(market.expirySec, Math.floor(nowSec / BUCKET_SEC) * BUCKET_SEC);
-  const history = usePriceHistory(feed, market.tradingStartSec, toSec);
-  const spotBucket = spotE8 === null ? "" : (spotE8 / 1_000_000n).toString();
+export interface FocalFigures {
+  book: Reading<BookDepth> | null;
+  lotRaw: bigint | null;
+  spotE8: bigint | null;
+  fairUpE6: bigint | null;
+}
+
+/** The guard's model UP for one Window at the latest signed spot (crypto Windows with a σ); null elsewhere. */
+export function useFairUp(market: EventMarket | null, modelled: boolean, spotE8: bigint | null, nowMs: number): bigint | null {
+  // One preview per 15 s bucket at the spot of that moment: keyed on the spot's cents, a ticking BTC feed asked the
+  // guard every second.
+  const bucket = Math.floor(nowMs / 1000 / BUCKET_SEC);
+  const open = market !== null && Math.floor(nowMs / 1000) < market.lockAtSec;
   const fair = useQuery({
-    queryKey: ["cwf", "surface", "fair", market.marketId, spotBucket],
-    queryFn: async () => (await previewLegFair([{ marketId: market.marketId as MarketId, side: "up" }], [spotE8!]))[0]!,
-    enabled: modelled && spotE8 !== null && nowSec < market.lockAtSec,
+    queryKey: ["cwf", "surface", "fair", market?.marketId ?? null, spotE8 !== null, bucket],
+    queryFn: async () => (await previewLegFair([{ marketId: market!.marketId as MarketId, side: "up" }], [spotE8!]))[0]!,
+    enabled: market !== null && modelled && spotE8 !== null && open,
     staleTime: 10_000,
+    // The same Window's last model stays up while the next bucket is asked (no "…" every 15 s); never another Window's.
+    placeholderData: (prev, prevQuery) => (prevQuery?.queryKey[3] === (market?.marketId ?? null) ? prev : undefined),
   });
-  return useMemo(() => {
-    const book = depth && isOk(depth) ? depth.value : null;
-    const asks = book ? [...book.upAsks].sort((a, b) => a.priceBps - b.priceBps) : [];
-    const bids = book ? [...book.upBids].sort((a, b) => b.priceBps - a.priceBps) : [];
-    const upAskBps = asks[0]?.priceBps ?? null;
-    const upBidBps = bids[0]?.priceBps ?? null;
-    const path: SparkPoint[] = history && isOk(history) ? history.value.map((p) => ({ tSec: p.blockTimestampSec, priceE8: p.priceRaw })) : [];
-    if (spotE8 !== null && nowSec <= market.expirySec && (path.length === 0 || path[path.length - 1]!.tSec < nowSec)) path.push({ tSec: nowSec, priceE8: spotE8 });
-    return {
-      book,
-      bookFailed: depth !== null && !isOk(depth),
-      upAskBps,
-      upBidBps,
-      spreadBps: upAskBps !== null && upBidBps !== null ? upAskBps - upBidBps : null,
-      bidDepthRaw: bids.reduce((s, l) => s + l.quantityRaw, 0n),
-      askDepthRaw: asks.reduce((s, l) => s + l.quantityRaw, 0n),
-      spotE8,
-      fairUpE6: fair.data ?? null,
-      path,
-    };
-  }, [depth, history, spotE8, nowSec, market.expirySec, fair.data]);
+  return fair.data ?? null;
+}
+
+export function useFocalFigures(market: EventMarket | null, modelled: boolean, nowMs: number): FocalFigures {
+  const book = useBookDepth(market, { depth: 20, pollMs: 20_000 });
+  const grid = useSeriesGrid(market?.seriesId ?? null);
+  const price = useAssetPrice(market ? feedKeyOf(market) : null, nowMs);
+  const spotE8 = market && price?.ok && price.value ? price.value.priceRaw : null;
+  const fairUpE6 = useFairUp(market, modelled, spotE8, nowMs);
+  return { book: market ? book : null, lotRaw: grid?.ok ? grid.value.lotBase : null, spotE8, fairUpE6 };
 }

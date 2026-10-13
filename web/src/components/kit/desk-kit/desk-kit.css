@@ -84,6 +84,7 @@
 .dkit-spark[data-tone="up"] .dkit-spark-area { fill: var(--color-profit-wash); }
 .dkit-spark[data-tone="down"] .dkit-spark-line { stroke: var(--color-loss); }
 .dkit-spark[data-tone="down"] .dkit-spark-area { fill: var(--color-loss-wash); }
+.dkit-spark[data-stretch] .dkit-spark-line { vector-effect: non-scaling-stroke; stroke-dasharray: none; animation: none; }
 .dkit-spark-empty { display: inline-block; border-bottom: 1px dashed var(--color-hairline); }
 .dkit-logos { --dkit-logo: 28px; display: inline-flex; align-items: center; }
 .dkit-logos[data-size="sm"] { --dkit-logo: 20px; }

@@ -1,15 +1,21 @@
 "use client";
-// `/settings/notifications` (S13 step 7; plan: topics grouped Money moved / Social / Games, money on by default): the
-// browser's permission, the topics this device announces (FeedbackSection's switch rows), and every price alert kept on
-// this device with a remove each. The app's push (SM2) keeps its own copy of the topics server-side.
+// `/settings/notifications` (S13 step 7) as one grouped list (R4-11, D-227; Owarine 90a91d71 AccountSheet's settings
+// grammar and features/alerts/PriceAlertsButton.tsx's alert rows): the title with "Activity →" beside it; BROWSER, one row
+// with its state and an Allow pill while the browser hasn't been asked; ANNOUNCE, four toggles on this device's topics;
+// PRICE ALERTS, a coloured ↑/↓, the asset, the target and ✕ per alert, kept on this device. One foot line says where
+// alerts fire. The app's push (SM2) keeps its own copy of the topics server-side.
 import Link from "next/link";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Switch } from "@/components/ui/switch";
-import { AlertList } from "@/features/alerts/PriceAlertsPanel";
+import { GroupedList, GroupedToggle, PillButton } from "@/components/kit";
 import { notificationState, requestNotificationPermission, type NotificationState } from "@/features/alerts/notifications";
-import { loadAlerts, subscribeAlerts, type PriceAlert } from "@/features/alerts/store";
+import { ALERTS } from "@/features/alerts/copy";
+import { loadAlerts, removeAlert, subscribeAlerts, type PriceAlert } from "@/features/alerts/store";
 import { NOTICE_SETTINGS as S } from "./copy";
 import { setNoticeTopics, useNoticeTopics, type NoticeTopics } from "./topics";
+import "@/styles/account.css";
+
+const usd = (cents: number) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export function NotificationSettings() {
   const topics = useNoticeTopics();
@@ -22,43 +28,47 @@ export function NotificationSettings() {
     return subscribeAlerts(sync);
   }, []);
   return (
-    <div className="mx-auto flex w-full max-w-(--content-reading) flex-col gap-8 px-gutter py-10 lg:px-gutter-desktop">
-      <header className="flex flex-col gap-2">
+    <section className="acct-page">
+      <div className="acct-head">
         <h1 className="type-display text-ink">{S.title}</h1>
-        <p className="type-body text-ink-secondary">{S.lead} <Link href="/activity" className="underline">{S.activity}</Link></p>
-      </header>
-      <section aria-labelledby="browser-title" className="flex flex-col items-start gap-3 rounded-lg border border-hairline bg-surface-1 p-4">
-        <h2 id="browser-title" className="type-title text-ink">{S.browser.title}</h2>
-        {perm ? <p role="status" className="type-body text-ink-secondary">{S.browser[perm]}</p> : null}
-        {perm === "default" ? (
-          <button type="button" className="min-h-touch rounded-full bg-accent-fill px-4 type-body-strong text-on-accent" onClick={() => void requestNotificationPermission().then(() => setPerm(notificationState()))}>{S.browser.allow}</button>
-        ) : null}
-      </section>
-      <section aria-labelledby="topics-title" className="flex flex-col gap-2">
-        <h2 id="topics-title" className="type-title text-ink">{S.topics.title}</h2>
-        <ul className="flex flex-col divide-y divide-hairline">
-          {S.topics.rows.map((row) => {
-            const key = row.key as keyof NoticeTopics;
-            return (
-              <li key={row.key}>
-                <label className="flex min-h-touch cursor-pointer items-center justify-between gap-4 py-2">
-                  <span className="flex min-w-0 flex-col">
-                    <span className="type-body-strong text-ink">{row.label}</span>
-                    <span className="type-caption text-ink-secondary">{row.hint}</span>
-                  </span>
-                  <Switch aria-label={row.label} checked={topics[key]} onCheckedChange={(on) => setNoticeTopics({ [key]: on })} />
-                </label>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-      <section aria-labelledby="alerts-title" className="flex flex-col gap-2">
-        <h2 id="alerts-title" className="type-title text-ink">{S.alerts.title}</h2>
+        <Link href="/activity" className="acct-head-link">{S.activity}</Link>
+      </div>
+      <GroupedList title={S.browser.title}>
+        <div className="kit-item">
+          <span className="kit-item-label">{S.browser.row}</span>
+          <span role="status" className="kit-item-detail">{perm ? S.browser[perm] : "—"}</span>
+          {perm === "default" ? <PillButton tone="accent" size="sm" onClick={() => void requestNotificationPermission().then(() => setPerm(notificationState()))}>{S.browser.allow}</PillButton> : null}
+        </div>
+      </GroupedList>
+      <GroupedList title={S.topics.title}>
+        {S.topics.rows.map((row) => {
+          const key = row.key as keyof NoticeTopics;
+          return <GroupedToggle key={row.key} label={row.label} checked={topics[key]} onChange={(on) => setNoticeTopics({ [key]: on })} />;
+        })}
+      </GroupedList>
+      <GroupedList title={S.alerts.title}>
         {alerts.length === 0 ? (
-          <p className="type-body text-ink-secondary">{S.alerts.empty} <Link href="/trade" className="underline">{S.alerts.open}</Link></p>
-        ) : <AlertList alerts={alerts} withAsset />}
-      </section>
-    </div>
+          <Link href="/trade" className="kit-item">
+            <span className="kit-item-label kit-item-detail">{S.alerts.empty}</span>
+          </Link>
+        ) : (
+          alerts.map((a) => {
+            const line = ALERTS.line(a.direction, usd(a.targetCents));
+            return (
+              <div key={a.id} className="nt-alert">
+                <span aria-hidden className="nt-alert-dir" data-dir={a.direction}>{a.direction === "above" ? "↑" : "↓"}</span>
+                <span className="nt-alert-asset">{a.asset}</span>
+                <span className="nt-alert-price">{usd(a.targetCents)}</span>
+                {a.triggered ? <span className="nt-alert-fired">{ALERTS.done}</span> : null}
+                <button type="button" className="nt-alert-x" aria-label={ALERTS.remove(`${a.asset} ${line}`)} title={ALERTS.remove(`${a.asset} ${line}`)} onClick={() => removeAlert(a.id)}>
+                  <X aria-hidden className="size-4" />
+                </button>
+              </div>
+            );
+          })
+        )}
+      </GroupedList>
+      <p className="nt-alert-foot">{S.alerts.foot}</p>
+    </section>
   );
 }

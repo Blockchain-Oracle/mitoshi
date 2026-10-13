@@ -1,17 +1,17 @@
 // `/settings/account` → Your data (S13 step 10; D34): AI sharing, the export and the off-chain deletion, in words.
 export const DATA = {
   title: "Your data",
-  lead: "What Mitoshi keeps about you off chain: your public name and bio, takes, room messages, reactions, follows, blocks, reports you filed and game seats. Everything you do on Tempo is on chain, public and permanent.",
+  lead: "Off-chain data only. Tempo history is permanent.",
   ai: {
     title: "AI sharing",
     on: (provider: string, since: string) => `Sensei sends your questions and the figures on your screen to ${provider}, since ${since}.`,
-    off: "Sensei asks before it shares anything with an AI provider. Nothing is shared now.",
+    off: "Off · Sensei asks first",
     stop: "Stop sharing",
     stopped: "Sensei stopped sharing. It asks again before your next question.",
   },
   export: {
     title: "Download your data",
-    body: "One JSON file with every off-chain row about this account.",
+    body: "One JSON file",
     button: "Download",
     working: "Preparing your file…",
     failed: "Your data couldn't be read right now. Try again.",
@@ -19,11 +19,11 @@ export const DATA = {
   },
   delete: {
     title: "Delete your Mitoshi data",
-    body: "Deletes your profile, takes, room messages, reactions, follows, blocks you made, reports you filed and game seats. Blocks others placed on you stay theirs.",
-    chain: "Your trades, positions, keys and payouts are transactions on Tempo: public and permanent. Deleting here can't touch them, and your money stays where it is.",
+    body: "Deletes your profile, takes, messages, follows and seats. Trades stay on Tempo.",
+    chain: "Undo for 5 s after you sign.",
     typePrefix: "Type",
     typeSuffix: "to confirm",
-    permanent: "This can't be undone after the five seconds that follow your signature.",
+    permanent: "Permanent after the undo.",
     word: "DELETE",
     hold: "Hold to delete",
     holding: "Deleting…",

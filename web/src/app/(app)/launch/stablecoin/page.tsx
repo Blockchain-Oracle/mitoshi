@@ -1,9 +1,8 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// `/launch/stablecoin` (S17a; R4-11, D-227): a USD stablecoin, its DEX pair and fee pool in one batch.
+import { StablecoinWizard } from "@/features/launch/StablecoinWizard";
 
-export const metadata = { title: pendingFor("/launch/stablecoin").title };
+export const metadata = { title: "Launch a stablecoin" };
 
 export default function LaunchStablecoinPage() {
-  return <PendingRoute route="/launch/stablecoin" />;
+  return <StablecoinWizard />;
 }

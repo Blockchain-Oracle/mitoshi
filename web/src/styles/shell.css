@@ -129,6 +129,30 @@
   color: var(--gray-400);
 }
 
+/* Ported from Owarine 90a91d71:web/src/styles/shell.css (R4-11, D-227): what the page waits on, then its one way out. */
+.capability-pending .cp-meta {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-hairline);
+  font-family: var(--font-data);
+  font-size: 11px;
+  color: var(--color-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.capability-pending .cp-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 8px;
+  font-family: var(--font-data);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+.capability-pending .cp-action:hover { text-decoration: underline; text-underline-offset: 3px; }
+.capability-pending .cp-action:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+
 /* With the install strip dismissed the reference drops the header to the top (`[data-strip="off"] .header
    { top: 0 }`, part-02) on the assumption that the ticker went with it — but the ticker stays, so the
    header covers it and the page's first line hides under the header. Verified on yosuku.xyz itself
