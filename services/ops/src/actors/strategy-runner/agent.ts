@@ -3,18 +3,16 @@
 // books quoted at the envelope's stake; the read is reserved in the store before the call and MPP receipts, when the
 // model is paid on Tempo, are scoped to the decision (`decisionIdOf`).
 import { decideAgentWindow, missingCredentialHint, promptHashOf, resolveModel, type ResolvedModel } from "@cwf/brain";
-import { agentPrompt, decisionIdOf, decisionSlot, formatCadence, gateAgentVerdict, type AgentContext, type AgentSample, type AgentSpec, type VaultCaps } from "@cwf/core";
+import { agentPrompt, decisionIdOf, decisionSlot, formatCadence, gateAgentVerdict, type AgentSpec, type VaultCaps } from "@cwf/core";
 import { insertMppReceipt, type Sql, type StrategyStore } from "@cwf/db";
 import type { IndexedStrategy } from "@cwf/db/idx";
-import { quoteFromBook, type RunnerWindow, type YesBook } from "@cwf/markets/ops";
+import { type RunnerWindow, type YesBook } from "@cwf/markets/ops";
+import { agentContextOf, samplesOf } from "@cwf/markets/strategies";
 import { mppPayerFromEnv, withReceiptScope } from "@cwf/markets/server";
 import { readAgentRecord, type SettlementReader } from "./agent-record";
 import type { Scan } from "./decide";
 
 const HOUR_MS = 3_600_000;
-const MAX_SAMPLES = 12;
-const FEED_DECIMALS = 8;
-const COLLATERAL_DECIMALS = 6;
 
 /** The brain and the call budget the agent scan carries between cycles. */
 export interface AgentState {
@@ -48,22 +46,8 @@ export async function warmAgentState(state: AgentState, store: StrategyStore, no
   state.callsAtMs = rows.map((r) => r.decidedAtMs).filter((at) => nowMs - at < HOUR_MS);
 }
 
-/** Up to 12 spot points across the Window so far (oldest first), and an EMA over them. */
-export function samplesOf(at: (sec: number, windowSec: number) => { priceE8: bigint } | null, fromSec: number, nowSec: number): { samples: AgentSample[]; emaE8: bigint | null } {
-  const span = Math.max(1, nowSec - fromSec);
-  const step = Math.max(10, Math.ceil(span / MAX_SAMPLES));
-  const samples: AgentSample[] = [];
-  for (let t = fromSec + step; t <= nowSec && samples.length < MAX_SAMPLES; t += step) {
-    const q = at(t, step);
-    if (q) samples.push({ atSec: t, priceRaw: q.priceE8 });
-  }
-  if (samples.length === 0) return { samples, emaE8: null };
-  // α = 2 / (n + 1), in integer arithmetic on the feed's own scale.
-  const n = BigInt(samples.length);
-  let ema = samples[0]!.priceRaw;
-  for (const s of samples.slice(1)) ema = (s.priceRaw * 2n + ema * (n - 1n)) / (n + 1n);
-  return { samples, emaE8: ema };
-}
+/** Up to 12 spot points across the Window so far, and an EMA over them (moved to @cwf/markets/strategies, R4-6). */
+export { samplesOf };
 
 export interface AgentScanDeps {
   /** The rested books of these Windows (one multicall on the lens). */
@@ -100,19 +84,13 @@ export async function scanAgent(deps: AgentScanDeps, s: IndexedStrategy, spec: A
     const slot = decisionSlot({ tradingStartSec: w.tradingStartSec, expirySec: w.expirySec, intervalSec: w.cadenceSec }, nowMs);
     const previous = await store.decisionOf(s.strategyId, w.marketId, deps.dryRun);
     const symbol = w.spotSymbol;
-    const spot = symbol ? deps.spot.latest(symbol) : null;
-    const { samples, emaE8 } = symbol ? samplesOf((sec, win) => deps.spot.at(symbol, sec, win), w.tradingStartSec, nowSec) : { samples: [], emaE8: null };
     const book = books.get(w.marketId.toLowerCase()) ?? null;
-    const centsOf = (side: "up" | "down") => (book ? (quoteFromBook(book, w.grid, side, envelope.maxStakePerTradeBase, nowMs)?.oddsCents ?? null) : null);
-    if (!spot || emaE8 === null) {
+    const spot = symbol ? { latest: () => deps.spot.latest(symbol), at: (sec: number, win: number) => deps.spot.at(symbol, sec, win) } : null;
+    const context = agentContextOf({ window: w, spot, book, stakeBase: envelope.maxStakePerTradeBase, nowMs });
+    if (!context) {
       notes.push(`${label}: no fresh spot; holding`);
       continue;
     }
-    const context: AgentContext = {
-      asset: symbol!.replace(/-24$/, ""), intervalSec: w.cadenceSec, tradingStartSec: w.tradingStartSec, openingRaw: w.openPriceE8, emaRaw: emaE8, spotRaw: spot.priceE8, feedDecimals: FEED_DECIMALS,
-      samples, upCents: centsOf("up"), downCents: centsOf("down"), stakeBase: envelope.maxStakePerTradeBase, collateralDecimals: COLLATERAL_DECIMALS,
-      elapsedSec: Math.max(0, nowSec - w.tradingStartSec), leftSec: Math.max(0, w.lockAtSec - nowSec),
-    };
     const record = await readAgentRecord(store, id, nowSec, deps.dryRun, deps.settlementOf);
     if (previous) {
       // A held or failed read stays held for its Window; a recorded trade is re-gated on today's figures and may resume.

@@ -178,6 +178,13 @@ board's states, Your calls as a chip rail, the terminal phone (three controls + 
 the toast). Checks clean (71 routes within budget, /markets 222.6 KB); /markets at 375 and 1440 clean (the sweep's one
 clip is Sensei's collapsed hover label). Open: a signed-in 2×/3× hold and a Private ticket on testnet — not driven in
 this merge (no wallet on the dev server).
+R4-6 (Automate) merged at `077a1ac`: Owarine's strategy cards and grid, RecordCard, the copy drawer (pinned Copy/Fade
+CTA, Hold to stop), Yours as LiveDesk, the four-step studio with a live test read, the agents board and the agent
+cockpit; DiceBear portraits (THIRD_PARTY_NOTICES); `portraitSeed` and `feesEarnedBase` on the strategy wire; the ops
+runner's agent context moved into @cwf/markets/strategies (ops redeployed). Checks clean (71 routes within budget,
+/strategies 224.8 KB, /agents 221.1 KB); /strategies at 375 and 1440 clean (Continue on the first phone screen, sweep
+empty). Open: a signed-in Copy, Publish and Hold to stop on testnet — not driven in this merge (no wallet on the dev
+server).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
