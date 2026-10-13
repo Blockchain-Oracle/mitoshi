@@ -4,7 +4,7 @@
  *
  * A restricted visitor browses everything and funds nothing in that pillar: entry actions refuse (451 on the route,
  * the relay refuses the area's entry selectors), while every exit stays open — withdraw, redeem, claims, cash-out,
- * sell, bridge-out, unfollow. Disclosed as posture, not on-chain enforcement. Lists are Q-008's default.
+ * sell, unfollow. Disclosed as posture, not on-chain enforcement. Lists are Q-008's default.
  */
 export const GEOFENCE_PILLARS = ["markets", "stocks", "launch"] as const;
 export type GeofencePillar = (typeof GEOFENCE_PILLARS)[number];

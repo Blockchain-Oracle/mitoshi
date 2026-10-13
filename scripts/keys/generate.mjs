@@ -18,7 +18,7 @@ const { generatePrivateKey, privateKeyToAddress } = await import(require.resolve
  * on mainnet they are created only after Q-020. `strategy-runner` is the actor every house strategy's STRATEGY grants name
  * and the house agents' owner (S9); `agent-rater` is the separate key that rates them (AG-15, D-218.6).
  */
-export const ROLES = ["deployer", "deployer-launch", "deployer-themes", "deployer-products", "deployer-vault", "deployer-maker", "deployer-tickets", "relay-fee-payer", "roller", "price-relay", "settler", "seed-maker", "earn-quoter", "keeper", "x-relay", "desk", "stock-sync", "ops-fee-payer", "mpp-root", "mpp-payer", "strategy-runner", "agent-rater"];
+export const ROLES = ["deployer", "deployer-launch", "deployer-themes", "deployer-products", "deployer-vault", "deployer-maker", "deployer-tickets", "relay-fee-payer", "roller", "price-relay", "settler", "seed-maker", "earn-quoter", "keeper", "x-relay", "desk", "ops-fee-payer", "mpp-root", "mpp-payer", "strategy-runner", "agent-rater"];
 
 const network = process.argv[2];
 if (network !== "testnet" && network !== "mainnet") throw new Error("usage: generate.mjs <testnet|mainnet>");

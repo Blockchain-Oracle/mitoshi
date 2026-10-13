@@ -12,7 +12,8 @@ describe("pinned addresses", () => {
   collect(pinned, "pinned", all);
 
   it("are all well-formed 20-byte addresses with a valid checksum when mixed-case", () => {
-    expect(all.length).toBeGreaterThan(50);
+    // D-231 removed the bridge's LayerZero and Robinhood constants (60 → 30 addresses).
+    expect(all.length).toBeGreaterThan(25);
     for (const [path, value] of all) {
       expect(isAddress(value, { strict: false }), path).toBe(true);
       const mixed = value !== value.toLowerCase() && value.slice(2) !== value.slice(2).toUpperCase();

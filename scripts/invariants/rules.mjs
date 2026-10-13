@@ -17,7 +17,7 @@ const TS = [".ts", ".tsx"];
 const JS = [".mjs", ".js"];
 const OUTSIDE_MARKETS = ["web", "mobile", "packages/core", "packages/db", "packages/brain", "packages/clients", "services", "scripts"];
 const MAX_FILE_LINES = 400;
-const SEND_FILES = ["packages/markets/src/tx/send.ts", "packages/markets/src/stocks/bridge-in.ts"];
+const SEND_FILES = ["packages/markets/src/tx/send.ts"];
 const ABI_DIR = "packages/clients/src/abis";
 
 function fileLength(rule, ctx) {
@@ -31,7 +31,7 @@ function fileLength(rule, ctx) {
   return findings;
 }
 
-/** Sends happen only in the submitter's send module and the Robinhood bridge-in (plan C.1.2 write-boundary). */
+/** Sends happen only in the submitter's send module (plan C.1.2 write-boundary). */
 function writeBoundary(rule, ctx) {
   const findings = [];
   const pattern = /\b(writeContract|sendTransaction|sendTransactionSync|sendRawTransaction|sendCalls|sendCallsSync)\s*\(/;
@@ -102,7 +102,9 @@ function relayPolicyCoverage(rule, ctx) {
   for (const chain of readdirSync(deployments).filter((d) => /^\d+$/.test(d))) {
     for (const f of readdirSync(join(deployments, chain)).filter((f) => f.endsWith(".json") && !f.endsWith(".pending.json"))) areas.add(f.replace(/\.json$/, ""));
   }
-  const exempt = new Set(["v4", "pools", "lz"]);
+  // `stocks` (D-231): what is left of the fragment — the Mirrors, their views and the sync receiver — takes no app write;
+  // the bridge's sponsored exits went with the bridge.
+  const exempt = new Set(["v4", "pools", "stocks"]);
   for (const area of areas) {
     if (exempt.has(area)) continue;
     const policy = join(ctx.root, `packages/markets/src/relay/policies/${area}.ts`);
@@ -142,7 +144,7 @@ export const rules = [
     exclude: ["scripts/invariants", "scripts/deploy", "scripts/keys"],
     pattern: /from\s+["'](viem\/tempo|accounts\/server|mppx|tidx\.ts)(["'/])/,
   },
-  { id: "write-boundary", description: "sends only in packages/markets/src/tx/send.ts and stocks/bridge-in.ts", check: writeBoundary },
+  { id: "write-boundary", description: "sends only in packages/markets/src/tx/send.ts", check: writeBoundary },
   {
     id: "banned-wagmi-hooks",
     description: "wagmi read hooks are banned in product code; reads come through the markets port",
@@ -167,10 +169,9 @@ export const rules = [
   },
   {
     id: "no-native-value",
-    description: "Tempo contracts take no native value: no payable, no msg.value (Robinhood/transit side exempt)",
+    description: "Tempo contracts take no native value: no payable, no msg.value",
     scopes: ["contracts/src"],
     exts: [".sol"],
-    exclude: ["contracts/src/robinhood", "contracts/src/transit", "contracts/src/lz"],
     pattern: /\bmsg\.value\b|\)\s*(external|public)[^;{]*\bpayable\b/,
   },
   { id: "no-destination-abi", description: "payout functions pay msg.sender — no destination address (P6)", check: noDestinationAbi },

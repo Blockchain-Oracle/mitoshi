@@ -11,7 +11,7 @@ import { createOpsClient, fundAddress } from "@cwf/markets/ops";
 import { errorText, roleKey, runActor, type OpsRole, type VenueDeps } from "../../runtime";
 
 const PASS_MS = 5 * 60_000;
-const ROLES: OpsRole[] = ["roller", "price-relay", "settler", "seed-maker", "keeper", "earn-quoter", "ops-fee-payer", "desk", "x-relay", "stock-sync"];
+const ROLES: OpsRole[] = ["roller", "price-relay", "settler", "seed-maker", "keeper", "earn-quoter", "ops-fee-payer", "desk", "x-relay"];
 /** Below this a testnet role is topped up; on mainnet it is reported as low. */
 const FLOOR_BASE = BigInt(Number(process.env.FUNDS_FLOOR_PATHUSD) > 0 ? Number(process.env.FUNDS_FLOOR_PATHUSD) : 10_000) * 1_000_000n;
 
