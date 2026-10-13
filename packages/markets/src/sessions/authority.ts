@@ -30,8 +30,6 @@ export type AuthorityKind =
   | "claim-actor"
   /** The duel arena's settler: cranks lock, settle, finalize and refund, all of which anyone may crank. */
   | "game-settler"
-  /** The theme agent trading a follower's mirrors through a scoped access key (D-002). */
-  | "theme-agent"
   /** Pays policy-approved fees (the relay's fee payer). Never has user-fund authority. */
   | "sponsor";
 
@@ -39,7 +37,6 @@ export type AuthorityKind =
 const DELEGATED: ReadonlySet<AuthorityKind> = new Set<AuthorityKind>([
   "access-key",
   "session-key",
-  "theme-agent",
   "x-executor",
   "strategy-runner",
   "game-session",

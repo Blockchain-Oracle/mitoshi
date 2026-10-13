@@ -40,7 +40,7 @@ describe("leverage keeper decisions", () => {
 });
 
 describe("spot proof from a real RedStone latest response", () => {
-  const text = readFileSync(join(import.meta.dirname, "../reference-writer/fixtures/redstone-latest-1790666930.json"), "utf8");
+  const text = readFileSync(join(import.meta.dirname, "fixtures/redstone-latest-1790666930.json"), "utf8");
   const signers = new Set(venueSpec.redstone.signers.map((s) => s.toLowerCase()));
 
   it("builds the verifier payload at the timestamp most configured signers share", () => {

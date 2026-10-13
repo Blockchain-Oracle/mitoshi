@@ -1,7 +1,8 @@
 /**
  * Every actor ops can run (plan C.5.2), by `OPS_ACTORS` name. `spot: true` asks main for the process's spot feed.
- * The default set is the venue (`all` = the default set plus any named extra); `house-taker`, `launch-keeper`,
- * `reference-writer` and `x-relay` are opt-in only.
+ * The default set is the venue (`all` = the default set plus any named extra); `house-taker`, `launch-keeper` and
+ * `x-relay` are opt-in only. D-231 retired `theme-agent` and `reference-writer` with the guarded stock pools: a theme is
+ * a basket strategy `strategy-runner` trades.
  */
 import { archivePass, ARCHIVE_EVERY_MS } from "./actors/archive";
 import { chainHeadPass, CHAIN_HEAD_EVERY_MS } from "./actors/chain-head";
@@ -23,12 +24,8 @@ import { startCalendar } from "./calendar";
 import { startFundsWatch } from "./actors/funds-watch";
 import { startHouseTaker } from "./actors/house-taker";
 import { indexerRecountPass, INDEXER_RECOUNT_EVERY_MS } from "./actors/indexer-recount";
-import { referenceWriterPass, REFERENCE_WRITER_EVERY_MS } from "./actors/reference-writer";
 import { keeperDeps, launchKeeperPass, LAUNCH_KEEPER_EVERY_MS, type GraduateSender } from "./actors/launch-keeper";
 import { moderationPass, MODERATION_EVERY_MS } from "./actors/moderation";
-import { themeAgentPass, THEME_AGENT_EVERY_MS } from "./actors/theme-agent";
-import { createPgThemeKeys } from "@cwf/db";
-import { NETWORKS, TEMPO_RPC_HTTP } from "@cwf/core";
 import { memeAddresses } from "@cwf/markets/launch";
 import { tempoReadClient } from "@cwf/markets";
 import { createOpsClient, OpsSendError, sendOps } from "@cwf/markets/ops";
@@ -95,7 +92,7 @@ export const ACTORS: Record<string, ActorEntry> = {
   // Opt-in (S3 soak): house-key trades so an unattended soak exercises fills and auto-pay; never in the default set.
   "house-taker": { start: (d) => startHouseTaker(d) },
   // Opt-in (S17b): graduates Complete memecoins. R4-11 (D-227): its sender is `sendOps` (`sendBatch`, self-paid, an
-  // expiring nonce so it shares the `keeper` key with reference-writer safely) from `LAUNCH_KEEPER_PRIVATE_KEY`, else the
+  // expiring nonce, so it can share the `keeper` key with another sender safely) from `LAUNCH_KEEPER_PRIVATE_KEY`, else the
   // `keeper` role's key; DRY_RUN / no key plans and simulates only. Add it to OPS_ACTORS to run it.
   "launch-keeper": {
     start: (d) => {
@@ -123,22 +120,6 @@ export const ACTORS: Record<string, ActorEntry> = {
       return runActor({ name: "launch-keeper", log: d.log, dryRun, everyMs: LAUNCH_KEEPER_EVERY_MS, pass: launchKeeperPass({ deps, launchpad: a.launchpad, dryRun, sender }) });
     },
   },
-  // Opt-in (S16a, R4-11): issues each follower's theme key (sealed under THEME_KEYS_SECRET) and rebalances their wallet
-  // inside the theme's bands with it. DRY_RUN / no secret plans and says so.
-  "theme-agent": {
-    start: (d) => {
-      if (!d.sql) throw new Error("theme-agent keeps its keys in Postgres: DATABASE_URL is required");
-      const secret = process.env.THEME_KEYS_SECRET && /^[0-9a-fA-F]{64}$/.test(process.env.THEME_KEYS_SECRET) ? process.env.THEME_KEYS_SECRET : null;
-      if (!secret) d.log("THEME_KEYS_SECRET missing: no keys issued, plans only");
-      const client = tempoReadClient(d.env.network, d.env.tempoRpcUrl);
-      const rpcUrl = d.env.tempoRpcUrl || TEMPO_RPC_HTTP[d.env.network];
-      const dryRun = d.env.dryRun || !secret;
-      return runActor({ name: "theme-agent", log: d.log, dryRun, everyMs: THEME_AGENT_EVERY_MS, critical: false, pass: themeAgentPass({ client: client as never, chainId: NETWORKS[d.env.network], rpcUrl, keys: createPgThemeKeys(d.sql), secret, dryRun }) });
-    },
-  },
-  // Opt-in (S15b): keeps StockReference fresh — RedStone pushes + the keeper session flag, signed with
-  // KEEPER_PRIVATE_KEY (pushRedStone + setSession). DRY_RUN / OPS_DRY_ACTORS log the batch and never sign.
-  "reference-writer": { start: (d) => runActor({ name: "reference-writer", log: d.log, dryRun: d.env.dryRun, everyMs: REFERENCE_WRITER_EVERY_MS, pass: referenceWriterPass(d.env, d.redstone.gateways) }) },
 };
 
 export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "duel-settler", "exit-keeper", "earn-quoter", "moderation"] as const;
