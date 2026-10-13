@@ -35,7 +35,7 @@ export const PROOF = {
   reverify: "Re-verify",
   reverifying: "Checking…",
   verdictLine: (pass: number, total: number, at: string) => `Re-verified: ${pass} of ${total} pass · ${at}`,
-  row: { record: (which: string) => `${which} · record tx`, archive: (which: string) => `${which} · archive` },
+  row: { record: (which: string) => `${which} · record tx`, copiedRecord: (which: string) => `${which} · previous close's record tx`, archive: (which: string) => `${which} · archive` },
   value: { matches: "matches", differs: "differs", cant: "can't check", refused: "refused", wouldPrint: "would print" },
   detail: (price: string, n: number) => `${price} · ${n} signers`,
   archive: {
