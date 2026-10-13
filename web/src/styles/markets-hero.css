@@ -334,20 +334,27 @@
   gap: 12px;
 }
 
-/* lg:!items-start — the reference overrides the panel's `align-items: stretch`
-   at the desktop breakpoint so a short ticket sits at the top of the rail
-   instead of stretching down beside the chart. R4-0 (D-227): the ticket column
-   narrows with the stage (a fixed 400 px left the chart 400 px at 1024). */
-@media (min-width: 1024px) {
+/* lg:!items-start — the reference overrides the panel's `align-items: stretch` at the desktop breakpoint so a short
+   ticket sits at the top of the rail instead of stretching down beside the chart. R4-3 (D-227): range syntax at 64rem,
+   the threshold TicketDock's rail query uses, so CSS and JS agree at fractional 1023.x widths (browser zoom) — a
+   `max-width: 1023px` collapse left two columns with no rail there; the ticket column is 360 px while the icon rail
+   still takes 88 px (1024–1279), Owarine's 400 px from 80rem. */
+@media (width < 64rem) {
+  .markets-hero .hero-grid.hero-grid-mini { grid-template-columns: 1fr; }
+}
+@media (width >= 64rem) {
   .markets-hero .hero-grid.hero-grid-mini {
     align-items: start;
-    grid-template-columns: minmax(0, 1fr) clamp(20rem, 36%, 25rem);
+    grid-template-columns: minmax(0, 1fr) 360px;
   }
   /* …but the chart fills the row (Owarine 90a91d71 markets-hero.css: beside a tall ticket it grew no taller than its
      460 px floor and left a dead block under it); the canvas is the flexible part, so the height goes to the chart. */
   .markets-hero .hero-grid.hero-grid-mini > .hero-chart {
     align-self: stretch;
   }
+}
+@media (width >= 80rem) {
+  .markets-hero .hero-grid.hero-grid-mini { grid-template-columns: minmax(0, 1fr) 400px; }
 }
 
 /* The reference's sections only carry top padding (.markets-section); the step
@@ -367,32 +374,3 @@
   text-align: center;
 }
 
-/* The foot (D-226; keyed to the panel, R4-0): Room · Alert on the left, then Price/Depth beside the UP ramp. Price/Depth
-   are text tabs in the cadence's style (Owarine `TextTabs`), not a boxed control. On a narrow panel the actions take
-   the first line and the ramp shares the second with the tabs. */
-.hero-chart-foot { column-gap: 14px; }
-.hero-chart-foot .mh-view { flex: none; margin-left: auto; }
-.mh-view .mh-cadence { text-transform: uppercase; }
-/* Sensei is a foot item on phones, where its floating seal would sit on DOWN (yosuku/part-02.css hides the seal there). */
-@media (min-width: 768px) { .mh-sensei { display: none; } }
-@container mh-panel (max-width: 639px) {
-  .hero-chart-foot { flex-wrap: wrap; row-gap: 4px; padding: 10px 14px 4px; }
-  .hero-chart-foot .mh-foot-actions { flex: 1 1 100%; flex-wrap: nowrap; }
-  .mh-foot-actions .mh-room { white-space: nowrap; }
-  .hero-chart-foot .mh-view { order: 1; }
-  .hero-chart-foot .ramp { flex: 1 1 0; min-width: 0; }
-  .hero-chart-foot .ramp .bar { flex: 1; width: auto; }
-}
-
-/* UP/DOWN above the phone's dock (R4-0, D-227): on a narrow panel the call follows the canvas straight away, the
-   canvas scales with the screen's height, and the panel keeps no floor of its own. */
-@media (max-width: 767px) {
-  .markets-hero .hero-grid-mini .hero-chart { min-height: 0; }
-}
-@media (max-width: 1023px) {
-  @container mh-panel (max-width: 639px) {
-    .markets-hero .hero-grid-mini .hero-chart .hero-chart-canvas { min-height: clamp(150px, 26svh, 230px) !important; }
-    .markets-hero .hero-yesno { order: 1; margin: 12px 14px 0; }
-    .markets-hero .hero-chart-foot { order: 2; margin-top: 12px; }
-  }
-}

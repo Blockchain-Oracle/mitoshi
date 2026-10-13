@@ -1,0 +1,91 @@
+/* The /markets hero fitted to its panel and the phone's fold (R4-3, D-227; Ported from Owarine 90a91d71:web/src/styles/
+ * markets-hero.css and the markets spec): the head on a narrow panel, the one-row foot, the Price/Depth chip on the canvas
+ * and the phone's call above the dock. Loaded after markets-hero.css, which keeps the reference's own rules. */
+
+/* A narrow panel (R4-3, D-227; Owarine's 480 px head rule keyed to the panel): the clock moves up beside the asset row
+   and the question takes the full width — beside it, the question column fell to 90–200 px on a 323 px phone panel and
+   on the 360 px desktop panel, a four-line question and a distance broken word by word. */
+@container mh-panel (width < 560px) {
+  .markets-hero .hero-chart-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 12px;
+    padding: 16px 16px 12px;
+  }
+  .markets-hero .mh-head-main { display: contents; }
+  .markets-hero .mh-asset-row { grid-area: 1 / 1; margin: 0; min-width: 0; }
+  .markets-hero .mh-settles { grid-area: 1 / 2; align-self: center; }
+  .markets-hero .mh-question,
+  .markets-hero .mh-distance,
+  .markets-hero .hero-chart-head .src-line { grid-column: 1 / -1; }
+  .markets-hero .mh-distance { margin-top: 0; }
+  .markets-hero .hero-chart-head .src-line { margin-top: 0; }
+}
+
+/* The foot (R4-3, D-227; Owarine 90a91d71 HeroChartFoot): one row — Room · Alert (· Sensei on a phone) on the left, the
+   UP ramp on the right. Price/Depth left the foot for a chip on the canvas's corner, so the foot no longer wraps to a
+   second row on phones; under 380 px the Room and the Alert are their icons alone (their titles name them). */
+.hero-chart-foot { column-gap: 14px; flex-wrap: nowrap; }
+.mh-foot-actions { flex-wrap: nowrap; }
+.mh-foot-actions .mh-room { white-space: nowrap; min-height: 44px; }
+.hero-chart-foot .ramp { flex: none; }
+/* Sensei is a foot item on phones, where its floating seal would sit on DOWN (yosuku/part-02.css hides the seal there). */
+@media (width >= 48rem) { .mh-sensei { display: none; } }
+@container mh-panel (width < 640px) {
+  .hero-chart-foot { padding: 0 14px; }
+  .hero-chart-foot .ramp .bar { width: 56px; }
+  .mh-foot-actions .mh-room-meta { display: none; }
+}
+@container mh-panel (width < 380px) {
+  .mh-foot-actions { gap: 2px; }
+  .mh-foot-actions .mh-room { min-width: 44px; justify-content: center; }
+  .mh-foot-actions .mh-room-word { display: none; }
+}
+
+/* Price/Depth (R4-3, D-227): a quiet chip on the canvas's top-left corner, in the cadence tabs' mono caps — the right
+   edge belongs to the price axis and the CLOSES label. */
+.mh-view {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  background: rgba(5, 5, 5, 0.6);
+}
+.mh-view-btn {
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  transition: color 200ms var(--ease), background 200ms var(--ease);
+}
+.mh-view-btn:hover { color: var(--white); }
+.mh-view-btn[aria-pressed="true"] { color: var(--vermilion); background: rgba(255, 255, 255, 0.06); }
+/* A 44 px target without a 44 px chip. */
+.mh-view-btn { position: relative; }
+.mh-view-btn::after { content: ""; position: absolute; inset: -8px -2px; }
+[data-theme="light"] .mh-view { border-color: rgba(20, 18, 16, 0.12); background: rgba(251, 247, 238, 0.8); }
+[data-theme="light"] .mh-view-btn { color: rgba(20, 18, 16, 0.6); }
+[data-theme="light"] .mh-view-btn:hover { color: #141210; }
+[data-theme="light"] .mh-view-btn[aria-pressed="true"] { color: var(--vermilion); background: rgba(20, 18, 16, 0.06); }
+
+/* UP/DOWN above the phone's dock (R4-0/R4-3, D-227): on a narrow panel the call follows the canvas straight away, the
+   canvas scales with the screen's height, and the panel keeps no floor of its own; the call is a 48 px target. */
+@media (width < 48rem) {
+  .markets-hero .hero-grid-mini .hero-chart { min-height: 0; }
+  .markets-hero .hyn { min-height: 48px; font-size: 13px; }
+}
+@media (width < 64rem) {
+  @container mh-panel (width < 640px) {
+    .markets-hero .hero-grid-mini .hero-chart .hero-chart-canvas { min-height: clamp(128px, 24svh, 230px) !important; }
+    .markets-hero .hero-yesno { order: 1; margin: 12px 14px 0; }
+    .markets-hero .hero-chart-foot { order: 2; margin-top: 12px; }
+  }
+}
