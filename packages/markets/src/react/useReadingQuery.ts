@@ -1,6 +1,9 @@
 // Ported from Masayume 68f7a09:packages/markets/src/react/useReadingQuery.ts — TanStack Query over a port read. A
 // first-ever infrastructure failure rejects (so TanStack retries it); a domain failure (revert, not deployed) resolves
 // as the error arm, because it is an answer, not an outage. A failed refresh keeps the last-good value, stale.
+// D-230: the public RPC's per-IP limit ("rate-limited", 429 / -32005) is an outage too, not an answer — it replaced a
+// Window's last-good opening print with an error, and the terminal said "Waiting for the opening print" over a Window
+// trading for minutes. It now retries with TanStack's backoff (1 s, 2 s) and a refresh it fails keeps the last value.
 import { err, type DiagnosisKind, type Reading } from "@cwf/core";
 import { queryOptions, useQuery, type QueryKey } from "@tanstack/react-query";
 import { diagnose } from "../errors/error-map";
@@ -8,7 +11,7 @@ import { ReadingError } from "../errors/reading-error";
 
 const DEFAULT_STALE_MS = 5_000;
 const MAX_READ_RETRIES = 2;
-const RETRYABLE_READ_KINDS: ReadonlySet<DiagnosisKind> = new Set<DiagnosisKind>(["indexer-down", "rpc-down", "send-unknown", "unknown"]);
+const RETRYABLE_READ_KINDS: ReadonlySet<DiagnosisKind> = new Set<DiagnosisKind>(["indexer-down", "rpc-down", "rate-limited", "send-unknown", "unknown"]);
 
 export function isInfrastructureFailure(error: unknown): boolean {
   return RETRYABLE_READ_KINDS.has(diagnose(error).kind);

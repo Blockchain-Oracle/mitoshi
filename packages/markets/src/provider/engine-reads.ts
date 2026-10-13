@@ -147,18 +147,20 @@ export const getBookParams = (seriesId: SeriesId): Promise<Reading<BookParams>> 
   });
 
 /** Watch-free: the book straight off the chain, what the order lane re-quotes with at click time. */
+// The Window's facts and its book are read side by side, one round trip (D-230 item 3: one after the other, a quote cost
+// two, and a tap before it landed said "Getting a price…").
 export const freshQuoteStake = (target: QuoteTarget, side: Side, stakeBase: bigint): Promise<Reading<Quote | null>> =>
   engineReading(`quote:${target.marketId}:${side}:${stakeBase}`, async () => {
-    const w = await windowFacts(target.marketId);
-    return quoteFromBook(await readBook(target.marketId, TAKER_MIN_REST_SEC), w.series, side, stakeBase, nowMs());
+    const [w, book] = await Promise.all([windowFacts(target.marketId), readBook(target.marketId, TAKER_MIN_REST_SEC)]);
+    return quoteFromBook(book, w.series, side, stakeBase, nowMs());
   });
 
 /** The exit for a cash-out (D-067); a Window that is not trading has no exit, it pays at settlement. */
 export const freshExitQuote = (target: BookTarget, side: Side, contractsRaw: bigint): Promise<Reading<ExitQuote | null>> =>
   engineReading(`exit:${target.marketId}:${side}:${contractsRaw}`, async () => {
-    const w = await windowFacts(target.marketId);
+    const [w, book] = await Promise.all([windowFacts(target.marketId), readBook(target.marketId, TAKER_MIN_REST_SEC)]);
     if (w.status !== ONCHAIN_STATUS.Trading) throw new ReadingError(diagnosis("market-not-trading", EXIT_LOCKED));
-    return exitFromBook(await readBook(target.marketId, TAKER_MIN_REST_SEC), w.series, side, contractsRaw / w.series.lotBase, nowMs());
+    return exitFromBook(book, w.series, side, contractsRaw / w.series.lotBase, nowMs());
   });
 
 export const getOpeningPrice = (marketId: MarketId): Promise<Reading<bigint | null>> =>

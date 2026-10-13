@@ -55,9 +55,16 @@ export function setClockOffset(ms: number): void {
   if (timer) tick();
 }
 
-/** Chain-corrected now, ticking once a second; 0 on the server and before the first tick. */
+/**
+ * The client's first read seeds the clock (D-230 item 6): a tab or app web view hidden at load never started the
+ * interval, so `now` stayed 0, every phase read null and the terminal sat on "Syncing the chain clock…" until a
+ * visibility event that a web view may never send. Seeded, a hidden page holds its last second until it ticks again.
+ */
+const snapshot = () => (now === 0 && typeof window !== "undefined" ? (now = Date.now() + offsetMs) : now);
+
+/** Chain-corrected now, ticking once a second; 0 on the server. */
 export function useNowMs(): number {
-  return useSyncExternalStore(subscribe, () => now, () => 0);
+  return useSyncExternalStore(subscribe, snapshot, () => 0);
 }
 
 /**
@@ -66,7 +73,7 @@ export function useNowMs(): number {
  * `derive` must return a primitive. It sees 0 before the first client tick, as `useNowMs` readers do.
  */
 export function useClockValue<T extends string | number | boolean | null>(derive: (nowMs: number) => T): T {
-  return useSyncExternalStore(subscribe, () => derive(now), () => derive(0));
+  return useSyncExternalStore(subscribe, () => derive(snapshot()), () => derive(0));
 }
 
 /** Chain-corrected now for an event handler or a one-off decision (not for rendering — render with `useNowMs`). */
