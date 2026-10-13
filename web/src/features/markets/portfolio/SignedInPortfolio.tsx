@@ -17,7 +17,7 @@ import { SectionHeader } from "@/components/kit";
 import { MotionScope } from "@/components/motion-scope";
 import { ErrorState, LoadingState } from "@/components/states";
 import { useBoostWrites } from "@/features/boost/useBoostWrites";
-import { BridgeInFlight } from "@/features/bridge/BridgeInFlight";
+import { BridgeInFlight, useBridgeInFlight } from "@/features/bridge/BridgeInFlight";
 import { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import { BOOST_KEYS } from "@/features/terminal/terminal-positions";
 import { TradingBalancePanel } from "@/features/vault/TradingBalancePanel";
@@ -63,6 +63,7 @@ function Ledger({ wallet }: { wallet: Address }) {
   const boostWrites = useBoostWrites(wallet);
   const collector = useCollect(wallet);
   const history = useAccountHistory(wallet, sheet !== null);
+  const inFlight = useBridgeInFlight(wallet);
   useLiveMarketData({ wallet });
   const retryOpen = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: keys.positions(wallet) });
@@ -81,8 +82,10 @@ function Ledger({ wallet }: { wallet: Address }) {
   const settled = history?.ok ? history.value.rounds.length : null;
   const failedHome = [positions, vaultBets, boosts].find((r) => r !== null && !r.ok);
   const showCollect = rows.length > 0 || money.boostOwedBase > 0n;
-  // Sections number at runtime: 01 bets, 02 collect (when there is any), then the record.
-  const recordIndex = pad(showCollect ? 3 : 2);
+  // Sections number at runtime: 01 bets, then in flight and collect (each only when there is any), then the record.
+  const inFlightIndex = pad(2);
+  const collectIndex = pad(inFlight.length > 0 ? 3 : 2);
+  const recordIndex = pad(2 + (inFlight.length > 0 ? 1 : 0) + (showCollect ? 1 : 0));
   const runCollect = () => {
     if (live.length > 0) void collector.collect(live);
     else if (money.boostOwedBase > 0n) void boostWrites.claimOwed();
@@ -104,10 +107,10 @@ function Ledger({ wallet }: { wallet: Address }) {
         history={history}
         retryHistory={retryHistory}
       />
-      <BridgeInFlight wallet={wallet} />
+      <BridgeInFlight rows={inFlight} index={inFlightIndex} />
       {showCollect ? (
         <section className="flex flex-col gap-3" aria-labelledby="collect-title">
-          <SectionHeader id="collect-title" index="02" title={HERO_MONEY.collectTitle} aside={<span className="type-caption text-ink-secondary">{CLAIM.waiting(rows.length)}</span>} />
+          <SectionHeader id="collect-title" index={collectIndex} title={HERO_MONEY.collectTitle} aside={<span className="type-caption text-ink-secondary">{CLAIM.waiting(rows.length)}</span>} />
           <CollectPlate wallet={wallet} rows={rows} bare collector={collector} boostOwed={{ amountBase: money.boostOwedBase, busy: boostWrites.busy === "owed", collect: () => void boostWrites.claimOwed() }} />
         </section>
       ) : null}
