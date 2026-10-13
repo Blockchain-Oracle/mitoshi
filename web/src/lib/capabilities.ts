@@ -23,7 +23,7 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/reserves": { eyebrow: "Reserves", title: "Every bridged token, backed", body: "Locked there versus supply here, per ticker.", dependency: "the bridge adapters and lockboxes" },
   "/earn": { eyebrow: "Earn", title: "Back the market makers", body: "Supply the maker vault; see results per Window.", dependency: "the maker vault" },
   "/parlay": { eyebrow: "Parlay", title: "Combine calls", body: "Several Windows on one ticket.", dependency: "the parlay reserve" },
-  "/surface": { eyebrow: "Market Surface", title: "The market's shape", body: "Term structure and depth across live Windows.", dependency: "the parlay and range products" },
+  "/surface": { eyebrow: "Market Surface", title: "Market Surface", body: "Every Window's book at a glance.", dependency: "the parlay and range products" },
   "/games": { eyebrow: "Games", title: "Play the markets", body: "Duels, Lucky, Range, Moonshot and arcade runs.", dependency: `${engine} and the games` },
   "/games/practice": { eyebrow: "Games", title: "Practice", body: "The swipe loop, no stake.", dependency: "the games" },
   "/games/duel": { eyebrow: "Games", title: "Duel", body: "Face another player over a live deck.", dependency: "the arena" },
