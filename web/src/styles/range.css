@@ -120,7 +120,8 @@
 .bc-side[aria-checked="true"] { background: var(--color-accent-wash); color: var(--color-accent); }
 
 /* the action block (TicketStrip): Pays ×N | To win, the stake row, the hold, one micro line */
-.ts { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: var(--radius-lg); border: 1px solid var(--color-hairline); background: var(--color-surface-1); box-shadow: 0 -8px 24px color-mix(in srgb, var(--color-stage) 70%, transparent); }
+.ts { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: var(--radius-lg); border: 1px solid var(--color-hairline); background: var(--color-surface-1); }
+.game-page .game-action { box-shadow: 0 -8px 24px color-mix(in srgb, var(--color-stage) 70%, transparent); }
 .ts-pays { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; transition: opacity 160ms var(--ease); }
 .ts-pays.is-stale { opacity: 0.6; }
 .ts-left, .ts-right { display: flex; flex-direction: column; min-width: 0; }
@@ -130,12 +131,13 @@
 .ts-sub { font-family: var(--font-data); font-size: 11px; color: var(--color-ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ts-win { font-family: var(--font-data); font-weight: 600; font-size: 20px; color: var(--color-up); }
 .ts-stake { display: flex; flex-direction: column; gap: 4px; }
-.ts-modes .kit-tab { min-height: 32px; font-size: 13px; }
+.ts-modes .kit-tab { position: relative; min-height: 32px; font-size: 13px; }
+.ts-modes .kit-tab::after { content: ""; position: absolute; inset: -6px 0; }
 .ts-row { display: flex; align-items: center; gap: 6px; }
 .ts-chips { display: flex; gap: 4px; flex: 1; min-width: 0; }
-.ts-chip { flex: 1; min-height: 40px; min-width: 0; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 13px; color: var(--color-ink); }
+.ts-chip { flex: 1; min-height: 44px; min-width: 0; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 13px; color: var(--color-ink); }
 .ts-chip[aria-pressed="true"] { border-color: var(--color-accent); background: var(--color-accent-wash); }
-.ts-amount { display: flex; align-items: center; gap: 2px; width: 84px; min-height: 40px; padding: 0 10px; border-radius: var(--radius-md); border: 1px solid var(--color-border-strong); font-family: var(--font-data); color: var(--color-ink-secondary); }
+.ts-amount { display: flex; align-items: center; gap: 2px; width: 84px; min-height: 44px; padding: 0 10px; border-radius: var(--radius-md); border: 1px solid var(--color-border-strong); font-family: var(--font-data); color: var(--color-ink-secondary); }
 .ts-amount input { width: 100%; min-width: 0; background: transparent; border: 0; outline: none; font-size: 15px; color: var(--color-ink); }
 .ts-amount:focus-within { border-color: var(--color-accent); }
 .ts-cap { font-size: 12px; color: var(--color-ink-secondary); }
