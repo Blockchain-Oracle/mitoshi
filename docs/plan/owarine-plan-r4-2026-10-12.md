@@ -212,21 +212,21 @@ Create/Connect, the TESTNET stamp) on testnet — not driven in this merge (no w
 R4-10 (Records) merged at `2aa26bd`: the ticker hub for every listed ticker, /news's strip, /activity, /stats, /status
 and /status/halts boards, /proof in the status frame, the profile, /docs as the /legal frame. Merge kept R4-4's badges and
 BetRow (Close/settle now off on someone else's profile), R4-6's ?copy= studio, both provenance lines on Trader Edge.
-Open: perf budget — the records pages load the whole kit barrel in first load (≈340–395 KB vs 250 KB); the profile's
-… menu and /proof Re-verify not driven live.
+Open: the profile's … menu and /proof Re-verify not driven live.
 R4-13a (Landing · share · legal · demo · states) merged at `f09170d`: the landing on Owarine's anatomy, share cards
 (call, verdict, position), /demo, /privacy and /terms, per-route loading boundaries, /short. Merge moved the History
 Share pill onto R4-4's HistoryRow and the parlay placed-slip into useParlayTicket; the records pages' loaders now draw
-R4-10's frames. Fixed: the landing nav's links overflowed a phone (unlayered display beat max-sm:hidden). Open: arcade
-routes 257 KB vs 250 KB; (site)/loading.tsx still the generic shape.
+R4-10's frames. Fixed: the landing nav's links overflowed a phone (unlayered display beat max-sm:hidden); /games/loading.tsx no
+longer imports the islands (the arcade routes carried them). Open: (site)/loading.tsx still the generic shape.
 R4-11 (Account · launch · themes · surface · claim) merged at `027de1a` (the trunk's uncommitted launch files were the
 branch's earlier copy; stash dropped). Fixed: /launch and /themes crashed with no QueryClient (now behind DataGate) and
 failed the build's prerender; launch's lp-head/lp-disc/lp-steps collided with the landing's; /launch* and /themes* out
-of the Soon set. /launch reads two real launches. Open: perf budget (/launch*, /themes*, /settings/account 438–482 KB);
-migrations launch/0001 and themes/0001 and the ops env (THEME_KEYS_SECRET, theme-agent, launch-keeper, reference-writer
+of the Soon set. /launch reads two real launches, /themes three themes. /launch*, /themes*, /settings/* load their screens as
+islands. Open: migrations (ops applies them on start) launch/0001 and themes/0001 and the ops env (THEME_KEYS_SECRET, theme-agent, launch-keeper, reference-writer
 in OPS_ACTORS); /claim blocked on S11; the theme agent's first rebalance blocked on the stock sync (S14c).
 Batch checks: web tsc, core/markets/db/ops/scripts typecheck, invariants clean; changed tests 58/58; build clean;
-perf:budgets fails on 20 routes (above). Quick look at 375 × 667 and 1440 × 900: /tickers/BTC, /, /settings/account,
+perf:budgets failed on 20 routes, fixed after the first push (`kit` barrel → direct imports with kit.css; R4-11's
+screens and the profile's takes and … menu as islands): 74 routes within budget (/u/[address] 229.1 KB, arcade 246.1 KB). Quick look at 375 × 667 and 1440 × 900: /tickers/BTC, /, /settings/account,
 /launch.
 
 ## Verification per slice

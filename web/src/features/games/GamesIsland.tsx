@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { LoadingState } from "@/components/states";
 import { useDataReady } from "@/providers/data/context";
 
+/** The same placeholder as `app/(app)/games/loading.tsx` draws, so a navigation swaps it once, in place (R4-13a). */
 const Wait = () => <div className="container"><LoadingState shape="page" label="Loading" /></div>;
 const Hub = dynamic(() => import("./GamesHub").then((m) => m.GamesHub), { ssr: false, loading: Wait });
 const Practice = dynamic(() => import("./practice/PracticeStage").then((m) => m.PracticeStage), { ssr: false, loading: Wait });
@@ -43,6 +44,3 @@ export function RankIsland() {
 export function HistoryIsland() {
   return useDataReady() ? <History /> : <Wait />;
 }
-
-/** The route's loading boundary draws this same placeholder, so a navigation swaps it once, in place (R4-13a, D-227). */
-export { Wait as GamesLoading };

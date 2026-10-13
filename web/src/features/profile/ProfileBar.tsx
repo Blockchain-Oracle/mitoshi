@@ -5,8 +5,8 @@
 // Explorer, and a "…" menu for Report and Block (Ported from Owarine 90a91d71:web/src/features/desk/DeskControls.tsx's
 // more-menu, on Base UI Menu). Your own profile shows neither Follow nor Copy this trader. On a phone the actions stick
 // above the dock while the bar is on screen.
-import { Menu } from "@base-ui/react/menu";
 import { Check, Copy, MoreHorizontal } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
 import { pillButtonVariants, PillButton } from "@/components/kit/PillButton";
@@ -16,6 +16,16 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { notify } from "@/lib/toast";
 import { PROFILE as P } from "./copy";
 import "@/components/kit/kit.css";
+
+/** The "…" menu loads after first paint; its trigger's shape holds the place. */
+const More = dynamic(() => import("./ProfileMore").then((m) => m.ProfileMore), {
+  ssr: false,
+  loading: () => (
+    <span className="prf-more" aria-hidden>
+      <MoreHorizontal className="size-5" />
+    </span>
+  ),
+});
 
 export interface BarStat {
   label: string;
@@ -75,19 +85,7 @@ export function ProfileBar({ address, stats, explorerHref }: { address: string; 
           {P.explorer}
         </a>
         {!own ? (
-          <Menu.Root modal={false}>
-            <Menu.Trigger className="prf-more" aria-label={P.more} title={P.more}>
-              <MoreHorizontal aria-hidden className="size-5" />
-            </Menu.Trigger>
-            <Menu.Portal>
-              <Menu.Positioner sideOffset={8} align="end" collisionPadding={12} className="am-positioner">
-                <Menu.Popup className="am-popup prf-menu">
-                  <Menu.Item className="am-item" onClick={() => setReporting(true)}>{P.report}</Menu.Item>
-                  <Menu.Item className="am-item" onClick={() => void block()}>{P.block}</Menu.Item>
-                </Menu.Popup>
-              </Menu.Positioner>
-            </Menu.Portal>
-          </Menu.Root>
+          <More onReport={() => setReporting(true)} onBlock={() => void block()} />
         ) : null}
       </div>
       {reporting ? <ReportDialog open onOpenChange={setReporting} target={{ kind: "profile", id: address }} urlKey="report" /> : null}
