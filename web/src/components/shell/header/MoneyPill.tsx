@@ -53,7 +53,8 @@ export function MoneyPillView({ total, onAdd = openFunds, title }: { total: bigi
   const hidden = usePrivacy();
   return (
     <span className="money-chip" title={title}>
-      <span className={`money-chip-sum numbers${total === null && !hidden ? " is-dim" : ""}`} aria-label={hidden ? SHELL.privacyHidden : undefined}>
+      {/* Masked, it is named "Hidden" as the kit's `Masked` is (an aria-label on a bare span is not announced). */}
+      <span className={`money-chip-sum numbers${total === null && !hidden ? " is-dim" : ""}`} role={hidden ? "img" : undefined} aria-label={hidden ? SHELL.privacyHidden : undefined}>
         {hidden ? SHELL.masked : dollars(total)}
       </span>
       {/* Slush's balance eye (S22, RV-10): hides every balance and PnL on this device. */}
