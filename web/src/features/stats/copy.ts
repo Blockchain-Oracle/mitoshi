@@ -1,7 +1,7 @@
 /**
  * `/stats` — Owarine 90a91d71 `features/stats/copy.ts` at its counts (R4-10, D-227), truth-corrected for Mitoshi: the
  * proof is the engine's fill tape on Tempo testnet as our own index holds it, over all time. How a call is attributed
- * and recounted is told on /docs/record.
+ * and recounted is told in the guide (docs.mitoshi.xyz/explore/record, D-230).
  */
 export const STATS = {
   hero: {

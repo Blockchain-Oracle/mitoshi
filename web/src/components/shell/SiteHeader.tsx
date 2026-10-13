@@ -5,7 +5,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BRAND, FOOTER } from "@/lib/copy";
-import { DOCS_EXTERNAL, DOCS_URL } from "@/lib/docs-url";
+import { DOCS_URL } from "@/lib/docs-url";
 import { ExternalLink } from "./ExternalLink";
 import MitoshiMark from "./MitoshiMark";
 import ThemeToggle from "./ThemeToggle";
@@ -20,11 +20,7 @@ export function SiteHeader({ account }: { account?: ReactNode }) {
         </Link>
       </div>
       <div className="header-right">
-        {DOCS_EXTERNAL ? (
-          <ExternalLink className="nav-link site-docs" href={DOCS_URL}>{FOOTER.links.docs}</ExternalLink>
-        ) : (
-          <Link className="nav-link site-docs" href={DOCS_URL}>{FOOTER.links.docs}</Link>
-        )}
+        <ExternalLink className="nav-link site-docs" href={DOCS_URL}>{FOOTER.links.docs}</ExternalLink>
         <ThemeToggle />
         {account}
       </div>

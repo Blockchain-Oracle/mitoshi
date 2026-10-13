@@ -29,8 +29,7 @@ const config: NextConfig = {
     // D-226: no Stocks section — the listed stocks trade in Markets' 24/7 lanes; each ticker's hub is /tickers/<SYM>.
     { source: "/stocks", destination: "/markets", permanent: true },
     { source: "/stocks/:symbol", destination: "/tickers/:symbol", permanent: true },
-    // No /docs redirect (R4-10, D-227): the guides (DOCS_URL, an external site by default since 67cb549) are linked, and
-    // /docs stays the app's own Reference — /stats, /proof and Trader Edge link its /docs/record.
+    // /docs and /docs/* are not here: `proxy.ts` answers them with a 308 to the matching guide on the docs site (D-230).
   ],
 };
 

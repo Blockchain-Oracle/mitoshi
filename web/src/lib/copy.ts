@@ -78,7 +78,9 @@ export const SHELL = {
   /** The kit CountdownRing's name for assistive tech ("4:05 left"). */
   timeLeft: (t: string) => `${t} left`,
   legal: "Legal",
-  legalNav: "Docs and legal",
+  legalNav: "App, docs and legal",
+  /** The rail foot's short way to /download (D-230); its title says it in full. */
+  railApp: "App",
   health: { healthy: "All systems live", degraded: "Running degraded", unreachable: "Venue unreachable", unread: "Checking…" },
   /** The top line's health chip names the chain; the network itself is said once, by the mode plate (D-228). */
   network: "Tempo",
@@ -135,7 +137,7 @@ export const APP_STRIP = {
 
 export const FOOTER = {
   disclosure: "Not investment advice. Prices come from signed oracle feeds; receipts link to the chain.",
-  links: { privacy: "Privacy", terms: "Terms", contact: "Contact", status: "Status", docs: "Docs" },
+  links: { app: "Get the app", privacy: "Privacy", terms: "Terms", contact: "Contact", status: "Status", docs: "Docs" },
 } as const;
 
 export const BOOT = {

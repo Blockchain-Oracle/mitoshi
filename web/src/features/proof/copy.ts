@@ -1,6 +1,6 @@
 /**
  * `/proof/<market>` and `/proof` (S5, L-15; R4-10, D-227: at Owarine's counts): the evidence behind each print that
- * settled a Window. How the check works is told on /docs/record, not on the page.
+ * settled a Window. How the check works is told in the guide (docs.mitoshi.xyz/trading/proof, D-230), not on the page.
  */
 export const PROOF = {
   title: "Print proof",
