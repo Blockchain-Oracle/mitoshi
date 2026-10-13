@@ -12,8 +12,10 @@ export interface CapitalSegment {
   id: string;
   label: string;
   valueBase: bigint;
-  /** A CSS colour by token (`var(--color-accent)`). */
+  /** A CSS colour by token (`var(--color-accent)`), or a token holding a pattern (an idle hatch). */
   color: string;
+  /** Its legend chip is a label, not a filter (idle capital has no rows to show; R4-7). */
+  fixed?: boolean;
 }
 
 export interface CapitalBarProps {
@@ -56,7 +58,7 @@ export function CapitalBar({ segments, totalBase, capBps, format, label, onFilte
               <span className="kit-capital-amount">{format(s.valueBase)}</span>
             </>
           );
-          return onFilter ? (
+          return onFilter && !s.fixed ? (
             <button key={s.id} type="button" className="kit-capital-chip" aria-pressed={active === s.id} onClick={() => onFilter(active === s.id ? null : s.id)}>
               {body}
             </button>
