@@ -9,8 +9,7 @@ import { invalidateThemes } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { SlideOver, SlideOverContent } from "@/components/kit";
-import { TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
-import { signerOf } from "@/features/earn/MakerEarn";
+import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { useWalletSession } from "@/lib/wallet-session";
 import { THEMES } from "./copy";
 
