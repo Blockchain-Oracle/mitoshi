@@ -25,6 +25,8 @@
     "./parlay": "./src/parlay/index.ts",
     "./strategies": "./src/strategies/index.ts",
     "./range": "./src/range/index.ts",
+    "./stocks": "./src/stocks/index.ts",
+    "./stocks-ops": "./src/stocks/watch.ts",
     "./leverage": "./src/leverage/index.ts",
     "./maker": "./src/maker/index.ts",
     "./private": "./src/private/index.ts",

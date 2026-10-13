@@ -17,6 +17,7 @@ import { SectionHeader } from "@/components/kit";
 import { MotionScope } from "@/components/motion-scope";
 import { ErrorState, LoadingState } from "@/components/states";
 import { useBoostWrites } from "@/features/boost/useBoostWrites";
+import { BridgeInFlight } from "@/features/bridge/BridgeInFlight";
 import { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import { BOOST_KEYS } from "@/features/terminal/terminal-positions";
 import { TradingBalancePanel } from "@/features/vault/TradingBalancePanel";
@@ -103,6 +104,7 @@ function Ledger({ wallet }: { wallet: Address }) {
         history={history}
         retryHistory={retryHistory}
       />
+      <BridgeInFlight wallet={wallet} />
       {showCollect ? (
         <section className="flex flex-col gap-3" aria-labelledby="collect-title">
           <SectionHeader id="collect-title" index="02" title={HERO_MONEY.collectTitle} aside={<span className="type-caption text-ink-secondary">{CLAIM.waiting(rows.length)}</span>} />
