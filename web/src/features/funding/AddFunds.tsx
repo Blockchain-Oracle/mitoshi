@@ -5,7 +5,9 @@
 // signature; a wallet signs a free message. Mainnet has no faucet: the address is the way in (L-26). Loaded on first open.
 // R4-4 (D-227; critic gap 11): on the kit sheet (`SlideOver`: a bottom sheet on a phone, the right drawer on desktop)
 // with the button pinned in its footer; the figure wears the privacy mask; the foot is the short address with Copy and
-// a QR to receive pathUSD on Tempo.
+// a QR to receive pathUSD on Tempo. R6 money (S25, D-230): never signed out — FundsHost opens the sign-in sheet titled
+// for the money and reopens this once an account is there; a brand-new account's first fund shows as a named wait
+// (`funding`), then the funded figure with Trade →, with no second faucet call.
 import { useBalanceSheet } from "@cwf/markets/react";
 import { shortHex } from "@cwf/core/units";
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +16,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Masked } from "@/components/kit/Masked";
 import { PillButton } from "@/components/kit/PillButton";
+import { WaitingText } from "@/components/states/WaitingText";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -31,8 +34,15 @@ export function laterText(ms: number): string {
   return new Date(ms).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
 }
 
-export default function AddFunds({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export default function AddFunds({ open, onOpenChange, funding = false }: { open: boolean; onOpenChange: (open: boolean) => void; funding?: boolean }) {
   const session = useWalletSession();
+  // The first fund ran while this was open: once it lands the figure is the funded one and the next step is Trade.
+  const [fundedFirst, setFundedFirst] = useState(false);
+  const [wasFunding, setWasFunding] = useState(funding);
+  if (wasFunding !== funding) {
+    setWasFunding(funding);
+    if (!funding) setFundedFirst(true);
+  }
   const sheet = useBalanceSheet(session.address);
   const testnet = webEnv.markets.network === "testnet";
   const faucet = useFaucetClaim({ address: session.address, viaSession: session.kind === "passkey" });
@@ -43,7 +53,7 @@ export default function AddFunds({ open, onOpenChange }: { open: boolean; onOpen
   const availability = useQuery({
     queryKey: ["faucet-availability", session.address],
     queryFn: () => faucetAvailability(session.address!),
-    enabled: open && testnet && session.address !== null && state.phase === "idle",
+    enabled: open && testnet && session.address !== null && state.phase === "idle" && !funding && !fundedFirst,
     staleTime: 0,
   });
   const blocked = state.phase === "idle" && availability.data && !availability.data.available ? availability.data : null;
@@ -63,18 +73,18 @@ export default function AddFunds({ open, onOpenChange }: { open: boolean; onOpen
     : state.phase === "funded" ? { text: FUNDING.modal.done, when: state.claim.nextClaimAtMs, alert: false }
     : null;
 
-  const footer = !session.address ? (
-    <PillButton tone="accent" size="lg" block onClick={() => { onOpenChange(false); session.connect(); }}>{FUNDING.modal.signIn}</PillButton>
+  const footer = !session.address ? null : funding ? (
+    <WaitingText as="p" size="body" className="block text-center">{FUNDING.modal.funding}</WaitingText>
   ) : testnet ? (
     <div className="flex flex-col gap-2">
-      {state.phase === "funded" ? (
+      {state.phase === "funded" || fundedFirst ? (
         <PillButton tone="ink" size="lg" block nativeButton={false} render={<Link href="/trade/BTC" onClick={() => onOpenChange(false)} />}>
           {FUNDING.modal.trade} <ArrowRight aria-hidden />
         </PillButton>
       ) : (
         <PillButton tone="accent" size="lg" block disabled={faucet.busy || blocked !== null || availability.isPending} aria-busy={faucet.busy} onClick={() => void faucet.claim()}>
           {faucet.busy ? <Loader2 aria-hidden className="animate-spin motion-reduce:animate-none" /> : null}
-          {state.phase === "signing" ? FUNDING.modal.signing : state.phase === "funding" ? FUNDING.modal.funding : FUNDING.modal.request}
+          {state.phase === "signing" ? FUNDING.modal.signing : state.phase === "funding" ? FUNDING.modal.asking : FUNDING.modal.request}
         </PillButton>
       )}
       {status ? (
@@ -88,9 +98,7 @@ export default function AddFunds({ open, onOpenChange }: { open: boolean; onOpen
   return (
     <SlideOver open={open} onOpenChange={(o) => (o || !faucet.busy) && onOpenChange(o)}>
       <SlideOverContent eyebrow={FUNDING.modal.eyebrow} title={testnet ? FUNDING.modal.testnetTitle : FUNDING.modal.mainnetTitle} description={testnet ? undefined : FUNDING.modal.mainnetBody} footer={footer} dismissible={!faucet.busy}>
-        {!session.address ? (
-          <p className="py-2 text-center type-body text-ink-secondary">{FUNDING.modal.connectFirst}</p>
-        ) : (
+        {!session.address ? null : (
           <div className="flex flex-col gap-5">
             <section className="flex flex-col items-center gap-2 text-center" aria-label={FUNDING.modal.balance}>
               <span className="type-caption text-ink-secondary">{FUNDING.modal.balance}</span>

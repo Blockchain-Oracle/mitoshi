@@ -37,6 +37,8 @@ export interface WalletShellState {
   wrongChain: boolean;
   /** Why the sign-in opened, in the order's words ("to place UP · $25.00"); null from a plain Sign in (D-224). */
   pickerIntent: string | null;
+  /** The sign-in sheet is showing (R6 money, S25: Add money resumes after it, or forgets when it closes empty). */
+  pickerOpen: boolean;
   /** The wallet-mode key armed on this device for this account (D-047); null when taps still prompt. */
   walletKey: WalletKeyState | null;
   /** A passkey account on a network with the engine: the one-tap arm can be offered. */
@@ -62,7 +64,7 @@ export interface WalletShellActions {
 
 export type WalletShell = WalletShellState & WalletShellActions;
 
-export const SIGNED_OUT: WalletShellState = { runtime: false, status: "ready", connecting: false, tempo: null, network: "testnet", wrongChain: false, pickerIntent: null, walletKey: null, canArmWalletKey: false };
+export const SIGNED_OUT: WalletShellState = { runtime: false, status: "ready", connecting: false, tempo: null, network: "testnet", wrongChain: false, pickerIntent: null, pickerOpen: false, walletKey: null, canArmWalletKey: false };
 
 export const WalletShellContext = createContext<WalletShell>({
   ...SIGNED_OUT,
