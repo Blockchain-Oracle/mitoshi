@@ -2,14 +2,17 @@
 // Ported from Owarine 90a91d71:web/src/features/share/useShareCard.ts (R4-13a, D-227) — the share flow every Share pill
 // runs: draw the PNG, hand it to the native share sheet where the platform takes files, else download it and open a
 // pre-filled post so the reader attaches it. The path is decided inside the click, so the post's tab opens before any
-// await (a late `window.open` is popup-blocked once the drawing takes a beat).
+// await (a late `window.open` is popup-blocked once the drawing takes a beat). R4-13a: the drawing code (canvas cards, the
+// QR encoder) loads at the tap, so a page with a Share pill carries the pill, not the renderer.
 import { useCallback, useState } from "react";
 import { notify } from "@/lib/toast";
 import { SHARE } from "./copy";
-import { renderShareImage, type ShareImage } from "./share-cards";
+import type { ShareImage } from "./share-cards";
 
 export interface ShareInput {
-  image: ShareImage;
+  /** The card, or how to read what it prints first (a history row reads its Window's signed close at the tap). It is
+   *  awaited after the post's tab is opened, so a read never pushes `window.open` past the click. */
+  image: ShareImage | (() => Promise<ShareImage>);
   fileName: string;
   text: string;
   /** The link the post carries (the proof page, the market). */
@@ -37,7 +40,8 @@ export function useShareCard() {
       }
     };
     try {
-      const blob = await renderShareImage(image);
+      const [{ renderShareImage }, card] = await Promise.all([import("./share-cards"), typeof image === "function" ? image() : image]);
+      const blob = await renderShareImage(card);
       const file = new File([blob], fileName, { type: "image/png" });
       const intentUrl = `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
       if (canNativeShare && navigator.canShare({ files: [file] })) {

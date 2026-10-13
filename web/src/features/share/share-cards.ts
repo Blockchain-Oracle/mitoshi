@@ -6,6 +6,8 @@
 //    absolute UTC time (never "settles in ~Xm", which goes stale once shared). The QR opens the market's terminal.
 //  · A verdict is the Window's stamp (WON / LOST / VOID in the stamp face), the close print and who signed it; the QR
 //    opens the Window's proof page, where anyone can re-verify the print.
+//  · A score is an arcade run's game-over (Ported from Senryo:features/games/arcade/StageParts.tsx's OverPlate Share):
+//    the game, the score, a NEW BEST stamp when it is one, where it ranked, the run's seed and length; the QR opens the game.
 import { C, faces, fit, font, H, mark, qr, renderSharePng, W, type ShareCard } from "./share-png";
 
 export interface CallShare {
@@ -32,7 +34,20 @@ export interface VerdictShare {
   url: string;
 }
 
-export type ShareImage = ({ kind: "position" } & ShareCard) | ({ kind: "call" } & CallShare) | ({ kind: "verdict" } & VerdictShare);
+export interface ScoreShare {
+  /** "LINE RIDER". */
+  game: string;
+  /** "12,480". */
+  score: string;
+  best: boolean;
+  /** "Ranked #3"; null when the run posted nothing. */
+  rank: string | null;
+  /** "Seed 7f3a · 41.2 s". */
+  meta: string;
+  url: string;
+}
+
+export type ShareImage = ({ kind: "position" } & ShareCard) | ({ kind: "call" } & CallShare) | ({ kind: "verdict" } & VerdictShare) | ({ kind: "score" } & ScoreShare);
 
 const RECEIPT = { x: 560, y: 520, w: 820, h: 640 } as const;
 const STAMP = { win: "WON", loss: "LOST", void: "VOID" } as const;
@@ -44,6 +59,8 @@ const WORDS = {
   network: "On Tempo testnet.",
   verify: "VERIFY ON THE PROOF PAGE",
   scan: "SCAN TO MAKE YOUR CALL",
+  beat: "SCAN TO BEAT IT",
+  newBest: "NEW BEST",
 } as const;
 
 /** The ground, the accent's glow, and the tilted receipt; the context is left translated to the receipt's centre. */
@@ -185,9 +202,58 @@ export async function renderVerdictPng(card: VerdictShare): Promise<Blob> {
   return blob(canvas);
 }
 
+export async function renderScorePng(card: ScoreShare): Promise<Blob> {
+  const f = faces();
+  await Promise.allSettled([document.fonts.load(font(800, 200, f.display), card.score), document.fonts.load(font(700, 96, f.jp), WORDS.newBest)]);
+  await document.fonts.ready;
+  const { canvas, ctx } = canvas2d();
+  frame(ctx);
+  const { w, h } = RECEIPT;
+  const left = -w / 2 + 60;
+  ctx.fillStyle = C.ink;
+  ctx.globalAlpha = 0.7;
+  ctx.font = font(700, 30, f.body);
+  ctx.fillText(card.game.toUpperCase(), left + 40, -h / 2 + 74);
+  ctx.globalAlpha = 1;
+  fit(ctx, card.score, (px) => font(800, px, f.display), w - 120, 200);
+  ctx.fillText(card.score, left, -h / 2 + 300);
+  if (card.best) {
+    ctx.save();
+    ctx.translate(left + 170, -h / 2 + 400);
+    ctx.rotate((-6 * Math.PI) / 180);
+    ctx.strokeStyle = C.accent;
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.roundRect(-170, -56, 340, 100, 20);
+    ctx.stroke();
+    ctx.fillStyle = C.accent;
+    ctx.textAlign = "center";
+    fit(ctx, WORDS.newBest, (px) => font(700, px, f.jp), 300, 64);
+    ctx.fillText(WORDS.newBest, 0, 18);
+    ctx.restore();
+  }
+  ctx.fillStyle = C.ink;
+  ctx.textAlign = "left";
+  ctx.globalAlpha = 0.75;
+  ctx.font = font(600, 36, f.body);
+  if (card.rank) ctx.fillText(card.rank, left, -h / 2 + 510);
+  ctx.globalAlpha = 0.55;
+  ctx.font = font(600, 28, f.body);
+  ctx.fillText(card.meta, left, -h / 2 + 556);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = C.accent;
+  ctx.font = font(700, 96, f.jp);
+  ctx.textAlign = "right";
+  ctx.fillText("見通し", w / 2 - 50, h / 2 - 40);
+  ctx.restore();
+  brand(ctx, f, card.url, WORDS.beat);
+  return blob(canvas);
+}
+
 /** One entry for every kind of card. */
 export function renderShareImage(image: ShareImage): Promise<Blob> {
   if (image.kind === "call") return renderCallPng(image);
   if (image.kind === "verdict") return renderVerdictPng(image);
+  if (image.kind === "score") return renderScorePng(image);
   return renderSharePng(image);
 }

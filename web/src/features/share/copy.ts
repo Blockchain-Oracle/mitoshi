@@ -24,6 +24,8 @@ export const SHARE = {
   /** The pre-filled posts: real figures only; a call is framed as live, a verdict names its signed close. */
   callPost: (band: string, cadence: string, stake: string, toWin: string, closes: string) => `My call: ${band.toLowerCase()}${cadence ? ` (${cadence} Window)` : ""}. Staked ${stake} to win ${toWin}, settles ${closes} on Tempo testnet. Will it land?`,
   signedBy: (who: string) => `Signed by ${who}`,
+  /** An arcade run's post (Ported from Senryo:features/games/arcade/ArcadeScreen.tsx's share line). */
+  scorePost: (score: string, game: string) => `I scored ${score} on ${game} at Mitoshi. Beat it:`,
   verdictPost: (call: string, outcome: "win" | "loss" | "void") => `${call}: ${outcome === "win" ? "won" : outcome === "loss" ? "lost" : "voided, stake returned"} on Mitoshi. Signed close, checkable:`,
   /** Tradash's post tiers, in dollars. */
   post: (asset: string, side: "up" | "down", pnl: string, roiPct: number, positive: boolean) => {

@@ -25,6 +25,7 @@ import { Pager } from "../Pager";
 import type { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import type { PositionValue } from "@/features/terminal/usePositionValue";
 import { BetRow } from "./BetRow";
+import { HistoryShare } from "./HistoryShare";
 import type { BetGroup } from "./usePortfolioPositions";
 
 type Tab = "open" | "history";
@@ -64,6 +65,8 @@ function HistoryList({ history }: { history: WalletHistory }) {
     formula: PORTFOLIO.pnlFormula,
     // A Trading Balance or Boost round has no single transaction of the wallet's to link (the vault or reserve traded).
     href: r.source === "wallet" ? txUrl(r.entryTxHash, webEnv.markets.network) : undefined,
+    // R4-13a (D-227): the settled Window shares as its verdict (or a cashed-out round as its P&L), QR to its proof.
+    action: <HistoryShare round={r} />,
   }));
   return <TradeJournal entries={entries} labels={JOURNAL} />;
 }

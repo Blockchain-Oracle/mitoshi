@@ -5,7 +5,8 @@
  * figure's title, and the outcome pill in Masayume's stamp words (WIN / LOSS / VOID) with an icon so colour is never the
  * only signal. Changed: rows come from the host (fills projection), money is pre-formatted from base units (no floats),
  * the fixed px grid becomes token columns on `sm` and a stacked card below it (390 px phones), `layoutId` is dropped
- * (no layout projection, §3.1), colours are the profit/loss tokens.
+ * (no layout projection, §3.1), colours are the profit/loss tokens. R4-13a (D-227): a row may carry one action (the
+ * portfolio's Share pill), in its own column from `sm` and on its own line below it.
  */
 import { Check, Minus, X } from "lucide-react";
 import { useState, type KeyboardEvent, type ReactNode } from "react";
@@ -26,6 +27,8 @@ export interface JournalEntry {
   outcomeLabel: string;
   formula: string;
   href?: string;
+  /** One control at the row's end (the Share pill). */
+  action?: ReactNode;
 }
 
 export interface JournalLabels {
@@ -53,6 +56,7 @@ export function TradeJournal({ entries, labels, className }: { entries: readonly
   const [range, setRange] = useState(labels.ranges.at(-1)!.label);
   const newest = entries.reduce((m, e) => Math.max(m, e.atMs), 0);
   const days = labels.ranges.find((r) => r.label === range)!.days;
+  const actions = entries.some((e) => e.action);
   const shown = entries.filter((e) => newest - e.atMs <= days * 86_400_000).sort((a, b) => b.atMs - a.atMs);
   const onKey = (e: KeyboardEvent) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
@@ -61,7 +65,7 @@ export function TradeJournal({ entries, labels, className }: { entries: readonly
     setRange(labels.ranges[(i + (e.key === "ArrowRight" ? 1 : labels.ranges.length - 1)) % labels.ranges.length]!.label);
   };
   return (
-    <div className={cn("journal", className)}>
+    <div className={cn("journal", actions && "journal--actions", className)}>
       <div className="journal-head">
         <div className="flex items-baseline gap-2">
           <h3 className="type-body-strong text-ink">{labels.title}</h3>
@@ -83,6 +87,7 @@ export function TradeJournal({ entries, labels, className }: { entries: readonly
             {[labels.cols.date, labels.cols.window, labels.cols.side, labels.cols.stake, labels.cols.net, labels.cols.outcome].map((c, i) => (
               <span key={c} role="columnheader" className={cn("type-label-micro text-ink-muted", i >= 3 && "text-right")}>{c}</span>
             ))}
+            {actions && <span role="columnheader" />}
           </div>
           {shown.map((e) => (
             <div key={e.id} role="row" className="journal-row">
@@ -92,6 +97,7 @@ export function TradeJournal({ entries, labels, className }: { entries: readonly
               <span role="cell" className="text-right type-data text-ink">{e.stake}</span>
               <span role="cell" title={e.formula} className={cn("text-right type-data", e.netSign > 0 ? "text-profit" : e.netSign < 0 ? "text-loss" : "text-ink-secondary")}>{e.net}</span>
               <span role="cell" className="flex justify-end"><Pill outcome={e.outcome} label={e.outcomeLabel} /></span>
+              {actions && <span role="cell" className="journal-action">{e.action}</span>}
             </div>
           ))}
         </div>
