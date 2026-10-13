@@ -11,6 +11,8 @@
   background: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--color-accent) 10%, var(--color-surface-1)), var(--color-surface-1) 70%);
 }
 .du-searching-art { width: min(100%, 320px); height: auto; }
+.du-queue-me { display: inline-flex; align-items: center; gap: 10px; }
+.du-chip--stake { display: inline-grid; place-items: center; min-height: 32px; padding: 0 14px; }
 .du-breathe { animation: du-breathe 2.4s ease-in-out infinite; }
 @keyframes du-breathe { 50% { border-color: color-mix(in srgb, var(--color-accent) 70%, transparent); box-shadow: 0 0 24px color-mix(in srgb, var(--color-accent) 22%, transparent); } }
 .du-dots { display: inline-flex; gap: 8px; }

@@ -44,11 +44,18 @@ export function DuelEntry({ tier, onTier, onFind, busy, error }: { tier: StakeTi
   );
 }
 
-export function DuelQueue({ queue, onLeave }: { queue: Extract<DuelQueueWire, { status: "waiting" }>; onLeave: () => void }) {
+export function DuelQueue({ queue, me, onLeave }: { queue: Extract<DuelQueueWire, { status: "waiting" }>; me: string; onLeave: () => void }) {
+  const tier = STAKE_TIERS.find((t) => t.id === queue.tier);
   return (
     <section className="du-queue" aria-label={DUEL.queue.title} aria-live="polite">
       <div className="du-searching du-breathe" aria-hidden>
         <SearchingBanner className="du-searching-art" />
+        <span className="du-queue-me">
+          <AccountAvatar seed={me} size={40} className="du-portrait" />
+          <span className="du-chip du-chip--stake" data-on>
+            {DUEL.entry.tierWord(queue.tier, tier?.potUnits ?? 0)}
+          </span>
+        </span>
         <span className="du-dots">
           <span />
           <span />

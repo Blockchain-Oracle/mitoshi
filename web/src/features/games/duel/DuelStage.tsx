@@ -8,12 +8,13 @@
 // card, one real IOC per card at the tier's $1 cap, measured by the arena → the cards settle on their Windows' closes
 // and the better P&L takes both pots. Every crank (lock, settle, award, claim) is anyone's to send, and is offered here.
 // Signed out, the CTA opens sign-in for that duel (the CTA is the action).
-import type { Bytes32 } from "@cwf/core";
-import { cardsInMask, type DeckCard, type Pick, type StakeTierId } from "@cwf/core/games";
+import { isOk, type Bytes32 } from "@cwf/core";
+import { cardsInMask, PICK_ATTEMPT_GUARD_SEC, PICK_ATTEMPT_MAX, pickFloorRaw, type DeckCard, type Pick, type StakeTierId } from "@cwf/core/games";
+import { quoteArenaPick } from "@cwf/markets/arena";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNowMs } from "@/lib/clock";
 import { useWalletSession } from "@/lib/wallet-session";
-import { startBgm, stopBgm } from "../audio";
+import { playSfx, startBgm, stopBgm } from "../audio";
 import { useGames, useImmersive } from "../GamesProvider";
 import { tickerOf } from "../lanes";
 import { CardLine } from "../practice/BeatParts";
@@ -93,14 +94,40 @@ function Lobby({ paired, match, me, write, busy, failed }: { paired: DuelPairedW
 
 function Picking({ match, me, write, busy, failed }: { match: DuelMatchWire; me: string; write: ReturnType<typeof useDuelWrite>["write"]; busy: string | null; failed: string | null }) {
   const nowMs = useNowMs();
+  const sending = useRef(false);
+  const [hold, setHold] = useState(false);
   const seat = match.creator.toLowerCase() === me.toLowerCase() ? 0 : 1;
   const mine = useMemo(() => new Map(match.picks.filter((p) => p.seat === seat).map((p) => [p.cardIndex, p.pick as Pick])), [match.picks, seat]);
   const theirs = useMemo(() => new Set(match.picks.filter((p) => p.seat !== seat).map((p) => p.cardIndex)), [match.picks, seat]);
   const active = match.deck.find((c) => !mine.has(c.index)) ?? null;
   const leftSec = match.pickDeadlineSec ? Math.max(0, match.pickDeadlineSec - Math.floor(nowMs / 1_000)) : null;
 
-  const onPick = (card: DeckCard, side: Pick) =>
-    void write(`pick:${card.index}`, { kind: "arena-pick", matchId: match.matchId as Bytes32, cardIndex: card.index, pick: side, stakeBase: BigInt(match.perCardCapBase), minQuantityRaw: 0n });
+  // Masayume's pick ladder (core picking.ts): quote the stake on the live book, place with a floor under that size, and
+  // when two seats drew the same liquidity in the same second and the fill came back under it, quote again with a
+  // looser floor — 90 %, 70 %, then 50 % — up to four sends, never past the deadline's guard. The stake never grows.
+  const onPick = async (card: DeckCard, side: Pick) => {
+    if (sending.current) return;
+    sending.current = true;
+    setHold(true);
+    try {
+      await pickWithLadder(card, side);
+    } finally {
+      sending.current = false;
+      setHold(false);
+    }
+  };
+  const pickWithLadder = async (card: DeckCard, side: Pick) => {
+    const stakeBase = BigInt(match.perCardCapBase);
+    playSfx(side === "up" ? "swipe-up" : "swipe-down");
+    for (let attempt = 1; attempt <= PICK_ATTEMPT_MAX; attempt += 1) {
+      if (match.pickDeadlineSec !== null && Date.now() / 1_000 > match.pickDeadlineSec - PICK_ATTEMPT_GUARD_SEC) return;
+      const q = await quoteArenaPick(card.marketId, side, stakeBase);
+      const floor = isOk(q) && q.value ? pickFloorRaw(q.value.quantityRaw, attempt) : 0n;
+      const last = attempt === PICK_ATTEMPT_MAX;
+      const r = await write(`pick:${card.index}`, { kind: "arena-pick", matchId: match.matchId as Bytes32, cardIndex: card.index, pick: side, stakeBase, minQuantityRaw: floor }, { quietKinds: last ? [] : ["below-min-quantity"] });
+      if (r.ok || r.kind !== "below-min-quantity") return;
+    }
+  };
 
   const renderFace = (card: DeckCard, place: DeckPlace) => (
     <StageFace
@@ -120,7 +147,7 @@ function Picking({ match, me, write, busy, failed }: { match: DuelMatchWire; me:
   if (!active) return <p className="du-note du-note--wait">{DUEL.pick.waitOpponent}</p>;
   return (
     <>
-      <SwipeDeck cards={match.deck} active={active} playedSide={(i) => mine.get(i) ?? null} onPick={onPick} busy={busy !== null} refusal={failed ? DUEL.failed(failed) : null} renderFace={renderFace} />
+      <SwipeDeck cards={match.deck} active={active} playedSide={(i) => mine.get(i) ?? null} onPick={(card, side) => void onPick(card, side)} busy={busy !== null || hold} refusal={failed ? DUEL.failed(failed) : null} renderFace={renderFace} />
       {leftSec !== null ? <p className="du-note">{DUEL.pick.left(leftSec)}</p> : null}
     </>
   );
@@ -139,6 +166,20 @@ export function DuelStage() {
   const m = match.data ?? null;
   useImmersive(m?.status === "picking");
   useEffect(() => () => stopBgm(), []);
+  // The match chord when the queue pairs you; the duel's own sting when the pot is decided.
+  const pairedId = paired?.matchId ?? null;
+  useEffect(() => {
+    if (pairedId) playSfx("match-found");
+  }, [pairedId]);
+  const finalSeen = useRef<string | null>(null);
+  useEffect(() => {
+    if (!m || m.status !== "finalized" || !address || finalSeen.current === m.matchId) return;
+    finalSeen.current = m.matchId;
+    const seat = m.creator.toLowerCase() === address.toLowerCase() ? 0 : 1;
+    const mine = BigInt(seat === 0 ? m.creatorPnlBase : m.challengerPnlBase);
+    const theirs = BigInt(seat === 0 ? m.challengerPnlBase : m.creatorPnlBase);
+    playSfx(mine >= theirs ? "duel-win" : "duel-lose");
+  }, [m, address]);
 
   const onFind = async () => {
     if (!address) return connectFor(DUEL.entry.signIn);
@@ -155,7 +196,7 @@ export function DuelStage() {
     <div className="gm-page du-stage">
       {!paired ? (
         queue?.status === "waiting" ? (
-          <DuelQueue queue={queue} onLeave={() => void leave()} />
+          <DuelQueue queue={queue} me={address ?? ""} onLeave={() => void leave()} />
         ) : (
           <DuelEntry tier={tier} onTier={setTier} onFind={() => void onFind()} busy={finding} error={error} />
         )

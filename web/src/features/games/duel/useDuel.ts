@@ -65,6 +65,8 @@ export function useDuelMatch(matchId: string | null) {
   });
 }
 
+export type WriteResult = { ok: boolean; kind: string | null };
+
 /** One duel call through the submitter; `busy` names the call in flight, `failed` the last refusal in words. */
 export function useDuelWrite(matchId: string | null) {
   const submitter = useSubmitter();
@@ -72,18 +74,18 @@ export function useDuelWrite(matchId: string | null) {
   const [busy, setBusy] = useState<string | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const write = useCallback(
-    async (key: string, intent: TxIntent): Promise<boolean> => {
-      if (!submitter || busy) return false;
+    async (key: string, intent: TxIntent, opts: { quietKinds?: readonly string[] } = {}): Promise<WriteResult> => {
+      if (!submitter || busy) return { ok: false, kind: "busy" };
       setBusy(key);
       setFailed(null);
       try {
         const r = await submitter.submitTx(intent);
-        if (r.status === "confirmed") return true;
-        setFailed(diagnosisCopy(r.diagnosis.kind).headline);
-        return false;
+        if (r.status === "confirmed") return { ok: true, kind: null };
+        if (!opts.quietKinds?.includes(r.diagnosis.kind)) setFailed(diagnosisCopy(r.diagnosis.kind).headline);
+        return { ok: false, kind: r.diagnosis.kind };
       } catch (e) {
         setFailed(e instanceof Error ? e.message : String(e));
-        return false;
+        return { ok: false, kind: "unknown" };
       } finally {
         setBusy(null);
         await qc.invalidateQueries({ queryKey: ["games", "duel", "match", matchId] });
