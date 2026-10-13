@@ -4,7 +4,9 @@
 // Manage. A pocket that can't be managed here says why instead (Owarine's `blockedReason`), never a sheet with nothing
 // in it. Manage opens the kit sheet (`SlideOver` size lg: a bottom sheet on a phone, the right drawer on desktop,
 // D-222); the last pocket opened stays in it while it animates closed (Owarine's `shown`), and the open one lives in the
-// URL (`?d=pocket-trading` · `?d=pocket-private`, D-190): Back closes it. Under 400 px each tile is one tappable chip.
+// URL (`?d=pocket-trading` · `?d=pocket-private`, D-190): Back closes it. R6 money (D-230, round 7 "feel like an app"):
+// under 640 px the pockets are one inset grouped list — a 64 px row each (mark, name over its line, amount, chevron),
+// the iOS Wallet grammar — instead of two half tiles.
 import { ChevronRight, LockKeyhole, Vault, type LucideIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Masked } from "@/components/kit/Masked";
@@ -59,11 +61,11 @@ export function Pockets({ pockets, decimals, panels, children }: { pockets: Pock
                 )}
               </article>
               <button type="button" className="pocket-chip" disabled={p.blockedReason !== null} aria-label={`${m.label} · ${HERO_MONEY.manage}`} onClick={() => manage(p.id)}>
-                <span className="pocket-icon"><m.icon aria-hidden className="size-3.5" /></span>
+                <span className="pocket-icon"><m.icon aria-hidden className="size-4" /></span>
                 <span className="pocket-chip-body">
                   <span className="pocket-chip-label">{m.label}</span>
                   <span className="numbers pocket-chip-amount">{amount(p)}</span>
-                  {p.blockedReason ? <span className="pocket-chip-why">{p.blockedReason}</span> : null}
+                  <span className="pocket-chip-why">{p.blockedReason ?? m.note}</span>
                 </span>
                 {p.blockedReason ? null : <ChevronRight aria-hidden className="pocket-chip-chev size-4 shrink-0 text-ink-secondary" />}
               </button>

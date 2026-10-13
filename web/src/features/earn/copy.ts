@@ -111,7 +111,7 @@ export const EARN = {
     about: (label: string) => `About ${label}`,
   },
   /** Portfolio's Earn pocket and its line under the money figure (FR-5). */
-  pocket: { label: "Earn", note: "Supplied to the vault and reserves.", open: "Open" },
+  pocket: { label: "Earn", note: "Supplied to the vault and reserves.", open: "Open", suppliers: (pct: string) => `Suppliers ${pct}`, sinceLaunch: "Maker vault, since launch" },
   notDeployed: {
     title: "Earn",
     /** A house reserve not deployed on the network the app is pointed at (the vault's own case is the registered pending page). */

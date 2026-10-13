@@ -39,7 +39,6 @@ export const PLATE = {
   pools: {
     escrow: { label: "Resting orders", note: "Locked behind scheduled calls." },
   },
-  connect: { title: "See your money", action: "Sign in", newHere: "New here? Test dollars are free →" },
 } as const;
 
 export const CASH_OUT = {
@@ -77,7 +76,17 @@ export const HERO_MONEY = {
   },
   blocked: { passkey: "Needs a passkey account", network: "Not on this network" },
   collectTitle: "To collect",
-  demo: { title: "Demo", cta: "Trade on paper", line: (open: number, pnl: string) => `${open} open · ${pnl} on paper` },
+  /** Signed out (R6 money, S07): the same card on DEMO's paper account. */
+  paper: {
+    eyebrow: "Paper balance",
+    tag: "DEMO",
+    dollars: "Paper dollars",
+    onPaper: "on paper",
+    signIn: "Sign in to use test dollars",
+    afterSignIn: "After sign-in",
+    openTitle: "Open on paper",
+    settledTitle: "Settled on paper",
+  },
 } as const;
 
 /** The settled list, its receipt, the record and the Trader Edge link (Owarine 90a91d71 `history/copy.ts`, in dollars). */

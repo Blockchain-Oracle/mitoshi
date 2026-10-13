@@ -41,7 +41,7 @@ function OpenList({ open }: { open: OpenBets }) {
   const pager = usePager(open.groups, PAGE);
   if (open.count === null) return <LoadingState shape="row" />;
   const failed = open.failed ? <ErrorState diagnosis={open.failed.diagnosis} retry={open.failed.retry} /> : null;
-  if (open.groups.length === 0) return failed ?? <EmptyState why={PORTFOLIO.noBets} nextAction={{ label: PORTFOLIO.firstCall, href: "/trade/BTC" }} />;
+  if (open.groups.length === 0) return failed ?? <EmptyState size="inline" why={PORTFOLIO.noBets} nextAction={{ label: PORTFOLIO.firstCall, href: "/trade/BTC" }} />;
   return (
     <div className="bets-fill">
       {failed}
