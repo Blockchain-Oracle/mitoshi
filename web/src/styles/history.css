@@ -264,7 +264,8 @@
    Under 640 px: the status, the call, its home and cadence, the clock pushed right (no "left"); then stake → worth,
    the P&L and Close pushed right. The words "Live", "Staked" and "Worth now" are read aloud only under 400 px. From
    640 px, Owarine's one line. */
-.bet-row .bet-call { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; }
+.bet-row .bet-call { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 32px; }
+.bet-row .bet-call::before { content: ""; position: absolute; inset: -6px -4px; }
 .bet-row .bet-status { flex-shrink: 0; }
 .bet-row .bet-money { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
 .bet-row .bet-pnl { flex-shrink: 0; }

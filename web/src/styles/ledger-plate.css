@@ -97,7 +97,7 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .money-hero-actions .kit-pill { font-size: 16px; }
 @media (min-width: 640px) { .money-hero-actions { display: flex; flex-wrap: wrap; } }
 .money-hero .money-hero-white { background: var(--plate-ink); color: var(--plate-black); border-color: transparent; }
-.money-hero .money-hero-white:hover { opacity: 0.9; }
+.money-hero .money-hero-white:hover, .money-hero .money-hero-white:focus-visible { background: var(--plate-ink); opacity: 0.9; }
 .money-hero-dot { width: 12px; height: 12px; flex: none; border-radius: 50%; }
 /* The legs: a compact list under 400 px, three mini cells to 640, Owarine's right-hand list from 640. */
 .money-hero-legs { display: grid; gap: 6px; width: 100%; }

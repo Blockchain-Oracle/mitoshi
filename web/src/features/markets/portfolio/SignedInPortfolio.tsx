@@ -92,7 +92,7 @@ function Ledger({ wallet }: { wallet: Address }) {
   return (
     <div className="flex flex-col gap-6 lg:gap-10">
       <PositionValuers positions={book.positions} onValue={book.onValue} />
-      <MoneyHero money={money} settled={settled} onAdd={openFunds} collect={{ busy: collectBusy, run: runCollect }} />
+      <MoneyHero money={money} settled={settled} onAdd={openFunds} collect={live.length > 0 || money.boostOwedBase > 0n ? { busy: collectBusy, run: runCollect } : null} />
       <Pockets
         decimals={money.decimals}
         pockets={money.pockets}
