@@ -1,88 +1,63 @@
 import { PRACTICE_WATCH_SEC } from "@cwf/core/games";
 
 /**
- * Everything Practice says.
- *
- * One sentence in here carries the whole mode's honesty and must never be softened: practice scores
- * on the live feed over a short watch, **not** on the Window's settlement. Everything else — no
- * stake, no position, no ladder, an opponent that flips a coin — follows from saying that plainly
- * (`04-game-system.md` §Practice and arcade state).
+ * Everything Practice says — "Beat the coin" (R4-9, D-227; copy cuts #9–#13 and copy bugs 1). The honesty line —
+ * scored on the live price after a short watch, not at the Window's settlement — lives in the ⓘ how-to now, verbatim
+ * (`GAMES.howTo.practice`); on the stage each element carries one short fragment.
  */
 export const PRACTICE = {
-  eyebrow: "No stake · no position · nothing on the ledger",
-  title: "Practice",
-  intro: "Swipe live Windows the way you think price goes. Nothing at risk.",
-
-  scoring: {
-    label: "How this is scored",
-    body: `Each card is scored on the live public price ${PRACTICE_WATCH_SEC} seconds after your last swipe — not on the Window's own settlement, which takes as long as the Window does. The prices are real. Nothing here is a position, a payout or a rating.`,
-  },
-
-  tutorial: {
-    title: "How practice works",
-    steps: [
-      "A card is one of the venue's live Windows. Swipe it up if you think the price rises, down if you think it falls — the arrow keys and the two buttons do the same thing.",
-      `When the last card is played, the round watches the live feed for ${PRACTICE_WATCH_SEC} seconds and scores every card at that one moment.`,
-      "The opponent is a coin flip and is labelled as one. It is here so the round has the duel's shape, not because it knows anything.",
-    ],
-    dismiss: "Got it",
-    reopen: "How this works",
-  },
+  title: "Beat the coin",
 
   card: {
-    /** The quote box, on the same bands as the duel's: the eyebrow and the question it sets up. */
     eyebrow: (asset: string) => `will ${asset} be higher`,
-    question: `${PRACTICE_WATCH_SEC}s after you swipe?`,
+    question: `in ${PRACTICE_WATCH_SEC} s?`,
     live: "Live",
-    stake: "stake",
-    noStake: "none",
-    window: "From the Window",
-    windowValue: (cadence: string) => `${cadence} · settles on its own clock`,
+    crowd: "Crowd",
+    crowdUp: (pct: number) => `${pct}% up`,
     noPrice: "Waiting for the live price",
+    coach: { up: `↑ higher in ${PRACTICE_WATCH_SEC} s`, down: "↓ lower" },
   },
 
+  versus: { you: "You", coin: "Coin" },
+
   deal: {
-    dealing: "Dealing from the venue's live Windows…",
+    dealing: "Dealing from the live Windows…",
     none: {
-      title: "No Window to practise on",
-      body: "Practice deals from the venue's live Windows, and right now none has enough time left to run a round. The next roll brings one.",
-      /** Overnight and at weekends only the 24/7 Windows run (crypto and the 24/7 stocks); a card needs two minutes. */
+      title: "No Window yet",
+      body: "No Window long enough yet. Next one soon.",
       closedBody: "US stocks closed. No 24/7 Window has 2 min left — next roll soon.",
     },
     offline: {
-      title: "The venue is not readable",
-      body: "Practice needs the live Window list and the live price feed. Both are reads, so nothing was signed and nothing was spent.",
+      title: "Venue unreadable",
+      body: "Live Windows and prices are reads; nothing was signed.",
     },
   },
 
   watch: {
-    label: "Watching the feed",
-    body: "Every card is scored at the same moment, so no card gets a longer run than another.",
+    label: "Watching the race",
     left: (sec: number) => `${sec}s`,
+    leader: "leads",
   },
 
   result: {
     title: "Round over",
     you: "You",
-    bot: "Practice bot",
-    botNote: "Picks at random. Nothing about this opponent is a real player or a real record.",
-    won: "You took it",
-    lost: "The coin flip took it",
+    bot: "Coin",
+    botNote: "Coin flip, not a player.",
+    won: "You beat the coin",
+    lost: "The coin took it",
     tied: "Level",
-    /** What the feed did. */
     move: { up: "Rose", down: "Fell", flat: "Flat" },
-    /** What a player called. A call is not a move, and the row must not print one as the other. */
     call: { up: "Up", down: "Down" },
     arrow: { up: "↑", down: "↓", flat: "·" },
     cardResult: { won: "Won", lost: "Lost", flat: "Flat" },
-    flatNote: "A flat feed is nobody's card — neither side is given it.",
-    unscored: (n: number) => `${n} card${n === 1 ? "" : "s"} could not be scored: the live price was unreadable when the watch closed.`,
+    flatNote: "Flat is nobody's card.",
+    unscored: (n: number) => `${n} unscored · no price`,
     again: "Play again",
-    toDuel: "Play a real duel",
+    toReal: "Call it for real",
     entry: "Entry",
     close: "Close",
   },
 
-  /** Reachable from the stage at any time; a practice round has nothing to lose by being abandoned. */
   restart: "New deck",
 } as const;

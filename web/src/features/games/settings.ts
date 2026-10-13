@@ -1,6 +1,7 @@
 "use client";
 
 import { booleanCodec, usePersistedState } from "@/lib/persisted";
+import { gameKey } from "./keys";
 
 /**
  * The three stage settings PIPS applies immediately (`reference/pips` menu/settings), in this
@@ -35,9 +36,9 @@ export interface GameSettings {
   accent: AccentChoice;
 }
 
-const MOTION_KEY = "owarine.games.motion";
-const HAPTICS_KEY = "owarine.games.haptics";
-const ACCENT_KEY = "owarine.games.accent";
+const MOTION_KEY = gameKey("motion");
+const HAPTICS_KEY = gameKey("haptics");
+const ACCENT_KEY = gameKey("accent");
 
 const motionCodec = {
   parse: (raw: string): MotionChoice | null => (raw === "system" || raw === "full" || raw === "reduced" ? raw : null),

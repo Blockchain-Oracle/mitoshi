@@ -12,7 +12,7 @@ import {
   traceCanonical,
   type ArcadeGame,
 } from "@cwf/core/games/arcade";
-import { createPgArcadeStore, type ArcadeStore } from "@cwf/db";
+import { createPgArcadeStore, type ArcadeRunRow, type ArcadeStore } from "@cwf/db";
 import { z } from "zod";
 import { ceremonyLimiter } from "@/server/auth";
 import { db } from "@/server/db";
@@ -61,12 +61,15 @@ export function freshSeed(): string {
   return seedFromBytes(randomBytes(4));
 }
 
-export async function readBoard(game: ArcadeGame, address: string | null): Promise<BoardWire> {
+/** The rank page's longer board (R4-9, D-227); the cabinet keeps BOARD_LIMIT. */
+export const RANK_LIMIT = 50;
+
+export async function readBoard(game: ArcadeGame, address: string | null, limit: number = BOARD_LIMIT): Promise<BoardWire> {
   const engineVersion = ENGINE_VERSION[game];
   const seed = freshSeed();
   const scores = arcadeStore();
   if (!scores) return { configured: false, seed, engineVersion, rows: [], me: null };
-  const rows = await scores.board(game, engineVersion, BOARD_LIMIT);
+  const rows = await scores.board(game, engineVersion, Math.min(Math.max(1, limit), RANK_LIMIT));
   let me: BoardWire["me"] = null;
   if (address) {
     const best = await scores.best(address, game, engineVersion);
@@ -110,4 +113,18 @@ export async function acceptScore(claim: ScoreClaim, wallet: string | null, ip: 
   const rank = await scores.rank(claim.game, engineVersion, claim.score);
   const board = await readBoard(claim.game, wallet);
   return { ok: true, body: { rank, isBest, board } };
+}
+
+/** The newest replayed runs on any game (the hall's marquee); `null` when this deployment keeps no scores. */
+export async function readRecentRuns(limit: number): Promise<ArcadeRunRow[] | null> {
+  const scores = arcadeStore();
+  return scores ? scores.recent(Math.min(Math.max(1, limit), 30)) : null;
+}
+
+/** One wallet's runs, newest first (its history), with each run's rank on its board now; `null` with no store. */
+export async function readRuns(wallet: string, limit: number): Promise<(ArcadeRunRow & { rank: number | null })[] | null> {
+  const scores = arcadeStore();
+  if (!scores) return null;
+  const runs = await scores.byWallet(wallet, Math.min(Math.max(1, limit), 100));
+  return Promise.all(runs.map(async (run) => ({ ...run, rank: run.engineVersion === ENGINE_VERSION[run.game] ? await scores.rank(run.game, run.engineVersion, run.score) : null })));
 }

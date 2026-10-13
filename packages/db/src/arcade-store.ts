@@ -28,6 +28,19 @@ export interface ArcadeBoardRow {
   at: string;
 }
 
+/** One replayed run, as the hall's marquee and a player's history read it (R4-9, D-227). */
+export interface ArcadeRunRow {
+  game: ArcadeGameId;
+  wallet: string;
+  score: number;
+  engineVersion: number;
+  durationMs: number;
+  seed: string | null;
+  calm: boolean;
+  /** ISO 8601. */
+  at: string;
+}
+
 export interface ArcadeStore {
   record(input: ArcadeScoreInput): Promise<void>;
   /** Each wallet's best on this build, greatest first, the earlier of equals ahead. */
@@ -35,7 +48,14 @@ export interface ArcadeStore {
   best(wallet: string, game: ArcadeGameId, engineVersion: number): Promise<number | null>;
   /** One more than the number of wallets whose best beats `score`; equal bests share a rank. */
   rank(game: ArcadeGameId, engineVersion: number, score: number): Promise<number>;
+  /** The newest replayed runs on any game, newest first — the hall's marquee. */
+  recent(limit: number): Promise<ArcadeRunRow[]>;
+  /** One wallet's runs, newest first — its history. */
+  byWallet(wallet: string, limit: number): Promise<ArcadeRunRow[]>;
 }
+
+type RunDb = { game: ArcadeGameId; wallet: string; score: number; engine_version: number; duration_ms: number; seed: string | null; calm: boolean; created_at: Date };
+const runRow = (r: RunDb): ArcadeRunRow => ({ game: r.game, wallet: r.wallet, score: r.score, engineVersion: r.engine_version, durationMs: r.duration_ms, seed: r.seed, calm: r.calm, at: r.created_at.toISOString() });
 
 export function createPgArcadeStore(sql: Sql): ArcadeStore {
   return {
@@ -73,6 +93,18 @@ export function createPgArcadeStore(sql: Sql): ArcadeStore {
         ) bests
         where bests.best > ${score}`;
       return Number(rows[0]?.n ?? 0) + 1;
+    },
+    async recent(limit) {
+      const rows = await sql<RunDb[]>`
+        select game, wallet, score, engine_version, duration_ms, seed, calm, created_at from arcade_scores
+        order by created_at desc limit ${limit}`;
+      return rows.map(runRow);
+    },
+    async byWallet(wallet, limit) {
+      const rows = await sql<RunDb[]>`
+        select game, wallet, score, engine_version, duration_ms, seed, calm, created_at from arcade_scores
+        where wallet = ${wallet.toLowerCase()} order by created_at desc limit ${limit}`;
+      return rows.map(runRow);
     },
   };
 }

@@ -227,6 +227,15 @@ span.top-money, span.top-account { display: contents; }
 @media (min-width: 1280px) { .app-column:has(.terminal-surface:not([style*="display: none"])) { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
 .terminal-surface { position: relative; display: flex; flex: 1; min-width: 0; min-height: 0; }
 
+/* ── a game in play (R4-9, D-227): while a round is dealt or a run is live the frame wears `data-immersive`, and on a
+ * phone the play surface takes the screen — no dock, no top line, the rail pinned at the top (the terminal's `:has()`
+ * grammar, visible copies only). The arcade's run goes further, onto its own full-screen layer. ── */
+@media (max-width: 767px) {
+  .app-shell:has(.gm-frame[data-immersive]:not([style*="display: none"])) .app-dock,
+  .app-column:has(.gm-frame[data-immersive]:not([style*="display: none"])) > .app-topline { display: none; }
+  .app-shell:has(.gm-frame[data-immersive]:not([style*="display: none"])) { --stage-sticky-top: 0px; --dock-clearance: 0px; --dock-strip-offset: calc(8px + env(safe-area-inset-bottom, 0px)); }
+}
+
 /* The Trade place's own drawers under it on the terminal (S23g). */
 .rail-sub { display: flex; flex-direction: column; gap: 2px; margin: -4px 0 4px; padding-left: 28px; }
 .rail-sub-item { display: flex; min-height: 36px; align-items: center; gap: 10px; padding: 0 12px; border-radius: var(--radius-full); color: var(--color-ink-secondary); font: 500 14px/1 var(--font-body); text-align: left; }

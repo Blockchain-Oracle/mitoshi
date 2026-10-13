@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { createChipBed, type ChipBed } from "./bed";
+import { gameKey } from "./keys";
 
 /**
  * Game audio: effects through Web Audio (decoded buffers, so rapid swipes overlap instead of cutting
@@ -33,8 +34,8 @@ export const SFX_FILES: Readonly<Record<SfxName, string>> = {
 /** The bed is ours, sequenced in `bed.ts`: Flicky's track is Uppbeat-licensed (a visible per-download credit), which is not ours to carry. */
 export const BGM_BED = "chip" as const;
 
-const SFX_VOLUME_KEY = "owarine.games.sfxVolume";
-const BGM_VOLUME_KEY = "owarine.games.bgmVolume";
+const SFX_VOLUME_KEY = gameKey("sfxVolume");
+const BGM_VOLUME_KEY = gameKey("bgmVolume");
 /** The sliders multiply these tuned levels: "100%" is the designed balance, not full amplitude. */
 const SFX_VOLUME_BASE = 0.6;
 const BGM_VOLUME_BASE = 0.3;
@@ -312,4 +313,26 @@ export function useModalSfx(open: boolean): void {
     previous.current = open;
     playSfx(open ? "modal-open" : "modal-close");
   }, [open]);
+}
+
+// ── the rail's one-tap mute (R4-9, D-227) ──
+
+let unmuteTo: { sfx: number; bgm: number } = { sfx: 1, bgm: 1 };
+
+/** Both channels to zero, or back to where they were; the sliders in settings stay the fine control. */
+export function toggleMute(): void {
+  if (sfxVolume > 0 || bgmVolume > 0) {
+    unmuteTo = { sfx: sfxVolume || 1, bgm: bgmVolume || 1 };
+    setSfxVolume(0);
+    setBgmVolume(0);
+  } else {
+    setSfxVolume(unmuteTo.sfx);
+    setBgmVolume(unmuteTo.bgm);
+  }
+}
+
+const isMuted = () => sfxVolume === 0 && bgmVolume === 0;
+
+export function useMuted(): boolean {
+  return useSyncExternalStore(subscribe, isMuted, () => false);
 }
