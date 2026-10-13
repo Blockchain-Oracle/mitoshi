@@ -6,6 +6,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { COUNTRY_HEADERS, encodePosture, GEOFENCE_PILLARS, postureOf, REGION_COOKIE, REGION_HEADER } from "@cwf/core";
 import { TRADE_COOKIE, tradeRedirect } from "./features/terminal/route";
+import { tickerHubRoute } from "./lib/ticker-href";
 
 const COOKIE_MAX_AGE_SEC = 60 * 60 * 24;
 
@@ -36,6 +37,14 @@ export function proxy(request: NextRequest): NextResponse {
     const url = request.nextUrl.clone();
     url.pathname = trade;
     return NextResponse.redirect(url, 307);
+  }
+  // A ticker's hub (R4-10, D-227): `/tickers/tsla` → `/tickers/TSLA`; an unlisted symbol is rewritten to `/tickers`,
+  // which no page serves, so it answers the root 404 with status 404 (the URL stays what was typed).
+  const hub = tickerHubRoute(request.nextUrl.pathname);
+  if (hub) {
+    const url = request.nextUrl.clone();
+    url.pathname = hub === "missing" ? "/tickers" : hub.redirect;
+    return hub === "missing" ? NextResponse.rewrite(url) : NextResponse.redirect(url, 307);
   }
   const country = process.env.CWF_REGION_OVERRIDE || COUNTRY_HEADERS.map((h) => request.headers.get(h)).find(Boolean) || null;
   const posture = postureOf(country);
