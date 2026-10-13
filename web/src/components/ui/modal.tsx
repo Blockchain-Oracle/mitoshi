@@ -15,7 +15,8 @@ import { useUrlOverlay } from "@/lib/drawer-param";
 import { useModalSignal } from "@/lib/modal-signal";
 import { usePhoneLayout } from "@/lib/phone-layout";
 import { cn } from "@/lib/utils";
-import { dropOnLeave, OverlayFooterSlot, SlideOver, SlideOverContent } from "./drawer";
+import { SlideOver, SlideOverContent } from "./drawer";
+import { dropOnLeave, OverlayFooterSlot } from "./overlay-footer";
 
 export interface ModalProps {
   open: boolean;

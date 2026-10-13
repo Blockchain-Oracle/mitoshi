@@ -8,5 +8,6 @@ contracts/broadcast
 reference
 context
 data
-mobile/ios
-mobile/android
+# The Expo app (D-227, MOBILE) never enters an image: the web's and ops' filtered installs (--filter "@cwf/web..." /
+# "@cwf/ops...") pass --frozen-lockfile without its manifest, as they did before it had one.
+mobile

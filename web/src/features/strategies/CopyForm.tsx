@@ -5,7 +5,7 @@
 import { formatBaseUnits, USD_DECIMALS, type SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { COPY } from "./copy";

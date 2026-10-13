@@ -17,7 +17,7 @@ import { txUrl } from "@cwf/core/urls";
 import { useMemo } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { OrderSummary } from "@/components/ui/order-summary";
 import { AmountField, QuickAdds } from "@/components/ui/prediction-ticket";

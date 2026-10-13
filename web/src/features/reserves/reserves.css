@@ -1,0 +1,75 @@
+/* /reserves (R4-12, D-227): Owarine 90a91d71 `earn.css` hero + `status.css` rows on Mitoshi's tokens. The stage
+   (.app-stage) pads the page; nothing here adds an outer inset. Phone first: the verdict and Re-check fit the first
+   screen at 320; from 1024 the rows read as a table and the history sits in a right column. */
+
+.rsv-page { display: flex; flex-direction: column; gap: 14px; padding-bottom: 32px; }
+.rsv-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.rsv-head-text { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.rsv-title { font-family: var(--font-display); font-size: 28px; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; color: var(--color-ink); }
+.rsv-line { font-size: 13px; color: var(--color-ink-secondary); }
+.rsv-link { display: inline-flex; flex: none; align-items: center; min-height: 44px; font-size: 13px; font-weight: 600; color: var(--color-accent); }
+.rsv-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+@media (min-width: 768px) { .rsv-title { font-size: 36px; } }
+
+.rsv-grid { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1024px) { .rsv-grid { grid-template-columns: minmax(0, 1fr) 320px; align-items: start; } }
+.rsv-main { display: flex; min-width: 0; flex-direction: column; gap: 14px; }
+
+/* ── the verdict ── */
+.rsv-hero { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.rsv-hero-top { display: flex; align-items: center; gap: 14px; }
+.rsv-stamp { display: inline-flex; flex: none; flex-direction: column; align-items: flex-start; }
+.rsv-kanji { color: var(--verdict-stamp-void-ink); }
+.rsv-hero[data-verdict="backed"] .rsv-kanji { color: var(--verdict-stamp-win-ink); }
+.rsv-hero[data-verdict="short"] .rsv-kanji { color: var(--color-down); }
+.rsv-romaji { color: var(--color-ink-secondary); }
+.rsv-hero-body { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.rsv-sentence { font-size: 14px; font-weight: 600; line-height: 1.35; color: var(--color-ink); }
+.rsv-blocks { font-size: 11px; line-height: 1.4; color: var(--color-ink-muted); overflow-wrap: anywhere; }
+.rsv-flash { animation: rsv-flash 900ms var(--ease); }
+@keyframes rsv-flash { 0% { color: var(--color-accent); } 100% { color: var(--color-ink-muted); } }
+@media (prefers-reduced-motion: reduce) { .rsv-flash { animation: none; } }
+.rsv-recheck { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 48px; border-radius: var(--radius-md); background: var(--color-accent-fill); color: var(--color-on-accent); font-size: 15px; font-weight: 700; transition: background-color 160ms var(--ease); }
+.rsv-recheck:hover { background: var(--color-accent-hover); }
+.rsv-recheck:disabled { cursor: progress; opacity: 0.75; }
+.rsv-recheck:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+@media (min-width: 640px) { .rsv-recheck { width: auto; align-self: flex-start; padding: 0 22px; } }
+@media (max-width: 359px) { .rsv-hero { padding: 12px; } .rsv-hero-top { gap: 10px; } .rsv-sentence { font-size: 13px; } }
+
+/* ── the tickers ── */
+.rsv-table { display: flex; flex-direction: column; }
+.rsv-colheads { display: none; }
+.rsv-rows { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.rsv-row { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; border-top: 1px solid var(--color-hairline); }
+.rsv-row:first-child { border-top: 0; }
+.rsv-row-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px; min-height: 44px; width: 100%; text-align: left; color: var(--color-ink); }
+.rsv-row-head:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: var(--radius-sm); }
+.rsv-cell { min-width: 0; }
+.rsv-ticker { display: inline-flex; align-items: center; gap: 8px; }
+.rsv-disc { display: grid; flex: none; place-items: center; width: 28px; height: 28px; border-radius: 9999px; }
+.rsv-disc.generic { background: var(--color-surface-2); font-size: 12px; font-weight: 700; }
+.rsv-sym { font-weight: 700; font-size: 14px; }
+.rsv-summary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--color-ink-secondary); }
+.rsv-col { display: none; }
+.rsv-mark { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 9999px; }
+.rsv-mark[data-state="pass"] { background: var(--color-accent-wash); color: var(--color-accent); }
+.rsv-mark[data-state="fail"] { background: var(--color-loss-wash); color: var(--color-down); }
+.rsv-mark[data-state="partial"] { background: var(--color-surface-2); color: var(--color-ink-muted); }
+.rsv-chev { color: var(--color-ink-muted); transition: transform 160ms var(--ease); }
+.rsv-row[data-open] .rsv-chev { transform: rotate(180deg); }
+.rsv-row-facts { padding-top: 4px; }
+
+@media (min-width: 1024px) {
+  .rsv-colheads, .rsv-row-head { display: grid; grid-template-columns: minmax(0, 1.3fr) repeat(4, minmax(0, 1fr)) 56px 20px; gap: 12px; }
+  .rsv-colheads { padding: 0 12px 8px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-muted); }
+  .rsv-colheads span:nth-child(n + 2) { text-align: right; }
+  .rsv-colheads span:last-child { grid-column: 6 / span 2; text-align: center; }
+  .rsv-summary { display: none; }
+  .rsv-col { display: block; text-align: right; font-size: 13px; color: var(--color-ink); }
+  .rsv-mark { justify-self: center; }
+}
+
+/* ── the right column ── */
+.rsv-side { display: flex; min-width: 0; flex-direction: column; gap: 14px; }
+.rsv-panel { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.rsv-h2 { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-secondary); }
