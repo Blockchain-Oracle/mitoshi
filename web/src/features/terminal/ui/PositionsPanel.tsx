@@ -21,7 +21,7 @@ import { roiBpsOf, type PositionsTotals } from "../positions-totals";
 import type { TerminalPosition } from "../terminal-positions";
 import { usePositionValue, type PositionValue } from "../usePositionValue";
 import { ParlayRow, RangeRow } from "../parlay/BetRows";
-import type { useTerminalBets } from "../parlay/useTerminalBets";
+import { rangeBetId, type useTerminalBets } from "../parlay/useTerminalBets";
 import type { Valued } from "../positions-totals";
 import { useRowTrail } from "../useTrail";
 
@@ -148,7 +148,7 @@ export function PositionsList({ positions, bets, pending = [], activeMarketId, b
         <PendingRow key={`pending:${f.marketId}:${f.side}`} f={f} />
       ))}
       {onBetValue ? parlays.map((t) => <ParlayRow key={`parlay:${t.parlayId}`} t={t} onValue={onBetValue} />) : null}
-      {onBetValue ? ranges.map((r) => <RangeRow key={`range:${r.roundId}`} r={r} onValue={onBetValue} />) : null}
+      {onBetValue ? ranges.map((r) => <RangeRow key={rangeBetId(r)} r={r} onValue={onBetValue} />) : null}
       {positions.map((p) => (
         <PositionRow key={p.id} p={p} current={p.marketId === activeMarketId} busy={busyId === p.id} onClose={onClose} onOpen={onOpen} onTrailHit={onTrailHit ?? noTrail} onValue={onValue} />
       ))}

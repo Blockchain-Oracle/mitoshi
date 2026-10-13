@@ -11,6 +11,8 @@ pragma solidity 0.8.30;
 // anchor/programs/agari-range/src/basis.rs `TICK_TO_E6`, the "mark factor" that was once restated wrong). PD-2/D-119:
 // `_checkDrift` refuses `StaleBasis` when `|probitE4(centerQE6) − zSpotE4| > maxDriftE4`, the spot a same-call signed
 // price verified through the FairValueGuard and z taken with the reserve's own σ over the seconds left.
+// R4-5 (D-227): σ is the reserve's measured value for the asset when set, else the guard's for the Window's Series
+// (`_sigma`), so stocks (Regular, 24/7, Gap) and every cadence price on the clock their Series runs on.
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -137,7 +139,7 @@ abstract contract RangePricing is IRangeReserve {
     /// @notice The Window's opening print and where its book puts the market now, as the pricing reads them.
     function previewBasis(bytes32 marketId, string calldata asset) external view returns (int256 openingPrint, uint256 centerQE6, uint64 sigmaE8) {
         MarketRef memory r = _resolve(marketId);
-        sigmaE8 = volatilityOf[_requireAsset(marketId, asset, r)];
+        sigmaE8 = _sigma(marketId, _requireAsset(marketId, asset, r));
         openingPrint = _openingPrint(marketId, r);
         centerQE6 = _center(marketId, r);
     }
@@ -145,7 +147,7 @@ abstract contract RangePricing is IRangeReserve {
     /// @notice The drift the open would test for a spot the caller supplies (previews; no proof, so never the bound).
     function previewDriftE4(bytes32 marketId, string calldata asset, int64 spotE8) external view returns (int256 driftE4) {
         MarketRef memory r = _resolve(marketId);
-        uint64 sigma = volatilityOf[_requireAsset(marketId, asset, r)];
+        uint64 sigma = _sigma(marketId, _requireAsset(marketId, asset, r));
         if (sigma == 0) revert NoVolatility(asset);
         uint256 tau = r.expiry > block.timestamp ? r.expiry - block.timestamp : 0;
         return _drift(_center(marketId, r), spotE8, r.openE8, sigma, tau);
@@ -165,7 +167,7 @@ abstract contract RangePricing is IRangeReserve {
         if (r.expiry > block.timestamp + params.maxHorizonSec) revert TooFar(marketId, r.expiry);
         uint256 tau = r.expiry - block.timestamp;
 
-        uint64 sigma = volatilityOf[_requireAsset(marketId, asset, r)];
+        uint64 sigma = _sigma(marketId, _requireAsset(marketId, asset, r));
         if (sigma == 0) revert NoVolatility(asset);
         q.openingPrint = _openingPrint(marketId, r);
         uint256 centerQE6 = _center(marketId, r);
@@ -198,6 +200,14 @@ abstract contract RangePricing is IRangeReserve {
         uint256 std = RangeMath.stdE8(sigmaE8, tau);
         int256 zSpot = std == 0 ? (spotE8 >= openE8 ? RangeMath.Z_MAX_E4 : -RangeMath.Z_MAX_E4) : RangeMath.zOf(spotE8, openE8, std);
         return RangeMath.probitE4(centerQE6) - zSpot;
+    }
+
+    /// @dev σ per √s × 1e8: the reserve's own measured value for the asset when set, else the FairValueGuard's for the
+    ///      Window's Series (R4-5, D-227) — every Series the guard models, on its own clock (a Regular stock Window on
+    ///      trading seconds, a 24/7 one on calendar seconds, a Gap over its span), so stocks and every cadence price.
+    function _sigma(bytes32 marketId, bytes32 assetKey) internal view returns (uint64 sigma) {
+        sigma = volatilityOf[assetKey];
+        if (sigma == 0) sigma = guard.sigmaOf(marketId);
     }
 
     /// @dev The asset must name this Window's own ticker.

@@ -33,3 +33,197 @@
 .rg-note { font-size: 12px; color: var(--gray-400); }
 .rg-note--warn { color: var(--white); border-left: 2px solid var(--color-warning); padding-left: 8px; }
 .rg-foot { font-size: 12px; line-height: 1.5; color: var(--gray-400); }
+
+/* ── R4-5 (D-227): the house games on one phone screen — Ported from Owarine 90a91d71:web/src/features/range/
+ * range-band.css and range-page.css on Mitoshi's tokens (vermilion accent, ink, the data face for figures). The page:
+ * a 40 px head, the cadence words and the Window chips, the board, then the action block, which sticks above the dock
+ * (the same offset as R4-2's `.page-action`), so the hold is on the first screen at 320 × 568 and up. ── */
+.game-page { display: flex; flex-direction: column; gap: 12px; padding: 0; }
+.game-grid { display: grid; gap: 12px; align-items: start; }
+.game-board { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+@media (min-width: 1024px) {
+  .game-grid { grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; }
+  .game-side { position: sticky; top: calc(var(--stage-sticky-top) + 12px); }
+}
+.game-page .game-action { position: sticky; bottom: var(--dock-strip-offset); z-index: var(--z-sticky); }
+@media (min-width: 1024px) { .game-page .game-side .game-action { position: static; } }
+.game-below { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.game-below-title { font-family: var(--font-heading); font-weight: 700; font-size: 16px; color: var(--color-ink); }
+
+/* the head: title, the rounds chip, ⓘ — one 40 px row, no eyebrow, no description */
+.gh { display: flex; align-items: center; gap: 8px; min-height: 40px; }
+.gh-title { margin-right: auto; font-family: var(--font-heading); font-weight: 800; font-size: 22px; line-height: 1; letter-spacing: -0.02em; color: var(--color-ink); }
+@media (min-width: 1024px) { .gh-title { font-size: 32px; } }
+.gh-chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: var(--radius-full);
+  border: 1px solid var(--color-hairline); background: var(--color-surface-1); color: var(--color-ink); font-size: 13px; font-weight: 600;
+}
+.gh-chip.is-accent { border-color: transparent; background: var(--color-accent-fill); color: var(--color-on-accent); }
+.gh-info { display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-full); border: 1px solid var(--color-hairline); color: var(--color-ink-secondary); }
+.gh-chip::before, .gh-info::before { content: ""; position: absolute; inset: -4px; }
+.gh-chip, .gh-info { position: relative; }
+.gh-how { display: flex; flex-direction: column; gap: 10px; }
+.gh-how li { display: flex; gap: 10px; font-size: 15px; color: var(--color-ink); }
+.gh-how li::before { content: counter(list-item); font-family: var(--font-data); color: var(--color-accent); }
+.gh-facts { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--color-ink-secondary); }
+
+/* the Window picker: cadence words over a sideways chip rail (scroll-snap), a radiogroup */
+.gw { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.gw-rail { padding: 2px; margin: -2px; }
+.gw-group { display: flex; gap: 8px; }
+.gw-chip {
+  flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px 0 8px; border-radius: var(--radius-full);
+  border: 1px solid var(--color-hairline); background: var(--color-surface-1); color: var(--color-ink);
+  font-family: var(--font-heading); font-weight: 700; font-size: 14px; transition: border-color 160ms var(--ease), background 160ms var(--ease);
+}
+.gw-chip.is-on { border-color: var(--color-accent); background: var(--color-accent-wash); }
+.gw-chip:disabled { opacity: 0.45; cursor: not-allowed; }
+.gw-chip:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.gw-disc { display: grid; place-items: center; width: 20px; height: 20px; border-radius: var(--radius-full); overflow: hidden; background: var(--color-surface-2); font-size: 11px; }
+.gw-disc .asset-mark { width: 100%; height: 100%; }
+.gw-disc.has-mark { background: transparent; }
+.gw-tag { font-family: var(--font-data); font-size: 10px; font-weight: 500; color: var(--color-ink-secondary); }
+.gw-ring { width: 28px; height: 28px; }
+.gw-empty { font-size: 13px; color: var(--color-ink-secondary); }
+
+/* the band card (Owarine `.rg-band-card`): bounds flanked by the centre nudges, the slider, the foot */
+.bc { display: flex; flex-direction: column; gap: 8px; }
+.bc-card { border-radius: var(--radius-lg); border: 1px solid var(--color-hairline); background: var(--color-surface-1); overflow: hidden; }
+.bc-bounds { display: grid; grid-template-columns: 44px 1fr auto 1fr 44px; align-items: center; gap: 8px; padding: 8px 8px 0; }
+.bc-nudge, .bc-recenter { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); color: var(--color-ink-secondary); }
+.bc-nudge:active, .bc-recenter:active { transform: scale(0.95); }
+.bc-edge { min-width: 0; }
+.bc-edge--right { text-align: right; }
+.bc-k { display: block; font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-muted); }
+.bc-v { display: block; font-family: var(--font-data); font-size: 15px; font-weight: 600; color: var(--color-accent); }
+.bc-arrow { font-family: var(--font-data); font-size: 12px; color: var(--color-ink-muted); }
+/* R4-5 review: under 360 px a cent-grid print ("$4,123.40") outgrew its 74 px cell and ran into the arrow. */
+@media (max-width: 359px) { .bc-bounds { gap: 4px; } .bc-v { font-size: 13px; } }
+.bc-slider { padding: 0 12px; }
+.bc-slider .band-bars { height: 48px; }
+@media (min-width: 768px) { .bc-slider .band-bars { height: 88px; } }
+.bc-slider .band-root { padding: 4px 0; }
+.bc-slider .band-axis { display: none; }
+.bc-foot { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 12px; border-top: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 11px; color: var(--color-ink-secondary); }
+.bc-foot > span:first-child { margin-right: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bc-recenter { width: 36px; height: 36px; border: 0; }
+.bc-now { flex: none; padding: 2px 8px; border-radius: var(--radius-full); font-size: 11px; font-weight: 600; }
+.bc-now.is-in { background: color-mix(in srgb, var(--color-up) 16%, transparent); color: var(--color-up); }
+.bc-now.is-out { background: color-mix(in srgb, var(--color-down) 16%, transparent); color: var(--color-down); }
+.bc-wait { display: grid; place-items: center; height: 120px; font-size: 13px; color: var(--color-ink-secondary); }
+.bc-presets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.bc-preset { min-height: 44px; padding: 6px 10px; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); text-align: left; color: var(--color-ink-secondary); }
+.bc-preset[aria-pressed="true"] { border-color: var(--color-accent); background: var(--color-accent-wash); color: var(--color-ink); }
+.bc-preset-name { display: block; font-family: var(--font-heading); font-weight: 700; font-size: 13px; line-height: 1.1; }
+.bc-preset-span { display: block; margin-top: 2px; font-family: var(--font-data); font-size: 10px; color: var(--color-ink-muted); }
+.bc-preset[aria-pressed="true"] .bc-preset-span { color: var(--color-accent); }
+.bc-sides { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); }
+.bc-side { min-height: 36px; border-radius: var(--radius-sm); font-family: var(--font-data); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-secondary); }
+.bc-side[aria-checked="true"] { background: var(--color-accent-wash); color: var(--color-accent); }
+
+/* the action block (TicketStrip): Pays ×N | To win, the stake row, the hold, one micro line */
+.ts { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: var(--radius-lg); border: 1px solid var(--color-hairline); background: var(--color-surface-1); }
+.game-page .game-action { box-shadow: 0 -8px 24px color-mix(in srgb, var(--color-stage) 70%, transparent); }
+.ts-pays { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; transition: opacity 160ms var(--ease); }
+.ts-pays.is-stale { opacity: 0.6; }
+.ts-left, .ts-right { display: flex; flex-direction: column; min-width: 0; }
+.ts-right { align-items: flex-end; }
+.ts-k { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-muted); }
+.ts-mult { font-family: var(--font-heading); font-weight: 800; font-size: 28px; line-height: 1.05; color: var(--color-ink); }
+.ts-sub { font-family: var(--font-data); font-size: 11px; color: var(--color-ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ts-win { font-family: var(--font-data); font-weight: 600; font-size: 20px; color: var(--color-up); }
+.ts-stake { display: flex; flex-direction: column; gap: 4px; }
+/* 32 px words in a 44 px row: the kit's list scrolls sideways, so it clips vertically too and a hit area hung above the
+   tab was cut off (38 px); 6 px of list padding above the word (the bar's 6 below) makes the whole 44 px row the hit. */
+.ts-modes .kit-tab { min-height: 32px; font-size: 13px; }
+.ts-modes .kit-tabs-list { padding-top: 6px; }
+.ts-row { display: flex; align-items: center; gap: 6px; }
+.ts-chips { display: flex; gap: 4px; flex: 1; min-width: 0; }
+.ts-chip { flex: 1; min-height: 44px; min-width: 0; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 13px; color: var(--color-ink); }
+.ts-chip[aria-pressed="true"] { border-color: var(--color-accent); background: var(--color-accent-wash); }
+.ts-amount { display: flex; align-items: center; gap: 2px; width: 84px; min-height: 44px; padding: 0 10px; border-radius: var(--radius-md); border: 1px solid var(--color-border-strong); font-family: var(--font-data); color: var(--color-ink-secondary); }
+.ts-amount input { width: 100%; min-width: 0; background: transparent; border: 0; outline: none; font-size: 15px; color: var(--color-ink); }
+.ts-amount:focus-within { border-color: var(--color-accent); }
+.ts-cap { font-size: 12px; color: var(--color-ink-secondary); }
+.ts-cap button { color: var(--color-accent); text-decoration: underline; min-height: 32px; }
+.ts-blocked { width: 100%; min-height: var(--ticket-cta-height, 52px); padding: 0 16px; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); background: var(--color-surface-2); font-weight: 600; color: var(--color-ink-secondary); cursor: not-allowed; }
+.ts-micro { text-align: center; font-size: 11px; line-height: 1.3; color: var(--color-ink-muted); }
+/* The hold and its blocker are one height (the ticket CTA's 52), so the block doesn't jump when the hold appears. */
+.ts-hold { min-height: var(--ticket-cta-height); }
+.ts .slide-over-foot .ts-micro, .slide-over-foot .ts-micro { margin-top: 4px; }
+
+/* Moonshot: the aim pad (2 × 5 on a phone, Owarine's vertical ladder from 768) and the distance gauge */
+.ms-pad { display: grid; grid-template-columns: 44px repeat(5, minmax(0, 1fr)); gap: 4px; }
+.ms-rung { min-height: 44px; min-width: 0; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 13px; font-weight: 600; color: var(--color-ink-secondary); }
+.ms-rung.is-long[aria-checked="true"] { border-color: var(--color-up); background: color-mix(in srgb, var(--color-up) 16%, transparent); color: var(--color-up); }
+.ms-rung.is-short[aria-checked="true"] { border-color: var(--color-down); background: color-mix(in srgb, var(--color-down) 16%, transparent); color: var(--color-down); }
+.ms-rung:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.ms-side { display: grid; place-items: center; font-family: var(--font-data); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-muted); }
+.ms-hint { font-size: 12px; color: var(--color-ink-secondary); }
+/* On a phone the readout is only Owarine's hint, once under the pad; the pad itself shows the pick. */
+.ms-aim { display: flex; flex-direction: column; gap: 6px; }
+.ms-readout > :not(.ms-hint) { display: none; }
+/* R4-5 review (D-227): from 768 Owarine's ladder (`.ms-ladder`) — one column, deepest long at the top, deepest short at
+   the floor, the side word where the side flips — with the readout beside it (×N, the side, the hint, ▲ / ▼). The DOM
+   keeps the pad's order (long ×2…×25, short ×2…×25), so the ladder's order is set here; the arrow keys follow it. */
+@media (min-width: 768px) {
+  .ms-aim { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 16px; align-items: start; }
+  .ms-pad { display: flex; flex-direction: column; gap: 4px; }
+  .ms-pad .ms-side { place-items: center start; min-height: 20px; }
+  .ms-pad .ms-rung { position: relative; min-height: 40px; }
+  .ms-pad .ms-rung::before { content: ""; position: absolute; inset: -2px 0; }
+  .ms-side--long { order: 0; }
+  .ms-rung[data-aim="25"] { order: 1; } .ms-rung[data-aim="10"] { order: 2; } .ms-rung[data-aim="5"] { order: 3; }
+  .ms-rung[data-aim="3"] { order: 4; } .ms-rung[data-aim="2"] { order: 5; }
+  .ms-side--short { order: 6; margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--color-hairline); }
+  .ms-rung[data-aim="-2"] { order: 7; } .ms-rung[data-aim="-3"] { order: 8; } .ms-rung[data-aim="-5"] { order: 9; }
+  .ms-rung[data-aim="-10"] { order: 10; } .ms-rung[data-aim="-25"] { order: 11; }
+  .ms-readout { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding-top: 24px; }
+  .ms-readout > :not(.ms-hint) { display: revert; }
+  .ms-readout > .ms-steps { display: flex; }
+}
+.ms-readout strong { font-family: var(--font-heading); font-weight: 800; font-size: 40px; line-height: 1; color: var(--color-ink); }
+.ms-readout .ms-readout-side { font-family: var(--font-data); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.ms-steps { gap: 4px; margin-top: 6px; }
+.ms-step { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-md); border: 1px solid var(--color-hairline); color: var(--color-ink-secondary); }
+.ms-step:hover:not(:disabled) { color: var(--color-ink); border-color: var(--color-border-strong); }
+.ms-step:disabled { opacity: 0.45; cursor: not-allowed; }
+.ms-step:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.ms-gauge { padding: 8px 12px; border-radius: var(--radius-lg); border: 1px solid var(--color-hairline); background: var(--color-surface-1); }
+.ms-track { position: relative; height: 16px; margin: 4px 0; }
+.ms-track-line { position: absolute; left: 0; right: 0; top: 50%; height: 2px; transform: translateY(-50%); border-radius: 2px; background: var(--color-surface-3); }
+.ms-track-fill { position: absolute; top: 50%; height: 2px; transform: translateY(-50%); background: var(--color-accent); }
+.ms-track-end { position: absolute; top: 0; width: 2px; height: 16px; background: var(--color-ink-muted); }
+.ms-track-end.is-target { background: var(--color-accent); }
+.ms-track-dot { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: var(--radius-full); transform: translate(-50%, -50%); background: var(--color-ink); transition: left 300ms var(--easeOut); }
+.ms-gauge-foot { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-data); font-size: 11px; color: var(--color-ink-secondary); }
+@media (prefers-reduced-motion: reduce) { .ms-track-dot, .ts-pays { transition: none; } }
+/* R4-5 review: a pointer's hover on every control of the house games (Owarine's rungs, presets and chips step up). */
+@media (hover: hover) {
+  .gw-chip:not(:disabled):not(.is-on):hover, .bc-preset:not([aria-pressed="true"]):hover, .ts-chip:not([aria-pressed="true"]):hover,
+  .ms-rung:not(:disabled):not([aria-checked="true"]):hover, .bc-nudge:hover, .gh-chip:not(.is-accent):hover, .gh-info:hover { border-color: var(--color-border-strong); color: var(--color-ink); }
+  .bc-side:not([aria-checked="true"]):hover, .bc-recenter:hover { color: var(--color-ink); }
+}
+/* R4-5 review (D-227): on a phone the board and the action share one screen. Measured from these rules, the sticky
+   action (~253 px) covered the presets and Inside / Outside at 375 × 812 (the content to the sides' foot ~479 px, the
+   kit's cadence words alone 50 px). A tighter rhythm, nothing removed: the cadence words in a 44 px row (the hit), a
+   32 px distribution, 8 / 6 px gaps, the action's padding and label leading trimmed. */
+@media (max-width: 767px) {
+  .game-page { gap: 8px; }
+  .game-page .rg, .bc { gap: 6px; }
+  .gw { gap: 4px; }
+  .gw-tabs .kit-tab { min-height: 32px; font-size: 14px; }
+  .gw-tabs .kit-tabs-list { padding-top: 6px; }
+  .bc-slider .band-bars { height: 32px; }
+  .bc-slider .band-root { padding: 0; }
+  .bc-foot { padding-top: 0; padding-bottom: 0; }
+  .ts { gap: 6px; padding: 8px 10px; }
+  .ts-k, .ts-sub { line-height: 1.25; }
+}
+/* From 1024 the band and the action block sit side by side; the action is sticky beside the board, not above a dock */
+@media (min-width: 1024px) {
+  .game-page .rg { display: grid; grid-template-columns: minmax(0, 1fr) 380px; column-gap: 24px; row-gap: 12px; align-items: start; }
+  .game-page .rg > .bc, .game-page .rg > .ms-board { grid-column: 1; grid-row: 1 / span 4; }
+  .game-page .rg > :not(.bc):not(.ms-board) { grid-column: 2; }
+  .game-page .rg > .game-action { top: calc(var(--stage-sticky-top) + 12px); bottom: auto; }
+}

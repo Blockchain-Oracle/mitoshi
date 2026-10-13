@@ -94,7 +94,7 @@ function TabBones({ n }: { n: number }) {
   );
 }
 
-export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards" | "page" | "hero" | "tiles" | "table" | "podium" | "strategy-grid" | "studio" | "agents-board" | "cockpit" | "portfolio" | "earn";
+export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards" | "page" | "hero" | "tiles" | "table" | "podium" | "strategy-grid" | "studio" | "agents-board" | "cockpit" | "portfolio" | "earn" | "game";
 
 const SHAPES: Record<LoadingShape, () => ReactNode> = {
   line: () => <Skeleton className="h-4 w-2/3 rounded-md" />,
@@ -304,6 +304,26 @@ const SHAPES: Record<LoadingShape, () => ReactNode> = {
       <div className="skel-card skel-earn-rows gap-0 py-1">
         {[0, 1, 2].map((i) => <RowBones key={i} />)}
       </div>
+    </div>
+  ),
+  // A house game (R4-5, D-227): the head row, the cadence words, the Window chips, the board, the action block — where
+  // each lands, so nothing jumps when the reserve answers.
+  game: () => (
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-6 w-28 rounded-md" />
+        <Skeleton className="ml-auto h-9 w-24 rounded-full" />
+        <Skeleton className="size-9 rounded-full" />
+      </div>
+      <div className="flex gap-5">
+        {[0, 1, 2].map((i) => <Skeleton key={i} className="h-6 w-10 rounded-md" />)}
+      </div>
+      <div className="flex gap-2">
+        {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-touch w-24 rounded-full" />)}
+      </div>
+      <Skeleton className="h-36 w-full rounded-lg" />
+      <Skeleton className="h-11 w-full rounded-md" />
+      <Skeleton className="h-44 w-full rounded-lg" />
     </div>
   ),
   // The leaderboard: the head, the filters, three on the podium, the first rows.
