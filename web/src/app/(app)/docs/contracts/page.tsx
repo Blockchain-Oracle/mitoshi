@@ -25,7 +25,8 @@ export default function Page() {
   const rows = AREAS.flatMap(([area, what]) =>
     Object.entries(MODERATO[area]?.contracts ?? {}).map(([name, c]) => [
       <span key="n"><b>{name}</b><br /><span className="type-caption text-ink-secondary">{what}</span></span>,
-      <A key="a" href={addressUrl(c.address as `0x${string}`, "testnet")}><Code>{c.address}</Code></A>,
+      // An address wraps rather than running past the table's edge (R4-13: cut mid-hex at 1440 and on phones).
+      <A key="a" href={addressUrl(c.address as `0x${string}`, "testnet")}><span className="break-all"><Code>{c.address}</Code></span></A>,
     ]),
   );
   return (

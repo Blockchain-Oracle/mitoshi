@@ -54,7 +54,7 @@ export async function StatsScreen() {
   const S = STATS.sections;
 
   return (
-    <div className="stats">
+    <div className="stats-page">
       <section className="stats-hero">
         <div>
           <p className="stats-eyebrow">

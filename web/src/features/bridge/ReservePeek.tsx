@@ -22,7 +22,7 @@ export function ReservePeek({ ticker }: { ticker: BridgeTicker }) {
       <h2 className="brr-title">{BRIDGE.reserve.title} · b{ticker}</h2>
       {t ? (
         <>
-          <p className="numbers brr-what">{RESERVES.rowSummary(t.check.locked === null ? RESERVES.notLive : sd(t.check.locked), sd(t.check.onTempo))}</p>
+          <p className="numbers brr-what">{RESERVES.rowSummary(t.check.locked === null ? null : sd(t.check.locked), sd(t.check.onTempo))}</p>
           <PartitionBar segments={partitionOf(t.check).map((p) => ({ id: p.part, weight: Number(p.value), tone: TONE[p.part], label: LABEL[p.part], display: sd(p.value) }))} label={`b${ticker}`} />
         </>
       ) : (

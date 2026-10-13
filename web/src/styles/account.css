@@ -2,8 +2,9 @@
  * 90a91d71 AccountSheet (grouped lists under one head), SeatAccountMenu (the facts block) and seat.css's `.cx-link`
  * (the backup card). The page adds no inset of its own — the stage pads (D-226). */
 .acct-page { display: flex; width: 100%; max-width: 40rem; flex-direction: column; gap: 20px; margin-inline: auto; }
-.acct-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-.acct-head-link { display: inline-flex; min-height: 44px; align-items: center; font-size: 14px; font-weight: 600; color: var(--color-accent); }
+/* The head wraps rather than squeezing its link (R4-13: "Activity →" broke over two lines beside "Notifications" at 375). */
+.acct-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; column-gap: 12px; }
+.acct-head-link { display: inline-flex; min-height: 44px; align-items: center; font-size: 14px; font-weight: 600; color: var(--color-accent); white-space: nowrap; }
 .acct-signed-out { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .acct-hero { display: flex; flex-direction: column; gap: 4px; }
 .acct-hero .am-head { padding: 0 0 8px; }

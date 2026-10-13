@@ -25,7 +25,7 @@ export function TxFailureCard({ state, onRetry, explorerHref, className }: { sta
       <div className="flex flex-wrap gap-2">
         {needsFunds ? (
           <button type="button" onClick={openFunds} className="min-h-touch rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">
-            Add funds
+            Add money
           </button>
         ) : null}
         {onRetry && state.diagnosis.retryable ? (

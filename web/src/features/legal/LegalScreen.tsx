@@ -3,6 +3,7 @@
 // section with a one-line gist, opening to its points. Inside the app shell, so it adds no inset of its own.
 import { AtSign } from "lucide-react";
 import Link from "next/link";
+import { Children } from "react";
 import { Sticker } from "@/components/kit/Sticker";
 import "@/components/kit/kit.css";
 import "@/styles/legal.css";
@@ -28,7 +29,9 @@ export function LegalScreen({ heading, lede, facts, sections }: { heading: strin
           {LEGAL.contact.label} <span>{LEGAL.contact.text}</span>
         </Link>
       </header>
-      <LegalAccordion sections={sections} />
+      {/* Keyed here (R4-13): an array of elements crossing into the client accordion needs keys, or React warns once per
+          point on every load. */}
+      <LegalAccordion sections={sections.map((s) => ({ ...s, points: Children.toArray(s.points) }))} />
     </div>
   );
 }

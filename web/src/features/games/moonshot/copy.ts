@@ -24,7 +24,7 @@ export const MOONSHOT = {
   notDeployed: {
     eyebrow: "Moonshot",
     title: "Moonshot",
-    body: "Call a side and a multiple; the house solves the level that pays it. This is never mapped onto an ordinary up/down position — it needs the reserve that funds the payout.",
+    body: "Call a side and a multiple. Needs the reserve that funds the payout.",
     why: RANGE_NOT_DEPLOYED,
   },
   aim: {

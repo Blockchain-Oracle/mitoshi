@@ -45,7 +45,11 @@ export function ContactForm({ sent, error }: { sent: boolean; error: string | nu
         <div aria-hidden className="sr-only">
           <label>Website<input type="text" name="website" tabIndex={-1} autoComplete="off" /></label>
         </div>
-        <button type="submit" className="min-h-touch w-full rounded-lg bg-accent-fill px-4 type-body-strong text-on-accent">{C.send}</button>
+        {/* Send sticks above the phone dock while the form is on screen (`.page-action`, R4-13: it sat 230 px under a
+            375 × 667 phone's first screen). */}
+        <div className="page-action max-md:bg-surface-1 max-md:py-2">
+          <button type="submit" className="min-h-touch w-full rounded-lg bg-accent-fill px-4 type-body-strong text-on-accent">{C.send}</button>
+        </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline pt-4 type-caption text-ink-secondary">
           <span className="inline-flex items-center gap-1.5"><UserRound aria-hidden className="size-3" />{C.notes[0]}</span>
           <span className="inline-flex items-center gap-1.5"><ShieldCheck aria-hidden className="size-3" />{C.notes[1]}</span>

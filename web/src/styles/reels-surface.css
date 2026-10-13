@@ -26,9 +26,10 @@
   .reels-surface .reel-hint { bottom: calc(var(--dock-clearance) + 16px); }
   .reels-surface .reel-count { top: 10px; right: 50%; translate: 50% 0; }
 }
+/* From tablets the hint keeps its own row under the card too (R4-13: at 1440 its pill and arrow sat on UP and DOWN). */
 @media (min-width: 768px) {
-  .reels-surface .reel-slot { padding: 16px 72px 16px 16px; }
-  .reels-surface .reel-hint { bottom: 24px; }
+  .reels-surface .reel-slot { padding: 16px 72px 68px 16px; }
+  .reels-surface .reel-hint { bottom: 12px; }
 }
 
 /* "3 of 18" (21st 23559's position, as a quiet pill) and the desktop previous/next pair. */

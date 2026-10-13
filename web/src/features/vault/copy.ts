@@ -3,6 +3,8 @@
  * field reasons): the pool-row grammar — label, one sentence on what the pool is FOR and who can move it, then the
  * amount — in dollars, with Tempo's facts (withdrawals are free; deposits and budgets are yours to pay for).
  */
+import { TX } from "@/components/tx/copy";
+
 export const VAULT = {
   row: {
     label: "Trading Balance",
@@ -22,13 +24,13 @@ export const VAULT = {
   deposit: { cta: (amount: string) => `Add ${amount}`, busy: "Adding…" },
   withdraw: { cta: (amount: string) => `Withdraw ${amount}`, busy: "Withdrawing…" },
   fee: "Adding costs a cent. Withdrawing is free.",
-  receivePolicy: "Your account's receive policy blocks this payment, so nothing moved. Allow the vault in your policy and withdraw again.",
+  receivePolicy: TX.receiveBlocked,
   arm: "Set up tap-trading",
   toasts: { deposited: (amount: string) => `Added · ${amount}`, withdrawn: (amount: string) => `Withdrawn · ${amount}` },
   receipt: { deposited: "Added to your Trading Balance", withdrawn: "Withdrawn to your account" },
   legacy: {
     title: "Your previous Trading Balance",
-    body: (held: string) => `Mitoshi moved to a new Trading Balance. The previous one still holds ${held}: withdraw it to your account, then add it here when you like.`,
+    body: (held: string) => `Your previous Trading Balance holds ${held}. Withdraw it, then add it here.`,
     key: (budget: string) => `An old tap-trading key there still holds ${budget}. Stop it to move that back first.`,
     stop: "Stop the old key",
     withdraw: (amount: string) => `Withdraw ${amount}`,

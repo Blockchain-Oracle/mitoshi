@@ -7,13 +7,12 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
+import { headingSlug as slug } from "./slug";
 
 interface TocItem {
   id: string;
   title: string;
 }
-
-const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 function useHeadings(): TocItem[] {
   const path = usePathname();
@@ -24,7 +23,7 @@ function useHeadings(): TocItem[] {
       let id = h.id || slug(h.textContent ?? "");
       while (seen.has(id)) id = `${id}-1`;
       seen.add(id);
-      h.id = id;
+      if (h.id !== id) h.id = id;
       return { id, title: h.textContent ?? "" };
     });
     setItems(found);
