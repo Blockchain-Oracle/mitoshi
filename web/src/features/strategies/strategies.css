@@ -170,7 +170,7 @@
 .agents-cells { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 @media (min-width: 768px) { .agents-cells { display: flex; flex-shrink: 0; align-items: center; gap: 32px; } .agents-cells > div { text-align: right; } }
 .agents-figure-sub { margin-left: 4px; font-family: var(--font-data); font-size: 11px; font-weight: 400; color: var(--color-ink-muted); }
-.agents-row a.agents-name:hover { color: var(--color-accent); }
+.agents-row:hover .agents-name { color: var(--color-accent); }
 .agents-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 @media (min-width: 768px) { .agents-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 400px) { .agents-stat { padding: 14px; } .agents-stat-value { font-size: 24px; } }

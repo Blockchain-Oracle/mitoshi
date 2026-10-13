@@ -1,7 +1,7 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/strategies/AgentsScreen.tsx's board row (R4-6, D-227) — rank 01 in the
 // mono face, the agent's own portrait (seeded per strategy, never by its runner: house agents share one runner), its name
-// to /agents/[id], the top badge and accent edge on #1, "N copiers · N trades", then figure cells: Entrusted (accent) ·
+// (the whole row a link to /agents/[id], LeaderboardRankings' link and focus), the top badge and accent edge on #1, "N copiers · N trades", then figure cells: Entrusted (accent) ·
 // Net (with its settled count) · Max / trade · Last active. Two-up on phones, one row from 768.
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -17,14 +17,14 @@ export function AgentRow({ s, rank, nowMs }: { s: StrategyWire; rank: number; no
   const net = BigInt(s.record.netBase);
   const top = rank === 1;
   return (
-    <li className={cn("agents-row", top && "agents-row--top")}>
-      <div className="flex flex-col gap-4 md:flex-row md:items-center">
+    <li>
+      <Link href={`/agents/${s.strategyId}`} className={cn("agents-row flex flex-col gap-4 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent md:flex-row md:items-center", top && "agents-row--top")}>
         <div className="flex min-w-0 flex-1 items-center gap-4">
           <div className="agents-rank">{String(rank).padStart(2, "0")}</div>
           <AgentPortrait seed={seed} name={name} size="row" />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <Link href={`/agents/${s.strategyId}`} className="agents-name strat-mono-12 truncate text-ink transition-colors">{name}</Link>
+              <span className="agents-name strat-mono-12 truncate text-ink transition-colors">{name}</span>
               {top && <span className="agents-top-badge">{A.top}</span>}
             </div>
             <div className="strat-mono-11 mt-1 truncate text-ink-muted">{A.byline(s.subscribers, s.record.copyTrades)}</div>
@@ -42,7 +42,7 @@ export function AgentRow({ s, rank, nowMs }: { s: StrategyWire; rank: number; no
           <div><div className="agents-label">{A.cells.max}</div><div className="agents-figure text-ink">{usd(BigInt(s.envelope.maxStakePerTradeBase))}</div></div>
           <div><div className="agents-label">{A.cells.last}</div><div className="strat-mono-12 text-ink-secondary">{ago(s.record.lastActiveSec * 1000, nowMs)}</div></div>
         </div>
-      </div>
+      </Link>
     </li>
   );
 }
