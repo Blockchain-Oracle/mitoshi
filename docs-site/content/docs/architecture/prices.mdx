@@ -1,0 +1,44 @@
+---
+title: Prices and prints
+description: Two kinds of price, kept apart — a display feed you watch, and RedStone's signed prints that settle. Where each comes from and who checks it.
+sources:
+  - packages/core/src/market/venue-spec.json
+  - contracts/src/engine/verifiers
+  - contracts/src/fair/FairValueGuard.sol
+  - services/ops/src/prices
+  - services/ops/src/display
+  - services/ops/src/actors/price-relay
+  - services/ops/src/actors/archive
+  - services/ops/src/actors/halt-watch
+  - docs/plan/decisions.md
+---
+
+## Two prices, never mixed
+
+| | Display feed | Signed prints |
+| --- | --- | --- |
+| What | The live line on the chart | The opening and closing print of a Window |
+| From | Coinbase trades for crypto, Alpaca's exchange trades for stocks | RedStone's signed data packages (`redstone-primary-prod`) |
+| Checked by | Nobody — it is for watching | The engine's RedStonePrintVerifier, on chain |
+| Settles | Nothing | Every Window |
+
+The terminal marks RedStone's latest signed value on the chart (**Signed**) beside the display line, so you can see both.
+
+## The signed path
+
+- **Spot.** Ops reads RedStone's latest packages for every feed it uses — 19 of them, read every 10 seconds — and publishes them as the venue's signed spot.
+- **Prints.** The price relay posts the packages for each Window's boundary to the engine. The verifier recovers the signers and admits a print only with at least **three of the five** production signers, inside the policy's time window around the boundary.
+- **Archive.** A separate actor keeps RedStone's packages for every boundary, so the [proof page](/trading/proof) can re-check a print — or show why a Window got none.
+- **Fair value.** The fair-value guard reads the same signed packages as its spot (no older than 120 s) for Range, Parlay, Boost and the exit floor.
+
+## Halts and sessions
+
+**halt-watch** reads each feed's RedStone freshness and signer count, and Alpaca's tradable flag for each stock, and keeps the halt board: a halted asset gets no new Window, the house maker pulls its quotes, and UP and DOWN say why. It confirms a halt over two passes (an exchange flag at once), and treats every feed going stale at once as its own fetch failing, not a halt. A calendar actor keeps the NYSE sessions and holidays; an earnings actor reads upcoming reports.
+
+## Stocks' weekend Gap on mainnet
+
+On mainnet the stocks' Gap is designed to settle on Chainlink Data Streams with RedStone as a check: if the two diverge by more than 0.25 %, the Window voids. Data Streams credentials are an open owner decision, so on testnet the Gap settles on RedStone.
+
+## RedStone's public gateways
+
+RedStone is switching its public gateways off: since 8 October they refuse requests in daily windows that grow until 29 October 2026, then stop. Inside a window, prints, the house's quotes, halt-watch, Boost knock-outs and the exit keeper wait. The code takes RedStone's authenticated gateways the moment the key is issued (`REDSTONE_GATEWAYS`, on ops and web) — an [owner action](/help/availability).
