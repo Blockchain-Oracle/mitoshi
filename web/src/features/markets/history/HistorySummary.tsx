@@ -9,6 +9,8 @@ import { useCallback } from "react";
 import { EquitySparkline } from "@/components/data/EquitySparkline";
 import { Masked, PillButton } from "@/components/kit";
 import { money } from "@/features/terminal/format";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { HISTORY } from "../copy";
@@ -32,6 +34,9 @@ export function HistorySummary({ history, edge, address }: { history: WalletHist
   const download = useCsvDownload(history, address);
   const S = HISTORY.summary;
   const net = money(edge.netBase, true, history.decimals);
+  // The curve's spoken label names the net too: the dots in privacy mode, like the figure beside it.
+  const hidden = usePrivacy();
+  const curveLabel = hidden ? (direction: "up" | "down") => S.curveLabel(direction, SHELL.masked) : S.curveLabel;
   return (
     <div className="history-summary">
       <div className="history-summary-figure">
@@ -39,7 +44,7 @@ export function HistorySummary({ history, edge, address }: { history: WalletHist
         <span className={cn("type-data-lg numbers", net === "$0.00" ? "text-ink" : edge.netBase > 0n ? "text-up" : "text-down")}><Masked>{net}</Masked></span>
         <span className="type-caption text-ink-secondary">{S.rounds(edge.settledRounds, edge.openRounds)}</span>
       </div>
-      <EquitySparkline points={edge.equity} decimals={history.decimals} labels={{ empty: S.curveEmpty, curve: S.curveLabel }} className="history-summary-curve" />
+      <EquitySparkline points={edge.equity} decimals={history.decimals} labels={{ empty: S.curveEmpty, curve: curveLabel }} className="history-summary-curve" />
       <dl className="history-summary-stats">
         <div>
           <dt className="type-label-micro text-ink-muted">{S.winRate}</dt>
