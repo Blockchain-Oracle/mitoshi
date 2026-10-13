@@ -67,6 +67,7 @@ async function openOn(key: string, opener: { walletFile: string; address: Addres
       continue;
     }
     const asset = w.series.symbol;
+    if (!asset) throw new Error(`${label(w)}: a Series with no registry symbol`);
     const feed = (guardSpec.spotFeeds as Record<string, string>)[asset]!;
     const spot = await latestSpot(feed);
     const spotCents = spot.medianE8 / 1_000_000n;
