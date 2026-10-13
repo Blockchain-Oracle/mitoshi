@@ -45,7 +45,7 @@ export type RideCue = { kind: "regain" } | { kind: "milestone"; mult: number };
 const KEY_RATE = 1.4;
 const HUD_EVERY_TICKS = 3;
 
-export function RideCanvas({ run, reduced, onHud, onEnd, onCue }: { run: ArcadeRun | null; reduced: boolean; onHud: (hud: RideHud) => void; onEnd: (end: RunEnd) => void; onCue: (cue: RideCue) => void }) {
+export function RideCanvas({ run, reduced, onHud, onEnd, onCue, paused = false }: { run: ArcadeRun | null; reduced: boolean; /** The stage holds the run (R4-9, D-227); the step counter stops, so the replay is the same run. */ paused?: boolean; onHud: (hud: RideHud) => void; onEnd: (end: RunEnd) => void; onCue: (cue: RideCue) => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stateRef = useRef<RideState>(createRideState(createRng(IDLE_SEED), { calm: false }));
   const rngRef = useRef<Rng>(createRng(IDLE_SEED));
@@ -93,7 +93,7 @@ export function RideCanvas({ run, reduced, onHud, onEnd, onCue }: { run: ArcadeR
     canvasRef,
     useCallback((view: ArcadeView) => driverRef.current.draw(view, 1, performance.now()), []),
   );
-  useArcadeLoop(driverRef, viewRef, running);
+  useArcadeLoop(driverRef, viewRef, running && !paused);
 
   // A new run: fresh dice, a fresh state on the run's seed, the wheel centred, the controls attached.
   useEffect(() => {

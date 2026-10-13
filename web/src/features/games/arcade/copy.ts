@@ -8,24 +8,37 @@ import type { ArcadeGame } from "@cwf/core/games/arcade";
  * Pips's, in our words; the control hints say what this build actually listens to.
  */
 export const ARCADE = {
-  eyebrow: "Arcade · no stake",
-  /** The board's label, verbatim from doc 06: what a score here is and is not. */
-  honesty: "arcade score · server-checked · not on the ledger",
+  /** The board's label (copy cut #15): what a score here is and is not. */
+  honesty: "Server-checked · no stake",
+  signIn: "to rank your runs",
 
   games: {
     "line-rider": {
       title: "Line Rider",
-      pitch: "Keep the dot on the line. The longer you ride it, the faster the score climbs; drift off and your grip drains. Grip empty, run over.",
-      control: "Drag on the screen, scroll, or hold ↑ ↓ to move the dot",
-      readout: "Follow the line",
+      line: "Ride the line · hold your grip",
+      control: "Drag, scroll or hold ↑ ↓",
     },
     "candle-hop": {
       title: "Candle Hop",
-      pitch: "Tap to lift, let it fall, and slip through the candle gaps. Each gap is a point; one clipped candle ends the run.",
-      control: "Tap the screen or press Space to hop",
-      readout: "Hop the gaps",
+      line: "Hop the candle gaps",
+      control: "Tap or Space to hop",
     },
-  } satisfies Record<ArcadeGame, { title: string; pitch: string; control: string; readout: string }>,
+  } satisfies Record<ArcadeGame, { title: string; line: string; control: string }>,
+
+  /** The full-screen stage (R4-9, D-227; Senryo StageParts). */
+  stage: {
+    go: "GO",
+    sound: "Sound on",
+    mute: "Mute",
+    pause: "Pause",
+    paused: "Paused",
+    resume: "Resume",
+    exit: "Exit",
+    share: "Share",
+    length: "Length",
+    seed: "Seed",
+    shareText: (score: string, title: string) => `I scored ${score} on ${title} at Mitoshi. Beat it:`,
+  },
 
   hud: {
     score: "Score",
@@ -40,7 +53,7 @@ export const ARCADE = {
   },
 
   over: {
-    newBest: "★ New best",
+    newBest: "NEW BEST",
     ranked: (rank: number) => (rank <= 10 ? `Ranked #${rank}` : `Rank #${rank}`),
     over: "Run over",
     topOfBoard: "Top of the board",
@@ -51,7 +64,7 @@ export const ARCADE = {
     refused: (why: string) => `Not recorded — ${why}`,
     /** Why a run stayed local, by the reason the stage already knew before it started. */
     local: {
-      signedOut: "Sign in to post to the board",
+      signedOut: "Sign in to rank your runs",
       noStore: "Kept on this device",
       unavailable: "Kept on this device",
     },
@@ -66,21 +79,16 @@ export const ARCADE = {
     you: "you",
     calm: "calm",
     loading: "Reading the board…",
-    unreachable: "The board did not answer. Play goes on; the score stays on this screen.",
+    unreachable: "Board offline · play on",
     noStore: "No board yet. Your best stays on this device.",
     unavailable: "No board yet. Your best stays on this device.",
     yours: (score: string, rank: number | null) => (rank === null ? `Your best ${score}` : `Your best ${score} · #${rank}`),
-    connect: "Sign in to post — play is open without one.",
+    connect: "Sign in to rank",
   },
 
   calm: {
     label: "Calmer ramp",
-    hint: "A slower climb to full speed. Scores set on it are marked on the board.",
-  },
-
-  note: {
-    label: "What this is",
-    body: "A seeded run. The line and the candles come from a seed you can see, your inputs are recorded, and the server replays the run before it records a score. Nothing here is a position, a payout or a rating.",
+    hint: "Slower ramp · marked",
   },
 
   fmt: (n: number) => Math.round(n).toLocaleString("en-US"),

@@ -22,7 +22,7 @@ export type FlapCue = "score" | "crash" | "flap";
 
 const HUD_EVERY_TICKS = 3;
 
-export function FlapCanvas({ run, reduced, onHud, onEnd, onCue }: { run: ArcadeRun | null; reduced: boolean; onHud: (hud: FlapHud) => void; onEnd: (end: RunEnd) => void; onCue: (cue: FlapCue) => void }) {
+export function FlapCanvas({ run, reduced, onHud, onEnd, onCue, paused = false }: { run: ArcadeRun | null; reduced: boolean; /** The stage holds the run (R4-9, D-227); the step counter stops, so the replay is the same run. */ paused?: boolean; onHud: (hud: FlapHud) => void; onEnd: (end: RunEnd) => void; onCue: (cue: FlapCue) => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stateRef = useRef<FlapState>(createFlapState(createRng(IDLE_SEED), { calm: false }));
   const rngRef = useRef<Rng>(createRng(IDLE_SEED));
@@ -76,7 +76,7 @@ export function FlapCanvas({ run, reduced, onHud, onEnd, onCue }: { run: ArcadeR
     canvasRef,
     useCallback((view: ArcadeView) => driverRef.current.draw(view, 1, performance.now()), []),
   );
-  useArcadeLoop(driverRef, viewRef, running);
+  useArcadeLoop(driverRef, viewRef, running && !paused);
 
   useEffect(() => {
     if (!run) return;

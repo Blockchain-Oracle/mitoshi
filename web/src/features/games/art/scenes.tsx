@@ -8,6 +8,7 @@
 // rocket, Duel's two cards facing off. Still under reduced motion (hall.css).
 import type { GameId } from "@cwf/core/games";
 import { useId } from "react";
+import "./scenes.css";
 
 const LINE = "M0,120 L40,112 L80,118 L120,98 L160,104 L200,86 L240,92 L280,110 L320,102 L360,120 L400,128 L440,112 L480,118 L520,100 L560,108 L600,120 L640,112 L680,118";
 

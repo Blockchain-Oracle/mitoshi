@@ -170,3 +170,11 @@ export function milestoneSfx(mult: number): void {
 export function regainSfx(): void {
   safely((ctx, out, t) => tone(ctx, out, "triangle", 440, t, 0.06, 0.05));
 }
+
+/** The 3-2-1 beeps and the GO (R4-9, D-227; Senryo `countBeep`/`countGo`): A5 for each count, an octave up for GO. */
+export function countSfx(go: boolean): void {
+  safely((ctx, out, t) => {
+    tone(ctx, out, "square", go ? 1_760 : 880, t, go ? 0.28 : 0.12, 0.06);
+    if (go) tone(ctx, out, "triangle", 1_318.51, t + 0.02, 0.24, 0.04);
+  });
+}

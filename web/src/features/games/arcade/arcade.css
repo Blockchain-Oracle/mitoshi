@@ -8,21 +8,6 @@
  * modules read these triplets once per resize; no literal reaches TSX.
  */
 
-.ar-head { margin-bottom: 16px; }
-.ar-title {
-  margin-top: 8px;
-  font-family: var(--font-display); font-weight: 800;
-  font-size: clamp(2rem, 5.6vw, 3rem); line-height: 0.96; letter-spacing: -0.04em;
-  color: var(--white); font-stretch: 100%; }
-.ar-title .accent { color: var(--signal-ink); }
-
-.ar-layout { display: grid; gap: 16px; grid-template-columns: 1fr; align-items: start; }
-@media (min-width: 900px) {
-  .ar-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 320px); gap: 24px; }
-}
-.ar-main { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.ar-side { display: flex; flex-direction: column; gap: 12px; }
-
 /* ── The screen ───────────────────────────────────────────────────────────── */
 
 .ar-screen {
@@ -58,75 +43,19 @@
 .ar-screw--bl { bottom: 4px; left: 4px; }
 .ar-screw--br { bottom: 4px; right: 4px; }
 
-/* The live readout, top-left over the field: the score in the pixel face, the best under it. */
-.ar-hud {
-  position: absolute; top: var(--ar-rim); left: calc(var(--ar-rim) + 12px); z-index: 5;
-  display: flex; flex-direction: column; gap: 2px; pointer-events: none;
-  color: var(--ar-ink);
-}
-.ar-hud-k { font-family: var(--font-pixel); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--ar-ink-rgb) / 0.55); }
-.ar-hud-v { font-family: var(--font-pixel); font-size: 33px; line-height: 1; font-variant-numeric: tabular-nums; }
-.ar-hud-best { font-family: var(--font-pixel); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgb(var(--ar-ink-rgb) / 0.55); }
-.ar-hud-best b { font-weight: 400; color: rgb(var(--ar-ink-rgb) / 0.85); }
-.ar-hud-combo { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.1em; color: rgb(var(--ar-accent-rgb)); }
-@media (max-width: 480px) {
-  .ar-hud-v { font-size: 22px; }
-}
-
-/* The title and over plates sit over the field, in the field's own ink — never the theme's. */
-.ar-overlay {
-  position: absolute; inset: 0; z-index: 6;
-  display: flex; flex-direction: column; justify-content: center; gap: 8px;
-  padding: var(--ar-rim) calc(var(--ar-rim) + 12px);
-  background: rgb(var(--ar-ground-rgb) / 0.9);
-  color: var(--ar-ink);
-  animation: gm-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.ar-overlay-title { font-family: var(--font-pixel); font-size: 33px; line-height: 1; letter-spacing: 0.06em; text-transform: uppercase; }
-.ar-overlay-pitch { max-width: 44ch; font-size: 13px; line-height: 1.5; color: rgb(var(--ar-ink-rgb) / 0.7); }
-.ar-overlay-banner { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: rgb(var(--ar-ink-rgb) / 0.6); }
-.ar-overlay-banner[data-best] { color: rgb(var(--ar-accent-rgb)); }
-.ar-overlay-score { font-family: var(--font-pixel); font-size: 44px; line-height: 1; font-variant-numeric: tabular-nums; }
-.ar-overlay-sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: rgb(var(--ar-ink-rgb) / 0.55); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.ar-overlay-sub[data-tone="refused"] { color: rgb(var(--ar-down-rgb)); text-transform: none; letter-spacing: 0; }
-.ar-overlay-meta { font-family: var(--font-mono); font-size: 10px; color: rgb(var(--ar-ink-rgb) / 0.4); font-variant-numeric: tabular-nums; }
-.ar-overlay-actions { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
-.ar-overlay .du-cta { align-self: flex-start; min-width: 160px; }
-.ar-overlay-best { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--ar-ink-rgb) / 0.6); font-variant-numeric: tabular-nums; }
-@media (max-width: 480px) {
-  .ar-overlay { gap: 6px; }
-  .ar-overlay-title { font-size: 22px; }
-  /* A phone's screen is ~184 px tall: the title, PLAY and the best fit; the pitch is in "How to play" (D-226). */
-  .ar-overlay-pitch { display: none; }
-  .ar-overlay-score { font-size: 33px; }
-  .ar-overlay .du-cta { min-height: 40px; min-width: 132px; }
-}
-
-/* ── Under the screen: Pips's readout — the game's identity and the one control hint ───────────── */
-.ar-readout { display: flex; align-items: center; gap: 12px; }
-.ar-readout-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; color: var(--signal-ink); background: color-mix(in srgb, var(--signal) 10%, transparent); flex: none; }
-.ar-readout-icon svg { width: 18px; height: 18px; }
-.ar-readout-name { font-family: var(--font-pixel); font-size: 22px; line-height: 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--white); }
-.ar-readout-hint { margin-top: 4px; font-size: 12px; line-height: 1.4; color: var(--gray-400); }
-
-/* ── The side: the honesty note, the calm switch, the board ───────────────── */
-.ar-note {
-  display: flex; flex-direction: column; gap: 6px;
-  border-radius: 14px; padding: 14px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(23, 22, 22, 0.4);
-}
-[data-theme="light"] .ar-note { border-color: rgba(10, 10, 10, 0.11); background: rgba(255, 255, 255, 0.94); }
-.ar-note-k { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-500); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
-.ar-note-body { font-size: 12px; line-height: 1.65; color: var(--gray-400); }
-.ar-honesty { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em; color: var(--gray-500); font-variant-numeric: tabular-nums; }
-
-.ar-calm { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
-.ar-calm input { margin-top: 3px; accent-color: var(--signal); }
-.ar-calm-text { display: flex; flex-direction: column; gap: 2px; }
-.ar-calm-label { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--white); font-stretch: 100%; }
-.ar-calm-hint { font-size: 12px; line-height: 1.5; color: var(--gray-400); }
-
-.ar-board { gap: 10px; }
+/* ── The cabinet (R4-9, D-227; Senryo ArcadeScreen): the scene with a big Play, the line, best + calm, the board ── */
+.ar-cabinet { display: flex; flex-direction: column; gap: 12px; max-width: 720px; margin-inline: auto; width: 100%; }
+.ar-attract { position: relative; aspect-ratio: 16 / 9; border-radius: 20px; overflow: hidden; border: 1px solid var(--color-hairline); }
+.ar-play { position: absolute; inset: 0; margin: auto; width: fit-content; min-height: 64px; padding: 0 32px; font-family: var(--font-pixel); font-size: 33px; font-weight: 400; letter-spacing: 0.1em; text-transform: uppercase; gap: 12px; box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6); }
+.ar-play-icon { width: 24px; height: 24px; fill: currentColor; }
+.ar-line { font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); }
+.ar-cab-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ar-best { font-family: var(--font-data); font-size: 14px; color: var(--gray-400); font-variant-numeric: tabular-nums; }
+.ar-calm { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
+.ar-calm-label { font-size: 13px; font-weight: 600; color: var(--white); }
+.ar-calm-hint { font-family: var(--font-data); font-size: 11px; color: var(--gray-500); }
+.ar-honesty { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.04em; color: var(--gray-500); }
+.ar-board { display: flex; flex-direction: column; gap: 10px; border-radius: 14px; padding: 14px 16px; border: 1px solid var(--color-hairline); background: var(--color-surface-1); }
 .ar-board-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .ar-board-title { font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--white); font-stretch: 100%; }
 .ar-board-banner { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--signal-ink); }
@@ -147,3 +76,56 @@
 .ar-board-row[data-you] .ar-board-score { color: var(--signal-ink); }
 .ar-board-foot { font-family: var(--font-mono); font-size: 10px; line-height: 1.6; color: var(--gray-500); font-variant-numeric: tabular-nums; }
 .ar-board-empty { font-size: 12px; line-height: 1.6; color: var(--gray-400); }
+
+/* ── The stage (R4-9, D-227; Ported from Senryo:apps/web/src/features/games/arcade/arcade.css): the run on its own
+ * full-screen layer, the 16:9 field centred and letterboxed on the arena, the HUD over it, the plates in its ink. ── */
+.as-layer {
+  position: fixed; inset: 0; z-index: var(--z-modal); height: 100dvh; background: rgb(5 5 5); color: rgb(255 255 255);
+  overscroll-behavior: contain; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+.as-screen.ar-screen { position: absolute; top: 50%; left: 50%; translate: -50% -50%; width: min(100vw, calc(100dvh * 16 / 9)); max-width: none; aspect-ratio: 16 / 9; border: 0; }
+.as-hud {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between;
+  padding: max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+}
+.as-hud button { pointer-events: auto; }
+.as-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.as-score-col { display: flex; flex-direction: column; gap: 4px; }
+.as-score { font-family: var(--font-pixel); font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1; font-variant-numeric: tabular-nums; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.6); }
+.as-score--big { font-size: clamp(2.75rem, 9vw, 4.5rem); }
+.as-combo { font-family: var(--font-pixel); font-size: clamp(1.25rem, 3vw, 1.75rem); color: var(--color-accent); text-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 60%, transparent); animation: as-pop 220ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.as-dim { font-family: var(--font-data); font-size: 12px; color: rgba(255, 255, 255, 0.6); }
+.as-dim[data-tone="refused"] { color: var(--loss); }
+.as-hint { animation: as-fade 400ms ease both; }
+.as-icons { display: flex; gap: 8px; }
+.as-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 9999px; background: rgba(255, 255, 255, 0.12); color: rgb(255 255 255); transition: transform 120ms ease, background 120ms ease; }
+.as-icon svg { width: 20px; height: 20px; }
+.as-icon:hover { background: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+.as-icon:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.as-count { position: absolute; inset: 0; z-index: 6; display: grid; place-items: center; pointer-events: none; font-family: var(--font-pixel); font-size: clamp(5rem, 18vw, 11rem); line-height: 1; text-shadow: 0 0 40px color-mix(in srgb, var(--color-accent) 55%, transparent); }
+.as-count span { animation: as-count 600ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.as-count [data-go] { color: var(--profit); }
+.as-plate { position: absolute; inset: 0; z-index: 7; display: grid; place-items: center; padding: 16px; background: radial-gradient(80% 70% at 50% 50%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.82)); animation: as-fade 260ms ease both; }
+.as-card {
+  display: flex; flex-direction: column; align-items: center; gap: 12px; width: min(100%, 26rem); max-height: 100%; overflow-y: auto; padding: 22px; border-radius: 24px; text-align: center;
+  background: linear-gradient(180deg, rgb(28 24 22), rgb(10 9 8)); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 24px 60px rgba(0, 0, 0, 0.5);
+  animation: as-rise 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.as-card-title { font-family: var(--font-pixel); font-size: 33px; line-height: 1; }
+.as-card-eyebrow { text-transform: uppercase; letter-spacing: 0.16em; }
+.as-stamp { font-family: var(--font-pixel); font-size: 22px; letter-spacing: 0.08em; color: var(--profit); rotate: -4deg; animation: as-stamp 420ms cubic-bezier(0.34, 1.56, 0.64, 1) 200ms both; }
+.as-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 18px; width: 100%; }
+.as-stats div { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.as-stats dt { font-size: 11px; color: rgba(255, 255, 255, 0.55); }
+.as-stats dd { font-family: var(--font-data); font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.as-cta { width: 100%; min-height: 52px; font-family: var(--font-pixel); font-size: 22px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; }
+.as-cta-icon { width: 18px; height: 18px; }
+.as-row { display: flex; gap: 8px; width: 100%; }
+.as-ghost { flex: 1; min-height: 44px; color: rgb(255 255 255); border-color: rgba(255, 255, 255, 0.16); }
+.as-signin { min-height: 44px; font-size: 13px; color: var(--color-accent); }
+@keyframes as-pop { from { transform: scale(1.35); } }
+@keyframes as-count { from { opacity: 0; transform: scale(1.8); } 60% { opacity: 1; } }
+@keyframes as-fade { from { opacity: 0; } }
+@keyframes as-rise { from { opacity: 0; transform: translateY(24px) scale(0.96); } }
+@keyframes as-stamp { from { opacity: 0; transform: scale(2.2); } }
+@media (prefers-reduced-motion: reduce) { .as-combo, .as-count span, .as-plate, .as-card, .as-stamp, .as-hint { animation: none; } }
