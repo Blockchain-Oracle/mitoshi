@@ -50,6 +50,7 @@ async function redstone(ctx: ProofContext, slot: PrintSlot, nowSec: number, wall
     const response = await ctx.cache.redstone(slot.boundarySec);
     if (!response) return { wait: `no gateway data yet${ctx.cache.error(slot.boundarySec) ? ` (${ctx.cache.error(slot.boundarySec)})` : ""}` };
     text = response.text;
+    if (response.keyed) from = "gateway, key";
   }
   const at = feedAt(text, feed, slot.boundarySec, ctx.sources.signers);
   const have = at?.packages.length ?? 0;

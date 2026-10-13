@@ -22,6 +22,8 @@ export interface RedstoneResponse {
   fetchedAtMs: number;
   /** The answering gateway's origin (safe to show). */
   gateway: string;
+  /** Whether the answering gateway is an authenticated one (its key sent). */
+  keyed: boolean;
 }
 
 export const PUBLIC_REDSTONE_GATEWAYS: readonly RedstoneGateway[] = [
@@ -51,6 +53,8 @@ export function redstoneGatewaysFromEnv(env: Record<string, string | undefined> 
 
 /** A gateway as logs and `/health` may show it: its origin and whether it is keyed — never the key. */
 export const redstoneGatewayName = (g: RedstoneGateway) => `${new URL(g.url).origin}${g.apiKey ? " (key)" : ""}`;
+/** The gateway that answered, named as `redstoneGatewayName` names it. */
+export const redstoneAnswerName = (r: Pick<RedstoneResponse, "gateway" | "keyed">) => `${r.gateway}${r.keyed ? " (key)" : ""}`;
 
 // One request a second per key, in this process: each keyed request takes the next free slot.
 const nextSlotMs = new Map<string, number>();
@@ -88,7 +92,7 @@ async function fetchFirst(gateways: readonly RedstoneGateway[], urlOf: (gateway:
       const text = await res.text();
       if (res.ok && text.startsWith("{")) {
         cooling.delete(g.url);
-        return { text, fetchedAtMs: Date.now(), gateway: new URL(g.url).origin };
+        return { text, fetchedAtMs: Date.now(), gateway: new URL(g.url).origin, keyed: g.apiKey !== null };
       }
       const code = /"error"\s*:\s*"([a-z_]+)"/.exec(text)?.[1];
       const reason = `HTTP ${res.status}${code ? ` ${code}` : /Request blocked/.test(text) ? " blocked by the CDN" : ""}`;

@@ -1,11 +1,13 @@
 /**
- * RedStone print archive (plan S0.11, C.4.4). The public gateway keeps ≈ 24 h of signed packages, so every 5-minute
+ * RedStone print archive (plan S0.11, C.4.4). The gateway keeps ≈ 24 h of signed packages, so every 5-minute
  * boundary T is fetched shortly after it passes and stored with its signatures. Unlike the laptop archiver it replaces
  * (stocklana `scripts/archive/redstone.mjs`, which followed the NYSE calendar via Alpaca), this runs around the clock:
  * crypto and the 24/7 and pre/after stock feeds are live off-hours, and the weekend Gap needs Friday's close and
- * Monday's open. A 10-second grid around 09:30 ET keeps the open-print evidence.
+ * Monday's open. A 10-second grid around 09:30 ET keeps the open-print evidence. The fetch goes through the process's
+ * gateways (authenticated with `REDSTONE_GATEWAYS`, D-210), as every other RedStone read in ops does.
  */
-export const GATEWAY = "https://oracle-gateway-2.a.redstone.finance";
+import { fetchRedstoneAt, redstoneAnswerName, type RedstoneGateway } from "../../prices/redstone-gateway";
+
 export const SERVICE = "redstone-primary-prod";
 export const NAMES = ["TSLA", "NVDA", "AAPL", "MSFT", "META", "GOOGL", "AMZN", "PLTR", "AMD"] as const;
 const STOCK_FEEDS = NAMES.flatMap((n) => [n, `${n}---EXTENDED`, `${n}---24_7`, `${n}---PRE_AFTER`]);
@@ -53,11 +55,13 @@ export function pick(all: Record<string, Package[]>, tSec: number): Snapshot {
   return { tSec, complete: core.every((id) => (summary[id]?.signers ?? 0) >= 3), summary, feeds };
 }
 
-/** Fetches T from the gateway; null when the gateway has nothing yet (retry on a later pass). */
-export async function fetchSnapshot(tSec: number, fetchImpl: typeof fetch = fetch): Promise<Snapshot | null> {
-  const res = await fetchImpl(`${GATEWAY}/data-packages/historical/${SERVICE}/${tSec * 1000}`, { signal: AbortSignal.timeout(30_000) });
-  if (res.status !== 200) return null;
-  const all = (await res.json()) as Record<string, Package[]>;
+/**
+ * Fetches T from the gateways; null when the answer has nothing yet (retry on a later pass). Throws when no gateway
+ * answers (a refusal, or T not served yet), naming the gateway's reason, so the pass reports it instead of "up to date".
+ */
+export async function fetchSnapshot(tSec: number, gateways: readonly RedstoneGateway[]): Promise<{ snap: Snapshot; via: string } | null> {
+  const response = await fetchRedstoneAt(tSec, gateways, 30_000);
+  const all = JSON.parse(response.text) as Record<string, Package[]>;
   if (!all || typeof all !== "object" || !all.BTC) return null;
-  return pick(all, tSec);
+  return { snap: pick(all, tSec), via: redstoneAnswerName(response) };
 }

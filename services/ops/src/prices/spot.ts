@@ -10,7 +10,7 @@ import { REDSTONE_STALE_SEC, REDSTONE_TICKERS, TICKERS, type TickerSymbol } from
 import { latestMedian } from "@cwf/markets/ops";
 import { errorText } from "../runtime/env";
 import { registerHeartbeat } from "../runtime/heartbeat";
-import { fetchRedstoneLatest, type RedstoneSources } from "./redstone-gateway";
+import { fetchRedstoneLatest, redstoneAnswerName, type RedstoneSources } from "./redstone-gateway";
 
 export type SpotSymbol = TickerSymbol | `${TickerSymbol}-24`;
 
@@ -79,7 +79,8 @@ export function createSpotFeed(input: { sources: RedstoneSources; log: (why: str
   const poll = async () => {
     beat.passStartedMs = Date.now();
     try {
-      const { text } = await fetchRedstoneLatest(input.sources.gateways, { shareMs: 0 });
+      const response = await fetchRedstoneLatest(input.sources.gateways, { shareMs: 0 });
+      const { text } = response;
       let seen = 0;
       let newestSec = 0;
       for (const { symbol, feed } of feeds) {
@@ -96,8 +97,8 @@ export function createSpotFeed(input: { sources: RedstoneSources; log: (why: str
       lastReadSec = nowSec;
       beat.lastOkMs = Date.now();
       beat.failures = 0;
-      beat.lastWhy = `redstone latest: ${seen}/${feeds.length} feeds`;
-      beat.detail = { feeds: seen, of: feeds.length };
+      beat.lastWhy = `redstone latest: ${seen}/${feeds.length} feeds via ${redstoneAnswerName(response)}`;
+      beat.detail = { feeds: seen, of: feeds.length, via: redstoneAnswerName(response) };
     } catch (error) {
       beat.failures += 1;
       beat.lastWhy = `redstone latest failed: ${errorText(error)}`;

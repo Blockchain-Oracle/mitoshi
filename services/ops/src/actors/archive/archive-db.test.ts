@@ -58,8 +58,8 @@ describe.skipIf(!url)("print_archive holds objects every reader can query (D-188
       const body = Object.fromEntries(Object.entries(recorded).map(([feed, pkgs]) => [feed, pkgs.map((p) => ({ ...p, timestampMilliseconds: tMs }))]));
       return new Response(JSON.stringify(body));
     }));
-    const pass = await archivePass(sql)();
-    expect(pass.detail).toMatchObject({ saved: 2 }); // 08:00:00Z and 08:05:00Z (fetched 15 s after T)
+    const pass = await archivePass(sql, [{ url: "https://gw.example", apiKey: "rk_test" }])();
+    expect(pass.detail).toMatchObject({ saved: 2, via: "https://gw.example (key)" }); // 08:00:00Z and 08:05:00Z (fetched 15 s after T)
     const btc = JSON.parse((await archivedFeed(sql, "BTC", GAP_T))!) as Pkg[];
     expect(btc.map((p) => p.timestampMilliseconds)).toEqual(Array(5).fill(GAP_T * 1000));
     expect(btc[0]!.dataPoints[0]!.value).toBe(83262.77456189);

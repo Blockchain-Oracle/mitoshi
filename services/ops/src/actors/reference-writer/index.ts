@@ -11,10 +11,11 @@ import { encodeFunctionData, type Hex, type PublicClient } from "viem";
 import { deployments } from "@cwf/clients";
 import { stockReferenceAbi } from "@cwf/clients/abis/StockReference";
 import { NETWORKS } from "@cwf/core";
-import { parseGatewayJson, redstoneLatestUrl } from "@cwf/core/prices/redstone";
+import { parseGatewayJson } from "@cwf/core/prices/redstone";
 import { SESSIONS } from "@cwf/core/stocks/guard";
 import { tempoReadClient } from "@cwf/markets";
 import { sendRootCalls } from "@cwf/markets/tx/send";
+import { fetchRedstoneLatest, redstoneGatewaysFromEnv, type RedstoneGateway } from "../../prices/redstone-gateway";
 import type { OpsEnv, PassResult } from "../../runtime";
 import { feedName, plan, type MirrorState } from "./plan";
 
@@ -39,7 +40,8 @@ function config(env: OpsEnv) {
   return { ref, mirrors };
 }
 
-export function referenceWriterPass(env: OpsEnv, fetchImpl: typeof fetch = fetch): () => Promise<PassResult> {
+/** `gateways`: the process's RedStone gateways (authenticated with `REDSTONE_GATEWAYS`, D-210). */
+export function referenceWriterPass(env: OpsEnv, gateways: readonly RedstoneGateway[] = redstoneGatewaysFromEnv()): () => Promise<PassResult> {
   const { ref, mirrors } = config(env);
   const client: PublicClient = tempoReadClient(env.network, env.tempoRpcUrl);
   const key = process.env.KEEPER_PRIVATE_KEY as Hex | undefined;
@@ -69,9 +71,7 @@ export function referenceWriterPass(env: OpsEnv, fetchImpl: typeof fetch = fetch
       }),
     );
     const [session, untilSec] = await Promise.all([read<number>("keeperSession"), read<bigint>("keeperSessionUntil")]);
-    const res = await fetchImpl(redstoneLatestUrl(), { signal: AbortSignal.timeout(20_000) });
-    if (res.status !== 200) throw new Error(`RedStone gateway ${res.status}`);
-    const all = parseGatewayJson(await res.text());
+    const all = parseGatewayJson((await fetchRedstoneLatest(gateways)).text);
 
     const nowMs = Date.now();
     if (pendingCloseMs !== null && nowMs >= pendingCloseMs) [lastCloseMs, pendingCloseMs] = [pendingCloseMs, null];

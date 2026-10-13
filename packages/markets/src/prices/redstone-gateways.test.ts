@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchRedstoneAt, fetchRedstoneLatest, PUBLIC_REDSTONE_GATEWAYS, REDSTONE_COOLDOWN_MS, redstoneGatewayName, redstoneGatewaysFromEnv, REDSTONE_KEY_INTERVAL_MS, resetRedstoneCooldowns } from "./redstone-gateways";
+import { fetchRedstoneAt, fetchRedstoneLatest, PUBLIC_REDSTONE_GATEWAYS, REDSTONE_COOLDOWN_MS, redstoneAnswerName, redstoneGatewayName, redstoneGatewaysFromEnv, REDSTONE_KEY_INTERVAL_MS, resetRedstoneCooldowns } from "./redstone-gateways";
 
 const KEY = "rk_live_secret_value";
 const PAIRS = JSON.stringify([{ url: "https://gw-a.example/", apiKey: KEY }, { url: "https://gw-b.example", apiKey: "rk_two" }]);
@@ -31,6 +31,7 @@ describe("RedStone gateways (D-210)", () => {
     const gateways = redstoneGatewaysFromEnv({ REDSTONE_GATEWAYS: PAIRS });
     const r = await fetchRedstoneAt(1_791_490_000, gateways);
     expect(r.gateway).toBe("https://gw-b.example");
+    expect(redstoneAnswerName(r)).toBe("https://gw-b.example (key)");
     expect(seen.map((s) => s.key)).toEqual([KEY, "rk_two"]);
     expect(seen.every((s) => !s.url.includes(KEY))).toBe(true);
 

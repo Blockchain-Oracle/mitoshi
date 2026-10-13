@@ -48,7 +48,7 @@ export const ACTORS: Record<string, ActorEntry> = {
   archive: {
     start: (d) => {
       if (!d.sql) throw new Error("archive needs DATABASE_URL");
-      return runActor({ name: "archive", log: d.log, dryRun: false, everyMs: ARCHIVE_EVERY_MS, pass: archivePass(d.sql) });
+      return runActor({ name: "archive", log: d.log, dryRun: false, everyMs: ARCHIVE_EVERY_MS, pass: archivePass(d.sql, d.redstone.gateways) });
     },
   },
   spot: { start: () => undefined, spot: true },
@@ -148,7 +148,7 @@ export const ACTORS: Record<string, ActorEntry> = {
   },
   // Opt-in (S15b): keeps StockReference fresh — RedStone pushes + the keeper session flag, signed with
   // KEEPER_PRIVATE_KEY (pushRedStone + setSession). DRY_RUN / OPS_DRY_ACTORS log the batch and never sign.
-  "reference-writer": { start: (d) => runActor({ name: "reference-writer", log: d.log, dryRun: d.env.dryRun, everyMs: REFERENCE_WRITER_EVERY_MS, pass: referenceWriterPass(d.env) }) },
+  "reference-writer": { start: (d) => runActor({ name: "reference-writer", log: d.log, dryRun: d.env.dryRun, everyMs: REFERENCE_WRITER_EVERY_MS, pass: referenceWriterPass(d.env, d.redstone.gateways) }) },
 };
 
 export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "duel-settler", "exit-keeper", "earn-quoter", "moderation", "bridge-watch", "reserve-watch", "stock-sync"] as const;

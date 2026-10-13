@@ -8,7 +8,7 @@
  * `@cwf/markets/ops` with the web proxy's.
  */
 import venueSpec from "@cwf/core/venue-spec.json" with { type: "json" };
-import { fetchRedstoneAt, fetchRedstoneLatest, redstoneGatewaysFromEnv, type RedstoneGateway, type RedstoneResponse } from "@cwf/markets/ops";
+import { fetchRedstoneAt, fetchRedstoneLatest, redstoneAnswerName, redstoneGatewaysFromEnv, type RedstoneGateway, type RedstoneResponse } from "@cwf/markets/ops";
 
 export interface RedstoneSources {
   gateways: RedstoneGateway[];
@@ -26,4 +26,4 @@ export function loadRedstoneSources(env: NodeJS.ProcessEnv = process.env): Redst
   return { gateways: redstoneGatewaysFromEnv(env), signers: new Set(signers), signerCount: signers.length, threshold: venueSpec.redstone.threshold };
 }
 
-export { fetchRedstoneAt, fetchRedstoneLatest };
+export { fetchRedstoneAt, fetchRedstoneLatest, redstoneAnswerName, redstoneGatewaysFromEnv, type RedstoneGateway };
