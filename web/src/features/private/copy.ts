@@ -76,6 +76,7 @@ export const PRIVATE = {
     trust: "Only your wallet withdraws. Keep the allowance to a few bets.",
     correlation: "Amounts and timing can be matched; the desk sees owners.",
     notDeployed: "Private mode isn't deployed on this network yet.",
+    vaultBucket: { label: "In the vault's private bucket", withdraw: (amount: string) => `Withdraw ${amount}` },
     toasts: { moved: (amount: string) => `Moved in · ${amount}`, withdrawn: (amount: string) => `Withdrawn · ${amount}`, revoked: "Desk revoked" },
     receipt: { moved: "Moved to your private balance", withdrawn: "Withdrawn to your account" },
   },

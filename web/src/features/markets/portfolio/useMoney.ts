@@ -87,7 +87,8 @@ export function useMoney(wallet: Address) {
     },
   ];
   // Private only where it exists: the desk is deployed, or money sits there (Owarine useMoney: never a dead "—" tile).
-  if (privateDeployed || privateHeld > 0n) pockets.push({ id: "private", amountBase: privateBalance === null && vaultPrivate === 0n ? null : privateHeld, blockedReason: privateDeployed ? null : HERO_MONEY.blocked.network });
+  // Its sheet reaches all of it: the desk's moves once deployed, the vault's private bucket by its own withdraw.
+  if (privateDeployed || privateHeld > 0n) pockets.push({ id: "private", amountBase: privateBalance === null && vaultPrivate === 0n ? null : privateHeld, blockedReason: null });
 
   const money: Money = {
     decimals,
