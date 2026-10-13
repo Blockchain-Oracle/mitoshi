@@ -7,6 +7,7 @@
  * addresses are lowercased at the write.
  */
 import { parseRunnerBeat, type RunnerBeat } from "@cwf/core";
+import type { PendingQuery, Row } from "postgres";
 import type { Sql } from "./index";
 
 export interface HeartbeatRecord {
@@ -90,7 +91,23 @@ const toDecision = (r: DecisionRow): StrategyDecisionRecord => ({
   confidence: r.confidence, why: r.why, gate: r.gate, gateReason: r.gate_reason, side: r.side, filled: r.filled, skipped: r.skipped, dryRun: r.dry_run,
 });
 
+/** Postgres `undefined_column`. */
+const UNDEFINED_COLUMN = "42703";
+
 export function createPgStrategyStore(sql: Sql) {
+  /**
+   * `runner_heartbeats.state` arrives with strategies/0005, which ops runs at boot — after the web on a normal ship, and
+   * never if an ops deploy fails. Until it exists a read selects the older shape (`state` null) rather than failing
+   * /agents and /api/strategies.
+   */
+  const heartbeats = async (read: (state: PendingQuery<Row[]>) => Promise<HeartbeatRow[]>): Promise<HeartbeatRecord[]> => {
+    try {
+      return (await read(sql`state`)).map(toHeartbeat);
+    } catch (error) {
+      if ((error as { code?: string }).code !== UNDEFINED_COLUMN) throw error;
+      return (await read(sql`null::jsonb as state`)).map(toHeartbeat);
+    }
+  };
   return {
     async recordHeartbeat(beat: NewHeartbeat): Promise<void> {
       await sql`
@@ -100,18 +117,16 @@ export function createPgStrategyStore(sql: Sql) {
 
     /** The latest heartbeat per strategy. */
     async latestHeartbeats(): Promise<HeartbeatRecord[]> {
-      const rows = await sql<HeartbeatRow[]>`
-        select distinct on (strategy_id) runner, strategy_id, tick_at, interval_ms, why, scanned, closest_bps, dry_run, state
-        from runner_heartbeats order by strategy_id, tick_at desc`;
-      return rows.map(toHeartbeat);
+      return heartbeats((state) => sql<HeartbeatRow[]>`
+        select distinct on (strategy_id) runner, strategy_id, tick_at, interval_ms, why, scanned, closest_bps, dry_run, ${state}
+        from runner_heartbeats order by strategy_id, tick_at desc`);
     },
 
     /** The runner's last words for one strategy, newest first — the live why/why-not feed. */
     async recentHeartbeats(strategyId: string, limit: number): Promise<HeartbeatRecord[]> {
-      const rows = await sql<HeartbeatRow[]>`
-        select runner, strategy_id, tick_at, interval_ms, why, scanned, closest_bps, dry_run, state
-        from runner_heartbeats where strategy_id = ${strategyId} order by tick_at desc limit ${limit}`;
-      return rows.map(toHeartbeat);
+      return heartbeats((state) => sql<HeartbeatRow[]>`
+        select runner, strategy_id, tick_at, interval_ms, why, scanned, closest_bps, dry_run, ${state}
+        from runner_heartbeats where strategy_id = ${strategyId} order by tick_at desc limit ${limit}`);
     },
 
     /** A fill's receipt; the tx hash keys it, so a cycle that re-reads its own receipt cannot double-count. */

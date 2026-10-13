@@ -83,4 +83,15 @@ describe.skipIf(!url)("strategy store (runner records)", () => {
     expect(beats.find((b) => b.strategyId === "2")?.state).toEqual(state);
     expect(beats.find((b) => b.strategyId === "1")?.state).toBeNull();
   });
+
+  it("reads heartbeats before strategies/0005 has run (a web shipped ahead of ops): the older shape, state null", async () => {
+    const store = createPgStrategyStore(sql);
+    await sql`alter table runner_heartbeats drop column state`;
+    try {
+      expect((await store.latestHeartbeats()).find((b) => b.strategyId === "2")).toMatchObject({ why: "scanned 1 Window", state: null });
+      expect((await store.recentHeartbeats("2", 5)).map((b) => b.state)).toEqual([null]);
+    } finally {
+      await sql`alter table runner_heartbeats add column state jsonb`;
+    }
+  });
 });
