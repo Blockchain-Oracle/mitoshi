@@ -12,7 +12,8 @@
 .agent-builder-grid { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; gap: 2rem; align-items: start; }
 .agent-builder-panel { min-width: 0; }
 .agent-builder-preview { position: sticky; top: calc(var(--stage-sticky-top) + 1.5rem); min-width: 0; }
-.agent-builder-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--color-hairline); padding-top: 1.5rem; }
+.agent-builder-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--color-hairline); padding-top: 1.5rem; }
+.agent-builder-actions .agent-form-error { flex-basis: 100%; margin: 0; text-align: right; }
 .agent-builder-actions .strat-confirm { width: auto; flex: 1; max-width: 22rem; margin: 0 0 0 auto; }
 .agent-preview-facts { margin: 1.5rem 0; font-size: .75rem; }
 .agent-preview-facts > div { display: flex; justify-content: space-between; gap: .8rem; border-top: 1px solid var(--color-hairline); padding: .8rem 0; }

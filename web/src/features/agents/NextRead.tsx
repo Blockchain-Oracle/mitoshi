@@ -13,6 +13,7 @@ import type { StrategyWire } from "../strategies/protocol";
 import { AGENTS } from "./copy";
 
 const N = AGENTS.cockpit.next;
+const LATE_GRACE_SEC = 60;
 const clock = (sec: number) => `${Math.floor(sec / 60)}:${String(Math.max(0, sec) % 60).padStart(2, "0")}`;
 
 function nextSlot(s: StrategyWire, markets: readonly EventMarket[], nowMs: number): { atSec: number; spanSec: number; open: boolean } | null {
@@ -34,7 +35,11 @@ export function NextRead({ s }: { s: StrategyWire }) {
   const nowSec = Math.floor(nowMs / 1000);
   const agentSlot = nextSlot(s, markets, nowMs);
   const beat = s.health.lastTickMs !== null && s.health.intervalMs !== null ? { atSec: Math.floor((s.health.lastTickMs + s.health.intervalMs) / 1000), spanSec: Math.floor(s.health.intervalMs / 1000), open: false } : null;
-  const next = s.spec?.preset === "agent" ? agentSlot : beat;
+  const due = s.spec?.preset === "agent" ? agentSlot : beat;
+  // A heartbeat past its time (beyond this page's 30 s refresh and the runner's own pass) means the runner is late:
+  // say so, never a ring parked at 0:00.
+  const late = due !== null && !due.open && due.atSec + LATE_GRACE_SEC <= nowSec;
+  const next = late ? null : due;
   const left = next ? Math.max(0, next.atSec - nowSec) : 0;
   return (
     <section className="cp-card cp-check" aria-label={N.title}>
@@ -44,7 +49,7 @@ export function NextRead({ s }: { s: StrategyWire }) {
           <span className="cp-ring-text">{next ? clock(left) : "—"}</span>
         </CountdownRing>
         <div className="cp-check-text">
-          <p className="cp-check-lead">{!next ? (s.spec?.preset === "agent" ? N.none : N.noBeat) : next.open ? N.now(clock(left)) : N.in(clock(left))}</p>
+          <p className="cp-check-lead">{late ? N.late : !next ? (s.spec?.preset === "agent" ? N.none : N.noBeat) : next.open ? N.now(clock(left)) : left === 0 ? N.due : N.in(clock(left))}</p>
           <p className="type-caption text-ink-secondary">{s.health.lastTickMs !== null ? N.beat(ago(s.health.lastTickMs, nowMs)) : N.noBeat}</p>
         </div>
       </div>

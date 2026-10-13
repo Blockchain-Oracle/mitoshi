@@ -7,6 +7,7 @@ import { addressUrl, txUrl, type Address } from "@cwf/core";
 import { CHAIN, ERC8004 } from "@cwf/clients";
 import { webEnv } from "@/lib/env";
 import { MemoryReader } from "../strategies/MemorySection";
+import { strategyIdentity } from "../strategies/identity";
 import type { StrategyDetailPayload } from "../strategies/protocol";
 import { shortAddress } from "../strategies/names";
 import { AgentIdCard } from "./AgentIdCard";
@@ -29,7 +30,7 @@ export function IdentityTab({ detail, wallet, copying, onCopy }: { detail: Strat
       <div className="cp-col">
         {s.agentId ? (
           <>
-            <AgentIdCard name={s.name} agentId={s.agentId} registry={registry} runner={s.runner} model={s.agent?.model ?? null} kind={C.identity} />
+            <AgentIdCard name={strategyIdentity(s).name} agentId={s.agentId} registry={registry} runner={s.runner} model={s.agent?.model ?? null} kind={C.identity} />
             <div className="cp-card">
               <span className="cp-stat-label">{C.registry}</span>
               <a className="cp-id-registry hover:text-ink" href={addressUrl(identity as Address, network)} target="_blank" rel="noreferrer">{registry} ↗</a>

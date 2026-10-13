@@ -69,6 +69,13 @@ export function StrategiesScreen({ view, onView: setView }: { view: View; onView
           </div>
         ) : !payload?.deployed ? (
           <EmptyState why={S.notDeployed} />
+        ) : view === "yours" && writes.signedIn && !writes.mineReady ? (
+          <LoadingState shape="strategy-grid" label={S.loading} />
+        ) : view === "yours" && writes.mineFailed ? (
+          <div role="alert" className="strat-empty flex flex-col items-center gap-3">
+            <p className="strat-h2">{S.yours.unreadable}</p>
+            <button type="button" onClick={writes.refetchMine} className="strat-sensei">{S.retry}</button>
+          </div>
         ) : view === "yours" && !writes.signedIn ? (
           <div className="strat-empty flex flex-col items-center gap-4">
             <h2 className="strat-h2">{S.yours.signedOutTitle}</h2>

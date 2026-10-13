@@ -6,6 +6,7 @@
 import { Dialog } from "@base-ui/react/dialog";
 import { txUrl } from "@cwf/core";
 import { XIcon } from "lucide-react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { webEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,9 @@ export const DECISION = {
   unpaid: "unpaid · testnet",
   paid: (amount: string, host: string) => `${amount} · ${host}`,
   noTrades: "Nothing placed on this Window.",
+  /** The runner says it filled, but those fills aren't in what this view read (the catalogue carries the latest only). */
+  unlisted: (n: number) => `${n} placed · not listed here`,
+  proof: "Print proof →",
   pending: "Not settled yet",
   outcome: { won: "won", lost: "lost", void: "void", open: "open" } as Record<string, string>,
   noAnswer: "no answer",
@@ -73,7 +77,7 @@ function Body({ d, agentName, fills }: { d: DecisionWire | DecisionDetailWire; a
         {d.gateReason && <p className="decision-note">{d.gateReason}</p>}
       </Section>
       <Section title={DECISION.sections.trades}>
-        {fills.length === 0 ? <p className="decision-note">{DECISION.noTrades}</p> : fills.map((t) => (
+        {fills.length === 0 ? <p className="decision-note">{d.gate === "trade" && d.filled > 0 ? DECISION.unlisted(d.filled) : DECISION.noTrades}</p> : fills.map((t) => (
           <div key={t.txHash} className="decision-trade">
             <div className="flex items-baseline justify-between gap-2">
               <span className={cn("decision-side", t.side === "up" ? "decision-side--up" : "decision-side--down")}>{t.side.toUpperCase()}{t.mode === "fade" ? " · fade" : ""}</span>
@@ -89,6 +93,7 @@ function Body({ d, agentName, fills }: { d: DecisionWire | DecisionDetailWire; a
       </Section>
       <Section title={DECISION.sections.settlement}>
         <Row label={DECISION.rows.outcome} value={d.outcome && d.outcome !== "open" ? DECISION.outcome[d.outcome]! : DECISION.pending} />
+        {d.outcome && d.outcome !== "open" && <Link className="decision-link" href={`/proof/${d.marketId}`}>{DECISION.proof}</Link>}
       </Section>
     </>
   );

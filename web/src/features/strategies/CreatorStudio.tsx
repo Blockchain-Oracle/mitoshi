@@ -24,7 +24,7 @@ import { StudioForm } from "./StudioForm";
 import type { StrategiesPayload } from "./protocol";
 import { useDryRead } from "./useDryRead";
 import type { CopyWrites } from "./useCopyWrites";
-import { STRATEGIES_KEY, useStrategies } from "./useStrategies";
+import { rememberPublished, STRATEGIES_KEY, useStrategies } from "./useStrategies";
 import "./builder.css";
 import "./strategies.css";
 
@@ -146,7 +146,9 @@ export function CreatorStudio({ writes, trader, onYours }: { writes: CopyWrites;
     }
     // The catalogue is "use cache": expire its tag, and list the strategy now from what the receipt confirmed.
     void fetch("/api/strategies/revalidate", { method: "POST" }).catch(() => undefined);
-    queryClient.setQueryData<StrategiesPayload>(STRATEGIES_KEY, (p) => (p && !p.strategies.some((s) => s.strategyId === id) ? { ...p, strategies: [publishedWire({ id, creator: writes.wallet ?? "", check, draft, agentId }), ...p.strategies] } : p));
+    const wire = publishedWire({ id, creator: writes.wallet ?? "", check, draft, agentId, seriesLabel: series.find((s) => s.seriesId === draft.seriesId)?.label ?? null });
+    rememberPublished(wire);
+    queryClient.setQueryData<StrategiesPayload>(STRATEGIES_KEY, (p) => (p && !p.strategies.some((s) => s.strategyId === id) ? { ...p, strategies: [wire, ...p.strategies] } : p));
   };
 
   if (published) return (
@@ -223,8 +225,9 @@ export function CreatorStudio({ writes, trader, onYours }: { writes: CopyWrites;
           <div className="agent-builder-actions">
             {step > 1 && <button type="button" onClick={() => { setProblem(null); setStep((s) => (s - 1) as 1 | 2 | 3); }} className="strat-sensei">{T.back}</button>}
             {action}
+            {/* Inside the sticky bar: on a phone the reason stands under the button it explains, never below the fold. */}
+            {problem && <p className="agent-form-error" role="status">{problem}</p>}
           </div>
-          {problem && <p className="agent-form-error" role="status">{problem}</p>}
         </div>
         <aside className="strat-preview agent-builder-preview">
           <p className="strat-micro text-ink-muted">{T.preview.eyebrow}</p>

@@ -39,7 +39,7 @@ export const AGENTS = {
     blocked: "Blocked.",
     shared: "Link copied.",
     hero: { title: "Net", ranges: { "1d": "1D", "1w": "1W", all: "All" } as Record<string, string>, rangesAria: "Range", winRate: "Win rate", settled: "Settled", open: "Open", none: "No settled trades yet." },
-    next: { title: "Next read", in: (s: string) => `in ${s}`, now: (s: string) => `Reading now · ${s} left`, none: "No live Window", beat: (age: string) => `Heartbeat ${age}`, noBeat: "No heartbeat yet", report: "Runner report" },
+    next: { title: "Next read", in: (s: string) => `in ${s}`, now: (s: string) => `Reading now · ${s} left`, none: "No live Window", beat: (age: string) => `Heartbeat ${age}`, noBeat: "No heartbeat yet", due: "Due now", late: "Runner late", report: "Runner report" },
     tabs: { overview: "Overview", decisions: "Decisions", copies: "Copies", identity: "Identity" },
     tabsLabel: "Agent",
     latest: "Latest decision",

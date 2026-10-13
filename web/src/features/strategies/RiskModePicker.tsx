@@ -2,6 +2,7 @@
 // Ported from Owarine 90a91d71:web/src/features/strategies/DeskInputs.tsx `RiskModePicker` (R4-6, D-227) — three modes
 // as `.desk-modes` radios (Guarded 1 open · ≤ 70¢, Balanced 1 open · ≤ 85¢, Active 2 open · any), plus Custom, which
 // reveals the two inputs; a mode writes the draft's open Windows and price cap, which go on chain in the envelope.
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { STUDIO as T } from "./studio-copy";
 import { RISK_MODES, riskModeOf, type Draft, type RiskMode } from "./studio-draft";
@@ -10,8 +11,16 @@ import "./desk.css";
 const ORDER: readonly RiskMode[] = ["guarded", "balanced", "active", "custom"];
 
 export function RiskModePicker({ draft, set }: { draft: Draft; set: (patch: Partial<Draft>) => void }) {
-  const mode = riskModeOf(draft);
-  const pick = (m: RiskMode) => (m === "custom" ? set(mode === "custom" ? {} : { openText: "3", priceCentsText: "90" }) : set(RISK_MODES[m]));
+  // Custom stays Custom while its inputs are edited, even when the typed values happen to equal a preset's (they'd
+  // otherwise vanish mid-edit); a preset tap leaves it.
+  const [custom, setCustom] = useState(() => riskModeOf(draft) === "custom");
+  const mode: RiskMode = custom ? "custom" : riskModeOf(draft);
+  const pick = (m: RiskMode) => {
+    setCustom(m === "custom");
+    if (m === "custom") {
+      if (mode !== "custom") set({ openText: "3", priceCentsText: "90" });
+    } else set(RISK_MODES[m]);
+  };
   return (
     <div className="flex flex-col gap-3">
       <div>

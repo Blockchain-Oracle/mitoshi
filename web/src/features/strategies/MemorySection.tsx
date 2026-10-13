@@ -10,6 +10,7 @@ import { LockKeyhole, LockKeyholeOpen } from "lucide-react";
 import { useState } from "react";
 import { webEnv } from "@/lib/env";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
+import { strategyIdentity } from "./identity";
 import type { StrategyWire } from "./protocol";
 import { STRATEGIES_KEY } from "./useStrategies";
 import "./copy-form.css";
@@ -47,10 +48,11 @@ export function MemoryReader({ card, wallet, copying, onCopy }: { card: Strategy
   const network = networkFrom(webEnv.markets.network);
   const isCreator = wallet !== null && wallet.toLowerCase() === card.creator.toLowerCase();
   const price = card.memory ? BigInt(card.memory.readPriceBase) : 0n;
+  const name = strategyIdentity(card).name;
   if (!card.memory) return <p className="desk-note text-ink-muted">{M.none}</p>;
 
   const read = async () => {
-    if (!wallet) return shell.openPicker("tempo", `${M.read} ${card.name}`);
+    if (!wallet) return shell.openPicker("tempo", `${M.read} ${name}`);
     setBusy(true);
     setStatus(M.reading);
     try {
@@ -71,7 +73,7 @@ export function MemoryReader({ card, wallet, copying, onCopy }: { card: Strategy
   };
 
   const buy = async () => {
-    if (!wallet) return shell.openPicker("tempo", `${M.buy(price)} · ${card.name}`);
+    if (!wallet) return shell.openPicker("tempo", `${M.buy(price)} · ${name}`);
     setBusy(true);
     setStatus(M.paying);
     try {
@@ -95,7 +97,9 @@ export function MemoryReader({ card, wallet, copying, onCopy }: { card: Strategy
     }
   };
 
-  const canRead = !wallet || isCreator || copying;
+  // Signed out, the action keeps its price when a read is sold (sign-in at the end, D-224): after sign-in a copier's or
+  // the creator's label turns to Read.
+  const canRead = isCreator || copying || (!wallet && price === 0n);
   const action = canRead ? (
     <button type="button" disabled={busy} onClick={() => void read()} className="strat-sensei self-start">{M.read}</button>
   ) : price > 0n ? (

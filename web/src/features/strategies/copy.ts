@@ -24,6 +24,7 @@ export const STRATEGIES = {
   advice: "Testnet money. Strategies can lose. Not advice.",
   yours: {
     signedOutTitle: "Your strategies, in one place.",
+    unreadable: "Your copies couldn't be read just now.",
     signIn: "Sign in",
     emptyTitle: "No strategies here yet.",
     create: "Create one →",
