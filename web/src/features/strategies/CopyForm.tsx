@@ -32,18 +32,9 @@ export function useCopyForm(card: StrategyWire, strategies: readonly StrategyWir
     mode, choice, budgetText, perTradeText, nowSec: Math.floor(Date.now() / 1000), busy, signedIn: writes.signedIn,
   });
   const canShare = writes.grant !== null && plan.shareBlocked === null && writes.grant.actor.toLowerCase() === card.runner.toLowerCase();
-  /** Budget's Max: the wallet plus the Trading Balance (plus a live grant's unspent budget, which a new grant returns
-   *  first — planCopy's `reusable`), less the fee. Per trade's Max: the tightest ceiling of this strategy and every copy
-   *  the new budget carries (planCopy's own bound). */
-  const nowSec = Math.floor(Date.now() / 1000);
-  const liveGrantBase = writes.grant && !writes.grant.revoked && writes.grant.expiresAtSec > nowSec ? writes.grant.budgetBase : 0n;
-  const maxBudget = writes.walletBase === null || writes.availableBase === null ? null : writes.walletBase + writes.availableBase + liveGrantBase - BigInt(card.feeBase);
-  const ceiling = plan.carried.reduce((m, c) => {
-    const e = strategies.find((s) => s.strategyId === c.strategyId)?.envelope;
-    return e ? min(m, BigInt(e.maxStakePerTradeBase)) : m;
-  }, maxPerTrade);
+  // The Max chips are planCopy's own bounds, so a Max never fills in an amount the plan then refuses.
   const amount = plan.route === "new" ? plan.budgetBase : BigInt(card.feeBase) > 0n ? BigInt(card.feeBase) : null;
-  return { mode, setMode, choice, setChoice, budgetText, setBudget, perTradeText, setPerTrade, plan, canShare, maxBudget, maxPerTrade: ceiling, amount, cta: COPY.cta(mode, amount) };
+  return { mode, setMode, choice, setChoice, budgetText, setBudget, perTradeText, setPerTrade, plan, canShare, maxBudget: plan.maxBudgetBase, maxPerTrade: plan.maxPerTradeBase, amount, cta: COPY.cta(mode, amount) };
 }
 export type CopyFormModel = ReturnType<typeof useCopyForm>;
 

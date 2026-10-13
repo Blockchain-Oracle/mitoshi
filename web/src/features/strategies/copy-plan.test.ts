@@ -75,6 +75,24 @@ describe("planCopy (one transaction, D-219)", () => {
     expect(planCopy(base({ strategy: { ...s1, active: false } })).blockedBy).toBe("This strategy is closed to new copiers");
   });
 
+  it("the Max chips are the plan's own bounds: a Max budget is fundable, a Max per trade fits every carried envelope (R4-6)", () => {
+    const paid = strategy("4", {}, RUNNER, "1500000");
+    // $4 in the Trading Balance + $20 in the wallet − the $1.50 fee.
+    const first = planCopy(base({ strategy: paid, strategies: [paid], availableBase: 4n * ONE, walletBase: 20n * ONE }));
+    expect(first.maxBudgetBase).toBe(22_500_000n);
+    expect(planCopy(base({ strategy: paid, strategies: [paid], availableBase: 4n * ONE, walletBase: 20n * ONE, budgetText: "22.5", perTradeText: "2" })).blockedBy).toBeNull();
+    expect(planCopy(base({ strategy: paid, strategies: [paid], availableBase: 4n * ONE, walletBase: 20n * ONE, budgetText: "22.51", perTradeText: "2" })).blockedBy).toBe("Your wallet has $20.00; this needs $20.01.");
+    // A live grant's unspent $10 returns first, so it counts; a revoked or expired one doesn't.
+    expect(planCopy(base({ grant: grant(), walletBase: 5n * ONE })).maxBudgetBase).toBe(15n * ONE);
+    expect(planCopy(base({ grant: grant({ revoked: true }), walletBase: 5n * ONE })).maxBudgetBase).toBe(5n * ONE);
+    expect(planCopy(base({ grant: grant({ expiresAtSec: NOW - 1 }), walletBase: 5n * ONE })).maxBudgetBase).toBe(5n * ONE);
+    // Strategy 2's $3 ceiling, carrying strategy 1's $5 one: the Max is $3, and the plan takes it.
+    const mine = [{ strategyId: "1", grantId: "8", mode: "follow" as const, active: true, feesPaidBase: "0", subscribedAtSec: 0 }];
+    expect(planCopy(base({ strategy: s2, grant: grant({}, { maxStakePerTradeBase: 4n * ONE }), mine })).maxPerTradeBase).toBe(3n * ONE);
+    expect(planCopy(base({ strategy: s1, grant: grant({}, { maxStakePerTradeBase: 4n * ONE }), mine: [{ ...mine[0]!, strategyId: "2" }] })).maxPerTradeBase).toBe(3n * ONE);
+    expect(planCopy(base({ walletBase: null })).maxBudgetBase).toBeNull();
+  });
+
   it("caps the fee by what the creator asks now, from the wallet", () => {
     const paid = strategy("4", {}, RUNNER, "1500000");
     const p = planCopy(base({ strategy: paid, strategies: [paid], walletBase: 11n * ONE }));
