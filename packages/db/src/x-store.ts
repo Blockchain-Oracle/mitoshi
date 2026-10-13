@@ -72,10 +72,16 @@ export function createPgXStore(sql: Sql) {
       const [r] = await sql<LinkRow[]>`select author_id, handle, wallet, signature, issued_at_ms, created_at from x_links where wallet = ${account.toLowerCase()} and revoked_at is null order by created_at desc limit 1`;
       return r ? toLink(r) : null;
     },
-    /** Points an X account at an account: an account re-pointed to a new X account drops its old route (Owarine). */
+    /**
+     * Points an X account at an account: an account re-pointed to a new X account drops its old route (Owarine). Two
+     * binds at once take turns (a lock per X account, then per account — always in that order), so each leaves one
+     * live route; without it both inserts could survive and an unlink would quietly revive the other (S11 review).
+     */
     async upsertLink(link: Omit<XLinkRecord, "createdAtMs">): Promise<XLinkRecord> {
       const account = link.account.toLowerCase();
       const [r] = await sql.begin(async (tx) => {
+        await tx`select pg_advisory_xact_lock(hashtext(${`x_links:author:${link.authorId}`}))`;
+        await tx`select pg_advisory_xact_lock(hashtext(${`x_links:wallet:${account}`}))`;
         await tx`update x_links set revoked_at = now() where revoked_at is null and (wallet = ${account} or author_id = ${link.authorId})`;
         return tx<LinkRow[]>`insert into x_links (author_id, handle, wallet, signature, issued_at_ms) values (${link.authorId}, ${link.handle}, ${account}, ${link.signature}, ${link.issuedAtMs})
           returning author_id, handle, wallet, signature, issued_at_ms, created_at`;

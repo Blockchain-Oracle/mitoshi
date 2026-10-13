@@ -55,7 +55,9 @@
   left `unknown` now holds the rest of its pass too, not only the next pass. (6) Cash out disappeared while the relay
   was down or the grant expired; it now stays whenever the X grant holds money. (7) A closed passkey prompt showed the
   browser's raw WebAuthn text, and other signer or network failures their raw messages; they now say nothing or the
-  route's own line. (8) A malformed cookie escape threw a 500 from the X routes.
+  route's own line. (8) A malformed cookie escape threw a 500 from the X routes. (9) Two binds of one X account at once
+  could both stay live (an unlink then revived the other); `upsertLink` now takes a lock per X account and per account
+  (the store test races eight binds: one live route; without the lock it failed every run).
 
 ## Handoff
 

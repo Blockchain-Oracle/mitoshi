@@ -83,6 +83,13 @@ describe.skipIf(!hasPg)("X stores (links, receipts, OAuth state, replies)", () =
     expect(await x.linkByAuthor("42")).toBeNull();
   });
 
+  it("leaves one live route when binds race", async () => {
+    const x = createPgXStore(sql);
+    await Promise.all(Array.from({ length: 8 }, (_, i) => x.upsertLink({ authorId: "77", handle: "racer", account: i % 2 ? A : B, signature: `0x0${i}`, issuedAtMs: i + 1 })));
+    const [live] = await sql<{ n: string }[]>`select count(*)::text as n from x_links where author_id = '77' and revoked_at is null`;
+    expect(live?.n).toBe("1");
+  });
+
   it("takes an OAuth state exactly once, and never a stale one", async () => {
     const x = createPgXStore(sql);
     const row = { bindingHash: "b", caller: null, pkceVerifier: "v".repeat(43), appChallenge: null, returnPath: "/trade-from-x" };
