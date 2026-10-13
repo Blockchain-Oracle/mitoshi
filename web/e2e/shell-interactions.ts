@@ -119,12 +119,12 @@ for (const theme of ["dark", "light"]) {
     await dp.keyboard.press("Meta+k");
     const input = dp.getByRole("combobox", { name: /Search destinations/ });
     await expect(input).toBeVisible();
-    await input.fill("bridge");
+    await input.fill("parlay");
     await dp.waitForTimeout(200);
     await dp.screenshot({ path: join(out, `palette-${theme}.png`) });
     await axeOn(dp);
     await dp.keyboard.press("Enter");
-    await dp.waitForURL(`${base}/bridge`);
+    await dp.waitForURL(`${base}/parlay`);
   });
   await check(`${theme}: 1024 px shows the 88 px icon rail`, async () => {
     await dp.setViewportSize({ width: 1024, height: 768 });

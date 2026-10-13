@@ -4,8 +4,6 @@
 |---|---|---|---|---|
 | `NETWORK` | ✓ | ✓ | `testnet` | `mainnet` |
 | `TEMPO_RPC_HTTP_URL`, `TEMPO_RPC_WS_URL` | ✓ | ✓ | Moderato 42431 | Tempo 4217 |
-| `RH_RPC_HTTP_URL` | ✓ | ✓ | Robinhood testnet 46630 | Robinhood 4663 |
-| `BASE_SEPOLIA_RPC_HTTP_URL` | ✓ | ✓ | ✓ | — |
 | `APP_ORIGIN`, `PASSKEY_RP_ID` | ✓ | — | `https://mitoshi.xyz`, `mitoshi.xyz` (D-228; was `https://testnet.mitoshi.xyz`) | `https://mitoshi.xyz`, `mitoshi.xyz` |
 | `NEXT_PUBLIC_APP_ORIGIN`, `NEXT_PUBLIC_OPS_URL`, `NEXT_PUBLIC_STREAM_URL`, `NEXT_PUBLIC_DOCS_URL` (build-time; D-228) | ✓ | — | `https://mitoshi.xyz`, `https://ops.mitoshi.xyz`, `https://stream.mitoshi.xyz`, `https://docs.mitoshi.xyz` (the default when unset) | the same hosts |
 | `OPS_CORS_ORIGINS`; `APP_ORIGIN` (the x-relay's link base) | — | ✓ | unset: `https://mitoshi.xyz,https://testnet.mitoshi.xyz,http://localhost:3000` (the retired host keeps tabs opened before the move reading); unset: `https://mitoshi.xyz` | unset: `https://mitoshi.xyz,https://www.mitoshi.xyz` |

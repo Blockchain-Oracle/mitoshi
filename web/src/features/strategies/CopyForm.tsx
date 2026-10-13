@@ -121,7 +121,7 @@ export function CopyCta({ card, form, writes, onDone }: { card: StrategyWire; fo
   const { plan } = form;
   if (!writes.signedIn) {
     return (
-      <button type="button" data-primary-action="" className="strat-confirm copy-footer-cta" onClick={() => shell.openPicker("tempo", COPY.intent(form.cta, strategyIdentity(card).name))}>
+      <button type="button" data-primary-action="" className="strat-confirm copy-footer-cta" onClick={() => shell.openPicker(COPY.intent(form.cta, strategyIdentity(card).name))}>
         {form.cta}
       </button>
     );

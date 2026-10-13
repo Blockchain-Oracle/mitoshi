@@ -3,9 +3,9 @@
 // places (Trade · Markets · Portfolio · Games · Automate · Leaderboard), the dock, and More, one home per destination.
 // No Stocks place: stocks trade in Markets' 24/7 lanes beside crypto and each ticker's hub is `/tickers/[symbol]`.
 import {
-  Activity, ArrowLeftRight, BadgeCheck, BarChart3, Bell, BookOpen, Bot, CandlestickChart, CirclePause, ChartCandlestick, ChartLine, ChartNoAxesCombined,
+  Activity, BadgeCheck, BarChart3, Bell, BookOpen, Bot, CandlestickChart, CirclePause, ChartCandlestick, ChartLine, ChartNoAxesCombined,
   CircleHelp, Clapperboard, Coins, Dices, Download, GalleryVerticalEnd, Gamepad2, Goal, Handshake, History, KeyRound,
-  Layers3, MessageSquare, Mountain, Newspaper, Palette, Presentation, Rocket, ScanSearch, Settings, ShieldCheck, Sparkles, Trophy,
+  Layers3, MessageSquare, Mountain, Newspaper, Palette, Presentation, Rocket, ScanSearch, Settings, Sparkles, Trophy,
   TrendingDown, WalletCards, X as XLogo, type LucideIcon,
 } from "lucide-react";
 import { DOCS_URL } from "../../../lib/docs-url";
@@ -50,8 +50,6 @@ export const NAV_ITEMS = {
   earn: item({ id: "earn", name: "Earn", href: "/earn", description: "Supply the maker vault and the house reserves.", icon: Coins, keywords: "vault yield maker reserve supply" }),
   themes: item({ id: "themes", name: "Themes", href: "/themes", description: "Follow a basket an agent rebalances.", icon: Palette, keywords: "baskets follow stocks" }),
   launch: item({ id: "launch", name: "Launch", href: "/launch", description: "Launch a stablecoin or a memecoin.", icon: Rocket, keywords: "token create memecoin stablecoin" }),
-  bridge: item({ id: "bridge", name: "Bridge", href: "/bridge", description: "Stocks, Robinhood ⇄ Tempo.", icon: ArrowLeftRight, keywords: "robinhood layerzero transfer stocks" }),
-  reserves: item({ id: "reserves", name: "Backing", href: "/reserves", description: "Every bridged stock, backed.", icon: ShieldCheck, keywords: "proof backing stocks" }),
   surface: item({ id: "surface", name: "Market Surface", href: "/surface", description: "The market's shape at a glance.", icon: ScanSearch }),
   sensei: item({ id: "sensei", name: "Sensei", href: "/markets?sensei=1", description: "Ask the market assistant.", icon: MessageSquare, keywords: "assistant ai help", match: { paths: [] } }),
   xTrade: item({ id: "x-trade", name: "X-trade", href: "/trade-from-x", description: "Turn a post into a bounded trade.", icon: XLogo }),
@@ -94,7 +92,7 @@ export const DOCK_OMITTED: readonly NavItem[] = RAIL_NAV.filter((p) => !DOCK_NAV
 
 /** Everything that is not a place, grouped (Owarine `MORE`). The first section is what most people open More for. */
 export const EVERYTHING_SECTIONS: readonly NavSection[] = [
-  { id: "trade", name: "More ways to trade", items: [NAV_ITEMS.short, NAV_ITEMS.parlay, NAV_ITEMS.earn, NAV_ITEMS.themes, NAV_ITEMS.launch, NAV_ITEMS.bridge, NAV_ITEMS.reserves, NAV_ITEMS.surface, NAV_ITEMS.sensei, NAV_ITEMS.xTrade] },
+  { id: "trade", name: "More ways to trade", items: [NAV_ITEMS.short, NAV_ITEMS.parlay, NAV_ITEMS.earn, NAV_ITEMS.themes, NAV_ITEMS.launch, NAV_ITEMS.surface, NAV_ITEMS.sensei, NAV_ITEMS.xTrade] },
   { id: "learn", name: "Learn", items: [NAV_ITEMS.download, NAV_ITEMS.docs, NAV_ITEMS.howItWorks, NAV_ITEMS.demo, NAV_ITEMS.news, NAV_ITEMS.reels, NAV_ITEMS.pitch] },
   { id: "games", name: "Games", items: [NAV_ITEMS.practice, NAV_ITEMS.duel, NAV_ITEMS.lucky, NAV_ITEMS.range, NAV_ITEMS.moonshot, NAV_ITEMS.lineRider, NAV_ITEMS.candleHop] },
   { id: "automate", name: "Automate", items: [NAV_ITEMS.agents] },
@@ -105,10 +103,10 @@ export const EVERYTHING_ITEMS: readonly NavItem[] = EVERYTHING_SECTIONS.flatMap(
 
 /** Every real, user-facing page; each must have a home in the places or More (the route-coverage contract). */
 export const NAVIGABLE_ROUTE_PATHS = [
-  "/activity", "/agents", "/bridge", "/claim", "/demo", "/download", "/earn", "/games", "/games/candle-hop", "/games/duel",
+  "/activity", "/agents", "/claim", "/demo", "/download", "/earn", "/games", "/games/candle-hop", "/games/duel",
   "/games/history", "/games/line-rider", "/games/lucky", "/games/moonshot", "/games/practice", "/games/range", "/games/rank",
   "/how-it-works", "/launch", "/leaderboard", "/markets", "/news", "/parlay", "/pitch", "/portfolio", "/portfolio/edge", "/proof",
-  "/reels", "/reserves", "/settings/account", "/settings/notifications", "/stats", "/status", "/status/halts", "/strategies",
+  "/reels", "/settings/account", "/settings/notifications", "/stats", "/status", "/status/halts", "/strategies",
   "/surface", "/themes", "/trade", "/trade-from-x",
 ] as const;
 

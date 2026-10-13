@@ -15,12 +15,11 @@ import { noopPolicy } from "./noop";
 import { parlayPolicy } from "./parlay";
 import { privatePolicy } from "./private";
 import { rangePolicy } from "./range";
-import { stocksRelayPolicy } from "./stocks";
 import { strategiesPolicy } from "./strategies";
 import { themesPolicy } from "./themes";
 import { vaultPolicy } from "./vault";
 import { vault2Policy } from "./vault2";
 
-export { agentsPolicy, arenaPolicy, enginePolicy, keysPolicy, launchPolicy, leveragePolicy, makerPolicy, noopPolicy, parlayPolicy, privatePolicy, rangePolicy, stocksRelayPolicy, strategiesPolicy, themesPolicy, vault2Policy, vaultPolicy };
+export { agentsPolicy, arenaPolicy, enginePolicy, keysPolicy, launchPolicy, leveragePolicy, makerPolicy, noopPolicy, parlayPolicy, privatePolicy, rangePolicy, strategiesPolicy, themesPolicy, vault2Policy, vaultPolicy };
 
-export const POLICIES: readonly RelayPolicy[] = [noopPolicy, keysPolicy, launchPolicy, themesPolicy, stocksRelayPolicy, vaultPolicy, vault2Policy, enginePolicy, parlayPolicy, rangePolicy, leveragePolicy, makerPolicy, privatePolicy, arenaPolicy, strategiesPolicy, agentsPolicy];
+export const POLICIES: readonly RelayPolicy[] = [noopPolicy, keysPolicy, launchPolicy, themesPolicy, vaultPolicy, vault2Policy, enginePolicy, parlayPolicy, rangePolicy, leveragePolicy, makerPolicy, privatePolicy, arenaPolicy, strategiesPolicy, agentsPolicy];

@@ -12,11 +12,6 @@ export const SIGN_IN = {
   back: "Back",
   technical: "Technical details",
   nothingTaken: "Nothing was taken.",
-  robinhood: {
-    title: "Link a Robinhood Chain wallet",
-    body: "Link the wallet that holds your stock tokens.",
-    none: "Open in a wallet's browser, or use WalletConnect.",
-  },
 } as const;
 
 /**
@@ -53,8 +48,6 @@ export const ACCOUNT = {
   wallet: "Wallet",
   tradingBalance: "Trading Balance",
   tradingBalancePending: "Not open",
-  robinhood: "Robinhood Chain",
-  linkRobinhood: "Link a wallet",
   copy: "Copy address",
   copied: "Copied",
   keys: "Account & keys",

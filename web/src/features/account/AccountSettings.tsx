@@ -4,8 +4,8 @@
 // rows whose drill-ins open a sheet) and features/canton-ux/seat/SeatAccountMenu.tsx (the facts as one recessed `dl`).
 // The head reuses the account menu's `am-head` / `am-rows`; a summary strip holds "Stop all" in the first fold; each
 // SECURITY or DATA row opens a SlideOver (a bottom sheet on phones) whose body is the section it used to be inline.
-import { useEffect, useState, type ReactNode } from "react";
-import { Bell, Download, KeyRound, Link2, ShieldCheck, Trash2, Wallet } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bell, Download, KeyRound, ShieldCheck, Trash2, Wallet } from "lucide-react";
 import { useBalanceSheet } from "@cwf/markets/react";
 import type { Address, RegionPosture } from "@cwf/core";
 import { GroupedItem, GroupedList } from "@/components/kit/GroupedList";
@@ -14,8 +14,7 @@ import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { webEnv } from "@/lib/env";
 import { readRegionPosture } from "@/lib/region-mark";
 import { useWalletSession } from "@/lib/wallet-session";
-import { shortAddress } from "@/providers/wallet/format";
-import { useWalletShell, type TempoAccountKind } from "@/providers/wallet/wallet-shell-context";
+import type { TempoAccountKind } from "@/providers/wallet/wallet-shell-context";
 import { useDataReady } from "@/providers/data/context";
 import { AccountHero, AccountSummary } from "./AccountSummary";
 import { BackupPasskeySection } from "./BackupPasskeySection";
@@ -35,7 +34,7 @@ import "@/styles/account.css";
 import "@/components/kit/kit.css";
 
 const P = ACCOUNT_PAGE;
-type Drill = "backup" | "keys" | "grants" | "linked" | "x" | "delete";
+type Drill = "backup" | "keys" | "grants" | "x" | "delete";
 
 export function AccountSettings() {
   const session = useWalletSession();
@@ -69,7 +68,6 @@ export function AccountSettings() {
 }
 
 function SignedIn({ address, kind }: { address: Address; kind: TempoAccountKind | null }) {
-  const shell = useWalletShell();
   const network = webEnv.markets.network;
   const ready = useDataReady();
   const [drill, setDrill] = useState<Drill | null>(null);
@@ -82,7 +80,7 @@ function SignedIn({ address, kind }: { address: Address; kind: TempoAccountKind 
   const nudge = useBackupNeeded(kind === "passkey", hasMoney);
   const x = useXLink();
   const close = (open: boolean) => (open ? undefined : setDrill(null));
-  const titles: Record<Drill, string> = { backup: BACKUP.title, keys: P.keys.title, grants: P.grants.title, linked: P.linked.title, x: P.x, delete: DATA.delete.title };
+  const titles: Record<Drill, string> = { backup: BACKUP.title, keys: P.keys.title, grants: P.grants.title, x: P.x, delete: DATA.delete.title };
 
   return (
     <>
@@ -92,7 +90,6 @@ function SignedIn({ address, kind }: { address: Address; kind: TempoAccountKind 
         <GroupedItem icon={ShieldCheck} label={BACKUP.title} detail={kind !== "passkey" ? "—" : backups === null ? "…" : backups === 0 ? BACKUP.noneShort : String(backups)} dot={nudge} onClick={() => setDrill("backup")} />
         <GroupedItem icon={KeyRound} label={P.keys.title} detail={keys === null ? "…" : String(keys)} onClick={() => setDrill("keys")} />
         <GroupedItem icon={Wallet} label={P.grants.title} detail={grants === null ? "…" : String(grants)} onClick={() => setDrill("grants")} />
-        <GroupedItem icon={Link2} label={P.linked.title} detail={shell.robinhood ? shortAddress(shell.robinhood.address) : P.linked.none} onClick={() => setDrill("linked")} />
         <GroupedItem icon={XGlyph as never} label={P.x} detail={x.loading ? "…" : xRowDetail(x)} onClick={() => setDrill("x")} />
       </GroupedList>
       <GroupedList title={P.groups.data}>
@@ -106,25 +103,10 @@ function SignedIn({ address, kind }: { address: Address; kind: TempoAccountKind 
           {drill === "backup" ? <BackupPasskeySection hasMoney={hasMoney} /> : null}
           {drill === "keys" && ready ? <KeysSection account={address} network={network} /> : null}
           {drill === "grants" && ready ? <GrantsSection account={address} network={network} /> : null}
-          {drill === "linked" ? <LinkedBody /> : null}
           {drill === "x" ? <XAccountSheet /> : null}
           {drill === "delete" ? <DeleteSheetBody address={address} /> : null}
         </SlideOverContent>
       </SlideOver>
     </>
-  );
-}
-
-function LinkedBody(): ReactNode {
-  const shell = useWalletShell();
-  return (
-    <div className="acct-linked">
-      <span className="type-body text-ink-secondary">{P.linked.robinhood}</span>
-      {shell.robinhood ? (
-        <span className="numbers type-body text-ink">{shortAddress(shell.robinhood.address)}</span>
-      ) : (
-        <PillButton tone="ink" size="sm" onClick={() => shell.openPicker("robinhood")}>{P.linked.link}</PillButton>
-      )}
-    </div>
   );
 }

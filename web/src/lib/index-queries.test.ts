@@ -17,9 +17,8 @@ describe("/api/index path table (C.4.5)", () => {
     expect(() => resolveIndexQuery(["wallet", "nope", "fills"], {}, 42431)).toThrow(BadRequest);
     expect(() => resolveIndexQuery(["candles", M], {}, 42431)).toThrow(BadRequest);
     expect(() => resolveIndexQuery(["themes", "list"], {}, 42431)).toThrow(NotDeployed);
-    // The bridge adapters are indexed since R4-12 (index/0007): only `/stocks/events` answers.
-    expect(resolveIndexQuery(["stocks", "events"], { account: A }, 42431)?.scope).toBe("public");
-    expect(resolveIndexQuery(["stocks", "list"], {}, 42431)).toBeNull();
+    // The bridge left the product (D-231): `/stocks/events` no longer answers.
+    expect(resolveIndexQuery(["stocks", "events"], { account: A }, 42431)).toBeNull();
     expect(resolveIndexQuery(["nothing"], {}, 42431)).toBeNull();
   });
 });

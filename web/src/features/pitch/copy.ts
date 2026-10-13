@@ -53,7 +53,7 @@ export const PITCH = {
     h1a: "Now. Next. ",
     emph: "Mainnet",
     now: { tag: "NOW", title: "On your phone", body: "Open mitoshi.xyz in your phone's browser, sign up with a passkey and tap. Nothing to install." },
-    later: { tag: "NEXT", title: "Stocks you hold", body: "Tokenized stocks traded on Tempo beside the Windows. The pools and their price guard are already deployed on Moderato; the screens come next." },
+    later: { tag: "NEXT", title: "In the stores", body: "The iPhone and Android apps, in TestFlight and Google Play testing now." },
     then: { tag: "THEN", title: "Mainnet", body: "The same contracts and keepers on Tempo mainnet, at the same address." },
     foot: "mitoshi.xyz",
   },

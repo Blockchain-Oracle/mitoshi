@@ -4,7 +4,7 @@
 |---|---|---|
 | `RELAY_FEE_PAYER_PRIVATE_KEY` | Coolify web app (per network) | `/api/relay` fee payer |
 | `DESK_PRIVATE_KEY` (the `desk` role; testnet `~/.config/cwf/testnet/desk.json`) | Coolify web app (per network) | `/api/private/*` desk service: signs claims, pays its own sends (D-171) |
-| `<ROLE>_PRIVATE_KEY` (roller, price-relay, settler, seed-maker, earn-quoter, keeper, x-relay, desk, stock-sync, ops-fee-payer) | Coolify ops app env (per network); locally `~/.config/cwf/<network>/<role>.json` | ops actors |
+| `<ROLE>_PRIVATE_KEY` (roller, price-relay, settler, seed-maker, earn-quoter, keeper, x-relay, desk, ops-fee-payer) | Coolify ops app env (per network); locally `~/.config/cwf/<network>/<role>.json` | ops actors |
 | `DEPLOYER` key | local `~/.config/cwf/<network>/deployer.json`; mainnet via the owner's hardware wallet / Safe | forge scripts |
 | `MPP_PAYER_PRIVATE_KEY`, `MPP_ROOT_ADDRESS` | Coolify ops (testnet: roles `mpp-payer`/`mpp-root` in `~/.config/cwf/testnet/`; mainnet after Q-020) | MPP payer (TIP-1011 access key on the root), brain `via: 'mpp'`, paid data |
 | `MPP_SECRET_KEY` (≥ 32 bytes, `openssl rand -base64 32`; runtime-only) | Coolify web (per network) | mppx server: HMAC-binds the Memory Market's paid-read challenges (S9.9b) |
@@ -19,7 +19,7 @@
 | `FINNHUB_API_KEY`, `ALPACA_*`, `DATASTREAMS_API_KEY/SECRET` | Coolify web + ops (testnet ops: the owner's Alpaca + Finnhub keys, the same ones Agari uses, set 2026-09-29 runtime-only; testnet web: `FINNHUB_API_KEY` copied app to app from ops 2026-10-10 for `/news`, runtime-only, never shown) | data providers (calendar, halts, earnings) |
 | `TEMPO_INDEXER_API_KEY` (Tempo API console key, `tempo-api-key` header) | Coolify ops (testnet: the owner's sandbox key from `~/.config/mitoshi/indexer.env`, 0600; set 2026-10-13 runtime-only, literal, never shown) | `indexer-recount` (D-086) |
 | `TIDX_URL`, `TIDX_BASIC_AUTH` | Coolify ops (when a self-hosted tidx is chosen, D-086) | indexer recount |
-| RPC provider URLs (`TEMPO_RPC_*`, `RH_RPC_HTTP_URL`, `BASE_SEPOLIA_RPC_HTTP_URL`) | Coolify web + ops + GitHub Actions | chain reads |
+| RPC provider URLs (`TEMPO_RPC_*`) | Coolify web + ops + GitHub Actions | chain reads. D-231 retired the bridge's `RH_RPC_HTTP_URL` and `BASE_SEPOLIA_RPC_HTTP_URL` from web and ops; the nightly fork suite's `RH_RPC_HTTP_URL` (CrwdMultiplier, which falls back to a public RPC) goes with the stock guard's tests |
 | APNs `.p8` + key ID + team ID, FCM service account | Coolify ops | notifier (SM2) |
 | Reown project ID | Coolify web | WalletConnect |
 | EAS token, Android upload keystore (EAS-managed) | GitHub Actions / EAS | mobile builds |

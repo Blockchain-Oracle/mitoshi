@@ -24,8 +24,8 @@ This entry ports code the owner wrote before the hackathon, and says so file by 
 - Yosuku-derived design (through Masayume), Tradash as a behaviour reference only (nothing of theirs copied),
   21st.dev components and other third-party material: `THIRD_PARTY_NOTICES.md`.
 
-New for this hackathon: the Tempo engine and product contracts, stocks on Tempo (Robinhood Chain bridge, v4 pools with
-a guard hook, themes — contracts deployed on Moderato, their screens next), the launchpads, the Tempo
+New for this hackathon: the Tempo engine and product contracts, stock Windows (nine US stocks in NYSE hours, seven of
+them 24/7, settled on RedStone's signed prints), themes, the launchpads, the Tempo
 wallet/relay/passkey layer, the ops keepers, the terminal and the UX rebuild. The native mobile app is planned
 (SM1–SM5) and not built yet. The plan (`docs/plan/00-plan.md`) and the git history show what was built when.
 

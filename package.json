@@ -15,7 +15,7 @@
     "invariants": "node scripts/invariants/run.mjs",
     "codegen": "node scripts/codegen/clients.mjs",
     "codegen:check": "node scripts/codegen/clients.mjs --check",
-    "contracts:build": "forge build --root contracts --sizes && FOUNDRY_PROFILE=evm forge build --root contracts --sizes",
+    "contracts:build": "forge build --root contracts --sizes",
     "contracts:test": "forge test --root contracts --no-match-contract Fork",
     "db:migrate": "pnpm --filter @cwf/db migrate",
     "ops:start": "pnpm --filter @cwf/ops start",

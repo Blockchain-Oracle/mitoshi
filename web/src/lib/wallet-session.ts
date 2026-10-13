@@ -31,8 +31,8 @@ export function useWalletSession(): WalletSession {
     isConnected: tempo !== null,
     isConnecting: shell.status === "restoring",
     isRightChain: tempo !== null && !shell.wrongChain,
-    connect: () => shell.openPicker("tempo"),
-    connectFor: (intent) => shell.openPicker("tempo", intent),
+    connect: () => shell.openPicker(),
+    connectFor: (intent) => shell.openPicker(intent),
     disconnect: shell.disconnect,
     switchToTempo: shell.switchToTempo,
   };

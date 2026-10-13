@@ -8,7 +8,7 @@
 | Claim leftovers | 1 batch (sponsored) | "Collect" on top of Portfolio when non-zero |
 | Copy an agent / follow a theme | 1 (+1 if X4 splits) | arm-modal grammar; caps behind "adjust" |
 | Stock buy/sell | 1 | quote age tick; guard/session reasons on the CTA; optimistic holdings |
-| Bridge in | 1–2 in the source wallet | stepper + in-flight tracker that survives app kills; push on delivery |
+| Bridge in (removed, D-231) | 1–2 in the source wallet | stepper + in-flight tracker that survives app kills; push on delivery |
 | Launch a stablecoin / memecoin | 1 | typed confirm for the currency code; per-call progress |
 | Earn withdraw | 1 | keeper settles closed Windows ("Settling 2 of 4"); partial withdraw |
 

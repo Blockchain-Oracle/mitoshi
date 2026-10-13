@@ -1,10 +1,9 @@
 "use client";
-// Ported from Agari 03b30ab:web/src/providers/wallet/wallet-shell-context.ts — the two-wallet model (C.3.1): a Tempo
-// account (passkey, Tempo Wallet or an injected wallet) and, separately, a Robinhood Chain wallet for bridge-in.
+// Ported from Agari 03b30ab:web/src/providers/wallet/wallet-shell-context.ts — one Tempo account (C.3.1): a passkey,
+// Tempo Wallet or an injected wallet. D-231 removed the second, Robinhood Chain wallet with the bridge.
 // Every consumer reads this; only `web/src/providers/wallet/WalletRuntime` (a lazy island, §3.1) touches wagmi.
 import type { Address, Hex } from "@cwf/core";
 import type { SignerCaps } from "@cwf/markets";
-import type { SideWallet } from "@cwf/markets/stocks";
 import { createContext, useContext } from "react";
 import type { WalletKeyState } from "./wallet-key-store";
 
@@ -25,24 +24,14 @@ export interface TempoAccount {
   connectorId: string;
 }
 
-export interface SideAccount {
-  address: Address;
-  chainId: number;
-  connectorId: string;
-}
-
 export interface WalletShellState {
   status: WalletShellStatus;
   /** A user-initiated connection is in flight. */
   connecting: boolean;
   tempo: TempoAccount | null;
-  /** The Robinhood Chain (or Base Sepolia) wallet used for bridge-in; null until one is linked. */
-  robinhood: SideAccount | null;
   network: "mainnet" | "testnet";
   /** The Tempo account's wallet sits on another chain (injected wallets only; passkeys are chain-bound). */
   wrongChain: boolean;
-  /** What the open sign-in modal is for: the Tempo account, or linking a Robinhood Chain wallet. */
-  pickerMode: "tempo" | "robinhood";
   /** Why the sign-in opened, in the order's words ("to place UP · $25.00"); null from a plain Sign in (D-224). */
   pickerIntent: string | null;
   /** The wallet-mode key armed on this device for this account (D-047); null when taps still prompt. */
@@ -52,15 +41,9 @@ export interface WalletShellState {
 }
 
 export interface WalletShellActions {
-  openPicker(mode?: "tempo" | "robinhood", intent?: string | null): void;
+  openPicker(intent?: string | null): void;
   disconnect(): Promise<void>;
   switchToTempo(): Promise<void>;
-  /** Asks the linked Robinhood wallet to switch chain (R4-12 bridge); rejects with none linked. */
-  switchSide(chainId: number): Promise<void>;
-  /** The linked Robinhood wallet as a viem wallet client on `chainId` (bridge-in signs through `@cwf/markets/stocks`). */
-  sideWallet(chainId: number): Promise<SideWallet>;
-  /** Where to send the user back to their wallet app while it holds a request (a WalletConnect session's own redirect); null when there's none. */
-  sideReopenUrl(): Promise<string | null>;
   /** EIP-191 personal_sign with the connected Tempo account (the faucet challenge); rejects with no account. */
   signMessage(message: string): Promise<Hex>;
   /** One passkey prompt: authorise the wallet-mode key so later calls sign with no prompt (D-046 arm slot). */
@@ -69,20 +52,13 @@ export interface WalletShellActions {
 
 export type WalletShell = WalletShellState & WalletShellActions;
 
-export const SIGNED_OUT: WalletShellState = { status: "ready", connecting: false, tempo: null, robinhood: null, network: "testnet", wrongChain: false, pickerMode: "tempo", pickerIntent: null, walletKey: null, canArmWalletKey: false };
+export const SIGNED_OUT: WalletShellState = { status: "ready", connecting: false, tempo: null, network: "testnet", wrongChain: false, pickerIntent: null, walletKey: null, canArmWalletKey: false };
 
 export const WalletShellContext = createContext<WalletShell>({
   ...SIGNED_OUT,
   openPicker: () => undefined,
   disconnect: async () => undefined,
   switchToTempo: async () => undefined,
-  switchSide: async () => {
-    throw new Error("no Robinhood wallet linked");
-  },
-  sideWallet: async () => {
-    throw new Error("no Robinhood wallet linked");
-  },
-  sideReopenUrl: async () => null,
   signMessage: async () => {
     throw new Error("no wallet connected");
   },

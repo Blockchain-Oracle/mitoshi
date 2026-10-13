@@ -77,7 +77,7 @@ screen; after it is recorded, the check lists the commits that touched them — 
 
 ## Evidence
 
-`evidence/` holds dated snapshots the guides cite: ops' `/health` (12 and 13 October 2026), the mirrors' total supply,
+`evidence/` holds dated snapshots the guides cite: ops' `/health` (12 and 13 October 2026),
 every admin and role read on chain, the public routes' answers, and the media probes. It is excluded from the image.
 
 ## Deploy

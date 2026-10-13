@@ -79,7 +79,7 @@ export function StrategiesScreen({ view, onView: setView }: { view: View; onView
         ) : view === "yours" && !writes.signedIn ? (
           <div className="strat-empty flex flex-col items-center gap-4">
             <h2 className="strat-h2">{S.yours.signedOutTitle}</h2>
-            <button type="button" className="desk-btn-primary" onClick={() => shell.openPicker("tempo", S.views[2].label)}>{S.yours.signIn}</button>
+            <button type="button" className="desk-btn-primary" onClick={() => shell.openPicker(S.views[2].label)}>{S.yours.signIn}</button>
           </div>
         ) : (
           <>

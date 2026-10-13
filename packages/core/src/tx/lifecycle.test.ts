@@ -59,13 +59,6 @@ describe("TxLifecycle (D-052)", () => {
     expect(reduceTx(scheduled, { type: "undo-elapsed" })).toEqual({ kind: "signing" });
   });
 
-  it("tracks delivered legs for multi-leg flows", () => {
-    const confirmed = run([{ type: "confirm", nowMs: 0 }, { type: "submitted", txHash: HASH, validBeforeSec: null }, { type: "receipt", txHash: HASH, status: "success" }]);
-    const one = reduceTx(confirmed, { type: "leg-delivered", legs: 2 });
-    expect(one).toEqual({ kind: "settled", txHash: HASH, legs: 2, delivered: 1 });
-    expect(reduceTx(one, { type: "leg-delivered", legs: 2 })).toMatchObject({ delivered: 2 });
-  });
-
   it("picks the confirmation tier", () => {
     expect(confirmTierFor({ signer: "access-key", withinCaps: true, irreversible: false })).toBe("tap");
     expect(confirmTierFor({ signer: "access-key", withinCaps: false, irreversible: false })).toBe("passkey");

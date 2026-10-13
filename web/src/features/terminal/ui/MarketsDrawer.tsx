@@ -100,7 +100,7 @@ export function MarketsDrawer({ open, onOpenChange, symbol, set, nowSec, onPick 
             {(tab === "all" || tab === "stocks") && !q ? (
               <section aria-label={TERMINAL.picker.paused.title} className="tm-paused">
                 <p className="tm-market-group">{TERMINAL.picker.paused.title}</p>
-                {[TERMINAL.picker.paused.nflx, TERMINAL.picker.paused.preIpo].map((p) => (
+                {[TERMINAL.picker.paused.preIpo].map((p) => (
                   <div key={p.name} className="tm-pos-text tm-paused-row">
                     <span className="tm-pos-title">{p.name}</span>
                     <span className="tm-pos-meta">{p.why}</span>

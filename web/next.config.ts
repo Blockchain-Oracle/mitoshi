@@ -30,6 +30,11 @@ const config: NextConfig = {
     { source: "/stocks", destination: "/markets", permanent: true },
     { source: "/stocks/:symbol", destination: "/tickers/:symbol", permanent: true },
     // /docs and /docs/* are not here: `proxy.ts` answers them with a 308 to the matching guide on the docs site (D-230).
+    // D-231: the bridge and its Backing page left the product. Old links land on the stock's hub or on Markets (removed,
+    // not moved, so no `?note=moved`).
+    { source: "/bridge", has: [{ type: "query", key: "t", value: "(?<sym>TSLA|AMZN|PLTR|AMD)" }], destination: "/tickers/:sym", permanent: true },
+    { source: "/bridge", destination: "/markets", permanent: true },
+    { source: "/reserves", destination: "/markets", permanent: true },
   ],
 };
 

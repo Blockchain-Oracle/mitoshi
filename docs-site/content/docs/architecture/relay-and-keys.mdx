@@ -5,7 +5,6 @@ sources:
   - web/src/server/relay.ts
   - packages/markets/src/relay/gates.ts
   - packages/markets/src/relay/policies/index.ts
-  - packages/markets/src/relay/policies/stocks.ts
   - packages/markets/src/relay/policies/arena.ts
   - packages/markets/src/relay/policies/themes.ts
   - packages/markets/src/keys/wallet-key.ts
@@ -18,9 +17,9 @@ sources:
 
 Tempo transactions can carry a separate **fee payer**: the sender signs the call, and another account signs to pay its network fee in a stablecoin. Mitoshi's relay, at `/api/relay` on the web app, is that fee payer. It can't change your call — your signature covers it — and it can't spend from your account.
 
-The relay sponsors a call only if a **policy** for that contract allows it. There is one policy per deployed area — the engine, both Trading Balances, the maker vault, Range, Parlay, Boost, the private desk, the duel arena, strategies, themes, launch, stocks, agents and keys — and CI fails if a deployed area has none. Money **coming in** is never sponsored: deposits, `depositAndGrant`, grants and supply are always paid by you.
+The relay sponsors a call only if a **policy** for that contract allows it. There is one policy per deployed area — the engine, both Trading Balances, the maker vault, Range, Parlay, Boost, the private desk, the duel arena, strategies, themes, launch, agents and keys — and CI fails if a deployed area has none. Money **coming in** is never sponsored: deposits, `depositAndGrant`, grants and supply are always paid by you.
 
-The stocks policy pays for the two ways out of a held bridge credit — `claimDeferred` and `sendDeferred`, whose LayerZero fee is still yours — and never for a bridge-out. The arena's pays for a duel's cranks, refunds and claims, never a pot or a pick. The themes policy pays for a follow only as the pair `[authorize the agent's key, follow]`.
+The arena's policy pays for a duel's cranks, refunds and claims, never a pot or a pick. The themes policy pays for a follow only as the pair `[authorize the agent's key, follow]`.
 
 Its gates, at deployment:
 

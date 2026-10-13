@@ -1,11 +1,10 @@
 ---
 title: Deployed addresses
-description: Every contract Mitoshi deployed on Tempo testnet and Base Sepolia, straight from the deployment fragments the app itself reads.
+description: The contracts Mitoshi runs on Tempo testnet, straight from the deployment fragments the app itself reads.
 sources:
   - contracts/deployments/README.md
   - contracts/deployments/42431/engine.json
   - contracts/deployments/42431/vault2.json
-  - contracts/deployments/84532/stocks.json
   - packages/clients/src/deployments.ts
 ---
 
@@ -21,8 +20,4 @@ Predeployed by Tempo and used as-is: **pathUSD** `0x20C0000000000000000000000000
 
 <StockPools />
 
-## Base Sepolia (chain 84532) — the testnet bridge hop
-
-<Deployments chain="84532" areas={["stocks", "lz"]} />
-
-Nothing is deployed on Tempo mainnet or Robinhood Chain yet.
+Nothing is deployed on Tempo mainnet yet.

@@ -39,8 +39,7 @@ a record of what pays and when, with a CSV; and any position can be shared as a 
   reserves are our contracts on Tempo.
 - **RedStone** — live: signed price packages for every Window's opening and closing print, verified on chain by our
   print verifier.
-- **Uniswap v4** — deployed: stock pools with a guard hook (screens next).
-- **LayerZero** — deployed: the bridge contracts for stock tokens from Robinhood Chain (not live yet).
+- **Uniswap v4** — replayed on Moderato at mainnet's addresses; graduated memecoins trade in its pools.
 - Tools: Foundry, Next.js 16 / React 19, viem and wagmi with Tempo support, the Tempo accounts SDK, Postgres
   (indexer), self-hosted on Coolify.
 
