@@ -143,6 +143,8 @@ span.top-money, span.top-account { display: contents; }
 /* Pages written for the old full-width frame carry `px-gutter` (and `lg:px-gutter-desktop`): inside the stage that was a
    second inset; the stage is the only one (D-226). */
 .app-stage [class*="px-gutter"] { padding-inline: 0; }
+/* A pending page sits in the one stage too (R4-11, D-227): shell-fixes' gutter was a second inset. */
+.app-stage .capability-pending { padding: 0; margin: 0; }
 /* Where a sticky bar pins inside the stage (Owarine `shell.css`): under the stage's top edge on desktop, where the top
  * line scrolls away; under the phone's sticky top line. */
 :root { --stage-sticky-top: 0.75rem; }

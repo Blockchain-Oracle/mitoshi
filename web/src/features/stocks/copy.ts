@@ -2,7 +2,7 @@
 export const STOCKS = {
   title: "Stocks",
   eyebrow: "Stock",
-  intro: (name: string) => `Everything on ${name}: the print, the session, its Windows, its headlines.`,
+  intro: (name: string) => `${name}: price, session, Windows, headlines.`,
   spot: "Spot",
   spotStale: "last print",
   report: "Next report",

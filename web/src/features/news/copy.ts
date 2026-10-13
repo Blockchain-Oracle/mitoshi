@@ -8,16 +8,13 @@ export const NEWS = {
   headingAccent: "News",
   /** Verbatim from the reference: "headlines that move the market". */
   headingJp: "市場を動かす見出し。",
-  intro: "The stories on the coins and stocks Mitoshi lists, newest first, each tagged by the words in its headline. Read the room before you call the close.",
   credit: "Headlines via Finnhub, Cointelegraph and Decrypt.",
   lead: "Latest",
   list: "The wire",
-  refreshed: (at: string) => `Read ${at} UTC; refreshed every few minutes.`,
-  partial: "One of the sources couldn't be read just now, so this is what the others carry.",
+  partial: "One source didn't answer.",
   quiet: "The wire is quiet. Headlines return shortly.",
   reading: "Reading the wire…",
   sentiment: { positive: "bullish", negative: "bearish", neutral: "neutral" } satisfies Record<Sentiment, string>,
-  tone: "Tagged from the headline's words, not a market signal.",
   trade: (symbol: string) => `Trade ${symbol}`,
   story: "Story",
 } as const;

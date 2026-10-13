@@ -1,6 +1,6 @@
 export const ALERTS = {
   title: "Price alerts",
-  lead: (symbol: string) => `Get told when ${symbol} crosses a price. Alerts live on this device; it tells you while Mitoshi is open, with a browser notification if you allow it.`,
+  lead: (symbol: string) => `${symbol} crosses a price · fires while Mitoshi is open`,
   above: "Above",
   below: "Below",
   target: "Price",

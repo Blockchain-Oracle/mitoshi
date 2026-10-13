@@ -1,4 +1,5 @@
 "use client";
+// R4-11 (D-227): the body of the account page's "Trading keys" sheet; the filter sits in its head, one note at its foot.
 // The keys list (D-053): Active / Stopped (21st 23552), a skeleton only if the read is slow (21st 23557), one-tap revoke
 // per key and hold-to-revoke-all (21st 23527) — each a sponsored `key-revoke` through the TxLifecycle, so stopping a key
 // never needs funds. Coverage says how far back the chain was read; nothing is claimed beyond it.
@@ -55,9 +56,8 @@ export function KeysSection({ account, network }: { account: Address; network: N
 
   return (
     <MotionScope>
-      <section aria-labelledby="keys-title" className="flex flex-col gap-4">
+      <section aria-label={K.title} className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 id="keys-title" className="type-title text-ink">{K.title}</h2>
           <SegmentedControl
             label={K.filterLabel}
             value={filter}
@@ -65,7 +65,6 @@ export function KeysSection({ account, network }: { account: Address; network: N
             options={[{ value: "active", label: `${K.active}${data ? ` · ${active.length}` : ""}` }, { value: "stopped", label: `${K.stopped}${data ? ` · ${stopped.length}` : ""}` }]}
           />
         </div>
-        <p className="type-caption text-ink-secondary">{K.revokeHint}</p>
         {keys.isError ? (
           <div role="alert" className="flex flex-col items-start gap-2">
             <p className="type-body text-ink">{K.unavailable}</p>
@@ -83,7 +82,7 @@ export function KeysSection({ account, network }: { account: Address; network: N
             {shown.length === 0 ? (
               <p className="type-body text-ink-secondary">{filter === "active" ? K.none : K.noneStopped}</p>
             ) : (
-              <ul className="flex flex-col gap-3">
+              <ul className="flex flex-col">
                 {shown.map((k) => (
                   <KeyRow key={k.keyId} thisDevice={isDeviceKey(k)} keyState={k} nowSec={nowSec} network={network} revoking={pending.includes(k.keyId.toLowerCase())} onRevoke={pending.length ? undefined : () => void revoke([k])} />
                 ))}
@@ -99,7 +98,7 @@ export function KeysSection({ account, network }: { account: Address; network: N
         ) : null}
         {data ? (
           <p className="type-caption text-ink-secondary" aria-live="polite">
-            {data.coverage.complete ? K.complete : data.coverage.fromTimeSec ? K.scanning(whenText(data.coverage.fromTimeSec)) : K.loading}
+            {data.coverage.complete ? K.complete : data.coverage.fromTimeSec ? K.scanning(whenText(data.coverage.fromTimeSec)) : K.loading} · {K.revokeHint}
           </p>
         ) : null}
       </section>

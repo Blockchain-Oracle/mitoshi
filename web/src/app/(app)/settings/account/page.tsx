@@ -2,7 +2,7 @@
 // and region posture. Client-rendered from the wallet session; the chain is read through `/api/keys`.
 import { AccountSettings } from "@/features/account";
 
-export const metadata = { title: "Account & keys" };
+export const metadata = { title: "Account" };
 
 export default function AccountSettingsPage() {
   return <AccountSettings />;

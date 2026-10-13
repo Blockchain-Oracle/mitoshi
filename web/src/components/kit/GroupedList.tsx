@@ -18,11 +18,13 @@ export function GroupedList({ title, children }: { title: string; children: Reac
   );
 }
 
-export function GroupedItem({ icon: Icon, label, detail, onClick, href }: { icon: LucideIcon; label: string; detail?: string; onClick?: () => void; href?: string }) {
+/** `dot`: a warning dot beside the detail (a backup the account needs, R4-11) — the detail says what it means. */
+export function GroupedItem({ icon: Icon, label, detail, onClick, href, dot = false, tone }: { icon: LucideIcon; label: string; detail?: string; onClick?: () => void; href?: string; dot?: boolean; tone?: "danger" }) {
   const body = (
     <>
       <Icon aria-hidden className="kit-item-icon" />
-      <span className="kit-item-label">{label}</span>
+      <span className="kit-item-label" data-tone={tone}>{label}</span>
+      {dot ? <span aria-hidden className="kit-item-dot" /> : null}
       {detail ? <span className="kit-item-detail">{detail}</span> : null}
       <ChevronRight aria-hidden className="kit-item-chevron" />
     </>

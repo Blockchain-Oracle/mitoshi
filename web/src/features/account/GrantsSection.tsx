@@ -1,4 +1,5 @@
 "use client";
+// R4-11 (D-227): the body of the account page's "Trading Balance grants" sheet, one row per grant, one footnote.
 // The Trading Balance's grants on the trust surface (D44, UX-07; Masayume 68f7a09:web/src/features/vault/VaultGrants.tsx
 // "grants you allow" + the session manager's details): every live grant with what it may do, what is left, when it
 // ends and which key holds it, each stoppable in one step (the relay pays — an exit never needs funds), hold-to-stop-all
@@ -11,8 +12,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { MotionScope } from "@/components/motion-scope";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
-import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
-import { exitAllowanceText, leftNowBase, spentTodayBase, usd } from "@/features/session/caps";
+import { HoldToConfirm, PillButton } from "@/components/kit";
+import { exitAllowanceText, leftNowBase, usd } from "@/features/session/caps";
 import { useSessionActions, useSessionView } from "@/features/session/context";
 import { ACCOUNT_PAGE } from "./copy";
 import { whenText } from "./KeyRow";
@@ -34,36 +35,43 @@ function useGrantHistory(owner: Address) {
   });
 }
 
-// While a stop runs every row's button is disabled and the one being stopped says so (the row stays until the re-read).
+/** The grants that can still act (not revoked), from a vault snapshot. */
+export function liveGrantsOf(snapshot: { grants: Record<string, VaultGrant | null> }): VaultGrant[] {
+  return Object.values(snapshot.grants).filter((g): g is VaultGrant => g !== null && !g.revoked);
+}
+
+/** The settings row's count; null until the Trading Balance has been read (0 where it isn't deployed). */
+export function useGrantCounts(account: Address): number | null {
+  const snap = useVaultSnapshot(account);
+  if (!snap) return null;
+  return snap.ok && snap.value ? liveGrantsOf(snap.value).length : 0;
+}
+
+// One grouped row per grant (Owarine 90a91d71:web/src/features/vault/VaultGrants.tsx, R4-11): the kind and a "this
+// device" tag, its caps as chips, what is left today, and Stop. While a stop runs every Stop is disabled.
 function LiveGrant({ grant, thisDevice, nowSec, onStop, stopping, busy }: { grant: VaultGrant; thisDevice: boolean; nowSec: number; onStop: () => void; stopping: boolean; busy: boolean }) {
   const expired = grant.expiresAtSec < nowSec;
   return (
-    <li className="flex flex-col gap-3 rounded-lg border border-hairline bg-surface-1 p-4">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-col">
-          <span className="type-body-strong text-ink">{G.kind[grant.kind]}{thisDevice ? ` · ${G.thisDevice}` : ""}</span>
-          <span className="numbers type-caption text-ink-secondary">{G.key} {shortHex(grant.actor)} · #{grant.grantId.toString()}</span>
-        </div>
-        <span className="rounded-full border border-border-strong px-2 py-0.5 type-label-micro text-ink">{expired ? G.expired : G.active}</span>
+    <li className="acct-grant">
+      <div className="acct-grant-main">
+        <span className="type-body-strong text-ink">
+          {G.kind[grant.kind]}
+          {thisDevice ? <span className="acct-tag">{G.thisDevice}</span> : null}
+          {expired ? <span className="acct-tag">{G.expired}</span> : null}
+        </span>
+        <span className="acct-grant-chips numbers">
+          {grant.kind === "exit"
+            ? G.exitScope(grant.exitToleranceBps !== undefined ? exitAllowanceText(grant.exitToleranceBps, grant.exitSlackBps) : null, grant.caps.market ? shortHex(grant.caps.market) : null)
+            : G.scopeValue(usd(grant.caps.maxStakePerTradeBase), usd(grant.caps.maxDailySpendBase), grant.caps.maxOpenPositions)}
+        </span>
+        <span className="acct-grant-meta numbers">
+          {grant.kind === "exit" ? null : <>{G.left} {usd(leftNowBase(grant, nowSec))} · </>}
+          {G.expires} {whenText(BigInt(grant.expiresAtSec))} · {G.key} {shortHex(grant.actor)}
+        </span>
       </div>
-      {grant.kind === "exit" ? (
-        // Sell-only, no budget (S24): its caps and spend would read as zeros, so the row says what it does instead.
-        <dl className="grid grid-cols-1 gap-1 type-caption text-ink-secondary">
-          <div><dt className="inline">{G.scope}: </dt><dd className="inline text-ink">{G.exitScope(grant.exitToleranceBps !== undefined ? exitAllowanceText(grant.exitToleranceBps, grant.exitSlackBps) : null, grant.caps.market ? shortHex(grant.caps.market) : null)}</dd></div>
-          <div><dt className="inline">{G.expires}: </dt><dd className="inline text-ink">{whenText(BigInt(grant.expiresAtSec))}</dd></div>
-        </dl>
-      ) : (
-        <dl className="grid grid-cols-1 gap-1 type-caption text-ink-secondary sm:grid-cols-2">
-          <div><dt className="inline">{G.scope}: </dt><dd className="inline text-ink">{G.scopeValue(usd(grant.caps.maxStakePerTradeBase), usd(grant.caps.maxDailySpendBase), grant.caps.maxOpenPositions)}</dd></div>
-          <div><dt className="inline">{G.left}: </dt><dd className="numbers inline text-ink">{G.leftValue(usd(leftNowBase(grant, nowSec)), usd(grant.budgetBase))}</dd></div>
-          <div><dt className="inline">{G.spentToday}: </dt><dd className="numbers inline text-ink">{usd(spentTodayBase(grant, nowSec))}</dd></div>
-          <div><dt className="inline">{G.expires}: </dt><dd className="inline text-ink">{whenText(BigInt(grant.expiresAtSec))}</dd></div>
-        </dl>
-      )}
-      <p className="type-caption text-ink-secondary">{grant.kind === "exit" ? G.exitNever : G.never}</p>
-      <button type="button" onClick={onStop} disabled={busy} aria-busy={stopping} className="min-h-touch self-start rounded-md border border-border-strong px-4 type-body-strong text-ink disabled:opacity-50">
+      <PillButton tone="ghost" size="sm" onClick={onStop} disabled={busy} aria-busy={stopping}>
         {stopping ? G.stopping : G.stop}
-      </button>
+      </PillButton>
     </li>
   );
 }
@@ -77,7 +85,7 @@ export function GrantsSection({ account, network }: { account: Address; network:
   const [stopping, setStopping] = useState<string[]>([]);
   const nowSec = Math.floor(Date.now() / 1000);
   const snapshot = snap?.ok ? snap.value : null;
-  const live = snapshot ? (Object.values(snapshot.grants).filter((g): g is VaultGrant => g !== null && !g.revoked)) : [];
+  const live = snapshot ? liveGrantsOf(snapshot) : [];
   const liveIds = new Set(live.map((g) => g.grantId.toString()));
   const stopped = (history.data ?? []).filter((g) => !liveIds.has(g.grant_id));
 
@@ -94,20 +102,19 @@ export function GrantsSection({ account, network }: { account: Address; network:
 
   return (
     <MotionScope>
-      <section aria-labelledby="grants-title" className="flex flex-col gap-4 rounded-lg border border-hairline bg-surface-1 p-4">
-        <h2 id="grants-title" className="type-title text-ink">{G.title}</h2>
-        <p className="type-caption text-ink-secondary">{G.note}</p>
+      <section aria-label={G.title} className="flex flex-col gap-4">
         {snap === null ? <p className="type-body text-ink-secondary" aria-busy="true">{G.loading}</p> : null}
         {snap && !snap.ok ? <p role="alert" className="type-body text-ink">{G.unavailable}</p> : null}
         {snap?.ok && snapshot === null ? <p className="type-body text-ink-secondary">{G.notDeployed}</p> : null}
         {snapshot && live.length === 0 ? <p className="type-body text-ink-secondary">{G.none}</p> : null}
         {live.length > 0 ? (
-          <ul className="flex flex-col gap-3">
+          <ul className="acct-grants">
             {live.map((g) => (
               <LiveGrant key={g.grantId.toString()} grant={g} nowSec={nowSec} thisDevice={view.keyAddress !== null && g.actor.toLowerCase() === view.keyAddress.toLowerCase()} stopping={stopping.includes(g.grantId.toString())} busy={stopping.length > 0} onStop={() => void stop([g])} />
             ))}
           </ul>
         ) : null}
+        {live.length > 0 ? <p className="type-caption text-ink-secondary">{G.note}</p> : null}
         {tx.state.kind === "failed" ? <TxFailureCard state={tx.state} onRetry={() => tx.dispatch({ type: "reset" })} /> : null}
         {live.length > 1 ? (
           <HoldToConfirm onConfirm={() => void stop(live)} confirmLabel={G.stopping} disabled={stopping.length > 0} className="self-start">{G.stopAll(live.length)}</HoldToConfirm>
