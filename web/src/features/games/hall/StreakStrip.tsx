@@ -11,7 +11,7 @@ import { useLeaderboard } from "@/features/leaderboard/useLeaderboard";
 import { useWalletSession } from "@/lib/wallet-session";
 import { ARCADE } from "../arcade/copy";
 import { GAMES } from "../copy";
-import { useLuckyHistory } from "../lucky/LuckyHistory";
+import { useLuckyHistory } from "../lucky/useLuckyHistory";
 import { useBoard } from "./data";
 
 function ArcadeBest({ game, address }: { game: "line-rider" | "candle-hop"; address: string }) {

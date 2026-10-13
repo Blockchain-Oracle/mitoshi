@@ -4,7 +4,8 @@
 // TextTabs (Ported from Owarine 90a91d71:web/src/components/kit/TextTabs.tsx, R4-2) over Line Rider and Candle Hop —
 // the replayed-run boards, 50 deep — and Streaks, the venue's best runs of settled wins (`/api/leaderboard?sort=streak`).
 // Each on the owner-approved LeaderboardPodium and LeaderboardRankings with the marble AccountAvatar. A Duel tab joins
-// with the arena: the duel ladder is the first tab. Lucky's streak ladder is its own tab.
+// with the arena: the duel ladder is the first tab. Lucky's streak ladder is its own tab. Before its rows each board is
+// one of RankStates' (R6 games §4.8): bones, a failed read with Retry, no store, or an empty ladder with its game.
 import { useEffect, useState } from "react";
 import { TextTabs } from "@/components/kit/TextTabs";
 import { LeaderboardPodium, type PodiumPlace } from "@/components/ui/leaderboard-podium";
@@ -13,15 +14,16 @@ import { useLeaderboard } from "@/features/leaderboard/useLeaderboard";
 import { useWalletSession } from "@/lib/wallet-session";
 import { ARCADE } from "../arcade/copy";
 import { GAMES } from "../copy";
-import { useBoard } from "../hall/data";
+import { useBoardQuery } from "../hall/data";
 import { useQuery } from "@tanstack/react-query";
 import type { LuckyBoardWire } from "../lucky/lucky-wire";
 import { SeasonBanner } from "../duel/SeasonBanner";
 import "../duel/duel.css";
+import { boardGate, type RankTab } from "./RankStates";
 import "./rank.css";
 import "@/components/kit/kit.css";
 
-type Tab = "duel" | "line-rider" | "candle-hop" | "streaks" | "lucky";
+type Tab = RankTab;
 const TABS = (Object.keys(GAMES.rank.tabs) as Tab[]).map((value) => ({ value, label: GAMES.rank.tabs[value] }));
 const RANK_LIMIT = 50;
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
@@ -36,11 +38,10 @@ function Board({ places, rows, you, youOwner, label }: { places: PodiumPlace[]; 
 }
 
 function ArcadeBoard({ game, address }: { game: "line-rider" | "candle-hop"; address: string | null }) {
-  const board = useBoard(game, address, RANK_LIMIT);
-  if (board === undefined) return <p className="rk-note">{GAMES.rank.loading}</p>;
-  if (board === null) return <p className="rk-note">{GAMES.rank.offline}</p>;
-  if (!board.configured) return <p className="rk-note">{GAMES.rank.noStore}</p>;
-  if (board.rows.length === 0) return <p className="rk-note">{GAMES.rank.empty}</p>;
+  const q = useBoardQuery(game, address, RANK_LIMIT);
+  const board = q.data;
+  const gate = boardGate(q, game, board && { configured: board.configured, count: board.rows.length });
+  if (gate || !board) return gate;
   const me = address?.toLowerCase() ?? null;
   const rows: RankingRow[] = board.rows.map((r, i) => ({
     rank: i + 1,
@@ -60,9 +61,8 @@ function ArcadeBoard({ game, address }: { game: "line-rider" | "candle-hop"; add
 
 function StreakBoard({ address }: { address: string | null }) {
   const board = useLeaderboard("all", "streak", address);
-  if (board.isLoading) return <p className="rk-note">{GAMES.rank.loading}</p>;
-  if (board.isError || !board.data) return <p className="rk-note">{GAMES.rank.offline}</p>;
-  if (board.data.rankings.length === 0) return <p className="rk-note">{GAMES.rank.streakEmpty}</p>;
+  const gate = boardGate(board, "streaks", board.data && { configured: true, count: board.data.rankings.length });
+  if (gate || !board.data) return gate;
   const me = address?.toLowerCase() ?? null;
   const toRow = (r: (typeof board.data.rankings)[number]): RankingRow => ({
     rank: r.rank,
@@ -89,10 +89,8 @@ function LuckyBoard({ address }: { address: string | null }) {
     },
     retry: 1,
   });
-  if (q.isLoading) return <p className="rk-note">{GAMES.rank.loading}</p>;
-  if (q.isError || !q.data) return <p className="rk-note">{GAMES.rank.offline}</p>;
-  if (!q.data.configured) return <p className="rk-note">{GAMES.rank.noStore}</p>;
-  if (q.data.rows.length === 0) return <p className="rk-note">{GAMES.rank.streakEmpty}</p>;
+  const gate = boardGate(q, "lucky", q.data && { configured: q.data.configured, count: q.data.rows.length });
+  if (gate || !q.data) return gate;
   const me = address?.toLowerCase() ?? null;
   const rows: RankingRow[] = q.data.rows.map((r, i) => ({ rank: i + 1, owner: r.wallet, label: short(r.wallet), byline: GAMES.rank.luckyBest(r.best, r.draws), figure: GAMES.rank.streakValue(r.streak), tone: "up", href: `/u/${r.wallet}` }));
   const places: PodiumPlace[] = rows.slice(0, 3).map((r) => ({ rank: r.rank, owner: r.owner, label: r.label, figure: r.figure, tone: r.tone, href: r.href }));
@@ -110,10 +108,8 @@ function DuelBoard({ address }: { address: string | null }) {
     },
     retry: 1,
   });
-  if (q.isLoading) return <p className="rk-note">{GAMES.rank.loading}</p>;
-  if (q.isError || !q.data) return <p className="rk-note">{GAMES.rank.offline}</p>;
-  if (!q.data.configured) return <p className="rk-note">{GAMES.rank.noStore}</p>;
-  if (q.data.rows.length === 0) return <p className="rk-note">{GAMES.rank.duelEmpty}</p>;
+  const gate = boardGate(q, "duel", q.data && { configured: q.data.configured, count: q.data.rows.length });
+  if (gate || !q.data) return gate;
   const me = address?.toLowerCase() ?? null;
   const rows: RankingRow[] = q.data.rows.map((r, i) => ({ rank: i + 1, owner: r.wallet, label: short(r.wallet), byline: GAMES.rank.duelRecord(r.won, r.finished), figure: String(r.rating), tone: "flat", href: `/u/${r.wallet}` }));
   const places: PodiumPlace[] = rows.slice(0, 3).map((r) => ({ rank: r.rank, owner: r.owner, label: r.label, figure: r.figure, tone: r.tone, href: r.href }));

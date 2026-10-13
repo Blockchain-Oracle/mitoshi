@@ -12,7 +12,7 @@ import { startBgm, stopBgm } from "../audio";
 import { useImmersive, useGames } from "../GamesProvider";
 import { LUCKY } from "./copy";
 import { LuckyDeal } from "./LuckyDeal";
-import { useLuckyHistory } from "./LuckyHistory";
+import { useLuckyHistory } from "./useLuckyHistory";
 import { LuckyReels } from "./LuckyReels";
 import { LuckySettled } from "./LuckySettled";
 import type { LuckyDealWire } from "./lucky-wire";

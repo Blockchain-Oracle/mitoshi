@@ -21,7 +21,7 @@ import { useDuelPresence } from "./MatchTile";
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 const CLUSTER_MAX = 5;
 
-function useDuelRecent() {
+export function useDuelRecent() {
   return useQuery({
     queryKey: ["games", "duel", "recent"],
     queryFn: async () => {

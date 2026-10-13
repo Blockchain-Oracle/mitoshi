@@ -61,22 +61,31 @@ export interface RecentRunWire {
   wallet: string;
   score: number;
   at: string;
+  seed?: string | null;
+  calm?: boolean;
   best?: boolean;
 }
 
+export function useRecentRunsQuery() {
+  return useQuery({ queryKey: ["games", "arcade", "recent"], queryFn: () => json<{ configured?: boolean; rows: RecentRunWire[] }>("/api/games/arcade/recent"), refetchInterval: 30_000, retry: 1 });
+}
+
 export function useRecentRuns(): RecentRunWire[] {
-  const q = useQuery({ queryKey: ["games", "arcade", "recent"], queryFn: () => json<{ rows: RecentRunWire[] }>("/api/games/arcade/recent"), refetchInterval: 30_000, retry: 1 });
-  return q.data?.rows ?? [];
+  return useRecentRunsQuery().data?.rows ?? [];
 }
 
 /** One arcade board with the caller's best; `undefined` while reading, `null` when it did not answer. */
-export function useBoard(game: "line-rider" | "candle-hop", address: string | null, limit?: number): BoardWire | null | undefined {
-  const q = useQuery({
+export function useBoardQuery(game: "line-rider" | "candle-hop", address: string | null, limit?: number) {
+  return useQuery({
     queryKey: ["games", "arcade", "board", game, address, limit ?? 10],
     queryFn: () => json<BoardWire>(`/api/games/arcade/board?game=${game}${address ? `&address=${address}` : ""}${limit ? `&limit=${limit}` : ""}`),
     staleTime: 30_000,
     retry: 1,
   });
+}
+
+export function useBoard(game: "line-rider" | "candle-hop", address: string | null, limit?: number): BoardWire | null | undefined {
+  const q = useBoardQuery(game, address, limit);
   return q.isError ? null : q.data;
 }
 

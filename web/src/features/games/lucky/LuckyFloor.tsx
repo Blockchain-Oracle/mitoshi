@@ -19,7 +19,7 @@ const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 const usd = (base: string) => `$${formatBaseUnits(BigInt(base), 6, { minDp: 0 })}`;
 const STREAKS = 5;
 
-function useRecentDraws() {
+export function useRecentDraws() {
   return useQuery({
     queryKey: ["games", "lucky", "recent"],
     queryFn: async () => {

@@ -16,7 +16,7 @@ import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { SIDE_WORD } from "@/features/markets/side-styles";
 import { gameKey } from "../keys";
 import { LUCKY } from "./copy";
-import { useLuckyHistory } from "./LuckyHistory";
+import { useLuckyHistory } from "./useLuckyHistory";
 import type { LuckyRowWire } from "./lucky-wire";
 import "@/components/kit/kit.css";
 
