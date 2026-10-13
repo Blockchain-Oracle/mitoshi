@@ -12,6 +12,8 @@ export const THEMES = {
     index: "Weighted price",
     priced: (n: number, of: number) => (n === of ? "Every member priced" : `${n} of ${of} priced`),
     noPrice: "No prices yet",
+    week: (move: string) => `${move} this week`,
+    weekNone: "No week yet",
     cadence: (every: string, when: string) => `Rebalances ${every} · ${when}`,
     paused: (when: string) => `Paused · market closed · trades in ${when}`,
     follow: "Follow",
