@@ -1,10 +1,11 @@
 "use client";
 // Tradash's Position details (RV-47) as a right-edge drawer (D-190), on Mitoshi's facts: the Window and where the
 // position is held, the Line (the opening print) and the entry spot, avg in and what Close pays now (both in cents a
-// contract), PnL, the settle time and the Window's proof page; Reduce (25 / 50 / 75 / 100 % through the one-tap Close),
+// contract), PnL, the settle time and the Window's proof page; Reduce (round 7: ReducePanel — pick, preview, hold),
 // Add (a centred modal), "Show on the chart" for a Window not on screen, and Share (RV-83: the S5 share card in a
 // centred modal, loaded on the tap). D-227: Staked is the open cost of what is held, Avg in its price a contract (a
 // Boost's own entry price), Close pays now the walk for every home, and the share card's ROI is the row's.
+import { ReducePanel } from "./ReducePanel";
 import { formatCadence } from "@cwf/core/copy";
 import { isOk } from "@cwf/core";
 import { formatBaseUnits } from "@cwf/core/units";
@@ -28,7 +29,6 @@ import { avgTicksOf } from "../position-value";
 import { PositionGone } from "./PositionGone";
 import "@/components/kit/kit.css";
 
-const REDUCE = [25n, 50n, 75n, 100n] as const;
 const ShareModal = dynamic(() => import("@/features/share/ShareModal").then((m) => m.ShareModal), { ssr: false });
 type ShareSubject = import("@/features/share/ShareModal").ShareSubject;
 
@@ -87,17 +87,7 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
               <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
             ))}
           </dl>
-          <div className="tm-field">
-            <span className="tm-field-head">{TERMINAL.details.reduce}</span>
-            <div className="tm-choices">
-              {/* A Boost sells whole (`LeverageReserve.close`): Close only. */}
-              {(p.boost ? [100n] : REDUCE).map((pct) => (
-                <button key={String(pct)} type="button" className="tm-choice" disabled={busy || !tradable} onClick={() => (tapFeedback(), onReduce(p, (p.heldRaw * pct) / 100n))}>
-                  {pct === 100n ? TERMINAL.buttons.close : `${pct}%`}
-                </button>
-              ))}
-            </div>
-          </div>
+          <ReducePanel p={p} valueBase={value?.valueBase ?? null} tradable={tradable} busy={busy} masked={masked} onReduce={onReduce} />
           <div className="tm-choices">
             {p.boost ? null : <button type="button" className="tm-choice" disabled={!tradable} onClick={() => (tapFeedback(), setAdding(true))}>{TERMINAL.details.add}</button>}
             <button type="button" className="tm-choice" disabled={!tradable} onClick={() => (tapFeedback(), onExits(p))}>{TERMINAL.exits.open}</button>
