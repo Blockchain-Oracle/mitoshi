@@ -1,59 +1,51 @@
 "use client";
 /**
- * One open bet (Ported from Agari 03b30ab:web/src/features/markets/portfolio/BetRow.tsx, over Masayume 68f7a09's): live
- * or settling, the Window, the countdown, stake, worth now and P&L; before lock a one-sided bet carries the plain
- * cash-out (L-35) that Masayume never connected. D-227: on the terminal's value engine — Staked is the open cost of what
- * is held, Worth now is what Close pays (the exit walk, not the last trade), P&L is the terminal's; a Trading Balance
- * bet is tagged "Balance" and closes on its own lane; a hedge reads "UP + DOWN" with its legs summed.
+ * One open bet — Ported from Owarine 90a91d71:web/src/features/markets/portfolio/BetRow.tsx (over Agari 03b30ab's and
+ * Masayume 68f7a09's), R4-4 (D-227): live or settling, the Window, its home (Trading Balance, or a Boost's multiple),
+ * the countdown, stake → worth now and P&L, and Close. On the terminal's value engine — Staked is the open cost of what
+ * is held, Worth now is what Close pays (the exit walk), P&L is the terminal's — and the terminal's one-tap Close for all
+ * three homes (`useTerminalClose`: the wallet's SELL, the vault's sell lane, the reserve's close; a requote offers
+ * "Close for $X"). A hedge reads "UP + DOWN" with its legs summed. Two lines on a phone (the call and its clock, then
+ * the money and Close), Owarine's one line from 640 px. Every amount wears the privacy mask.
  */
-import type { Address, Side } from "@cwf/core";
+import type { Side } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import { countdown } from "@cwf/core/lifecycle";
 import { marketDeepLink } from "@cwf/core/urls";
 import Link from "next/link";
-import { Countdown, Money } from "@/components/data";
-import { TERMINAL } from "@/features/terminal/copy";
-import { isPriced, statusText } from "@/features/terminal/position-return";
+import { Countdown } from "@/components/data";
+import { Masked, PillButton } from "@/components/kit";
+import { livePnlText, money } from "@/features/terminal/format";
+import { canTrade, isPriced, statusText } from "@/features/terminal/position-return";
 import type { TerminalPosition } from "@/features/terminal/terminal-positions";
 import type { useTerminalClose } from "@/features/terminal/useTerminalClose";
 import type { PositionValue } from "@/features/terminal/usePositionValue";
+import { BOOST } from "@/features/boost/copy";
+import type { useBoostWrites } from "@/features/boost/useBoostWrites";
 import { useNowMs } from "@/lib/clock";
 import { cn } from "@/lib/utils";
-import { CASH_OUT, PORTFOLIO } from "../copy";
+import { CASH_OUT, HISTORY, PORTFOLIO } from "../copy";
 import { AssetDisc } from "../hero/AssetDisc";
 import { SIDE_WORD } from "../side-styles";
-import { useCashOut } from "./useCashOut";
-
-/**
- * Cash-out in one tap, as the terminal's CLOSE (D-197): the tap reads the exit and sells at its floor less the close
- * tolerance; a requote past the tolerance becomes "Close for $X" at the fresh floor.
- */
-function CashOut({ p, wallet }: { p: TerminalPosition; wallet: Address }) {
-  const { canSign, busy, note, retry, close, money } = useCashOut({ marketId: p.marketId, side: p.side, heldRaw: p.heldRaw, decimals: p.decimals }, wallet);
-  if (!canSign) return null;
-  return (
-    <>
-      <button type="button" className="min-h-touch type-caption text-accent underline" disabled={busy} aria-busy={busy} onClick={() => void close(retry ?? undefined)}>
-        {busy ? CASH_OUT.cashingOut : retry ? CASH_OUT.closeFor(money(retry.minProceedsBase)) : CASH_OUT.cashOut}
-      </button>
-      {note && <span className="basis-full type-caption text-warning sm:text-right" role="status">{note}</span>}
-    </>
-  );
-}
-
-/** A Trading Balance bet closes on the vault's sell lane (the terminal's Close: the session key when armed). */
-function BalanceCashOut({ p, v, closer }: { p: TerminalPosition; v: PositionValue | null; closer: ReturnType<typeof useTerminalClose> }) {
-  const busy = closer.busy === p.id;
-  return (
-    <button type="button" className="min-h-touch type-caption text-accent underline" disabled={busy} aria-busy={busy} onClick={() => void closer.close(p, v?.exit ?? null)}>
-      {busy ? CASH_OUT.cashingOut : CASH_OUT.cashOut}
-    </button>
-  );
-}
 
 const sum = (xs: readonly (bigint | null)[]): bigint | null => (xs.some((x) => x === null) ? null : xs.reduce<bigint>((a, x) => a + x!, 0n));
 
-export function BetRow({ legs, values, wallet, closer }: { legs: readonly TerminalPosition[]; values: ReadonlyMap<string, PositionValue>; wallet: Address; closer: ReturnType<typeof useTerminalClose> }) {
+/** Where the row is held, as a tag: the Trading Balance, or a Boost's multiple. The wallet's own carries none. */
+function homeTag(p: TerminalPosition): string | null {
+  if (p.via === "vault") return HISTORY.via.vault ?? null;
+  if (p.via === "boost" && p.boost) return PORTFOLIO.boostTag(`${(p.boost.leverageBps / 10_000).toFixed(p.boost.leverageBps % 10_000 === 0 ? 0 : 1)}×`);
+  return null;
+}
+
+export interface BetRowProps {
+  legs: readonly TerminalPosition[];
+  values: ReadonlyMap<string, PositionValue>;
+  closer: ReturnType<typeof useTerminalClose>;
+  /** A Boost past its close settles by anyone's crank (the reserve's `settle`): offered on its row. */
+  boosts: ReturnType<typeof useBoostWrites>;
+}
+
+export function BetRow({ legs, values, closer, boosts }: BetRowProps) {
   const nowMs = useNowMs();
   const p = legs[0]!;
   const state = nowMs > 0 ? countdown(nowMs, p.expirySec, p.intervalSec) : null;
@@ -67,23 +59,52 @@ export function BetRow({ legs, values, wallet, closer }: { legs: readonly Termin
   // No number: why (locked, no bids, updating), from the first leg without one.
   const unpriced = vs.find((v) => v === null || v.valueBase === null);
   const why = unpriced ? statusText(unpriced.status, p.expirySec, unpriced.fillablePct, unpriced.settled, unpriced.valueBase) : "";
+  const tag = homeTag(p);
+  const v0 = vs[0] ?? null;
+  const closable = side !== null && !settling && v0 !== null && canTrade(v0.status);
+  const busy = closer.busy === p.id;
+  const settleKey = p.boost ? `settle:${p.boost.positionId}` : "";
+  const settleBoost = p.boost && nowMs >= p.expirySec * 1000 ? p.boost : null;
   return (
-    <li className="bets-row">
-      <span className={cn("type-label-micro shrink-0", settling ? "text-ink" : "text-ink-secondary")}>
-        {settling ? PORTFOLIO.settling : <><span aria-hidden className="mr-1.5 text-accent">●</span>{PORTFOLIO.live}</>}
+    <li className="bets-row bet-row">
+      <span className={cn("bet-status type-label-micro", settling ? "text-ink" : "text-ink-secondary")}>
+        {settling ? PORTFOLIO.settling : <><span aria-hidden className="text-accent">●</span> <span className="bet-status-word">{PORTFOLIO.live}</span></>}
       </span>
-      <Link href={marketDeepLink({ marketId: p.marketId })} className="inline-flex min-h-touch items-center gap-2 type-body-strong text-ink">
+      <Link href={marketDeepLink({ marketId: p.marketId })} className="bet-call type-body-strong text-ink">
         <AssetDisc asset={p.asset} className="bets-mark" />
         {p.asset} {label}
       </Link>
-      <span className="type-label-micro text-ink-muted">{formatCadence(p.intervalSec)}{p.via === "vault" ? ` · ${TERMINAL.positions.balanceTag}` : ""}</span>
-      {!settling && <span className="type-caption text-ink-secondary"><Countdown expirySec={p.expirySec} intervalSec={p.intervalSec} nowMs={nowMs} /> {PORTFOLIO.left}</span>}
+      {tag ? <span className="type-label-micro text-accent">{tag}</span> : null}
+      <span className="type-label-micro text-ink-muted">{formatCadence(p.intervalSec)}</span>
+      {!settling && (
+        <span className="bet-left type-caption text-ink-secondary numbers">
+          <Countdown expirySec={p.expirySec} intervalSec={p.intervalSec} nowMs={nowMs} /> <span className="bet-left-word">{PORTFOLIO.left}</span>
+        </span>
+      )}
       <span className="bets-break" aria-hidden />
-      <span className="flex-1" />
-      <span className="type-caption text-ink-secondary">{PORTFOLIO.stake} <Money value={stake} decimals={p.decimals} /></span>
-      <span className="type-caption text-ink-secondary">{PORTFOLIO.value} {worth === null ? (why || "—") : <Money value={worth} decimals={p.decimals} />}</span>
-      {pnl === null ? <span className="type-data shrink-0 text-ink-muted">—</span> : <Money value={pnl} decimals={p.decimals} tone="pnl" className="type-data shrink-0" />}
-      {!settling && side ? p.via === "vault" ? <BalanceCashOut p={p} v={vs[0] ?? null} closer={closer} /> : <CashOut p={p} wallet={wallet} /> : null}
+      <span className="bet-money type-caption text-ink-secondary">
+        <span className="bet-label">{PORTFOLIO.stake} </span>
+        <span className="numbers text-ink"><Masked>{money(stake, false, p.decimals)}</Masked></span>
+        <span aria-hidden className="bet-arrow">→</span>
+        <span className="bet-label">{PORTFOLIO.value} </span>
+        <span className="numbers text-ink">{worth === null ? (why || "—") : <Masked>{money(worth, false, p.decimals)}</Masked>}</span>
+      </span>
+      {pnl === null ? (
+        <span className="bet-pnl type-data text-ink-muted">—</span>
+      ) : (
+        <span className={cn("bet-pnl type-data numbers", pnl > 0n ? "text-up" : pnl < 0n ? "text-down" : "text-ink")}>
+          <Masked>{livePnlText(pnl, p.decimals)}</Masked>
+        </span>
+      )}
+      {closable ? (
+        <PillButton tone="ghost" size="sm" className="bet-act" disabled={busy} aria-busy={busy} onClick={() => void closer.close(p, v0?.exit ?? null)}>
+          {busy ? CASH_OUT.cashingOut : PORTFOLIO.close}
+        </PillButton>
+      ) : settleBoost ? (
+        <PillButton tone="ghost" size="sm" className="bet-act" disabled={boosts.busy === settleKey} aria-busy={boosts.busy === settleKey} onClick={() => void boosts.settle(settleBoost.positionId, p.marketId)}>
+          {boosts.busy === settleKey ? BOOST.bets.settling : BOOST.bets.settle}
+        </PillButton>
+      ) : null}
     </li>
   );
 }

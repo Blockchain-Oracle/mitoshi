@@ -10,7 +10,7 @@ import { sameValue, totalsOf } from "@/features/terminal/positions-totals";
 import { useTerminalPositions, type TerminalPosition } from "@/features/terminal/terminal-positions";
 import { usePositionValue, type PositionValue } from "@/features/terminal/usePositionValue";
 
-/** One Window in one home: a side, or both (a hedge reads "UP + DOWN" with its legs summed). Boosts list apart. */
+/** One Window in one home: a side, or both (a hedge reads "UP + DOWN" with its legs summed); a Boost is its own row. */
 export interface BetGroup {
   key: string;
   legs: TerminalPosition[];
@@ -19,8 +19,7 @@ export interface BetGroup {
 export function groupBets(positions: readonly TerminalPosition[]): BetGroup[] {
   const groups = new Map<string, TerminalPosition[]>();
   for (const p of positions) {
-    if (p.via === "boost") continue;
-    const key = `${p.via}:${p.vault ?? ""}:${p.marketId}`.toLowerCase();
+    const key = p.via === "boost" ? p.id : `${p.via}:${p.vault ?? ""}:${p.marketId}`.toLowerCase();
     groups.set(key, [...(groups.get(key) ?? []), p]);
   }
   return [...groups].map(([key, legs]) => ({ key, legs }));

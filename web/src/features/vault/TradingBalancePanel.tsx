@@ -1,115 +1,125 @@
 "use client";
-// Ported from Masayume 68f7a09:web/src/features/vault/{TradingBalancePanel,TradingBalanceView,VaultControls,VaultCells,
-// VaultBetRows}.tsx — the pool row under the plate (label · what the pool is FOR · amount), the snapshot cells, deposit
-// and withdraw, and the rows the vault holds. Fixed while porting (E.5 S7): withdraw is partial with a Max and an inline
-// reason (Agari's `AmountField`) instead of "withdraw everything"; the tap-trading allowance is the persistent pill.
-/**
- * The Trading Balance on Portfolio (S7): what is free, what sits in the tap-trading budget and what it spent today,
- * add money (one root transaction, `[approve, deposit]`, self-paid) and withdraw any part of the free amount (sponsored,
- * paid to the owner only — a blocking receive policy refuses and nothing moves, D-112). Below it, the Windows it
- * traded: open, settling into the balance, paid into it.
- */
-import { parseDecimalToBaseUnits } from "@cwf/core/units";
-import { useBalanceSheet, useVaultBets } from "@cwf/markets/react";
+// Ported from Masayume 68f7a09:web/src/features/vault/TradingBalancePanel.tsx, in the grammar of Owarine 90a91d71:web/src/
+// features/vault/{TradingBalanceView,VaultControls,VaultCells}.tsx + vault.css (R4-4, D-227): the pocket's own figure
+// (the vault's free amount plus every live grant's budget — the same sum as the money card and the tile), one line, one
+// pill field with Max, the Add and Withdraw pills below it, one hint, one fee line, the stat tiles, then tap-trading.
+// Withdraw stays partial (Mitoshi's fix, E.5 S7): the typed amount, up to Free. Adding is one root transaction
+// (`[approve, deposit]`, self-paid); withdrawing is sponsored and paid to the owner only — a blocking receive policy
+// refuses and nothing moves (D-112). A confirmed write names itself in a toast with its Receipt (critic gap 21). The
+// rows the vault holds are in Your bets now, beside the wallet's and the Boosts'.
+import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
+import { useBalanceSheet, useVaultBets, useVaultSnapshot } from "@cwf/markets/react";
 import { useState } from "react";
-import { TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
+import { Masked, PillButton } from "@/components/kit";
+import { TxFailureCard, useTxLifecycle } from "@/components/tx";
+import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { AllowancePill } from "@/features/session/AllowancePill";
 import { ArmTradingBalance } from "@/features/session/ArmTradingBalance";
-import { spentTodayBase, usd } from "@/features/session/caps";
+import { spentTodayBase } from "@/features/session/caps";
 import { useRootSubmitter, useSessionActions, useSessionView } from "@/features/session/context";
 import { useNowMs } from "@/lib/clock";
-import { notify } from "@/lib/toast";
 import { AmountField, amountProblem } from "./AmountField";
 import { LegacyBalance } from "./LegacyBalance";
 import { VAULT } from "./copy";
-import { VaultBetRows } from "./VaultBetRows";
+import { tradingBalanceOf } from "./trading-balance";
+import "@/styles/vault.css";
 
-const cell = (label: string, value: string) => (
-  <div className="flex min-w-0 flex-col">
-    <span className="type-label-micro text-ink-secondary">{label}</span>
-    <span className="numbers type-body-strong text-ink">{value}</span>
-  </div>
-);
+const usd = (base: bigint) => `$${formatBaseUnits(base, 6, { minDp: 2, maxDp: 2 })}`;
+
+function Tile({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div>
+      <span className="vault-cell-label">{label}</span>
+      <div className="vault-cell-value numbers">{value === null ? "—" : <Masked>{value}</Masked>}</div>
+    </div>
+  );
+}
 
 export function TradingBalancePanel() {
   const view = useSessionView();
   const actions = useSessionActions();
   const nowMs = useNowMs();
   const sheet = useBalanceSheet(view.owner);
+  const snapshot = useVaultSnapshot(view.owner);
   const bets = useVaultBets(view.owner, view.deployed);
   const root = useRootSubmitter();
   const deposit = useTxLifecycle({ submitter: root });
   const withdraw = useTxLifecycle({ submitter: root });
-  const [inText, setIn] = useState("");
-  const [outText, setOut] = useState("");
+  const [text, setText] = useState("");
   const [showArm, setShowArm] = useState(false);
   if (!view.owner || !view.deployed || view.status === "not-passkey" || view.status === "no-wallet") return null;
 
   const nowSec = Math.floor((nowMs || Date.now()) / 1000);
   const free = view.availableBase;
   const grant = view.grant && !view.grant.revoked ? view.grant : null;
-  const inBudget = grant?.budgetBase ?? 0n;
+  const snap = snapshot?.ok ? snapshot.value : null;
+  const figure = snap ? tradingBalanceOf(snap) : free === null ? null : free + (grant?.budgetBase ?? 0n);
   const wallet = sheet?.ok ? sheet.value.spendableBase : null;
-  const inBase = parseDecimalToBaseUnits(inText.trim(), 6) ?? 0n;
-  const outBase = parseDecimalToBaseUnits(outText.trim(), 6) ?? 0n;
-  const inProblem = amountProblem(inText, wallet, VAULT.amount.overWallet);
-  const outProblem = amountProblem(outText, free, VAULT.amount.overBalance);
+  const openCost = bets?.ok ? bets.value.filter((b) => b.state === "open").reduce((s, b) => s + b.costUpBase + b.costDownBase, 0n) : null;
+  const amountBase = parseDecimalToBaseUnits(text.trim(), 6) ?? 0n;
+  const inProblem = amountProblem(text, wallet, VAULT.amount.overWallet);
+  const outProblem = amountProblem(text, free, VAULT.amount.overBalance);
+  // The field turns red only when neither pill can take the amount; otherwise the blocked pill is off and the hint
+  // ("Account $A · Free $F") already says why.
+  const problem = inProblem && outProblem ? (inProblem === outProblem ? inProblem : VAULT.amount.over) : null;
+  const busy = (tx: typeof deposit) => tx.state.kind === "signing" || tx.state.kind === "submitted";
+  const anyBusy = busy(deposit) || busy(withdraw);
 
-  const runDeposit = async () => {
-    const outcome = await deposit.run({ kind: "vault-deposit", amountBase: inBase });
-    if (outcome?.status === "confirmed") {
-      setIn("");
-      notify.neutral(VAULT.toasts.deposited);
-      await actions.refresh();
-    }
+  const run = async (tx: typeof deposit, kind: "vault-deposit" | "vault-withdraw") => {
+    const amount = usd(amountBase);
+    const outcome = await tx.run({ kind, amountBase });
+    if (outcome?.status !== "confirmed") return;
+    setText("");
+    notifyReceipt({
+      title: kind === "vault-deposit" ? VAULT.toasts.deposited(amount) : VAULT.toasts.withdrawn(amount),
+      figure: amount,
+      figureLabel: kind === "vault-deposit" ? VAULT.receipt.deposited : VAULT.receipt.withdrawn,
+      txHash: outcome.txHash,
+      atMs: Date.now(),
+      signer: "passkey",
+      sponsored: kind === "vault-withdraw",
+    });
+    await actions.refresh();
   };
-  const runWithdraw = async () => {
-    const outcome = await withdraw.run({ kind: "vault-withdraw", amountBase: outBase });
-    if (outcome?.status === "confirmed") {
-      setOut("");
-      notify.neutral(VAULT.toasts.withdrawn);
-      await actions.refresh();
-    }
-  };
-  const idleOr = (tx: typeof deposit, blockedReason: string | null) =>
-    blockedReason ? { kind: "blocked" as const, reason: blockedReason } : tx.state.kind === "confirmed" ? { kind: "idle" as const } : tx.state;
 
   return (
-    <section aria-labelledby="tb-title" className="pool-rows flex flex-col gap-4">
+    <section aria-label={VAULT.row.label} className="vault-sheet">
       <LegacyBalance owner={view.owner} />
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h2 id="tb-title" className="pool-label">{VAULT.row.label}</h2>
-          <p className="pool-note">{VAULT.row.note}</p>
-        </div>
-        <div className="pool-amount numbers" aria-live="polite">{free === null ? "—" : usd(free + inBudget)}</div>
+      <div className="vault-head">
+        <p className="vault-figure numbers" aria-live="polite">{figure === null ? "—" : <Masked>{usd(figure)}</Masked>}</p>
+        <p className="vault-note">{VAULT.row.note}</p>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {cell(VAULT.cells.available, free === null ? "—" : usd(free))}
-        {cell(VAULT.cells.inBudget, usd(inBudget))}
-        {grant ? cell(VAULT.cells.spentToday, usd(spentTodayBase(grant, nowSec))) : null}
+      <AmountField
+        value={text}
+        onChange={setText}
+        maxBase={wallet}
+        label={VAULT.amount.label}
+        problem={problem}
+        hint={wallet === null || free === null ? "—" : <Masked>{VAULT.amount.hint(usd(wallet), usd(free))}</Masked>}
+        disabled={anyBusy}
+      />
+      <div className="vault-buttons">
+        <PillButton tone="accent" size="md" disabled={anyBusy || amountBase === 0n || inProblem !== null} aria-busy={busy(deposit)} onClick={() => void run(deposit, "vault-deposit")}>
+          {busy(deposit) ? VAULT.deposit.busy : VAULT.deposit.cta(usd(amountBase))}
+        </PillButton>
+        <PillButton tone="ink" size="md" disabled={anyBusy || amountBase === 0n || outProblem !== null} aria-busy={busy(withdraw)} onClick={() => void run(withdraw, "vault-withdraw")}>
+          {busy(withdraw) ? VAULT.withdraw.busy : VAULT.withdraw.cta(usd(amountBase))}
+        </PillButton>
       </div>
-      {grant ? <AllowancePill /> : showArm ? <ArmTradingBalance onDone={() => setShowArm(false)} /> : (
-        <button type="button" onClick={() => setShowArm(true)} className="min-h-touch self-start rounded-md border border-border-strong px-4 type-body-strong text-ink">{VAULT.arm}</button>
+      {deposit.state.kind === "failed" ? <TxFailureCard state={deposit.state} onRetry={() => deposit.dispatch({ type: "reset" })} /> : null}
+      {withdraw.state.kind === "failed" ? (
+        withdraw.state.diagnosis.kind === "receive-policy" ? <p role="alert" className="vault-amount-problem">{VAULT.receivePolicy}</p> : <TxFailureCard state={withdraw.state} onRetry={() => withdraw.dispatch({ type: "reset" })} />
+      ) : null}
+      <p className="vault-fee">{VAULT.fee}</p>
+      <div className="vault-cells">
+        <Tile label={VAULT.cells.available} value={free === null ? null : usd(free)} />
+        <Tile label={VAULT.cells.inBudget} value={usd(grant?.budgetBase ?? 0n)} />
+        <Tile label={VAULT.cells.spentToday} value={usd(grant ? spentTodayBase(grant, nowSec) : 0n)} />
+        <Tile label={VAULT.cells.open} value={openCost === null ? null : usd(openCost)} />
+      </div>
+      {grant ? <AllowancePill className="self-start" /> : showArm ? <ArmTradingBalance onDone={() => setShowArm(false)} /> : (
+        <PillButton tone="ghost" size="sm" className="self-start" onClick={() => setShowArm(true)}>{VAULT.arm}</PillButton>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <AmountField value={inText} onChange={setIn} maxBase={wallet} label={VAULT.deposit.label} over={VAULT.amount.overWallet} hint={VAULT.amount.walletHolds} disabled={deposit.state.kind === "signing" || deposit.state.kind === "submitted"} />
-          <TxCta state={idleOr(deposit, inProblem ?? (inBase === 0n ? VAULT.amount.zero : null))} action={VAULT.deposit.cta(usd(inBase))} signer="passkey" onConfirm={() => void runDeposit()} />
-          <p className="type-caption text-ink-secondary">{VAULT.deposit.note}</p>
-          {deposit.state.kind === "failed" ? <TxFailureCard state={deposit.state} onRetry={() => deposit.dispatch({ type: "reset" })} /> : null}
-        </div>
-        <div className="flex flex-col gap-2">
-          <AmountField value={outText} onChange={setOut} maxBase={free} label={VAULT.withdraw.label} over={VAULT.amount.overBalance} hint={VAULT.amount.balanceHolds} disabled={withdraw.state.kind === "signing" || withdraw.state.kind === "submitted"} />
-          <TxCta state={idleOr(withdraw, outProblem ?? (outBase === 0n ? VAULT.amount.zero : null))} action={VAULT.withdraw.cta(usd(outBase))} signer="passkey" sponsored onConfirm={() => void runWithdraw()} />
-          <p className="type-caption text-ink-secondary">{VAULT.withdraw.note}</p>
-          {withdraw.state.kind === "failed" ? (
-            withdraw.state.diagnosis.kind === "receive-policy" ? <p role="alert" className="type-caption text-ink">{VAULT.receivePolicy}</p> : <TxFailureCard state={withdraw.state} onRetry={() => withdraw.dispatch({ type: "reset" })} />
-          ) : null}
-        </div>
-      </div>
-      <p className="type-caption text-ink-secondary">{VAULT.settledNote}</p>
-      <VaultBetRows bets={bets} nowSec={nowSec} />
     </section>
   );
 }

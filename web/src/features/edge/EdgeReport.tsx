@@ -2,14 +2,16 @@
 // Ported from Masayume 68f7a09:web/src/features/edge/{EdgeReport,EdgeMetrics,EdgeWindows,EdgePayoff}.tsx — the report:
 // the net result with its curve and readout, four metrics, the time-of-day split bars and the payoff shape. The
 // reference's own SVG curve gives way to 21st 29532 (`components/ui/portfolio-chart`, the curve `/portfolio` already
-// draws from the same rounds, so the two can't disagree); the `edge-*` palette gives way to Mitoshi's tokens.
+// draws from the same rounds, so the two can't disagree); the `edge-*` palette gives way to Mitoshi's tokens. R4-4
+// (D-227): the chart runs headless (the net figure is said once), the time-of-day rows hold their bar at 320 px, the
+// metrics sit two-up on a phone, the source and method sit in the provenance box, and the reputation, badges and CSV
+// moved to /portfolio's record.
 import type { TraderEdge, WalletHistory } from "@cwf/core";
 import { PortfolioChart } from "@/components/ui/portfolio-chart";
 import { RECORD_CHART } from "@/features/markets/copy";
-import { recordPoints } from "@/features/markets/portfolio/RecordChart";
+import { recordPoints } from "./record-points";
 import { money as moneyText, moneyTone } from "@/features/terminal/format";
 import { EDGE } from "./copy";
-import { RecordBadges } from "./RecordBadges";
 
 type Tone = "gain" | "loss" | "flat";
 /** The tone of a figure as it reads at two decimals: a P&L that rounds to zero cents is flat, never a red −$0.00. */
@@ -40,10 +42,10 @@ function readout(report: TraderEdge, decimals: number): string {
 
 function Metric({ label, value, note, tone = "flat" }: { label: string; value: string; note: string; tone?: Tone }) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-hairline bg-surface-1 p-5">
+    <div className="flex min-w-0 flex-col gap-2 rounded-lg border border-hairline bg-surface-1 p-4 sm:p-5">
       <span className="type-label-micro text-ink-secondary">{label}</span>
       <span className={`type-title tabular-nums ${INK[tone]}`}>{value}</span>
-      <span className="type-caption text-ink-secondary">{note}</span>
+      <span className="type-caption text-ink-secondary edge-xs-hide">{note}</span>
     </div>
   );
 }
@@ -73,17 +75,17 @@ function Windows({ report, decimals }: { report: TraderEdge; decimals: number })
             const width = x.count === 0 ? 0 : Math.max(MIN_BAR_PCT, Number((abs * 100n) / maxAbs));
             const label = w.labels[x.key];
             return (
-              <li key={x.key} className="grid grid-cols-[6.5rem_1fr_auto] items-center gap-3">
-                <span className="flex flex-col">
+              <li key={x.key} className="grid grid-cols-[4.75rem_minmax(0,1fr)_auto] items-center gap-2 sm:grid-cols-[6.5rem_minmax(0,1fr)_auto] sm:gap-3">
+                <span className="flex min-w-0 flex-col">
                   <span className="type-body text-ink">{label.label}</span>
-                  <span className="font-mono type-caption text-ink-secondary">{label.range}</span>
+                  <span className="font-mono type-caption text-ink-secondary edge-xs-hide">{label.range}</span>
                 </span>
                 <span aria-hidden className="grid h-2.5 grid-cols-[1fr_1px_1fr] items-center">
                   <span className="flex h-full justify-end">{t === "loss" && x.count > 0 ? <span className="h-full rounded-l-sm bg-down" style={{ width: `${width}%` }} /> : null}</span>
                   <span className="h-4 bg-hairline" />
                   <span className="flex h-full">{t === "gain" && x.count > 0 ? <span className="h-full rounded-r-sm bg-up" style={{ width: `${width}%` }} /> : null}</span>
                 </span>
-                <span className="flex min-w-24 flex-col items-end">
+                <span className="flex min-w-16 flex-col items-end sm:min-w-24">
                   <span className={`type-body-strong tabular-nums ${x.count === 0 ? "text-ink-secondary" : INK[t]}`}>{x.count === 0 ? w.none : money(x.netBase, decimals)}</span>
                   <span className="type-caption text-ink-secondary">{w.rounds(x.count)}</span>
                 </span>
@@ -116,15 +118,23 @@ function Payoff({ report, decimals }: { report: TraderEdge; decimals: number }) 
           </div>
         ))}
       </dl>
-      <div className="flex flex-col gap-1 rounded-md bg-surface-2 p-4">
+      <div className="flex flex-col gap-2 rounded-md bg-surface-2 p-4">
         <span className="type-label-micro text-ink-secondary">{p.provenanceLabel}</span>
         <p className="type-caption text-ink-secondary">{p.provenance}</p>
+        <dl className="flex flex-col gap-1 type-caption">
+          {[p.source, p.method].map((m) => (
+            <div key={m.label} className="flex flex-wrap gap-x-2">
+              <dt className="text-ink-secondary">{m.label}</dt>
+              <dd className="text-ink">{m.value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </aside>
   );
 }
 
-export function EdgeReport({ history, report, onRetry, address }: { history: WalletHistory; report: TraderEdge; onRetry: () => void; address: string }) {
+export function EdgeReport({ history, report, onRetry }: { history: WalletHistory; report: TraderEdge; onRetry: () => void }) {
   const { decimals } = history;
   const tone = toneOf(report.netBase, decimals);
   const m = EDGE.report.metrics;
@@ -141,7 +151,7 @@ export function EdgeReport({ history, report, onRetry, address }: { history: Wal
             </div>
             <span className="type-caption text-ink-secondary tabular-nums">{EDGE.report.sample(report.settledRounds, report.openRounds)}</span>
           </div>
-          <PortfolioChart points={recordPoints(history)} status="ready" labels={RECORD_CHART} onRetry={onRetry} />
+          <PortfolioChart points={recordPoints(history)} status="ready" labels={RECORD_CHART} onRetry={onRetry} headless />
         </section>
         <aside className="flex flex-col justify-between gap-4 rounded-lg border border-accent/30 bg-accent/10 p-5" aria-labelledby="edge-readout">
           <div className="flex flex-col gap-2">
@@ -152,7 +162,7 @@ export function EdgeReport({ history, report, onRetry, address }: { history: Wal
         </aside>
       </div>
 
-      <section aria-label={m.label} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section aria-label={m.label} className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Metric label={m.winRate.label} value={report.winRatePct === null ? m.winRate.unset : `${report.winRatePct.toFixed(0)}%`} note={m.winRate.note(report.wins, report.losses)} />
         <Metric label={m.profitFactor.label} value={report.profitFactor === null ? m.profitFactor.noLoss : report.profitFactor.toFixed(2)} note={m.profitFactor.note} />
         <Metric label={m.expectancy.label} value={report.expectancyBase === null ? m.expectancy.unset : money(report.expectancyBase, decimals)} note={m.expectancy.note} tone={report.expectancyBase === null ? "flat" : toneOf(report.expectancyBase, decimals)} />
@@ -163,8 +173,6 @@ export function EdgeReport({ history, report, onRetry, address }: { history: Wal
         <Windows report={report} decimals={decimals} />
         <Payoff report={report} decimals={decimals} />
       </div>
-      <RecordBadges history={history} report={report} address={address} />
-      <p className="type-caption text-ink-secondary">{EDGE.report.footer}</p>
     </div>
   );
 }

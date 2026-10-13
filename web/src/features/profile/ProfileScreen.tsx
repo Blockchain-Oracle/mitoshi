@@ -1,6 +1,6 @@
 // `/u/<address>` — a wallet's public record (S5's profile component; S13 adds its calls, takes and follows): the 21st
 // 781 header (initials on the address hue, the tier and its board place, the explorer), the figures the leaderboard
-// ranks it by, its reputation and badges (Trader Edge's own components, `features/edge`), and its latest settled
+// ranks it by, its reputation and badges (the portfolio record's, `features/markets/history`, R4-4), and its latest settled
 // Windows, each opening its proof. Read on the server from the index (`readProfile`); a read that fails shows no
 // figure.
 import { addressUrl, type Address } from "@cwf/core";
@@ -10,7 +10,9 @@ import { connection } from "next/server";
 import { ProfileHeader } from "@/components/ui/profile-header";
 import { ProfileSocial } from "@/features/social/ProfileSocial";
 import { people } from "@/server/social";
-import { BadgeGrid, ReputationCard } from "@/features/edge/RecordBadges";
+import { BadgeGrid } from "@/features/markets/history/BadgeGrid";
+import { ReputationPanel } from "@/features/markets/history/ReputationPanel";
+import "@/styles/history.css";
 import { recordOf } from "@/features/edge/record";
 import { money, moneyTone } from "@/features/terminal/format";
 import { webEnv } from "@/lib/env";
@@ -58,7 +60,7 @@ function Record({ p }: { p: Profile }) {
         <Figure label={W.figures.streak} value={String(p.bestStreak)} />
       </div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-        <ReputationCard reputation={reputation} />
+        <ReputationPanel reputation={reputation} />
         <BadgeGrid badges={badges} />
       </div>
       <section className="flex flex-col gap-3" aria-labelledby="profile-recent">

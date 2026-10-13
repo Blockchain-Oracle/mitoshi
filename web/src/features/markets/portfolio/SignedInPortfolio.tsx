@@ -1,39 +1,39 @@
 "use client";
 /**
- * The signed-in Portfolio (split from `PortfolioScreen`, D-183), in Owarine 90a91d71's order (P2, D-223): the money card,
- * the pockets (Trading Balance, Private) with their controls in a sheet, 01 your bets, 02 what waits to collect, then
- * the record and the Trader Edge link. Its own island, loaded once a wallet is
- * there, so a signed-out visitor (the connect card) never evaluates the ledger, the ticket-grade tx components or the
- * Trading Balance controls. The motion scope rides inside it (§3.1). D-227: positions are valued as the terminal values
- * them (`usePortfolioPositions`: what Close pays now, the rest at cost), so the money card and the rows match /trade.
+ * The signed-in Portfolio (split from `PortfolioScreen`, D-183), in Owarine 90a91d71's order (P2, D-223; R4-4, D-227):
+ * the money card, the pockets (Trading Balance, Private where it exists) with their controls in a sheet, 01 your bets
+ * (every home: the wallet, the Trading Balance, Boosts), 02 what waits to collect (only when there is any), then the
+ * record and the Trader Edge link. One money reading (`useMoney`) feeds the card, the tiles, the sheets and the rows,
+ * so they can't disagree; positions are valued and closed as the terminal values and closes them. Its own island,
+ * loaded once a wallet is there. One inset: the stage pads; this page adds none.
  */
 import type { Address, Reading } from "@cwf/core";
 import { isOk } from "@cwf/core";
-import { keys, useAccountHistory, useBalanceSheet, useClaimables, useLiveMarketData, usePositions, useVaultBets } from "@cwf/markets/react";
-import { useOwed } from "@/features/terminal/useOwed";
-import { useTerminalClose } from "@/features/terminal/useTerminalClose";
-import { usePrivateBudget } from "@/features/private/usePrivate";
-import { openFunds } from "@/lib/funds-event";
-import { MoneyHero, type HeroMoney } from "./MoneyHero";
-import { Pockets } from "./Pockets";
-import SectionHead from "@/components/shell/SectionHead";
+import { keys, useAccountHistory, useLiveMarketData } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useCallback } from "react";
+import { SectionHeader } from "@/components/kit";
 import { MotionScope } from "@/components/motion-scope";
-import { ErrorState } from "@/components/states";
+import { ErrorState, LoadingState } from "@/components/states";
+import { useBoostWrites } from "@/features/boost/useBoostWrites";
+import { useTerminalClose } from "@/features/terminal/useTerminalClose";
+import { BOOST_KEYS } from "@/features/terminal/terminal-positions";
 import { TradingBalancePanel } from "@/features/vault/TradingBalancePanel";
-import { HERO_MONEY, PLATE, PORTFOLIO } from "../copy";
+import { openFunds } from "@/lib/funds-event";
+import { CLAIM, HERO_MONEY } from "../copy";
 import { CollectPlate } from "../claims/CollectPlate";
+import { collectableRows, useCollect } from "../claims/useCollect";
+import { RecordSection } from "../history/RecordSection";
+import { TraderEdgeLink } from "../history/TraderEdgeLink";
 import { BetsPanel } from "./BetsPanel";
-import { RecordChart } from "./RecordChart";
-import { PositionValuers, usePortfolioPositions } from "./usePortfolioPositions";
+import { MoneyHero } from "./MoneyHero";
+import { Pockets } from "./Pockets";
+import { useMoney } from "./useMoney";
+import { PositionValuers } from "./usePortfolioPositions";
 
-// Boosts (S10c) load as their own island: the leverage reads and lane stay out of the Portfolio's first load.
-const BoostPositions = dynamic(() => import("@/features/boost/BoostPositions").then((m) => m.BoostPositions), { ssr: false });
-// The private desk (S10d): its balance moves, the desk's cells and the account's private bets — its own island too.
-const PrivateDesk = dynamic(() => import("@/features/private/PrivateDesk").then((m) => m.PrivateDesk), { ssr: false });
+// The private balance (S10d): its moves, tiles and the account's private bets — its own island.
+const PrivateBalancePanel = dynamic(() => import("@/features/private/PrivateBalancePanel").then((m) => m.PrivateBalancePanel), { ssr: false, loading: () => <LoadingState shape="row" /> });
 
 const CONNECTION = new Set(["rpc-down", "indexer-down", "send-unknown", "unknown"]);
 
@@ -45,6 +45,8 @@ function outageOf(readings: readonly (Reading<unknown> | null)[]) {
   return first && !first.ok && CONNECTION.has(first.error.kind) ? first.error : null;
 }
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
 export function SignedInPortfolio({ wallet }: { wallet: Address }) {
   return (
     <MotionScope>
@@ -55,65 +57,60 @@ export function SignedInPortfolio({ wallet }: { wallet: Address }) {
 
 function Ledger({ wallet }: { wallet: Address }) {
   const queryClient = useQueryClient();
-  const sheet = useBalanceSheet(wallet);
-  const positions = usePositions(wallet);
-  const vaultBets = useVaultBets(wallet);
-  const claimables = useClaimables(wallet);
-  const book = usePortfolioPositions(wallet);
-  const owed = useOwed(wallet, book.positions);
+  const { money, book, sheet, positions, vaultBets, claimables, boosts } = useMoney(wallet);
   const closer = useTerminalClose();
-  const critical = [sheet, positions, claimables];
-  const criticalSettled = critical.every((r) => r !== null);
-  const history = useAccountHistory(wallet, criticalSettled);
-  const privateBudget = usePrivateBudget(wallet);
+  const boostWrites = useBoostWrites(wallet);
+  const collector = useCollect(wallet);
+  const history = useAccountHistory(wallet, sheet !== null);
   useLiveMarketData({ wallet });
-  const retry = useCallback(() => void queryClient.invalidateQueries({ queryKey: keys.positions(wallet) }), [queryClient, wallet]);
+  const retryOpen = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: keys.positions(wallet) });
+    void queryClient.invalidateQueries({ queryKey: [...BOOST_KEYS] });
+    void queryClient.invalidateQueries({ queryKey: keys.vault(wallet) });
+  }, [queryClient, wallet]);
+  const retryHistory = useCallback(() => void queryClient.invalidateQueries({ queryKey: keys.history(wallet) }), [queryClient, wallet]);
 
-  const outage = outageOf(critical);
-  if (outage) {
-    return (
-      <div className="mx-auto flex w-full max-w-(--content-reading) flex-col gap-4 px-gutter py-8">
-        <ErrorState diagnosis={outage} retry={() => void queryClient.invalidateQueries()} />
-      </div>
-    );
-  }
+  const outage = outageOf([sheet, positions, claimables]);
+  if (outage) return <ErrorState diagnosis={outage} retry={() => void queryClient.invalidateQueries()} />;
+  // Nothing read yet: the page's outline, not a card of dashes.
+  if (sheet === null) return <LoadingState shape="portfolio" />;
+
   const rows = claimables && isOk(claimables) ? claimables.value : [];
-  const value = sheet?.ok ? sheet.value : null;
-  const money: HeroMoney = {
-    decimals: value?.decimals ?? 6,
-    dollarsBase: value ? value.spendableBase + (value.vaultBase ?? 0n) : 0n,
-    readyBase: value?.spendableBase ?? 0n,
-    // Every position at what it counts for (D-227): the part the book takes at what Close pays, the rest at cost; a
-    // Trading Balance Window that has its answer at its payout until the settler cranks it into the balance.
-    positionsBase: book.totals.equityBase + owed.vaultBase,
-    // Read with the wallet's balance (D-227), so a payout the settler just made is never in both legs at once.
-    collectBase: value ? owed.collectBase : rows.reduce((sum, r) => sum + r.netPayoutBase, 0n),
-    // Engine credit is already inside the collect leg (a redeem pays it); only resting-order escrow is named apart.
-    pools: value?.orderEscrowBase ? [{ id: "escrow", label: PLATE.pools.escrow.label, amountBase: value.orderEscrowBase }] : [],
-    // Every leg read (the balance sheet, both homes' positions, claimables), so the figure never sums a leg still at 0 (R4-0).
-    ready: value !== null && criticalSettled && vaultBets !== null,
+  const live = collectableRows(rows);
+  const settled = history?.ok ? history.value.rounds.length : null;
+  const failedHome = [positions, vaultBets, boosts].find((r) => r !== null && !r.ok);
+  const showCollect = rows.length > 0 || money.boostOwedBase > 0n;
+  // Sections number at runtime: 01 bets, 02 collect (when there is any), then the record.
+  const recordIndex = pad(showCollect ? 3 : 2);
+  const runCollect = () => {
+    if (live.length > 0) void collector.collect(live);
+    else if (money.boostOwedBase > 0n) void boostWrites.claimOwed();
   };
+  const collectBusy = collector.tx.kind === "signing" || collector.tx.kind === "submitted" || boostWrites.busy === "owed";
+
   return (
-    <div className="container flex flex-col gap-10 px-gutter py-8 lg:px-gutter-desktop">
+    <div className="flex flex-col gap-6 lg:gap-10">
       <PositionValuers positions={book.positions} onValue={book.onValue} />
-      <MoneyHero money={money} openBets={book.groups.length} settled={history?.ok ? history.value.rounds.length : 0} onAdd={openFunds} />
+      <MoneyHero money={money} settled={settled} onAdd={openFunds} collect={{ busy: collectBusy, run: runCollect }} />
       <Pockets
         decimals={money.decimals}
-        pockets={[
-          { id: "vault", amountBase: value?.vaultBase ?? null, panel: <TradingBalancePanel /> },
-          { id: "private", amountBase: privateBudget?.ok ? privateBudget.value.balanceBase : null, panel: <PrivateDesk wallet={wallet} index="" /> },
-        ]}
+        pockets={money.pockets}
+        panels={{ vault: <TradingBalancePanel />, private: <PrivateBalancePanel wallet={wallet} /> }}
       />
-      <BetsPanel wallet={wallet} positions={positions} open={{ groups: book.groups, values: book.values, closer }} history={history} index="01" retry={retry} />
-      <BoostPositions wallet={wallet} index="" values={book.values} />
-      {rows.length > 0 ? (
-        <section className="flex flex-col gap-4" aria-label={HERO_MONEY.collectTitle}>
-          <SectionHead number="02" title={HERO_MONEY.collectTitle} />
-          <CollectPlate wallet={wallet} rows={rows} />
+      <BetsPanel
+        index="01"
+        open={{ groups: book.groups, values: book.values, closer, boosts: boostWrites, count: money.openCount, failed: failedHome && !failedHome.ok ? { diagnosis: failedHome.error, retry: retryOpen } : null }}
+        history={history}
+        retryHistory={retryHistory}
+      />
+      {showCollect ? (
+        <section className="flex flex-col gap-3" aria-labelledby="collect-title">
+          <SectionHeader id="collect-title" index="02" title={HERO_MONEY.collectTitle} aside={<span className="type-caption text-ink-secondary">{CLAIM.waiting(rows.length)}</span>} />
+          <CollectPlate wallet={wallet} rows={rows} bare collector={collector} boostOwed={{ amountBase: money.boostOwedBase, busy: boostWrites.busy === "owed", collect: () => void boostWrites.claimOwed() }} />
         </section>
       ) : null}
-      <RecordChart history={history} onRetry={() => void queryClient.invalidateQueries({ queryKey: keys.history(wallet) })} />
-      <Link href="/portfolio/edge" className="min-h-touch self-start py-2 type-caption text-accent">{PORTFOLIO.traderEdge}</Link>
+      <RecordSection history={history} openCount={money.openCount} address={wallet} index={recordIndex} retry={retryHistory} />
+      <TraderEdgeLink />
     </div>
   );
 }

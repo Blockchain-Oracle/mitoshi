@@ -75,29 +75,80 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .connect-card-link { font-size: 11px; color: var(--gray-600); transition: color 180ms var(--ease); }
 .connect-card-link:hover { color: var(--white); }
 
-/* P2 (D-223), Owarine 90a91d71 plate/MoneyHero + Pockets on Mitoshi's tokens: one black card with the figure, its
-   three legs and the split bar; pockets as equal tiles. Sticker colours identify the legs, so the bar needs no legend. */
-.money-hero { --leg-dollars: var(--color-accent); --leg-positions: #7DD3FC; --leg-collect: #BEF264; position: relative; overflow: hidden; padding: 24px; border-radius: 28px; background: #000; color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1); }
+/* P2 (D-223), Owarine 90a91d71 plate/MoneyHero + Pockets on Mitoshi's tokens; R4-4 (D-227): one black card with the
+   figure, its three legs and the split bar; pockets as equal tiles. Sticker colours identify the legs (tokens.css
+   --leg-*), so the bar needs no legend. The card is --plate-black with its edge, so it reads on the dark stage. */
+.money-hero { position: relative; overflow: hidden; padding: 20px; border-radius: 28px; background: var(--plate-black); color: var(--plate-ink); box-shadow: inset 0 0 0 1px var(--plate-black-edge); }
+@media (min-width: 400px) { .money-hero { padding: 24px; } }
 @media (min-width: 640px) { .money-hero { padding: 32px; } }
-.money-hero-eyebrow { font: 500 13px/1.2 var(--font-body); color: rgba(255, 255, 255, 0.6); }
-/* Fluid under 640 px: an 11-character figure ($999,999.88) fits a 320 px phone's card (it ran 37 px past it, R4-1). */
-.money-hero-figure { font: 700 clamp(30px, 10.5vw, 44px)/1 var(--font-data); letter-spacing: -0.02em; }
-@media (min-width: 640px) { .money-hero-figure { font-size: 56px; } }
-.money-hero-line { font: 400 15px/1.4 var(--font-body); color: rgba(255, 255, 255, 0.7); }
-.money-hero-strong { font-weight: 700; color: #fff; }
-.money-hero-primary { display: inline-flex; align-items: center; height: 48px; padding: 0 22px; border-radius: var(--radius-full); background: var(--accent-fill); color: var(--on-accent); font: 700 15px/1 var(--font-body); }
-.money-hero-secondary { display: inline-flex; align-items: center; gap: 6px; height: 48px; padding: 0 22px; border-radius: var(--radius-full); background: #fff; color: #000; font: 700 15px/1 var(--font-body); }
+.money-hero-top { display: flex; flex-direction: column; gap: 20px; }
+@media (min-width: 640px) { .money-hero-top { flex-direction: row; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; column-gap: 40px; row-gap: 32px; } }
+.money-hero-eyebrow { font: 500 13px/1.2 var(--font-body); color: var(--plate-ink-muted); }
+/* Fluid: an 11-character figure ($123,456.78) fits a 320 px phone's card. */
+.money-hero-figure { min-width: 0; font: 700 clamp(30px, 10.5vw, 56px)/1 var(--font-data); letter-spacing: -0.02em; }
+@media (min-width: 1024px) { .money-hero-figure { font-size: 64px; } }
+.money-hero-skel { display: block; width: 60%; height: 44px; border-radius: 12px; opacity: 0.35; }
+.money-hero-line { font: 400 15px/1.4 var(--font-body); color: var(--plate-ink-soft); }
+.money-hero-strong { font-weight: 700; color: var(--plate-ink); }
+.money-hero-counts-inline { white-space: nowrap; }
+@media (min-width: 640px) { .money-hero-counts-inline { display: none; } }
+/* The pair sits as one even row and stacks cleanly at 320 (Owarine's PillButtons under the line). */
+.money-hero-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: 8px; margin-top: 16px; }
+.money-hero-actions .kit-pill { font-size: 16px; }
+@media (min-width: 640px) { .money-hero-actions { display: flex; flex-wrap: wrap; } }
+.money-hero .money-hero-white { background: var(--plate-ink); color: var(--plate-black); border-color: transparent; }
+.money-hero .money-hero-white:hover { opacity: 0.9; }
 .money-hero-dot { width: 12px; height: 12px; flex: none; border-radius: 50%; }
-.money-hero-leg { font: 500 13px/1.2 var(--font-body); color: rgba(255, 255, 255, 0.7); }
-.money-hero-amount { font: 700 17px/1 var(--font-data); }
-.money-hero-counts { display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.15); font: 500 13px/1.2 var(--font-body); color: rgba(255, 255, 255, 0.7); }
-.money-hero-bar { display: flex; gap: 4px; height: 12px; margin-top: 32px; overflow: hidden; border-radius: var(--radius-full); background: rgba(255, 255, 255, 0.12); }
+/* The legs: a compact list under 400 px, three mini cells to 640, Owarine's right-hand list from 640. */
+.money-hero-legs { display: grid; gap: 6px; width: 100%; }
+.mh-leg { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "dot lab amt" "act act act"; align-items: center; column-gap: 10px; }
+.mh-leg .money-hero-dot { grid-area: dot; width: 8px; height: 8px; }
+.mh-leg-label { grid-area: lab; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 12px/1.3 var(--font-body); color: var(--plate-ink-soft); }
+.mh-leg-amount { grid-area: amt; font: 700 14px/1 var(--font-data); }
+/* The inline Collect: a 36 px light pill with a 44 px hit area. */
+.mh-leg-act { grid-area: act; position: relative; justify-self: start; height: 36px; margin-top: 6px; padding: 0 16px; border-radius: var(--radius-full); background: var(--plate-ink); color: var(--plate-black); font: 700 14px/36px var(--font-body); transition: opacity 180ms var(--ease); }
+.mh-leg-act::before { content: ""; position: absolute; inset: -4px; }
+.mh-leg-act:disabled { opacity: 0.6; }
+.money-hero-counts { display: none; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--plate-rule); font: 500 13px/1.2 var(--font-body); color: var(--plate-ink-soft); }
+@media (min-width: 400px) and (max-width: 639px) {
+  .money-hero-legs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .mh-leg { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "dot amt" "lab lab" "act act"; row-gap: 4px; column-gap: 6px; }
+}
+@media (min-width: 640px) {
+  .money-hero-legs { max-width: 22rem; gap: 12px; }
+  .mh-leg { grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "dot lab amt act"; column-gap: 12px; }
+  .mh-leg .money-hero-dot { width: 12px; height: 12px; }
+  .mh-leg-label { font-size: 13px; }
+  .mh-leg-amount { font-size: 17px; }
+  .mh-leg-act { margin-top: 0; }
+  .money-hero-counts { display: flex; }
+}
+.money-hero-bar { display: flex; gap: 4px; height: 12px; margin-top: 24px; overflow: hidden; border-radius: var(--radius-full); background: var(--plate-rule); }
+@media (min-width: 640px) { .money-hero-bar { margin-top: 32px; } }
 .money-hero-seg { height: 100%; border-radius: var(--radius-full); }
 .mh-leg-dollars { background: var(--leg-dollars); }
 .mh-leg-positions { background: var(--leg-positions); }
 .mh-leg-collect { background: var(--leg-collect); }
-.pocket { display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 20px; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
+
+/* Pockets (Owarine plate/Pockets): two equal tiles at every width; a tappable chip under 400 px; the note from 640. */
+.pockets-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pockets-grid.is-single { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 640px) { .pockets-grid.is-single { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.pocket { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 16px; border-radius: 20px; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
+@media (min-width: 640px) { .pocket { padding: 20px; } }
 .pocket-icon { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink); }
-.pocket-amount { font: 700 28px/1 var(--font-data); color: var(--color-ink); }
-.pocket-manage { align-self: flex-start; height: 36px; padding: 0 16px; border-radius: var(--radius-full); background: var(--color-ink); color: var(--color-ground, #000); font: 700 13px/36px var(--font-body); }
+.pocket-amount { font: 700 clamp(20px, 6vw, 28px)/1 var(--font-data); color: var(--color-ink); }
+.pocket-note { display: none; flex: 1; font: 400 13px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+.pocket-note.is-blocked { display: -webkit-box; }
+@media (min-width: 640px) { .pocket-note { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } }
+.pocket-chip { display: none; }
+@media (max-width: 399px) {
+  .pocket { display: none; }
+  .pocket-chip { display: flex; align-items: center; gap: 10px; min-height: 64px; min-width: 0; padding: 10px 12px; border-radius: 16px; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); color: var(--color-ink); text-align: left; }
+  .pocket-chip .pocket-icon { width: 32px; height: 32px; }
+  .pocket-chip-body { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 4px; }
+  .pocket-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12px/1.2 var(--font-body); color: var(--color-ink-secondary); }
+  .pocket-chip-amount { font: 700 16px/1 var(--font-data); }
+  .pocket-chip-why { font: 400 11px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+}
 .connect-card-icon { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 12px; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink); box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-surface-2) 40%, transparent); }

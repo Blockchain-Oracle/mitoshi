@@ -32,6 +32,7 @@
   border-radius: 999px;
 }
 .bets-tab {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -45,6 +46,8 @@
   transition: color 180ms var(--ease), background-color 180ms var(--ease);
 }
 .bets-tab:hover { color: var(--color-ink); }
+/* R4-4: the 44 px target comes from a hit area, not a 44 px-tall pill (the tabs sit on the section header's line). */
+.bets-tab::before { content: ""; position: absolute; inset: -12px -2px; }
 .bets-tab--on { background: var(--color-surface-2); color: var(--color-ink); }
 .bets-tab-count { font-variant-numeric: tabular-nums; color: var(--gray-500); }
 
@@ -256,23 +259,43 @@
 .badge-card-icon svg { width: 16px; height: 16px; }
 .badge-card.is-earned .badge-card-icon { border-color: rgba(224, 77, 38, 0.35); background: rgba(224, 77, 38, 0.08); color: var(--vermilion); }
 
-/* The settled-calls journal (components/ui/trade-journal.tsx; From 21st.dev 27124). */
-.journal { width: 100%; overflow: hidden; }
-.journal-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 1rem 1rem 0.75rem; }
-.journal-range { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--color-surface-2); }
-.journal-range-opt { min-height: 2.75rem; min-width: 2.75rem; padding: 0 0.75rem; border-radius: 999px; font-family: var(--font-data); font-size: var(--text-caption); color: var(--color-ink-secondary); transition: background-color 200ms var(--ease), color 200ms var(--ease); }
-.journal-range-opt.is-on { background: var(--color-surface-3); color: var(--color-ink); }
-.journal-range-opt:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
-.journal-row { display: grid; grid-template-columns: 7rem minmax(0, 1fr) 3.5rem 5rem 5.5rem 5.5rem; align-items: center; gap: 0.75rem; padding: 0.625rem 1rem; border-bottom: 1px solid var(--color-hairline); }
-.journal-row:last-child { border-bottom: 0; }
-.journal-cols { padding-block: 0.5rem; }
+
+/* ── R4-4 (D-227): the open row's two phone lines (Owarine BetRow) ──
+   Under 640 px: the status, the call, its home and cadence, the clock pushed right (no "left"); then stake → worth,
+   the P&L and Close pushed right. The words "Live", "Staked" and "Worth now" are read aloud only under 400 px. From
+   640 px, Owarine's one line. */
+.bet-row .bet-call { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; }
+.bet-row .bet-status { flex-shrink: 0; }
+.bet-row .bet-money { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
+.bet-row .bet-pnl { flex-shrink: 0; }
 @media (max-width: 639px) {
-  .journal-row { grid-template-columns: minmax(0, 1fr) auto; row-gap: 0.25rem; }
-  .journal-row > :nth-child(1) { order: 3; }
-  .journal-row > :nth-child(3) { order: 4; }
-  .journal-row > :nth-child(4) { order: 5; }
+  .bets-row { gap: 6px 10px; padding: 12px 14px; }
+  .bet-row .bet-left { margin-left: auto; }
+  .bet-row .bet-left-word { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .bet-row .bet-act { margin-left: auto; }
 }
-.journal-pill { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.125rem 0.5rem; border-radius: 999px; border: 1px solid var(--color-hairline); font-size: var(--text-caption); font-weight: 600; letter-spacing: 0.04em; }
-.journal-pill.is-win { color: var(--color-profit); border-color: color-mix(in srgb, var(--color-profit) 30%, transparent); background: color-mix(in srgb, var(--color-profit) 10%, transparent); }
-.journal-pill.is-loss { color: var(--color-loss); border-color: color-mix(in srgb, var(--color-loss) 30%, transparent); background: color-mix(in srgb, var(--color-loss) 10%, transparent); }
-.journal-pill.is-void, .journal-pill.is-closed { color: var(--color-ink-secondary); }
+@media (max-width: 399px) {
+  .bet-row .bet-status-word, .bet-row .bet-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media (min-width: 640px) {
+  .bet-row .bet-arrow { display: none; }
+  .bet-row .bet-money { margin-left: auto; gap: 4px 16px; }
+}
+
+/* The reputation ladder's rule, folded. */
+.reputation-rule > summary { display: inline-flex; min-height: 44px; cursor: pointer; list-style: none; align-items: center; font: 600 13px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+.reputation-rule > summary::-webkit-details-marker { display: none; }
+.reputation-rule > p { font: 400 13px/1.5 var(--font-body); color: var(--color-ink-secondary); }
+
+/* The badge seals: one row of five 44 px seals with their names, under 640 px (the cards take over from 640). */
+.badge-seals { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 12px; list-style: none; }
+.badge-seal { display: flex; min-width: 0; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.badge-seal-icon { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--color-hairline); border-radius: 50%; color: var(--color-ink-muted); }
+.badge-seal-icon svg { width: 18px; height: 18px; }
+.badge-seal-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 11px/1.2 var(--font-body); color: var(--color-ink-secondary); }
+.badge-seal.is-earned .badge-seal-icon { border-color: color-mix(in srgb, var(--color-accent) 35%, transparent); background: color-mix(in srgb, var(--color-accent) 8%, transparent); color: var(--color-accent); }
+.badge-seal.is-earned .badge-seal-name { color: var(--color-ink); }
+.badge-seal.is-locked { opacity: 0.55; }
+@media (max-width: 639px) { .badge-grid { display: none; } }
+@media (min-width: 640px) { .badge-seals { display: none; } }
+@media (max-width: 639px) { .badge-rank { min-height: 0; gap: 12px; padding: 16px; } .badge-rank-figure { font-size: 36px; } }

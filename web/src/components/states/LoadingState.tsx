@@ -68,7 +68,7 @@ function HeadBones() {
   );
 }
 
-export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards" | "page" | "hero" | "tiles" | "table" | "podium";
+export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards" | "page" | "hero" | "tiles" | "table" | "podium" | "portfolio";
 
 const SHAPES: Record<LoadingShape, () => ReactNode> = {
   line: () => <Skeleton className="h-4 w-2/3 rounded-md" />,
@@ -144,6 +144,28 @@ const SHAPES: Record<LoadingShape, () => ReactNode> = {
   table: () => (
     <div className="skel-card gap-0 py-1">
       {[0, 1, 2, 3, 4].map((i) => <RowBones key={i} />)}
+    </div>
+  ),
+  // /portfolio (R4-4, D-227): the full-width money card with its pill pair, the two pockets, the first bet rows — the
+  // page's own outline, so nothing jumps when it lands.
+  portfolio: () => (
+    <div className="flex flex-col gap-6">
+      <div className="skel-money">
+        <div className="skel-money-line w-24" />
+        <div className="skel-money-figure" />
+        <div className="skel-money-line w-40" />
+        <div className="skel-money-pills">
+          <div className="skel-money-pill" />
+          <div className="skel-money-pill" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Skeleton className="h-24 rounded-xl" />
+        <Skeleton className="h-24 rounded-xl" />
+      </div>
+      <div className="skel-card gap-0 py-1">
+        {[0, 1, 2].map((i) => <RowBones key={i} />)}
+      </div>
     </div>
   ),
   // The leaderboard: the head, the filters, three on the podium, the first rows.

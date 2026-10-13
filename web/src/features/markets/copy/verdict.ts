@@ -62,7 +62,7 @@ export const CLAIM = {
   netLabel: "to collect",
   collectAll: "Collect all",
   collecting: "Collecting…",
-  oneBatch: (txs: number) => (txs <= 1 ? "One confirm collects everything — no fees to pay." : `Collected in ${txs} batches of up to 8 — no fees to pay.`),
+  oneBatch: (txs: number) => (txs <= 1 ? "One confirm. No fees." : `${txs} batches of up to 8. No fees.`),
   contracts: "contracts",
   closed: "closed",
   settled: "settled",

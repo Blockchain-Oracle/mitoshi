@@ -1,8 +1,11 @@
 "use client";
-// Ported from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:web/src/features/vault/AmountField.tsx — an amount with a
-// Max and a reason: the field says why when it asks for more than there is, so a button is never disabled without a
-// word (E.5 S7 "partial withdraw with Max and inline reasons"). Masayume tokens, ≥ 16 px input, 44 px Max.
+// Ported from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:web/src/features/vault/AmountField.tsx, reskinned to Owarine
+// 90a91d71:web/src/features/vault/AmountField.tsx (R4-4, D-227) — one pill field with Max inside it and a reason under
+// it: the field says why when it asks for more than there is, so a button is never disabled without a word. Shared by
+// the Trading Balance and the private balance (both move in and out of the one field). ≥ 16 px input, 36 px Max on a
+// 44 px hit area. Styles in styles/vault.css.
 import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
+import type { ReactNode } from "react";
 import { useId } from "react";
 import { cn } from "@/lib/utils";
 import { VAULT } from "./copy";
@@ -22,25 +25,24 @@ export function amountProblem(value: string, maxBase: bigint | null, over: (held
 export interface AmountFieldProps {
   value: string;
   onChange: (text: string) => void;
-  /** What can move; null while it is being read. */
+  /** What Max fills in; null while it is being read. */
   maxBase: bigint | null;
+  /** The field's accessible name. */
   label: string;
-  /** The refusal for an amount over `maxBase`, given the max as text. */
-  over: (held: string) => string;
-  /** The hint under the field when there is no problem, given the max as text. */
-  hint: (held: string) => string;
+  /** The refusal to show in place of the hint (from `amountProblem`), or null. */
+  problem: string | null;
+  /** The one line under the field when nothing is wrong. */
+  hint: ReactNode;
   disabled?: boolean;
   className?: string;
 }
 
-export function AmountField({ value, onChange, maxBase, label, over, hint, disabled, className }: AmountFieldProps) {
+export function AmountField({ value, onChange, maxBase, label, problem, hint, disabled, className }: AmountFieldProps) {
   const id = useId();
-  const problem = amountProblem(value, maxBase, over);
   return (
-    <div className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <label htmlFor={id} className="type-label-micro text-ink-secondary">{label}</label>
-      <div className="relative flex items-center">
-        <span aria-hidden className="pointer-events-none absolute left-3 type-body text-ink-secondary">$</span>
+    <div className={cn("vault-amount", className)} data-invalid={problem ? "" : undefined}>
+      <div className="vault-amount-row">
+        <span aria-hidden className="vault-amount-symbol">$</span>
         <input
           id={id}
           type="text"
@@ -49,17 +51,18 @@ export function AmountField({ value, onChange, maxBase, label, over, hint, disab
           value={value}
           disabled={disabled}
           onChange={(e) => onChange(e.target.value.replace(/[^\d.]/g, ""))}
+          aria-label={label}
           aria-invalid={problem ? true : undefined}
           aria-describedby={`${id}-note`}
           placeholder="0.00"
-          className={cn("numbers h-11 w-full rounded-md border bg-surface-1 pr-16 pl-7 text-base text-ink outline-none focus-visible:ring-2 focus-visible:ring-ring", problem ? "border-warning" : "border-border-strong")}
+          className="vault-input numbers"
         />
-        <button type="button" disabled={disabled || maxBase === null || maxBase <= 0n} onClick={() => maxBase !== null && onChange(formatBaseUnits(maxBase, 6, { minDp: 0, maxDp: 6, group: false }))} className="absolute right-1 min-h-touch rounded-md px-3 type-caption font-semibold text-ink disabled:opacity-50">
+        <button type="button" className="vault-max" disabled={disabled || maxBase === null || maxBase <= 0n} onClick={() => maxBase !== null && onChange(formatBaseUnits(maxBase, 6, { minDp: 0, maxDp: 6, group: false }))}>
           {VAULT.amount.max}
         </button>
       </div>
-      <span id={`${id}-note`} role={problem ? "alert" : undefined} className={cn("type-caption", problem ? "text-ink" : "text-ink-secondary")}>
-        {problem ?? (maxBase !== null ? hint(usd(maxBase)) : "—")}
+      <span id={`${id}-note`} role={problem ? "alert" : undefined} className={problem ? "vault-amount-problem" : "vault-amount-hint"}>
+        {problem ?? hint}
       </span>
     </div>
   );
