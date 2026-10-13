@@ -7,7 +7,8 @@
 // with the button pinned in its footer; the figure wears the privacy mask; the foot is the short address with Copy and
 // a QR to receive pathUSD on Tempo; the bridge is the other way in (Owarine's rail card) only once the Robinhood side
 // of the stock bridge is deployed — nothing until then.
-import { robinhoodLive, bridgeTopology } from "@cwf/markets/stocks";
+// The topology alone (pure, the generated deployments): the bridge's clients and reads stay out of this sheet's chunk.
+import { bridgeTopology, robinhoodLive } from "@cwf/markets/stocks/topology";
 import { useBalanceSheet } from "@cwf/markets/react";
 import { shortHex } from "@cwf/core/units";
 import { useQuery } from "@tanstack/react-query";
