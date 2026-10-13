@@ -11,7 +11,6 @@ import { themeRegistryAbi } from "@cwf/clients/abis/ThemeRegistry";
 import { themeRouterAbi } from "@cwf/clients/abis/ThemeRouter";
 import { specFromUri, type Reading, type ThemeSpec } from "@cwf/core";
 import { getAddress, type Address, type Hex } from "viem";
-import { deploymentOf } from "../deployments";
 import { getLogClient, getPublicClient } from "../runtime/read-runtime";
 import { withReading } from "../runtime/reading";
 import { themesVenueOf } from "./encoders";
@@ -42,7 +41,7 @@ export interface ThemeView {
 
 /** The stock mirrors this chain knows (`MirrorTSLA` … in the stocks fragment), symbol by address. */
 export function mirrorsOf(chainId: number): { token: Address; symbol: string }[] {
-  const contracts = (generated as unknown as Record<string, Record<string, { contracts: Record<string, { address: string }> }>>)[String(chainId)]?.stocks?.contracts ?? {};
+  const contracts = (generated as unknown as Fragments)[String(chainId)]?.stocks?.contracts ?? {};
   return Object.entries(contracts).filter(([name]) => name.startsWith("Mirror")).map(([name, c]) => ({ token: getAddress(c.address), symbol: name.slice("Mirror".length) }));
 }
 
@@ -51,7 +50,12 @@ async function venue() {
   return { client, v: themesVenueOf(client.chain.id), chainId: client.chain.id };
 }
 
-const stockReference = (chainId: number): Address | null => deploymentOf("stocks", chainId)?.StockReference?.address ?? null;
+type Fragments = Record<string, Record<string, { contracts: Record<string, { address: string }> }>>;
+/** StockReference lives in the `guard` fragment (S15b), beside the StockGuardHook the theme pools wear. */
+const stockReference = (chainId: number): Address | null => {
+  const a = (generated as unknown as Fragments)[String(chainId)]?.guard?.contracts.StockReference?.address;
+  return a ? getAddress(a) : null;
+};
 
 async function readTheme(client: Awaited<ReturnType<typeof getPublicClient>>, v: NonNullable<ReturnType<typeof themesVenueOf>>, chainId: number, themeId: bigint): Promise<ThemeView> {
   const reg = { address: v.registry, abi: themeRegistryAbi } as const;
