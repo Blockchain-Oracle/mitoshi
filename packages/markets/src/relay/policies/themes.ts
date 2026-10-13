@@ -68,7 +68,9 @@ export const themesPolicy = {
   pillar: "stocks" as const,
   entry: ["follow"] as readonly string[],
   maxGas: 22_000_000n,
-  keychainBatch: { keychain: KEYCHAIN, match: (calls: readonly { to: Address; data: Hex }[]) => matchThemesBatch(calls, "root") },
+  // Only the follow shape rides a keychain call through the engine: `scopeChunk` needs the router read (followOf's key
+  // = the chunk's key) the engine does not make, so a lone setAllowedCalls stays unsponsored until it does (R4-11).
+  keychainBatch: { keychain: KEYCHAIN, match: (calls: readonly { to: Address; data: Hex }[]) => (matchThemesBatch(calls, "root") === "follow" ? "follow" : null) },
 } satisfies RelayPolicy & { keychain: Address; batches: readonly Shape[] };
 
 const isTip20 = (a: string) => a.toLowerCase().startsWith("0x20c0");
