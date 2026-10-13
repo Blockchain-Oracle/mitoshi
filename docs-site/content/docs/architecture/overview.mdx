@@ -1,0 +1,50 @@
+---
+title: How Mitoshi fits together
+description: The contracts decide and pay; the keepers keep the clock and the prints moving; the app shows you evidence. What each part can and cannot do.
+sources:
+  - contracts/src/engine/EventsEngine.sol
+  - services/ops/src/registry.ts
+  - services/ops/src/main.ts
+  - web/src/server/relay.ts
+  - packages/markets/src/relay/policies
+  - packages/db/src/idx
+  - README.md
+---
+
+<Architecture name="venue" />
+
+## The parts
+
+| Part | Where | What it does |
+| --- | --- | --- |
+| **Contracts** | Tempo testnet (Moderato, chain 42431) | The market engine and its print verifiers; the Trading Balance; the maker vault and three house reserves; the private desk; strategies; the stock mirrors, guard and pools; themes; launchpads. They hold the money and the rules. |
+| **Ops** | One process on Mitoshi's Coolify server | Actors that open Windows, post prints, settle and pay, quote the house's books, run exits and strategies, index the chain and watch halts. They can stall; they cannot move your money or change a result. |
+| **Web** | Next.js at testnet.mitoshi.xyz | The app, its read APIs, the passkey and faucet routes, the relay, the stream ticket and the Memory Market's paid reads. |
+| **Postgres** | Beside ops and web | The index, the print archive, relay budgets, exit triggers, social posts. A view of the chain, never its source of truth. |
+
+```
+contracts/   Foundry: deployments/<chainId>/<area>.json are the addresses everything reads
+packages/    core (pure rules) · markets (all chain I/O) · clients (generated ABIs) · db · brain · tokens
+services/    ops — every actor on one runtime, one HTTP server
+web/         Next.js 16 app
+```
+
+Only `packages/markets` reads or writes the chain; `packages/core` stays pure, so every money rule is a function you can test without a network.
+
+## Trust, plainly
+
+<Mermaid title="Who can do what" chart={`flowchart LR
+  You[Your passkey] -->|owns| Account[Your Tempo account]
+  Account -->|capped key or grant| Engine[EventsEngine]
+  Relay[Mitoshi relay] -.->|pays network fees| Engine
+  Ops[Ops keepers] -->|open Windows, post prints, settle| Engine
+  Verifier[RedStone print verifier] -->|admits signed prints| Engine
+  Engine -->|pays the position's owner| Account
+  Account -->|deposit| Vault[Trading Balance]
+  Keeper[Exit keeper] -->|sell-only, above the floor| Vault`} />
+
+- **Your money** moves only by your signature, or by a key or grant you made, inside caps the contract enforces. No contract takes a payout address: a payout goes to the caller, or — when a keeper settles for you — to the position's owner.
+- **Results** come from signed prints the verifier admits and the engine's rule. There is no admin void.
+- **Mitoshi's servers** — the relay, the keepers, the indexer — can stop working. Then no new Windows open, payouts wait and the app's reads go stale. On the Windows that exist, anyone can still post RedStone's signed prints, settle or void, redeem and withdraw on chain.
+
+Read on: [contracts](/architecture/contracts), [prices](/architecture/prices), [ops and the indexer](/architecture/ops-and-indexer), [the relay and keys](/architecture/relay-and-keys), [deployments](/architecture/deployments), and what each platform under it does: [built on Tempo](/architecture/built-on).

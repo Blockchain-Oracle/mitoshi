@@ -24,6 +24,9 @@ import { indexerRecountPass, INDEXER_RECOUNT_EVERY_MS } from "./actors/indexer-r
 import { referenceWriterPass, REFERENCE_WRITER_EVERY_MS } from "./actors/reference-writer";
 import { keeperDeps, launchKeeperPass, LAUNCH_KEEPER_EVERY_MS } from "./actors/launch-keeper";
 import { moderationPass, MODERATION_EVERY_MS } from "./actors/moderation";
+import { startBridgeWatch } from "./actors/bridge-watch";
+import { startReserveWatch } from "./actors/reserve-watch";
+import { startStockSync } from "./actors/stock-sync";
 import { memeAddresses } from "@cwf/markets/launch";
 import { tempoReadClient } from "@cwf/markets";
 import { runActor, type VenueDeps } from "./runtime";
@@ -81,6 +84,13 @@ export const ACTORS: Record<string, ActorEntry> = {
       return runActor({ name: "moderation", log: d.log, dryRun: false, everyMs: MODERATION_EVERY_MS, pass: moderationPass(d.sql, d.log) });
     },
   },
+  // S14 14o (R4-12, D-227): the bridge's watchers. bridge-watch follows recorded transfers leg by leg (LayerZero Scan +
+  // receipts), re-runs a stored compose once its Base float can pay (stock-sync key; DRY_RUN never sends) and reports
+  // the hop floats; reserve-watch snapshots every ticker's reserve and alerts; both need DATABASE_URL. stock-sync pushes
+  // Robinhood multipliers through StockSyncSender (stock-sync key) and idles, saying why, until that is deployed.
+  "bridge-watch": { start: (d) => startBridgeWatch(d) },
+  "reserve-watch": { start: (d) => startReserveWatch(d) },
+  "stock-sync": { start: (d) => startStockSync(d) },
   // Opt-in (S3 soak): house-key trades so an unattended soak exercises fills and auto-pay; never in the default set.
   "house-taker": { start: (d) => startHouseTaker(d) },
   // Opt-in (S17b): graduates Complete memecoins. Until `tx/send.ts` is wired as its sender (D-098) it plans and
@@ -98,4 +108,4 @@ export const ACTORS: Record<string, ActorEntry> = {
   "reference-writer": { start: (d) => runActor({ name: "reference-writer", log: d.log, dryRun: d.env.dryRun, everyMs: REFERENCE_WRITER_EVERY_MS, pass: referenceWriterPass(d.env) }) },
 };
 
-export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "exit-keeper", "earn-quoter", "moderation"] as const;
+export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "exit-keeper", "earn-quoter", "moderation", "bridge-watch", "reserve-watch", "stock-sync"] as const;

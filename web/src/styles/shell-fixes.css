@@ -68,6 +68,13 @@ html[data-shell="app"] .grain { display: none; }
    under 420 px, and "Open the app" stays on one line (it wrapped to two). */
 .site-header .logo-mark { flex: none; width: 17px; }
 .site-header .btn { white-space: nowrap; }
+/* The guides' link (Owarine's landing nav): a 44 px target from 768 px up, its underline under the text; phones reach
+   the guides from the footer (R4 DOCS, D-227). */
+.site-header .site-docs { display: none; }
+@media (min-width: 768px) {
+  .site-header .site-docs { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; }
+  .site-header .site-docs::after { bottom: 9px; }
+}
 @media (max-width: 420px) {
   .site-header .logo > span:last-child { display: none; }
 }

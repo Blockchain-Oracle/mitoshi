@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useId, useState } from "react";
 import { captionParts } from "@cwf/core/social";
 import { formatCadence } from "@cwf/core/copy";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { notify } from "@/lib/toast";
 import { SOCIAL } from "./copy";
 import { REACTIONS } from "./reactions";

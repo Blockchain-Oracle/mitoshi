@@ -1,0 +1,41 @@
+---
+title: Strategies and agents
+description: Copy a strategy in one transaction, stop it in one, and watch every trade it made for you — inside limits written on chain.
+sources:
+  - contracts/src/products/strategy
+  - contracts/deployments/42431/strategies.json
+  - services/ops/src/actors/strategy-runner
+  - services/ops/src/actors/agent-rater
+  - web/src/features/strategies/copy.ts
+  - web/src/features/agents/copy.ts
+  - docs/plan/acceptance/S9.md
+---
+
+<AppLink href="/strategies">Automate</AppLink> is where a strategy trades the Windows for you, from your [Trading Balance](/trading/trading-balance), inside two sets of limits: the strategy's own **envelope**, written on chain when it is published, and your **budget**, which can only be smaller.
+
+## The pieces
+
+| Piece | What it is |
+| --- | --- |
+| **StrategyRegistry** | The contract that holds each strategy: its envelope, its fee, its runner and, optionally, its ERC-8004 identity. The only money it moves is a subscription fee, from you straight to the creator. |
+| **A STRATEGY grant** | What copying gives the strategy's runner on your Trading Balance: buy for you inside both sets of limits, and sell what the Trading Balance holds — the contract puts no floor on a sale. It can't withdraw ([the worst case](/safety/worst-case)). |
+| **The runner** | The key that places trades for every live copier. The house runner is the ops `strategy-runner`; a creator can run their own with the same code. |
+| **An agent** | A strategy with an ERC-8004 identity on Tempo's identity registry, so its record and ratings follow one public id. |
+
+## The house strategies
+
+Three run on Moderato, each free to copy, each $5 a trade and $50 a day at most, three Windows at once, never above 90¢:
+
+| # | Name | Reads | Agent id |
+| --- | --- | --- | --- |
+| 1 | BTC Momentum | BTC 5m: acts once the price has moved past a trigger from the opening print | 7 |
+| 2 | ETH Mean-reversion | ETH 5m: takes the other side of a move past its trigger | 8 |
+| 3 | House agent: BTC reader | BTC 5m: a language model reads each Window and calls UP, DOWN or holds, with its reason | 9 |
+
+The runner names its trigger for each trade ("BTC -3 bps → down; 1 filled") and never places twice in one Window. House agent #3 runs on the owner's model key since 12 October; its decisions, held or called, are listed on its page with the model that made them.
+
+## Read next
+
+- [Copy a strategy](/automate/copy-strategies) — follow or fade, one transaction each way.
+- [Agents and ERC-8004](/automate/agents) — the board, identities and ratings.
+- [The Memory Market](/automate/memory-market) — a strategy's sealed notes, sold per read over MPP.

@@ -1,0 +1,28 @@
+---
+title: Practice and the arcade
+description: Learn the swipe on live prices with nothing staked, and play two arcade runs whose scores the server replays before it records them.
+sources:
+  - packages/core/src/games/practice.ts
+  - web/src/features/games/practice/PracticeStage.tsx
+  - packages/core/src/games/arcade/index.ts
+  - packages/core/src/games/arcade/replay.ts
+  - packages/db/src/arcade-store.ts
+  - web/src/app/api/games
+---
+
+## Practice
+
+Five live Windows come as cards. Swipe up if you think the price goes above its line, down if below; a bot that is a coin flip plays the same hand.
+
+Practice cannot wait for a Window to settle, so it asks a narrower question and says so: every card records the live public price when you swipe it, and all five are scored together on the same feed after a **30-second watch**. Every price is a real reading; nothing is simulated. It is not a settlement, a payout, a position or a real opponent, and nothing is staked.
+
+## The arcade
+
+**Line Rider** and **Candle Hop** are seeded, fixed-step runs drawn from a seed you can see.
+
+- **Line Rider:** a line scrolls in from the right; drag, scroll or hold the arrow keys to keep the dot on it. Hugging the line builds a combo and refills your grip; drifting off drains it.
+- **Candle Hop:** candles scroll in; tap or press Space to hop through each gap.
+
+No stake and nothing on the ledger. Your inputs are recorded as a trace, and the server **replays the run** from the seed before it records the score: a forged score is refused, and an unsigned post is refused. The board shows the top ten and your rank.
+
+On 12 October a live check posted a real run that ranked first, and saw the forged and unsigned posts refused ([evidence](/help/evidence)).
