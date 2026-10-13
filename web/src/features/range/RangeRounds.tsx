@@ -30,7 +30,9 @@ function Round({ r, nowSec, staleAfterSec, writes }: { r: RangeRoundView; nowSec
   const bandText = kind.kind === "moonshot" ? R.target(kind.direction, usdBand(kind.strikePrint)) : R.band(usdBand(r.lowPrint), usdBand(r.highPrint), r.side);
   const pill = r.status === "won" ? R.won : r.status === "claimed" ? R.paid : r.status === "lost" ? R.lost : r.status === "void" ? R.voided : R.inPlay;
   const milli = Number((r.maxPayoutBase * 1000n) / (r.stakeBase || 1n));
-  const stale = r.status === "live" && !r.answered && nowSec > r.expirySec + staleAfterSec;
+  // A round on a retired reserve is a record: its actions belong to the old address (closed out before retiring).
+  const actionable = !r.retiredReserve;
+  const stale = actionable && r.status === "live" && !r.answered && nowSec > r.expirySec + staleAfterSec;
   return (
     <article className={cn("pl-card", r.status === "won" && "pl-card--won", r.status === "lost" && "pl-card--lost", r.status === "void" && "pl-card--void")} aria-label={`${r.asset ?? ""} range #${r.roundId}`}>
       <div className="pl-card-head">
@@ -48,7 +50,7 @@ function Round({ r, nowSec, staleAfterSec, writes }: { r: RangeRoundView; nowSec
         {R.opening(usdBand(r.openingPrint))}
         {r.closingPrint !== null ? ` · ${R.closed(usdBand(r.closingPrint), r.closingPrint >= r.lowPrint && r.closingPrint <= r.highPrint)}` : ""}
       </p>
-      {r.status === "live" && r.answered ? (
+      {actionable && r.status === "live" && r.answered ? (
         <button type="button" className="pl-settle min-h-touch mt-3" disabled={writes.busy === `settle:${r.roundId}`} onClick={() => void writes.settle(r.roundId, r.marketId)}>
           {writes.busy === `settle:${r.roundId}` ? R.settling : R.settle}
         </button>
@@ -56,7 +58,7 @@ function Round({ r, nowSec, staleAfterSec, writes }: { r: RangeRoundView; nowSec
       {stale ? (
         <button type="button" className="pl-settle min-h-touch mt-3" onClick={() => void writes.voidStale(r.roundId)}>{R.voidStale}</button>
       ) : null}
-      {r.status === "won" ? (
+      {actionable && r.status === "won" ? (
         <button type="button" className="pl-claim min-h-touch" disabled={writes.busy === `claim:${r.roundId}`} onClick={() => void writes.claim(r.roundId, r.maxPayoutBase)}>
           {writes.busy === `claim:${r.roundId}` ? R.claiming : R.claim(usd(r.maxPayoutBase))}
         </button>
@@ -107,7 +109,7 @@ export function RangeRounds({ wallet, nowMs, staleAfterSec, writes, onSignIn, ki
         {(rounds) => (
           <div className="pl-slip">
             {rounds.map((r) => (
-              <Round key={r.roundId.toString()} r={r} nowSec={nowSec} staleAfterSec={staleAfterSec} writes={writes} />
+              <Round key={`${r.retiredReserve ?? ""}:${r.roundId}`} r={r} nowSec={nowSec} staleAfterSec={staleAfterSec} writes={writes} />
             ))}
           </div>
         )}

@@ -136,32 +136,44 @@ export async function getRangeReserveState(): Promise<Reading<RangeReserveState 
   });
 }
 
-async function roundsByIds(ids: readonly bigint[]): Promise<RangeRound[]> {
-  const contract = await reserveContract();
+async function roundsByIds(ids: readonly bigint[], at?: Address): Promise<RangeRound[]> {
+  const current = await reserveContract();
+  const contract = at ? ({ address: at, abi: RANGE_READ_ABI } as const) : current;
   if (!contract || ids.length === 0) return [];
   const rows = await (await reserveClient()).multicall({
     allowFailure: false,
     contracts: ids.map((id) => ({ ...contract, functionName: "roundOf", args: [id] }) as const),
   });
-  return ids.map((id, i) => toRangeRound(id, rows[i] as RoundTuple));
+  return ids.map((id, i) => ({ ...toRangeRound(id, rows[i] as RoundTuple), ...(at ? { retiredReserve: at } : {}) }));
 }
 
 const STATUS_RANK = { live: 0, won: 1, lost: 2, void: 2, claimed: 3 } as const;
 
-/** One wallet's rounds: live first, then newest expiry; empty without a reserve. */
+async function idsOf(at: Address, wallet: Address): Promise<bigint[]> {
+  const client = await reserveClient();
+  const contract = { address: at, abi: RANGE_READ_ABI } as const;
+  const total = Math.min(Number(await client.readContract({ ...contract, functionName: "roundCountOf", args: [wallet] })), MAX_ROUNDS);
+  const ids: bigint[] = [];
+  for (let offset = 0; offset < total; offset += PAGE) {
+    const page = await client.readContract({ ...contract, functionName: "roundsOf", args: [wallet, BigInt(offset), BigInt(Math.min(PAGE, total - offset))] });
+    ids.push(...(page as readonly bigint[]));
+  }
+  return ids;
+}
+
+/**
+ * One wallet's rounds: live first, then newest expiry; empty without a reserve. R4-5 (D-227): the rounds on a retired
+ * reserve (the deployment's `history`) are read too and tagged `retiredReserve`, so a redeploy never hides a wallet's
+ * record; they are shown, never written to (the retired reserve was closed out before it was retired).
+ */
 export async function listRangesOf(wallet: Address): Promise<Reading<RangeRound[]>> {
   return withReading(`ranges:${wallet}`, async () => {
     const contract = await reserveContract();
     if (!contract) return [];
-    const client = await reserveClient();
-    const total = Math.min(Number(await client.readContract({ ...contract, functionName: "roundCountOf", args: [wallet] })), MAX_ROUNDS);
-    const ids: bigint[] = [];
-    for (let offset = 0; offset < total; offset += PAGE) {
-      const page = await client.readContract({ ...contract, functionName: "roundsOf", args: [wallet, BigInt(offset), BigInt(Math.min(PAGE, total - offset))] });
-      ids.push(...(page as readonly bigint[]));
-    }
-    const rounds = await roundsByIds(ids);
-    return rounds.sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status] || b.expirySec - a.expirySec || Number(b.roundId - a.roundId));
+    const venue = rangeVenueOf((await getPublicClient()).chain.id);
+    const current = await roundsByIds(await idsOf(contract.address, wallet));
+    const retired = await Promise.all((venue?.retired ?? []).map(async (at) => roundsByIds(await idsOf(at, wallet), at)));
+    return [...current, ...retired.flat()].sort((a, b) => STATUS_RANK[a.status] - STATUS_RANK[b.status] || b.expirySec - a.expirySec || Number(b.roundId - a.roundId));
   });
 }
 
