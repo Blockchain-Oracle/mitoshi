@@ -11,6 +11,7 @@ import { startPriceRelay } from "./actors/price-relay";
 import { startSettler } from "./actors/settler";
 import { startSeedMaker } from "./actors/seed-maker";
 import { startLeverageKeeper } from "./actors/leverage-keeper";
+import { startDuelSettler } from "./actors/duel-settler";
 import { startExitKeeper } from "./actors/exit-keeper";
 import { startStrategyRunner } from "./actors/strategy-runner";
 import { startAgentRater } from "./actors/agent-rater";
@@ -57,6 +58,7 @@ export const ACTORS: Record<string, ActorEntry> = {
   "funds-watch": { start: (d) => startFundsWatch(d) },
   // S10c: settles and knocks out Boost positions (both permissionless, both pay the owner); `keeper` role key.
   "leverage-keeper": { start: (d) => startLeverageKeeper(d) },
+  "duel-settler": { start: (d) => startDuelSettler(d) },
   // S24.3: Trail / take-profit / stop-loss with the app closed — sells through the owners' EXIT grants at the vault's
   // fair-value floor; `keeper` role key; trails step on the display feed (so it asks for the spot/display runtime).
   "exit-keeper": { start: (d) => startExitKeeper(d), spot: true },
@@ -108,4 +110,4 @@ export const ACTORS: Record<string, ActorEntry> = {
   "reference-writer": { start: (d) => runActor({ name: "reference-writer", log: d.log, dryRun: d.env.dryRun, everyMs: REFERENCE_WRITER_EVERY_MS, pass: referenceWriterPass(d.env) }) },
 };
 
-export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "exit-keeper", "earn-quoter", "moderation", "bridge-watch", "reserve-watch", "stock-sync"] as const;
+export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "duel-settler", "exit-keeper", "earn-quoter", "moderation", "bridge-watch", "reserve-watch", "stock-sync"] as const;

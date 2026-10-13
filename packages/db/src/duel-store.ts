@@ -72,6 +72,8 @@ export interface DuelStore {
   setStatus(matchId: string, status: string, extra?: { winner?: string | null; creatorPnl?: string; challengerPnl?: string; cards?: readonly string[] }): Promise<void>;
   markRevealed(matchId: string): Promise<void>;
   matchesOf(wallet: string, limit: number): Promise<DuelMatchRow[]>;
+  /** Match ids still undecided on the record, created inside `withinSec` — the settler's worklist. */
+  live(withinSec: number, limit: number): Promise<string[]>;
   /** Who is waiting now, per tier, inside the pairing window — the hall's presence line. */
   waiting(windowSec: number): Promise<Record<string, number>>;
   /** Every decided duel (finalized or refunded), oldest first — the ladder's and the badges' input. */
@@ -181,6 +183,13 @@ export function createPgDuelStore(sql: Sql): DuelStore {
     },
     async markRevealed(matchId) {
       await sql`update duel_decks set revealed_at = coalesce(revealed_at, now()) where match_id = ${matchId.toLowerCase()}`;
+    },
+    async live(withinSec, limit) {
+      const rows = await sql<{ match_id: string }[]>`
+        select match_id from duel_matches
+        where status not in ('finalized', 'refunded') and created_at > now() - make_interval(secs => ${withinSec})
+        order by created_at limit ${limit}`;
+      return rows.map((r) => r.match_id);
     },
     async waiting(windowSec) {
       const rows = await sql<{ tier: string; n: string }[]>`
