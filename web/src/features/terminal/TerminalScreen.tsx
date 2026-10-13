@@ -6,7 +6,7 @@
 // hides while the interval menu is open, UP/DOWN stay with the reason when no Window is listed, and signed-out History
 // is DEMO's paper history. R4-1 (D-227): the book of positions is `useTerminalBook` — totals over priced rows, equity
 // with every row at what it counts for, the Window's positions summed on the chart.
-import { isStockSymbol, type TickerSymbol } from "@cwf/core";
+import { isStockSymbol, type Side, type TickerSymbol } from "@cwf/core";
 import { usePathname, useSearchParams } from "next/navigation";
 import { holdStreamAwake } from "@cwf/markets/stream";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -24,7 +24,7 @@ import { formatPrice, priceDecimals } from "./chart/engine";
 import { TERMINAL } from "./copy";
 import { clockText, money } from "./format";
 import { gap0400NextOpen } from "./pick-window";
-import { MODE_PARAM, replaceTradeParams } from "./useTerminalWindow";
+import { MODE_PARAM, PICK_PARAM, replaceTradeParams } from "./useTerminalWindow";
 import { useMarketSession, type MarketSession } from "@/features/markets/session";
 import { useTerminalState } from "./useTerminalState";
 import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } from "./ui/Chrome";
@@ -118,20 +118,25 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const [depth, setDepth] = useState(false);
   // Up/Down is Tradash's one tap; the other modes host the ticket's own bodies (inline on desktop, a drawer on phones).
   const [mode, setMode] = useState<TerminalMode>("updown");
-  const chooseMode = (m: TerminalMode) => {
+  // `?mode=` opens a mode, `?pick=` its side (R4-13a, D-227): More's "Short" is Boost on DOWN, the deployed reserve. The
+  // side belongs to the mode the link opened: a mode the reader picks (or closing it) drops it, so it never preselects
+  // a side in another mode or on a reload.
+  const params = useSearchParams();
+  const [pickedSide, setPickedSide] = useState<Side | null>(() => {
+    const p = params.get(PICK_PARAM);
+    return p === "up" || p === "down" ? p : null;
+  });
+  const chooseMode = (m: TerminalMode, fromLink = false) => {
     setMode(m);
-    replaceTradeParams({ mode: m === "updown" ? null : m });
+    if (!fromLink) setPickedSide(null);
+    replaceTradeParams(fromLink ? { mode: m === "updown" ? null : m } : { mode: m === "updown" ? null : m, pick: null });
     if (m !== "updown" && !window.matchMedia(`(min-width: ${TICKET_RAIL_MIN_WIDTH}px)`).matches) drawer.show(DRAWERS.mode);
   };
-  // `?mode=` opens a mode, `?pick=` its side (R4-13a, D-227): More's "Short" is Boost on DOWN, the deployed reserve.
-  const params = useSearchParams();
-  const pickParam = params.get("pick");
-  const pickedSide = pickParam === "up" || pickParam === "down" ? pickParam : null;
   const askedMode = useRef(params.get(MODE_PARAM));
   useEffect(() => {
     const asked = askedMode.current;
     askedMode.current = null;
-    if (asked && asked !== "updown" && (MODES as readonly string[]).includes(asked)) chooseMode(asked as TerminalMode);
+    if (asked && asked !== "updown" && (MODES as readonly string[]).includes(asked)) chooseMode(asked as TerminalMode, true);
   }); // once: the ref is cleared on the first run
   useAppUpdate();
   useWalletToasts();
@@ -291,7 +296,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
       </div>
       <Tutorial open={tourOpen} onDone={endTour} instant={instantTour} />
       {mode !== "updown" && market ? (
-        <SlideOver open={drawer.open === DRAWERS.mode} onOpenChange={(o) => { if (!o) { drawer.close(); setMode("updown"); replaceTradeParams({ mode: null }); } }}>
+        <SlideOver open={drawer.open === DRAWERS.mode} onOpenChange={(o) => { if (!o) { drawer.close(); setMode("updown"); setPickedSide(null); replaceTradeParams({ mode: null, pick: null }); } }}>
           <SlideOverContent title={TERMINAL.modes.names[mode]} fields>
             <ModePanel mode={mode} market={market} side={pickedSide} />
           </SlideOverContent>

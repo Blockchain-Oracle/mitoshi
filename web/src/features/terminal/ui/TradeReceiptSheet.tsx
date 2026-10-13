@@ -12,23 +12,22 @@ import { useKeyRemaining, useSigner } from "@cwf/markets/react";
 import { KeyUsedReceipt, TxReceipt } from "@/components/tx";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { useSessionView } from "@/features/session";
+import { leftNowBase } from "@/features/session/caps";
 import { webEnv } from "@/lib/env";
 import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
 import { readWalletKey } from "@/providers/wallet/wallet-key-store";
 import { money } from "../format";
 import { RECEIPT, useTradeReceipt } from "../receipt";
 
-const DAY_SEC = 86_400;
 const utc = (sec: number) => formatUtc(secToMs(sec), { withSeconds: false, withDate: true });
 
-/** The Trading Balance's session key: its vault grant's cap, what today's taps spent of it, and its expiry. */
+/** The Trading Balance's session key: what it can still spend now — today's headroom under the vault grant's daily cap,
+ *  bounded by the grant's budget, the rule the key's own chip uses (`leftNowBase`) — against that cap, and its expiry. */
 function SessionKeyLine() {
   const session = useSessionView();
   const grant = session.grant;
-  const nowSec = Math.floor(Date.now() / 1000);
-  const spent = grant && grant.spentDay === Math.floor(nowSec / DAY_SEC) ? grant.spentTodayBase : 0n;
   const cap = grant?.caps.maxDailySpendBase ?? null;
-  const left = grant && cap !== null ? (cap > spent ? cap - spent : 0n) : null;
+  const left = grant ? leftNowBase(grant, Math.floor(Date.now() / 1000)) : null;
   return (
     <KeyUsedReceipt
       keyLabel={RECEIPT.keys.session}
