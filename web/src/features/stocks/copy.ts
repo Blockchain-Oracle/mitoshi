@@ -21,7 +21,8 @@ export const STOCKS = {
     title: "The token",
     mirror: "Mirror token on Tempo",
     none: "No token on Moderato yet.",
-    blocked: "Buy and sell wait on bridged supply on Moderato.",
+    blocked: "No bridged supply yet.",
+    bridge: "Bridge →",
     reserves: "Reserves →",
   },
 } as const;

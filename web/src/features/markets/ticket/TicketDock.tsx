@@ -6,6 +6,7 @@
  * `?d=ticket` so Back closes it without leaving /markets or dropping the composed order). Every tap that selects a Window
  * bumps the selection's `sessionId`, and that opens it; the drawer has no trigger of its own. The ticket body is a lazy
  * island (§3.1) and stays mounted while closed under `<Activity>` so reopening is instant and keeps the composition.
+ * R4-3 (D-227, Owarine 90a91d71 TicketDock): the rail ticket wears its frame (`variant="rail"` → `.tk-ticket--rail`).
  */
 import type { EventMarket, Side } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
@@ -16,6 +17,7 @@ import { LoadingState } from "@/components/states";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { TICKET } from "../copy";
 import { TICKET_RAIL_MIN_WIDTH } from "../data/useSelection";
+import { RailFrame } from "../hero/RailFrame";
 
 const Ticket = dynamic(() => import("./Ticket").then((m) => m.Ticket), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
 const TicketMiniChart = dynamic(() => import("./TicketMiniChart").then((m) => m.TicketMiniChart), { ssr: false });
@@ -50,11 +52,11 @@ export function TicketDock({ market, side, sessionId }: { market: EventMarket; s
     }
   }, [hasRail, sessionId]);
 
-  if (hasRail === null) return <div className="mh-rail max-lg:hidden"><LoadingState shape="ticket" /></div>;
+  if (hasRail === null) return <RailFrame><LoadingState shape="ticket" /></RailFrame>;
   if (hasRail) {
     return (
       <div className="mh-rail">
-        <Ticket market={market} side={side} />
+        <Ticket market={market} side={side} variant="rail" />
       </div>
     );
   }
@@ -72,7 +74,7 @@ export function TicketDock({ market, side, sessionId }: { market: EventMarket; s
       <SlideOverContent title={`${TICKET.title} · ${market.asset}`} hideHeading keepMounted={everOpened} fields className="tk-slide-over">
         {everOpened ? (
           <Activity mode={open ? "visible" : "hidden"}>
-            <Ticket market={market} side={side} head={<>{head}<TicketMiniChart market={market} /></>} />
+            <Ticket market={market} side={side} variant="drawer" head={<>{head}<TicketMiniChart market={market} /></>} />
           </Activity>
         ) : null}
       </SlideOverContent>

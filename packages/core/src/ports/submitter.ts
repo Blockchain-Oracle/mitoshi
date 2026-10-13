@@ -14,6 +14,7 @@ import type { LeverageIntent } from "../leverage/types";
 import type { PrivateIntent } from "../private/types";
 import type { StrategyIntent } from "../strategies/types";
 import type { GrantKind, VaultCaps } from "../vault/types";
+import type { BridgeIntent } from "../bridge/types";
 
 /** The write-path state machine every surface renders (EXPERIENCE.md). */
 export type WritePhase = "composing" | "submitted" | "confirming" | "confirmed" | "reverted" | "unknown";
@@ -175,7 +176,8 @@ export type TxIntent =
   | ThemeIntent
   | LeverageIntent
   | PrivateIntent
-  | ArenaIntent;
+  | ArenaIntent
+  | BridgeIntent;
 
 export function isVaultIntent(intent: TxIntent): intent is VaultIntent {
   return intent.kind.startsWith("vault-");
@@ -187,6 +189,10 @@ export function isStrategyIntent(intent: TxIntent): intent is StrategyIntent {
 
 export function isParlayIntent(intent: TxIntent): intent is ParlayIntent {
   return intent.kind.startsWith("parlay-");
+}
+
+export function isBridgeIntent(intent: TxIntent): intent is BridgeIntent {
+  return intent.kind.startsWith("bridge-");
 }
 
 export function isRangeIntent(intent: TxIntent): intent is RangeIntent {

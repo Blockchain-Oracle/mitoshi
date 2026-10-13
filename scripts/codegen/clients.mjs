@@ -56,10 +56,27 @@ function loadAbi(artifact, profile) {
 
 const ident = (name) => name.charAt(0).toLowerCase() + name.slice(1);
 
+/**
+ * ABIs the app needs that no fragment records (R4-12, D-227): the Robinhood testnet side of the bridge (it waits on the
+ * owner's test ETH, but `/bridge`, `/reserves` and the ops watchers are built against it now), the LayerZero endpoint's
+ * compose surface (a stored compose is re-run) and TIP-20 roles (the reserve check's ISSUER_ROLE scan). Generated from
+ * the compiled artifacts like every other ABI; a deployed fragment with the same contract supersedes its entry.
+ */
+const EXTRA_ABIS = [
+  { artifact: "StockLockbox.sol:StockLockbox", profile: "evm" },
+  { artifact: "StockSyncSender.sol:StockSyncSender", profile: "evm" },
+  { artifact: "ILayerZeroEndpointV2.sol:ILayerZeroEndpointV2", profile: "evm" },
+  { artifact: "ITIP20RolesAuth.sol:ITIP20RolesAuth", profile: "tempo" },
+];
+
 function generate(fragments) {
   const files = new Map();
   const abis = new Map();
   for (const f of fragments) for (const [name, c] of Object.entries(f.contracts ?? {})) {
+    const contractName = c.artifact.split(":")[1];
+    if (!abis.has(contractName)) abis.set(contractName, loadAbi(c.artifact, c.profile));
+  }
+  for (const c of EXTRA_ABIS) {
     const contractName = c.artifact.split(":")[1];
     if (!abis.has(contractName)) abis.set(contractName, loadAbi(c.artifact, c.profile));
   }

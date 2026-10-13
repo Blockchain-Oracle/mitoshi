@@ -8,12 +8,18 @@
  * tap away for the one-tap trader. No clock is read here: countdowns, cards and the board tick as leaves (ux-audit fix
  * 12). Live data: the D-049 stream marks the hero's book, the visible Windows and the wallet's reads stale as events
  * land (`useLiveMarketData`). R4-0 (D-227): one root (`.markets-page`), so the stage always holds a single item —
- * a fragment let a flex stage set the hero and the lanes side by side.
+ * a fragment let a flex stage set the hero and the lanes side by side. R4-3 (D-227), Owarine 90a91d71 MarketsScreen: the
+ * Room is one sheet held here (`roomMarket`), opened from the hero or any card (the alerts sheet too); §01 and §02 wear
+ * Owarine's compact `SectionHeader` (§01's aside the session chip, no "Live" pill); the word board follows the pinned
+ * ticker and says why when the read failed; with no Window the rail is the ticket's own framed placeholder.
  */
-import { isAllHoursLane, type MarketId, type Side } from "@cwf/core";
+import { isAllHoursLane, isOk, type EventMarket, type MarketId, type Side } from "@cwf/core";
 import { useLiveMarketData, useOpeningPrice } from "@cwf/markets/react";
 import { MotionScope } from "@/components/motion-scope";
-import SectionHead from "@/components/shell/SectionHead";
+import { SectionHeader } from "@/components/shell/SectionHeader";
+import { AlertsDrawer, RoomDrawer } from "@/features/terminal/lazy-drawers";
+import { closeDrawer, openDrawer, useOpenDrawerName } from "@/lib/drawer-param";
+import { useState } from "react";
 import { pickWindow } from "@/features/terminal/pick-window";
 import { useClockValue } from "@/lib/clock";
 import { tapFeedback } from "@/lib/feedback";
@@ -24,7 +30,7 @@ import { MarketsAllowance } from "@/features/session/MarketsAllowance";
 import { laneTickers, tickerMarkets, type LaneTabKey } from "./data/lane-view";
 import { useLanesState } from "./data/useLanesState";
 import { useMarketsSelection } from "./data/useSelection";
-import { MarketsHero } from "./hero/MarketsHero";
+import { MarketsHero, RailPlaceholder } from "./hero/MarketsHero";
 import { CadenceLanes } from "./lanes/CadenceLanes";
 import { ClosedStocks } from "./lanes/ClosedStocks";
 import { MarketSessionChip } from "./session/MarketSessionChip";
@@ -66,6 +72,26 @@ function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
     lanes.pin(key);
     setSelection(marketId);
   };
+  // One Room and one alerts sheet for the page (Owarine `roomMarket`), in the URL (`?d=room` · `?d=alerts`, D-190): Back
+  // closes them. A card opens its own Window's Room; the hero opens the hero's.
+  const named = useOpenDrawerName();
+  const [roomMarket, setRoomMarket] = useState<EventMarket | null>(null);
+  const roomFor = roomMarket ?? selection.market;
+  const openRoom = (m: EventMarket | null) => {
+    setRoomMarket(m);
+    openDrawer("room");
+  };
+  const closeSheet = () => {
+    setRoomMarket(null);
+    closeDrawer();
+  };
+  const failure = lanes.reading && !isOk(lanes.reading) ? lanes.reading.error : null;
+  const allHours = lanes.activeLane ? isAllHoursLane(lanes.activeLane.basis) : false;
+  const ticket = selection.market ? (
+    <TicketDock market={selection.market} side={selection.side} sessionId={selection.sessionId} />
+  ) : (
+    <RailPlaceholder waiting={lanes.reading === null || selection.resolving} allHours={allHours} failure={failure} />
+  );
 
   return (
     <div className="markets-page">
@@ -76,23 +102,29 @@ function Screen({ routeMarketId = null }: { routeMarketId?: MarketId | null }) {
         resolving={selection.resolving}
         onSelect={select}
         onPickLane={pickLane}
-        ticket={selection.market ? <TicketDock market={selection.market} side={selection.side} sessionId={selection.sessionId} /> : null}
+        onOpenRoom={() => openRoom(null)}
+        onOpenAlerts={() => openDrawer("alerts")}
+        ticket={ticket}
       />
       <div className="markets-main">
         <div className="container">
           <MarketsAllowance />
           <YourCalls />
           <section className="markets-section flex flex-col gap-4" aria-label={SECTIONS.lanes.title}>
-            <SectionHead number={SECTIONS.lanes.index} title={SECTIONS.lanes.title} live aside={<MarketSessionChip allHours={lanes.activeLane ? isAllHoursLane(lanes.activeLane.basis) : false} />} />
-            <CadenceLanes state={lanes} selectedMarketId={selection.marketId} onSelect={select} />
+            <SectionHeader index={SECTIONS.lanes.index} title={SECTIONS.lanes.title} aside={<MarketSessionChip allHours={allHours} />} />
+            <CadenceLanes state={lanes} selectedMarketId={selection.marketId} onSelect={select} onOpenRoom={openRoom} />
             <ClosedStocks laneSet={lanes.laneSet} />
           </section>
           <section id="words" className="markets-section flex flex-col gap-4 scroll-mt-4" aria-label={SECTIONS.words.title}>
-            <SectionHead number={SECTIONS.words.index} title={SECTIONS.words.title} desc={SECTIONS.words.desc} />
-            <WordMarketBoard laneSet={lanes.laneSet} onSelect={select} />
+            <SectionHeader index={SECTIONS.words.index} title={SECTIONS.words.title} desc={SECTIONS.words.desc} />
+            <WordMarketBoard laneSet={lanes.laneSet} ticker={lanes.ticker} failure={failure} onSelect={select} />
           </section>
         </div>
       </div>
+      {named === "room" && roomFor ? (
+        <RoomDrawer open onOpenChange={(o) => !o && closeSheet()} symbol={roomFor.asset} window={{ marketId: roomFor.marketId, asset: roomFor.asset, intervalSec: roomFor.intervalSec, expirySec: roomFor.expirySec }} />
+      ) : null}
+      {named === "alerts" && selection.market ? <AlertsDrawer open onOpenChange={(o) => !o && closeSheet()} symbol={selection.market.asset} /> : null}
       {/* The dock rides above the page, as the reference mounts it (Owarine 90a91d71 MarketsScreen L94; O-6). */}
       <SenseiDock laneSet={lanes.laneSet} market={selection.market} openingRaw={openingRaw} address={address} onAct={(id, side) => select(id, side)} />
     </div>

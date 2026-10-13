@@ -23,13 +23,14 @@ const META: Record<Pocket["id"], { icon: LucideIcon; label: string; note: string
   private: { icon: LockKeyhole, ...HERO_MONEY.pockets.private },
 };
 
-export function Pockets({ pockets, decimals }: { pockets: Pocket[]; decimals: number }) {
+/** `children`: tiles that are their own island (the Earn pocket, R4-7) — they sit in the same grid. */
+export function Pockets({ pockets, decimals, children }: { pockets: Pocket[]; decimals: number; children?: ReactNode }) {
   const named = useOpenDrawerName();
   const current = pockets.find((p) => URL_KEY[p.id] === named) ?? null;
   return (
     <section className="flex flex-col gap-3" aria-labelledby="pockets-title">
       <h2 id="pockets-title" className="type-title text-ink">{HERO_MONEY.pocketsTitle}</h2>
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className={children ? "grid gap-3 md:grid-cols-3" : "grid gap-3 md:grid-cols-2"}>
         {pockets.map((p) => {
           const m = META[p.id];
           return (
@@ -44,6 +45,7 @@ export function Pockets({ pockets, decimals }: { pockets: Pocket[]; decimals: nu
             </article>
           );
         })}
+        {children}
       </div>
       <Modal open={current !== null} onOpenChange={(o) => !o && closeDrawer()} fields title={current ? META[current.id].label : HERO_MONEY.pocketsTitle}>
         {current?.panel}

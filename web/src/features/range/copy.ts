@@ -50,7 +50,6 @@ export const RANGE = {
     amount: "Amount",
     quickAdds: "Add to the amount",
     basis: (opening: string, centerPct: string) => `Opening print ${opening} · the book puts ${centerPct}% on a close above it`,
-    footnote: "The full payout is set aside up front. No fees to pay: your stake leaves your wallet, the network fee is covered.",
     reserve: (liquid: string, pct: string) => `Reserve: ${liquid} free · ${pct}% in play`,
   },
   cta: {

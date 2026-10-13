@@ -5,6 +5,7 @@ export { ArmTradingBalance } from "./ArmTradingBalance";
 export { useSessionActions, useSessionSubmitter, useSessionView } from "./context";
 export { SESSION } from "./copy";
 export { SessionFallbackCta } from "./SessionFallbackCta";
+export { TapArmModal } from "./TapArmModal";
 export { TapTradingChip } from "./TapTradingChip";
 export { TradingBalanceProvider } from "./TradingBalanceProvider";
 export { useTicketRoute, type TicketRoute } from "./useTicketRoute";

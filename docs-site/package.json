@@ -1,0 +1,43 @@
+{
+  "name": "mitoshi-docs",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev --port 3156",
+    "build": "next build",
+    "start": "next start --port 3156",
+    "typecheck": "next typegen && tsc --noEmit",
+    "diagrams": "node scripts/export-architecture.mjs",
+    "sync:deployments": "node scripts/sync-deployments.mjs",
+    "media:record": "node scripts/record-media.mjs",
+    "media:publish": "node scripts/publish-media.mjs",
+    "check:content": "node scripts/check-content.mjs",
+    "check": "pnpm check:content && pnpm typecheck && pnpm build"
+  },
+  "dependencies": {
+    "fumadocs-core": "16.15.4",
+    "fumadocs-mdx": "15.4.0",
+    "fumadocs-ui": "npm:@fumadocs/base-ui@16.15.4",
+    "lucide-react": "1.38.0",
+    "mermaid": "^12.1.0",
+    "next": "16.3.4",
+    "next-themes": "^0.4.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/mdx": "2.0.14",
+    "@types/node": "24.12.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
+    "playwright": "1.63.0",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5.9.0"
+  }
+}

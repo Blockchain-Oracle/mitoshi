@@ -1,6 +1,6 @@
 // `/surface` (S10e; R4-11, D-227) — Ported from Owarine 90a91d71:web/src/features/surface/copy.ts: one focal Window, then
 // 01 the book, 02 depth, 03 slippage, 04 term structure. Here the book is the engine's own order book (a real book, not
-// an indicative ladder), and the crypto Windows also carry the fair-value guard's model — the fifth tile and a column.
+// an indicative ladder), and every Series the fair-value guard models (all of them since S24.1) carries its model — the fifth tile and a column.
 export const SURFACE = {
   title: "Market Surface",
   line: "Every Window's book at a glance.",

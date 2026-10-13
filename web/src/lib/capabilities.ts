@@ -19,8 +19,6 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/markets": { eyebrow: "Markets", title: "Call where a price closes", body: "Live Windows on BTC, ETH, SOL and US stocks.", dependency: engine },
   "/markets/[id]": { eyebrow: "Markets", title: "This Window", body: "One Window, its book and your position.", dependency: engine },
   "/portfolio": { eyebrow: "Portfolio", title: "Your positions, money and verdicts", body: "Your money, open calls and verdicts.", dependency: engine },
-  "/bridge": { eyebrow: "Bridge", title: "Move stock tokens to Tempo", body: "Stock tokens from Robinhood Chain to Tempo.", dependency: "the bridge adapters and lockboxes" },
-  "/reserves": { eyebrow: "Reserves", title: "Every bridged token, backed", body: "Locked there versus supply here, per ticker.", dependency: "the bridge adapters and lockboxes" },
   "/earn": { eyebrow: "Earn", title: "Back the market makers", body: "Supply the maker vault; see results per Window.", dependency: "the maker vault" },
   "/parlay": { eyebrow: "Parlay", title: "Combine calls", body: "Several Windows on one ticket.", dependency: "the parlay reserve" },
   "/surface": { eyebrow: "Market Surface", title: "Market Surface", body: "Every Window's book at a glance.", dependency: "the parlay and range products" },

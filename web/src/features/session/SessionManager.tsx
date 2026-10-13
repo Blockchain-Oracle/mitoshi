@@ -13,7 +13,7 @@ import { leftNowBase, spentTodayBase, topUpBase, usd } from "./caps";
 import { SESSION } from "./copy";
 import { useSessionActions, useSessionView } from "./context";
 import { useSessionWrites } from "./useSessionWrites";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 
 const M = SESSION.manager;
 const at = (sec: number) => new Date(sec * 1000).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });

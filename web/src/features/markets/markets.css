@@ -11,6 +11,10 @@
   .markets-hero .hero-yesno.page-action { padding-bottom: 8px; background: var(--color-ground); }
 }
 .tk-add, .tk-lev, .tk-mode { min-height: 44px; }
+/* R4-3 review (D-227): `+1 +5 +20` and "Leverage 1× 2× 3×" need ~327 px on one row — more than the 360 px rail's 320 px
+ * of content (1024–1279) and a 320 px phone's sheet; there the chips take a second row, still on the right. */
+.tk-amount-row { flex-wrap: wrap; row-gap: 8px; }
+.tk-amount-row > .tk-levs { margin-left: auto; }
 .pager { display: flex; align-items: center; justify-content: space-between; gap: calc(var(--spacing) * 3); }
 /* 22249's spark readout on the lane card. */
 .mc-spark { position: relative; }
@@ -23,6 +27,8 @@
 /* Eight lanes list some assets: the hero's cadence row scrolls on a phone instead of wrapping "24/7 5m" in two. */
 .mh-cadence-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
 .mh-cadence { white-space: nowrap; min-height: 44px; }
+/* R4-3 (D-227): a 44 px target without 44 px of layout — the asset row keeps the reference's 28 px. */
+.mh-cadence-tabs .mh-cadence { margin-block: -8px; }
 /* UX gate (§2.5, axe color-contrast): the reference's muted captions fall under 4.5:1 on these grounds — they read at
  * the secondary ink here, and the live pill's vermilion-on-wash takes the ink it needs in the light theme. */
 .markets-section .section-desc, .words-empty { color: var(--color-ink-secondary); }
@@ -32,3 +38,27 @@
  * min-height: the placeholder isn't a `.markets-hero`, so those floors never held its box — they only pushed the lanes
  * below the fold (Owarine stretches the chart to the ticket instead, markets-hero.css). */
 .markets-page { display: flex; min-width: 0; flex-direction: column; }
+/* R4-3 (D-227), Owarine 90a91d71 ticket-composer.css: from 64rem the framed rail ticket rides beside the hero while the
+ * page scrolls, and never runs past the fold — its body scrolls inside the frame and the CTA dock sticks to the frame's
+ * foot, so the action is in view at 1024 × 768. */
+@media (width >= 64rem) {
+  .mh-rail { position: sticky; top: var(--stage-sticky-top); }
+  /* The frame's first-load top is the top line, the stage's inset and its padding; the fold is counted from there. */
+  .mh-rail .tk-ticket--rail { max-height: calc(100dvh - var(--spacing-topline) - var(--spacing-rail-inset) - var(--spacing-stage-pad) - 16px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+  .mh-rail .tk-cta-dock { position: sticky; bottom: -20px; margin-bottom: -20px; padding-bottom: 20px; padding-top: 8px; background: var(--ticket-surface); }
+}
+/* The side segments carry their live cents (Owarine `SideSegments` + Mitoshi's book price, R4-3). */
+.tk-side .price { margin-left: 8px; font-family: var(--font-data); opacity: 0.82; }
+.tk-pp-btn { min-height: 44px; }
+/* "Your calls" as one sideways row of compact chips (R4-3, D-227): asset · side · line · the countdown or the verdict. */
+.markets-calls { margin-top: calc(var(--spacing) * 4); }
+.call-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-full); background: var(--color-surface-1); font-family: var(--font-data); font-size: var(--text-caption); color: var(--color-ink-secondary); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.call-chip:hover { border-color: var(--color-border-strong); color: var(--color-ink); }
+.call-chip .glyph { display: inline-flex; width: 18px; height: 18px; flex: none; align-items: center; justify-content: center; border-radius: var(--radius-full); font-size: 10px; }
+.call-chip-asset { font-weight: 700; color: var(--color-ink); }
+.call-chip-side { font-weight: 700; letter-spacing: 0.06em; }
+.call-chip-side.up { color: var(--profit); }
+.call-chip-side.down { color: var(--loss); }
+.call-chip-state { color: var(--color-ink); }
+.call-chip[data-outcome="win"] .call-chip-state { color: var(--profit); }
+.call-chip[data-outcome="loss"] .call-chip-state { color: var(--loss); }

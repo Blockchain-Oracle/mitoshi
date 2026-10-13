@@ -9,7 +9,23 @@ import { TRADE_COOKIE, tradeRedirect } from "./features/terminal/route";
 
 const COOKIE_MAX_AGE_SEC = 60 * 60 * 24;
 
+/** The app's own host (APP_ORIGIN), read once; null locally without one. */
+const APP_HOST = (() => {
+  try {
+    return process.env.APP_ORIGIN ? new URL(process.env.APP_ORIGIN).host : null;
+  } catch {
+    return null;
+  }
+})();
+
 export function proxy(request: NextRequest): NextResponse {
+  // The passkey rpId's host (mitoshi.xyz while the app lives on testnet.mitoshi.xyz; D-227, MOBILE) serves only the
+  // phone app's association files — answered here with no redirect, as Apple and Google require — and sends every other
+  // path to the app, so the site and its passkey ceremonies run on one origin.
+  const host = request.headers.get("host");
+  if (APP_HOST && host && host !== APP_HOST && host === process.env.PASSKEY_RP_ID && !request.nextUrl.pathname.startsWith("/.well-known/")) {
+    return NextResponse.redirect(new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, process.env.APP_ORIGIN), 307);
+  }
   // /dev fixtures are internal: 404 in production unless explicitly enabled (the layout also calls notFound()).
   if (request.nextUrl.pathname.startsWith("/dev") && process.env.NODE_ENV === "production" && process.env.DEV_FIXTURES !== "1") {
     return new NextResponse(null, { status: 404 });
