@@ -25,7 +25,12 @@ export interface TradeSettings {
   chartInterval: CandleInterval;
   /** Tradash's leverage as Mitoshi's Boost (RV-41): the multiple UP/DOWN open at; 1 is a plain call. */
   boostX: number;
+  /** A listed Window's scheduled call rests at this many cents (R4-3, D-227: the price chips moved here). */
+  scheduledCents: number;
 }
+
+/** The scheduled price's quick picks (the settings sheet; the footer keeps the − value + stepper). */
+export const SCHEDULED_PRICE_CHIPS = [50, 55, 60, 70] as const;
 
 export type MusicTrack = "arcade" | "rush" | "night";
 export const MUSIC_TRACKS: readonly MusicTrack[] = ["arcade", "rush", "night"];
@@ -37,7 +42,7 @@ export const CLOSE_TOLERANCE_CHOICES_BPS = [50, 100, 200, 500] as const;
 export const DEFAULT_SIZE_SHARE_BPS = 500n;
 
 const KEY = "cwf.trade.settings.v1";
-const DEFAULTS: TradeSettings = { sizeBase: null, trailPct: 0.001, closeToleranceBps: 100, musicTrack: "arcade", tutorialSeen: false, favourites: [], chartView: "line", chartInterval: "1m", boostX: 1 };
+const DEFAULTS: TradeSettings = { sizeBase: null, trailPct: 0.001, closeToleranceBps: 100, musicTrack: "arcade", tutorialSeen: false, favourites: [], chartView: "line", chartInterval: "1m", boostX: 1, scheduledCents: 50 };
 
 const listeners = new Set<() => void>();
 let current: TradeSettings = DEFAULTS;
@@ -60,6 +65,7 @@ function read(): TradeSettings {
       chartView: p.chartView === "candles" ? "candles" : "line",
       chartInterval: CANDLE_INTERVALS.includes(p.chartInterval as CandleInterval) ? (p.chartInterval as CandleInterval) : "1m",
       boostX: num(p.boostX, 1, 10) && Number.isInteger(p.boostX) ? p.boostX : 1,
+      scheduledCents: num(p.scheduledCents, 1, 99) && Number.isInteger(p.scheduledCents) ? p.scheduledCents : DEFAULTS.scheduledCents,
     };
   } catch {
     return DEFAULTS;

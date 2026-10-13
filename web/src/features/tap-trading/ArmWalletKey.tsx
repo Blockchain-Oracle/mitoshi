@@ -53,6 +53,20 @@ export function ArmWalletKey(_props: { onDone: () => void }) {
       <h3 id="arm-wallet-key" className="type-body-strong text-ink">{TAP.lead}</h3>
       <p className="type-caption text-ink-secondary">{TAP.facts(limit, hours)}</p>
       <p className="type-caption text-ink-secondary">{TAP.sponsored}</p>
+      {/* R4-3 (D-227): the scope, the never and the fees as a receipt (ArmTradingBalance's, Owarine SessionModal). */}
+      <details className="modal-disclosure">
+        <summary className="min-h-touch py-2 type-caption text-ink">{TAP.receipt.title}</summary>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 pt-2 type-caption">
+          <dt className="text-ink-secondary">{TAP.receipt.scope}</dt>
+          <dd className="text-ink">{TAP.receipt.scopeValue}</dd>
+          <dt className="text-ink-secondary">{TAP.receipt.never}</dt>
+          <dd className="text-ink">{TAP.receipt.neverValue}</dd>
+          <dt className="text-ink-secondary">{TAP.receipt.limit}</dt>
+          <dd className="numbers text-ink">{TAP.receipt.limitValue(limit, hours)}</dd>
+          <dt className="text-ink-secondary">{TAP.receipt.fees}</dt>
+          <dd className="text-ink">{TAP.receipt.feesValue}</dd>
+        </dl>
+      </details>
       {phase === "failed" || phase === "aborted" ? <p role="alert" className="type-caption text-ink">{phase === "failed" ? TAP.failed : TAP.aborted}</p> : null}
       <SheetFooter>
         <button type="button" className={primary} disabled={phase === "busy"} aria-busy={phase === "busy"} onClick={() => void arm()}>

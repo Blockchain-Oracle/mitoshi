@@ -11,7 +11,8 @@ import { boostKeys } from "@/features/boost/useBoostWrites";
 import { tapFeedback } from "@/lib/feedback";
 import { TERMINAL } from "../copy";
 import { money, USD_DECIMALS } from "../format";
-import { CLOSE_TOLERANCE_CHOICES_BPS, setTradeSettings, TRAIL_CHOICES, TRAIL_MAX, TRAIL_MIN, useTradeSettings } from "../settings";
+import { CLOSE_TOLERANCE_CHOICES_BPS, SCHEDULED_PRICE_CHIPS, setTradeSettings, TRAIL_CHOICES, TRAIL_MAX, TRAIL_MIN, useTradeSettings } from "../settings";
+import { TapTradingChip } from "@/features/session";
 import { trailWords } from "./TradeButtons";
 
 export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase, capped, pays = "—" }: { open: boolean; onOpenChange: (open: boolean) => void; stakeBase: bigint; minBase: bigint; maxBase: bigint | null; capped: keyof typeof TERMINAL.stack.cappedWhy | null; pays?: string }) {
@@ -92,6 +93,19 @@ export function SettingsDrawer({ open, onOpenChange, stakeBase, minBase, maxBase
               {TRAIL_CHOICES.map((pct) => (
                 <button key={pct} type="button" className="tm-sheet-chip" data-on={settings.trailPct === pct ? "" : undefined} onClick={() => (tapFeedback(), setTradeSettings({ trailPct: pct }))}>
                   {trailWords(pct)}%
+                </button>
+              ))}
+            </div>
+          </Section>
+          {/* R4-3 (D-227): one-tap lives here (Owarine: each action carries its own consent — no card above UP/DOWN). */}
+          <Section title={TERMINAL.settings.oneTap} right={TERMINAL.settings.oneTapRight}>
+            <TapTradingChip className="tm-choice tm-arm-cta" offLabel={TERMINAL.arm.cta} />
+          </Section>
+          <Section title={TERMINAL.settings.scheduledPrice} right={TERMINAL.settings.scheduledRight}>
+            <div className="tm-sheet-chips">
+              {SCHEDULED_PRICE_CHIPS.map((c) => (
+                <button key={c} type="button" className="tm-sheet-chip" data-on={settings.scheduledCents === c ? "" : undefined} onClick={() => (tapFeedback(), setTradeSettings({ scheduledCents: c }))}>
+                  {c}¢
                 </button>
               ))}
             </div>

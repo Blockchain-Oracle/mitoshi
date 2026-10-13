@@ -19,6 +19,20 @@ export function usd0(raw: bigint): string {
   return `$${formatOracleRaw(raw, PRICE_SCALE, dp)}`;
 }
 
+/** Whole dollars only from here up (Ported from Owarine 90a91d71:web/src/features/markets/hero/units.ts, R4-3 D-227). */
+export const WHOLE_DOLLARS_FROM = 10_000n;
+const ONE_DOLLAR = 10n ** BigInt(PRICE_SCALE);
+
+/**
+ * A dollar level or a move on it (Owarine's `usdLine`): cents below $10,000, where a stock's whole Window can move less
+ * than a dollar, whole dollars from there up, five decimals under $1. A move takes its line's scale (`levelRaw`), so
+ * "NVDA holds above $182.37?" is never followed by "+$0".
+ */
+export function usdLine(raw: bigint, levelRaw: bigint = raw): string {
+  const dp = levelRaw >= WHOLE_DOLLARS_FROM * ONE_DOLLAR ? 0 : levelRaw < ONE_DOLLAR ? 5 : 2;
+  return `$${formatOracleRaw(raw < 0n ? -raw : raw, PRICE_SCALE, dp)}`;
+}
+
 /** "$64,210.37" — two decimals (the chart readout, the legend, receipts). */
 export function usd2(raw: bigint): string {
   return `$${formatOracleRaw(raw < 0n ? -raw : raw, PRICE_SCALE, 2)}`;

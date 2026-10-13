@@ -9,7 +9,7 @@ import { useWhen } from "@/lib/when";
 
 export function HaltNoticeView({ halt, symbol, nowSec }: { halt: HaltEntry; symbol: string; nowSec?: number }) {
   const when = useWhen();
-  return <NoticeAlert tone="warning" role="alert" title={haltLabel(halt.reason)} description={SESSION.haltBody[halt.reason](symbol, when(halt.sinceSec, nowSec === undefined ? {} : { nowSec }))} />;
+  return <NoticeAlert tone="warning" role="alert" title={haltLabel(halt.reason)} description={SESSION.haltBody(when(halt.sinceSec, nowSec === undefined ? {} : { nowSec }))} />;
 }
 
 export function HaltNotice({ symbol, basis }: { symbol: string; basis: LaneBasis | null }) {
