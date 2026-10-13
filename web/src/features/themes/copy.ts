@@ -49,6 +49,15 @@ export const THEMES = {
     },
     holdingsLine: "Targets and bands per stock",
   },
+  you: {
+    held: "You hold",
+    today: "Today",
+    invested: "Invested",
+    of: (part: string, whole: string) => `${part} of ${whole}`,
+    inBand: "Inside every band",
+    outOfBand: (n: number) => `${n} out of band · the agent rebalances`,
+    unpriced: "Waiting for every price",
+  },
   follow: {
     title: (name: string) => `Follow ${name}`,
     line: "An agent keeps your wallet near these weights, inside your caps. Holdings stay yours.",
@@ -63,6 +72,7 @@ export const THEMES = {
     split: (n: number) => `Over five stocks: ${n} signatures`,
     finish: (n: number) => `Let the agent trade ${n} more`,
     capsBad: "Set an allocation and a daily cap at least the per-trade cap",
+    unpriced: (symbols: string) => `Waiting for a price on ${symbols}`,
     following: "Following",
     unfollow: "Unfollow",
     unfollowLine: "The agent stops. Your holdings stay in your wallet.",
@@ -72,6 +82,7 @@ export const THEMES = {
     sellAll: "Hold to sell everything",
     selling: "Selling…",
     nothingToSell: "Nothing to sell",
+    tooSoon: (at: string) => `Sells after ${at}`,
     signIn: "Sign in to follow",
   },
   studio: {

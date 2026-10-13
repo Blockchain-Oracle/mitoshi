@@ -11,7 +11,7 @@
 // `theme-key-scopes` signature per ≤ 5 more stocks; a follow that stopped part-way offers to finish from the key's scopes.
 import { pathUsdDailyLimit, parseDecimalToBaseUnits, tokenDailyLimit, type Address } from "@cwf/core";
 import { SCOPE_CHUNK, splitFollowTokens, type ThemeView } from "@cwf/markets/themes";
-import { invalidateThemes, useThemeHoldings, useThemeUnscoped } from "@cwf/markets/react";
+import { invalidateThemes, useThemeFollow, useThemeHoldings, useThemeUnscoped } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { HoldToConfirm, PillButton, SlideOver, SlideOverContent } from "@/components/kit";
@@ -20,6 +20,7 @@ import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "
 import { useSocialSession } from "@/features/social/session";
 import { useWalletSession } from "@/lib/wallet-session";
 import { THEMES } from "./copy";
+import { sessionsText } from "./format";
 
 const F = THEMES.follow;
 const KEY_POLL_MS = 3_000;
@@ -86,9 +87,13 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
     for (let i = 0; i < unscoped.tokens.length; i += SCOPE_CHUNK) rest.push(unscoped.tokens.slice(i, i + SCOPE_CHUNK));
     void scopeChunks(unscoped.keyId, rest);
   };
+  // One pending unfollow at a time: a second press inside the 5 s would queue a second transaction.
+  const [unfollowing, setUnfollowing] = useState(false);
   const unfollow = () => {
-    const timer = setTimeout(() => void tx.run({ kind: "theme-unfollow", themeId: theme.themeId }).then(async (o) => { if (o?.status === "confirmed") await invalidateThemes(queryClient); }), UNDO_MS);
-    notify.item({ id: "theme-unfollow", title: F.unfollowing(UNDO_MS / 1000), timeout: UNDO_MS, action: { label: F.undo, onClick: () => (clearTimeout(timer), notify.item({ id: "theme-unfollow", title: F.undone })) } });
+    if (unfollowing) return;
+    setUnfollowing(true);
+    const timer = setTimeout(() => void tx.run({ kind: "theme-unfollow", themeId: theme.themeId }).then(async (o) => { setUnfollowing(false); if (o?.status === "confirmed") await invalidateThemes(queryClient); }), UNDO_MS);
+    notify.item({ id: "theme-unfollow", title: F.unfollowing(UNDO_MS / 1000), timeout: UNDO_MS, action: { label: F.undo, onClick: () => (clearTimeout(timer), setUnfollowing(false), notify.item({ id: "theme-unfollow", title: F.undone })) } });
   };
   const prices = new Map(theme.members.map((m) => [m.token.toLowerCase(), m.refPriceE18]));
   const sellLegs = (holdings?.ok ? holdings.value : []).flatMap((h) => {
@@ -120,7 +125,16 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
   };
   const confirm = () => (session.address ? (following ? unfollow() : void follow()) : session.connectFor(F.signIn));
   const capsBlocker = usd(allocation) <= 0n || usd(perTrade) <= 0n || usd(perDay) < usd(perTrade) ? F.capsBad : null;
-  const blocker = !session.address || following ? null : phase === "key" ? F.preparing : capsBlocker;
+  // The key's daily limit per stock is set at its reference price; without one it would be 0 and the agent could never
+  // sell that stock for this follow, so the follow waits for every price.
+  const unpriced = theme.members.filter((m) => m.refPriceE18 === null).map((m) => m.symbol);
+  const blocker = !session.address ? null : following ? (unfollowing ? F.unfollowing(UNDO_MS / 1000) : null) : phase === "key" ? F.preparing : unpriced.length > 0 ? F.unpriced(unpriced.join(", ")) : capsBlocker;
+  // The router checks the session and every leg's price on a root sell too: closed hours or a halt would revert it.
+  // …and the theme's own interval since the last rebalance (TooSoon), the agent's included.
+  const followRead = useThemeFollow(session.address, following ? theme.themeId : null);
+  const lastAt = followRead?.ok && followRead.value ? Number(followRead.value.lastRebalanceAt) : 0;
+  const nextAtSec = lastAt === 0 ? 0 : lastAt + theme.minIntervalSec;
+  const sellBlocker = theme.openNow === false ? THEMES.card.paused(sessionsText(theme.sessionsMask)) : theme.haltedNow ? THEMES.card.halted : nextAtSec * 1000 > Date.now() ? F.tooSoon(new Date(nextAtSec * 1000).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })) : null;
   const busy = tx.state.kind === "signing" || tx.state.kind === "submitted";
 
   return (
@@ -131,7 +145,8 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
           {following ? (
             <>
               {unscoped && unscoped.tokens.length > 0 ? <PillButton tone="accent" block disabled={busy} onClick={finish}>{F.finish(unscoped.tokens.length)}</PillButton> : null}
-              {sellLegs.length === 0 ? <PillButton tone="ghost" block disabled>{F.nothingToSell}</PillButton> : <HoldToConfirm className="w-full" disabled={busy} confirmLabel={F.selling} onConfirm={() => void sellAll()}>{F.sellAll}</HoldToConfirm>}
+              {sellLegs.length === 0 ? <PillButton tone="ghost" block disabled>{F.nothingToSell}</PillButton> : <HoldToConfirm className="w-full" disabled={busy || sellBlocker !== null} confirmLabel={F.selling} onConfirm={() => void sellAll()}>{F.sellAll}</HoldToConfirm>}
+              {sellLegs.length > 0 && sellBlocker ? <p className="type-caption text-ink-muted">{sellBlocker}</p> : null}
             </>
           ) : (
             <>

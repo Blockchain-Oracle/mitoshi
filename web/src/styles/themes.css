@@ -46,6 +46,12 @@
 .th-overview-side { display: flex; min-width: 12rem; flex: 1; flex-direction: column; gap: 12px; }
 .th-donut-figure { display: block; font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--color-ink); }
 .th-donut-label { display: block; font-size: 11px; color: var(--color-ink-muted); }
+/* The follower's rings (held now outside, the targets inside) and the day and allocation gauges. */
+.th-you { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 16px 0 8px; border-top: 1px solid var(--color-hairline); }
+.th-you-rings { position: relative; flex: none; }
+.th-you-inner { position: absolute; inset: 22px; display: grid; place-items: center; pointer-events: none; }
+.th-you-gauges { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 10px 12px; }
+.th-you-gauge-text { display: flex; min-width: 0; flex-direction: column; gap: 2px; font-size: 13px; color: var(--color-ink); }
 .th-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--color-ink-secondary); }
 .th-legend li { display: inline-flex; align-items: center; gap: 6px; }
 .th-legend li > span { width: 8px; height: 8px; border-radius: 9999px; }

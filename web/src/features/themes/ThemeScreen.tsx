@@ -20,6 +20,7 @@ import { signerOfKind as signerOf, TxCta, useTxLifecycle } from "@/components/tx
 import { useWalletSession } from "@/lib/wallet-session";
 import { THEMES } from "./copy";
 import { FollowSheet } from "./FollowSheet";
+import { ThemeYou } from "./ThemeYou";
 import { useThemeWeek } from "./useThemeWeek";
 import { everyText, pct, sessionsText, sliceColor, usd18, usd6, weightedPrice } from "./format";
 import "@/styles/themes.css";
@@ -34,6 +35,7 @@ function slices(t: ThemeView) {
 function Overview({ t }: { t: ThemeView }) {
   const index = weightedPrice(t.members);
   const week = useThemeWeek(t.members);
+  const session = useWalletSession();
   return (
     <>
     <div className="th-hero">
@@ -42,7 +44,7 @@ function Overview({ t }: { t: ThemeView }) {
         <span className="th-index-value numbers">{index.e18 === null ? "—" : usd18(index.e18)}</span>
         <span className="th-week-label" data-tone={week.moveBps === null ? undefined : week.moveBps > 0 ? "up" : week.moveBps < 0 ? "down" : undefined}>{week.moveBps === null ? THEMES.card.weekNone : THEMES.card.week(`${week.moveBps > 0 ? "+" : week.moveBps < 0 ? "−" : ""}${pct(Math.abs(week.moveBps))}`)}</span>
       </div>
-      <Sparkline values={week.values} width={640} height={140} className="th-hero-line" />
+      <Sparkline values={week.values} width={640} height={140} className="th-hero-line" stretch />
     </div>
     <div className="th-overview">
       <Donut slices={slices(t)} label={T.target} size={168} thickness={18}>
@@ -56,6 +58,7 @@ function Overview({ t }: { t: ThemeView }) {
         </ul>
       </div>
     </div>
+    {session.address ? <ThemeYou t={t} who={session.address} /> : null}
     </>
   );
 }
@@ -85,7 +88,8 @@ function Holdings({ t }: { t: ThemeView }) {
 function Activity({ t }: { t: ThemeView }) {
   const activity = useThemeActivity(t.themeId);
   const rows = activity?.ok ? [...activity.value.rebalances].reverse() : [];
-  if (activity === null) return <p className="th-note">{T.activityEmpty}</p>;
+  if (activity === null) return <p role="status" className="th-note">{THEMES.reading}</p>;
+  if (!activity.ok) return <p role="alert" className="th-note">{THEMES.failed}</p>;
   if (rows.length === 0) return <p className="th-note">{T.activityEmpty}</p>;
   return (
     <Timeline label={T.tabs.activity}>
@@ -167,6 +171,7 @@ function View({ t, openFollow }: { t: ThemeView; openFollow: boolean }) {
 export function ThemeScreen({ themeId, openFollow }: { themeId: bigint; openFollow: boolean }) {
   const theme = useTheme(themeId);
   if (theme === null) return <section className="th-page"><p role="status" className="th-note">{T.reading}</p></section>;
-  if (!theme.ok || !theme.value) return <section className="th-page"><p className="th-note">{T.missing}</p></section>;
+  if (!theme.ok) return <section className="th-page"><p role="alert" className="th-note">{THEMES.failed}</p></section>;
+  if (!theme.value) return <section className="th-page"><p className="th-note">{T.missing}</p></section>;
   return <View t={theme.value} openFollow={openFollow} />;
 }
