@@ -114,16 +114,22 @@ function SupplyPanel({ sheet, writes, signedIn, signer, walletBase, onSignIn, ke
 function WithdrawPanel({ sheet, words, writes, signer, held, unsettledExpired = false, keypad }: ActionCardProps) {
   const { withdraw } = EARN;
   const [amount, setAmount] = useState("");
+  // Max sends exactly the idle shares (and names exactly what is idle), even where the field holds cents (the keypad).
+  const [maxed, setMaxed] = useState(false);
+  const type = (text: string) => {
+    setAmount(text);
+    setMaxed(false);
+  };
   const { decimals } = sheet;
-  const base = amountBase(amount, decimals);
-  const shares = withdrawSharesFor(held, base);
+  const base = maxed ? held.idleBase : amountBase(amount, decimals);
+  const shares = maxed ? held.idleShares : withdrawSharesFor(held, base);
   const blocker = held.idleShares <= 0n ? withdraw.over(money2(0n, decimals)) : base <= 0n || shares <= 0n ? EARN.supply.enterAmount : base > held.idleBase ? withdraw.over(money2(held.idleBase, decimals)) : null;
   const tx = writes.withdrawTx;
-  const confirm = () => void writes.withdraw(shares).then((ok) => ok && setAmount(""));
+  const confirm = () => void writes.withdraw(shares).then((ok) => ok && type(""));
   const usd = (b: bigint) => money2(b, decimals);
   return (
     <>
-      <AmountRow value={amount} onChange={setAmount} maxBase={held.idleBase} label={withdraw.amount} over={withdraw.over} hint={withdraw.idle} keypad={keypad} />
+      <AmountRow value={amount} onChange={type} onMax={() => setMaxed(true)} maxBase={held.idleBase} label={withdraw.amount} over={withdraw.over} hint={withdraw.idle} keypad={keypad} />
       <CapitalBar
         label={withdraw.withdrawable}
         format={usd}

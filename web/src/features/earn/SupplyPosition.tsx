@@ -60,7 +60,7 @@ export function SupplyPosition({ sheet, held, ledger }: SupplyPositionProps) {
         <div>
           <dt>{position.shares}</dt>
           <dd>
-            {formatBaseUnits(held.shares, decimals, { minDp: 2, maxDp: 2 })}
+            {masked ? SHELL.masked : formatBaseUnits(held.shares, decimals, { minDp: 2, maxDp: 2 })}
             <span className="ea-pos-at">{position.at(formatSharePrice(sheet.sharePriceRaw, decimals))}</span>
           </dd>
         </div>

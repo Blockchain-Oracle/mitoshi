@@ -3,7 +3,9 @@
    Max inside the pill, the reason in the loss tone) and the kit's position card. One column the stage insets; no page
    padding, no max-width (the stage sets the width). The capital map and the limits are in `earn-map.css`. */
 
-.earn-page { --ea-idle: repeating-linear-gradient(135deg, var(--color-surface-3) 0 4px, var(--color-surface-2) 4px 8px); display: flex; min-width: 0; flex-direction: column; gap: 12px; }
+/* the idle hatch: on the action card too, which the phone sheet portals out of `.earn-page` */
+.earn-page, .ea-action { --ea-idle: repeating-linear-gradient(135deg, var(--color-surface-3) 0 4px, var(--color-surface-2) 4px 8px); }
+.earn-page { display: flex; min-width: 0; flex-direction: column; gap: 12px; }
 @media (min-width: 640px) { .earn-page { gap: 16px; } }
 /* the action dock floats above the phone dock once the card scrolls away: the page's end clears it */
 @media (max-width: 767px) { .earn-page { padding-bottom: 64px; } }
@@ -54,7 +56,8 @@
 .ea-rc-dot[data-leg="value"] { background: #fff; }
 .ea-rc-dot[data-leg="idle"] { background: rgba(255, 255, 255, 0.4); }
 .ea-rc-dot[data-leg="committed"] { background: var(--color-accent); }
-.ea-rc-leg-amount { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; margin: 4px 0 0; font: 700 14px/1.2 var(--font-data); color: #fff; overflow-wrap: anywhere; }
+/* three legs on a 320 phone are ~82 px each: the figure steps down to 12 px there, so "$12,345.67" stays on one line */
+.ea-rc-leg-amount { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; margin: 4px 0 0; font: 700 clamp(12px, 3.7vw, 14px)/1.2 var(--font-data); color: #fff; overflow-wrap: anywhere; }
 .ea-rc-leg-pct { font-size: 12px; font-weight: 600; color: var(--color-accent); }
 @media (min-width: 640px) { .ea-rc-leg-amount { font-size: 17px; } .ea-rc-dot { width: 12px; height: 12px; } }
 .money-hero-bar.ea-rc-bar { height: 8px; margin-top: 10px; }
@@ -99,6 +102,8 @@
 .ea-pos-paper { flex-wrap: wrap; }
 .ea-pos-paper-label { font: 500 12px/1.2 var(--font-body); color: var(--color-ink-secondary); }
 .ea-pos-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* under 360 a third of the card is narrower than a rolling five-figure amount (it can't wrap): two columns there */
+@media (max-width: 359px) { .ea-pos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .ea-pos-at { display: block; font: 500 11px/1.3 var(--font-data); color: var(--color-ink-secondary); }
 .ea-pos-skel { display: inline-block; width: 64px; height: 12px; border-radius: var(--radius-md); }
 .ea-up { color: var(--chart-up); }

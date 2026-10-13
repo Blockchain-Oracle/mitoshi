@@ -25,8 +25,6 @@ export { earnKeys, useEarnWorth, useReserveShares, type EarnWorth } from "./shar
 /** A Window the vault settled can't change; a wallet's supply history changes only when it writes. */
 const LEDGER_STALE_MS = 5 * 60_000;
 
-
-
 /** Every key a write on one reserve can change: this page's, and the reserve's own feature's. */
 export const RESERVE_KEYS: Readonly<Record<ReserveKind, readonly string[]>> = { maker: earnKeys.all, range: rangeKeys.all, parlay: parlayKeys.all, boost: boostKeys.all };
 

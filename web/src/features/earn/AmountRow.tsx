@@ -24,14 +24,20 @@ export interface AmountRowProps {
   hint: (max: string) => string;
   /** The phone sheet: the kit Keypad drives a display, not a text field. */
   keypad?: boolean;
+  /** Max was tapped (after `onChange` has the figure): a withdraw then sends exactly the idle shares, whatever the field rounds to. */
+  onMax?: () => void;
 }
 
 const usd = (base: bigint) => `$${formatBaseUnits(base, DECIMALS, { minDp: 2, maxDp: 2 })}`;
 
-export function AmountRow({ value, onChange, maxBase, label, over, hint, keypad = false }: AmountRowProps) {
+export function AmountRow({ value, onChange, maxBase, label, over, hint, keypad = false, onMax }: AmountRowProps) {
   const id = useId();
   const problem = amountProblem(value, maxBase, over);
-  const fill = () => maxBase !== null && onChange(formatBaseUnits(maxBase, DECIMALS, { minDp: 0, maxDp: keypad ? DOLLAR_KEYPAD.maxDecimals : DECIMALS, group: false }));
+  const fill = () => {
+    if (maxBase === null) return;
+    onChange(formatBaseUnits(maxBase, DECIMALS, { minDp: 0, maxDp: keypad ? DOLLAR_KEYPAD.maxDecimals : DECIMALS, group: false }));
+    onMax?.();
+  };
   return (
     <div className="ea-amount">
       <div className="ea-amount-pill" data-problem={problem ? "" : undefined}>
