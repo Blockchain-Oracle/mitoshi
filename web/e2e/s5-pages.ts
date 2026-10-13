@@ -8,7 +8,7 @@
  * terminal drawer's board opening a profile. Every
  * capture is listed in `s5-pages.json`; a miss keeps its screen and the reason.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/s5-pages.ts --base https://testnet.mitoshi.xyz --out <dir> [--widths 1440,390]
+ *   pnpm --filter @cwf/web exec tsx e2e/s5-pages.ts --base https://mitoshi.xyz --out <dir> [--widths 1440,390]
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -17,7 +17,7 @@ import { settle } from "./lib/settle";
 import { modal, openTerminalSession, signUpFromTour, stakeMin, waitEnterable } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "https://testnet.mitoshi.xyz");
+const base = arg("base", "https://mitoshi.xyz");
 const out = arg("out", "s5-pages-out");
 const widths = arg("widths", "1440,390").split(",").map(Number);
 mkdirSync(out, { recursive: true });

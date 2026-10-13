@@ -38,7 +38,7 @@ jobs:
           SYMBOL: ${{ matrix.symbol }}
         run: |
           case "$SYMBOL" in *[!A-Z]*|"") echo "::error::symbol is upper-case letters"; exit 1;; esac
-          pnpm --filter @cwf/web exec tsx e2e/s6-session.ts --base https://testnet.mitoshi.xyz --out "$GITHUB_WORKSPACE/s6-out" --widths 1440,390 --symbol "$SYMBOL" 2>&1 | tee "$GITHUB_WORKSPACE/s6-out.log"
+          pnpm --filter @cwf/web exec tsx e2e/s6-session.ts --base https://mitoshi.xyz --out "$GITHUB_WORKSPACE/s6-out" --widths 1440,390 --symbol "$SYMBOL" 2>&1 | tee "$GITHUB_WORKSPACE/s6-out.log"
           exit "${PIPESTATUS[0]}"
       - if: always()
         uses: actions/upload-artifact@v4

@@ -2,14 +2,14 @@ name: e2e
 # Runs one browser driver from `web/e2e/` against a deployed build from a GitHub runner (S23): the owner's link is too
 # slow for page loads against testnet (F-S22-03), so stage gates that drive the deployed site run here. Screenshots and
 # the driver's log are uploaded as an artifact.
-#   gh workflow run e2e.yml -f url=https://testnet.mitoshi.xyz -f driver=terminal [-f args="--symbol TSLA"]
+#   gh workflow run e2e.yml -f url=https://mitoshi.xyz -f driver=terminal [-f args="--symbol TSLA"]
 on:
   workflow_dispatch:
     inputs:
       url:
         description: Base URL of the deployed build (no trailing slash)
         required: true
-        default: https://testnet.mitoshi.xyz
+        default: https://mitoshi.xyz
       driver:
         description: Driver name in web/e2e (without .ts), e.g. terminal, shell-interactions, ux-gate
         required: true

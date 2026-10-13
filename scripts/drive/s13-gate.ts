@@ -9,7 +9,7 @@
  *    room, the take and the follow are gone.
  * Keys are read from ~/.config/cwf/testnet/ and never printed.
  *
- *   pnpm --dir scripts exec tsx drive/s13-gate.ts [--base https://testnet.mitoshi.xyz]
+ *   pnpm --dir scripts exec tsx drive/s13-gate.ts [--base https://mitoshi.xyz]
  */
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
@@ -18,7 +18,7 @@ import { deletionMessage, socialSessionMessage } from "@cwf/core";
 import { generatePrivateKey, privateKeyToAccount, type PrivateKeyAccount } from "viem/accounts";
 
 const arg = (n: string, d: string) => (process.argv.includes(n) ? process.argv[process.argv.indexOf(n) + 1]! : d);
-const BASE = arg("--base", "https://testnet.mitoshi.xyz").replace(/\/$/, "");
+const BASE = arg("--base", "https://mitoshi.xyz").replace(/\/$/, "");
 const ROOM = encodeURIComponent("$BTC");
 const results: { step: string; ok: boolean }[] = [];
 const nonce = () => Array.from(crypto.getRandomValues(new Uint8Array(10)), (b) => b.toString(16).padStart(2, "0")).join("");

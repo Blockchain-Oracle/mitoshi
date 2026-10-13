@@ -26,7 +26,7 @@ const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`)
 const TX = arg("tx", "0xf0d1a96aee563d31effba0ff9aabcde045ee6e9198c3eccb43eca77b5521624a") as Hex;
 const HANDLE = arg("handle", "s11_drive");
 const OUT = arg("out", "x-reply-card.png");
-const SITE = process.env.APP_ORIGIN?.trim() || "https://testnet.mitoshi.xyz";
+const SITE = process.env.APP_ORIGIN?.trim() || "https://mitoshi.xyz";
 const RPC = process.env.TEMPO_RPC_HTTP_URL ?? "https://rpc.moderato.tempo.xyz";
 const out = (step: string, data: Record<string, unknown> = {}) => console.log(JSON.stringify({ step, ...data }, (_k, v) => (typeof v === "bigint" ? v.toString() : v)));
 

@@ -5,12 +5,12 @@
  * (`stepHalts`), requiring the confirmed board after every pass to equal the recorded one. Exit 1 on any difference.
  * It checks the rules against what halt-watch observed, not RedStone itself: see `replayHaltLog` (D-186).
  *
- *   pnpm --dir scripts exec tsx drive/halt-replay.ts [--ops https://ops.testnet.mitoshi.xyz] [--from <unix s>] [--to <unix s>]
+ *   pnpm --dir scripts exec tsx drive/halt-replay.ts [--ops https://ops.mitoshi.xyz] [--from <unix s>] [--to <unix s>]
  */
 import { replayHaltLog, type HaltLogRow } from "../../services/ops/src/actors/halt-watch/replay";
 
 const arg = (name: string, fallback: string) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1]! : fallback);
-const OPS = arg("--ops", "https://ops.testnet.mitoshi.xyz").replace(/\/$/, "");
+const OPS = arg("--ops", "https://ops.mitoshi.xyz").replace(/\/$/, "");
 const FROM = arg("--from", "0");
 const TO = arg("--to", String(Math.floor(Date.now() / 1000)));
 

@@ -26,9 +26,9 @@ describe("registries", () => {
 
 describe("calls", () => {
   it("encodes register / setAgentURI / giveFeedback against the right registry", () => {
-    const reg = registerAgentCall(42431, "https://testnet.mitoshi.xyz/api/agents/a/registration.json");
+    const reg = registerAgentCall(42431, "https://mitoshi.xyz/api/agents/a/registration.json");
     expect(reg.to).toBe(erc8004Registries(42431).identity);
-    expect(decodeFunctionData({ abi: identityRegistryAbi, data: reg.data })).toMatchObject({ functionName: "register", args: ["https://testnet.mitoshi.xyz/api/agents/a/registration.json"] });
+    expect(decodeFunctionData({ abi: identityRegistryAbi, data: reg.data })).toMatchObject({ functionName: "register", args: ["https://mitoshi.xyz/api/agents/a/registration.json"] });
     expect(decodeFunctionData({ abi: identityRegistryAbi, data: setAgentUriCall(42431, 6n, "ipfs://x").data }).args).toEqual([6n, "ipfs://x"]);
     const fb = giveFeedbackCall(42431, { agentId: 6n, value: -250n, valueDecimals: 2, tag1: "pnl" });
     expect(fb.to).toBe(erc8004Registries(42431).reputation);
@@ -51,9 +51,9 @@ describe("receipts (real Moderato txs)", () => {
 
 describe("registration file", () => {
   it("has the registration-v1 shape with the on-chain registration", () => {
-    const file = buildAgentRegistration({ strategyId: "s", name: "n", description: "d", image: "https://x/i.svg", origin: "https://testnet.mitoshi.xyz/", active: true, registrations: [{ chainId: 42431, agentId: 6n }] });
+    const file = buildAgentRegistration({ strategyId: "s", name: "n", description: "d", image: "https://x/i.svg", origin: "https://mitoshi.xyz/", active: true, registrations: [{ chainId: 42431, agentId: 6n }] });
     expect(file).toMatchObject({ type: "https://eips.ethereum.org/EIPS/eip-8004#registration-v1", x402Support: false, registrations: [{ agentId: 6, agentRegistry: "eip155:42431:0x8004A818BFB912233c491871b3d84c89A494BD9e" }], supportedTrust: ["reputation"] });
-    expect(registrationUrl("https://testnet.mitoshi.xyz/", "a b")).toBe("https://testnet.mitoshi.xyz/api/agents/a%20b/registration.json");
+    expect(registrationUrl("https://mitoshi.xyz/", "a b")).toBe("https://mitoshi.xyz/api/agents/a%20b/registration.json");
     expect(() => buildAgentRegistration({ strategyId: "s", name: "n", description: "d", image: "", origin: "http://evil", active: true, registrations: [] })).toThrow(/https/);
   });
 });

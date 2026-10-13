@@ -11,7 +11,7 @@
  *  - #3 (sealed copiers-only) offers no paid read.
  * Keys are read from ~/.config/cwf/testnet/ and the wallet file and never printed.
  *
- *   pnpm --dir scripts exec tsx drive/s9-memory.ts --subscriber <cast wallet new --json file> [--origin https://testnet.mitoshi.xyz]
+ *   pnpm --dir scripts exec tsx drive/s9-memory.ts --subscriber <cast wallet new --json file> [--origin https://mitoshi.xyz]
  */
 import { readFileSync } from "node:fs";
 import { getAddress, type Address, type Hex } from "viem";
@@ -25,7 +25,7 @@ import { loadRole } from "../v4/lib";
 
 const argv = process.argv.slice(2);
 const flag = (name: string) => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
-const origin = flag("--origin") ?? "https://testnet.mitoshi.xyz";
+const origin = flag("--origin") ?? "https://mitoshi.xyz";
 const subscriberFile = flag("--subscriber");
 if (!subscriberFile) throw new Error("usage: s9-memory.ts --subscriber <wallet file> [--origin …]");
 const client = tempoReadClient("testnet", process.env.TEMPO_RPC_HTTP_URL);

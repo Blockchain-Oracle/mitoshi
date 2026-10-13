@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { isPriceTick } from "./stream-hub";
 import { createStreamClient, type StreamEvent } from "./stream";
 
-const url = process.env.LIVE_STREAM_URL ?? "https://stream.testnet.mitoshi.xyz";
+const url = process.env.LIVE_STREAM_URL ?? "https://stream.mitoshi.xyz";
 
 describe("stream client on the live ops stream", () => {
   it("receives real price ticks", async () => {

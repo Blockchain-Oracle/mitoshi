@@ -5,14 +5,14 @@
  * the grip runs out); a post without a session is refused; one signature buys the session; the run is accepted after
  * the server's replay and ranked; a score the replay doesn't reproduce is refused; the board lists the wallet.
  *
- *   pnpm --dir scripts exec tsx drive/arcade-live.ts [--base https://testnet.mitoshi.xyz]
+ *   pnpm --dir scripts exec tsx drive/arcade-live.ts [--base https://mitoshi.xyz]
  */
 import { isArcadeSeed, replayRide, ticksToMs } from "@cwf/core/games/arcade";
 import { socialSessionMessage } from "@cwf/core";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 const arg = (n: string, d: string) => (process.argv.includes(n) ? process.argv[process.argv.indexOf(n) + 1]! : d);
-const BASE = arg("--base", "https://testnet.mitoshi.xyz").replace(/\/$/, "");
+const BASE = arg("--base", "https://mitoshi.xyz").replace(/\/$/, "");
 const account = privateKeyToAccount(generatePrivateKey());
 let cookie = "";
 let failed = 0;

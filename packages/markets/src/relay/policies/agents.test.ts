@@ -18,7 +18,7 @@ describe("agents relay policy (D-218.7)", () => {
     expect(enc.value).toMatchObject({ area: "agents", sponsored: true });
     expect(enc.value.calls[0]!.to).toBe(ERC8004[42431].identity);
     expect(await evaluate(config, req(enc.value.calls), ctx)).toMatchObject({ ok: true, area: "agents" });
-    const set = await encodeIntent({ kind: "agent-set-uri", agentId: 7n, agentURI: "https://testnet.mitoshi.xyz/api/agents/1/registration.json" }, { chainId: 42431, wallet: "0x00000000000000000000000000000000000000a1" });
+    const set = await encodeIntent({ kind: "agent-set-uri", agentId: 7n, agentURI: "https://mitoshi.xyz/api/agents/1/registration.json" }, { chainId: 42431, wallet: "0x00000000000000000000000000000000000000a1" });
     if (!set.ok) throw new Error(set.diagnosis.technical);
     expect(await evaluate(config, req(set.value.calls, 200_000n), ctx)).toMatchObject({ ok: true });
   });

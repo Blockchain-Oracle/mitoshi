@@ -5,14 +5,14 @@
  * render — must stamp the call a void, and the engine's own `Redeemed` event (the settler's `redeemFor`) must show the
  * stake returned. Nothing here is sent; every hash printed is for `cast receipt`.
  *
- *   pnpm --filter @cwf/scripts exec tsx drive/void-returned.ts [--index https://testnet.mitoshi.xyz/api/index]
+ *   pnpm --filter @cwf/scripts exec tsx drive/void-returned.ts [--index https://mitoshi.xyz/api/index]
  */
 import type { Address } from "viem";
 import type { MarketId } from "@cwf/core";
 import { createMarketsProvider, nowSec, readWindows, redeemedEvents } from "@cwf/markets";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const index = arg("index", "https://testnet.mitoshi.xyz/api/index");
+const index = arg("index", "https://mitoshi.xyz/api/index");
 const HOLDER_BUDGET_MS = Number(arg("holder-ms", "180000"));
 const out = (step: string, data: Record<string, unknown>) => console.log(JSON.stringify({ step, ...data }, (_k, v) => (typeof v === "bigint" ? v.toString() : v)));
 

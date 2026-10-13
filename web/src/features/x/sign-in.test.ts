@@ -30,7 +30,7 @@ function memoryStore() {
 }
 
 const SECRET = "s".repeat(64);
-const config = { credentials: { kind: "oauth2" as const, clientId: "client-123", clientSecret: "secret-456" }, redirectUri: "https://testnet.mitoshi.xyz/api/x/callback", sessionSecret: SECRET };
+const config = { credentials: { kind: "oauth2" as const, clientId: "client-123", clientSecret: "secret-456" }, redirectUri: "https://mitoshi.xyz/api/x/callback", sessionSecret: SECRET };
 const NOW = 1_791_870_000_000;
 
 /** X's token and profile endpoints, as fetch sees them: the code must arrive with the verifier whose challenge X saw. */
@@ -135,7 +135,7 @@ describe("X sign-in (OAuth 2.0 + PKCE, state server-side)", () => {
     // The URL parser drops tabs and newlines: each of these would land on evil.com.
     for (const raw of ["/\t/evil.com", "/\n/evil.com", "/\r/evil.com/x", "/\\evil.com", "/ /evil.com"]) {
       expect(safeReturn(raw)).toBe("/trade-from-x");
-      expect(new URL(safeReturn(raw), "https://testnet.mitoshi.xyz").host).toBe("testnet.mitoshi.xyz");
+      expect(new URL(safeReturn(raw), "https://mitoshi.xyz").host).toBe("mitoshi.xyz");
     }
   });
 });

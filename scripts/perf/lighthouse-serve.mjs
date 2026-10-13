@@ -5,14 +5,14 @@
  * APP_UPSTREAM. Production's pages read the index same-origin (`NEXT_PUBLIC_INDEX_URL` unset → `/api/index`), so the
  * page under test runs the same code against the same data without a CORS allowance on the deployed index.
  *
- *   APP_UPSTREAM=http://127.0.0.1:3001 INDEX_UPSTREAM=https://testnet.mitoshi.xyz PORT=3000 node scripts/perf/lighthouse-serve.mjs
+ *   APP_UPSTREAM=http://127.0.0.1:3001 INDEX_UPSTREAM=https://mitoshi.xyz PORT=3000 node scripts/perf/lighthouse-serve.mjs
  */
 import http from "node:http";
 import https from "node:https";
 
 const port = Number(process.env.PORT ?? 3000);
 const app = new URL(process.env.APP_UPSTREAM ?? "http://127.0.0.1:3001");
-const index = new URL(process.env.INDEX_UPSTREAM ?? "https://testnet.mitoshi.xyz");
+const index = new URL(process.env.INDEX_UPSTREAM ?? "https://mitoshi.xyz");
 const agents = { "http:": new http.Agent({ keepAlive: true }), "https:": new https.Agent({ keepAlive: true }) };
 const PRIVATE = ["cookie", "authorization"];
 

@@ -4,7 +4,7 @@
  * minute's allowance (3/min), so the fourth, posted from the terminal's Room drawer, shows at once, is refused by the
  * server and must keep its caption in the composer, with the failed card saying why. The key's rows are deleted after.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/s13-draft.ts --base https://testnet.mitoshi.xyz --out <dir>
+ *   pnpm --filter @cwf/web exec tsx e2e/s13-draft.ts --base https://mitoshi.xyz --out <dir>
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -14,7 +14,7 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { openTerminal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "https://testnet.mitoshi.xyz");
+const base = arg("base", "https://mitoshi.xyz");
 const out = arg("out", "s13-draft-out");
 mkdirSync(out, { recursive: true });
 const nonce = () => Array.from(crypto.getRandomValues(new Uint8Array(10)), (b) => b.toString(16).padStart(2, "0")).join("");

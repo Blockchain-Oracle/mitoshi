@@ -33,7 +33,7 @@ const input = {
   symbol: `MT${tag.toUpperCase()}USD`,
   currency: "USD",
   logoURI: "",
-  metadataURI: "https://testnet.mitoshi.xyz/launch/stablecoin",
+  metadataURI: "https://mitoshi.xyz/launch/stablecoin",
   supplyCap: 1_000_000_000_000n,
   initialSupply: 10_000_000_000n,
   bidAmount: 100_000_000n,

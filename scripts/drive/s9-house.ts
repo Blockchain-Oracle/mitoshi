@@ -5,7 +5,7 @@
  * (agentId) → the `agent_registrations` row → `setAgentURI` (the live registration file). Idempotent by name: one the
  * registry already holds from this creator is skipped, or `update`d when its published description differs. Keys are read from ~/.config/cwf/testnet/ and never printed.
  *
- *   DATABASE_URL=… pnpm --dir scripts exec tsx drive/s9-house.ts [--origin https://testnet.mitoshi.xyz]
+ *   DATABASE_URL=… pnpm --dir scripts exec tsx drive/s9-house.ts [--origin https://mitoshi.xyz]
  */
 import { decodeEventLog, getAddress, hexToString, type Address, type Hex } from "viem";
 import { strategyRegistryAbi } from "@cwf/clients/abis/StrategyRegistry";
@@ -17,7 +17,7 @@ import { castSend } from "../lib/cast";
 import { loadRole } from "../v4/lib";
 
 const argv = process.argv.slice(2);
-const origin = argv.includes("--origin") ? argv[argv.indexOf("--origin") + 1]! : "https://testnet.mitoshi.xyz";
+const origin = argv.includes("--origin") ? argv[argv.indexOf("--origin") + 1]! : "https://mitoshi.xyz";
 const CHAIN_ID = 42431;
 const ONE = 1_000_000n;
 const client = tempoReadClient("testnet", process.env.TEMPO_RPC_HTTP_URL);

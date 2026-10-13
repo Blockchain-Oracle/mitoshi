@@ -10,7 +10,7 @@
  * The owner's passkey secret is kept in the drive key folder (`KEY_DIR`, outside the repo) and printed as a path, so a
  * run cut short resumes with `--resume <file>`: it skips funding and booking and goes on waiting for the cranks.
  *
- *   pnpm --filter @cwf/scripts exec tsx drive/previous-vaults-live.ts [--base https://testnet.mitoshi.xyz] [--resume <file>]
+ *   pnpm --filter @cwf/scripts exec tsx drive/previous-vaults-live.ts [--base https://mitoshi.xyz] [--resume <file>]
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -23,7 +23,7 @@ import { fund, KEY_DIR, reader } from "./lib/actors";
 import { label, liveWindows, testnetVenue } from "./lib/live-windows";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const BASE = arg("base", "https://testnet.mitoshi.xyz");
+const BASE = arg("base", "https://mitoshi.xyz");
 const RESUME = arg("resume", "");
 const RELAY = `${BASE.replace(/\/+$/, "")}/api/relay`;
 const RPC = process.env.TEMPO_RPC_HTTP_URL ?? "https://rpc.moderato.tempo.xyz";

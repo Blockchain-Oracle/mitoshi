@@ -22,7 +22,7 @@ describe("share-to-sign links (A-3e)", () => {
     expect(goTerminalHref("ETH", { marketId: "0xabc" }, null)).toBe("/trade/ETH?w=0xabc");
   });
   it("builds the links a post or a share card carries", () => {
-    expect(goTradeUrl("https://testnet.mitoshi.xyz/", "BTC", "5m", "up", "5")).toBe("https://testnet.mitoshi.xyz/go/t/BTC/5m?side=up&stake=5");
-    expect(goWindowUrl("https://testnet.mitoshi.xyz", "0xABC")).toBe("https://testnet.mitoshi.xyz/go/w/0xabc");
+    expect(goTradeUrl("https://mitoshi.xyz/", "BTC", "5m", "up", "5")).toBe("https://mitoshi.xyz/go/t/BTC/5m?side=up&stake=5");
+    expect(goWindowUrl("https://mitoshi.xyz", "0xABC")).toBe("https://mitoshi.xyz/go/w/0xabc");
   });
 });

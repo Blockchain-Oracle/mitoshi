@@ -79,8 +79,8 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
           NEXT_PUBLIC_NETWORK: testnet
           NEXT_PUBLIC_APP_ORIGIN: http://localhost:3000
-          NEXT_PUBLIC_OPS_URL: https://ops.testnet.mitoshi.xyz
-          NEXT_PUBLIC_STREAM_URL: https://stream.testnet.mitoshi.xyz
+          NEXT_PUBLIC_OPS_URL: https://ops.mitoshi.xyz
+          NEXT_PUBLIC_STREAM_URL: https://stream.mitoshi.xyz
         run: |
           set -eu
           for dir in target ${BASE_REF:+base-target}; do
@@ -92,7 +92,7 @@ jobs:
               git log -1 --format="Built $dir: %h %s" | tee -a "$GITHUB_STEP_SUMMARY"
             )
           done
-          PORT=3000 APP_UPSTREAM=http://127.0.0.1:3001 INDEX_UPSTREAM=https://testnet.mitoshi.xyz \
+          PORT=3000 APP_UPSTREAM=http://127.0.0.1:3001 INDEX_UPSTREAM=https://mitoshi.xyz \
             nohup node scripts/perf/lighthouse-serve.mjs > "$RUNNER_TEMP/serve.log" 2>&1 &
 
       - name: Lighthouse CI collect (same-host base)

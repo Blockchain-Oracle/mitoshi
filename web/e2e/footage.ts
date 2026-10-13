@@ -6,7 +6,7 @@
  * and the share card → Range mode → history → the leaderboard → a Window's proof re-verified in the browser → proof of
  * demand (`/stats`). A beat that can't happen (no Window open yet) is waited for, never faked.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/footage.ts --base https://testnet.mitoshi.xyz --out <dir> [--width 1440|390]
+ *   pnpm --filter @cwf/web exec tsx e2e/footage.ts --base https://mitoshi.xyz --out <dir> [--width 1440|390]
  */
 import { mkdirSync, readdirSync, renameSync } from "node:fs";
 import { join } from "node:path";
@@ -14,7 +14,7 @@ import { expect } from "@playwright/test";
 import { modal, openTerminalSession, signUpFromTour, stakeMin, waitEnterable } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "https://testnet.mitoshi.xyz");
+const base = arg("base", "https://mitoshi.xyz");
 const out = arg("out", "footage-out");
 const widths = process.argv.includes("--width") ? [Number(arg("width", "1440"))] : [1440, 390];
 mkdirSync(out, { recursive: true });

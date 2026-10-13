@@ -1,5 +1,5 @@
 import { configureMarkets, createMarketsProvider, parseMarketsEnv } from "@cwf/markets";
-configureMarkets(parseMarketsEnv({ network: "testnet", opsUrl: "https://ops.testnet.mitoshi.xyz" }));
+configureMarkets(parseMarketsEnv({ network: "testnet", opsUrl: "https://ops.mitoshi.xyz" }));
 const p = createMarketsProvider();
 await p.syncClock();
 const r = await p.listLiveLanes();

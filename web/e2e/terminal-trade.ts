@@ -5,7 +5,7 @@
  * a refused P&L stop, a valid one), and closes it in one tap (a requote outside the tolerance is taken from the
  * toast's "Close for $X"). Every transaction hash the relay sends is printed for `cast receipt`.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/terminal-trade.ts --base https://testnet.mitoshi.xyz --out <dir>
+ *   pnpm --filter @cwf/web exec tsx e2e/terminal-trade.ts --base https://mitoshi.xyz --out <dir>
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -13,7 +13,7 @@ import { expect } from "@playwright/test";
 import { openTerminalSession, signUpFromTour, stakeMin, waitEnterable, modal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "https://testnet.mitoshi.xyz");
+const base = arg("base", "https://mitoshi.xyz");
 const out = arg("out", "terminal-trade-out");
 const symbol = arg("symbol", "BTC");
 mkdirSync(out, { recursive: true });

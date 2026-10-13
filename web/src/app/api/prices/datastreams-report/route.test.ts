@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { GET } from "./route";
 
-const req = (q: string) => new NextRequest(`https://testnet.mitoshi.xyz/api/prices/datastreams-report${q}`);
+const req = (q: string) => new NextRequest(`https://mitoshi.xyz/api/prices/datastreams-report${q}`);
 
 afterEach(() => {
   vi.unstubAllEnvs();

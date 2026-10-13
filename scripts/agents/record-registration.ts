@@ -12,7 +12,7 @@ import { readAgent, readRegistered, tempoReadClient } from "@cwf/markets";
 const [txHash, strategyId] = process.argv.slice(2) as [Hex | undefined, string | undefined];
 if (!txHash || !strategyId) throw new Error("usage: record-registration.ts <registerTxHash> <strategyId> [--name …] [--description …] [--origin …]");
 const flag = (name: string, fallback: string) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1]! : fallback);
-const origin = flag("--origin", "https://testnet.mitoshi.xyz");
+const origin = flag("--origin", "https://mitoshi.xyz");
 const CHAIN_ID = 42431;
 const client = tempoReadClient("testnet", process.env.TEMPO_RPC_HTTP_URL);
 

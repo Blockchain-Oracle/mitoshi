@@ -11,7 +11,7 @@
  * stats grid; the stream dropped (network offline 12 s) → "Reconnecting…". The update toast needs a newer build id: the
  * one capture whose answer is substituted (`/api/version`), named so. Every capture is listed in `states.json`.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/states.ts --base https://testnet.mitoshi.xyz --out <dir> [--widths 1440,390]
+ *   pnpm --filter @cwf/web exec tsx e2e/states.ts --base https://mitoshi.xyz --out <dir> [--widths 1440,390]
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -20,7 +20,7 @@ import { modal, openTerminal, openTerminalSession, stakeMin, waitEnterable } fro
 import { settle } from "./lib/settle";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "https://testnet.mitoshi.xyz");
+const base = arg("base", "https://mitoshi.xyz");
 const out = arg("out", "states-out");
 const widths = arg("widths", "1440,390").split(",").map(Number);
 mkdirSync(out, { recursive: true });

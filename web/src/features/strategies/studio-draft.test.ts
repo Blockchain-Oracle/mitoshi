@@ -42,8 +42,8 @@ describe("checkDraft (the builder)", () => {
   });
 
   it("writes a self-contained ERC-8004 registration file", () => {
-    const uri = agentUriOf(draft({ name: "Café runner" }), "https://testnet.mitoshi.xyz/");
+    const uri = agentUriOf(draft({ name: "Café runner" }), "https://mitoshi.xyz/");
     const file = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(uri.split(",")[1]!), (c) => c.charCodeAt(0))));
-    expect(file).toMatchObject({ type: "https://eips.ethereum.org/EIPS/eip-8004#registration-v1", name: "Café runner", image: "https://testnet.mitoshi.xyz/icon-512.png", registrations: [] });
+    expect(file).toMatchObject({ type: "https://eips.ethereum.org/EIPS/eip-8004#registration-v1", name: "Café runner", image: "https://mitoshi.xyz/icon-512.png", registrations: [] });
   });
 });

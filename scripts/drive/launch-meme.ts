@@ -67,7 +67,7 @@ const configId = Number(readMemeReceipt({ logs: cfg.logs }, a).find((e) => e.nam
 
 // ── 2. create + creator buy (base fee, capped) ─────────────────────────────────────────────────────────────────────
 const symbol = `MITO${Math.floor(Math.random() * 9000 + 1000)}`;
-const launch = buildCreateLaunch({ launchpad: a.launchpad, creator: me, configId, name: `Mitoshi Meme ${symbol}`, symbol, logoURI: "", metadataURI: `https://testnet.mitoshi.xyz/launch/${symbol}`, salt: randomSalt(), creatorBuyQuote: 25_000_000n, minCoinOut: 1n });
+const launch = buildCreateLaunch({ launchpad: a.launchpad, creator: me, configId, name: `Mitoshi Meme ${symbol}`, symbol, logoURI: "", metadataURI: `https://mitoshi.xyz/launch/${symbol}`, salt: randomSalt(), creatorBuyQuote: 25_000_000n, minCoinOut: 1n });
 send("createLaunch (+creator buy)", launch.calls);
 const token = launch.token;
 console.log(`token ${token} (${symbol}), config ${configId}`);

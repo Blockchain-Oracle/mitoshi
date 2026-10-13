@@ -9,7 +9,7 @@
  * walked and counted by name too, decoded with this script's own ABI list. Log windows follow what the RPC accepts: it
  * refuses more than 20,000 results and names a range that fits (D-187). Exit 1 on any mismatch.
  *
- *   pnpm --dir scripts exec tsx drive/recount.ts [--ops https://ops.testnet.mitoshi.xyz] [--rpc https://rpc.moderato.tempo.xyz]
+ *   pnpm --dir scripts exec tsx drive/recount.ts [--ops https://ops.mitoshi.xyz] [--rpc https://rpc.moderato.tempo.xyz]
  */
 import { createPublicClient, decodeEventLog, getAddress, parseAbi, type Address, type Hex, type Log } from "viem";
 import { tempoModerato } from "viem/chains";
@@ -19,7 +19,7 @@ import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
 import { tempoHttp, vaultVenuesOf, walkLogWindows } from "@cwf/markets/ops";
 
 const arg = (name: string, fallback: string) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1]! : fallback);
-const OPS = arg("--ops", "https://ops.testnet.mitoshi.xyz").replace(/\/$/, "");
+const OPS = arg("--ops", "https://ops.mitoshi.xyz").replace(/\/$/, "");
 const RPC = arg("--rpc", process.env.TEMPO_RPC_HTTP_URL ?? "https://rpc.moderato.tempo.xyz");
 
 const client = createPublicClient({ chain: tempoModerato, transport: tempoHttp(RPC) });

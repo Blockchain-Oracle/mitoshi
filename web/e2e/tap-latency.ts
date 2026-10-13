@@ -13,7 +13,7 @@
  * and for the close: pointerdown on CLOSE → "Closing …" (the lane's `onSigned`, D-150) → "Closed …" (the receipt), with
  * the relay and RPC calls in between. Every tx hash is printed for `cast receipt`.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/tap-latency.ts --base https://testnet.mitoshi.xyz --taps 6 --out <dir>
+ *   pnpm --filter @cwf/web exec tsx e2e/tap-latency.ts --base https://mitoshi.xyz --taps 6 --out <dir>
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -22,7 +22,7 @@ import { openTerminalSession, signUpFromTour, stakeMin, switchSymbol, waitEntera
 import { phasesOf, summarize, type NetCall, type TapMarks } from "./lib/tap-phases";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "https://testnet.mitoshi.xyz");
+const base = arg("base", "https://mitoshi.xyz");
 const out = arg("out", "tap-latency-out");
 const taps = Number(arg("taps", "6"));
 const width = Number(arg("width", "1440"));

@@ -13,7 +13,7 @@ export interface AgentRegistrationInput {
   description: string;
   /** Absolute https URL of the agent's image. */
   image: string;
-  /** Site origin, e.g. `https://testnet.mitoshi.xyz`. */
+  /** Site origin, e.g. `https://mitoshi.xyz`. */
   origin: string;
   active: boolean;
   /** On-chain registrations once minted (empty before the first `register`). */

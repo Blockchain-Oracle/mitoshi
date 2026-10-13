@@ -6,7 +6,7 @@
  * log filters over the RPC WebSocket carrying the wallet as an indexed topic. Then the existing passkey signs in
  * (login ceremony) and the ticket answers 200 again. Exits non-zero on any miss.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/stream-ticket.ts --base https://testnet.mitoshi.xyz
+ *   pnpm --filter @cwf/web exec tsx e2e/stream-ticket.ts --base https://mitoshi.xyz
  */
 import { chromium, expect, type Page } from "@playwright/test";
 

@@ -8,7 +8,7 @@
  *   5. keeper (a separate rater) `giveFeedback(agentId, 100, 0, "s3.5", "smoke", …)`
  *   6. read back: owner, agentURI, agent wallet, readAllFeedback, getSummary([keeper]), registry versions
  *
- *   DATABASE_URL=postgres://… tsx scripts/drive/register-agent.ts [--origin https://testnet.mitoshi.xyz] [--strategy id]
+ *   DATABASE_URL=postgres://… tsx scripts/drive/register-agent.ts [--origin https://mitoshi.xyz] [--strategy id]
  */
 import { getAddress, type Address } from "viem";
 import { createSql, runMigrations, setAgentRegistrationUri, upsertAgentRegistration } from "@cwf/db";
@@ -31,7 +31,7 @@ import { castSend, loadRole } from "../v4/lib";
 
 const argv = process.argv.slice(2);
 const arg = (name: string, fallback: string) => (argv.includes(name) ? argv[argv.indexOf(name) + 1]! : fallback);
-const origin = arg("--origin", "https://testnet.mitoshi.xyz");
+const origin = arg("--origin", "https://mitoshi.xyz");
 const strategyId = arg("--strategy", "s3-5-smoke-agent");
 const CHAIN_ID = 42431;
 const client = tempoReadClient("testnet", process.env.TEMPO_RPC_HTTP_URL);

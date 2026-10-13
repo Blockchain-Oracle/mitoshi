@@ -6,7 +6,7 @@
  * withdraw does — and the ledger shows the money back. Then the same on the range reserve ($1). Nothing is printed
  * but receipts and figures; the throwaway key is never written anywhere.
  *
- *   NETWORK=testnet pnpm --dir scripts exec tsx drive/earn-live.ts [--origin https://testnet.mitoshi.xyz]
+ *   NETWORK=testnet pnpm --dir scripts exec tsx drive/earn-live.ts [--origin https://mitoshi.xyz]
  */
 import { getAddress, type Address } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
@@ -19,7 +19,7 @@ import type { EncodeContext, EncodeResult } from "@cwf/markets";
 
 const argv = process.argv.slice(2);
 const flag = (name: string) => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
-const origin = flag("--origin") ?? "https://testnet.mitoshi.xyz";
+const origin = flag("--origin") ?? "https://mitoshi.xyz";
 const CHAIN_ID = 42431;
 const ONE = 1_000_000n;
 const client = tempoReadClient("testnet", process.env.TEMPO_RPC_HTTP_URL);

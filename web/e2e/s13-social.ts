@@ -5,7 +5,7 @@
  * state as the server says), the price-alerts drawer and `/settings/notifications`. Words and screenshots land in
  * `s13-social.json`.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/s13-social.ts --base https://testnet.mitoshi.xyz --out <dir> [--widths 390,1440]
+ *   pnpm --filter @cwf/web exec tsx e2e/s13-social.ts --base https://mitoshi.xyz --out <dir> [--widths 390,1440]
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -13,7 +13,7 @@ import { chromium, type Page } from "@playwright/test";
 import { openTerminal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "https://testnet.mitoshi.xyz");
+const base = arg("base", "https://mitoshi.xyz");
 const out = arg("out", "s13-social-out");
 const widths = arg("widths", "390,1440").split(",").map(Number);
 mkdirSync(out, { recursive: true });

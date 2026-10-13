@@ -6,7 +6,7 @@
  * above $0, the tour staying dismissed across a reload, Add money from Account naming the faucet's cooldown with no
  * button that would fail, and 0 console errors. Prints the funding tx hashes for `cast receipt`.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/onboarding.ts --base https://testnet.mitoshi.xyz --out <dir>
+ *   pnpm --filter @cwf/web exec tsx e2e/onboarding.ts --base https://mitoshi.xyz --out <dir>
  */
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -16,7 +16,7 @@ import { settle } from "./lib/settle";
 import { modal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "https://testnet.mitoshi.xyz");
+const base = arg("base", "https://mitoshi.xyz");
 const out = arg("out", "onboarding-out");
 mkdirSync(out, { recursive: true });
 

@@ -9,7 +9,7 @@
  *     engine's payout) equals the vault index's own (`Settled` payout − cash paid on the grant's fills).
  * Keys are read from ~/.config/cwf/testnet/ and never printed; `DATABASE_URL` reaches the testnet index.
  *
- *   DATABASE_URL=… pnpm --dir scripts exec tsx drive/s9-gate.ts --copier 0x… [--origin https://testnet.mitoshi.xyz]
+ *   DATABASE_URL=… pnpm --dir scripts exec tsx drive/s9-gate.ts --copier 0x… [--origin https://mitoshi.xyz]
  */
 import { getAddress, type Address } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
@@ -23,7 +23,7 @@ import { loadRole } from "../v4/lib";
 
 const argv = process.argv.slice(2);
 const flag = (name: string) => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
-const origin = flag("--origin") ?? "https://testnet.mitoshi.xyz";
+const origin = flag("--origin") ?? "https://mitoshi.xyz";
 const copierFlag = flag("--copier");
 if (!copierFlag || !process.env.DATABASE_URL) throw new Error("usage: DATABASE_URL=… s9-gate.ts --copier 0x… [--origin …]");
 const copier = getAddress(copierFlag);

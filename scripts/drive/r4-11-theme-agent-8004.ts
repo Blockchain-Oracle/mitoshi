@@ -5,7 +5,7 @@
  * (`ThemeRegistry.setAgent`), one batch per step, sent by `cast` from the creator's role key; then reads back
  * `readAgent` and each theme's `erc8004AgentId` through the app's theme read.
  *
- *   tsx scripts/drive/r4-11-theme-agent-8004.ts [--role deployer-themes] [--themes 1,2] [--origin https://testnet.mitoshi.xyz]
+ *   tsx scripts/drive/r4-11-theme-agent-8004.ts [--role deployer-themes] [--themes 1,2] [--origin https://mitoshi.xyz]
  */
 import { configureMarkets, parseMarketsEnv, readAgent, readRegistered, registerAgentCall, tempoReadClient } from "@cwf/markets";
 import { themeRegistryAbi } from "@cwf/clients/abis/ThemeRegistry";
@@ -18,7 +18,7 @@ const argv = process.argv.slice(2);
 const flag = (n: string, d: string) => (argv.includes(n) ? argv[argv.indexOf(n) + 1]! : d);
 const role = flag("--role", "deployer-themes");
 const themes = flag("--themes", "1,2").split(",").map((s) => BigInt(s));
-const origin = flag("--origin", "https://testnet.mitoshi.xyz");
+const origin = flag("--origin", "https://mitoshi.xyz");
 const CHAIN = 42431;
 configureMarkets(parseMarketsEnv({ network: "testnet" }));
 const me = getAddress(loadRole(role).address);

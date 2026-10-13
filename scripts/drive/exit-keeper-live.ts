@@ -10,7 +10,7 @@
  *   3. Down $1, then a trail: with `--restart`, a far stop is stored first and the run waits for ops to restart
  *      (`/health` shows a new start), then a newer trigger puts the stop behind the spot — the keeper's next tick sells.
  *
- *   pnpm --filter @cwf/scripts exec tsx drive/exit-keeper-live.ts [--base https://testnet.mitoshi.xyz] [--ops https://ops.testnet.mitoshi.xyz] [--restart] [--lane crypto24]
+ *   pnpm --filter @cwf/scripts exec tsx drive/exit-keeper-live.ts [--base https://mitoshi.xyz] [--ops https://ops.mitoshi.xyz] [--restart] [--lane crypto24]
  */
 import { encodeFunctionData, zeroHash, type Address, type Hex } from "viem";
 import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
@@ -25,8 +25,8 @@ import { startLocalRelay } from "./lib/relay-server";
 import { latestSpot } from "./lib/spot";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const BASE = arg("base", "https://testnet.mitoshi.xyz");
-const OPS = arg("ops", "https://ops.testnet.mitoshi.xyz");
+const BASE = arg("base", "https://mitoshi.xyz");
+const OPS = arg("ops", "https://ops.mitoshi.xyz");
 const RESTART = process.argv.includes("--restart");
 /** `--lane crypto24`: a lively Window for the trail (BTC moves bps in seconds; a stock after hours may not move 0.1 %). */
 const LANE = arg("lane", "");

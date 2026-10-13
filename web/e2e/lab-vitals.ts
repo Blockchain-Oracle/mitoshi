@@ -4,7 +4,7 @@
  * CI workflow (a quiet host: `gh workflow run lighthouse.yml -f url=<base>`); on a loaded workstation the simulated CPU
  * scales the host's own load into TBT, so compare builds back to back on the same host rather than against budgets.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/lab-vitals.ts --base https://testnet.mitoshi.xyz --runs 3 / /markets /markets/<id> /portfolio
+ *   pnpm --filter @cwf/web exec tsx e2e/lab-vitals.ts --base https://mitoshi.xyz --runs 3 / /markets /markets/<id> /portfolio
  */
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync } from "node:fs";

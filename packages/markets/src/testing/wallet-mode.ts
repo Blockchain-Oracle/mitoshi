@@ -15,7 +15,7 @@ import { tempoTransport } from "../transports";
 import { accessKeyAccount, generateSessionKey, type SessionKeyRecord } from "../sessions/session-key";
 import type { WalletKeyAuthorization } from "../keys/wallet-key";
 
-export const DRIVE_WEBAUTHN = { rpId: "testnet.mitoshi.xyz", origin: "https://testnet.mitoshi.xyz" } as const;
+export const DRIVE_WEBAUTHN = { rpId: "mitoshi.xyz", origin: "https://mitoshi.xyz" } as const;
 
 export type DriveClient = WalletClient<Transport, Chain, Account>;
 

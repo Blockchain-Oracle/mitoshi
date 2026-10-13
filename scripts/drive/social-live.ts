@@ -6,13 +6,13 @@
  * need no call — "backed" says whether there is one); a reaction and a report land; the account downloads its data and
  * deletes it with a fresh signature (another account's text refused); a contact message lands; the session signs out.
  *
- *   pnpm --dir scripts exec tsx drive/social-live.ts [--base https://testnet.mitoshi.xyz]
+ *   pnpm --dir scripts exec tsx drive/social-live.ts [--base https://mitoshi.xyz]
  */
 import { deletionMessage, socialSessionMessage } from "@cwf/core";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
 const arg = (n: string, d: string) => (process.argv.includes(n) ? process.argv[process.argv.indexOf(n) + 1]! : d);
-const BASE = arg("--base", "https://testnet.mitoshi.xyz").replace(/\/$/, "");
+const BASE = arg("--base", "https://mitoshi.xyz").replace(/\/$/, "");
 const account = privateKeyToAccount(generatePrivateKey());
 let cookie = "";
 const results: { step: string; status: number; ok: boolean; note?: string }[] = [];

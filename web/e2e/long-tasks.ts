@@ -9,8 +9,8 @@
  * first-visit tour dismissed — the terminal's live chart loop plus anything else animating. Reported as p50 / p95 / max
  * per frame at the same CPU rate.
  *
- *   pnpm --filter @cwf/web exec tsx e2e/long-tasks.ts https://testnet.mitoshi.xyz / /markets /portfolio
- *   pnpm --filter @cwf/web exec tsx e2e/long-tasks.ts --base https://testnet.mitoshi.xyz --routes /trade/BTC [--cpu 1] [--out <dir>]
+ *   pnpm --filter @cwf/web exec tsx e2e/long-tasks.ts https://mitoshi.xyz / /markets /portfolio
+ *   pnpm --filter @cwf/web exec tsx e2e/long-tasks.ts --base https://mitoshi.xyz --routes /trade/BTC [--cpu 1] [--out <dir>]
  *
  * `--profile` (with `--out`) also saves each route's first 12 s as a V8 CPU profile (`<route>.cpuprofile`, 100 µs
  * sampling) — against a local `ANALYZE_MAPS=1` build its frames map back to source through the chunks' `.map` files.
@@ -21,7 +21,7 @@ import { chromium } from "@playwright/test";
 
 const arg = (n: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1] : undefined; };
 const flagged = process.argv.some((a) => a.startsWith("--"));
-const base = (flagged ? arg("base") : process.argv[2]) ?? "https://testnet.mitoshi.xyz";
+const base = (flagged ? arg("base") : process.argv[2]) ?? "https://mitoshi.xyz";
 const routes = flagged ? (arg("routes") ?? "/trade/BTC").split(",") : process.argv.slice(3);
 const cpu = Number(arg("cpu") ?? "4");
 const framesS = Number(arg("frames-s") ?? "10");

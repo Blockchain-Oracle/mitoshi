@@ -17,7 +17,7 @@ import { settle } from "./lib/settle";
 import { openTerminal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "https://testnet.mitoshi.xyz");
+const base = arg("base", "https://mitoshi.xyz");
 const out = arg("out", "range-out");
 const width = Number(arg("width", "390"));
 const settleWaitMin = Number(arg("settle-min", "12"));

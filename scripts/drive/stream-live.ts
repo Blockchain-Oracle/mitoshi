@@ -1,6 +1,6 @@
 /**
  * S4.5 live proof of the D-049 wiring: S1's stream client (`createStreamClient`, the shared hub's engine) against the
- * live ops stream (`https://ops.testnet.mitoshi.xyz/v1/stream`), with S4's engine-event dispatch (`opsFor`) and S1's
+ * live ops stream (`https://ops.mitoshi.xyz/v1/stream`), with S4's engine-event dispatch (`opsFor`) and S1's
  * price writes applied to a real TanStack `QueryClient`, while a throwaway user taps a live Window through the relay —
  * the tap's `Fill`/`OrderExecuted` arrive on `market:<id>` and mark the Window's snapshot, depth and row stale.
  *
@@ -14,7 +14,7 @@ import { fund, restInside, wallet } from "./lib/actors";
 import { label, liveWindows, rawTop, testnetVenue } from "./lib/live-windows";
 import { startLocalRelay } from "./lib/relay-server";
 
-const STREAM = process.env.OPS_STREAM_URL ?? "https://ops.testnet.mitoshi.xyz";
+const STREAM = process.env.OPS_STREAM_URL ?? "https://ops.mitoshi.xyz";
 const seconds = Number(process.argv[2] ?? 90);
 const out = (step: string, data: Record<string, unknown>) => console.log(JSON.stringify({ step, atMs: Date.now(), ...data }, (_k, v) => (typeof v === "bigint" ? v.toString() : v)));
 

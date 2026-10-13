@@ -6,7 +6,7 @@
  * `/markets` lanes. Every state's words and the instant they were read land in `s6-session.json` with a screenshot; the
  * gate reads them against the session they were taken in (closed / pre / open / after hours / a halt / the Gap).
  *
- *   pnpm --filter @cwf/web exec tsx e2e/s6-session.ts --base https://testnet.mitoshi.xyz --out <dir> [--widths 1440,390] [--symbol TSLA]
+ *   pnpm --filter @cwf/web exec tsx e2e/s6-session.ts --base https://mitoshi.xyz --out <dir> [--widths 1440,390] [--symbol TSLA]
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -14,7 +14,7 @@ import { chromium, expect, type Page } from "@playwright/test";
 import { openTerminal } from "./lib/terminal";
 
 const arg = (n: string, d: string) => { const i = process.argv.indexOf(`--${n}`); return i >= 0 ? process.argv[i + 1]! : d; };
-const base = arg("base", "https://testnet.mitoshi.xyz");
+const base = arg("base", "https://mitoshi.xyz");
 const out = arg("out", "s6-session-out");
 const widths = arg("widths", "1440,390").split(",").map(Number);
 const symbol = arg("symbol", "TSLA");
