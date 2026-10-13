@@ -35,6 +35,15 @@ export function pickWindow(markets: readonly EventMarket[], nowMs: number): XWin
   return { ok: false, code: "no-window" };
 }
 
+/**
+ * A call is for the Window trading when it was posted. Read more than one cadence later (the relay was down, X held the
+ * read back, the bot's session was being renewed), that Window has closed: the call is refused, never placed late on
+ * whichever Window trades now (S11 review, D-227).
+ */
+export function xCallExpired(postedAtMs: number, intervalSec: number, nowMs: number): boolean {
+  return Number.isFinite(postedAtMs) && nowMs - postedAtMs > intervalSec * 1000;
+}
+
 /** Match the asked name and duration exactly, on the lanes that price that name; never substitute another trade. */
 export function selectXWindow(markets: readonly EventMarket[], instruction: Pick<XInstruction, "asset" | "intervalSec">, nowMs: number): XWindowSelection {
   let first: XWindowSelection | null = null;

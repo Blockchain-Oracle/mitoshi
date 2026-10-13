@@ -42,6 +42,15 @@ describe("mention execution: once, in order, cursor after the receipt", () => {
     expect(ctx.claim).not.toHaveBeenCalled();
     expect(ctx.setCursor).toHaveBeenCalledWith("1");
   });
+  it("never executes a repost of a call — not even the author's own — and moves the cursor past it", async () => {
+    const f = fixture();
+    const call = (await f.ctx.fetch("0"))[0]!;
+    f.ctx.fetch = async () => [call, { ...call, id: "3", text: `RT @caller: ${call.text}`, repost: true }];
+    expect(await pollMentionCycle(f.ctx)).toEqual({ processed: 1, held: false });
+    expect(f.ctx.execute).toHaveBeenCalledOnce();
+    expect(f.ctx.claim).toHaveBeenCalledOnce();
+    expect(f.order).toEqual(["save:1", "cursor:1", "cursor:3"]);
+  });
   it("keeps the durable facts and says unknown when execution throws", async () => {
     const { ctx, receipts } = fixture();
     ctx.execute = async (m) => {

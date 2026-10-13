@@ -1,7 +1,7 @@
 // Ported from Masayume 68f7a09:packages/core/src/x/window.test.ts — plus the stock lane rule (S11, D-227).
 import { describe, expect, it } from "vitest";
 import type { EventMarket } from "../types";
-import { selectXWindow, xLanesOf } from "./window";
+import { selectXWindow, xCallExpired, xLanesOf } from "./window";
 
 const at = (minute: number, second = 0) => Date.UTC(2026, 9, 13, 8, minute, second);
 const market = (over: Partial<EventMarket> & { onchainStatus?: number } = {}) => ({ asset: "BTC", lane: "crypto24", intervalSec: 300,
@@ -29,5 +29,11 @@ describe("X Window matching", () => {
     expect(selectXWindow([regular], tsla, at(21))).toMatchObject({ ok: true, market: { lane: "regular" } });
     expect(selectXWindow([market({ asset: "TSLA", lane: "gap" })], tsla, at(21))).toEqual({ ok: false, code: "no-window" });
     expect(xLanesOf("BTC")).toEqual(["crypto24"]);
+  });
+
+  it("calls a call too late once one cadence has passed since it was posted", () => {
+    expect(xCallExpired(at(20), 300, at(25))).toBe(false);
+    expect(xCallExpired(at(20), 300, at(25, 1))).toBe(true);
+    expect(xCallExpired(at(20), 3_600, at(50))).toBe(false);
   });
 });

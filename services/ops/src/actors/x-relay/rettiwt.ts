@@ -98,7 +98,7 @@ export function rettiwtTransport(apiKey: string, handle: string): XTransport {
         for (const t of page.list) {
           if (!/^\d+$/.test(t.id)) throw new Error("Invalid mention id from X");
           if (!t.tweetBy?.id || (sinceId !== null && BigInt(t.id) <= BigInt(sinceId))) continue;
-          mentions.set(t.id, { id: t.id, authorId: t.tweetBy.id, handle: t.tweetBy.userName ?? null, text: t.fullText, createdAtMs: t.createdAt ? Date.parse(t.createdAt) || Date.now() : Date.now() });
+          mentions.set(t.id, { id: t.id, authorId: t.tweetBy.id, handle: t.tweetBy.userName ?? null, text: t.fullText, createdAtMs: t.createdAt ? Date.parse(t.createdAt) || Date.now() : Date.now(), repost: Boolean(t.retweetedTweet) });
         }
         // The first poll only draws the line; never walk historical instructions.
         if (sinceId === null || page.list.length === 0 || !page.next || page.list.every((t) => BigInt(t.id) <= BigInt(sinceId))) {

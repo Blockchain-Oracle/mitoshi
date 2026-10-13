@@ -1,5 +1,6 @@
 // Ported from Owarine 90a91d71:services/ops/src/actors/x-relay/poll-cycle.ts — S11 (D-227): the bot's own posts are
-// skipped by author (the relay replies as the bot), and a hold stops before the next mention without moving the cursor.
+// skipped by author (the relay replies as the bot) and reposts by kind, and a hold stops before the next mention
+// without moving the cursor.
 import type { XReceipt } from "@cwf/core";
 import type { Mention } from "./transport";
 
@@ -36,7 +37,8 @@ export async function pollMentionCycle(ctx: MentionCycleContext): Promise<{ proc
   }
   let processed = 0;
   for (const mention of mentions) {
-    if (ctx.isOwnPost(mention)) {
+    // The bot's own replies and anyone's repost are not calls: only the cursor moves past them.
+    if (ctx.isOwnPost(mention) || mention.repost) {
       await ctx.setCursor(mention.id);
       continue;
     }

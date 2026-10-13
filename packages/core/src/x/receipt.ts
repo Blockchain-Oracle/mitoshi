@@ -13,7 +13,9 @@ export type XRefusalCode =
   | "quote-unavailable" | "no-liquidity" | "price-moved" | "permission-denied"
   | "insufficient-funds" | "execution-unavailable" | "unconfirmed"
   | "grant-update-required" | "position-limit" | "price-limit" | "execution-paused"
-  | "market-data-unavailable" | "window-entry-closed" | "window-not-started" | "opening-price-pending";
+  | "market-data-unavailable" | "window-entry-closed" | "window-not-started" | "opening-price-pending"
+  /** S11 review (D-227): read more than one cadence after it was posted — the Window it meant has closed. */
+  | "call-expired";
 
 /** Optional for receipts written before booked amounts and resolved market details were retained. */
 export interface XReceiptDetails {

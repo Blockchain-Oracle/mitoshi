@@ -3,7 +3,7 @@
 // before anything is reserved, a `placeFor` IOC sent self-paid from the executor key with an expiring nonce, and the
 // hash stored once signed — so a restart settles the mention from its receipt and never resends it (S11, D-227).
 import type { Address, Hex } from "viem";
-import { describeRefusal, formatBaseUnits, formatCadence, isBalanceOnlyXGrant, parseInstruction, USD_DECIMALS, X_REFUSAL_DETAILS, type XReceipt, type XRefusalCode } from "@cwf/core";
+import { describeRefusal, formatBaseUnits, formatCadence, isBalanceOnlyXGrant, parseInstruction, USD_DECIMALS, X_REFUSAL_DETAILS, xCallExpired, type XReceipt, type XRefusalCode } from "@cwf/core";
 import type { XStore } from "@cwf/db";
 import { OpsSendError, pickXWindow, preflight, readBooks, readExecutorGrant, readHoldings, runnerFillOf, sendOps, xOrder, type OpsClient, type XVenue } from "@cwf/markets/ops";
 import type { Mention } from "./transport";
@@ -36,8 +36,8 @@ const usd = (base: bigint) => `$${formatBaseUnits(base, USD_DECIMALS, { minDp: 2
 
 /**
  * One mention → one receipt. The author's live link names the account; the text parses to exactly one call or one
- * refusal; the account's EXECUTOR grant must be live, name this executor and hold the stake; the Window is the one the
- * call names. Then, live, one `placeFor` through that grant — nothing here can move the account's money anywhere but
+ * refusal; a call read more than one cadence after it was posted is too late; the account's EXECUTOR grant must be
+ * live, name this executor and hold the stake; the Window is the one the call names. Then, live, one `placeFor` through that grant — nothing here can move the account's money anywhere but
  * into a position it owns (the vault's rule), and nothing pays the executor.
  */
 export async function executeMention(ctx: ExecuteContext, mention: Mention): Promise<XReceipt> {
@@ -53,6 +53,8 @@ export async function executeMention(ctx: ExecuteContext, mention: Mention): Pro
   if (!parsed.ok) return refused(mention, "instruction-invalid", { wallet: owner, parseRefusal: parsed.reason, reason: describeRefusal(parsed.reason, parsed.token) });
   const call = parsed.instruction;
   const base: Partial<XReceipt> = { wallet: owner, side: call.side, stakeBase: call.stakeBase.toString(), asset: call.asset, intervalSec: call.intervalSec };
+  // A backlog read late (an outage, X's rate limit, a renewed session) is not placed on whichever Window trades now.
+  if (xCallExpired(mention.createdAtMs, call.intervalSec, nowMs)) return refused(mention, "call-expired", base);
 
   if (!ctx.executor) return refused(mention, "execution-unavailable", base);
   const grant = await readExecutorGrant(ctx.client, ctx.xv, owner).catch(() => undefined);

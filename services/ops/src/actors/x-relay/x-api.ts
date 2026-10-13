@@ -9,7 +9,7 @@ const API = "https://api.x.com/2";
 const TIMEOUT_MS = 10_000;
 
 interface MentionsPayload {
-  data?: Array<{ id: string; author_id?: string; text: string; created_at?: string }>;
+  data?: Array<{ id: string; author_id?: string; text: string; created_at?: string; referenced_tweets?: Array<{ type?: string }> }>;
   includes?: { users?: Array<{ id: string; username?: string }> };
 }
 
@@ -65,7 +65,7 @@ export function xApiTransport(handle: string, read: XApiAuth, post: OAuth1Creden
     authenticatedAuthorId: idOf,
     async fetchMentions(sinceId) {
       const id = await idOf();
-      const query: Record<string, string> = { max_results: sinceId === null ? "5" : "100", "tweet.fields": "author_id,created_at,text", expansions: "author_id", "user.fields": "username" };
+      const query: Record<string, string> = { max_results: sinceId === null ? "5" : "100", "tweet.fields": "author_id,created_at,text,referenced_tweets", expansions: "author_id", "user.fields": "username" };
       if (sinceId !== null && sinceId !== "0") query.since_id = sinceId;
       const response = await get(`/users/${id}/mentions`, query);
       if (!response.ok) {
@@ -77,7 +77,7 @@ export function xApiTransport(handle: string, read: XApiAuth, post: OAuth1Creden
       const handles = new Map((payload.includes?.users ?? []).map((u) => [u.id, u.username ?? null]));
       return (payload.data ?? [])
         .filter((t) => /^\d+$/.test(t.id) && typeof t.author_id === "string")
-        .map((t) => ({ id: t.id, authorId: t.author_id!, handle: handles.get(t.author_id!) ?? null, text: t.text, createdAtMs: t.created_at ? Date.parse(t.created_at) || Date.now() : Date.now() }) satisfies Mention)
+        .map((t) => ({ id: t.id, authorId: t.author_id!, handle: handles.get(t.author_id!) ?? null, text: t.text, createdAtMs: t.created_at ? Date.parse(t.created_at) || Date.now() : Date.now(), repost: t.referenced_tweets?.some((r) => r.type === "retweeted") ?? false }) satisfies Mention)
         .sort((a, b) => (BigInt(a.id) < BigInt(b.id) ? -1 : 1));
     },
     readyAtMs: () => readyAt,

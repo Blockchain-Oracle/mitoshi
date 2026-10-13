@@ -9,6 +9,11 @@ export interface Mention {
   handle: string | null;
   text: string;
   createdAtMs: number;
+  /**
+   * A repost (X's retweet) carries the original's words under a new id and its reposter as author: never a call of its
+   * own, or one call would be placed again by anyone — the author included — who reposts it (S11 review, D-227).
+   */
+  repost?: boolean;
 }
 
 export interface XTransport {

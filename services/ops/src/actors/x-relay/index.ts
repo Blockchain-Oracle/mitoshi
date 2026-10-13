@@ -78,6 +78,8 @@ export function startXRelay(deps: Pick<VenueDeps, "env" | "log" | "sql" | "bus">
         isOwnPost: (m) => m.authorId === reader?.botId,
         claim: (r) => store.claimMention(r, posting),
         receipt: (id) => store.receiptByMention(id),
+        // Owarine's gate, between mentions too: a send this pass left unknown holds the rest until recovery settles it.
+        canExecute: !dryRun && executor ? async () => (await store.unresolved(executor)).length === 0 : undefined,
         execute: (m) => executeMention({ client, xv, store, executor, dryRun, log: deps.log }, m),
         save: async (r) => {
           await store.saveReceipt(r);

@@ -27,6 +27,7 @@ export const X_REFUSAL_DETAILS: Record<XRefusalCode, string> = {
   "execution-paused": "X trading is paused.",
   "execution-unavailable": "Execution is unavailable. Check the app.",
   unconfirmed: "Not confirmed. Check the app before trying again.",
+  "call-expired": "Too late for that Window. Nothing was placed.",
 };
 
 export const X_REFUSAL_TITLES = {
@@ -34,6 +35,7 @@ export const X_REFUSAL_TITLES = {
   "window-not-started": "Window not started", "opening-price-pending": "Waiting for opening price",
   "no-window": "Window unavailable", "instruction-invalid": "Check your instruction",
   "grant-update-required": "Update X trading", "insufficient-funds": "Not enough X balance",
+  "call-expired": "Too late",
 } as const;
 
 const PARSE_REASONS: readonly XRefusalReason[] = ["empty", "no-side", "two-sides", "no-asset", "unknown-asset", "two-assets", "no-stake", "bad-stake", "two-stakes", "no-cadence", "cadence-not-listed", "two-cadences", "unknown-token"];
@@ -58,7 +60,7 @@ export function xRefusalCopy(receipt: XReceiptDetails): { title: string; detail:
 }
 
 export function xReceiptRecovery(code: XRefusalCode | null | undefined): { label: string; href: string } | null {
-  if (code && ["no-window", "market-data-unavailable", "window-entry-closed", "window-not-started", "opening-price-pending", "instruction-invalid"].includes(code)) {
+  if (code && ["no-window", "market-data-unavailable", "window-entry-closed", "window-not-started", "opening-price-pending", "instruction-invalid", "call-expired"].includes(code)) {
     return { label: "Build a call", href: "/trade-from-x#x-instruction" };
   }
   if (code === "position-limit") return { label: "Review positions", href: "/portfolio" };
