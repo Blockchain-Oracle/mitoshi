@@ -6,6 +6,15 @@
 /** The user's pinned calls (D-048), above the lanes. */
 export const CALLS_SECTION = { index: "00", title: "Your calls", desc: "" } as const;
 
+/** A pinned call as a compact chip (R4-3, D-227): the countdown, then the verdict in one word. */
+export const CALLS_CHIP = {
+  open: (asset: string, side: string) => `Your ${asset} ${side} call`,
+  settling: "Settling…",
+  win: "Won",
+  loss: "Lost",
+  void: "Void",
+} as const;
+
 export const SECTIONS = {
   lanes: { index: "01", title: "Live windows" },
   /** The reference's own §02 header, verbatim. */
@@ -16,14 +25,28 @@ export const LANE_CARD = {
   openTicket: (asset: string) => `Open the ticket for this ${asset} Window`,
   oddsLive: "LIVE ODDS",
   oddsLoading: "READING THE BOOK…",
+  /** An empty, read book (Owarine `LANE_CARD.noQuotes`; R4-3): not "reading" forever. */
+  noQuotes: "NO QUOTES YET",
   closing: "CLOSING · NEXT ROUND SOON",
+  pendingPrint: "WAITING FOR THE STARTING PRICE",
   opensAt: (clock: string) => `OPENS ${clock}`,
   /** Owarine 90a91d71 `CLOSED.kind` / `ListedCard` (O-5). */
   kind247: "24/7 · stock",
   kindCrypto: "24/7 · crypto",
-  schedule: (clock: string) => `Schedule a call · opens ${clock}`,
+  /** Owarine `ListedCard` (R4-3): the head says when it opens; the body says what a call here does, once. */
+  listedHeadline: "Rests at your price till the bell.",
+  listedAria: (asset: string) => `Schedule a call on this ${asset} Window`,
   scheduleCta: "Schedule a call",
   scheduleMeta: "your price",
+  /** Owarine `PausedCard` / `MARKETS.paused` (R4-3): a ticker the roller holds back in this lane. */
+  paused: {
+    clock: "PAUSED",
+    noSource: "Paused: no signed price",
+    corporate: "Paused: corporate action",
+    why: (asset: string, cadence: string) => `No ${cadence} ${asset} Window until a signed print can settle it.`,
+    haltWhy: (asset: string, cadence: string) => `No new ${cadence} ${asset} Window until the price is healthy.`,
+    reason: (why: string) => `Source: ${why}.`,
+  },
   priceLoading: "···",
   line: "line",
 } as const;
@@ -31,6 +54,11 @@ export const LANE_CARD = {
 export const WORD_BOARD = {
   reading: "reading the board…",
   between: "Between rounds.",
+  /** Owarine word-board states (R4-3): a closed Window, an empty book, the listed companies. */
+  kind247: "24/7",
+  unquoted: "No quotes yet",
+  open: "Open",
+  listedWhy: "Schedule a call at your price.",
   closes: (clock: string) => `closes ${clock}`,
   /** The two asks are independent contracts, so the bar is a stated derivation, never "the odds". */
   implied: (share: number) => `${share}% implied on Yes`,

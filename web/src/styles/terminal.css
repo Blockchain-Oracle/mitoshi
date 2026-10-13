@@ -43,8 +43,10 @@
 @media (min-width: 1024px) { .tm-side { min-height: 0; padding: 16px; border-left: 1px solid var(--color-hairline); background: var(--color-stage); } }
 .tm-side-list { display: none; }
 @media (min-width: 1024px) { .tm-side-list { display: flex; flex: 1; min-height: 0; flex-direction: column; gap: 12px; overflow-y: auto; } }
-@media (min-width: 1024px) { .tm-phone { display: none !important; } }
-@media (max-width: 1023px) { .tm-desk { display: none !important; } }
+/* R4-3 review (D-227): range syntax at 64rem — `useIsDesktop`'s and terminal-phone.css's threshold — so a fractional
+   1023.x px width (browser zoom) shows the phone's footer without the desk's tabs and cells beside it. */
+@media (width >= 64rem) { .tm-phone { display: none !important; } }
+@media (width < 64rem) { .tm-desk { display: none !important; } }
 
 /* ── chrome: glass chips over the chart ─────────────────────────────────────────────────────────────────────────── */
 .tm-glass {

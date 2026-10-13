@@ -60,3 +60,17 @@ export function SessionCell({ symbol, basis }: { symbol: string; basis: LaneBasi
   if (!session || !asset || minute === 0) return null;
   return <SessionCellView session={session} symbol={symbol} basis={basis} nowSec={minute * 60} />;
 }
+
+/**
+ * The session in a word for the phone's Window chip (R4-3, D-227; terminal spec gap 5): the halt's label while one
+ * holds, else the NYSE state on a Regular stock lane ("Pre-market · trades 1h 12m"); nothing for crypto or a 24/7 lane.
+ * The same stream-fed session as the cell, which shows from 1024 px.
+ */
+export function useSessionWord(symbol: string, basis: LaneBasis | null): string | null {
+  const asset = isTickerSymbol(symbol) ? laneHaltAsset(symbol, basis ?? (isStockSymbol(symbol) ? "regular" : "crypto24")) : undefined;
+  const session = useMarketSession(asset);
+  if (!session || !asset) return null;
+  if (session.halt) return haltLabel(session.halt.reason);
+  if (!isStockSymbol(symbol) || basis === "stock24") return null;
+  return sessionStateWord(session.status);
+}
