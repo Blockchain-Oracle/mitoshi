@@ -13,6 +13,10 @@
 .lp-nav-links { display: flex; align-items: center; gap: 4px; }
 .lp-nav-link { display: inline-flex; min-height: 44px; align-items: center; padding-inline: 12px; border-radius: var(--radius-full); font: 600 14px/1 var(--font-body); color: var(--color-ink); }
 .lp-nav-link:hover { background: var(--color-surface-2); }
+/* The links step aside on a phone (Markets under 640, the rest under 768): this sheet is unlayered, so the display above
+   would beat Tailwind's layered max-sm:/max-md:hidden — the rules live here. */
+@media (max-width: 639px) { .lp-nav-link--sm { display: none; } }
+@media (max-width: 767px) { .lp-nav-link--md { display: none; } }
 /* Under 375 px the seal, the theme and "Start trading" fill the row: the name steps aside (the link keeps its label). */
 @media (max-width: 374px) { .lp-brand-name { display: none; } }
 

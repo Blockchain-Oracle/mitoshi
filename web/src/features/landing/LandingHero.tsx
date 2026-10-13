@@ -37,9 +37,9 @@ export function LandingNav() {
         <span className="lp-brand-name">{BRAND.name}</span>
       </Link>
       <div className="lp-nav-links">
-        <Link href="/markets" className="lp-nav-link max-sm:hidden">{nav.markets}</Link>
-        <Link href="/how-it-works" className="lp-nav-link max-md:hidden">{nav.how}</Link>
-        <a href={DOCS_URL} className="lp-nav-link max-md:hidden">{nav.docs}</a>
+        <Link href="/markets" className="lp-nav-link lp-nav-link--sm">{nav.markets}</Link>
+        <Link href="/how-it-works" className="lp-nav-link lp-nav-link--md">{nav.how}</Link>
+        <a href={DOCS_URL} className="lp-nav-link lp-nav-link--md">{nav.docs}</a>
         <ThemeToggle />
         <Link href={START} className="kit-pill kit-pill--ink kit-pill--sm">{nav.start}</Link>
       </div>
