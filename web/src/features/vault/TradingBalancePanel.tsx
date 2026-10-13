@@ -19,6 +19,8 @@ import { ArmTradingBalance } from "@/features/session/ArmTradingBalance";
 import { spentTodayBase } from "@/features/session/caps";
 import { useRootSubmitter, useSessionActions, useSessionView } from "@/features/session/context";
 import { useNowMs } from "@/lib/clock";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { AmountField, amountProblem } from "./AmountField";
 import { LegacyBalance } from "./LegacyBalance";
 import { VAULT } from "./copy";
@@ -48,6 +50,7 @@ export function TradingBalancePanel() {
   const withdraw = useTxLifecycle({ submitter: root });
   const [text, setText] = useState("");
   const [showArm, setShowArm] = useState(false);
+  const mask = usePrivacy() ? SHELL.masked : undefined;
   // While the vault reads, the sheet shows its outline (never an empty sheet under its title, R4-4).
   if (view.status === "loading" && view.owner) return <LoadingState shape="ticket" />;
   if (!view.owner || !view.deployed || view.status === "not-passkey" || view.status === "no-wallet") return null;
@@ -60,8 +63,8 @@ export function TradingBalancePanel() {
   const wallet = sheet?.ok ? sheet.value.spendableBase : null;
   const openCost = bets?.ok ? bets.value.filter((b) => b.state === "open").reduce((s, b) => s + b.costUpBase + b.costDownBase, 0n) : null;
   const amountBase = parseDecimalToBaseUnits(text.trim(), 6) ?? 0n;
-  const inProblem = amountProblem(text, wallet, VAULT.amount.overWallet);
-  const outProblem = amountProblem(text, free, VAULT.amount.overBalance);
+  const inProblem = amountProblem(text, wallet, VAULT.amount.overWallet, mask);
+  const outProblem = amountProblem(text, free, VAULT.amount.overBalance, mask);
   // The field turns red only when neither pill can take the amount; otherwise the blocked pill is off and the hint
   // ("Account $A · Free $F") already says why.
   const problem = inProblem && outProblem ? (inProblem === outProblem ? inProblem : VAULT.amount.over) : null;

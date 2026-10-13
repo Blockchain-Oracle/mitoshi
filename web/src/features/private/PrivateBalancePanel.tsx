@@ -18,6 +18,8 @@ import { Masked, PillButton } from "@/components/kit";
 import { EmptyState, LoadingState } from "@/components/states";
 import { accountSigner } from "@/features/receipts/write-receipt";
 import { AmountField, amountProblem } from "@/features/vault/AmountField";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { useWalletSession } from "@/lib/wallet-session";
 import { PRIVATE } from "./copy";
 import { PrivateClaims } from "./PrivateClaims";
@@ -45,6 +47,7 @@ export function PrivateBalancePanel({ wallet }: { wallet: Address }) {
   const snapshot = useVaultSnapshot(wallet);
   const actions = usePrivateActions(wallet);
   const signer = accountSigner(useWalletSession().kind);
+  const hidden = usePrivacy();
   const [text, setText] = useState("");
 
   const vaultPrivate = snapshot?.ok ? (snapshot.value?.account.privateAvailableBase ?? 0n) : 0n;
@@ -71,8 +74,9 @@ export function PrivateBalancePanel({ wallet }: { wallet: Address }) {
   const budget = budgetReading?.ok ? budgetReading.value : null;
   const walletBase = sheet?.ok ? sheet.value.spendableBase : null;
   const amountBase = parseDecimalToBaseUnits(text.trim() || "0", USD_DECIMALS) ?? 0n;
-  const inProblem = amountProblem(text, walletBase, D.over);
-  const outProblem = amountProblem(text, budget?.balanceBase ?? null, D.over);
+  const mask = hidden ? SHELL.masked : undefined;
+  const inProblem = amountProblem(text, walletBase, D.over, mask);
+  const outProblem = amountProblem(text, budget?.balanceBase ?? null, D.over, mask);
   const problem = inProblem && outProblem ? inProblem : null;
   const busy = actions.busy !== null;
   const moveIn = () => {

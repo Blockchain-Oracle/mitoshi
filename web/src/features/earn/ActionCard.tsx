@@ -14,6 +14,8 @@ import { CapitalBar, PillButton } from "@/components/kit";
 import { TxCta, TxFailureCard, type SignerKind, type TxRunner } from "@/components/tx";
 import { SheetFooter } from "@/components/ui/overlay-footer";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { cn } from "@/lib/utils";
 import { AmountRow } from "./AmountRow";
 import { EARN } from "./copy";
@@ -71,6 +73,8 @@ function SupplyPanel({ sheet, writes, signedIn, signer, walletBase, onSignIn, ke
   const [amount, setAmount] = useState("");
   const { decimals, paused } = sheet;
   const wallet = walletBase ?? 0n;
+  // Privacy mode (the balance eye): the account's figure is the dots, and the chips stop being quarters of it.
+  const hidden = usePrivacy();
   const base = amountBase(amount, decimals);
   const blocker = paused
     ? supply.paused
@@ -83,7 +87,7 @@ function SupplyPanel({ sheet, writes, signedIn, signer, walletBase, onSignIn, ke
           : wallet <= 0n
             ? supply.noFunds
             : base > wallet
-              ? supply.over(money2(wallet, decimals))
+              ? supply.over(hidden ? SHELL.masked : money2(wallet, decimals))
               : null;
   const confirm = () => {
     if (!signedIn) return onSignIn(supply.signInFor(money2(base, decimals)));
@@ -96,7 +100,7 @@ function SupplyPanel({ sheet, writes, signedIn, signer, walletBase, onSignIn, ke
       <AmountRow value={amount} onChange={setAmount} maxBase={signedIn ? walletBase : null} label={supply.amount} over={supply.over} hint={supply.wallet} keypad={keypad} />
       {keypad ? null : (
         <div className="ea-quick">
-          {quickAmounts(signedIn ? wallet : 0n, decimals).map((a) => (
+          {quickAmounts(signedIn && !hidden ? wallet : 0n, decimals).map((a) => (
             <button key={a} type="button" onClick={() => setAmount(a)} aria-pressed={amount === a} className="ea-quick-chip numbers">
               {a}
             </button>
@@ -121,18 +125,20 @@ function WithdrawPanel({ sheet, words, writes, signer, held, unsettledExpired = 
     setMaxed(false);
   };
   const { decimals } = sheet;
+  const hidden = usePrivacy();
   const base = maxed ? held.idleBase : amountBase(amount, decimals);
   const shares = maxed ? held.idleShares : withdrawSharesFor(held, base);
-  const blocker = held.idleShares <= 0n ? withdraw.over(money2(0n, decimals)) : base <= 0n || shares <= 0n ? EARN.supply.enterAmount : base > held.idleBase ? withdraw.over(money2(held.idleBase, decimals)) : null;
+  const blocker = held.idleShares <= 0n ? withdraw.over(money2(0n, decimals)) : base <= 0n || shares <= 0n ? EARN.supply.enterAmount : base > held.idleBase ? withdraw.over(hidden ? SHELL.masked : money2(held.idleBase, decimals)) : null;
   const tx = writes.withdrawTx;
   const confirm = () => void writes.withdraw(shares).then((ok) => ok && type(""));
   const usd = (b: bigint) => money2(b, decimals);
+  const own = (b: bigint) => (hidden ? SHELL.masked : usd(b));
   return (
     <>
       <AmountRow value={amount} onChange={type} onMax={() => setMaxed(true)} maxBase={held.idleBase} label={withdraw.amount} over={withdraw.over} hint={withdraw.idle} keypad={keypad} />
       <CapitalBar
         label={withdraw.withdrawable}
-        format={usd}
+        format={own}
         className="ea-mini"
         segments={[
           { id: "idle", label: withdraw.withdrawable, valueBase: held.idleBase, color: "var(--ea-idle)" },

@@ -13,12 +13,13 @@ import { VAULT } from "./copy";
 const usd = (base: bigint) => `$${formatBaseUnits(base, 6, { minDp: 2, maxDp: 2 })}`;
 
 /** The one reason the amount can't go (null when it can, or when the field is empty). */
-export function amountProblem(value: string, maxBase: bigint | null, over: (held: string) => string): string | null {
+/** `mask` (privacy mode's dots) stands in for the held figure, so a refusal never prints what the account holds. */
+export function amountProblem(value: string, maxBase: bigint | null, over: (held: string) => string, mask?: string): string | null {
   if (value.trim() === "") return null;
   const base = parseDecimalToBaseUnits(value.trim(), 6);
   if (base === null) return VAULT.amount.notANumber;
   if (base === 0n) return VAULT.amount.zero;
-  if (maxBase !== null && base > maxBase) return over(usd(maxBase));
+  if (maxBase !== null && base > maxBase) return over(mask ?? usd(maxBase));
   return null;
 }
 
