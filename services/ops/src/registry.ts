@@ -23,14 +23,18 @@ import { startFundsWatch } from "./actors/funds-watch";
 import { startHouseTaker } from "./actors/house-taker";
 import { indexerRecountPass, INDEXER_RECOUNT_EVERY_MS } from "./actors/indexer-recount";
 import { referenceWriterPass, REFERENCE_WRITER_EVERY_MS } from "./actors/reference-writer";
-import { keeperDeps, launchKeeperPass, LAUNCH_KEEPER_EVERY_MS } from "./actors/launch-keeper";
+import { keeperDeps, launchKeeperPass, LAUNCH_KEEPER_EVERY_MS, type GraduateSender } from "./actors/launch-keeper";
 import { moderationPass, MODERATION_EVERY_MS } from "./actors/moderation";
+import { themeAgentPass, THEME_AGENT_EVERY_MS } from "./actors/theme-agent";
+import { createPgThemeKeys } from "@cwf/db";
+import { NETWORKS, TEMPO_RPC_HTTP } from "@cwf/core";
 import { startBridgeWatch } from "./actors/bridge-watch";
 import { startReserveWatch } from "./actors/reserve-watch";
 import { startStockSync } from "./actors/stock-sync";
 import { memeAddresses } from "@cwf/markets/launch";
 import { tempoReadClient } from "@cwf/markets";
-import { runActor, type VenueDeps } from "./runtime";
+import { createOpsClient, OpsSendError, sendOps } from "@cwf/markets/ops";
+import { roleKey, runActor, type VenueDeps } from "./runtime";
 
 export interface ActorEntry {
   start(deps: VenueDeps): Promise<unknown> | unknown;
@@ -95,14 +99,46 @@ export const ACTORS: Record<string, ActorEntry> = {
   "stock-sync": { start: (d) => startStockSync(d) },
   // Opt-in (S3 soak): house-key trades so an unattended soak exercises fills and auto-pay; never in the default set.
   "house-taker": { start: (d) => startHouseTaker(d) },
-  // Opt-in (S17b): graduates Complete memecoins. Until `tx/send.ts` is wired as its sender (D-098) it plans and
-  // simulates only (dry), from the keeper role's address.
+  // Opt-in (S17b): graduates Complete memecoins. R4-11 (D-227): its sender is `sendOps` (`sendBatch`, self-paid, an
+  // expiring nonce so it shares the `keeper` key with reference-writer safely) from `LAUNCH_KEEPER_PRIVATE_KEY`, else the
+  // `keeper` role's key; DRY_RUN / no key plans and simulates only. Add it to OPS_ACTORS to run it.
   "launch-keeper": {
     start: (d) => {
       const a = memeAddresses(d.env.network === "mainnet" ? 4217 : 42431);
-      const account = (process.env.LAUNCH_KEEPER_ADDRESS ?? a.launchpad) as `0x${string}`;
+      const key = roleKey("launch-keeper", d.env.network, process.env, d.env.keysDir) ?? roleKey("keeper", d.env.network, process.env, d.env.keysDir);
+      const ops = createOpsClient({ network: d.env.network, rpcUrl: d.env.tempoRpcUrl, privateKey: key, tier: 2 });
+      const dryRun = d.env.dryRun || !ops.address;
+      if (!ops.address) d.log("LAUNCH_KEEPER_PRIVATE_KEY / KEEPER_PRIVATE_KEY missing: planning and simulating only");
+      const account = (ops.address ?? process.env.LAUNCH_KEEPER_ADDRESS ?? a.launchpad) as `0x${string}`;
       const deps = keeperDeps(tempoReadClient(d.env.network, d.env.tempoRpcUrl), a, account);
-      return runActor({ name: "launch-keeper", log: d.log, dryRun: true, everyMs: LAUNCH_KEEPER_EVERY_MS, pass: launchKeeperPass({ deps, launchpad: a.launchpad, dryRun: true }) });
+      const sender: GraduateSender | undefined = ops.address
+        ? {
+            account: ops.address,
+            send: async (calls) => {
+              try {
+                const sent = await sendOps(ops, calls);
+                return { hash: sent.hash, status: "success" };
+              } catch (error) {
+                if (error instanceof OpsSendError && error.txHash) return { hash: error.txHash, status: "reverted" };
+                throw error;
+              }
+            },
+          }
+        : undefined;
+      return runActor({ name: "launch-keeper", log: d.log, dryRun, everyMs: LAUNCH_KEEPER_EVERY_MS, pass: launchKeeperPass({ deps, launchpad: a.launchpad, dryRun, sender }) });
+    },
+  },
+  // Opt-in (S16a, R4-11): issues each follower's theme key (sealed under THEME_KEYS_SECRET) and rebalances their wallet
+  // inside the theme's bands with it. DRY_RUN / no secret plans and says so.
+  "theme-agent": {
+    start: (d) => {
+      if (!d.sql) throw new Error("theme-agent keeps its keys in Postgres: DATABASE_URL is required");
+      const secret = process.env.THEME_KEYS_SECRET && /^[0-9a-fA-F]{64}$/.test(process.env.THEME_KEYS_SECRET) ? process.env.THEME_KEYS_SECRET : null;
+      if (!secret) d.log("THEME_KEYS_SECRET missing: no keys issued, plans only");
+      const client = tempoReadClient(d.env.network, d.env.tempoRpcUrl);
+      const rpcUrl = d.env.tempoRpcUrl || TEMPO_RPC_HTTP[d.env.network];
+      const dryRun = d.env.dryRun || !secret;
+      return runActor({ name: "theme-agent", log: d.log, dryRun, everyMs: THEME_AGENT_EVERY_MS, critical: false, pass: themeAgentPass({ client: client as never, chainId: NETWORKS[d.env.network], rpcUrl, keys: createPgThemeKeys(d.sql), secret, dryRun }) });
     },
   },
   // Opt-in (S15b): keeps StockReference fresh — RedStone pushes + the keeper session flag, signed with

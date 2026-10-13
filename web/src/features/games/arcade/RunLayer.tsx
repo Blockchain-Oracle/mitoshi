@@ -8,6 +8,8 @@
 import type { ArcadeGame } from "@cwf/core/games/arcade";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { SHARE } from "@/features/share/copy";
+import { useShareCard } from "@/features/share/useShareCard";
 import { startBgm, stopBgm } from "../audio";
 import { useGames } from "../GamesProvider";
 import { countSfx, hopCrashSfx, hopScoreSfx, milestoneSfx, regainSfx, rideCrashSfx, rideStartSfx } from "./arcade-sfx";
@@ -54,6 +56,8 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
   const [run, setRun] = useState<ArcadeRun | null>(null);
   const [hud, setHud] = useState({ score: 0, combo: 1, grip: 0 });
   const [result, setResult] = useState<StageResult | null>(null);
+  const shareRun = useRef<{ end: RunEnd; outcome: PostOutcome | null } | null>(null);
+  const shareCard = useShareCard();
   const streak = useRef(0);
   const runId = useRef(0);
   const canPause = ability !== "yes";
@@ -98,10 +102,15 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
       ];
       // A first run sets the best; only beating one is a new best (Senryo).
       const card = (outcome: PostOutcome | null): StageResult => ({ score: end.score, isBest, stats, earned: outcome?.kind === "posted" && outcome.isBest, ...noteOf(ability, outcome) });
+      shareRun.current = { end, outcome: null };
       setResult(card(null));
       setPhase("over");
       if (isBest) feedback("card-win");
-      if (ability === "yes") void post(end).then((outcome) => setResult(card(outcome)));
+      if (ability === "yes")
+        void post(end).then((outcome) => {
+          shareRun.current = { end, outcome };
+          setResult(card(outcome));
+        });
       else void refresh();
     },
     [ability, best, feedback, game, onFinished, post, refresh],
@@ -161,12 +170,20 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
     setCount(COUNT_FROM);
     setPhase("countdown");
   };
+  // The run as a share card at the tap (R4-13a's score card, carried onto this game-over): the score, a new best, where
+  // it ranked, its seed and length, a QR to the game; the native share sheet where there is one.
   const share = () => {
-    if (!result) return;
+    const run = shareRun.current;
+    if (!result || !run) return;
     const url = `${window.location.origin}/games/${game}`;
-    const text = ARCADE.stage.shareText(ARCADE.fmt(result.score), words.title);
-    if (navigator.share) void navigator.share({ title: words.title, text, url }).catch(() => undefined);
-    else void navigator.clipboard?.writeText(`${text} ${url}`).catch(() => undefined);
+    const score = ARCADE.fmt(result.score);
+    const posted = run.outcome?.kind === "posted" ? run.outcome : null;
+    void shareCard.share({
+      image: { kind: "score", game: words.title, score, best: posted?.isBest ?? result.isBest, rank: posted ? ARCADE.over.ranked(posted.rank) : null, meta: `${ARCADE.over.seed(run.end.seed)} · ${ARCADE.over.length((run.end.durationMs / 1_000).toFixed(1))}`, url },
+      fileName: `mitoshi-${game}-${Math.round(result.score)}.png`,
+      text: SHARE.scorePost(score, words.title),
+      url,
+    });
   };
   const paused = phase === "paused" || phase === "over";
   const combo = game === "line-rider" && hud.combo > 1 ? ARCADE.hud.combo(hud.combo) : null;

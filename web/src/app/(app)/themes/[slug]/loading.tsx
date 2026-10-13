@@ -1,7 +1,13 @@
-// Per-segment loading boundary (D-050): partial prefetch fetches the shell down to here, and a slow navigation is
-// never silent (ux-audit §8: zero loading.tsx before).
-import { LoadingState } from "@/components/states/LoadingState";
+// The theme page's shape while it loads (R4-11, D-227): the head, the Follow pill, the tabs' first panel.
+import "@/styles/themes.css";
+import "@/styles/launch.css";
 
 export default function Loading() {
-  return <LoadingState shape="page" />;
+  return (
+    <section className="th-page th-cockpit" aria-busy="true" aria-label="Reading the theme">
+      <div className="th-cockpit-head"><span className="lp-skel lp-skel--disc" /><span className="lp-skel lp-skel--line" /></div>
+      <span className="lp-skel lp-skel--pill" />
+      <div className="lp-chart lp-skel" />
+    </section>
+  );
 }

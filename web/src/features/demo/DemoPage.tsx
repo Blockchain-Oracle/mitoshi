@@ -1,211 +1,116 @@
-// Ported from Masayume 68f7a09:web/src/features/demo/DemoPage.tsx (itself `reference/yosuku/app/demo/page.tsx`) —
-// "the walkthrough, in place of a video": the real product, dated captures of it, and every claim a transaction anyone
-// can open. Kept section for section; every fact is Mitoshi's (`copy.ts`, `proofs.ts`), the traction line is the
-// indexer's live count, and the video slot says it is being recorded until it is (L-13).
-import { ArrowRightIcon, ChartCandlestickIcon, LogOutIcon, ScrollTextIcon, ShieldCheckIcon, SignatureIcon, SmartphoneIcon, VaultIcon } from "lucide-react";
+// Ported from Owarine 90a91d71:web/src/features/demo/DemoPage.tsx (R4-13a, D-227: its 8 Oct rebuild) — the sticker,
+// "Watch it work", one lede, the way in and the docs; the film (or its honest pending state in one line, over a dated
+// capture of the live product); four claims a judge can check, one line and one link each; live figures from the index;
+// the receipts. It renders inside the app shell with no bar of its own (one chrome, one inset: the stage pads). On
+// Mitoshi's tokens (`styles/demo.css`), so both themes read. Every link opens real evidence (`proofs.ts`, the index).
+import { ArrowRight, BadgeCheck, Fingerprint, ReceiptText, Stamp, type LucideIcon } from "lucide-react";
+import { connection } from "next/server";
 import Link from "next/link";
-import { Suspense, type ReactNode } from "react";
+import { Suspense } from "react";
+import { Sticker } from "@/components/kit/Sticker";
+import { landingBoard } from "@/features/landing/board";
+import { DOCS_URL } from "@/lib/docs-url";
+import "@/components/kit/kit.css";
 import "@/styles/demo.css";
-import "@/styles/demo-sections.css";
 import { DEMO } from "./copy";
-import { Eyebrow, Frame, Kicker, ProofLink, Reveal, Serif } from "./DemoBlocks";
-import { DemoTraction } from "./DemoTraction";
+import { DemoTraction, DemoTractionWait } from "./DemoTraction";
 import { DemoVideo } from "./DemoVideo";
-import { CONTRACT_PROOFS, contractProof, contractProofHref, PROOFS_READ_ON, TX_PROOFS, txProofHref, txProofLabel } from "./proofs";
+import { contractProof, contractProofHref, PROOFS_READ_ON, TX_PROOFS, txProofHref, txProofLabel } from "./proofs";
 
-const { sections: S } = DEMO;
 const TERMINAL = "/trade/BTC";
 
-function Cta({ href, children, primary = false }: { href: string; children: ReactNode; primary?: boolean }) {
-  return (
-    <Link href={href} className={primary ? "demo-cta" : "demo-cta ghost"}>
-      {children}
-    </Link>
-  );
+interface Claim {
+  id: keyof typeof DEMO.claims;
+  icon: LucideIcon;
+  href: string;
+  external?: boolean;
 }
 
-function TopBar() {
+function Claims({ latestProof }: { latestProof: string | null }) {
+  const claims: Claim[] = [
+    { id: "passkey", icon: Fingerprint, href: TERMINAL },
+    { id: "prints", icon: Stamp, href: contractProofHref(contractProof("prints")), external: true },
+    // The latest settled Window's proof, from the index; without the read, the verifier's own page.
+    { id: "settles", icon: ReceiptText, href: latestProof ?? contractProofHref(contractProof("prints")), external: latestProof === null },
+    { id: "recount", icon: BadgeCheck, href: "/stats" },
+  ];
   return (
-    <div className="demo-bar">
-      <div className="demo-bar-inner">
-        <div className="demo-brand">
-          {DEMO.bar.brand} <span className="demo-brand-sub">{DEMO.bar.sub}</span>
-        </div>
-        <div className="demo-bar-links">
-          <Link href="/pitch" className="demo-bar-link">{DEMO.bar.pitch}</Link>
-          <Link href={TERMINAL} className="demo-bar-open">
-            {DEMO.bar.open} <ArrowRightIcon className="demo-bar-icon" aria-hidden />
-          </Link>
-        </div>
-      </div>
+    <div className="demo-claims">
+      {claims.map(({ id, icon: Glyph, href, external }) => {
+        const c = DEMO.claims[id];
+        const body = (
+          <>
+            <span className="demo-claim-icon"><Glyph aria-hidden /></span>
+            <span className="demo-claim-title">{c.title}</span>
+            <span className="demo-claim-line">{c.line}</span>
+            <span className="demo-claim-cta">{c.cta} <ArrowRight aria-hidden /></span>
+          </>
+        );
+        return external ? (
+          <a key={id} href={href} target="_blank" rel="noreferrer" className="demo-claim">{body}</a>
+        ) : (
+          <Link key={id} href={href} className="demo-claim">{body}</Link>
+        );
+      })}
     </div>
   );
 }
 
-function Hero() {
-  return (
-    <section className="demo-hero">
-      <Eyebrow>{DEMO.hero.eyebrow}</Eyebrow>
-      <Reveal immediate>
-        <h1 className="demo-h1">
-          {DEMO.hero.headline}
-          <Serif>{DEMO.hero.headlineSerif}</Serif>
-        </h1>
-      </Reveal>
-      <div className="demo-video-label">{DEMO.hero.videoLabel}</div>
-      <Reveal immediate>
-        <DemoVideo />
-      </Reveal>
-      <Reveal immediate>
-        <p className="demo-lead">{DEMO.hero.lead}</p>
-      </Reveal>
-      <Reveal immediate className="demo-ctas">
-        <Cta href={TERMINAL} primary>
-          {DEMO.hero.open} <ArrowRightIcon className="demo-cta-icon" aria-hidden />
-        </Cta>
-        <Cta href="/pitch">{DEMO.hero.pitch}</Cta>
-      </Reveal>
-      <Suspense fallback={null}>
-        <DemoTraction />
-      </Suspense>
-    </section>
-  );
-}
-
-function Feature({ kicker, icon, headline, serif, body, link, frame, flip = false }: { kicker: string; icon: ReactNode; headline: string; serif: string; body: string; link: string; frame: ReactNode; flip?: boolean }) {
-  return (
-    <section className="demo-section">
-      <Reveal className={flip ? "demo-order-2" : undefined}>
-        <Kicker icon={icon}>{kicker}</Kicker>
-        <h2 className="demo-h2">
-          {headline}
-          <Serif>{serif}</Serif>
-        </h2>
-        <p className="demo-body">{body}</p>
-        <Link href={TERMINAL} className="demo-inline-link">
-          {link} <ArrowRightIcon className="demo-cta-icon" aria-hidden />
-        </Link>
-      </Reveal>
-      <Reveal className={flip ? "demo-order-1" : undefined}>{frame}</Reveal>
-    </section>
-  );
+async function LiveClaims() {
+  await connection();
+  const board = await landingBoard();
+  const latest = board?.settled[0]?.market ?? null;
+  return <Claims latestProof={latest ? `/proof/${latest}` : null} />;
 }
 
 export function DemoPage() {
-  const engine = contractProof("engine");
-  const prints = contractProof("prints");
-  const vault = contractProof("vault");
-
   return (
-    <div className="demo-page">
-      <TopBar />
-      <Hero />
-
-      <Feature
-        kicker={S.tap.kicker}
-        icon={<SmartphoneIcon className="demo-kicker-icon" aria-hidden />}
-        headline={S.tap.headline}
-        serif={S.tap.headlineSerif}
-        body={S.tap.body}
-        link={S.tap.link}
-        frame={<Frame src="/demo/terminal.png" alt={DEMO.frame.terminal} width={1440} height={900} />}
-      />
-      <Feature
-        flip
-        kicker={S.exits.kicker}
-        icon={<LogOutIcon className="demo-kicker-icon" aria-hidden />}
-        headline={S.exits.headline}
-        serif={S.exits.headlineSerif}
-        body={S.exits.body}
-        link={S.exits.link}
-        frame={<Frame src="/demo/position.png" alt={DEMO.frame.position} width={390} height={844} phone />}
-      />
-      <Feature
-        kicker={S.record.kicker}
-        icon={<ScrollTextIcon className="demo-kicker-icon" aria-hidden />}
-        headline={S.record.headline}
-        serif={S.record.headlineSerif}
-        body={S.record.body}
-        link={S.record.link}
-        frame={<Frame src="/demo/history.png" alt={DEMO.frame.history} width={1440} height={900} />}
-      />
-
-      <section className="demo-section single">
-        <Reveal>
-          <Kicker icon={<ChartCandlestickIcon className="demo-kicker-icon" aria-hidden />}>{S.depth.kicker}</Kicker>
-          <h2 className="demo-h2">
-            {S.depth.headline}
-            <Serif>{S.depth.headlineSerif}</Serif>
-          </h2>
-        </Reveal>
-        <div className="demo-cards">
-          {[
-            { icon: <ChartCandlestickIcon className="demo-card-icon" aria-hidden />, card: S.depth.cards.book, proof: engine },
-            { icon: <SignatureIcon className="demo-card-icon" aria-hidden />, card: S.depth.cards.prints, proof: prints },
-            { icon: <VaultIcon className="demo-card-icon" aria-hidden />, card: S.depth.cards.vault, proof: vault },
-          ].map(({ icon, card, proof }) => (
-            <Reveal key={card.title}>
-              <div className="demo-card">
-                {icon}
-                <div className="demo-card-title">{card.title}</div>
-                <div className="demo-card-body">{card.body}</div>
-                <div className="demo-card-proof">
-                  <ProofLink href={contractProofHref(proof)} label={`${S.depth.proven} · ${proof.label}`} reference={proof.address} />
-                </div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <section className="demo-section single">
-        <Reveal>
-          <Kicker icon={<ShieldCheckIcon className="demo-kicker-icon" aria-hidden />}>{S.verify.kicker}</Kicker>
-          <h2 className="demo-h2">
-            {S.verify.headline}
-            <Serif>{S.verify.headlineSerif}</Serif>
-          </h2>
-          <p className="demo-body wide">{S.verify.body}</p>
-          <p className="demo-proof-note">{S.verify.readOn(PROOFS_READ_ON)}</p>
-        </Reveal>
-        <div className="demo-proofs">
-          {TX_PROOFS.map((proof) => (
-            <Reveal key={proof.hash}>
-              <div className="demo-proof-row">
-                <ProofLink href={txProofHref(proof)} label={txProofLabel(proof)} reference={proof.hash} />
-                <p className="demo-proof-note">{proof.detail}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-        <Reveal>
-          <p className="demo-proof-note">{S.verify.contracts}</p>
-        </Reveal>
-        <div className="demo-proofs">
-          {CONTRACT_PROOFS.map((proof) => (
-            <Reveal key={proof.key}>
-              <div className="demo-proof-row">
-                <ProofLink href={contractProofHref(proof)} label={proof.label} reference={proof.address} />
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      <section className="demo-close">
-        <Reveal>
-          <h2 className="demo-close-h2">
-            {DEMO.close.headline}
-            <Serif>{DEMO.close.headlineSerif}</Serif>
-          </h2>
-          <div className="demo-close-ctas">
-            <Cta href={TERMINAL} primary>
-              {DEMO.hero.open} <ArrowRightIcon className="demo-cta-icon" aria-hidden />
-            </Cta>
-            <Cta href="/pitch">{DEMO.hero.pitch}</Cta>
+    <div className="demo">
+      <section className="demo-top">
+        <div className="demo-head">
+          <div className="demo-head-copy">
+            <Sticker tone="profit" tilt={-4} size="sm" className="w-fit">{DEMO.sticker}</Sticker>
+            <h1 className="demo-h1">{DEMO.heading}</h1>
+            <p className="demo-lede">{DEMO.lede}</p>
           </div>
-          <div className="demo-footer-line">{DEMO.close.footer}</div>
-        </Reveal>
+          <div className="flex flex-wrap gap-2">
+            <Link href={TERMINAL} className="kit-pill kit-pill--accent kit-pill--md" data-primary-action>
+              {DEMO.actions.open} <ArrowRight aria-hidden />
+            </Link>
+            <a href={DOCS_URL} className="kit-pill kit-pill--ghost kit-pill--md">{DEMO.actions.docs}</a>
+          </div>
+        </div>
+        <DemoVideo />
+      </section>
+
+      <section className="demo-block" aria-labelledby="demo-claims">
+        <h2 id="demo-claims" className="demo-h2">{DEMO.claimsTitle}</h2>
+        <Suspense fallback={<Claims latestProof={null} />}>
+          <LiveClaims />
+        </Suspense>
+      </section>
+
+      <section className="demo-block" aria-labelledby="demo-live">
+        <h2 id="demo-live" className="demo-h2">{DEMO.liveTitle}</h2>
+        <Suspense fallback={<DemoTractionWait />}>
+          <DemoTraction />
+        </Suspense>
+      </section>
+
+      <section className="demo-block" aria-labelledby="demo-receipts">
+        <div className="demo-receipts-head">
+          <h2 id="demo-receipts" className="demo-h2">{DEMO.receiptsTitle}</h2>
+          <p className="demo-note">{DEMO.receiptsOn(PROOFS_READ_ON)}</p>
+        </div>
+        <ul className="demo-receipts">
+          {TX_PROOFS.map((proof) => (
+            <li key={proof.hash}>
+              <a href={txProofHref(proof)} target="_blank" rel="noreferrer" className="demo-receipt" title={proof.detail}>
+                {txProofLabel(proof)} <ArrowRight aria-hidden />
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );

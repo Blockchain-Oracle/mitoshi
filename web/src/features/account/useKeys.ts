@@ -6,6 +6,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Address, Hex } from "@cwf/core";
 import type { KeyState } from "@cwf/markets";
+import { keyStatus } from "@cwf/markets/key-status";
 
 export interface KeysAnswer {
   keys: KeyState[];
@@ -51,4 +52,16 @@ export function useKeys(account: Address | null) {
     refetchInterval: (q) => (q.state.data && !q.state.data.coverage.complete ? 1_000 : false),
     staleTime: 15_000,
   });
+}
+
+/** The active keys the chain knows for this account (the settings row's count); null until the first answer. */
+export function useActiveKeys(account: Address | null): KeyState[] | null {
+  const q = useKeys(account);
+  if (!q.data) return null;
+  const nowSec = BigInt(Math.floor(Date.now() / 1_000));
+  return q.data.keys.filter((k) => keyStatus(k, nowSec) === "active");
+}
+
+export function useKeyCounts(account: Address | null): number | null {
+  return useActiveKeys(account)?.length ?? null;
 }

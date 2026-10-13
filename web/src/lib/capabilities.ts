@@ -19,16 +19,9 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/markets": { eyebrow: "Markets", title: "Call where a price closes", body: "Live Windows on BTC, ETH, SOL and US stocks.", dependency: engine },
   "/markets/[id]": { eyebrow: "Markets", title: "This Window", body: "One Window, its book and your position.", dependency: engine },
   "/portfolio": { eyebrow: "Portfolio", title: "Your positions, money and verdicts", body: "Your money, open calls and verdicts.", dependency: engine },
-  "/themes": { eyebrow: "Themes", title: "Baskets that rebalance themselves", body: "Baskets an agent rebalances for you.", dependency: "the theme router and agent", links: [{ href: "/themes/create", label: "Create a theme" }] },
-  "/themes/[slug]": { eyebrow: "Themes", title: "One theme", body: "Weights, rebalances, follow or unfollow.", dependency: "the theme router and agent" },
-  "/themes/create": { eyebrow: "Themes", title: "Create a theme", body: "Pick tickers, an envelope and your fee.", dependency: "the theme router and agent" },
-  "/launch": { eyebrow: "Launch", title: "Launch a token", body: "A stablecoin or a memecoin, in one confirmation.", dependency: "the launchpads", links: [{ href: "/launch/stablecoin", label: "Launch a stablecoin" }, { href: "/launch/meme", label: "Launch a memecoin" }] },
-  "/launch/stablecoin": { eyebrow: "Launch", title: "Launch a stablecoin", body: "One confirmation creates the token and its pair.", dependency: "the launch registry" },
-  "/launch/meme": { eyebrow: "Launch", title: "Launch a memecoin", body: "A bonding curve that graduates to a pool.", dependency: "the curve launchpad" },
-  "/launch/[token]": { eyebrow: "Launch", title: "One launch", body: "Curve progress, trades and holders.", dependency: "the curve launchpad" },
   "/earn": { eyebrow: "Earn", title: "Back the market makers", body: "Supply the maker vault; see results per Window.", dependency: "the maker vault" },
   "/parlay": { eyebrow: "Parlay", title: "Combine calls", body: "Several Windows on one ticket.", dependency: "the parlay reserve" },
-  "/surface": { eyebrow: "Market Surface", title: "The market's shape", body: "Term structure and depth across live Windows.", dependency: "the parlay and range products" },
+  "/surface": { eyebrow: "Market Surface", title: "Market Surface", body: "Every Window's book at a glance.", dependency: "the parlay and range products" },
   "/games": { eyebrow: "Games", title: "Play the markets", body: "Duels, Lucky, Range, Moonshot and arcade runs.", dependency: `${engine} and the games` },
   "/games/practice": { eyebrow: "Games", title: "Practice", body: "The swipe loop, no stake.", dependency: "the games" },
   "/games/range": { eyebrow: "Games", title: "Range", body: "Pick the band where price finishes.", dependency: "the range reserve" },
@@ -52,8 +45,7 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
  * one of these surfaces drops it here; `nav-items.test.ts` fails while this set and the pages disagree.
  */
 export const PENDING_ROUTES: ReadonlySet<string> = new Set([
-  "/claim", "/launch", "/launch/[token]",
-  "/launch/meme", "/launch/stablecoin", "/native-auth", "/themes", "/themes/[slug]", "/themes/create", "/trade-from-x",
+  "/claim", "/native-auth", "/trade-from-x",
 ]);
 
 /** Whether a nav destination still lands on a pending page (its path, query dropped). */

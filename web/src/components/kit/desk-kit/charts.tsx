@@ -73,7 +73,8 @@ export function RadialGauge({ value, size = 64, stroke = 6, tone, children, labe
 }
 
 /** A tiny line with a soft fill, drawn left to right; flat input draws a flat line, one point draws nothing. */
-export function Sparkline({ values, width = 96, height = 28, tone, className }: { values: readonly number[]; width?: number; height?: number; tone?: "up" | "down" | "flat"; className?: string }) {
+/** `stretch` (R4-11): the line fills a box its CSS sizes (a page-wide chart), its stroke kept unscaled. */
+export function Sparkline({ values, width = 96, height = 28, tone, className, stretch = false }: { values: readonly number[]; width?: number; height?: number; tone?: "up" | "down" | "flat"; className?: string; stretch?: boolean }) {
   if (values.length < 2) return <span className={cn("dkit-spark dkit-spark-empty", className)} style={{ width, height }} aria-hidden />;
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -85,7 +86,7 @@ export function Sparkline({ values, width = 96, height = 28, tone, className }: 
   const last = values.at(-1) ?? 0;
   const t = tone ?? (last > first ? "up" : last < first ? "down" : "flat");
   return (
-    <svg className={cn("dkit-spark", className)} data-tone={t} width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden>
+    <svg className={cn("dkit-spark", className)} data-tone={t} data-stretch={stretch ? "" : undefined} width={width} height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio={stretch ? "none" : undefined} aria-hidden>
       <path d={area} className="dkit-spark-area" />
       <path d={line} className="dkit-spark-line" pathLength={1} />
     </svg>

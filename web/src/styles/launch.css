@@ -1,0 +1,141 @@
+/* `/launch*` (S17; R4-11, D-227): the list (21st 22252's watchlist rows on Mitoshi's market rows), the 23549 progress bar,
+ * the 377 logo dropzone, the create wizards and the token page in the terminal's order. Owarine has no launchpad; its
+ * kit (pills, TextTabs, grouped rows) carries the grammar. The page adds no inset of its own — the stage pads (D-226). */
+.lp-page { display: flex; width: 100%; max-width: 48rem; flex-direction: column; gap: 16px; margin-inline: auto; }
+.lp-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.lp-head-text { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.lp-head-actions { display: flex; gap: 8px; }
+.lp-note { padding: 12px 0; font-size: 13px; color: var(--color-ink-secondary); }
+.lp-list { display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.lp-list > [role="listitem"] + [role="listitem"] { border-top: 1px solid var(--color-hairline); }
+.lp-row { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "disc id price" "disc progress progress"; align-items: center; gap: 4px 12px; min-height: 64px; padding: 10px 14px; color: var(--color-ink); }
+.lp-row::before { content: ""; position: absolute; inset: 8px auto 8px 0; width: 3px; border-radius: 9999px; background: var(--color-accent); opacity: 0; transition: opacity 140ms ease; }
+.lp-row:hover { background: var(--color-surface-2); }
+.lp-row:hover::before, .lp-row:focus-visible::before { opacity: 1; }
+.lp-row:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.lp-row > .lp-logo { grid-area: disc; }
+.lp-row-id { grid-area: id; display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.lp-row-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 600; color: var(--color-ink); }
+.lp-row-sym { font-family: var(--font-data); font-size: 12px; color: var(--color-ink-secondary); }
+.lp-row-progress { grid-area: progress; min-width: 0; }
+.lp-row-meta { font-size: 12px; color: var(--color-ink-secondary); }
+.lp-row-price { grid-area: price; justify-self: end; font-size: 14px; font-weight: 600; }
+.lp-row > .lp-spark { display: none; }
+.lp-row > .lp-chip { grid-area: price; justify-self: end; }
+@media (min-width: 640px) {
+  .lp-row { grid-template-columns: auto minmax(0, 1fr) minmax(0, 12rem) 96px 7rem; grid-template-areas: "disc id progress spark price"; }
+  .lp-row > .lp-spark { display: block; grid-area: spark; width: 96px; height: 28px; }
+}
+.lp-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border: 1px solid var(--color-hairline); border-radius: 9999px; font-size: 11px; font-weight: 600; color: var(--color-ink-secondary); white-space: nowrap; }
+.lp-chip[data-stage="graduated"] { border-color: color-mix(in srgb, var(--color-up) 40%, transparent); color: var(--color-up); }
+.lp-chip[data-stage="complete"] { border-color: color-mix(in srgb, var(--color-warning) 40%, transparent); color: var(--color-warning); }
+.lp-chip[data-side="buy"] { color: var(--color-up); }
+.lp-chip[data-side="sell"] { color: var(--color-down); }
+.lp-logo { display: grid; flex: none; place-items: center; width: 36px; height: 36px; overflow: hidden; border-radius: 9999px; background: var(--color-accent-wash); color: var(--color-accent); font-family: var(--font-heading); font-size: 13px; font-weight: 700; }
+.lp-logo[data-size="lg"] { width: 48px; height: 48px; font-size: 16px; }
+.lp-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+.pbar { display: flex; width: 100%; flex-direction: column; gap: 6px; }
+.pbar-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.pbar-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 500; color: var(--color-ink); }
+.pbar-value { flex: none; font-size: 12px; color: var(--color-ink-secondary); }
+.pbar-track { position: relative; height: 8px; overflow: hidden; border-radius: 9999px; background: var(--color-surface-2); box-shadow: inset 0 0 0 1px var(--color-hairline); }
+.pbar--compact .pbar-track { height: 6px; }
+.pbar-fill { position: absolute; inset: 0; display: block; transform-origin: left; border-radius: 9999px; background: var(--color-accent-fill); }
+.pbar[data-complete] .pbar-fill { background: var(--color-up); }
+
+.dropzone { display: flex; align-items: center; gap: 14px; }
+.dropzone-target { position: relative; display: grid; flex: none; place-items: center; width: 72px; height: 72px; overflow: hidden; border: 1px dashed var(--color-border-strong); border-radius: var(--radius-lg); background: var(--color-surface-2); color: var(--color-ink-secondary); }
+.dropzone-target[data-over] { border-color: var(--color-accent); color: var(--color-accent); }
+.dropzone-target:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.dropzone-img { width: 100%; height: 100%; object-fit: cover; }
+.dropzone-busy { position: absolute; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--color-surface-1) 70%, transparent); color: var(--color-ink); }
+.dropzone-side { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 2px; }
+.dropzone-remove { display: inline-flex; min-height: 32px; align-items: center; gap: 4px; font-size: 12px; color: var(--color-ink-secondary); }
+
+.lp-fields { display: flex; flex-direction: column; gap: 14px; }
+.lp-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.lp-field { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.lp-field > span { font-size: 12px; color: var(--color-ink-secondary); }
+.lp-field input { min-height: 44px; padding: 0 12px; border: 1px solid var(--color-hairline); border-radius: var(--radius-md); background: var(--color-surface-1); color: var(--color-ink); }
+.lp-field input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.lp-field small { font-size: 12px; color: var(--color-ink-muted); }
+.lp-templates { display: grid; gap: 10px; }
+.lp-template { display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); text-align: left; }
+.lp-template.is-on { border-color: var(--color-accent); box-shadow: inset 0 0 0 1px var(--color-accent); }
+.lp-template-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.lp-template-spark { width: 100%; height: 28px; }
+.lp-review { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: var(--radius-md); background: var(--color-surface-2); font-size: 13px; }
+.lp-review > div { display: flex; justify-content: space-between; gap: 12px; }
+.lp-review dt { flex: none; color: var(--color-ink-secondary); }
+.lp-review dd { min-width: 0; text-align: right; color: var(--color-ink); }
+.lp-mono { overflow-wrap: anywhere; font-size: 12px; }
+.lp-warn { padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--color-warning) 40%, transparent); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-warning) 8%, transparent); font-size: 13px; color: var(--color-ink); }
+.lp-wallet-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.lp-done { align-items: stretch; }
+.lp-stepper { display: flex; flex-wrap: wrap; gap: 6px; }
+.lp-stepper li { padding: 2px 10px; border: 1px solid var(--color-hairline); border-radius: 9999px; font-size: 12px; color: var(--color-ink-muted); }
+.lp-stepper li[data-done] { border-color: color-mix(in srgb, var(--color-up) 40%, transparent); color: var(--color-up); }
+
+/* Phones: the price and its move take their own line under the name, so a long name or "+12.34% since launch" never
+ * squeezes the other to a sliver at 320; from 480 they sit on the right of one row. */
+.lp-token-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "disc id icon" "price price price"; align-items: center; gap: 4px 12px; }
+.lp-token-head > .lp-logo { grid-area: disc; }
+.lp-token-head > .lp-row-id { grid-area: id; }
+.lp-token-head > .lp-icon { grid-area: icon; }
+.lp-token-price { grid-area: price; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 20px; font-weight: 700; color: var(--color-ink); }
+@media (min-width: 480px) {
+  .lp-token-head { grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "disc id price icon"; }
+  .lp-token-price { flex-direction: column; align-items: flex-end; gap: 0; }
+}
+.lp-change { font-size: 12px; font-weight: 600; color: var(--color-down); }
+.lp-change[data-up] { color: var(--color-up); }
+.lp-icon { display: grid; width: 44px; height: 44px; flex: none; place-items: center; border-radius: 9999px; color: var(--color-ink-secondary); }
+.lp-icon:hover { background: var(--color-surface-2); color: var(--color-ink); }
+.lp-chart { display: grid; min-height: 180px; place-items: center; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.lp-chart-line { width: 100%; height: 180px; }
+.lp-stage { font-size: 13px; font-weight: 600; color: var(--color-ink-secondary); }
+.lp-stage[data-stage="graduated"] { color: var(--color-up); }
+.lp-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr)); gap: 8px; }
+.lp-facts > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: var(--radius-md); background: var(--color-surface-2); }
+.lp-facts dt { font-size: 11px; color: var(--color-ink-secondary); }
+.lp-facts dd { overflow-wrap: anywhere; font-size: 14px; font-weight: 600; color: var(--color-ink); }
+.lp-action { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 0; background: var(--color-ground); }
+.lp-trades { display: flex; flex-direction: column; }
+/* A tape row: side, pathUSD, coin, trader. Phones stack pathUSD over the coin so four columns never crowd 320. */
+.lp-trade { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "side usd who" "side coin who"; align-items: center; gap: 0 10px; min-height: 44px; padding-block: 6px; border-bottom: 1px solid var(--color-hairline); font-size: 13px; }
+.lp-trade > :nth-child(1) { grid-area: side; }
+.lp-trade > :nth-child(2) { grid-area: usd; }
+.lp-trade > :nth-child(3) { grid-area: coin; font-size: 12px; }
+.lp-trade > :nth-child(4) { grid-area: who; }
+@media (min-width: 480px) {
+  .lp-trade { grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr) auto; grid-template-areas: "side usd coin who"; padding-block: 0; }
+  .lp-trade > :nth-child(3) { font-size: 13px; }
+}
+.lp-link { color: var(--color-ink-secondary); text-decoration: underline dotted; text-underline-offset: 4px; }
+.lp-holders { display: flex; flex-direction: column; gap: 6px; }
+.lp-holder { display: grid; grid-template-columns: 7rem 1fr 4rem; align-items: center; gap: 10px; min-height: 32px; font-size: 13px; }
+.lp-holder > :last-child { text-align: right; }
+.lp-holder-bar { display: block; height: 6px; overflow: hidden; border-radius: 9999px; background: var(--color-surface-2); }
+.lp-holder-bar > span { display: block; height: 100%; border-radius: 9999px; background: var(--color-accent-fill); }
+.lp-safety { display: flex; flex-direction: column; gap: 8px; padding: 4px 0; font-size: 13px; color: var(--color-ink); }
+.lp-safety li { padding-left: 14px; border-left: 2px solid var(--color-up); }
+.lp-you { display: flex; flex-direction: column; gap: 14px; padding: 4px 0; }
+.lp-you-hold { display: flex; flex-direction: column; gap: 4px; }
+.lp-skel { display: block; border-radius: var(--radius-md); background: var(--color-surface-2); animation: lp-pulse 1.4s ease-in-out infinite; }
+.lp-skel--disc { width: 48px; height: 48px; border-radius: 9999px; }
+.lp-skel--line { width: 60%; height: 14px; }
+.lp-skel--pill { height: 52px; border-radius: 9999px; }
+@keyframes lp-pulse { 50% { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) { .lp-skel { animation: none; } .lp-row::before { transition: none; } }
+
+/* The wizard's Back / Continue strip, sticky above the dock on phones (`.page-action`): it needs the ground behind it. */
+.lp-wizard .wizard-nav { padding-block: 8px; background: var(--color-ground); }
+
+/* The wizards' side card (Owarine 90a91d71 DeskStudio's StudioSide): what the coin will look like, from 1024 px. */
+.lp-studio-grid { display: grid; gap: 20px; }
+.lp-side { display: none; }
+@media (min-width: 1024px) {
+  .lp-studio-grid { grid-template-columns: minmax(0, 1fr) 16rem; align-items: start; }
+  .lp-side { position: sticky; top: var(--stage-sticky-top); display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); text-align: center; }
+}

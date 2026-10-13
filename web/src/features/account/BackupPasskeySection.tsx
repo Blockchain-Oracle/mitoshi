@@ -1,4 +1,6 @@
 "use client";
+// R4-11 (D-227): the body of the account page's "Backup passkey" sheet, as Owarine 90a91d71:web/src/features/canton-ux/
+// seat/seat.css's `.cx-link` card — a mark, a title, one sub-line, the two steps, the action and one foot line.
 // `/settings/account` → Backup passkey (S13 step 10; D-053 "passkey devices + backup-passkey prompt after the first
 // deposit"): a second passkey on another device or security key, authorised on chain as a TIP-1049 admin key of this
 // account (`key-backup`, root-signed, unsponsored), then recorded so it can sign in as the account. The nudge turns
@@ -10,6 +12,9 @@ import { useState } from "react";
 import { createWebAuthnCredential } from "viem/account-abstraction";
 import { getAddress, keccak256, type Hex } from "viem";
 import { useTxLifecycle } from "@/components/tx";
+import { PillButton } from "@/components/kit";
+import { StepProgress } from "@/components/kit/desk-kit";
+import { cn } from "@/lib/utils";
 import { diagnosisCopy } from "@/lib/copy";
 import { notify } from "@/lib/toast";
 import { BACKUP } from "./backup-copy";
@@ -89,35 +94,38 @@ export function BackupPasskeySection({ hasMoney, className }: { hasMoney: boolea
   if (q.isPending || !data) return null;
   const passkey = data.credentialId !== null;
   const nudge = passkey && hasMoney && data.backups.length === 0;
+  const step = created ? 2 : 1;
   return (
-    <section id="backup" aria-labelledby="backup-title" className={className}>
-      <h2 id="backup-title" className="flex items-center gap-2 type-title text-ink"><KeyRound aria-hidden className="size-5" />{BACKUP.title}</h2>
-      {!passkey ? <p className="type-body text-ink-secondary">{BACKUP.passkeyOnly}</p> : (
+    <section id="backup" aria-label={BACKUP.title} className={cn("cx-link", className)}>
+      <div className="cx-link-head">
+        <span aria-hidden className="cx-link-mark"><KeyRound /></span>
+        <span className="cx-link-title">{BACKUP.title}</span>
+        <span className="cx-link-sub">{!passkey ? BACKUP.passkeyOnly : data.backups.some((b) => b.credentialId === data.credentialId) ? BACKUP.viaBackup : BACKUP.lead}</span>
+      </div>
+      {!passkey ? null : (
         <>
-          {nudge ? <p role="status" className="flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 p-3 type-body text-ink"><ShieldAlert aria-hidden className="mt-0.5 size-4 flex-none text-warning" />{BACKUP.nudge}</p> : null}
-          {data.backups.some((b) => b.credentialId === data.credentialId) ? <p role="status" className="type-body-strong text-ink">{BACKUP.viaBackup}</p> : null}
-          <p className="type-body text-ink-secondary">{BACKUP.lead}</p>
-          {data.backups.length === 0 ? <p className="type-body text-ink">{BACKUP.none}</p> : (
-            <ul className="flex flex-col divide-y divide-hairline">
+          {nudge ? <p role="status" className="cx-link-nudge"><ShieldAlert aria-hidden className="size-4 flex-none" />{BACKUP.nudge}</p> : null}
+          {data.backups.length > 0 ? (
+            <ul className="cx-link-list">
               {data.backups.map((b) => (
-                <li key={b.credentialId} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <li key={b.credentialId}>
                   <span className="type-body-strong text-ink">{b.name ?? BACKUP.name}</span>
                   <span className="numbers type-caption text-ink-secondary">{b.keyId.slice(0, 10)}… · {BACKUP.added(new Date(b.createdAt).toLocaleDateString())}</span>
                 </li>
               ))}
             </ul>
-          )}
-          <p className="type-caption text-ink-secondary">{BACKUP.how}</p>
-          <p className="type-caption text-ink-secondary">{BACKUP.fee}</p>
-          {error && phase === "idle" ? <p role="alert" className="type-body text-warning">{error}</p> : null}
+          ) : null}
+          <StepProgress steps={BACKUP.steps.map((label) => ({ label }))} current={step} onPick={() => undefined} label={BACKUP.title} />
+          {error && phase === "idle" ? <p role="alert" className="type-caption text-warning">{error}</p> : null}
           {phase !== "idle" ? <p role="status" className="type-body text-ink-secondary">{BACKUP[phase]}</p> : created ? (
-            <div className="flex flex-col items-start gap-2">
+            <>
               <p className="type-body text-ink">{BACKUP.step2}</p>
-              <button type="button" onClick={() => void authorise()} className="min-h-touch rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{BACKUP.confirm}</button>
-            </div>
+              <PillButton tone="accent" block onClick={() => void authorise()}>{BACKUP.confirm}</PillButton>
+            </>
           ) : (
-            <button type="button" onClick={() => void create()} className="min-h-touch self-start rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{BACKUP.add}</button>
+            <PillButton tone="accent" block onClick={() => void create()}>{BACKUP.add}</PillButton>
           )}
+          <p className="cx-link-foot">{BACKUP.fee} {BACKUP.how}</p>
         </>
       )}
     </section>

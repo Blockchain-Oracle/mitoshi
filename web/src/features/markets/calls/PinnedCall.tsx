@@ -51,7 +51,7 @@ export function PinnedCall({ wallet, call, onDismiss }: { wallet: Address; call:
   }
   return (
     <div className="flex flex-col gap-2">
-      <CallCard card={{ asset: call.asset, side: call.side, lineRaw: opening?.ok ? opening.value : null, stakeBase: call.costBase, contractsRaw: call.contractsRaw, decimals: call.decimals, tradingStartSec: call.tradingStartSec, expirySec: call.expirySec, txHash: call.txHash, placedAtMs: call.placedAtMs, resting: call.resting }} />
+      <CallCard card={{ asset: call.asset, intervalSec: call.intervalSec, side: call.side, lineRaw: opening?.ok ? opening.value : null, stakeBase: call.costBase, contractsRaw: call.contractsRaw, decimals: call.decimals, tradingStartSec: call.tradingStartSec, expirySec: call.expirySec, txHash: call.txHash, placedAtMs: call.placedAtMs, resting: call.resting }} />
       {view?.phase === "settling" ? (
         <p className="type-body text-ink-secondary" role="status"><span className="type-body-strong text-ink">{CALL.settling}</span> {VERDICT_UI.settling}</p>
       ) : null}

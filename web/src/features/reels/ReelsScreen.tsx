@@ -3,21 +3,30 @@
 // `app/reels`) — a full-screen vertical snap feed of live Windows and people's takes, woven market, take, market…
 // Native scroll-snap, not drag physics; from 21st 23559 (snap carousel) each card is a labelled slide ("3 of 18"), the
 // position is announced, ↑/↓ move a card and desktop gets visible previous/next buttons. The Take button opens the
-// composer bound to the Window on screen (UX fix 10). Agari's holding and desk cards have no Mitoshi counterpart yet.
+// composer bound to the Window on screen (UX fix 10). R4-11 (D-227): off-hours the closed-session card leads, and a
+// copied agent's latest traded Window is woven in once (Owarine 90a91d71's desk card).
 // R4-2 (D-227): the open composer is `?d=take`, so Back closes it instead of leaving the feed with a half-typed take.
-import { useLanes } from "@cwf/markets/react";
+import { useLanes, useLatestThemeRebalance } from "@cwf/markets/react";
 import { ChevronDown, ChevronUp, Feather } from "lucide-react";
 import { useDeferredValue, useMemo, useRef, useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { TakeComposer } from "@/features/social/TakesPanel";
 import { useTakes } from "@/features/social/useTakes";
+import { useMarketSession } from "@/features/markets/session";
+import type { StrategyDetailPayload } from "@/features/strategies/protocol";
+import { useMyStrategies } from "@/features/strategies/useStrategies";
+import { useWalletSession } from "@/lib/wallet-session";
+import { useQuery } from "@tanstack/react-query";
 import { useNowMs } from "@/lib/clock";
+import { useSessionPhrase } from "@/lib/when";
 import { closeDrawer, openDrawer, useOpenDrawerName } from "@/lib/drawer-param";
 import { REELS } from "./copy";
 import { ReelCard } from "./ReelCard";
 import { ReelHolding } from "./ReelHolding";
 import { isClosing, useReelRounds } from "./rounds";
+import { StrategyReelCard, type StrategyReelDecision } from "./StrategyReelCard";
 import { TakeReelCard } from "./TakeReelCard";
+import { ThemeReelCard } from "./ThemeReelCard";
 import { useActiveReel } from "./useActiveReel";
 import { useReelPosition } from "./useReelPosition";
 import { reelKey, weaveReel, type ReelItem } from "./weave";
@@ -45,12 +54,22 @@ export function ReelsScreen() {
   const rounds = useReelRounds(laneSet, nowMs);
   const feed = useTakes({});
   const takes = useMemo(() => feed.takes.filter((t) => !t.local), [feed.takes]);
-  const reel = useMemo(() => weaveReel(rounds, takes), [rounds, takes]);
+  const agent = useCopiedAgentDecision();
+  const { address } = useWalletSession();
+  const latest = useLatestThemeRebalance(address);
+  const themeItem = latest?.ok ? latest.value : null;
+  const reel = useMemo(() => weaveReel(rounds, takes, agent, themeItem), [rounds, takes, agent, themeItem]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [scrolled, setScrolled] = useState(false);
   const composing = useOpenDrawerName() === TAKE_DRAWER;
+  // Off-hours the reel still carries crypto and the takes, so the closed card leads it rather than replacing it (Ported
+  // from Owarine 90a91d71:web/src/features/markets/reels/ReelsScreen.tsx, R4-11): read when stocks open, then swipe on.
+  const session = useMarketSession();
+  const phrase = useSessionPhrase();
+  const closedLine = session && !session.open && nowMs > 0 ? REELS.sessionClosed(phrase(session.status, Math.floor(nowMs / 1000))) : null;
+  const leading = closedLine !== null && reel.length > 0 ? 1 : 0;
   const { register, isNear, activeIndex } = useActiveReel(scrollRef, reel.length);
-  useReelPosition(scrollRef, reel, activeIndex);
+  useReelPosition(scrollRef, reel, activeIndex, leading);
   const minuteMs = Math.floor(nowMs / MINUTE_MS) * MINUTE_MS;
   const target = windowFor(reel, activeIndex);
   const step = (dir: 1 | -1) => scrollRef.current?.scrollBy({ top: dir * scrollRef.current.clientHeight, behavior: "smooth" });
@@ -61,17 +80,24 @@ export function ReelsScreen() {
         {lanes === null || nowMs === 0 ? (
           <ReelHolding>{REELS.reading}</ReelHolding>
         ) : reel.length === 0 ? (
-          <ReelHolding>{lanes.ok ? REELS.betweenRounds : REELS.readFailed}</ReelHolding>
+          <ReelHolding>{closedLine ?? (lanes.ok ? REELS.betweenRounds : REELS.readFailed)}</ReelHolding>
         ) : (
-          reel.map((item, index) => (
+          <>
+          {closedLine !== null ? <ReelHolding>{closedLine}</ReelHolding> : null}
+          {reel.map((item, index) => (
             <section key={reelKey(item)} ref={register(index)} role="group" aria-roledescription="slide" aria-label={REELS.card(index + 1, reel.length)} className="feed-card reel-slot">
               {item.kind === "market" ? (
                 <ReelCard market={item.market} near={isNear(index)} closing={isClosing(item.market, nowMs)} />
-              ) : (
+              ) : item.kind === "take" ? (
                 <TakeReelCard take={item.take} nowMs={minuteMs} />
+              ) : item.kind === "agent" ? (
+                <StrategyReelCard item={item.agent} nowMs={minuteMs} />
+              ) : (
+                <ThemeReelCard item={item.theme} />
               )}
             </section>
-          ))
+          ))}
+          </>
         )}
       </div>
       <span id="reel-keys" className="sr-only">{REELS.keys}</span>
@@ -92,7 +118,7 @@ export function ReelsScreen() {
           {/* Nothing else says this is a snap scroll; a viewer who never swipes would think one card is the app. */}
           <div aria-hidden className="reel-hint" data-scrolled={scrolled}>
             <ChevronUp size={20} strokeWidth={3} className="reel-hint-arrow" />
-            <span className="reel-hint-pill">{REELS.swipeHint}</span>
+            <span className="reel-hint-pill">{closedLine !== null ? REELS.swipeTakes : REELS.swipeHint}</span>
           </div>
         </>
       ) : null}
@@ -103,4 +129,25 @@ export function ReelsScreen() {
       ) : null}
     </div>
   );
+}
+
+/** The latest Window a copied agent traded (its runner's record), for the reel's agent card; null without one. */
+function useCopiedAgentDecision(): StrategyReelDecision | null {
+  const { address } = useWalletSession();
+  const mine = useMyStrategies(address);
+  const strategyId = mine.data?.subscriptions.find((s) => s.active)?.strategyId ?? null;
+  const detail = useQuery({
+    queryKey: ["cwf", "strategies", "detail", strategyId],
+    enabled: strategyId !== null,
+    queryFn: async (): Promise<StrategyDetailPayload | null> => {
+      const res = await fetch(`/api/strategies/${strategyId}`, { cache: "no-store" });
+      return res.ok ? ((await res.json()) as StrategyDetailPayload) : null;
+    },
+    staleTime: 60_000,
+  });
+  return useMemo(() => {
+    const d = detail.data;
+    const notable = d?.decisions.find((x) => x.gate === "trade");
+    return d && notable ? { strategyId: d.strategy.strategyId, name: d.strategy.name, decision: notable } : null;
+  }, [detail.data]);
 }

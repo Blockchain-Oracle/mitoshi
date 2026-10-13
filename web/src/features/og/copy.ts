@@ -32,4 +32,27 @@ export const OG_COPY = {
     /** The index was slow or down when the card was drawn: say what the page holds, not that the Window is missing. */
     unread: "Both signed prints and its verdict, re-verifiable in your browser.",
   },
+  /** `/u/<address>` (R4-13a, D-227): the wallet's settled record, as its profile shows it. */
+  profile: {
+    alt: "A Mitoshi trader's record: settled Windows, win rate and P&L.",
+    eyebrow: "Record",
+    pnl: "P&L, settled",
+    record: (rounds: number, winRatePct: number) => `${rounds} Window${rounds === 1 ? "" : "s"} settled · ${winRatePct}% won`,
+    rank: (rank: number, of: number) => `#${rank} of ${of} on the board`,
+    none: "No settled Window yet.",
+    house: "A house key: it makes markets, so it has no record.",
+    invalid: "Not a wallet address.",
+    unread: "Its record, every Window with its proof.",
+  },
+  /** `/agents/<id>` (R4-13a, D-227): the agent's name and its settled record, as its page shows it. */
+  agent: {
+    alt: "A Mitoshi agent: its name, its settled record and its copiers.",
+    eyebrow: (id: string | null) => (id ? `Agent #${id}` : "Agent"),
+    net: "P&L, settled",
+    record: (settled: number, wins: number, losses: number) => `${settled} settled trade${settled === 1 ? "" : "s"} · ${wins} won · ${losses} lost`,
+    copiers: (n: number) => `${n} copier${n === 1 ? "" : "s"}`,
+    none: "No settled trades yet.",
+    invalid: "Not an agent link.",
+    unread: "Its record, decisions and feedback.",
+  },
 } as const;

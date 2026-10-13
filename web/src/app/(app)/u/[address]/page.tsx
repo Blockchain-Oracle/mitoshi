@@ -4,7 +4,7 @@ import { isAddress } from "viem";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { LoadingState } from "@/components/states/LoadingState";
+import { ProfileLoading } from "@/features/profile/ProfileLoading";
 import { ProfileScreen } from "@/features/profile/ProfileScreen";
 
 type Params = Promise<{ address: string }>;
@@ -22,7 +22,7 @@ async function Profile({ params }: { params: Params }) {
 
 export default function Page({ params }: { params: Params }) {
   return (
-    <Suspense fallback={<LoadingState shape="plate" label="Reading the record" />}>
+    <Suspense fallback={<ProfileLoading />}>
       <Profile params={params} />
     </Suspense>
   );

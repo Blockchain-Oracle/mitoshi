@@ -1,7 +1,11 @@
-// Ported from Masayume 68f7a09:web/src/components/shell/CapabilityPending.tsx
+// Ported from Masayume 68f7a09:web/src/components/shell/CapabilityPending.tsx; the meta line and the way out ported from
+// Owarine 90a91d71:web/src/components/shell/CapabilityPending.tsx (R4-11, D-227).
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { pendingFor } from "@/lib/capabilities";
+
+/** Where a pending surface sends the reader meanwhile: the live venue, never a blank page (Owarine D-083). */
+export const CAPABILITY_NEXT = { label: "Make a call on the markets", href: "/markets" } as const;
 
 /**
  * The honest state for a route whose capability is not connected yet. Loading and unavailable are valid product
@@ -14,6 +18,8 @@ export function CapabilityPending({ eyebrow, title, children, dependency }: { ey
       <p className="cp-eyebrow">{eyebrow}</p>
       <h1 className="cp-title">{title}</h1>
       <div className="cp-body">{children}</div>
+      <p className="cp-meta">Not connected yet · waiting on {dependency}</p>
+      <Link href={CAPABILITY_NEXT.href} className="cp-action">{CAPABILITY_NEXT.label} →</Link>
     </section>
   );
 }

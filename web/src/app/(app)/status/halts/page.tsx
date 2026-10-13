@@ -4,11 +4,9 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { LoadingState } from "@/components/states";
 import { HaltsBoard } from "@/features/halts/HaltsBoard";
 import { readHaltsBoard } from "@/features/halts/board.server";
-import { HALTS } from "@/features/halts/copy";
-import "@/styles/status.css";
+import { HaltsReading } from "@/features/halts/HaltsLoading";
 
 export const metadata: Metadata = { title: "Trading halts" };
 
@@ -20,7 +18,7 @@ async function Board() {
 export default function Page() {
   return (
     <div className="container status-page">
-      <Suspense fallback={<LoadingState shape="hero" label={HALTS.reading} />}>
+      <Suspense fallback={<HaltsReading />}>
         <Board />
       </Suspense>
     </div>

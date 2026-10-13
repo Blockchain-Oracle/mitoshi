@@ -15,6 +15,11 @@ import { TX } from "./copy";
 
 export type SignerKind = "passkey" | "access-key" | "session-key" | "injected";
 
+/** The CTA's signer from the session's account kind: a passkey signs as one, anything else is a browser wallet. */
+export function signerOfKind(kind: string | null): SignerKind {
+  return kind === "passkey" ? "passkey" : "injected";
+}
+
 export function signingLabel(signer: SignerKind): string {
   return signer === "passkey" ? TX.signingPasskey : signer === "injected" ? TX.signingWallet : TX.signingKey;
 }

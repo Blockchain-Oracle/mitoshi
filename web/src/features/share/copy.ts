@@ -13,7 +13,20 @@ export const SHARE = {
   retry: "Try again",
   download: { idle: "Download", preparing: "Preparing…", saving: "Saving…", retry: "Retry" },
   onX: "Share on X",
-  masked: "Amounts are hidden. Show them (the eye in the top line) to share this card.",
+  /** R4-13a (D-227): the eye is hidden on phones, so the sheet carries its own "Show" (bug 14). */
+  masked: "Amounts are hidden.",
+  show: "Show",
+  /** The Share pill on a call, a verdict and a receipt (R4-13a, Owarine's ShareCallButton / ShareTradeButton). */
+  pill: "Share",
+  rendering: "Drawing…",
+  savedAttach: "Card saved. Attach it to your post on X",
+  renderFailed: "Couldn't draw the card.",
+  /** The pre-filled posts: real figures only; a call is framed as live, a verdict names its signed close. */
+  callPost: (band: string, cadence: string, stake: string, toWin: string, closes: string) => `My call: ${band.toLowerCase()}${cadence ? ` (${cadence} Window)` : ""}. Staked ${stake} to win ${toWin}, settles ${closes} on Tempo testnet. Will it land?`,
+  signedBy: (who: string) => `Signed by ${who}`,
+  /** An arcade run's post (Ported from Senryo:features/games/arcade/ArcadeScreen.tsx's share line). */
+  scorePost: (score: string, game: string) => `I scored ${score} on ${game} at Mitoshi. Beat it:`,
+  verdictPost: (call: string, outcome: "win" | "loss" | "void") => `${call}: ${outcome === "win" ? "won" : outcome === "loss" ? "lost" : "voided, stake returned"} on Mitoshi. Signed close, checkable:`,
   /** Tradash's post tiers, in dollars. */
   post: (asset: string, side: "up" | "down", pnl: string, roiPct: number, positive: boolean) => {
     const dir = side === "up" ? "Up" : "Down";

@@ -1,116 +1,121 @@
 "use client";
-// `/settings/account`, the trust surface (D-053) — S1's shell: the account and its owner, every key the chain knows
-// with its live limits and one-step revoke, where Trading Balance grants will appear (S7), linked wallets and the
-// region posture. S4 adds the wallet key, S7 the Trading Balance grants, S9/S11/S12b/S16 their keys; S13 completes it.
-import { useEffect, useState } from "react";
+// `/settings/account`, the trust surface (D-053), on Owarine's settings grammar (R4-11, D-227) — ported from Owarine
+// 90a91d71:web/src/features/terminal/ui/sheets/AccountSheet.tsx (avatar and name, one facts block, then grouped 48 px
+// rows whose drill-ins open a sheet) and features/canton-ux/seat/SeatAccountMenu.tsx (the facts as one recessed `dl`).
+// The head reuses the account menu's `am-head` / `am-rows`; a summary strip holds "Stop all" in the first fold; each
+// SECURITY or DATA row opens a SlideOver (a bottom sheet on phones) whose body is the section it used to be inline.
+import { useEffect, useState, type ReactNode } from "react";
+import { Bell, Download, KeyRound, Link2, ShieldCheck, Trash2, Wallet } from "lucide-react";
 import { useBalanceSheet } from "@cwf/markets/react";
-import type { RegionPosture } from "@cwf/core";
+import type { Address, RegionPosture } from "@cwf/core";
+import { GroupedItem, GroupedList, PillButton, SlideOver, SlideOverContent } from "@/components/kit";
 import { webEnv } from "@/lib/env";
 import { readRegionPosture } from "@/lib/region-mark";
 import { useWalletSession } from "@/lib/wallet-session";
-import { ACCOUNT } from "@/providers/wallet/copy";
 import { shortAddress } from "@/providers/wallet/format";
-import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
-import { ACCOUNT_PAGE } from "./copy";
+import { useWalletShell, type TempoAccountKind } from "@/providers/wallet/wallet-shell-context";
 import { useDataReady } from "@/providers/data/context";
-import { FeedbackSection } from "./FeedbackSection";
-import dynamic from "next/dynamic";
+import { AccountHero, AccountSummary } from "./AccountSummary";
+import { BackupPasskeySection } from "./BackupPasskeySection";
+import { BACKUP } from "./backup-copy";
+import { ACCOUNT_PAGE } from "./copy";
+import { DATA } from "./data-copy";
+import { AiSharingRow, DeleteSheetBody, useDataExport } from "./DataSection";
+import { FeedbackRows } from "./FeedbackSection";
+import { GrantsSection, useGrantCounts } from "./GrantsSection";
+import { KeysSection } from "./KeysSection";
+import { useKeyCounts } from "./useKeys";
+import { useBackupCount, useBackupNeeded } from "./useBackupNeeded";
+import "@/styles/account.css";
 
 const P = ACCOUNT_PAGE;
-
-// The keys list (its revoke flow, segmented control, hold-to-confirm and motion) is a lazy island: its content waits on
-// `/api/keys` anyway, so it loads in parallel with that read instead of in the page's first load (§3.1).
-function KeysLoading() {
-  return (
-    <div aria-busy="true" aria-label={P.keys.loading} className="flex flex-col gap-3">
-      <h2 className="type-title text-ink">{P.keys.title}</h2>
-      {[0, 1, 2].map((i) => <div key={i} className="h-3 w-10/12 animate-pulse rounded-sm bg-surface-2 motion-reduce:animate-none" />)}
-    </div>
-  );
-}
-const KeysSection = dynamic(() => import("./KeysSection").then((m) => m.KeysSection), { ssr: false, loading: KeysLoading });
-// The Trading Balance's grants (S7): the same lazy-island rule — its content waits on the chain and the index anyway.
-const GrantsSection = dynamic(() => import("./GrantsSection").then((m) => m.GrantsSection), { ssr: false });
-const DataSection = dynamic(() => import("./DataSection").then((m) => m.DataSection), { ssr: false });
-const BackupPasskeySection = dynamic(() => import("./BackupPasskeySection").then((m) => m.BackupPasskeySection), { ssr: false });
-const card = "flex flex-col gap-2 rounded-lg border border-hairline bg-surface-1 p-4";
+type Drill = "backup" | "keys" | "grants" | "linked" | "delete";
 
 export function AccountSettings() {
   const session = useWalletSession();
-  const shell = useWalletShell();
-  const network = webEnv.markets.network;
-  const dataReady = useDataReady();
   const [posture, setPosture] = useState<RegionPosture | null>(null);
   useEffect(() => setPosture(readRegionPosture()), []);
   const held = posture ? (Object.keys(P.region.pillar) as (keyof typeof P.region.pillar)[]).filter((p) => posture[p] === "restricted") : [];
 
   return (
-    <section className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-gutter py-8 lg:px-gutter-desktop">
-      {/* Masayume's page heading (eyebrow + title) lives under `.capability-pending`; its box rules are reset here. */}
-      <header className="capability-pending m-0! flex max-w-none! flex-col gap-2 p-0!">
-        <p className="cp-eyebrow">{P.eyebrow}</p>
-        <h1 className="cp-title">{P.title}</h1>
-      </header>
-
+    <section className="acct-page">
+      <h1 className="type-display text-ink">{P.title}</h1>
       {!session.address ? (
-        <div className={card}>
+        <div className="acct-signed-out">
           <p className="type-body text-ink-secondary">{P.signedOut}</p>
-          <button type="button" onClick={session.connect} className="min-h-touch self-start rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{P.signIn}</button>
+          <PillButton tone="accent" onClick={session.connect}>{P.signIn}</PillButton>
         </div>
       ) : (
-        <>
-          <section aria-labelledby="acct-title" className={card}>
-            <h2 id="acct-title" className="type-title text-ink">{P.account.title}</h2>
-            <dl className="grid grid-cols-1 gap-1 type-body sm:grid-cols-[auto_1fr] sm:gap-x-4">
-              <dt className="text-ink-secondary">{P.account.address}</dt>
-              <dd className="numbers min-w-0 break-all text-ink">{session.address}</dd>
-              <dt className="text-ink-secondary">{P.account.signIn}</dt>
-              <dd className="text-ink">{session.kind ? ACCOUNT.kinds[session.kind] : "—"}</dd>
-            </dl>
-            <p className="type-caption text-ink-secondary">{session.kind === "passkey" ? P.account.passkeyNote : P.account.walletNote}</p>
-          </section>
-
-          {dataReady ? <BackupPasskeyMount address={session.address} className={card} /> : null}
-
-          {dataReady ? <KeysSection account={session.address} network={network} /> : <KeysLoading />}
-
-          {dataReady ? (
-            <GrantsSection account={session.address} network={network} />
-          ) : (
-            <section aria-labelledby="grants-title" className={card} aria-busy="true">
-              <h2 id="grants-title" className="type-title text-ink">{P.grants.title}</h2>
-              <p className="type-body text-ink-secondary">{P.grants.loading}</p>
-            </section>
-          )}
-
-          <section aria-labelledby="linked-title" className={card}>
-            <h2 id="linked-title" className="type-title text-ink">{P.linked.title}</h2>
-            <div className="flex flex-wrap items-center justify-between gap-2 type-body">
-              <span className="text-ink-secondary">{P.linked.robinhood}</span>
-              {shell.robinhood ? (
-                <span className="numbers text-ink">{shortAddress(shell.robinhood.address)}</span>
-              ) : (
-                <button type="button" onClick={() => shell.openPicker("robinhood")} className="min-h-touch rounded-md border border-border-strong px-4 type-body-strong text-ink">{P.linked.link}</button>
-              )}
-            </div>
-          </section>
-
-          <DataSection address={session.address} className={card} />
-        </>
+        <SignedIn address={session.address} kind={session.kind} />
       )}
-
-      <FeedbackSection className={card} />
-
-      <section aria-labelledby="region-title" className={card}>
-        <h2 id="region-title" className="type-title text-ink">{P.region.title}</h2>
-        <p className="type-body text-ink-secondary">{posture === null ? "—" : held.length === 0 ? P.region.open : P.region.restricted(held.map((p) => P.region.pillar[p]).join(", "))}</p>
-      </section>
+      <GroupedList title={P.groups.device}>
+        <FeedbackRows />
+        <GroupedItem icon={Bell} label={P.notifications} href="/settings/notifications" />
+      </GroupedList>
+      <GroupedList title={P.groups.region}>
+        <div className="kit-item">
+          <span className="kit-item-label">{P.region.title}</span>
+          <span className="kit-item-detail">{posture === null ? "—" : held.length === 0 ? P.region.open : P.region.restricted(held.map((p) => P.region.pillar[p]).join(", "))}</span>
+        </div>
+      </GroupedList>
     </section>
   );
 }
 
-/** The backup passkey's nudge follows the first deposit (D-053): money on the account, and only one passkey. */
-function BackupPasskeyMount({ address, className }: { address: `0x${string}`; className: string }) {
+function SignedIn({ address, kind }: { address: Address; kind: TempoAccountKind | null }) {
+  const shell = useWalletShell();
+  const network = webEnv.markets.network;
+  const ready = useDataReady();
+  const [drill, setDrill] = useState<Drill | null>(null);
+  const keys = useKeyCounts(address);
+  const grants = useGrantCounts(address);
   const sheet = useBalanceSheet(address);
-  return <BackupPasskeySection hasMoney={sheet?.ok === true && sheet.value.spendableBase > 0n} className={className} />;
+  const hasMoney = sheet?.ok === true && sheet.value.spendableBase > 0n;
+  const exportData = useDataExport();
+  const backups = useBackupCount(kind === "passkey");
+  const nudge = useBackupNeeded(kind === "passkey", hasMoney);
+  const close = (open: boolean) => (open ? undefined : setDrill(null));
+  const titles: Record<Drill, string> = { backup: BACKUP.title, keys: P.keys.title, grants: P.grants.title, linked: P.linked.title, delete: DATA.delete.title };
+
+  return (
+    <>
+      <AccountHero address={address} kind={kind} />
+      {ready ? <AccountSummary account={address} /> : null}
+      <GroupedList title={P.groups.security}>
+        <GroupedItem icon={ShieldCheck} label={BACKUP.title} detail={kind !== "passkey" ? "—" : backups === null ? "…" : backups === 0 ? BACKUP.noneShort : String(backups)} dot={nudge} onClick={() => setDrill("backup")} />
+        <GroupedItem icon={KeyRound} label={P.keys.title} detail={keys === null ? "…" : String(keys)} onClick={() => setDrill("keys")} />
+        <GroupedItem icon={Wallet} label={P.grants.title} detail={grants === null ? "…" : String(grants)} onClick={() => setDrill("grants")} />
+        <GroupedItem icon={Link2} label={P.linked.title} detail={shell.robinhood ? shortAddress(shell.robinhood.address) : P.linked.none} onClick={() => setDrill("linked")} />
+      </GroupedList>
+      <GroupedList title={P.groups.data}>
+        <AiSharingRow />
+        <GroupedItem icon={Download} label={DATA.export.title} detail={exportData.working ? DATA.export.working : DATA.export.body} onClick={() => void exportData.run()} />
+        <GroupedItem icon={Trash2} label={DATA.delete.title} tone="danger" onClick={() => setDrill("delete")} />
+      </GroupedList>
+
+      <SlideOver open={drill !== null} onOpenChange={close}>
+        <SlideOverContent title={drill ? titles[drill] : ""} size={drill === "keys" || drill === "grants" ? "lg" : "md"} fields={drill === "delete"}>
+          {drill === "backup" ? <BackupPasskeySection hasMoney={hasMoney} /> : null}
+          {drill === "keys" && ready ? <KeysSection account={address} network={network} /> : null}
+          {drill === "grants" && ready ? <GrantsSection account={address} network={network} /> : null}
+          {drill === "linked" ? <LinkedBody /> : null}
+          {drill === "delete" ? <DeleteSheetBody address={address} /> : null}
+        </SlideOverContent>
+      </SlideOver>
+    </>
+  );
+}
+
+function LinkedBody(): ReactNode {
+  const shell = useWalletShell();
+  return (
+    <div className="acct-linked">
+      <span className="type-body text-ink-secondary">{P.linked.robinhood}</span>
+      {shell.robinhood ? (
+        <span className="numbers type-body text-ink">{shortAddress(shell.robinhood.address)}</span>
+      ) : (
+        <PillButton tone="ink" size="sm" onClick={() => shell.openPicker("robinhood")}>{P.linked.link}</PillButton>
+      )}
+    </div>
+  );
 }

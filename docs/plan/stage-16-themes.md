@@ -4,9 +4,11 @@
 - [x] 16c.2 `src/themes/ThemeRegistry.sol` + tests.
 - [x] 16c.3 `src/themes/ThemeRouter.sol` + tests + `invariant_routerHoldsOnlyOwedFees` + a test that settlement calls
   `sync` before each transfer.
-- [ ] 16c.4 deploy; `relay/policies/themes.ts`. Deployed + verified on Moderato and the relay policy landed; the
+- [x] 16c.4 deploy; `relay/policies/themes.ts`. Deployed + verified on Moderato and the relay policy landed; the
   owner configuration that needs S15b–c (`setGuard`, `setTokenPool` × 5, `setOracle`, proof target/selectors) runs
-  after they register the guarded pools (D-101, D-102; see Handoff).
+  after they register the guarded pools (D-101, D-102; see Handoff). R4-11 (D-227): read back on Moderato — guard and
+  oracle = StockGuardHook, proof target = StockReference; the nine txs are in `deployments/42431/themes.json`
+  `configuration` (the fragment had said "unset"). The relay engine now sponsors the `[authorizeKey, follow]` shape.
 - [ ] 16a `packages/core/src/themes/{spec,drift,plan}.ts` (JCS hash; UI-amount drift; planner); `packages/markets/src/
   themes/*`; `/api/themes/[id]/agent-key` → ops `/internal/theme-keys` (keys never touch Vercel); `theme_agent_keys`;
   theme-agent/rebalancer actor (B.4.4); ERC-8004 registration; MPP receipts.

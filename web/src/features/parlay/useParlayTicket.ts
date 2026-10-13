@@ -10,7 +10,7 @@ import { mulBpsCeil, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { USD_DECIMALS, type ParlayMode, type ParlayReserveState } from "@cwf/core";
 import { parseRefusal } from "@cwf/markets/parlay";
 import { useBalanceSheet } from "@cwf/markets/react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { FUNDING } from "@/features/funding/copy";
 import { useFirstFunding } from "@/features/funding/first-fund-state";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -64,12 +64,15 @@ export function useParlayTicket(reserve: ParlayReserveState, windows: readonly L
   })();
 
   const busy = writes.tx.kind === "signing" || writes.tx.kind === "submitted" || writes.tx.kind === "unknown";
+  // The slip as placed (R4-13a, D-227): its legs and latest close, for the receipt's Share card while the slip moves on.
+  const [placed, setPlaced] = useState<{ legs: number; band: string; expirySec: number } | null>(null);
   const place = () => {
     if (!quote || blocker) return;
     if (signedOut) return session.connectFor(PARLAY.cta.signInFor(slip.legs.length, usd(quote.stakeBase)));
+    setPlaced({ legs: slip.legs.length, band: slip.legs.map((l) => `${l.laneKey.split("|")[0]} ${l.side.toUpperCase()}`).join(" + "), expirySec: Math.max(...legs.map((l) => l.expirySec)) });
     void writes.open({ legs, maxPayoutBase: quote.maxPayoutBase, maxStakeBase: mulBpsCeil(quote.stakeBase, 10_000 + STAKE_HEADROOM_BPS), spots: q.spots });
   };
-  return { slip, q, quote, shown: q.shown, refusal, blocker, busy, place, writes, signedOut };
+  return { slip, q, quote, shown: q.shown, refusal, blocker, busy, place, placed, writes, signedOut };
 }
 
 export type ParlayTicket = ReturnType<typeof useParlayTicket>;

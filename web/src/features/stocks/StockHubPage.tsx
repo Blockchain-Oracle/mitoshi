@@ -70,3 +70,12 @@ export function StockHubPage(props: StockHubProps) {
     </>
   );
 }
+
+/** The route's loading boundary (R4-13a, D-227): the hub's frame with the body's own placeholder, replaced in place. */
+export function StockHubLoading() {
+  return (
+    <div className="container stk-page stk-hub">
+      <LoadingState shape="cards" />
+    </div>
+  );
+}

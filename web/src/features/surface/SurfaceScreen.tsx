@@ -1,97 +1,73 @@
 "use client";
 /**
- * `/surface` (S10e; plan "31861 table + 30538 sparklines"; Ported in role from Masayume 68f7a09:web/src/features/surface/
- * SurfaceScreen.tsx — the crumb, title, intro, the asset chips, then the structure): every live Window of the chosen
- * asset as a sortable 31861 table, nearest close first, each with its 30538 price path since the open, the book's UP
- * ask and bid, the fair-value guard's model where the Series has one, and the book's distance from it; a row expands to
- * the Window's depth. No figure the chain or the signed feed did not give: hydrating is "…", an empty side "—".
+ * `/surface` (S10e; R4-11, D-227) — Ported from Owarine 90a91d71:web/src/features/surface/SurfaceScreen.tsx: the title and
+ * one line, the asset and Window chips choosing one focal Window — with the accent "Trade" on its row, in the first fold
+ * at 375 — then 01 the book (BookReadout, plus Mitoshi's model tile), 02 depth (the hero's own HeroDepth), 03 slippage,
+ * 04 the term structure (the curve and every live Window as rows, the model as a column), and one mono basis line.
+ * No section shows a figure the chain or the signed feed did not give: hydrating is "…", an empty side "—".
  */
-import { useCallback, useMemo, useState } from "react";
+import { bookStructure, formatCadence } from "@cwf/core";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { pillButtonVariants, SectionHeader } from "@/components/kit";
 import { ReadingBoundary } from "@/components/states";
-import { Table, TableBody, TableHead, TableHeader, TableRow, type SortDirection } from "@/components/ui/data-table";
+import { useMarketSession } from "@/features/markets/session";
+import { terminalHref } from "@/features/terminal/route";
 import { useNowMs } from "@/lib/clock";
-import { cn } from "@/lib/utils";
+import { BookReadout } from "./BookReadout";
 import { SURFACE } from "./copy";
-import { SURFACE_COLUMNS as C, SurfaceRow } from "./SurfaceRow";
-import { useSurfaceSelection, type RowFigures } from "./useSurface";
+import { SlippageLadder } from "./SlippageLadder";
+import { SurfaceChips } from "./SurfaceChips";
+import { TermStructure } from "./TermStructure";
+import { useFocalFigures, useSurfaceSelection } from "./useSurface";
 import "@/styles/surface.css";
 
-type SortKey = "closes" | "up" | "model" | "gap" | "spread";
-
-/** The guard models a Series only with its σ set and a spot source for its ticker (the reserves refuse the rest). */
-const isModelled = (m: { sigmaE8: bigint; feed: string | null } | undefined) => m !== undefined && m.sigmaE8 > 0n && m.feed !== null;
+const HeroDepth = dynamic(() => import("../markets/hero/HeroDepth"), { ssr: false, loading: () => <div className="sf-box sf-box--chart" /> });
 
 export function SurfaceScreen() {
   const nowMs = useNowMs();
   const sel = useSurfaceSelection();
-  const [figures, setFigures] = useState<Record<string, RowFigures>>({});
-  const [sort, setSort] = useState<{ key: SortKey; dir: Exclude<SortDirection, null> }>({ key: "closes", dir: "asc" });
-  const [open, setOpen] = useState<string | null>(null);
-  const onFigures = useCallback((id: string, f: RowFigures) => setFigures((prev) => (prev[id] === f ? prev : { ...prev, [id]: f })), []);
-
-  const rows = useMemo(() => {
-    const value = (id: string, expirySec: number): number | null => {
-      const f = figures[id];
-      if (sort.key === "closes") return expirySec;
-      if (!f) return null;
-      if (sort.key === "up") return f.upAskBps;
-      if (sort.key === "spread") return f.spreadBps;
-      const fair = f.fairUpE6 === null ? null : Number(f.fairUpE6) / 100;
-      if (sort.key === "model") return fair;
-      return fair !== null && f.upAskBps !== null ? f.upAskBps - fair : null;
-    };
-    const sign = sort.dir === "asc" ? 1 : -1;
-    return [...sel.rows].sort((a, b) => {
-      const va = value(a.market.marketId, a.market.expirySec);
-      const vb = value(b.market.marketId, b.market.expirySec);
-      if (va === null && vb === null) return a.market.expirySec - b.market.expirySec;
-      if (va === null) return 1;
-      if (vb === null) return -1;
-      return (va - vb) * sign;
-    });
-  }, [sel.rows, figures, sort]);
-
-  const head = (key: SortKey) => ({ sortDirection: sort.key === key ? sort.dir : null, onSort: () => setSort((s) => ({ key, dir: s.key === key && s.dir === "asc" ? "desc" : "asc" })) });
-
+  const focal = sel.focal;
+  const modelled = focal ? sel.modelled(focal) : false;
+  const fig = useFocalFigures(focal, modelled, nowMs);
+  const structure = fig.book?.ok ? bookStructure(fig.book.value) : null;
+  const session = useMarketSession();
+  const empty = session && !session.open ? SURFACE.closed(session.label) : SURFACE.noLive;
+  const S = SURFACE.sections;
   return (
-    <div className="sf mx-auto flex w-full max-w-(--content-wide) flex-col gap-6">
-      <header className="flex flex-col gap-2">
-        <span className="type-label-micro text-ink-secondary">{SURFACE.eyebrow}</span>
+    <div className="sf-page">
+      <header className="sf-head">
         <h1 className="type-display text-ink">{SURFACE.title}</h1>
-        <p className="max-w-(--content-reading) type-body text-ink-secondary">{SURFACE.intro}</p>
+        <p className="type-body text-ink-secondary">{SURFACE.line}</p>
       </header>
-      <ReadingBoundary reading={sel.reading} shape="table" isEmpty={(set) => set.lanes.every((l) => l.markets.length === 0)} empty={{ why: SURFACE.noLive }}>
+      <ReadingBoundary reading={sel.reading} shape="plate" isEmpty={(set) => set.lanes.every((l) => l.markets.length === 0)} empty={{ why: empty }}>
         {() => (
           <>
-            <div role="radiogroup" aria-label={SURFACE.assets} className="flex gap-2 overflow-x-auto pb-1">
-              {sel.assets.map((a) => (
-                <button key={a} type="button" role="radio" aria-checked={sel.asset === a} onClick={() => { sel.setAsset(a); setOpen(null); }} className={cn("min-h-touch shrink-0 rounded-full border px-4 type-body-strong", sel.asset === a ? "border-border-strong bg-surface-2 text-ink" : "border-hairline text-ink-secondary")}>
-                  {a}
-                </button>
-              ))}
+            <div className="sf-focal">
+              <SurfaceChips assets={sel.assets} asset={sel.asset} onAsset={sel.setAsset} windows={sel.windows} focalId={focal?.marketId ?? null} onFocal={sel.setFocal} nowMs={nowMs} />
+              {focal ? <Link href={terminalHref(focal.asset, focal.marketId)} className={pillButtonVariants({ tone: "accent", size: "md" })}>{SURFACE.trade}</Link> : null}
             </div>
-            <Table label={`${SURFACE.table} · ${sel.asset ?? ""}`} density="compact">
-              <TableHeader>
-                <TableRow>
-                  <th scope="col" className="w-12"><span className="sr-only">{SURFACE.detail.depth}</span></th>
-                  <TableHead>{C.window}</TableHead>
-                  <TableHead align="end" {...head("closes")}>{C.closes}</TableHead>
-                  <TableHead>{C.path}</TableHead>
-                  <TableHead align="end" className="max-md:hidden">{C.open}</TableHead>
-                  <TableHead align="end" {...head("up")}>{C.up}</TableHead>
-                  <TableHead align="end" className="max-md:hidden">{C.bid}</TableHead>
-                  <TableHead align="end" {...head("model")}>{C.model}</TableHead>
-                  <TableHead align="end" className="max-md:hidden" {...head("gap")}>{C.gap}</TableHead>
-                  <TableHead align="end" className="max-md:hidden" {...head("spread")}>{`${C.spread} · ${C.depth}`}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody animatedSort>
-                {rows.map((w) => (
-                  <SurfaceRow key={w.market.marketId} w={w} modelled={isModelled(sel.models?.get(w.market.seriesId.toLowerCase()))} nowMs={nowMs} expanded={open === w.market.marketId} onToggle={() => setOpen((o) => (o === w.market.marketId ? null : w.market.marketId))} onFigures={onFigures} />
-                ))}
-              </TableBody>
-            </Table>
-            <p className="max-w-(--content-reading) type-caption text-ink-secondary">{SURFACE.foot}</p>
+            {focal ? (
+              <div className="sf-sections">
+                <section>
+                  <SectionHeader index={S.book.number} title={S.book.title} aside={<span className="sf-meta">{`${focal.asset} · ${formatCadence(focal.intervalSec)}`}</span>} />
+                  <BookReadout market={focal} structure={structure} hydrating={fig.book === null} spotE8={fig.spotE8} fairUpE6={fig.fairUpE6} modelled={modelled} nowMs={nowMs} />
+                </section>
+                <section>
+                  <SectionHeader index={S.depth.number} title={S.depth.title} desc={S.depth.desc} aside={structure ? <span className="sf-meta">{structure.levels}</span> : undefined} />
+                  <div className="sf-box sf-box--chart"><HeroDepth market={focal} /></div>
+                </section>
+                <section>
+                  <SectionHeader index={S.slippage.number} title={S.slippage.title} desc={S.slippage.desc} />
+                  <SlippageLadder depth={fig.book?.ok ? fig.book.value : null} lotRaw={fig.lotRaw} />
+                </section>
+                <section>
+                  <SectionHeader index={S.term.number} title={S.term.title} desc={S.term.desc(focal.asset)} />
+                  <TermStructure windows={sel.windows} modelled={sel.modelled} spotE8={fig.spotE8} nowMs={nowMs} focalId={focal.marketId} onPick={sel.setFocal} />
+                </section>
+                <p className="sf-basis">{SURFACE.basis}</p>
+              </div>
+            ) : null}
           </>
         )}
       </ReadingBoundary>
