@@ -1,59 +1,46 @@
 "use client";
-// Ported from Masayume 68f7a09:web/src/features/install/InstallCta.tsx
+// Ported from Masayume 68f7a09:web/src/features/install/InstallCta.tsx; on the kit's pill (D-230, `/download`'s web card).
 
+import { Download } from "lucide-react";
 import { useState } from "react";
 import { INSTALL } from "./copy";
 import { useInstallPrompt } from "./useInstallPrompt";
 
-/** The reference's glyph: an arrow descending into a tray — 'get', not 'share'. */
-function TrayArrow() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="dl-cta-arrow">
-      <path d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 /**
- * The reference's single "Get the app" link, made stateful: the platform decides what the
- * one button does, and the button never claims a store or a build that does not exist.
+ * The web app's one action, made stateful: the browser decides what it does, and it never claims a store. Where the
+ * browser holds an install prompt it opens it; on iOS it shows Safari's three steps; elsewhere it names the browser menu;
+ * once installed it says so. `primary` makes it the page's accent action (the card that leads on this device).
  */
-export function InstallCta() {
+export function InstallCta({ primary = false }: { primary?: boolean }) {
   const { state, install, busy } = useInstallPrompt();
   const [open, setOpen] = useState(false);
+  const pill = `kit-pill kit-pill--md ${primary ? "kit-pill--accent" : "kit-pill--ink"}`;
 
-  if (state === "installed") {
-    return (
-      <span className="dl-cta is-inert" aria-disabled="true">
-        {INSTALL.cta.installed}
-      </span>
-    );
-  }
+  if (state === "installed") return <p className="get-done">{INSTALL.cta.installed}</p>;
 
   if (state === "prompt") {
     return (
-      <button type="button" className="dl-cta" disabled={busy} aria-busy={busy} onClick={() => void install()}>
+      <button type="button" className={pill} disabled={busy} aria-busy={busy} onClick={() => void install()} data-primary-action={primary ? "" : undefined}>
         {busy ? INSTALL.cta.installing : INSTALL.cta.prompt}
-        <TrayArrow />
+        <Download aria-hidden />
       </button>
     );
   }
 
-  const label = state === "ios" ? INSTALL.cta.ios : INSTALL.cta.manual;
   return (
-    <div>
-      <button type="button" className="dl-cta" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-        {label}
-        <TrayArrow />
+    <div className="get-install">
+      <button type="button" className={pill} aria-expanded={open} onClick={() => setOpen((v) => !v)} data-primary-action={primary ? "" : undefined}>
+        {state === "ios" ? INSTALL.cta.ios : INSTALL.cta.manual}
+        <Download aria-hidden />
       </button>
-      {open && state === "ios" && (
-        <ol className="dl-steps">
+      {open && state === "ios" ? (
+        <ol className="get-steps">
           {INSTALL.iosSteps.map((step) => (
             <li key={step}>{step}</li>
           ))}
         </ol>
-      )}
-      {open && state === "manual" && <p className="dl-hint">{INSTALL.manualHint}</p>}
+      ) : null}
+      {open && state === "manual" ? <p className="get-hint">{INSTALL.manualHint}</p> : null}
     </div>
   );
 }

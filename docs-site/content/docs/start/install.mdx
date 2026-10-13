@@ -1,8 +1,10 @@
 ---
 title: Get the app
-description: Mitoshi installs from the browser as a web app today. The phone app is built for iOS and Android and isn't in a store yet.
+description: iPhone, Android or the web app, on one page and with one passkey. The web app installs today; each phone app opens as its store test goes live.
 sources:
   - web/src/features/install/copy.ts
+  - web/src/features/install/PlatformCards.tsx
+  - web/src/lib/release.ts
   - web/src/app/(app)/download/page.tsx
   - docs/specs/mobile.md
   - mobile/README.md
@@ -11,10 +13,18 @@ sources:
   - docs/plan/owner-actions.md
 ---
 
-Open <AppLink href="/download">Download</AppLink> on your phone and choose **Install Mitoshi**.
+<AppLink href="/download">Get the app</AppLink> lists every way in, your device's first:
+
+- **iPhone**: the TestFlight beta. Until its public link is live, the card says **Coming to TestFlight**.
+- **Android**: the Google Play test. Until it opens, the card says **Coming to Google Play**.
+- **Web app**: installs from your browser today, no store.
+
+On a computer, each card with a link carries a QR code. Scan it with your phone.
+
+## Install the web app
 
 - **iPhone (Safari):** tap Share — the square with the arrow — then **Add to Home Screen**, then **Add**.
-- **Chrome and Edge:** use the install icon at the right of the address bar, or **Install** in the browser menu.
+- **Chrome and Edge:** choose **Install Mitoshi** on the page, or use the install icon at the right of the address bar.
 
 The installed app is the same site: the same passkey, the same account, the same test dollars.
 

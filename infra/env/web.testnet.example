@@ -21,6 +21,11 @@ STREAM_TICKET_SECRET=
 SOCIAL_SESSION_SECRET=
 MPP_SECRET_KEY=
 WALLETCONNECT_PROJECT_ID=
+# /download's store links (D-230; runtime, not NEXT_PUBLIC_*: set and restart, no rebuild). Unset or malformed, a card
+# says "Coming to TestFlight" / "Coming to Google Play". Only Apple's /join/<code> and Google Play's test pages are taken.
+TESTFLIGHT_PUBLIC_LINK=
+PLAY_OPEN_TEST_LINK=
+PLAY_INTERNAL_TEST_LINK=
 # Sensei (S13, D-221): any one model key; SENSEI_MODEL / AI_MODEL name another model
 ANTHROPIC_API_KEY=
 OPENAI_API_KEY=

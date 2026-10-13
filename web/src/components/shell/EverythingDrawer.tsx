@@ -5,17 +5,21 @@
 // print. Opened from the rail, the dock and `?d=everything`. R4-8 (D-227): the search pill opens the whole ⌘K palette
 // (places, live markets, every page) — Owarine's `OPEN_SEARCH_EVENT` — so a phone reaches it; it used to filter More's
 // own tiles only. A page not connected yet says "Soon" (critic gap 18). The external Docs link goes through
-// `open-external`; a link drops the URL param first so Back from the new page doesn't reopen the drawer.
-import { Search } from "lucide-react";
+// `open-external`; a link drops the URL param first so Back from the new page doesn't reopen the drawer. D-230: "Get the
+// app" leads the list (the platforms' marks, to /download) until the app is installed — and stands in for Learn's own
+// tile meanwhile, so /download is offered once.
+import { ArrowRight, Search } from "lucide-react";
 import Link from "next/link";
+import { AndroidGlyph, AppleGlyph } from "@/components/icons/StoreGlyphs";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
+import { useInstallState } from "@/features/install/useInstallPrompt";
 import { isPendingHref } from "@/lib/capabilities";
 import { FOOTER, SHELL } from "@/lib/copy";
 import { closeDrawer, dropDrawerParam } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { externalClick } from "@/lib/open-external";
 import { openSearch } from "@/lib/search-event";
-import { DOCK_OMITTED, EVERYTHING_SECTIONS, isActiveNavItem, type NavItem } from "./header/nav-items";
+import { DOCK_OMITTED, EVERYTHING_SECTIONS, isActiveNavItem, NAV_ITEMS, type NavItem } from "./header/nav-items";
 import ThemeToggle from "./ThemeToggle";
 
 export interface EverythingDrawerProps {
@@ -48,7 +52,26 @@ function Tile({ item, active }: { item: NavItem; active: boolean }) {
   );
 }
 
+/** Get the app (D-230): the iPhone and Android marks, the name and its line, to /download. */
+function GetTheApp({ active }: { active: boolean }) {
+  const item = NAV_ITEMS.download;
+  return (
+    <Link href={item.href} className="more-app" aria-current={active ? "page" : undefined} onClick={() => { tapFeedback(); dropDrawerParam(); }}>
+      <span className="more-app-marks" aria-hidden>
+        <AppleGlyph />
+        <AndroidGlyph />
+      </span>
+      <span className="more-tile-copy">
+        <span className="more-tile-name">{item.name}</span>
+        <span className="more-tile-line">{item.description}</span>
+      </span>
+      <ArrowRight aria-hidden className="more-app-arrow" />
+    </Link>
+  );
+}
+
 export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDrawerProps) {
+  const { installed } = useInstallState();
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
       <SlideOverContent title={SHELL.moreTitle} size="lg" fields>
@@ -77,11 +100,12 @@ export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDra
               );
             })}
           </nav>
+          {installed ? null : <GetTheApp active={isActiveNavItem(pathname, NAV_ITEMS.download)} />}
           {EVERYTHING_SECTIONS.map((section) => (
             <section className="more-section" key={section.id} aria-labelledby={`more-${section.id}`}>
               <h2 id={`more-${section.id}`} className="more-section-title">{section.name}</h2>
               <div className="more-grid">
-                {section.items.map((item) => (
+                {section.items.filter((item) => installed || item.id !== NAV_ITEMS.download.id).map((item) => (
                   <Tile key={item.id} item={item} active={isActiveNavItem(pathname, item)} />
                 ))}
               </div>

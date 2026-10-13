@@ -10,6 +10,7 @@ import { Seal } from "@/components/kit/Seal";
 import { SkyCollage, type CollageObject } from "@/components/kit/SkyCollage";
 import { Sticker } from "@/components/kit/Sticker";
 import ThemeToggle from "@/components/shell/ThemeToggle";
+import { AndroidGlyph, AppleGlyph } from "@/components/icons/StoreGlyphs";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { BRAND } from "@/lib/copy";
 import { DOCS_URL } from "@/lib/docs-url";
@@ -39,6 +40,7 @@ export function LandingNav() {
       <div className="lp-nav-links">
         <Link href="/markets" className="lp-nav-link lp-nav-link--sm">{nav.markets}</Link>
         <Link href="/how-it-works" className="lp-nav-link lp-nav-link--md">{nav.how}</Link>
+        <Link href="/download" className="lp-nav-link lp-nav-link--md">{nav.app}</Link>
         <a href={DOCS_URL} className="lp-nav-link lp-nav-link--md">{nav.docs}</a>
         <ThemeToggle />
         <Link href={START} className="kit-pill kit-pill--ink kit-pill--sm">{nav.start}</Link>
@@ -76,6 +78,18 @@ export function LandingHero() {
             </Link>
             <Link href={START} className="kit-pill kit-pill--ghost kit-pill--lg">{hero.paper}</Link>
           </div>
+          {/* D-230: the app, from the first screen — iPhone, Android or the web app on /download. */}
+          <Link href="/download" className="lp-getapp">
+            <span className="lp-getapp-marks" aria-hidden>
+              <AppleGlyph />
+              <AndroidGlyph />
+            </span>
+            <span className="lp-getapp-text">
+              <b>{hero.app}</b>
+              <span>{hero.appPlatforms}</span>
+            </span>
+            <ArrowRight aria-hidden className="lp-getapp-arrow" />
+          </Link>
         </div>
         <div className="lp-phone-col">
           <LandingPhone src={START} title={hero.frameTitle} />

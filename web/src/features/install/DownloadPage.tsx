@@ -1,57 +1,31 @@
-// Ported from Masayume 68f7a09:web/src/features/install/DownloadPage.tsx
-import MitoshiMark from "@/components/shell/MitoshiMark";
+// `/download` — the place to get the app (D-230, the owner's point 8), rebuilt from the Masayume 68f7a09 port: a short
+// head (the seal, one headline, one line), then one card per way in — iPhone (TestFlight), Android (Google Play
+// testing) and the web app — From 21st.dev 18105 shadcnspace/download-01 (see PlatformCard), what this device can act
+// on first; QR codes for a desktop reader. The head is static; the cards read the request (store links, device) inside Suspense
+// behind a skeleton of the same shape. Styles: `styles/download.css`, on tokens, both themes.
+import { Suspense } from "react";
+import { Seal } from "@/components/kit/Seal";
+import "@/components/kit/kit.css";
 import "@/styles/download.css";
-import { INSTALL } from "./copy";
-import { InstallCta } from "./InstallCta";
-import { PhoneShot } from "./PhoneShot";
+import { DOWNLOAD } from "./copy";
+import { PlatformCardsWait } from "./PlatformCard";
+import { PlatformCards } from "./PlatformCards";
 
-/**
- * `/download` — the page the app strip lands on, ported from the reference's
- * `app/download/page.tsx` element for element (`.dl-*` in part-18.css). The words are
- * Mitoshi's: an installable web app on Tempo testnet, and no native build claimed.
- */
 export function DownloadPage() {
   return (
-    <div className="dl">
-      <section className="dl-hero">
-        <div className="dl-copy">
-          <div className="section-eyebrow dl-eyebrow">{INSTALL.eyebrow}</div>
-          <h1 className="dl-title">
-            {INSTALL.titleLead}
-            <em>{INSTALL.titleEm}</em>
-          </h1>
-          <p className="dl-line">{INSTALL.line}</p>
-
-          <InstallCta />
-
-          <ul className="dl-meta">
-            {INSTALL.meta.map((item) => (
-              <li key={item.label}>
-                <b>{item.label}</b>
-                <span>{item.note}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="dl-stage" aria-hidden="false">
-          <PhoneShot />
-        </div>
-      </section>
-
-      <section className="dl-points">
-        {INSTALL.points.map((point) => (
-          <article key={point.title}>
-            <span className="dl-pt-mark">
-              <MitoshiMark />
-            </span>
-            <h3>{point.title}</h3>
-            <p>{point.body}</p>
-          </article>
-        ))}
-      </section>
-
-      <p className="dl-foot">{INSTALL.foot}</p>
+    <div className="get">
+      <header className="get-head">
+        <Seal size="sm" tilt={-8} className="get-seal" />
+        <h1 className="get-title">
+          {DOWNLOAD.heading.lead}
+          <em>{DOWNLOAD.heading.em}</em>
+        </h1>
+        <p className="get-line">{DOWNLOAD.line}</p>
+      </header>
+      <Suspense fallback={<PlatformCardsWait />}>
+        <PlatformCards />
+      </Suspense>
+      <p className="get-foot">{DOWNLOAD.foot}</p>
     </div>
   );
 }

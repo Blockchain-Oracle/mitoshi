@@ -36,6 +36,26 @@
 .lp-discs { display: flex; }
 .lp-discs li { margin-left: -8px; border-radius: var(--radius-full); box-shadow: 0 0 0 3px var(--color-canvas); }
 .lp-discs li:first-child { margin-left: 0; }
+/* Get the app (D-230): one quiet chip under the pills — the platforms' marks, the words, an arrow — to /download. */
+.lp-getapp {
+  display: inline-flex; min-height: 44px; align-items: center; gap: 12px; padding: 6px 16px 6px 6px; border-radius: var(--radius-full);
+  background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); color: var(--color-ink);
+  transition: box-shadow var(--duration-hover) var(--ease-out);
+}
+.lp-getapp:hover { box-shadow: inset 0 0 0 1px var(--color-accent); }
+.lp-getapp:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.lp-getapp-marks { display: flex; }
+.lp-getapp-marks svg {
+  width: 36px; height: 36px; padding: 9px; border-radius: var(--radius-full); background: var(--color-ink); color: var(--color-stage);
+  box-shadow: 0 0 0 2px var(--color-surface-1);
+}
+.lp-getapp-marks svg + svg { margin-left: -8px; }
+.lp-getapp-text { display: flex; flex-direction: column; gap: 3px; }
+.lp-getapp-text b { font: 700 15px/1 var(--font-body); }
+.lp-getapp-text span { font: 500 12px/1 var(--font-body); color: var(--color-ink-secondary); }
+.lp-getapp-arrow { width: 16px; height: 16px; transition: translate 150ms var(--ease-out); }
+.lp-getapp:hover .lp-getapp-arrow { translate: 2px 0; }
+@media (prefers-reduced-motion: reduce) { .lp-getapp-arrow { transition: none; } .lp-getapp:hover .lp-getapp-arrow { translate: none; } }
 
 /* The asset discs: the registry's mark on its brand colour; an unknown asset's initial on a plain disc. */
 .lp-disc { display: inline-grid; flex: none; width: 36px; height: 36px; place-items: center; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-3); color: var(--color-ink); font: 700 13px/1 var(--font-body); }
