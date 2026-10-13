@@ -50,6 +50,12 @@ export const GAMES = {
     arcadeBest: (name: string, score: string) => `${name} ${score}`,
   },
 
+  achievements: {
+    title: "Achievements",
+    count: (earned: number, total: number) => `${earned} of ${total}`,
+    signedOut: "Sign in to earn",
+  },
+
   rail: {
     back: "Games",
     settings: "Game settings",

@@ -4,6 +4,7 @@ import { useNowMs } from "@/lib/clock";
 import { GAMES } from "./copy";
 import { useGames } from "./GamesProvider";
 import { SettingsButton } from "./GamesRail";
+import { AchievementsShelf } from "./hall/AchievementsShelf";
 import { CabinetRail } from "./hall/CabinetRail";
 import { FeaturedCabinet } from "./hall/FeaturedCabinet";
 import { NowPlaying } from "./hall/NowPlaying";
@@ -35,6 +36,7 @@ export function GamesHub() {
       <FeaturedCabinet nowMs={nowMs} />
       <CabinetRail nowMs={nowMs} />
       <StreakStrip />
+      <AchievementsShelf />
     </div>
   );
 }

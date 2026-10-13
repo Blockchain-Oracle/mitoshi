@@ -120,3 +120,17 @@
 .streak-bests { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .streak-chip { min-height: 32px; display: inline-flex; align-items: center; padding: 0 10px; border-radius: 9999px; border: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 11px; color: var(--white); white-space: nowrap; }
 @media (max-width: 400px) { .streak { flex-wrap: wrap; } .streak-bests { margin-left: 0; justify-content: flex-start; } }
+
+/* ── The achievements shelf (Owarine 90a91d71 AchievementsPlate): a locked badge is a goal, shown at lower contrast ── */
+.ach { display: flex; flex-direction: column; gap: 8px; }
+.ach-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.ach-title { font-family: var(--font-pixel); font-size: 22px; line-height: 1; color: var(--white); }
+.ach-count { font-family: var(--font-data); font-size: 11px; color: var(--gray-500); }
+.ach-list { display: grid; gap: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); list-style: none; margin: 0; padding: 0; }
+@media (min-width: 1024px) { .ach-list { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ach-badge { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--color-hairline); background: var(--color-surface-1); }
+.ach-badge[data-on] { border-color: color-mix(in srgb, var(--color-accent) 50%, transparent); background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface-1)); }
+.ach-name { font-size: 13px; font-weight: 600; color: var(--gray-400); }
+.ach-badge[data-on] .ach-name { color: var(--white); }
+.ach-how { font-size: 11px; line-height: 1.4; color: var(--gray-500); }
+.ach-progress { font-family: var(--font-data); font-size: 10px; color: var(--color-accent); }
