@@ -97,6 +97,7 @@ export function StablecoinWizard() {
   return (
     <section className="lp-page lp-wizard">
       <h1 className="type-display text-ink">{S.title}</h1>
+      <div className="lp-studio-grid">
       <StudioWizard
         label={S.title}
         steps={[
@@ -150,6 +151,14 @@ export function StablecoinWizard() {
           },
         ]}
       />
+      <aside className="lp-side" aria-label={S.preview}>
+        <LogoDisc uri={logo?.url ?? ""} symbol={sym || "?"} size="lg" />
+        <span className="lp-row-name">{input.name || "—"}</span>
+        <span className="lp-row-sym">{sym || "—"} · USD</span>
+        <span className="numbers type-caption text-ink-secondary">{S.supply} {coinText(input.initialSupply)}</span>
+        {escrow !== null ? <span className="numbers type-caption text-ink-secondary">{S.escrow(usdText(escrow))}</span> : null}
+      </aside>
+      </div>
     </section>
   );
 }

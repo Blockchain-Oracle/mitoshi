@@ -114,3 +114,11 @@
 
 /* The wizard's Back / Continue strip, sticky above the dock on phones (`.page-action`): it needs the ground behind it. */
 .lp-wizard .wizard-nav { padding-block: 8px; background: var(--color-ground); }
+
+/* The wizards' side card (Owarine 90a91d71 DeskStudio's StudioSide): what the coin will look like, from 1024 px. */
+.lp-studio-grid { display: grid; gap: 20px; }
+.lp-side { display: none; }
+@media (min-width: 1024px) {
+  .lp-studio-grid { grid-template-columns: minmax(0, 1fr) 16rem; align-items: start; }
+  .lp-side { position: sticky; top: var(--stage-sticky-top); display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); text-align: center; }
+}

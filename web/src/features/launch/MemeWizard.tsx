@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
 import { LAUNCH } from "./copy";
 import { bpsText, coinText, parseAmount, priceText, usdText } from "./format";
+import { LogoDisc } from "./LogoDisc";
 import "@/styles/launch.css";
 
 const M = LAUNCH.meme;
@@ -108,6 +109,7 @@ export function MemeWizard() {
   return (
     <section className="lp-page lp-wizard">
       <h1 className="type-display text-ink">{M.title}</h1>
+      <div className="lp-studio-grid">
       <StudioWizard
         label={M.title}
         steps={[
@@ -163,6 +165,14 @@ export function MemeWizard() {
           },
         ]}
       />
+      <aside className="lp-side" aria-label={M.steps.review}>
+        <LogoDisc uri={logo?.url ?? ""} symbol={sym || "?"} size="lg" />
+        <span className="lp-row-name">{name.trim() || "—"}</span>
+        <span className="lp-row-sym">${sym || "—"}</span>
+        {template ? <span className="numbers type-caption text-ink-secondary">{M.priceRange(priceText(template.startPriceE18), priceText(template.endPriceE18))}</span> : null}
+        {template ? <span className="numbers type-caption text-ink-secondary">{M.graduates(usdText(template.migrationQuoteThreshold))}</span> : null}
+      </aside>
+      </div>
     </section>
   );
 }
