@@ -1,9 +1,10 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/desk/cockpit/CheckStrip.tsx (R4-6, D-227), rebuilt for R6 #9 (D-230):
 // the card beside the record — a ring counting down to the agent's next decision (`next-decision.ts`: its read slot,
-// or the time left to call this Window, or the next Window), the runner's last pass in words (`pulse.ts`, never its log
-// line) and its last decision with its time and result, which opens the Decisions tab. The shared clock reads 0 before
-// its first tick: the ring then shows "—", never a countdown from 1970 ("29865024:42").
+// or the time left to call this Window, or the next Window; "waiting for the opening print" while the runner can't
+// decide its Window yet), the runner's last pass in words (`pulse.ts`, never its log line) and its last decision with
+// its time and result, which opens the Decisions tab. The shared clock reads 0 before its first tick: the ring then
+// shows "—", never a countdown from 1970 ("29865024:42").
 import { formatCadence, formatClock, isOk } from "@cwf/core";
 import { useLanes } from "@cwf/markets/react";
 import { ChevronRight } from "lucide-react";
@@ -25,6 +26,7 @@ function words(s: StrategyWire, next: Next, clock: string, pulse: string): { lea
   const agent = s.spec?.preset === "agent";
   switch (next.kind) {
     case "closed": return { lead: N.closed(label), sub: N.closedWhy };
+    case "awaiting-print": return { lead: N.awaitingPrint(label), sub: N.awaitingPrintWhy };
     case "watching": return { lead: pulse, sub: `${clock} ${N.toCall}` };
     case "reading": return { lead: N.reading(label), sub: `${clock} ${N.readLeft}` };
     case "reads-in": return { lead: N.readNext(label), sub: `${N.readsIn} in ${clock}` };

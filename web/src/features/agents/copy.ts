@@ -54,6 +54,8 @@ export const AGENTS = {
       late: (label: string) => `Too late to call ${label}`,
       closed: (label: string) => `No ${label} Window open`,
       closedWhy: "It decides when the next one opens.",
+      awaitingPrint: (label: string) => `Waiting for the ${label} opening print`,
+      awaitingPrintWhy: "It decides once the print is in.",
       idleWhy: "It decides once a copier has a budget.",
       last: "Last decision",
       none: "No decisions yet",

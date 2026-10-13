@@ -35,6 +35,18 @@ describe("the next decision", () => {
     expect(nextDecisionOf(agent, [win(T0, { intervalSec: 900 })], [], at(T0 + 30))).toEqual({ kind: "closed" });
   });
 
+  it("mirrors the runner: no decision on a Window whose opening print isn't in, nor one past its entry cutoff", () => {
+    const pending = win(T0, { openingPriceRaw: null });
+    expect(nextDecisionOf(rule, [pending], [], at(T0 + 20))).toEqual({ kind: "awaiting-print", market: pending });
+    expect(nextDecisionOf(agent, [pending], [], at(T0 + 100))).toEqual({ kind: "awaiting-print", market: pending });
+    expect(nextDecisionOf(rule, [pending], [], at(T0 + 280))).toMatchObject({ kind: "between", atSec: T0 + 300 });
+    // Another series' Window it can call now comes before one waiting on its print.
+    const any = { ...rule, envelope: { series: null, seriesLabel: null } } as unknown as StrategyWire;
+    const live = win(T0, { seriesId: `0x${"ab".repeat(32)}`, marketId: `0x${"ab".repeat(32)}` } as Partial<EventMarket>);
+    expect(nextDecisionOf(any, [pending, live], [], at(T0 + 20))).toMatchObject({ kind: "watching", market: live });
+    expect(nextDecisionOf(rule, [win(T0, { state: "resolved" } as Partial<EventMarket>)], [], at(T0 + 20))).toEqual({ kind: "closed" });
+  });
+
   it("is closed with no trading Window of its series", () => {
     expect(nextDecisionOf(rule, [win(T0, { seriesId: `0x${"ab".repeat(32)}` })], [], at(T0 + 10))).toEqual({ kind: "closed" });
     expect(nextDecisionOf(rule, [win(T0)], [], at(T0 + 400))).toEqual({ kind: "closed" });
