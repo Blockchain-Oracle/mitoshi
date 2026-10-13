@@ -5,7 +5,8 @@
  * credits), turns each into one receipt — idempotent by the post's id, claimed in Postgres before anything is sent —
  * and, live, places it for the linked account through that account's EXECUTOR grant with the executor key. Dry by
  * default: it signs only with `X_RELAY_LIVE=1` (and ops' `DRY_RUN=0`). A receipt reply posts as the bot only live and
- * with `X_POSTING_ENABLED=1`. When X refuses every way in, the heartbeat says which refusal and why, and it waits.
+ * with `X_POSTING_ENABLED=1`, with the receipt card unless `X_REPLY_IMAGES_ENABLED=0`. When X refuses every way in,
+ * the heartbeat says which refusal and why, and it waits.
  */
 import type { Address } from "viem";
 import { TEMPO_RPC_HTTP, type XReadState, type XRelayStatus } from "@cwf/core";
@@ -18,12 +19,16 @@ import { pollMentionCycle } from "./poll-cycle";
 import { recoverMentions } from "./recovery";
 import { chooseReader, type Reader } from "./reading";
 import { deliverReplies } from "./reply";
+import type { ReplyPresentation } from "./reply-format";
 import { XRateLimitedError, XReadBlockedError } from "./transport";
 
 const CURSOR_KEY = "mentions.since_id";
 /** A blocked way in is tried again this often (credits bought, a session renewed, the rate window over). */
 const REPROBE_MS = 5 * 60_000;
 const BLOCKED_PASS_MS = 60_000;
+
+/** The card's renderer (sharp, the fonts) loads on the first reply, so ops starts without it; a failure means text. */
+const renderCard = async (p: ReplyPresentation): Promise<Uint8Array> => (await import("./reply-card")).renderReplyCardPng(p);
 
 const siteOf = (network: string) => (process.env.APP_ORIGIN?.trim() || (network === "mainnet" ? "https://mitoshi.xyz" : "https://testnet.mitoshi.xyz")).replace(/\/+$/, "");
 
@@ -38,7 +43,8 @@ export function startXRelay(deps: Pick<VenueDeps, "env" | "log" | "sql" | "bus">
   const site = siteOf(deps.env.network);
   let reader: Reader | null = null;
   let handled = 0;
-  const status = (reading: XReadState, posting: boolean): XRelayStatus => ({ running: true, dryRun, executor, handle: env.handle, reading, posting, handled });
+  let uploads = false;
+  const status = (reading: XReadState, posting: boolean): XRelayStatus => ({ running: true, dryRun, executor, handle: env.handle, reading, posting, images: posting && env.replyImages && uploads, handled });
 
   if (!env.live) deps.log(`dry run: set ${RELAY_ENV.live}=1 (with DRY_RUN=0) to sign`);
   if (env.missing.length) deps.log(`not configured — ${env.missing.join(", ")}`);
@@ -54,6 +60,7 @@ export function startXRelay(deps: Pick<VenueDeps, "env" | "log" | "sql" | "bus">
     }
     const transport = reader.transport;
     const posting = !dryRun && env.postingEnabled && Boolean(transport?.reply);
+    uploads = Boolean(transport?.uploadImage);
     if (!transport) return { why: `mentions unreadable — ${reader.state.block}: ${reader.state.detail ?? "no way in"}; retrying every ${REPROBE_MS / 60_000} min`, detail: { status: status(reader.state, false) }, nextDelayMs: BLOCKED_PASS_MS };
 
     if (!dryRun && executor) {
@@ -86,11 +93,11 @@ export function startXRelay(deps: Pick<VenueDeps, "env" | "log" | "sql" | "bus">
       throw error;
     }
     reader.state = { ...reader.state, ok: true, block: null, checkedAtMs: Date.now() };
-    const replies = posting ? await deliverReplies({ store, delivery, transport, network: deps.env.network, site, log: deps.log }).catch((e) => (deps.log(`replies: ${errorText(e)}`), 0)) : 0;
+    const replies = posting ? await deliverReplies({ store, delivery, transport, network: deps.env.network, site, images: env.replyImages, render: renderCard, log: deps.log }).catch((e) => (deps.log(`replies: ${errorText(e)}`), 0)) : 0;
     const why = `${transport.describe()}: ${result.processed} new mention(s)${result.held ? " (held)" : ""}${replies ? `, ${replies} repl${replies === 1 ? "y" : "ies"}` : ""}${dryRun ? " · DRY RUN" : ""}`;
     return { why, detail: { status: status(reader.state, posting) } };
   };
 
-  deps.log(`x-relay executor ${executor ?? "(none)"}${xv ? ` on vault ${xv.vault}` : ""}; posting ${env.postingEnabled ? "asked" : "off"}`);
+  deps.log(`x-relay executor ${executor ?? "(none)"}${xv ? ` on vault ${xv.vault}` : ""}; posting ${env.postingEnabled ? "asked" : "off"}; cards ${env.replyImages ? "on" : "off"}`);
   return runActor({ name: "x-relay", log: deps.log, dryRun, everyMs: env.pollMs, pass, critical: false });
 }

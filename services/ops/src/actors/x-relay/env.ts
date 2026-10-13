@@ -21,6 +21,8 @@ export interface RelayEnv {
   /** Signs only with `X_RELAY_LIVE=1` (and ops' `DRY_RUN=0`). */
   live: boolean;
   postingEnabled: boolean;
+  /** The receipt card goes with each reply unless `X_REPLY_IMAGES_ENABLED` is `0`/`false` (Owarine's default). */
+  replyImages: boolean;
   pollMs: number;
   /** Missing pieces, by variable name, for the heartbeat. */
   missing: string[];
@@ -37,6 +39,7 @@ export const RELAY_ENV = {
   executor: "X_EXECUTOR_PRIVATE_KEY",
   live: "X_RELAY_LIVE",
   posting: "X_POSTING_ENABLED",
+  images: "X_REPLY_IMAGES_ENABLED",
   poll: "X_POLL_MS",
 } as const;
 
@@ -66,6 +69,7 @@ export function readRelayEnv(network: Network, env: NodeJS.ProcessEnv = process.
     handle, rettiwtApiKey, oauth1, bearerToken, executorKey, missing,
     live: on(env.X_RELAY_LIVE),
     postingEnabled: on(env.X_POSTING_ENABLED),
+    replyImages: env.X_REPLY_IMAGES_ENABLED !== "0" && env.X_REPLY_IMAGES_ENABLED !== "false",
     pollMs: Number.isFinite(poll) && poll >= 5_000 ? poll : DEFAULT_POLL_MS,
   };
 }

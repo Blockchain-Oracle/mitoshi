@@ -1,6 +1,7 @@
 // Ported from Masayume 68f7a09^9b077b1:services/ops/src/actors/x-relay/{client,transport}.ts (the X API v2 way in,
 // removed there when its relay moved to the account session) — S11 (D-227): signed with the bot account's OAuth 1.0a
-// user context (or an app-only bearer for reads), and X's pay-per-use 402 named as the owner action it is.
+// user context (or an app-only bearer for reads), and X's pay-per-use 402 named as the owner action it is. It has no
+// image upload, so its replies are the text alone (the text carries every fact the card shows).
 import { oauth1Header, type OAuth1Credentials } from "./oauth1";
 import { XRateLimitedError, XReadBlockedError, XRefusedError, type Mention, type XTransport } from "./transport";
 

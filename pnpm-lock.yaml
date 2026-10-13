@@ -114,6 +114,9 @@ catalogs:
     obscenity:
       specifier: 0.4.6
       version: 0.4.6
+    opentype.js:
+      specifier: 1.3.4
+      version: 1.3.4
     ox:
       specifier: ~0.14.45
       version: 0.14.45
@@ -138,6 +141,9 @@ catalogs:
     server-only:
       specifier: ^0.0.1
       version: 0.0.1
+    sharp:
+      specifier: 0.35.5
+      version: 0.35.5
     solidity-bytes-utils:
       specifier: ^0.8.4
       version: 0.8.4
@@ -539,9 +545,18 @@ importers:
       '@cwf/markets':
         specifier: workspace:*
         version: link:../../packages/markets
+      '@cwf/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
+      opentype.js:
+        specifier: 'catalog:'
+        version: 1.3.4
       rettiwt-api:
         specifier: 'catalog:'
         version: 7.1.4(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+      sharp:
+        specifier: 'catalog:'
+        version: 0.35.5(@types/node@24.19.0)
       tsx:
         specifier: 'catalog:'
         version: 4.23.15
@@ -5258,6 +5273,11 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
+  opentype.js@1.3.4:
+    resolution: {integrity: sha512-d2JE9RP/6uagpQAVtJoF0pJJA/fgai89Cc50Yp0EJHk+eLp6QQ7gBoblsnubRULNY132I0J1QKMJ+JTbMqz4sw==}
+    engines: {node: '>= 8.0.0'}
+    hasBin: true
+
   ora@3.4.0:
     resolution: {integrity: sha512-eNwHudNbO1folBP3JsZ19v9azXWtQZjICdr3Q0TDPIaeBQ3mXLrh54wM+er0+hSp+dWKf+Z8KM58CYzEyIYxYg==}
     engines: {node: '>=6'}
@@ -5835,6 +5855,9 @@ packages:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
     engines: {node: '>=8'}
 
+  string.prototype.codepointat@0.2.1:
+    resolution: {integrity: sha512-2cBVCj6I4IOvEnjgO/hWqXjqBGsY+zwPmHl12Srk9IXSZ56Jwwmy+66XO5Iut/oQVR7t5ihYdLB0GMa4alEUcg==}
+
   strip-ansi@4.0.0:
     resolution: {integrity: sha512-4XaJ2zQdCzROZDivEVIDPkcQn8LMFSa8kj8Gxb/Lnwzv9A8VctNZ+lfivC/sV3ivW8ElJTERXZoPBRrZKkNKow==}
     engines: {node: '>=4'}
@@ -5935,6 +5958,9 @@ packages:
 
   tidx.ts@0.1.2:
     resolution: {integrity: sha512-iz+ghbOFRAePPJGs1AA2wYqx13qyqNKBgI77p9HPq20mcX5Xh3XF0RkcgOLlvWAezWRCJdYgCnQY53+vCJ+A+w==}
+
+  tiny-inflate@1.0.3:
+    resolution: {integrity: sha512-pkY1fj1cKHb2seWDy0B16HeWyczlJA9/WW3u3c4z/NiWDsO3DOU5D7nhTLE9CF0yXv/QZFY7sEJmj24dK+Rrqw==}
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
@@ -7902,8 +7928,7 @@ snapshots:
     dependencies:
       hono: 4.13.9
 
-  '@img/colour@1.1.0':
-    optional: true
+  '@img/colour@1.1.0': {}
 
   '@img/sharp-darwin-arm64@0.35.5':
     optionalDependencies:
@@ -12548,6 +12573,11 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
+  opentype.js@1.3.4:
+    dependencies:
+      string.prototype.codepointat: 0.2.1
+      tiny-inflate: 1.0.3
+
   ora@3.4.0:
     dependencies:
       chalk: 2.4.2
@@ -13151,7 +13181,6 @@ snapshots:
       '@img/sharp-win32-ia32': 0.35.5
       '@img/sharp-win32-x64': 0.35.5
       '@types/node': 24.19.0
-    optional: true
 
   shebang-command@2.0.0:
     dependencies:
@@ -13283,6 +13312,8 @@ snapshots:
       is-fullwidth-code-point: 3.0.0
       strip-ansi: 6.0.1
 
+  string.prototype.codepointat@0.2.1: {}
+
   strip-ansi@4.0.0:
     dependencies:
       ansi-regex: 3.0.1
@@ -13400,6 +13431,8 @@ snapshots:
       zod: 4.6.5
     transitivePeerDependencies:
       - typescript
+
+  tiny-inflate@1.0.3: {}
 
   tinybench@2.9.0: {}
 

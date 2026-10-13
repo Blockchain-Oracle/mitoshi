@@ -1,49 +1,15 @@
-// Ported from Owarine 90a91d71:services/ops/src/actors/x-relay/{reply-format,reply-delivery}.ts — S11 (D-227): text
-// replies only (no card renderer yet), Mitoshi's words, Tempo's explorer for the proof link, and one POST per mention.
-import { formatBaseUnits, formatCadence, NETWORK_LABEL, txUrl, X_RECEIPT_STATUSES, xRefusalCopy, xReceiptRecovery, type Network, type XReceipt } from "@cwf/core";
+// Ported from Owarine 90a91d71:services/ops/src/actors/x-relay/reply-delivery.ts — S11 (D-227): one POST per mention,
+// the receipt card rendered and uploaded BEFORE the posting gate (so a slow render can't hold a row in `posting`), an
+// image failure falling back to the same text, and an outright refusal of the image reply retried once as text.
+import type { Network } from "@cwf/core";
 import type { XDelivery, XStore } from "@cwf/db";
+import { isCall, replyPresentation, replyTextOf, type ReplyPresentation } from "./reply-format";
 import { XRefusedError, type XTransport } from "./transport";
 
-export const REPLY_LIMIT = 280;
-const HASH = /^0x[0-9a-fA-F]{64}$/;
-const BASE = /^(0|[1-9]\d{0,77})$/;
-
-function usd(value: string | null | undefined): string | null {
-  return typeof value === "string" && BASE.test(value) ? `$${formatBaseUnits(BigInt(value), 6, { minDp: 2, maxDp: 6 })}` : null;
-}
-
-function context(r: XReceipt): string | null {
-  const asset = typeof r.asset === "string" && /^[A-Z]{2,6}$/.test(r.asset) ? r.asset : null;
-  const side = r.side === "up" ? "UP" : r.side === "down" ? "DOWN" : null;
-  const cadence = typeof r.intervalSec === "number" && r.intervalSec > 0 ? formatCadence(r.intervalSec) : null;
-  const ends = typeof r.expirySec === "number" && r.expirySec > 0 ? `ends ${new Date(r.expirySec * 1000).toISOString().slice(11, 16)} UTC` : null;
-  const line = [asset, side, cadence, ends].filter(Boolean).join(" / ");
-  return line || null;
-}
-
-/** Only validated receipt facts and fixed copy reach public text; ASCII, within 280. */
-export function replyText(r: XReceipt, network: Network, site: string): string {
-  const hash = typeof r.txHash === "string" && HASH.test(r.txHash) ? (r.txHash as `0x${string}`) : null;
-  let status = X_RECEIPT_STATUSES.includes(r.status) ? r.status : "unknown";
-  if (!hash && (status === "filled" || status === "nothing-filled" || status === "reverted")) status = "unknown";
-  const recovery = status === "refused" ? xReceiptRecovery(r.refusalCode) : null;
-  const url = hash ? txUrl(hash, network) : `${site}${recovery?.href ?? "/trade-from-x"}`;
-  const lines: (string | null)[] =
-    status === "filled" ? ["Filled", context(r), usd(r.bookedCostBase) ? `Spent ${usd(r.bookedCostBase)}.` : null]
-    : status === "nothing-filled" ? ["No fill", context(r), "Nothing was booked."]
-    : status === "reverted" ? ["Reverted", context(r), "Nothing was booked."]
-    : status === "refused" ? (() => { const c = xRefusalCopy(r); return [c.title, context(r), c.detail]; })()
-    : ["Needs checking", context(r), "Check the app before trying again."];
-  const net = NETWORK_LABEL[network];
-  let text = [...lines, net, url].filter(Boolean).join("\n");
-  if (text.length > REPLY_LIMIT) text = [lines[0], lines[2], url].filter(Boolean).join("\n");
-  return text.replace(/[^\x20-\x7E\n]/g, "-").slice(0, REPLY_LIMIT);
-}
-
-/** A reply goes to a linked account's mention, or to anyone's mention that parsed as a call. */
-export const isCall = (r: XReceipt): boolean => r.wallet !== null || r.side !== null;
+export { isCall, replyText } from "./reply-format";
 
 const DEADLINE_MS = 45_000;
+/** A timeout can't cancel a remote POST: the caller treats it as ambiguous. */
 async function withDeadline<T>(operation: Promise<T>): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -55,19 +21,38 @@ async function withDeadline<T>(operation: Promise<T>): Promise<T> {
 
 export interface ReplyContext {
   store: Pick<XStore, "receiptByMention">;
-  delivery: XDelivery;
+  delivery: Pick<XDelivery, "ready" | "beginPost" | "retryAsText" | "finish" | "markInterrupted">;
   transport: XTransport;
   network: Network;
   site: string;
+  /** The receipt card goes with the text when this is on and the way in can upload (`X_REPLY_IMAGES_ENABLED`). */
+  images: boolean;
+  render: (presentation: ReplyPresentation) => Promise<Uint8Array>;
   log: (why: string) => void;
 }
 
+/** The card's media id, or null: any failure here only means the reply goes as text. Nothing is posted. */
+async function prepareCard(ctx: ReplyContext, mentionId: string, p: ReplyPresentation): Promise<string | null> {
+  if (!ctx.images || !ctx.transport.uploadImage) return null;
+  try {
+    const png = await withDeadline(ctx.render(p));
+    const id = await withDeadline(ctx.transport.uploadImage(png));
+    if (!/^\d+$/.test(id)) throw new Error("invalid media id");
+    return id;
+  } catch {
+    ctx.log(`reply ${mentionId}: card unavailable; the same receipt goes as text`);
+    return null;
+  }
+}
+
 /**
- * Posts the replies whose receipts are final, once each: the exact text is stored and the row moved to `posting`
- * before X is called, so a crash or a timeout leaves `unknown` for a person to check — never a second post.
+ * Posts the replies whose receipts are final, once each: the exact text (and the card's media id) is stored and the row
+ * moved to `posting` before X is called, so a crash or a timeout leaves `unknown` for a person to check — never a second
+ * post. The one exception is X refusing the image reply outright (nothing published): the same text goes once, alone.
  */
 export async function deliverReplies(ctx: ReplyContext, limit = 5): Promise<number> {
-  if (!ctx.transport.reply) return 0;
+  const reply = ctx.transport.reply;
+  if (!reply) return 0;
   const interrupted = await ctx.delivery.markInterrupted();
   if (interrupted) ctx.log(`${interrupted} interrupted reply(s) need inspection; no automatic repost`);
   let sent = 0;
@@ -76,13 +61,22 @@ export async function deliverReplies(ctx: ReplyContext, limit = 5): Promise<numb
     if (!receipt || !/^\d+$/.test(mentionId)) continue;
     if (!isCall(receipt)) {
       // Not a call from anyone linked: nothing is posted (X's automation rules; the bot doesn't answer every mention).
-      if (await ctx.delivery.beginPost(mentionId, "")) await ctx.delivery.finish(mentionId, "failed", null, "not-a-call");
+      if (await ctx.delivery.beginPost(mentionId, "", null)) await ctx.delivery.finish(mentionId, "failed", null, "not-a-call");
       continue;
     }
-    const text = replyText(receipt, ctx.network, ctx.site);
-    if (!(await ctx.delivery.beginPost(mentionId, text))) continue;
+    const presentation = replyPresentation(receipt, ctx.network, ctx.site);
+    const text = replyTextOf(presentation);
+    const mediaId = await prepareCard(ctx, mentionId, presentation);
+    if (!(await ctx.delivery.beginPost(mentionId, text, mediaId))) continue;
     try {
-      const replyId = await withDeadline(ctx.transport.reply(mentionId, text));
+      let replyId: string | null;
+      try {
+        replyId = await withDeadline(reply(mentionId, text, mediaId ?? undefined));
+      } catch (error) {
+        if (!(error instanceof XRefusedError) || !mediaId || !(await ctx.delivery.retryAsText(mentionId, error.code))) throw error;
+        ctx.log(`reply ${mentionId}: ${error.message}; once more as text`);
+        replyId = await withDeadline(reply(mentionId, text));
+      }
       if (!replyId || !/^\d+$/.test(replyId)) throw new Error("X did not acknowledge the reply id");
       await ctx.delivery.finish(mentionId, "sent", replyId, null);
       sent += 1;

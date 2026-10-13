@@ -103,9 +103,26 @@ describe.skipIf(!hasPg)("X stores (links, receipts, OAuth state, replies)", () =
     expect(await d.ready()).not.toContain("4");
     await x.saveReceipt(mention("4", { status: "refused", refusalCode: "account-not-linked" }));
     expect(await d.ready()).toContain("4");
-    expect(await d.beginPost("4", "reply")).toBe(true);
-    expect(await d.beginPost("4", "reply")).toBe(false);
+    expect(await d.beginPost("4", "reply", null)).toBe(true);
+    expect(await d.beginPost("4", "reply", null)).toBe(false);
+    expect(await d.retryAsText("4", "324")).toBe(false);
     await d.finish("4", "sent", "1900000000000000000", null);
     expect((await d.counts()).sent).toBe(1);
+  });
+
+  it("drops a refused card once and keeps the exact text", async () => {
+    const x = createPgXStore(sql);
+    const d = createPgXDelivery(sql);
+    await x.claimMention(mention("5"), true);
+    await x.saveReceipt(mention("5", { status: "refused", refusalCode: "account-not-linked", side: "up" }));
+    expect(await d.beginPost("5", "SAME TEXT", "902")).toBe(true);
+    const [posting] = await sql<{ media_id: string | null }[]>`select media_id from x_reply_delivery where mention_id = '5'`;
+    expect(posting?.media_id).toBe("902");
+    expect(await d.retryAsText("5", "324")).toBe(true);
+    expect(await d.retryAsText("5", "324")).toBe(false);
+    const [row] = await sql`select state, reply_text, media_id, error_code from x_reply_delivery where mention_id = '5'`;
+    expect(row).toEqual({ state: "posting", reply_text: "SAME TEXT", media_id: null, error_code: "x-refused-324" });
+    await d.finish("5", "failed", null, "x-refused-324");
+    expect(await d.retryAsText("5", "324")).toBe(false);
   });
 });

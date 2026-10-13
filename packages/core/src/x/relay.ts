@@ -35,12 +35,14 @@ export interface XRelayStatus {
   reading: XReadState;
   /** Receipt replies post as the bot only when `X_POSTING_ENABLED=1` and a way to post exists. */
   posting: boolean;
+  /** Replies carry the receipt card (posting, `X_REPLY_IMAGES_ENABLED` not off, and a way in that uploads). */
+  images: boolean;
   /** Mentions handled since the process started (filled, refused, dry). */
   handled: number;
 }
 
 export const X_RELAY_STOPPED: XRelayStatus = {
-  running: false, dryRun: true, executor: null, handle: null, posting: false, handled: 0,
+  running: false, dryRun: true, executor: null, handle: null, posting: false, images: false, handled: 0,
   reading: { via: "none", ok: false, block: "unconfigured", detail: null, checkedAtMs: null },
 };
 

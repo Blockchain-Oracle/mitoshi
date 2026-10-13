@@ -15,7 +15,10 @@
     "@cwf/core": "workspace:*",
     "@cwf/db": "workspace:*",
     "@cwf/markets": "workspace:*",
+    "@cwf/tokens": "workspace:*",
+    "opentype.js": "catalog:",
     "rettiwt-api": "catalog:",
+    "sharp": "catalog:",
     "tsx": "catalog:",
     "viem": "catalog:"
   },

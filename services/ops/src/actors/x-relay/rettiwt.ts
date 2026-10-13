@@ -1,6 +1,7 @@
 // Ported from Owarine 90a91d71:services/ops/src/actors/x-relay/rettiwt.ts on rettiwt-api 7.1.4 (Masayume 52a86fc:
 // "7.1.3 no longer reads the X session") — S11 (D-227): a refused or unreadable session is a named read block, and the
-// key's shape is checked against the README's format (`auth_token`, `ct0`, `twid`) without ever printing a value.
+// key's shape is checked against the README's format (`auth_token`, `ct0`, `twid`) without ever printing a value. The
+// receipt card uploads through the same writer (Owarine's `uploadImage`); an upload never posts.
 import { Rettiwt } from "rettiwt-api";
 import { createSearchPacer } from "./search-pacer";
 import { XRateLimitedError, XReadBlockedError, XRefusedError, type Mention, type XTransport } from "./transport";
@@ -111,11 +112,16 @@ export function rettiwtTransport(apiKey: string, handle: string): XTransport {
       throw new Error("X mention backlog exceeds the bounded drain; cursor retained");
     },
     readyAtMs: () => pacer.readyAtMs(),
-    reply: async (mentionId, text) => {
-      if (!/^\d+$/.test(mentionId)) throw new Error("Invalid reply identifier");
+    uploadImage: async (png) => {
+      const id = await writer.tweet.upload(Uint8Array.from(png).buffer);
+      if (!/^\d+$/.test(id)) throw new Error("X image upload did not return a media id");
+      return id;
+    },
+    reply: async (mentionId, text, mediaId) => {
+      if (!/^\d+$/.test(mentionId) || (mediaId && !/^\d+$/.test(mediaId))) throw new Error("Invalid reply identifier");
       if (text.length > 280 || /[^\x20-\x7E\n]/.test(text)) throw new Error("Reply text exceeded its ASCII budget");
       try {
-        const id = await writer.tweet.post({ text, replyTo: mentionId });
+        const id = await writer.tweet.post({ text, replyTo: mentionId, ...(mediaId ? { media: [{ id: mediaId }] } : {}) });
         return typeof id === "string" && id ? id : null;
       } catch (error) {
         if (!isRefusal(error)) throw error;

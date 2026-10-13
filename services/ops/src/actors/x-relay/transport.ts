@@ -21,8 +21,10 @@ export interface XTransport {
   fetchMentions(sinceId: string | null): Promise<Mention[]>;
   /** The earliest time X's budget allows the next read (epoch ms); absent, any time. */
   readyAtMs?: () => number;
-  /** One POST under the mention; no retries after an ambiguous answer. Null when this way in can't post. */
-  reply: ((mentionId: string, text: string) => Promise<string | null>) | null;
+  /** Upload only — never posts or executes anything. Absent when this way in can't upload (the reply goes as text). */
+  uploadImage?: (png: Uint8Array) => Promise<string>;
+  /** One POST under the mention, with the uploaded card when given; no retries after an ambiguous answer. Null when this way in can't post. */
+  reply: ((mentionId: string, text: string, mediaId?: string) => Promise<string | null>) | null;
 }
 
 /** X refused the read in a way only a person can fix (credits, a dead session): the relay says so and waits. */
