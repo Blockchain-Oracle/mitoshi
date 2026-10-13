@@ -1,0 +1,22 @@
+---
+title: Fees
+description: The price you see is the book's. Mitoshi adds no trading or settlement fee, and its relay pays the network fee on most of what you sign.
+sources:
+  - web/src/app/(app)/docs/fees/page.tsx
+  - docs/specs/engine.md
+  - packages/markets/src/relay/policies
+  - contracts/deployments/42431/leverage.json
+---
+
+| Fee | Who pays | How much |
+| --- | --- | --- |
+| Trading | — | None: the engine has no trading-fee field. |
+| Settlement | — | None: a winning contract pays $1.00, all of it. |
+| A tap's network fee | Mitoshi's relay | Paid in pathUSD for calls inside its policy; you hold no gas token. |
+| Withdrawing from the Trading Balance, revoking a key or a grant | Mitoshi's relay | — |
+| Arming a Trading Balance, supplying Earn | You | A fraction of a cent; money coming in is never fee-sponsored. |
+| Withdraw to another address | You | The network fee of one pathUSD transfer. |
+| Range, Moonshot, Parlay | — | Priced into the stake the ticket shows before you confirm; nothing on top. |
+| Boost | You, to the reserve | A premium the reserve keeps for fronting the position (8 % of what it fronts, at deployment), shown before you confirm. |
+
+Tempo charges network fees in a stablecoin, so there is no gas token to hold. Which calls the relay sponsors is listed per contract in [the relay](/architecture/relay-and-keys).

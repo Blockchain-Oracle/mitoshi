@@ -1,0 +1,51 @@
+---
+title: The contracts
+description: What each contract holds and enforces — the engine, its verifiers, the Trading Balance, the house products, strategies, stocks, themes and launchpads.
+sources:
+  - docs/specs/engine.md
+  - docs/specs/interface-checklist.md
+  - contracts/src/engine/EventsEngine.sol
+  - contracts/src/engine/EngineLens.sol
+  - contracts/src/products
+  - contracts/src/fair/FairValueGuard.sol
+  - contracts/foundry.toml
+  - packages/clients/src/deployments.ts
+---
+
+Mitoshi's contracts are Solidity, built and tested with Foundry against Tempo's own EVM rules, and kept under 23.5 KB each. Their ABIs reach the app only through generated code (`packages/clients`), and their addresses only through the [deployment fragments](/architecture/deployments).
+
+## The market engine
+
+| Contract | Holds and enforces |
+| --- | --- |
+| **EventsEngine** | Every Window's order book, positions and state; `placeOrder`, `cancelOrders`, `recordPrint`, `settle`, `voidExpired`, `redeem`. Ported from Agari's events engine and rewritten for Tempo. One ABI, frozen as `engine-abi-v1`. |
+| AdminLib · MatchLib · ResolveLib | Libraries the engine delegatecalls: listing and series, matching, and prints and settlement. |
+| **EngineLens** | Read-only views: book levels, positions, Window state. |
+| **RedStonePrintVerifier** | Admits a RedStone package as a print: three of five production signers, close to the boundary. |
+| DataStreamsPrintVerifier · AttestedPrintVerifier | The Chainlink Data Streams path (the stocks' Gap on mainnet) and an attested-print path. |
+
+How the engine is built:
+
+- **One book per Window**, 1,000 price levels a side, held in bitmaps; order nodes come from one recycled pool, so a fresh order rarely pays for new storage.
+- **Positions** are free and locked UP and DOWN contracts plus credit. A pair of UP and DOWN merges back to $1; a fill can mint a pair from two buyers.
+- **Takers are immediate-or-cancel**, with caps on fills and evictions per call. Nothing can take before the opening print.
+- **No function takes a payout address:** a payout goes to the caller, or to the holder when a settler redeems for them. Accounting never reads the token balance, so a donation can be swept but never counted.
+
+## Products on the engine
+
+| Contract | What it is |
+| --- | --- |
+| **EventVaultV2** | The [Trading Balance](/trading/trading-balance): owners' accounts and grants (SESSION, EXECUTOR, STRATEGY, EXIT). |
+| **FairValueGuard** | The fair price of a Window's side at a signed RedStone spot, from the opening print, the time left and a per-series volatility. Refuses by name when an input is missing or stale. |
+| **MarketMakerVault** | The maker vault [Earn](/trading/earn) supplies. |
+| **RangeReserve** · **ParlayReserve** · **LeverageReserve** | The house reserves behind Range and Moonshot, Parlay, and Boost. |
+| **PrivateDesk** | Link-private bets from a separate balance. |
+| **StrategyRegistry** | Strategies, their envelopes, fees, runners and ERC-8004 ids. Never touches money. |
+
+## Pillar two
+
+Stock mirrors and their bridge adapters, the sync receiver, the scaled views, **StockReference** and **StockGuardHook**, the replayed Uniswap v4, **ThemeRegistry** and **ThemeRouter**, and the launchpads (**LaunchRegistry**, **CurveLaunchpad**, **LiquidityLocker**). See [stocks and tokens](/stocks/overview).
+
+## Verified source
+
+The first Trading Balance, the maker vault, Parlay, Range, Boost, the private desk, StrategyRegistry, the themes contracts, LaunchRegistry, LiquidityLocker and CurveLaunchpad were verified on Tempo's Sourcify (contracts.tempo.xyz) as they were deployed; the acceptance records note each match. The engine, EventVaultV2 and the stock contracts have no such record.

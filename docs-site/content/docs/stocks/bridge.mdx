@@ -1,0 +1,70 @@
+---
+title: The bridge
+description: How a Robinhood Stock Token reaches Tempo over LayerZero — lock there, mint here — and what is live on testnet today.
+sources:
+  - docs/specs/pillar2.md
+  - contracts/src/robinhood/StockLockbox.sol
+  - contracts/src/robinhood/StockSyncSender.sol
+  - contracts/src/transit/HopComposer.sol
+  - contracts/src/stocks/TIP20MintBurnAdapter.sol
+  - contracts/src/stocks/StockSyncReceiver.sol
+  - contracts/deployments/42431/stocks.json
+  - contracts/deployments/84532/stocks.json
+  - docs/plan/acceptance/S14.md
+  - docs/plan/stage-14-bridge.md
+  - docs/plan/acceptance/R4-12.md
+  - web/src/features/bridge/copy.ts
+  - web/src/features/bridge/BridgeCard.tsx
+  - services/ops/src/actors/bridge-watch/index.ts
+  - services/ops/src/actors/stock-sync/index.ts
+---
+
+## Lock there, mint here
+
+<Steps>
+<Step>
+### Lock on Robinhood Chain
+
+A **StockLockbox** per ticker — an immutable LayerZero OFT adapter — locks your Stock Token and sends a message. A guardian can pause new locks and lower limits; it can never block an unlock. A forged over-release reverts and stays stuck, by design.
+</Step>
+<Step>
+### Cross over LayerZero
+
+On mainnet, Robinhood Chain and Tempo are linked directly with explicit verifiers (Nethermind and LayerZero Labs). On testnet there is no direct path, so a transit OFT and a composer on **Base Sepolia** carry each send onward.
+</Step>
+<Step>
+### Mint the mirror on Tempo
+
+**TIP20MintBurnAdapter** mints the ticker's mirror — a TIP-20 such as bTSLA — to you. If the mint would be refused (the token paused, a policy, the supply cap, a rate limit, your receive policy), the credit is **deferred** and claimable, never lost.
+</Step>
+<Step>
+### Back the other way
+
+Sending back burns the mirror on Tempo and the lockbox releases the token on Robinhood Chain.
+</Step>
+</Steps>
+
+## The bridge screen
+
+<AppLink href="/bridge">Bridge</AppLink> is one card: From and To, a flip, the stock, the amount and one button that always names the next step — link a Robinhood wallet, switch chain, approve, then **Bridge**. The route line shows the LayerZero fee, today's room under the rate limit, and the time a transfer takes: the median of transfers actually delivered, none until one has been.
+
+After you sign, the card follows the transfer leg by leg — sent, through Base, delivered — with each leg's LayerZero id. A credit Tempo can't mint shows as held, with **Claim**; a send that bounces is returned to you. The transfer is recorded the moment your wallet returns its hash, so a closed tab finds it again, and ops' **bridge-watch** keeps following it. **stock-sync** pushes multipliers and pauses across; it idles until the sync sender is deployed on Robinhood Chain.
+
+## Splits and pauses travel too
+
+**StockSyncSender** reads a token's UI multiplier, any pending change and its pause flags on Robinhood Chain, and anyone can send that snapshot to Tempo. **StockSyncReceiver** keeps the newest one per mirror and ignores stale or duplicate records; a **ScaledUIView** per mirror shows balances in shares after the multiplier (ERC-8056).
+
+<GuideCapture name="bridgeDesk" />
+
+## On testnet today
+
+| | |
+| --- | --- |
+| Moderato | Five mirrors (bTSLA, bAMZN, bPLTR, bNFLX, bAMD), five adapters, five scaled views and the sync receiver — deployed 29 September; each mirror has a supply cap of 1,000 tokens |
+| Base Sepolia | The TSLA transit, its composer and the sync forwarder — deployed |
+| Moderato → Base Sepolia | A LayerZero message delivered in 20 s |
+| Base Sepolia → Moderato | Delivered in 23 s on 12 October: verified 14 s after the send, executed on Moderato in <Tx hash="0x80fd27759c31f895e46a2cb50baccef7c0e91f29bfeae6ee0f8d97ba05dc4670" /> |
+| Robinhood Chain testnet | Lockboxes and the sync sender not deployed: the deployer has no testnet ETH yet (owner action) |
+| `/bridge` | Built; ships with the next web release. Until the lockboxes are deployed it reads "Robinhood side not live" |
+
+Addresses are in [deployments](/architecture/deployments). A direct Robinhood ↔ Tempo pathway request to LayerZero is drafted for the owner to send.

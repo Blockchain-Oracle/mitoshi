@@ -1,0 +1,67 @@
+---
+title: Run Mitoshi locally
+description: The repository's layout, the commands that build and check it, and the configuration each app needs.
+sources:
+  - package.json
+  - pnpm-workspace.yaml
+  - infra/env/web.testnet.example
+  - infra/env/ops.testnet.example
+  - infra/secrets.md
+  - infra/coolify.md
+  - docs/plan/working-rules.md
+  - contracts/foundry.toml
+---
+
+The repository is private. If you have access, this is the layout and the loop.
+
+## Layout
+
+```
+contracts/     Foundry (Tempo + evm profiles); deployments/<chainId>/<area>.json
+packages/      @cwf/core (pure rules) · markets (all chain I/O) · clients (generated) · db · brain · tokens
+services/ops   every keeper on runActor, one HTTP server
+web/           the Next.js 16 app
+docs-site/     these docs — their own pnpm root and Dockerfile
+scripts/       codegen, invariants, keys, deploy, live drives, e2e
+infra/         env examples (names only), secrets' names, Coolify notes
+docs/          plan, stage files, decisions, acceptance evidence, specs, design
+```
+
+## The loop
+
+Node 24 and pnpm 11.24.
+
+```sh
+pnpm install
+pnpm dev                # the web app
+pnpm ops:start          # ops (dry run unless DRY_RUN=0)
+pnpm db:migrate         # Postgres migrations
+```
+
+| Check | Command |
+| --- | --- |
+| Types, every package | `pnpm typecheck` |
+| Repository invariants (chain I/O only in markets, no float money, files ≤ 400 lines, relay coverage, …) | `pnpm invariants` |
+| Generated ABIs and addresses up to date | `pnpm codegen:check` |
+| Unit tests | `pnpm test` |
+| Contracts | `pnpm contracts:build`, `pnpm contracts:test` |
+| All of it, as CI runs it | `pnpm ci` |
+
+## Configuration
+
+`infra/env/web.testnet.example` and `ops.testnet.example` list every variable by name — RPC endpoints, Postgres and Redis, the relay's fee payer, each ops role key, the stream ticket secret, data-provider keys, model keys. Values live only in the Coolify apps; `infra/secrets.md` names where each comes from. Nothing secret is committed.
+
+## Deploy
+
+Web and ops deploy from `integration/t1` to the owner's Coolify server, at `testnet.mitoshi.xyz` and `ops.testnet.mitoshi.xyz`. These docs build from `docs-site/` (its Dockerfile serves port 3000) for `docs.testnet.mitoshi.xyz`.
+
+## These docs
+
+```sh
+cd docs-site
+pnpm install
+pnpm dev                # localhost:3156
+pnpm check              # content checks against the app, typecheck, build
+```
+
+`pnpm check` fails when a guide links a page or an app route that doesn't exist, cites a transaction no acceptance record holds or an address no deployment fragment names, or when `lib/deployments.json` differs from the fragments (`pnpm sync:deployments` refreshes it). It warns with every app commit since the revision the guides were last checked against (`site.revision` in `lib/site.ts`): read those, update the guides, then advance the revision.

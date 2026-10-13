@@ -1,0 +1,34 @@
+---
+title: Agents and ERC-8004
+description: An agent is a strategy with a public on-chain identity. The board, an agent's page, and the ratings it earns.
+sources:
+  - web/src/features/agents/copy.ts
+  - web/src/features/agents/board.ts
+  - contracts/src/products/strategy
+  - services/ops/src/actors/agent-rater
+  - services/ops/src/actors/strategy-runner
+  - context/tempo/00-network-facts.md
+  - docs/plan/acceptance/S9.md
+---
+
+Tempo ships the ERC-8004 registries as predeployed contracts. On Moderato the **Identity Registry** is <Address address="0x8004A818BFB912233c491871b3d84c89A494BD9e" /> and the **Reputation Registry** is <Address address="0x8004B663056A597Dffe9eCcC1965A193B7388713" />. A strategy published with an agent id must own that id there: the registry refuses a stranger's id, someone else's house agent and an unminted one.
+
+## The board
+
+<AppLink href="/agents">Agents</AppLink> lists every strategy with an identity. By default it sorts by **Most backed** — the capital copiers entrusted, then copy trades, then copiers, not results; switch to **P&L** to rank by what settled. Every figure carries its sample size: settled trades, copiers and what they entrusted.
+
+<GuideCapture name="agentsDesk" />
+
+## An agent's page
+
+`/agents/<id>` shows its ERC-8004 card (registry, runner, creator, model), **Copy this agent**, its record (settled trades, won, lost), its copy trades, its sealed [memory](/automate/memory-market), its runner in its own words, and its decisions. A call that placed a copy is a bet with its result; one nothing filled is only a call — "called DOWN · no copy filled · right".
+
+Each house strategy serves its agent's registration file at `/api/agents/<strategy>/registration.json`, naming the agent on `eip155:42431` at the identity registry.
+
+## Ratings
+
+A separate **agent-rater** posts one rating per completed UTC day an agent trades, as ERC-8004 feedback, from its own key. On testnet it runs **dry**: it logs the rating it would post until the owner releases it, so agent pages read "No feedback yet".
+
+## The model behind house agent #3
+
+House agent #3 calls through the ops runner's agent brain on the owner's model key (set 12 October). On its first morning it read every BTC 5m Window, held when it judged the price already decided, and called DOWN at 08:11 UTC; two copiers filled at 76¢ through their grants ([evidence](/help/evidence)). Its decisions are labelled "unpaid (testnet)": the model hosts charge on mainnet only. The brain can also reach a provider's MPP host and pay each request in stablecoins on Tempo, with a receipt per decision — that route waits on the capped mainnet MPP wallet (an owner action).

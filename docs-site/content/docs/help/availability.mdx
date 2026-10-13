@@ -1,0 +1,64 @@
+---
+title: What's live, what's next
+description: What runs on Tempo testnet today, what is registered but not built, what waits on the owner, and the limits you will meet.
+sources:
+  - docs/plan/STATUS.md
+  - docs/plan/owner-actions.md
+  - docs/plan/owarine-plan-r4-2026-10-12.md
+  - web/src/lib/capabilities.ts
+  - web/src/features/games/catalog.ts
+  - contracts/deployments/42431/range.json
+  - docs/plan/acceptance/S24.md
+  - docs/plan/acceptance/R4-12.md
+  - mobile/README.md
+---
+
+Checked against app revision `595e40d` on 13 October 2026. Mitoshi runs on **Tempo testnet (Moderato)** only; nothing is deployed on Tempo mainnet.
+
+## Live on testnet
+
+- **Trade:** the terminal, Markets and each ticker's hub, Portfolio and Trader Edge, Parlay, Range and Moonshot, Boost, Private, exits with the app closed.
+- **Money:** passkey sign-up with test dollars, one-tap keys, the Trading Balance, Earn's four tabs, Withdraw.
+- **Automate:** strategies, copy and fade, the builder, the agents board, the Memory Market over MPP, house agent #3 on a model.
+- **Games:** the hall, Practice, Line Rider and Candle Hop with a replay-checked board, Range and Moonshot.
+- **Records and social:** proof pages, Stats, the leaderboard and profiles, the season league, share cards, rooms and takes, price alerts and notifications, Sensei, Reels, News, Status and the halts board.
+
+## Registered, not built
+
+Each of these pages exists, says what it does and names what it waits on — never invented numbers:
+
+| Page | Waits on |
+| --- | --- |
+| Themes | The themes screens; the relay honouring the follow batch |
+| Launch (stablecoin, memecoin) | The launch screens; the launch keeper's sender |
+| Duel, Games history, Game ranks | The arena contracts |
+| Lucky | The draw server |
+| X-trade, X recovery | The X relay and an X account (owner) |
+
+The phone app is built for iOS and Android and isn't in a store yet; the web app installs from the browser ([get the app](/start/install)).
+
+## Being built now
+
+Built and checked, shipping with the next web and ops releases: P&L correctness; the shared component kit and one sheet grammar (Back closes a sheet); Bridge and Reserves, with ops' bridge-watch, reserve-watch and stock-sync — until the Robinhood-side lockboxes are deployed (testnet ETH) they read "Robinhood side not live" and **Partial**. Next: Markets, Portfolio, Range · Moonshot · Parlay, Automate, Earn, the palette and shell, games (a full-screen arcade stage, Lucky and Duel), records, account · launch · themes, and the landing. These guides are pinned to a revision; the docs build lists every app change since, to review.
+
+## Waiting on the owner
+
+| Item | Effect until then |
+| --- | --- |
+| RedStone's authenticated-gateway key, before **29 October 2026** | Inside RedStone's daily refusal windows, prints, quotes, halts, Boost knock-outs and exits wait; Windows that get no print void at half |
+| Test ETH on Robinhood Chain testnet and Base Sepolia; Robinhood faucet claims | The bridge's Robinhood legs can't be deployed |
+| The App Store Connect and Play Console records; `mitoshi.xyz` serving the app's association files | The phone app isn't on TestFlight or Google Play, and passkeys don't work inside it yet |
+| The LayerZero direct-pathway request | Testnet routes through Base Sepolia |
+| A country header in front of the live domains | The region check reads "open" everywhere |
+| Passkey runs on the owner's own phone | Automated checks use virtual authenticators and a browser-wallet test session, not a real device |
+| Releasing the ERC-8004 agent rater | Ratings are logged dry |
+| The capped mainnet MPP wallet; Data Streams credentials; Safes; mainnet stock-token eligibility | Mainnet |
+
+## Limits you will meet
+
+- **Test money.** pathUSD from the faucet, once a day per account, with no value.
+- **24/7 stock lanes** pause around 04:00 ET daily; AMD and PLTR have none. NFLX and pre-IPO names are listed as paused.
+- **Range and Moonshot** price BTC, ETH and SOL: the Range reserve has a volatility for those three. Parlay, Boost and keeper exits price every series through the fair-value guard.
+- **The public RPC** is shared and rate-limited; a busy minute can slow reads.
+- **The private desk** is deployed and fork-tested; no private bet through the browser is recorded yet.
+- **Settlement run.** The venue's 24-hour settlement run has not passed: most of its voids came from RedStone's public-gateway windows. A fresh 24 hours spanning a 04:00 ET is still to run.

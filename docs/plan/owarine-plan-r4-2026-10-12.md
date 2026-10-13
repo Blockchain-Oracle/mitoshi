@@ -142,6 +142,29 @@ R4-0's open sync-state item). Web and ops deploys triggered. Open, the owner's c
 the reserve's `markOf` (rested bids only), so it can sit below what Close pays, never above; a Boost that paid back more
 than its stake shows a negative Staked (the P&L is right; a $0.00 floor is a display choice). Seen, outside the spec: a
 wallet row and a Trading Balance row on one Window and side share one TP/SL entry.
+R4-2 (Kit) merged at `b3653d2`: components/kit (one barrel, kit.css), the desk kit, the overlay grammar (pinned
+footer, `urlKey`, keyboard inset, a phone modal is the sheet). Merge fix `79202e7`: SheetFooter moved to
+`components/ui/overlay-footer.tsx` and /dev/kit's sections lazy (three routes were over 250 KB; all 71 within budget).
+/markets at 375 and 1440 clean. Open: sticky PLAY on the games' featured cabinet (R4-9 builds it), the Trading Balance
+panel's two actions stay in the body (R4-4 ports the pocket panel), Sensei's aside isn't a sheet — rejected for now
+(moving it changes its look at every width); CadenceLanes' and Surface's chip rails not yet on ScrollRail (R4-3, R4-11).
+R4-12 (Bridge and reserves) merged at `735f553`: /bridge as one card tracked to delivery, /reserves with its verdict,
+bridge-watch / reserve-watch / stock-sync in ops (migrations bridge/0001 and index/0007; ops redeployed). /bridge at 375
+and 1440 clean (the CTA on the first phone screen). Open, blocked-owner: Robinhood testnet test ETH (deployer 0 ETH,
+nonce 0) for the Handoff and the driven UI pass (14w/14o/UX-08); the Reown project ID for WalletConnect on phones.
+MOBILE (Expo app) merged at `83058f9`: mobile/ in the workspace (frozen install and the web build pass), the testnet site
+in one web view, and the web's /.well-known AASA and assetlinks (200 JSON locally). Open, blocked-owner: the App Store
+Connect app record and TestFlight submit; the Play Console app, its first AAB by hand and the app-signing SHA-256;
+`https://mitoshi.xyz` on the Coolify web app's domains so the passkey rpId host serves the association files; a check
+on real phones.
+DOCS (Docs site) merged at `32d6783`: docs-site/ (Fumadocs, its own lockfile, outside the workspace and the web/ops
+images), Docs → docs.testnet.mitoshi.xyz from More, the rail, the footer and /docs, Boost's no-model line fixed; checks
+clean (71 routes within budget, the docs site's own build too); /docs at 375 and 1440 clean. New Coolify app
+`mitoshi-docs-testnet` (`phvlvicp7lo7wdgemfypa4bu`), first deploy `hju4rfh3ow2zfeitbnei1hsg`; web
+`rynao75mwprutv9wqbx3xsbe`. Open, unfinished: the 17 captures and 2 walkthroughs (19 slots render nothing) — record
+after R4's last web deploy (`cd docs-site && pnpm media:record && pnpm media:publish`); re-run `pnpm check` and move
+the pin (595e40d) as later slices land. Seen, R4-9's area: Practice's how-to says "the real closing prints" (the code
+scores the live feed after a 30 s watch).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on

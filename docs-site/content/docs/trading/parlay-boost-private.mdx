@@ -1,0 +1,49 @@
+---
+title: Parlay, Boost and Private
+description: Combine Windows on one ticket, take more exposure with a knock-out line, or bet from a balance kept apart from your wallet.
+sources:
+  - contracts/src/products/parlay
+  - contracts/src/products/leverage
+  - contracts/src/products/private/PrivateDesk.sol
+  - packages/core/src/parlay/pricing.ts
+  - packages/core/src/private/protocol.ts
+  - web/src/features/boost/copy.ts
+  - web/src/features/private/copy.ts
+  - web/src/features/parlay/data.ts
+  - web/src/features/boost/useBoostTicket.ts
+  - docs/plan/acceptance/S10.md
+  - docs/plan/acceptance/S24.md
+  - docs/plan/acceptance/R4-1.md
+---
+
+## Parlay
+
+Two or three legs on one ticket at <AppLink href="/parlay">Parlay</AppLink>, or from the terminal's **Parlay** mode, where UP and DOWN add the Window to the slip. The chances multiply down, so the payout multiplies up — and it is all or nothing: one miss and the stake is lost.
+
+- **ParlayReserve** prices each leg off the Window's book — refusing a leg priced more than 5¢ under the fair-value guard's model — with a floor for legs that settle at the same instant.
+- The winning payout is locked before the ticket is accepted. A book too thin for it is refused by name, before any prompt.
+- Legs resolve in close order, by anyone. Each ticket asks your passkey.
+- Legs need the fair-value guard's model, which covers every series, crypto and stocks.
+
+<GuideCapture name="parlayDesk" />
+
+## Boost
+
+A leveraged UP or DOWN from the terminal's **Boost** mode or chips. **LeverageReserve** fronts the rest of the position for a premium it keeps, and is repaid first from a sale.
+
+- **Your loss is capped at your stake.** A boost has a knock-out line and can be knocked out before the Window closes; Mitoshi's leverage keeper settles and knocks out positions, and both actions pay the owner.
+- It refuses to open a boost that would start under its knock-out line, one priced above the market model, or one a void would leave the reserve short on.
+- Boost opens on any Window the guard prices, stocks included. Each boost asks your passkey, and it closes from its own row.
+
+## Private
+
+The terminal's **Private** mode bets from a private balance on **PrivateDesk**. Kept separate from your wallet, so it is harder to link back to you — **not anonymous**.
+
+- You deposit to the desk and set an allowance it may spend. One passkey prompt signs the bet's text; it moves nothing by itself.
+- The desk then makes three transactions that never name you and the Window together: charge your allowance into a pool, fund a throwaway slot, buy in that slot. Payouts come home the same way, and only you can withdraw.
+- Always 1×, a stake of $1 to $25. The claim is kept with your account; cash it out from Portfolio.
+- What it is not: anonymity. A charge and a slot's funding land seconds apart for the same figure, and the desk process sees both halves.
+
+## Seen live
+
+Through the browser on Moderato, sponsored by the relay: a two-leg parlay in one prompt and a 2× boost in one prompt, with refusals named before signing (`ThinBook`, `BelowFairValue`, `LegOutOfOrder`). The private desk is deployed and passed its tests on a Moderato fork; a private bet through the browser is not recorded yet. Receipts are in [evidence](/help/evidence).

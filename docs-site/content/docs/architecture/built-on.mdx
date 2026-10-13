@@ -1,0 +1,45 @@
+---
+title: Built on Tempo
+description: What each platform does for Mitoshi today — Tempo's chain and accounts, RedStone's signed prints, LayerZero's bridge, Robinhood Chain's Stock Tokens, Uniswap v4 — and where each stands on testnet.
+sources:
+  - context/tempo/00-network-facts.md
+  - context/tracks/tempo.md
+  - web/src/server/relay.ts
+  - web/src/server/mpp.ts
+  - packages/markets/src/keys/wallet-key.ts
+  - packages/core/src/faucet/index.ts
+  - contracts/src/engine/verifiers/RedStonePrintVerifier.sol
+  - contracts/src/robinhood/StockLockbox.sol
+  - contracts/src/stocks/TIP20MintBurnAdapter.sol
+  - contracts/deployments/42431/stocks.json
+  - contracts/deployments/84532/stocks.json
+  - contracts/deployments/42431/v4.json
+  - docs/plan/acceptance/S14.md
+  - docs/plan/acceptance/S9.md
+---
+
+Mitoshi runs on Tempo, a payments-first Layer 1 incubated by Stripe and Paradigm. Each row says what a platform does for the product and where it stands on testnet.
+
+| Platform | What it does for Mitoshi | On testnet today |
+| --- | --- | --- |
+| **Tempo** | The chain: every contract, every dollar (pathUSD, a TIP-20 stablecoin) and every network fee. Passkeys are accounts, access keys carry limits the chain enforces, another account can pay a call's fee, and the ERC-8004 registries and MPP are built in. | Live on Moderato (chain 42431). Its faucet gives each new account test dollars. |
+| **RedStone** | The signed prints that settle every Window — three of five production signers — plus the fair-value guard's spot and the stock pools' reference. | Live. Its public gateways go dark in growing daily windows and stop on 29 October 2026; the authenticated ones wait on a key ([availability](/help/availability)). |
+| **LayerZero** | The bridge: a Stock Token locked on Robinhood Chain mints its mirror on Tempo, and back. | Moderato → Base Sepolia delivered in 20 s. The return waits on LayerZero's testnet verifier. |
+| **Robinhood Chain** | Home of Robinhood's Stock Tokens: the lockboxes and the split-and-pause sender go there. | Not deployed yet: the deployer has no testnet ETH ([availability](/help/availability)). |
+| **Uniswap v4** | A pool per mirror against pathUSD, kept in a band around the share price by Mitoshi's hook. | Replayed at mainnet's addresses on Moderato; pools opened; no screen trades them yet. |
+
+The chart's live line comes from Coinbase (crypto) and Alpaca (stocks). It settles nothing.
+
+## Why Tempo
+
+- **Dollars all the way down.** Stakes, payouts and network fees are all pathUSD. There is no gas token to buy first.
+- **A passkey is an account.** Tempo verifies WebAuthn signatures, so Face ID or a fingerprint signs a call — no extension, no seed phrase.
+- **One tap, bounded by the chain.** An access key may call the engine and approve at most $25 a day for 24 hours (TIP-1011). Anything else it signs is refused.
+- **Someone else can pay the fee.** Mitoshi's relay co-signs as the fee payer. It can't change your call or spend from your account.
+- **Agents and paid reads are native.** The ERC-8004 identity and reputation registries are predeployed; MPP charges per request in pathUSD.
+
+Read on: [the relay and keys](/architecture/relay-and-keys), [prices and prints](/architecture/prices), [the bridge](/stocks/bridge), [pools and the guard](/stocks/pools-and-guard), [agents](/automate/agents), [the Memory Market](/automate/memory-market).
+
+## Marks and attribution
+
+No brand kit or written permission is recorded for these platforms' marks, so each is named in plain text. Tempo, RedStone, LayerZero, Robinhood, Uniswap, Coinbase and Alpaca belong to their owners. Mitoshi is independent: none of them has sponsored or endorsed it.

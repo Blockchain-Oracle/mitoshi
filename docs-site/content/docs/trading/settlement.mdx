@@ -1,0 +1,49 @@
+---
+title: Prints and settlement
+description: A Window settles on two signed numbers, its opening print and its closing print. Who records them, who settles, and what a void pays.
+sources:
+  - contracts/src/engine/libs/ResolveLib.sol
+  - contracts/src/engine/verifiers
+  - packages/core/src/market/venue-spec.json
+  - services/ops/src/actors/price-relay
+  - services/ops/src/actors/settler
+  - web/src/app/(app)/docs/settlement/page.tsx
+---
+
+The live line on screen never settles anything. A Window settles on its **opening print** and its **closing print**: RedStone signed data packages, checked on chain.
+
+## Signed prints
+
+Mitoshi's price relay fetches RedStone's packages for each Window's open and close and posts them to the engine. The engine's **RedStonePrintVerifier** recovers the signers itself and records a print only with at least **three of RedStone's five production signers**, close enough to the Window's boundary. Anyone may post a package; only the verifier decides whether it counts. Each position's details link to the [proof](/trading/proof) of its prints.
+
+## Settlement
+
+<Steps>
+<Step>
+### Anyone settles
+
+Once both prints are in, anyone can call `settle`. Mitoshi's settler does it shortly after the close.
+</Step>
+<Step>
+### The rule
+
+Close ≥ open pays UP; close < open pays DOWN. A winning contract pays **$1.00**, a losing one nothing. There is no settlement fee.
+</Step>
+<Step>
+### Void
+
+If a print is missing when its admission deadline passes, anyone can void the Window and both sides are returned at half — **$0.50** a contract. Where a Window's policy names a check source (the stocks' Gap on mainnet), a print that diverges from it by more than 0.25 % voids it too. There is no admin void.
+</Step>
+<Step>
+### Paid without a claim
+
+The settler then pays every winning position on its own, a few minutes after the close. Collecting it yourself only hurries it. Positions in a Trading Balance are paid into it.
+</Step>
+</Steps>
+
+A payout your account's receive policy blocks is not lost: it waits as credit you can collect once the engine is allowed.
+
+## Today on testnet
+
+- The ops settler has settled, voided and paid thousands of Windows; its live counts are on <AppLink href="/status">Status</AppLink>.
+- RedStone is switching its public gateways off, in daily windows that grow until **29 October 2026**. While one refuses, prints wait, so Windows don't open or settle until it answers again; a Window that gets no reliable print in time is void at half. Mitoshi moves to RedStone's authenticated gateway when its key is issued (an [owner action](/help/availability)).

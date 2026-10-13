@@ -13,8 +13,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, type CSSProperties, type ReactNode } from "react";
 import { BRAND, FOOTER, SHELL } from "@/lib/copy";
+import { DOCS_EXTERNAL, DOCS_URL } from "@/lib/docs-url";
 import { openDrawer } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
+import { ExternalLink } from "./ExternalLink";
 import MitoshiMark from "./MitoshiMark";
 import { NetworkPill } from "./NetworkPill";
 import { isActiveNavItem, RAIL_NAV } from "./header/nav-items";
@@ -132,7 +134,8 @@ export function Rail({ foot }: { foot?: ReactNode }) {
       </Suspense>
       {foot ? <div className="rail-foot">{foot}</div> : null}
       <nav className="rail-legal" aria-label={SHELL.legalNav}>
-        <Link href="/docs">{FOOTER.links.docs}</Link>
+        {/* The guides site, where Owarine 90a91d71 AppRail links its docs (D-227). */}
+        {DOCS_EXTERNAL ? <ExternalLink href={DOCS_URL}>{FOOTER.links.docs}</ExternalLink> : <Link href={DOCS_URL}>{FOOTER.links.docs}</Link>}
         <Link href="/terms">{SHELL.legal}</Link>
       </nav>
     </aside>
