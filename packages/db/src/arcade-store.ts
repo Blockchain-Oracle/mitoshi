@@ -107,10 +107,11 @@ export function createPgArcadeStore(sql: Sql): ArcadeStore {
       return Number(rows[0]?.n ?? 0) + 1;
     },
     async recent(limit) {
-      const rows = await sql<RunDb[]>`
-        select game, wallet, score, engine_version, duration_ms, seed, calm, created_at from arcade_scores
-        order by created_at desc limit ${limit}`;
-      return rows.map(runRow);
+      const rows = await sql<(RunDb & { best: boolean })[]>`
+        select game, wallet, score, engine_version, duration_ms, seed, calm, created_at, best from (
+          select *, score = max(score) over (partition by game, engine_version, wallet) as best from arcade_scores
+        ) runs order by created_at desc limit ${limit}`;
+      return rows.map((r) => ({ ...runRow(r), best: r.best }));
     },
     async issueTape(seed, game, tape) {
       const rows = await sql<{ seed: string }[]>`

@@ -20,6 +20,7 @@
 .hall-now-item[data-tone="up"] .hall-now-what { color: var(--profit); }
 .hall-now-item[data-tone="down"] .hall-now-what { color: var(--loss); }
 .hall-now-ago { color: var(--gray-500); }
+.hall-now-item[data-tone="best"] .hall-now-what { color: var(--color-accent); }
 
 /* ── Marquee lights: a dot row across a cabinet's top edge, chasing (21st.dev 25295 educalvolpz/switchboard-card,
  * revamped: vermilion dots on the cabinet trim, still under reduced motion) ── */

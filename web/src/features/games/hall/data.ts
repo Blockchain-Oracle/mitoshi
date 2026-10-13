@@ -61,6 +61,7 @@ export interface RecentRunWire {
   wallet: string;
   score: number;
   at: string;
+  best?: boolean;
 }
 
 export function useRecentRuns(): RecentRunWire[] {

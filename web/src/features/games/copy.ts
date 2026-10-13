@@ -39,6 +39,7 @@ export const GAMES = {
     tapeDown: "DOWN",
     tapeAgo: (sec: number) => (sec < 60 ? `${sec}s` : `${Math.floor(sec / 60)}m`),
     runLine: (game: string, score: string) => `${game} ${score}`,
+    newBest: "NEW BEST",
   },
 
   streak: {
