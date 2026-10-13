@@ -23,6 +23,10 @@ export const FUNDING = {
     close: "Close add money",
     connectFirst: "Sign in first.",
     signIn: "Sign in",
+    qr: "QR",
+    qrHide: "Hide QR",
+    qrLabel: "Your address as a QR code, to receive pathUSD on Tempo",
+    bridge: "Bring stock tokens from Robinhood →",
   },
   errors: {
     cooldown: "Already funded today.",
