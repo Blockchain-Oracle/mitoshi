@@ -4,15 +4,17 @@
 // rows whose drill-ins open a sheet) and features/canton-ux/seat/SeatAccountMenu.tsx (the facts as one recessed `dl`).
 // The head reuses the account menu's `am-head` / `am-rows`; a summary strip holds "Stop all" in the first fold; each
 // SECURITY or DATA row opens a SlideOver (a bottom sheet on phones) whose body is the section it used to be inline.
-import { useEffect, useState } from "react";
-import { Bell, Download, KeyRound, ShieldCheck, Trash2, Wallet } from "lucide-react";
+// R6 money (S21 + T10, D-230): the settings shell owns the title and the tabs; Device and Region moved to their own tab
+// (`DeviceSettings`). Signed out there is no wall: the Security group is drawn as it will be — its rows, each "—", not
+// tappable — with one inline "Sign in to see yours" as its header row.
+import { useState, type ComponentType } from "react";
+import { Download, KeyRound, ShieldCheck, Trash2, Wallet } from "lucide-react";
 import { useBalanceSheet } from "@cwf/markets/react";
-import type { Address, RegionPosture } from "@cwf/core";
+import type { Address } from "@cwf/core";
 import { GroupedItem, GroupedList } from "@/components/kit/GroupedList";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill } from "@/components/kit/Pill";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { webEnv } from "@/lib/env";
-import { readRegionPosture } from "@/lib/region-mark";
 import { useWalletSession } from "@/lib/wallet-session";
 import type { TempoAccountKind } from "@/providers/wallet/wallet-shell-context";
 import { useDataReady } from "@/providers/data/context";
@@ -22,7 +24,6 @@ import { BACKUP } from "./backup-copy";
 import { ACCOUNT_PAGE } from "./copy";
 import { DATA } from "./data-copy";
 import { AiSharingRow, DeleteSheetBody, useDataExport } from "./DataSection";
-import { FeedbackRows } from "./FeedbackSection";
 import { GrantsSection, useGrantCounts } from "./GrantsSection";
 import { KeysSection } from "./KeysSection";
 import { useKeyCounts } from "./useKeys";
@@ -38,32 +39,34 @@ type Drill = "backup" | "keys" | "grants" | "x" | "delete";
 
 export function AccountSettings() {
   const session = useWalletSession();
-  const [posture, setPosture] = useState<RegionPosture | null>(null);
-  useEffect(() => setPosture(readRegionPosture()), []);
-  const held = posture ? (Object.keys(P.region.pillar) as (keyof typeof P.region.pillar)[]).filter((p) => posture[p] === "restricted") : [];
-
   return (
     <section className="acct-page">
-      <h1 className="type-display text-ink">{P.title}</h1>
-      {!session.address ? (
-        <div className="acct-signed-out">
-          <p className="type-body text-ink-secondary">{P.signedOut}</p>
-          <PillButton tone="accent" onClick={session.connect}>{P.signIn}</PillButton>
-        </div>
-      ) : (
-        <SignedIn address={session.address} kind={session.kind} />
-      )}
-      <GroupedList title={P.groups.device}>
-        <FeedbackRows />
-        <GroupedItem icon={Bell} label={P.notifications} href="/settings/notifications" />
-      </GroupedList>
-      <GroupedList title={P.groups.region}>
-        <div className="kit-item">
-          <span className="kit-item-label">{P.region.title}</span>
-          <span className="kit-item-detail">{posture === null ? "—" : held.length === 0 ? P.region.open : P.region.restricted(held.map((p) => P.region.pillar[p]).join(", "))}</span>
-        </div>
-      </GroupedList>
+      {!session.address ? <SignedOutSecurity onSignIn={() => session.connectFor(P.signInIntent)} /> : <SignedIn address={session.address} kind={session.kind} />}
     </section>
+  );
+}
+
+/** The Security group as it will read once signed in: the same rows, "—" for each figure, the sign-in on top. */
+function SignedOutSecurity({ onSignIn }: { onSignIn: () => void }) {
+  const rows: { icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>; label: string }[] = [
+    { icon: ShieldCheck, label: BACKUP.title },
+    { icon: KeyRound, label: P.keys.title },
+    { icon: Wallet, label: P.grants.title },
+    { icon: XGlyph as never, label: P.x },
+  ];
+  return (
+    <GroupedList title={P.groups.security}>
+      <div className="kit-item acct-signin-row">
+        <Pill tone="accent" size="sm" data-primary-action="" onClick={onSignIn}>{P.signIn}</Pill>
+      </div>
+      {rows.map((r) => (
+        <div key={r.label} className="kit-item acct-row-preview" aria-disabled="true">
+          <r.icon aria-hidden className="kit-item-icon" />
+          <span className="kit-item-label">{r.label}</span>
+          <span className="kit-item-detail">—</span>
+        </div>
+      ))}
+    </GroupedList>
   );
 }
 

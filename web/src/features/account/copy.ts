@@ -1,8 +1,9 @@
 /** `/settings/account` — the trust surface (D-053): see every key and stop any of them. Cut to Owarine's counts (R4-11). */
 export const ACCOUNT_PAGE = {
   title: "Account",
-  signedOut: "Sign in to see your account's keys.",
-  signIn: "Sign in",
+  /** Signed out (R6 money, T10): the Security group drawn as it will be, with one inline sign-in as its header row. */
+  signIn: "Sign in to see yours",
+  signInIntent: "to see your account",
   account: {
     title: "Your account",
     address: "Address",
@@ -17,7 +18,7 @@ export const ACCOUNT_PAGE = {
     stopAll: "Hold to stop all",
     stopping: "Stopping…",
   },
-  groups: { security: "Security", device: "Device", data: "Data", region: "Region" },
+  groups: { security: "Security", device: "Sound & Vibration", privacy: "Privacy", data: "Data", region: "Region" },
   notifications: "Notifications",
   keys: {
     title: "Trading keys",
@@ -101,9 +102,22 @@ export const ACCOUNT_PAGE = {
     faceId: { label: "Face ID to open", hint: "Asks when you come back" },
   },
   region: {
-    title: "Your region",
-    open: "All open",
+    title: "Trading here",
+    open: "Calls · stock tokens · launches",
     restricted: (pillars: string) => `Browse-only: ${pillars}`,
     pillar: { markets: "markets", stocks: "stock tokens", launch: "launches" },
+    foot: "Set by where you connect from.",
   },
+  privacy: { label: "Hide balances", hint: "Every amount reads as dots" },
+} as const;
+
+/** The settings shell (R6 money, S21): one title, three tabs, each its own page. */
+export const SETTINGS_NAV = {
+  title: "Settings",
+  label: "Settings",
+  tabs: [
+    { href: "/settings/account", label: "Account" },
+    { href: "/settings/notifications", label: "Notifications" },
+    { href: "/settings/device", label: "Device" },
+  ],
 } as const;

@@ -45,6 +45,8 @@
 .kit-group { display: flex; flex-direction: column; gap: 6px; }
 .kit-group-title { padding: 0 4px; color: var(--ow-muted); font: 700 11px/1 var(--ow-font-body); letter-spacing: 0.1em; text-transform: uppercase; }
 .kit-group-body { overflow: hidden; border: 1px solid var(--ow-hairline); border-radius: var(--ow-r-card); background: var(--ow-card); }
+/* R6 money (S21): Apple's grouped-list footer — one caption line under the card, saying what the setting gates. */
+.kit-group-foot { margin: 0; padding: 2px 4px 0; color: var(--color-ink-secondary); font: 400 12px/1.4 var(--ow-font-body); }
 .kit-item { display: flex; width: 100%; min-height: 48px; align-items: center; gap: 12px; padding: 0 14px; border-bottom: 1px solid var(--ow-hairline); font: 500 14px/1.2 var(--ow-font-body); color: var(--ow-ink); text-align: left; }
 .kit-item:last-child { border-bottom: 0; }
 .kit-item:hover { background: var(--ow-recessed); }

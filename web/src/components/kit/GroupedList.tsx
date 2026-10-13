@@ -8,12 +8,14 @@ import Link from "next/link";
 import { useId, type ReactNode } from "react";
 import { tapFeedback } from "@/lib/feedback";
 
-export function GroupedList({ title, children }: { title: string; children: ReactNode }) {
+/** `foot`: one caption line under the group (Apple's grouped-list footer, R6 money S21: what a setting gates). */
+export function GroupedList({ title, foot, children }: { title: string; foot?: string; children: ReactNode }) {
   const id = useId();
   return (
     <div className="kit-group" role="group" aria-labelledby={id}>
       <span id={id} className="kit-group-title">{title}</span>
       <div className="kit-group-body">{children}</div>
+      {foot ? <p className="kit-group-foot">{foot}</p> : null}
     </div>
   );
 }

@@ -3,11 +3,13 @@
 // grammar and features/alerts/PriceAlertsButton.tsx's alert rows): the title with "Activity →" beside it; BROWSER, one row
 // with its state and an Allow pill while the browser hasn't been asked; ANNOUNCE, four toggles on this device's topics;
 // PRICE ALERTS, a coloured ↑/↓, the asset, the target and ✕ per alert, kept on this device. One foot line says where
-// alerts fire. The app's push (SM2) keeps its own copy of the topics server-side.
-import Link from "next/link";
-import { X } from "lucide-react";
+// alerts fire. The app's push (SM2) keeps its own copy of the topics server-side. R6 money (S21, D-230): under the
+// settings shell's title and tabs; no alerts is an empty state with the way to set one (the terminal's alerts drawer),
+// and the inbox is a row of its own (it was a corner "Activity →").
+import { Inbox, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { GroupedList, GroupedToggle } from "@/components/kit/GroupedList";
+import { GroupedItem, GroupedList, GroupedToggle } from "@/components/kit/GroupedList";
+import { EmptyState } from "@/components/states/EmptyState";
 import { PillButton } from "@/components/kit/PillButton";
 import { notificationState, requestNotificationPermission, type NotificationState } from "@/features/alerts/notifications";
 import { ALERTS } from "@/features/alerts/copy";
@@ -16,6 +18,9 @@ import { NOTICE_SETTINGS as S } from "./copy";
 import { setNoticeTopics, useNoticeTopics, type NoticeTopics } from "./topics";
 import "@/styles/account.css";
 import "@/components/kit/kit.css";
+
+/** The terminal's alerts drawer, open (`TerminalScreen` DRAWERS.alerts): where an alert is set, on its chart. */
+const ALERTS_DRAWER = "/trade/BTC?d=trade-alerts";
 
 const usd = (cents: number) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -31,10 +36,6 @@ export function NotificationSettings() {
   }, []);
   return (
     <section className="acct-page">
-      <div className="acct-head">
-        <h1 className="type-display text-ink">{S.title}</h1>
-        <Link href="/activity" className="acct-head-link">{S.activity}</Link>
-      </div>
       <GroupedList title={S.browser.title}>
         <div className="kit-item">
           <span className="kit-item-label">{S.browser.row}</span>
@@ -48,11 +49,9 @@ export function NotificationSettings() {
           return <GroupedToggle key={row.key} label={row.label} checked={topics[key]} onChange={(on) => setNoticeTopics({ [key]: on })} />;
         })}
       </GroupedList>
-      <GroupedList title={S.alerts.title}>
+      <GroupedList title={S.alerts.title} foot={S.alerts.foot}>
         {alerts.length === 0 ? (
-          <Link href="/trade" className="kit-item">
-            <span className="kit-item-label kit-item-detail">{S.alerts.empty}</span>
-          </Link>
+          <EmptyState size="inline" why={S.alerts.empty} nextAction={{ label: S.alerts.set, href: ALERTS_DRAWER }} className="nt-alert-empty" />
         ) : (
           alerts.map((a) => {
             const line = ALERTS.line(a.direction, usd(a.targetCents));
@@ -70,7 +69,9 @@ export function NotificationSettings() {
           })
         )}
       </GroupedList>
-      <p className="nt-alert-foot">{S.alerts.foot}</p>
+      <GroupedList title={S.inbox.title}>
+        <GroupedItem icon={Inbox} label={S.inbox.row} href="/activity" />
+      </GroupedList>
     </section>
   );
 }
