@@ -5,11 +5,12 @@
  * from 1024 the card and §02 on the left and the action with the position in a sticky 22rem column (Owarine 90a91d71
  * `features/earn/MakerEarn.tsx`'s order, its trade-column width). Under 768, once the inline action scrolls away, a
  * dock (the parlay slip's `.pl-dock`) opens the same card in the phone sheet with the kit Keypad, its button pinned in
- * the sheet's footer.
+ * the sheet's footer. The dock steps aside while any modal is open (`useAnyModalOpen`).
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { SignerKind } from "@/components/tx";
 import { Modal } from "@/components/ui/modal";
+import { useAnyModalOpen } from "@/lib/modal-signal";
 import { usePhoneLayout } from "@/lib/phone-layout";
 import { EARN } from "./copy";
 
@@ -32,6 +33,7 @@ export function EarnLayout({ card, action, position, map, title }: EarnLayoutPro
   const phone = usePhoneLayout();
   const [away, setAway] = useState(false);
   const [sheet, setSheet] = useState(false);
+  const covered = useAnyModalOpen();
   useEffect(() => {
     const node = inline.current;
     if (!phone || !node || typeof IntersectionObserver === "undefined") return setAway(false);
@@ -49,7 +51,7 @@ export function EarnLayout({ card, action, position, map, title }: EarnLayoutPro
         </div>
         <div className="ea-a-map">{map}</div>
       </div>
-      {phone && away && !sheet ? (
+      {phone && away && !sheet && !covered ? (
         <div className="ea-dock">
           <button type="button" className="ea-dock-btn" onClick={() => setSheet(true)}>
             {EARN.action.dock}
