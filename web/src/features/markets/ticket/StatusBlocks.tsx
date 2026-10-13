@@ -26,7 +26,7 @@ export interface ReadoutCells {
   loss: string | null;
 }
 
-export function ReadoutStrip({ cells, live, caption, chance }: { cells: ReadoutCells; live: boolean; caption: string; chance: string | null }) {
+export function ReadoutStrip({ cells, live, caption, chance, note = null }: { cells: ReadoutCells; live: boolean; caption: string; chance: string | null; note?: string | null }) {
   const cell = (label: string, value: string | null, accent = false) => (
     <div className="tk-readout-cell">
       <span className="tk-readout-label">{label}</span>
@@ -44,6 +44,8 @@ export function ReadoutStrip({ cells, live, caption, chance }: { cells: ReadoutC
         <span>{caption}</span>
         {chance && <span className="tk-caption-chance">{chance}</span>}
       </div>
+      {/* Owarine's strip note: a Boost's knock-out line (R4-3, D-227). */}
+      {note && <p className="tk-note">{note}</p>}
     </>
   );
 }

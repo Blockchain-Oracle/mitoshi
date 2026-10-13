@@ -5,7 +5,7 @@ export const BOOST = {
   mode: "Boost",
   label: "Boost",
   valueText: (x: number) => (x === 1 ? "1×, no boost" : `${x}× boost`),
-  hint: "The reserve fronts the rest of the position. Your loss is capped at your stake, and a boost can knock out before expiry.",
+  hint: "Max loss is your stake. A boost can knock out early.",
   knockout: (x: number) => `${x}× can knock out before expiry.`,
   side: "Side",
   up: "Up",
@@ -78,5 +78,5 @@ export const BOOST = {
     owed: (amount: string) => `${amount} held for you. Collect once your policy allows.`,
     collect: (amount: string) => `Collect ${amount}`,
   },
-  footnote: "No fees to pay. The reserve fronts part of the position and is repaid first from whatever it fetches.",
+  footnote: "No fees. The reserve is repaid first.",
 } as const;

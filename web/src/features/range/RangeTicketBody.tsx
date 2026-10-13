@@ -6,6 +6,7 @@
  * the 23527 hold. Used as the markets ticket's Range mode (inside only, as the reference) and on /games/range (inside
  * or outside). Every blocker is the CTA's label (D-045); a stale book (D-119, 2σ from the signed spot) is named.
  * R4-2 (D-227): in a phone sheet the hold sits in the pinned footer (`SheetFooter`); on a page or the rail, in place.
+ * R4-3 (D-227): the footnote and the requote are the shared short lines (`TX.payoutSetAside`, `TX.requote`).
  */
 import { FUNDING } from "@/features/funding/copy";
 import { useFirstFunding } from "@/features/funding/first-fund-state";
@@ -176,10 +177,10 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
           <button type="button" className="min-h-touch type-body-strong underline" onClick={writes.reset}>{RANGE.outcome.another}</button>
         </div>
       ) : null}
-      {writes.outcome?.status === "requote" ? <p role="alert" className="rg-note rg-note--warn">{RANGE.outcome.requote(usd(writes.outcome.stakeBase))}</p> : null}
+      {writes.outcome?.status === "requote" ? <p role="alert" className="rg-note rg-note--warn">{TX.requote(usd(writes.outcome.stakeBase))}</p> : null}
       {writes.tx.kind === "failed" ? <TxFailureCard state={writes.tx} onRetry={writes.reset} explorerHref={writes.outcome?.status === "failed" && writes.outcome.txHash ? txUrl(writes.outcome.txHash, webEnv.markets.network) : null} /> : null}
       <p className="rg-foot">
-        {RANGE.ticket.footnote}
+        {TX.payoutSetAside}
         <br />
         {RANGE.ticket.reserve(usd(reserve.liquidBase), utilizationPct(reserve.utilizationBps))}
       </p>

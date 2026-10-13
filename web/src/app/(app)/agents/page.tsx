@@ -3,7 +3,7 @@
 import type { Metadata } from "next";
 import { AgentsPage } from "@/features/agents/AgentsPage";
 
-export const metadata: Metadata = { title: "Agents", description: "Agents you can copy: strategies with an on-chain ERC-8004 identity, their records as the chain settled them, and the runner's own words." };
+export const metadata: Metadata = { title: "Agents", description: "ERC-8004 agents, ranked by the capital behind them." };
 
 export default function Page() {
   return <AgentsPage />;

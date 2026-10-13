@@ -58,6 +58,11 @@ export interface CopyPlan {
   stops: string[];
   budgetError: string | null;
   perTradeError: string | null;
+  /** The form's Max chips (R4-6): the largest budget this one transaction can fund — the Trading Balance, plus a live
+   *  grant's unspent budget a new grant returns first, plus the wallet, less the fee (null while a balance is read) —
+   *  and the tightest per-trade ceiling of this envelope and every carried one. */
+  maxBudgetBase: bigint | null;
+  maxPerTradeBase: bigint;
   blockedBy: string | null;
   intent: TxIntent | null;
 }
@@ -135,7 +140,8 @@ export function planCopy(i: CopyPlanInput): CopyPlan {
           kind: "strategy-copy", strategyId: id, runner: s.runner as `0x${string}`, caps, expiresAtSec: i.nowSec + COPY_TERM_SEC, budgetBase, depositBase, mode, maxFeeBase: feeBase,
           carry: carried.map((c) => ({ strategyId: BigInt(c.strategyId), mode: c.mode })),
         };
-  return { route, shareBlocked, budgetBase, perTradeBase, depositBase, feeBase, caps, carried, stops, budgetError, perTradeError, blockedBy, intent };
+  const maxBudgetBase = i.availableBase === null || i.walletBase === null ? null : reusable + i.walletBase - feeBase;
+  return { route, shareBlocked, budgetBase, perTradeBase, depositBase, feeBase, caps, carried, stops, budgetError, perTradeError, maxBudgetBase, maxPerTradeBase: maxPerTrade, blockedBy, intent };
 }
 
 /**

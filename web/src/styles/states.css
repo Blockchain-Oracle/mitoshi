@@ -25,6 +25,24 @@
 .skel-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-hairline); }
 .skel-row:last-child { border-bottom: 0; }
 .skel-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 12px; }
+/* Automate (R4-6): each body placeholder sits where its content lands — the archive (StrategyGrid: 1 / 2 from 768 / 3
+ * from 1280), the creator studio (builder.css: the four-step rail, the panel beside a 19 rem preview to 850, the strip
+ * under it), the agents board (the stat strip 2 × 2 then 4-up from 768, the runner rows). */
+.skel-section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 24px; border-top: 1px solid var(--color-hairline); }
+.skel-tabs { display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--color-hairline); }
+.skel-strat-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 768px) { .skel-strat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; } }
+@media (min-width: 1280px) { .skel-strat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.skel-strat-card { padding: 24px; border-radius: 18px; min-height: 13rem; }
+.skel-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 2rem 0; padding-bottom: .9rem; border-bottom: 1px solid var(--color-hairline); }
+.skel-studio { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; gap: 2rem; align-items: start; }
+.skel-studio-strip { display: none; }
+.skel-studio-actions { display: flex; justify-content: flex-end; margin-top: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--color-hairline); }
+@media (max-width: 850px) { .skel-studio { grid-template-columns: minmax(0, 1fr); } .skel-studio-aside { display: none; } .skel-studio-strip { display: block; } }
+@media (max-width: 767px) { .skel-steps { margin: 1rem 0; } }
+.skel-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 768px) { .skel-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.skel-board-row { flex-direction: row; align-items: center; gap: 16px; padding: 20px; border-radius: 4px; }
 
 /* The first-load splash (components/shell/Splash.tsx; the terminal's `.tm-splash`, app-wide). It also leaves on its own
  * at 4 s, so a page whose script never runs is never stuck under it. */
