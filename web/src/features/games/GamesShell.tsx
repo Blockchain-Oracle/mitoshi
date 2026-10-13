@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useState, type ReactNode } from "react";
 import { installAudioUnlock, pressSfx, releaseSfx, stopBgm } from "./audio";
-import { GameSettingsSheet } from "./GameSettingsSheet";
 import { GamesProvider, useGames } from "./GamesProvider";
 import { GamesRail } from "./GamesRail";
 import "./games.css";
+
+// The settings sheet is an island fetched on its first open (Base UI's dialog stays out of every /games first load).
+const GameSettingsSheet = dynamic(() => import("./GameSettingsSheet").then((m) => m.GameSettingsSheet), { ssr: false, loading: () => null });
 
 /**
  * The `/games` frame: settings, the rail, the active match and the accent, owned once for all
@@ -34,7 +37,10 @@ function isControl(target: EventTarget | null): boolean {
 }
 
 function GamesFrame({ children }: { children: ReactNode }) {
-  const { reducedMotion, settings, immersive } = useGames();
+  const { reducedMotion, settings, immersive, settingsOpen } = useGames();
+  // Mounted from its first open on, so it can animate shut.
+  const [settingsWanted, setSettingsWanted] = useState(false);
+  if (settingsOpen && !settingsWanted) setSettingsWanted(true);
 
   // Audio lives for exactly as long as the frame does: unlocked on the first gesture and — Pips's discipline — every
   // control sounding its own press and release, baked in here once. The music bed is the stages' (R4-9, D-227: Senryo
@@ -74,7 +80,7 @@ function GamesFrame({ children }: { children: ReactNode }) {
     <div className="gm-frame" data-reduced-motion={reducedMotion ? "true" : "false"} data-accent={settings.accent} data-immersive={immersive ? "" : undefined}>
       <GamesRail />
       {children}
-      <GameSettingsSheet />
+      {settingsWanted ? <GameSettingsSheet /> : null}
     </div>
   );
 }

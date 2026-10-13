@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, CircleHelp, SlidersHorizontal, Volume2, VolumeX } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -9,9 +10,11 @@ import { toggleMute, useMuted } from "./audio";
 import { gameEntry, gameIdFromPath } from "./catalog";
 import { GAMES } from "./copy";
 import { useGames } from "./GamesProvider";
-import { HowToSheet } from "./HowToSheet";
 import { rememberGame } from "./last-game";
 import "@/components/kit/kit.css";
+
+// The how-to is an island fetched on its first open, so the rail carries no dialog runtime into first load.
+const HowToSheet = dynamic(() => import("./HowToSheet").then((m) => m.HowToSheet), { ssr: false, loading: () => null });
 
 /** The cabinet sticker's tone by whose money is at risk: free reads profit, your stake the accent, the house's quiet. */
 export const ECON_TONE = { none: "profit", "market-order": "accent", "market-order-and-pot": "accent", "house-position": "surface" } as const;
@@ -43,6 +46,7 @@ export function GamesRail() {
   const entry = id ? gameEntry(id) : null;
   const { setSettingsOpen, feedback, activeMatchId: roomMatchId } = useGames();
   const [howTo, setHowTo] = useState(false);
+  const [howToWanted, setHowToWanted] = useState(false);
   const liveDuel = useLiveDuel(pathname);
   // Resume shows off the duel's own stage: a live duel you're paired into, one tap back.
   const activeMatchId = pathname?.startsWith("/games/duel") ? null : (roomMatchId ?? liveDuel);
@@ -69,7 +73,7 @@ export function GamesRail() {
 
   return (
     <>
-      <HowToSheet id={entry.id} open={howTo} onClose={() => setHowTo(false)} />
+      {howToWanted ? <HowToSheet id={entry.id} open={howTo} onClose={() => setHowTo(false)} /> : null}
       <div className="gm-rail">
         <div className="gm-rail-inner">
           <Link href="/games" className="gm-rail-icon" aria-label={GAMES.rail.back} title={GAMES.rail.back}>
@@ -86,7 +90,7 @@ export function GamesRail() {
                 {GAMES.rail.resume}
               </Link>
             ) : null}
-            <button type="button" className="gm-rail-icon" onClick={() => setHowTo(true)} aria-label={GAMES.howToWords.open} title={GAMES.howToWords.open}>
+            <button type="button" className="gm-rail-icon" onClick={() => { setHowToWanted(true); setHowTo(true); }} aria-label={GAMES.howToWords.open} title={GAMES.howToWords.open}>
               <CircleHelp aria-hidden />
             </button>
             <button type="button" className="gm-rail-icon" onClick={toggleMute} aria-pressed={muted} aria-label={muted ? GAMES.rail.sound : GAMES.rail.mute} title={muted ? GAMES.rail.sound : GAMES.rail.mute}>
