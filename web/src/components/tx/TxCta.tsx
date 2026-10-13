@@ -15,7 +15,7 @@ import type { TxState } from "@cwf/core";
 import { canConfirm } from "@cwf/core";
 import type { BlockerCopy } from "@cwf/core/copy";
 import type { CSSProperties, ReactNode } from "react";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill } from "@/components/kit/Pill";
 import { BlockedCta, type BlockedCtaProps } from "@/components/states/BlockedCta";
 import { Faces } from "@/components/states/Faces";
 import { useClockValue } from "@/lib/clock";
@@ -131,7 +131,7 @@ export function TxCta({ state, action, signer, sponsored = false, onConfirm, ton
     : null;
   const cta = (
     <div className={cn("txcta", receipt ? null : className)} data-phase={state.kind}>
-      <PillButton
+      <Pill
         type="button"
         data-primary-action=""
         data-done={done ? "" : undefined}
@@ -149,7 +149,7 @@ export function TxCta({ state, action, signer, sponsored = false, onConfirm, ton
           <span className="truncate">{face}</span>
         </Faces>
         <span aria-hidden className="txcta-bar" />
-      </PillButton>
+      </Pill>
       <div className="txcta-caption type-caption" aria-live={state.kind === "failed" ? "polite" : undefined}>{caption}</div>
     </div>
   );

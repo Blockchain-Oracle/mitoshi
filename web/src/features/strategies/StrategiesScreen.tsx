@@ -6,7 +6,6 @@
 // `?copy=<address>` (the mirror preset, that trader in it) are read once after mount. The stage is the inset.
 import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/states/EmptyState";
-import { LoadingState } from "@/components/states/LoadingState";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { CopyDrawer, type DrawerTab } from "./CopyDrawer";
 import { STRATEGIES as S } from "./copy";
@@ -20,6 +19,8 @@ import { useCopyWrites } from "./useCopyWrites";
 import { useStrategies } from "./useStrategies";
 import "./strategies.css";
 import "./builder.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { strategyGrid as strategyGridShape } from "@/components/states/shapes/automate";
 
 export function StrategiesScreen({ view, onView: setView }: { view: View; onView: (v: View) => void }) {
   const reading = useStrategies();
@@ -61,7 +62,7 @@ export function StrategiesScreen({ view, onView: setView }: { view: View; onView
 
       {view !== "create" && (
         reading.isPending ? (
-          <LoadingState shape="strategy-grid" label={S.loading} />
+          <LoadingFrame shape="strategy-grid" label={S.loading}>{strategyGridShape()}</LoadingFrame>
         ) : reading.isError && !payload ? (
           <div role="alert" className="strat-empty flex flex-col items-center gap-3">
             <p className="strat-h2">{S.error}</p>
@@ -70,7 +71,7 @@ export function StrategiesScreen({ view, onView: setView }: { view: View; onView
         ) : !payload?.deployed ? (
           <EmptyState why={S.notDeployed} />
         ) : view === "yours" && writes.signedIn && !writes.mineReady ? (
-          <LoadingState shape="strategy-grid" label={S.loading} />
+          <LoadingFrame shape="strategy-grid" label={S.loading}>{strategyGridShape()}</LoadingFrame>
         ) : view === "yours" && writes.mineFailed ? (
           <div role="alert" className="strat-empty flex flex-col items-center gap-3">
             <p className="strat-h2">{S.yours.unreadable}</p>

@@ -9,7 +9,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { TabsPanel, UnderlineTabs } from "@/components/kit/desk-kit";
 import { EmptyState } from "@/components/states/EmptyState";
-import { LoadingState } from "@/components/states/LoadingState";
 import { notify } from "@/lib/toast";
 import { ReportDialog } from "../social/report-dialog-lazy";
 import { useSocialSession } from "../social/session";
@@ -28,6 +27,8 @@ import { RecordHero } from "./RecordHero";
 import { FillRows } from "./FillRows";
 import "./cockpit.css";
 import "../strategies/strategies.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { cockpit as cockpitShape } from "@/components/states/shapes/automate";
 
 const C = AGENTS.cockpit;
 type Tab = "overview" | "decisions" | "copies" | "identity";
@@ -50,7 +51,7 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
   const [reporting, setReporting] = useState(false);
   const [tab, setTab] = useState<Tab>("overview");
 
-  if (detail.isPending) return <LoadingState shape="cockpit" label={AGENTS.loading} />;
+  if (detail.isPending) return <LoadingFrame shape="cockpit" label={AGENTS.loading}>{cockpitShape()}</LoadingFrame>;
   if (!detail.data) return detail.isError
     ? <EmptyState why={AGENTS.error} nextAction={{ label: AGENTS.retry, onClick: () => void detail.refetch() }} />
     : <EmptyState why={C.notFound} nextAction={{ label: C.back, href: "/agents" }} />;

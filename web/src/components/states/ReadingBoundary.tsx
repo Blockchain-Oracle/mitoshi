@@ -16,6 +16,8 @@ interface ReadingBoundaryProps<T> {
   /** `null` = nothing ever known (skeleton); the port never returns null once it has answered. */
   reading: Reading<T> | null;
   shape?: LoadingShape;
+  /** A page-specific skeleton (`<LoadingFrame>` + its shape), so the generic boundary never imports every shape. */
+  placeholder?: ReactNode;
   isEmpty?: (value: T) => boolean;
   empty?: { why: string; nextAction?: NextAction };
   retry?: () => void;
@@ -29,6 +31,7 @@ interface ReadingBoundaryProps<T> {
 export function ReadingBoundary<T>({
   reading,
   shape = "plate",
+  placeholder,
   isEmpty,
   empty,
   retry,
@@ -36,7 +39,7 @@ export function ReadingBoundary<T>({
   className,
   children,
 }: ReadingBoundaryProps<T>) {
-  if (reading === null) return <LoadingState shape={shape} className={className} />;
+  if (reading === null) return placeholder ?? <LoadingState shape={shape} className={className} />;
   if (!isOk(reading)) return <ErrorState diagnosis={reading.error} retry={retry} className={className} />;
   if (empty && isEmpty?.(reading.value)) return <EmptyState why={empty.why} nextAction={empty.nextAction} className={className} />;
 

@@ -5,13 +5,14 @@
  *  is replaced in place (R4-6 gap 16, D-227). The cockpit's placeholder is the whole page (`cockpit`). No wrapper inset —
  *  the stage is the inset. */
 import dynamic from "next/dynamic";
-import { LoadingState } from "@/components/states";
 import { useDataReady } from "@/providers/data/context";
 import { AgentsHead } from "./AgentsHead";
 import { AGENTS } from "./copy";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { agentsBoard as agentsBoardShape, cockpit as cockpitShape } from "@/components/states/shapes/automate";
 
-const Board = () => <LoadingState shape="agents-board" label={AGENTS.loading} />;
-const Cockpit = () => <LoadingState shape="cockpit" label={AGENTS.loading} />;
+const Board = () => <LoadingFrame shape="agents-board" label={AGENTS.loading}>{agentsBoardShape()}</LoadingFrame>;
+const Cockpit = () => <LoadingFrame shape="cockpit" label={AGENTS.loading}>{cockpitShape()}</LoadingFrame>;
 const AgentsScreen = dynamic(() => import("./AgentsScreen").then((m) => m.AgentsScreen), { ssr: false, loading: () => <Board /> });
 const AgentProfile = dynamic(() => import("./AgentProfile").then((m) => m.AgentProfile), { ssr: false, loading: () => <Cockpit /> });
 

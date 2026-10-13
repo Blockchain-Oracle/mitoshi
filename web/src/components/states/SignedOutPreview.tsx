@@ -7,7 +7,7 @@
 // point, Dub's product preview beside its sign-in (Refero).
 import { SIGNED_OUT } from "@cwf/core/copy";
 import type { ReactNode } from "react";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill } from "@/components/kit/Pill";
 import { useWalletSession } from "@/lib/wallet-session";
 import { cn } from "@/lib/utils";
 
@@ -34,9 +34,9 @@ export function SignedOutPreview({ intent, source, title, children, className }:
       <div className="so-preview-foot">
         <span className="so-preview-chip type-label-micro">{source}</span>
         {title ? <h2 className="so-preview-title type-title">{title}</h2> : null}
-        <PillButton tone="accent" size="lg" className="max-lg:w-full lg:min-w-60" onClick={() => session.connectFor(intent)}>
+        <Pill tone="accent" size="lg" className="max-lg:w-full lg:min-w-60" onClick={() => session.connectFor(intent)}>
           {SIGNED_OUT.cta}
-        </PillButton>
+        </Pill>
       </div>
     </section>
   );

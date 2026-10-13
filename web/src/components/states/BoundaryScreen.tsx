@@ -3,7 +3,7 @@
 
 import { ERROR_BOUNDARY } from "@cwf/core/copy";
 import { useEffect } from "react";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill, PillLink } from "@/components/kit/Pill";
 
 interface BoundaryScreenProps {
   error: Error & { digest?: string };
@@ -33,12 +33,12 @@ export function BoundaryScreen({ error, reset, backHref = "/markets", root = fal
       <h1 className="boundary-title">{ERROR_BOUNDARY.headline}</h1>
       <p className="boundary-body">{ERROR_BOUNDARY.body}</p>
       <div className="boundary-actions">
-        <PillButton tone="ink" size="md" onClick={() => reset()}>
+        <Pill tone="ink" size="md" onClick={() => reset()}>
           {ERROR_BOUNDARY.retry}
-        </PillButton>
-        <PillButton tone="ghost" size="md" render={<a href={backHref} />}>
+        </Pill>
+        <PillLink native tone="ghost" size="md" href={backHref}>
           {ERROR_BOUNDARY.back}
-        </PillButton>
+        </PillLink>
       </div>
       <details className="boundary-details">
         <summary>{ERROR_BOUNDARY.technical}</summary>

@@ -8,7 +8,7 @@
  */
 import type { TxState } from "@cwf/core";
 import { diagnosisCopy, fixForDiagnosis, fixLabel } from "@cwf/core/copy";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill } from "@/components/kit/Pill";
 import { useFixRunner } from "@/components/states/BlockedCta";
 import { cn } from "@/lib/utils";
 import { TX } from "./copy";
@@ -29,12 +29,12 @@ export function TxFailureCard({ state, onRetry, explorerHref, className }: { sta
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {fix && action ? (
-          <PillButton tone={fix.kind === "retry" ? "ink" : "accent"} size="sm" onClick={action}>
+          <Pill tone={fix.kind === "retry" ? "ink" : "accent"} size="sm" onClick={action}>
             {fix.kind === "retry" ? TX.retry : fixLabel(fix)}
-          </PillButton>
+          </Pill>
         ) : null}
         {onRetry && state.diagnosis.retryable && fix?.kind !== "retry" ? (
-          <PillButton tone={fix ? "ghost" : "ink"} size="sm" onClick={onRetry}>{TX.retry}</PillButton>
+          <Pill tone={fix ? "ghost" : "ink"} size="sm" onClick={onRetry}>{TX.retry}</Pill>
         ) : null}
         {explorerHref ? (
           <a href={explorerHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-touch items-center px-2 type-caption text-ink! underline underline-offset-4">

@@ -10,7 +10,7 @@ import type { Diagnosis } from "@cwf/core";
 import { diagnosisCopy, ERROR_BOUNDARY, fixForDiagnosis, fixLabel } from "@cwf/core/copy";
 import { RotateCw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill, PillLink } from "@/components/kit/Pill";
 import { useFixRunner } from "./BlockedCta";
 import { StateFrame } from "./EmptyState";
 
@@ -48,14 +48,14 @@ export function ErrorState({ diagnosis, retry, backHref, mode = "read", variant 
       className={className}
       actions={detour || offerRetry || backHref ? (
         <>
-          {detour ? <PillButton tone="accent" size="sm" onClick={() => run(detour)?.()}>{fixLabel(detour)}</PillButton> : null}
+          {detour ? <Pill tone="accent" size="sm" onClick={() => run(detour)?.()}>{fixLabel(detour)}</Pill> : null}
           {offerRetry ? (
-            <PillButton tone="ink" size="sm" onClick={offerRetry}>
+            <Pill tone="ink" size="sm" onClick={offerRetry}>
               {variant === "strip" ? <RotateCw aria-hidden /> : null}
               {ERROR_BOUNDARY.retry}
-            </PillButton>
+            </Pill>
           ) : null}
-          {backHref ? <PillButton tone="ghost" size="sm" render={<Link href={backHref} />}>{ERROR_BOUNDARY.back}</PillButton> : null}
+          {backHref ? <PillLink tone="ghost" size="sm" href={backHref}>{ERROR_BOUNDARY.back}</PillLink> : null}
         </>
       ) : null}
     >

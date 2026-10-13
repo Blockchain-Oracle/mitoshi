@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import { LoadingState } from "@/components/states/LoadingState";
 import "@/styles/themes.css";
 import "@/styles/launch.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { studio as studioShape } from "@/components/states/shapes/automate";
 
 export const THEMES_READING = "Reading the themes";
 
@@ -20,5 +22,5 @@ export function ThemeLoading() {
 }
 
 export const ThemesIsland = dynamic(() => import("./ThemesScreen").then((m) => m.ThemesScreen), { ssr: false, loading: () => <LoadingState shape="cards" label={THEMES_READING} /> });
-export const ThemeStudioIsland = dynamic(() => import("./ThemeStudio").then((m) => m.ThemeStudio), { ssr: false, loading: () => <LoadingState shape="studio" /> });
+export const ThemeStudioIsland = dynamic(() => import("./ThemeStudio").then((m) => m.ThemeStudio), { ssr: false, loading: () => <LoadingFrame shape="studio">{studioShape()}</LoadingFrame> });
 export const ThemeIsland = dynamic(() => import("./ThemeScreen").then((m) => m.ThemeScreen), { ssr: false, loading: () => <ThemeLoading /> });

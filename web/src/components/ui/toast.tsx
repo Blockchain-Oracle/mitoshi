@@ -11,7 +11,7 @@ import * as React from "react"
 import { Toast as ToastPrimitive } from "@base-ui/react/toast"
 
 import { cn } from "@/lib/utils"
-import { PillButton } from "@/components/kit/PillButton"
+import { Pill } from "@/components/kit/Pill"
 import { XIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from "lucide-react"
 
 const toast = ToastPrimitive.createToastManager()
@@ -107,7 +107,7 @@ function ToastDescription({
 
 function ToastAction({
   className,
-  render = <PillButton tone="ink" size="sm" />,
+  render = <Pill tone="ink" size="sm" />,
   ...props
 }: ToastPrimitive.Action.Props) {
   return (

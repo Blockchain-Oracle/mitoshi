@@ -18,6 +18,8 @@ import { ReserveCard } from "./ReserveCard";
 import { RESERVES, type ReserveWords } from "./reserves";
 import { hasPosition, SupplyPosition } from "./SupplyPosition";
 import { useEarnWrites } from "./useEarnWrites";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { earn as earnShape } from "@/components/states/shapes/money";
 
 type HouseKind = Exclude<ReserveKind, "maker">;
 
@@ -48,7 +50,7 @@ export function HouseEarn({ kind }: { kind: HouseKind }) {
   const words = RESERVES[kind];
   const reading = useHouseReserve(kind);
   return (
-    <ReadingBoundary reading={reading} shape="earn">
+    <ReadingBoundary reading={reading} placeholder={<LoadingFrame shape="earn">{earnShape()}</LoadingFrame>}>
       {(state) => (state ? <Page kind={kind} words={words} reading={state} /> : <NotOnThisNetwork words={words} />)}
     </ReadingBoundary>
   );

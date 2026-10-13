@@ -16,6 +16,8 @@ import { useRangeWrites } from "../../range/useRangeWrites";
 import { WindowPicker } from "../../range/WindowPicker";
 import { MOONSHOT } from "./copy";
 import { MoonshotTicket } from "./MoonshotTicket";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { game as gameShape } from "@/components/states/shapes/games";
 
 function Page({ reserve }: { reserve: RangeReserveState }) {
   const session = useWalletSession();
@@ -39,7 +41,7 @@ export function MoonshotScreen() {
   const reading = useRangeReserve();
   return (
     <div className="game-page">
-      <ReadingBoundary reading={reading} shape="game">
+      <ReadingBoundary reading={reading} placeholder={<LoadingFrame shape="game">{gameShape()}</LoadingFrame>}>
         {(reserve) => (reserve ? <Page reserve={reserve} /> : <EmptyState why={MOONSHOT.notDeployed.why} detail={MOONSHOT.notDeployed.body} />)}
       </ReadingBoundary>
     </div>

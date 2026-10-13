@@ -24,6 +24,8 @@ import "@/styles/claim-winnings.css";
 import "@/styles/history.css";
 import "@/styles/alerts.css";
 import "./markets.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { marketsHero as marketsHeroShape, marketsRail as marketsRailShape } from "@/components/states/shapes/markets";
 
 /**
  * The page's own outline while the data layer boots (D-226; R4-3 D-227, loading parity; R6 T08, D-230): the hero card
@@ -37,9 +39,9 @@ function Placeholder() {
       <section className="page-hero markets-hero">
         <div className="container">
           <div className="hero-grid hero-grid-mini">
-            <LoadingState shape="markets-hero" layout="contents" label={MARKETS.loadingWindows} />
+            <LoadingFrame shape="markets-hero" layout="contents" label={MARKETS.loadingWindows}>{marketsHeroShape()}</LoadingFrame>
             <RailFrame>
-              <LoadingState shape="markets-rail" layout="contents" label={MARKETS.loadingWindows} />
+              <LoadingFrame shape="markets-rail" layout="contents" label={MARKETS.loadingWindows}>{marketsRailShape()}</LoadingFrame>
             </RailFrame>
           </div>
         </div>

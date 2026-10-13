@@ -16,6 +16,8 @@ import { RangeRounds } from "./RangeRounds";
 import { RangeTicketBody } from "./RangeTicketBody";
 import { useRangeWrites } from "./useRangeWrites";
 import { WindowPicker } from "./WindowPicker";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { game as gameShape } from "@/components/states/shapes/games";
 
 function Page({ reserve }: { reserve: RangeReserveState }) {
   const session = useWalletSession();
@@ -39,7 +41,7 @@ export function RangeScreen() {
   const reading = useRangeReserve();
   return (
     <div className="game-page">
-      <ReadingBoundary reading={reading} shape="game">
+      <ReadingBoundary reading={reading} placeholder={<LoadingFrame shape="game">{gameShape()}</LoadingFrame>}>
         {(reserve) => (reserve ? <Page reserve={reserve} /> : <EmptyState why={RANGE.notDeployed} />)}
       </ReadingBoundary>
     </div>

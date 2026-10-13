@@ -4,6 +4,8 @@
 import dynamic from "next/dynamic";
 import { LoadingState } from "@/components/states/LoadingState";
 import "@/styles/launch.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { studio as studioShape } from "@/components/states/shapes/automate";
 
 export const LAUNCH_READING = "Reading the launches";
 
@@ -20,6 +22,6 @@ export function TokenLoading() {
 }
 
 export const LaunchIsland = dynamic(() => import("./LaunchScreen").then((m) => m.LaunchScreen), { ssr: false, loading: () => <LoadingState shape="page" label={LAUNCH_READING} /> });
-export const MemeWizardIsland = dynamic(() => import("./MemeWizard").then((m) => m.MemeWizard), { ssr: false, loading: () => <LoadingState shape="studio" /> });
-export const StablecoinWizardIsland = dynamic(() => import("./StablecoinWizard").then((m) => m.StablecoinWizard), { ssr: false, loading: () => <LoadingState shape="studio" /> });
+export const MemeWizardIsland = dynamic(() => import("./MemeWizard").then((m) => m.MemeWizard), { ssr: false, loading: () => <LoadingFrame shape="studio">{studioShape()}</LoadingFrame> });
+export const StablecoinWizardIsland = dynamic(() => import("./StablecoinWizard").then((m) => m.StablecoinWizard), { ssr: false, loading: () => <LoadingFrame shape="studio">{studioShape()}</LoadingFrame> });
 export const TokenIsland = dynamic(() => import("./TokenScreen").then((m) => m.TokenScreen), { ssr: false, loading: () => <TokenLoading /> });

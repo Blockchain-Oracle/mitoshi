@@ -18,6 +18,8 @@ import { NotDeployed, ReserveCard } from "./ReserveCard";
 import { RESERVES } from "./reserves";
 import { hasPosition, SupplyPosition } from "./SupplyPosition";
 import { useEarnWrites } from "./useEarnWrites";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { earn as earnShape } from "@/components/states/shapes/money";
 
 const WORDS = RESERVES.maker;
 const HISTORY = 10;
@@ -25,7 +27,7 @@ const HISTORY = 10;
 export function MakerEarn() {
   const reading = useMakerVault();
   return (
-    <ReadingBoundary reading={reading} shape="earn">
+    <ReadingBoundary reading={reading} placeholder={<LoadingFrame shape="earn">{earnShape()}</LoadingFrame>}>
       {(state) => (state ? <Page vault={state} /> : <NotDeployed />)}
     </ReadingBoundary>
   );

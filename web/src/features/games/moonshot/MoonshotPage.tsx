@@ -1,16 +1,17 @@
 "use client";
 /** The /games/moonshot island (§3.1, D-071). */
 import dynamic from "next/dynamic";
-import { LoadingState } from "@/components/states";
 import { useDataReady } from "@/providers/data/context";
 import { MOONSHOT } from "./copy";
 import "@/styles/parlay.css";
 import "@/styles/range.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { game as gameShape } from "@/components/states/shapes/games";
 
 function Placeholder() {
   return (
     <div className="game-page">
-      <LoadingState shape="game" label={MOONSHOT.ticket.pricing} />
+      <LoadingFrame shape="game" label={MOONSHOT.ticket.pricing}>{gameShape()}</LoadingFrame>
     </div>
   );
 }

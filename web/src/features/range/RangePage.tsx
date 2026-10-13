@@ -1,16 +1,17 @@
 "use client";
 /** The /games/range island (same shape as /parlay, §3.1, D-071): the screen loads with the late data layer. */
 import dynamic from "next/dynamic";
-import { LoadingState } from "@/components/states";
 import { useDataReady } from "@/providers/data/context";
 import { RANGE } from "./copy";
 import "@/styles/parlay.css";
 import "@/styles/range.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { game as gameShape } from "@/components/states/shapes/games";
 
 function Placeholder() {
   return (
     <div className="game-page">
-      <LoadingState shape="game" label={RANGE.band.waiting} />
+      <LoadingFrame shape="game" label={RANGE.band.waiting}>{gameShape()}</LoadingFrame>
     </div>
   );
 }

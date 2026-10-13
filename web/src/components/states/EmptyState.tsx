@@ -6,7 +6,7 @@
 // its frame (a container query stacks the actions under 18 rem); it never animates (an empty state is a fact).
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill, PillLink } from "@/components/kit/Pill";
 import { cn } from "@/lib/utils";
 
 export type NextAction = { label: string; href: string } | { label: string; onClick: () => void };
@@ -29,9 +29,9 @@ export interface EmptyStateProps {
 
 export function ActionPill({ action, tone }: { action: NextAction; tone: "accent" | "ink" | "ghost" }) {
   return "href" in action ? (
-    <PillButton tone={tone} size="sm" render={<Link href={action.href} />}>{action.label}</PillButton>
+    <PillLink tone={tone} size="sm" href={action.href}>{action.label}</PillLink>
   ) : (
-    <PillButton tone={tone} size="sm" onClick={action.onClick}>{action.label}</PillButton>
+    <Pill tone={tone} size="sm" onClick={action.onClick}>{action.label}</Pill>
   );
 }
 

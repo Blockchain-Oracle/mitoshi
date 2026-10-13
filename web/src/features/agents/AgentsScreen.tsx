@@ -6,7 +6,6 @@
 // one inset.
 import Link from "next/link";
 import { useState } from "react";
-import { LoadingState } from "@/components/states/LoadingState";
 import { cn } from "@/lib/utils";
 import { usd } from "../strategies/format";
 import { useStrategies } from "../strategies/useStrategies";
@@ -15,6 +14,8 @@ import { rankAgents, type BoardSort } from "./board";
 import { AGENTS as A } from "./copy";
 import "../strategies/strategies.css";
 import "../strategies/builder.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { agentsBoard as agentsBoardShape } from "@/components/states/shapes/automate";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -34,7 +35,7 @@ export function AgentsScreen() {
   return (
     <>
       {reading.isPending ? (
-        <LoadingState shape="agents-board" label={A.loading} />
+        <LoadingFrame shape="agents-board" label={A.loading}>{agentsBoardShape()}</LoadingFrame>
       ) : reading.isError && !reading.data ? (
         <div role="alert" className="strat-empty flex flex-col items-center gap-3">
           <p className="strat-h2">{A.error}</p>

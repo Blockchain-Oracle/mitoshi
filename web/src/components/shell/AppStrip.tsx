@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useInstallState } from "@/features/install";
+import { useInstallState } from "@/features/install/useInstallPrompt";
 import { APP_STRIP } from "@/lib/copy";
 
 const KEY = "cwf.appstrip.dismissed";

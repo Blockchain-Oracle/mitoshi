@@ -7,7 +7,7 @@ import type { Hex, Network } from "@cwf/core";
 import { txUrl } from "@cwf/core";
 import { shortHex } from "@cwf/core/units";
 import type { ReactNode } from "react";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill } from "@/components/kit/Pill";
 import { ReceiptRow } from "@/components/receipt/ReceiptRow";
 import { ReceiptStub } from "@/components/receipt/ReceiptStub";
 import { TX } from "./copy";
@@ -49,7 +49,7 @@ export function TxPlaced({ title, figure, figureLabel, txHash, network, rows = [
       </article>
       {onAnother || share ? (
         <div className="tx-placed-actions">
-          {onAnother ? <PillButton tone="ghost" size="md" onClick={onAnother}>{anotherLabel}</PillButton> : null}
+          {onAnother ? <Pill tone="ghost" size="md" onClick={onAnother}>{anotherLabel}</Pill> : null}
           {share}
         </div>
       ) : null}

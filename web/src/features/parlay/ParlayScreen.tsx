@@ -23,6 +23,8 @@ import { Tickets } from "./Tickets";
 import { useParlayWrites } from "./useParlayWrites";
 import { WindowList } from "./WindowList";
 import "@/components/kit/kit.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { game as gameShape } from "@/components/states/shapes/games";
 
 function Owed({ wallet }: { wallet: string }) {
   const reading = useReadingQuery([...parlayKeys.all, "owed", wallet], () => readParlayOwed(wallet as `0x${string}`), { pollMs: 30_000 });
@@ -89,7 +91,7 @@ export function ParlayScreen() {
   const reading = useParlayReserve();
   return (
     <div className="game-page pl-page">
-      <ReadingBoundary reading={reading} shape="game">
+      <ReadingBoundary reading={reading} placeholder={<LoadingFrame shape="game">{gameShape()}</LoadingFrame>}>
         {(reserve) => (reserve ? <Page reserve={reserve} /> : <EmptyState why={PARLAY.notDeployed.why} detail={PARLAY.notDeployed.body} />)}
       </ReadingBoundary>
     </div>

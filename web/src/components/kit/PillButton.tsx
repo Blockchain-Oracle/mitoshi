@@ -5,21 +5,11 @@
 // with a 44 px hit area, `md` 48, `lg` the ticket CTA's 52. Pressing sinks the pill slightly (not under reduced motion).
 // `pillButtonVariants` gives a Link the same look.
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import "./pill.css";
+import { pillButtonVariants, type PillLook } from "./pill-variants";
 
-export const pillButtonVariants = cva("kit-pill", {
-  variants: {
-    tone: { accent: "kit-pill--accent", ink: "kit-pill--ink", white: "kit-pill--white", ghost: "kit-pill--ghost", up: "kit-pill--up", down: "kit-pill--down", "up-fill": "kit-pill--up-fill", "down-fill": "kit-pill--down-fill" },
-    size: { sm: "kit-pill--sm", md: "kit-pill--md", lg: "kit-pill--lg", icon: "kit-pill--icon" },
-    block: { true: "kit-pill--block", false: "" },
-  },
-  defaultVariants: { tone: "ink", size: "md", block: false },
-});
-
-export type PillTone = NonNullable<VariantProps<typeof pillButtonVariants>["tone"]>;
-export type PillButtonProps = ButtonPrimitive.Props & VariantProps<typeof pillButtonVariants>;
+export { pillButtonVariants, type PillTone } from "./pill-variants";
+export type PillButtonProps = ButtonPrimitive.Props & PillLook;
 
 export function PillButton({ className, tone, size, block, nativeButton, ...props }: PillButtonProps) {
   return <ButtonPrimitive data-slot="pill-button" nativeButton={nativeButton ?? props.render === undefined} className={cn(pillButtonVariants({ tone, size, block }), className)} {...props} />;

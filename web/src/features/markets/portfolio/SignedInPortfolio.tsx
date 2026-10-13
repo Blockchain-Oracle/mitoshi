@@ -33,6 +33,8 @@ import { Pockets } from "./Pockets";
 import { useMoney } from "./useMoney";
 import { PositionValuers } from "./usePortfolioPositions";
 import "@/components/kit/kit.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { portfolio as portfolioShape } from "@/components/states/shapes/money";
 
 // The private balance (S10d): its moves, tiles and the account's private bets — its own island.
 const PrivateBalancePanel = dynamic(() => import("@/features/private/PrivateBalancePanel").then((m) => m.PrivateBalancePanel), { ssr: false, loading: () => <LoadingState shape="row" /> });
@@ -75,7 +77,7 @@ function Ledger({ wallet }: { wallet: Address }) {
   const outage = outageOf([sheet, positions, claimables]);
   if (outage) return <ErrorState diagnosis={outage} retry={() => void queryClient.invalidateQueries()} />;
   // Nothing read yet: the page's outline, not a card of dashes.
-  if (sheet === null) return <LoadingState shape="portfolio" />;
+  if (sheet === null) return <LoadingFrame shape="portfolio">{portfolioShape()}</LoadingFrame>;
 
   const rows = claimables && isOk(claimables) ? claimables.value : [];
   const live = collectableRows(rows);

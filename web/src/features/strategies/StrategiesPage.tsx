@@ -9,7 +9,8 @@
  */
 import dynamic from "next/dynamic";
 import { createContext, useContext, useEffect, useState } from "react";
-import { LoadingState } from "@/components/states";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { strategyGrid as strategyGridShape, studio as studioShape } from "@/components/states/shapes/automate";
 import { useDataReady } from "@/providers/data/context";
 import { STRATEGIES } from "./copy";
 import { StrategiesHead, type StrategiesView } from "./StrategiesHead";
@@ -17,7 +18,9 @@ import { StrategiesHead, type StrategiesView } from "./StrategiesHead";
 const ViewContext = createContext<StrategiesView>("create");
 
 function Placeholder({ view }: { view: StrategiesView }) {
-  return <LoadingState shape={view === "create" ? "studio" : "strategy-grid"} label={STRATEGIES.loading} />;
+  return view === "create"
+    ? <LoadingFrame shape="studio" label={STRATEGIES.loading}>{studioShape()}</LoadingFrame>
+    : <LoadingFrame shape="strategy-grid" label={STRATEGIES.loading}>{strategyGridShape()}</LoadingFrame>;
 }
 /** next/dynamic's `loading` gets no props; it renders where the screen will, so it reads the view from context. */
 function IslandPlaceholder() {

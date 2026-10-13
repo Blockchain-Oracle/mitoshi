@@ -7,7 +7,7 @@
 import type { BlockerCopy, BlockerFix } from "@cwf/core/copy";
 import { fixLabel } from "@cwf/core/copy";
 import { useId, type ReactNode } from "react";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill } from "@/components/kit/Pill";
 import { openFunds } from "@/lib/funds-event";
 import { useWalletSession } from "@/lib/wallet-session";
 import { cn } from "@/lib/utils";
@@ -73,7 +73,7 @@ export function BlockedCta({ blocker, tone = "accent", onFix, fix, intent, size 
   return (
     <div className={cn("bcta", className)} data-state={live ? "fix" : busy ? "busy" : "blocked"}>
       {live ? (
-        <PillButton
+        <Pill
           type="button"
           data-primary-action=""
           tone={live.side && tone !== "accent" ? (tone === "up" ? "up-fill" : "down-fill") : "accent"}
@@ -83,9 +83,9 @@ export function BlockedCta({ blocker, tone = "accent", onFix, fix, intent, size 
           onClick={live.run}
         >
           <Faces faceKey={faceKey}><span className="truncate">{live.label}</span></Faces>
-        </PillButton>
+        </Pill>
       ) : (
-        <PillButton
+        <Pill
           type="button"
           data-primary-action=""
           data-blocked=""
@@ -100,7 +100,7 @@ export function BlockedCta({ blocker, tone = "accent", onFix, fix, intent, size 
           <Faces faceKey={faceKey}>
             {busy ? <WaitingText timeoutMs={null} size="inherit">{blocker.label}</WaitingText> : <span className="truncate">{blocker.label}</span>}
           </Faces>
-        </PillButton>
+        </Pill>
       )}
       <p id={captionId} className="bcta-caption type-caption" aria-hidden={live ? undefined : true}>{reason}</p>
     </div>

@@ -9,7 +9,7 @@ import { WAIT } from "@cwf/core/copy";
 import { Clock3 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill, PillLink } from "@/components/kit/Pill";
 import { nowMs, useClockValue } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import type { NextAction } from "./EmptyState";
@@ -63,9 +63,9 @@ export interface WaitingTextProps {
 
 function SecondWay({ action }: { action: NextAction }) {
   return "href" in action ? (
-    <PillButton tone="ghost" size="sm" render={<Link href={action.href} />}>{action.label}</PillButton>
+    <PillLink tone="ghost" size="sm" href={action.href}>{action.label}</PillLink>
   ) : (
-    <PillButton tone="ghost" size="sm" onClick={action.onClick}>{action.label}</PillButton>
+    <Pill tone="ghost" size="sm" onClick={action.onClick}>{action.label}</Pill>
   );
 }
 
@@ -84,7 +84,7 @@ export function WaitingText({ children, startedAtMs, showElapsedAfterMs = 3_000,
         {onRetry || timeout?.action ? (
           <div className="wait-late-actions">
             {onRetry ? (
-              <PillButton tone="ink" size="sm" onClick={() => { clock.restart(); onRetry(); }}>{WAIT.retry}</PillButton>
+              <Pill tone="ink" size="sm" onClick={() => { clock.restart(); onRetry(); }}>{WAIT.retry}</Pill>
             ) : null}
             {timeout?.action ? <SecondWay action={timeout.action} /> : null}
           </div>

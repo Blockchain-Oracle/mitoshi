@@ -3,8 +3,9 @@
 // `/api/agents/<id>/registration.json`). Read at request time, the /u/[address] shape (params inside Suspense).
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { LoadingState } from "@/components/states/LoadingState";
 import { AgentProfilePage } from "@/features/agents/AgentsPage";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { cockpit as cockpitShape } from "@/components/states/shapes/automate";
 
 type Params = Promise<{ id: string }>;
 
@@ -21,7 +22,7 @@ async function Agent({ params }: { params: Params }) {
 
 export default function Page({ params }: { params: Params }) {
   return (
-    <Suspense fallback={<LoadingState shape="cockpit" label="Reading the agent" />}>
+    <Suspense fallback={<LoadingFrame shape="cockpit" label="Reading the agent">{cockpitShape()}</LoadingFrame>}>
       <Agent params={params} />
     </Suspense>
   );

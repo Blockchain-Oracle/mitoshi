@@ -4,16 +4,17 @@
  * that, the page's own outline (R6 T18: its head, the Window rows, the slip from the desk), in its own frame. The feature's stylesheets load with the route, never globally.
  */
 import dynamic from "next/dynamic";
-import { LoadingState } from "@/components/states/LoadingState";
 import { useDataReady } from "@/providers/data/context";
 import { PARLAY } from "./copy";
 import "@/styles/parlay.css";
 import "@/styles/range.css";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { parlay as parlayShape } from "@/components/states/shapes/parlay";
 
 function Placeholder() {
   return (
     <div className="game-page pl-page">
-      <LoadingState shape="parlay" layout="contents" label={PARLAY.windows.loading} />
+      <LoadingFrame shape="parlay" layout="contents" label={PARLAY.windows.loading}>{parlayShape()}</LoadingFrame>
     </div>
   );
 }
