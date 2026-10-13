@@ -21,6 +21,8 @@ export default function Page() {
         ]}
       />
       <P>A payout your account&apos;s receive policy blocks is not lost: it waits as credit you can collect once the engine is allowed.</P>
+      <H2>Checking a print yourself</H2>
+      <P>A Window&apos;s proof page re-verifies its prints in your browser, with nothing from Mitoshi&apos;s servers: it reads the transaction that recorded the print from Tempo, takes the signed RedStone packages out of the engine&apos;s record call, and asks the on-chain print verifier for the price itself. The archive check gives the same verifier the packages Mitoshi archived from RedStone for that instant instead, apart from any transaction.</P>
       <Note>On testnet, prints depend on RedStone&apos;s public gateways, which RedStone is switching off in daily windows; while one refuses, Windows wait for their prints (see <A href="/docs/testnet">testnet notes</A>).</Note>
     </>
   );

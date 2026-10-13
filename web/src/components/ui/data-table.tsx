@@ -117,7 +117,7 @@ export function TableCell({ className, align = "start", ...props }: Omit<React.T
 export function TableExpandTriggerCell({ expanded, onToggle, label, className }: { expanded: boolean; onToggle: () => void; label: string; className?: string }) {
   return (
     <td className={cn("w-12 px-1 text-center", className)}>
-      <button type="button" aria-expanded={expanded} aria-label={label} onClick={onToggle} className="inline-flex size-touch items-center justify-center rounded-md text-ink-secondary hover:bg-surface-3 hover:text-ink focus-visible:outline-2 focus-visible:outline-accent">
+      <button type="button" aria-expanded={expanded} aria-label={label} title={label} onClick={onToggle} className="inline-flex size-touch items-center justify-center rounded-md text-ink-secondary hover:bg-surface-3 hover:text-ink focus-visible:outline-2 focus-visible:outline-accent">
         <ChevronDown aria-hidden className={cn("size-4 transition-transform duration-300 motion-reduce:transition-none", expanded && "rotate-180")} />
       </button>
     </td>

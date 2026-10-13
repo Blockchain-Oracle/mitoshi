@@ -48,7 +48,7 @@ function Row({ symbol, current, lanes, day, dayLoading, starred, onPick }: { sym
             : dayLoading || spot.price === null ? <span aria-hidden className="tm-skel" style={{ width: "3rem" }} /> : null}
         </span>
       </button>
-      <button type="button" className={`tm-star${starred ? " is-on" : ""}`} aria-pressed={starred} aria-label={TERMINAL.picker.star(symbol)} onClick={toggleStar}>
+      <button type="button" className={`tm-star${starred ? " is-on" : ""}`} aria-pressed={starred} aria-label={TERMINAL.picker.star(symbol)} title={TERMINAL.picker.star(symbol)} onClick={toggleStar}>
         <Star aria-hidden />
       </button>
     </div>
@@ -83,7 +83,7 @@ export function MarketsDrawer({ open, onOpenChange, symbol, set, nowSec, onPick 
   const shown = list.filter(match);
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={TERMINAL.picker.title}>
+      <SlideOverContent title={TERMINAL.picker.title} fields>
         {open ? (
           <div className="tm-picker">
             <input className="tm-input" type="search" placeholder={TERMINAL.picker.search} aria-label={TERMINAL.picker.search} value={query} onChange={(e) => setQuery(e.target.value)} />

@@ -22,62 +22,6 @@
   padding: 20px;
 }
 
-/* ── the mobile drawer (L768–777) ──
-   backdrop: fixed inset-0 z-[9998] bg-black/70 backdrop-blur-sm
-   panel:    fixed top-0 right-0 z-[9999] h-full w-full max-w-[440px] p-6 shadow-2xl border-l border-white/10
-             bg-[#0b0b0e] overflow-y-auto transition-transform duration-300 translate-x-full → translate-x-0 */
-.tk-drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 9998;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
-.tk-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 9999;
-  height: 100%;
-  width: 100%;
-  max-width: 440px;
-  padding: 24px;
-  overflow-y: auto;
-  border-left: 1px solid rgba(255, 255, 255, 0.1);
-  background: #0b0b0e;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  transform: translateX(100%);
-  transition: transform 300ms var(--ease);
-}
-.tk-drawer--open {
-  transform: translateX(0);
-}
-[data-theme="light"] .tk-drawer {
-  border-left-color: rgba(20, 18, 16, 0.1);
-  background: var(--bg);
-}
-/* lg:hidden absolute right-4 top-4 rounded-full p-2 text-gray-600 hover:bg-white/[0.05] hover:text-white */
-.tk-drawer-close {
-  position: absolute;
-  right: 16px;
-  top: 16px;
-  border-radius: 999px;
-  padding: 8px;
-  color: var(--gray-600);
-  transition: background 200ms var(--ease), color 200ms var(--ease);
-}
-.tk-drawer-close:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--white);
-}
-/* the head is the drawer's only — on desktop the hero names the market beside the rail. The reference's
-   head is `pr-8`; ours carries the countdown on its right, so it clears the close button's full 32px. */
-.tk-drawer-head {
-  padding-right: 48px;
-  margin-bottom: 8px;
-}
-
 /* ── amount + leverage — the only sizing controls (L1045–1095) ──
    mb-4 border-y border-white/[0.08] py-3 */
 .tk-amount {

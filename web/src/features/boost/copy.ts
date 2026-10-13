@@ -24,7 +24,7 @@ export const BOOST = {
     contracts: (n: string) => `${n} contracts`,
   },
   total: "You collect if it lands",
-  refused3x: "A void pays half — 3× this far above even would leave the reserve short (D-116)",
+  refused3x: "A void would leave the reserve short at 3×.",
   cta: {
     signIn: "Sign in to boost",
     signInFor: "to open a Boost",

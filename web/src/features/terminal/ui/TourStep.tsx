@@ -64,26 +64,41 @@ export function TourNav({ step, back, next }: { step: number; back: ReactNode; n
 export const TOUR_SEEN_SCRIPT = `try{var s=JSON.parse(localStorage.getItem("cwf.trade.settings.v1")||"{}");if(window.self!==window.top||(s&&s.tutorialSeen===true))document.documentElement.setAttribute("data-tm-tour-seen","")}catch(e){}`;
 
 /**
- * The tour's first step as the modal paints it (`modal-scrim` / `modal-root` / `modal tm-tour`), server-rendered and
- * hidden before paint for a browser that has seen the tour. The real tour replaces it, without an entry animation, as
- * soon as the screen mounts; until then the cover's buttons are drawn but inert (the splash covers most of that wait).
+ * The tour's first step as the modal paints it (`modal-scrim` / `modal-root` / `modal tm-tour`) and, under 768 px, as the
+ * phone sheet paints it (`slide-over-*`: a modal is the sheet on a phone, R4-2), server-rendered and hidden before paint
+ * for a browser that has seen the tour. The real tour replaces it, without an entry animation, as soon as the screen
+ * mounts; until then the cover's buttons are drawn but inert (the splash covers most of that wait).
  */
 export function TourCover() {
+  const step = TERMINAL.tour.steps[0]!;
+  const nav = <TourNav step={0} back={<span className="tm-choice">{TERMINAL.tour.skip}</span>} next={<span className="tm-btn tm-btn-cta tm-tour-next">{TERMINAL.tour.next}</span>} />;
   return (
     <div className="tm-tour-cover" aria-hidden>
       <div className="modal-scrim" />
-      <div className="modal-root">
+      <div className="modal-root tm-tour-cover-wide">
         <div className="modal tm-tour">
           <div className="modal-head">
             <div className="modal-eyebrow-row">
               <span className="modal-eyebrow-dot" />
               <span className="modal-eyebrow">{TERMINAL.tour.label}</span>
             </div>
-            <h2 className="modal-title">{TERMINAL.tour.steps[0]!.title}</h2>
+            <h2 className="modal-title">{step.title}</h2>
           </div>
           <div className="modal-body"><TourStepBody step={0} /></div>
-          <div className="modal-foot">
-            <TourNav step={0} back={<span className="tm-choice">{TERMINAL.tour.skip}</span>} next={<span className="tm-btn tm-btn-cta tm-tour-next">{TERMINAL.tour.next}</span>} />
+          <div className="modal-foot">{nav}</div>
+        </div>
+      </div>
+      <div className="slide-over-viewport tm-tour-cover-phone">
+        <div className="slide-over-popup is-modal tm-tour" data-size="md">
+          <span className="slide-over-grab" />
+          <div className="slide-over-content">
+            <div className="slide-over-head">
+              <span className="slide-over-eyebrow"><span className="slide-over-eyebrow-dot" />{TERMINAL.tour.label}</span>
+              <h2 className="type-title text-ink">{step.title}</h2>
+            </div>
+            <div className="slide-over-body slide-over-body--stack"><TourStepBody step={0} /></div>
+            <div className="slide-over-foot">{nav}</div>
+            <span className="slide-over-close"><X className="size-4" /></span>
           </div>
         </div>
       </div>

@@ -6,14 +6,14 @@
 // price is a spot on the fair model ("≈"). A Trading Balance position can hand them to Mitoshi's exit keeper (S24.5,
 // D-193): one passkey confirmation grants EXIT, then every Set is signed by the session key and runs with the app
 // closed; otherwise they run only while Mitoshi is open, and need a key that signs without a prompt until the Window
-// closes.
+// closes. R4-2 (D-227): Set sits in the sheet's pinned footer, above a phone's keyboard.
 import type { VaultGrant } from "@cwf/core";
 import { diagnosisCopy } from "@cwf/core/copy";
 import { useState } from "react";
 import { useTxLifecycle } from "@/components/tx/useTxLifecycle";
 import { useSessionActions, useSessionView } from "@/features/session";
 import { exitAllowanceText } from "@/features/session/caps";
-import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
+import { SheetFooter, SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { tapFeedback } from "@/lib/feedback";
 import { notify } from "@/lib/toast";
 import { formatUsd, priceDecimals } from "../chart/engine";
@@ -150,7 +150,9 @@ function ExitsForm({ p, value, onDone }: { p: TerminalPosition; value: PositionV
       <ExitCard kind="sl" mode={mode} base={sl} onBase={setSl} ctx={ctx} asset={p.asset} />
       {p.trailStop !== null ? <p className="tm-field-hint">{TERMINAL.exits.trailing(usd(p.trailStop))}</p> : null}
       <KeeperRow state={keeperState} grant={view.exitGrant ?? null} waiting={held?.status === "armed" ? held.lastError : null} onGrant={() => void grant()} granting={granting} />
-      <button type="button" className="tm-btn tm-btn-cta" disabled={blocked} onClick={() => void save()}>{TERMINAL.exits.save}</button>
+      <SheetFooter>
+        <button type="button" className="tm-btn tm-btn-cta" disabled={blocked} onClick={() => void save()}>{TERMINAL.exits.save}</button>
+      </SheetFooter>
     </>
   );
 }
@@ -165,7 +167,7 @@ export function ExitsDrawer({ p, value, open, onOpenChange }: { p: TerminalPosit
   }
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={TERMINAL.exits.title(sideWord(p.side), p.asset)} description={TERMINAL.exits.body}>
+      <SlideOverContent title={TERMINAL.exits.title(sideWord(p.side), p.asset)} description={TERMINAL.exits.body} fields>
         <ExitsForm key={p.id} p={p} value={value} onDone={() => onOpenChange(false)} />
       </SlideOverContent>
     </SlideOver>

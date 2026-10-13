@@ -163,7 +163,7 @@ function Plate({ readiness, closedLabel }: { readiness: "dealing" | "no-deck" | 
   return (
     <div className="gm-plate">
       <p className="gm-plate-title">{copy.title}</p>
-      <p className="gm-plate-body">{readiness === "no-deck" && closedLabel !== null ? PRACTICE.deal.none.closedBody(closedLabel) : copy.body}</p>
+      <p className="gm-plate-body">{readiness === "no-deck" && closedLabel !== null ? PRACTICE.deal.none.closedBody : copy.body}</p>
       <p className="gm-plate-meta">{GAMES.card.waitingOn("the venue's live Window list")}</p>
     </div>
   );

@@ -102,7 +102,7 @@ export function DepthChart({ book, status, labels, formatPrice, formatSize, onRe
       <ChartState status={status} height="12.5rem" empty={labels.empty} error={labels.error} retryLabel={labels.retry} onRetry={onRetry}>
         <div className="relative w-full">
           {width === 0 ? <div className="h-50" /> : (
-            <svg ref={svgRef} width={w} height={HEIGHT} viewBox={`0 0 ${w} ${HEIGHT}`} className="block w-full touch-pan-y select-none overflow-visible focus-visible:outline-(--focus-ring)" role="img" tabIndex={0}
+            <svg ref={svgRef} width={w} height={HEIGHT} viewBox={`0 0 ${w} ${HEIGHT}`} className="block w-full touch-pan-y select-none overflow-visible focus-visible:outline-(--focus-ring)" role="img" tabIndex={0} data-base-ui-swipe-ignore=""
               aria-label={`${labels.title}. ${labels.mid} ${formatPrice(b.mid)}, ${labels.spread} ${formatPrice(b.spread)}.`}
               onPointerMove={(e) => onMove(e.clientX)} onPointerDown={(e) => onMove(e.clientX)} onPointerLeave={() => setHoverX(null)} onKeyDown={onKey} onBlur={() => setHoverX(null)}>
               {hTicks.map((t) => <line key={t} x1={x0} x2={x1} y1={yOf(t)} y2={yOf(t)} stroke="currentColor" strokeOpacity={0.12} strokeDasharray="2 4" />)}

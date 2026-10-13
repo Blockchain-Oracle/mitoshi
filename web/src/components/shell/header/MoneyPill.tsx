@@ -28,14 +28,14 @@ export function MoneyTile({ total, label = SHELL.moneyLabel, onAdd = openFunds }
     <div className="money-tile">
       <div className="money-tile-head">
         <span className="money-tile-label">{label}</span>
-        <button type="button" className="money-tile-eye" aria-pressed={hidden} aria-label={hidden ? SHELL.privacyShow : SHELL.privacyHide} onClick={() => setPrivacy(!hidden)}>
+        <button type="button" className="money-tile-eye" aria-pressed={hidden} aria-label={hidden ? SHELL.privacyShow : SHELL.privacyHide} title={hidden ? SHELL.privacyShow : SHELL.privacyHide} onClick={() => setPrivacy(!hidden)}>
           {hidden ? <EyeOff aria-hidden className="size-3.5" /> : <Eye aria-hidden className="size-3.5" />}
         </button>
       </div>
       <div className="money-tile-row">
         <span className={`money-tile-sum numbers${total === null && !hidden ? " is-dim" : ""}`}>{hidden ? SHELL.masked : dollars(total)}</span>
         {onAdd ? (
-          <button type="button" onClick={onAdd} aria-label={SHELL.addMoney} className="money-tile-add">
+          <button type="button" onClick={onAdd} aria-label={SHELL.addMoney} title={SHELL.addMoney} className="money-tile-add">
             <Plus aria-hidden className="size-4" strokeWidth={3} />
           </button>
         ) : null}
@@ -54,7 +54,7 @@ export function MoneyPillView({ total }: { total: bigint | null }) {
         <span className="dusdc-plus" aria-hidden>+</span>
       </button>
       {/* Slush's balance eye (S22, RV-10): hides every balance and PnL on this device. */}
-      <button type="button" className="money-eye size-touch" aria-pressed={hidden} aria-label={hidden ? SHELL.privacyShow : SHELL.privacyHide} onClick={() => setPrivacy(!hidden)}>
+      <button type="button" className="money-eye size-touch" aria-pressed={hidden} aria-label={hidden ? SHELL.privacyShow : SHELL.privacyHide} title={hidden ? SHELL.privacyShow : SHELL.privacyHide} onClick={() => setPrivacy(!hidden)}>
         {hidden ? <EyeOff aria-hidden className="size-4" /> : <Eye aria-hidden className="size-4" />}
       </button>
     </span>

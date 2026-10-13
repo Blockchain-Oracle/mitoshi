@@ -21,6 +21,7 @@ import { nowMs as clockNow } from "@/lib/clock";
 import { DEFAULT_EXPIRY, DEFAULT_PRESET, expiryOptions, PRESETS, presetOptions, tapsPerDay, termsOf, usd, leftNowBase, type ExpiryId, type PresetId } from "./caps";
 import { SESSION } from "./copy";
 import { useRootSubmitter, useSessionActions, useSessionView } from "./context";
+import { SheetFooter } from "@/components/ui/drawer";
 
 const hoursText = (id: ExpiryId) => SESSION.expiries[id];
 const until = (sec: number) => new Date(sec * 1000).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
@@ -75,7 +76,9 @@ export function ArmTradingBalance(_props: { onDone?: () => void }) {
       <p className="type-caption text-ink-secondary">{SESSION.fees}</p>
       {problem ? <p role="alert" className="type-caption text-ink">{problem}</p> : null}
       {tx.state.kind === "failed" ? <TxFailureCard state={tx.state} onRetry={() => void arm()} /> : null}
-      <TxCta state={state} action={problem ? SESSION.retry : SESSION.cta(budget)} signer="passkey" onConfirm={() => void arm()} />
+      <SheetFooter>
+        <TxCta state={state} action={problem ? SESSION.retry : SESSION.cta(budget)} signer="passkey" onConfirm={() => void arm()} />
+      </SheetFooter>
       <p className="type-caption text-ink-secondary">{SESSION.skip}</p>
       <details className="modal-disclosure">
         <summary className="min-h-touch py-2 type-caption text-ink">{SESSION.adjust(usd(p.perTapBase), usd(p.dailyBase), hoursText(expiry))}</summary>
