@@ -18,7 +18,7 @@
 | `FINNHUB_API_KEY`, `ALPACA_*`, `DATASTREAMS_API_KEY/SECRET` | Coolify web + ops (testnet ops: the owner's Alpaca + Finnhub keys, the same ones Agari uses, set 2026-09-29 runtime-only; testnet web: `FINNHUB_API_KEY` copied app to app from ops 2026-10-10 for `/news`, runtime-only, never shown) | data providers (calendar, halts, earnings) |
 | `TEMPO_INDEXER_API_KEY` (Tempo API console key, `tempo-api-key` header) | Coolify ops (testnet: the owner's sandbox key from `~/.config/mitoshi/indexer.env`, 0600; set 2026-10-13 runtime-only, literal, never shown) | `indexer-recount` (D-086) |
 | `TIDX_URL`, `TIDX_BASIC_AUTH` | Coolify ops (when a self-hosted tidx is chosen, D-086) | indexer recount |
-| RPC provider URLs (`TEMPO_RPC_*`) | Coolify web + ops + GitHub Actions | chain reads. D-231 retired the bridge's `RH_RPC_HTTP_URL` and `BASE_SEPOLIA_RPC_HTTP_URL` from web and ops; the nightly fork suite's `RH_RPC_HTTP_URL` (CrwdMultiplier, which falls back to a public RPC) goes with the stock guard's tests |
+| RPC provider URLs (`TEMPO_RPC_*`) | Coolify web + ops + GitHub Actions | chain reads. D-231 retired the bridge's `RH_RPC_HTTP_URL` and `BASE_SEPOLIA_RPC_HTTP_URL` from web and ops; the nightly fork suite no longer reads `RH_RPC_HTTP_URL` or `RH_TESTNET_RPC_HTTP_URL` (CrwdMultiplier left with the stock guard's tests): delete both GitHub secrets |
 | APNs `.p8` + key ID + team ID, FCM service account | Coolify ops | notifier (SM2) |
 | Reown project ID | Coolify web | WalletConnect |
 | EAS token, Android upload keystore (EAS-managed) | GitHub Actions / EAS | mobile builds |

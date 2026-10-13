@@ -2,19 +2,8 @@
   "name": "@cwf/contracts",
   "version": "0.0.0",
   "private": true,
-  "description": "Solidity sources; LayerZero V2 comes from npm (its documented Foundry setup), everything else from lib/ submodules.",
+  "description": "Solidity sources; every dependency comes from the lib/ submodules (D-231 retired LayerZero with the stock sync receiver).",
   "scripts": {
     "typecheck": "echo 'contracts: checked by forge build'"
-  },
-  "devDependencies": {
-    "@layerzerolabs/oapp-evm": "catalog:",
-    "@layerzerolabs/oapp-evm-upgradeable": "catalog:",
-    "@layerzerolabs/oft-evm": "catalog:",
-    "@layerzerolabs/oft-evm-upgradeable": "catalog:",
-    "@layerzerolabs/lz-evm-protocol-v2": "catalog:",
-    "@layerzerolabs/lz-evm-messagelib-v2": "catalog:",
-    "@layerzerolabs/lz-evm-v1-0.7": "catalog:",
-    "@layerzerolabs/test-devtools-evm-foundry": "catalog:",
-    "solidity-bytes-utils": "catalog:"
   }
 }
