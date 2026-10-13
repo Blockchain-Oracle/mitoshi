@@ -129,13 +129,13 @@ function AssetPicker(props: { side: "pay" | "receive"; assets: readonly SwapAsse
       role="dialog"
       aria-labelledby={titleId}
       onKeyDown={(e) => e.key === "Escape" && props.onClose()}
-      className="absolute inset-0 z-20 flex flex-col rounded-lg border border-hairline bg-surface-1 p-3"
+      className="absolute inset-0 z-10 flex flex-col rounded-lg border border-hairline bg-surface-1 p-3"
     >
       <div className="mb-2 flex items-center justify-between">
         <span id={titleId} className="type-body-strong text-ink">
           {props.side === "pay" ? "You pay" : "You receive"}
         </span>
-        <button type="button" onClick={props.onClose} aria-label="Close" className="grid size-touch place-items-center rounded-md text-ink-secondary">
+        <button type="button" onClick={props.onClose} aria-label="Close" title="Close" className="grid size-touch place-items-center rounded-md text-ink-secondary">
           <X aria-hidden className="size-4" />
         </button>
       </div>
@@ -196,8 +196,8 @@ export function SwapTicket(props: SwapTicketProps) {
         <button
           type="button"
           onClick={props.onFlip}
-          aria-label="Flip pay and receive"
-          className="absolute left-1/2 top-1/2 z-10 grid size-touch -translate-x-1/2 -translate-y-1/2 place-items-center rounded-lg border border-hairline bg-surface-2 text-ink"
+          aria-label="Flip pay and receive" title="Flip pay and receive"
+          className="absolute left-1/2 top-1/2 z-1 grid size-touch -translate-x-1/2 -translate-y-1/2 place-items-center rounded-lg border border-hairline bg-surface-2 text-ink"
         >
           <ArrowUpDown aria-hidden className="size-4" />
         </button>

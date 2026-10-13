@@ -1,3 +1,6 @@
+/* R4-2 (D-227): the first two selectors ended part-02.css as a dangling list, which did not parse as a file of its own. */
+[data-theme="light"] .sensei-page .border-white\/\[0\.08\],
+[data-theme="light"] .sensei-page .border-white\/\[0\.1\],
 [data-theme="light"] .sensei-page .border-white\/\[0\.12\] { border-color: rgba(20,18,16,0.12); }
 [data-theme="light"] .sensei-page .text-gray-100 { color: #141210; }
 [data-theme="light"] .sensei-page .text-gray-300 { color: rgba(20,18,16,0.74); }
@@ -75,15 +78,16 @@
 /* The panel is a sibling of the (scrolling) message list, so it must cap its own
    height: with 3+ live markets it used to grow past the drawer with no way to
    scroll. The head stays pinned and only the cards scroll. */
-.sensei-trade { flex: none; min-height: 0; max-height: 46vh; }
+.sensei-trade { flex: none; min-height: 0; max-height: 46svh; }
 .st-list { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 8px; padding-bottom: 2px; }
 .st-head { display: flex; align-items: baseline; justify-content: space-between; padding: 2px 2px 0; flex: none; }
 .st-head span:first-child { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--white); }
 [data-theme="light"] .st-head span:first-child { color: #171310; }
 .st-head .st-sub { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gray-500); }
 .st-headright { display: flex; align-items: center; gap: 12px; }
-.st-hide { border: 0; background: transparent; padding: 2px 4px; font-size: 13px; line-height: 1; color: var(--gray-500); cursor: pointer; transition: color 150ms var(--ease); }
+.st-hide { position: relative; border: 0; background: transparent; padding: 2px 4px; font-size: 13px; line-height: 1; color: var(--gray-500); cursor: pointer; transition: color 150ms var(--ease); }
 .st-hide:hover { color: var(--white); }
+.st-hide::before { content: ""; position: absolute; inset: -14px -12px; }
 [data-theme="light"] .st-hide:hover { color: #171310; }
 .st-card { border: 1px solid rgba(255,255,255,0.08); border-radius: 13px; background: rgba(255,255,255,0.025); padding: 11px 12px; transition: border-color 200ms var(--ease), background 200ms var(--ease); }
 [data-theme="light"] .st-card { border-color: rgba(20,18,16,0.09); background: #fffdf8; }
@@ -149,7 +153,7 @@
   position: absolute;
   top: calc(100% + 18px);
   right: 0;
-  z-index: 60;
+  z-index: var(--z-menu);
   width: 202px;
   padding: 8px;
   border: 1px solid rgba(255,255,255,0.1);
@@ -309,7 +313,7 @@
 .bell {
   position: fixed;
   bottom: 48px; right: 28px;
-  z-index: 700;
+  z-index: var(--z-float);
   width: 92px; height: 92px;
   border-radius: 50%;
   background: rgba(5,5,5,0.7);

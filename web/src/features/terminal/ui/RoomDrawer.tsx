@@ -15,7 +15,7 @@ export function RoomDrawer({ open, onOpenChange, symbol, window }: { open: boole
   const onWindow = which === "window" && marketId !== null;
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={SOCIAL.room.ticker(symbol)}>
+      <SlideOverContent title={SOCIAL.room.ticker(symbol)} fields>
         {open ? (
           <div className="flex h-full min-h-0 flex-col gap-3">
             <MotionScope>

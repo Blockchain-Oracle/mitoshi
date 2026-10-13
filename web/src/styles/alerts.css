@@ -83,58 +83,6 @@
   height: 12px;
 }
 
-/* absolute top-[calc(100%+8px)] right-0 w-[280px] z-[900]
-   border border-white/10 rounded-xl backdrop-blur-xl p-4 space-y-3
-   — opens upward from the foot; see the note at the top of this file. */
-.alerts-pop {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 0;
-  width: 280px;
-  max-width: calc(100vw - 48px);
-  z-index: 900;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 16px;
-  backdrop-filter: blur(24px);
-  color: var(--white);
-}
-
-/* bg-neutral-900/96 — one step past part-14's ladder, so its cream value is repeated. */
-[data-theme="light"] .alerts-pop {
-  border-color: rgba(20, 18, 16, 0.12);
-  background-color: rgba(251, 247, 238, 0.94);
-}
-
-/* flex items-center justify-between */
-.alerts-pop-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* text-xs font-bold text-white uppercase tracking-wider */
-.alerts-pop-title {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--white);
-}
-
-/* text-gray-500 hover:text-white */
-.alerts-pop-close {
-  color: var(--gray-500);
-  transition: color 150ms var(--ease);
-}
-
-.alerts-pop-close:hover {
-  color: var(--white);
-}
-
 /* space-y-2 */
 .alerts-form {
   display: flex;
@@ -318,7 +266,7 @@
 
 /* `text-gray-*` does not follow the light theme (the recorded Tailwind-4 finding),
    so the popover's gray steps are re-inked on cream with part-14's own ladder. */
-[data-theme="light"] .alerts-pop-close,
+
 [data-theme="light"] .alerts-dir-btn,
 [data-theme="light"] .alerts-foot {
   color: rgba(20, 18, 16, 0.62);
@@ -336,10 +284,6 @@
   color: var(--loss);
 }
 
-[data-theme="light"] .alerts-pop-close:hover {
-  color: #141210;
-}
-
 /* Below 480px the reference hides the foot's helper label; the Room's qualifier is
    the equivalent here, and dropping it is what keeps Room + Alert + ramp on one line. */
 @media (max-width: 480px) {
@@ -347,7 +291,6 @@
     display: none;
   }
 }
-
 
 /* In the hero foot the trigger takes the foot's own grammar — the Room's (`inline-flex items-center gap-1.5
    font-mono text-[9px] uppercase tracking-[0.16em] text-white/45 hover:text-white`). The bordered pill above

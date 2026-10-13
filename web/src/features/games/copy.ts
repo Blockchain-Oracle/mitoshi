@@ -21,11 +21,11 @@ export const GAMES = {
     pendingBadge: "Not connected",
     liveBadge: "Live",
     /**
-     * S23: the stock market is shut, so only the 24/7 lanes have Windows to play on. On Canton those are BTC and ETH
-     * (Coinbase, Kraken and Bitstamp closes) and the pre-IPO names and baskets (PreStocks), `docs/evidence/c6-lanes-*`.
+     * The stock market is shut, so only the 24/7 lanes have Windows to play on: crypto and the stocks with a 24/7 feed
+     * (`packages/core/src/market/tickers.ts`). The card wears the badge; the hub says the line once, above §01.
      */
     afterHoursBadge: "24/7 only",
-    afterHours: (label: string) => `US stocks closed${/^(closed)?$/i.test(label) ? "" : ` · ${label}`} · BTC, ETH, pre-IPO and baskets only`,
+    afterHours: "US stocks closed · crypto and 24/7 stocks only",
     unavailableBadge: "Unavailable",
     waitingOn: (dependency: string) => `Waiting on ${dependency}`,
     paused: "Paused by the operator",
@@ -163,7 +163,6 @@ export const GAMES = {
     title: "Finished matches",
     pending:
       "Finished matches are read back from the arena's own events, indexed so a history page is one query rather than a log replay. The arena is not on this network yet.",
-    dependency: "the Arena contracts of abu-pm-games and the ops projector on this network (proven on the local sandbox, not yet on DevNet)",
   },
 
   settings: {

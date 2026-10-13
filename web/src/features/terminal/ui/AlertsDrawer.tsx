@@ -7,7 +7,7 @@ import { PriceAlertsPanel } from "@/features/alerts/PriceAlertsPanel";
 export function AlertsDrawer({ open, onOpenChange, symbol }: { open: boolean; onOpenChange: (o: boolean) => void; symbol: string }) {
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={`${ALERTS.title} · ${symbol}`}>{open ? <PriceAlertsPanel key={symbol} symbol={symbol} /> : null}</SlideOverContent>
+      <SlideOverContent title={`${ALERTS.title} · ${symbol}`} fields>{open ? <PriceAlertsPanel key={symbol} symbol={symbol} /> : null}</SlideOverContent>
     </SlideOver>
   );
 }

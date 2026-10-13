@@ -289,7 +289,7 @@
 .filter-bar {
   position: sticky;
   top: calc(var(--appstrip) + 92px);
-  z-index: 600;
+  z-index: var(--z-sticky);
   background: rgba(5,5,5,0.85);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255,255,255,0.06);

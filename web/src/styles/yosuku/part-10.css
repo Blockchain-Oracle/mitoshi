@@ -81,7 +81,7 @@
 
 /* ───────── Landing: Hero ───────── */
 .hero {
-  min-height: 100vh;
+  min-height: 100svh;
   position: relative;
   overflow: hidden;
   padding: 140px 64px 64px;

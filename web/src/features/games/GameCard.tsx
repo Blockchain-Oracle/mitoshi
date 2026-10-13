@@ -19,7 +19,7 @@ export type CardStatus =
   | { kind: "loading" }
   | { kind: "live" }
   /** Playable, but only on the 24/7 lanes while the stock market is shut (S23). */
-  | { kind: "after-hours"; note: string }
+  | { kind: "after-hours" }
   | { kind: "unavailable"; why: string };
 
 /** A live, wallet-free fact about a mode — who is in it — drawn beside the build and chain facts. */
@@ -42,7 +42,6 @@ export function GameCard({ entry, status, presence }: { entry: GameEntry; status
         <span className={`gm-econ gm-econ--${entry.descriptor.economicKind}`}>{entry.descriptor.economicLabel}</span>
         {status.kind === "pending" && <span className="gm-card-waiting">{GAMES.card.waitingOn(status.dependency)}</span>}
         {status.kind === "unavailable" && <span className="gm-card-waiting">{status.why}</span>}
-        {status.kind === "after-hours" && <span className="gm-card-waiting">{status.note}</span>}
         {status.kind === "loading" && <Skeleton className="h-3 w-24" />}
       </div>
       {presence && <p className="gm-card-presence">{presence}</p>}

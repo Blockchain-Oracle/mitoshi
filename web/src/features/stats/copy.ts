@@ -49,7 +49,7 @@ export const STATS = {
     }`.trim(),
   testnet:
     "Tempo testnet, test dollars only. The wallets include the fresh passkey accounts our own end-to-end checks create when they sign up: the chain can't tell them from anyone else's, so they count as what they are, wallets that made a call.",
-  foot: "Read from Mitoshi's index of the engine's events, the same index an independent replay of the chain recounts (scripts/drive/recount.ts), and refreshed every few minutes.",
+  foot: "From Mitoshi's index, refreshed every few minutes.",
   computed: (at: string) => `Computed ${at} UTC.`,
   unreachable: "The index can't be read right now, so this page shows no numbers rather than old or made-up ones. Try again in a minute.",
   reading: "Reading the index…",

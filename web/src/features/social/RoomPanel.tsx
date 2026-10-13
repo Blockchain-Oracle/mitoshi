@@ -2,9 +2,12 @@
 // From 21st.dev 26900 rmahammad/comment-thread, revamped per D-044 for S13's rooms: its message row (avatar, name, time,
 // body), its reaction chips (count, aria-pressed, the picker) and its optimistic send states (sending · failed · retry)
 // are kept; threads, @mentions, edit/resolve/delete and motion's portal are not (a room is one flat conversation, and
-// the terminal's drawer carries no motion runtime). Avatars are initials on the address hue; tokens throughout.
+// the terminal's drawer carries no motion runtime). Avatars are initials on the address hue; tokens throughout. The
+// composer sits in the sheet's pinned footer (R4-2, D-227, Owarine 90a91d71 kit/Sheet `footer`), so a phone's keyboard
+// lifts it and the draft never hides under the keys.
 import { MoreHorizontal, SmilePlus } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { SheetFooter } from "@/components/ui/drawer";
 import { addressHue } from "@/lib/address-hue";
 import { notify } from "@/lib/toast";
 import { SOCIAL } from "./copy";
@@ -40,7 +43,7 @@ function Message({ m, me, onReact, onRetry, onReport, onBlock }: { m: RoomMessag
           <span className="type-caption text-ink-secondary">{m.local?.state === "sending" ? SOCIAL.room.sending : clock(m.createdAtMs)}</span>
           {!m.local && !mine ? (
             <span className="relative ml-auto">
-              <button type="button" aria-label={SOCIAL.menu.open} aria-expanded={menu} onClick={() => setMenu((v) => !v)} className="grid size-touch place-items-center rounded-full text-ink-secondary hover:text-ink">
+              <button type="button" aria-label={SOCIAL.menu.open} title={SOCIAL.menu.open} aria-expanded={menu} onClick={() => setMenu((v) => !v)} className="grid size-touch place-items-center rounded-full text-ink-secondary hover:text-ink">
                 <MoreHorizontal aria-hidden className="size-4" />
               </button>
               {menu ? (
@@ -72,7 +75,7 @@ function Message({ m, me, onReact, onRetry, onReport, onBlock }: { m: RoomMessag
                 </button>
               );
             })}
-            <button type="button" aria-label={SOCIAL.react.add} aria-expanded={picking} onClick={() => setPicking((v) => !v)} className="grid size-touch place-items-center rounded-full border border-hairline text-ink-secondary hover:text-ink">
+            <button type="button" aria-label={SOCIAL.react.add} title={SOCIAL.react.add} aria-expanded={picking} onClick={() => setPicking((v) => !v)} className="grid size-touch place-items-center rounded-full border border-hairline text-ink-secondary hover:text-ink">
               <SmilePlus aria-hidden className="size-4" />
             </button>
             {picking ? (
@@ -130,37 +133,39 @@ export function RoomPanel({ room, what }: { room: string; what: string }) {
           <Message key={m.id} m={m} me={r.signedIn} onReact={(k, on) => void r.react(m.id, k, on)} onRetry={() => r.retry(m.id)} onReport={() => setReporting(m.id)} onBlock={() => void block(m.author, m.name ?? short(m.author))} />
         ))}
       </ol>
-      <form className="flex flex-col gap-1 border-t border-hairline pt-2" onSubmit={(e) => (e.preventDefault(), void submit())}>
-        {gated ? <p className="type-caption text-ink-secondary">{SOCIAL.room.gated(what)}</p> : null}
-        <div className="flex items-end gap-2">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value.slice(0, MAX))}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                if (!busy && !gated && draft.trim()) void submit();
-              }
-            }}
-            rows={2}
-            disabled={gated}
-            aria-label={SOCIAL.room.placeholder}
-            placeholder={SOCIAL.room.placeholder}
-            className="min-h-touch flex-1 resize-none rounded-md border border-hairline bg-surface-1 p-2 text-base text-ink disabled:opacity-60"
-          />
-          {r.signedIn ? (
-            <button type="submit" disabled={busy || gated || !draft.trim()} className="min-h-touch rounded-full bg-accent-fill px-4 type-body-strong text-on-accent disabled:opacity-50">
-              {SOCIAL.room.send}
-            </button>
-          ) : (
-            // Signed out: the one sign-in (a passkey session counts; any other wallet signs once), then the draft posts.
-            <button type="button" onClick={() => void (draft.trim() ? submit() : social.ensure())} className="min-h-touch rounded-full bg-accent-fill px-4 type-body-strong text-on-accent">
-              {SOCIAL.room.signIn}
-            </button>
-          )}
-        </div>
-        <span className="self-end type-caption tabular-nums text-ink-secondary" aria-hidden>{SOCIAL.room.count(draft.length, MAX)}</span>
-      </form>
+      <SheetFooter>
+        <form className="flex flex-col gap-1 border-t border-hairline pt-2 [.slide-over-foot>&]:border-0 [.slide-over-foot>&]:pt-0" onSubmit={(e) => (e.preventDefault(), void submit())}>
+          {gated ? <p className="type-caption text-ink-secondary">{SOCIAL.room.gated(what)}</p> : null}
+          <div className="flex items-end gap-2">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value.slice(0, MAX))}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (!busy && !gated && draft.trim()) void submit();
+                }
+              }}
+              rows={2}
+              disabled={gated}
+              aria-label={SOCIAL.room.placeholder}
+              placeholder={SOCIAL.room.placeholder}
+              className="min-h-touch flex-1 resize-none rounded-md border border-hairline bg-surface-1 p-2 text-base text-ink disabled:opacity-60"
+            />
+            {r.signedIn ? (
+              <button type="submit" disabled={busy || gated || !draft.trim()} className="min-h-touch rounded-full bg-accent-fill px-4 type-body-strong text-on-accent disabled:opacity-50">
+                {SOCIAL.room.send}
+              </button>
+            ) : (
+              // Signed out: the one sign-in (a passkey session counts; any other wallet signs once), then the draft posts.
+              <button type="button" onClick={() => void (draft.trim() ? submit() : social.ensure())} className="min-h-touch rounded-full bg-accent-fill px-4 type-body-strong text-on-accent">
+                {SOCIAL.room.signIn}
+              </button>
+            )}
+          </div>
+          <span className="self-end type-caption tabular-nums text-ink-secondary" aria-hidden>{SOCIAL.room.count(draft.length, MAX)}</span>
+        </form>
+      </SheetFooter>
       {reporting ? <ReportDialog open onOpenChange={(o) => !o && setReporting(null)} target={{ kind: "comment", id: reporting }} /> : null}
     </div>
   );

@@ -102,7 +102,7 @@ export function PortfolioChart({ points, status, labels, onRetry, className }: {
       <ChartState status={effective} height="13.75rem" empty={labels.empty} error={labels.error} retryLabel={labels.retry} onRetry={onRetry}>
         <div className="relative w-full">
           {width === 0 ? <div className="h-55" /> : (
-            <svg ref={svgRef} width={w} height={HEIGHT} viewBox={`0 0 ${w} ${HEIGHT}`} className="block w-full touch-pan-y select-none overflow-visible focus-visible:outline-(--focus-ring)" role="img" tabIndex={0}
+            <svg ref={svgRef} width={w} height={HEIGHT} viewBox={`0 0 ${w} ${HEIGHT}`} className="block w-full touch-pan-y select-none overflow-visible focus-visible:outline-(--focus-ring)" role="img" tabIndex={0} data-base-ui-swipe-ignore=""
               aria-label={`${labels.title} ${money(view.at(-1)?.value ?? 0)}. ${labels.peak} ${money(maxDd)}.`}
               onKeyDown={onKeyDown} onBlur={() => setHover(null)} onPointerMove={(e) => onMove(e.clientX)} onPointerDown={(e) => onMove(e.clientX)} onPointerLeave={() => setHover(null)}>
               {niceTicks(lo, hi, 4).map((t) => (
