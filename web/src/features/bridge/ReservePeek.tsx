@@ -26,7 +26,7 @@ export function ReservePeek({ ticker }: { ticker: BridgeTicker }) {
           <PartitionBar segments={partitionOf(t.check).map((p) => ({ id: p.part, weight: Number(p.value), tone: TONE[p.part], label: LABEL[p.part], display: sd(p.value) }))} label={`b${ticker}`} />
         </>
       ) : (
-        <p className="brr-empty">{RESERVES.reading}</p>
+        <p className="brr-empty">{view && !view.ok ? RESERVES.unread : RESERVES.reading}</p>
       )}
       <Link href="/reserves" className="brr-link">{BRIDGE.reserve.link}</Link>
     </section>

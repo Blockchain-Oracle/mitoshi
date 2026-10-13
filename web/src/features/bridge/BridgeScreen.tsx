@@ -44,7 +44,7 @@ export function BridgeScreen() {
       <div className="brs-grid">
         <BridgeCard model={model} tracker={tracker} />
         <aside className="brs-side">
-          <RecentTransfers api={api.data ?? null} onOpen={tracker.start} />
+          <RecentTransfers api={api.isPending ? undefined : (api.data ?? null)} onOpen={tracker.start} />
           <ReservePeek ticker={tracker.tracked?.ticker ?? model.ticker} />
         </aside>
       </div>

@@ -3,23 +3,29 @@
 // status · detail) with the ticker's partition bar (21st 26545) — of what the lockbox holds: on Tempo (vermilion), in
 // flight (amber), owed + deferred (grey), surplus (hairline). Tap to open its facts. From 1024 px the head becomes a
 // table row (Ticker | Locked | On Tempo | In flight | Owed | Check), drawn by CSS from the same cells.
-import { partitionOf, type Network } from "@cwf/core";
+import { partitionOf, type Network, type ReserveCheck } from "@cwf/core";
 import type { TickerReserve } from "@cwf/markets/stocks";
 import { Check, ChevronDown, Minus, TriangleAlert } from "lucide-react";
 import { useId, useState } from "react";
 import { PartitionBar, type PartitionSegment } from "@/components/ui/partition-bar";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { sd } from "../bridge/format";
-import { RESERVES } from "./copy";
+import { RESERVES, type PartialWhy } from "./copy";
 import { TickerFacts } from "./TickerFacts";
 
 const TONE = { onTempo: "accent", inFlight: "warning", held: "muted", surplus: "surplus" } as const;
 const LABEL = { onTempo: RESERVES.onTempo, inFlight: RESERVES.inFlight, held: RESERVES.held, surplus: RESERVES.surplus } as const;
 
-/** pass: every check ran and passed; fail: any failed; partial: some could not run (the Robinhood side). */
+/** pass: every check ran and passed; fail: any failed; partial: some could not run. */
 export function rowState(t: TickerReserve): "pass" | "fail" | "partial" {
   if (t.check.checks.some((c) => c.status === "fail")) return "fail";
   return t.check.checks.every((c) => c.status === "pass") ? "pass" : "partial";
+}
+
+/** Which side the checks that could not run need: the lockbox (covered), the Base hop (accounted), the role scan. */
+export function partialWhy(checks: readonly ReserveCheck[]): PartialWhy {
+  const missing = (id: ReserveCheck["id"]) => checks.some((c) => c.id === id && c.status === "unavailable");
+  return { robinhood: missing("covered"), base: missing("accounted"), issuers: missing("issuer") };
 }
 
 export function TickerRow({ t, network, nowSec }: { t: TickerReserve; network: Network; nowSec: number }) {
@@ -27,6 +33,7 @@ export function TickerRow({ t, network, nowSec }: { t: TickerReserve; network: N
   const id = useId();
   const c = t.check;
   const state = rowState(t);
+  const stateText = state === "partial" ? RESERVES.partialStatus(partialWhy(c.checks)) : RESERVES.status[state];
   const locked = c.locked === null ? RESERVES.notLive : sd(c.locked);
   const segments: PartitionSegment[] = partitionOf(c).map((p) => ({ id: p.part, weight: Number(p.value), tone: TONE[p.part], label: LABEL[p.part], display: sd(p.value) }));
   const inFlight = segments.find((s) => s.id === "inFlight")!.display;
@@ -34,7 +41,7 @@ export function TickerRow({ t, network, nowSec }: { t: TickerReserve; network: N
   const Mark = state === "pass" ? Check : state === "fail" ? TriangleAlert : Minus;
   return (
     <li className="rsv-row" data-state={state} data-open={open || undefined}>
-      <button type="button" className="rsv-row-head" aria-expanded={open} aria-controls={id} aria-label={`b${t.ticker} · ${RESERVES.rowSummary(locked, sd(c.onTempo))} · ${RESERVES.inFlight} ${inFlight} · ${RESERVES.held} ${held} · ${RESERVES.status[state]}`} onClick={() => setOpen((o) => !o)}>
+      <button type="button" className="rsv-row-head" aria-expanded={open} aria-controls={id} aria-label={`b${t.ticker} · ${RESERVES.rowSummary(locked, sd(c.onTempo))} · ${RESERVES.inFlight} ${inFlight} · ${RESERVES.held} ${held} · ${stateText}`} onClick={() => setOpen((o) => !o)}>
         <span className="rsv-cell rsv-ticker">
           <AssetDisc asset={t.ticker} className="rsv-disc" />
           <span className="rsv-sym">b{t.ticker}</span>
@@ -44,9 +51,9 @@ export function TickerRow({ t, network, nowSec }: { t: TickerReserve; network: N
         <span className="rsv-cell rsv-col numbers">{sd(c.onTempo)}</span>
         <span className="rsv-cell rsv-col numbers">{inFlight}</span>
         <span className="rsv-cell rsv-col numbers">{held}</span>
-        <span className="rsv-cell rsv-mark" data-state={state} title={RESERVES.status[state]}>
+        <span className="rsv-cell rsv-mark" data-state={state} title={stateText}>
           <Mark aria-hidden className="size-4" />
-          <span className="sr-only">{RESERVES.status[state]}</span>
+          <span className="sr-only">{stateText}</span>
         </span>
         <ChevronDown aria-hidden className="rsv-chev size-4" />
       </button>

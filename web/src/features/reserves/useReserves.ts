@@ -7,7 +7,7 @@
  * and runs the full role scan when no snapshot exists yet.
  */
 import { isBridgeTicker, reserveVerdict, type BridgeTicker, type Reading, type ReserveVerdict } from "@cwf/core";
-import { browserBridgeClients, issuerScansOf, readReserves, type KnownIssuers, type ReservesView } from "@cwf/markets/stocks";
+import { bridgeTopology, browserBridgeClients, issuerScansOf, readReserves, type KnownIssuers, type ReservesView } from "@cwf/markets/stocks";
 import { useReadingQuery } from "@cwf/markets/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
@@ -81,10 +81,15 @@ export function useReserves() {
     };
     setSteps([...s]);
     const block = (n: bigint) => `#${n.toLocaleString("en-US")}`;
-    try {
-      put(0, { status: "done", meta: block(await clients.robinhood.getBlockNumber()) });
-    } catch {
-      put(0, { status: "error" });
+    // No lockbox on Robinhood Chain yet: nothing there to re-read, and the step says so rather than ticking.
+    const rhLive = Object.values(bridgeTopology(network).tickers).some((t) => t.lockbox);
+    if (!rhLive) put(0, { status: "skipped", meta: RESERVES.notLive });
+    else {
+      try {
+        put(0, { status: "done", meta: block(await clients.robinhood.getBlockNumber()) });
+      } catch {
+        put(0, { status: "error" });
+      }
     }
     put(1, { status: "active" });
     try {

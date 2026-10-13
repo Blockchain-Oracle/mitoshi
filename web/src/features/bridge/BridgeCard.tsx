@@ -14,7 +14,7 @@ import { WalletWait } from "@/components/ui/pending";
 import { webEnv } from "@/lib/env";
 import { FromPanel, ToPanel, Who } from "./ChainPanel";
 import { BRIDGE } from "./copy";
-import { eth, sd } from "./format";
+import { ethUp, sd } from "./format";
 import { RouteLine } from "./RouteLine";
 import { TokenPicker } from "./TokenPicker";
 import { TrackerView } from "./TrackerView";
@@ -38,6 +38,7 @@ function label(s: BridgeStep, ticker: string, from: string, amount: string): str
     case "not-live": return C.notLive;
     case "not-connected": return C.onlyFor(ticker);
     case "paused": return C.paused;
+    case "unreadable": return C.unreadable;
     case "quoting": return C.quoting;
     case "approve": return C.approve(ticker);
     case "bridge": return C.bridge(amount, from);
@@ -57,13 +58,13 @@ export function BridgeCard({ model: mo, tracker }: { model: BridgeModel; tracker
   const to = inbound ? `b${mo.ticker}` : mo.ticker;
   const amountText = mo.amountSD ? sd(mo.amountSD) : "";
   const links = mo.links?.ok ? mo.links.value : null;
-  const quote = mo.quote?.ok ? mo.quote.value : null;
+  const quote = mo.quote;
   const rh = mo.rh?.ok ? mo.rh.value : null;
   const tempo = mo.tempo?.ok ? mo.tempo.value : null;
   const live = links ? (inbound ? links.inReady : links.outReady) : null;
   const badge = !links ? null : !links.robinhoodLive ? BRIDGE.badge.notLive : live ? BRIDGE.badge.live : BRIDGE.badge.partial(mo.ticker);
   const balanceSD = inbound ? (rh ? toShared(rh.stockLD, 18) : null) : tempo ? tempo.mirrorSD : null;
-  const fee = quote ? (inbound ? BRIDGE.fee(eth(quote.nativeFee), "ETH") : BRIDGE.feeUsd(usdUp(quote.nativeFee))) : null;
+  const fee = quote ? (inbound ? BRIDGE.fee(ethUp(quote.nativeFee), "ETH") : BRIDGE.feeUsd(usdUp(quote.nativeFee))) : null;
   const eta = mo.api.data?.eta[mo.direction] ?? null;
   const cap = mo.capacity?.ok ? mo.capacity.value : null;
   const step = mo.step;
@@ -125,7 +126,7 @@ export function BridgeCard({ model: mo, tracker }: { model: BridgeModel; tracker
                 <ArrowDownUp aria-hidden className="size-4" />
               </button>
             </div>
-            <ToPanel stop={inbound ? "tempo" : "robinhood"} who={inbound ? tempoWho : rhWho} gets={quote ? BRIDGE.get(sd(quote.receivedSD), to) : mo.amountSD ? BRIDGE.get(amountText, to) : null} />
+            <ToPanel stop={inbound ? "tempo" : "robinhood"} who={inbound ? tempoWho : rhWho} gets={quote ? BRIDGE.get(sd(quote.receivedSD), to) : null} />
             <RouteLine fee={fee} via={NETWORK === "testnet"} etaSec={eta?.medianSec ?? null} capacity={cap ? { availableSD: cap.availableSD, capacitySD: cap.capacitySD } : null} />
             {mo.sideStep ? (
               <WalletWait title={mo.sideStep === "approving" ? BRIDGE.track.approving : BRIDGE.track.wallet} note={mo.sideStep === "approving" ? undefined : BRIDGE.track.walletNote} action={reopen ? <a href={reopen} className="wwait-reopen">{BRIDGE.track.reopen}</a> : undefined} />

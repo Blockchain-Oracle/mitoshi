@@ -44,7 +44,8 @@ export function useBridge(initialTicker: BridgeTicker, onTracked: (t: Tracked) =
   const rh = useReadingQuery(["bridge", NETWORK, "rh", ticker, rhAddr], async () => readRobinhoodHoldings(await bridgeClients(), ticker, rhAddr!), { enabled: Boolean(rhAddr), pollMs: 15_000 });
   const rhAll = useReadingQuery(["bridge", NETWORK, "rh-all", rhAddr], async () => readRobinhoodBalances(await bridgeClients(), rhAddr!), { enabled: Boolean(rhAddr), pollMs: 30_000 });
   const tempo = useReadingQuery(["bridge", NETWORK, "tempo", ticker, tempoAddr], async () => readTempoHoldings(await bridgeClients(), ticker, tempoAddr!), { enabled: Boolean(tempoAddr), pollMs: 15_000 });
-  const routeLive = links?.ok ? (direction === "in" ? links.value.inReady : links.value.outReady) : false;
+  const linkRead = links?.ok ? links.value : null;
+  const routeLive = linkRead ? (direction === "in" ? linkRead.inReady : linkRead.outReady) : false;
   const recipient = direction === "in" ? tempoAddr : rhAddr;
   const quote = useReadingQuery(
     ["bridge", NETWORK, "quote", direction, ticker, debounced?.toString() ?? "", recipient],
@@ -52,6 +53,8 @@ export function useBridge(initialTicker: BridgeTicker, onTracked: (t: Tracked) =
     { enabled: routeLive && debounced !== null && Boolean(recipient), pollMs: 30_000 },
   );
   const api = useBridgeApi([tempoAddr, rhAddr]);
+  // Only a quote for the amount on screen counts (one for the previous keystroke is never shown or sent).
+  const fresh = quote?.ok && debounced === amountSD ? quote.value : null;
 
   const step = nextStep({
     direction,
@@ -61,38 +64,40 @@ export function useBridge(initialTicker: BridgeTicker, onTracked: (t: Tracked) =
     signedIn: Boolean(tempoAddr),
     rh: rh?.ok ? rh.value : null,
     tempo: tempo?.ok ? tempo.value : null,
-    links: links?.ok ? links.value : null,
+    links: linkRead,
+    linksFailed: links !== null && !links.ok,
     capacity: capacity?.ok ? capacity.value : null,
-    quote: quote?.ok && debounced === amountSD ? quote.value : null,
-    paused: false,
+    quote: fresh,
+    paused: linkRead ? linkRead.mirrorPaused || (direction === "out" && linkRead.sendsPaused) : false,
   });
 
-  const track = useCallback((srcTx: Hex, from: string, to: string) => {
-    const t: Tracked = { direction, ticker, srcTx, amountSD: amountSD!.toString(), startedAtMs: Date.now() };
+  // The record carries what actually leaves (the quote's, after dust), checked later against the source's OFTSent.
+  const track = useCallback((srcTx: Hex, sentSD: bigint, from: string, to: string) => {
+    const t: Tracked = { direction, ticker, srcTx, amountSD: sentSD.toString(), startedAtMs: Date.now() };
     void recordTransfer({ ...t, from, to });
     onTracked(t);
-  }, [direction, ticker, amountSD, onTracked]);
+  }, [direction, ticker, onTracked]);
 
   const submit = useCallback(async () => {
-    if (!quote?.ok) return;
+    if (!fresh) return;
     setSideError(null);
     if (direction === "out") {
-      await tx.run({ kind: "bridge-send", ticker, amountSD: quote.value.sentSD, recipient: rhAddr!, feeBase: quote.value.nativeFee }, (hash) => track(hash, tempoAddr!, rhAddr!));
+      await tx.run({ kind: "bridge-send", ticker, amountSD: fresh.sentSD, recipient: rhAddr!, feeBase: fresh.nativeFee }, (hash) => track(hash, fresh.sentSD, tempoAddr!, rhAddr!));
       return;
     }
     try {
       const c = await bridgeClients();
       const wallet = await shell.sideWallet(RH_CHAIN_ID);
-      const calls = bridgeInCalls(ticker, NETWORK, quote.value, rhAddr!, rh?.ok ? rh.value.allowanceLD : 0n);
+      const calls = bridgeInCalls(ticker, NETWORK, fresh, rhAddr!, rh?.ok ? rh.value.allowanceLD : 0n);
       const hash = await sendBridgeIn(wallet, c.robinhood, calls, { onStep: (s, h) => setSideStep(s === "approve" && h ? "approving" : s) });
-      track(hash, rhAddr!, tempoAddr!);
+      track(hash, fresh.sentSD, rhAddr!, tempoAddr!);
     } catch (error) {
       const text = error instanceof Error ? error.message.split("\n")[0]! : String(error);
       setSideError(/reject|denied|cancel/i.test(text) ? null : text.slice(0, 160));
     } finally {
       setSideStep(null);
     }
-  }, [quote, direction, tx, ticker, rhAddr, tempoAddr, track, shell, rh]);
+  }, [fresh, direction, tx, ticker, rhAddr, tempoAddr, track, shell, rh]);
 
   const flip = useCallback(() => {
     setDirection((d) => (d === "in" ? "out" : "in"));
@@ -100,8 +105,8 @@ export function useBridge(initialTicker: BridgeTicker, onTracked: (t: Tracked) =
   }, []);
 
   return useMemo(
-    () => ({ direction, flip, ticker, setTicker, amount, setAmount, amountSD, step, links, capacity, rh, rhAll, tempo, quote, api, tx, sideStep, sideError, submit, shell }),
-    [direction, flip, ticker, amount, amountSD, step, links, capacity, rh, rhAll, tempo, quote, api, tx, sideStep, sideError, submit, shell],
+    () => ({ direction, flip, ticker, setTicker, amount, setAmount, amountSD, step, links, capacity, rh, rhAll, tempo, quote: fresh, api, tx, sideStep, sideError, submit, shell }),
+    [direction, flip, ticker, amount, amountSD, step, links, capacity, rh, rhAll, tempo, fresh, api, tx, sideStep, sideError, submit, shell],
   );
 }
 

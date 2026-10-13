@@ -10,6 +10,7 @@
  */
 import { encodeFunctionData, erc20Abi, type Address, type Hex, type PublicClient } from "viem";
 import { diagnosis, err, LZ_EID, removeDust, toShared, type BridgeDirection, type BridgeTicker, type Reading } from "@cwf/core";
+import { iTIP20Abi } from "@cwf/clients/abis/ITIP20";
 import { transitOFTAbi } from "@cwf/clients/abis/TransitOFT";
 import { tIP20MintBurnAdapterAbi } from "@cwf/clients/abis/TIP20MintBurnAdapter";
 import { withReading } from "../runtime/reading";
@@ -29,12 +30,16 @@ export interface SideCall {
 const ZERO32 = `0x${"0".repeat(64)}`;
 const notDeployed = <T>(what: string): Reading<T> => err(diagnosis("not-deployed", `${what} is not deployed on this network yet`));
 
-/** Which links of a ticker's route are wired (peers set); a missing link blocks the CTA with "<T> only for now". */
+/** Which links of a ticker's route are wired (peers set); a missing link blocks the CTA with "<T> not connected yet". */
 export interface RouteLinks {
   inReady: boolean;
   outReady: boolean;
   /** The Robinhood lockbox exists (its absence is the owner's test ETH, owner-actions S14c). */
   robinhoodLive: boolean;
+  /** The Tempo mirror is paused (an arriving credit would be held, a send-out can't burn). */
+  mirrorPaused: boolean;
+  /** The adapter's sends are paused (bridge-out reverts; held credits can still go back). */
+  sendsPaused: boolean;
 }
 
 export async function readRouteLinks(clients: BridgeClients, ticker: BridgeTicker): Promise<Reading<RouteLinks>> {
@@ -45,14 +50,16 @@ export async function readRouteLinks(clients: BridgeClients, ticker: BridgeTicke
       const p = (await c.readContract({ address, abi, functionName: "peers", args: [eid] } as never)) as Hex;
       return p !== ZERO32;
     };
-    const [adapterToBase, baseToTempo, baseToRh, lockboxToBase] = await Promise.all([
+    const [adapterToBase, baseToTempo, baseToRh, lockboxToBase, mirrorPaused, sendsPaused] = await Promise.all([
       peer(clients.tempo, t.adapter, LZ_EID.baseSepolia, tIP20MintBurnAdapterAbi),
       peer(clients.base, t.transit, LZ_EID.moderato, transitOFTAbi),
       peer(clients.base, t.transit, LZ_EID.robinhoodTestnet, transitOFTAbi),
       peer(clients.robinhood, t.lockbox, LZ_EID.baseSepolia, stockLockboxAbi),
+      t.mirror ? clients.tempo.readContract({ address: t.mirror, abi: iTIP20Abi, functionName: "paused" }) : Promise.resolve(false),
+      t.adapter ? clients.tempo.readContract({ address: t.adapter, abi: tIP20MintBurnAdapterAbi, functionName: "sendsPaused" }) : Promise.resolve(false),
     ]);
     const robinhoodLive = t.lockbox !== null;
-    return { inReady: robinhoodLive && lockboxToBase && baseToTempo && adapterToBase, outReady: robinhoodLive && adapterToBase && baseToRh, robinhoodLive };
+    return { inReady: robinhoodLive && lockboxToBase && baseToTempo && adapterToBase, outReady: robinhoodLive && adapterToBase && baseToRh, robinhoodLive, mirrorPaused, sendsPaused };
   });
 }
 

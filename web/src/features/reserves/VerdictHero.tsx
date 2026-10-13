@@ -9,6 +9,7 @@ import { RefreshCw } from "lucide-react";
 import { TaskSteps, type TaskStep } from "@/components/ui/task-steps";
 import { blockText } from "../bridge/format";
 import { RESERVES } from "./copy";
+import { partialWhy } from "./TickerRow";
 
 export function VerdictHero({ verdict, view, steps, busy, onRecheck }: { verdict: ReserveVerdict; view: ReservesView; steps: TaskStep[] | null; busy: boolean; onRecheck: () => void }) {
   const v = RESERVES.verdict[verdict];
@@ -26,7 +27,7 @@ export function VerdictHero({ verdict, view, steps, busy, onRecheck }: { verdict
           <span className="type-label-micro normal-case rsv-romaji"><span lang="ja-Latn">{v.romaji}</span> · {v.word}</span>
         </div>
         <div className="rsv-hero-body">
-          <p className="rsv-sentence">{RESERVES.sentence[verdict]}</p>
+          <p className="rsv-sentence">{verdict === "partial" ? RESERVES.sentence.partial(partialWhy(view.tickers.flatMap((t) => t.check.checks))) : RESERVES.sentence[verdict]}</p>
           <p key={b.tempo.toString()} className="numbers rsv-blocks rsv-flash">{blocks.join(" · ")}</p>
         </div>
       </div>

@@ -9,12 +9,17 @@ import { sd } from "./format";
 import type { BridgeApi } from "./api";
 import type { Tracked } from "./useTracker";
 
-export function RecentTransfers({ api, onOpen }: { api: BridgeApi | null; onOpen: (t: Tracked) => void }) {
+/** `api`: undefined while reading, null when the records can't be read (no database, or it failed), else the list. */
+export function RecentTransfers({ api, onOpen }: { api: BridgeApi | null | undefined; onOpen: (t: Tracked) => void }) {
   const rows = (api?.transfers ?? []).filter((t) => isBridgeTicker(t.ticker)).slice(0, 8);
   return (
     <section className="brr" aria-label={BRIDGE.recent.label}>
       <h2 className="brr-title">{BRIDGE.recent.title}</h2>
-      {rows.length === 0 ? (
+      {api === undefined ? (
+        <p className="brr-empty">{BRIDGE.recent.reading}</p>
+      ) : api === null ? (
+        <p className="brr-empty">{BRIDGE.recent.unread}</p>
+      ) : rows.length === 0 ? (
         <p className="brr-empty">{BRIDGE.recent.empty}</p>
       ) : (
         <ul className="brr-list">

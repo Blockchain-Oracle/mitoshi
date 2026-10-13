@@ -3,7 +3,7 @@
 // spinner — over the route map, a live elapsed timer (the shared clock), the legs for screen readers, and the one
 // thing to do when there is one: trade what arrived, claim a held credit (relay-sponsored, "No fees to pay") or send
 // it back, or start again. Shown in the card after signing and in Portfolio's drawer.
-import { deliveredLegs, layerZeroMessageUrl, routeOf, type Hex } from "@cwf/core";
+import { deliveredLegs, layerZeroMessageUrl, routeOf, type Hex, type TxState } from "@cwf/core";
 import { bridgeTopology, claimOwed, quoteBridgeOut } from "@cwf/markets/stocks";
 import Link from "next/link";
 import { useState } from "react";
@@ -18,13 +18,17 @@ import { bridgeClients, NETWORK, RH_CHAIN_ID } from "./useBridge";
 import type { TrackerModel } from "./useTracker";
 
 const T = BRIDGE.track;
+const ENDED = new Set(["delivered", "released", "returned", "reverted", "failed"]);
+const firstLine = (error: unknown) => (error instanceof Error ? error.message : String(error)).split("\n")[0]!.slice(0, 160);
 
 export function TrackerView({ tracker, showLegs = false }: { tracker: TrackerModel; showLegs?: boolean }) {
   const shell = useWalletShell();
   const nowMs = useNowMs() || Date.now();
   const claim = useTxLifecycle();
   const sendBack = useTxLifecycle();
-  const [owedHash, setOwedHash] = useState<Hex | null>(null);
+  // The bridge-out's held unlock is claimed on Robinhood Chain with the linked wallet (not a Tempo intent).
+  const [owed, setOwed] = useState<TxState>({ kind: "idle" });
+  const [actionError, setActionError] = useState<string | null>(null);
   const t = tracker.tracked!;
   const route = routeOf(t.direction, NETWORK);
   const adv = tracker.advance;
@@ -33,34 +37,50 @@ export function TrackerView({ tracker, showLegs = false }: { tracker: TrackerMod
   const amount = sd(BigInt(t.amountSD));
   const arriving = t.direction === "in" ? `b${t.ticker}` : t.ticker;
   const phase = adv?.phase ?? "sent";
-  const ended = adv?.status === "delivered" || adv?.status === "reverted" || adv?.status === "failed";
+  const ended = adv ? ENDED.has(adv.status) : false;
+  // The clock runs until the end; a delivery keeps its measured time, any other end drops it.
+  const stopped = ended && adv?.status !== "delivered";
   const elapsedSec = ((adv?.deliveredAtMs ?? nowMs) - t.startedAtMs) / 1000;
-  const stopped = adv?.status === "reverted" || adv?.status === "failed";
   const current = legs.find((l) => l.status !== "delivered") ?? legs[legs.length - 1];
   const reason = legs.find((l) => l.deferReason)?.deferReason ?? "none";
+  const lzLink = (phase === "slow" || phase === "failed" || phase === "returned") && current?.guid;
 
   const line =
     phase === "delivered" ? T.delivered(amount, arriving)
     : phase === "hop" ? T.hop
     : phase === "deferred" ? T.deferred(BRIDGE.defer[reason] ?? BRIDGE.defer.none!)
+    : phase === "released" ? T.released
+    : phase === "returned" ? T.returned(BRIDGE.chain[route.stops[0]!])
+    : phase === "failed" ? T.failed
     : phase === "fuel" ? T.fuel
     : phase === "slow" ? T.slow
     : phase === "nothing" ? T.nothing
     : T.sent(BRIDGE.chain[route.stops[0]!]);
 
   const runClaim = async () => {
+    setActionError(null);
     if (t.direction === "in") {
       await claim.run({ kind: "bridge-claim-deferred", ticker: t.ticker });
       return;
     }
+    if (!shell.robinhood) return shell.openPicker("robinhood");
     const lockbox = bridgeTopology(NETWORK).tickers[t.ticker].lockbox;
-    if (lockbox) setOwedHash(await claimOwed(await shell.sideWallet(RH_CHAIN_ID), lockbox));
+    if (!lockbox) return;
+    setOwed({ kind: "signing" });
+    try {
+      setOwed({ kind: "confirmed", txHash: await claimOwed(await shell.sideWallet(RH_CHAIN_ID), lockbox), pending: false });
+    } catch (error) {
+      setOwed({ kind: "idle" });
+      if (!/reject|denied|cancel/i.test(firstLine(error))) setActionError(firstLine(error));
+    }
   };
   const runSendBack = async () => {
+    setActionError(null);
     const rh = shell.robinhood?.address;
     if (!rh) return shell.openPicker("robinhood");
     const q = await quoteBridgeOut(await bridgeClients(), t.ticker, BigInt(t.amountSD), rh);
-    if (q.ok) await sendBack.run({ kind: "bridge-send-deferred", ticker: t.ticker, amountSD: q.value.sentSD, recipient: rh, feeBase: q.value.nativeFee });
+    if (!q.ok) return setActionError(q.error.technical);
+    await sendBack.run({ kind: "bridge-send-deferred", ticker: t.ticker, amountSD: q.value.sentSD, recipient: rh, feeBase: q.value.nativeFee });
   };
 
   return (
@@ -68,10 +88,10 @@ export function TrackerView({ tracker, showLegs = false }: { tracker: TrackerMod
       <div className="btr-head">
         <p className="btr-line" role="status" aria-live="polite">
           {line}
-          {phase === "slow" && current?.guid ? (
+          {lzLink ? (
             <>
               {" · "}
-              <a href={layerZeroMessageUrl(current.guid as Hex, NETWORK)} target="_blank" rel="noreferrer">{T.lzscan}</a>
+              <a href={layerZeroMessageUrl(current!.guid as Hex, NETWORK)} target="_blank" rel="noreferrer">{T.lzscan}</a>
             </>
           ) : null}
         </p>
@@ -83,7 +103,7 @@ export function TrackerView({ tracker, showLegs = false }: { tracker: TrackerMod
       {phase === "delivered" && t.direction === "in" ? <Link href={`/trade/${t.ticker}`} className="btr-act">{T.trade}</Link> : null}
       {phase === "deferred" ? (
         <div className="btr-acts">
-          <TxCta state={owedHash ? { kind: "confirmed", txHash: owedHash, pending: false } : claim.state} action={T.claim(amount, arriving)} signer={t.direction === "in" && shell.tempo?.kind === "passkey" ? "passkey" : "injected"} sponsored={t.direction === "in"} onConfirm={() => void runClaim()} />
+          <TxCta state={t.direction === "in" ? claim.state : owed} action={T.claim(amount, arriving)} signer={t.direction === "in" && shell.tempo?.kind === "passkey" ? "passkey" : "injected"} sponsored={t.direction === "in"} onConfirm={() => void runClaim()} />
           {t.direction === "in" ? (
             <button type="button" className="btr-secondary" onClick={() => void runSendBack()} disabled={sendBack.state.kind === "signing" || sendBack.state.kind === "submitted"}>
               {T.sendBack}
@@ -91,6 +111,7 @@ export function TrackerView({ tracker, showLegs = false }: { tracker: TrackerMod
           ) : null}
         </div>
       ) : null}
+      {actionError ? <p className="brc-error" role="alert">{actionError}</p> : null}
       {ended || phase === "deferred" ? (
         <button type="button" className="btr-secondary" onClick={tracker.clear}>{T.again}</button>
       ) : null}

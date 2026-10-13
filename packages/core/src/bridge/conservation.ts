@@ -20,7 +20,7 @@ export interface LockboxReads {
 export interface ReserveReads {
   /** Null while the Robinhood lockbox is not deployed (or could not be read). */
   lockbox: LockboxReads | null;
-  /** Base Sepolia TransitOFT supply (the testnet hop); null on mainnet or when unread. */
+  /** Base Sepolia TransitOFT supply (the testnet hop); 0 on mainnet (no hop), null when unread or not deployed. */
   transitSupply: bigint | null;
   supply: bigint;
   supplyCap: bigint;

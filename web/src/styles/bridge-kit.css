@@ -60,6 +60,7 @@
 .tsteps-dot { width: 6px; height: 6px; border-radius: 9999px; background: var(--color-ink-disabled); }
 .tsteps-spin { width: 12px; height: 12px; border: 2px solid var(--color-hairline); border-top-color: var(--color-accent); border-radius: 9999px; animation: tsteps-spin 0.8s linear infinite; }
 @keyframes tsteps-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .tsteps-spin { animation: none; border-top-color: var(--color-accent); } }
 
 /* ── wallet wait ── */
 .wwait { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--color-accent-dim); border-radius: var(--radius-md); background: var(--color-accent-wash); }
@@ -93,3 +94,4 @@
 .alog-detail { grid-column: 2 / -1; font-size: 12px; color: var(--color-ink-secondary); }
 .alog-empty { font-size: 13px; color: var(--color-ink-muted); }
 .wwait-reopen { display: inline-flex; flex: none; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 9999px; background: var(--color-surface-1); font-size: 13px; font-weight: 700; color: var(--color-accent); }
+.wwait-reopen:hover { background: var(--color-surface-2); }

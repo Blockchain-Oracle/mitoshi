@@ -154,7 +154,8 @@ export async function readReserves(clients: BridgeClients, known: KnownIssuers =
         const issuers = scans.get(t.ticker) ?? null;
         const reads: ReserveReads = {
           lockbox: lockbox ? { locked: toShared(lockbox[0][0], RH_DECIMALS), outstanding: toShared(lockbox[0][1], RH_DECIMALS), owed: toShared(lockbox[0][2], RH_DECIMALS) } : null,
-          transitSupply: transitSupply === null ? null : toShared(transitSupply, RH_DECIMALS),
+          // Mainnet has no hop (nothing can sit on Base); on testnet an unread or undeployed hop stays unknown.
+          transitSupply: clients.network === "mainnet" ? 0n : transitSupply === null ? null : toShared(transitSupply, RH_DECIMALS),
           supply: tempo.supply,
           supplyCap: tempo.cap,
           deferred: tempo.deferred,

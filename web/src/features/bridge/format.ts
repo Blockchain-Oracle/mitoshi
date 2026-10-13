@@ -4,8 +4,11 @@ import { formatBaseUnits, SHARED_DECIMALS } from "@cwf/core";
 /** A 6-dp shared amount (a mirror, or a Robinhood amount after dust): "25", "25.5", "1,000". */
 export const sd = (v: bigint, maxDp = 4) => formatBaseUnits(v, SHARED_DECIMALS, { maxDp, minDp: 0 });
 
-/** Wei → "0.0001 ETH"-style text (up to 6 dp). */
+/** Wei → "0.0001"-style text (up to 6 dp). */
 export const eth = (wei: bigint) => formatBaseUnits(wei, 18, { maxDp: 6, minDp: 0 });
+
+/** A fee in wei, rounded up to the 6 dp shown — a fee is never shown smaller than it is. */
+export const ethUp = (wei: bigint) => eth(((wei + 10n ** 12n - 1n) / 10n ** 12n) * 10n ** 12n);
 
 /** An ERC-8056 multiplier (1e18 = 1.00). */
 export const multiplier = (e18: bigint) => formatBaseUnits(e18, 18, { maxDp: 2, minDp: 2 });
