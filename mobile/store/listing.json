@@ -1,0 +1,15 @@
+{
+  "$comment": "The store words (D-227, MOBILE), read by mobile/scripts/play.mjs (the Play listing, en-US, and the release note) and mobile/scripts/testflight.mjs (TestFlight's test information). Every claim is in the docs: /docs/windows (lanes), /docs/testnet (test money), the footer's disclosure.",
+  "language": "en-US",
+  "title": "Mitoshi",
+  "shortDescription": "Call BTC, ETH, SOL and US stocks UP or DOWN. On Tempo testnet, test dollars.",
+  "fullDescription": "Call where a price closes. Pick an asset, call UP or DOWN, and the Window settles on a signed oracle print.\n\n• BTC, ETH and SOL in 5-minute Windows, around the clock.\n• Nine US stocks (AAPL, AMD, AMZN, GOOGL, META, MSFT, NVDA, PLTR, TSLA) in 5, 15 and 60-minute Windows.\n• Sign up with a passkey. No seed phrase, no extension.\n• One tap to trade from your Trading Balance.\n• Every Window keeps its proof: both signed prints and the verdict, re-checkable in your browser. Receipts link to the chain.\n\nTestnet: Mitoshi runs on Tempo's testnet (Moderato). The money is test pathUSD from the faucet. It has no value and can't be bought or sold. Not investment advice.",
+  "releaseNotes": "Sign up with a passkey, get test dollars, call BTC UP or DOWN on a 5-minute Window, watch it settle.",
+  "website": "https://mitoshi.xyz",
+  "privacyPolicy": "https://mitoshi.xyz/privacy",
+  "testflight": {
+    "whatToTest": "Sign up with a passkey, get test dollars, call BTC UP or DOWN on a 5-minute window, watch it settle.",
+    "description": "Call where a price closes: BTC, ETH, SOL and US stocks in Windows that settle on a signed oracle print. Sign up with a passkey; one tap to trade. Runs on Tempo testnet with test pathUSD, which has no value.",
+    "reviewNotes": "Sign up with a passkey, get test dollars, call BTC UP or DOWN on a 5-minute window, watch it settle. No account or login to give: the app creates a passkey on the device. Test money only (Tempo testnet pathUSD, no value)."
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "origin": "https://mitoshi.xyz",
+  "shots": [
+    {
+      "file": "phone-1-markets.png",
+      "url": "https://mitoshi.xyz/markets",
+      "capturedAt": "2026-10-13T16:04:07.014Z",
+      "viewport": "360x640@3x",
+      "sha256": "49a801dbf51370cfaf4cc2bb47368af917b0d5a7b29db3cfb9a2be8cb8077f0f"
+    },
+    {
+      "file": "phone-2-btc.png",
+      "url": "https://mitoshi.xyz/trade/BTC",
+      "capturedAt": "2026-10-13T16:04:27.316Z",
+      "viewport": "360x640@3x",
+      "sha256": "bf07f68aa4a20e85072995bc863d7566ac2915da73dd808cb53f32187ff6722e"
+    },
+    {
+      "file": "phone-3-tsla.png",
+      "url": "https://mitoshi.xyz/trade/TSLA",
+      "capturedAt": "2026-10-13T16:04:48.796Z",
+      "viewport": "360x640@3x",
+      "sha256": "c105237ccc0a0e4200d22e99f49b1fdf62cdebf90e04d1f134381b395b3d4e84"
+    },
+    {
+      "file": "phone-4-proof.png",
+      "url": "https://mitoshi.xyz/proof",
+      "capturedAt": "2026-10-13T16:05:16.573Z",
+      "viewport": "360x640@3x",
+      "sha256": "32ce6eafba44afc320e343fa15daa70ac3151cc2a397b6a320e65ad3c50028d0"
+    },
+    {
+      "file": "phone-5-games.png",
+      "url": "https://mitoshi.xyz/games",
+      "capturedAt": "2026-10-13T16:05:44.199Z",
+      "viewport": "360x640@3x",
+      "sha256": "d4a03c2eadc3cf97c106ff5385c1ae2039eed83253f34fba69b6244a3ca72a51"
+    },
+    {
+      "file": "phone-6-earn.png",
+      "url": "https://mitoshi.xyz/earn",
+      "capturedAt": "2026-10-13T16:06:09.213Z",
+      "viewport": "360x640@3x",
+      "sha256": "d96cb3880547f15c331e15f51a3409c986c2e36d27ef4d193fa7ec865d915232"
+    }
+  ]
+}
