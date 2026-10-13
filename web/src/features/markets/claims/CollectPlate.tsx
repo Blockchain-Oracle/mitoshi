@@ -19,7 +19,9 @@ import { Receipt, ReceiptRow } from "@/components/receipt";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { BOOST } from "@/features/boost/copy";
 import { money } from "@/features/terminal/format";
+import { SHELL } from "@/lib/copy";
 import { webEnv } from "@/lib/env";
+import { usePrivacy } from "@/lib/privacy";
 import { CLAIM } from "../copy";
 import { collectableRows, useCollect } from "./useCollect";
 
@@ -60,6 +62,8 @@ export function CollectPlate({ wallet, rows, bare = false, collector, boostOwed 
   const decimals = rows[0]?.decimals ?? 6;
   const batches = Math.max(1, Math.ceil(live.length / 8));
   const owed = boostOwed && boostOwed.amountBase > 0n ? boostOwed : null;
+  // The owed row's button names its amount — the dots in privacy mode, like the row beside it.
+  const hidden = usePrivacy();
 
   const run = async () => {
     const outcome = await collect(live);
@@ -82,7 +86,7 @@ export function CollectPlate({ wallet, rows, bare = false, collector, boostOwed 
             {owed ? (
               <li className="bets-row">
                 <span className="min-w-0 flex-1 type-caption text-ink"><Masked>{BOOST.bets.owed(money(owed.amountBase))}</Masked></span>
-                <PillButton tone="ghost" size="sm" disabled={owed.busy} aria-busy={owed.busy} onClick={owed.collect}>{BOOST.bets.collect(money(owed.amountBase))}</PillButton>
+                <PillButton tone="ghost" size="sm" disabled={owed.busy} aria-busy={owed.busy} onClick={owed.collect}>{BOOST.bets.collect(hidden ? SHELL.masked : money(owed.amountBase))}</PillButton>
               </li>
             ) : null}
           </ul>

@@ -6,19 +6,22 @@ import { Masked, SlideOver, SlideOverContent } from "@/components/kit";
 import { KeyUsedReceipt, TxReceipt } from "@/components/tx";
 import { webEnv } from "@/lib/env";
 import { closeDrawer, useOpenDrawerName } from "@/lib/drawer-param";
+import { usePrivacy } from "@/lib/privacy";
 import { WRITE_RECEIPT } from "./copy";
-import { RECEIPT_KEY, useWriteReceipt } from "./write-receipt";
+import { RECEIPT_KEY, receiptTitle, useWriteReceipt } from "./write-receipt";
 
 export function ReceiptHost() {
   const receipt = useWriteReceipt();
   const open = useOpenDrawerName() === RECEIPT_KEY && receipt !== null;
+  const hidden = usePrivacy();
   if (!receipt) return null;
+  const title = receiptTitle(receipt, hidden);
   return (
     <SlideOver open={open} onOpenChange={(o) => !o && closeDrawer()}>
-      <SlideOverContent title={WRITE_RECEIPT.title} description={receipt.title}>
+      <SlideOverContent title={WRITE_RECEIPT.title} description={title}>
         <div className="flex flex-col gap-4">
           <TxReceipt
-            title={receipt.title}
+            title={title}
             figure={<Masked>{receipt.figure}</Masked>}
             figureLabel={receipt.figureLabel}
             atMs={receipt.atMs}

@@ -5,14 +5,17 @@
  * didn't, one toast says so and offers Add money. Mainnet has no faucet: nothing to do. R4-4 (D-227; critic gap 10,
  * bug 6): signed in to place an order, the welcome modal would be a wall between the user and that order — so the
  * welcome is suppressed and a toast names what landed ("+$X test dollars", the new account's balance as the chain reads
- * it once funded), while the order CTAs say "Funding your account…" (`first-fund-state`) until it has.
+ * it once funded; the dots in privacy mode), while the order CTAs say "Funding your account…" (`first-fund-state`)
+ * until it has.
  */
 import { keys, useMarketsPort } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { money } from "@/features/terminal/format";
+import { SHELL } from "@/lib/copy";
 import { webEnv } from "@/lib/env";
 import { openFunds } from "@/lib/funds-event";
+import { isPrivacyOn } from "@/lib/privacy";
 import { notify } from "@/lib/toast";
 import { useWalletSession } from "@/lib/wallet-session";
 import { FUNDING } from "./copy";
@@ -44,7 +47,7 @@ export function FirstFund({ onDone, forOrder = false }: { onDone: () => void; fo
       } else if (state.phase === "funded" && forOrder) {
         // A brand-new account held nothing before: what it holds now is what landed.
         const sheet = port ? await port.getBalanceSheet(address) : null;
-        notify.item({ id: "first-fund", title: sheet?.ok && sheet.value.spendableBase > 0n ? FUNDING.firstFund.landed(money(sheet.value.spendableBase)) : FUNDING.welcome.title });
+        notify.item({ id: "first-fund", title: sheet?.ok && sheet.value.spendableBase > 0n ? FUNDING.firstFund.landed(isPrivacyOn() ? SHELL.masked : money(sheet.value.spendableBase)) : FUNDING.welcome.title });
       }
       await queryClient.invalidateQueries({ queryKey: keys.balanceSheet(address) });
       setFirstFunding(false);

@@ -5,7 +5,9 @@
 // (`ReceiptHost`) reads it; nothing is re-read or guessed — every row comes from the confirmed outcome.
 import type { Hex } from "@cwf/core";
 import { useSyncExternalStore } from "react";
+import { SHELL } from "@/lib/copy";
 import { openDrawer } from "@/lib/drawer-param";
+import { isPrivacyOn } from "@/lib/privacy";
 import { notify } from "@/lib/toast";
 import { WRITE_RECEIPT } from "./copy";
 
@@ -37,9 +39,17 @@ export function openReceipt(receipt: WriteReceipt): void {
   openDrawer(RECEIPT_KEY);
 }
 
+/**
+ * The title as it may be shown: with privacy mode on (the balance eye), the figure it names is the dots — the toast and
+ * the sheet never print the amount the stub masks.
+ */
+export function receiptTitle(receipt: Pick<WriteReceipt, "title" | "figure">, hidden: boolean): string {
+  return hidden && receipt.figure ? receipt.title.split(receipt.figure).join(SHELL.masked) : receipt.title;
+}
+
 /** The toast with its Receipt action, once the write is confirmed. */
 export function notifyReceipt(receipt: WriteReceipt): void {
-  notify.item({ id: `receipt-${receipt.txHash}`, title: receipt.title, action: { label: WRITE_RECEIPT.action, onClick: () => openReceipt(receipt) } });
+  notify.item({ id: `receipt-${receipt.txHash}`, title: receiptTitle(receipt, isPrivacyOn()), action: { label: WRITE_RECEIPT.action, onClick: () => openReceipt(receipt) } });
 }
 
 export function useWriteReceipt(): WriteReceipt | null {
