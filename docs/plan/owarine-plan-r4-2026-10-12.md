@@ -152,11 +152,18 @@ R4-12 (Bridge and reserves) merged at `735f553`: /bridge as one card tracked to 
 bridge-watch / reserve-watch / stock-sync in ops (migrations bridge/0001 and index/0007; ops redeployed). /bridge at 375
 and 1440 clean (the CTA on the first phone screen). Open, blocked-owner: Robinhood testnet test ETH (deployer 0 ETH,
 nonce 0) for the Handoff and the driven UI pass (14w/14o/UX-08); the Reown project ID for WalletConnect on phones.
+2026-10-13 05:17Z: testnet ops' explicit OPS_ACTORS had left out four default-set actors, so they never started —
+indexer-recount, bridge-watch, reserve-watch, stock-sync; now appended, and `duel-settler` after them (26 actors, every
+earlier one kept; no new env). They start on R4's final ops deploy (the one triggered at 05:18Z was cancelled while
+queued, box memory-starved). Expected on /health: reserve-watch "5 tickers partial at Tempo #… · Robinhood side not deployed",
+bridge-watch "0 open…", stock-sync "idle: StockSyncSender is not deployed…", indexer-recount "idle: no indexer
+configured" (needs the owner's TEMPO_INDEXER_API_KEY or a self-hosted tidx, D-086). STOCK_SYNC_PRIVATE_KEY is unset
+on Coolify (role key in `~/.config/cwf/testnet/`; nothing to sign until the Robinhood side lands).
 MOBILE (Expo app) merged at `83058f9`: mobile/ in the workspace (frozen install and the web build pass), the testnet site
 in one web view, and the web's /.well-known AASA and assetlinks (200 JSON locally). Open, blocked-owner: the App Store
-Connect app record and TestFlight submit; the Play Console app, its first AAB by hand and the app-signing SHA-256;
-`https://mitoshi.xyz` on the Coolify web app's domains so the passkey rpId host serves the association files; a check
-on real phones.
+Connect app record and TestFlight submit; the Play Console app, its first AAB by hand and the app-signing SHA-256; a
+check on real phones. (`https://mitoshi.xyz` joined the Coolify web app's domains 2026-10-13 05:19Z, `PASSKEY_RP_ID=
+mitoshi.xyz`; the apex serves the association files from R4's final web deploy.)
 DOCS (Docs site) merged at `32d6783`: docs-site/ (Fumadocs, its own lockfile, outside the workspace and the web/ops
 images), Docs → docs.testnet.mitoshi.xyz from More, the rail, the footer and /docs, Boost's no-model line fixed; checks
 clean (71 routes within budget, the docs site's own build too); /docs at 375 and 1440 clean. New Coolify app
@@ -237,8 +244,8 @@ over budget (286–308 KB: the settings and how-to sheets brought Base UI's dial
 run stage) — both sheets load on first open, the run is an island prefetched at idle: 74 routes within budget (/games
 234.5 KB, arcade 247.6 KB). Checks: web tsc, core/markets/db/clients/ops typecheck, invariants clean; changed tests
 55/55; build clean. Quick look /games at 375 × 667 and 1440 × 900: PLAY on the first phone screen, the 4-column grid;
-no page overflow (sweep hits are Lucky's reel cells, clipped); the settings and how-to sheets and the run stage open from their islands. Open: `duel-settler` is not in testnet ops' explicit
-OPS_ACTORS, so paired duels don't settle until it's added; the duel season (prize pool, SEASON_* env) is the owner's.
+no page overflow (sweep hits are Lucky's reel cells, clipped); the settings and how-to sheets and the run stage open from their islands. Open: the duel season (prize pool, SEASON_* env) is
+the owner's. (`duel-settler` joined testnet ops' OPS_ACTORS 2026-10-13; it runs from R4's final ops deploy.)
 R4-13b (Final pass A: copy and the whole-app look) at `a5f8b74`: copy.json's 80 cuts and 11 bugs and critic.json's 13
 cuts walked against the trunk — all in but these, applied now: Add funds → Add money, the funding welcome without its
 eyebrow, the vault's receive-policy refusal on `TX.receiveBlocked`, Moonshot's not-deployed body, Sensei's server "off"
