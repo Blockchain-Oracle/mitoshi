@@ -17,7 +17,7 @@ import { useBalanceSheet, useSeriesGrid, useSigner } from "@cwf/markets/react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { LoadingState } from "@/components/states";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { SESSION, SessionFallbackCta, TapTradingChip, useTicketRoute } from "@/features/session";
 import { nowMs as clockNow, useNowMs } from "@/lib/clock";

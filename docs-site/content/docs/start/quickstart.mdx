@@ -1,0 +1,51 @@
+---
+title: Make your first call
+description: From the terminal to a settled Window in five steps, with testnet dollars.
+sources:
+  - web/src/features/terminal/demo.ts
+  - web/src/features/terminal/copy.ts
+  - web/src/providers/wallet/copy.ts
+  - web/src/app/api/faucet/route.ts
+  - packages/markets/src/keys/wallet-key.ts
+  - contracts/src/engine/libs/ResolveLib.sol
+---
+
+A **call** is UP or DOWN on one **Window**: one asset, one start, one close. UP wins if the closing print is at or above the opening print; DOWN wins if it is below. A winning contract pays $1.00.
+
+<Walkthrough name="first-call-demo" />
+
+<Steps>
+<Step>
+### Open the terminal
+
+Open <AppLink href="/trade/BTC">the terminal</AppLink>. Signed out, it trades on paper: the equity pill reads **DEMO**, with 10,000 paper dollars kept in this browser. A paper call fills at the live book's price and settles on the real signed result. Nothing reaches the chain.
+</Step>
+<Step>
+### Create an account
+
+Tap **Sign in**, then **Create account**. Face ID, a fingerprint or a security key makes a passkey, and your Tempo account comes from it — no seed phrase, no extension, no gas token. Test dollars arrive while you sign up.
+
+Already have a wallet? Tempo Wallet, a browser wallet and WalletConnect work too. See [your account](/start/account).
+</Step>
+<Step>
+### Turn on one-tap
+
+The terminal offers **Turn on one-tap**: one passkey prompt now, and every tap after it signs itself, up to $25 a day for 24 hours. Skip it and each trade asks your passkey instead. See [one-tap trading](/start/one-tap).
+</Step>
+<Step>
+### Pick a Window and tap
+
+The asset chip switches markets; the Window chip shows the lane and its clock ("trades 2:32"). The card on the chart shows your size, what UP and DOWN pay per dollar, the fees (free) and the trailing distance.
+
+Tap **UP** or **DOWN**. The position shows the moment the trade is sent — "Confirming on Tempo…" — and the receipt replaces it with what the engine booked.
+</Step>
+<Step>
+### Close it or hold it
+
+The position's value is what **CLOSE** pays right now. Close any time, set take-profit, stop-loss or a trail ([exits](/trading/exits)), or hold to the close: the Window settles on its signed closing print and the settler pays winners a few minutes later ([settlement](/trading/settlement)).
+</Step>
+</Steps>
+
+<Callout title="Testnet">
+Mitoshi runs on Tempo testnet (Moderato). Testnet pathUSD has no value and can't be bought or sold. The books, prints, settlement and receipts are real contracts on a real chain.
+</Callout>
