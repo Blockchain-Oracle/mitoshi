@@ -4,20 +4,23 @@
 // failed with a retry, nothing settled yet (with the open count) and the report — over the account's fills projection
 // (`useWalletHistory`, the reading `/portfolio`'s record and journal use), computed in the browser by core's
 // `computeTraderEdge`, grouped by the device's local hour. D-227: the account's history (`useAccountHistory`), so its
-// one-tap Trading Balance and Boost rounds count as the wallet's own do.
+// one-tap Trading Balance and Boost rounds count as the wallet's own do. R4-4 (D-227): one inset (the stage's), the
+// head is one row — back to Portfolio and the title — with the lede under it; the source and method moved into the
+// report's provenance box; each state's action is a kit pill.
 import { computeTraderEdge, isOk } from "@cwf/core";
 import { keys, useAccountHistory, usePositions, useVaultBets } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, type ReactNode } from "react";
+import { PillButton } from "@/components/kit";
 import { LoadingState } from "@/components/states/LoadingState";
 import { useWalletSession } from "@/lib/wallet-session";
 import { EDGE } from "./copy";
 import { EdgeReport } from "./EdgeReport";
+import "@/styles/edge-phone.css";
 
 const START = "/trade/BTC";
-const BUTTON = "inline-flex min-h-touch items-center rounded-full px-5 type-body-strong";
 
 function State({ eyebrow, title, copy, action }: { eyebrow: string; title: string; copy: string; action?: ReactNode }) {
   return (
@@ -52,38 +55,30 @@ export function EdgeScreen() {
 
   let body: ReactNode;
   if (!wallet) {
-    body = <State {...S.connect} action={<button type="button" onClick={session.connect} className={`${BUTTON} bg-accent-fill text-on-accent`}>{S.connect.action}</button>} />;
+    body = <State {...S.connect} action={<PillButton tone="accent" size="lg" onClick={session.connect}>{S.connect.action}</PillButton>} />;
   } else if (history === null) {
     body = <LoadingState shape="table" label={S.reading} />;
   } else if (!isOk(history)) {
-    body = <State {...S.failed} action={<button type="button" onClick={retry} className={`${BUTTON} border border-hairline text-ink hover:bg-surface-2`}>{S.failed.retry}</button>} />;
+    body = <State {...S.failed} action={<PillButton tone="white" size="md" onClick={retry}>{S.failed.retry}</PillButton>} />;
   } else if (!value || !report || report.settledRounds === 0) {
     const open = openCount;
-    body = <State eyebrow={S.none.eyebrow} title={S.none.title} copy={open > 0 ? S.none.open(open) : S.none.first} action={<Link href={START} className={`${BUTTON} bg-accent-fill text-on-accent!`}>{S.none.action}</Link>} />;
+    body = <State eyebrow={S.none.eyebrow} title={S.none.title} copy={open > 0 ? S.none.open(open) : S.none.first} action={<PillButton tone="accent" size="lg" nativeButton={false} render={<Link href={START} />}>{S.none.action}</PillButton>} />;
   } else {
-    body = <EdgeReport history={value} report={report} onRetry={retry} address={wallet} />;
+    body = <EdgeReport history={value} report={report} onRetry={retry} />;
   }
 
   const I = EDGE.intro;
   return (
-    <div className="mx-auto flex w-full max-w-(--content-wide) flex-col gap-6 px-gutter py-8 lg:px-gutter-desktop">
-      <Link href="/portfolio" className="inline-flex min-h-touch items-center gap-1.5 self-start type-caption text-ink-secondary hover:text-ink">
-        <ArrowLeft aria-hidden className="size-4" /> {EDGE.back}
-      </Link>
-      <header className="flex flex-wrap items-end justify-between gap-6">
-        <div className="flex max-w-2xl flex-col gap-2">
-          <span className="type-label-micro text-ink-secondary">{I.eyebrow}</span>
-          <h1 className="type-display text-ink">{I.title}</h1>
-          <p className="type-body text-ink-secondary">{I.lede}</p>
+    <div className="flex flex-col gap-6">
+      <header className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <Link href="/portfolio" className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center gap-1.5 rounded-full px-2 type-caption text-ink-secondary hover:bg-surface-2 hover:text-ink" title={EDGE.back}>
+            <ArrowLeft aria-hidden className="size-5" />
+            <span className="edge-xs-sr">{EDGE.back}</span>
+          </Link>
+          <h1 className="min-w-0 type-display text-ink">{I.title}</h1>
         </div>
-        <dl className="flex flex-col gap-2 type-caption">
-          {[I.source, I.method].map((m) => (
-            <div key={m.label} className="flex gap-2">
-              <dt className="text-ink-secondary">{m.label}</dt>
-              <dd className="text-ink">{m.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <p className="type-body text-ink-secondary">{I.lede}</p>
       </header>
       {body}
     </div>

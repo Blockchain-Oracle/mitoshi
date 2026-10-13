@@ -1,0 +1,60 @@
+/* Ported from Owarine 90a91d71:web/src/features/vault/vault.css (R4-4, D-227) — the pocket sheets' grammar on Mitoshi's
+ * tokens: the pocket's own figure, one pill field with Max inside it and a reason under it, the two pills below the
+ * field, one fee line, the stat tiles (2-up on a phone, 4-up from 640), then a disclosure for the long words. Shared by
+ * the Trading Balance and the private balance. */
+.vault-sheet { display: flex; flex-direction: column; gap: 16px; }
+.vault-head { display: flex; flex-direction: column; gap: 4px; }
+.vault-figure { font: 700 28px/1 var(--font-data); color: var(--color-ink); }
+.vault-note { font: 400 15px/1.45 var(--font-body); color: var(--color-ink-secondary); }
+
+.vault-amount { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.vault-amount-row { position: relative; display: flex; align-items: center; }
+.vault-amount-symbol { position: absolute; left: 18px; pointer-events: none; font: 600 17px/1 var(--font-data); color: var(--color-ink-secondary); }
+.vault-input {
+  height: 48px; width: 100%; border-radius: var(--radius-full); border: 1px solid var(--color-hairline); background: var(--color-surface-2);
+  padding: 0 72px 0 34px; font: 600 17px/1 var(--font-data); color: var(--color-ink);
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+.vault-input::placeholder { color: var(--color-ink-muted); }
+.vault-input:focus-visible { outline: none; }
+.vault-input:focus { border-color: var(--color-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.vault-input:disabled { opacity: 0.6; }
+.vault-amount[data-invalid] .vault-input { border-color: var(--color-down); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-down) 16%, transparent); }
+.vault-max {
+  position: absolute; right: 6px; height: 36px; padding: 0 14px; border-radius: var(--radius-full); border: 0; background: var(--color-surface-1);
+  font: 700 13px/36px var(--font-body); color: var(--color-ink); transition: background-color 160ms var(--ease);
+}
+.vault-max::before { content: ""; position: absolute; inset: -4px; }
+.vault-max:hover:not(:disabled) { background: var(--color-surface-3); }
+.vault-max:disabled { color: var(--color-ink-muted); }
+.vault-amount-problem { font: 400 13px/1.4 var(--font-body); color: var(--color-down); }
+.vault-amount-hint { font: 400 13px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+
+/* The two pills below the field: one even row, stacking cleanly at 320. */
+.vault-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: 8px; }
+.vault-fee { font: 400 13px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+
+.vault-cells { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (min-width: 640px) { .vault-cells { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.vault-cells > * { min-width: 0; border-radius: 16px; background: color-mix(in srgb, var(--color-surface-2) 60%, transparent); padding: 12px 14px; }
+.vault-cell-label { display: block; font: 400 13px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+.vault-cell-value { margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 18px/1.2 var(--font-data); color: var(--color-ink); }
+
+/* The long words fold here (Owarine's PRIVATE.panel.more). */
+.vault-more { border-top: 1px solid var(--color-hairline); padding-top: 4px; }
+.vault-more > summary { display: flex; min-height: 44px; cursor: pointer; list-style: none; align-items: center; justify-content: space-between; font: 600 14px/1.3 var(--font-body); color: var(--color-ink); }
+.vault-more > summary::-webkit-details-marker { display: none; }
+.vault-more > summary::after { content: "+"; font: 600 16px/1 var(--font-data); color: var(--color-ink-secondary); }
+.vault-more[open] > summary::after { content: "−"; }
+.vault-more > div { display: flex; flex-direction: column; gap: 8px; padding-bottom: 8px; font: 400 13px/1.5 var(--font-body); color: var(--color-ink-secondary); }
+
+/* Add money's foot (R4-4, critic gap 11): the short address, Copy and the receive QR; the bridge row as a rail card. */
+.funds-foot { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--color-hairline); padding-top: 16px; }
+.funds-foot-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.funds-address { flex: 1; min-width: 0; font: 500 14px/1.3 var(--font-data); color: var(--color-ink); }
+.receive-qr { align-self: center; width: 11rem; height: 11rem; border-radius: 12px; }
+.receive-qr-bg { fill: var(--color-cream); }
+.receive-qr-ink { fill: var(--color-cream-ink); }
+.funds-rail { display: flex; min-height: 52px; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-radius: 16px; background: var(--color-surface-2); font: 600 15px/1.3 var(--font-body); color: var(--color-ink); }
+.funds-rail:hover { background: var(--color-surface-3); }
+.funds-figure { font: 700 clamp(32px, 11vw, 48px)/1 var(--font-data); color: var(--color-ink); }

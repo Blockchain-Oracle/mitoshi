@@ -75,7 +75,7 @@ export const BOOST = {
     nothingBack: "nothing back",
     cashedOut: (amount: string) => `Cashed out: ${amount} back to your wallet.`,
     settledToast: "Settled. Whatever the contracts paid is in your wallet, the reserve repaid first.",
-    owed: (amount: string) => `${amount} is held for you (your receive policy refused it) — collect it once it allows transfers.`,
+    owed: (amount: string) => `${amount} held for you. Collect once your policy allows.`,
     collect: (amount: string) => `Collect ${amount}`,
   },
   footnote: "No fees. The reserve is repaid first.",

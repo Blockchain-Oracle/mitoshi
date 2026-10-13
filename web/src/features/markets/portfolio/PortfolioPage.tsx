@@ -5,13 +5,15 @@ import dynamic from "next/dynamic";
 import { LoadingState } from "@/components/states";
 import { useWalletSession } from "@/lib/wallet-session";
 import { useDataReady } from "@/providers/data/context";
-const Loading = () => <LoadingState shape="page" className="mx-auto w-full max-w-(--content-reading)" />;
+// The page's own outline, full width (R4-4, D-227: a reading-width head skeleton snapped into a full-width page).
+const Loading = () => <LoadingState shape="portfolio" />;
 const PortfolioScreen = dynamic(() => import("./PortfolioScreen").then((m) => m.PortfolioScreen), { ssr: false, loading: Loading });
 const SignedInPortfolio = dynamic(() => import("./SignedInPortfolio").then((m) => m.SignedInPortfolio), { ssr: false, loading: Loading });
 import "@/styles/ledger-plate.css";
 import "@/styles/history.css";
 import "@/styles/claim-winnings.css";
 import "../markets.css";
+import "@/styles/vault.css";
 
 export function PortfolioPage() {
   const ready = useDataReady();

@@ -1,0 +1,6 @@
+/* /portfolio/edge on the narrowest phones (R4-4, D-227): under 400 px the metric notes and the time-of-day ranges step
+ * out (the bars keep their width at 320), and the back link is its arrow (its word stays for assistive tech). */
+@media (max-width: 399px) {
+  .edge-xs-hide { display: none; }
+  .edge-xs-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}

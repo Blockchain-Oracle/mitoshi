@@ -23,6 +23,8 @@ import { AmountField, QuickAdds } from "@/components/ui/prediction-ticket";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
+import { FUNDING } from "@/features/funding/copy";
+import { useFirstFunding } from "@/features/funding/first-fund-state";
 import { useDebounced } from "../../markets/ticket/useDebounced";
 import { formatMultiplier, usd } from "../../parlay/format";
 import { RANGE } from "../../range/copy";
@@ -52,6 +54,8 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
   const q = active && reading?.ok ? reading.value : null;
   const error = active && reading && !reading.ok ? reading.error : null;
   const spendable = sheet?.ok ? sheet.value.spendableBase : null;
+  // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
+  const funding = useFirstFunding();
   const strike = q ? (direction === "long" ? q.band.lowPrint : q.band.highPrint) : null;
 
   const blocker = ((): string | null => {
@@ -61,6 +65,7 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
     if (stakeBase === 0n) return RANGE.cta.enterAmount;
     if (error) return error.errorName === "StaleBasis" ? RANGE.cta.stale : error.errorName === "ThinBook" ? RANGE.cta.thin : error.kind === "reserve-cap" || error.errorName === "OverPayoutCap" ? RANGE.cta.reserveCap : RANGE.cta.unavailable;
     if (!q) return RANGE.cta.pricing;
+    if (funding && (spendable === null || spendable < q.quote.stakeBase)) return FUNDING.firstFund.funding;
     if (spendable !== null && spendable < q.quote.stakeBase) return RANGE.cta.topUp;
     return null;
   })();
