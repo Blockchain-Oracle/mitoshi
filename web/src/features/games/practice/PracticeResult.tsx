@@ -89,10 +89,13 @@ export function PracticeResult({ round, score, shown, onAgain }: { round: Practi
             <button type="button" className="du-cta" onClick={onAgain} autoFocus>
               {PRACTICE.result.again}
             </button>
-            <Link href={`/trade/${encodeURIComponent(asset)}`} className="du-cta du-cta--quiet">
-              {PRACTICE.result.toReal}
+            <Link href="/games/duel" className="du-cta du-cta--quiet">
+              {PRACTICE.result.toDuel}
             </Link>
           </div>
+          <Link href={`/trade/${encodeURIComponent(asset)}`} className="pr-real">
+            {PRACTICE.result.toReal}
+          </Link>
         </>
       ) : null}
     </section>

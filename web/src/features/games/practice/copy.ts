@@ -55,6 +55,7 @@ export const PRACTICE = {
     unscored: (n: number) => `${n} unscored · no price`,
     again: "Play again",
     toReal: "Call it for real",
+    toDuel: "Play a real duel",
     entry: "Entry",
     close: "Close",
   },

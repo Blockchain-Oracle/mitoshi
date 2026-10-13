@@ -77,3 +77,6 @@
   .pr-score-v { font-size: 26px; }
   .pr-score-verdict { font-size: 18px; }
 }
+
+/* The real call, under the two buttons once the duel took the second (R4-9, D-227). */
+.pr-real { display: grid; place-items: center; min-height: 44px; font-size: 13px; color: var(--gray-400); text-decoration: underline; text-underline-offset: 3px; }

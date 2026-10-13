@@ -126,6 +126,19 @@ export function cardsInMask(mask: number, deckSize: number): readonly number[] {
   return out;
 }
 
+/**
+ * `GameArena.finalize`'s winner (R4-9, D-227), re-derived from the state it leaves behind: a seat that played every card
+ * against one that didn't took a forfeit; otherwise the greater measured P&L; equal P&L is a tie (null — the pot splits).
+ */
+export function arenaWinnerOf(m: { creator: Address; challenger: Address; deckSize: number; pickedMask0: number; pickedMask1: number }, creatorPnlBase: bigint, challengerPnlBase: bigint): Address | null {
+  const full = fullDeckMask(m.deckSize);
+  const creatorDone = m.pickedMask0 === full;
+  const challengerDone = m.pickedMask1 === full;
+  if (creatorDone !== challengerDone) return creatorDone ? m.creator : m.challenger;
+  if (creatorPnlBase === challengerPnlBase) return null;
+  return creatorPnlBase > challengerPnlBase ? m.creator : m.challenger;
+}
+
 /** The mask a complete deck produces, so "did this seat finish" is one comparison. */
 export function fullDeckMask(deckSize: number): number {
   return (1 << deckSize) - 1;

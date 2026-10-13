@@ -72,6 +72,20 @@ export interface DuelStore {
   setStatus(matchId: string, status: string, extra?: { winner?: string | null; creatorPnl?: string; challengerPnl?: string; cards?: readonly string[] }): Promise<void>;
   markRevealed(matchId: string): Promise<void>;
   matchesOf(wallet: string, limit: number): Promise<DuelMatchRow[]>;
+  /** Who is waiting now, per tier, inside the pairing window — the hall's presence line. */
+  waiting(windowSec: number): Promise<Record<string, number>>;
+  /** Every decided duel (finalized or refunded), oldest first — the ladder's and the badges' input. */
+  finished(limit: number): Promise<DuelFinishedRow[]>;
+}
+
+export interface DuelFinishedRow {
+  matchId: string;
+  tier: DuelTierId;
+  creator: string;
+  challenger: string;
+  status: "finalized" | "refunded";
+  winner: string | null;
+  createdAt: string;
 }
 
 type QueueDb = { wallet: string; tier: DuelTierId; client_seed: string; match_id: string | null; queued_at: Date };
@@ -167,6 +181,18 @@ export function createPgDuelStore(sql: Sql): DuelStore {
     },
     async markRevealed(matchId) {
       await sql`update duel_decks set revealed_at = coalesce(revealed_at, now()) where match_id = ${matchId.toLowerCase()}`;
+    },
+    async waiting(windowSec) {
+      const rows = await sql<{ tier: string; n: string }[]>`
+        select tier, count(*)::text as n from duel_queue where match_id is null and queued_at > now() - make_interval(secs => ${windowSec}) group by tier`;
+      return Object.fromEntries(rows.map((r) => [r.tier, Number(r.n)]));
+    },
+    async finished(limit) {
+      const rows = await sql<{ match_id: string; tier: DuelTierId; creator: string; challenger: string; status: "finalized" | "refunded"; winner: string | null; created_at: Date }[]>`
+        select match_id, tier, creator, challenger, status, winner, created_at from duel_matches
+        where status in ('finalized', 'refunded') and challenger is not null
+        order by created_at asc limit ${limit}`;
+      return rows.map((r) => ({ matchId: r.match_id, tier: r.tier, creator: r.creator, challenger: r.challenger, status: r.status, winner: r.winner, createdAt: r.created_at.toISOString() }));
     },
     async matchesOf(wallet, limit) {
       const w = wallet.toLowerCase();

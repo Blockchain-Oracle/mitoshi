@@ -22,6 +22,8 @@ import { useGames } from "../GamesProvider";
 import { ECON_TONE } from "../GamesRail";
 import { windowsLive } from "../lanes";
 import { useBoard, usePreviewTape, type PreviewTape } from "./data";
+import { DUEL } from "../duel/copy";
+import { useDuelPresence } from "../duel/MatchTile";
 
 const ORDER: readonly GameId[] = ["line-rider", "candle-hop", "lucky", "range", "moonshot", "duel", "practice"];
 
@@ -40,6 +42,13 @@ function ArcadeFact({ game }: { game: "line-rider" | "candle-hop" }) {
   const top = board.rows[0];
   if (!top) return <span className="cab-fact">{GAMES.card.noRuns}</span>;
   return <span className="cab-fact">{GAMES.card.top(ARCADE.fmt(top.score), board.me ? ARCADE.fmt(board.me.best) : null)}</span>;
+}
+
+/** Who waits at a pot right now, or the arena's own pitch when nobody does. */
+function DuelFact() {
+  const p = useDuelPresence();
+  const n = p.data?.configured ? Object.values(p.data.waiting).reduce((a, b) => a + b, 0) : 0;
+  return <span className="cab-fact">{n > 0 ? DUEL.presence(n) : GAMES.card.duelFact}</span>;
 }
 
 function Cabinet({ id, fact, open, tape }: { id: GameId; fact: ReactNode; open: boolean; tape?: PreviewTape | null }) {
@@ -112,6 +121,7 @@ export function CabinetRail({ nowMs }: { nowMs: number }) {
       {ORDER.map((id) => {
         if (id === "line-rider" || id === "candle-hop") return <Cabinet key={id} id={id} open tape={tape} fact={<ArcadeFact game={id} />} />;
         if (id === "range" || id === "moonshot") return <Cabinet key={id} id={id} open={range.open} fact={<span className="cab-fact">{range.fact || windowsText}</span>} />;
+        if (id === "duel") return <Cabinet key={id} id={id} open fact={<DuelFact />} />;
         return <Cabinet key={id} id={id} open fact={windowsFact} />;
       })}
     </ul>

@@ -7,6 +7,8 @@ import { SettingsButton } from "./GamesRail";
 import { AchievementsShelf } from "./hall/AchievementsShelf";
 import { CabinetRail } from "./hall/CabinetRail";
 import { FeaturedCabinet } from "./hall/FeaturedCabinet";
+import { MatchTile } from "./duel/MatchTile";
+import "./duel/duel.css";
 import { NowPlaying } from "./hall/NowPlaying";
 import { StreakStrip } from "./hall/StreakStrip";
 import "./hall/hall.css";
@@ -33,6 +35,7 @@ export function GamesHub() {
           }}
         />
       </header>
+      <MatchTile />
       <FeaturedCabinet nowMs={nowMs} />
       <CabinetRail nowMs={nowMs} />
       <StreakStrip />

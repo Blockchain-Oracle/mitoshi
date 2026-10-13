@@ -1,7 +1,7 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { isOk, type Address, type Bytes32, type MarketId } from "@cwf/core";
-import { deckCommitmentPreimage, DUEL_POLICY_VERSION, INTERVAL_5M_SEC, nextDealableSec, selectDeck, STAKE_TIERS, toBaseUnits, type DeckCandidate, type DeckCard, type DeckPolicy, type StakeTierId } from "@cwf/core/games";
+import { applyResult, arenaWinnerOf, deckCommitmentPreimage, DUEL_POLICY_VERSION, NEW_RATING, type RatingRecord, INTERVAL_5M_SEC, nextDealableSec, selectDeck, STAKE_TIERS, toBaseUnits, type DeckCandidate, type DeckCard, type DeckPolicy, type StakeTierId } from "@cwf/core/games";
 import { createPgDuelStore, type DuelMatchRow, type DuelStore } from "@cwf/db";
 import { configureMarkets, createMarketsProvider, marketsEnv, tempoChain } from "@cwf/markets";
 import { arenaOf, getArenaCredit, getArenaMatch, getArenaState } from "@cwf/markets/arena";
@@ -198,6 +198,7 @@ export async function leaveQueue(wallet: Address): Promise<void> {
 
 const FINISHED = new Set(["finalized", "refunded"]);
 
+
 /** One match: what was committed, what the chain says now, and — once both pots are in — the reveal material. */
 export async function readMatch(input: { matchId: Bytes32; wallet: Address | null; origin: string }): Promise<Outcome<DuelMatchWire>> {
   const duels = duelStore();
@@ -209,9 +210,10 @@ export async function readMatch(input: { matchId: Bytes32; wallet: Address | nul
   if (!isOk(chain)) return { ok: false, status: 503, error: "the arena could not be read" };
   const view = chain.value;
   const status = view ? view.match.status : "pending";
-  // The record follows the chain for History; the winner is the arena's `MatchFinalized` to say, not this copy's.
+  // The record follows the chain for History and Rank. The winner is `finalize`'s own rule, re-derived from the state it
+  // leaves: a seat that played every card against one that didn't took a forfeit; otherwise the greater P&L; a tie, none.
   if (view && view.match.status !== row.status) {
-    await duels.setStatus(row.matchId, view.match.status, { creatorPnl: view.creatorPnlBase.toString(), challengerPnl: view.challengerPnlBase.toString(), cards: view.cards.length ? view.cards : undefined });
+    await duels.setStatus(row.matchId, view.match.status, { winner: view.match.status === "finalized" ? arenaWinnerOf(view.match, view.creatorPnlBase, view.challengerPnlBase) : null, creatorPnl: view.creatorPnlBase.toString(), challengerPnl: view.challengerPnlBase.toString(), cards: view.cards.length ? view.cards : undefined });
   }
   const state = await getArenaState();
   const windows = isOk(state) && state.value ? state.value.params : null;
@@ -271,4 +273,54 @@ export async function readDuelHistory(wallet: Address): Promise<{ configured: bo
   const rows = await duels.matchesOf(wallet, 30);
   const w = wallet.toLowerCase();
   return { configured: true, rows: rows.map((m) => ({ matchId: m.matchId, tier: m.tier, status: m.status, opponent: (m.creator === w ? m.challenger : m.creator) ?? "", createdAt: m.createdAt })) };
+}
+
+export interface DuelStanding {
+  wallet: string;
+  rating: number;
+  verifiedMatches: number;
+  finished: number;
+  won: number;
+  stakedWon: number;
+}
+
+/**
+ * The ladder (core `rating.ts`: one transparent Elo, 1000 to start, K 48 for the first ten verified matches, then 24),
+ * replayed over every decided duel oldest first. A refund is finished but not verified (it moves no rating); a forfeit
+ * is a real result. Recomputed on read from the record the arena's own state wrote — nothing here is stored twice.
+ */
+export async function duelStandings(opts: { everyone?: boolean } = {}): Promise<{ configured: boolean; rows: DuelStanding[] }> {
+  const duels = duelStore();
+  if (!duels) return { configured: false, rows: [] };
+  const by = new Map<string, DuelStanding & { record: RatingRecord }>();
+  const of = (w: string) => {
+    let s = by.get(w);
+    if (!s) by.set(w, (s = { wallet: w, rating: NEW_RATING.rating, verifiedMatches: 0, finished: 0, won: 0, stakedWon: 0, record: NEW_RATING }));
+    return s;
+  };
+  for (const m of await duels.finished(5_000)) {
+    const a = of(m.creator);
+    const b = of(m.challenger);
+    a.finished += 1;
+    b.finished += 1;
+    if (m.status !== "finalized") continue;
+    const score = m.winner === null ? 0.5 : m.winner === m.creator ? 1 : 0;
+    const next = applyResult(a.record, b.record, score);
+    a.record = next.a;
+    b.record = next.b;
+    const winner = m.winner === m.creator ? a : m.winner === m.challenger ? b : null;
+    if (winner) {
+      winner.won += 1;
+      if (m.tier !== "free") winner.stakedWon += 1;
+    }
+  }
+  const rows = [...by.values()].map(({ record, ...s }) => ({ ...s, rating: record.rating, verifiedMatches: record.verifiedMatches }));
+  return { configured: true, rows: rows.filter((r) => opts.everyone || r.verifiedMatches > 0).sort((x, y) => y.rating - x.rating || y.won - x.won || x.wallet.localeCompare(y.wallet)) };
+}
+
+/** Who is waiting at each pot right now (the queue's own rows inside the pairing window). */
+export async function duelPresence(): Promise<{ configured: boolean; waiting: Record<string, number> }> {
+  const duels = duelStore();
+  if (!duels) return { configured: false, waiting: {} };
+  return { configured: true, waiting: await duels.waiting(PAIR_WINDOW_SEC) };
 }

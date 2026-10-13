@@ -12,6 +12,7 @@ export const GAMES = {
   econ: { none: "Free", "market-order": "Your stake", "market-order-and-pot": "Your stake", "house-position": "House pays" } satisfies Record<EconomicKind, string>,
 
   card: {
+    duelFact: "Real calls · winner takes both pots",
     play: "Play",
     soon: "Soon",
     paused: "Paused",
@@ -90,7 +91,9 @@ export const GAMES = {
 
   rank: {
     title: "Rank",
-    tabs: { "line-rider": "Line Rider", "candle-hop": "Candle Hop", streaks: "Streaks", lucky: "Lucky" },
+    tabs: { duel: "Duel", "line-rider": "Line Rider", "candle-hop": "Candle Hop", streaks: "Streaks", lucky: "Lucky" },
+    duelEmpty: "No decided duels yet.",
+    duelRecord: (won: number, played: number) => `${won} won · ${played} played`,
     luckyBest: (best: number, draws: number) => `best ${best} · ${draws} settled`,
     empty: "No ranked runs yet. Set the first.",
     noStore: "No board on this deployment.",

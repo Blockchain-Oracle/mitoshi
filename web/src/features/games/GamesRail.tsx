@@ -20,12 +20,31 @@ export const ECON_TONE = { none: "profit", "market-order": "accent", "market-ord
  * back, no how-to and no sound). Back, the mode's name and its econ sticker, then ?, sound and settings. The hub has no
  * rail: its own head carries the title and the settings (bug 7, the title said twice).
  */
+/** The duel this wallet is paired into and still live, read once per route (no query client on the shell). */
+function useLiveDuel(pathname: string | null): string | null {
+  const [matchId, setMatchId] = useState<string | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/games/duel/queue", { cache: "no-store", credentials: "same-origin" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((w: { status?: string; matchId?: string } | null) => alive && setMatchId(w?.status === "paired" ? (w.matchId ?? null) : null))
+      .catch(() => alive && setMatchId(null));
+    return () => {
+      alive = false;
+    };
+  }, [pathname]);
+  return matchId;
+}
+
 export function GamesRail() {
   const pathname = usePathname();
   const id = gameIdFromPath(pathname);
   const entry = id ? gameEntry(id) : null;
-  const { setSettingsOpen, feedback, activeMatchId } = useGames();
+  const { setSettingsOpen, feedback, activeMatchId: roomMatchId } = useGames();
   const [howTo, setHowTo] = useState(false);
+  const liveDuel = useLiveDuel(pathname);
+  // Resume shows off the duel's own stage: a live duel you're paired into, one tap back.
+  const activeMatchId = pathname?.startsWith("/games/duel") ? null : (roomMatchId ?? liveDuel);
   const muted = useMuted();
   // Pips remembers the last game opened; the hub offers it first.
   useEffect(() => rememberGame(pathname), [pathname]);
