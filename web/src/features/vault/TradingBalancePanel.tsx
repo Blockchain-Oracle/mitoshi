@@ -11,6 +11,7 @@ import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { useBalanceSheet, useVaultBets, useVaultSnapshot } from "@cwf/markets/react";
 import { useState } from "react";
 import { Masked, PillButton } from "@/components/kit";
+import { LoadingState } from "@/components/states";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { AllowancePill } from "@/features/session/AllowancePill";
@@ -47,6 +48,8 @@ export function TradingBalancePanel() {
   const withdraw = useTxLifecycle({ submitter: root });
   const [text, setText] = useState("");
   const [showArm, setShowArm] = useState(false);
+  // While the vault reads, the sheet shows its outline (never an empty sheet under its title, R4-4).
+  if (view.status === "loading" && view.owner) return <LoadingState shape="ticket" />;
   if (!view.owner || !view.deployed || view.status === "not-passkey" || view.status === "no-wallet") return null;
 
   const nowSec = Math.floor((nowMs || Date.now()) / 1000);
