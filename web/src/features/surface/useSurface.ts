@@ -59,7 +59,7 @@ export function useFairUp(market: EventMarket | null, modelled: boolean, spotE8:
 export function useFocalFigures(market: EventMarket | null, modelled: boolean, nowMs: number): FocalFigures {
   const book = useBookDepth(market, { depth: 20, pollMs: 20_000 });
   const grid = useSeriesGrid(market?.seriesId ?? null);
-  const price = useAssetPrice(market ? feedKeyOf(market) : "", nowMs);
+  const price = useAssetPrice(market ? feedKeyOf(market) : null, nowMs);
   const spotE8 = market && price?.ok && price.value ? price.value.priceRaw : null;
   const fairUpE6 = useFairUp(market, modelled, spotE8, nowMs);
   return { book: market ? book : null, lotRaw: grid?.ok ? grid.value.lotBase : null, spotE8, fairUpE6 };
