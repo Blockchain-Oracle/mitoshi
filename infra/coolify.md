@@ -10,6 +10,7 @@ Apps are public through Coolify's proxy on 80/443.
 |---|---|---|---|---|
 | testnet | `mitoshi-web-testnet` | app, Dockerfile `/web/Dockerfile`, port 3000, health `/api/health` | `vhxmiwhhjhngikv2ut5mqjio` | `https://testnet.mitoshi.xyz` |
 | testnet | `mitoshi-ops-testnet` | app, Dockerfile `/services/ops/Dockerfile`, port 8080, health `/health` | `8iaimzcz5gcmont5hqbm6yhk` | `https://ops.testnet.mitoshi.xyz`, `https://stream.testnet.mitoshi.xyz` |
+| testnet | `mitoshi-docs-testnet` | app, base directory `/docs-site`, Dockerfile `/Dockerfile` (the docs site alone), port 3000, health `/` | `phvlvicp7lo7wdgemfypa4bu` | `https://docs.testnet.mitoshi.xyz` |
 | testnet | `mitoshi-testnet-db` | PostgreSQL | `j9uqt80ux3ajxyaer5t5psfj` | internal only |
 | testnet | `mitoshi-testnet-redis` | Redis (passkey challenges, sessions; replaces Upstash) | `3mpjtxc1cofmctbfnufzjwvg` | internal only |
 | mainnet | web, ops, Postgres, Redis | created at S19 with the owner's go | — | `https://mitoshi.xyz`, `ops.mitoshi.xyz`, `stream.mitoshi.xyz` |
