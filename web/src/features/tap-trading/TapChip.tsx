@@ -11,9 +11,9 @@ import { ArmWalletKey, dollars, untilText } from "./ArmWalletKey";
 import { TAP } from "./copy";
 
 /** `className` and `offLabel` restyle the trigger for a surface without the ticket's `tk-*` styles (the terminal). */
-export function TapChip({ className, offLabel, defaultOpen = false }: { className?: string; offLabel?: string; defaultOpen?: boolean } = {}) {
+export function TapChip({ className, offLabel }: { className?: string; offLabel?: string } = {}) {
   const shell = useWalletShell();
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = useState(false);
   if (!shell.tempo) return null;
   const key = shell.walletKey;
   const title = key ? TAP.chip.titleOn(dollars(key.limitBase), untilText(key.expirySec)) : shell.canArmWalletKey ? TAP.chip.titleOff : TAP.chip.titleUnavailable;

@@ -22,7 +22,7 @@ import { notify } from "@/lib/toast";
 import { closeDrawer, useDrawerParam } from "@/lib/drawer-param";
 import { usePrivacy } from "@/lib/privacy";
 import { useWalletSession } from "@/lib/wallet-session";
-import { TapTradingChip, useSessionView } from "@/features/session";
+import { TapArmModal, useSessionView } from "@/features/session";
 import { useTapArmed } from "@/providers/wallet/tap-session";
 import { LiveChart, type ChartHandle } from "./chart/LiveChart";
 import { formatPrice, priceDecimals } from "./chart/engine";
@@ -103,8 +103,9 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   // browser wallet signs each call itself and can never arm (D-140), so it gets no card with a dead button (R4-0).
   const needsArm = session.isConnected && sessionView.status !== "not-passkey" && !tapArmed && sessionView.status !== "armed";
   // R4-3 (D-227): after the first passkey-prompted open, one toast a session — "One-tap is off · Turn on" — whose action
-  // mounts the arm chip with its modal open. A fresh fill (`usePendingFills`) is a trade this tab just opened.
-  const [armAsk, setArmAsk] = useState(0);
+  // opens the arm modal itself (`TapArmModal`, no hidden trigger). A fresh fill (`usePendingFills`) is a trade this tab
+  // just opened.
+  const [armOpen, setArmOpen] = useState(false);
   const fillsSeen = useRef(pendingFills.length);
   useEffect(() => {
     const grew = pendingFills.length > fillsSeen.current;
@@ -116,7 +117,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
     } catch {
       // No session storage (a private window): the toast still says it once per mount.
     }
-    notify.item({ id: "terminal-one-tap", title: TERMINAL.arm.toastTitle, action: { label: TERMINAL.arm.toastAction, onClick: () => setArmAsk((n) => n + 1) } });
+    notify.item({ id: "terminal-one-tap", title: TERMINAL.arm.toastTitle, action: { label: TERMINAL.arm.toastAction, onClick: () => setArmOpen(true) } });
   }, [pendingFills.length, needsArm]);
   const desktop = useIsDesktop();
   const sessionWord = useSessionWord(symbol, s.win.lane?.basis ?? null);
@@ -285,11 +286,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             <PositionsList positions={s.positions} bets={bets} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={onTrailHit} onValue={onValue} onBetValue={book.onBetValue} />
           </div>
           {count > 0 ? <ViewPositionPill count={count} roiPct={totalRoiBps === null ? null : totalRoiBps / 100} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
-          {armAsk > 0 && needsArm ? (
-            <span className="sr-only">
-              <TapTradingChip key={armAsk} defaultOpen className="tm-choice tm-arm-cta" offLabel={TERMINAL.arm.cta} />
-            </span>
-          ) : null}
+          <TapArmModal open={armOpen} onOpenChange={setArmOpen} />
           <HaltNotice symbol={symbol} basis={s.win.lane?.basis ?? null} />
           {market ? <ModeChips mode={mode} onMode={chooseMode} /> : null}
           {mode !== "updown" && market ? (
