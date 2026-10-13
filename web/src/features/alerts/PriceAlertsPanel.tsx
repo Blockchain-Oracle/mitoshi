@@ -2,9 +2,11 @@
 // Price alerts for one market (S13 step 7; Agari 03b30ab `PriceAlertsButton`'s form and list, in a terminal drawer):
 // above or below a price, on the session price or at any hour for a stock, the market's alerts with a remove each, and
 // the browser-notification permission. Rules stay on this device (`store.ts`); the watcher says them while Mitoshi is open.
+// In a sheet, Add sits in its pinned footer over a phone's keyboard (R4-2, D-227), tied to the form by `form=`.
 import { isStockSymbol } from "@cwf/core";
 import { Bell, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
+import { SheetFooter } from "@/components/ui/drawer";
 import { ALERTS } from "./copy";
 import { notificationState, requestNotificationPermission, type NotificationState } from "./notifications";
 import { addAlert, loadAlerts, parseTargetCents, removeAlert, subscribeAlerts, type AlertBasis, type AlertDirection, type PriceAlert } from "./store";
@@ -31,6 +33,7 @@ export function AlertList({ alerts, withAsset = false }: { alerts: readonly Pric
 
 export function PriceAlertsPanel({ symbol }: { symbol: string }) {
   const stock = isStockSymbol(symbol);
+  const formId = useId();
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
   const [direction, setDirection] = useState<AlertDirection>("above");
   const [basis, setBasis] = useState<AlertBasis>(stock ? "regular" : "allDay");
@@ -53,7 +56,7 @@ export function PriceAlertsPanel({ symbol }: { symbol: string }) {
   return (
     <div className="flex flex-col gap-4">
       <p className="type-caption text-ink-secondary">{ALERTS.lead(symbol)}</p>
-      <form className="flex flex-col gap-3" onSubmit={(e) => (e.preventDefault(), add())}>
+      <form id={formId} className="flex flex-col gap-3" onSubmit={(e) => (e.preventDefault(), add())}>
         <div role="radiogroup" aria-label={ALERTS.title} className="flex gap-2">
           {(["above", "below"] as const).map((d) => (
             <button key={d} type="button" role="radio" aria-checked={direction === d} onClick={() => setDirection(d)} className={`min-h-touch flex-1 rounded-full border type-body-strong ${direction === d ? "border-accent bg-accent/10" : "border-hairline"}`}>{ALERTS[d]}</button>
@@ -75,7 +78,9 @@ export function PriceAlertsPanel({ symbol }: { symbol: string }) {
             ))}
           </fieldset>
         ) : null}
-        <button type="submit" className="min-h-touch rounded-full bg-accent-fill px-4 type-body-strong text-on-accent">{ALERTS.add}</button>
+        <SheetFooter>
+          <button type="submit" form={formId} className="min-h-touch rounded-full bg-accent-fill px-4 type-body-strong text-on-accent">{ALERTS.add}</button>
+        </SheetFooter>
       </form>
       {alerts.length === 0 ? <p className="type-caption text-ink-secondary">{ALERTS.none}</p> : <AlertList alerts={alerts} />}
       {perm === "default" ? <button type="button" className="min-h-touch self-start rounded-full border border-hairline px-4 type-body-strong" onClick={() => void requestNotificationPermission().then(() => setPerm(notificationState()))}>{ALERTS.allow}</button> : null}
