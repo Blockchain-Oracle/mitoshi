@@ -334,7 +334,7 @@ span.top-money, span.top-account { display: contents; }
   .app-rail { gap: 8px; padding-block: 12px; overflow-y: auto; scrollbar-width: none; }
   .rail-nav { --rail-gap: 2px; }
   .rail-foot .rail-tools { display: none; }
-  .mode-stamp-tile { width: 44px; height: 44px; }
+  .app-rail .mode-stamp-tile { width: 44px; height: 44px; }
 }
 
 /* ── ultra-wide (critic gap 25, R4-8 D-227): the one inset governs padding, not measure — from 1600 px a reading page's
