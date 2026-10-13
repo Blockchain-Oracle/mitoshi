@@ -7,6 +7,7 @@
 | S0 | ~~Namecheap API whitelist~~ done (owner) | Done |
 | S0 | ~~Push-to-deploy route~~ decided (owner): deploy with the Coolify CLI, as Agari does | Done |
 | S0 gate | ~~Domain + hosting accounts~~ decided: Mitoshi / `mitoshi.xyz` (D-060), Coolify (D-061) | Done |
+| R4-9 (D-227) — the duel season | Name the duel season and fund its prize: choose its id, name, end and split, then (agent can run it once you say) `SEASON_ID=<id> SEASON_ENDS_AT_SEC=<unix> forge script script/products/DeploySeasonPrizePool.s.sol --rpc-url moderato --broadcast --slow --private-key <deployer-products> --tempo.fee-token 0x20C0…0000`, `tsx scripts/deploy/finalize.ts 42431 arena DeploySeasonPrizePool.s.sol && pnpm codegen`; `deposit` the prize into the pool; set `SEASON_ID`, `SEASON_NAME`, `SEASON_ENDS_AT` (ISO), `SEASON_PRIZE_SPLIT` (`start:end:amount,…`) and `SEASON_MIN_STAKED_DUELS` on the Coolify web app and redeploy. Until then the hall and the ladder show no season banner (no prize is invented); the duel, its pots and the ladder work without one | Open |
 | S0 (X11) | Start daily Robinhood Chain testnet faucet claims (5 × 5 tokens / 24 h) | Open |
 | Before S3.5 | Approve and fund the capped mainnet MPP wallet (Q-020) | Open |
 | S1, S4 (NYSE date), S15, S16, R4-0 | Passkey checks on your own device. R4-0 (2026-10-12): sign in with a passkey on a 375 × 667 phone, open /trade/BTC and check the account reads "Passkey" and the full one-tap card leaves the settings stack clear of the chart controls (agents can only sign in with a browser-wallet test session) | Open |

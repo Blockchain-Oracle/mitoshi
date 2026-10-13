@@ -5,11 +5,11 @@
  */
 import { arenaStatusOf, cardsInMask, pickOf as pickFromIndex, type ArenaAgent, type ArenaDeployment, type ArenaMatch, type ArenaParams, type ArenaPick, type ArenaQuote, type ArenaTier, type Pick, type Seat } from "@cwf/core/games";
 import { toMarketId, type Address, type Bytes32, type MarketId, type Reading } from "@cwf/core";
-import { zeroAddress, type PublicClient } from "viem";
+import { parseAbi, zeroAddress, type PublicClient } from "viem";
 import { gameArenaAbi } from "@cwf/clients/abis/GameArena";
 import { withReading } from "../runtime/reading";
 import { getPublicClient } from "../runtime/read-runtime";
-import { arenaOf } from "./deployment";
+import { arenaOf, seasonPoolOf } from "./deployment";
 
 /** The public `params` getter flattens the struct into a tuple, in declaration order. */
 type ParamsTuple = readonly [number, number, number, number, number, number];
@@ -201,4 +201,42 @@ export async function readArenaAgent(matchId: Bytes32, player: Address): Promise
 export function cardsOutstanding(match: ArenaMatch, seat: Seat): readonly number[] {
   const mask = seat === 0 ? match.pickedMask0 : match.pickedMask1;
   return cardsInMask((1 << match.deckSize) - 1, match.deckSize).filter((i) => ((mask >> i) & 1) === 0);
+}
+
+/** The season's prize escrow (SeasonPrizePool, R4-9): what it holds now, what was ever deposited, and whether it paid. */
+export interface SeasonPoolState {
+  address: Address;
+  seasonId: string;
+  endsAtSec: number;
+  balanceBase: bigint;
+  depositedBase: bigint;
+  distributed: boolean;
+}
+
+const seasonPoolAbi = parseAbi([
+  "function seasonId() view returns (string)",
+  "function endsAtSec() view returns (uint64)",
+  "function balance() view returns (uint256)",
+  "function deposited() view returns (uint256)",
+  "function distributed() view returns (bool)",
+]);
+
+/** The deployed season pool, read whole; null where none is deployed (the season is the operator's to name). */
+export async function getSeasonPool(): Promise<Reading<SeasonPoolState | null>> {
+  return withReading("seasonPool", async () => {
+    const pool = seasonPoolOf((await getPublicClient()).chain.id);
+    if (!pool) return null;
+    const contract = { address: pool, abi: seasonPoolAbi } as const;
+    const [seasonId, endsAtSec, balance, deposited, distributed] = await (await viemClient()).multicall({
+      allowFailure: false,
+      contracts: [
+        { ...contract, functionName: "seasonId" },
+        { ...contract, functionName: "endsAtSec" },
+        { ...contract, functionName: "balance" },
+        { ...contract, functionName: "deposited" },
+        { ...contract, functionName: "distributed" },
+      ],
+    });
+    return { address: pool, seasonId: seasonId as string, endsAtSec: Number(endsAtSec), balanceBase: balance as bigint, depositedBase: deposited as bigint, distributed: distributed as boolean };
+  });
 }

@@ -55,6 +55,7 @@ export const DUEL = {
     side: { up: "Up", down: "Down" } as Record<string, string>,
     none: "—",
   },
+  season: { eyebrow: "Season", pool: (amt: string) => `${amt} pool`, notEscrowed: "Prize not escrowed", endsIn: (t: string) => `ends in ${t}`, ended: "ended", cta: "Ladder" },
   tile: { title: "Your duel is live", vs: (who: string) => `vs ${who}`, resume: "Resume →" },
   presence: (n: number) => (n === 1 ? "1 waiting" : `${n} waiting`),
   proof: { open: "Proof", hash: "Commitment", seed: "Server seed", seeds: "Seeds", match: "Match" },

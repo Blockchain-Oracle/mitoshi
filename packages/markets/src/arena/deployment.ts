@@ -10,3 +10,9 @@ export function arenaOf(chainId: number): ArenaDeployment | null {
   const d = byChain[String(chainId)]?.arena?.contracts.GameArena;
   return d ? { chainId, gameArena: d.address as Address, fromBlock: BigInt(d.deployBlock ?? 0) } : null;
 }
+
+/** The season's prize pool beside the arena in the `arena` fragment; null until the operator deploys one. */
+export function seasonPoolOf(chainId: number): Address | null {
+  const d = byChain[String(chainId)]?.arena?.contracts.SeasonPrizePool;
+  return d ? (d.address as Address) : null;
+}

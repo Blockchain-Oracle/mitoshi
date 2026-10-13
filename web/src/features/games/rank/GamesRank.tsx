@@ -16,6 +16,8 @@ import { GAMES } from "../copy";
 import { useBoard } from "../hall/data";
 import { useQuery } from "@tanstack/react-query";
 import type { LuckyBoardWire } from "../lucky/lucky-wire";
+import { SeasonBanner } from "../duel/SeasonBanner";
+import "../duel/duel.css";
 import "./rank.css";
 
 type Tab = "duel" | "line-rider" | "candle-hop" | "streaks" | "lucky";
@@ -123,6 +125,7 @@ export function GamesRank() {
   return (
     <div className="gm-page rk">
       <TextTabs value={tab} onChange={setTab} tabs={TABS} label={GAMES.rank.title} />
+      {tab === "duel" ? <SeasonBanner /> : null}
       {tab === "duel" ? <DuelBoard address={address} /> : tab === "streaks" ? <StreakBoard address={address} /> : tab === "lucky" ? <LuckyBoard address={address} /> : <ArcadeBoard game={tab} address={address} />}
     </div>
   );

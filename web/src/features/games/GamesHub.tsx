@@ -8,6 +8,7 @@ import { AchievementsShelf } from "./hall/AchievementsShelf";
 import { CabinetRail } from "./hall/CabinetRail";
 import { FeaturedCabinet } from "./hall/FeaturedCabinet";
 import { MatchTile } from "./duel/MatchTile";
+import { SeasonBanner } from "./duel/SeasonBanner";
 import "./duel/duel.css";
 import { NowPlaying } from "./hall/NowPlaying";
 import { StreakStrip } from "./hall/StreakStrip";
@@ -39,6 +40,7 @@ export function GamesHub() {
       <FeaturedCabinet nowMs={nowMs} />
       <CabinetRail nowMs={nowMs} />
       <StreakStrip />
+      <SeasonBanner />
       <AchievementsShelf />
     </div>
   );

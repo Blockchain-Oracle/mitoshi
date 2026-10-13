@@ -93,3 +93,19 @@
 .du-tile-sub { font-family: var(--font-data); font-size: 11px; color: var(--gray-400); }
 .du-tile-go { font-family: var(--font-data); font-size: 12px; color: var(--color-accent); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .du-tile-dot { animation: none; } }
+
+/* ── The season strip (SeasonBanner; Ported from Owarine 90a91d71 games.css .gm-season*, on Mitoshi's accent) ── */
+.gm-season {
+  position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
+  min-height: 96px; padding: 14px 18px; border-radius: 16px; overflow: hidden; color: inherit;
+  border: 1px solid color-mix(in srgb, var(--color-accent) 40%, var(--color-hairline));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 16%, var(--color-surface-1)), var(--color-surface-1) 70%), var(--color-surface-1);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.06), inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+}
+.gm-season-trophy { width: 56px; height: 56px; flex: none; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-accent) 55%, transparent)); }
+.gm-season-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.gm-season-eyebrow { font-family: var(--font-pixel); font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gray-500); }
+.gm-season-name { font-family: var(--font-pixel); font-size: 28px; line-height: 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--white); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gm-season-line { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-accent); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gm-season-cta { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); white-space: nowrap; }
+@media (max-width: 360px) { .gm-season { grid-template-columns: auto minmax(0, 1fr); } .gm-season-cta { display: none; } .gm-season-trophy { width: 40px; height: 40px; } }
