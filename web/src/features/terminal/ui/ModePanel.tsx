@@ -19,7 +19,7 @@ const PrivateTicketMode = dynamic(() => import("@/features/private/PrivateTicket
 const ParlayMode = dynamic(() => import("./ParlayMode").then((m) => m.ParlayMode), { ssr: false, loading: () => <LoadingState shape="ticket" /> });
 
 export type TerminalMode = "updown" | "range" | "boost" | "private" | "parlay";
-const MODES: TerminalMode[] = ["updown", "range", "boost", "private", "parlay"];
+export const MODES: readonly TerminalMode[] = ["updown", "range", "boost", "private", "parlay"];
 
 export function ModeChips({ mode, onMode }: { mode: TerminalMode; onMode: (m: TerminalMode) => void }) {
   return (

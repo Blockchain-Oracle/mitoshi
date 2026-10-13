@@ -6,7 +6,7 @@ import {
   Activity, ArrowLeftRight, BarChart3, Bell, BookOpen, Bot, CandlestickChart, CirclePause, ChartCandlestick, ChartLine, ChartNoAxesCombined,
   CircleHelp, Clapperboard, Coins, Dices, Download, GalleryVerticalEnd, Gamepad2, Goal, Handshake, History, KeyRound,
   Layers3, MessageSquare, Mountain, Newspaper, Palette, Presentation, Rocket, ScanSearch, Settings, ShieldCheck, Sparkles, Trophy,
-  WalletCards, X as XLogo, type LucideIcon,
+  TrendingDown, WalletCards, X as XLogo, type LucideIcon,
 } from "lucide-react";
 import { DOCS_EXTERNAL, DOCS_URL } from "../../../lib/docs-url";
 
@@ -44,6 +44,8 @@ export const NAV_ITEMS = {
   lineRider: item({ id: "line-rider", name: "Line Rider", href: "/games/line-rider", description: "Ride the line and build a combo.", icon: ChartNoAxesCombined, match: { paths: ["/games/line-rider"], exact: true } }),
   candleHop: item({ id: "candle-hop", name: "Candle Hop", href: "/games/candle-hop", description: "Hop through a candlestick run.", icon: Mountain, match: { paths: ["/games/candle-hop"], exact: true } }),
 
+  // Owarine 90a91d71's /short as a way into the terminal (R4-13a, D-227): Boost on DOWN, the same deployed reserve.
+  short: item({ id: "short", name: "Short", href: "/trade/BTC?mode=boost&pick=down", description: "Call DOWN with Boost; the reserve fronts the rest.", icon: TrendingDown, keywords: "short sell fall down boost leverage", match: { paths: [] } }),
   parlay: item({ id: "parlay", name: "Parlay", href: "/parlay", description: "Combine several market outcomes.", icon: ChartNoAxesCombined }),
   earn: item({ id: "earn", name: "Earn", href: "/earn", description: "Supply the maker vault and the house reserves.", icon: Coins, keywords: "vault yield maker reserve supply" }),
   themes: item({ id: "themes", name: "Themes", href: "/themes", description: "Follow a basket an agent rebalances.", icon: Palette, keywords: "baskets follow stocks" }),
@@ -89,7 +91,7 @@ export const DOCK_OMITTED: readonly NavItem[] = RAIL_NAV.filter((p) => !DOCK_NAV
 
 /** Everything that is not a place, grouped (Owarine `MORE`). The first section is what most people open More for. */
 export const EVERYTHING_SECTIONS: readonly NavSection[] = [
-  { id: "trade", name: "More ways to trade", items: [NAV_ITEMS.parlay, NAV_ITEMS.earn, NAV_ITEMS.themes, NAV_ITEMS.launch, NAV_ITEMS.bridge, NAV_ITEMS.reserves, NAV_ITEMS.surface, NAV_ITEMS.sensei, NAV_ITEMS.xTrade] },
+  { id: "trade", name: "More ways to trade", items: [NAV_ITEMS.short, NAV_ITEMS.parlay, NAV_ITEMS.earn, NAV_ITEMS.themes, NAV_ITEMS.launch, NAV_ITEMS.bridge, NAV_ITEMS.reserves, NAV_ITEMS.surface, NAV_ITEMS.sensei, NAV_ITEMS.xTrade] },
   { id: "learn", name: "Learn", items: [NAV_ITEMS.demo, NAV_ITEMS.news, NAV_ITEMS.howItWorks, NAV_ITEMS.download, NAV_ITEMS.reels, NAV_ITEMS.docs, NAV_ITEMS.pitch] },
   { id: "games", name: "Games", items: [NAV_ITEMS.practice, NAV_ITEMS.duel, NAV_ITEMS.lucky, NAV_ITEMS.range, NAV_ITEMS.moonshot, NAV_ITEMS.lineRider, NAV_ITEMS.candleHop] },
   { id: "automate", name: "Automate", items: [NAV_ITEMS.agents] },

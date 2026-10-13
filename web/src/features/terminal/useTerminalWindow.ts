@@ -16,6 +16,8 @@ import { defaultLane, laneMarkets, lanesFor, pickWindow, type TerminalLane } fro
 
 export const LANE_PARAM = "lane";
 export const WINDOW_PARAM = "w";
+/** `?mode=`: the terminal's mode (R4-13a, D-227) — More's "Short" opens `?mode=boost&pick=down`. */
+export const MODE_PARAM = "mode";
 
 export interface TerminalWindow {
   set: LaneSet | null;
@@ -34,9 +36,9 @@ export interface TerminalWindow {
  * own state goes along without Next's marker (`__NA`): with it, Next takes the write for its own and `useSearchParams`
  * never hears the new lane (R4-0, D-227: a lane chip changed the URL and nothing else).
  */
-export function replaceTradeParams(next: { lane?: LaneTabKey | null; w?: MarketId | null }): void {
+export function replaceTradeParams(next: { lane?: LaneTabKey | null; w?: MarketId | null; mode?: string | null }): void {
   const url = new URL(window.location.href);
-  for (const [k, v] of [[LANE_PARAM, next.lane], [WINDOW_PARAM, next.w]] as const) {
+  for (const [k, v] of [[LANE_PARAM, next.lane], [WINDOW_PARAM, next.w], [MODE_PARAM, next.mode]] as const) {
     if (v === undefined) continue;
     if (v === null) url.searchParams.delete(k);
     else url.searchParams.set(k, v);

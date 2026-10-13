@@ -7,7 +7,7 @@
 // is DEMO's paper history. R4-1 (D-227): the book of positions is `useTerminalBook` — totals over priced rows, equity
 // with every row at what it counts for, the Window's positions summed on the chart.
 import { isStockSymbol, type TickerSymbol } from "@cwf/core";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { holdStreamAwake } from "@cwf/markets/stream";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MotionScope } from "@/components/motion-scope";
@@ -24,7 +24,7 @@ import { formatPrice, priceDecimals } from "./chart/engine";
 import { TERMINAL } from "./copy";
 import { clockText, money } from "./format";
 import { gap0400NextOpen } from "./pick-window";
-import { replaceTradeParams } from "./useTerminalWindow";
+import { MODE_PARAM, replaceTradeParams } from "./useTerminalWindow";
 import { useMarketSession, type MarketSession } from "@/features/markets/session";
 import { useTerminalState } from "./useTerminalState";
 import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } from "./ui/Chrome";
@@ -54,7 +54,7 @@ import { setTradeSettings, useTradeSettingsState } from "./settings";
 import { Tutorial } from "./ui/Tutorial";
 import { AccountDrawer, AlertsDrawer, DemoHistoryDrawer, ExitsDrawer, MarketsDrawer, PositionDetails, RoomDrawer, SenseiDrawer, SettingsDrawer, useDrawersMounted } from "./lazy-drawers";
 import { usePendingFills } from "./fresh-fills";
-import { ModeChips, ModePanel, type TerminalMode } from "./ui/ModePanel";
+import { ModeChips, ModePanel, MODES, type TerminalMode } from "./ui/ModePanel";
 import { useDrawnBand } from "@/features/range/band-store";
 import { TICKET_RAIL_MIN_WIDTH } from "@/features/markets/data/useSelection";
 import dynamic from "next/dynamic";
@@ -119,8 +119,19 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const [mode, setMode] = useState<TerminalMode>("updown");
   const chooseMode = (m: TerminalMode) => {
     setMode(m);
+    replaceTradeParams({ mode: m === "updown" ? null : m });
     if (m !== "updown" && !window.matchMedia(`(min-width: ${TICKET_RAIL_MIN_WIDTH}px)`).matches) drawer.show(DRAWERS.mode);
   };
+  // `?mode=` opens a mode, `?pick=` its side (R4-13a, D-227): More's "Short" is Boost on DOWN, the deployed reserve.
+  const params = useSearchParams();
+  const pickParam = params.get("pick");
+  const pickedSide = pickParam === "up" || pickParam === "down" ? pickParam : null;
+  const askedMode = useRef(params.get(MODE_PARAM));
+  useEffect(() => {
+    const asked = askedMode.current;
+    askedMode.current = null;
+    if (asked && asked !== "updown" && (MODES as readonly string[]).includes(asked)) chooseMode(asked as TerminalMode);
+  }); // once: the ref is cleared on the first run
   useAppUpdate();
   useWalletToasts();
   // First visit: the five-step tour, once the browser's settings have loaded with it unseen.
@@ -255,7 +266,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           <HaltNotice symbol={symbol} basis={s.win.lane?.basis ?? null} />
           {market ? <ModeChips mode={mode} onMode={chooseMode} /> : null}
           {mode !== "updown" && market ? (
-            <div className="tm-desk"><ModePanel mode={mode} market={market} side={null} /></div>
+            <div className="tm-desk"><ModePanel mode={mode} market={market} side={pickedSide} /></div>
           ) : active.lead ? (
             <TradeButtons
               mode="open"
@@ -279,9 +290,9 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
       </div>
       <Tutorial open={tourOpen} onDone={endTour} instant={instantTour} />
       {mode !== "updown" && market ? (
-        <SlideOver open={drawer.open === DRAWERS.mode} onOpenChange={(o) => { if (!o) { drawer.close(); setMode("updown"); } }}>
+        <SlideOver open={drawer.open === DRAWERS.mode} onOpenChange={(o) => { if (!o) { drawer.close(); setMode("updown"); replaceTradeParams({ mode: null }); } }}>
           <SlideOverContent title={TERMINAL.modes.names[mode]} fields>
-            <ModePanel mode={mode} market={market} side={null} />
+            <ModePanel mode={mode} market={market} side={pickedSide} />
           </SlideOverContent>
         </SlideOver>
       ) : null}
