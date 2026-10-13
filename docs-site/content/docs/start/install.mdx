@@ -1,10 +1,11 @@
 ---
 title: Get the app
-description: iPhone, Android or the web app, on one page and with one passkey. The web app installs today; each phone app opens as its store test goes live.
+description: iPhone, Android or the web app, on one page. The web app installs today; each phone app opens as its store test goes live.
 sources:
   - web/src/features/install/copy.ts
   - web/src/features/install/PlatformCards.tsx
   - web/src/lib/release.ts
+  - web/src/features/install/browser.ts
   - web/src/app/(app)/download/page.tsx
   - docs/specs/mobile.md
   - mobile/README.md
@@ -16,18 +17,24 @@ sources:
 <AppLink href="/download">Get the app</AppLink> lists every way in, your device's first:
 
 - **iPhone**: the TestFlight beta. Until its public link is live, the card says **Coming to TestFlight**.
-- **Android**: the Google Play test. Until it opens, the card says **Coming to Google Play**.
+- **Android**: the Google Play test. Until it opens, the card says **Coming to Google Play**. While only the invited testers' test is up, the card says **Invited testers** and the web app leads.
 - **Web app**: installs from your browser today, no store.
 
 On a computer, each card with a link carries a QR code. Scan it with your phone.
 
 ## Install the web app
 
+Where the browser offers it, choose **Install Mitoshi** on the page. Otherwise the card names your browser's own path:
+
 - **iPhone (Safari):** tap Share — the square with the arrow — then **Add to Home Screen**, then **Add**.
-- **Chrome and Edge:** choose **Install Mitoshi** on the page, or use the install icon at the right of the address bar.
+- **Android:** the browser menu, then **Add to Home screen**.
+- **Chrome:** ⋮ → **Cast, save and share** → **Install page as app**.
+- **Edge:** … → **Apps** → **Install this site as an app**.
+- **Safari on a Mac (17 or later):** **File** → **Add to Dock**.
+- **Any other browser:** install from Chrome, Edge or Safari, or scan the card's code with your phone.
 
 The installed app is the same site: the same passkey, the same account, the same test dollars.
 
 ## The phone app
 
-**Mitoshi** for iOS and Android is built and waits on its store records. `mitoshi.xyz` names it in its association files, so your passkey can sign inside it. See [the phone app](/start/mobile-app).
+**Mitoshi** for iOS and Android is built and on its way through TestFlight and Google Play testing. `mitoshi.xyz` names it in its association files; passkey sign-in inside it hasn't been checked on a real phone yet. See [the phone app](/start/mobile-app).

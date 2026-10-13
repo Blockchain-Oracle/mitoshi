@@ -1,7 +1,7 @@
 // /download's store links (D-230): only Apple's and Google's own test pages are offered, a malformed value reads as
 // unset (the card says "Coming to …"), and the open test wins over the internal one.
 import { describe, expect, it } from "vitest";
-import { orderCards, parsePlay, parseTestflight, platformOf, readStoreRelease } from "./release";
+import { orderCards, parsePlay, parseTestflight, platformOf, readStoreRelease, storeOpen, testflightClosed, type StoreRelease } from "./release";
 
 const TF = "https://testflight.apple.com/join/AbC123xy";
 const OPEN = "https://play.google.com/apps/testing/xyz.mitoshi.app.testnet";
@@ -33,6 +33,17 @@ describe("parsePlay", () => {
   });
 });
 
+describe("testflightClosed", () => {
+  it("reads Apple's closed page, escaped as it is served, and the full one", () => {
+    expect(testflightClosed('<div class="beta-status"> This beta isn&#39;t accepting any new testers right now. </div>')).toBe(true);
+    expect(testflightClosed("This beta isn’t accepting any new testers right now.")).toBe(true);
+    expect(testflightClosed("<h1>This beta is full.</h1>")).toBe(true);
+  });
+  it("takes a join page as open", () => {
+    expect(testflightClosed("<h1>Join the Mitoshi beta</h1><a>Start Testing</a>")).toBe(false);
+  });
+});
+
 describe("readStoreRelease", () => {
   it("is all pending with nothing set", () => {
     expect(readStoreRelease({})).toEqual({ testflight: null, play: null });
@@ -54,9 +65,19 @@ describe("platformOf", () => {
   });
 });
 
+describe("storeOpen", () => {
+  it("counts TestFlight's public link and Play's open test, never Play's invitation", () => {
+    expect(storeOpen({ testflight: TF, play: null }, "ios")).toBe(true);
+    expect(storeOpen({ testflight: null, play: { url: OPEN, track: "open" } }, "android")).toBe(true);
+    expect(storeOpen({ testflight: null, play: { url: INTERNAL, track: "internal" } }, "android")).toBe(false);
+    expect(storeOpen({ testflight: null, play: null }, "ios")).toBe(false);
+  });
+});
+
 describe("orderCards", () => {
-  const none = { testflight: null, play: null };
-  const both = { testflight: TF, play: { url: OPEN, track: "open" as const } };
+  const none: StoreRelease = { testflight: null, play: null };
+  const both: StoreRelease = { testflight: TF, play: { url: OPEN, track: "open" } };
+  const invited: StoreRelease = { testflight: null, play: { url: INTERNAL, track: "internal" } };
   it("shows a desktop the open store tests first, then the web app, then the stores still coming", () => {
     expect(orderCards("desktop", false, both)).toEqual(["ios", "android", "web"]);
     expect(orderCards("desktop", false, none)).toEqual(["web", "ios", "android"]);
@@ -67,6 +88,13 @@ describe("orderCards", () => {
     expect(orderCards("ios", false, none)).toEqual(["web", "ios", "android"]);
     expect(orderCards("android", false, both)).toEqual(["android", "web", "ios"]);
     expect(orderCards("android", false, { testflight: TF, play: null })).toEqual(["web", "android", "ios"]);
+  });
+  it("never leads with Play's invitation: the web app leads an Android phone, and a desk puts it after the web app", () => {
+    expect(orderCards("android", false, invited)).toEqual(["web", "android", "ios"]);
+    expect(orderCards("ios", false, invited)).toEqual(["web", "ios", "android"]);
+    expect(orderCards("desktop", false, invited)).toEqual(["web", "android", "ios"]);
+    expect(orderCards("desktop", false, { ...invited, testflight: TF })).toEqual(["ios", "web", "android"]);
+    expect(orderCards("ios", false, { ...invited, testflight: TF })).toEqual(["ios", "web", "android"]);
   });
   it("leads with the app itself inside its own web view", () => {
     expect(orderCards("android", true, none)).toEqual(["android", "web", "ios"]);

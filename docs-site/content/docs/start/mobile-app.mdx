@@ -1,6 +1,6 @@
 ---
 title: The phone app
-description: Mitoshi for iOS and Android — the site in a native shell. Built, and waiting on its store records.
+description: Mitoshi for iOS and Android — the site in a native shell. Built, and on its way through TestFlight and Google Play testing.
 sources:
   - mobile/README.md
   - mobile/app.identity.json
@@ -15,7 +15,7 @@ sources:
   - docs/plan/owner-actions.md
 ---
 
-**Mitoshi** (`xyz.mitoshi.app.testnet`) is an Expo app that opens <AppLink href="/">the site</AppLink> in one native web view. Same passkey, same account, same test dollars.
+**Mitoshi** (`xyz.mitoshi.app.testnet`) is an Expo app that opens <AppLink href="/">the site</AppLink> in one native web view.
 
 ## What the shell adds
 
@@ -32,10 +32,10 @@ Your passkey belongs to `mitoshi.xyz`. A native app may use it only when that do
 
 | | State |
 | --- | --- |
-| iOS · TestFlight | Built on EAS. Waits on the owner creating the App Store Connect record |
-| Android · Play internal testing | Built on EAS. Waits on the owner creating the Play Console app and its first upload; the Play signing key then joins `assetlinks.json` |
+| iOS · TestFlight | Built on EAS. The App Store Connect record exists; the public link follows Apple's beta review |
+| Android · Google Play testing | Built on EAS. Internal testing, for invited testers; Play's signing key is in `assetlinks.json`. Open testing comes next |
 
-<AppLink href="/download">Get the app</AppLink> offers each link the moment it is set, with a QR code for a computer.
+<AppLink href="/download">Get the app</AppLink> offers each public link the moment it is set, with a QR code for a computer. Play's internal test opens only for invited testers, so there it stays quiet and the web app leads.
 
 <Callout title="Not in a store yet">
 Until then, [install from the browser](/start/install). No passkey sign-in inside the app has been checked on a real phone yet.

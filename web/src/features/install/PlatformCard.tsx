@@ -5,14 +5,17 @@
 // motion runtime), and a QR code at the foot for a desktop reader (on cream paper so any camera reads it; hidden on
 // phones, where the phone is the device). The store button is From 21st.dev 8280 efferd/app-store-button: the mark
 // beside a two-line label ("Join the beta on" / "TestFlight"), as an ink pill on the kit's tokens (the accent fill when
-// it is the page's one primary action). Layout references (Refero): Amie's "Download apps", Skiff's `/download`.
+// it is the page's one primary action; a quiet surface pill for Play's invitation-only test). Layout references
+// (Refero): Amie's "Download apps", Skiff's `/download`.
 import type { ReactNode } from "react";
 import { ExternalLink } from "@/components/shell/ExternalLink";
 import { QrCode } from "@/components/ui/qr-code";
 import type { PlatformId } from "@/lib/release";
+import type { CardShape } from "./cards";
 import { DOWNLOAD } from "./copy";
 
-export type CardTone = "live" | "soon" | "here";
+/** The chip: live (anyone can install it), invite (invited testers only), soon (not out yet), here (the one in use). */
+export type CardTone = "live" | "invite" | "soon" | "here";
 
 export interface PlatformCardProps {
   id: PlatformId;
@@ -42,7 +45,7 @@ export function PlatformCard({ id, name, glyph, chip, tone, line, action, qr }: 
           {qr ? (
             <figure className="get-qr">
               <QrCode value={qr.value} label={DOWNLOAD.qrLabel(qr.caption)} className="get-qr-code" bgClassName="get-qr-bg" inkClassName="get-qr-ink" />
-              <figcaption>{qr.caption}</figcaption>
+              <figcaption className="get-qr-caption">{qr.caption}</figcaption>
             </figure>
           ) : null}
         </div>
@@ -51,13 +54,13 @@ export function PlatformCard({ id, name, glyph, chip, tone, line, action, qr }: 
   );
 }
 
-/**
- * A store's own page as a store-style button: its mark, a small kicker and the store's name. Opens outside the app.
- * `primary` (the card leading on this phone) makes it the page's accent action; otherwise it is ink.
- */
-export function StoreButton({ href, glyph, kicker, store, primary = false }: { href: string; glyph: ReactNode; kicker: string; store: string; primary?: boolean }) {
+/** The store button's weight: the page's one accent action, an ink pill, or quiet (an invitation most can't open). */
+export type StoreVariant = "accent" | "ink" | "quiet";
+
+/** A store's own page as a store-style button: its mark, a small kicker and the store's name. Opens outside the app. */
+export function StoreButton({ href, glyph, kicker, store, variant = "ink" }: { href: string; glyph: ReactNode; kicker: string; store: string; variant?: StoreVariant }) {
   return (
-    <ExternalLink href={href} className={primary ? "get-store get-store--accent" : "get-store"}>
+    <ExternalLink href={href} className={`get-store get-store--${variant}`}>
       <span className="get-store-glyph">{glyph}</span>
       <span className="get-store-text">
         <small>{kicker}</small>
@@ -81,21 +84,44 @@ export function PlatformGrid({ cards }: { cards: readonly PlatformCardProps[] })
   );
 }
 
-/** The cards' shape while the request is read: three cards, so nothing moves when they land. */
-export function PlatformCardsWait() {
+/**
+ * The cards' shape while the request is read, so nothing moves when they land: the shapes this deployment's store links
+ * give a desk (`waitShapes`) — today the web app leading wide (`data-lead="web"`, two rows tall on a desk) with its
+ * install and QR, and the two stores still coming stacked beside it with no button. Each block holds its real words,
+ * unseen, so every line box is the size the card's own text will take.
+ */
+export function PlatformCardsWait({ shapes }: { shapes: readonly CardShape[] }) {
   return (
-    <div className="get-grid" aria-busy="true" aria-label={DOWNLOAD.title}>
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="get-card get-card--wait">
-          <div className="get-card-top">
-            <span className="get-card-icon skel" />
-            <span className="get-chip skel" />
-          </div>
-          <span className="skel get-wait-line" />
-          <span className="skel get-wait-line get-wait-line--short" />
-          <span className="skel get-wait-pill" />
-        </div>
+    <div className="get-grid" data-lead={shapes[0]?.id} aria-busy="true" aria-label={DOWNLOAD.title}>
+      {shapes.map((shape) => (
+        <WaitCard key={shape.id} {...shape} />
       ))}
+    </div>
+  );
+}
+
+function WaitCard({ name, chip, line, action, scan }: CardShape) {
+  return (
+    <div className="get-card get-card--wait" aria-hidden>
+      <div className="get-card-top">
+        <span className="get-card-icon skel" />
+        <span className="get-chip skel">{chip}</span>
+      </div>
+      <div className="get-card-copy">
+        <p className="get-card-name"><span className="skel">{name}</span></p>
+        <p className="get-card-line"><span className="skel">{line}</span></p>
+      </div>
+      {action || scan ? (
+        <div className="get-card-foot">
+          {action ? <div className="get-card-action"><span className={`skel get-wait-pill get-wait-pill--${action}`} /></div> : null}
+          {scan ? (
+            <div className="get-qr">
+              <span className="skel get-qr-code" />
+              <span className="get-qr-caption"><span className="skel">{scan}</span></span>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

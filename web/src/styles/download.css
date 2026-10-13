@@ -48,15 +48,18 @@
 }
 .get-card-icon svg { width: 24px; height: 24px; }
 
-/* The status chip: live (profit), coming (quiet), the one in use (accent). */
+/* The status chip: live (profit), coming or invitation-only (quiet), the one in use (ink on the accent wash, an accent
+ * dot). Every pair is AA (4.5:1) at 12 px in both themes: the accent itself is 4.0:1 on its wash in dark and 3.4:1 in
+ * light, so the word stays ink and the dot carries the colour. */
 .get-chip {
   display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 10px; border-radius: var(--radius-full);
   background: var(--color-surface-2); color: var(--color-ink-secondary); font: 600 12px/1 var(--font-body); white-space: nowrap;
 }
 .get-chip::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: var(--radius-full); background: currentColor; }
 .get-chip[data-tone="live"] { background: var(--color-profit-wash); color: var(--color-profit); }
-.get-chip[data-tone="here"] { background: var(--color-accent-wash); color: var(--color-accent); }
-.get-chip[data-tone="soon"]::before { background: var(--color-ink-muted); }
+.get-chip[data-tone="here"] { background: var(--color-accent-wash); color: var(--color-ink); }
+.get-chip[data-tone="here"]::before { background: var(--color-accent); }
+.get-chip[data-tone="soon"]::before, .get-chip[data-tone="invite"]::before { background: var(--color-ink-muted); }
 
 .get-card-copy { display: flex; flex: 1; flex-direction: column; gap: 6px; }
 .get-card-name { font: 700 22px/1.15 var(--font-heading); letter-spacing: -0.02em; color: var(--color-ink); }
@@ -68,34 +71,54 @@
 /* On a phone the action is the card's full width (a long label never runs past the card); from 768 it is its own size. */
 .get-card-action .kit-pill, .get-card-action .get-store { width: 100%; }
 @media (min-width: 768px) {
-  .get-card-action { flex: 0 1 auto; align-items: flex-start; }
+  .get-card-action { flex: 1 1 12rem; align-items: flex-start; }
   .get-card-action .kit-pill, .get-card-action .get-store { width: auto; }
 }
 
-/* The store button (21st 8280): mark + "Join the beta on" over "TestFlight", ink on the page, 52 px. */
+/* The store button (21st 8280): mark + "Join the beta on" over "TestFlight", 52 px — ink on the page, the accent fill
+ * when it is the page's one primary action, quiet (surface and hairline) for an invitation most can't open. The kicker
+ * keeps the button's full colour: at 0.8 it fell to 3.8:1 on the accent fill. */
 .get-store {
   display: inline-flex; height: var(--ticket-cta-height); align-items: center; justify-content: center; gap: 10px; padding: 0 22px 0 16px;
   border-radius: var(--radius-full); background: var(--color-ink); color: var(--color-stage);
   transition: opacity var(--duration-hover) var(--ease-out), transform 150ms var(--ease-out);
 }
 .get-store--accent { background: var(--color-accent-fill); color: var(--color-on-accent); }
+.get-store--quiet { background: var(--color-surface-2); color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-hairline); }
 .get-store:hover { opacity: 0.88; }
 .get-store:active { transform: scale(0.97); }
 .get-store:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .get-store-glyph { display: grid; width: 24px; height: 24px; flex: none; place-items: center; }
 .get-store-glyph svg { width: 100%; height: 100%; }
 .get-store-text { display: flex; flex-direction: column; gap: 3px; text-align: left; }
-.get-store-text small { font: 500 11px/1 var(--font-body); letter-spacing: 0.01em; opacity: 0.8; }
+.get-store-text small { font: 500 11px/1 var(--font-body); letter-spacing: 0.01em; }
 .get-store-text b { font: 700 17px/1 var(--font-heading); letter-spacing: -0.02em; }
 
-/* The web app's install: the pill, then Safari's steps or the browser-menu hint when opened; "Installed" as a fact. */
+/* The web app's install: the pill (and Safari's steps when opened), or — no prompt held — where this browser keeps it,
+ * its menu path in keys, never an accent; "Installed" as a fact. The hint is the pill's height, so the browser's
+ * answer (a prompt arriving) moves nothing. Step numerals are the accent at AA: vermilion is 4.5:1 on the dark card
+ * and 4.0:1 on the light one, so dark takes the lifted accent and light the pressed one. */
 .get-install { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
 @media (min-width: 768px) { .get-install { align-items: flex-start; } }
 .get-done { font: 600 15px/1.4 var(--font-body); color: var(--color-ink); }
 .get-steps { display: flex; flex-direction: column; gap: 8px; max-width: 30rem; counter-reset: step; }
 .get-steps li { display: flex; align-items: baseline; gap: 12px; font: 400 15px/1.45 var(--font-body); color: var(--color-ink-secondary); }
-.get-steps li::before { counter-increment: step; content: counter(step, decimal-leading-zero); font: 600 12px/1 var(--font-data); color: var(--color-accent); }
-.get-hint { max-width: 30rem; font: 400 14px/1.5 var(--font-body); color: var(--color-ink-secondary); }
+.get-steps li::before { counter-increment: step; content: counter(step, decimal-leading-zero); font: 600 12px/1 var(--font-data); color: var(--color-accent-hover); }
+[data-theme="light"] .get-steps li::before { color: var(--color-accent-pressed); }
+.get-how {
+  display: flex; min-height: var(--button-primary-height); max-width: 30rem; flex-wrap: wrap; align-items: center; gap: 6px;
+  font: 400 14px/1.5 var(--font-body); color: var(--color-ink-secondary);
+}
+.get-how-icon { width: 16px; height: 16px; flex: none; color: var(--color-ink-secondary); }
+/* The menu path: From 21st.dev 28308 ai2/kbd-combo (SequenceKbd) — caps on the raised surface with a hairline, joined
+ * by an arrow, in the body face (menu items are words, not keys). */
+.get-path { display: inline-flex; min-width: 0; max-width: 100%; font: inherit; }
+.get-path-keys { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.get-path-keys kbd {
+  padding: 2px 8px; border-radius: var(--radius-md); background: var(--color-surface-2); box-shadow: inset 0 0 0 1px var(--color-hairline);
+  color: var(--color-ink); font: 600 13px/1.3 var(--font-body); white-space: nowrap;
+}
+.get-path-then { color: var(--color-ink-secondary); }
 
 /* The QR: cream paper with its ink in both themes (any camera reads dark on light), from 768 px only. */
 .get-qr { display: none; margin: 0; }
@@ -105,17 +128,18 @@
 .get-qr-code { width: 7rem; height: 7rem; border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--color-hairline); }
 .get-qr-bg { fill: var(--color-cream); }
 .get-qr-ink { fill: var(--color-cream-ink); }
-.get-qr figcaption { max-width: 8rem; font: 500 12px/1.3 var(--font-body); color: var(--color-ink-muted); text-align: center; }
+/* The caption is secondary ink: the muted grey was 3.8:1 (dark) and 4.1:1 (light) at 12 px. */
+.get-qr-caption { max-width: 8rem; font: 500 12px/1.3 var(--font-body); color: var(--color-ink-secondary); text-align: center; }
 
-.get-foot { font: 400 13px/1.45 var(--font-body); color: var(--color-ink-muted); }
-
-/* While the request is read: the cards' shape, so nothing moves when they land. */
-.get-card--wait { min-height: 15rem; }
-.get-card--wait .get-chip { width: 7rem; }
+/* While the request is read: the shape this deployment's links give a desk (`waitShapes`; today the web app wide, the
+ * two stores stacked beside it), each text block its real words unseen, so the cards land without a shift. */
+.get-card--wait .get-chip { color: transparent; }
 .get-card--wait .get-chip::before { content: none; }
-.get-wait-line { display: block; height: 14px; width: 70%; border-radius: var(--radius-full); }
-.get-wait-line--short { width: 45%; }
-.get-wait-pill { display: block; height: var(--ticket-cta-height); width: 11rem; margin-top: auto; border-radius: var(--radius-full); }
+.get-card--wait :is(.get-card-name, .get-card-line, .get-qr-caption) > .skel {
+  display: inline-block; max-width: 100%; vertical-align: top; border-radius: var(--radius-md); color: transparent;
+}
+.get-wait-pill { display: block; height: var(--button-primary-height); width: 11rem; border-radius: var(--radius-full); }
+.get-wait-pill--store { height: var(--ticket-cta-height); }
 
 @media (prefers-reduced-motion: reduce) {
   .get-store { transition: none; }

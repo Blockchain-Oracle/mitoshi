@@ -1,13 +1,14 @@
 // Ported from Owarine 90a91d71:web/src/lib/release.ts (C10f) — the one config point for what `/download` links to but
 // this repository can't publish by itself (D-230, the owner's point 8): the iPhone app's public TestFlight link and the
 // Android app's Google Play testing link. Each is a runtime variable on the web app, read on the server per request, so
-// a deployment turns a card from "Coming to …" into the real link by setting a value and restarting — no rebuild. The
-// names are the ones the store ship step writes to `~/.config/mitoshi/stores.env` (`docs/plan/env-matrix.md`):
+// a deployment turns a card from "Coming to …" into the real link by setting a value and restarting — no rebuild (the
+// loading skeleton reads them when the shell is prerendered, so they are build variables too). The names are the ones
+// the store ship step writes to `~/.config/mitoshi/stores.env` (`docs/plan/env-matrix.md`):
 //
 //   TESTFLIGHT_PUBLIC_LINK     https://testflight.apple.com/join/<code>
 //   PLAY_OPEN_TEST_LINK        https://play.google.com/apps/testing/xyz.mitoshi.app.testnet (anyone can join)
 //   PLAY_INTERNAL_TEST_LINK    https://play.google.com/apps/internaltest/<token> (invited testers; used only when no
-//                              open test is set)
+//                              open test is set, and never leads or takes the accent: `storeOpen`)
 //
 // None is a secret and none is NEXT_PUBLIC_*. A malformed value counts as unset, so a card keeps saying it is coming
 // rather than linking somewhere wrong. Pure (no server-only import) so the parsing is tested.
@@ -59,6 +60,15 @@ export function parsePlay(raw: string | undefined, track: PlayTrack): string | n
   return pkg && PACKAGE.test(pkg) ? url.toString() : null;
 }
 
+/**
+ * Whether Apple's join page says the beta takes no one: a public link exists before Apple's beta review passes (and after
+ * the tester limit is reached), and then it opens a page that says so — a dead end, never a page's lead action. The page
+ * is HTML-escaped English (the request asks for en-US).
+ */
+export function testflightClosed(html: string): boolean {
+  return /isn(?:'|’|&#39;|&#x27;|&apos;)t accepting any new testers|this beta is full/i.test(html);
+}
+
 export function readStoreRelease(env: Env): StoreRelease {
   const open = parsePlay(env.PLAY_OPEN_TEST_LINK, "open");
   const internal = open ? null : parsePlay(env.PLAY_INTERNAL_TEST_LINK, "internal");
@@ -82,20 +92,30 @@ export function platformOf(userAgent: string | null | undefined): { platform: Pl
 }
 
 /**
+ * A store anyone can open today: the public TestFlight link, or Google Play's open test. Play's internal test is an
+ * invitation — Google shows it only to the accounts on its testers list, and everyone else lands on "not available" —
+ * so it never leads a page and is never its accent action (D-230).
+ */
+export function storeOpen(release: StoreRelease, store: "ios" | "android"): boolean {
+  return store === "ios" ? release.testflight !== null : release.play?.track === "open";
+}
+
+/**
  * `/download`'s cards in the order this device needs them (D-230): what this device can act on first. A phone sees its
- * own app first when its store test is open (or it is the app), else the web app — it installs today, so the first
- * screen always holds an action that works — then its own card, then the other phone's. A desktop sees the phones'
- * open tests first (each with its QR), then the web app, then the stores still coming.
+ * own app first when anyone can install it (its store is open, or it is the app), else the web app — it installs today,
+ * so the first screen always holds an action that works — then its own card, then the other phone's. A desktop sees the
+ * open stores first (each with its QR), then the web app, then Play's invitation-only test, then the stores still
+ * coming.
  */
 export function orderCards(platform: Platform, inApp: boolean, release: StoreRelease): PlatformId[] {
   if (platform === "desktop") {
-    const open: PlatformId[] = [];
-    const coming: PlatformId[] = [];
-    (release.testflight ? open : coming).push("ios");
-    (release.play ? open : coming).push("android");
-    return [...open, "web", ...coming];
+    const stores = ["ios", "android"] as const;
+    const open = stores.filter((s) => storeOpen(release, s));
+    const invited: PlatformId[] = release.play?.track === "internal" ? ["android"] : [];
+    const coming = stores.filter((s) => !open.includes(s) && !invited.includes(s));
+    return [...open, "web", ...invited, ...coming];
   }
   const other: PlatformId = platform === "ios" ? "android" : "ios";
-  const ownReady = inApp || (platform === "ios" ? release.testflight !== null : release.play !== null);
+  const ownReady = inApp || storeOpen(release, platform);
   return ownReady ? [platform, "web", other] : ["web", platform, other];
 }

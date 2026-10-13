@@ -21,8 +21,10 @@ STREAM_TICKET_SECRET=
 SOCIAL_SESSION_SECRET=
 MPP_SECRET_KEY=
 WALLETCONNECT_PROJECT_ID=
-# /download's store links (D-230; runtime, not NEXT_PUBLIC_*: set and restart, no rebuild). Unset or malformed, a card
-# says "Coming to TestFlight" / "Coming to Google Play". Only Apple's /join/<code> and Google Play's test pages are taken.
+# /download's store links (D-230; not NEXT_PUBLIC_*: the cards read them per request, so set and restart is enough; the
+# loading skeleton reads them at build, so mark them build variables too and the next deploy draws the same shape).
+# Unset or malformed, a card says "Coming to TestFlight" / "Coming to Google Play". Only Apple's /join/<code> and Google
+# Play's test pages are taken; the internal test (invited testers) never leads the page.
 TESTFLIGHT_PUBLIC_LINK=
 PLAY_OPEN_TEST_LINK=
 PLAY_INTERNAL_TEST_LINK=
