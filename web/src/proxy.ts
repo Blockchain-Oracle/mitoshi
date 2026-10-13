@@ -6,7 +6,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { COUNTRY_HEADERS, encodePosture, GEOFENCE_PILLARS, postureOf, REGION_COOKIE, REGION_HEADER } from "@cwf/core";
 import { TRADE_COOKIE, tradeRedirect } from "./features/terminal/route";
-import { SHELL_UA } from "./lib/app-shell";
+import { appHome, SHELL_UA } from "./lib/app-shell";
 import { canonicalRedirect } from "./lib/canonical-host";
 import { docsRedirect } from "./lib/docs-url";
 import { tickerHubRoute } from "./lib/ticker-href";
@@ -29,9 +29,11 @@ export function proxy(request: NextRequest): NextResponse {
   // The phone app opens on the product, never the marketing page (round 7, the owner's TestFlight review): its web view
   // marks every request `CWFShell/` in the user agent (lib/app-shell.ts), and `/` answers Markets. 307, not 308, so a
   // browser that once was the app keeps no permanent redirect.
-  if (request.nextUrl.pathname === "/" && SHELL_UA.test(request.headers.get("user-agent") ?? "")) {
+  // A first-time app user (no welcome cookie, never signed in here) meets the welcome first (features/welcome).
+  const home = SHELL_UA.test(request.headers.get("user-agent") ?? "") ? appHome(request.nextUrl.pathname, (n) => request.cookies.get(n)?.value) : null;
+  if (home) {
     const url = request.nextUrl.clone();
-    url.pathname = "/markets";
+    url.pathname = home;
     return NextResponse.redirect(url, 307);
   }
   // /dev fixtures are internal: 404 in production unless explicitly enabled (the layout also calls notFound()).

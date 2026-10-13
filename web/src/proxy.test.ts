@@ -53,10 +53,14 @@ describe("proxy on /docs", () => {
 
 describe("proxy for the phone app", () => {
   const app = (path: string) => proxy(new NextRequest(`${ORIGIN}${path}`, { headers: { host: "mitoshi.xyz", "user-agent": "Mozilla/5.0 (iPhone) AppleWebKit/605.1.15 CWFShell/1.0.1 (ios; testnet)" } }));
-  it("sends the app's / to Markets, never the marketing page", () => {
-    const res = app("/");
-    expect(res.status).toBe(307);
-    expect(res.headers.get("location")).toBe(`${ORIGIN}/markets`);
+  it("sends a first-time app user to the welcome, and a returning one's / to Markets — never the marketing page", () => {
+    expect(app("/").headers.get("location")).toBe(`${ORIGIN}/welcome`);
+    expect(app("/markets").headers.get("location")).toBe(`${ORIGIN}/welcome`);
+    const back = proxy(new NextRequest(`${ORIGIN}/`, { headers: { host: "mitoshi.xyz", cookie: "cwf_welcomed=1", "user-agent": "Mozilla/5.0 (iPhone) CWFShell/1.1.0 (ios; testnet)" } }));
+    expect(back.status).toBe(307);
+    expect(back.headers.get("location")).toBe(`${ORIGIN}/markets`);
+    const signedIn = proxy(new NextRequest(`${ORIGIN}/markets`, { headers: { host: "mitoshi.xyz", cookie: `wagmi.store=${encodeURIComponent('{"state":{"current":"abc"}}')}`, "user-agent": "CWFShell/1.1.0" } }));
+    expect(signedIn.headers.get("location")).toBeNull();
   });
   it("leaves the app's other pages and a browser's / alone", () => {
     expect(app("/portfolio").headers.get("location")).toBeNull();

@@ -66,6 +66,9 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
         setQueued(true);
         want();
       },
+      createPasskey: async () => ({ ok: false as const, aborted: false, error: new Error("wallet not loaded") }),
+      signInPasskey: async () => ({ ok: false as const, aborted: false, error: new Error("wallet not loaded") }),
+      prepare: want,
       disconnect: async () => undefined,
       switchToTempo: async () => undefined,
       signMessage: async () => {

@@ -4,6 +4,7 @@
 // the passkey connector's `accounts` + zod, WalletConnect) loaded right after hydration by the eager
 // `WalletShellProvider`. It computes the wallet shell (C.3.1) and the signing session and publishes both upward;
 // it also hosts the sign-in and account modals (loaded on first open). Agari's UserSessionProvider is folded in here.
+import { useWalletChoices } from "./useWalletChoices";
 import type { Address, Hex } from "@cwf/core";
 import { INJECTED_CAPS, type SubmitterSession } from "@cwf/markets";
 import { useSubmitterSessionState } from "@cwf/markets/react-session";
@@ -96,9 +97,13 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
   }, [connections, signMessageAsync, tempo]);
 
   const wrongChain = tempo !== null && tempo.chainId !== TEMPO_CHAIN.id;
+  const choices = useWalletChoices();
+  const createPasskey = useCallback(() => choices.createPasskey(""), [choices]);
+  const signInPasskey = useCallback(() => choices.signInPasskey(), [choices]);
   const walletKey = useWalletKey(tempo, connections);
   const shell = useMemo<WalletShell>(
     () => ({
+      runtime: true,
       status: hydrated && restoring ? "restoring" : "ready",
       connecting: false,
       tempo,
@@ -112,8 +117,11 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
       walletKey: walletKey.key,
       canArmWalletKey: walletKey.canArm,
       armWalletKey: walletKey.arm,
+      createPasskey,
+      signInPasskey,
+      prepare: () => undefined,
     }),
-    [hydrated, restoring, tempo, wrongChain, pickerIntent, openPicker, disconnect, switchToTempo, signMessage, walletKey.key, walletKey.canArm, walletKey.arm],
+    [hydrated, restoring, tempo, wrongChain, pickerIntent, openPicker, disconnect, switchToTempo, signMessage, walletKey.key, walletKey.canArm, walletKey.arm, createPasskey, signInPasskey],
   );
   useEffect(() => publish(shell), [publish, shell]);
 

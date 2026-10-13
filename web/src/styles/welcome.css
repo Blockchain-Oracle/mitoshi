@@ -1,0 +1,78 @@
+/* The welcome (round 7, features/welcome; Senryo's story as the model): one full screen over the app's chrome — the
+   scene's picture, its headline and sentence, the dots, and three actions pinned in the thumb zone above the home
+   indicator. The pictures are the product's own marks, coloured here; each scene restarts its keyframes on mount. */
+.welcome {
+  position: fixed; inset: 0; z-index: var(--z-modal);
+  display: grid; grid-template-rows: 1fr auto auto auto;
+  padding: calc(var(--safe-top, 0px) + 24px) 24px calc(var(--safe-bottom, 0px) + 20px);
+  background: var(--color-ground); color: var(--color-ink);
+  overscroll-behavior: none; touch-action: pan-y;
+}
+.wl-stage { display: grid; place-items: center; min-height: 0; }
+.wl-scene, .wl-stage > .wl-art { width: min(100%, 440px); }
+@media (min-height: 760px) { .wl-scene { width: min(100%, 460px); } }
+.wl-art { display: block; width: 100%; height: auto; overflow: visible; }
+
+.wl-words { display: grid; gap: 8px; text-align: center; margin: 8px auto 0; max-width: 420px; }
+.wl-title { font: 700 clamp(26px, 7.4vw, 34px)/1.12 var(--font-heading); letter-spacing: -0.02em; }
+.wl-body { font: 400 16px/1.45 var(--font-body); color: var(--color-ink-secondary); }
+
+.wl-dots { display: flex; justify-content: center; gap: 4px; margin: 18px 0 14px; }
+.wl-dot-btn { width: 28px; height: 28px; display: grid; place-items: center; }
+.wl-dot-btn::before { content: ""; width: 6px; height: 6px; border-radius: 999px; background: var(--color-hairline); transition: width 240ms var(--ease-drawer), background 240ms; }
+.wl-dot-btn[aria-current="step"]::before { width: 20px; background: var(--color-ink); }
+
+.wl-actions { display: grid; gap: 10px; width: 100%; max-width: 420px; margin: 0 auto; }
+.wl-btn { min-height: 52px; border-radius: 999px; font: 600 17px/1 var(--font-body); background: var(--color-surface-2); color: var(--color-ink); transition: transform 100ms ease-out, opacity 160ms; }
+.wl-btn:active:not(:disabled) { transform: scale(0.97); }
+.wl-btn:disabled { opacity: 0.6; }
+.wl-btn--accent { background: var(--accent-fill); color: var(--on-accent); }
+.wl-btn--ghost { background: transparent; border: 1px solid var(--color-hairline); }
+.wl-link { min-height: 44px; font: 500 15px/1 var(--font-body); color: var(--color-ink-secondary); }
+.wl-note { text-align: center; font: 500 14px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+
+/* The pictures. */
+.wl-line-ref { stroke: var(--color-hairline); stroke-width: 2; stroke-dasharray: 6 6; }
+.wl-line { fill: none; stroke: var(--color-up); stroke-width: 5; stroke-linecap: round; }
+.wl-dot { fill: var(--color-accent); }
+.wl-pill-up { fill: color-mix(in oklab, var(--color-up) 16%, transparent); stroke: var(--color-up); stroke-width: 1.5; }
+.wl-pill-down { fill: color-mix(in oklab, var(--color-down) 14%, transparent); stroke: var(--color-down); stroke-width: 1.5; }
+.wl-pill-text { font: 600 14px var(--font-data); letter-spacing: 0.12em; text-anchor: middle; }
+.wl-big { font-size: 22px; }
+.wl-up-text { fill: var(--color-up); }
+.wl-down-text { fill: var(--color-down); }
+.wl-card { fill: var(--color-surface-2); stroke: var(--color-hairline); }
+.wl-card-text { font: 600 15px var(--font-body); fill: var(--color-ink); }
+.wl-ok { fill: var(--color-up); }
+.wl-ripple { fill: none; stroke: var(--color-up); stroke-width: 2; opacity: 0; }
+.wl-mono { font: 500 12px var(--font-data); letter-spacing: 0.08em; fill: var(--color-ink); }
+.wl-muted { fill: var(--color-ink-secondary); }
+.wl-center { text-anchor: middle; }
+.wl-figure { font: 700 26px var(--font-data); fill: var(--color-ink); }
+.wl-stamp-box { fill: none; stroke: var(--color-up); stroke-width: 3; }
+.wl-stamp-text { font: 700 18px var(--font-data); letter-spacing: 0.1em; fill: var(--color-up); text-anchor: middle; }
+.wl-frame { fill: none; stroke: var(--color-ink); stroke-width: 6; stroke-linecap: round; }
+.wl-feature { fill: none; stroke: var(--color-accent); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+.wl-plate { fill: var(--color-ink); }
+.wl-plate-text { font: 600 11px var(--font-data); letter-spacing: 0.14em; fill: var(--color-ground); text-anchor: middle; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .wl-title, .wl-body { animation: wl-in 420ms var(--ease-drawer) both; }
+  .wl-body { animation-delay: 60ms; }
+  .wl-draw { stroke-dasharray: 520; stroke-dashoffset: 520; animation: wl-draw 1400ms var(--ease-drawer) 120ms forwards; }
+  .wl-pop { transform-box: fill-box; transform-origin: center; animation: wl-pop 360ms var(--ease-drawer) 1350ms both; }
+  .wl-rise { animation: wl-in 420ms var(--ease-drawer) 700ms both; }
+  .wl-press { transform-box: fill-box; transform-origin: center; animation: wl-press 700ms ease-out 400ms both; }
+  .wl-ripple { transform-box: fill-box; transform-origin: center; animation: wl-ripple 900ms ease-out 450ms both; }
+  .wl-receipt { animation: wl-in 420ms var(--ease-drawer) 900ms both; }
+  .wl-stamp { transform-box: fill-box; transform-origin: center; animation: wl-stamp 520ms cubic-bezier(0.2, 1.4, 0.4, 1) 700ms both; }
+  .wl-face { animation: wl-breathe 2400ms ease-in-out 300ms infinite; transform-box: fill-box; transform-origin: center; }
+  .wl-count { animation: wl-in 520ms var(--ease-drawer) 300ms both; }
+}
+@keyframes wl-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes wl-draw { to { stroke-dashoffset: 0; } }
+@keyframes wl-pop { from { opacity: 0; transform: scale(0.2); } to { opacity: 1; transform: scale(1); } }
+@keyframes wl-press { 0%, 100% { transform: scale(1); } 35% { transform: scale(0.94); } }
+@keyframes wl-ripple { from { opacity: 0.9; transform: scale(0.4); } to { opacity: 0; transform: scale(5); } }
+@keyframes wl-stamp { from { opacity: 0; transform: rotate(-12deg) scale(1.6); } to { opacity: 1; transform: rotate(-6deg) scale(1); } }
+@keyframes wl-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }

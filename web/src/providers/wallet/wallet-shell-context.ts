@@ -2,6 +2,7 @@
 // Ported from Agari 03b30ab:web/src/providers/wallet/wallet-shell-context.ts — one Tempo account (C.3.1): a passkey,
 // Tempo Wallet or an injected wallet. D-231 removed the second, Robinhood Chain wallet with the bridge.
 // Every consumer reads this; only `web/src/providers/wallet/WalletRuntime` (a lazy island, §3.1) touches wagmi.
+import type { ConnectOutcome } from "./useWalletChoices";
 import type { Address, Hex } from "@cwf/core";
 import type { SignerCaps } from "@cwf/markets";
 import { createContext, useContext } from "react";
@@ -25,6 +26,8 @@ export interface TempoAccount {
 }
 
 export interface WalletShellState {
+  /** The wallet runtime has loaded: the passkey ceremonies can start on a tap. */
+  runtime: boolean;
   status: WalletShellStatus;
   /** A user-initiated connection is in flight. */
   connecting: boolean;
@@ -42,6 +45,13 @@ export interface WalletShellState {
 
 export interface WalletShellActions {
   openPicker(intent?: string | null): void;
+  /**
+   * Round 7 (the welcome): the passkey ceremonies straight from a screen's own button, no sheet in between, so the
+   * system's Face ID sheet opens on that tap. Only once `runtime` is true; `prepare` loads it early.
+   */
+  createPasskey(): Promise<ConnectOutcome>;
+  signInPasskey(): Promise<ConnectOutcome>;
+  prepare(): void;
   disconnect(): Promise<void>;
   switchToTempo(): Promise<void>;
   /** EIP-191 personal_sign with the connected Tempo account (the faucet challenge); rejects with no account. */
@@ -52,11 +62,14 @@ export interface WalletShellActions {
 
 export type WalletShell = WalletShellState & WalletShellActions;
 
-export const SIGNED_OUT: WalletShellState = { status: "ready", connecting: false, tempo: null, network: "testnet", wrongChain: false, pickerIntent: null, walletKey: null, canArmWalletKey: false };
+export const SIGNED_OUT: WalletShellState = { runtime: false, status: "ready", connecting: false, tempo: null, network: "testnet", wrongChain: false, pickerIntent: null, walletKey: null, canArmWalletKey: false };
 
 export const WalletShellContext = createContext<WalletShell>({
   ...SIGNED_OUT,
   openPicker: () => undefined,
+  createPasskey: async () => ({ ok: false, aborted: false, error: new Error("wallet not loaded") }),
+  signInPasskey: async () => ({ ok: false, aborted: false, error: new Error("wallet not loaded") }),
+  prepare: () => undefined,
   disconnect: async () => undefined,
   switchToTempo: async () => undefined,
   signMessage: async () => {

@@ -12,3 +12,19 @@ export const SHELL_INIT_SCRIPT = `try{if(${SHELL_UA}.test(navigator.userAgent)||
 export function inAppShell(): boolean {
   return typeof document !== "undefined" && document.documentElement.dataset.shell === "app";
 }
+
+/** Set by the welcome when a first-time app user leaves it (features/welcome/WelcomeScreen.tsx). */
+export const WELCOMED_COOKIE = "cwf_welcomed";
+/** wagmi's stored connection names a current account once someone has signed in on this device (lib/theme.ts). */
+const SIGNED_IN = /"current":"/;
+
+/**
+ * Where the app's home lands (proxy.ts): a first-time app user who has never signed in meets the welcome; everyone
+ * else Markets. Null for a request this doesn't decide.
+ */
+export function appHome(pathname: string, cookie: (name: string) => string | undefined): string | null {
+  if (pathname !== "/" && pathname !== "/markets") return null;
+  const fresh = cookie(WELCOMED_COOKIE) !== "1" && !SIGNED_IN.test(decodeURIComponent(cookie("wagmi.store") ?? ""));
+  if (fresh) return "/welcome";
+  return pathname === "/" ? "/markets" : null;
+}
