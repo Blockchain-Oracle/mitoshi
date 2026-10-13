@@ -52,6 +52,25 @@ function tracePath(ctx: CanvasRenderingContext2D, state: RideState, worldX: numb
   }
 }
 
+/**
+ * The line's crisp core coloured by its move (R4-9, D-227; the games spec's "the line colours by move"): a rising
+ * stretch in profit, a falling one in the vermilion accent — on a tape of real prints it reads as the chart it is.
+ */
+function strokeMoves(ctx: CanvasRenderingContext2D, state: RideState, worldX: number, up: Rgb, down: Rgb): void {
+  let prevX = 0;
+  let prevY = rideLineYAt(state, 0, worldX) * FIELD_H;
+  for (let x = BAND_STEP; x <= FIELD_W; x += BAND_STEP) {
+    const y = rideLineYAt(state, x, worldX) * FIELD_H;
+    ctx.strokeStyle = rgb(y <= prevY ? up : down);
+    ctx.beginPath();
+    ctx.moveTo(prevX, prevY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    prevX = x;
+    prevY = y;
+  }
+}
+
 function advanceFx(fx: RideFx, state: RideState, dtSec: number, worldX: number, pipY: number, reduced: boolean): void {
   const drift = worldX - fx.lastWorldX;
   fx.lastWorldX = worldX;
@@ -130,9 +149,8 @@ export function drawRide(view: ArcadeView, state: RideState, alpha: number, nowM
   ctx.strokeStyle = hc(0.3 + 0.12 * flare);
   ctx.lineWidth = 5;
   ctx.stroke();
-  ctx.strokeStyle = rgb(heat);
   ctx.lineWidth = 2.4;
-  ctx.stroke();
+  strokeMoves(ctx, state, worldX, palette.up, palette.accent);
 
   if (fx.trail.length > 1) {
     ctx.lineWidth = 3;
