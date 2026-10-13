@@ -34,6 +34,19 @@ export interface LuckyDrawRow {
   placedAt: string | null;
 }
 
+/** A draw as the public Lucky floor shows it (R6 games §5.1): no seeds, no hashes — what was drawn and how it went. */
+export interface LuckyRecentRow {
+  drawId: string;
+  wallet: string;
+  asset: string | null;
+  side: "up" | "down" | null;
+  multiplier: number | null;
+  costBase: string | null;
+  stakeBase: string;
+  result: LuckyRowResult;
+  placedAt: string;
+}
+
 export interface LuckyStore {
   /** The next nonce is one past the wallet's last; the unique (wallet, nonce) key settles a race. */
   create(input: { drawId: string; wallet: string; policyVersion: number; stakeBase: string; commitment: string; serverSeed: string }): Promise<LuckyDrawRow>;
@@ -46,6 +59,8 @@ export interface LuckyStore {
   settle(drawId: string, result: "won" | "lost" | "void" | "cashed-out"): Promise<void>;
   /** Every wallet's verified rows (won, lost, void), newest first — the streak board's input. */
   verified(limit: number): Promise<{ wallet: string; result: LuckyRowResult }[]>;
+  /** The latest placed draws across every wallet, newest first, at most 12 — the public floor (no reconcile here). */
+  recent(limit: number): Promise<LuckyRecentRow[]>;
 }
 
 type Db = {
@@ -95,6 +110,13 @@ export function createPgLuckyStore(sql: Sql): LuckyStore {
     async verified(limit) {
       return sql<{ wallet: string; result: LuckyRowResult }[]>`
         select wallet, result from lucky_draws where result in ('won', 'lost', 'void') order by created_at desc limit ${limit}`;
+    },
+    async recent(limit) {
+      const rows = await sql<{ draw_id: string; wallet: string; asset: string | null; side: "up" | "down" | null; multiplier: number | null; cost_base: string | null; stake_base: string; result: LuckyRowResult; at: Date }[]>`
+        select draw_id, wallet, asset, side, multiplier, cost_base, stake_base, result, coalesce(placed_at, created_at) as at
+        from lucky_draws where result in ('placed', 'pending', 'won', 'lost', 'void', 'cashed-out')
+        order by coalesce(placed_at, created_at) desc limit ${Math.max(1, Math.min(12, limit))}`;
+      return rows.map((r) => ({ drawId: r.draw_id, wallet: r.wallet, asset: r.asset, side: r.side, multiplier: r.multiplier, costBase: r.cost_base, stakeBase: r.stake_base, result: r.result, placedAt: r.at.toISOString() }));
     },
     async history(wallet, limit) {
       const rows = await sql<Db[]>`select * from lucky_draws where wallet = ${wallet.toLowerCase()} and client_seed is not null order by created_at desc limit ${limit}`;

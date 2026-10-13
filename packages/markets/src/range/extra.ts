@@ -13,7 +13,7 @@ import { rangeReserveAbi } from "@cwf/clients/abis/RangeReserve";
 import { getPublicClient } from "../runtime/read-runtime";
 import { withReading } from "../runtime/reading";
 import { readFairModels } from "../parlay/read";
-import { listRangesOf, reserveContract } from "./read";
+import { listRangesOf, listRecentRanges, reserveContract } from "./read";
 
 const byChain = deployments as unknown as Record<string, Record<string, { contracts: Record<string, { address: string }> } | undefined>>;
 
@@ -90,6 +90,18 @@ export interface RangeRoundView extends RangeRound {
 export async function listRangeRoundViews(wallet: Address): Promise<Reading<RangeRoundView[]>> {
   return withReading(`rangeViews:${wallet}`, async (inner) => {
     const rounds = inner(await listRangesOf(wallet));
+    const facts = await readWindows([...new Set(rounds.map((r) => r.marketId))]);
+    return rounds.map((r) => {
+      const f = facts.get(r.marketId);
+      return { ...r, asset: f?.market.asset ?? null, intervalSec: f?.market.intervalSec ?? null, answered: f ? f.market.state !== "open" : false };
+    });
+  });
+}
+
+/** The latest rounds across every wallet with each Window read beside it (R6 games §5.4; the public floor's rows). */
+export async function listRecentRangeRoundViews(limit = 12): Promise<Reading<RangeRoundView[]>> {
+  return withReading(`rangeRecentViews:${limit}`, async (inner) => {
+    const rounds = inner(await listRecentRanges(limit));
     const facts = await readWindows([...new Set(rounds.map((r) => r.marketId))]);
     return rounds.map((r) => {
       const f = facts.get(r.marketId);

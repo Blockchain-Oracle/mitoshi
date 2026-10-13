@@ -19,6 +19,8 @@ export const rangeKeys = {
   reserve: () => ["cwf", "range", "reserve"] as const,
   models: (assets: string) => ["cwf", "range", "models", assets] as const,
   rounds: (wallet: string | null) => ["cwf", "range", "rounds", wallet] as const,
+  /** Every wallet's latest rounds (R6 games §5.4). */
+  recent: () => ["cwf", "range", "recent"] as const,
   quote: (signature: string) => ["cwf", "range", "quote", signature] as const,
 };
 

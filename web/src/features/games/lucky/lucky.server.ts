@@ -22,7 +22,7 @@ import { ceremonyLimiter } from "@/server/auth";
 import { db } from "@/server/db";
 import { serverEnv } from "@/server/env";
 import { ensureServerReads } from "../server-reads";
-import type { LuckyBoardWire, LuckyCommitWire, LuckyDealWire, LuckyHistoryWire, LuckyRowWire } from "./lucky-wire";
+import type { LuckyBoardWire, LuckyCommitWire, LuckyDealWire, LuckyHistoryWire, LuckyRecentResponse, LuckyRecentWire, LuckyRowWire } from "./lucky-wire";
 
 /**
  * The draw — server only (R4-9, D-227). Ported from Masayume 68f7a09 web/src/features/games/lucky/{lucky.server.ts,
@@ -205,4 +205,13 @@ export async function readLuckyBoard(): Promise<LuckyBoardWire> {
     .sort((a, b) => b.streak - a.streak || b.best - a.best || b.draws - a.draws || a.wallet.localeCompare(b.wallet))
     .slice(0, 50);
   return { configured: true, rows };
+}
+
+/** The latest draws across every wallet for the public floor (§5.1). No reconcile here: each owner's own history read
+ *  settles their rows; this shows what the record says. */
+export async function readRecentDraws(): Promise<LuckyRecentResponse> {
+  const draws = luckyStore();
+  if (!draws) return { configured: false, rows: [] };
+  const rows = await draws.recent(12);
+  return { configured: true, rows: rows.map((r) => ({ ...r, result: r.result as LuckyRecentWire["result"] })) };
 }

@@ -78,6 +78,10 @@ export interface DuelStore {
   waiting(windowSec: number): Promise<Record<string, number>>;
   /** Every decided duel (finalized or refunded), oldest first — the ladder's and the badges' input. */
   finished(limit: number): Promise<DuelFinishedRow[]>;
+  /** Who is waiting now, inside the pairing window, oldest first (R6 games §5.2: the floor's avatars per pot). */
+  waitingPlayers(windowSec: number, limit?: number): Promise<{ tier: DuelTierId; wallet: string; queuedAt: string }[]>;
+  /** The latest decided duels, newest first, with each player's pot (§5.2: the floor's "last duels"). */
+  recent(limit?: number): Promise<(DuelFinishedRow & { potPerPlayer: string })[]>;
 }
 
 export interface DuelFinishedRow {
@@ -202,6 +206,20 @@ export function createPgDuelStore(sql: Sql): DuelStore {
         where status in ('finalized', 'refunded') and challenger is not null
         order by created_at asc limit ${limit}`;
       return rows.map((r) => ({ matchId: r.match_id, tier: r.tier, creator: r.creator, challenger: r.challenger, status: r.status, winner: r.winner, createdAt: r.created_at.toISOString() }));
+    },
+    async waitingPlayers(windowSec, limit = 8) {
+      const rows = await sql<{ tier: DuelTierId; wallet: string; queued_at: Date }[]>`
+        select tier, wallet, queued_at from duel_queue
+        where match_id is null and queued_at > now() - make_interval(secs => ${windowSec})
+        order by queued_at asc limit ${Math.max(1, Math.min(32, limit))}`;
+      return rows.map((r) => ({ tier: r.tier, wallet: r.wallet, queuedAt: r.queued_at.toISOString() }));
+    },
+    async recent(limit = 5) {
+      const rows = await sql<{ match_id: string; tier: DuelTierId; creator: string; challenger: string; status: "finalized" | "refunded"; winner: string | null; created_at: Date; pot_per_player: string }[]>`
+        select match_id, tier, creator, challenger, status, winner, created_at, pot_per_player from duel_matches
+        where status in ('finalized', 'refunded') and challenger is not null
+        order by created_at desc limit ${Math.max(1, Math.min(20, limit))}`;
+      return rows.map((r) => ({ matchId: r.match_id, tier: r.tier, creator: r.creator, challenger: r.challenger, status: r.status, winner: r.winner, createdAt: r.created_at.toISOString(), potPerPlayer: r.pot_per_player }));
     },
     async matchesOf(wallet, limit) {
       const w = wallet.toLowerCase();

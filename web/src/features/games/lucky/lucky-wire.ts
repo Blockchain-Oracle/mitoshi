@@ -62,3 +62,22 @@ export interface LuckyBoardWire {
   configured: boolean;
   rows: { wallet: string; streak: number; best: number; draws: number }[];
 }
+
+/** One draw on the public Lucky floor (R6 games §5.1): who drew what and how it went — no seeds, no hashes. */
+export interface LuckyRecentWire {
+  drawId: string;
+  wallet: string;
+  asset: string | null;
+  side: "up" | "down" | null;
+  multiplier: number | null;
+  /** Base units, as text. */
+  costBase: string | null;
+  stakeBase: string;
+  result: "placed" | "pending" | "won" | "lost" | "void" | "cashed-out";
+  placedAt: string;
+}
+
+export interface LuckyRecentResponse {
+  configured: boolean;
+  rows: LuckyRecentWire[];
+}

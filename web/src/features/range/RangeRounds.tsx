@@ -12,7 +12,7 @@
 import { formatCadence } from "@cwf/core/copy";
 import { classifyRangeBand } from "@cwf/core/range";
 import type { Address } from "@cwf/core";
-import { listRangeRoundViews, readRangeOwed, type RangeRoundView } from "@cwf/markets/range";
+import { listRangeRoundViews, listRecentRangeRoundViews, readRangeOwed, type RangeRoundView } from "@cwf/markets/range";
 import type { Reading } from "@cwf/core";
 import { useReadingQuery } from "@cwf/markets/react";
 import { ReadingBoundary } from "@/components/states";
@@ -22,6 +22,7 @@ import { RANGE } from "./copy";
 import { rangeKeys } from "./data";
 import { usdBand } from "./format";
 import type { useRangeWrites } from "./useRangeWrites";
+import { SignedOutPreview } from "@/components/states/SignedOutPreview";
 
 const R = RANGE.rounds;
 
@@ -78,6 +79,12 @@ function useRounds(wallet: Address | null, kind: RoundKind): Reading<RangeRoundV
   return reading && reading.ok ? { ...reading, value: reading.value.filter((r) => kindOf(r) === kind) } : reading;
 }
 
+/** Every wallet's latest rounds of this kind (R6 games §5.4): the signed-out preview and the floors. */
+export function useRecentRangeRounds(kind: RoundKind, enabled = true): Reading<RangeRoundView[]> | null {
+  const reading = useReadingQuery(rangeKeys.recent(), () => listRecentRangeRoundViews(12), { pollMs: 30_000, enabled });
+  return reading && reading.ok ? { ...reading, value: reading.value.filter((r) => kindOf(r) === kind) } : reading;
+}
+
 /** The head chip's figures: how many rounds this page has, and what the won ones pay when claimed (a retired reserve's rounds are read-only). */
 export function useRoundsSummary(wallet: Address | null, kind: RoundKind): { count: number; claimBase: bigint } {
   const reading = useRounds(wallet, kind);
@@ -87,16 +94,25 @@ export function useRoundsSummary(wallet: Address | null, kind: RoundKind): { cou
 
 export function RangeRounds({ wallet, nowMs, staleAfterSec, writes, onSignIn, kind }: { wallet: Address | null; nowMs: number; staleAfterSec: number; writes: ReturnType<typeof useRangeWrites>; onSignIn: () => void; kind: RoundKind }) {
   const reading = useRounds(wallet, kind);
+  const recent = useRecentRangeRounds(kind, wallet === null);
   const owed = useReadingQuery([...rangeKeys.all, "owed", wallet], () => readRangeOwed(wallet as Address), { pollMs: 30_000, enabled: wallet !== null });
+  const nowSec = Math.floor(nowMs / 1000);
+  // Signed out (R6 games T10): everyone's latest rounds, live and public, under one "Sign in to see yours" — not a wall.
   if (!wallet) {
     return (
-      <div className="pl-slip-empty">
-        <p>{R.signIn}</p>
-        <button type="button" onClick={onSignIn} className="mt-3 min-h-touch rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{R.signInCta}</button>
-      </div>
+      <SignedOutPreview intent={R.signIn} source={R.preview.source} title={R.preview.title(kind === "moonshot")}>
+        <ReadingBoundary reading={recent} shape="row" isEmpty={(rs) => rs.length === 0} empty={{ why: kind === "moonshot" ? R.emptyMoonshot : R.empty }}>
+          {(rounds) => (
+            <div className="pl-slip">
+              {rounds.map((r) => (
+                <Round key={`recent:${r.roundId}`} r={r} nowSec={nowSec} staleAfterSec={staleAfterSec} writes={writes} />
+              ))}
+            </div>
+          )}
+        </ReadingBoundary>
+      </SignedOutPreview>
     );
   }
-  const nowSec = Math.floor(nowMs / 1000);
   return (
     <>
       {owed?.ok && owed.value > 0n ? (

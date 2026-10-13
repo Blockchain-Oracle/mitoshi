@@ -177,6 +177,19 @@ export async function listRangesOf(wallet: Address): Promise<Reading<RangeRound[
   });
 }
 
+/** The latest rounds on the current reserve across every wallet, newest first (R6 games §5.4: the public "recent
+ *  rounds"; ids run 1…roundCount, one multicall for at most 12). */
+export async function listRecentRanges(limit = 12): Promise<Reading<RangeRound[]>> {
+  return withReading(`rangesRecent:${limit}`, async () => {
+    const contract = await reserveContract();
+    if (!contract) return [];
+    const count = Number(await (await reserveClient()).readContract({ ...contract, functionName: "roundCount" }));
+    const n = Math.max(0, Math.min(12, limit, count));
+    const ids = Array.from({ length: n }, (_, i) => BigInt(count - i));
+    return roundsByIds(ids);
+  });
+}
+
 export async function getRange(roundId: bigint): Promise<Reading<RangeRound | null>> {
   return withReading(`range:${roundId}`, async () => (await roundsByIds([roundId]))[0] ?? null);
 }

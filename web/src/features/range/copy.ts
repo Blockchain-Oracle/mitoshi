@@ -99,6 +99,8 @@ export const RANGE = {
   rounds: {
     signIn: "Sign in to see your rounds",
     signInCta: "Sign in",
+    /** Signed out (R6 games T10): everyone's latest rounds, live and public, over one "Sign in to see yours". */
+    preview: { source: "Live, public", title: (moonshot: boolean) => (moonshot ? "Latest moonshots" : "Latest rounds") },
     empty: "No rounds yet",
     emptyMoonshot: "No moonshots yet",
     inPlay: "In play",

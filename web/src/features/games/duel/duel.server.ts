@@ -331,9 +331,31 @@ export async function duelStandings(opts: { everyone?: boolean } = {}): Promise<
   return { configured: true, rows: rows.filter((r) => opts.everyone || r.verifiedMatches > 0).sort((x, y) => y.rating - x.rating || y.won - x.won || x.wallet.localeCompare(y.wallet)) };
 }
 
-/** Who is waiting at each pot right now (the queue's own rows inside the pairing window). */
-export async function duelPresence(): Promise<{ configured: boolean; waiting: Record<string, number> }> {
+/** Who is waiting at each pot right now (the queue's own rows inside the pairing window), and who they are (R6 games
+ *  §5.2: the floor's avatars — wallets are already public on every board). */
+export async function duelPresence(): Promise<{ configured: boolean; waiting: Record<string, number>; players: { tier: string; wallet: string; queuedAt: string }[] }> {
   const duels = duelStore();
-  if (!duels) return { configured: false, waiting: {} };
-  return { configured: true, waiting: await duels.waiting(PAIR_WINDOW_SEC) };
+  if (!duels) return { configured: false, waiting: {}, players: [] };
+  const [waiting, players] = await Promise.all([duels.waiting(PAIR_WINDOW_SEC), duels.waitingPlayers(PAIR_WINDOW_SEC, 8)]);
+  return { configured: true, waiting, players };
+}
+
+export interface DuelRecentWire {
+  matchId: string;
+  tier: string;
+  /** Both players' stakes together, base units as text. */
+  potBase: string;
+  creator: string;
+  challenger: string;
+  winner: string | null;
+  status: "finalized" | "refunded";
+  at: string;
+}
+
+/** The last decided duels, newest first (§5.2: the floor before you play). */
+export async function duelRecent(): Promise<{ configured: boolean; rows: DuelRecentWire[] }> {
+  const duels = duelStore();
+  if (!duels) return { configured: false, rows: [] };
+  const rows = await duels.recent(5);
+  return { configured: true, rows: rows.map((r) => ({ matchId: r.matchId, tier: r.tier, potBase: (BigInt(r.potPerPlayer) * 2n).toString(), creator: r.creator, challenger: r.challenger, winner: r.winner, status: r.status, at: r.createdAt })) };
 }

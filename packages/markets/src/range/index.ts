@@ -7,6 +7,7 @@ export {
   getRangeReserveState,
   getRangeSharesOf,
   listRangesOf,
+  listRecentRanges,
   previewRangeBasis,
   previewRangeOpen,
   quoteRangeOnchain,
@@ -16,4 +17,4 @@ export {
   type RangePreview,
   type RangeWindowBasis,
 } from "./read";
-export { listRangeRoundViews, previewRangeDrift, readRangeModels, readRangeOpened, readRangeOwed, type RangeModel, type RangeRoundView } from "./extra";
+export { listRangeRoundViews, listRecentRangeRoundViews, previewRangeDrift, readRangeModels, readRangeOpened, readRangeOwed, type RangeModel, type RangeRoundView } from "./extra";
