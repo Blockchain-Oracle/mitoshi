@@ -3,7 +3,8 @@
 Prediction markets and stocks on Tempo, plus a mobile app, for Colosseum's Crypto World's Fair hackathon
 (Sep 14 – **Oct 12, 2026**).
 
-**Docs:** [docs.testnet.mitoshi.xyz](https://docs.testnet.mitoshi.xyz) — the guides, the architecture, every deployed
+**App:** [mitoshi.xyz](https://mitoshi.xyz).
+**Docs:** [docs.mitoshi.xyz](https://docs.mitoshi.xyz) — the guides, the architecture, every deployed
 address on Moderato and dated evidence (source: `docs-site/`).
 **Building:** start with `docs/plan/working-rules.md`, then `docs/plan/STATUS.md` (the build's resume pointer).
 **Research and context:** `context/STATUS.md`.
@@ -38,7 +39,7 @@ contracts/     Foundry (Tempo + evm profiles), deployments/<chainId>/<area>.json
 packages/      @cwf/core · markets · brain · db · clients
 services/ops   actors on runActor, one HTTP server, Fly
 web/           Next.js 16 app
-docs-site/     the guides (Fumadocs on Next 16, its own pnpm root; docs.testnet.mitoshi.xyz)
+docs-site/     the guides (Fumadocs on Next 16, its own pnpm root; docs.mitoshi.xyz)
 scripts/       codegen, invariants, keys, deploy, drive, archive, e2e
 infra/         secrets (names only), env examples, Vercel and Fly notes
 ```

@@ -20,7 +20,10 @@ ALPACA_ENDPOINT=
 FINNHUB_API_KEY=
 DATASTREAMS_API_KEY=
 DATASTREAMS_API_SECRET=
+# Unset: https://mitoshi.xyz (plus the retired testnet.mitoshi.xyz and localhost:3000 on testnet, www on mainnet);
+# APP_ORIGIN is the x-relay's link base (unset: https://mitoshi.xyz)
 OPS_CORS_ORIGINS=
+APP_ORIGIN=
 RELAY_FEE_PAYER_ADDRESS=
 RELAY_ATTESTED=
 SETTLER_REDEEM_GRACE_SEC=

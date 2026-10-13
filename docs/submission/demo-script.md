@@ -7,7 +7,7 @@ say. Keep the cuts honest: no sped-up confirmations, no edited numbers.
 
 | Time | On screen | Say |
 |---|---|---|
-| 0:00–0:12 | `testnet.mitoshi.xyz` landing → Start trading | "This is Mitoshi on Tempo testnet. One screen for calling where a price closes." |
+| 0:00–0:12 | `mitoshi.xyz` landing → Start trading | "This is Mitoshi on Tempo testnet. One screen for calling where a price closes." |
 | 0:12–0:35 | Sign in → passkey sheet → signed up; Add money → testnet dollars land | "Sign-up is a passkey — no seed phrase, no extension. On testnet, Add money mints test dollars." |
 | 0:35–0:50 | "Turn on one-tap" → one biometric | "One more biometric publishes an access key with a daily limit. After this, taps don't prompt." |
 | 0:50–1:15 | The BTC 5-minute Window: the line, the Line mark, UP pays 1.9× / DOWN pays 2.0×; tap UP → row appears "Confirming on Tempo…" → booked | "UP wins if this Window closes at or above its opening print. One tap — the position is there in under a second." |

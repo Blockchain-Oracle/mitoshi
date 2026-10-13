@@ -1,5 +1,13 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
+**2026-10-13, D-228 (owner): one address, `mitoshi.xyz` — the code half is on the trunk. The app at the apex
+(`www.` and the old `testnet.` 301 to it, `/.well-known/*` answers on every host), ops and the stream at `ops.` and
+`stream.mitoshi.xyz`, the guides at `docs.mitoshi.xyz`; the retired `*.testnet.` names only redirect. "Testnet" left
+the branding (titles, landing, share cards, link previews, store name); the mode plate is the one place the app names
+its network. The chain, `NETWORK=testnet` and the Coolify names are unchanged. Next: ship it (Coolify domains and the
+origin variables in `decisions.md` D-228 / `env-matrix.md`, the `docs` A record, then web, ops, docs one at a time),
+then a 1.0.1 phone build.**
+
 **2026-10-13, S11 shipped (D-227, `stage-11-trade-from-x.md`, `acceptance/S11.md`): sign in with X, trade from X,
 `/claim` and the share-to-sign links are on testnet — merge `cbf5c9dd`, ship fixes `64f5567a` (the X screens waited for
 no data layer: `/claim` hit the error page) and `4022e80a` (22 px CTAs); web `4022e80a`, ops `11d85e07`. The x-relay is

@@ -1,6 +1,6 @@
 # Presentation video — script (2:30 target, 3:00 max)
 
-For the owner's voice, recorded over `https://testnet.mitoshi.xyz/pitch` (← → moves the folio) and then the live
+For the owner's voice, recorded over `https://mitoshi.xyz/pitch` (← → moves the folio) and then the live
 terminal. Every line is something the product does today on Tempo testnet; the numbers are from
 `docs/plan/acceptance/S23.md` and the indexer's live count on the landing. Read it in your own words — this is the
 shape and the facts, not a teleprompter.
@@ -25,7 +25,7 @@ shape and the facts, not a teleprompter.
 > keeper sells it with the app closed. And Range, Moonshot, Parlay and Boost price against the same order book.
 > Every fill is a receipt on Tempo.
 
-## 1:20–2:05 · The product (switch to testnet.mitoshi.xyz/trade/BTC)
+## 1:20–2:05 · The product (switch to mitoshi.xyz/trade/BTC)
 
 Show, don't narrate every click:
 1. The terminal signed in: the BTC line moving, the Window's clock, UP / DOWN with what each pays.

@@ -8,7 +8,7 @@ stay as built there unless a row below changes them).
 
 | Field | Record |
 |---|---|
-| Target | Mitoshi web (`web/`), testnet `testnet.mitoshi.xyz` |
+| Target | Mitoshi web (`web/`), `mitoshi.xyz` (the Moderato build; `testnet.mitoshi.xyz` until D-228) |
 | Reference | Owarine `Blockchain-Oracle/owarine` `main` **90a91d71** (2026-10-09; local `../owarine`, current with origin on 2026-10-12) and the live `owarine.xyz` |
 | Authority order | The owner's words of 2026-10-12 → Owarine's source → the live site → older Mitoshi specs |
 | Strength | Minimum baseline for the surfaces below |

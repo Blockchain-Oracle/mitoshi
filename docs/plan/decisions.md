@@ -355,7 +355,8 @@ tempo`; real runs use Moderato/Tempo.
 "Outlook, forecast". Answers Q-019. The owner buys `mitoshi.xyz` on Namecheap (verified unregistered in the .xyz
 registry 2026-09-29). Layout: `mitoshi.xyz` = mainnet web; `testnet.mitoshi.xyz` = testnet web; `ops.` / `stream.`
 (per network, under `testnet.` for testnet) = ops health and the D-049 SSE stream; `docs.mitoshi.xyz` = docs (S20).
-Passkey rpId = `mitoshi.xyz` on both networks. Brand strings live only in `web/src/lib/copy.ts`.
+Passkey rpId = `mitoshi.xyz` on both networks. Brand strings live only in `web/src/lib/copy.ts`. The layout is superseded by
+D-228 (2026-10-13): one set of hosts at the apex, no `testnet.` names.
 
 ### D-061 — hosting on the owner's Coolify, not Vercel/Fly/Neon/Upstash (owner answer, 2026-09-29)
 
@@ -2078,6 +2079,34 @@ source study (one spec per surface).
    place nothing. A call is for the Window trading when it was posted: read more than one cadence late it is refused
    (`call-expired`), a repost is never a call, and a send left unknown holds every later mention until the chain
    settles it (S11 review).
+
+### D-228 — one address: `mitoshi.xyz`, and no "testnet" in the name (owner, 2026-10-13)
+
+The owner: the `testnet.` host was a discouragement, and DEMO already says "practice"; just change the domain. Supersedes
+D-060's layout.
+
+1. **Hosts:** the app at `https://mitoshi.xyz` (`www.` redirects to it), ops at `ops.mitoshi.xyz`, the stream at
+   `stream.mitoshi.xyz`, the guides at `docs.mitoshi.xyz`. Until mainnet (S19) they serve the Moderato build; at S19
+   the same hosts move to the mainnet apps.
+2. **Retired names** (`testnet.`, `ops.testnet.`, `stream.testnet.`, `docs.testnet.`) stay attached only to redirect:
+   301 (308 for a write) to the same path and query on the current name — `web/src/lib/canonical-host.ts` (from
+   `APP_ORIGIN` and `PASSKEY_RP_ID`; a 307 while `APP_ORIGIN` still names another host, so no browser caches the apex
+   pointing away), `movedHost` in `@cwf/core` for ops (a CORS preflight is answered, never redirected),
+   `docs-site/next.config.mjs`. `/.well-known/*` answers 200 on every web host (static files — `*.json`, images — are
+   outside the proxy and answer on every host too), and the phone app links both the apex and the old host. Ops' default
+   CORS list on testnet keeps the old web origin, so a tab opened before the move keeps its prices and stream.
+3. **Unchanged:** the chain (Moderato), `NETWORK=testnet`, chain ids, the Coolify `testnet` environment and resource
+   names, the passkey rpId `mitoshi.xyz` (every passkey keeps working), the bundle id, package and EAS slug.
+4. **Words:** "testnet" is not branding — page titles, metadata, the landing, share cards, link previews, the docs'
+   name and the app's store name ("Mitoshi", version 1.0.1) drop it. The app names its network in one place: the
+   R4-8 mode plate at the rail's head (`ModePlate`; its stamp on the icon rail, its chip beside the mark on a phone —
+   one indicator, one width at a time) — 練 DEMO signed out, 試 TESTNET · Test dollars signed in. The account chip, the
+   sign-in sheet's passkey group and the health chip say "Tempo"; the site header's TESTNET pill is gone. Money stays
+   honest where it moves: Add money's "Test dollars" with "No cash value", "Test dollars · no cash value" on the X
+   pages, "Test money" on automation, the terms, the in-app testnet notes and the guides. An X receipt card still names
+   its chain (Tempo Moderato testnet).
+5. **Returning users** sign in again on the new origin with the same passkey: the session cookie, one-tap keys and
+   DEMO's paper balance belong to the old origin.
 
 ## Open questions
 

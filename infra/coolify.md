@@ -6,17 +6,21 @@ Apps are public through Coolify's proxy on 80/443.
 
 ## Project `mitoshi` (uuid `ktcbykphojha86g1oz1fjt78`)
 
-| Environment | Resource | Kind | uuid | Domain (after `mitoshi.xyz` is bought) |
+| Environment | Resource | Kind | uuid | Domains (D-228) |
 |---|---|---|---|---|
-| testnet | `mitoshi-web-testnet` | app, Dockerfile `/web/Dockerfile`, port 3000, health `/api/health` | `vhxmiwhhjhngikv2ut5mqjio` | `https://testnet.mitoshi.xyz`, `https://mitoshi.xyz` (added 2026-10-13, MOBILE: the passkey rpId host serves the app's association files and 307s every other path to the testnet host, `web/src/proxy.ts`; live from the first web deploy after that; mainnet web takes the apex at S19) |
-| testnet | `mitoshi-ops-testnet` | app, Dockerfile `/services/ops/Dockerfile`, port 8080, health `/health` | `8iaimzcz5gcmont5hqbm6yhk` | `https://ops.testnet.mitoshi.xyz`, `https://stream.testnet.mitoshi.xyz` |
-| testnet | `mitoshi-docs-testnet` | app, base directory `/docs-site`, Dockerfile `/Dockerfile` (the docs site alone), port 3000, health `/` | `phvlvicp7lo7wdgemfypa4bu` | `https://docs.testnet.mitoshi.xyz` |
+| testnet | `mitoshi-web-testnet` | app, Dockerfile `/web/Dockerfile`, port 3000, health `/api/health` | `vhxmiwhhjhngikv2ut5mqjio` | `https://mitoshi.xyz` (the app), `https://www.mitoshi.xyz` and `https://testnet.mitoshi.xyz` (both 301 every path but `/.well-known/*` to the apex, `web/src/lib/canonical-host.ts`) |
+| testnet | `mitoshi-ops-testnet` | app, Dockerfile `/services/ops/Dockerfile`, port 8080, health `/health` | `8iaimzcz5gcmont5hqbm6yhk` | `https://ops.mitoshi.xyz`, `https://stream.mitoshi.xyz`; `https://ops.testnet.mitoshi.xyz`, `https://stream.testnet.mitoshi.xyz` redirect (`movedHost`, `services/ops/src/http/server.ts`) |
+| testnet | `mitoshi-docs-testnet` | app, base directory `/docs-site`, Dockerfile `/Dockerfile` (the docs site alone), port 3000, health `/` | `phvlvicp7lo7wdgemfypa4bu` | `https://docs.mitoshi.xyz`; `https://docs.testnet.mitoshi.xyz` redirects (`docs-site/next.config.mjs`) |
 | testnet | `mitoshi-testnet-db` | PostgreSQL | `j9uqt80ux3ajxyaer5t5psfj` | internal only |
 | testnet | `mitoshi-testnet-redis` | Redis (passkey challenges, sessions; replaces Upstash) | `3mpjtxc1cofmctbfnufzjwvg` | internal only |
-| mainnet | web, ops, Postgres, Redis | created at S19 with the owner's go | — | `https://mitoshi.xyz`, `ops.mitoshi.xyz`, `stream.mitoshi.xyz` |
+| mainnet | web, ops, Postgres, Redis | created at S19 with the owner's go | — | the same hosts move to the mainnet apps at S19 |
 
-`mitoshi.xyz` registered 2026-09-29 (Namecheap BasicDNS; A `@`, `www`, `testnet`, `*.testnet`, `ops`, `stream` → 84.46.247.92). Testnet apps carry their domains; certificates issue once DNS propagates. The `sslip.io` addresses remain as fallbacks. Passkey rpId = `mitoshi.xyz`
-(both networks), so the S1 passkey gate needs the real domain.
+`mitoshi.xyz` registered 2026-09-29 (Namecheap BasicDNS; A `@`, `www`, `testnet`, `*.testnet`, `ops`, `stream` → 84.46.247.92;
+`docs` is still to add for `docs.mitoshi.xyz`). D-228 (2026-10-13): Mitoshi lives at `mitoshi.xyz` and one label under
+it; until mainnet (S19) these hosts serve the Moderato build, and the `testnet.` names stay attached only to redirect.
+The resource and environment names keep `testnet` (they name the chain). Certificates issue once DNS propagates. The
+`sslip.io` addresses remain as fallbacks. Passkey rpId = `mitoshi.xyz` (both networks), so the S1 passkey gate needs the
+real domain.
 
 Source: private repo `Blockchain-Oracle/mitoshi`, branch `integration/t1`, read-only deploy key `mitoshi-deploy-key`
 (`gxhdukuhxrh5taztpi5jzb24`). Images build from the repo root (Agari's pattern: cached pnpm store, `curl` for

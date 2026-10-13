@@ -2,6 +2,13 @@
 NETWORK=testnet
 APP_ORIGIN=
 PASSKEY_RP_ID=
+# Build-time, public (D-228: the app at https://mitoshi.xyz, ops and the stream at ops./stream.mitoshi.xyz, the guides at
+# docs.mitoshi.xyz; the rpId stays mitoshi.xyz)
+NEXT_PUBLIC_NETWORK=testnet
+NEXT_PUBLIC_APP_ORIGIN=
+NEXT_PUBLIC_OPS_URL=
+NEXT_PUBLIC_STREAM_URL=
+NEXT_PUBLIC_DOCS_URL=
 TEMPO_RPC_HTTP_URL=
 TEMPO_RPC_WS_URL=
 RH_RPC_HTTP_URL=
