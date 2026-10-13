@@ -88,8 +88,8 @@ describe("eligibility", () => {
       candidate({ marketId: toMarketId(`0x${"05".repeat(32)}`), expirySec: now + 119 }),
       candidate({ marketId: toMarketId(`0x${"06".repeat(32)}`), intervalSec: 300 }),
     ];
-    // Policy 2 admits 5m Windows (Mitoshi's crypto Series are 5m only); the headroom rule still drops 0x05.
-    expect(eligibleLuckyWindows(pool, "ETH", now).map((c) => c.marketId.slice(0, 4))).toEqual(["0x02", "0x06", "0x01"]);
+    // Policy 2 keeps the owner's never-5m rule (0x06) and the headroom rule (0x05).
+    expect(eligibleLuckyWindows(pool, "ETH", now).map((c) => c.marketId.slice(0, 4))).toEqual(["0x02", "0x01"]);
   });
 });
 
