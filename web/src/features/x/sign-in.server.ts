@@ -78,9 +78,12 @@ export async function finishSignIn(i: FinishInput): Promise<FinishResult> {
   if (!row) return { kind: "error", reason: "state", returnPath: X_DEFAULT_RETURN };
   const back = row.returnPath ?? X_DEFAULT_RETURN;
   if (oauth2 ? p.get("error") : p.get("denied")) return { kind: "error", reason: "denied", returnPath: back };
-  // The browser that started must be the one that finished; from the app, the PKCE challenge binds it instead.
-  if (!row.appChallenge && (!i.binding || !row.bindingHash || !sameText(s256(i.binding), row.bindingHash))) return { kind: "error", reason: "state", returnPath: back };
-  if (row.caller && row.caller !== i.caller?.toLowerCase()) return { kind: "error", reason: "state", returnPath: back };
+  // The browser (and Mitoshi caller) that started must be the one that finished. From the app, X's callback lands in
+  // the system browser, which holds neither: the web view's PKCE challenge binds the code it gets instead.
+  if (!row.appChallenge) {
+    if (!i.binding || !row.bindingHash || !sameText(s256(i.binding), row.bindingHash)) return { kind: "error", reason: "state", returnPath: back };
+    if (row.caller && row.caller !== i.caller?.toLowerCase()) return { kind: "error", reason: "state", returnPath: back };
+  }
   let identity: XIdentity;
   if (credentials.kind === "oauth2") {
     const code = p.get("code");

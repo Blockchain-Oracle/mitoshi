@@ -99,7 +99,8 @@ describe("X sign-in (OAuth 2.0 + PKCE, state server-side)", () => {
   it("hands the app a one-time code that opens only with the web view's verifier", async () => {
     const store = memoryStore();
     const appVerifier = "v".repeat(43);
-    const begun = await beginSignIn({ config, store, caller: null, returnPath: "/trade-from-x", appChallenge: s256(appVerifier) });
+    // Signed in inside the app's web view; X's callback lands in the system browser, which holds no Mitoshi session.
+    const begun = await beginSignIn({ config, store, caller: "0x1111111111111111111111111111111111111111", returnPath: "/trade-from-x", appChallenge: s256(appVerifier) });
     if (!begun.ok) throw new Error(begun.reason);
     expect(begun.binding).toBeNull();
     const state = new URL(begun.authorize).searchParams.get("state")!;

@@ -2068,6 +2068,12 @@ source study (one spec per surface).
 3. **One cost basis rule:** a position's P&L is what Close pays now (or the known payout once resolved, or its cost
    while locked) less the open cost of what is held; sales lower the open cost pro rata.
 4. **One kit** (`components/kit`) before any surface port.
+5. **Trade from X (S11, 2026-10-13)** is Owarine's rail on Mitoshi's account: the X session signs who is on X; the
+   account's passkey or wallet signs the link (Tempo's verifier, network named); a mention trades only through the
+   account's EXECUTOR grant (`xGrantCaps`: the budget is the boundary, 8 open Windows, 30 days) from the relay's own
+   key, once per post id. The relay reads the bot's session first (free) and the X API second (credits); it is dry
+   until `X_RELAY_LIVE=1` and speaks on X only live with `X_POSTING_ENABLED=1`. Share links (A-3e) open the terminal
+   with the call set and place nothing.
 
 ## Open questions
 

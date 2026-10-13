@@ -184,9 +184,9 @@ These follow from the research and are applied row by row below. The architectur
 
 | ID | Capability | Ref | Class | Tempo implementation | Carry / fix | Deps | Status |
 |---|---|---|---|---|---|---|---|
-| L-58 | Trade from X | M+A | Adapted | Executor = an access key (AG-22); grammar gains stock cashtags (A-3d) | Owner action: a new X account | K | Pending |
-| L-59 | X recovery / claim | M | Adapted | EIP-191 wallet bind, 5-minute TTL | — | — | Pending |
-| L-60 | X relay | M | Adapted | Same actor | Add dry-run (A: none) | K | Pending |
+| L-58 | Trade from X | M+A | Adapted | Executor = an access key (AG-22); grammar gains stock cashtags (A-3d) | Owner action: a new X account | K | Done — S11 gate on Moderato (2026-10-13): the mention text executed once through the account's EXECUTOR grant from the x-relay key (`0xf0d1…624a`, acceptance/S11.md); the first mention from X itself is an owner step |
+| L-59 | X recovery / claim | M | Adapted | EIP-191 wallet bind, 5-minute TTL | — | — | Done — S11: the bind verifies a passkey (WebAuthn) signature over the network-named link text, 5-minute TTL (acceptance/S11.md); `/claim` is Owarine's ClaimScreen |
+| L-60 | X relay | M | Adapted | Same actor | Add dry-run (A: none) | K | Done — S11: ops `x-relay`, dry until `X_RELAY_LIVE=1`, idempotent by post id, recovery from the stored hash; reads the bot's session (Rettiwt 7.1.4), the X API on credits |
 
 ### 4.10 Games
 
@@ -252,8 +252,8 @@ recommendation. Recommending that a row be *built* is allowed; nothing is propos
 | A-3a | Profiles, follows, social leaderboards | A | Additive | EIP-191 social session | — | Pending |
 | A-3b | Copy human traders (mirror) | A | Additive | Positions are the user's own address on Tempo, so a mirror sees every fill, not just "own" fills | K | Pending |
 | A-3c | Ticker rooms, cashtag takes, activity, notifications | A | Additive | Same | — | Pending |
-| A-3d | Trade-from-X for stocks | A | Additive | Grammar over the Tempo ticker set | K | Pending |
-| A-3e | Blinks (Solana Actions) | A | **Owner** | No Tempo analogue found; candidates: EIP-681 payment links, share-to-sign URLs that open the passkey flow | — | Owner |
+| A-3d | Trade-from-X for stocks | A | Additive | Grammar over the Tempo ticker set | K | Done — S11: `$TSLA`-style cashtags apart from a `$5` stake, every listed stock on its 24/7 lane (else Regular) |
+| A-3e | Blinks (Solana Actions) | A | **Owner** | No Tempo analogue found; candidates: EIP-681 payment links, share-to-sign URLs that open the passkey flow | — | Default built — S11: share-to-sign links `/go/t/<symbol>/<cadence>` and `/go/w/<marketId>` open the terminal with the call set; nothing placed until the person signs |
 
 ## 7. Masayume rows Agari lacks (M-01 … M-15)
 
