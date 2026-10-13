@@ -1,92 +1,102 @@
 "use client";
-// `/themes/create` (S16; R4-11, D-227) on StudioWizard (21st 23576), as Owarine 90a91d71's DeskStudio
-// (features/desk/studio: 01 the basket — BasketChoice and WeightEditor with bar and ring; 02 how strict — LimitsForm's
-// Careful / Balanced / Loose; then one signature): 1 Stocks — the mirrors the registry lists now (`isEligible`), each with
-// its StockReference price, weights in whole percents, the rest in cash, a PartitionBar and Donut preview; 2 Envelope —
-// the three presets → each token's band, and its hours (market, plus pre/after, around the clock → sessionsMask);
-// 3 Name and fee (≤ 50 bps); 4 Publish — the spec's canonical JSON rides on chain as its data URI,
-// `ThemeRegistry.publish` (the creator pays). StudioSide follows every edit from 1024 px.
-import { bandAround, isValidCreatorFee, type Envelope, type ThemeSpec, type TxState } from "@cwf/core";
-import { invalidateThemes, useEligibleMirrors } from "@cwf/markets/react";
-import { useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
-import { useState } from "react";
-import { pillButtonVariants } from "@/components/kit/PillButton";
-import { Donut, PartitionBar, RadioCards, Slider } from "@/components/kit/desk-kit";
-import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
+// `/themes/create` (S16; R6, D-230; D-231) on StudioWizard (21st 23576), as Owarine 90a91d71's DeskStudio: 1 Stocks
+// (the lanes, then the stocks whose Windows list on them now — read by the server with the page — and their weights),
+// 2 Rule, 3 Publish — one `strategy-publish` of a `basket` spec the house runner calls (the creator pays; the metadata
+// is an SSTORE2 write), then the new theme from its receipt with the way to it. Signed out, Publish opens sign-in for
+// this theme (sign-in at the end, D-224). The side panel follows every edit from 1024 px: the ring, the bar and the
+// pick's three months as a weighted mix (ops' daily closes), the line its page will draw. Refero: Acorns' recommended
+// portfolio (e2bd5833-b4cc-4e5f-8bd9-d96cea0dc7cb — the mix as one ring, the count in its hole) for the side panel.
+import { strategyRegistryAbi } from "@cwf/clients/abis/StrategyRegistry";
+import { readReceipt } from "@cwf/markets/react";
+import { CircleCheck } from "lucide-react";
+import { Suspense, use, useState } from "react";
+import { decodeEventLog, type Hex } from "viem";
+import { Donut, PartitionBar } from "@/components/kit/desk-kit";
+import { EmptyState } from "@/components/states/EmptyState";
+import { TxCta, TxFailureCard } from "@/components/tx";
 import { StudioWizard } from "@/components/ui/wizard-steps";
-import { useWalletSession } from "@/lib/wallet-session";
+import { useCopyWrites } from "@/features/strategies/useCopyWrites";
+import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { THEMES } from "./copy";
-import { pct, sliceColor, usd18 } from "./format";
+import { pct, signedPct, sliceColor, toneOf } from "./format";
+import { useThemesRefresh } from "./live";
+import { mixMoveBps, mixSeries, rangeStart, type Candle } from "./mix";
+import { MixSpark } from "./spark";
+import { checkStudio, EMPTY_STUDIO, type StudioDraft } from "./studio";
+import { NameStep, RuleStep, StocksStep } from "./StudioSteps";
+import type { StudioStock } from "./themes.server";
 import "@/styles/themes.css";
-import "@/components/kit/kit.css";
+import "@/styles/themes-detail.css";
 
 const S = THEMES.studio;
-// ThemeRegistry's MAX_TOKENS; past five a follow is split into one signature per five more stocks (D-100).
-const MAX_STOCKS = 16;
-/** The theme's sessionsMask (bit s = oracle session s: REGULAR, EXTENDED, CLOSED); UNKNOWN is never offered. */
-const HOURS = { market: 0b001, extended: 0b011, always: 0b111 } as const;
-type Hours = keyof typeof HOURS;
-const idleOr = (state: TxState, blocker: string | null): TxState => (blocker ? { kind: "blocked", reason: blocker } : state);
+const PREVIEW_DAYS = 90;
 
-export function ThemeStudio() {
-  const session = useWalletSession();
-  const mirrors = useEligibleMirrors();
-  const queryClient = useQueryClient();
-  const tx = useTxLifecycle();
-  const list = mirrors?.ok ? mirrors.value : [];
-  const [weights, setWeights] = useState<Record<string, number>>({});
-  const [envelope, setEnvelope] = useState<Envelope>("balanced");
-  const [hours, setHours] = useState<Hours>("market");
-  const [name, setName] = useState("");
-  const [blurb, setBlurb] = useState("");
-  const [feeBps, setFeeBps] = useState(25);
-  const [done, setDone] = useState(false);
-  const picked = list.filter((m) => weights[m.symbol] !== undefined);
-  const invested = picked.reduce((s, m) => s + weights[m.symbol]!, 0);
-  const cashBps = 10_000 - invested;
-  const stocksBlocker = picked.length === 0 ? S.pick : cashBps < 0 ? S.over : picked.some((m) => weights[m.symbol]! <= 0) ? S.pick : null;
-  const nameBlocker = !name.trim() ? S.needName : !isValidCreatorFee(feeBps) ? S.fee : null;
-  const mix = [...picked.map((m, i) => ({ id: m.symbol, label: `${m.symbol} ${pct(weights[m.symbol]!)}`, value: weights[m.symbol]!, color: sliceColor(i) })), { id: "cash", label: S.cash(pct(Math.max(0, cashBps))), value: Math.max(0, cashBps), color: "var(--color-surface-3)" }];
+/** The strategy id a publish receipt's `Published` event carries. */
+function publishedId(logs: { topics: Hex[]; data: Hex }[]): string | null {
+  for (const l of logs) {
+    try {
+      const ev = decodeEventLog({ abi: strategyRegistryAbi, data: l.data, topics: l.topics as [Hex, ...Hex[]] }) as unknown as { eventName: string; args: { strategyId?: bigint } };
+      if (ev.eventName === "Published" && ev.args.strategyId !== undefined) return ev.args.strategyId.toString();
+    } catch {
+      // another contract's event in the receipt
+    }
+  }
+  return null;
+}
 
-  const toggle = (sym: string) =>
-    setWeights((w) => {
-      const next = { ...w };
-      if (next[sym] !== undefined) delete next[sym];
-      else if (Object.keys(next).length < MAX_STOCKS) next[sym] = 2_000;
-      return next;
-    });
+/** The pick's three months: the weighted mix over ops' daily closes; a stock without closes draws nothing. */
+function Preview({ daily, d }: { daily: Promise<Record<string, Candle[] | null>>; d: StudioDraft }) {
+  const candles = use(daily);
+  if (d.members.length === 0) return <p className="th-preview-note">{S.previewNone}</p>;
+  const line = mixSeries(d.members, candles, rangeStart(Date.now(), PREVIEW_DAYS));
+  const move = mixMoveBps(line.points);
+  return (
+    <div className="th-preview">
+      <span className="th-micro">{S.preview}</span>
+      <span className="th-card-move numbers" data-tone={toneOf(move)}>{move === null ? "—" : signedPct(move)}</span>
+      {line.points.length >= 2 ? <MixSpark points={line.points} moveBps={move} id="studio" /> : <p className="th-preview-note">{line.missing.length ? THEMES.theme.noChart(line.missing.join(", ")) : THEMES.theme.flat}</p>}
+    </div>
+  );
+}
+
+export function ThemeStudio({ stocks, houseRunner, daily }: { stocks: StudioStock[] | null; houseRunner: string | null; daily: Promise<Record<string, Candle[] | null>> }) {
+  const writes = useCopyWrites();
+  const shell = useWalletShell();
+  const refresh = useThemesRefresh();
+  const [d, setDraft] = useState<StudioDraft>(EMPTY_STUDIO);
+  const [published, setPublished] = useState<{ id: string | null; name: string } | null>(null);
+  const set = (patch: Partial<StudioDraft>) => setDraft((x) => ({ ...x, ...patch }));
+  const check = checkStudio(d, { houseRunner });
+  const slices = d.members.map((m, i) => ({ id: m.symbol, label: `${m.symbol} ${pct(m.weightBps)}`, value: m.weightBps, color: sliceColor(i) }));
+  const busy = writes.tx.state.kind === "signing" || writes.tx.state.kind === "submitted";
 
   const publish = async () => {
-    if (!session.address) return session.connectFor(S.signIn);
-    const spec: ThemeSpec = {
-      schema: 1, name: name.trim(), blurb: blurb.trim(), creatorFeeBps: feeBps, maxSlippageBps: 100, minIntervalSec: 3_600, maxRefAgeSec: 345_600, sessionsMask: HOURS[hours],
-      bands: picked.map((m) => ({ token: m.token, symbol: m.symbol, ...bandAround(weights[m.symbol]!, envelope), allowed: true })),
-      cashBand: bandAround(cashBps, envelope),
-    };
-    const outcome = await tx.run({ kind: "theme-publish", spec, tokens: picked.map((m) => m.token) });
-    if (outcome?.status === "confirmed") {
-      setDone(true);
-      await invalidateThemes(queryClient);
-    }
+    if (!check.spec || !check.envelope || !check.metadata || !houseRunner) return;
+    const outcome = await writes.run({ kind: "strategy-publish", runner: houseRunner as `0x${string}`, spec: check.spec, metadata: check.metadata, envelope: check.envelope, feeBase: check.feeBase, agentId: null });
+    if (outcome?.status !== "confirmed") return;
+    const receipt = await readReceipt(outcome.txHash).catch(() => null);
+    setPublished({ id: receipt ? publishedId(receipt.logs as never) : null, name: check.metadata.name });
+    await refresh();
   };
 
-  if (done) {
+  if (published) {
     return (
-      <section className="th-page th-done">
-        <h1 className="type-display text-ink">{S.done(name.trim())}</h1>
-        <Link href="/themes" className={pillButtonVariants({ tone: "accent", size: "lg", block: true })}>{S.open}</Link>
+      <section className="th-page th-done" aria-live="polite">
+        <EmptyState icon={<CircleCheck aria-hidden />} why={S.done(published.name)} nextAction={{ label: published.id ? S.open : THEMES.theme.all, href: published.id ? `/themes/${published.id}` : "/themes" }} />
       </section>
     );
   }
 
-  const side = (
-    <aside className="th-side" aria-label={THEMES.theme.target}>
-      <Donut slices={mix} label={THEMES.theme.target} size={128} thickness={14}>
-        <span className="th-donut-figure numbers">{picked.length}</span>
-      </Donut>
-      <PartitionBar slices={mix} label={THEMES.theme.target} />
-    </aside>
+  const preview = (
+    <Suspense fallback={<span className="skel th-skel-spark" />}>
+      <Preview daily={daily} d={d} />
+    </Suspense>
+  );
+  const blocker = check.stocks ?? check.rule ?? check.publish;
+  const action = !writes.signedIn ? (
+    <button type="button" data-primary-action="" className="kit-pill kit-pill--accent kit-pill--lg kit-pill--block" onClick={() => shell.openPicker(`${S.publish} · ${d.name.trim() || THEMES.title}`)}>{S.signIn}</button>
+  ) : (
+    <TxCta state={blocker && !busy ? { kind: "blocked", reason: blocker } : writes.tx.state.kind === "confirmed" ? { kind: "idle" } : writes.tx.state} action={S.publish} signer={writes.signer} sponsored={false} onConfirm={() => void publish()} />
   );
 
   return (
@@ -96,67 +106,31 @@ export function ThemeStudio() {
         <StudioWizard
           label={S.title}
           steps={[
-            {
-              id: "stocks",
-              label: S.steps.stocks,
-              blocker: stocksBlocker,
-              content: (
-                <div className="th-fields">
-                  <div className="th-choices" role="group" aria-label={S.pick}>
-                    {list.map((m) => (
-                      <button key={m.symbol} type="button" aria-pressed={weights[m.symbol] !== undefined} className="th-choice" onClick={() => toggle(m.symbol)}>
-                        <span className="th-holding-sym">{m.symbol}</span>
-                        <span className="numbers type-caption text-ink-secondary">{m.refPriceE18 === null ? S.noPrice : usd18(m.refPriceE18)}</span>
-                      </button>
-                    ))}
-                  </div>
-                  {picked.map((m) => (
-                    <Slider key={m.symbol} label={S.weight(m.symbol)} value={weights[m.symbol]! / 100} min={1} max={100} step={1} display={pct(weights[m.symbol]!)} onChange={(v) => setWeights((w) => ({ ...w, [m.symbol]: Math.round(v) * 100 }))} />
-                  ))}
-                  <PartitionBar slices={mix} label={THEMES.theme.target} warn={cashBps < 0} />
-                </div>
-              ),
-            },
-            {
-              id: "envelope",
-              label: S.steps.envelope,
-              blocker: null,
-              content: (
-                <div className="th-fields">
-                  <RadioCards value={envelope} onChange={setEnvelope} label={S.steps.envelope} items={(Object.keys(S.envelopes) as Envelope[]).map((value) => ({ value, title: S.envelopes[value], body: S.envelopeBody[value] }))} />
-                  <RadioCards value={hours} onChange={setHours} label={S.hours} items={(Object.keys(HOURS) as Hours[]).map((value) => ({ value, title: S.hoursChoice[value], body: S.hoursBody[value] }))} />
-                </div>
-              ),
-            },
-            {
-              id: "name",
-              label: S.steps.name,
-              blocker: nameBlocker,
-              content: (
-                <div className="th-fields">
-                  <label className="th-field"><span>{S.name}</span><input value={name} maxLength={40} onChange={(e) => setName(e.target.value)} autoComplete="off" /></label>
-                  <label className="th-field"><span>{S.blurb}</span><input value={blurb} maxLength={80} onChange={(e) => setBlurb(e.target.value)} autoComplete="off" /></label>
-                  <Slider label={S.fee} value={feeBps} min={0} max={50} step={5} display={pct(feeBps)} onChange={(v) => setFeeBps(Math.round(v))} />
-                </div>
-              ),
-            },
+            { id: "stocks", label: S.steps.stocks, blocker: check.stocks, content: <><StocksStep d={d} set={set} stocks={stocks} problem={d.members.length > 0 ? check.stocks : null} /><div className="th-studio-preview">{preview}</div></> },
+            { id: "rule", label: S.steps.rule, blocker: check.rule, content: <RuleStep d={d} set={set} problem={check.rule} /> },
             {
               id: "publish",
               label: S.steps.publish,
               blocker: null,
               content: (
                 <div className="th-fields">
-                  <PartitionBar slices={mix} label={THEMES.theme.target} />
-                  <ul className="th-legend">{mix.map((s) => <li key={s.id}><span aria-hidden style={{ background: s.color }} />{s.label}</li>)}</ul>
-                  <TxCta state={idleOr(tx.state, stocksBlocker ?? nameBlocker)} action={session.address ? S.publish : S.signIn} signer={signerOf(session.kind)} onConfirm={() => void publish()} />
+                  <NameStep d={d} set={set} />
+                  <PartitionBar slices={slices} height={8} label={THEMES.theme.mix} />
+                  {action}
                   <p className="type-caption text-ink-secondary">{S.selfPaid}</p>
-                  {tx.state.kind === "failed" ? <TxFailureCard state={tx.state} onRetry={() => tx.dispatch({ type: "reset" })} /> : null}
+                  {writes.tx.state.kind === "failed" ? <TxFailureCard state={writes.tx.state} onRetry={() => writes.tx.dispatch({ type: "reset" })} /> : null}
                 </div>
               ),
             },
           ]}
         />
-        {side}
+        <aside className="th-side" aria-label={THEMES.theme.mix}>
+          <Donut slices={slices} label={THEMES.theme.mix} size={128} thickness={14}>
+            <span className="th-ring-figure numbers">{d.members.length}</span>
+          </Donut>
+          <PartitionBar slices={slices} label={THEMES.theme.mix} />
+          {preview}
+        </aside>
       </div>
     </section>
   );

@@ -1,177 +1,90 @@
 "use client";
-// A theme's follow sheet (S16; R4-11, D-227) in the arm grammar of features/strategies/CopyDrawer.tsx: one sentence, the
-// allocation with its caps behind "Adjust", a "What you are signing" disclosure, one passkey prompt. A follow is one
-// root transaction `[authorizeKey(the agent's scoped key), follow]` (`theme-follow`, sponsored): the key's address
-// comes from ops' theme-agent (`/api/themes/<id>/agent-key`, which files the request and reads the address back — the
-// key itself never leaves ops), its daily limits from core's plan at each member's reference price. Unfollow stops
-// the agent after a 5 s Undo (the holdings stay in the wallet; `theme-unfollow`, sponsored); "Sell everything" is its
-// own action, held to confirm (the app's destructive grammar, 21st 23527 in components/ui/hold-to-confirm) — the
-// follower's root rebalance of every holding into pathUSD at the reference less the theme's slippage.
-// Past five stocks the follow is split (D-100): the follow carries every limit and the first scopes, then one
-// `theme-key-scopes` signature per ≤ 5 more stocks; a follow that stopped part-way offers to finish from the key's scopes.
-import { pathUsdDailyLimit, parseDecimalToBaseUnits, tokenDailyLimit, type Address } from "@cwf/core";
-import { SCOPE_CHUNK, splitFollowTokens, type ThemeView } from "@cwf/markets/themes";
-import { invalidateThemes, useThemeFollow, useThemeHoldings, useThemeUnscoped } from "@cwf/markets/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
-import { PillButton } from "@/components/kit/PillButton";
+// A theme's follow sheet (S16; R6, D-230; D-231) — the strategies desk's copy flow in the theme's own head: following a
+// basket is copying its strategy, so it is the same one self-paid transaction (`planCopy`: a STRATEGY grant to the house
+// runner — with a deposit when the Trading Balance is short — the fee's exact approval and `subscribe`), Follow or Fade,
+// Budget and Biggest call with their Max chips, the plan as rows, and the one action pinned in the footer (sign-in at
+// the end for a signed-out visitor, D-224). Once following, "Your copy" (its result, switch follow ↔ fade, top up) with
+// Hold to stop (sponsored). Every call the runner then places is sized by its stock's weight of the per-trade cap the
+// copier set. No key is issued, no share is bought: the runner places calls through the grant, inside its caps.
+import { useEffect, useState } from "react";
+import { TxFailureCard } from "@/components/tx";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { notify } from "@/lib/toast";
-import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
-import { useSocialSession } from "@/features/social/session";
-import { useWalletSession } from "@/lib/wallet-session";
+import { COPY } from "@/features/strategies/copy";
+import { CopyCta, CopyForm, useCopyForm } from "@/features/strategies/CopyForm";
+import { copyIsLive, ManageCopy, StopCopy } from "@/features/strategies/ManageCopy";
+import type { StrategyWire } from "@/features/strategies/protocol";
+import { useCopyWrites, type CopyWrites } from "@/features/strategies/useCopyWrites";
+import { useStrategies } from "@/features/strategies/useStrategies";
+import { LogoStack } from "@/components/kit/desk-kit/charts";
+import "@/components/kit/desk-kit/desk-kit.css";
+import "@/features/strategies/strategies.css";
 import { THEMES } from "./copy";
-import { sessionsText } from "./format";
-import "@/components/kit/kit.css";
+import { useThemesRefresh } from "./live";
+import "@/styles/themes-detail.css";
 
 const F = THEMES.follow;
-const KEY_POLL_MS = 3_000;
-const KEY_WAIT_MS = 75_000;
-const EXPIRY_SEC = 30 * 86_400;
-const usd = (text: string) => parseDecimalToBaseUnits(text.trim() || "0", 6) ?? 0n;
-const UNDO_MS = 5_000;
-const PATH_USD = "0x20C0000000000000000000000000000000000000" as Address;
 
-/** The agent's key address for this follower and theme: filed, then read back until ops issues it (null on time-out). */
-async function agentKey(themeId: bigint): Promise<{ keyId: Address | null; message: string | null }> {
-  const url = `/api/themes/${themeId}/agent-key`;
-  const first = await fetch(url, { method: "POST", credentials: "same-origin" }).catch(() => null);
-  const body = first ? ((await first.json().catch(() => ({}))) as { keyId?: Address | null; message?: string }) : {};
-  if (!first?.ok) return { keyId: null, message: body.message ?? F.agentPending };
-  if (body.keyId) return { keyId: body.keyId, message: null };
-  for (const until = Date.now() + KEY_WAIT_MS; Date.now() < until; ) {
-    await new Promise((r) => setTimeout(r, KEY_POLL_MS));
-    const r = await fetch(url, { credentials: "same-origin", cache: "no-store" }).catch(() => null);
-    const j = r?.ok ? ((await r.json().catch(() => ({}))) as { keyId?: Address | null }) : {};
-    if (j.keyId) return { keyId: j.keyId, message: null };
-  }
-  return { keyId: null, message: F.agentPending };
+export interface FollowSheetProps {
+  card: StrategyWire;
+  name: string;
+  symbols: string[];
+  /** "in 14h 20m" while a market-hours theme's market is closed; null when it calls now. */
+  opensIn: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+export function FollowSheet({ card, name, symbols, opensIn, open, onOpenChange }: FollowSheetProps) {
+  const writes = useCopyWrites();
+  const catalogue = useStrategies();
+  const refresh = useThemesRefresh();
+  // The plan carries the wallet's other copies on the same runner by name; the desk's catalogue has them all.
+  const strategies = catalogue.data?.strategies.some((s) => s.strategyId === card.strategyId) ? catalogue.data.strategies : [card, ...(catalogue.data?.strategies ?? [])];
+  const [shown, setShown] = useState(open);
+  useEffect(() => {
+    if (open) setShown(true);
+  }, [open]);
+  const done = (said: string) => {
+    notify.item({ id: `theme-${card.strategyId}`, title: said });
+    void refresh();
+    onOpenChange(false);
+  };
   return (
-    <label className="th-field">
-      <span>{label}</span>
-      <span className="th-field-input"><span aria-hidden>$</span><input value={value} inputMode="decimal" onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ""))} className="numbers" /></span>
-    </label>
+    <SlideOver open={open} onOpenChange={onOpenChange} urlKey="follow" onOpenChangeComplete={(o: boolean) => !o && setShown(false)}>
+      {shown ? <Body card={card} name={name} symbols={symbols} opensIn={opensIn} strategies={strategies} writes={writes} onDone={done} /> : null}
+    </SlideOver>
   );
 }
 
-export function FollowSheet({ theme, following, open, onOpenChange }: { theme: ThemeView; following: boolean; open: boolean; onOpenChange: (o: boolean) => void }) {
-  const session = useWalletSession();
-  const social = useSocialSession();
-  const queryClient = useQueryClient();
-  const [phase, setPhase] = useState<"idle" | "key">("idle");
-  const [why, setWhy] = useState<string | null>(null);
-  const tx = useTxLifecycle();
-  const [allocation, setAllocation] = useState("100");
-  const [perTrade, setPerTrade] = useState("20");
-  const [perDay, setPerDay] = useState("50");
-  const [adjust, setAdjust] = useState(false);
-  const name = theme.spec?.name ?? `#${theme.themeId}`;
-
-  const holdings = useThemeHoldings(session.address, theme.themeId);
-  const unscopedRead = useThemeUnscoped(session.address, following ? theme.themeId : null);
-  const unscoped = unscopedRead?.ok ? unscopedRead.value : null;
-  const tokens = theme.members.map((m) => m.token);
-  const signatures = 1 + splitFollowTokens(tokens).chunks.length;
-  /** The split follow's later chunks, one signature each; stops at the first that doesn't confirm. */
-  const scopeChunks = async (keyId: Address, chunks: Address[][]) => {
-    for (const chunk of chunks) {
-      const o = await tx.run({ kind: "theme-key-scopes", themeId: theme.themeId, keyId, tokens: chunk });
-      if (o?.status !== "confirmed") return;
-    }
-    await invalidateThemes(queryClient);
-  };
-  const finish = () => {
-    if (!unscoped || unscoped.tokens.length === 0) return;
-    const rest: Address[][] = [];
-    for (let i = 0; i < unscoped.tokens.length; i += SCOPE_CHUNK) rest.push(unscoped.tokens.slice(i, i + SCOPE_CHUNK));
-    void scopeChunks(unscoped.keyId, rest);
-  };
-  // One pending unfollow at a time: a second press inside the 5 s would queue a second transaction.
-  const [unfollowing, setUnfollowing] = useState(false);
-  const unfollow = () => {
-    if (unfollowing) return;
-    setUnfollowing(true);
-    const timer = setTimeout(() => void tx.run({ kind: "theme-unfollow", themeId: theme.themeId }).then(async (o) => { setUnfollowing(false); if (o?.status === "confirmed") await invalidateThemes(queryClient); }), UNDO_MS);
-    notify.item({ id: "theme-unfollow", title: F.unfollowing(UNDO_MS / 1000), timeout: UNDO_MS, action: { label: F.undo, onClick: () => (clearTimeout(timer), setUnfollowing(false), notify.item({ id: "theme-unfollow", title: F.undone })) } });
-  };
-  const prices = new Map(theme.members.map((m) => [m.token.toLowerCase(), m.refPriceE18]));
-  const sellLegs = (holdings?.ok ? holdings.value : []).flatMap((h) => {
-    const p = prices.get(h.token.toLowerCase());
-    if (!p || h.balance <= 0n) return [];
-    const value = (h.balance * p) / 10n ** 18n;
-    return [{ tokenIn: h.token, tokenOut: PATH_USD, amountIn: h.balance, minAmountOut: (value * BigInt(10_000 - theme.maxSlippageBps)) / 10_000n }];
-  });
-  const sellAll = async () => {
-    const outcome = await tx.run({ kind: "theme-sell-all", themeId: theme.themeId, creatorFeeBps: theme.creatorFeeBps, legs: sellLegs });
-    if (outcome?.status === "confirmed") await invalidateThemes(queryClient);
-  };
-  const follow = async () => {
-    setWhy(null);
-    const signed = await social.ensure();
-    if (!signed.ok) return setWhy(F.signIn);
-    setPhase("key");
-    const key = await agentKey(theme.themeId);
-    setPhase("idle");
-    if (!key.keyId) return setWhy(key.message);
-    const caps = { expirySec: Math.floor(Date.now() / 1000) + EXPIRY_SEC, allocationUsd: usd(allocation), maxTradeUsd: usd(perTrade), maxDailyUsd: usd(perDay), maxSlippageBps: theme.maxSlippageBps, maxFeeBps: theme.creatorFeeBps, minIntervalSec: theme.minIntervalSec };
-    const outcome = await tx.run({
-      kind: "theme-follow", themeId: theme.themeId, version: theme.version, caps, keyId: key.keyId, tokens,
-      tokenDailyLimits: theme.members.map((m) => tokenDailyLimit(caps.maxDailyUsd, m.refPriceE18)), pathUsdDailyLimit: pathUsdDailyLimit(caps.maxDailyUsd, theme.creatorFeeBps),
-    });
-    if (outcome?.status !== "confirmed") return;
-    await invalidateThemes(queryClient);
-    await scopeChunks(key.keyId, splitFollowTokens(tokens).chunks);
-  };
-  const confirm = () => (session.address ? (following ? unfollow() : void follow()) : session.connectFor(F.signIn));
-  const capsBlocker = usd(allocation) <= 0n || usd(perTrade) <= 0n || usd(perDay) < usd(perTrade) ? F.capsBad : null;
-  // The key's daily limit per stock is set at its reference price; without one it would be 0 and the agent could never
-  // sell that stock for this follow, so the follow waits for every price.
-  const unpriced = theme.members.filter((m) => m.refPriceE18 === null).map((m) => m.symbol);
-  const blocker = !session.address ? null : following ? (unfollowing ? F.unfollowing(UNDO_MS / 1000) : null) : phase === "key" ? F.preparing : unpriced.length > 0 ? F.unpriced(unpriced.join(", ")) : capsBlocker;
-  // The router checks the session and every leg's price on a root sell too: closed hours or a halt would revert it.
-  // …and the theme's own interval since the last rebalance (TooSoon), the agent's included.
-  const followRead = useThemeFollow(session.address, following ? theme.themeId : null);
-  const lastAt = followRead?.ok && followRead.value ? Number(followRead.value.lastRebalanceAt) : 0;
-  const nextAtSec = lastAt === 0 ? 0 : lastAt + theme.minIntervalSec;
-  const sellBlocker = theme.openNow === false ? THEMES.card.paused(sessionsText(theme.sessionsMask)) : theme.haltedNow ? THEMES.card.halted : nextAtSec * 1000 > Date.now() ? F.tooSoon(new Date(nextAtSec * 1000).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })) : null;
-  const busy = tx.state.kind === "signing" || tx.state.kind === "submitted";
-
+function Body({ card, name, symbols, opensIn, strategies, writes, onDone }: { card: StrategyWire; name: string; symbols: string[]; opensIn: string | null; strategies: readonly StrategyWire[]; writes: CopyWrites; onDone: (said: string) => void }) {
+  const sub = writes.mine.find((m) => m.strategyId === card.strategyId && m.active) ?? null;
+  const live = sub !== null && copyIsLive(sub, writes);
+  const copy = useCopyForm(card, strategies, writes);
+  // Following a theme is copying its strategy; the action says Follow (a fade keeps its own word).
+  const form = { ...copy, cta: copy.mode === "follow" ? copy.cta.replace(/^Copy/, THEMES.card.follow) : copy.cta };
+  const footer = live ? (
+    <StopCopy card={card} writes={writes} onStopped={() => onDone(COPY.done.stopped)} />
+  ) : card.active ? (
+    <CopyCta card={card} form={form} writes={writes} onDone={() => onDone(COPY.done.copied)} />
+  ) : null;
   return (
-    <SlideOver open={open} onOpenChange={onOpenChange} urlKey="follow">
-      <SlideOverContent title={F.title(name)} fields footer={<TxCta state={blocker ? { kind: "blocked", reason: blocker } : tx.state} action={!session.address ? F.signIn : following ? F.unfollow : THEMES.card.follow} signer={signerOf(session.kind)} sponsored onConfirm={confirm} />}>
-        <div className="th-follow">
-          <p className="type-body text-ink">{following ? F.unfollowLine : F.line}</p>
-          {following ? (
-            <>
-              {unscoped && unscoped.tokens.length > 0 ? <PillButton tone="accent" block disabled={busy} onClick={finish}>{F.finish(unscoped.tokens.length)}</PillButton> : null}
-              {sellLegs.length === 0 ? <PillButton tone="ghost" block disabled>{F.nothingToSell}</PillButton> : <HoldToConfirm className="w-full" disabled={busy || sellBlocker !== null} confirmLabel={F.selling} onConfirm={() => void sellAll()}>{F.sellAll}</HoldToConfirm>}
-              {sellLegs.length > 0 && sellBlocker ? <p className="type-caption text-ink-muted">{sellBlocker}</p> : null}
-            </>
-          ) : (
-            <>
-              <Field label={F.allocation} value={allocation} onChange={setAllocation} />
-              <button type="button" className="th-adjust" aria-expanded={adjust} onClick={() => setAdjust((a) => !a)}>{F.adjust}</button>
-              {adjust ? (
-                <div className="th-follow-caps">
-                  <Field label={F.perTrade} value={perTrade} onChange={setPerTrade} />
-                  <Field label={F.perDay} value={perDay} onChange={setPerDay} />
-                </div>
-              ) : null}
-              {signatures > 1 ? <p className="type-caption text-ink-muted">{F.split(signatures)}</p> : null}
-              <details className="th-signing">
-                <summary>{F.signing}</summary>
-                <p>{F.signingBody}</p>
-              </details>
-            </>
-          )}
-          {why ? <p role="alert" className="type-caption text-warning">{why}</p> : null}
-          {tx.state.kind === "failed" ? <TxFailureCard state={tx.state} onRetry={() => tx.dispatch({ type: "reset" })} /> : null}
+    <SlideOverContent title={F.title(name)} hideHeading fields footer={footer}>
+      <div className="flex flex-col gap-4 pb-2">
+        <div className="th-sheet-head">
+          <LogoStack symbols={symbols} max={4} size="md" />
+          <h2 className="th-sheet-name">{name}</h2>
         </div>
-      </SlideOverContent>
-    </SlideOver>
+        <p className="th-sheet-line">{THEMES.theme.followLine}{opensIn ? ` ${F.closedHint(opensIn)}` : ""}</p>
+        {writes.tx.state.kind === "failed" && !sub ? <TxFailureCard state={writes.tx.state} onRetry={() => writes.tx.dispatch({ type: "reset" })} /> : null}
+        {sub ? (
+          <ManageCopy card={card} sub={sub} writes={writes} renew={<CopyForm card={card} form={form} writes={writes} />} onStopped={() => onDone(COPY.done.stopped)} />
+        ) : card.active ? (
+          <CopyForm card={card} form={form} writes={writes} />
+        ) : (
+          <p className="desk-note text-ink-muted">{COPY.blocked.inactive}</p>
+        )}
+      </div>
+    </SlideOverContent>
   );
 }

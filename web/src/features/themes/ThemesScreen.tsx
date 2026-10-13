@@ -1,47 +1,33 @@
-"use client";
-// `/themes` (S16; R4-11, D-227) — Ported from Owarine 90a91d71:web/src/features/baskets/BasketsIndex.tsx: one head line
-// with the Create pill on the right, then one card per published theme (ThemeCard), one column, two from 720 px. The
-// catalogue is the registry's own (`themeCount` themes, newest first); none on chain says so — never a sample theme.
-import { useThemeActivity, useThemes } from "@cwf/markets/react";
-import type { ThemeView } from "@cwf/markets/themes";
-import Link from "next/link";
+// `/themes` (S16; R6, D-230; D-231) — one head line with Create on the right, then a card per theme (one column, two
+// from 720 px, three from 1180). Rendered on the server from the strategies desk's shared read (`themes.server.ts`): the
+// catalogue paints with the page, each card's week streams in, and a visible page re-renders from the server once a
+// minute (`ServerRefresh`) — no read from the browser. None published says so, with the way to make one — never a
+// sample theme; a read that failed says so, with a retry.
 import { Layers } from "lucide-react";
-import { pillButtonVariants } from "@/components/kit/PillButton";
-import { EmptyState } from "@/components/kit/desk-kit";
+import { EmptyState } from "@/components/states/EmptyState";
 import { THEMES } from "./copy";
+import { ServerRefresh } from "./live";
+import { RetryPanel } from "./RetryPanel";
+import { themeStatus, type MarketClock } from "./status";
 import { ThemeCard } from "./ThemeCard";
+import { ThemesHead } from "./ThemesHead";
+import type { CardMix, ThemeWire } from "./wire";
 import "@/styles/themes.css";
-import "@/components/kit/kit.css";
 
-export function ThemesScreen() {
-  const themes = useThemes();
-  const list = themes?.ok ? themes.value.filter((t) => !t.delisted) : [];
+export function ThemesScreen({ themes, clock, nowSec, mixes }: { themes: ThemeWire[] | null; clock: MarketClock | null; nowSec: number; mixes: Promise<Record<string, CardMix>> }) {
   return (
     <section className="th-page">
-      <header className="th-page-head">
-        <div className="th-page-text">
-          <h1 className="type-display text-ink">{THEMES.title}</h1>
-          <p className="type-body text-ink-secondary">{THEMES.line}</p>
-        </div>
-        <Link href="/themes/create" className={pillButtonVariants({ tone: "ink", size: "md" })}>{THEMES.create}</Link>
-      </header>
+      <ServerRefresh />
+      <ThemesHead />
       {themes === null ? (
-        <p role="status" className="th-note">{THEMES.reading}</p>
-      ) : !themes.ok ? (
-        <p role="alert" className="th-note">{THEMES.failed}</p>
-      ) : list.length === 0 ? (
-        <EmptyState icon={<Layers aria-hidden />} title={THEMES.empty} />
+        <RetryPanel line={THEMES.failed} />
+      ) : themes.length === 0 ? (
+        <EmptyState icon={<Layers aria-hidden />} why={THEMES.empty} detail={THEMES.emptyLine} nextAction={{ label: THEMES.create, href: "/themes/create" }} />
       ) : (
         <div className="th-grid">
-          {list.map((t) => <LiveCard key={t.themeId.toString()} theme={t} />)}
+          {themes.map((t) => <ThemeCard key={t.card.strategyId} theme={t} status={themeStatus(t.spec.lanes, clock)} nowSec={nowSec} mixes={mixes} />)}
         </div>
       )}
     </section>
   );
-}
-
-/** A card with its followers from the router's events (Followed − Unfollowed). */
-function LiveCard({ theme }: { theme: ThemeView }) {
-  const activity = useThemeActivity(theme.themeId);
-  return <ThemeCard theme={theme} followers={activity?.ok ? activity.value.followers.length : null} />;
 }

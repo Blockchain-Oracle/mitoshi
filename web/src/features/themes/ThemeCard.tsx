@@ -1,64 +1,71 @@
-"use client";
-// One theme on `/themes` (S16; R4-11, D-227) — Ported from Owarine 90a91d71:web/src/features/baskets/BasketCard.tsx:
-// the same fixed row grid (head, a two-line blurb, members as a LogoStack with a count, the index box, a reserved 44 px
-// row, two pills, one meta line) so a read landing never moves a card. The index box is the members' target-weighted
-// StockReference price; Owarine's Window row becomes the theme's own cadence and sessions; Predict / Automate become
-// Follow (accent) and Details. Every figure is the chain's.
+// One theme on `/themes` (S16; R6, D-230; D-231) — the anatomy of 21st.dev 20113 ssychui/market-snapshot (name at the
+// top left and its tag at the top right, the move as the big figure over its line, a footer of small facts), revamped
+// per D-044 onto a basket strategy: the stocks' marks stacked before the name, the live / 24/7 / closed pill, the
+// figure the weighted mix's week (ops' closes — never a follower's return) with the weighted price under it and the same
+// week as a spark (`MixSpark`, from 30538), the mix as a partition bar with its legend, the rule, when a closed theme
+// trades, and Follow beside the followers and the fee. The whole card opens the theme (a stretched link on its name);
+// Follow opens the follow sheet there. The week streams in from the server under a placeholder of its own size, so
+// nothing moves. Rendered on the server; only Follow is a client island. Refero: Copilot's "top movers" cards
+// (50879a7a-12ba-4b53-a980-5ce6401f6875 — a spark, the move in its trend colour) for the week block; UGLYCASH's trader
+// profile (c4c2bc7d-01a8-4e47-a349-0f667472460b) for Follow beside the followers count.
 import Link from "next/link";
-import type { ThemeView } from "@cwf/markets/themes";
-import { pillButtonVariants } from "@/components/kit/PillButton";
-import { LogoStack, PartitionBar, Sparkline } from "@/components/kit/desk-kit";
+import { Suspense } from "react";
+import { themeWeekBones } from "@/components/states/shapes/themes";
+import { CardFollow } from "./CardFollow";
 import { THEMES } from "./copy";
-import { everyText, pct, sessionsText, sliceColor, usd18, weightedPrice } from "./format";
-import { useThemeWeek } from "./useThemeWeek";
-import "@/components/kit/kit.css";
+import { lanesText, ruleText, signedPct, toneOf, usd6, usdFloat } from "./format";
+import type { ThemeStatus } from "./status";
+import { MixSpark } from "./spark";
+import { MemberStack, MixLegend, StatusPill, StatusPlate, themeName } from "./ThemeBits";
+import type { CardMix, ThemeWire } from "./wire";
 
 const C = THEMES.card;
 
-export function ThemeCard({ theme, followers }: { theme: ThemeView; followers: number | null }) {
-  const name = theme.spec?.name ?? `Theme #${theme.themeId}`;
-  const symbols = theme.members.map((m) => m.symbol);
-  const index = weightedPrice(theme.members);
-  const week = useThemeWeek(theme.members);
-  const href = `/themes/${theme.themeId}`;
+async function Week({ mixes, id }: { mixes: Promise<Record<string, CardMix>>; id: string }) {
+  const mix = (await mixes)[id] ?? null;
+  const move = mix?.moveBps ?? null;
+  if (!mix || mix.points.length < 2) return <p className="th-card-nochart">{mix?.missing.length ? C.noChart(mix.missing.join(", ")) : C.flat}</p>;
+  return (
+    <>
+      <div className="th-card-figure">
+        <span className="th-card-move numbers" data-tone={toneOf(move)}>{move === null ? "—" : signedPct(move)}</span>
+        <span className="th-micro">{`${C.week} · ${C.weighted}`}</span>
+        {mix.priceUsd !== null ? <span className="th-card-price numbers">{C.price(usdFloat(mix.priceUsd))}</span> : null}
+      </div>
+      <MixSpark points={mix.points} moveBps={move} id={id} />
+    </>
+  );
+}
+
+export function ThemeCard({ theme, status, nowSec, mixes }: { theme: ThemeWire; status: ThemeStatus; nowSec: number; mixes: Promise<Record<string, CardMix>> }) {
+  const { card, spec } = theme;
+  const name = themeName(card);
+  const id = card.strategyId;
+  const href = `/themes/${id}`;
+  const fee = BigInt(card.feeBase);
   return (
     <article className="th-card" aria-label={C.aria(name)}>
-      <header className="th-head">
-        <span className="th-mark" aria-hidden>{name.slice(0, 1)}</span>
-        <div className="th-title">
-          <span className="th-name">{name}</span>
-          <span className="th-tag numbers">#{theme.themeId.toString()} · v{theme.version}</span>
+      <header className="th-card-head">
+        <MemberStack spec={spec} size="md" />
+        <div className="th-card-title">
+          <h2 className="th-card-name"><Link href={href} className="th-card-link">{name}</Link></h2>
+          <span className="th-card-tag numbers">{`${C.count(spec.members.length)} · ${lanesText(spec)}`}</span>
         </div>
+        <StatusPill status={status} nowSec={nowSec} />
       </header>
-      <p className="th-blurb">{theme.spec?.blurb ?? ""}</p>
-      <div className="th-members">
-        <LogoStack symbols={symbols} names={symbols} max={5} size="sm" />
-        <span className="th-members-text">{C.count(symbols.length)}</span>
+      {card.description ? <p className="th-card-blurb">{card.description}</p> : null}
+      <div className="th-card-perf">
+        <Suspense fallback={themeWeekBones()}>
+          <Week mixes={mixes} id={id} />
+        </Suspense>
       </div>
-      <div className="th-index">
-        <div className="th-index-figures">
-          <span className="th-index-label">{C.index}</span>
-          <span className="th-index-value numbers">{index.e18 === null ? "—" : usd18(index.e18)}</span>
-          <span className="th-index-move">{index.e18 === null ? C.noPrice : C.priced(index.priced, theme.members.length)}</span>
-        </div>
-        <div className="th-index-week">
-          <Sparkline values={week.values} width={120} height={40} />
-          <span className="th-week-label" data-tone={week.moveBps === null ? undefined : week.moveBps > 0 ? "up" : week.moveBps < 0 ? "down" : undefined}>
-            {week.moveBps === null ? C.weekNone : C.week(`${week.moveBps > 0 ? "+" : week.moveBps < 0 ? "−" : ""}${pct(Math.abs(week.moveBps))}`)}
-          </span>
-        </div>
-      </div>
-      <div className="th-index-mix">
-        <PartitionBar label={THEMES.theme.target} slices={[...theme.members.map((m, i) => ({ id: m.symbol, label: `${m.symbol} ${pct(m.band.targetBps)}`, value: m.band.targetBps, color: sliceColor(i) })), { id: "cash", label: `${THEMES.theme.cash} ${pct(theme.cash.targetBps)}`, value: theme.cash.targetBps, color: "var(--color-surface-3)" }]} />
-      </div>
-      <div className="th-row" data-paused={theme.openNow === false || theme.haltedNow ? "" : undefined}>{theme.openNow === false ? C.paused(sessionsText(theme.sessionsMask)) : theme.haltedNow ? C.halted : C.cadence(everyText(theme.minIntervalSec), sessionsText(theme.sessionsMask))}</div>
-      <div className="th-actions">
-        <Link href={`${href}?follow=1`} className={pillButtonVariants({ tone: "accent", size: "md" })}>{C.follow}</Link>
-        <Link href={href} className={pillButtonVariants({ tone: "ghost", size: "md" })}>{C.details}</Link>
-      </div>
-      <p className="th-why">
-        {followers === null ? "…" : C.followers(followers)} · {C.fee(pct(theme.creatorFeeBps))} · {theme.agentId > 0n ? `${C.agent} #${theme.agentId}` : C.noAgent}
-      </p>
+      <MixLegend spec={spec} />
+      <p className="th-card-rule">{ruleText(spec.rule)}</p>
+      <StatusPlate spec={spec} status={status} nowSec={nowSec} compact />
+      <footer className="th-card-foot">
+        <CardFollow href={href} name={name} strategyId={id} />
+        <span className="th-card-meta numbers">{`${C.followers(card.subscribers)} · ${fee > 0n ? C.fee(usd6(fee)) : C.free}`}</span>
+      </footer>
     </article>
   );
 }
