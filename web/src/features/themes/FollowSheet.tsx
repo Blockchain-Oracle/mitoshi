@@ -5,7 +5,8 @@
 // comes from ops' theme-agent (`/api/themes/<id>/agent-key`, which files the request and reads the address back — the
 // key itself never leaves ops), its daily limits from core's plan at each member's reference price. Unfollow stops
 // the agent after a 5 s Undo (the holdings stay in the wallet; `theme-unfollow`, sponsored); "Sell everything" is its
-// own action — the follower's root rebalance of every holding into pathUSD at the reference less the theme's slippage.
+// own action, held to confirm (the app's destructive grammar, 21st 23527 in components/ui/hold-to-confirm) — the
+// follower's root rebalance of every holding into pathUSD at the reference less the theme's slippage.
 // Past five stocks the follow is split (D-100): the follow carries every limit and the first scopes, then one
 // `theme-key-scopes` signature per ≤ 5 more stocks; a follow that stopped part-way offers to finish from the key's scopes.
 import { pathUsdDailyLimit, parseDecimalToBaseUnits, tokenDailyLimit, type Address } from "@cwf/core";
@@ -13,7 +14,7 @@ import { SCOPE_CHUNK, splitFollowTokens, type ThemeView } from "@cwf/markets/the
 import { invalidateThemes, useThemeHoldings, useThemeUnscoped } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { PillButton, SlideOver, SlideOverContent } from "@/components/kit";
+import { HoldToConfirm, PillButton, SlideOver, SlideOverContent } from "@/components/kit";
 import { notify } from "@/lib/toast";
 import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { useSocialSession } from "@/features/social/session";
@@ -130,7 +131,7 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
           {following ? (
             <>
               {unscoped && unscoped.tokens.length > 0 ? <PillButton tone="accent" block disabled={busy} onClick={finish}>{F.finish(unscoped.tokens.length)}</PillButton> : null}
-              <PillButton tone="ghost" block disabled={sellLegs.length === 0 || busy} onClick={() => void sellAll()}>{sellLegs.length === 0 ? F.nothingToSell : F.sellAll}</PillButton>
+              {sellLegs.length === 0 ? <PillButton tone="ghost" block disabled>{F.nothingToSell}</PillButton> : <HoldToConfirm className="w-full" disabled={busy} confirmLabel={F.selling} onConfirm={() => void sellAll()}>{F.sellAll}</HoldToConfirm>}
             </>
           ) : (
             <>
