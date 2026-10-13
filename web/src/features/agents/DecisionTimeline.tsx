@@ -3,12 +3,13 @@
 // agent's decisions as a timeline (the desk kit's Timeline, 21st #28276 / #29318): filter chips with counts (All ·
 // Called · Held · Failed — every decision it made, not the page's latest; R6 #9), a head per day, each decision a node
 // in its tone with a card — the time, a badge for its outcome or ruling, "UP · 0.72 → sent UP · 1 filled" (a rule's
-// call has no confidence), the why clamped to two lines. A card opens the whole decision.
-import { isRuleModel } from "@cwf/core";
+// call has no confidence), the why clamped to two lines (the model's own words, or the ruling in words when it gave
+// none — `gate-words`). A card opens the whole decision.
 import { Ban, Check, CircleDashed, OctagonAlert } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { EmptyState, Timeline, TimelineDay, TimelineNode, type NodeTone } from "@/components/kit/desk-kit";
 import { DecisionDetail, callOf, rulingOf, DECISION } from "../strategies/DecisionDetail";
+import { gateOf, whyOf } from "../strategies/gate-words";
 import { ago } from "../strategies/names";
 import type { DecisionDetailWire, DecisionsWire, FillWire } from "../strategies/protocol";
 import { AGENTS } from "./copy";
@@ -33,7 +34,7 @@ export function DecisionCard({ d, nowMs, onOpen }: { d: DecisionDetailWire; nowM
         <span className="act-meta">{ago(d.decidedAtMs, nowMs)}{d.label ? ` · ${d.label}` : ""}</span>
       </span>
       <span className="act-line-lead block px-0.5"><b className="act-figure">{callOf(d)}</b> → {rulingOf(d)}</span>
-      <span className="act-line-rest line-clamp-2 block px-0.5">{isRuleModel(d.model) ? d.why : `“${d.why}”`}</span>
+      <span className="act-line-rest line-clamp-2 block px-0.5">{whyOf(d) ?? gateOf(d)}</span>
     </button>
   );
 }

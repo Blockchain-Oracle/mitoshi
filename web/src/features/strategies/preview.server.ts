@@ -100,7 +100,6 @@ export async function dryReadAgent(request: AgentPreviewRequest, nowMs: number):
       market: { marketId: w.marketId, label: `${context.asset} ${formatCadence(w.cadenceSec)}`, elapsedSec: context.elapsedSec, leftSec: context.leftSec, inSlot: picked.inSlot },
       read: { openingText: `$${formatBaseUnits(w.openPriceE8, AGENT_FEED_DECIMALS, { minDp: 2, maxDp: 2 })}`, moveBps: moveBps(w.openPriceE8, context.emaRaw), upCents: context.upCents, downCents: context.downCents },
       verdict: read.ok ? read.verdict : null,
-      failure: read.ok ? null : `${read.failure}: ${read.detail}`,
       gate: { side: decision.side, reason: decision.reason },
       model: read.ok ? read.modelId : `${brain.providerName}/${brain.modelId}`,
     },

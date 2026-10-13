@@ -165,7 +165,7 @@ export interface AgentPreviewResponse {
   market: { marketId: string; label: string; elapsedSec: number; leftSec: number; inSlot: boolean };
   read: { openingText: string; moveBps: number; upCents: number | null; downCents: number | null };
   verdict: { side: "up" | "down" | "hold"; confidence: number; why: string } | null;
-  failure: string | null;
+  /** The gate's line, worded by the app (`gate-words`); a failed read's is its failure. */
   gate: { side: "up" | "down" | null; reason: string };
   model: string;
 }

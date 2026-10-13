@@ -155,3 +155,45 @@ export function gateAgentVerdict(input: GateInput): Decision {
   if (cents > rules.maxPriceCents) return hold(`${verdict.side} costs ${cents}¢, over the ${spec.posture} cap of ${rules.maxPriceCents}¢: ${verdict.why}`);
   return { side: verdict.side, moveBps: move, thresholdBps: 0, reason: `agent bets ${verdict.side} (${conf}): ${verdict.why}` };
 }
+
+/** The gate reason of a read the runner was interrupted in (restart mid-call): the Window holds, never asked twice. */
+export const INTERRUPTED_READ_REASON = "Interrupted read; holding this Window without another model call";
+
+/**
+ * A stored gate reason as data, for the app to word (R6 #9, D-230): the reason itself is the ops log's line, never
+ * shown. The model's own words are the decision's `why`, not repeated here. A line no format matches is `other`.
+ */
+export type GateRuling =
+  | { kind: "bet"; side: Side; confidence: number }
+  | { kind: "model-held" }
+  | { kind: "unsure"; confidence: number; floor: number }
+  | { kind: "breaker"; losses: number }
+  | { kind: "loss-line" }
+  | { kind: "unquoted"; side: Side }
+  | { kind: "too-dear"; side: Side; cents: number; capCents: number }
+  | { kind: "no-answer"; failure: AgentReadFailure | null }
+  | { kind: "interrupted" }
+  | { kind: "other" };
+
+const NUM = String.raw`(\d+(?:\.\d+)?)`;
+/** Each `gateAgentVerdict` branch's line, in its order, then the store's interrupted read. */
+const GATE_LINES: readonly [RegExp, (m: RegExpExecArray) => GateRuling][] = [
+  [/^model unavailable: (timeout|parse|upstream|refusal)\b/, (m) => ({ kind: "no-answer", failure: m[1] as AgentReadFailure })],
+  [/^model unavailable\b/, () => ({ kind: "no-answer", failure: null })],
+  [/^agent held:/, () => ({ kind: "model-held" })],
+  [new RegExp(`^confidence ${NUM} under the \\w+ floor ${NUM}`), (m) => ({ kind: "unsure", confidence: Number(m[1]), floor: Number(m[2]) })],
+  [/^breaker: (\d+) straight losses/, (m) => ({ kind: "breaker", losses: Number(m[1]) })],
+  [/^down \S+ today, past the \w+ daily loss line/, () => ({ kind: "loss-line" })],
+  [/^(up|down) is not quoted at this stake/, (m) => ({ kind: "unquoted", side: m[1] as Side })],
+  [/^(up|down) costs (\d+)¢, over the \w+ cap of (\d+)¢/, (m) => ({ kind: "too-dear", side: m[1] as Side, cents: Number(m[2]), capCents: Number(m[3]) })],
+  [new RegExp(`^agent bets (up|down) \\(${NUM}\\)`), (m) => ({ kind: "bet", side: m[1] as Side, confidence: Number(m[2]) })],
+  [/^Interrupted read\b/, () => ({ kind: "interrupted" })],
+];
+
+export function readGateReason(reason: string): GateRuling {
+  for (const [line, ruling] of GATE_LINES) {
+    const m = line.exec(reason);
+    if (m) return ruling(m);
+  }
+  return { kind: "other" };
+}

@@ -2,8 +2,8 @@
 // Ported from Owarine 90a91d71:web/src/features/strategies/{DecisionDetail.tsx,decision-copy.ts} (R4-6, D-227) — one
 // decision, whole: the Window, the read (model, call, the why in full, and what paid for it — Mitoshi's MPP receipts, or
 // "unpaid · testnet", D-218.4) or, for a rule's call (R6 #9), the rule and its trigger — nothing is paid for a rule —
-// the ruling, the copies it placed (this strategy's fills on that Window) and how it settled. A centred dialog on
-// desktop, a bottom sheet on a phone, on Base UI's Dialog.
+// the ruling in words (`gate-words`, never the gate's raw line), the copies it placed (this strategy's fills on that
+// Window) and how it settled. A centred dialog on desktop, a bottom sheet on a phone, on Base UI's Dialog.
 import { Dialog } from "@base-ui/react/dialog";
 import { isRuleModel, txUrl } from "@cwf/core";
 import { XIcon } from "lucide-react";
@@ -12,6 +12,7 @@ import type { ReactNode } from "react";
 import { webEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import { usd, usdSigned } from "./format";
+import { gateOf, whyOf } from "./gate-words";
 import { shortAddress } from "./names";
 import type { DecisionDetailWire, DecisionWire, FillWire } from "./protocol";
 import "./decision.css";
@@ -69,6 +70,8 @@ function Body({ d, agentName, fills }: { d: DecisionWire | DecisionDetailWire; a
   const network = webEnv.markets.network;
   const rule = isRuleModel(d.model);
   const preset = d.model.slice("rule/".length);
+  const why = whyOf(d);
+  const ruling = gateOf(d);
   return (
     <>
       <p className="strat-meta mb-1.5 text-accent">{DECISION.eyebrow} · {agentName}</p>
@@ -79,11 +82,12 @@ function Body({ d, agentName, fills }: { d: DecisionWire | DecisionDetailWire; a
         <Row label={DECISION.rows.call} value={callOf(d)} />
         {rule ? <Row label={DECISION.rows.rule} value={DECISION.rules[preset] ?? preset} /> : <Row label={DECISION.rows.model} value={d.model} />}
         {!rule && receipts !== undefined && <Row label={DECISION.rows.paid} value={receipts ? receipts.map((r) => DECISION.paid(usd(BigInt(r.amountBase)), r.host)).join(", ") : DECISION.unpaid} />}
-        <Dialog.Description className="decision-why">{rule ? d.why : `“${d.why}”`}</Dialog.Description>
+        {/* A read the model never answered says so here, once; its `why` is the error, never shown. */}
+        <Dialog.Description className="decision-why">{why ?? ruling}</Dialog.Description>
       </Section>
       <Section title={rule ? DECISION.sections.trigger : DECISION.sections.gate}>
         <Row label={DECISION.rows.ruling} value={rulingOf(d)} accent={d.gate === "trade"} />
-        {d.gateReason && <p className="decision-note">{d.gateReason}</p>}
+        {why !== null && ruling && <p className="decision-note">{ruling}</p>}
       </Section>
       <Section title={DECISION.sections.trades}>
         {fills.length === 0 ? <p className="decision-note">{d.gate === "trade" && d.filled > 0 ? DECISION.unlisted(d.filled) : DECISION.noTrades}</p> : fills.map((t) => (

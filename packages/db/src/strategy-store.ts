@@ -6,7 +6,7 @@
  * (reserved before the model call, so a restart never asks twice). Amounts are decimal strings, never floats; ids and
  * addresses are lowercased at the write.
  */
-import { parseRunnerBeat, type RunnerBeat } from "@cwf/core";
+import { INTERRUPTED_READ_REASON, parseRunnerBeat, type RunnerBeat } from "@cwf/core";
 import type { PendingQuery, Row } from "postgres";
 import type { Sql } from "./index";
 
@@ -171,7 +171,7 @@ export function createPgStrategyStore(sql: Sql) {
 
     /** A process that died during a provider call holds that Window; it never asks twice. */
     async interruptDecisions(runner: string, beforeMs: number): Promise<void> {
-      await sql`update strategy_decisions set gate = 'failed', why = 'Runner interrupted during the model read', gate_reason = 'Interrupted read; holding this Window without another model call'
+      await sql`update strategy_decisions set gate = 'failed', why = 'Runner interrupted during the model read', gate_reason = ${INTERRUPTED_READ_REASON}
         where runner = ${runner.toLowerCase()} and gate = 'pending' and decided_at < ${new Date(beforeMs)}`;
     },
 

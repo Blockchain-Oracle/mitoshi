@@ -1,18 +1,19 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/strategies/AgentMemory.tsx (R4-6, D-227) — a strategy's last decisions
 // (an agent's reads, a rule's calls — R6 #9), one row each: when and which Window, the outcome, "UP · 0.72 → sent UP ·
-// 1 filled" (or held), the why clamped to two lines and the gate's reason when it held. A row opens the whole decision
-// (DecisionDetail).
-import { isRuleModel } from "@cwf/core";
+// 1 filled" (or held), the why clamped to two lines and, when it held, the gate's ruling in words ("Held — 55% sure,
+// under its 60% floor"; `gate-words`). A row opens the whole decision (DecisionDetail).
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { DECISION, DecisionDetail, callOf, rulingOf } from "./DecisionDetail";
+import { gateOf, whyOf } from "./gate-words";
 import { ago } from "./names";
 import type { DecisionDetailWire, DecisionWire, FillWire } from "./protocol";
 import "./strategies.css";
 import "./decision.css";
 
 function MemoryRow({ d, nowMs, onOpen }: { d: DecisionWire; nowMs: number; onOpen: () => void }) {
+  const why = whyOf(d);
   return (
     <button type="button" className="strat-memory-row strat-memory-open" onClick={onOpen} aria-label={`${DECISION.open}: ${ago(d.decidedAtMs, nowMs)}, ${callOf(d)}`}>
       <span className="strat-mono-10 flex items-baseline justify-between gap-2 text-ink/40">
@@ -26,8 +27,8 @@ function MemoryRow({ d, nowMs, onOpen }: { d: DecisionWire; nowMs: number; onOpe
         <span className={cn(d.gate === "failed" ? "text-ink/50" : "text-ink")}>{callOf(d)}</span>
         <span className={cn(d.gate === "trade" ? "text-accent" : "text-ink/50")}>→ {rulingOf(d)}</span>
       </span>
-      <span className="mt-1 line-clamp-2 block text-xs leading-snug text-ink-secondary">{isRuleModel(d.model) ? d.why : `“${d.why}”`}</span>
-      {d.gate !== "trade" && d.gateReason && <span className="strat-mono-10 mt-0.5 line-clamp-1 block text-ink/35">{d.gateReason}</span>}
+      {why && <span className="mt-1 line-clamp-2 block text-xs leading-snug text-ink-secondary">{why}</span>}
+      {d.gate !== "trade" && <span className="strat-mono-10 mt-0.5 line-clamp-1 block text-ink/50">{gateOf(d)}</span>}
     </button>
   );
 }

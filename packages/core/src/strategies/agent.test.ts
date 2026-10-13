@@ -1,7 +1,7 @@
 // Ported from Masayume 68f7a09:packages/core/src/strategies/agent.test.ts
 import { describe, expect, it } from "vitest";
 import { agentPrompt } from "./agent-prompt";
-import { AGENT_PERSONA_MAX_CHARS, decisionSlot, EMPTY_AGENT_RECORD, gateAgentVerdict, POSTURES, type AgentContext, type AgentRecordSummary, type AgentVerdict } from "./agent";
+import { AGENT_PERSONA_MAX_CHARS, decisionSlot, EMPTY_AGENT_RECORD, gateAgentVerdict, INTERRUPTED_READ_REASON, POSTURES, readGateReason, type AgentContext, type AgentRecordSummary, type AgentVerdict } from "./agent";
 import { describeSpec, encodeSpec, isSpec, parseStrategyMetadata } from "./spec";
 import type { AgentSpec } from "./types";
 
@@ -73,6 +73,23 @@ describe("gateAgentVerdict", () => {
     const d = gate(up());
     expect(d).toEqual({ side: "up", moveBps: 8, thresholdBps: 0, reason: "agent bets up (0.72): EMA above the print and rising" });
     expect(/bets (up|down)/.exec(d.reason)?.[1]).toBe("up");
+  });
+});
+
+describe("readGateReason", () => {
+  it("reads every gate line back as data, and anything else as other", () => {
+    const read = (verdict: AgentVerdict | null, over: Partial<Parameters<typeof gateAgentVerdict>[0]> = {}) => readGateReason(gate(verdict, over).reason);
+    expect(read(null, { failure: "timeout — no answer in 20000 ms" })).toEqual({ kind: "no-answer", failure: "timeout" });
+    expect(read(null)).toEqual({ kind: "no-answer", failure: null });
+    expect(read({ side: "hold", confidence: 0.9, why: "no book confirmation" })).toEqual({ kind: "model-held" });
+    expect(read(up(0.64))).toEqual({ kind: "unsure", confidence: 0.64, floor: 0.65 });
+    expect(read(up(), { record: { ...EMPTY_AGENT_RECORD, consecutiveLosses: 4, lastLossAtSec: NOW_SEC - 60 } })).toEqual({ kind: "breaker", losses: 4 });
+    expect(read(up(), { record: { ...EMPTY_AGENT_RECORD, lostTodayBase: 20n * ONE } })).toEqual({ kind: "loss-line" });
+    expect(read(up(), { context: context({ upCents: null }) })).toEqual({ kind: "unquoted", side: "up" });
+    expect(read(up(), { context: context({ upCents: 86 }) })).toEqual({ kind: "too-dear", side: "up", cents: 86, capCents: 85 });
+    expect(read({ side: "down", confidence: 0.76, why: "fading the spike" })).toEqual({ kind: "bet", side: "down", confidence: 0.76 });
+    expect(readGateReason(INTERRUPTED_READ_REASON)).toEqual({ kind: "interrupted" });
+    expect(readGateReason("0.08% move, past its 0.05% trigger")).toEqual({ kind: "other" });
   });
 });
 
