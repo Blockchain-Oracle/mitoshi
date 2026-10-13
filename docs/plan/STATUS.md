@@ -5,8 +5,9 @@
 reserve-watch and stock-sync leave the product (branch `r6/r6-no-bridge`); old `/bridge` and `/reserves` links 308 to
 `/tickers/<SYM>` or `/markets`. The contracts stay on testnet, recorded in `contracts/deployments/retired/`. Stocks are
 UP/DOWN Windows on RedStone's signed prints, 24/7 for seven of them. Themes move to baskets an agent trades as calls on
-their stocks' Windows (package themes-basket). Ship order: trim `OPS_ACTORS` first (ops throws on an unknown name),
-then ops, web, docs one at a time — see `decisions.md` D-231.
+their stocks' Windows (package themes-basket). Ship order (`decisions.md` D-231 item 6): drop the three names from the
+ops app's `OPS_ACTORS` (24 left; no restart — on Coolify a restart deploys the branch head), then web, then ops (it
+drops the bridge tables at boot, so never before web), then docs. No other env changes.
 
 **2026-10-13, D-228 (owner): one address, `mitoshi.xyz` — the code half is on the trunk. The app at the apex
 (`www.` and the old `testnet.` 301 to it, `/.well-known/*` answers on every host), ops and the stream at `ops.` and

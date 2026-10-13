@@ -30,14 +30,16 @@ function selected(): string[] {
 }
 
 async function boot(): Promise<void> {
+  // The actor list is checked before any migration runs: a stale `OPS_ACTORS` (a name this build dropped) stops the boot
+  // with the database untouched, so the ops and web still running keep the tables they read (D-231).
+  const wanted = selected();
+  for (const name of wanted) if (!ACTORS[name]) throw new Error(`unknown actor "${name}" (known: ${Object.keys(ACTORS).join(", ")})`);
   let sql: Sql | null = null;
   if (process.env.DATABASE_URL) {
     sql = createSql();
     const applied = await runMigrations(sql);
     log("ops")(`migrations: ${applied.length ? applied.join(", ") : "up to date"}`);
   }
-  const wanted = selected();
-  for (const name of wanted) if (!ACTORS[name]) throw new Error(`unknown actor "${name}" (known: ${Object.keys(ACTORS).join(", ")})`);
   const redstone = loadRedstoneSources();
   const bus = createBus();
   // S13: room messages and takes the web writes reach the stream through Postgres NOTIFY.

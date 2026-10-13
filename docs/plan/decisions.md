@@ -2144,11 +2144,27 @@ its network where chains appear and uses real logos — or it is removed.
    cuts a feature the owner asked to revamp). The guarded v4 stock pools, the Mirrors, StockGuardHook/StockReference,
    ThemeRegistry/ThemeRouter, theme-agent and reference-writer retire with that rebuild (package themes-basket, plan
    steps 14–18); the house withdraws its ~$80k of bid-ladder positions (tokenIds 6–33) for maker depth.
-6. **Ship order (ops throws `unknown actor` for any `OPS_ACTORS` name it lacks):** first remove `bridge-watch`,
-   `reserve-watch` and `stock-sync` from the Coolify ops app's explicit `OPS_ACTORS` (27 names at the 2026-10-13 boot;
-   24 after) and from `OPS_DRY_ACTORS` if listed there, restart ops on the current image, then deploy ops (it applies
-   `bridge/0002` and `index/0008` at boot), web and the docs one at a time. `RH_RPC_HTTP_URL`,
-   `BASE_SEPOLIA_RPC_HTTP_URL` and `STOCK_SYNC_PRIVATE_KEY` were never set on the Coolify apps (checked 2026-10-13).
+6. **Ship order: env, web, ops, docs.** Only ops runs migrations, at boot. The old web reads `bridge_messages`,
+   `reserve_snapshots` and `idx_bridge_events` until it is replaced; the new web reads none of them and needs nothing
+   new from ops. Ops throws `unknown actor` for an `OPS_ACTORS` name it lacks.
+   1. **Env.** On `mitoshi-ops-testnet`, set the production `OPS_ACTORS` to the 24 names left once `bridge-watch`,
+      `reserve-watch` and `stock-sync` are removed (27 at the 2026-10-13 boot): `chain-head,archive,spot,indexer,roller,
+      price-relay,settler,seed-maker,halt-watch,earnings,calendar,funds-watch,house-taker,leverage-keeper,exit-keeper,
+      earn-quoter,strategy-runner,agent-rater,theme-agent,launch-keeper,reference-writer,indexer-recount,duel-settler,
+      x-relay` (one line, no spaces). Nothing else changes: `OPS_DRY_ACTORS` is empty, the preview `OPS_ACTORS` is
+      `chain-head`, and `RH_RPC_HTTP_URL`, `BASE_SEPOLIA_RPC_HTTP_URL` and `STOCK_SYNC_PRIVATE_KEY` are absent on web
+      and ops, preview included; docs has no env (all read 2026-10-13). Don't restart ops: the running process keeps the
+      env it booted with, and Coolify 4.4.6 turns a restart of a Dockerfile app into a deploy of `integration/t1`'s head
+      (`restart_only` is dropped for the `dockerfile` build pack) — after the D-231 merge, the new ops ahead of the web.
+   2. **Web.** `/bridge` and `/reserves` answer 308 (item 1); More and ⌘K list neither.
+   3. **Ops.** It checks `OPS_ACTORS` before any migration, so a stale name stops the boot with the database untouched
+      and Coolify's `/livez` check keeps the old container. Then it applies `bridge/0002` and `index/0008`, and the indexer drops its five
+      adapter followers. `/health` lists 27 actors.
+   4. **Docs.**
+
+   Ops before web drops the tables under the old web for the length of its build: `/bridge`, `/reserves` and their
+   APIs answer errors while More and ⌘K still link them. A web rollback after step 3 brings that back, so roll the web
+   back only before it.
 
 Supersedes D-001 (stock-token source), D-020 (the bridge design) and D-080 (bridge gas); D-027 in part (the Robinhood
 Chain wallet of the two-wallet model); D-040 in part (bridge-completion pushes); D-105 §4–5 (the StockSync pauses) and
