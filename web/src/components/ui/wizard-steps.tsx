@@ -1,6 +1,6 @@
 "use client";
 // R4-11 (D-227): moved here from features/strategies (R4-6 retired it there for Owarine's studio shell) — the launch
-// wizards and the theme studio step through it.
+// wizards and the theme studio step through it; Back / Continue stick above the phone dock (`.page-action`).
 // From 21st.dev 23576 ddoemonn/wizard-steps: the progress rail (numbered tiles that turn to checks, a filling track),
 // direction-aware panel transitions and arrow-key navigation, revamped onto Mitoshi's tokens. The panel grows with its
 // content (no fixed height), "Next" carries the step's own blocker instead of a silent disabled state, and the last
@@ -125,7 +125,8 @@ export function StudioWizard({ steps, label, backLabel = "Back", nextLabel = "Ne
           </motion.div>
         </AnimatePresence>
       </div>
-      <div className="flex flex-wrap items-center gap-3">
+      {/* Back / Continue stick above the dock on a phone while the wizard is on screen (the page's one action strip). */}
+      <div className="page-action wizard-nav flex flex-wrap items-center gap-3">
         {at > 0 && (
           <button
             type="button"

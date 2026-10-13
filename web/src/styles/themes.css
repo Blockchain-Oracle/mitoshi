@@ -67,6 +67,7 @@
 @media (min-width: 1024px) { .th-studio-grid { grid-template-columns: minmax(0, 1fr) 16rem; align-items: start; } }
 .th-side { display: none; }
 @media (min-width: 1024px) { .th-side { position: sticky; top: var(--stage-sticky-top); display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 20px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); } }
+.th-studio .wizard-nav { padding-block: 8px; background: var(--color-ground); }
 .th-fields { display: flex; flex-direction: column; gap: 14px; }
 .th-choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr)); gap: 8px; }
 .th-choice { display: flex; min-height: 56px; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; padding: 8px 12px; border: 1px solid var(--color-hairline); border-radius: var(--radius-md); background: var(--color-surface-1); text-align: left; }

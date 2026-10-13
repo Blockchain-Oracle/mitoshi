@@ -111,3 +111,6 @@
 .lp-skel--pill { height: 52px; border-radius: 9999px; }
 @keyframes lp-pulse { 50% { opacity: 0.55; } }
 @media (prefers-reduced-motion: reduce) { .lp-skel { animation: none; } .lp-row::before { transition: none; } }
+
+/* The wizard's Back / Continue strip, sticky above the dock on phones (`.page-action`): it needs the ground behind it. */
+.lp-wizard .wizard-nav { padding-block: 8px; background: var(--color-ground); }
