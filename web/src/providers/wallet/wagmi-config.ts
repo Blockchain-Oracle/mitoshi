@@ -49,13 +49,13 @@ export function getWagmiConfig(): Config {
       // Built on first use: its wallet.tempo.xyz iframe (and ~1 MB of third-party script) mounts at setup (D-152). Its
       // accounts store gets its own IndexedDB key: the passkey's provider keeps `tempo.store` (accounts' default), and a
       // Tempo Wallet store that starts empty must never persist over it (F-S23-10).
-      lazyConnector({ id: TEMPO_WALLET_CONNECTOR_ID, name: "Tempo Wallet", rdns: TEMPO_WALLET_CONNECTOR_ID, type: "injected" }, async () => {
+      lazyConnector({ id: TEMPO_WALLET_CONNECTOR_ID, name: "Tempo Wallet", icon: "/wallet/tempo.svg", rdns: TEMPO_WALLET_CONNECTOR_ID, type: "injected" }, async () => {
         const { Storage } = await import("accounts");
         return tempoWallet({ storage: Storage.idb({ key: "tempo-wallet" }) });
       }),
       injected(),
       // wagmi's WalletConnect initialises its provider (and relay socket) in `setup` — also built on first use.
-      ...(WALLETCONNECT_ENABLED ? [lazyConnector({ id: "walletConnect", name: "WalletConnect", type: "walletConnect" }, () => walletConnect({ projectId: webEnv.walletConnectProjectId!, showQrModal: true }))] : []),
+      ...(WALLETCONNECT_ENABLED ? [lazyConnector({ id: "walletConnect", name: "WalletConnect", icon: "/wallet/walletconnect.svg", type: "walletConnect" }, () => walletConnect({ projectId: webEnv.walletConnectProjectId!, showQrModal: true }))] : []),
     ],
     multiInjectedProviderDiscovery: true,
     ssr: true,

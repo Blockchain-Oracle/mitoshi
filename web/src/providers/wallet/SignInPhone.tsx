@@ -10,7 +10,7 @@ import { Fingerprint, KeyRound, Wallet } from "lucide-react";
 import type { Connector } from "wagmi";
 import { SIGN_IN, WALLET_MODAL as T } from "./copy";
 import type { ConnectOutcome, WalletChoices } from "./useWalletChoices";
-import { CloseButton, Spinner, WalletIcon } from "./wallet-modal-parts";
+import { CloseButton, NoWallet, Spinner, WalletIcon } from "./wallet-modal-parts";
 
 export interface SignInPhoneProps {
   choices: WalletChoices;
@@ -57,9 +57,8 @@ export function SignInPhone({ choices, intent, hint = null, busy, run, onLearn }
       {hint ? <p className="wm-m-hint" role="status">{hint}</p> : null}
       <div className="wm-m-divider" />
       <p className="wm-m-label">{T.groups.wallets}</p>
-      {wallets.length === 0 ? (
-        <p className="wm-m-none">{SIGN_IN.noInjected}</p>
-      ) : (
+      {choices.injected.length === 0 ? <NoWallet className="wm-m-none" /> : null}
+      {wallets.length === 0 ? null : (
         <div className="wm-m-strip">
           {wallets.map((connector) => {
             const label = SIGN_IN.waiting.wallet(connector.name);
@@ -77,6 +76,7 @@ export function SignInPhone({ choices, intent, hint = null, busy, run, onLearn }
                   )}
                 </span>
                 <span className="wm-m-tile-name">{connector.name}</span>
+                {choices.badge(connector) ? <span className="wm-badge wm-badge--tile">{SIGN_IN.badge[choices.badge(connector)!]}</span> : null}
               </button>
             );
           })}

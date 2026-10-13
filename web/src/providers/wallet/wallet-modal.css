@@ -248,3 +248,10 @@
 .wm-row-note { display: block; margin-top: 2px; font-size: 12px; line-height: 16px; font-weight: 500; color: var(--color-ink-secondary); }
 .wm-glyph-icon { display: grid; place-items: center; background: var(--color-surface-2); color: var(--color-ink-secondary); }
 .wm-glyph-icon.is-accent { background: var(--color-accent); color: var(--color-cream-ink); }
+
+/* R6 shell S16: a wallet's badge — "Last used" or "Detected" — a pill at the row's right; under the name on a phone
+   tile. And the one line when this browser has no wallet, with the one that needs no install. */
+.wm-badge { flex: none; padding: 3px 8px; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink-secondary); font: 600 11px/1.2 var(--font-body); white-space: nowrap; }
+.wm-badge--tile { display: inline-block; margin-top: 4px; padding: 2px 6px; font-size: 10px; }
+.wm-nowallet { margin: 0; padding: 4px 6px; font: 500 14px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+.wm-nowallet a { color: var(--color-ink); text-decoration: underline; text-underline-offset: 2px; }

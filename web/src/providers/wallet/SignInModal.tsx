@@ -20,7 +20,7 @@ import { ACCOUNT, SIGN_IN, WALLET_MODAL as T } from "./copy";
 import { useWalletChoices, type ConnectOutcome } from "./useWalletChoices";
 import { passkeyFailure } from "./passkey-errors";
 import { SignInPhone, SignInPhoneFailure } from "./SignInPhone";
-import { ActionButton, BackButton, CloseButton, Spinner, usePhoneLayout, WalletDialog, WalletIcon } from "./wallet-modal-parts";
+import { ActionButton, BackButton, CloseButton, NoWallet, Spinner, usePhoneLayout, WalletDialog, WalletIcon } from "./wallet-modal-parts";
 import { useWalletShell } from "./wallet-shell-context";
 
 type Step =
@@ -72,14 +72,18 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     setStep({ kind: "failed", headline: copy.headline, body: copy.body, action: SIGN_IN.retry, next: retry });
   }
 
-  const connectRow = (connector: Connector) => (
-    <Row
-      key={connector.uid}
-      icon={connector.icon ? <WalletIcon src={connector.icon} size={28} /> : <GlyphIcon><Wallet className="size-4" /></GlyphIcon>}
-      name={connector.name}
-      onClick={() => void run(SIGN_IN.waiting.wallet(connector.name), () => choices.connect(connector))}
-    />
-  );
+  const connectRow = (connector: Connector) => {
+    const badge = choices.badge(connector);
+    return (
+      <Row
+        key={connector.uid}
+        icon={connector.icon ? <WalletIcon src={connector.icon} size={28} /> : <GlyphIcon><Wallet className="size-4" /></GlyphIcon>}
+        name={connector.name}
+        badge={badge ? SIGN_IN.badge[badge] : null}
+        onClick={() => void run(SIGN_IN.waiting.wallet(connector.name), () => choices.connect(connector))}
+      />
+    );
+  };
 
   const busy = step.kind === "waiting";
   const close = (next: boolean) => {
@@ -127,7 +131,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
                   {choices.tempoWallet ? connectRow(choices.tempoWallet) : null}
                   {choices.injected.map((c) => connectRow(c))}
                   {choices.walletConnect ? connectRow(choices.walletConnect) : null}
-                  {!choices.tempoWallet && choices.injected.length === 0 && !choices.walletConnect ? <p className="wm-t14m px-1.5">{SIGN_IN.noInjected}</p> : null}
+                  {choices.injected.length === 0 ? <NoWallet /> : null}
                 </Group>
               </div>
               <div className="wm-divider" />
@@ -199,15 +203,16 @@ function Group({ name, accent = false, children }: { name: string; accent?: bool
   );
 }
 
-/** One row of the list (Owarine `WalletRow`): the icon and the name. */
-function Row({ icon, name, disabled = false, onClick }: { icon: ReactNode; name: string; disabled?: boolean; onClick: () => void }) {
+/** One row of the list (Owarine `WalletRow`): the icon, the name and a badge at the right (S16). */
+function Row({ icon, name, badge = null, disabled = false, onClick }: { icon: ReactNode; name: string; badge?: string | null; disabled?: boolean; onClick: () => void }) {
   return (
     <button type="button" disabled={disabled} className="wm-row wm-touch wm-shrink disabled:opacity-50" onClick={onClick}>
       <span className="wm-row-inner">
         {icon}
-        <span className="min-w-0">
+        <span className="min-w-0 flex-1">
           <span className="wm-row-name">{name}</span>
         </span>
+        {badge ? <span className="wm-badge">{badge}</span> : null}
       </span>
     </button>
   );

@@ -5,6 +5,7 @@
 import { useCallback, useMemo } from "react";
 import { useConnect, useConnectors, type Connector } from "wagmi";
 import { PASSKEY_CONNECTOR_ID, TEMPO_WALLET_CONNECTOR_ID } from "./connector-kind";
+import { badgeOf, realInjected, recentConnectorId, type WalletBadge } from "./wallet-list";
 import { TEMPO_CHAIN } from "./wagmi-config";
 
 export type ConnectOutcome = { ok: true } | { ok: false; aborted: boolean; error: unknown };
@@ -14,6 +15,8 @@ export interface WalletChoices {
   tempoWallet: Connector | null;
   injected: readonly Connector[];
   walletConnect: Connector | null;
+  /** "Last used" (wagmi's recent connector) over "Detected" (announced by this browser), else none (S16). */
+  badge(connector: Connector): WalletBadge;
   createPasskey(name: string): Promise<ConnectOutcome>;
   signInPasskey(): Promise<ConnectOutcome>;
   connect(connector: Connector): Promise<ConnectOutcome>;
@@ -39,15 +42,13 @@ export function useWalletChoices(): WalletChoices {
   const passkey = connectors.find((c) => c.id === PASSKEY_CONNECTOR_ID) ?? null;
   const tempoWallet = connectors.find((c) => c.id === TEMPO_WALLET_CONNECTOR_ID) ?? null;
   const walletConnect = connectors.find((c) => c.type === "walletConnect") ?? null;
-  // EIP-6963 announces each installed wallet; the generic `injected` shows only when none announced.
-  const injected = useMemo(() => {
-    const others = connectors.filter((c) => c.type === "injected" && c.id !== TEMPO_WALLET_CONNECTOR_ID);
-    // EIP-6963 wallets carry their reverse-DNS id (`io.metamask`); the generic connector only means something when a
-    // provider is actually injected.
-    const announced = others.filter((c) => c.id.includes("."));
-    const generic = others.filter((c) => !c.id.includes(".") && typeof window !== "undefined" && "ethereum" in window);
-    return announced.length > 0 ? announced : generic;
-  }, [connectors]);
+  // EIP-6963 announces each installed wallet; our own providers' announcements and the SDK's blank one are not wallets
+  // (S16, wallet-list.ts); the generic `injected` shows only when none announced.
+  const injected = useMemo(() => realInjected(connectors, typeof window !== "undefined" && "ethereum" in window), [connectors]);
+  const badge = useCallback(
+    (connector: Connector): WalletBadge => badgeOf(connector, typeof document === "undefined" ? null : recentConnectorId(document.cookie), new Set(injected.map((c) => c.id))),
+    [injected],
+  );
 
   const connect = useCallback(
     async (connector: Connector): Promise<ConnectOutcome> => {
@@ -74,5 +75,5 @@ export function useWalletChoices(): WalletChoices {
   );
   const signInPasskey = useCallback(() => (passkey ? connect(passkey) : Promise.resolve(outcome(new Error("passkey connector missing")))), [connect, passkey]);
 
-  return { passkey, tempoWallet, injected, walletConnect, createPasskey, signInPasskey, connect };
+  return { passkey, tempoWallet, injected, walletConnect, badge, createPasskey, signInPasskey, connect };
 }

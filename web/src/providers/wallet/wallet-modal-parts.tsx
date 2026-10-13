@@ -6,7 +6,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { useRef, type ReactNode } from "react";
 import { usePhoneLayout } from "@/lib/phone-layout";
 import { cn } from "@/lib/utils";
-import { WALLET_MODAL } from "./copy";
+import { SIGN_IN, WALLET_MODAL } from "./copy";
 import "./wallet-modal.css";
 
 /** RainbowKit switched to its mobile layouts on phones; the shared hook (`lib/phone-layout`) decides, the CSS mirrors it. */
@@ -131,5 +131,17 @@ export function WalletIcon({ src, size, ring = true }: { src: string; size: 28 |
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={src} alt="" draggable={false} />
     </span>
+  );
+}
+
+/** No wallet in this browser (S16): one line and the one that needs no install. */
+export function NoWallet({ className }: { className?: string }) {
+  return (
+    <p className={cn("wm-nowallet", className)}>
+      {SIGN_IN.noWallet} ·{" "}
+      <a href={SIGN_IN.getTempoWalletHref} target="_blank" rel="noopener noreferrer">
+        {SIGN_IN.getTempoWallet} ↗
+      </a>
+    </p>
   );
 }

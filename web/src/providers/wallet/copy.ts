@@ -7,6 +7,11 @@ import { BRAND } from "@/lib/copy";
 export const SIGN_IN = {
   title: `Sign in to ${BRAND.name}`,
   noInjected: "No browser wallet here.",
+  /** R6 shell S16: no wallet in this browser — one line and the way to get one (Tempo Wallet needs no install). */
+  noWallet: "No wallet found",
+  getTempoWallet: "Get Tempo Wallet",
+  getTempoWalletHref: "https://wallet.tempo.xyz",
+  badge: { detected: "Detected", lastUsed: "Last used" },
   waiting: { passkey: "Waiting for your passkey…", wallet: (name: string) => `Opening ${name}…` },
   retry: "Try again",
   back: "Back",
