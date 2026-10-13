@@ -61,7 +61,15 @@ export function proxy(request: NextRequest): NextResponse {
   return response;
 }
 
-/** Everything but static payloads: `/api` is matched on purpose (funded routes read the stamped headers). */
+/**
+ * Everything but static payloads: `/api` is matched on purpose (funded routes read the stamped headers). `/docs` and
+ * every `/docs/*` path are matched whatever they end in (D-230): the static-payload skip would otherwise leave
+ * `/docs/llms.txt` or `/docs/x.png` to the app's 404 instead of the docs site (`proxy.test.ts`).
+ */
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|mp3|wav|mp4|webm|txt|xml|json)$).*)"],
+  matcher: [
+    "/docs",
+    "/docs/:path*",
+    "/((?!_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|mp3|wav|mp4|webm|txt|xml|json)$).*)",
+  ],
 };

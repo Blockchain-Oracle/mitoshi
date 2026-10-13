@@ -1,7 +1,7 @@
 // Ported from Masayume 68f7a09:web/src/features/install/copy.ts; rewritten for D-230 (the owner's point 8) at Owarine's
 // word counts. Every sentence is about what exists now: the web app installs today; the iPhone and Android apps are
-// offered only when their test link is set (`lib/release.ts`), and otherwise say they are coming, in one line, with the
-// web app as the way in. No claim the phones haven't proven: passkey sign-in inside the phone app comes back to this
+// offered only when anyone can join their test (`lib/release.ts`), and otherwise say they are coming, in one line, with
+// the web app as the way in. No claim the phones haven't proven: passkey sign-in inside the phone app comes back to this
 // page once a real phone has signed in there (docs-site `start/mobile-app`).
 
 import type { InstallHint } from "./browser";
@@ -21,7 +21,7 @@ export const INSTALL = {
    */
   where: {
     android: { in: "In your browser", path: [{ item: "Menu" }, { item: "Add to Home screen" }] },
-    chrome: { in: "In Chrome", path: [{ item: "⋮", label: "Chrome menu" }, { item: "Cast, save and share" }, { item: "Install page as app" }] },
+    chrome: { in: "In Chrome", path: [{ item: "⋮", label: "Chrome menu" }, { item: "Cast, save, and share" }, { item: "Install page as app" }] },
     edge: { in: "In Edge", path: [{ item: "…", label: "Edge menu" }, { item: "Apps" }, { item: "Install this site as an app" }] },
     safari: { in: "In Safari", path: [{ item: "File" }, { item: "Add to Dock" }] },
   },
@@ -59,8 +59,7 @@ export const DOWNLOAD = {
   },
   android: {
     name: "Android",
-    open: { chip: "Open test", line: "Join the test, then install from Play.", kicker: "Join the test on", store: "Google Play", scan: "Scan with your Android phone" },
-    internal: { chip: "Invited testers", line: "Invited testers only. Everyone else: the web app.", kicker: "Testers, open it on", store: "Google Play", scan: "Testers: scan with your Android phone" },
+    ready: { chip: "Open test", line: "Join the test, then install from Play.", kicker: "Join the Android test on", store: "Google Play", scan: "Scan with your Android phone" },
     pending: { chip: "Coming to Google Play", line: "Install the web app today." },
   },
   web: { name: "Web app", chip: "Live", line: "Installs from your browser. No store.", scan: "Scan to open it on your phone" },

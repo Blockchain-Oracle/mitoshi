@@ -1,9 +1,7 @@
 // `/download`'s three cards as data (D-230): iPhone, Android and the web app for one device and one set of store links —
 // pure, so the server wrapper (`PlatformCards`) only reads the request and every state is tested (`cards.test.tsx`). A
-// store whose test link isn't set says it is coming and sends the reader to the web app, which installs today and leads
-// the page then: the card carries no button at all, so nothing on it is dead. Play's internal test is an invitation
-// (only listed testers can open it), so its card is quiet — a quiet chip and a quiet button, after the web app — and
-// never leads or takes the accent.
+// store no one can join yet says it is coming and sends the reader to the web app, which installs today and leads the
+// page then: the card carries no button at all, so nothing on it is dead.
 import { Globe } from "lucide-react";
 import { AndroidGlyph, AppleGlyph, PlayGlyph } from "@/components/icons/StoreGlyphs";
 import { orderCards, type Platform, type PlatformId, type StoreRelease } from "@/lib/release";
@@ -43,15 +41,13 @@ function androidCard(release: StoreRelease, here: boolean, primary: boolean): Pl
   const base = { id: "android" as const, name: c.name, glyph: <AndroidGlyph /> };
   if (here) return { ...base, chip: DOWNLOAD.here.chip, tone: "here", line: DOWNLOAD.here.line, action: null, qr: null };
   if (!release.play) return { ...base, chip: c.pending.chip, tone: "soon", line: c.pending.line, action: null, qr: null };
-  const open = release.play.track === "open";
-  const t = open ? c.open : c.internal;
   return {
     ...base,
-    chip: t.chip,
-    tone: open ? "live" : "invite",
-    line: t.line,
-    action: <StoreButton href={release.play.url} glyph={<PlayGlyph />} kicker={t.kicker} store={t.store} variant={!open ? "quiet" : primary ? "accent" : "ink"} />,
-    qr: { value: release.play.url, caption: t.scan },
+    chip: c.ready.chip,
+    tone: "live",
+    line: c.ready.line,
+    action: <StoreButton href={release.play} glyph={<PlayGlyph />} kicker={c.ready.kicker} store={c.ready.store} variant={primary ? "accent" : "ink"} />,
+    qr: { value: release.play, caption: c.ready.scan },
   };
 }
 
@@ -96,11 +92,13 @@ export interface CardShape {
 }
 
 /**
- * The cards' outlines for `/download`'s skeleton, in a desk's order for these store links: the device is only known
- * with the request, the links are known with the deployment, so the static shell draws what a desk will get.
+ * The cards' outlines for `/download`'s skeleton, drawn when the shell is prerendered: a desk's order for what the
+ * deployment can know without a request — Play's open-test link from its env; TestFlight as coming, since Apple's page
+ * is read only at request time (`server/store-release.ts`). Today that is exactly the desk the cards land as.
  */
 export function waitShapes(release: StoreRelease): CardShape[] {
-  return platformCards({ platform: "desktop", inApp: false, release, origin: "", hint: "other" }).map(({ id, name, chip, line, action, qr }) => ({
+  const known: StoreRelease = { testflight: null, play: release.play };
+  return platformCards({ platform: "desktop", inApp: false, release: known, origin: "", hint: "other" }).map(({ id, name, chip, line, action, qr }) => ({
     id,
     name,
     chip,

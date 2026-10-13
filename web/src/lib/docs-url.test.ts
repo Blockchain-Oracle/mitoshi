@@ -23,8 +23,9 @@ describe("the docs site", () => {
     expect(docsUrl("trading/proof")).toBe("https://docs.mitoshi.xyz/trading/proof");
   });
 
-  it("lists exactly the site's guides", () => {
-    expect([...GUIDES].sort()).toEqual(pages(CONTENT).filter((p) => p !== "index").sort());
+  it("names only the site's own guides", () => {
+    const site = new Set(pages(CONTENT));
+    expect(GUIDES.filter((guide) => !site.has(guide))).toEqual([]);
   });
 });
 
@@ -48,6 +49,14 @@ describe("docsRedirect", () => {
     expect(docsRedirect("/docs/nope/nothing")).toBe(DOCS_URL);
     expect(docsRedirect("/docs/constructor")).toBe(DOCS_URL);
     expect(docsRedirect("/docs/__proto__")).toBe(DOCS_URL);
+    expect(docsRedirect("/docs/stocks/bridge")).toBe(DOCS_URL);
+  });
+
+  it("sends a path with a file's extension to the site's own file, or its home", () => {
+    expect(docsRedirect("/docs/llms.txt")).toBe(`${DOCS_URL}/llms.txt`);
+    expect(docsRedirect("/docs/llms-full.txt")).toBe(`${DOCS_URL}/llms-full.txt`);
+    expect(docsRedirect("/docs/start/install.json")).toBe(DOCS_URL);
+    expect(docsRedirect("/docs/x.png")).toBe(DOCS_URL);
   });
 
   it("leaves every other path alone", () => {

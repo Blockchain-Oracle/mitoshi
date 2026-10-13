@@ -5,8 +5,7 @@
 // motion runtime), and a QR code at the foot for a desktop reader (on cream paper so any camera reads it; hidden on
 // phones, where the phone is the device). The store button is From 21st.dev 8280 efferd/app-store-button: the mark
 // beside a two-line label ("Join the beta on" / "TestFlight"), as an ink pill on the kit's tokens (the accent fill when
-// it is the page's one primary action; a quiet surface pill for Play's invitation-only test). Layout references
-// (Refero): Amie's "Download apps", Skiff's `/download`.
+// it is the page's one primary action). Layout references (Refero): Amie's "Download apps", Skiff's `/download`.
 import type { ReactNode } from "react";
 import { ExternalLink } from "@/components/shell/ExternalLink";
 import { QrCode } from "@/components/ui/qr-code";
@@ -14,8 +13,8 @@ import type { PlatformId } from "@/lib/release";
 import type { CardShape } from "./cards";
 import { DOWNLOAD } from "./copy";
 
-/** The chip: live (anyone can install it), invite (invited testers only), soon (not out yet), here (the one in use). */
-export type CardTone = "live" | "invite" | "soon" | "here";
+/** The chip: live (anyone can install it), soon (no one can join yet), here (the one in use). */
+export type CardTone = "live" | "soon" | "here";
 
 export interface PlatformCardProps {
   id: PlatformId;
@@ -54,8 +53,8 @@ export function PlatformCard({ id, name, glyph, chip, tone, line, action, qr }: 
   );
 }
 
-/** The store button's weight: the page's one accent action, an ink pill, or quiet (an invitation most can't open). */
-export type StoreVariant = "accent" | "ink" | "quiet";
+/** The store button's weight: the page's one accent action, or an ink pill. */
+export type StoreVariant = "accent" | "ink";
 
 /** A store's own page as a store-style button: its mark, a small kicker and the store's name. Opens outside the app. */
 export function StoreButton({ href, glyph, kicker, store, variant = "ink" }: { href: string; glyph: ReactNode; kicker: string; store: string; variant?: StoreVariant }) {
@@ -85,10 +84,10 @@ export function PlatformGrid({ cards }: { cards: readonly PlatformCardProps[] })
 }
 
 /**
- * The cards' shape while the request is read, so nothing moves when they land: the shapes this deployment's store links
- * give a desk (`waitShapes`) — today the web app leading wide (`data-lead="web"`, two rows tall on a desk) with its
- * install and QR, and the two stores still coming stacked beside it with no button. Each block holds its real words,
- * unseen, so every line box is the size the card's own text will take.
+ * The cards' shape while the request is read, so nothing moves when they land: the shapes a desk gets from what the
+ * deployment knows without a request (`waitShapes`) — today the web app leading wide (`data-lead="web"`, two rows tall
+ * on a desk) with its install and QR, and the two stores still coming stacked beside it with no button. Each block
+ * holds its real words, unseen, so every line box is the size the card's own text will take.
  */
 export function PlatformCardsWait({ shapes }: { shapes: readonly CardShape[] }) {
   return (

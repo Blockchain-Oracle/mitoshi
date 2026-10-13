@@ -5,7 +5,7 @@
 //
 //   ios      iPhone, iPad or iPod: Safari's Share → Add to Home Screen (the steps in `INSTALL.iosSteps`)
 //   android  any Android browser without a prompt: the browser menu → Add to Home screen
-//   chrome   desktop Chrome (and the Chromium browsers that say Chrome): ⋮ → Cast, save and share → Install page as app
+//   chrome   desktop Chrome (and the Chromium browsers that say Chrome): ⋮ → Cast, save, and share → Install page as app
 //   edge     desktop Edge: … → Apps → Install this site as an app
 //   safari   Safari 17+ on a Mac: File → Add to Dock
 //   other    anything else (Firefox, Opera, older Safari): no claim about this browser; install from Chrome, Edge or

@@ -27,7 +27,7 @@ describe("InstallCta (server paint)", () => {
       for (const step of where.path) expect(html).toContain(step.item);
     }
     expect(paint("safari")).toContain("Add to Dock");
-    expect(paint("chrome")).toContain("Chrome menu, then Cast, save and share, then Install page as app");
+    expect(paint("chrome")).toContain("Chrome menu, then Cast, save, and share, then Install page as app");
   });
 
   it("sends a browser we can't vouch for elsewhere, with nothing to press", () => {

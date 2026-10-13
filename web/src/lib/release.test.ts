@@ -1,7 +1,8 @@
-// /download's store links (D-230): only Apple's and Google's own test pages are offered, a malformed value reads as
-// unset (the card says "Coming to …"), and the open test wins over the internal one.
+// /download's store links (D-230): only Apple's join links and Google Play's open test are offered (Play's internal test
+// opens only for its listed testers, so it is refused), a malformed value reads as unset (the card says "Coming to …"),
+// and Apple's join page is read as open only when it is the join page for that code without the closed line.
 import { describe, expect, it } from "vitest";
-import { orderCards, parsePlay, parseTestflight, platformOf, readStoreRelease, storeOpen, testflightClosed, type StoreRelease } from "./release";
+import { orderCards, parsePlay, parseTestflight, platformOf, readStoreRelease, storeOpen, testflightState, type StoreRelease } from "./release";
 
 const TF = "https://testflight.apple.com/join/AbC123xy";
 const OPEN = "https://play.google.com/apps/testing/xyz.mitoshi.app.testnet";
@@ -19,28 +20,36 @@ describe("parseTestflight", () => {
 });
 
 describe("parsePlay", () => {
-  it("takes the open test's opt-in page or the store page, and the internal test's invitation", () => {
-    expect(parsePlay(OPEN, "open")).toBe(OPEN);
-    expect(parsePlay("https://play.google.com/store/apps/details?id=xyz.mitoshi.app.testnet", "open")).toBe("https://play.google.com/store/apps/details?id=xyz.mitoshi.app.testnet");
-    expect(parsePlay(INTERNAL, "internal")).toBe(INTERNAL);
+  it("takes the open test's opt-in page or the store page", () => {
+    expect(parsePlay(OPEN)).toBe(OPEN);
+    expect(parsePlay("https://play.google.com/store/apps/details?id=xyz.mitoshi.app.testnet")).toBe("https://play.google.com/store/apps/details?id=xyz.mitoshi.app.testnet");
   });
-  it("refuses another host, a track's wrong page, or a broken package", () => {
-    expect(parsePlay(INTERNAL, "open")).toBeNull();
-    expect(parsePlay(OPEN, "internal")).toBeNull();
-    expect(parsePlay("https://play.google.com.evil.example/apps/testing/xyz.mitoshi.app", "open")).toBeNull();
-    expect(parsePlay("https://play.google.com/apps/testing/notapackage", "open")).toBeNull();
-    expect(parsePlay("https://play.google.com/store/apps/details", "open")).toBeNull();
+  it("refuses the internal test's invitation, another host, or a broken package", () => {
+    expect(parsePlay(INTERNAL)).toBeNull();
+    expect(parsePlay("https://play.google.com.evil.example/apps/testing/xyz.mitoshi.app")).toBeNull();
+    expect(parsePlay("https://play.google.com/apps/testing/notapackage")).toBeNull();
+    expect(parsePlay("https://play.google.com/store/apps/details")).toBeNull();
   });
 });
 
-describe("testflightClosed", () => {
+describe("testflightState", () => {
+  const join = (status: string) =>
+    `<div id="status"><div class="beta-status">${status}</div></div><a href="itms-beta://testflight.apple.com/join/AbC123xy">`;
   it("reads Apple's closed page, escaped as it is served, and the full one", () => {
-    expect(testflightClosed('<div class="beta-status"> This beta isn&#39;t accepting any new testers right now. </div>')).toBe(true);
-    expect(testflightClosed("This beta isn’t accepting any new testers right now.")).toBe(true);
-    expect(testflightClosed("<h1>This beta is full.</h1>")).toBe(true);
+    expect(testflightState(TF, 200, join("<span>This beta isn&#39;t accepting any new testers right now.</span>"))).toBe("closed");
+    expect(testflightState(TF, 200, join("This beta isn’t accepting any new testers right now."))).toBe("closed");
+    expect(testflightState(TF, 200, join("<h1>This beta is full.</h1>"))).toBe("closed");
   });
-  it("takes a join page as open", () => {
-    expect(testflightClosed("<h1>Join the Mitoshi beta</h1><a>Start Testing</a>")).toBe(false);
+  it("takes a gone code as closed", () => {
+    expect(testflightState(TF, 404, "<h2>Not Found</h2>")).toBe("closed");
+  });
+  it("takes the join page for this code, without the closed line, as open", () => {
+    expect(testflightState(TF, 200, join("<span>Join the Mitoshi beta</span>"))).toBe("open");
+  });
+  it("never reads another page or a server error as open", () => {
+    expect(testflightState(TF, 200, "<html><body>Something went wrong</body></html>")).toBe("unknown");
+    expect(testflightState(TF, 200, join("").replace("AbC123xy", "Other999"))).toBe("unknown");
+    expect(testflightState(TF, 503, join(""))).toBe("unknown");
   });
 });
 
@@ -48,10 +57,10 @@ describe("readStoreRelease", () => {
   it("is all pending with nothing set", () => {
     expect(readStoreRelease({})).toEqual({ testflight: null, play: null });
   });
-  it("prefers the open test and falls back to the internal one", () => {
-    expect(readStoreRelease({ TESTFLIGHT_PUBLIC_LINK: TF, PLAY_OPEN_TEST_LINK: OPEN, PLAY_INTERNAL_TEST_LINK: INTERNAL })).toEqual({ testflight: TF, play: { url: OPEN, track: "open" } });
-    expect(readStoreRelease({ PLAY_INTERNAL_TEST_LINK: INTERNAL })).toEqual({ testflight: null, play: { url: INTERNAL, track: "internal" } });
-    expect(readStoreRelease({ PLAY_OPEN_TEST_LINK: "garbage", PLAY_INTERNAL_TEST_LINK: INTERNAL }).play).toEqual({ url: INTERNAL, track: "internal" });
+  it("reads the public TestFlight link and Play's open test, never Play's internal test", () => {
+    expect(readStoreRelease({ TESTFLIGHT_PUBLIC_LINK: TF, PLAY_OPEN_TEST_LINK: OPEN })).toEqual({ testflight: TF, play: OPEN });
+    expect(readStoreRelease({ PLAY_INTERNAL_TEST_LINK: INTERNAL })).toEqual({ testflight: null, play: null });
+    expect(readStoreRelease({ PLAY_OPEN_TEST_LINK: INTERNAL }).play).toBeNull();
   });
 });
 
@@ -66,35 +75,28 @@ describe("platformOf", () => {
 });
 
 describe("storeOpen", () => {
-  it("counts TestFlight's public link and Play's open test, never Play's invitation", () => {
+  it("counts a store whose link is offered", () => {
     expect(storeOpen({ testflight: TF, play: null }, "ios")).toBe(true);
-    expect(storeOpen({ testflight: null, play: { url: OPEN, track: "open" } }, "android")).toBe(true);
-    expect(storeOpen({ testflight: null, play: { url: INTERNAL, track: "internal" } }, "android")).toBe(false);
+    expect(storeOpen({ testflight: null, play: OPEN }, "android")).toBe(true);
     expect(storeOpen({ testflight: null, play: null }, "ios")).toBe(false);
+    expect(storeOpen({ testflight: TF, play: null }, "android")).toBe(false);
   });
 });
 
 describe("orderCards", () => {
   const none: StoreRelease = { testflight: null, play: null };
-  const both: StoreRelease = { testflight: TF, play: { url: OPEN, track: "open" } };
-  const invited: StoreRelease = { testflight: null, play: { url: INTERNAL, track: "internal" } };
+  const both: StoreRelease = { testflight: TF, play: OPEN };
   it("shows a desktop the open store tests first, then the web app, then the stores still coming", () => {
     expect(orderCards("desktop", false, both)).toEqual(["ios", "android", "web"]);
     expect(orderCards("desktop", false, none)).toEqual(["web", "ios", "android"]);
-    expect(orderCards("desktop", false, { testflight: null, play: { url: OPEN, track: "open" } })).toEqual(["android", "web", "ios"]);
+    expect(orderCards("desktop", false, { testflight: null, play: OPEN })).toEqual(["android", "web", "ios"]);
+    expect(orderCards("desktop", false, { testflight: TF, play: null })).toEqual(["ios", "web", "android"]);
   });
   it("leads a phone with its own app when its test is open, else with the web app", () => {
     expect(orderCards("ios", false, both)).toEqual(["ios", "web", "android"]);
     expect(orderCards("ios", false, none)).toEqual(["web", "ios", "android"]);
     expect(orderCards("android", false, both)).toEqual(["android", "web", "ios"]);
     expect(orderCards("android", false, { testflight: TF, play: null })).toEqual(["web", "android", "ios"]);
-  });
-  it("never leads with Play's invitation: the web app leads an Android phone, and a desk puts it after the web app", () => {
-    expect(orderCards("android", false, invited)).toEqual(["web", "android", "ios"]);
-    expect(orderCards("ios", false, invited)).toEqual(["web", "ios", "android"]);
-    expect(orderCards("desktop", false, invited)).toEqual(["web", "android", "ios"]);
-    expect(orderCards("desktop", false, { ...invited, testflight: TF })).toEqual(["ios", "web", "android"]);
-    expect(orderCards("ios", false, { ...invited, testflight: TF })).toEqual(["ios", "web", "android"]);
   });
   it("leads with the app itself inside its own web view", () => {
     expect(orderCards("android", true, none)).toEqual(["android", "web", "ios"]);

@@ -1,6 +1,6 @@
-// /download's cards (D-230): a store without its test link says it is coming and has no button (the web app leads with
-// the action); a set link becomes the store button and its QR; the device's own card leads; Play's invitation-only test
-// is quiet and never leads; inside the phone app its card is "Installed" with nothing to press.
+// /download's cards (D-230): a store no one can join yet says it is coming and has no button (the web app leads with the
+// action); an open link becomes the store button and its QR; the device's own card leads; inside the phone app its card
+// is "Installed" with nothing to press. The skeleton outlines what a desk gets, TestFlight as coming.
 import { isValidElement, type ReactElement } from "react";
 import { describe, expect, it } from "vitest";
 import type { PlatformId, StoreRelease } from "@/lib/release";
@@ -11,10 +11,8 @@ import { StoreButton, type PlatformCardProps } from "./PlatformCard";
 
 const TF = "https://testflight.apple.com/join/AbC123xy";
 const OPEN = "https://play.google.com/apps/testing/xyz.mitoshi.app.testnet";
-const INTERNAL = "https://play.google.com/apps/internaltest/4701234567890123456";
 const NONE: StoreRelease = { testflight: null, play: null };
-const BOTH: StoreRelease = { testflight: TF, play: { url: OPEN, track: "open" } };
-const INVITED: StoreRelease = { testflight: null, play: { url: INTERNAL, track: "internal" } };
+const BOTH: StoreRelease = { testflight: TF, play: OPEN };
 const ORIGIN = "https://mitoshi.xyz";
 
 const cardsFor = (input: Omit<CardsInput, "origin" | "hint"> & Partial<CardsInput>) => platformCards({ origin: ORIGIN, hint: "chrome", ...input });
@@ -61,7 +59,8 @@ describe("platformCards", () => {
     expect(element(cards.ios.action)?.props.href).toBe(TF);
     expect(cards.ios.qr?.value).toBe(TF);
     expect(element(cards.android.action)?.props.href).toBe(OPEN);
-    expect(cards.android.chip).toBe(DOWNLOAD.android.open.chip);
+    expect(cards.android.chip).toBe(DOWNLOAD.android.ready.chip);
+    expect(element(cards.android.action)?.props.kicker).toBe(DOWNLOAD.android.ready.kicker);
     expect(cards.android.tone).toBe("live");
   });
 
@@ -79,26 +78,12 @@ describe("platformCards", () => {
     expect(accent(cards[2])).toBe(false);
   });
 
-  it("keeps Play's invitation quiet on an Android phone: the web app leads with the accent, the invite follows", () => {
-    const cards = cardsFor({ platform: "android", inApp: false, release: INVITED });
+  it("never offers Play's internal test: Android says it is coming, and the web app leads with the accent", () => {
+    const cards = cardsFor({ platform: "android", inApp: false, release: NONE });
     expect(cards.map((c) => c.id)).toEqual(["web", "android", "ios"]);
     expect(accent(cards[0])).toBe(true);
-    const android = cards[1]!;
-    expect(android.tone).toBe("invite");
-    expect(android.chip).toBe(DOWNLOAD.android.internal.chip);
-    expect(element(android.action)?.type).toBe(StoreButton);
-    expect(element(android.action)?.props.variant).toBe("quiet");
-    expect(element(android.action)?.props.href).toBe(INTERNAL);
-  });
-
-  it("puts Play's invitation after the web app on a desk, quiet, the web install still the accent", () => {
-    const cards = cardsFor({ platform: "desktop", inApp: false, release: INVITED });
-    expect(cards.map((c) => c.id)).toEqual(["web", "android", "ios"]);
-    expect(accent(cards[0])).toBe(true);
-    expect(cards[1]?.tone).toBe("invite");
-    expect(element(cards[1]?.action)?.props.variant).toBe("quiet");
-    expect(cards[1]?.qr?.value).toBe(INTERNAL);
-    expect(cards.filter((c) => c.tone === "live").map((c) => c.id)).toEqual(["web"]);
+    expect(cards[1]?.chip).toBe(DOWNLOAD.android.pending.chip);
+    expect(cards[1]?.action).toBeNull();
   });
 
   it("inside the phone app, marks its own card installed and offers nothing to install", () => {
@@ -118,8 +103,8 @@ describe("waitShapes", () => {
       { id: "android", name: DOWNLOAD.android.name, chip: DOWNLOAD.android.pending.chip, line: DOWNLOAD.android.pending.line, action: null, scan: null },
     ]);
   });
-  it("follows the links: Play's invitation after the web app with its button and QR; open stores first", () => {
-    expect(waitShapes(INVITED).map((c) => [c.id, c.action, c.scan !== null])).toEqual([["web", "install", true], ["android", "store", true], ["ios", null, false]]);
-    expect(waitShapes(BOTH).map((c) => c.id)).toEqual(["ios", "android", "web"]);
+  it("follows Play's open test, and draws TestFlight as coming: Apple's page is read only with the request", () => {
+    expect(waitShapes({ testflight: null, play: OPEN }).map((c) => [c.id, c.action, c.scan !== null])).toEqual([["android", "store", true], ["web", "install", true], ["ios", null, false]]);
+    expect(waitShapes({ testflight: TF, play: null })).toEqual(waitShapes(NONE));
   });
 });
