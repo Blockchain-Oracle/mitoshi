@@ -1,27 +1,22 @@
 "use client";
-/** The /agents island (the /leaderboard shape): the board loads with the late data layer; before that, a named wait. */
+/** The /agents islands (the /leaderboard shape): the board and the cockpit load with the late data layer; before that,
+ *  a placeholder shaped like each page (R4-6: `agents-board`, `cockpit`), with no wrapper — the stage is the inset. */
 import dynamic from "next/dynamic";
 import { LoadingState } from "@/components/states";
 import { useDataReady } from "@/providers/data/context";
 import { AGENTS } from "./copy";
 
-function Placeholder() {
-  return (
-    <div className="mx-auto w-full max-w-(--content-wide) px-gutter py-8 lg:px-gutter-desktop">
-      <LoadingState shape="page" label={AGENTS.loading} />
-    </div>
-  );
-}
-
-const AgentsScreen = dynamic(() => import("./AgentsScreen").then((m) => m.AgentsScreen), { ssr: false, loading: () => <Placeholder /> });
-const AgentProfile = dynamic(() => import("./AgentProfile").then((m) => m.AgentProfile), { ssr: false, loading: () => <Placeholder /> });
+const Board = () => <LoadingState shape="agents-board" label={AGENTS.loading} />;
+const Cockpit = () => <LoadingState shape="cockpit" label={AGENTS.loading} />;
+const AgentsScreen = dynamic(() => import("./AgentsScreen").then((m) => m.AgentsScreen), { ssr: false, loading: () => <Board /> });
+const AgentProfile = dynamic(() => import("./AgentProfile").then((m) => m.AgentProfile), { ssr: false, loading: () => <Cockpit /> });
 
 export function AgentsPage() {
   const ready = useDataReady();
-  return ready ? <AgentsScreen /> : <Placeholder />;
+  return ready ? <AgentsScreen /> : <Board />;
 }
 
 export function AgentProfilePage({ strategyId }: { strategyId: string }) {
   const ready = useDataReady();
-  return ready ? <AgentProfile strategyId={strategyId} /> : <Placeholder />;
+  return ready ? <AgentProfile strategyId={strategyId} /> : <Cockpit />;
 }

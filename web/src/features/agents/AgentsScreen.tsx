@@ -1,49 +1,78 @@
 "use client";
-// `/agents` (S9.8; L-54, Q-001): Masayume's agents board over the registry — the inherited order, labelled, with every
-// row's P&L and sample size — on S5's rankings rows (21st 13063). A row opens the agent's page.
+// Ported from Owarine 90a91d71:web/src/features/strategies/AgentsScreen.tsx (R4-6, D-227) on Mitoshi's registry and
+// rankAgents (board.ts, Q-001's inherited order): the title, the entry links into /strategies, the stat strip (Agents ·
+// Strategies · Copiers · Entrusted, from the same read), the order as two tabs (Most backed · P&L) and one AgentRow per
+// ERC-8004 agent; it ends on the not-advice line. The stage is the one inset.
+import Link from "next/link";
 import { useState } from "react";
-import { EmptyState } from "@/components/states/EmptyState";
 import { LoadingState } from "@/components/states/LoadingState";
-import { LeaderboardRankings, type RankingRow } from "@/components/ui/leaderboard-rankings";
-import { SegmentedControl } from "@/components/ui/segmented-control";
+import { cn } from "@/lib/utils";
+import { usd } from "../strategies/format";
 import { useStrategies } from "../strategies/useStrategies";
+import { AgentRow } from "./AgentRow";
 import { rankAgents, type BoardSort } from "./board";
 import { AGENTS as A } from "./copy";
+import "../strategies/strategies.css";
+import "../strategies/builder.css";
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="agents-stat">
+      <div className="strat-meta mb-2 text-ink-muted">{label}</div>
+      <div className="agents-stat-value">{value}</div>
+    </div>
+  );
+}
 
 export function AgentsScreen() {
   const [sort, setSort] = useState<BoardSort>("inherited");
   const reading = useStrategies();
-  const ranked = rankAgents(reading.data?.strategies ?? [], sort);
-  const rows: RankingRow[] = ranked.map((s, i) => {
-    const net = BigInt(s.record.netBase);
-    return {
-      rank: i + 1, owner: s.runner, label: s.name, byline: A.byline(s.record.settled, s.subscribers, BigInt(s.record.entrustedBase)), figure: A.figure(net, s.record.settled),
-      tone: s.record.settled === 0 || net === 0n ? "flat" : net > 0n ? "up" : "down", href: `/agents/${s.strategyId}`,
-    };
-  });
+  const strategies = reading.data?.strategies ?? [];
+  const ranked = rankAgents(strategies, sort);
+  const nowMs = Date.now();
   return (
-    <div className="mx-auto flex w-full max-w-(--content-wide) flex-col gap-6 px-gutter py-8 lg:px-gutter-desktop">
-      <header className="flex flex-col gap-2">
-        <span className="type-label-micro text-ink-secondary">{A.eyebrow}</span>
-        <h1 className="type-display text-ink">{A.title}</h1>
-        <p className="max-w-(--content-reading) type-body text-ink-secondary">{A.lead}</p>
-      </header>
-      <div className="flex flex-col gap-2">
-        <SegmentedControl label={A.sortLabel} options={A.sorts} value={sort} onValueChange={setSort} />
-        {sort === "inherited" && <p className="max-w-(--content-reading) type-caption text-ink-secondary">{A.inheritedNote}</p>}
-      </div>
+    <div className="flex flex-col gap-6">
+      <h1 className="strat-h1">{A.title}</h1>
+      <nav className="agent-entry" aria-label={A.entryLabel}>
+        <Link href="/strategies">{A.entry.create}</Link>
+        <Link href="/strategies?view=copy">{A.entry.copy}</Link>
+        <Link href="/strategies?view=yours">{A.entry.yours}</Link>
+      </nav>
       {reading.isPending ? (
-        <LoadingState shape="table" label={A.loading} />
+        <LoadingState shape="agents-board" label={A.loading} />
       ) : reading.isError && !reading.data ? (
-        <div role="alert" className="flex flex-col items-center gap-3 rounded-lg border border-hairline bg-surface-1 px-6 py-8 text-center">
-          <p className="type-body-strong text-ink">{A.error}</p>
-          <button type="button" onClick={() => void reading.refetch()} className="inline-flex min-h-touch items-center rounded-full border border-hairline px-5 type-body-strong text-ink hover:bg-surface-2">{A.retry}</button>
+        <div role="alert" className="strat-empty flex flex-col items-center gap-3">
+          <p className="strat-h2">{A.error}</p>
+          <button type="button" onClick={() => void reading.refetch()} className="strat-sensei">{A.retry}</button>
         </div>
-      ) : rows.length === 0 ? (
-        <EmptyState why={A.empty} />
+      ) : !reading.data?.deployed ? (
+        <div className="strat-empty"><p className="strat-h2">{A.notDeployed}</p></div>
       ) : (
-        <LeaderboardRankings rows={rows} you={null} youOwner={null} label={A.title} youLabel="" />
+        <>
+          <div className="agents-stats">
+            <Stat label={A.stats.agents} value={String(ranked.length)} />
+            <Stat label={A.stats.strategies} value={String(strategies.length)} />
+            <Stat label={A.stats.copiers} value={String(ranked.reduce((n, s) => n + s.subscribers, 0))} />
+            <Stat label={A.stats.entrusted} value={usd(ranked.reduce((n, s) => n + BigInt(s.record.entrustedBase), 0n))} />
+          </div>
+          <div className="strat-tabbar-row border-b border-hairline" role="group" aria-label={A.sortLabel}>
+            {A.sorts.map((o) => (
+              <button key={o.value} type="button" title={o.title} aria-pressed={sort === o.value} onClick={() => setSort(o.value)} className={cn("strat-tab", sort === o.value && "strat-tab--on")}>{o.label}</button>
+            ))}
+          </div>
+          {ranked.length === 0 ? (
+            <div className="strat-empty flex flex-col items-center gap-4">
+              <h2 className="strat-h2">{A.empty}</h2>
+              <Link href="/strategies" className="desk-btn-primary">{A.emptyCta}</Link>
+            </div>
+          ) : (
+            <ol className="flex flex-col gap-2">
+              {ranked.map((s, i) => <AgentRow key={s.strategyId} s={s} rank={i + 1} nowMs={nowMs} />)}
+            </ol>
+          )}
+        </>
       )}
+      <p className="strat-advice">{A.advice}</p>
     </div>
   );
 }
