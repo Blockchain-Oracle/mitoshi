@@ -211,45 +211,6 @@ export const deployments = {
       "external": {},
       "commit": "5e11092"
     },
-    "guard": {
-      "contracts": {
-        "StockGuardHook": {
-          "address": "0xFB0579c1dbFfbBabb05834998b5542B9Bd4FA0C0",
-          "artifact": "StockGuardHook.sol:StockGuardHook",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x5cef682527039bf33b54c08cf32f6a1e2c0ae765dca9522b4cea3e15e15ba5a8",
-          "deployBlock": 37384596,
-          "history": []
-        },
-        "StockReference": {
-          "address": "0xccBc2E760C22DBBdb3E1C2458C98593942A7Bd90",
-          "artifact": "StockReference.sol:StockReference",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0xdbf2a5d92f612af9c6a44c73175090b7b7cca75b8ee70d983acf219e2cee2283",
-          "deployBlock": 37384588,
-          "history": []
-        }
-      },
-      "roles": {
-        "KEEPER": "0x6Ed3a4b6E42B2C45211074F8D7BA58dbB2FAad0C",
-        "owner": "0xF368eE3b38bC3682A4f55Fd03778123269B69Fe5"
-      },
-      "params": {
-        "create2Deployer": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
-        "dataStreamsProxy": "0x72790f9eB82db492a7DDb6d2af22A270Dcc3Db64",
-        "hookFlags": "0x20C0 (beforeInitialize | beforeSwap | afterSwap)",
-        "hookSalt": "0x0000000000000000000000000000000000000000000000000000000000003209",
-        "poolFee": 3000,
-        "poolManager": "0x33620f62C5b9B2086dD6b62F4A297A9f30347029",
-        "poolTickSpacing": 60,
-        "redstoneVerifier": "0x38Ad9Fe54b3b271f737CdC231d7B85b1616A1377",
-        "syncReceiver": "0xE1576984eA22F1E620CFCCa6bf6154C4b9a3693e"
-      },
-      "external": {},
-      "commit": "86252d4"
-    },
     "launch": {
       "contracts": {
         "LaunchRegistry": {
@@ -442,13 +403,6 @@ export const deployments = {
       "external": {},
       "commit": "b721516"
     },
-    "pools": {
-      "contracts": {},
-      "roles": {},
-      "params": {},
-      "external": {},
-      "commit": "f98d630"
-    },
     "private": {
       "contracts": {
         "PrivateDesk": {
@@ -536,119 +490,6 @@ export const deployments = {
       "external": {},
       "commit": "741a58d"
     },
-    "stocks": {
-      "contracts": {
-        "MirrorAMD": {
-          "address": "0x20C000000000000000000000b21134EaB38DfecC",
-          "artifact": "ITIP20.sol:ITIP20",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0xb73fb458280737b6a416a1a4a7ce921fcfe41011ab1713bb1e60d4de5e5fbe4d",
-          "deployBlock": 37367729,
-          "history": []
-        },
-        "MirrorAMZN": {
-          "address": "0x20c00000000000000000000086081D645cF16774",
-          "artifact": "ITIP20.sol:ITIP20",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x447d55e6b80ac7e34e4d584467e1ba4523cca875ce2b662c8880a38d8382056d",
-          "deployBlock": 37367619,
-          "history": []
-        },
-        "MirrorNFLX": {
-          "address": "0x20c000000000000000000000Abbbf91DE8978A6d",
-          "artifact": "ITIP20.sol:ITIP20",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x4c6aea8f4b2f647de987c350478bb6b5b0080493bcc5f1c584e6a41f3ea01a97",
-          "deployBlock": 37367689,
-          "history": []
-        },
-        "MirrorPLTR": {
-          "address": "0x20C0000000000000000000001edEEA054Ea97549",
-          "artifact": "ITIP20.sol:ITIP20",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x61c9703b69e7c71cdbc3e52cfab6fbae5b5b58aadc95f198069771353fe1d6ee",
-          "deployBlock": 37367655,
-          "history": []
-        },
-        "MirrorTSLA": {
-          "address": "0x20c000000000000000000000a81E861906820FB7",
-          "artifact": "ITIP20.sol:ITIP20",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x448cd194524c11333c022c5129a4623bb19202214159a0f47489158ef6f7adb8",
-          "deployBlock": 37367578,
-          "history": []
-        },
-        "ScaledUIViewAMD": {
-          "address": "0x5b2C026CCd72da795F8C97Eb697755E255f82319",
-          "artifact": "ScaledUIView.sol:ScaledUIView",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x295c84c1278457a9afdcd63c3b2385d0d3fe5cea5230f3b827889e90f706e4bc",
-          "deployBlock": 37367725,
-          "history": []
-        },
-        "ScaledUIViewAMZN": {
-          "address": "0xfbD49C65De95a8dD785C757cd17F621e698C02Ee",
-          "artifact": "ScaledUIView.sol:ScaledUIView",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x1fcc059bdc245b970bbea0d6350dbb505c63249d4bdcca9813adfb23fb3b8964",
-          "deployBlock": 37367615,
-          "history": []
-        },
-        "ScaledUIViewNFLX": {
-          "address": "0xF042Aca1A896D2fc257544B54c7Df3EC8F186E10",
-          "artifact": "ScaledUIView.sol:ScaledUIView",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x67470dcfa45d81f8d67d8b30298a1160b9020c3e17290cacc42f9a35430ce12e",
-          "deployBlock": 37367680,
-          "history": []
-        },
-        "ScaledUIViewPLTR": {
-          "address": "0x5b6A5f7141cE3a3C7c234A461b723fA810264A55",
-          "artifact": "ScaledUIView.sol:ScaledUIView",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0xb4b0056bf60e0b5cd083e80d63fdc02919788fa9fd4872f53dc9b0ba6d49cbc8",
-          "deployBlock": 37367648,
-          "history": []
-        },
-        "ScaledUIViewTSLA": {
-          "address": "0x5d0E0FFd621021F8e4A1e801F2cdE3BCFd8260B2",
-          "artifact": "ScaledUIView.sol:ScaledUIView",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x50cfe7c365e1ba97272dd8530b106da05c98d03eb789eb69207a1175519d570b",
-          "deployBlock": 37367573,
-          "history": []
-        },
-        "StockSyncReceiver": {
-          "address": "0xE1576984eA22F1E620CFCCa6bf6154C4b9a3693e",
-          "artifact": "StockSyncReceiver.sol:StockSyncReceiver",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x140aed4b8565ba1e2175346969cf83e1a2cc1fac1d7eeabc7384bf4d5ef9e56a",
-          "deployBlock": 37367556,
-          "history": []
-        }
-      },
-      "roles": {
-        "GUARDIAN": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e",
-        "SAFE": "0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e"
-      },
-      "params": {
-        "srcChainId": 46630,
-        "supplyCap": 1000000000
-      },
-      "external": {},
-      "commit": "959edd4"
-    },
     "strategies": {
       "contracts": {
         "StrategyRegistry": {
@@ -671,40 +512,6 @@ export const deployments = {
       },
       "external": {},
       "commit": "7a907ee"
-    },
-    "themes": {
-      "contracts": {
-        "ThemeRegistry": {
-          "address": "0xdAb8A7fb64b561716cbE27CB0Eb9c49FB9414a9B",
-          "artifact": "ThemeRegistry.sol:ThemeRegistry",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0x1f3dd368c33c92aa45119791ade4571352f8456de179de0b657ed2040fe8e269",
-          "deployBlock": 37380560,
-          "history": []
-        },
-        "ThemeRouter": {
-          "address": "0x86b12714e58F91762Cb0F00d8830e08d6B642C41",
-          "artifact": "ThemeRouter.sol:ThemeRouter",
-          "profile": "default",
-          "proxy": false,
-          "txHash": "0xb837dc36f100c479bf1b59798c7f62fee8b7581b5b98ab9bf7b9428ea6938085",
-          "deployBlock": 37380562,
-          "history": []
-        }
-      },
-      "roles": {
-        "owner": "0xb0A5F0389098a8B0F33B9B6d6cf2a5917F8A58D6"
-      },
-      "params": {
-        "guard": "0xFB0579c1dbFfbBabb05834998b5542B9Bd4FA0C0",
-        "maxCreatorFeeBps": 50,
-        "oracle": "0xFB0579c1dbFfbBabb05834998b5542B9Bd4FA0C0",
-        "poolManager": "0x33620f62C5b9B2086dD6b62F4A297A9f30347029",
-        "proofTarget": "0xccBc2E760C22DBBdb3E1C2458C98593942A7Bd90"
-      },
-      "external": {},
-      "commit": "fc7b90b"
     },
     "v4": {
       "contracts": {

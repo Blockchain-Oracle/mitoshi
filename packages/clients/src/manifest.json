@@ -4,17 +4,13 @@
     "42431/arena",
     "42431/engine",
     "42431/fair",
-    "42431/guard",
     "42431/launch",
     "42431/leverage",
     "42431/maker",
     "42431/parlay",
-    "42431/pools",
     "42431/private",
     "42431/range",
-    "42431/stocks",
     "42431/strategies",
-    "42431/themes",
     "42431/v4",
     "42431/vault",
     "42431/vault2"
@@ -36,7 +32,6 @@
     "IPositionDescriptor",
     "IPositionManager",
     "IStateView",
-    "ITIP20",
     "IUniversalRouter",
     "IV4Quoter",
     "LaunchRegistry",
@@ -49,12 +44,6 @@
     "RangeReserve",
     "RedStonePrintVerifier",
     "ResolveLib",
-    "ScaledUIView",
-    "StockGuardHook",
-    "StockReference",
-    "StockSyncReceiver",
-    "StrategyRegistry",
-    "ThemeRegistry",
-    "ThemeRouter"
+    "StrategyRegistry"
   ]
 }

@@ -5,9 +5,9 @@
 import { deployments as generated } from "@cwf/clients";
 import { diagnosis, err, type Address, type Reading } from "@cwf/core";
 
-/** The areas the app reads or writes. Each contract stage adds its fragment; `noop` is the relay's S1 proof area. `stocks`
- *  holds the Mirror tokens, their views and the sync receiver the guard and themes still read (D-231 retired the bridge). */
-export const AREAS = ["engine", "vault", "vault2", "parlay", "range", "maker", "leverage", "private", "arena", "strategies", "stocks", "themes", "launch", "agents", "v4"] as const;
+/** The areas the app reads or writes. Each contract stage adds its fragment; `noop` is the relay's S1 proof area. D-231
+ *  retired `stocks`, `guard`, `pools` and `themes` (contracts/deployments/retired/): a theme is a `basket` strategy. */
+export const AREAS = ["engine", "vault", "vault2", "parlay", "range", "maker", "leverage", "private", "arena", "strategies", "launch", "agents", "v4"] as const;
 export type Area = (typeof AREAS)[number];
 
 export interface DeployedContract {

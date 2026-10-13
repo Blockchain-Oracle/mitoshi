@@ -1,9 +1,0 @@
-{
-  "_doc": "Theme weight vectors (S1 stub; S16 adds rebalance cases). Scores are integers; weights are bps summing to 10,000.",
-  "normalize": [
-    { "scores": { "TSLA": "1", "NVDA": "1" }, "bps": { "TSLA": 5000, "NVDA": 5000 } },
-    { "scores": { "TSLA": "1", "NVDA": "1", "AMD": "1" }, "bps": { "TSLA": 3334, "NVDA": 3333, "AMD": 3333 } },
-    { "scores": { "TSLA": "3", "NVDA": "1", "AMD": "0" }, "bps": { "TSLA": 7500, "NVDA": 2500, "AMD": 0 } },
-    { "scores": { "AAPL": "2", "MSFT": "2", "META": "2", "GOOGL": "1" }, "bps": { "AAPL": 2857, "MSFT": 2857, "META": 2857, "GOOGL": 1429 } }
-  ]
-}

@@ -8,11 +8,7 @@
     ".": "./src/index.ts",
     "./venue-spec.json": "./src/market/venue-spec.json",
     "./strategies/basket.vectors.json": "./src/strategies/basket.vectors.json",
-    "./stocks/guard": "./src/stocks/guard.ts",
-    "./stocks/session": "./src/stocks/session.ts",
     "./prices/redstone": "./src/prices/redstonePayload.ts",
-    "./stocks/housePlan": "./src/stocks/housePlan.ts",
-    "./stocks/liquidity": "./src/stocks/liquidity.ts",
     "./*": "./src/*/index.ts"
   },
   "scripts": {
