@@ -253,6 +253,17 @@ span.top-money, span.top-account { display: contents; }
   .app-shell:has(.gm-frame[data-immersive]:not([style*="display: none"])) { --stage-sticky-top: 0px; --dock-clearance: 0px; --dock-strip-offset: calc(8px + env(safe-area-inset-bottom, 0px)); }
 }
 
+/* ── one header per game screen (R6 games S06): a game route's strip (and rank's and history's) owns the top — on a
+ * phone the app's top line leaves (the strip carries back, the title and the account), from 768 px only the top line's
+ * chevron does, so the strip's back is the one back. The dock stays; `data-immersive` still hides it. ── */
+@media (max-width: 767px) {
+  .app-column:has(.gm-frame[data-owns-top]:not([style*="display: none"])) > .app-topline { display: none; }
+  .app-shell:has(.gm-frame[data-owns-top]:not([style*="display: none"])) { --stage-sticky-top: 0px; }
+}
+@media (min-width: 768px) {
+  .app-column:has(.gm-frame[data-owns-top]:not([style*="display: none"])) .topline-back { display: none; }
+}
+
 /* The Trade place's own drawers under it on the terminal (S23g). */
 .rail-sub { display: flex; flex-direction: column; gap: 2px; margin: -4px 0 4px; padding-left: 28px; }
 .rail-sub-item { display: flex; min-height: 36px; align-items: center; gap: 10px; padding: 0 12px; border-radius: var(--radius-full); color: var(--color-ink-secondary); font: 500 14px/1 var(--font-body); text-align: left; }

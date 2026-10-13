@@ -52,6 +52,10 @@
 
 /* the head: title, the rounds chip, ⓘ — one 40 px row, no eyebrow, no description */
 .gh { display: flex; align-items: center; gap: 8px; min-height: 40px; }
+/* R6 games S06: on Range and Moonshot the head is the Rounds chip alone, at the cadence row's right end. */
+.gh--chip { min-height: 0; flex: none; }
+.gw-tabs-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.gw-tabs-row > .gw-tabs { min-width: 0; flex: 1 1 auto; }
 .gh-title { margin-right: auto; font-family: var(--font-heading); font-weight: 800; font-size: 22px; line-height: 1; letter-spacing: -0.02em; color: var(--color-ink); }
 @media (min-width: 1024px) { .gh-title { font-size: 32px; } }
 .gh-chip {

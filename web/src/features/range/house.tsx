@@ -14,7 +14,7 @@ import { usePersistedState } from "@/lib/persisted";
 import { useWalletSession } from "@/lib/wallet-session";
 import { usd, utilizationPct } from "../parlay/format";
 import { RANGE } from "./copy";
-import { useRangeWindows, type BandWindow } from "./data";
+import { useRangeReserve, useRangeWindows, type BandWindow } from "./data";
 import { GameHead } from "./GameHead";
 import { RangeRounds, useRoundsSummary, type RoundKind } from "./RangeRounds";
 import type { useRangeWrites } from "./useRangeWrites";
@@ -54,26 +54,32 @@ export function useHouseWindows(reserve: RangeReserveState, storageKey: string) 
   return { nowMs, windows, current, setPicked, empty, gapInSec };
 }
 
-export function HouseHead({ title, kind, reserve, writes, how, infoTitle }: { title: string; kind: RoundKind; reserve: RangeReserveState; writes: ReturnType<typeof useRangeWrites>; how: readonly string[]; infoTitle: string }) {
+/** Range's and Moonshot's head on a game route (R6 games S06): the Rounds chip alone, for the cadence row's right end —
+ *  the strip carries the title and ?, and the house's figures moved into the strip's how-to (`HouseFacts`). */
+export function HouseHead({ kind, reserve, writes }: { kind: RoundKind; reserve: RangeReserveState; writes: ReturnType<typeof useRangeWrites> }) {
   const nowMs = useNowMs();
   const session = useWalletSession();
   const summary = useRoundsSummary(session.address, kind);
   return (
     <GameHead
-      title={title}
       chip={summary.claimBase > 0n ? RANGE.head.claim(usd(summary.claimBase)) : RANGE.head.rounds(summary.count)}
       chipAccent={summary.claimBase > 0n}
       sheetTitle={RANGE.sections.rounds.title}
       sheet={<RangeRounds kind={kind} wallet={session.address} nowMs={nowMs} staleAfterSec={reserve.params.staleAfterSec} writes={writes} onSignIn={session.connect} />}
-      infoTitle={infoTitle}
-      how={how}
-      facts={
-        <>
-          <p className="numbers">{RANGE.info.reserve(usd(reserve.liquidBase), utilizationPct(reserve.utilizationBps))}</p>
-          <p>{RANGE.info.atMost}</p>
-        </>
-      }
     />
+  );
+}
+
+/** The house's figures for the strip's how-to on Range and Moonshot (S06): what the reserve has free and in play. */
+export function HouseFacts() {
+  const reading = useRangeReserve();
+  const reserve = reading?.ok ? reading.value : null;
+  if (!reserve) return null;
+  return (
+    <div className="gh-facts">
+      <p className="numbers">{RANGE.info.reserve(usd(reserve.liquidBase), utilizationPct(reserve.utilizationBps))}</p>
+      <p>{RANGE.info.atMost}</p>
+    </div>
   );
 }
 

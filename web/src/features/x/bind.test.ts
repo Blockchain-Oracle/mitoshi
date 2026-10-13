@@ -8,7 +8,8 @@ import { tempoChain } from "@cwf/markets";
 import { newPasskeyRoot } from "@cwf/markets/drive";
 import { messageVerifier } from "@cwf/markets/server";
 
-const client = createPublicClient({ chain: tempoChain("testnet"), transport: http("https://rpc.moderato.tempo.xyz") }) as PublicClient;
+// The public RPC answers 429 while the whole suite runs in parallel: retry with backoff rather than read a refusal as "invalid".
+const client = createPublicClient({ chain: tempoChain("testnet"), transport: http("https://rpc.moderato.tempo.xyz", { retryCount: 6, retryDelay: 400 }) }) as PublicClient;
 const verify = messageVerifier(client, { allowAccessKey: true });
 const NOW = 1_791_870_000_000;
 

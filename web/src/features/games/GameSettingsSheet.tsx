@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { Switch } from "@/components/ui/switch";
+import { HeaderAccount } from "@/components/shell/header/HeaderAccount";
+import { ModeChip } from "@/components/shell/ModeChip";
 import { BGM_BED, playSfx, setBgmVolume, setSfxVolume, useBgmVolume, useModalSfx, useSfxVolume } from "./audio";
 import { GAMES } from "./copy";
 import { fireFeedback, hapticsSupported } from "./feedback";
@@ -43,6 +45,11 @@ export function GameSettingsSheet() {
     >
       {/* The sheet portals out of the frame, so it carries the motion setting itself. */}
       <div className="gm-settings" data-reduced-motion={reducedMotion ? "true" : "false"}>
+        {/* A phone's game screen has no top line (R6 games S06): the mode and the money are one tap away here. */}
+        <div className="gm-set-account">
+          <ModeChip />
+          <HeaderAccount placement="top" />
+        </div>
         <div className="gm-set-block">
           <label className="gm-set-row gm-set-row--stack">
             <span className="gm-set-label">{GAMES.settings.sfx.label}</span>

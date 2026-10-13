@@ -12,6 +12,7 @@ import type { EventMarket, MarketId } from "@cwf/core";
 import { useRef, type KeyboardEvent } from "react";
 import { CountdownRing } from "@/components/kit/CountdownRing";
 import { ScrollRail } from "@/components/kit/ScrollRail";
+import type { ReactNode } from "react";
 import { TextTabs } from "@/components/kit/TextTabs";
 import { cn } from "@/lib/utils";
 import { AssetDisc } from "../markets/hero/AssetDisc";
@@ -28,7 +29,7 @@ export const cadenceKeysOf = (ws: readonly { market: EventMarket }[]): string[] 
 const formatDays = (sec: number) => (sec >= 86_400 ? `${Math.ceil(sec / 86_400)}d` : `${Math.max(1, Math.ceil(sec / 3_600))}h`);
 const cadenceLabel = (key: string) => (key === "gap" ? RANGE.windows.gap : key);
 
-export function WindowPicker({ windows, pickedId, onPick, gapInSec = null }: { windows: readonly BandWindow[]; pickedId: MarketId | null; onPick: (id: MarketId) => void; gapInSec?: number | null }) {
+export function WindowPicker({ windows, pickedId, onPick, gapInSec = null, aside = null }: { windows: readonly BandWindow[]; pickedId: MarketId | null; onPick: (id: MarketId) => void; gapInSec?: number | null; /** At the cadence row's right end (R6 games S06: the Rounds chip). */ aside?: ReactNode }) {
   const priced = windows.filter((w) => w.model !== null);
   const keys = cadenceKeysOf(priced);
   const picked = priced.find((w) => w.market.marketId === pickedId) ?? null;
@@ -53,7 +54,10 @@ export function WindowPicker({ windows, pickedId, onPick, gapInSec = null }: { w
   const allHoursTwin = (m: EventMarket) => m.lane === "stock24" && chips.some((w) => w.market.asset === m.asset && w.market.lane === "regular");
   return (
     <div className="gw">
-      {keys.length > 0 ? <TextTabs value={cadence} onChange={choose} label={RANGE.windows.cadence} tabs={keys.map((k) => ({ value: k, label: cadenceLabel(k) }))} className="gw-tabs" /> : null}
+      <div className="gw-tabs-row">
+        {keys.length > 0 ? <TextTabs value={cadence} onChange={choose} label={RANGE.windows.cadence} tabs={keys.map((k) => ({ value: k, label: cadenceLabel(k) }))} className="gw-tabs" /> : null}
+        {aside}
+      </div>
       <ScrollRail label={RANGE.windows.rail} className="gw-rail">
         <div ref={rail} className="gw-group" role="radiogroup" aria-label={RANGE.windows.label} onKeyDown={onKey}>
           {chips.map(({ market: m, model }) => {

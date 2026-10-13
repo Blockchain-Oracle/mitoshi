@@ -5,6 +5,7 @@ import { Modal } from "@/components/ui/modal";
 import { useModalSfx } from "./audio";
 import { gameEntry } from "./catalog";
 import { GAMES } from "./copy";
+import { HouseFacts } from "../range/house";
 
 /**
  * Pips's per-game HOW TO (R4-9, D-227: on Mitoshi's one overlay, `components/ui/modal.tsx` — Base UI's focus trap,
@@ -33,6 +34,8 @@ export function HowToSheet({ id, open, onClose }: { id: GameId; open: boolean; o
           <li key={line}>{line}</li>
         ))}
       </ol>
+      {/* Range and Moonshot (R6 games S06): the house's figures, from their head's old ⓘ. */}
+      {id === "range" || id === "moonshot" ? <HouseFacts /> : null}
     </Modal>
   );
 }

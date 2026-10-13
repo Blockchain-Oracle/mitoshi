@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Sticker } from "@/components/kit/Sticker";
+import { HeaderAccount } from "@/components/shell/header/HeaderAccount";
 import { toggleMute, useMuted } from "./audio";
 import { gameEntry, gameIdFromPath } from "./catalog";
 import { GAMES } from "./copy";
@@ -64,6 +65,7 @@ export function GamesRail() {
           <h1 className="gm-rail-mode">{page}</h1>
           <div className="gm-rail-right">
             <SettingsButton onOpen={() => { feedback("tap"); setSettingsOpen(true); }} />
+            <span className="gm-rail-account"><HeaderAccount placement="top" /></span>
           </div>
         </div>
       </div>
@@ -79,7 +81,7 @@ export function GamesRail() {
           <Link href="/games" className="gm-rail-icon" aria-label={GAMES.rail.back} title={GAMES.rail.back}>
             <ChevronLeft aria-hidden />
           </Link>
-          <span className="gm-rail-mode">{entry.nav.name}</span>
+          <h1 className="gm-rail-mode">{entry.nav.name}</h1>
           <Sticker tone={ECON_TONE[entry.descriptor.economicKind]} size="sm" tilt={-3} className="gm-rail-econ" title={entry.descriptor.economicLabel}>
             {GAMES.econ[entry.descriptor.economicKind]}
           </Sticker>
@@ -97,6 +99,8 @@ export function GamesRail() {
               {muted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}
             </button>
             <SettingsButton onOpen={() => { feedback("tap"); setSettingsOpen(true); }} />
+            {/* The app's top line leaves a phone's game screen, so the way in (or the avatar) sits here (S06). */}
+            <span className="gm-rail-account"><HeaderAccount placement="top" /></span>
           </div>
         </div>
       </div>

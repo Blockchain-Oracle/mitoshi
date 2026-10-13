@@ -15,7 +15,7 @@ import type { Address } from "@cwf/core";
 import { listRangeRoundViews, listRecentRangeRoundViews, readRangeOwed, type RangeRoundView } from "@cwf/markets/range";
 import type { Reading } from "@cwf/core";
 import { useReadingQuery } from "@cwf/markets/react";
-import { ReadingBoundary } from "@/components/states";
+import { EmptyState, ReadingBoundary } from "@/components/states";
 import { cn } from "@/lib/utils";
 import { formatMultiplier, usd } from "../parlay/format";
 import { RANGE } from "./copy";
@@ -99,6 +99,8 @@ export function RangeRounds({ wallet, nowMs, staleAfterSec, writes, onSignIn, ki
   const nowSec = Math.floor(nowMs / 1000);
   // Signed out (R6 games T10): everyone's latest rounds, live and public, under one "Sign in to see yours" — not a wall.
   if (!wallet) {
+    // No public round of this kind yet: say so with the way in (a preview of nothing would be an empty frame).
+    if (recent?.ok && recent.value.length === 0) return <EmptyState why={kind === "moonshot" ? R.emptyMoonshot : R.empty} nextAction={{ label: R.signInCta, onClick: onSignIn }} />;
     return (
       <SignedOutPreview intent={R.signIn} source={R.preview.source} title={R.preview.title(kind === "moonshot")}>
         <ReadingBoundary reading={recent} shape="row" isEmpty={(rs) => rs.length === 0} empty={{ why: kind === "moonshot" ? R.emptyMoonshot : R.empty }}>

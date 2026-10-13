@@ -25,8 +25,7 @@ function Page({ reserve }: { reserve: RangeReserveState }) {
   const { nowMs, windows, current, setPicked, empty, gapInSec } = useHouseWindows(reserve, "moonshot");
   return (
     <>
-      <HouseHead title={MOONSHOT.title} kind="moonshot" reserve={reserve} writes={writes} how={MOONSHOT.how} infoTitle={MOONSHOT.infoTitle} />
-      <WindowPicker windows={windows} pickedId={current?.market.marketId ?? null} onPick={setPicked} gapInSec={gapInSec} />
+      <WindowPicker windows={windows} pickedId={current?.market.marketId ?? null} onPick={setPicked} gapInSec={gapInSec} aside={<HouseHead kind="moonshot" reserve={reserve} writes={writes} />} />
       {empty}
       {current ? <MoonshotTicket key={current.market.marketId} market={current.market} model={current.model} reserve={reserve} /> : null}
       <section className="game-below" aria-label={MOONSHOT.roundsTitle}>

@@ -1,9 +1,11 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { installAudioUnlock, pressSfx, releaseSfx, stopBgm } from "./audio";
 import { GamesProvider, useGames } from "./GamesProvider";
+import { gameIdFromPath } from "./catalog";
 import { GamesRail } from "./GamesRail";
 import "./games.css";
 
@@ -38,6 +40,9 @@ function isControl(target: EventTarget | null): boolean {
 
 function GamesFrame({ children }: { children: ReactNode }) {
   const { reducedMotion, settings, immersive, settingsOpen } = useGames();
+  // The strip owns the top on a game route and on rank and history (R6 games S06): one header per game screen.
+  const pathname = usePathname();
+  const ownsTop = gameIdFromPath(pathname) !== null || pathname === "/games/rank" || pathname === "/games/history";
   // Mounted from its first open on, so it can animate shut.
   const [settingsWanted, setSettingsWanted] = useState(false);
   if (settingsOpen && !settingsWanted) setSettingsWanted(true);
@@ -77,7 +82,7 @@ function GamesFrame({ children }: { children: ReactNode }) {
     // `data-reduced-motion` is the single switch every stage animation reads. A stage must never
     // consult the media query itself: the player's explicit choice has to beat the OS, and it can
     // only do that if there is one place that resolves the two.
-    <div className="gm-frame" data-reduced-motion={reducedMotion ? "true" : "false"} data-accent={settings.accent} data-immersive={immersive ? "" : undefined}>
+    <div className="gm-frame" data-reduced-motion={reducedMotion ? "true" : "false"} data-accent={settings.accent} data-immersive={immersive ? "" : undefined} data-owns-top={ownsTop ? "" : undefined}>
       <GamesRail />
       {children}
       {settingsWanted ? <GameSettingsSheet /> : null}

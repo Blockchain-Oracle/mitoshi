@@ -25,8 +25,7 @@ function Page({ reserve }: { reserve: RangeReserveState }) {
   const { nowMs, windows, current, setPicked, empty, gapInSec } = useHouseWindows(reserve, "range");
   return (
     <>
-      <HouseHead title={RANGE.title} kind="range" reserve={reserve} writes={writes} how={RANGE.how} infoTitle={RANGE.info.title} />
-      <WindowPicker windows={windows} pickedId={current?.market.marketId ?? null} onPick={setPicked} gapInSec={gapInSec} />
+      <WindowPicker windows={windows} pickedId={current?.market.marketId ?? null} onPick={setPicked} gapInSec={gapInSec} aside={<HouseHead kind="range" reserve={reserve} writes={writes} />} />
       {empty}
       {current ? <RangeTicketBody key={current.market.marketId} market={current.market} model={current.model} reserve={reserve} allowOutside /> : null}
       <section className="game-below" aria-label={RANGE.sections.rounds.title}>
