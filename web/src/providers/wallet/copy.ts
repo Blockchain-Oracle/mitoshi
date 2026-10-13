@@ -51,7 +51,7 @@ export const ACCOUNT = {
   address: "Address",
   wallet: "Wallet",
   tradingBalance: "Trading Balance",
-  tradingBalancePending: "Opens with the Trading Balance",
+  tradingBalancePending: "Not open",
   robinhood: "Robinhood Chain",
   linkRobinhood: "Link a wallet",
   copy: "Copy address",

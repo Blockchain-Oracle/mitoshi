@@ -4,9 +4,11 @@
 // Balance, the linked Robinhood Chain wallet — and the items: Portfolio, Account & keys, the balance eye, Sign out.
 // On Base UI Menu (keyboard, typeahead, focus return); the rail's foot opens it upward, the top line below. Its own
 // positioner class (R4-0, D-227): the old header's one was hidden on phones, so the phone avatar opened nothing.
+// R4-8 (D-227): from the rail it opens to the right, beside the rail and never over it (Owarine: side right, offset 28,
+// align end); the items carry Owarine's 18 px muted icons, the danger item last.
 import { Menu } from "@base-ui/react/menu";
 import { useBalanceSheet } from "@cwf/markets/react";
-import { Check, ChevronDown, Copy, Link2 } from "lucide-react";
+import { Check, ChevronDown, Copy, Eye, EyeOff, KeyRound, Link2, LogOut, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { ACCOUNT_MENU, CONNECT, SHELL } from "@/lib/copy";
@@ -22,8 +24,8 @@ const COPIED_MS = 1_500;
 export interface AccountMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** The rail's foot opens it upward (S22); the top line opens it below. */
-  side?: "top" | "bottom";
+  /** The rail's foot opens it beside the rail (R4-8); the top line opens it below. */
+  side?: "right" | "bottom";
 }
 
 export function AccountMenu({ open, onOpenChange, side = "bottom" }: AccountMenuProps) {
@@ -43,7 +45,7 @@ export function AccountMenu({ open, onOpenChange, side = "bottom" }: AccountMenu
   const kind = session.kind ? ACCOUNT.kinds[session.kind] : ACCOUNT_MENU.open;
   return (
     <Menu.Root modal={false} open={open} onOpenChange={onOpenChange}>
-      <Menu.Trigger className="wallet-pill min-h-touch" aria-label={ACCOUNT_MENU.open}>
+      <Menu.Trigger className="wallet-pill min-h-touch" aria-label={ACCOUNT_MENU.open} data-flood-origin="">
         <AccountAvatar seed={address} className="wallet-pill-avatar" />
         <span className="wallet-pill-id">
           <span className="wallet-pill-kind">{kind}</span>
@@ -52,7 +54,7 @@ export function AccountMenu({ open, onOpenChange, side = "bottom" }: AccountMenu
         <ChevronDown aria-hidden className="wallet-pill-chevron size-3.5" />
       </Menu.Trigger>
       <Menu.Portal>
-        <Menu.Positioner side={side} sideOffset={8} align={side === "top" ? "start" : "end"} collisionPadding={12} className="am-positioner">
+        <Menu.Positioner side={side} sideOffset={side === "right" ? 28 : 10} align="end" collisionPadding={12} className="am-positioner">
           <Menu.Popup className="am-popup">
             <div className="am-head">
               <AccountAvatar seed={address} size={36} />
@@ -89,11 +91,11 @@ export function AccountMenu({ open, onOpenChange, side = "bottom" }: AccountMenu
               </Row>
             </dl>
             <div className="am-items">
-              <Menu.LinkItem render={<Link href="/portfolio" />} closeOnClick className="am-item">{ACCOUNT_MENU.portfolio}</Menu.LinkItem>
-              <Menu.LinkItem render={<Link href="/settings/account" />} closeOnClick className="am-item">{ACCOUNT_MENU.settings}</Menu.LinkItem>
+              <Menu.LinkItem render={<Link href="/portfolio" />} closeOnClick className="am-item"><WalletCards aria-hidden />{ACCOUNT_MENU.portfolio}</Menu.LinkItem>
+              <Menu.LinkItem render={<Link href="/settings/account" />} closeOnClick className="am-item"><KeyRound aria-hidden />{ACCOUNT_MENU.settings}</Menu.LinkItem>
               {/* The balance eye for every width (phones have no room for it in the top line; Slush's privacy, RV-10). */}
-              <Menu.Item onClick={() => setPrivacy(!hidden)} className="am-item">{hidden ? SHELL.privacyShow : SHELL.privacyHide}</Menu.Item>
-              <Menu.Item onClick={() => void session.disconnect()} className="am-item am-item--danger">{CONNECT.disconnect}</Menu.Item>
+              <Menu.Item onClick={() => setPrivacy(!hidden)} className="am-item">{hidden ? <Eye aria-hidden /> : <EyeOff aria-hidden />}{hidden ? SHELL.privacyShow : SHELL.privacyHide}</Menu.Item>
+              <Menu.Item onClick={() => void session.disconnect()} className="am-item am-item--danger"><LogOut aria-hidden />{CONNECT.disconnect}</Menu.Item>
             </div>
           </Menu.Popup>
         </Menu.Positioner>

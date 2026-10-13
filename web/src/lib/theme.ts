@@ -35,7 +35,28 @@ export function resolveTheme(): Theme {
 function apply(theme: Theme): void {
   if (typeof document !== "undefined") {
     document.documentElement.setAttribute("data-theme", theme);
+    syncThemeColor();
   }
+}
+
+/** `rgb(…)` passes; `color(srgb r g b)` (how a `color-mix` computes) becomes `#rrggbb`; anything else is null. */
+function chromeColor(css: string): string | null {
+  if (/^rgba?\(/.test(css)) return /,\s*0\)$|\/\s*0\)$/.test(css) ? null : css;
+  const m = /^color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)/.exec(css);
+  if (!m) return null;
+  return `#${m.slice(1, 4).map((v) => Math.round(Math.min(1, Number(v)) * 255).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * The phone browser's bar takes the page's ground: the chosen theme, and the testnet canvas once the shell floods it
+ * (critic bug 17, R4-8 D-227). `viewport.themeColor` keys it to the OS scheme only, so a toggled theme left the bar in
+ * the other colour. Reads the computed ground, so it follows the tokens.
+ */
+export function syncThemeColor(): void {
+  if (typeof document === "undefined" || !document.body) return;
+  const color = chromeColor(getComputedStyle(document.body).backgroundColor);
+  if (!color) return;
+  for (const meta of document.querySelectorAll('meta[name="theme-color"]')) meta.setAttribute("content", color);
 }
 
 export function setStoredTheme(theme: Theme): void {
@@ -62,4 +83,4 @@ export function initTheme(): Theme {
 
 // Blocking snippet injected before the app renders so the correct theme paints on the
 // FIRST frame — no flash of dark. Kept tiny and dependency-free; mirrors resolveTheme().
-export const THEME_INIT_SCRIPT = `(()=>{try{var t=localStorage.getItem('${STORAGE_KEY}');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('${EXPLAINED_PREFIX}')===0&&localStorage.getItem(k)==='1')document.documentElement.classList.add('cwf-explained-'+k.slice(${EXPLAINED_PREFIX.length}));}}catch(e){}})();`;
+export const THEME_INIT_SCRIPT = `(()=>{try{var t=localStorage.getItem('${STORAGE_KEY}');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}try{var c=getComputedStyle(document.body).backgroundColor;if(/^rgb\\(/.test(c))document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute('content',c)});}catch(e){}try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('${EXPLAINED_PREFIX}')===0&&localStorage.getItem(k)==='1')document.documentElement.classList.add('cwf-explained-'+k.slice(${EXPLAINED_PREFIX.length}));}}catch(e){}})();`;

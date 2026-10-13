@@ -25,9 +25,10 @@ export function usePortReading<T>(queryKey: QueryKey, read: (port: MarketsProvid
   return useReadingQuery(queryKey, () => read(port!), { ...rest, enabled: enabled && port !== null });
 }
 
-/** Every live Window, grouped into (basis, cadence) lanes; the stream refreshes it on `WindowOpened`/`WindowResolved`. */
-export function useLanes(): Reading<LaneSet> | null {
-  return usePortReading(keys.lanes(), (p) => p.listLiveLanes(), { pollMs: MARKETS_POLL_MS });
+/** Every live Window, grouped into (basis, cadence) lanes; the stream refreshes it on `WindowOpened`/`WindowResolved`.
+ *  `enabled` lets a surface read only while it shows (the ⌘K palette, R4-8 D-227) — the key is shared, so a cache hit. */
+export function useLanes(enabled = true): Reading<LaneSet> | null {
+  return usePortReading(keys.lanes(), (p) => p.listLiveLanes(), { enabled, pollMs: MARKETS_POLL_MS });
 }
 
 export function useMarket(marketId: MarketId | null): Reading<EventMarket | null> | null {
