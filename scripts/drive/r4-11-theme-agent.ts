@@ -4,7 +4,10 @@
  * theme's session and interval, the members' oracle prices and the follower's balances, then says what it would do.
  * Outside the theme's hours it says so; the plan core would send is printed beside it from the same reads.
  *
- *   tsx scripts/drive/r4-11-theme-agent.ts [--role deployer-themes] [--theme 1]
+ * With `--send` the pass is not dry: inside the theme's hours it signs `[approve × k, rebalance]` with the agent key as
+ * the follower's access key — no prompt, no root signature (the 16a gate).
+ *
+ *   tsx scripts/drive/r4-11-theme-agent.ts [--role deployer-themes] [--theme 1] [--send]
  */
 import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -33,8 +36,9 @@ const keys: ThemeKeyStore = {
   request: async () => row, get: async () => row, pending: async () => [], issue: async () => undefined, issued: async () => [row],
   note: async (_id, note) => void (row.lastNote = note),
 };
-const r = await themeAgentPass({ client, chainId: 42431, rpcUrl, keys, secret, dryRun: true })();
+const r = await themeAgentPass({ client, chainId: 42431, rpcUrl, keys, secret, dryRun: !argv.includes("--send") })();
 console.log(`pass: ${r.why}`);
+console.log(`note: ${row.lastNote}`);
 
 // The same reads, planned regardless of the session: what the agent will send once the theme's hours open.
 const v = themesVenueOf(42431)!;

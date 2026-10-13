@@ -50,7 +50,7 @@ export function ThemeCard({ theme, followers }: { theme: ThemeView; followers: n
       <div className="th-index-mix">
         <PartitionBar label={THEMES.theme.target} slices={[...theme.members.map((m, i) => ({ id: m.symbol, label: `${m.symbol} ${pct(m.band.targetBps)}`, value: m.band.targetBps, color: sliceColor(i) })), { id: "cash", label: `${THEMES.theme.cash} ${pct(theme.cash.targetBps)}`, value: theme.cash.targetBps, color: "var(--color-surface-3)" }]} />
       </div>
-      <div className="th-row" data-paused={theme.openNow === false ? "" : undefined}>{theme.openNow === false ? C.paused(sessionsText(theme.sessionsMask)) : C.cadence(everyText(theme.minIntervalSec), sessionsText(theme.sessionsMask))}</div>
+      <div className="th-row" data-paused={theme.openNow === false || theme.haltedNow ? "" : undefined}>{theme.openNow === false ? C.paused(sessionsText(theme.sessionsMask)) : theme.haltedNow ? C.halted : C.cadence(everyText(theme.minIntervalSec), sessionsText(theme.sessionsMask))}</div>
       <div className="th-actions">
         <Link href={`${href}?follow=1`} className={pillButtonVariants({ tone: "accent", size: "md" })}>{C.follow}</Link>
         <Link href={href} className={pillButtonVariants({ tone: "ghost", size: "md" })}>{C.details}</Link>

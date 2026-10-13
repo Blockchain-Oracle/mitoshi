@@ -4,7 +4,7 @@
  * (`@cwf/markets/themes`): the catalogue, the theme's bands and members with their StockReference prices, the spec
  * re-hashed from its on-chain data URI, and the eligible mirrors.
  *
- *   tsx scripts/drive/r4-11-theme.ts [--role deployer-themes] [--symbols TSLA,PLTR,NFLX] [--name …] [--blurb …]
+ *   tsx scripts/drive/r4-11-theme.ts [--role deployer-themes] [--symbols TSLA,PLTR,NFLX] [--name …] [--blurb …] [--sessions 1|3|7]
  */
 import { configureMarkets, parseMarketsEnv } from "@cwf/markets";
 import { bandAround, specPayload, type ThemeSpec } from "@cwf/core";
@@ -37,7 +37,7 @@ const spec: ThemeSpec = {
   maxSlippageBps: 100,
   minIntervalSec: 3_600,
   maxRefAgeSec: 345_600,
-  sessionsMask: 1,
+  sessionsMask: Number(argv.includes("--sessions") ? argv[argv.indexOf("--sessions") + 1]! : "1"),
   bands: pick.map((m, i) => ({ token: m!.token, symbol: m!.symbol, ...bandAround(targets[i]!, "balanced"), allowed: true })),
   cashBand: bandAround(10_000 - targets.reduce((a, b) => a + b, 0), "balanced"),
 };

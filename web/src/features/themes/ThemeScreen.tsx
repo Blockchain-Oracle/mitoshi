@@ -152,6 +152,7 @@ function View({ t, openFollow }: { t: ThemeView; openFollow: boolean }) {
       <div className="th-cta page-action">
         <PillButton tone={following ? "ghost" : "accent"} size="lg" block onClick={() => setSheet(true)}>{following ? THEMES.follow.following : THEMES.card.follow}</PillButton>
       </div>
+      {t.openNow === false || t.haltedNow ? <p className="th-row" data-paused="">{t.openNow === false ? THEMES.card.paused(sessionsText(t.sessionsMask)) : THEMES.card.halted}</p> : null}
       <TextTabs value={tab} onChange={setTab} label={name} tabs={(Object.keys(T.tabs) as Tab[]).map((value) => ({ value, label: T.tabs[value] }))}>
         <TextTabPanel value="overview"><Overview t={t} /></TextTabPanel>
         <TextTabPanel value="holdings"><Holdings t={t} /></TextTabPanel>

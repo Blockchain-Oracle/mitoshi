@@ -41,9 +41,23 @@ export interface ThemeView {
   /** The oracle's session now (0 regular, 1 extended, 2 closed, 3 unknown) and whether this theme trades in it. */
   sessionNow: number | null;
   openNow: boolean | null;
+  /** Some member's oracle price is halted now (`IThemeOracle.tokenPrice`: keeper halt, unsynced multiplier, a pause…),
+   *  so the agent can't rebalance; null when unread. */
+  haltedNow: boolean | null;
 }
 
 const SESSION_ABI = [{ type: "function", name: "currentSession", stateMutability: "view", inputs: [], outputs: [{ type: "uint8" }] }] as const;
+const PRICE_ABI = [{ type: "function", name: "tokenPrice", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }, { type: "uint64" }, { type: "bool" }] }] as const;
+
+async function haltedNow(client: Awaited<ReturnType<typeof getPublicClient>>, router: Address, tokens: readonly Address[]): Promise<boolean | null> {
+  try {
+    const oracle = await client.readContract({ address: router, abi: themeRouterAbi, functionName: "oracle" });
+    const prices = await Promise.all(tokens.map((t) => client.readContract({ address: oracle, abi: PRICE_ABI, functionName: "tokenPrice", args: [t] })));
+    return prices.some(([, , halted]) => halted);
+  } catch {
+    return null;
+  }
+}
 
 async function sessionNow(client: Awaited<ReturnType<typeof getPublicClient>>, router: Address): Promise<number | null> {
   try {
@@ -78,10 +92,11 @@ async function readTheme(client: Awaited<ReturnType<typeof getPublicClient>>, v:
   const tokens = await client.readContract({ ...reg, functionName: "tokensOf", args: [themeId, t.version] });
   const names = new Map(mirrorsOf(chainId).map((m) => [m.token.toLowerCase(), m.symbol]));
   const ref = stockReference(chainId);
-  const [bands, cash, refs] = await Promise.all([
+  const [bands, cash, refs, halted] = await Promise.all([
     Promise.all(tokens.map((tok) => client.readContract({ ...reg, functionName: "bandOf", args: [themeId, t.version, tok] }))),
     client.readContract({ ...reg, functionName: "bandOf", args: [themeId, t.version, PATH_USD] }),
     Promise.all(tokens.map((tok) => (ref ? client.readContract({ address: ref, abi: stockReferenceAbi, functionName: "read", args: [tok] }).catch(() => null) : Promise.resolve(null)))),
+    haltedNow(client, v.router, tokens),
   ]);
   const band = (b: { minBps: number; targetBps: number; maxBps: number; allowed: boolean }): ThemeBand => ({ minBps: b.minBps, targetBps: b.targetBps, maxBps: b.maxBps, allowed: b.allowed });
   return {
@@ -106,6 +121,7 @@ async function readTheme(client: Awaited<ReturnType<typeof getPublicClient>>, v:
     cash: band(cash[1]),
     sessionNow: session,
     openNow: session === null ? null : ((t.sessionsMask >> session) & 1) === 1,
+    haltedNow: halted,
   };
 }
 

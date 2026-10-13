@@ -3,8 +3,9 @@
 // (features/desk/studio: 01 the basket — BasketChoice and WeightEditor with bar and ring; 02 how strict — LimitsForm's
 // Careful / Balanced / Loose; then one signature): 1 Stocks — the mirrors the registry lists now (`isEligible`), each with
 // its StockReference price, weights in whole percents, the rest in cash, a PartitionBar and Donut preview; 2 Envelope —
-// the three presets → each token's band; 3 Name and fee (≤ 50 bps); 4 Publish — the spec's canonical JSON rides on chain
-// as its data URI, `ThemeRegistry.publish` (the creator pays). StudioSide follows every edit from 1024 px.
+// the three presets → each token's band, and its hours (market, plus pre/after, around the clock → sessionsMask);
+// 3 Name and fee (≤ 50 bps); 4 Publish — the spec's canonical JSON rides on chain as its data URI,
+// `ThemeRegistry.publish` (the creator pays). StudioSide follows every edit from 1024 px.
 import { bandAround, isValidCreatorFee, type Envelope, type ThemeSpec, type TxState } from "@cwf/core";
 import { invalidateThemes, useEligibleMirrors } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -22,6 +23,9 @@ import "@/styles/themes.css";
 const S = THEMES.studio;
 // ThemeRegistry's MAX_TOKENS; past five a follow is split into one signature per five more stocks (D-100).
 const MAX_STOCKS = 16;
+/** The theme's sessionsMask (bit s = oracle session s: REGULAR, EXTENDED, CLOSED); UNKNOWN is never offered. */
+const HOURS = { market: 0b001, extended: 0b011, always: 0b111 } as const;
+type Hours = keyof typeof HOURS;
 const idleOr = (state: TxState, blocker: string | null): TxState => (blocker ? { kind: "blocked", reason: blocker } : state);
 
 export function ThemeStudio() {
@@ -32,6 +36,7 @@ export function ThemeStudio() {
   const list = mirrors?.ok ? mirrors.value : [];
   const [weights, setWeights] = useState<Record<string, number>>({});
   const [envelope, setEnvelope] = useState<Envelope>("balanced");
+  const [hours, setHours] = useState<Hours>("market");
   const [name, setName] = useState("");
   const [blurb, setBlurb] = useState("");
   const [feeBps, setFeeBps] = useState(25);
@@ -54,7 +59,7 @@ export function ThemeStudio() {
   const publish = async () => {
     if (!session.address) return session.connectFor(S.signIn);
     const spec: ThemeSpec = {
-      schema: 1, name: name.trim(), blurb: blurb.trim(), creatorFeeBps: feeBps, maxSlippageBps: 100, minIntervalSec: 3_600, maxRefAgeSec: 345_600, sessionsMask: 1,
+      schema: 1, name: name.trim(), blurb: blurb.trim(), creatorFeeBps: feeBps, maxSlippageBps: 100, minIntervalSec: 3_600, maxRefAgeSec: 345_600, sessionsMask: HOURS[hours],
       bands: picked.map((m) => ({ token: m.token, symbol: m.symbol, ...bandAround(weights[m.symbol]!, envelope), allowed: true })),
       cashBand: bandAround(cashBps, envelope),
     };
@@ -115,7 +120,12 @@ export function ThemeStudio() {
               id: "envelope",
               label: S.steps.envelope,
               blocker: null,
-              content: <RadioCards value={envelope} onChange={setEnvelope} label={S.steps.envelope} items={(Object.keys(S.envelopes) as Envelope[]).map((value) => ({ value, title: S.envelopes[value], body: S.envelopeBody[value] }))} />,
+              content: (
+                <div className="th-fields">
+                  <RadioCards value={envelope} onChange={setEnvelope} label={S.steps.envelope} items={(Object.keys(S.envelopes) as Envelope[]).map((value) => ({ value, title: S.envelopes[value], body: S.envelopeBody[value] }))} />
+                  <RadioCards value={hours} onChange={setHours} label={S.hours} items={(Object.keys(HOURS) as Hours[]).map((value) => ({ value, title: S.hoursChoice[value], body: S.hoursBody[value] }))} />
+                </div>
+              ),
             },
             {
               id: "name",
