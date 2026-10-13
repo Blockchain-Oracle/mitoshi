@@ -5,11 +5,15 @@
  * the stale void (only while the engine has no answer past the grace — `MustSettle` otherwise, D-108/D-172), the claim
  * (pays the owner only) or the verdict. A payout the owner's receive policy refused is held and collectable. A void
  * returns the stake, so it reads neutral, not lost (D-227).
+ * R4-5 (D-227, Ported from Owarine 90a91d71:web/src/features/range/RangeSlip.tsx `kind`): each page lists only its own
+ * rounds (`kind`), filtered before the empty check so a wallet with only bands sees Moonshot's empty line, not a blank;
+ * `useRoundsSummary` feeds the head's "Rounds · n" / "Claim $X" chip.
  */
 import { formatCadence } from "@cwf/core/copy";
 import { classifyRangeBand } from "@cwf/core/range";
 import type { Address } from "@cwf/core";
 import { listRangeRoundViews, readRangeOwed, type RangeRoundView } from "@cwf/markets/range";
+import type { Reading } from "@cwf/core";
 import { useReadingQuery } from "@cwf/markets/react";
 import { ReadingBoundary } from "@/components/states";
 import { cn } from "@/lib/utils";
@@ -64,14 +68,29 @@ function Round({ r, nowSec, staleAfterSec, writes }: { r: RangeRoundView; nowSec
   );
 }
 
-export function RangeRounds({ wallet, nowMs, staleAfterSec, writes, onSignIn, moonshotOnly = false }: { wallet: Address | null; nowMs: number; staleAfterSec: number; writes: ReturnType<typeof useRangeWrites>; onSignIn: () => void; moonshotOnly?: boolean }) {
+export type RoundKind = "range" | "moonshot";
+const kindOf = (r: RangeRoundView): RoundKind => (classifyRangeBand(r.openingPrint, r.lowPrint, r.highPrint).kind === "moonshot" ? "moonshot" : "range");
+
+function useRounds(wallet: Address | null, kind: RoundKind): Reading<RangeRoundView[]> | null {
   const reading = useReadingQuery(rangeKeys.rounds(wallet), () => listRangeRoundViews(wallet as Address), { pollMs: 8_000, enabled: wallet !== null });
+  return reading && reading.ok ? { ...reading, value: reading.value.filter((r) => kindOf(r) === kind) } : reading;
+}
+
+/** The head chip's figures: how many rounds this page has, and what the won ones pay when claimed. */
+export function useRoundsSummary(wallet: Address | null, kind: RoundKind): { count: number; claimBase: bigint } {
+  const reading = useRounds(wallet, kind);
+  const rounds = reading && reading.ok ? reading.value : [];
+  return { count: rounds.length, claimBase: rounds.filter((r) => r.status === "won").reduce((sum, r) => sum + r.maxPayoutBase, 0n) };
+}
+
+export function RangeRounds({ wallet, nowMs, staleAfterSec, writes, onSignIn, kind }: { wallet: Address | null; nowMs: number; staleAfterSec: number; writes: ReturnType<typeof useRangeWrites>; onSignIn: () => void; kind: RoundKind }) {
+  const reading = useRounds(wallet, kind);
   const owed = useReadingQuery([...rangeKeys.all, "owed", wallet], () => readRangeOwed(wallet as Address), { pollMs: 30_000, enabled: wallet !== null });
   if (!wallet) {
     return (
       <div className="pl-slip-empty">
         <p>{R.signIn}</p>
-        <button type="button" onClick={onSignIn} className="mt-3 min-h-touch rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{RANGE.cta.signIn}</button>
+        <button type="button" onClick={onSignIn} className="mt-3 min-h-touch rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{R.signInCta}</button>
       </div>
     );
   }
@@ -84,14 +103,12 @@ export function RangeRounds({ wallet, nowMs, staleAfterSec, writes, onSignIn, mo
           <button type="button" className="min-h-touch rounded-md border border-border-strong px-4 type-body-strong text-ink" onClick={() => void writes.claimOwed()}>{R.claim(usd(owed.value))}</button>
         </div>
       ) : null}
-      <ReadingBoundary reading={reading} shape="row" isEmpty={(rs) => rs.length === 0} empty={{ why: R.empty }}>
+      <ReadingBoundary reading={reading} shape="row" isEmpty={(rs) => rs.length === 0} empty={{ why: kind === "moonshot" ? R.emptyMoonshot : R.empty }}>
         {(rounds) => (
           <div className="pl-slip">
-            {rounds
-              .filter((r) => !moonshotOnly || classifyRangeBand(r.openingPrint, r.lowPrint, r.highPrint).kind === "moonshot")
-              .map((r) => (
-                <Round key={r.roundId.toString()} r={r} nowSec={nowSec} staleAfterSec={staleAfterSec} writes={writes} />
-              ))}
+            {rounds.map((r) => (
+              <Round key={r.roundId.toString()} r={r} nowSec={nowSec} staleAfterSec={staleAfterSec} writes={writes} />
+            ))}
           </div>
         )}
       </ReadingBoundary>

@@ -4,7 +4,7 @@
  * values live here (design-literals keeps px out of TSX); colours are the token variables, Up/Down are the direction
  * colours (never the only signal: every side carries its word and arrow). Touch targets ≥ 44 px (§2.5). */
 
-.pl-page { padding-top: 28px; padding-bottom: 96px; }
+.pl-page { padding: 0; }
 .pl-hero { margin-bottom: 40px; }
 .pl-eyebrow {
   display: block; margin-bottom: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.22em;

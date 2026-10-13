@@ -10,8 +10,8 @@ import "@/styles/prediction-ticket.css";
 
 function Placeholder() {
   return (
-    <div className="container px-gutter pl-page lg:px-gutter-desktop">
-      <LoadingState shape="page" label={MOONSHOT.ticket.pricing} />
+    <div className="game-page">
+      <LoadingState shape="game" label={MOONSHOT.ticket.pricing} />
     </div>
   );
 }
