@@ -34,7 +34,7 @@ export const EDGE = {
     roiUnavailable: "Return unavailable",
     sample: (settled: number, open: number) => `${settled} settled · ${open} open`,
     readoutLabel: "Mitoshi readout",
-    readoutFoot: "Patterns become more useful with a larger sample. This describes your record; it doesn't promise the next Window.",
+    readoutFoot: "Describes your record; doesn't predict the next Window.",
     readout: {
       moreRounds: (needed: number) => `${needed} more settled ${needed === 1 ? "Window" : "Windows"} will reveal your first useful pattern.`,
       bestWindow: (label: string, net: string, count: number) => `${label} is your strongest time so far: ${net} across ${count} settled ${count === 1 ? "Window" : "Windows"}.`,
@@ -73,9 +73,8 @@ export const EDGE = {
       noWins: "No wins yet",
       noLosses: "No losses yet",
       provenanceLabel: "How this is verified",
-      provenance:
-        "Calculated in your browser from your fills on Mitoshi's engine as the index holds them, settled by the engine's own rule. Redeeming a position doesn't erase it from this record, and every Window has a proof page with both of its prints.",
+      provenance: "From your fills, in your browser.",
+      proof: "Each Window has a proof →",
     },
-    footer: "This report measures settled Windows because a Window is what settles. Every figure is a fill, or the settlement rule applied to one — never an estimate.",
   },
 } as const;

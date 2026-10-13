@@ -4,6 +4,7 @@
 // reference's own SVG curve gives way to 21st 29532 (`components/ui/portfolio-chart`, the curve `/portfolio` already
 // draws from the same rounds, so the two can't disagree); the `edge-*` palette gives way to Mitoshi's tokens.
 import type { TraderEdge, WalletHistory } from "@cwf/core";
+import Link from "next/link";
 import { PortfolioChart } from "@/components/ui/portfolio-chart";
 import { RECORD_CHART } from "@/features/markets/copy";
 import { recordPoints } from "@/features/markets/portfolio/RecordChart";
@@ -118,7 +119,9 @@ function Payoff({ report, decimals }: { report: TraderEdge; decimals: number }) 
       </dl>
       <div className="flex flex-col gap-1 rounded-md bg-surface-2 p-4">
         <span className="type-label-micro text-ink-secondary">{p.provenanceLabel}</span>
-        <p className="type-caption text-ink-secondary">{p.provenance}</p>
+        <p className="type-caption text-ink-secondary">
+          {p.provenance} <Link href="/docs/record" className="text-ink underline underline-offset-4">{p.proof}</Link>
+        </p>
       </div>
     </aside>
   );
@@ -164,7 +167,6 @@ export function EdgeReport({ history, report, onRetry, address }: { history: Wal
         <Payoff report={report} decimals={decimals} />
       </div>
       <RecordBadges history={history} report={report} address={address} />
-      <p className="type-caption text-ink-secondary">{EDGE.report.footer}</p>
     </div>
   );
 }
