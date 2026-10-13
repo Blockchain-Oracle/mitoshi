@@ -1,33 +1,36 @@
-// /tickers/<SYMBOL> (P5, D-224; Owarine's route since D-226, which retired /stocks) — one spelling (upper case; any other case redirects to it), an unlisted symbol is a real
-// 404. The ticker's headlines are read here at request time from Finnhub's company wire (`/news`'s own source), so
-// the island opens with them; prices, the session and the Windows stream in client-side.
-import { isStockSymbol, TICKERS } from "@cwf/core";
+// /tickers/<SYMBOL> (P5, D-224; Owarine's route since D-226) — Ported from Owarine 90a91d71:web/src/app/tickers/[symbol]/page.tsx
+// (R4-10, D-227): every listed ticker, coins included, has a hub (an unlisted one is a real 404); one spelling, upper
+// case, any other redirects to it. The head and Trade it paint from the server at once; the headlines and the ticker's
+// newest calls are read here at request time; the price, the session and the Windows stream in on the client.
+import { isTickerSymbol, TICKERS } from "@cwf/core";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
-import { merge } from "@/features/news/wire";
+import { hubCalls, hubHeadlines } from "@/features/stocks/hub.server";
+import { StockHubHead } from "@/features/stocks/StockHubHead";
 import { StockHubPage } from "@/features/stocks/StockHubPage";
-import { companyNews, finnhubConfigured } from "@/server/finnhub";
+import { tickerHref } from "@/lib/ticker-href";
 
 interface Props {
   params: Promise<{ symbol: string }>;
 }
 
-const HEADLINES = 8;
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const upper = (await params).symbol.toUpperCase();
-  return { title: isStockSymbol(upper) ? `${TICKERS[upper].name} (${upper})` : undefined };
+  return { title: isTickerSymbol(upper) ? `${TICKERS[upper].name} (${upper})` : undefined };
 }
 
-export default async function StockPage({ params }: Props) {
+export default async function TickerPage({ params }: Props) {
   const { symbol } = await params;
   const upper = symbol.toUpperCase();
-  if (!isStockSymbol(upper)) notFound();
-  if (symbol !== upper) redirect(`/tickers/${upper}`);
+  if (!isTickerSymbol(upper)) notFound();
+  if (symbol !== upper) redirect(tickerHref(upper));
   await connection();
-  const headlinesOff = !finnhubConfigured();
-  const feed = headlinesOff ? null : await companyNews(upper);
-  const articles = feed === null ? null : merge([feed], HEADLINES);
-  return <StockHubPage symbol={upper} articles={articles} headlinesOff={headlinesOff} readAtMs={Date.now()} />;
+  const [headlines, calls] = await Promise.all([hubHeadlines(upper), hubCalls(upper)]);
+  return (
+    <div className="container stk-page stk-hub">
+      <StockHubHead symbol={upper} />
+      <StockHubPage symbol={upper} articles={headlines.articles} headlinesOff={headlines.off} calls={calls} readAtMs={Date.now()} />
+    </div>
+  );
 }

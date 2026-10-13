@@ -8,6 +8,6 @@ export { readSettledRounds, type RoundRow, type RoundsQuery } from "./rounds";
 export { hasCalled } from "./calls";
 export { readAgentFeedback, readIndexedStrategies, readSubscribers, readRatedDays, readSeriesList, readSubscriptionsOf, readTraderCalls, readWindowFacts, type AgentFeedback, type IndexedStrategy, type IndexedSubscription, type TraderCall, type WindowFacts } from "./strategies";
 export { readWalletFills, type WalletFill } from "./wallet-fills";
-export { everyDay, readTraction, type Traction, type TractionCall, type TractionQuery } from "./traction";
+export { everyDay, readTickerCalls, readTraction, type Traction, type TractionCall, type TractionQuery } from "./traction";
 export type { IdxCursor, IdxEvent, IdxSeries } from "./types";
 export { indexWriter, INDEX_TABLES, MARKET_PROJECTIONS, type IndexWriter, type WindowResult } from "./write";
