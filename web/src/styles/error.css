@@ -3,10 +3,10 @@
  * source values named above each rule. Every colour is a theme token, so the screen reads on
  * cream as well as on ink. */
 
-/* minHeight 100vh · flex column · centered both ways · textAlign center · gap 20px ·
+/* minHeight 100vh (100svh here: a phone keeps its browser bars, R4-2) · flex column · centered both ways · textAlign center · gap 20px ·
    padding 48px 24px · background var(--bg) · color var(--white) */
 .boundary {
-  min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -18,8 +18,8 @@
   color: var(--white);
 }
 /* Inside the shell the header and footer already frame the page; a full viewport on top of
-   them pushes the way out below the fold. The root boundary has no shell and keeps 100vh. */
-.boundary:not(.boundary-root) { min-height: 70vh; }
+   them pushes the way out below the fold. The root boundary has no shell and keeps 100svh. */
+.boundary:not(.boundary-root) { min-height: 70svh; }
 /* In the stage (`app/(app)/error.tsx`, R4-0) the stage is the one inset and the ground (D-226). */
 .app-stage .boundary { padding-inline: 0; background: none; }
 

@@ -45,8 +45,9 @@ Correction (2026-09-29): the plan's §2.2 and the 21st research say "Plex Mono" 
 - **Dock clearance:** anything that must clear the phone dock reads `--dock-clearance` / `--dock-strip-offset`; a page's
   one sticky action strip is `.page-action`.
 - **Fold budget:** count a phone fold against `100svh` (the browser's bars shown — a 568 px phone keeps ~450 px), never
-  the device height; check in DevTools with the browser-UI height or on a phone; clamps use `svh`/`dvh` only. Where the
-  budget can't hold the action, the action sticks (`.page-action`).
+  the device height; check in DevTools with the browser-UI height or on a phone; heights and clamps use `svh`/`dvh` only
+  (`fold-units` invariant: no `vh`, no `h-screen`). Where the budget can't hold the action, the action sticks
+  (`.page-action`).
 - **Primitives:** Base UI only; lucide icons; `motion/react` `m.*` under `LazyMotion` with `MotionConfig
   reducedMotion="user"`; transforms and opacity only.
 - **Phone first:** 390 px primary, no overflow at 320; ≥ 44 px targets; ≥ 16 px inputs; sticky CTA with safe-area inset.

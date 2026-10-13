@@ -204,7 +204,7 @@
 }
 
 /* ───────── Word markets (/words) ───────── */
-.words-wrap { padding: 120px 0 96px; min-height: 100vh; }
+.words-wrap { padding: 120px 0 96px; min-height: 100svh; }
 @media (max-width: 767px) { .words-wrap { padding: 92px 0 120px; } }
 .words-hero { padding: 8px 0 40px; }
 .words-eyebrow {

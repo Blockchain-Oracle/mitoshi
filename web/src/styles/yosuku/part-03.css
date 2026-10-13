@@ -78,7 +78,7 @@
 /* The panel is a sibling of the (scrolling) message list, so it must cap its own
    height: with 3+ live markets it used to grow past the drawer with no way to
    scroll. The head stays pinned and only the cards scroll. */
-.sensei-trade { flex: none; min-height: 0; max-height: 46vh; }
+.sensei-trade { flex: none; min-height: 0; max-height: 46svh; }
 .st-list { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 8px; padding-bottom: 2px; }
 .st-head { display: flex; align-items: baseline; justify-content: space-between; padding: 2px 2px 0; flex: none; }
 .st-head span:first-child { font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--white); }

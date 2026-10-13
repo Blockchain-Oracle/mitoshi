@@ -57,11 +57,11 @@ body:has(.pitch-deck:not([style*="display: none"]):not([style*="display: none"] 
   display: none;
 }
 
-/* absolute flex flex-col; top/bottom 4vh; left/right 4.5vw; borderLeft/Right 1px HAIR; padding 0 3vw */
+/* absolute flex flex-col; top/bottom 4vh (4svh here: a phone keeps its browser bars, R4-2); left/right 4.5vw; borderLeft/Right 1px HAIR; padding 0 3vw */
 .pitch-frame {
   position: absolute;
-  top: 4vh;
-  bottom: 4vh;
+  top: 4svh;
+  bottom: 4svh;
   left: 4.5vw;
   right: 4.5vw;
   display: flex;

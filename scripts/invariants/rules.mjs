@@ -197,6 +197,13 @@ export const rules = [
     pattern: /z-index:\s*(1[1-9]|[2-9]\d|\d{3,})\b|zIndex:\s*(1[1-9]|[2-9]\d|\d{3,})\b|\bz-(20|30|40|50|\[(calc\()?(1[1-9]|[2-9]\d|\d{3,})\b)/,
   },
   {
+    id: "fold-units",
+    description: "folds budget against the small viewport (R4-2, D-227): svh or dvh, never vh or h-screen (a phone keeps its browser bars)",
+    scopes: ["web/src"],
+    exts: [".css", ".tsx"],
+    pattern: /(?<![\w.-])\d+(\.\d+)?vh\b|\b(min-|max-)?h-screen\b/,
+  },
+  {
     id: "time-suffix",
     description: "time-shaped fields carry their unit suffix (Ms | Sec | Ns)",
     scopes: ["packages/core", "packages/markets", "services"],
