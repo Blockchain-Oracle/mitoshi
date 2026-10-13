@@ -44,7 +44,7 @@ The actors ops runs today, one heartbeat each on `/health`; agent-rater is the o
 | reference-writer | Keeps the stock pools' reference price and session fresh from RedStone. |
 | duel-settler | Cranks duels: closes the picks, settles each card, awards the pot. |
 | x-relay | Reads mentions of the X bot through its own session and places each call through its account's EXECUTOR grant ([trade from X](/x/trade-from-x)). |
-| indexer-recount | An hourly recount against the Tempo Indexer API or a self-hosted tidx. Idle: no indexer configured yet. |
+| indexer-recount | Every hour, counts each contract's logs in the Tempo Indexer API against the chain's own, over the blocks the index holds, and lists the blocks it lacks. |
 | halt-watch | The halt board from RedStone freshness and Alpaca's tradable flag. |
 | calendar · earnings | NYSE sessions and holidays; upcoming earnings. |
 | funds-watch | Watches every role key's pathUSD against a floor and tops a low one up from Moderato's faucet (mainnet only reports). |

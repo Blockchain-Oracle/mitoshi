@@ -1,46 +1,64 @@
 /**
- * One recount pass by hand (plan C.4.3; the ops actor `indexer-recount` runs it hourly): the configured indexer
- * (TIDX_URL / TEMPO_INDEXER_API_KEY / INDEXER_VIA_MPP) against the chain's `eth_getLogs`, per event of every deployed
- * contract on NETWORK, stored in `indexer_recounts` when DATABASE_URL is set. Also runs one decoded query through
- * `signature=` to show the event columns.
+ * The recount by hand (plan C.4.3; R6; the ops actor `indexer-recount` runs it hourly): the configured indexer
+ * (TIDX_URL / TEMPO_INDEXER_API_KEY / INDEXER_VIA_MPP) against the chain's `eth_getLogs`, per contract and topic0, over
+ * the blocks the index holds, paced under the key's rate limit. Prints the index's gaps and every compared item.
  *
- *   NETWORK=testnet TIDX_URL=http://localhost:58080 DATABASE_URL=… tsx scripts/indexer/recount.ts [--from-block N]
+ * Without DATABASE_URL it starts from nothing and runs passes until history is compared (or --passes N). With it,
+ * it resumes from and records to the same tables as ops (`indexer_recount_tiles`, `indexer_recounts`) — run it
+ * against a database ops doesn't use, or stop the actor first. --from-block N narrows the history (a quick check).
+ *
+ *   NETWORK=testnet TEMPO_INDEXER_API_KEY=… TEMPO_RPC_HTTP_URL=… tsx scripts/indexer/recount.ts [--from-block N] [--passes N]
  */
 import { NETWORKS, networkFrom } from "@cwf/core";
 import { indexerSources } from "@cwf/clients";
-import { createSql, insertRecounts, runMigrations } from "@cwf/db";
-import { tempoReadClient } from "@cwf/markets";
-import { indexerClientFromEnv, indexerHead, recount, rpcLogCounter, type RecountSource } from "@cwf/markets/server";
+import { commitRecount, createSql, loadRecountTiles, runMigrations } from "@cwf/db";
+import { createOpsClient } from "@cwf/markets/ops";
+import { formatRange, indexerClientFromEnv, recountPass, rpcLogWalk, type RecountSource, type TileState } from "@cwf/markets/server";
 
+const arg = (name: string) => (process.argv.includes(name) ? process.argv[process.argv.indexOf(name) + 1] : undefined);
 const network = networkFrom(process.env.NETWORK);
 const chainId = NETWORKS[network];
 const configured = indexerClientFromEnv();
 if (!configured.client) throw new Error(configured.reason);
 const indexer = configured.client;
-const rpc = tempoReadClient(network, process.env.TEMPO_RPC_HTTP_URL);
-const floorArg = process.argv.includes("--from-block") ? BigInt(process.argv[process.argv.indexOf("--from-block") + 1]!) : undefined;
-const sources = (indexerSources as Record<string, readonly RecountSource[]>)[String(chainId)] ?? [];
+// The ops actor's transport: no shared budget here, a 32 MiB answer cap, two retries (see indexer-recount/index.ts).
+const rpc = createOpsClient({ network, rpcUrl: process.env.TEMPO_RPC_HTTP_URL, unitsPerSec: 0, retryCount: 2, maxResponseBodySize: 32 * 1024 * 1024 }).public;
+const walk = rpcLogWalk(rpc, { initialBlocks: 10_000n, maxBlocks: 10_000n, onRefused: (a, b, why) => console.log(`  rpc refused ${a}-${b}: ${why.split("\n")[0]}`) });
+const floor = arg("--from-block") ? BigInt(arg("--from-block")!) : null;
+const passes = Number(arg("--passes") ?? 50);
+const all = (indexerSources as Record<string, readonly RecountSource[]>)[String(chainId)] ?? [];
+// A floor clips every deploy block up to it: history before it is left alone.
+const sources = floor === null ? all : all.map((s) => ({ ...s, deployBlock: s.deployBlock === null ? null : Math.max(s.deployBlock, Number(floor)) }));
 
-const head = await rpc.getBlockNumber();
-console.log(`indexer ${indexer.via} ${indexer.baseUrl} · chain ${chainId} · rpc head ${head} · indexer head ${await indexerHead(indexer)}`);
+const sql = process.env.DATABASE_URL ? createSql() : null;
+if (sql) await runMigrations(sql);
+const tiles = new Map<bigint, TileState>(sql ? (await loadRecountTiles(sql, chainId, indexer.via)).map((t) => [t.tileFrom, t]) : []);
+let mismatches = 0;
 
-const launch = sources.find((s) => s.contract === "LaunchRegistry");
-if (launch) {
-  const ev = launch.events.find((e) => e.name === "StablecoinRecorded")!;
-  const { rows } = await indexer.query({ sql: `SELECT block_num, tx_hash, token, creator, "index", "metadataURI" FROM StablecoinRecorded WHERE address = '${launch.address.toLowerCase()}' ORDER BY block_num`, signatures: [ev.signature] });
-  console.log(`decoded StablecoinRecorded via signature= (${rows.length}):`);
-  for (const r of rows) console.log(`  block ${r.block_num} tx ${r.tx_hash} token ${r.token} creator ${r.creator} index ${r.index} ${r.metadataURI}`);
+for (let pass = 1; pass <= passes; pass++) {
+  const headBlock = await rpc.getBlockNumber();
+  const result = await recountPass({
+    chainId,
+    indexer,
+    sources,
+    walk,
+    headBlock,
+    tiles: [...tiles.values()],
+    commit: async ({ tile, rows }) => {
+      if (sql) await commitRecount(sql, { chainId, via: indexer.via, tile, rows });
+      if (tile) tiles.set(tile.tileFrom, tile);
+      const first = rows[0];
+      const span = first ? `[${first.fromBlock}, ${first.toBlock}] held ${first.heldBlocks} skipped ${first.gapBlocks}` : "no logs";
+      console.log(`  ${tile ? "=" : "≠"} ${first?.kind ?? "item"} ${span}: ${rows.length} contract·topic rows`);
+      for (const r of rows.filter((x) => !x.match)) console.log(`    ≠ ${r.contract}.${r.event} indexer ${r.indexerCount} · chain ${r.localCount}`);
+    },
+  });
+  mismatches += result.mismatches.length;
+  const rate = indexer.pacer?.stats();
+  console.log(`pass ${pass} via ${result.via} ≤ ${result.toBlock}: ${result.items.done} items, ${result.items.left} left, ${result.logs} logs, ${result.mismatches.length} mismatches · compared ${result.compared.blocks}/${result.compared.of} blocks · ${result.gaps.length} index gaps (${result.gaps.slice(0, 5).map(formatRange).join(", ")}${result.gaps.length > 5 ? ", …" : ""})${rate ? ` · ${rate.requests} queries, ${rate.limited} × 429, limit ${rate.last?.limit ?? "?"}` : ""}${result.stopped ? ` · stopped by ${result.stopped.by}` : ""}`);
+  if (result.stopped?.by === "rate-limit") await new Promise((r) => setTimeout(r, result.stopped && "retryAfterMs" in result.stopped ? result.stopped.retryAfterMs + 1_000 : 60_000));
+  else if (!result.items.left) break;
 }
 
-const result = await recount({ chainId, indexer, sources, local: rpcLogCounter(rpc), headBlock: head, ...(floorArg !== undefined ? { fromBlockFloor: floorArg } : {}) });
-console.log(`recount ≤ ${result.toBlock}: ${result.rows.length} events, ${result.mismatches.length} mismatches, ${result.uncovered.length} uncovered`);
-for (const r of result.rows) console.log(`  ${r.match ? "=" : "≠"} ${r.contract}.${r.event} [${r.fromBlock}, ${r.toBlock}] indexer ${r.indexerCount} · chain ${r.localCount}`);
-for (const u of result.uncovered) console.log(`  … ${u.contract} [${u.fromBlock}, ${u.toBlock}] not yet covered by the indexer`);
-
-if (process.env.DATABASE_URL) {
-  const sql = createSql();
-  await runMigrations(sql);
-  console.log(`stored ${await insertRecounts(sql, result.rows.map((r) => ({ ...r, via: result.via })))} indexer_recounts rows`);
-  await sql.end();
-}
-if (result.mismatches.length) process.exitCode = 1;
+await sql?.end();
+if (mismatches) process.exitCode = 1;

@@ -4,6 +4,10 @@
  * the range the RPC names, halves when an error names none, and doubles again after every answered window — the ops
  * indexer's window rule (`services/ops/src/actors/indexer/window.ts`) plus the RPC's own hint (D-187).
  *
+ * Alchemy's Moderato endpoint (ops' private RPC since 2026-10-13) caps the range instead and names a hex range that fits:
+ * `-32600 "You can make eth_getLogs requests with up to a 10000 block range. Based on your parameters, this block range
+ * should work: [0x25317c0, 0x2533ecf]"` (measured 2026-10-13); the walk takes that hint the same way.
+ *
  * A refusal that names no range (Moderato aborting a body over its size limit, or timing out — F-S5-02) is a ceiling
  * too: growth stays under ¾ of the smallest such window, so a dense chain isn't refused once per window (each refusal
  * there costs a large aborted transfer). After `RELAX_AFTER` answered windows in a row the ceiling doubles, so a
@@ -35,6 +39,7 @@ export interface LogWalkStats {
 }
 
 const RANGE_HINT = /retry with the range (\d+)-(\d+)/;
+const HEX_RANGE_HINT = /block range should work: \[(0x[0-9a-f]+),\s*(0x[0-9a-f]+)\]/i;
 
 function errorTexts(error: unknown): string[] {
   const out: string[] = [];
@@ -48,7 +53,7 @@ function errorTexts(error: unknown): string[] {
 /** The block range the RPC suggests after refusing a window for its result count, or null. */
 export function suggestedLogRange(error: unknown): { from: bigint; to: bigint } | null {
   for (const text of errorTexts(error)) {
-    const m = RANGE_HINT.exec(text);
+    const m = RANGE_HINT.exec(text) ?? HEX_RANGE_HINT.exec(text);
     if (m) return { from: BigInt(m[1]!), to: BigInt(m[2]!) };
   }
   return null;

@@ -23,7 +23,7 @@ export { createPgStrategyStore, type DecisionGate, type DecisionVerdictSide, typ
 export { createPgStrategyAttempts, type AttemptKey, type NewStrategyAttempt, type StrategyAttempt, type StrategyAttemptState, type StrategyAttemptStore } from "./strategy-attempts";
 export { createPgSealedMemory, type SealedMemoryIndexRow, type SealedMemoryStore } from "./strategy-memory";
 export { agentRegistrationByStrategy, setAgentRegistrationUri, upsertAgentRegistration, type AgentRegistrationRow } from "./agents";
-export { insertRecounts, type RecountInsert } from "./recounts";
+export { commitRecount, insertRecounts, loadRecountTiles, type RecountInsert } from "./recounts";
 export { createPgPrivateClaimsStore, type PrivateClaimRow, type PrivateClaimsStore, type PrivateClaimStatus } from "./private-claims";
 export { createPgExitTriggersStore, type ExitTriggerRow, type ExitTriggerStatus, type ExitTriggersStore, type ExitWriteConflict } from "./exit-triggers";
 export { createPgSocialPeople, BIO_MAX, DISPLAY_NAME, type Profile, type SetProfileResult, type SocialPeopleStore } from "./social-people";
