@@ -31,4 +31,4 @@ The reference is **StockReference**: the share price per mirror, from RedStone p
 
 <StockPools />
 
-Each initialized pool was opened at the RedStone reference with seven house liquidity positions in one batch. Ops' **reference-writer** keeps the reference fresh with RedStone-signed spots and the session since 13 October (NFLX has no signed source). The guard still refuses every swap until a mirror's multiplier is synced from Robinhood Chain, and that sync waits on its sender there (testnet ETH). [Themes](/stocks/themes) are the screen that trades these pools; their rebalances wait on the same sync.
+Each initialized pool was opened at the RedStone reference with seven house liquidity positions in one batch. Ops' **reference-writer** keeps the reference fresh with RedStone-signed spots and the session since 13 October (NFLX has no signed source). The guard refuses every swap: it reads every mirror as halted (unsynced), so no rebalance can run (D-231). [Themes](/stocks/themes) are the screen that trades these pools.

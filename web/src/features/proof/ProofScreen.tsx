@@ -6,8 +6,10 @@ import { TEMPO_RPC_HTTP, txUrl, type Network } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import Link from "next/link";
 import { connection } from "next/server";
+import { ExternalLink } from "@/components/shell/ExternalLink";
 import { SectionHeader } from "@/components/shell/SectionHeader";
 import { Receipt, ReceiptRow } from "@/components/receipt";
+import { docsUrl } from "@/lib/docs-url";
 import { webEnv } from "@/lib/env";
 import { PROOF } from "./copy";
 import { readProof, type ProofPrint, type ProofWindow } from "./data";
@@ -118,7 +120,7 @@ export async function ProofScreen({ market }: { market: `0x${string}` }) {
         <Timeline w={w} network={network} />
       </section>
       <section className="flex flex-col gap-4" aria-label={PROOF.check.title}>
-        <SectionHeader index={PROOF.check.index} title={PROOF.check.title} aside={<Link href="/docs/record" className="type-caption text-accent">{PROOF.check.how}</Link>} />
+        <SectionHeader index={PROOF.check.index} title={PROOF.check.title} aside={<ExternalLink href={docsUrl("trading/proof")} className="type-caption text-accent">{PROOF.check.how}</ExternalLink>} />
         <ReverifyResults />
       </section>
     </ProofVerify>

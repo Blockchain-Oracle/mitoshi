@@ -1,14 +1,14 @@
 "use client";
 // The account popover (Owarine 90a91d71 `features/canton-ux/seat/SeatAccountMenu.tsx`; O-10, D-224), a lazy island: the
 // marble avatar, what the account is and its network chip, then one recessed panel — Address (copy), Wallet, Trading
-// Balance, the linked Robinhood Chain wallet — and the items: Portfolio, Account & keys, the balance eye, Sign out.
+// Balance — and the items: Portfolio, Account & keys, the balance eye, Sign out.
 // On Base UI Menu (keyboard, typeahead, focus return); the rail's foot opens it upward, the top line below. Its own
 // positioner class (R4-0, D-227): the old header's one was hidden on phones, so the phone avatar opened nothing.
 // R4-8 (D-227): from the rail it opens to the right, beside the rail and never over it (Owarine: side right, offset 28,
 // align end); the items carry Owarine's 18 px muted icons, the danger item last.
 import { Menu } from "@base-ui/react/menu";
 import { useBalanceSheet } from "@cwf/markets/react";
-import { Check, ChevronDown, Copy, Eye, EyeOff, KeyRound, Link2, LogOut, WalletCards } from "lucide-react";
+import { Check, ChevronDown, Copy, Eye, EyeOff, KeyRound, LogOut, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { ACCOUNT_MENU, CONNECT, SHELL } from "@/lib/copy";
@@ -78,16 +78,6 @@ export function AccountMenu({ open, onOpenChange, side = "bottom" }: AccountMenu
               </Row>
               <Row label={ACCOUNT_MENU.tradingAccount}>
                 <span className="numbers">{hidden ? SHELL.masked : value?.vaultBase === null ? ACCOUNT.tradingBalancePending : dollars(value?.vaultBase)}</span>
-              </Row>
-              <Row label={ACCOUNT.robinhood}>
-                {shell.robinhood ? (
-                  <span className="numbers">{shortAddress(shell.robinhood.address)}</span>
-                ) : (
-                  <button type="button" className="am-link" onClick={() => { onOpenChange(false); shell.openPicker("robinhood"); }}>
-                    <Link2 aria-hidden className="size-3.5" />
-                    {ACCOUNT.linkRobinhood}
-                  </button>
-                )}
               </Row>
             </dl>
             <div className="am-items">

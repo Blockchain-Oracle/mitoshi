@@ -37,8 +37,8 @@ Show, don't narrate every click:
 
 ## 2:05–2:35 · Slide 03, WHAT'S NEXT
 
-> It runs on your phone today — open the link, sign up, tap. Next: tokenized stocks you hold and trade on Tempo, right
-> beside the Windows; their pools and price guard are already deployed. Then mainnet.
+> It runs on your phone today — open the link, sign up, tap. Next: the iPhone and Android apps, in TestFlight and
+> Google Play testing now. Then mainnet.
 >
 > Mitoshi — see where it's going.
 

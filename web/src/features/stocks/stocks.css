@@ -67,5 +67,3 @@
 @media (min-width: 1280px) { .stk-windows { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .stk-section .news-wire, .stk-section ol { margin-top: 16px; }
 
-.stk-link { color: var(--color-accent); }
-.stk-link:hover { text-decoration: underline; text-underline-offset: 3px; }

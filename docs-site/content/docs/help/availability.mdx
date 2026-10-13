@@ -12,7 +12,7 @@ sources:
   - docs/plan/acceptance/S24.md
   - docs/plan/acceptance/R4-5.md
   - docs/plan/acceptance/R4-11.md
-  - docs/plan/acceptance/R4-12.md
+  - docs/plan/decisions.md
   - docs/plan/acceptance/S11.md
   - mobile/README.md
 ---
@@ -25,7 +25,7 @@ Checked against app revision `11d85e0` on 13 October 2026. Mitoshi runs on **Tem
 - **Money:** passkey sign-up with test dollars, one-tap keys, the Trading Balance, Earn's four reserves, Withdraw.
 - **Automate:** strategies, copy and fade, the studio with its test read, the agents board and cockpits, the Memory Market over MPP, house agent #3 on a model.
 - **Games:** the hall, Beat the coin, Line Rider and Candle Hop on the real prints, Lucky, Duel on the deployed arena, ranks and history.
-- **Stocks and tokens:** Bridge and Backing, Themes, Launch.
+- **Stocks and tokens:** Themes, Launch.
 - **X:** sign in with X, link, fund an X balance, trade from X, X recovery.
 - **Records and social:** proofs, Stats, the leaderboard and profiles, the season league, share cards, rooms and takes, Activity, price alerts and notifications, Sensei, Reels, News, Status and the halts board.
 
@@ -35,8 +35,7 @@ No page in the app is a placeholder.
 
 | What | Waits on |
 | --- | --- |
-| Bridging a Stock Token; Backing's **Backed**; the stock sync | The Robinhood Chain lockboxes and sync sender: testnet ETH (owner) |
-| Theme rebalances and Sell everything | The first stock sync: the guarded pools refuse until then |
+| Theme rebalances and Sell everything | The themes' move to stock Windows (D-231): the guarded pools they trade through refuse every swap |
 | The phone app on TestFlight and Play internal testing | The App Store Connect and Play Console records (owner) |
 | A mention posted on X itself | A person's first X sign-in and post; the relay is proven with a driven mention |
 | A duel's season prize | The owner naming and funding a season; duels run without one |
@@ -46,21 +45,18 @@ No page in the app is a placeholder.
 | Item | Effect until then |
 | --- | --- |
 | RedStone's authenticated-gateway key, before **29 October 2026** | Inside RedStone's daily refusal windows, prints, quotes, halts, Boost knock-outs and exits wait; Windows that get no print void at half |
-| Test ETH on Robinhood Chain testnet and Base Sepolia; Robinhood faucet claims | The bridge's Robinhood legs, the stock sync and theme rebalances can't start |
 | The App Store Connect and Play Console records; the Play signing key | The phone app isn't on TestFlight or Google Play |
 | X API credits | The relay reads mentions through the bot's own X session; X's API answers 402 |
-| The Reown project ID | On a phone with no wallet browser, Bridge links a Robinhood wallet only through MetaMask or Coinbase Wallet |
 | An indexer key or a self-hosted tidx | The hourly recount idles |
-| The LayerZero direct-pathway request | Testnet routes through Base Sepolia |
 | A country header in front of the live domains | The region check reads "open" everywhere |
 | Passkey runs on the owner's own phone | Automated checks use virtual authenticators and a browser-wallet test session, not a real device |
 | Releasing the ERC-8004 agent rater | Ratings are logged dry |
-| The capped mainnet MPP wallet; Data Streams credentials; Safes; mainnet stock-token eligibility | Mainnet |
+| The capped mainnet MPP wallet; Data Streams credentials; Safes | Mainnet |
 
 ## Limits you will meet
 
 - **Test money.** pathUSD from the faucet, once a day per account, with no value.
-- **24/7 stock lanes** pause around 04:00 ET daily; AMD and PLTR have none. NFLX and pre-IPO names are listed as paused.
+- **24/7 stock lanes** pause around 04:00 ET daily; AMD and PLTR have none. Pre-IPO names are listed as paused.
 - **Range and Moonshot** need 5 contracts resting a side for 20 seconds; a fresh Window says "Book too thin" until then.
 - **Lucky and Duel** deal only 15-minute and one-hour Windows.
 - **The public RPC** is shared and rate-limited; a busy minute can slow reads.

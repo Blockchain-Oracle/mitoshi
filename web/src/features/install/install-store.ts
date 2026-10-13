@@ -4,6 +4,8 @@
  * mounted, so the prompt was usually gone by the time the reader got there). The listeners attach the first time any
  * component subscribes — `AppStrip`, mounted by every route — and hold the prompt for the session.
  */
+import { installHintOf, type InstallHint } from "./browser";
+
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
   readonly userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
@@ -17,9 +19,11 @@ export interface InstallSnapshot {
   ios: boolean;
   /** Something useful can be offered: a prompt, or the iOS share-sheet path. */
   canInstall: boolean;
+  /** Where this browser keeps "install" when it holds no prompt (`browser.ts`). */
+  hint: InstallHint;
 }
 
-const SERVER: InstallSnapshot = { installed: false, canPrompt: false, ios: false, canInstall: false };
+const SERVER: InstallSnapshot = { installed: false, canPrompt: false, ios: false, canInstall: false, hint: "other" };
 let snapshot: InstallSnapshot = SERVER;
 let deferred: BeforeInstallPromptEvent | null = null;
 let attached = false;
@@ -30,7 +34,7 @@ function compute(): InstallSnapshot {
   const w = window as unknown as { ReactNativeWebView?: unknown };
   const installed = window.matchMedia?.("(display-mode: standalone)").matches === true || nav.standalone === true || w.ReactNativeWebView !== undefined;
   const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  return { installed, canPrompt: deferred !== null, ios, canInstall: !installed && (deferred !== null || ios) };
+  return { installed, canPrompt: deferred !== null, ios, canInstall: !installed && (deferred !== null || ios), hint: ios ? "ios" : installHintOf(navigator.userAgent) };
 }
 
 function emit() {

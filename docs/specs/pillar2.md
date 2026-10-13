@@ -1,5 +1,10 @@
 <!-- Copied from the approved build plan (v5, 2026-09-29). Change it only through D-entries in docs/plan/decisions.md. -->
 
+> **S14 removed (D-231, 2026-10-13).** The Robinhood ↔ Base Sepolia ↔ Tempo bridge, `/bridge`, `/reserves`, the stock
+> sync and the ops actors bridge-watch, reserve-watch and stock-sync left the product. Its contracts stay deployed on
+> testnet (`contracts/deployments/retired/`). Stocks are Windows; themes become baskets an agent trades as calls on
+> their stocks' Windows. The S14 sections below are kept as the record.
+
 ## Appendix B — Pillar 2 (stocks on Tempo), themes, launchpads (spec; S0 copies to `docs/specs/pillar2.md`)
 
 **Findings verified this pass (change the brief):** F-A WETH9 placeholder is a chain-bound CREATE (not replayable) and

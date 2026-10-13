@@ -2,6 +2,7 @@
 // Ported from Masayume 68f7a09:web/src/features/install/useInstallPrompt.ts — now reading the app-wide store.
 
 import { useCallback, useState, useSyncExternalStore } from "react";
+import type { InstallHint } from "./browser";
 import { installServerSnapshot, installSnapshot, promptInstall, subscribeInstall, type InstallSnapshot } from "./install-store";
 
 export type InstallState = "installed" | "prompt" | "ios" | "manual";
@@ -9,6 +10,8 @@ export type InstallChoice = "accepted" | "dismissed";
 
 export interface InstallPrompt {
   state: InstallState;
+  /** Where this browser keeps "install" when it holds no prompt; "other" on the server. */
+  hint: InstallHint;
   install: () => Promise<InstallChoice | null>;
   busy: boolean;
 }
@@ -30,5 +33,5 @@ export function useInstallPrompt(): InstallPrompt {
     }
   }, []);
   const state: InstallState = s.installed ? "installed" : s.canPrompt ? "prompt" : s.ios ? "ios" : "manual";
-  return { state, install, busy };
+  return { state, hint: s.hint, install, busy };
 }

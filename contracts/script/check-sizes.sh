@@ -2,15 +2,12 @@
 # S2.0 size gate: every contract compiled from `src/` must stay at or under 23.5 KB (23,500 B) of runtime code,
 # i.e. at least 1 KiB under the EIP-170 limit of 24,576 B (plan §6 S2 gate). Measured on every S2 step.
 #
-# Usage: contracts/script/check-sizes.sh            # default (Tempo) profile
-#        FOUNDRY_PROFILE=evm contracts/script/check-sizes.sh
+# Usage: contracts/script/check-sizes.sh            # the Tempo profile (D-231 removed the bridge's `evm` profile)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-PROFILE="${FOUNDRY_PROFILE:-default}"
 LIMIT="${SIZE_LIMIT:-23500}"
 OUT="out/tempo"
-[ "$PROFILE" = "evm" ] && OUT="out/evm"
 
 BUILD_LOG="$(mktemp)"
 if ! forge build --skip test --skip script >"$BUILD_LOG" 2>&1; then cat "$BUILD_LOG"; rm -f "$BUILD_LOG"; exit 1; fi

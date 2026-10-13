@@ -88,12 +88,6 @@ export const ACCOUNT_PAGE = {
     expiredAt: (when: string) => `ended ${when}`,
     taps: (n: number) => `${n} ${n === 1 ? "tap" : "taps"}`,
   },
-  linked: {
-    title: "Linked wallets",
-    robinhood: "Robinhood Chain wallet",
-    none: "None linked",
-    link: "Link a wallet",
-  },
   /** S11 (D-227): the linked X account (Trade from X). */
   x: "X account",
   feedback: {

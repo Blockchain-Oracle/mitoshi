@@ -15,8 +15,6 @@ function reached(state: TxState): number {
       return 1;
     case "confirmed":
       return state.pending ? 1 : 2;
-    case "settled":
-      return 2;
     default:
       return -1;
   }

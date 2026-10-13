@@ -169,6 +169,6 @@ export const FAQS: readonly Faq[] = [
   },
   {
     question: "And the stocks?",
-    answer: "Tokenized stocks to hold and trade on Tempo are next: their pools and price guard are deployed on Moderato, and the screens are being built. Today, stocks are Windows.",
+    answer: "Stocks are Windows: call nine US stocks UP or DOWN in NYSE hours, and seven of them around the clock. Each settles on RedStone's signed print. No share or token changes hands.",
   },
 ];

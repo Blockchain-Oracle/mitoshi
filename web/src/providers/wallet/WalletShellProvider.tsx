@@ -61,20 +61,13 @@ export function WalletShellProvider({ children }: { children: ReactNode }) {
     () => ({
       ...SIGNED_OUT,
       network: webEnv.markets.network,
-      openPicker: (mode = "tempo", intent = null) => {
-        pending.current = { kind: "picker", mode, intent };
+      openPicker: (intent = null) => {
+        pending.current = { kind: "picker", intent };
         setQueued(true);
         want();
       },
       disconnect: async () => undefined,
       switchToTempo: async () => undefined,
-      switchSide: async () => {
-        throw new Error("no Robinhood wallet linked");
-      },
-      sideWallet: async () => {
-        throw new Error("no Robinhood wallet linked");
-      },
-      sideReopenUrl: async () => null,
       signMessage: async () => {
         throw new Error("no wallet connected");
       },

@@ -5,7 +5,7 @@
  * here.
  */
 export const WORDS = {
-  nav: { markets: "Markets", how: "How it works", docs: "Docs", start: "Start trading", home: "Mitoshi home" },
+  nav: { markets: "Markets", how: "How it works", app: "Get the app", docs: "Docs", start: "Start trading", home: "Mitoshi home" },
   hero: {
     kicker: "On Tempo",
     title: ["See where", "it's going.", "Call the close."],
@@ -14,6 +14,9 @@ export const WORDS = {
     assetsLabel: "Some of the markets",
     start: "Start trading",
     paper: "Try it on paper",
+    /** D-230: the way to /download, under the two pills — iPhone, Android or the web app. */
+    app: "Get the app",
+    appPlatforms: "iPhone · Android · Web",
     stickers: { passkey: "Passkey · no seed", oracle: "RedStone signs the close" },
     frameTitle: "Mitoshi's terminal, live",
   },

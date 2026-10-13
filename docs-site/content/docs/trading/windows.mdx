@@ -4,7 +4,6 @@ description: A Window is one asset over a fixed stretch of time. Which assets, w
 sources:
   - packages/core/src/market/venue-spec.json
   - docs/plan/acceptance/R4-5.md
-  - web/src/app/(app)/docs/windows/page.tsx
   - contracts/src/engine/libs/ResolveLib.sol
   - services/ops/src/actors/window-roller
   - services/ops/src/actors/halt-watch
@@ -56,4 +55,4 @@ The terminal names the NYSE session with the Window chip — pre-market, open, a
 - **A halt** stops new calls on a Window: "Trading halted" when the exchange stops the stock, "Signed price stale" when the signed price goes stale or short of signers. UP and DOWN say why. An open call settles on its signed close, or the Window voids at half. Every halt of the last 30 days is on <AppLink href="/status/halts">the halts board</AppLink>.
 - **A corporate action** (a split, a multiplier change) pauses the Windows it would cut through.
 - **Earnings.** An upcoming report is named beside the session (in Sensei's head on a phone), and the Window that sits on it warns that prices can gap — a warning, never a block.
-- **Listed but paused.** NFLX is bridged to Tempo testnet but no signed price source carries it, and no attested source for pre-IPO companies exists on Tempo yet. Both are listed as paused rather than hidden.
+- **Listed but paused.** No attested source for pre-IPO companies exists on Tempo yet, so they are listed as paused rather than hidden.

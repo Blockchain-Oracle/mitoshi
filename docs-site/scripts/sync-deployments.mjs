@@ -12,7 +12,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const source = resolve(process.env.MITOSHI_SOURCE_DIR || resolve(root, '..'));
 const fragments = resolve(source, 'contracts/deployments');
 const target = resolve(root, 'lib/deployments.json');
-const CHAINS = { 42431: 'Tempo testnet (Moderato)', 84532: 'Base Sepolia' };
+const CHAINS = { 42431: 'Tempo testnet (Moderato)' };
 
 function readDeployments() {
   if (!existsSync(fragments)) throw new Error(`Deployment fragments missing: ${fragments}`);

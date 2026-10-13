@@ -25,6 +25,9 @@ its agents. It runs in this round. The domain moved to mitoshi.xyz (D-228). Deci
 6. **Bridge and reserves exist but can't bridge yet.** The Robinhood side waits on test ETH.
    - Get the test ETH (Codex), deploy and connect the Robinhood leg, and prove a bridge in and out.
    - Until then, the pages say exactly what works now and what is waiting, in one line, with no dead buttons.
+   - **Superseded by D-231 (owner, 2026-10-13): the bridge is removed.** `/bridge`, `/reserves`, their API routes
+     and the ops actors bridge-watch, reserve-watch and stock-sync go; old links 308 to Markets or the ticker's hub. The
+     stocks pillar is the stock Windows; themes become baskets on them.
 7. **Docs belong on their own domain.** The in-app `/docs` section goes. `/docs` and every docs link point to
    https://docs.mitoshi.xyz.
 8. **Download.** The home page and the navigation point to `/download`. That page lists the iOS app (TestFlight

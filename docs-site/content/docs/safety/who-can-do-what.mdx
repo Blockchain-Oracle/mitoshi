@@ -25,7 +25,6 @@ sources:
   - packages/core/src/x/grant-policy.ts
   - services/ops/src/actors/x-relay/execute.ts
   - contracts/deployments/42431/engine.json
-  - contracts/deployments/42431/stocks.json
   - contracts/deployments/42431/range.json
   - contracts/deployments/42431/arena.json
   - docs/plan/acceptance/S0.md
@@ -38,7 +37,7 @@ Every power here is enforced by a contract on Tempo testnet, not by Mitoshi's se
 
 - **Money leaves only to its owner.** No withdrawal or payout in the engine, the Trading Balance, Earn, Range, Parlay, Boost, the private desk or the duel arena takes a destination: each pays the account the money belongs to.
 - **Signed prints decide.** A print needs three of RedStone's five production signers, a set fixed at deployment. A Window's rules freeze when it opens. Anyone can post a print, settle, or void a Window whose print never came — at half. No one can void or decide a Window by hand.
-- **No upgrades.** The engine, the Trading Balance, Earn, the reserves, the private desk, the duel arena and the strategy registry are not proxies; their code can't change. Only the bridge's five mint adapters, and Uniswap's position descriptor in the v4 replay, sit behind proxies.
+- **No upgrades.** The engine, the Trading Balance, Earn, the reserves, the private desk, the duel arena and the strategy registry are not proxies; their code can't change. Only Uniswap's position descriptor in the v4 replay sits behind a proxy.
 - **Settling and withdrawing never pause.** Admins can stop new business, never claims, refunds, settlement or withdrawals.
 
 ## Who can do what

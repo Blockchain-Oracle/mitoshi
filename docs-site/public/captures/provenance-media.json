@@ -171,34 +171,6 @@
     },
     {
       "kind": "capture",
-      "name": "reservesDesk",
-      "file": "captures/reserves-desk-2026-10-13.png",
-      "sha256": "7979eec3745db91ec6dfc334e397f99a0721dc39ff48e25d0176e63acbfdd7fe",
-      "url": "https://testnet.mitoshi.xyz/reserves",
-      "capturedAt": "2026-10-13T07:17:48.588Z",
-      "viewport": {
-        "width": 1440,
-        "height": 900,
-        "deviceScaleFactor": 2
-      },
-      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
-    },
-    {
-      "kind": "capture",
-      "name": "bridgeDesk",
-      "file": "captures/bridge-desk-2026-10-13.png",
-      "sha256": "3ea4d906972a20d3b3b35fa4a04eeefc3edc3f0766aa12c45ac2c23e674043e1",
-      "url": "https://testnet.mitoshi.xyz/bridge",
-      "capturedAt": "2026-10-13T07:18:00.957Z",
-      "viewport": {
-        "width": 1440,
-        "height": 900,
-        "deviceScaleFactor": 2
-      },
-      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
-    },
-    {
-      "kind": "capture",
       "name": "themesDesk",
       "file": "captures/themes-desk-2026-10-13.png",
       "sha256": "da87c4061aefd888eaf6223e35c0480781dd5671ecdefa2a6e353ad31d80ae0f",

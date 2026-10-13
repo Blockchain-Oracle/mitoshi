@@ -132,13 +132,6 @@ export const events = {
     "SupplyRedeemed(address,uint256,uint256,uint256)",
     "Swept(uint256)"
   ],
-  "LzPingTempo": [
-    "EnforcedOptionSet(tuple[])",
-    "OwnershipTransferred(address,address)",
-    "PeerSet(uint32,bytes32)",
-    "PingLanded(bytes32,uint32,uint64,uint64,uint64)",
-    "PingSent(bytes32,uint32,uint64,uint64,uint256)"
-  ],
   "MarketMakerVault": [
     "AdminChanged(address)",
     "MakerChanged(address)",
@@ -199,22 +192,6 @@ export const events = {
     "Supplied(address,uint256,uint256,uint256)",
     "SupplyRedeemed(address,uint256,uint256,uint256)",
     "VolatilitySet(string,uint64)"
-  ],
-  "TIP20MintBurnAdapter": [
-    "CreditDeferred(address,uint32,uint256,uint8)",
-    "DeferredClaimed(address,uint256)",
-    "DeferredSent(address,bytes32,uint32,uint256)",
-    "EnforcedOptionSet(tuple[])",
-    "GuardianSet(address)",
-    "Initialized(uint64)",
-    "MsgInspectorSet(address)",
-    "OFTReceived(bytes32,uint32,address,uint256)",
-    "OFTSent(bytes32,uint32,address,uint256,uint256)",
-    "OwnershipTransferred(address,address)",
-    "PeerSet(uint32,bytes32)",
-    "PreCrimeSet(address)",
-    "RateLimitSet(uint32,bool,uint128,uint64)",
-    "SendsPaused(bool,address)"
   ],
   "ITIP20": [
     "Approval(address,address,uint256)",
@@ -323,87 +300,5 @@ export const events = {
     "Settled(address,bytes32,uint256,uint256,uint256,address,uint64)",
     "Swept(uint256)",
     "Withdrawn(address,uint256,uint256)"
-  ],
-  "LzPing": [
-    "EnforcedOptionSet(tuple[])",
-    "OwnershipTransferred(address,address)",
-    "PeerSet(uint32,bytes32)",
-    "PingLanded(bytes32,uint32,uint64,uint64,uint64)",
-    "PingSent(bytes32,uint32,uint64,uint64,uint256)"
-  ],
-  "HopComposer": [
-    "Bounced(bytes32,uint32,bytes32,uint256,bytes32,uint256)",
-    "EthWithdrawn(address,uint256)",
-    "Hopped(bytes32,uint32,uint32,bytes32,uint256,bytes32,uint256)",
-    "MinHopSet(uint256)",
-    "OwnershipTransferred(address,address)"
-  ],
-  "StockSyncForwarder": [
-    "EnforcedOptionSet(tuple[])",
-    "EthWithdrawn(address,uint256)",
-    "ForwardDeferred(bytes32,bytes)",
-    "Forwarded(bytes32,bytes32,uint256)",
-    "Ignored(bytes32,uint32)",
-    "OwnershipTransferred(address,address)",
-    "PeerSet(uint32,bytes32)"
-  ],
-  "TransitOFT": [
-    "Approval(address,address,uint256)",
-    "EnforcedOptionSet(tuple[])",
-    "MsgInspectorSet(address)",
-    "OFTReceived(bytes32,uint32,address,uint256)",
-    "OFTSent(bytes32,uint32,address,uint256,uint256)",
-    "OwnershipTransferred(address,address)",
-    "PeerSet(uint32,bytes32)",
-    "PreCrimeSet(address)",
-    "Transfer(address,address,uint256)"
-  ],
-  "StockLockbox": [
-    "EnforcedOptionSet(tuple[])",
-    "GuardianSet(address)",
-    "LocksPaused(bool,address)",
-    "MinLockSet(uint256)",
-    "MsgInspectorSet(address)",
-    "OFTReceived(bytes32,uint32,address,uint256)",
-    "OFTSent(bytes32,uint32,address,uint256,uint256)",
-    "OwedClaimed(address,uint256)",
-    "OwedResent(address,bytes32,uint32,uint256)",
-    "OwnershipTransferred(address,address)",
-    "PeerSet(uint32,bytes32)",
-    "PreCrimeSet(address)",
-    "RateLimitSet(uint32,uint128,uint64)",
-    "UnlockDeferred(address,uint32,uint256,bytes)"
-  ],
-  "StockSyncSender": [
-    "EnforcedOptionSet(tuple[])",
-    "OwnershipTransferred(address,address)",
-    "PeerSet(uint32,bytes32)",
-    "Synced(bytes32,uint32,uint64,uint256)",
-    "TokenRegistered(address,address)"
-  ],
-  "ILayerZeroEndpointV2": [
-    "ComposeDelivered(address,address,bytes32,uint16)",
-    "ComposeSent(address,address,bytes32,uint16,bytes)",
-    "DefaultReceiveLibrarySet(uint32,address)",
-    "DefaultReceiveLibraryTimeoutSet(uint32,address,uint256)",
-    "DefaultSendLibrarySet(uint32,address)",
-    "DelegateSet(address,address)",
-    "InboundNonceSkipped(uint32,bytes32,address,uint64)",
-    "LibraryRegistered(address)",
-    "LzComposeAlert(address,address,address,bytes32,uint16,uint256,uint256,bytes,bytes,bytes)",
-    "LzReceiveAlert(address,address,tuple,bytes32,uint256,uint256,bytes,bytes,bytes)",
-    "LzTokenSet(address)",
-    "PacketBurnt(uint32,bytes32,address,uint64,bytes32)",
-    "PacketDelivered(tuple,address)",
-    "PacketNilified(uint32,bytes32,address,uint64,bytes32)",
-    "PacketSent(bytes,bytes,address)",
-    "PacketVerified(tuple,address,bytes32)",
-    "ReceiveLibrarySet(address,uint32,address)",
-    "ReceiveLibraryTimeoutSet(address,uint32,address,uint256)",
-    "SendLibrarySet(address,uint32,address)"
-  ],
-  "ITIP20RolesAuth": [
-    "RoleAdminUpdated(bytes32,bytes32,address)",
-    "RoleMembershipUpdated(bytes32,address,address,bool)"
   ]
 } as const;

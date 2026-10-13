@@ -151,19 +151,6 @@ export function resolveIndexQuery(path: readonly string[], query: Record<string,
           where source = 'redstone' and t_sec between ${q.from} and ${q.to} and feeds ? ${feed} order by t_sec limit ${Math.min(q.limit ?? 300, 1000)}`,
       };
     }
-    // The bridge adapters' mints, burns and held credits on Tempo (index/0007, R4-12): `/stocks/events?account=0x…`.
-    case "stocks": {
-      if (second !== "events" || third !== undefined) return null;
-      const q = parse(z.object({ account: address.optional(), limit: optionalInt }), query);
-      const limit = Math.min(q.limit ?? 50, 200);
-      return {
-        scope: "public",
-        run: async (_r, sql) =>
-          q.account
-            ? sql`select tx_hash, log_index, adapter, name, guid, account, eid, amount_sd::text, reason, block_number::text, block_time_sec::text from idx_bridge_events where account = ${q.account.toLowerCase()} order by block_number desc, log_index desc limit ${limit}`
-            : sql`select tx_hash, log_index, adapter, name, guid, account, eid, amount_sd::text, reason, block_number::text, block_time_sec::text from idx_bridge_events order by block_number desc, log_index desc limit ${limit}`,
-      };
-    }
     case "status":
       return second === undefined ? { scope: "public", run: async (r) => [await r.status()] } : null;
     default:

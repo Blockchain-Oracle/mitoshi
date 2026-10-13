@@ -5,16 +5,13 @@
 // signature; a wallet signs a free message. Mainnet has no faucet: the address is the way in (L-26). Loaded on first open.
 // R4-4 (D-227; critic gap 11): on the kit sheet (`SlideOver`: a bottom sheet on a phone, the right drawer on desktop)
 // with the button pinned in its footer; the figure wears the privacy mask; the foot is the short address with Copy and
-// a QR to receive pathUSD on Tempo; the bridge is the other way in (Owarine's rail card) only once the Robinhood side
-// of the stock bridge is deployed — nothing until then.
-// The topology alone (pure, the generated deployments): the bridge's clients and reads stay out of this sheet's chunk.
-import { bridgeTopology, robinhoodLive } from "@cwf/markets/stocks/topology";
+// a QR to receive pathUSD on Tempo.
 import { useBalanceSheet } from "@cwf/markets/react";
 import { shortHex } from "@cwf/core/units";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check, Copy, Loader2, QrCode } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Masked } from "@/components/kit/Masked";
 import { PillButton } from "@/components/kit/PillButton";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
@@ -34,24 +31,11 @@ export function laterText(ms: number): string {
   return new Date(ms).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
 }
 
-/** The stock bridge's Robinhood side is deployed for some ticker on this network (the generated deployments, no read). */
-function useBridgeIn(): boolean {
-  return useMemo(() => {
-    const network = webEnv.markets.network;
-    try {
-      return Object.values(bridgeTopology(network).tickers).some((t) => robinhoodLive(t, network));
-    } catch {
-      return false;
-    }
-  }, []);
-}
-
 export default function AddFunds({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const session = useWalletSession();
   const sheet = useBalanceSheet(session.address);
   const testnet = webEnv.markets.network === "testnet";
   const faucet = useFaucetClaim({ address: session.address, viaSession: session.kind === "passkey" });
-  const bridgeIn = useBridgeIn();
   const [copied, setCopied] = useState(false);
   const [qr, setQr] = useState(false);
   const { state } = faucet;
@@ -114,11 +98,6 @@ export default function AddFunds({ open, onOpenChange }: { open: boolean; onOpen
               {testnet ? <span className="rounded-full bg-surface-2 px-3 py-1 type-caption text-ink-secondary">{FUNDING.modal.tag}</span> : null}
             </section>
             {state.phase === "funded" ? <FundedReceipt address={session.address} txHashes={state.claim.txHashes} atMs={state.atMs} /> : null}
-            {bridgeIn ? (
-              <Link href="/bridge" className="funds-rail" onClick={() => onOpenChange(false)}>
-                {FUNDING.modal.bridge}
-              </Link>
-            ) : null}
             <footer className="funds-foot">
               <span className="type-caption text-ink-secondary">{FUNDING.modal.account}</span>
               <div className="funds-foot-row">

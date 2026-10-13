@@ -6,7 +6,6 @@ export const TX = {
   submitted: "Sent — waiting for the chain",
   confirmedPending: "Confirmed",
   confirmed: "Confirmed",
-  settled: (delivered: number, legs: number) => (legs > 1 ? `Delivered ${delivered} of ${legs}` : "Delivered"),
   unknown: "Waiting for the chain to answer",
   unknownBody: "Waiting on the chain. Nothing is re-sent.",
   scheduled: (sec: number) => `Starting in ${sec}s`,

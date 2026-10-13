@@ -32,3 +32,7 @@ Coolify's health check).
 - Push-to-deploy needs a trigger GitHub can reach; the Coolify API is not public. Options are recorded in
   `docs/plan/owner-actions.md` (owner decides).
 - Env vars: `coolify app env create|sync <uuid>`; names per `infra/env/*.example`; values never in git.
+- A restart is a deploy here. Coolify 4.4.6 drops `restart_only` for the `dockerfile` build pack every app uses, so
+  Restart (UI, `coolify app restart`, the API) deploys `integration/t1`'s head, building it if its image is missing. An
+  env change reaches a running app only through that deploy: change env first, then deploy in the order the release
+  needs (D-231 item 6).

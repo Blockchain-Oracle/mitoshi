@@ -6,9 +6,8 @@ import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { PENDING, PENDING_ROUTES } from "../../../lib/capabilities";
-import { DOCS_EXTERNAL, DOCS_URL } from "../../../lib/docs-url";
-import { DOCS_NAV } from "../../../features/docs/nav";
-import { DOCK_NAV, EVERYTHING_SECTIONS, isActiveNavItem, isTopLevel, NAVIGABLE_ROUTE_PATHS, NAV_ITEMS, parentOf, RAIL_NAV, searchNav, type NavItem } from "./nav-items";
+import { DOCS_URL } from "../../../lib/docs-url";
+import { DOCK_NAV, EVERYTHING_ITEMS, EVERYTHING_SECTIONS, isActiveNavItem, isTopLevel, NAVIGABLE_ROUTE_PATHS, NAV_ITEMS, parentOf, RAIL_NAV, searchNav, type NavItem } from "./nav-items";
 
 const APP_DIR = fileURLToPath(new URL("../../../app", import.meta.url));
 
@@ -65,17 +64,21 @@ describe("navigation registry", () => {
     expect(isTopLevel("/games/duel")).toBe(false);
   });
 
-  it("keeps docs external only when they are another site, and every app destination internal", () => {
+  it("opens the docs site as the one external destination (D-230: no in-app docs), every app destination internal", () => {
     const items: NavItem[] = Object.values(NAV_ITEMS);
-    expect(items.filter((i) => i.external).map((i) => i.id)).toEqual(DOCS_EXTERNAL ? ["docs"] : []);
+    expect(items.filter((i) => i.external).map((i) => i.id)).toEqual(["docs"]);
     expect(NAV_ITEMS.docs.href).toBe(DOCS_URL);
+    expect(items.some((i) => i.href === "/docs" || i.href.startsWith("/docs/"))).toBe(false);
     expect(items.filter((i) => !i.external).every((i) => i.href.startsWith("/"))).toBe(true);
   });
 
   it("searches More by name, description and keywords", () => {
     expect(searchNav(EVERYTHING_SECTIONS.flatMap((s) => s.items), "revoke").map((i) => i.id)).toEqual(["account"]);
-    expect(searchNav([NAV_ITEMS.bridge], "robinhood")).toHaveLength(1);
-    expect(searchNav([NAV_ITEMS.bridge], "zzz")).toHaveLength(0);
+    expect(searchNav([NAV_ITEMS.earn], "yield")).toHaveLength(1);
+    expect(searchNav([NAV_ITEMS.earn], "zzz")).toHaveLength(0);
+    // D-231: the bridge left the product, so nothing in More answers to it.
+    expect(searchNav(EVERYTHING_ITEMS, "robinhood")).toHaveLength(0);
+    expect(searchNav(EVERYTHING_ITEMS, "bridge")).toHaveLength(0);
   });
 });
 
@@ -99,8 +102,8 @@ describe("route coverage (fidelity list 14)", () => {
 
   it("gives every static page a nav home, a parent that links to it, or an explicit off-nav reason", () => {
     const navigable = new Set<string>(NAVIGABLE_ROUTE_PATHS);
-    // Pending pages link their children; the docs' sidebar links every docs page (S20, L-20).
-    const linkedFrom = new Set([...Object.values(PENDING).flatMap((p) => (p.links ?? []).map((l) => l.href)), ...DOCS_NAV.flatMap((s) => s.pages.map((p) => p.href)), ...CHILD_OF_LIVE]);
+    // Pending pages link their children.
+    const linkedFrom = new Set([...Object.values(PENDING).flatMap((p) => (p.links ?? []).map((l) => l.href)), ...CHILD_OF_LIVE]);
     const orphans = routes.filter((r) => !r.includes("[") && !navigable.has(r) && !OFF_NAV.has(r) && !linkedFrom.has(r));
     expect(orphans).toEqual([]);
   });

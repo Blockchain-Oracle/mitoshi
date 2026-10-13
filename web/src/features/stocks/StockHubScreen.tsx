@@ -4,15 +4,13 @@
  * Mitoshi's data (P5, D-224; R4-10, D-227). The session chip reads the lanes: a coin and a stock with a 24/7 Window
  * trading say so (the owner's "stocks say closed while their 24/7 price moves"); a stock without one shows NYSE's hours.
  * The facts bar: the spot rolling on the Odometer beside a six-hour sparkline, the next report (a stock), the Mirror token
- * where S15 minted one, and the source with Bridge (R4-12) and Reserves. Then 01 its Windows (the lane cards), 02 Calls (fills and takes),
- * 03 Headlines. Nothing invented: every figure is a read.
+ * where S15 minted one, and the price source. Then 01 its Windows (the lane cards), 02 Calls (fills and takes), 03 Headlines. Nothing invented: every figure is a read.
  */
 import { TICKERS, type LaneSet, type TickerSymbol } from "@cwf/core";
 import { phase } from "@cwf/core/lifecycle";
 import { addressUrl } from "@cwf/core/urls";
 import { deploymentOf } from "@cwf/markets";
 import { useLanes, usePriceHistory } from "@cwf/markets/react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, use, useMemo } from "react";
 import { Odometer } from "@/components/kit/Odometer";
@@ -108,21 +106,7 @@ export function HubFacts({ symbol }: { symbol: TickerSymbol }) {
           </div>
         )}
       </dl>
-      <p className="stk-source">
-        {ticker.redstoneFeedId ? STOCKS.source : STOCKS.noSource}
-        {mirror && (
-          <>
-            {" · "}
-            <Link href={`/bridge?t=${symbol}`} className="stk-link">{STOCKS.bridge}</Link>
-          </>
-        )}
-        {stock && (
-          <>
-            {" · "}
-            <Link href="/reserves" className="stk-link">{STOCKS.reserves}</Link>
-          </>
-        )}
-      </p>
+      <p className="stk-source">{ticker.redstoneFeedId ? STOCKS.source : STOCKS.noSource}</p>
     </div>
   );
 }

@@ -7,7 +7,9 @@ import { addressUrl, formatBaseUnits, txUrl, USD_DECIMALS, type Network } from "
 import { formatCadence } from "@cwf/core/copy";
 import Link from "next/link";
 import { connection } from "next/server";
+import { ExternalLink } from "@/components/shell/ExternalLink";
 import { SectionHeader } from "@/components/shell/SectionHeader";
+import { docsUrl } from "@/lib/docs-url";
 import { webEnv } from "@/lib/env";
 import { STATS } from "./copy";
 import { readStats } from "./data";
@@ -151,7 +153,7 @@ export async function StatsScreen() {
 
       <p className="stats-foot">
         {STATS.foot(s.unattributed, new Date(s.computedAtMs).toISOString().replace("T", " ").slice(0, 16))}{" "}
-        <Link href="/docs/record">{STATS.how}</Link>
+        <ExternalLink href={docsUrl("explore/record")}>{STATS.how}</ExternalLink>
       </p>
     </div>
   );

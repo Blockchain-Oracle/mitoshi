@@ -1,8 +1,8 @@
 /**
  * The one transaction lifecycle every write renders (D-052; ux-audit §11.1; fidelity list 1–3, 6). Pure: a reducer over
- * events, so every surface — ticket, swap, bridge, follow, launch, revoke — shows the same honest states:
+ * events, so every surface — ticket, swap, follow, launch, revoke — shows the same honest states:
  *
- *   idle → blocked(reason) → review → signing → submitted → confirmed → settled/delivered
+ *   idle → blocked(reason) → review → signing → submitted → confirmed
  *                                            ↘ failed(diagnosis, moneyMoved)   ↘ unknown (reconciling by validBefore)
  *
  * Tempo confirms in ~0.5 s, so a write may move to an optimistic `confirmed` with `pending: true` the moment it is
@@ -23,7 +23,6 @@ export type TxState =
   | { kind: "signing" }
   | { kind: "submitted"; txHash: Hex | null; validBeforeSec: number | null }
   | { kind: "confirmed"; txHash: Hex | null; pending: boolean }
-  | { kind: "settled"; txHash: Hex; legs: number; delivered: number }
   | { kind: "failed"; diagnosis: Diagnosis; moneyMoved: MoneyMoved; txHash: Hex | null }
   | { kind: "unknown"; txHash: Hex | null; validBeforeSec: number | null };
 
@@ -38,8 +37,6 @@ export type TxEvent =
   /** The signer produced a signature; `optimistic` moves straight to confirmed-pending (Tempo's ~0.5 s finality). */
   | { type: "submitted"; txHash: Hex | null; validBeforeSec: number | null; optimistic?: boolean }
   | { type: "receipt"; txHash: Hex; status: "success" | "reverted"; diagnosis?: Diagnosis }
-  /** A multi-leg flow (bridge) delivered one more leg. */
-  | { type: "leg-delivered"; legs: number }
   | { type: "error"; diagnosis: Diagnosis }
   | { type: "timeout"; diagnosis: Diagnosis }
   /** Reconciliation's answer for an `unknown` write. */
@@ -73,7 +70,7 @@ const busy = (s: TxState) => s.kind === "signing" || s.kind === "submitted" || s
 export function reduceTx(state: TxState, event: TxEvent): TxState {
   switch (event.type) {
     case "evaluate":
-      if (busy(state) || state.kind === "confirmed" || state.kind === "settled" || state.kind === "review") return state;
+      if (busy(state) || state.kind === "confirmed" || state.kind === "review") return state;
       return event.blocker === null ? (state.kind === "failed" ? state : TX_IDLE) : { kind: "blocked", reason: event.blocker };
     case "review":
       return state.kind === "idle" || state.kind === "failed" ? { kind: "review" } : state;
@@ -91,10 +88,6 @@ export function reduceTx(state: TxState, event: TxEvent): TxState {
       if (state.kind !== "submitted" && state.kind !== "unknown" && !(state.kind === "confirmed" && state.pending) && state.kind !== "signing") return state;
       if (event.status === "success") return { kind: "confirmed", txHash: event.txHash, pending: false };
       return { kind: "failed", diagnosis: event.diagnosis ?? { kind: "contract-revert", retryable: false, technical: "reverted on chain", txHash: event.txHash }, moneyMoved: "no", txHash: event.txHash };
-    case "leg-delivered":
-      if (state.kind === "confirmed" && state.txHash) return { kind: "settled", txHash: state.txHash, legs: event.legs, delivered: 1 };
-      if (state.kind === "settled") return { ...state, delivered: Math.min(state.legs, state.delivered + 1) };
-      return state;
     case "error": {
       if (!busy(state) && state.kind !== "review" && !(state.kind === "confirmed" && state.pending)) return state;
       const afterSend = state.kind === "submitted" || state.kind === "confirmed";

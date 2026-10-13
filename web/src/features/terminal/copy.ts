@@ -358,7 +358,6 @@ export const TERMINAL = {
     /** G-05 (S6): what exists but can't list a Window on testnet, said plainly rather than hidden. */
     paused: {
       title: "Paused",
-      nflx: { name: "NFLX · Netflix", why: "No signed price source carries NFLX." },
       preIpo: { name: "Pre-IPO", why: "No attested price source for private companies yet." },
     },
   },

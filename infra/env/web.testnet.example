@@ -11,7 +11,6 @@ NEXT_PUBLIC_STREAM_URL=
 NEXT_PUBLIC_DOCS_URL=
 TEMPO_RPC_HTTP_URL=
 TEMPO_RPC_WS_URL=
-RH_RPC_HTTP_URL=
 DATABASE_URL=
 REDIS_URL=
 RELAY_FEE_PAYER_PRIVATE_KEY=
@@ -21,6 +20,12 @@ STREAM_TICKET_SECRET=
 SOCIAL_SESSION_SECRET=
 MPP_SECRET_KEY=
 WALLETCONNECT_PROJECT_ID=
+# /download's store links (D-230; runtime, not NEXT_PUBLIC_*: the cards read them per request, so set and restart is
+# enough). Unset or malformed, a card says "Coming to TestFlight" / "Coming to Google Play". Only Apple's /join/<code>
+# is taken, and offered only while Apple's join page takes testers (read off the request path; `[download]` log lines);
+# only Google Play's open test is taken (an internal-test link opens for listed testers only, so it is refused).
+TESTFLIGHT_PUBLIC_LINK=
+PLAY_OPEN_TEST_LINK=
 # Sensei (S13, D-221): any one model key; SENSEI_MODEL / AI_MODEL name another model
 ANTHROPIC_API_KEY=
 OPENAI_API_KEY=

@@ -41,4 +41,4 @@ Masayume (`sommina-events` @ `68f7a09`) and Agari (`agari-wt/w1`), plus a mobile
 
 - **Fast:** `pnpm typecheck && pnpm invariants && pnpm codegen:check`
 - **Web:** `pnpm build` (+ route budgets from S1)
-- **Contracts:** `forge build --sizes` in both profiles (`FOUNDRY_PROFILE=evm` for the Robinhood/transit side)
+- **Contracts:** `forge build --sizes` (one Tempo profile; D-231 removed the bridge's `evm` profile)

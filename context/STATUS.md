@@ -12,7 +12,7 @@ Updated 2026-09-29 by Claude, after the UX-first re-plan (plan v5). **Never trus
 Colosseum **Crypto World's Fair** entry, **Tempo track**. One product, two equal pillars:
 **prediction markets** (Masayume/Agari fidelity port, crypto + stocks, pathUSD) and **stocks on
 Tempo** (real Robinhood Stock Tokens bridged to Tempo + themed AI portfolio strategies). Plus stablecoin and
-memecoin launchpads.
+memecoin launchpads. *Superseded 2026-10-13 by D-231: no bridge; stocks are Windows (calls), themes trade them.*
 
 ## State
 
@@ -56,7 +56,8 @@ Tempo docs: 227 pages on disk in `../reference/tempo-docs-md/` — grep there fi
 - **Prices:** no push equity feeds on Tempo; RedStone pull (free) + Chainlink Data Streams (paid, mainnet) verify on chain;
   Pyth is unusable; Tempo refuses value transfers.
 - **Bridge:** LayerZero Robinhood↔Tempo works on mainnet with explicit DVNs; testnet needs a Base Sepolia hop; no CCIP lane.
-  195 Stock Tokens incl. GLD. Precedent: USDC.e/USDT0/frxUSD are TIP-20s minted by a LayerZero adapter.
+  195 Stock Tokens incl. GLD. Precedent: USDC.e/USDT0/frxUSD are TIP-20s minted by a LayerZero adapter. *(Superseded
+  2026-10-13 by D-231: the bridge left the product.)*
 - **Wallet UI:** RainbowKit 2 can't run on wagmi 3 (needed by Tempo's connectors) → Agari's replica modal.
 - **SpaceX is listed** (SPCX), not pre-IPO.
 - **Uniswap v4:** official mainnet deployment in real TIP-20 use; Moderato needs our own deploy (BUSL allows testnet);
@@ -85,11 +86,12 @@ are now answered: source chain D-001, theme model D-002, repository D-004). Kept
 
 Full list: `tempo/12-parity-ledger.md` §12 and `tempo/17-architecture.md` §13. Headlines:
 
-- Source chain Robinhood Chain (all research supports it) — confirm.
+- Source chain Robinhood Chain (all research supports it) — confirm. *(Moot since D-231, 2026-10-13: no bridge.)*
 - Theme account model (per-user recommended), AI's role in themes, themes and tickers, names for calls vs themes.
 - Q0 agent ranking; settlement fee; open print before taker fills on chain.
 - Y-rows to reopen (builder fees, mainnet funding, agent API).
-- Testnet bridge route; pause propagation; personal eligibility and budget for mainnet Stock Tokens; Safes.
+- Testnet bridge route; pause propagation; personal eligibility and budget for mainnet Stock Tokens; Safes. *(The bridge
+  and stock-token items are moot since D-231, 2026-10-13.)*
 - Data Streams subscriptions + testnet credentials; RedStone licence; indexer route; idle-yield token.
 - Yosuku CSS licence before a public repo; repository and product name; the pitch.
 - Mobile: app name/bundle IDs (Q-027), geofence for App Review (Q-028), organization account later (Q-029), ask

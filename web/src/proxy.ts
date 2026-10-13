@@ -7,11 +7,16 @@ import { NextResponse, type NextRequest } from "next/server";
 import { COUNTRY_HEADERS, encodePosture, GEOFENCE_PILLARS, postureOf, REGION_COOKIE, REGION_HEADER } from "@cwf/core";
 import { TRADE_COOKIE, tradeRedirect } from "./features/terminal/route";
 import { canonicalRedirect } from "./lib/canonical-host";
+import { docsRedirect } from "./lib/docs-url";
 import { tickerHubRoute } from "./lib/ticker-href";
 
 const COOKIE_MAX_AGE_SEC = 60 * 60 * 24;
 
 export function proxy(request: NextRequest): NextResponse {
+  // The docs are their own site (D-230): `/docs` and every `/docs/*` path answer a permanent 308 to the matching guide on
+  // docs.mitoshi.xyz, on every host (so the old testnet host gets there in one hop).
+  const guide = docsRedirect(request.nextUrl.pathname);
+  if (guide) return NextResponse.redirect(guide, 308);
   // One address (D-228): the app lives at APP_ORIGIN (https://mitoshi.xyz); the old testnet host and www answer a
   // permanent redirect there with the path and query kept, and /.well-known/* answers on every host (the phone app's
   // association files: Apple and Google follow no redirect).
@@ -56,7 +61,15 @@ export function proxy(request: NextRequest): NextResponse {
   return response;
 }
 
-/** Everything but static payloads: `/api` is matched on purpose (funded routes read the stamped headers). */
+/**
+ * Everything but static payloads: `/api` is matched on purpose (funded routes read the stamped headers). `/docs` and
+ * every `/docs/*` path are matched whatever they end in (D-230): the static-payload skip would otherwise leave
+ * `/docs/llms.txt` or `/docs/x.png` to the app's 404 instead of the docs site (`proxy.test.ts`).
+ */
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|mp3|wav|mp4|webm|txt|xml|json)$).*)"],
+  matcher: [
+    "/docs",
+    "/docs/:path*",
+    "/((?!_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|mp3|wav|mp4|webm|txt|xml|json)$).*)",
+  ],
 };

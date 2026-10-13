@@ -12,7 +12,7 @@ const STATES: { label: string; state: TxState }[] = [
   { label: "submitted", state: { kind: "submitted", txHash: null, validBeforeSec: 25 } },
   { label: "confirmed (pending)", state: { kind: "confirmed", txHash: HASH, pending: true } },
   { label: "unknown", state: { kind: "unknown", txHash: null, validBeforeSec: 25 } },
-  { label: "settled", state: { kind: "settled", txHash: HASH, legs: 2, delivered: 1 } },
+  { label: "confirmed", state: { kind: "confirmed", txHash: HASH, pending: false } },
 ];
 
 export function TxFixtures() {

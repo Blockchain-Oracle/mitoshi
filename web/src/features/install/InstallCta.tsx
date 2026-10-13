@@ -1,59 +1,76 @@
 "use client";
-// Ported from Masayume 68f7a09:web/src/features/install/InstallCta.tsx
+// Ported from Masayume 68f7a09:web/src/features/install/InstallCta.tsx; on the kit's pill (D-230, `/download`'s web card).
 
-import { useState } from "react";
-import { INSTALL } from "./copy";
+import { Download } from "lucide-react";
+import { Fragment, useState } from "react";
+import type { InstallHint } from "./browser";
+import { INSTALL, installWhere } from "./copy";
 import { useInstallPrompt } from "./useInstallPrompt";
 
-/** The reference's glyph: an arrow descending into a tray — 'get', not 'share'. */
-function TrayArrow() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="dl-cta-arrow">
-      <path d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 /**
- * The reference's single "Get the app" link, made stateful: the platform decides what the
- * one button does, and the button never claims a store or a build that does not exist.
+ * The web app's one action, made stateful: the browser decides what it does, and it never claims a store. Where the
+ * browser holds an install prompt it opens it; on iOS it shows Safari's three steps; once installed it says so. With no
+ * prompt it is not a button at all: it names where this browser keeps "install" (`hint`, read from the request so the
+ * first paint already says it) — Chrome's and Edge's menus, Safari's Add to Dock, an Android menu — or, for a browser
+ * we can't vouch for, where to go instead. `primary` makes a real action the page's accent; a hint is never accent.
  */
-export function InstallCta() {
+export function InstallCta({ primary = false, hint }: { primary?: boolean; hint: InstallHint }) {
   const { state, install, busy } = useInstallPrompt();
   const [open, setOpen] = useState(false);
+  const pill = `kit-pill kit-pill--md ${primary ? "kit-pill--accent" : "kit-pill--ink"}`;
+  const accent = primary ? "" : undefined;
+  // Until the browser answers (and on the server) the state is "manual": the request's own hint stands in, so an iPhone
+  // paints Safari's steps at once and the swap to the browser's real state moves nothing.
+  const view = state === "manual" ? hint : state;
 
-  if (state === "installed") {
-    return (
-      <span className="dl-cta is-inert" aria-disabled="true">
-        {INSTALL.cta.installed}
-      </span>
-    );
-  }
+  if (view === "installed") return <p className="get-done">{INSTALL.cta.installed}</p>;
 
-  if (state === "prompt") {
+  if (view === "prompt") {
     return (
-      <button type="button" className="dl-cta" disabled={busy} aria-busy={busy} onClick={() => void install()}>
+      <button type="button" className={pill} disabled={busy} aria-busy={busy} onClick={() => void install()} data-primary-action={accent}>
         {busy ? INSTALL.cta.installing : INSTALL.cta.prompt}
-        <TrayArrow />
+        <Download aria-hidden />
       </button>
     );
   }
 
-  const label = state === "ios" ? INSTALL.cta.ios : INSTALL.cta.manual;
+  if (view === "ios") {
+    return (
+      <div className="get-install">
+        <button type="button" className={pill} aria-expanded={open} onClick={() => setOpen((v) => !v)} data-primary-action={accent}>
+          {INSTALL.cta.ios}
+          <Download aria-hidden />
+        </button>
+        {open ? (
+          <ol className="get-steps">
+            {INSTALL.iosSteps.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+        ) : null}
+      </div>
+    );
+  }
+
+  const where = installWhere(view);
+  if (!where) return <p className="get-how">{INSTALL.elsewhere}</p>;
+  // The menu path as key caps (From 21st.dev 28308 ai2/kbd-combo, its SequenceKbd: one root <kbd> that a screen reader
+  // hears once — "Chrome menu, then …" — and the caps beside it hidden, joined by a connector; an arrow here).
   return (
-    <div>
-      <button type="button" className="dl-cta" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-        {label}
-        <TrayArrow />
-      </button>
-      {open && state === "ios" && (
-        <ol className="dl-steps">
-          {INSTALL.iosSteps.map((step) => (
-            <li key={step}>{step}</li>
+    <p className="get-how">
+      <Download aria-hidden className="get-how-icon" />
+      <span>{where.in}:</span>
+      <kbd className="get-path">
+        <span className="sr-only">{where.path.map((step) => ("label" in step ? step.label : step.item)).join(", then ")}</span>
+        <span aria-hidden className="get-path-keys">
+          {where.path.map((step, i) => (
+            <Fragment key={step.item}>
+              {i > 0 ? <span className="get-path-then">→</span> : null}
+              <kbd>{step.item}</kbd>
+            </Fragment>
           ))}
-        </ol>
-      )}
-      {open && state === "manual" && <p className="dl-hint">{INSTALL.manualHint}</p>}
-    </div>
+        </span>
+      </kbd>
+    </p>
   );
 }

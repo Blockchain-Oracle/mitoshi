@@ -108,24 +108,6 @@
       "width": 1440,
       "height": 900
     },
-    "reservesDesk": {
-      "title": "Reserves",
-      "file": "reserves-desk-2026-10-13.png",
-      "alt": "The reserves page at 1440 × 900, signed out.",
-      "state": "Signed out; live testnet data as the page showed it.",
-      "date": "13 October 2026",
-      "width": 1440,
-      "height": 900
-    },
-    "bridgeDesk": {
-      "title": "Bridge",
-      "file": "bridge-desk-2026-10-13.png",
-      "alt": "The bridge page at 1440 × 900, signed out.",
-      "state": "Signed out; live testnet data as the page showed it.",
-      "date": "13 October 2026",
-      "width": 1440,
-      "height": 900
-    },
     "themesDesk": {
       "title": "Themes",
       "file": "themes-desk-2026-10-13.png",

@@ -5,9 +5,6 @@
 export const NETWORKS = { mainnet: 4217, testnet: 42431 } as const;
 export type Network = keyof typeof NETWORKS;
 
-/** The other chains the product touches: Robinhood Chain (stock-token source, D-001) and Base Sepolia (testnet hop, Q-009). */
-export const OTHER_CHAINS = { robinhood: 4663, robinhoodTestnet: 46630, baseSepolia: 84532 } as const;
-
 /** Resolves the configured network name, defaulting to testnet. */
 export function networkFrom(value: string | undefined): Network {
   return value === "mainnet" ? "mainnet" : "testnet";

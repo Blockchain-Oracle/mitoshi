@@ -7,7 +7,6 @@
     "42431/guard",
     "42431/launch",
     "42431/leverage",
-    "42431/lz",
     "42431/maker",
     "42431/parlay",
     "42431/pools",
@@ -18,9 +17,7 @@
     "42431/themes",
     "42431/v4",
     "42431/vault",
-    "42431/vault2",
-    "84532/lz",
-    "84532/stocks"
+    "42431/vault2"
   ],
   "abis": [
     "AdminLib",
@@ -35,21 +32,16 @@
     "EventsEngine",
     "FairValueGuard",
     "GameArena",
-    "HopComposer",
-    "ILayerZeroEndpointV2",
     "IPoolManager",
     "IPositionDescriptor",
     "IPositionManager",
     "IStateView",
     "ITIP20",
-    "ITIP20RolesAuth",
     "IUniversalRouter",
     "IV4Quoter",
     "LaunchRegistry",
     "LeverageReserve",
     "LiquidityLocker",
-    "LzPing",
-    "LzPingTempo",
     "MarketMakerVault",
     "MatchLib",
     "ParlayReserve",
@@ -59,15 +51,10 @@
     "ResolveLib",
     "ScaledUIView",
     "StockGuardHook",
-    "StockLockbox",
     "StockReference",
-    "StockSyncForwarder",
     "StockSyncReceiver",
-    "StockSyncSender",
     "StrategyRegistry",
-    "TIP20MintBurnAdapter",
     "ThemeRegistry",
-    "ThemeRouter",
-    "TransitOFT"
+    "ThemeRouter"
   ]
 }
