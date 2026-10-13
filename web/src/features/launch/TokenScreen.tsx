@@ -7,7 +7,7 @@
 import type { Address } from "@cwf/core";
 import { txUrl } from "@cwf/core";
 import { shortHex } from "@cwf/core/units";
-import type { MemeLaunch, MemeTrade } from "@cwf/markets/launch";
+import type { MemeLaunch, TimedMemeTrade as MemeTrade } from "@cwf/markets/launch";
 import { useMemeLaunch, useMemeTrades } from "@cwf/markets/react";
 import { Flag } from "lucide-react";
 import { useState } from "react";
@@ -17,7 +17,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { ReportDialog } from "@/features/social/report-dialog-lazy";
 import { webEnv } from "@/lib/env";
 import { LAUNCH } from "./copy";
-import { bpsText, capBase, coinText, priceText, usdText } from "./format";
+import { bpsText, capBase, changeText, coinText, priceText, usdText } from "./format";
 import { LogoDisc } from "./LogoDisc";
 import { StablecoinView } from "./StablecoinView";
 import { TokenYou } from "./TokenYou";
@@ -85,6 +85,7 @@ function MemeView({ m }: { m: MemeLaunch }) {
   const [sheet, setSheet] = useState<"buy" | "sell" | null>(null);
   const [reporting, setReporting] = useState(false);
   const values = list.map((t) => Number(t.priceE18 / 1_000_000n));
+  const change = changeText(m.priceE18, list, Math.floor(Date.now() / 1000));
   const stageLine = m.stage === "trading" ? LAUNCH.toGraduation(`${Math.floor(m.progressBps / 100)}%`) : m.stage === "complete" ? K.graduating : K.onUniswap;
   return (
     <section className="lp-page lp-token">
@@ -94,7 +95,10 @@ function MemeView({ m }: { m: MemeLaunch }) {
           <span className="lp-row-name">{m.meta.name}</span>
           <span className="lp-row-sym">${m.meta.symbol}</span>
         </span>
-        <span className="lp-token-price numbers">{priceText(m.priceE18)}</span>
+        <span className="lp-token-price numbers">
+          {priceText(m.priceE18)}
+          {change ? <span className="lp-change" data-up={change.up ? "" : undefined}>{change.text} {change.since === "24h" ? K.day : K.sinceLaunch}</span> : null}
+        </span>
         <button type="button" className="lp-icon" aria-label={K.report} title={K.report} onClick={() => setReporting(true)}><Flag aria-hidden className="size-4" /></button>
       </header>
       <div className="lp-chart">{values.length >= 2 ? <Sparkline values={values} width={640} height={180} className="lp-chart-line" /> : <p className="lp-note">{trades === null ? K.reading : K.tradesEmpty}</p>}</div>

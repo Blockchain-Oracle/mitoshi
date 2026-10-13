@@ -79,7 +79,9 @@
 
 .lp-token-head { display: flex; align-items: center; gap: 12px; }
 .lp-token-head .lp-row-id { flex: 1; }
-.lp-token-price { font-size: 20px; font-weight: 700; color: var(--color-ink); }
+.lp-token-price { display: flex; flex-direction: column; align-items: flex-end; font-size: 20px; font-weight: 700; color: var(--color-ink); }
+.lp-change { font-size: 12px; font-weight: 600; color: var(--color-down); }
+.lp-change[data-up] { color: var(--color-up); }
 .lp-icon { display: grid; width: 44px; height: 44px; flex: none; place-items: center; border-radius: 9999px; color: var(--color-ink-secondary); }
 .lp-icon:hover { background: var(--color-surface-2); color: var(--color-ink); }
 .lp-chart { display: grid; min-height: 180px; place-items: center; overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }

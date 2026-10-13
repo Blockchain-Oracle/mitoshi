@@ -66,6 +66,8 @@ export const LAUNCH = {
     missing: "No launch at this address.",
     back: "All launches",
     price: "Price",
+    day: "24h",
+    sinceLaunch: "since launch",
     marketCap: "Market cap",
     raised: "Raised",
     feeNow: "Fee now",

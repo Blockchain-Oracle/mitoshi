@@ -23,3 +23,14 @@ export const parseAmount = (text: string): bigint | null => parseDecimalToBaseUn
 
 /** Market cap at the curve price: supply × price. */
 export const capBase = (totalSupply: bigint, priceE18: bigint) => (totalSupply * priceE18) / E18;
+
+/** The move against the last trade at least 24 h old, or since the first trade when the coin is younger; null without. */
+export function changeText(priceE18: bigint, trades: readonly { priceE18: bigint; atSec: number | null }[], nowSec: number): { text: string; up: boolean; since: "24h" | "launch" } | null {
+  const timed = trades.filter((t) => t.atSec !== null);
+  if (timed.length === 0) return null;
+  const old = [...timed].reverse().find((t) => t.atSec! <= nowSec - 86_400);
+  const ref = old ?? timed[0]!;
+  if (ref.priceE18 <= 0n) return null;
+  const bps = Number(((priceE18 - ref.priceE18) * 10_000n) / ref.priceE18);
+  return { text: `${bps >= 0 ? "+" : "−"}${(Math.abs(bps) / 100).toFixed(2)}%`, up: bps >= 0, since: old ? "24h" : "launch" };
+}

@@ -6,8 +6,8 @@
  */
 import type { Address, Reading } from "@cwf/core";
 import type { QueryClient } from "@tanstack/react-query";
-import type { MemeLaunch, MemeTrade } from "../launch/memeRead";
-import { getMemeClaims, getMemeLaunch, getMemePosition, getMemeTrades, getStablecoinLaunch, listLaunches, listMemeTemplates, quotePoolSwap, type LaunchRow, type MemeTemplate, type StablecoinView } from "../launch/reads";
+import type { MemeLaunch } from "../launch/memeRead";
+import { getMemeClaims, getMemeLaunch, getMemePosition, getMemeTrades, getStablecoinLaunch, listLaunches, listMemeTemplates, quotePoolSwap, type LaunchRow, type MemeTemplate, type StablecoinView, type TimedMemeTrade } from "../launch/reads";
 import { useReadingQuery } from "./useReadingQuery";
 
 const LIST_POLL_MS = 30_000;
@@ -42,7 +42,7 @@ export function useMemeLaunch(token: Address | null): Reading<MemeLaunch | null>
   return useReadingQuery(launchKeys.meme(token), () => getMemeLaunch(token!), { enabled: token !== null, pollMs: TOKEN_POLL_MS });
 }
 
-export function useMemeTrades(token: Address | null, enabled = true): Reading<MemeTrade[]> | null {
+export function useMemeTrades(token: Address | null, enabled = true): Reading<TimedMemeTrade[]> | null {
   return useReadingQuery(launchKeys.trades(token), () => getMemeTrades(token!), { enabled: enabled && token !== null, pollMs: LIST_POLL_MS });
 }
 

@@ -101,12 +101,20 @@ export async function getMemeLaunch(token: Address): Promise<Reading<MemeLaunch 
   });
 }
 
-/** The curve's trades on one memecoin, oldest first (the chart and the tape); empty without the launchpads. */
-export async function getMemeTrades(token: Address): Promise<Reading<MemeTrade[]>> {
+/** A trade with its block's time (the last `TIMED_TRADES` trades; older ones carry null). */
+export type TimedMemeTrade = MemeTrade & { atSec: number | null };
+const TIMED_TRADES = 200;
+
+/** The curve's trades on one memecoin, oldest first (the chart, the tape, the 24 h move); empty without the launchpads. */
+export async function getMemeTrades(token: Address): Promise<Reading<TimedMemeTrade[]>> {
   return withReading(`memeTrades:${token.toLowerCase()}`, async () => {
     const a = launchVenueOf((await getPublicClient()).chain.id);
     if (!a) return [];
-    return readMemeTrades(await getLogClient(), a, token, a.deployBlock, LOG_WINDOW);
+    const client = await getLogClient();
+    const trades = await readMemeTrades(client, a, token, a.deployBlock, LOG_WINDOW);
+    const recent = new Set(trades.slice(-TIMED_TRADES).map((t) => t.blockNumber));
+    const times = new Map(await Promise.all([...recent].map(async (n) => [n, Number((await client.getBlock({ blockNumber: n })).timestamp)] as const)));
+    return trades.map((t) => ({ ...t, atSec: times.get(t.blockNumber) ?? null }));
   });
 }
 
