@@ -11,11 +11,12 @@ import { shortHex } from "@cwf/core/units";
 import { ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
 import { PillButton, TextTabs, TextTabPanel } from "@/components/kit";
-import { Donut, LogoStack, PartitionBar, StatusDot, Timeline, TimelineNode } from "@/components/kit/desk-kit";
+import { Donut, LogoStack, PartitionBar, Sparkline, StatusDot, Timeline, TimelineNode } from "@/components/kit/desk-kit";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
 import { THEMES } from "./copy";
 import { FollowSheet } from "./FollowSheet";
+import { useThemeWeek } from "./useThemeWeek";
 import { everyText, pct, sessionsText, sliceColor, usd18, usd6, weightedPrice } from "./format";
 import "@/styles/themes.css";
 
@@ -28,7 +29,17 @@ function slices(t: ThemeView) {
 
 function Overview({ t }: { t: ThemeView }) {
   const index = weightedPrice(t.members);
+  const week = useThemeWeek(t.members);
   return (
+    <>
+    <div className="th-hero">
+      <div className="th-index-figures">
+        <span className="th-index-label">{THEMES.card.index}</span>
+        <span className="th-index-value numbers">{index.e18 === null ? "—" : usd18(index.e18)}</span>
+        <span className="th-week-label" data-tone={week.moveBps === null ? undefined : week.moveBps > 0 ? "up" : week.moveBps < 0 ? "down" : undefined}>{week.moveBps === null ? THEMES.card.weekNone : THEMES.card.week(`${week.moveBps > 0 ? "+" : week.moveBps < 0 ? "−" : ""}${pct(Math.abs(week.moveBps))}`)}</span>
+      </div>
+      <Sparkline values={week.values} width={640} height={140} className="th-hero-line" />
+    </div>
     <div className="th-overview">
       <Donut slices={slices(t)} label={T.target} size={168} thickness={18}>
         <span className="th-donut-figure numbers">{index.e18 === null ? "—" : usd18(index.e18)}</span>
@@ -41,6 +52,7 @@ function Overview({ t }: { t: ThemeView }) {
         </ul>
       </div>
     </div>
+    </>
   );
 }
 

@@ -40,6 +40,8 @@
 
 .th-cockpit .th-blurb { -webkit-line-clamp: 3; }
 .th-cta { padding: 8px 0; background: var(--color-ground); }
+.th-hero { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; background: var(--color-surface-2); }
+.th-hero-line { width: 100%; height: 140px; }
 .th-overview { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; padding: 8px 0; }
 .th-overview-side { display: flex; min-width: 12rem; flex: 1; flex-direction: column; gap: 12px; }
 .th-donut-figure { display: block; font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--color-ink); }
