@@ -32,9 +32,10 @@ function idFrom<T>(logs: { topics: Hex[]; data: Hex }[], abi: readonly unknown[]
   return null;
 }
 
-export function CreatorStudio({ writes, onPublished }: { writes: CopyWrites; onPublished: (strategyId: string) => void }) {
+/** `initial` seeds the draft: a profile's "Copy this trader" opens the mirror preset on that wallet (R4-10, D-227). */
+export function CreatorStudio({ writes, onPublished, initial }: { writes: CopyWrites; onPublished: (strategyId: string) => void; initial?: Partial<Draft> }) {
   const catalogue = useStrategies();
-  const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+  const [draft, setDraft] = useState<Draft>(() => ({ ...EMPTY_DRAFT, ...initial }));
   const [agentId, setAgentId] = useState<bigint | null>(null);
   const [said, setSaid] = useState<string | null>(null);
   const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch }));

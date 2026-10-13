@@ -53,7 +53,8 @@ function BalanceCashOut({ p, v, closer }: { p: TerminalPosition; v: PositionValu
 
 const sum = (xs: readonly (bigint | null)[]): bigint | null => (xs.some((x) => x === null) ? null : xs.reduce<bigint>((a, x) => a + x!, 0n));
 
-export function BetRow({ legs, values, wallet, closer }: { legs: readonly TerminalPosition[]; values: ReadonlyMap<string, PositionValue>; wallet: Address; closer: ReturnType<typeof useTerminalClose> }) {
+/** `readOnly` (someone else's profile, R4-10): the row without its cash-out — only the holder can close it. */
+export function BetRow({ legs, values, wallet, closer, readOnly = false }: { legs: readonly TerminalPosition[]; values: ReadonlyMap<string, PositionValue>; wallet: Address; closer?: ReturnType<typeof useTerminalClose>; readOnly?: boolean }) {
   const nowMs = useNowMs();
   const p = legs[0]!;
   const state = nowMs > 0 ? countdown(nowMs, p.expirySec, p.intervalSec) : null;
@@ -83,7 +84,7 @@ export function BetRow({ legs, values, wallet, closer }: { legs: readonly Termin
       <span className="type-caption text-ink-secondary">{PORTFOLIO.stake} <Money value={stake} decimals={p.decimals} /></span>
       <span className="type-caption text-ink-secondary">{PORTFOLIO.value} {worth === null ? (why || "—") : <Money value={worth} decimals={p.decimals} />}</span>
       {pnl === null ? <span className="type-data shrink-0 text-ink-muted">—</span> : <Money value={pnl} decimals={p.decimals} tone="pnl" className="type-data shrink-0" />}
-      {!settling && side ? p.via === "vault" ? <BalanceCashOut p={p} v={vs[0] ?? null} closer={closer} /> : <CashOut p={p} wallet={wallet} /> : null}
+      {readOnly || settling || !side ? null : p.via === "vault" ? closer ? <BalanceCashOut p={p} v={vs[0] ?? null} closer={closer} /> : null : <CashOut p={p} wallet={wallet} />}
     </li>
   );
 }

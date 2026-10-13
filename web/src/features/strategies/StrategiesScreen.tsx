@@ -1,7 +1,9 @@
 "use client";
 // Ported in role from Agari 03b30ab:web/src/features/strategies/StrategiesScreen.tsx — Copy · Yours · Create over the
-// registry (the index), the copy drawer, the latest copy trades; `?strategy=<id>` opens one, `?view=` picks the tab.
+// registry (the index), the copy drawer, the latest copy trades; `?strategy=<id>` opens one, `?view=` picks the tab,
+// `?copy=<wallet>` opens Create on the mirror preset for that wallet (a profile's "Copy this trader", R4-10, D-227).
 import { useEffect, useMemo, useState } from "react";
+import { isAddress } from "viem";
 import { EmptyState } from "@/components/states/EmptyState";
 import { LoadingState } from "@/components/states/LoadingState";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -22,10 +24,16 @@ export function StrategiesScreen() {
   const writes = useCopyWrites();
   const [view, setView] = useState<View>("copy");
   const [openId, setOpenId] = useState<string | null>(null);
+  const [copyTrader, setCopyTrader] = useState<string | null>(null);
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     const v = q.get("view");
     if (v === "copy" || v === "yours" || v === "create") setView(v);
+    const trader = q.get("copy");
+    if (trader && isAddress(trader)) {
+      setCopyTrader(trader);
+      setView("create");
+    }
     const id = q.get("strategy");
     if (id && /^\d+$/.test(id)) setOpenId(id);
   }, []);
@@ -50,7 +58,7 @@ export function StrategiesScreen() {
       <SegmentedControl label={S.viewsLabel} options={S.views} value={view} onValueChange={setView} />
 
       {view === "create" ? (
-        <CreatorStudio writes={writes} onPublished={(id) => {
+        <CreatorStudio key={copyTrader ?? "blank"} writes={writes} initial={copyTrader ? { preset: "mirror", trader: copyTrader } : undefined} onPublished={(id) => {
           setView("yours");
           setOpenId(id);
         }} />

@@ -1,107 +1,144 @@
-// `/u/<address>` — a wallet's public record (S5's profile component; S13 adds its calls, takes and follows): the 21st
-// 781 header (initials on the address hue, the tier and its board place, the explorer), the figures the leaderboard
-// ranks it by, its reputation and badges (Trader Edge's own components, `features/edge`), and its latest settled
-// Windows, each opening its proof. Read on the server from the index (`readProfile`); a read that fails shows no
-// figure.
+// `/u/<address>` — a wallet's public record. Ported from Owarine 90a91d71:web/src/features/profile/ProfileScreen.tsx (R4-10,
+// D-227): /news's frame — the eyebrow, the wallet's marble (the board's face for the same wallet) beside a mono title
+// with an accent tail, the JP line, the bar (P&L, rank, tier, followers; Follow, Copy this trader, copy, explorer, …),
+// then 01 Record (the rest of the figures, reputation, badges), 02 Open calls, 03 Settled (each opening its proof), 04
+// Takes. Read on the server from the index (`readProfile`); a read that fails shows no figure.
 import { addressUrl, type Address } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
-import Link from "next/link";
 import { connection } from "next/server";
-import { ProfileHeader } from "@/components/ui/profile-header";
-import { ProfileSocial } from "@/features/social/ProfileSocial";
-import { people } from "@/server/social";
+import { SectionHeader } from "@/components/kit";
+import { AccountAvatar } from "@/components/shell/header/AccountAvatar";
 import { BadgeGrid, ReputationCard } from "@/features/edge/RecordBadges";
 import { recordOf } from "@/features/edge/record";
+import { AssetDisc } from "@/features/markets/hero/AssetDisc";
+import { NewsRow } from "@/features/news/NewsRow";
 import { money, moneyTone } from "@/features/terminal/format";
 import { webEnv } from "@/lib/env";
+import { people } from "@/server/social";
+import { PROFILE as P } from "./copy";
 import { readProfile, type Profile } from "./data";
+import { ProfileBar, ProfileEyebrow, type BarStat } from "./ProfileBar";
+import { ProfileOpen, ProfileTakes } from "./ProfileLive";
+import "@/styles/news.css";
+import "@/styles/news-wire.css";
+import "./profile.css";
 
-const W = {
-  tierLine: (tier: string) => `${tier} tier`,
-  place: (rank: number, of: number) => `#${rank} of ${of} on the all-time board`,
-  unranked: "Not on the board yet",
-  explorer: "View on the explorer",
-  house: "This is one of Mitoshi's own keys (the house's maker, taker or a product contract). The house is never ranked, so it has no record here.",
-  unreadable: "This record can't be read right now. Nothing changed; try again in a minute.",
-  none: "No settled Windows yet. A record starts when a Window this wallet called settles.",
-  figures: { pnl: "P&L, all time", roi: "Return on stake", winRate: "Won", rounds: "Settled rounds", streak: "Best run" },
-  recent: "Latest settled Windows",
-  outcome: { win: "Won", loss: "Lost", void: "Void · returned", closed: "Sold before the close" },
-  proof: "Proof",
-} as const;
-
-const TONE = { "is-up": "text-up", "is-down": "text-down", "": "text-ink" } as const;
-const when = (sec: number) => {
-  const d = new Date(sec * 1000);
-  return `${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} ${d.toISOString().slice(11, 16)} UTC`;
-};
-
-function Figure({ label, value, tone = "" }: { label: string; value: string; tone?: keyof typeof TONE }) {
-  return (
-    <div className="flex flex-col gap-1 rounded-lg border border-hairline bg-surface-1 p-4">
-      <span className="type-label-micro text-ink-secondary">{label}</span>
-      <span className={`type-title tabular-nums ${TONE[tone]}`}>{value}</span>
-    </div>
-  );
-}
+const when = (sec: number) => new Date(sec * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+const roi = (bps: number | null) => (bps === null ? P.dash : `${bps > 0 ? "+" : bps < 0 ? "−" : ""}${Math.abs(bps / 100).toFixed(1)}%`);
+const TONE = { win: "positive", loss: "negative", void: "neutral", closed: "neutral" } as const;
 
 function Record({ p }: { p: Profile }) {
-  const pnl = BigInt(p.pnlBase);
   const { reputation, badges } = recordOf({ wins: p.wins, losses: p.losses, currentWinStreak: p.currentStreak, fillCount: p.rounds, stakeBase: BigInt(p.stakeBase), decimals: 6 });
+  const S = P.sections;
+  const figures = [
+    { label: P.stats.roi, value: roi(p.roiBps) },
+    { label: P.stats.won, value: `${p.winRatePct}%` },
+    { label: P.stats.rounds, value: p.rounds.toLocaleString("en-US") },
+    { label: P.stats.streak, value: String(p.bestStreak) },
+  ];
   return (
-    <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-        <Figure label={W.figures.pnl} value={money(pnl, true)} tone={moneyTone(pnl)} />
-        <Figure label={W.figures.roi} value={p.roiBps === null ? "—" : `${p.roiBps > 0 ? "+" : p.roiBps < 0 ? "−" : ""}${Math.abs(p.roiBps / 100).toFixed(1)}%`} />
-        <Figure label={W.figures.winRate} value={`${p.winRatePct}%`} />
-        <Figure label={W.figures.rounds} value={p.rounds.toLocaleString("en-US")} />
-        <Figure label={W.figures.streak} value={String(p.bestStreak)} />
-      </div>
+    <section className="prf-section" aria-label={S.record.title}>
+      <SectionHeader index={S.record.index} title={S.record.title} />
+      <dl className="prf-stats small">
+        {figures.map((f) => (
+          <div key={f.label} className="prf-stat">
+            <dt>{f.label}</dt>
+            <dd className="big numbers">{f.value}</dd>
+          </div>
+        ))}
+      </dl>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <ReputationCard reputation={reputation} />
         <BadgeGrid badges={badges} />
       </div>
-      <section className="flex flex-col gap-3" aria-labelledby="profile-recent">
-        <h2 id="profile-recent" className="type-label-micro text-ink-secondary">{W.recent}</h2>
-        <ol className="flex flex-col divide-y divide-hairline overflow-hidden rounded-lg border border-hairline bg-surface-1">
-          {p.recent.map((r) => {
-            const v = BigInt(r.pnlBase);
-            return (
-              <li key={r.market} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-3">
-                <span className="min-w-28 type-body-strong text-ink">{`${r.symbol} ${formatCadence(r.cadenceSec)}`}</span>
-                <span className="type-caption text-ink-secondary">{W.outcome[r.outcome]}</span>
-                <span className="type-caption text-ink-secondary tabular-nums">{when(r.settledSec)}</span>
-                <span className={`ml-auto type-body-strong tabular-nums ${TONE[moneyTone(v)]}`}>{money(v, true)}</span>
-                <Link href={`/proof/${r.market}`} className="inline-flex min-h-touch items-center type-caption text-ink underline-offset-4 hover:underline">{W.proof}</Link>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
-    </>
+    </section>
+  );
+}
+
+function Settled({ p }: { p: Profile }) {
+  const S = P.sections.settled;
+  return (
+    <section className="prf-section" aria-label={S.title}>
+      <SectionHeader index={S.index} title={S.title} />
+      <ol className="news-wire">
+        {p.recent.map((r, i) => {
+          const v = BigInt(r.pnlBase);
+          return (
+            <NewsRow
+              key={r.market}
+              index={i + 1}
+              title={`${r.symbol} ${formatCadence(r.cadenceSec)} · ${P.outcome[r.outcome]} · ${money(v, true)}`}
+              href={`/proof/${r.market}`}
+              external={false}
+              mark={<AssetDisc asset={r.symbol} className="news-mark" />}
+              meta={<span className="news-meta">{when(r.settledSec)}</span>}
+              tone={TONE[r.outcome]}
+              toneWord={P.outcome[r.outcome]}
+            />
+          );
+        })}
+      </ol>
+    </section>
   );
 }
 
 export async function ProfileScreen({ address }: { address: Address }) {
   await connection();
   const [p, named] = await Promise.all([readProfile(address).catch(() => null), people().profiles([address]).catch(() => new Map())]);
-  const short = `${address.slice(0, 6)}…${address.slice(-4)}`;
-  const display = named.get(address.toLowerCase())?.displayName ?? null;
-  const tier = p && !p.house ? recordOf({ wins: p.wins, losses: p.losses, currentWinStreak: p.currentStreak, fillCount: p.rounds, stakeBase: BigInt(p.stakeBase), decimals: 6 }).reputation.tier : null;
-  const meta = p && !p.house ? [W.tierLine(tier!), p.rank ? W.place(p.rank, p.of) : W.unranked] : [short];
+  const person = named.get(address.toLowerCase()) ?? null;
+  const display: string | null = person?.displayName ?? null;
+  const ranked = p && !p.house;
+  const tier = ranked ? recordOf({ wins: p.wins, losses: p.losses, currentWinStreak: p.currentStreak, fillCount: p.rounds, stakeBase: BigInt(p.stakeBase), decimals: 6 }).reputation.tier : null;
+  const pnl = ranked ? BigInt(p.pnlBase) : null;
+  const stats: BarStat[] = ranked
+    ? [
+        { label: P.stats.pnl, value: money(pnl!, true), tone: moneyTone(pnl!) },
+        { label: P.stats.rank, value: p.rank ? P.rank(p.rank, p.of) : P.dash },
+        { label: P.stats.tier, value: tier ?? P.dash },
+      ]
+    : [];
+  const tail = address.slice(-4);
+  const head = `${address.slice(0, 6)}…`;
   return (
-    <div className="mx-auto flex w-full max-w-(--content-wide) flex-col gap-8 px-gutter py-10 lg:px-gutter-desktop">
-      <ProfileHeader address={address} name={display ?? short} meta={display ? [short, ...meta] : meta} action={{ label: W.explorer, href: addressUrl(address, webEnv.markets.network) }} />
-      <ProfileSocial address={address} />
-      {!p ? (
-        <p className="rounded-lg border border-hairline bg-surface-1 p-4 type-body text-ink-secondary">{W.unreadable}</p>
-      ) : p.house ? (
-        <p className="rounded-lg border border-hairline bg-surface-1 p-4 type-body text-ink-secondary">{W.house}</p>
-      ) : p.rounds === 0 ? (
-        <p className="rounded-lg border border-hairline bg-surface-1 p-4 type-body text-ink-secondary">{W.none}</p>
-      ) : (
-        <Record p={p} />
-      )}
+    <div className="container news-page prf-page">
+      <div className="news-inner">
+        <div className="news-live">
+          <span className="news-live-dot" aria-hidden />
+          <ProfileEyebrow address={address} />
+        </div>
+        <div className="prf-ident">
+          <AccountAvatar seed={address} size={44} className="prf-avatar" />
+          <h1 className="news-title prf-title">
+            {display ? (
+              <>
+                @{display}
+                <span className="prf-sub">{head}{tail}</span>
+              </>
+            ) : (
+              <>
+                {head}
+                <span className="signal">{tail}</span>
+              </>
+            )}
+          </h1>
+        </div>
+        <div className="page-title-jp" lang="ja">{P.headingJp}</div>
+        {person?.bio ? <p className="prf-bio">{person.bio}</p> : null}
+        <ProfileBar address={address} stats={stats} explorerHref={addressUrl(address, webEnv.markets.network)} />
+
+        {!p ? (
+          <p className="prf-quiet prf-section">{P.unreadable}</p>
+        ) : p.house ? (
+          <p className="prf-quiet prf-section">{P.house}</p>
+        ) : p.rounds === 0 ? (
+          <p className="prf-quiet prf-section">{P.none}</p>
+        ) : (
+          <Record p={p} />
+        )}
+        {p && !p.house ? <ProfileOpen address={address} /> : null}
+        {p && !p.house && p.recent.length > 0 ? <Settled p={p} /> : null}
+        <ProfileTakes address={address} />
+      </div>
     </div>
   );
 }

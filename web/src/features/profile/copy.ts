@@ -1,0 +1,28 @@
+/** `/u/<address>` — Owarine 90a91d71 `features/profile/copy.ts`, at its counts, for Mitoshi (R4-10, D-227). */
+export const PROFILE = {
+  eyebrow: { other: "Trader profile", own: "Your profile" },
+  headingJp: "取引者の記録。",
+  stats: { pnl: "P&L", rank: "Rank", tier: "Tier", followers: "Followers", roi: "ROI", won: "Won", rounds: "Rounds", streak: "Best run" },
+  rank: (rank: number, of: number) => `#${rank} / ${of}`,
+  dash: "—",
+  follow: "Follow",
+  following: "Following",
+  copyTrader: "Copy this trader",
+  copyAddress: "Copy address",
+  copied: "Copied",
+  explorer: "Explorer ↗",
+  more: "More",
+  report: "Report",
+  block: "Block",
+  blocked: "Blocked. Their posts won't show for you.",
+  house: "House key · never ranked",
+  unreadable: "Can't read this record. Retrying.",
+  none: "No settled Windows yet.",
+  sections: {
+    record: { index: "01", title: "Record" },
+    open: { index: "02", title: "Open calls", empty: "No open calls." },
+    settled: { index: "03", title: "Settled" },
+    takes: { index: "04", title: "Takes", empty: "No takes yet." },
+  },
+  outcome: { win: "Won", loss: "Lost", void: "Void", closed: "Sold" },
+} as const;
