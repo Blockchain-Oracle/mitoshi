@@ -121,6 +121,11 @@ export function createPgXStore(sql: Sql) {
         where status in ('submitted', 'unknown') and details->>'executionActor' = ${actor.toLowerCase()} order by updated_at limit 20`;
       return rows.map(toReceipt);
     },
+    /** The mentions an X account made, newest first (what `/api/x/receipts` shows the signed-in handle). */
+    async receiptsByAuthor(authorId: string, limit: number): Promise<XReceipt[]> {
+      const rows = await sql<ReceiptRow[]>`select ${sql.unsafe(RECEIPT_COLUMNS)} from x_receipts where author_id = ${authorId} order by at_ms desc limit ${limit}`;
+      return rows.map(toReceipt);
+    },
     async receiptsByAccount(account: string, limit: number): Promise<XReceipt[]> {
       const rows = await sql<ReceiptRow[]>`select ${sql.unsafe(RECEIPT_COLUMNS)} from x_receipts where wallet = ${account.toLowerCase()} order by at_ms desc limit ${limit}`;
       return rows.map(toReceipt);

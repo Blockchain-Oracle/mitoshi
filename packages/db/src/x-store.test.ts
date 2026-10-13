@@ -62,6 +62,7 @@ describe.skipIf(!hasPg)("X stores (links, receipts, OAuth state, replies)", () =
     const r = await x.receiptByMention("2");
     expect(r).toMatchObject({ status: "filled", txHash: "0xaaa", bookedCostBase: "4990000", executionActor: EXEC });
     expect(await x.receiptsByAccount(A, 10)).toHaveLength(1);
+    expect((await x.receiptsByAuthor("42", 10)).map((r) => r.mentionId)).toContain("2");
   });
 
   it("lists this executor's open mentions for recovery", async () => {
