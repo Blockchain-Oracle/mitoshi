@@ -17,7 +17,7 @@ import { suppressWelcome } from "./credited";
 import { faucetAvailability } from "./faucet-client";
 import { FundedReceipt } from "./FundedReceipt";
 import { useFaucetClaim } from "./useFaucetClaim";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 
 const cta = "inline-flex h-(--ticket-cta-height) w-full items-center justify-center gap-2 rounded-md bg-accent-fill px-5 type-body-strong text-on-accent disabled:cursor-not-allowed disabled:bg-surface-2 disabled:text-ink-secondary";
 const quiet = "inline-flex h-(--ticket-cta-height) w-full items-center justify-center gap-2 rounded-md border border-border-strong px-5 type-body-strong text-ink";

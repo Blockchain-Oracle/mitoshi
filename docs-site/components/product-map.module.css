@@ -1,0 +1,193 @@
+/* Ported from Owarine 90a91d71:docs-site/components/product-map.module.css (D-227). */
+/* Keep this map readable independently of the surrounding article width.
+   The scoped selectors also outrank the legacy mobile map rules. */
+.root:global(.product-map) {
+  container: product-map / inline-size;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 18px 16px;
+}
+
+.root .brand {
+  position: static;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.root .brand :global(.brand) {
+  font-size: 13px;
+  gap: 6px;
+  letter-spacing: -.3px;
+}
+
+.root .brand :global(.brand) > svg {
+  width: 19px;
+  height: 23px;
+}
+
+.root .paths {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+.root .journey {
+  display: flex;
+  min-width: 0;
+  min-height: 112px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 6px;
+  border: 1px solid var(--color-fd-border);
+  border-radius: 10px;
+  color: var(--color-fd-foreground);
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+}
+
+.root .journey strong {
+  font-size: inherit;
+  font-weight: 600;
+  overflow-wrap: normal;
+}
+
+.root .icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: none;
+  place-items: center;
+  color: var(--color-fd-primary);
+}
+
+.root .icon svg {
+  width: 25px;
+  height: 25px;
+}
+
+.root .journey:hover,
+.root .foundation:hover {
+  border-color: var(--color-fd-primary);
+  background: var(--color-fd-accent);
+}
+
+.root .journey:focus-visible,
+.root .foundation:focus-visible {
+  outline: 2px solid var(--color-fd-primary);
+  outline-offset: 3px;
+}
+
+.root .connector {
+  position: relative;
+  width: 1px;
+  height: 24px;
+  margin: 0 auto;
+  border: 0;
+  border-radius: 0;
+  background: var(--color-fd-muted-foreground);
+}
+
+.root .connector::after {
+  position: absolute;
+  top: auto;
+  bottom: 0;
+  left: -3px;
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid var(--color-fd-muted-foreground);
+  border-bottom: 1px solid var(--color-fd-muted-foreground);
+  background: transparent;
+  transform: rotate(45deg);
+}
+
+.root .foundation {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 28px 12px 12px;
+  color: var(--color-fd-foreground);
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+}
+
+.root .foundationLabel {
+  color: var(--color-fd-muted-foreground);
+  font-size: 13px;
+}
+
+.root .foundationParts {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+  font-weight: 550;
+}
+
+.root .foundationParts > span {
+  white-space: nowrap;
+}
+
+.root .foundationParts b {
+  margin-inline: 3px;
+}
+
+.root .foundationArrow {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  color: var(--color-fd-primary);
+  transform: translateY(-50%);
+}
+
+@container product-map (min-width: 520px) {
+  .root .paths {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .root .journey {
+    min-height: 128px;
+    font-size: 16px;
+  }
+
+  .root .icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .root .icon svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .root .foundation {
+    width: fit-content;
+    min-width: 360px;
+    padding-inline: 20px 38px;
+  }
+
+  .root .foundationParts {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .root .foundationParts > span + span::before {
+    content: '·';
+    margin-inline: 8px;
+    color: var(--brand);
+  }
+}

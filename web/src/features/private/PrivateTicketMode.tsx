@@ -13,8 +13,8 @@ import { formatBaseUnits, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import { sizePrivateForStake } from "@cwf/markets/private";
 import { useBalanceSheet, useReadingQuery } from "@cwf/markets/react";
-import { useState } from "react";
-import { SheetFooter } from "@/components/ui/drawer";
+import { useState, type ReactNode } from "react";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { OrderSummary } from "@/components/ui/order-summary";
 import { AmountField, OutcomePills, QuickAdds } from "@/components/ui/prediction-ticket";
@@ -34,7 +34,12 @@ const FILL_FLOOR_BPS = 9_500n;
 const TOP_UP_STAKES = 4n;
 const LOCK_GUARD_SEC = 60;
 
-export function PrivateTicketMode({ market, side: initialSide }: { market: EventMarket; side: Side | null }) {
+/**
+ * `stakeBase` given (R4-3, D-227): the markets ticket composes the side and the amount in its own blocks (Owarine's one
+ * shape for every route), so this body is the desk's numbers, its funding box and the hold — `beforeCta` (the route
+ * toggle) sits right above the hold, where Owarine places Public/Private.
+ */
+export function PrivateTicketMode({ market, side: initialSide, stakeBase: composedStake, beforeCta }: { market: EventMarket; side: Side | null; stakeBase?: bigint; beforeCta?: ReactNode }) {
   const nowSec = Math.floor(useNowMs() / 1000);
   const session = useWalletSession();
   const owner = session.address;
@@ -43,10 +48,12 @@ export function PrivateTicketMode({ market, side: initialSide }: { market: Event
   const claims = usePrivateClaims(owner);
   const sheet = useBalanceSheet(owner);
   const actions = usePrivateActions(owner);
-  const [side, setSide] = useState<Side | null>(initialSide);
+  const composed = composedStake !== undefined;
+  const [ownSide, setSide] = useState<Side | null>(initialSide);
+  const side = composed ? initialSide : ownSide;
   const [amountText, setAmountText] = useState("2");
   const [result, setResult] = useState<PrivateOpenResult | null>(null);
-  const stakeBase = parseDecimalToBaseUnits(amountText || "0", USD_DECIMALS) ?? 0n;
+  const stakeBase = composed ? composedStake : (parseDecimalToBaseUnits(amountText || "0", USD_DECIMALS) ?? 0n);
   const ready = status.data?.ready === true;
   const signature = `${market.marketId}:${side}:${stakeBase}`;
   const debounced = useDebounced(signature, 400);
@@ -100,12 +107,16 @@ export function PrivateTicketMode({ market, side: initialSide }: { market: Event
 
   return (
     <div className="pv flex flex-col gap-4">
-      <OutcomePills label={PRIVATE.side} value={side} onChange={setSide} outcomes={[{ id: "up", label: PRIVATE.up, price: "" }, { id: "down", label: PRIVATE.down, price: "" }]} />
-      <div className="flex flex-col gap-2">
-        <span className="type-label-micro text-ink-secondary">{PRIVATE.amount}</span>
-        <AmountField value={amountText} onChange={setAmountText} label={PRIVATE.amount} />
-        <QuickAdds adds={ADDS} label={PRIVATE.quickAdds} onAdd={(n) => setAmountText(String((Number.parseInt(amountText || "0", 10) || 0) + n))} />
-      </div>
+      {composed ? null : (
+        <>
+          <OutcomePills label={PRIVATE.side} value={side} onChange={setSide} outcomes={[{ id: "up", label: PRIVATE.up, price: "" }, { id: "down", label: PRIVATE.down, price: "" }]} />
+          <div className="flex flex-col gap-2">
+            <span className="type-label-micro text-ink-secondary">{PRIVATE.amount}</span>
+            <AmountField value={amountText} onChange={setAmountText} label={PRIVATE.amount} />
+            <QuickAdds adds={ADDS} label={PRIVATE.quickAdds} onAdd={(n) => setAmountText(String((Number.parseInt(amountText || "0", 10) || 0) + n))} />
+          </div>
+        </>
+      )}
       {session.isConnected && budget && (short > 0n || reallowOnly) ? (
         <div className="pv-box">
           <p className="type-caption text-ink">{reallowOnly ? `${PRIVATE.rows.balance} ${usd(budget.balanceBase)} · ${PRIVATE.rows.limit} ${usd(budget.allowanceBase)}` : `${PRIVATE.rows.balance} ${usd(budget.balanceBase)}`}</p>
@@ -130,6 +141,7 @@ export function PrivateTicketMode({ market, side: initialSide }: { market: Event
           {actions.busy?.startsWith("resume") ? PRIVATE.claims.resuming : PRIVATE.cta.resume}
         </button>
       ) : null}
+      {beforeCta}
       <SheetFooter>
         {!session.isConnected ? (
           <button type="button" onClick={() => session.connectFor(PRIVATE.cta.signInFor)} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{PRIVATE.cta.signIn}</button>

@@ -9,6 +9,7 @@
  * lines moved to the page's ⓘ sheet. No churn: a tick never changes the band, and a requote keeps the figures and the
  * hold (only a new blocker replaces it). Signed out, the CTA still reads the order; the hold opens sign-in for it.
  * In a phone sheet the hold sits in the pinned footer (`SheetFooter`, R4-2); on a page or the rail, in place.
+ * R4-3 (D-227): the footnote and the requote are the shared short lines (`TX.payoutSetAside`, `TX.requote`).
  */
 import { USD_DECIMALS, type EventMarket } from "@cwf/core";
 import { bandProbE6, RANGE_STAKE_HEADROOM_BPS, type RangeReserveState, type RangeSide } from "@cwf/core/range";
@@ -20,7 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { useNowMs } from "@/lib/clock";
 import { webEnv } from "@/lib/env";

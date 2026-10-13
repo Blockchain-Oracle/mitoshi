@@ -14,7 +14,7 @@ import { oneUnit } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { webEnv } from "@/lib/env";
 import { RANGE } from "../range/copy";

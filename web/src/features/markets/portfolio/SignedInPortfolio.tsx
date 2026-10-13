@@ -24,9 +24,12 @@ import { useCallback } from "react";
 import { MotionScope } from "@/components/motion-scope";
 import { ErrorState } from "@/components/states";
 import { TradingBalancePanel } from "@/features/vault/TradingBalancePanel";
+import { EARN } from "@/features/earn/copy";
+import { EarnPocket, useEarnWorth } from "@/features/earn/EarnPocket";
 import { HERO_MONEY, PLATE, PORTFOLIO } from "../copy";
 import { CollectPlate } from "../claims/CollectPlate";
 import { BetsPanel } from "./BetsPanel";
+import { BridgeInFlight } from "@/features/bridge/BridgeInFlight";
 import { RecordChart } from "./RecordChart";
 import { PositionValuers, usePortfolioPositions } from "./usePortfolioPositions";
 
@@ -66,6 +69,7 @@ function Ledger({ wallet }: { wallet: Address }) {
   const criticalSettled = critical.every((r) => r !== null);
   const history = useAccountHistory(wallet, criticalSettled);
   const privateBudget = usePrivateBudget(wallet);
+  const earn = useEarnWorth(wallet);
   useLiveMarketData({ wallet });
   const retry = useCallback(() => void queryClient.invalidateQueries({ queryKey: keys.positions(wallet) }), [queryClient, wallet]);
 
@@ -89,7 +93,11 @@ function Ledger({ wallet }: { wallet: Address }) {
     // Read with the wallet's balance (D-227), so a payout the settler just made is never in both legs at once.
     collectBase: value ? owed.collectBase : rows.reduce((sum, r) => sum + r.netPayoutBase, 0n),
     // Engine credit is already inside the collect leg (a redeem pays it); only resting-order escrow is named apart.
-    pools: value?.orderEscrowBase ? [{ id: "escrow", label: PLATE.pools.escrow.label, amountBase: value.orderEscrowBase }] : [],
+    pools: [
+      ...(value?.orderEscrowBase ? [{ id: "escrow", label: PLATE.pools.escrow.label, amountBase: value.orderEscrowBase }] : []),
+      // R4-7: money supplied to the vault and the reserves is yours but not in the figure (FR-5).
+      ...(earn && earn.totalBase > 0n ? [{ id: "earn", label: EARN.pocket.label, amountBase: earn.totalBase }] : []),
+    ],
     // Every leg read (the balance sheet, both homes' positions, claimables), so the figure never sums a leg still at 0 (R4-0).
     ready: value !== null && criticalSettled && vaultBets !== null,
   };
@@ -103,9 +111,12 @@ function Ledger({ wallet }: { wallet: Address }) {
           { id: "vault", amountBase: value?.vaultBase ?? null, panel: <TradingBalancePanel /> },
           { id: "private", amountBase: privateBudget?.ok ? privateBudget.value.balanceBase : null, panel: <PrivateDesk wallet={wallet} index="" /> },
         ]}
-      />
+      >
+        <EarnPocket wallet={wallet} />
+      </Pockets>
       <BetsPanel wallet={wallet} positions={positions} open={{ groups: book.groups, values: book.values, closer }} history={history} index="01" retry={retry} />
       <BoostPositions wallet={wallet} index="" values={book.values} />
+      <BridgeInFlight wallet={wallet} />
       {rows.length > 0 ? (
         <section className="flex flex-col gap-4" aria-label={HERO_MONEY.collectTitle}>
           <SectionHead number="02" title={HERO_MONEY.collectTitle} />

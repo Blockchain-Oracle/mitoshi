@@ -1,0 +1,40 @@
+---
+title: Your account and money
+description: A passkey is your account. What it holds, where test dollars come from, and how to see and stop every key.
+sources:
+  - web/src/app/(app)/docs/account/page.tsx
+  - web/src/providers/wallet/copy.ts
+  - packages/core/src/faucet/index.ts
+  - web/src/app/api/faucet/route.ts
+  - web/src/server/backup-passkey.ts
+  - docs/plan/acceptance/S13.md
+---
+
+## Sign up with a passkey
+
+**Create account** makes a passkey with Face ID, a fingerprint or a security key. Your device — or your password manager — keeps its private key. Mitoshi stores only the public key and its credential id, and your Tempo account address comes from it. Next time, **I have a passkey** signs you in with the same biometric.
+
+A session cookie keeps you signed in for 30 days. It backs the faucet claim, the live stream's ticket and your posts in rooms; a wallet without a passkey signs once for a 30-day social session before its first post. Your account's authority stays on chain, with your passkey.
+
+## Other ways in
+
+If you already have a wallet, sign in with **Tempo Wallet**, a **browser wallet** or **WalletConnect**. Trading works the same way. Of the two ways to tap with no prompt, the wallet key needs a passkey account; a Trading Balance session works with any of them ([one-tap](/start/one-tap)).
+
+## A backup passkey
+
+From <AppLink href="/settings/account">Account & keys</AppLink>, **Add a backup passkey** on a second device, then confirm it with your first. The backup is an admin key on your Tempo account: it signs in alone as the same account. On 11 October a fresh browser holding only the backup signed in to the same account and balance ([evidence](/help/evidence)).
+
+## Money
+
+- Everything is **pathUSD**, Tempo's dollar stablecoin: stakes, payouts and the network fee.
+- **Test dollars.** Signing up funds the new account from Moderato's faucet. After that, **Add money** claims again once a day per account and says when you can.
+- Your **wallet** is your account itself. Your **Trading Balance** is a vault you own on Tempo that holds money and positions for you, so a capped key can tap from it and a keeper can run your exits ([Trading Balance](/trading/trading-balance)). Only you can withdraw from it.
+- **Withdraw** sends pathUSD to any Tempo address: one transfer your passkey signs and pays the small fee for — never a one-tap key.
+
+## See and stop every key
+
+<AppLink href="/settings/account">Account & keys</AppLink> reads your account's whole history from Tempo and lists every **trading key** (with what it may still approve today and when it was last used) and every **Trading Balance grant** — tap-trading, strategy agent, exits with the app closed — with its caps. **Revoke** or **Stop** ends one on chain; revoking is free. None of them can withdraw.
+
+<Callout title="No value" type="warn">
+Testnet pathUSD has no value. Never send real funds to a testnet address.
+</Callout>

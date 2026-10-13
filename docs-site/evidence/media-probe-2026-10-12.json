@@ -1,0 +1,207 @@
+{
+  "origin": "https://testnet.mitoshi.xyz",
+  "probedAt": "2026-10-12T22:43:19.084Z",
+  "method": "Headless Chromium, signed out; every capture's page, links and wait, and every walkthrough step, run against the live product with no pixels kept.",
+  "passed": 15,
+  "failed": 4,
+  "results": [
+    {
+      "kind": "capture",
+      "name": "marketsDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/markets",
+      "status": 200,
+      "ms": 9238,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "marketsPhone",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/markets",
+      "status": 200,
+      "ms": 9288,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "terminalDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "status": 200,
+      "ms": 9672,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "terminalPhone",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "status": 200,
+      "ms": 9329,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "earnDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/earn",
+      "status": 200,
+      "ms": 9266,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "rangePhone",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/games/range",
+      "status": 200,
+      "ms": 9564,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "parlayDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/parlay",
+      "status": 200,
+      "ms": 9172,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "strategiesDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/strategies",
+      "status": 200,
+      "ms": 9165,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "agentsDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/agents",
+      "status": 200,
+      "ms": 9139,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "gamesPhone",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/games",
+      "status": 200,
+      "ms": 9547,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "proofDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/proof/0x07491f636f9d32693327490b5080d61846bd132786c97c470c3648f473e33a3b",
+      "status": 200,
+      "ms": 26129,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "leaderboardDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/leaderboard",
+      "status": 200,
+      "ms": 9097,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "reservesDesk",
+      "ok": false,
+      "url": "https://testnet.mitoshi.xyz/reserves",
+      "error": "the page is still the not-built placeholder (CapabilityPending); record it once the screen ships",
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "bridgeDesk",
+      "ok": false,
+      "url": "https://testnet.mitoshi.xyz/bridge",
+      "error": "the page is still the not-built placeholder (CapabilityPending); record it once the screen ships",
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "themesDesk",
+      "ok": false,
+      "url": "https://testnet.mitoshi.xyz/themes",
+      "error": "the page is still the not-built placeholder (CapabilityPending); record it once the screen ships",
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "launchDesk",
+      "ok": false,
+      "url": "https://testnet.mitoshi.xyz/launch",
+      "error": "the page is still the not-built placeholder (CapabilityPending); record it once the screen ships",
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "capture",
+      "name": "statusDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/status",
+      "status": 200,
+      "ms": 9242,
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "walkthrough",
+      "name": "first-call-demo",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "ms": 14328,
+      "chapters": [
+        "Open the terminal",
+        "Skip the tour",
+        "Tap UP",
+        "Watch what it's worth",
+        "Close it"
+      ],
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    },
+    {
+      "kind": "walkthrough",
+      "name": "proof-reverify",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/proof/0x07491f636f9d32693327490b5080d61846bd132786c97c470c3648f473e33a3b",
+      "ms": 31217,
+      "chapters": [
+        "Open the leaderboard",
+        "Open a record",
+        "Open a proof",
+        "Re-verify the close",
+        "Verified"
+      ],
+      "pageErrors": [],
+      "at": "2026-10-12T22:43:19.084Z"
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "readAtUtc": "2026-10-12T22:06:06Z",
+  "source": "GET https://ops.testnet.mitoshi.xyz/health",
+  "ok": true,
+  "network": "testnet",
+  "dryRun": false,
+  "commit": "0f893e08f3ee273bcb074f1b6938c5ae5dc728ad",
+  "actors": [
+    {
+      "actor": "spot-feed",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "redstone latest: 19/19 feeds"
+    },
+    {
+      "actor": "display-crypto",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "ETH 249226000000, SOL 10729000000, BTC 8255945000000 \u00b7 socket 3/3"
+    },
+    {
+      "actor": "display-stocks",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "post: 10 ticker(s) on IEX"
+    },
+    {
+      "actor": "chain-head",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "head 39327360 (2s old)"
+    },
+    {
+      "actor": "archive",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "up to date"
+    },
+    {
+      "actor": "indexer",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "live 39327357..39327363 (+4 events) \u00b7 0 behind \u00b7 vault 0xdbb3Fa live 39327357..39327363 (+0) \u00b7 vault 0x6f05b0 live 39327357..39327363 (+0) \u00b7 vault 0x5E38dc live 39327357..39327363 (+0) \u00b7 strategies 0x79156a live 39327357..39327363 (+0) \u00b7 feedback 0x8004B6 live 39327357..39327363 (+0)"
+    },
+    {
+      "actor": "window-roller",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "66 lanes \u00b7 33 waiting, 27 closed, 6 paused"
+    },
+    {
+      "actor": "price-relay",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "51 live Windows \u00b7 due 0 \u00b7 pending 78"
+    },
+    {
+      "actor": "settler",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "16 Windows tracked \u00b7 12 due \u00b7 sweep 2459, settle 2506, redeemFor 52, void 6 \u00b7 vault cranked 2 | redeemFor 0x07491f63 #318: 5 of 5 holders to pay \u00b7 0x35042142, 0x27bc86a6, 0xb9597568, 0x2d9f5b4b, 0x3963c599 | sweep 0xceb89260 #3901: 2 orders still rest \u00b7 0x5d8e2b99 | sweep 0xccacd470 #3904: 2 orders still rest \u00b7 0x560e79d6 | sweep 0x7b34e8c8 #3904: 2 orders still rest \u00b7 0x858830e6 | sweep 0x04f9bdb6 #3904: 2 orders still rest \u00b7 0x27236b6b | vault: nothing to crank"
+    },
+    {
+      "actor": "seed-maker",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "14 Windows quoted of 61 open \u00b7 session post \u00b7 21892 txs | TSLA-24-15m #1299 fair 532 \u2192 502 / 562 \u00d7 5000; TSLA-24-60m #319 fair 514 \u2192 484 / 544 \u00d7 5000; NVDA-24-15m #1298 fair 640 \u2192 610 / 670 \u00d7 5000; NVDA-24-60m #319 fair 560 \u2192 530 / 590 \u00d7 5000; AAPL-24-15m #1298 fair 595, resting; AAPL-24-60m #319 fair 540, resting; MSFT-24-15m #1298 fair 604, resting; MSFT-24-60m #319 fair 544, resting; META-24-15m #1298 fair 620, resting; META-24-60m #319 fair 551, resting; GOOGL-24-15m #1298 fair 562, resting; GOOGL-24-60m #319 fair 526, resting"
+    },
+    {
+      "actor": "halt-watch",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "no halts \u00b7 session assets idle (post)"
+    },
+    {
+      "actor": "earnings",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "earnings 2026-10-12..2026-10-26: 1 report(s) for 10 stocks: TSLA 10-20 amc"
+    },
+    {
+      "actor": "calendar",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "Opens Tue 09:30 ET \u00b7 10 sessions ahead \u00b7 0 disagreements"
+    },
+    {
+      "actor": "funds-watch",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "6 wallets \u00b7 all above the floor"
+    },
+    {
+      "actor": "house-taker",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "house fill: BTC-5m #3918 IOC BUY_NO 1000 @ 595 \u00b7 0x1d11df9a6adb9f29e73a9994907c2a2be227e49bfaa84594f675a91e4346160e"
+    },
+    {
+      "actor": "leverage-keeper",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "0 live \u00b7 nothing sent yet"
+    },
+    {
+      "actor": "exit-keeper",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "no armed exits \u00b7 fired 0"
+    },
+    {
+      "actor": "earn-quoter",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "3 quoted of 3 live crypto Windows \u00b7 6/8 held \u00b7 1583 txs | settle 0xca23edc1 \u00b7 0x34a6546d56114f90770aec2cb1b18538ad7e4c196c1f3ff588833c14b5a3168d; settle 0x40a1070c \u00b7 0xd53942ecf4c5e6403f3aeb5f5694c12408e3e2b909b43cc7fc0cd1a634c8bd8e; BTC 0x30680e59 446/476 (model 461) \u00b7 0x23b040d0ff9326dc9ff4bd8683e475bcb530b96a3b6918dff8f944b087bacb78; ETH 0xe9bbf334 465/495 (model 480) \u00b7 0x62659316ca8fb2d92644e8f65fae794499864cb1c83aef48b7d81a69ef790c5c; SOL 0x7b53b25b 456/486 (model 471) \u00b7 0xc5c3c16ae17720159b5aad952fa5e5c20ec61498052e4206a00c5ab9f7a6762d"
+    },
+    {
+      "actor": "strategy-runner",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "#3: no trading Window on 5m right now; 2 live subscribers | #2: scanned 1 Window, closest trigger 3 bps away; 1 live subscriber | #1: scanned 1 Window, closest trigger 2 bps away; 1 live subscriber"
+    },
+    {
+      "actor": "agent-rater",
+      "dryRun": true,
+      "failing": false,
+      "lastWhy": "3 agents | #3 (agent 9): no settled calls on a completed day yet | DRY would rate agent 8 for 2026-10-11: -58.11% over 6 settled calls | DRY would rate agent 7 for 2026-10-11: +54.97% over 5 settled calls \u00b7 DRY (AGENT_RATER_LIVE unset)"
+    },
+    {
+      "actor": "moderation",
+      "dryRun": false,
+      "failing": false,
+      "lastWhy": "no open reports"
+    }
+  ],
+  "indexer": {
+    "windowsOpened": 60381,
+    "windowsResolved": 60320,
+    "fills": 1739,
+    "events": 2290580,
+    "cursor": 39327363,
+    "head": 39327363
+  }
+}

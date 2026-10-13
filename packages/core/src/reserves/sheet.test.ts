@@ -1,6 +1,6 @@
 // Ported from Agari 03b30ab:packages/core/src/reserves/sheet.test.ts
 import { describe, expect, it } from "vitest";
-import { boostSheet, makerSheet, parlaySheet, rangeSheet, realizedYield, sharePriceRawOf, supplierPosition, type ReserveSheet } from "./sheet";
+import { boostSheet, makerSheet, parlaySheet, rangeSheet, realizedYield, sharePriceRawOf, supplierPosition, withdrawSharesFor, type ReserveSheet } from "./sheet";
 
 const ONE = 1_000_000n;
 
@@ -82,5 +82,24 @@ describe("realizedYield", () => {
   });
   it("is empty for a wallet that never supplied", () => {
     expect(realizedYield({ suppliedBase: 0n, withdrawnBase: 0n, worthBase: 0n })).toEqual({ realizedBase: 0n, costStillInBase: 0n, unrealizedBase: 0n });
+  });
+});
+
+describe("withdrawSharesFor (a partial withdraw, R4-7)", () => {
+  const sheet = { kind: "maker", decimals: 6, paused: false, liquidBase: 60n, committedBase: 40n, totalValueBase: 100n, utilizationBps: 4_000, supplyShares: 80n, sharePriceRaw: 1_250_000n } as const;
+  const held = supplierPosition(sheet, 80n, 100n);
+  it("sends the floored share count for the amount asked", () => {
+    expect(withdrawSharesFor(held, 25n)).toBe(20n);
+    expect(withdrawSharesFor(held, 1n)).toBe(0n);
+  });
+  it("sends exactly the idle shares at or over what is idle (Max)", () => {
+    expect(held.idleShares).toBe(48n);
+    expect(withdrawSharesFor(held, 60n)).toBe(48n);
+    expect(withdrawSharesFor(held, 99n)).toBe(48n);
+  });
+  it("sends nothing for nothing asked, nothing held or nothing idle", () => {
+    expect(withdrawSharesFor(held, 0n)).toBe(0n);
+    expect(withdrawSharesFor(supplierPosition(sheet, 0n, 0n), 10n)).toBe(0n);
+    expect(withdrawSharesFor(supplierPosition({ ...sheet, liquidBase: 0n }, 80n, 100n), 10n)).toBe(0n);
   });
 });

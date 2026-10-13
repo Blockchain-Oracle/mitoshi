@@ -1,47 +1,34 @@
 "use client";
 /**
- * `/earn`'s maker tab (Owarine 90a91d71 `features/earn/MakerEarn.tsx` on the deployed `MarketMakerVault`): the hero with
- * the live panel, §01 supply and your position, §02 where the capital is. The maker is the ops earn-quoter's key; with
- * none set the panel says quoting is off.
+ * `/earn`'s maker tab (Owarine 90a91d71 `features/earn/MakerEarn.tsx` on the deployed `MarketMakerVault`; R4-7, D-227):
+ * the reserve card, the action, your position, and §02 the capital map. The maker is the ops earn-quoter's key; with
+ * none set the card says the maker is off. Every figure is the vault's own read; the page waits on one skeleton.
  */
-import { isOk, makerSheet } from "@cwf/core";
+import { makerSheet, supplierPosition } from "@cwf/core";
 import type { MakerVaultState } from "@cwf/core/maker";
 import { useBalanceSheet } from "@cwf/markets/react";
-import type { ReactNode } from "react";
-import SectionHead from "@/components/shell/SectionHead";
 import { ReadingBoundary } from "@/components/states";
-import { TxFailureCard, type SignerKind } from "@/components/tx";
 import { useNowMs } from "@/lib/clock";
 import { useWalletSession } from "@/lib/wallet-session";
-import { EARN } from "./copy";
+import { ActionCard } from "./ActionCard";
+import { CapitalMap } from "./CapitalMap";
 import { useMakerVault, useMakerWindows, useReserveShares, useSupplyLedger } from "./data";
-import { Hero, NotDeployed } from "./Hero";
+import { EarnLayout, signerOf } from "./EarnLayout";
+import { NotDeployed, ReserveCard } from "./ReserveCard";
 import { RESERVES } from "./reserves";
-import { PositionCard, SupplyCard } from "./SupplyCards";
+import { hasPosition, SupplyPosition } from "./SupplyPosition";
 import { useEarnWrites } from "./useEarnWrites";
-import { WindowsTable } from "./WindowsTable";
 
 const WORDS = RESERVES.maker;
 const HISTORY = 10;
 
-export function MakerEarn({ tabs }: { tabs: ReactNode }) {
+export function MakerEarn() {
   const reading = useMakerVault();
-  const vault = reading && isOk(reading) ? reading.value : null;
-  const deployed = reading === null || vault !== null;
-  const status = vault && !vault.paused && vault.maker === null ? EARN.panel.noMaker : undefined;
   return (
-    <>
-      {deployed ? <Hero words={WORDS} sheet={vault ? makerSheet(vault) : null} status={status} /> : null}
-      {tabs}
-      <ReadingBoundary reading={reading} shape="tiles" className="container">
-        {(state) => (state ? <Page vault={state} /> : <NotDeployed />)}
-      </ReadingBoundary>
-    </>
+    <ReadingBoundary reading={reading} shape="earn">
+      {(state) => (state ? <Page vault={state} /> : <NotDeployed />)}
+    </ReadingBoundary>
   );
-}
-
-export function signerOf(kind: string | null): SignerKind {
-  return kind === "passkey" ? "passkey" : "injected";
 }
 
 function Page({ vault }: { vault: MakerVaultState }) {
@@ -53,29 +40,25 @@ function Page({ vault }: { vault: MakerVaultState }) {
   const windows = useMakerWindows(HISTORY);
   const nowMs = useNowMs();
   const writes = useEarnWrites("maker", address);
-  const walletBase = balance?.ok ? balance.value.spendableBase : null;
-  const held = shares?.ok ? shares.value : { shares: 0n, worthBase: 0n };
-  const open = windows?.ok ? windows.value.open : [];
-  const history = windows?.ok ? windows.value.history : [];
-  const unsettledExpired = nowMs > 0 && open.some((r) => r.market !== null && r.market.expirySec * 1000 <= nowMs);
   const sheet = makerSheet(vault);
-  const { sections } = EARN;
+  const held = supplierPosition(sheet, shares?.ok ? shares.value.shares : 0n, shares?.ok ? shares.value.worthBase : 0n);
+  const ledgerValue = ledger?.ok ? ledger.value : null;
+  const open = windows?.ok ? windows.value.open : [];
+  const unsettledExpired = nowMs > 0 && open.some((r) => !r.view.settled && r.market !== null && r.market.expirySec * 1000 <= nowMs);
+  const signedIn = address !== null;
   return (
-    <div className="container ea-main">
-      <SectionHead number={sections.supply.number} title={WORDS.supplyTitle} meta={WORDS.supplyMeta} />
-      {vault.paused ? (
-        <div className="ea-paused" role="status">
-          <p className="ea-paused-title">{EARN.paused.title}</p>
-          <p className="ea-paused-body">{EARN.paused.body}</p>
-        </div>
-      ) : null}
-      <div className="ea-cards">
-        <SupplyCard signedIn={address !== null} signer={signerOf(session.kind)} sheet={sheet} walletBase={walletBase} tx={writes.supplyTx} onSupply={writes.supply} onSignIn={session.connectFor} />
-        <PositionCard signedIn={address !== null} signer={signerOf(session.kind)} sheet={sheet} words={WORDS} shares={held.shares} worthBase={held.worthBase} ledger={ledger?.ok ? ledger.value : null} unsettledExpired={unsettledExpired} tx={writes.withdrawTx} note={writes.note} onWithdraw={(s) => void writes.withdraw(s)} />
-      </div>
-      <SectionHead number={sections.windows.number} title={sections.windows.title} />
-      <WindowsTable open={open} history={history} nowMs={nowMs} busyRow={writes.busyRow} canSign={writes.canSign} onMerge={writes.merge} onSettle={writes.settle} />
-      {writes.rowTx.state.kind === "failed" ? <TxFailureCard state={writes.rowTx.state} onRetry={() => writes.rowTx.dispatch({ type: "reset" })} /> : null}
-    </div>
+    <EarnLayout
+      title={WORDS.label}
+      card={<ReserveCard sheet={sheet} words={WORDS} makerOff={!vault.paused && vault.maker === null} />}
+      action={(keypad) => (
+        <ActionCard sheet={sheet} words={WORDS} writes={writes} signedIn={signedIn} signer={signerOf(session.kind)} walletBase={balance?.ok ? balance.value.spendableBase : null} held={held} unsettledExpired={unsettledExpired} onSignIn={session.connectFor} keypad={keypad} />
+      )}
+      position={signedIn && hasPosition(held, ledgerValue) ? <SupplyPosition sheet={sheet} held={held} ledger={ledgerValue} ledgerPending={ledger === null} /> : null}
+      map={
+        <ReadingBoundary reading={windows} shape="table">
+          {(w) => <CapitalMap vault={vault} open={w.open} history={w.history} nowMs={nowMs} writes={writes} onSignIn={session.connectFor} />}
+        </ReadingBoundary>
+      }
+    />
   );
 }

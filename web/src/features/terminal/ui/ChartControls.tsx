@@ -3,14 +3,17 @@
 // small pieces; the music switch is the app-wide Sound & Vibration "music" (one setting, `lib/feedback.ts`) with the
 // track kept in the terminal's settings; Mitoshi adds the depth toggle (the Markets hero's `HeroDepth`, a lazy island).
 // R4-0 (D-227): the interval menu closes on a tap outside it or Escape (focus back on the pill), and tells the screen
-// it is open (`onMenu`), which hides the settings stack that sat over 1m and 3m on a phone.
-import { Bell, CandlestickChart, ChevronDown, Crosshair, Layers, LineChart, MessageCircle, Music2, Sparkles } from "lucide-react";
+// it is open (`onMenu`), which hides the settings stack that sat over 1m and 3m on a phone. R4-3 (D-227): Owarine's three —
+// interval, line/candles, music (with its track chip) — plus one round ⋯ (`ChartMore`) holding Depth, Room, Sensei and
+// Alerts, so a 320 px phone keeps one row of four; recentre still appears only when the candles are panned.
+import { CandlestickChart, ChevronDown, Crosshair, LineChart, Music2 } from "lucide-react";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { setFeedback, tapFeedback, useFeedback } from "@/lib/feedback";
 import { HOUR_INTERVALS, MINUTE_INTERVALS, type CandleInterval } from "../chart/candles";
 import type { ChartHandle } from "../chart/LiveChart";
 import { TERMINAL } from "../copy";
 import { MUSIC_TRACKS, setTradeSettings, useTradeSettings } from "../settings";
+import { ChartMore } from "./ChartMore";
 
 const TRACK_NAMES = { arcade: "Arcade", rush: "Rush", night: "Night" } as const;
 
@@ -88,24 +91,6 @@ export function ChartControls({ handle, depthOn, onDepth, onRoom, onAlerts, onSe
       <button type="button" className="tm-glass tm-ctl" aria-label={candles ? TERMINAL.controls.toLine : TERMINAL.controls.toCandles} title={candles ? TERMINAL.controls.toLine : TERMINAL.controls.toCandles} onClick={() => (tapFeedback(), setTradeSettings({ chartView: candles ? "line" : "candles" }))}>
         {candles ? <LineChart aria-hidden /> : <CandlestickChart aria-hidden />}
       </button>
-      <button type="button" className={`tm-glass tm-ctl${depthOn ? " is-on" : ""}`} aria-label={TERMINAL.controls.depth} title={TERMINAL.controls.depth} aria-pressed={depthOn} onClick={() => (tapFeedback(), onDepth(!depthOn))}>
-        <Layers aria-hidden />
-      </button>
-      {onRoom ? (
-        <button type="button" className="tm-glass tm-ctl" aria-label={TERMINAL.controls.room} title={TERMINAL.controls.room} onClick={() => (tapFeedback(), onRoom())}>
-          <MessageCircle aria-hidden />
-        </button>
-      ) : null}
-      {onSensei ? (
-        <button type="button" className="tm-glass tm-ctl" aria-label={TERMINAL.controls.sensei} title={TERMINAL.controls.sensei} onClick={() => (tapFeedback(), onSensei())}>
-          <Sparkles aria-hidden />
-        </button>
-      ) : null}
-      {onAlerts ? (
-        <button type="button" className="tm-glass tm-ctl" aria-label={TERMINAL.controls.alerts} title={TERMINAL.controls.alerts} onClick={() => (tapFeedback(), onAlerts())}>
-          <Bell aria-hidden />
-        </button>
-      ) : null}
       <button
         type="button"
         className={`tm-glass tm-ctl${feedback.music ? " is-on" : ""}`}
@@ -132,6 +117,7 @@ export function ChartControls({ handle, depthOn, onDepth, onRoom, onAlerts, onSe
           ♪ {TRACK_NAMES[settings.musicTrack]} ›
         </button>
       ) : null}
+      <ChartMore depthOn={depthOn} onDepth={onDepth} onRoom={onRoom} onSensei={onSensei} onAlerts={onAlerts} />
       {offCentre ? (
         <button type="button" className="tm-glass tm-ctl" aria-label={TERMINAL.controls.recentre} title={TERMINAL.controls.recentre} onClick={() => (tapFeedback(), handle.current?.recentre())}>
           <Crosshair aria-hidden />

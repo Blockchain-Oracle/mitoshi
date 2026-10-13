@@ -4,6 +4,8 @@
  * the RangeReserve's sheet and whether it can price this Window's asset, then the band body — inside only, as the
  * reference's ticket — with the band drawn on the hero chart (E.1, a Masayume gap). A lazy island of the ticket.
  * R4-5 (D-227): the model is read per Series (σ falls back to the guard's), so every lane the reserve prices shows.
+ * R4-3 review (D-227) brought `prediction-ticket.css` for the body's 16240 amount field and quick adds; R4-5 replaced
+ * them with the TicketStrip (its styles in `range.css`), so the island brings `range.css` only.
  */
 import type { EventMarket } from "@cwf/core";
 import { useQuery } from "@tanstack/react-query";

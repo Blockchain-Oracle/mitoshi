@@ -6,7 +6,6 @@ import { useDataReady } from "@/providers/data/context";
 import { RANGE } from "./copy";
 import "@/styles/parlay.css";
 import "@/styles/range.css";
-import "@/styles/prediction-ticket.css";
 
 function Placeholder() {
   return (

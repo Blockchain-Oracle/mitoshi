@@ -7,7 +7,7 @@ import { isOk, type EventMarket, type Side } from "@cwf/core";
 import { formatBaseUnits } from "@cwf/core/units";
 import { useMarket, useSigner } from "@cwf/markets/react";
 import { useEffect, useRef, useState } from "react";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { Modal } from "@/components/ui/modal";
 import { usePlaceBet } from "@/features/markets/ticket/usePlaceBet";
 import { useQuote } from "@/features/markets/ticket/useQuote";
