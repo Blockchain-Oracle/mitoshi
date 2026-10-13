@@ -1,6 +1,6 @@
 // `/u/<address>` — a wallet's public record (S5's profile component; S13 adds its calls, takes and follows): the 21st
 // 781 header (initials on the address hue, the tier and its board place, the explorer), the figures the leaderboard
-// ranks it by, its reputation and badges (Trader Edge's own components, `features/edge`), and its latest settled
+// ranks it by, its reputation and badges (the portfolio record's, `features/markets/history`, R4-4), and its latest settled
 // Windows, each opening its proof. Read on the server from the index (`readProfile`); a read that fails shows no
 // figure.
 import { addressUrl, type Address } from "@cwf/core";
@@ -10,7 +10,9 @@ import { connection } from "next/server";
 import { ProfileHeader } from "@/components/ui/profile-header";
 import { ProfileSocial } from "@/features/social/ProfileSocial";
 import { people } from "@/server/social";
-import { BadgeGrid, ReputationCard } from "@/features/edge/RecordBadges";
+import { BadgeGrid } from "@/features/markets/history/BadgeGrid";
+import { ReputationPanel } from "@/features/markets/history/ReputationPanel";
+import "@/styles/history.css";
 import { recordOf } from "@/features/edge/record";
 import { money, moneyTone } from "@/features/terminal/format";
 import { webEnv } from "@/lib/env";
@@ -21,6 +23,7 @@ const W = {
   place: (rank: number, of: number) => `#${rank} of ${of} on the all-time board`,
   unranked: "Not on the board yet",
   explorer: "View on the explorer",
+  copyTrader: "Copy this trader →",
   house: "This is one of Mitoshi's own keys (the house's maker, taker or a product contract). The house is never ranked, so it has no record here.",
   unreadable: "This record can't be read right now. Nothing changed; try again in a minute.",
   none: "No settled Windows yet. A record starts when a Window this wallet called settles.",
@@ -58,7 +61,7 @@ function Record({ p }: { p: Profile }) {
         <Figure label={W.figures.streak} value={String(p.bestStreak)} />
       </div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-        <ReputationCard reputation={reputation} />
+        <ReputationPanel reputation={reputation} />
         <BadgeGrid badges={badges} />
       </div>
       <section className="flex flex-col gap-3" aria-labelledby="profile-recent">
@@ -93,6 +96,8 @@ export async function ProfileScreen({ address }: { address: Address }) {
     <div className="mx-auto flex w-full max-w-(--content-wide) flex-col gap-8 px-gutter py-10 lg:px-gutter-desktop">
       <ProfileHeader address={address} name={display ?? short} meta={display ? [short, ...meta] : meta} action={{ label: W.explorer, href: addressUrl(address, webEnv.markets.network) }} />
       <ProfileSocial address={address} />
+      {/* R4-6 (D-227; Owarine 90a91d71 ProfileScreen): a mirror strategy of this wallet, in the studio, prefilled. */}
+      {p && !p.house && <Link href={`/strategies?copy=${address}`} className="inline-flex min-h-touch items-center self-start rounded-full border border-hairline px-4 type-body-strong text-ink hover:bg-surface-2">{W.copyTrader}</Link>}
       {!p ? (
         <p className="rounded-lg border border-hairline bg-surface-1 p-4 type-body text-ink-secondary">{W.unreadable}</p>
       ) : p.house ? (

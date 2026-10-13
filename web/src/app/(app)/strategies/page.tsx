@@ -6,7 +6,7 @@ import { StrategiesPage } from "@/features/strategies/StrategiesPage";
 
 export const metadata: Metadata = {
   title: "Strategies",
-  description: "Copy a strategy published on chain with hard limits — in one transaction, stoppable in one tap — or build and publish your own: momentum, reversion, an AI agent, or a mirror of a trader.",
+  description: "Copy a strategy or build your own.",
 };
 
 export default function Page() {

@@ -27,5 +27,5 @@ export const LEADERBOARD = {
   emptyPeriod: "No trades in this period.",
   error: "Couldn't load the leaderboard.",
   retry: "Try again",
-  foot: "P&L is what came back less what went in, per wallet per Window. ROI is P&L over what went in.",
+  foot: "P&L = paid back − paid in, per Window. ROI = P&L ÷ paid in.",
 } as const;

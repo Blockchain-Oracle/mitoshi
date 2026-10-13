@@ -34,6 +34,8 @@ export interface TicketBlockerInput {
   quoteStale: boolean;
   /** The Window's session and lane (S6); absent where the caller has none to give. */
   lane?: LaneGuardInput | null;
+  /** A brand-new account's first funding is landing (R4-4): a stake it can't back yet waits, it isn't short. */
+  funding?: boolean;
 }
 
 const PHASE_BLOCKERS: Partial<Record<MarketPhase, BlockerKind>> = {
@@ -74,6 +76,7 @@ export function commonBlocker(i: TicketBlockerInput, allow: { upcoming?: boolean
   if (lane) return lane;
   const phaseBlocker = allow.upcoming && i.phase === "upcoming" ? null : PHASE_BLOCKERS[i.phase];
   if (phaseBlocker) return phaseBlocker;
+  if (i.funding && (i.availableBase === null || i.availableBase === 0n || i.stakeBase > i.availableBase)) return "funding";
   if (i.availableBase === 0n) return "no-funds";
   if (i.side === null) return "no-side";
   if (i.stakeBase === 0n) return "no-stake";

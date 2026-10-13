@@ -14,6 +14,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { Hex } from "viem";
 import { useNowMs } from "@/lib/clock";
 import { useWalletSession } from "@/lib/wallet-session";
+import { FUNDING } from "../funding/copy";
+import { useFirstFunding } from "../funding/first-fund-state";
 import { useDebounced } from "../markets/ticket/useDebounced";
 import { feedKeyOf } from "../markets/units";
 import { BOOST } from "./copy";
@@ -25,6 +27,8 @@ const PAYOUT_VOID = 5_000_000n;
 export function useBoostTicket({ market, side, stakeBase, multiple, enabled = true }: { market: EventMarket | null; side: Side | null; stakeBase: bigint; multiple: number; enabled?: boolean }) {
   const nowMs = useNowMs();
   const session = useWalletSession();
+  // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
+  const funding = useFirstFunding();
   const sheet = useBalanceSheet(session.address);
   const reserve = useReadingQuery([...boostKeys.all, "reserve"], getLeverageReserveState, { pollMs: 15_000, enabled });
   const models = useQuery({ queryKey: [...boostKeys.all, "model", market?.seriesId ?? ""], queryFn: () => readFairModels([market!.seriesId as Hex]), staleTime: 60_000, enabled: enabled && market !== null });
@@ -69,6 +73,7 @@ export function useBoostTicket({ market, side, stakeBase, multiple, enabled = tr
     if (!quote) return BOOST.cta.pricing;
     if (voidShort) return BOOST.cta.voidShort;
     if (aboveFair) return BOOST.cta.aboveFair;
+    if (funding && (spendable === null || spendable < quote.stakeBase)) return FUNDING.firstFund.funding;
     if (spendable !== null && spendable < quote.stakeBase) return BOOST.cta.topUp;
     return null;
   })();

@@ -1,11 +1,12 @@
 export const ALERTS = {
   title: "Price alerts",
-  lead: (symbol: string) => `Get told when ${symbol} crosses a price. Alerts live on this device; it tells you while Mitoshi is open, with a browser notification if you allow it.`,
+  // R4-3 (D-227): Owarine's alerts foot wording.
+  lead: (_symbol: string) => "Fires while Mitoshi is open in a tab.",
   above: "Above",
   below: "Below",
   target: "Price",
   basis: { regular: "In NYSE hours", allDay: "Any hour" },
-  basisHint: "In NYSE hours watches the session price only; any hour also watches the 24/7 price after the close.",
+  basisHint: "NYSE hours: session price. Any hour: plus 24/7.",
   add: "Add alert",
   bad: "Enter a price above $0.",
   none: "No alerts on this market yet.",

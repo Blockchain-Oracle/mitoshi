@@ -18,6 +18,8 @@ import { MotionScope } from "@/components/motion-scope";
 import { TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { nowMs as clockNow } from "@/lib/clock";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { DEFAULT_EXPIRY, DEFAULT_PRESET, expiryOptions, PRESETS, presetOptions, tapsPerDay, termsOf, usd, leftNowBase, type ExpiryId, type PresetId } from "./caps";
 import { SESSION } from "./copy";
 import { useRootSubmitter, useSessionActions, useSessionView } from "./context";
@@ -35,6 +37,9 @@ export function ArmTradingBalance(_props: { onDone?: () => void }) {
   const [preset, setPreset] = useState<PresetId>(DEFAULT_PRESET);
   const [expiry, setExpiry] = useState<ExpiryId>(DEFAULT_EXPIRY);
   const [problem, setProblem] = useState<string | null>(null);
+  // Privacy mode (the balance eye): what's left of the grant and what the wallet holds are the account's own figures.
+  const hidden = usePrivacy();
+  const own = (base: bigint) => (hidden ? SHELL.masked : usd(base));
   if (view.status === "no-wallet" || view.status === "not-passkey" || view.status === "not-deployed") return null;
 
   if (view.status === "armed" && view.grant) {
@@ -42,7 +47,7 @@ export function ArmTradingBalance(_props: { onDone?: () => void }) {
     return (
       <div className="flex flex-col gap-2 rounded-md border border-hairline bg-surface-2 p-3" role="status">
         <p className="flex items-center gap-2 type-body-strong text-ink"><Check aria-hidden className="size-4 text-accent" />{SESSION.armed}</p>
-        <p className="type-caption text-ink-secondary">{SESSION.armedBody(usd(left), until(view.grant.expiresAtSec))}</p>
+        <p className="type-caption text-ink-secondary">{SESSION.armedBody(own(left), until(view.grant.expiresAtSec))}</p>
         <Link href="/settings/account" className="min-h-touch self-start py-2 type-caption text-ink underline">{SESSION.manager.title}</Link>
       </div>
     );
@@ -66,7 +71,7 @@ export function ArmTradingBalance(_props: { onDone?: () => void }) {
     }
     if (outcome.status === "refused") setProblem(outcome.diagnosis.kind === "user-rejected" ? SESSION.aborted : SESSION.failed);
   };
-  const state = short && spendable !== null ? { kind: "blocked" as const, reason: SESSION.walletShort(usd(spendable)) } : tx.state.kind === "failed" || tx.state.kind === "confirmed" ? { kind: "idle" as const } : tx.state;
+  const state = short && spendable !== null ? { kind: "blocked" as const, reason: SESSION.walletShort(own(spendable)) } : tx.state.kind === "failed" || tx.state.kind === "confirmed" ? { kind: "idle" as const } : tx.state;
 
   return (
     <section aria-labelledby="arm-trading-balance" className="flex flex-col gap-3 rounded-md border border-hairline bg-surface-2 p-3">

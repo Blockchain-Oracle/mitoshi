@@ -8,6 +8,8 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import { useNowMs } from "@/lib/clock";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { cn } from "@/lib/utils";
 import { leftNowBase, topUpBase, usd } from "./caps";
 import { SESSION } from "./copy";
@@ -34,6 +36,8 @@ export function AllowancePill({ compact = false, className }: { compact?: boolea
   const { open, modal } = useSessionModal();
   const w = useSessionWrites();
   const grant = view.grant;
+  // Privacy mode (the balance eye): what's left today is the account's own money; the daily cap is a setting.
+  const own = usePrivacy() ? () => SHELL.masked : usd;
   if (!grant || view.status === "disarmed" || view.status === "loading" || view.status === "no-wallet" || view.status === "not-passkey") return null;
   const nowSec = Math.floor((nowMs || Date.now()) / 1000);
   const secLeft = grant.expiresAtSec - nowSec;
@@ -43,10 +47,10 @@ export function AllowancePill({ compact = false, className }: { compact?: boolea
   const soon = !expired && secLeft < WARN_SEC;
   const low = !expired && left < grant.caps.maxStakePerTradeBase;
   const warn = expired || needsKey || soon || low;
-  const figure = expired ? SESSION.pill.expired : needsKey ? SESSION.pill.needsKey : SESSION.pill.left(usd(left), usd(grant.caps.maxDailySpendBase));
+  const figure = expired ? SESSION.pill.expired : needsKey ? SESSION.pill.needsKey : SESSION.pill.left(own(left), usd(grant.caps.maxDailySpendBase));
   const time = expired || needsKey ? null : SESSION.timeLeft(secLeft);
-  const title = SESSION.pill.title(usd(left), new Date(grant.expiresAtSec * 1000).toLocaleString());
-  const fix = expired ? { label: SESSION.pill.renew, run: () => void w.extend() } : soon ? { label: SESSION.manager.extend(SESSION.expiries.h24), run: () => void w.extend() } : low ? { label: SESSION.manager.addBudget(usd(topUpBase(grant))), run: () => void w.addBudget() } : null;
+  const title = SESSION.pill.title(own(left), new Date(grant.expiresAtSec * 1000).toLocaleString());
+  const fix = expired ? { label: SESSION.pill.renew, run: () => void w.extend() } : soon ? { label: SESSION.manager.extend(SESSION.expiries.h24), run: () => void w.extend() } : low ? { label: SESSION.manager.addBudget(own(topUpBase(grant))), run: () => void w.addBudget() } : null;
 
   return (
     <span className={cn("inline-flex flex-wrap items-center gap-2", className)}>

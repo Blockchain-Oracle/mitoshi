@@ -27,6 +27,10 @@ export interface CopyPlanInput {
   availableBase: bigint | null;
   /** The wallet's own pathUSD; null while it is read. */
   walletBase: bigint | null;
+  /** Privacy mode (the balance eye): a refusal says the wallet is short without printing what it holds. */
+  hideWallet?: boolean;
+  /** A brand-new account's first test dollars are landing (R4-4, critic gap 10): a short wallet waits, it isn't short. */
+  funding?: boolean;
   mode: SubscriptionMode;
   /** "share" uses the live grant; "new" sets a fresh budget. Ignored when sharing is not possible. */
   choice: "share" | "new";
@@ -54,6 +58,11 @@ export interface CopyPlan {
   stops: string[];
   budgetError: string | null;
   perTradeError: string | null;
+  /** The form's Max chips (R4-6): the largest budget this one transaction can fund — the Trading Balance, plus a live
+   *  grant's unspent budget a new grant returns first, plus the wallet, less the fee (null while a balance is read) —
+   *  and the tightest per-trade ceiling of this envelope and every carried one. */
+  maxBudgetBase: bigint | null;
+  maxPerTradeBase: bigint;
   blockedBy: string | null;
   intent: TxIntent | null;
 }
@@ -103,16 +112,18 @@ export function planCopy(i: CopyPlanInput): CopyPlan {
   let perTradeError: string | null = null;
   if (route === "new") {
     if (i.budgetText.trim() !== "" && parseUsdToBase(i.budgetText) === null) budgetError = COPY.form.notANumber;
-    else if (i.walletBase !== null && depositBase + feeBase > i.walletBase) budgetError = COPY.form.walletShort(i.walletBase, depositBase + feeBase);
+    else if (i.walletBase !== null && depositBase + feeBase > i.walletBase) budgetError = COPY.form.walletShort(i.hideWallet ? null : i.walletBase, depositBase + feeBase);
     if (i.perTradeText.trim() !== "" && parseUsdToBase(i.perTradeText) === null) perTradeError = COPY.form.notANumber;
     else if (perTradeBase > maxPerTrade) perTradeError = COPY.form.aboveStrategy(maxPerTrade);
     else if (budgetBase > 0n && perTradeBase > budgetBase) perTradeError = COPY.form.aboveBudget;
-  } else if (i.walletBase !== null && feeBase > i.walletBase) budgetError = COPY.form.walletShort(i.walletBase, feeBase);
+  } else if (i.walletBase !== null && feeBase > i.walletBase) budgetError = COPY.form.walletShort(i.hideWallet ? null : i.walletBase, feeBase);
+  const walletShort = i.walletBase !== null && (route === "new" ? depositBase : 0n) + feeBase > i.walletBase;
 
   const blockedBy =
     !i.signedIn ? COPY.blocked.signIn
     : i.busy ? COPY.blocked.busy
     : !s.active ? COPY.blocked.inactive
+    : i.funding && (i.walletBase === null || walletShort) ? COPY.blocked.funding
     : i.availableBase === null || i.walletBase === null ? COPY.blocked.checking
     : budgetError === COPY.form.notANumber ? budgetError
     : perTradeError === COPY.form.notANumber ? perTradeError
@@ -129,7 +140,8 @@ export function planCopy(i: CopyPlanInput): CopyPlan {
           kind: "strategy-copy", strategyId: id, runner: s.runner as `0x${string}`, caps, expiresAtSec: i.nowSec + COPY_TERM_SEC, budgetBase, depositBase, mode, maxFeeBase: feeBase,
           carry: carried.map((c) => ({ strategyId: BigInt(c.strategyId), mode: c.mode })),
         };
-  return { route, shareBlocked, budgetBase, perTradeBase, depositBase, feeBase, caps, carried, stops, budgetError, perTradeError, blockedBy, intent };
+  const maxBudgetBase = i.availableBase === null || i.walletBase === null ? null : reusable + i.walletBase - feeBase;
+  return { route, shareBlocked, budgetBase, perTradeBase, depositBase, feeBase, caps, carried, stops, budgetError, perTradeError, maxBudgetBase, maxPerTradeBase: maxPerTrade, blockedBy, intent };
 }
 
 /**

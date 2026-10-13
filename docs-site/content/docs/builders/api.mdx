@@ -1,0 +1,85 @@
+---
+title: The HTTP API
+description: Every route the web app and ops serve on testnet — the public reads, the one paid read, and what needs a session.
+sources:
+  - web/src/app/api
+  - web/src/lib/index-queries.ts
+  - services/ops/src/http/server.ts
+  - web/src/app/api/strategies/[id]/memory/route.ts
+  - web/src/app/api/prices/redstone-payload/route.ts
+  - web/src/app/api/agents/[strategyId]/registration.json/route.ts
+  - web/src/app/api/bridge/route.ts
+  - web/src/app/api/reserves/route.ts
+  - web/src/lib/app-links.ts
+---
+
+These are the app's own routes, not a versioned public API: they can change with the app. Trades, deposits and withdrawals are transactions on Tempo, never an HTTP call. Every public read below answered on 13 October 2026 (`evidence/api-probe-2026-10-13.json`).
+
+**Reading answers.** Money is in base units — pathUSD has 6 decimals — as decimal strings; keep them integers. `…Sec` is seconds, `…Ms` milliseconds. A 503 means a source couldn't be read, never "nothing happened"; an area not deployed on the network answers a named 404 (`not-deployed`).
+
+## Public reads — `testnet.mitoshi.xyz`
+
+| Route | Answers |
+| --- | --- |
+| `GET /api/health` · `/api/version` · `/api/status` | Liveness; the build id; the health chip's verdict. |
+| `GET /api/relay/status` | The fee payer, its balance, the breaker, every contract the relay sponsors and today's budget. |
+| `GET /api/index/markets[/<id>]` | Windows with their prints: `state`, `symbol`, `series`, `live`, `expiryFrom`, `expiryTo`, `ids`, `limit`. |
+| `GET /api/index/{fills,tape}` · `prints/<id or ticker>` · `candles/<id>` · `proof/<id>` · `archive/<feed>` · `status` | Fills, the tape, prints and print history, candles, a proof's checked prints, RedStone's archived packages, the indexer's cursors. |
+| `GET /api/index/wallet/<address>/{fills,positions,history,orders,claims,vault}` | One wallet's record, never cached. |
+| `GET /api/leaderboard?period=day\|week\|month\|all&sort=pnl\|roi` | The ranked board. |
+| `GET /api/league?wallet=` · `/api/notifications?wallet=` | A season's points and rank; a wallet's last seven days of notifications. |
+| `GET /api/activity?account=` · `/api/keys?account=` | An account's pathUSD transfers, classified; every access key the chain knows for it, with its limits. |
+| `GET /api/sentiment?symbol=` · `/api/earnings[?symbol=]` | UP's share of a ticker's demand; the next earnings dates. |
+| `GET /api/strategies` · `/api/strategies/<id>` · `/api/strategies/mine?wallet=` | The catalogue; one strategy's decisions, fills and ratings; a wallet's copies. |
+| `GET /api/agents/<id>/registration.json` · `image.svg` | An agent's ERC-8004 registration file — its on-chain `agentURI`. |
+| `GET /api/social/rooms/<room>` · `/api/social/takes` · `/api/social/profile?address=` | A Window's or a ticker's room, the takes feed, a profile. |
+| `GET /api/prices/redstone-payload?feed=` | Signed RedStone spots, ready for the verifier's `verifySpot`. |
+| `GET /api/prices/datastreams-report?symbol=` | A Chainlink Data Streams report — 503 on testnet: no subscription yet. |
+| `GET /api/games/arcade/board?game=` · `/api/sensei` · `/api/private/status` · `/api/vitals?days=` | The arcade board and a seed; whether Sensei is on and who receives questions; whether private bets can run; Web Vitals. |
+
+Coming with the next web release:
+
+| Route | Answers |
+| --- | --- |
+| `GET /api/bridge?address=` · `POST /api/bridge` | An address's bridge transfers and the measured time per direction; records a transfer the moment its source hash exists. |
+| `GET /api/bridge/<guid or tx>` | One transfer, by a leg's LayerZero guid or its source transaction. |
+| `GET /api/reserves` | reserve-watch's newest snapshot per ticker, 30 days of verdicts and the alert log. |
+| `GET /.well-known/apple-app-site-association` · `assetlinks.json` | The phone app's links and passkey association. |
+
+## The paid read
+
+`GET /api/strategies/<id>/memory` answers **402** with an MPP challenge. Pay it in pathUSD — at the price the creator signed, straight to the creator — and the same request returns the memory. Any MPP client works, for example `mppx <url>`. [The Memory Market](/automate/memory-market).
+
+## With a session
+
+A passkey sign-in is a session; a wallet signs one message for a 30-day social session (`/api/social/session`).
+
+| Route | Does |
+| --- | --- |
+| `/api/auth/*` | The passkey ceremony: register, log in, log out. |
+| `POST /api/faucet` | Test dollars, once a day per account. A wallet signs `/api/faucet/challenge` first. |
+| `POST /api/stream/ticket` | A 60-second ticket for your own topic on the live stream. |
+| `GET` · `POST /api/exits` | Your exits with the app closed: the triggers your session key signed. |
+| `POST /api/social/{follow,react,report,block}` · `PUT /api/social/profile` · `POST` rooms and takes | Social writes. Posting in a room needs a call on that Window. |
+| `POST /api/strategies/memory` · `/memory/read` | A creator seals a memory; a creator or a live copier reads it. |
+| `POST /api/private/open` · `/cashout` · `GET /claims` | Private bets, from your own session. |
+| `POST /api/games/arcade/score` | A finished run, replayed on the server before it counts. |
+| `GET` · `DELETE /api/account/data` · `/api/account/backup-passkey` | Download or erase your off-chain data; record a backup passkey. |
+| `POST /api/sensei` · `/api/contact` | Ask Sensei; write to Mitoshi. |
+| `POST /api/relay` | The fee relay's JSON-RPC, for calls its policies allow ([the relay](/architecture/relay-and-keys)). |
+
+## Ops — `ops.testnet.mitoshi.xyz`
+
+GET only.
+
+| Route | Answers |
+| --- | --- |
+| `/health` · `/livez` | Every actor's last pass and reason; process liveness. |
+| `/session` | The NYSE session, halts and the calendar. |
+| `/prices/latest` | RedStone's latest signed price per feed, its age and signer count. |
+| `/prices/history?symbol=&from=&to=` | Stored prices between two times. |
+| `/prices/{recent,candles,day}` | The chart's live line — Coinbase and Alpaca. Never a settling price. |
+| `/exits/keeper` | The key an EXIT grant should name, and its vault. |
+| `/index/recount?through=` · `/halts/log` | What the index holds through a block — slow, it counts the whole index; the halt watcher's log. |
+
+The live stream is `stream.testnet.mitoshi.xyz/v1/stream`: public topics are open; your own topic takes a ticket.

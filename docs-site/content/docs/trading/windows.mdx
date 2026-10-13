@@ -1,0 +1,58 @@
+---
+title: Windows and lanes
+description: A Window is one asset over a fixed stretch of time. Which assets, which lanes, when they trade, and what pauses them.
+sources:
+  - packages/core/src/market/venue-spec.json
+  - web/src/app/(app)/docs/windows/page.tsx
+  - contracts/src/engine/libs/ResolveLib.sol
+  - services/ops/src/actors/window-roller
+  - services/ops/src/actors/halt-watch
+  - services/ops/src/calendar
+---
+
+A Window asks one question: will this asset close at or above where it opened? **UP** wins if the closing print is at or above the opening print, **DOWN** if below. A tie goes UP. Each Window has its own order book on chain, and a winning contract pays $1.00.
+
+## Lanes
+
+| Assets | Lanes | When |
+| --- | --- | --- |
+| BTC, ETH, SOL | 5 minutes | Around the clock; a new Window every five minutes |
+| AAPL, AMD, AMZN, GOOGL, META, MSFT, NVDA, PLTR, TSLA | 5, 15 and 60 minutes | In NYSE hours |
+| AAPL, AMZN, GOOGL, META, MSFT, NVDA, TSLA | 24/7 · 5, 15 and 60 minutes | In and out of NYSE hours, settled on RedStone's 24/7 feed for that stock — not the NYSE print |
+| The nine stocks | Gap | Friday's close to the next 09:30 ET open; calls lock Sunday 20:00 ET |
+
+That is 66 series in all. AMD and PLTR have no RedStone 24/7 feed, so their 24/7 lanes are listed as paused. RedStone's 24/7 stock feeds also pause daily around 04:00 ET, so no 24/7 Window spans that gap; the terminal says when the next one opens.
+
+## A Window's life
+
+<Steps>
+<Step>
+### Opens and waits for its line
+
+The roller opens the Window. It waits for its **opening print** — RedStone's signed price at its start (the chip reads "pricing…"). That print is the line UP and DOWN are measured against.
+</Step>
+<Step>
+### Trades
+
+Makers rest prices on its book; a tap takes them, immediate-or-cancel. UP and DOWN trade on that one book — buying DOWN takes the other side of an UP bid — so the price of UP plus the price of DOWN is a dollar plus the spread.
+</Step>
+<Step>
+### Locks
+
+Shortly before the close it locks: positions can no longer be sold into the book.
+</Step>
+<Step>
+### Closes and settles
+
+The closing print lands and the Window settles: close ≥ open pays UP, close < open pays DOWN. With no reliable print in time it is void and both sides get half ([settlement](/trading/settlement)).
+</Step>
+</Steps>
+
+## Hours, halts and pauses
+
+The terminal names the NYSE session beside the Window chip — pre-market, open, after hours, closed, weekend or holiday — and the next open or close in your time with New York's beside it. Outside the session a stock's regular lane has no Window and says so; its 24/7 lane and the weekend Gap trade on.
+
+- **A halt** stops new calls on a Window: "Trading halted" when the exchange stops the stock, "Signed price stale" when the signed price goes stale or short of signers. UP and DOWN say why. An open call settles on its signed close, or the Window voids at half. Every halt of the last 30 days is on <AppLink href="/status/halts">the halts board</AppLink>.
+- **A corporate action** (a split, a multiplier change) pauses the Windows it would cut through.
+- **Earnings.** An upcoming report is named beside the session, and the Window that sits on it warns that prices can gap — a warning, never a block.
+- **Listed but paused.** NFLX is bridged to Tempo testnet but no signed price source carries it, and no attested source for pre-IPO companies exists on Tempo yet. Both are listed as paused rather than hidden.

@@ -1,0 +1,42 @@
+---
+title: The record
+description: Stats, the leaderboard, profiles, the season league and share cards — every number about trading read from the chain.
+sources:
+  - web/src/app/(app)/docs/record/page.tsx
+  - web/src/server/demand.ts
+  - web/src/features/stats
+  - web/src/features/leaderboard
+  - web/src/features/league
+  - web/src/features/share
+  - docs/plan/acceptance/S5.md
+  - docs/plan/acceptance/S13.md
+---
+
+## Stats: proof of demand
+
+<AppLink href="/stats">Stats</AppLink> counts the wallets that made a call, straight from the engine's fills: calls, what changed hands, what was paid out, the growth by day, the venue's own counts and the latest calls with their receipts.
+
+- The house's keys — its maker, its taker, the maker vault — are never counted; their fills are shown apart.
+- A tap from a Trading Balance counts for the wallet it was made for.
+- Calls taken by Boost, Parlay, Range or the private desk count as calls; their wallets aren't named yet.
+- On testnet the wallets include the fresh passkey accounts Mitoshi's own live checks create.
+
+A recount replayed the engine and all three Trading Balances through block 39,012,040, and the index matched it total for total and Window for Window.
+
+## Leaderboard and profiles
+
+The <AppLink href="/leaderboard">leaderboard</AppLink> ranks wallets by what settled — P&L or return on stake; daily, weekly, monthly or all time — with each wallet's rounds, win rate and best run. A **round** is one wallet in one Window: what came back (sold before the close, plus the payout on what was held) less what went in. Each row opens the wallet's public profile at `/u/<address>`: its figures, tier and badges, and latest settled Windows with their proofs. The same board is in the terminal's account drawer.
+
+<GuideCapture name="leaderboardDesk" />
+
+## The season league
+
+Each week from Monday 00:00 UTC, wallets earn points for calls, wins, their best run and active days, and are ranked with a tier. House keys earn nothing.
+
+## Share cards
+
+A position's details have **Share**: a card with the call, its P&L, its return or both, the price, and the terminal's link with a QR code, drawn in your browser. **Download** saves it or opens your phone's share sheet; **Share on X** opens a post. Every terminal and proof page has its own link preview.
+
+<Callout>
+Tiers and badge thresholds are inherited from the app Mitoshi's interface descends from. No tier pays a bonus or changes a fee.
+</Callout>

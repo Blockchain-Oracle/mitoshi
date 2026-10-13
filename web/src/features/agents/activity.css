@@ -1,0 +1,56 @@
+/* Ported from Owarine 90a91d71:web/src/features/desk/activity/activity.css (R4-6, D-227) — the agent's decisions as
+ * a timeline: each decision a node on a rail, the verdict in its tone, the call in one line, the why folded. */
+.act { display: flex; flex-direction: column; gap: 12px; }
+.act-filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.act-filter { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 12px; border-radius: 9999px; border: 1px solid var(--color-hairline); background: transparent; font-size: 12.5px; font-weight: 600; color: var(--color-ink-secondary); cursor: pointer; transition: border-color 140ms ease, color 140ms ease, background 140ms ease; }
+.act-filter:hover { color: var(--color-ink); border-color: var(--color-ink-muted); }
+.act-filter[aria-pressed="true"] { color: var(--color-ink); border-color: var(--color-accent); background: var(--color-accent-wash); }
+.act-filter:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.act-filter-count { font-family: var(--font-data); font-size: 11px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+
+.act-verdict { font-family: var(--font-data); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-ink-secondary); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.act-verdict[data-tone="acted"] { color: var(--color-profit); }
+.act-verdict[data-tone="declined"] { color: var(--color-accent); }
+.act-verdict[data-tone="asked"] { color: var(--color-warning); }
+.act-verdict[data-tone="error"], .act-verdict[data-tone="stopped"] { color: var(--color-loss); }
+.act-verdict[data-tone="quiet"] { color: var(--color-ink-muted); }
+.act-tag { padding: 1px 7px; border-radius: 9999px; border: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.act-meta { margin-left: auto; font-family: var(--font-data); font-size: 11px; color: var(--color-ink-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* One check: time on top, a line per company (badge, the fact, figures in the data face), reasons behind "Why". */
+.act-check { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; border: 1px solid var(--color-hairline); border-radius: 12px; background: var(--market-card-surface, var(--color-surface-1)); }
+.act-check[data-tone="acted"] { border-color: color-mix(in srgb, var(--color-profit) 35%, var(--color-hairline)); }
+.act-check[data-tone="asked"] { border-color: color-mix(in srgb, var(--color-warning) 45%, var(--color-hairline)); }
+.act-check-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 0 2px; }
+.act-time { font-family: var(--font-data); font-size: 13px; font-weight: 600; color: var(--color-ink); font-variant-numeric: tabular-nums; }
+.act-lines { display: flex; flex-direction: column; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.act-line { display: grid; grid-template-columns: 24px minmax(0, 1fr) 16px; align-items: start; gap: 10px; padding: 8px; border-radius: 9px; color: inherit; transition: background 140ms ease; }
+.act-line:hover { background: var(--color-surface-2); }
+.act-line:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+.act-line-mark { display: grid; place-items: center; min-height: 22px; color: var(--color-ink-muted); }
+.act-line-mark > svg { width: 16px; height: 16px; }
+.act-line-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.act-line-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.act-line-lead { font-size: 13.5px; line-height: 1.45; color: var(--color-ink); }
+.act-line-rest { font-size: 12.5px; line-height: 1.5; color: var(--color-ink-secondary); }
+.act-line-go { width: 16px; height: 16px; margin-top: 3px; color: var(--color-ink-muted); opacity: 0; transition: opacity 140ms ease; }
+.act-line:hover .act-line-go, .act-line:focus-visible .act-line-go { opacity: 1; }
+.act-figure { font-family: var(--font-data); font-weight: 600; font-variant-numeric: tabular-nums; }
+.act-badge { padding: 2px 8px; border-radius: 9999px; font-family: var(--font-data); font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-secondary); background: var(--color-surface-2); font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+.act-badge[data-tone="acted"] { color: var(--color-profit); background: color-mix(in srgb, var(--color-profit) 12%, transparent); }
+.act-badge[data-tone="declined"] { color: var(--color-accent); background: var(--color-accent-wash); }
+.act-badge[data-tone="asked"] { color: var(--color-warning); background: color-mix(in srgb, var(--color-warning) 14%, transparent); }
+.act-badge[data-tone="error"], .act-badge[data-tone="stopped"] { color: var(--color-loss); background: color-mix(in srgb, var(--color-loss) 12%, transparent); }
+.act-badge[data-tone="quiet"] { color: var(--color-ink-muted); }
+.act-why { display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; margin-left: 42px; padding: 2px 0; border: 0; background: transparent; font-size: 12px; font-weight: 600; color: var(--color-ink-secondary); cursor: pointer; }
+.act-why:hover { color: var(--color-ink); }
+.act-why:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+.act-quiet { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; border: 1px dashed var(--color-hairline); border-radius: 12px; background: transparent; font-size: 13px; color: var(--color-ink-secondary); cursor: pointer; text-align: left; }
+.act-quiet:hover { color: var(--color-ink); border-color: var(--color-ink-muted); }
+.act-quiet-chevron { width: 16px; height: 16px; flex: none; transition: transform 200ms ease; }
+.act-quiet-chevron[data-open] { transform: rotate(180deg); }
+.act-quiet-list { display: flex; flex-direction: column; gap: 2px; margin: 6px 0 0; padding: 0; list-style: none; overflow: hidden; }
+.act-quiet-line { display: flex; justify-content: space-between; gap: 12px; padding: 6px 14px; border-radius: 8px; font-size: 12.5px; color: var(--color-ink-secondary); }
+.act-quiet-line:hover { background: var(--color-surface-2); color: var(--color-ink); }
+@media (max-width: 640px) { .act-line-go { display: none; } .act-line { grid-template-columns: 24px minmax(0, 1fr); } .act-why { margin-left: 34px; } }
+
