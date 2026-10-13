@@ -49,6 +49,7 @@ export const GAMES = {
     winRate: (pct: string) => `${pct}% won`,
     noCalls: "No calls yet",
     arcadeBest: (name: string, score: string) => `${name} ${score}`,
+    lucky: (n: number, best: number) => `Lucky ${n} · best ${best}`,
   },
 
   achievements: {
