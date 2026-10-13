@@ -8,7 +8,7 @@ type Area = { commit: string | null; deployedAtUtc: string | null; contracts: Re
 type Chain = { name: string; areas: Record<string, Area> };
 
 const CHAINS = deployments as unknown as Record<string, Chain>;
-const EXPLORER: Record<string, string> = { '42431': 'https://explore.testnet.tempo.xyz', '84532': 'https://sepolia.basescan.org' };
+const EXPLORER: Record<string, string> = { '42431': 'https://explore.testnet.tempo.xyz' };
 
 /** What each area is, in the order a reader meets it. */
 const AREAS: Record<string, string> = {
@@ -22,35 +22,27 @@ const AREAS: Record<string, string> = {
   leverage: 'Boost (house reserve)',
   private: 'The private desk',
   strategies: 'Strategies and agents',
-  stocks: 'Stock token mirrors and their bridge adapters',
+  stocks: 'Stock mirrors, their views and the sync receiver',
   guard: 'The stock pools’ price guard',
   v4: 'Uniswap v4, replayed from Tempo mainnet',
   themes: 'Themes',
   launch: 'Launchpads',
-  lz: 'LayerZero pathway probe',
 };
 
 const short = (v: string) => `${v.slice(0, 8)}…${v.slice(-6)}`;
 
-/** Base Sepolia carries only the testnet hop of the bridge. */
-const HOP_AREAS: Record<string, string> = {
-  stocks: 'The TSLA transit, its composer and the sync forwarder',
-  lz: 'LayerZero pathway probe',
-};
-
 export function Deployments({ chain = '42431', areas }: { chain?: string; areas?: string[] }) {
   const data = CHAINS[chain];
   if (!data) return null;
-  const labels = chain === '84532' ? HOP_AREAS : AREAS;
-  const order = (areas ?? Object.keys(labels)).filter(a => data.areas[a] && Object.keys(data.areas[a].contracts).length > 0);
+  const order = (areas ?? Object.keys(AREAS)).filter(a => data.areas[a] && Object.keys(data.areas[a].contracts).length > 0);
   const base = EXPLORER[chain];
   return (
     <div className="not-prose">
       {order.map(area => {
         const a = data.areas[area];
         return (
-          <section key={area} className="ledger" aria-label={labels[area] ?? area}>
-            <header><span>{labels[area] ?? area}</span><small>{area} · commit {a.commit ?? '—'}{a.deployedAtUtc ? ` · ${a.deployedAtUtc.slice(0, 10)}` : ''}</small></header>
+          <section key={area} className="ledger" aria-label={AREAS[area] ?? area}>
+            <header><span>{AREAS[area] ?? area}</span><small>{area} · commit {a.commit ?? '—'}{a.deployedAtUtc ? ` · ${a.deployedAtUtc.slice(0, 10)}` : ''}</small></header>
             {Object.entries(a.contracts).map(([name, c]) => (
               <div className="ledger-row" key={name}>
                 <span><b>{name}</b>{c.deployBlock ? <small>block {c.deployBlock.toLocaleString('en-US')}</small> : null}{c.history.length ? <small>replaced: {c.history.map(h => short(h.address)).join(', ')}</small> : null}</span>

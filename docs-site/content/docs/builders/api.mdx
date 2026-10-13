@@ -8,8 +8,6 @@ sources:
   - web/src/app/api/strategies/[id]/memory/route.ts
   - web/src/app/api/prices/redstone-payload/route.ts
   - web/src/app/api/agents/[strategyId]/registration.json/route.ts
-  - web/src/app/api/bridge/route.ts
-  - web/src/app/api/reserves/route.ts
   - web/src/app/api/games
   - web/src/app/api/launch
   - web/src/app/api/themes
@@ -44,8 +42,6 @@ These are the app's own routes, not a versioned public API: they can change with
 | `GET /api/games/{lucky,duel}/board` · `/{lucky,duel}/history?address=` · `/duel/presence` · `/season` · `/achievements?wallet=` | The Lucky and duel ladders; a wallet's draws and duels; who waits at each pot; the duel season; a wallet's badges. |
 | `GET /api/launch/name?q=` · `/api/launch/logo/<sha256>` | Whether a launch name passes the word filter; a launch's logo. |
 | `GET /api/themes/agent/registration.json` | The theme agent's ERC-8004 registration file. |
-| `GET /api/bridge?address=` · `/api/bridge/<guid or tx>` | An address's bridge transfers and the measured time per direction; one transfer, by a leg's LayerZero guid or its source transaction. |
-| `GET /api/reserves` | reserve-watch's newest snapshot per ticker, 30 days of verdicts and the alert log. |
 | `GET /api/x/status?account=` | Who is signed in with X here, where an X account routes, and the relay's state. |
 | `GET /.well-known/apple-app-site-association` · `assetlinks.json` | The phone app's links and passkey association; also on `mitoshi.xyz`. |
 
@@ -69,7 +65,6 @@ Most need a session: a passkey sign-in is one; a wallet signs one message for a 
 | `POST /api/games/arcade/score` | A finished run, replayed on the server before it counts. |
 | `POST /api/games/lucky/{commit,reveal,placed}` | A Lucky draw: the server's commitment, the reveal with your seed, what was placed. |
 | `GET` · `POST` · `DELETE /api/games/duel/queue` · `GET /api/games/duel/match/<id>` | Join or leave the duel queue; one duel, with its deck once both pots are in. |
-| `POST /api/bridge` | Records a bridge transfer the moment its source hash exists. No session. |
 | `POST /api/launch/logo` · `/api/themes/<id>/agent-key` | Store a launch's logo (no session); ask ops for a theme agent's key. |
 | `POST /api/strategies/preview` | The studio's test read on a live Window, rate-limited. No session; nothing is sent. |
 | `/api/x/{start,callback,bind,unlink,receipts,native-exchange}` | Sign in with X; link or unlink with your account's signature; your mentions' receipts; the phone app's hand-back. |

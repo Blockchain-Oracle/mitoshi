@@ -18,7 +18,7 @@ sources:
 | Part | Where | What it does |
 | --- | --- | --- |
 | **Contracts** | Tempo testnet (Moderato, chain 42431) | The market engine and its print verifiers; the Trading Balance; the maker vault and three house reserves; the private desk; the duel arena; strategies; the stock mirrors, guard and pools; themes; launchpads. They hold the money and the rules. |
-| **Ops** | One process on Mitoshi's Coolify server | Actors that open Windows, post prints, settle and pay, quote the house's books, run exits, strategies and theme rebalances, crank duels, place calls from X, follow the bridge, index the chain and watch halts. They can stall; they cannot move your money or change a result. |
+| **Ops** | One process on Mitoshi's Coolify server | Actors that open Windows, post prints, settle and pay, quote the house's books, run exits, strategies and theme rebalances, crank duels, place calls from X, index the chain and watch halts. They can stall; they cannot move your money or change a result. |
 | **Web** | Next.js at mitoshi.xyz | The app, its read APIs, the passkey, X sign-in and faucet routes, the relay, the stream ticket, the games' servers and the Memory Market's paid reads. |
 | **Postgres** | Beside ops and web | The index, the print archive, relay budgets, exit triggers, social posts, arcade runs, draws and duels, X links and receipts. A view of the chain, never its source of truth. |
 

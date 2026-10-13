@@ -1,42 +1,17 @@
 ---
 title: Stocks on Tempo
-description: Call nine US stocks today. Hold real Robinhood Stock Tokens on Tempo next — the contracts and screens are live; the Robinhood side waits on test ETH.
+description: Call nine US stocks UP or DOWN — in NYSE hours, around the clock, and over the weekend.
 sources:
   - packages/core/src/market/venue-spec.json
-  - contracts/deployments/42431/stocks.json
-  - contracts/deployments/42431/pools.json
-  - contracts/deployments/42431/guard.json
-  - contracts/deployments/42431/themes.json
-  - docs/specs/pillar2.md
-  - web/src/lib/capabilities.ts
-  - docs/plan/acceptance/R4-12.md
-  - docs/plan/acceptance/R4-11.md
+  - packages/core/src/market/tickers.ts
+  - web/src/features/stocks/StockHubScreen.tsx
+  - docs/plan/decisions.md
 ---
 
-Mitoshi brings stocks to Tempo in two ways. One is live; the other is deployed on testnet with its screens live, and waits on the Robinhood side.
+AAPL, AMD, AMZN, GOOGL, META, MSFT, NVDA, PLTR and TSLA trade as [Windows](/trading/windows) of 5, 15 and 60 minutes in NYSE hours. Seven of them — all but AMD and PLTR — also trade around the clock on RedStone's 24/7 feeds, which pause around 04:00 ET each day. All nine have the weekend Gap.
 
-## 1. Call a stock — live
+Every Window opens and settles on RedStone's signed print (3 of 5 signers), verified on chain. The chart's live line is Alpaca's and settles nothing. No share or token changes hands: you call the price.
 
-AAPL, AMD, AMZN, GOOGL, META, MSFT, NVDA, PLTR and TSLA trade as [Windows](/trading/windows): 5, 15 and 60 minutes in NYSE hours, the same lanes around the clock on RedStone's 24/7 feeds for seven of them, and the weekend Gap. No token changes hands — you call the price, and the Window settles on RedStone's signed print. Each ticker has a hub of its own — <AppLink href="/tickers/TSLA">TSLA's</AppLink>, for one.
+Each ticker has a hub of its own — <AppLink href="/tickers/TSLA">TSLA's</AppLink>, for one. Sessions, halts and earnings are in [Windows](/trading/windows).
 
-## 2. Hold the real share token — the Robinhood side next
-
-Robinhood issues **Stock Tokens** on Robinhood Chain. Mitoshi's pillar two brings them to Tempo:
-
-<Architecture name="stocks" />
-
-| Piece | State on testnet |
-| --- | --- |
-| Five mirror TIP-20s (bTSLA, bAMZN, bPLTR, bNFLX, bAMD) and their mint/burn adapters | Deployed on Moderato |
-| The sync receiver for multipliers and pauses, and the scaled views | Deployed on Moderato |
-| LayerZero hop through Base Sepolia (transit, composer, forwarder) | Deployed; Moderato → Base Sepolia delivered in 20 s, Base Sepolia → Moderato in 23 s |
-| Lockboxes and the sync sender on Robinhood Chain testnet | Waiting on testnet ETH (owner action) |
-| Uniswap v4 on Moderato, the price guard and the reference | Deployed; four pools initialized with house liquidity |
-| Themes | Deployed and configured; three themes published, followed on testnet |
-| `/bridge`, `/reserves` and `/themes` | Live. Until the lockboxes are deployed the bridge reads "Robinhood side not live", the reserves **Partial**, and the guarded pools — and so every theme rebalance — wait on the first stock sync |
-
-Read on: [the bridge](/stocks/bridge), [pools and the guard](/stocks/pools-and-guard), [reserves](/stocks/reserves), [follow a theme](/stocks/follow-a-theme). The same pillar adds [Launch](/stocks/launch) for stablecoins and memecoins.
-
-<Callout title="Eligibility">
-Robinhood Stock Tokens have their own eligibility and transfer rules. Mainnet stock tokens, their budget and the Safes that would hold admin keys are open owner decisions; nothing here is a mainnet offer.
-</Callout>
+The same section covers [themes](/stocks/follow-a-theme) and [Launch](/stocks/launch) for stablecoins and memecoins.

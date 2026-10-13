@@ -20,7 +20,7 @@ export function WelcomeActions() {
 const journeys = [
   { label: 'Trade', title: 'Make your first call', description: 'Sign up with a passkey, take test dollars and tap UP or DOWN on a live Window.', href: '/start/quickstart', icon: CandlestickChart },
   { label: 'Automate', title: 'Copy a strategy or an agent', description: 'One transaction to copy, one to stop, with caps the vault enforces.', href: '/automate/overview', icon: Sparkles },
-  { label: 'Stocks', title: 'See stocks on Tempo', description: 'Stock Windows today; bridged Robinhood Stock Tokens, pools and reserves.', href: '/stocks/overview', icon: Layers3 },
+  { label: 'Stocks', title: 'Call a stock', description: 'Nine US stocks, in NYSE hours and 24/7.', href: '/stocks/overview', icon: Layers3 },
   { label: 'Architecture', title: 'See how it fits together', description: 'The engine, the signed prints, the keepers, the indexer and the relay.', href: '/architecture/overview', icon: Network },
 ];
 export function JourneyList() {
