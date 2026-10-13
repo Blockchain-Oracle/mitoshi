@@ -2,7 +2,6 @@
 import type { MarketId, Side } from "../types/market";
 import type { Hex } from "../types/primitives";
 import { concatWords, hexWord, uintWord } from "./commitment";
-import { INTERVAL_5M_SEC } from "./deck";
 
 /**
  * Lucky, as pure data: the policy a draw is made under, the bytes a candidate set commits to, the rule
@@ -16,17 +15,21 @@ import { INTERVAL_5M_SEC } from "./deck";
  */
 
 /**
- * Version 1 (2026-09-04): the assets below, the owner's 2/3/5/10/25 reach ladder, no 5m Windows, and two
- * minutes of headroom so a signature never lands on a Window that has already closed to entry.
+ * Version 1 (Masayume, 2026-09-04): BTC and ETH, the owner's 2/3/5/10/25 reach ladder, no 5m Windows, and two minutes
+ * of headroom so a signature never lands on a Window that has already closed to entry.
+ *
+ * Version 2 (Mitoshi, R4-9, D-227): the venue's crypto Windows run at 5m only (venue-spec: BTC, ETH and SOL are 5m
+ * Series), so v1's rule would refuse every draw. v2 draws over BTC, ETH and SOL, keeps the ladder and the two minutes of
+ * headroom, and admits 5m: a passkey tap places well inside the headroom on this venue.
  */
-export const LUCKY_POLICY_VERSION = 1;
+export const LUCKY_POLICY_VERSION = 2;
 /** The asset universe the draw is over, pinned by the policy so a verifier replays the same list. */
-export const LUCKY_ASSETS: readonly string[] = ["BTC", "ETH"];
+export const LUCKY_ASSETS: readonly string[] = ["BTC", "ETH", "SOL"];
 export const LUCKY_MULTIPLIERS: readonly number[] = [2, 3, 5, 10, 25];
 /** Headroom for a human signature between the deal and the fill. */
 export const LUCKY_MIN_HEADROOM_SEC = 120;
-/** Excluded by the deck policy's own rule: 5m returns only with a measured end-to-end timing. */
-export const LUCKY_EXCLUDED_INTERVAL_SEC = INTERVAL_5M_SEC;
+/** v1 excluded 5m (`INTERVAL_5M_SEC`); v2 excludes no cadence (0 matches no Series). */
+export const LUCKY_EXCLUDED_INTERVAL_SEC = 0;
 /** Past this the live multiple has moved far enough from the dealt one that the card must say so. */
 export const LUCKY_DRIFT_BPS = 1_000;
 
