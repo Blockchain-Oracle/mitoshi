@@ -2,7 +2,8 @@ import type { Sentiment } from "./wire";
 
 /** `/news` (R4-10, D-227: at Owarine's counts) — Masayume's and Agari's words (Yosuku's own deleted page, `app/news/page.tsx` at 93d09c1^), for Mitoshi. */
 export const NEWS = {
-  live: "Updated live",
+  /** The wire is read at request time: it says its order, never "live" (R6 money, T10). */
+  live: "Newest first",
   heading: "Market",
   headingAccent: "News",
   /** Verbatim from the reference: "headlines that move the market". */
