@@ -45,7 +45,7 @@ export function CardSpark({ points, openingRaw }: { points: readonly ChartPoint[
   const at = hover === null ? null : points[hover];
   return (
     <>
-      <svg ref={ref} className="mc-spark-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="none" aria-hidden focusable="false" onPointerMove={onMove} onPointerLeave={() => setHover(null)}>
+      <svg ref={ref} className="mc-spark-svg" viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} preserveAspectRatio="none" aria-hidden focusable="false" data-base-ui-swipe-ignore="" onPointerMove={onMove} onPointerLeave={() => setHover(null)}>
         <path className={shape.winning ? "mc-spark-line up" : "mc-spark-line down"} d={shape.path} />
         {hover !== null ? <line x1={(hover / (points.length - 1)) * VIEW_W} x2={(hover / (points.length - 1)) * VIEW_W} y1={0} y2={VIEW_H} className="mc-spark-cursor" vectorEffect="non-scaling-stroke" /> : null}
       </svg>

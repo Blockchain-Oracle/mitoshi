@@ -66,7 +66,7 @@ export function AccountMenu({ open, onOpenChange, side = "bottom" }: AccountMenu
               <Row label={ACCOUNT.address}>
                 <span className="flex min-w-0 items-center gap-1">
                   <span className="numbers truncate">{shortAddress(address)}</span>
-                  <button type="button" className="am-copy" aria-label={copied ? ACCOUNT.copied : ACCOUNT.copy} onClick={() => void navigator.clipboard?.writeText(address).then(() => setCopied(true), () => undefined)}>
+                  <button type="button" className="am-copy" aria-label={copied ? ACCOUNT.copied : ACCOUNT.copy} title={copied ? ACCOUNT.copied : ACCOUNT.copy} onClick={() => void navigator.clipboard?.writeText(address).then(() => setCopied(true), () => undefined)}>
                     {copied ? <Check aria-hidden className="size-3.5" /> : <Copy aria-hidden className="size-3.5" />}
                   </button>
                 </span>

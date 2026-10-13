@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { walletKeyTerms } from "@/providers/wallet/access-key";
 import { TAP } from "./copy";
+import { SheetFooter } from "@/components/ui/drawer";
 
 const primary = "inline-flex h-(--ticket-cta-height) w-full items-center justify-center gap-2 rounded-md bg-accent-fill px-5 type-body-strong text-on-accent disabled:opacity-60";
 
@@ -53,10 +54,12 @@ export function ArmWalletKey(_props: { onDone: () => void }) {
       <p className="type-caption text-ink-secondary">{TAP.facts(limit, hours)}</p>
       <p className="type-caption text-ink-secondary">{TAP.sponsored}</p>
       {phase === "failed" || phase === "aborted" ? <p role="alert" className="type-caption text-ink">{phase === "failed" ? TAP.failed : TAP.aborted}</p> : null}
-      <button type="button" className={primary} disabled={phase === "busy"} aria-busy={phase === "busy"} onClick={() => void arm()}>
-        {phase === "busy" ? <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" /> : null}
-        {phase === "busy" ? TAP.busy : phase === "idle" ? TAP.cta : TAP.retry}
-      </button>
+      <SheetFooter>
+        <button type="button" className={primary} disabled={phase === "busy"} aria-busy={phase === "busy"} onClick={() => void arm()}>
+          {phase === "busy" ? <Loader2 aria-hidden className="size-4 animate-spin motion-reduce:animate-none" /> : null}
+          {phase === "busy" ? TAP.busy : phase === "idle" ? TAP.cta : TAP.retry}
+        </button>
+      </SheetFooter>
       <p className="type-caption text-ink-secondary">{TAP.skip}</p>
     </section>
   );

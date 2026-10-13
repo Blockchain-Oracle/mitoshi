@@ -1,4 +1,5 @@
-// Ported from Masayume 68f7a09:web/src/components/data/CountdownRing.tsx
+// Ported from Masayume 68f7a09:web/src/components/data/CountdownRing.tsx — the one ring face (the kit CountdownRing draws
+// on it, R4-2, D-227); the drain steps instead of gliding under reduced motion, as Owarine 90a91d71 kit/CountdownRing.
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +31,7 @@ export function CountdownRing({ fraction, urgent = false, glow = false, classNam
           strokeDasharray={RING_LENGTH}
           strokeDashoffset={RING_LENGTH - remaining}
           className={cn(
-            "fill-none transition-[stroke-dashoffset] duration-1000 ease-linear",
+            "fill-none transition-[stroke-dashoffset] duration-1000 ease-linear motion-reduce:transition-none",
             urgent ? "stroke-accent" : "stroke-ink-secondary",
           )}
         />

@@ -71,7 +71,6 @@ export const TERMINAL_ACCOUNT = {
     signOutConfirm: "Sign out of Mitoshi?",
     signOutBody: "Your passkey stays on this device. One-tap keys here stop.",
     cancel: "Stay signed in",
-    back: "Back",
     testnet: "Tempo testnet",
   },
   send: {

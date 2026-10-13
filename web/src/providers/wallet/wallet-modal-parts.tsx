@@ -63,7 +63,7 @@ function CloseIcon({ phone }: { phone: boolean }) {
 
 export function CloseButton({ phone = false }: { phone?: boolean }) {
   return (
-    <Dialog.Close aria-label={WALLET_MODAL.close} className="wm-close wm-touch wm-grow-lg wm-shrink-sm">
+    <Dialog.Close aria-label={WALLET_MODAL.close} title={WALLET_MODAL.close} className="wm-close wm-touch wm-grow-lg wm-shrink-sm">
       <CloseIcon phone={phone} />
     </Dialog.Close>
   );

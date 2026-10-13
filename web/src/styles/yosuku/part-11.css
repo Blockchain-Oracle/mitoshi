@@ -203,7 +203,7 @@
    scroll past — that scroll drives the act crossfade. (Previously it was position:
    relative with overflow:hidden, so it never pinned: the content scrolled away and
    the empty runway filled the screen.) */
-.feature-pin { position: sticky; top: 0; height: 100vh; overflow: hidden; }
+.feature-pin { position: sticky; top: 0; height: 100svh; overflow: hidden; }
 .feature-stage {
   position: relative; height: 100%;
   display: flex; align-items: center; justify-content: center;
@@ -295,7 +295,7 @@
   position: fixed; top: 50%; right: 28px;
   transform: translateY(-50%);
   display: flex; flex-direction: column; gap: 12px;
-  z-index: 700; opacity: 0;
+  z-index: var(--z-float); opacity: 0;
   transition: opacity 300ms var(--ease);
 }
 .feature-progress.show { opacity: 1; }

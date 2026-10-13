@@ -2,7 +2,7 @@
 .mobile-bottom-nav {
   display: none;
   position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-  z-index: 900;
+  z-index: var(--z-chrome);
   background: rgba(12,12,12,0.72);
   backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255,255,255,0.08);
@@ -54,7 +54,7 @@
   left: 14px;
   right: 14px;
   bottom: 92px;
-  z-index: 899;
+  z-index: calc(var(--z-chrome) - 1);
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   padding: 10px;

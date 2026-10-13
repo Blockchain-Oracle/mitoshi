@@ -1,17 +1,15 @@
-/* S4 additions on Masayume's markets sheets (tokens only). The ticket's CTA dock stays in view inside the right-edge
- * slide-over, above the home indicator (ux-audit fix 6; §2.5 "CTA visible without scrolling on tickets and drawers"). */
-.tk-slide-over .slide-over-body { display: flex; flex-direction: column; padding-bottom: 0; }
-.tk-slide-over .tk-ticket { flex: 1; }
-.tk-slide-over .tk-cta-dock {
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  margin: 0 calc(var(--spacing) * -4);
-  padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4) calc(env(safe-area-inset-bottom, 0px) + var(--spacing) * 4);
-  background: var(--color-surface-1);
-  border-top: 1px solid var(--color-hairline);
-}
+/* S4 additions on Masayume's markets sheets (tokens only). In the slide-over the ticket's CTA dock renders in the sheet's
+ * pinned footer (`SheetFooter`; R4-2, D-227), above the home indicator and a phone's keyboard (§2.5 "CTA visible without
+ * scrolling on tickets and drawers") — the old sticky dock inside the scrolling body is gone. */
 .tk-cta-dock { display: flex; flex-direction: column; gap: calc(var(--spacing) * 2); }
+/* R4-2 (D-227), the fold budget against 100svh: with the browser's bars shown a 568 px phone keeps ~450 px, so the hero's
+ * UP/DOWN stick above the dock while the hero is on screen (`.page-action`). The panel and the hero section around it
+ * (`.page-hero` hides its overflow, yosuku/part-04) clip instead, so neither is a scroll container and the row sticks to
+ * the page — a `hidden` ancestor would hold it in place. */
+@media (max-width: 767px) {
+  .markets-hero.page-hero, .markets-hero .hero-chart { overflow: clip; }
+  .markets-hero .hero-yesno.page-action { padding-bottom: 8px; background: var(--color-ground); }
+}
 .tk-add, .tk-lev, .tk-mode { min-height: 44px; }
 .pager { display: flex; align-items: center; justify-content: space-between; gap: calc(var(--spacing) * 3); }
 /* 22249's spark readout on the lane card. */

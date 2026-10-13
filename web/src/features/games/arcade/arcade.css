@@ -37,7 +37,7 @@
   width: 100%;
   /* The field is 16:9 by definition; the screen keeps the ratio and never outgrows the viewport. */
   aspect-ratio: 16 / 9;
-  max-width: min(100%, calc(72vh * 16 / 9));
+  max-width: min(100%, calc(72svh * 16 / 9));
   margin: 0 auto;
   border: 1px solid var(--color-hairline);
   background: rgb(var(--ar-ground-rgb));

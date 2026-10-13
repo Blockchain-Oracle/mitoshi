@@ -211,6 +211,7 @@ a.gm-card:hover { border-color: color-mix(in srgb, var(--signal-ink) 40%, transp
 .gm-card-blurb { font-size: 13px; line-height: 1.6; color: var(--gray-400); }
 .gm-card-foot { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .gm-card-waiting { font-family: var(--font-mono); font-size: 10px; line-height: 1.5; color: var(--gray-500); font-variant-numeric: tabular-nums; }
+.gm-after-hours { margin: 0 0 12px; font-size: 11px; } /* the hub's one after-hours line, above §01 (R4-2) */
 /* A live count, read without a wallet. Brighter than the build facts above it because it changes. */
 .gm-card-presence { font-family: var(--font-mono); font-size: 10px; line-height: 1.5; color: var(--gray-400); margin-top: 6px; font-variant-numeric: tabular-nums; }
 .gm-card-open {

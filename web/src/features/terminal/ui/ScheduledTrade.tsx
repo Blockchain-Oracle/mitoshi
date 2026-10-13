@@ -71,9 +71,9 @@ export function ScheduledTrade({ market, stakeBase }: { market: EventMarket; sta
     <div className="tm-scheduled">
       <p className="tm-field-hint">{TERMINAL.scheduled.note(clockText(market.tradingStartSec))}</p>
       <div className="tm-price" role="group" aria-label={TICKET.scheduled.priceLabel}>
-        <button type="button" className="tm-choice" aria-label={TICKET.scheduled.stepDown} onClick={() => step(-1)}><Minus aria-hidden className="size-4" /></button>
+        <button type="button" className="tm-choice" aria-label={TICKET.scheduled.stepDown} title={TICKET.scheduled.stepDown} onClick={() => step(-1)}><Minus aria-hidden className="size-4" /></button>
         <output className="tm-price-value" aria-live="polite">{cents}¢</output>
-        <button type="button" className="tm-choice" aria-label={TICKET.scheduled.stepUp} onClick={() => step(1)}><Plus aria-hidden className="size-4" /></button>
+        <button type="button" className="tm-choice" aria-label={TICKET.scheduled.stepUp} title={TICKET.scheduled.stepUp} onClick={() => step(1)}><Plus aria-hidden className="size-4" /></button>
         {PRICE_CHIPS.map((c) => (
           <button key={c} type="button" className="tm-choice" aria-pressed={cents === c} onClick={() => (tapFeedback(), setCents(c))}>{c}¢</button>
         ))}
