@@ -36,35 +36,62 @@
   .ea-side { grid-area: side; display: flex; flex-direction: column; gap: 16px; position: sticky; top: var(--stage-sticky-top); }
 }
 
-/* ── the reserve card: the money card's black slab, compact on a phone ─────────────────────────────────────────── */
-.ea-rc.money-hero { display: flex; flex-direction: column; padding: 16px; }
-@media (min-width: 640px) { .ea-rc.money-hero { padding: 24px; } }
+/* ── the reserve card (R6 money, S09): the return first, in its tone; the share price; the share-price line; what
+   $100 did; the split. On the money card's black slab (plate tokens, both themes). ──────────────────────────────── */
+.ea-rc.money-hero { display: flex; flex-direction: column; gap: 10px; padding: 16px; --ea-rc-idle: color-mix(in srgb, var(--plate-ink) 40%, transparent); }
+@media (min-width: 640px) { .ea-rc.money-hero { gap: 14px; padding: 24px; } }
+.ea-rc [data-tone="up"] { color: var(--plate-up); }
+.ea-rc [data-tone="down"] { color: var(--plate-down); }
+.ea-rc [data-tone="flat"] { color: var(--plate-ink); }
 .ea-rc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.ea-rc-price { display: flex; min-width: 0; flex-wrap: wrap; align-items: baseline; column-gap: 6px; row-gap: 4px; }
-@media (min-width: 640px) { .ea-rc-price { column-gap: 8px; } }
-.ea-rc-figure { font: 700 32px/1 var(--font-data); letter-spacing: -0.02em; color: #fff; }
-@media (min-width: 640px) { .ea-rc-figure { font-size: 44px; } }
-.ea-rc-unit { font: 500 13px/1 var(--font-body); color: rgba(255, 255, 255, 0.6); }
-.ea-rc-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: var(--radius-full); background: color-mix(in srgb, var(--chart-up) 18%, transparent); font: 700 12px/1.2 var(--font-data); color: var(--chart-up); }
-.ea-rc-tri { width: 8px; height: 8px; }
-.ea-rc-status { flex: none; padding: 4px 10px; border-radius: var(--radius-full); background: rgba(255, 255, 255, 0.12); font: 700 12px/1.2 var(--font-body); color: #fff; }
-.ea-rc-caption { font: 500 12px/1.3 var(--font-body); color: rgba(255, 255, 255, 0.6); white-space: nowrap; }
-.ea-rc-legs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 10px 0 0; }
-.ea-rc-leg { min-width: 0; }
-.ea-rc-leg-label { display: flex; align-items: center; gap: 6px; font: 500 12px/1.2 var(--font-body); color: rgba(255, 255, 255, 0.7); white-space: nowrap; }
-.ea-rc-dot { width: 8px; height: 8px; }
-.ea-rc-dot[data-leg="value"] { background: #fff; }
-.ea-rc-dot[data-leg="idle"] { background: rgba(255, 255, 255, 0.4); }
-.ea-rc-dot[data-leg="committed"] { background: var(--color-accent); }
-/* three legs on a 320 phone are ~82 px each: the figure steps down to 12 px there, so "$12,345.67" stays on one line */
-.ea-rc-leg-amount { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; margin: 4px 0 0; font: 700 clamp(12px, 3.7vw, 14px)/1.2 var(--font-data); color: #fff; overflow-wrap: anywhere; }
-.ea-rc-leg-pct { font-size: 12px; font-weight: 600; color: var(--color-accent); }
-@media (min-width: 640px) { .ea-rc-leg-amount { font-size: 17px; } .ea-rc-dot { width: 12px; height: 12px; } }
-.money-hero-bar.ea-rc-bar { height: 8px; margin-top: 10px; }
-@media (min-width: 640px) { .money-hero-bar.ea-rc-bar { height: 12px; margin-top: auto; } .ea-rc-legs { margin: 12px 0 20px; } }
-.ea-rc-seg { width: calc(var(--ea-share) * 1%); min-width: 4px; transition: width 350ms var(--ease-out); }
-.ea-rc-seg[data-leg="idle"] { background: rgba(255, 255, 255, 0.4); }
-.ea-rc-seg[data-leg="committed"] { background: var(--color-accent); }
+.ea-rc-return { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+/* sized to the card (a container, `.money-hero`), so "Suppliers −12.34%" fits a 320 px phone on one line */
+.ea-rc-figure { font: 700 clamp(20px, calc(100cqi / 9.8), 34px)/1.05 var(--font-data); letter-spacing: -0.02em; white-space: nowrap; }
+@media (min-width: 1024px) { .ea-rc-figure { font-size: clamp(20px, calc(100cqi / 9.8), var(--text-data-hero)); } }
+.ea-rc-since { display: inline-flex; align-items: center; gap: 2px; font: 500 13px/1.3 var(--font-body); color: var(--plate-ink-soft); }
+.ea-rc-info { color: var(--plate-ink-soft); }
+.ea-rc-status { flex: none; padding: 4px 10px; border-radius: var(--radius-full); background: var(--plate-rule); font: 700 12px/1.2 var(--font-body); color: var(--plate-ink); }
+.ea-rc-price { margin: -4px 0 0; font: 500 13px/1.2 var(--font-data); color: var(--plate-ink-muted); }
+.ea-rc-chart { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
+.ea-rc .chart-range { background: var(--plate-rule); }
+.ea-rc .chart-range-thumb { background: color-mix(in srgb, var(--plate-ink) 22%, transparent); }
+.ea-rc .chart-range-tab { color: var(--plate-ink-soft); }
+.ea-rc .chart-range-tab.is-active { color: var(--plate-ink); }
+.ea-rc-hundred { margin: 0; font: 600 14px/1.3 var(--font-data); }
+.ea-rc-split { display: flex; flex-direction: column; gap: 6px; }
+.ea-rc-value { margin: 0; font: 600 13px/1.2 var(--font-data); color: var(--plate-ink); }
+.ea-rc-bar .kit-capital-bar { background: var(--plate-rule); }
+.ea-rc-bar .kit-capital-legend { gap: 4px 12px; }
+.ea-rc-bar .kit-capital-chip { padding: 0; min-height: 0; background: none; box-shadow: none; font: 500 13px/1.3 var(--font-body); color: var(--plate-ink-soft); }
+.ea-rc-bar .kit-capital-amount { font: 600 13px/1.3 var(--font-data); color: var(--plate-ink); }
+.ea-rc-bar .kit-capital-extra { font: 600 13px/1.3 var(--font-data); color: var(--color-accent); }
+
+/* the share-price line (ShareChart): 160 px on a phone, 200 from 640; the frame holds that height in every state */
+.ea-chart { position: relative; display: flex; flex-direction: column; gap: 2px; color: var(--plate-ink-muted); }
+.ea-chart-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ea-chart-readout { min-width: 0; margin: 0; font: 500 12px/1.3 var(--font-data); color: var(--plate-ink-soft); white-space: nowrap; }
+.ea-chart-svg { display: block; width: 100%; touch-action: pan-y; user-select: none; overflow: visible; }
+.ea-chart-svg:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+.ea-chart-box { height: 160px; }
+@media (min-width: 640px) { .ea-chart-box { height: 200px; } }
+.ea-chart-par { stroke: var(--plate-ink-muted); stroke-opacity: 0.6; }
+.ea-chart-axis { font-size: 10px; fill: var(--plate-ink-muted); }
+.ea-chart-line { fill: none; stroke-width: 2; stroke: var(--plate-ink); }
+.ea-chart[data-tone="up"] .ea-chart-line { stroke: var(--plate-up); }
+.ea-chart[data-tone="down"] .ea-chart-line { stroke: var(--plate-down); }
+.ea-chart-area { fill: var(--plate-ink); fill-opacity: 0.05; }
+.ea-chart[data-tone="up"] .ea-chart-area { fill: var(--plate-up); fill-opacity: 0.1; }
+.ea-chart[data-tone="down"] .ea-chart-area { fill: var(--plate-down); fill-opacity: 0.1; }
+.ea-chart-cursor { stroke: var(--plate-ink-muted); }
+.ea-chart-dot { fill: var(--plate-black); stroke: var(--plate-ink); stroke-width: 2; }
+.ea-chart[data-tone="up"] .ea-chart-dot { stroke: var(--plate-up); }
+.ea-chart[data-tone="down"] .ea-chart-dot { stroke: var(--plate-down); }
+.ea-chart-wait { display: flex; flex-direction: column; justify-content: space-between; padding: 18px 0 8px; }
+.ea-chart-rule { height: 1px; background: var(--plate-rule); animation: spectrum-sk-pulse 1.5s ease-in-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) { .ea-chart-rule { animation: none; } }
+.ea-chart-state { display: flex; align-items: center; justify-content: center; margin: 0; border-radius: var(--radius-lg); background: color-mix(in srgb, var(--plate-ink) 5%, transparent); }
+.ea-chart-note { padding: 0 24px; text-align: center; font: 500 13px/1.4 var(--font-body); color: var(--plate-ink-soft); }
+.ea-rc .ea-chart-state .state-title { color: var(--plate-ink); }
 
 /* ── the action card: switch, amount, quick amounts, one button ───────────────────────────────────────────────── */
 .ea-action { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
@@ -79,9 +106,8 @@
 .ea-amount-unit { font: 600 20px/1 var(--font-data); color: var(--color-ink-secondary); }
 .ea-amount-input { flex: 1; min-width: 0; border: 0; background: transparent; font: 700 22px/1.2 var(--font-data); color: var(--color-ink); outline: none; }
 .ea-amount-input[data-empty] { color: var(--color-ink-muted); }
-.ea-amount-max { flex: none; min-height: 44px; padding: 0 14px; border-radius: var(--radius-full); background: var(--color-surface-3); font: 700 13px/1 var(--font-body); color: var(--color-ink); cursor: pointer; }
-.ea-amount-max:hover:not(:disabled) { background: var(--color-hairline); }
-.ea-amount-max:disabled { color: var(--color-ink-muted); cursor: not-allowed; }
+.ea-amount-max { flex: none; min-height: 40px; padding: 0 16px; border-radius: var(--radius-full); background: var(--color-ink); font: 700 13px/1 var(--font-body); color: var(--color-stage); cursor: pointer; transition: opacity var(--duration-hover) var(--ease-out); }
+.ea-amount-max:hover { opacity: 0.88; }
 .ea-amount-note { min-height: 16px; padding: 0 16px; font: 500 12px/1.3 var(--font-body); color: var(--color-ink-secondary); }
 .ea-amount-note[data-problem] { color: var(--color-loss); }
 .ea-keypad { margin-top: 4px; }
@@ -93,6 +119,9 @@
 /* the shortest phones keep the button on the first screen: the quick amounts give way */
 @media (max-height: 640px) and (max-width: 767px) { .ea-quick { display: none; } }
 .ea-cta { width: 100%; }
+/* the CTA's place while the account reads (R6 money, T07): a pill-shaped bone, then the named wait in the same box */
+.ea-cta-skel { display: block; width: 100%; height: var(--ticket-cta-height); border-radius: var(--radius-full); }
+.ea-cta-wait { display: flex; min-height: var(--ticket-cta-height); align-items: center; justify-content: center; padding: 0 16px; border-radius: var(--radius-full); background: var(--color-surface-2); text-align: center; }
 .ea-cta button { border-radius: var(--radius-full); }
 .ea-mini .kit-capital-bar { height: 6px; }
 .ea-mini .kit-capital-chip { min-height: 28px; font-size: 12px; }

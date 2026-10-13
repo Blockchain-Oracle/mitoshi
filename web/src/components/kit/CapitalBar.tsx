@@ -14,6 +14,8 @@ export interface CapitalSegment {
   valueBase: bigint;
   /** A CSS colour by token (`var(--color-accent)`), or a token holding a pattern (an idle hatch). */
   color: string;
+  /** After the amount in the legend (R6 money: the committed leg's share, "3.8%"). */
+  extra?: string;
   /** Its legend chip is a label, not a filter (idle capital has no rows to show; R4-7). */
   fixed?: boolean;
 }
@@ -56,6 +58,7 @@ export function CapitalBar({ segments, totalBase, capBps, format, label, onFilte
               <span aria-hidden className="kit-capital-dot" style={{ background: s.color }} />
               {s.label}
               <span className="kit-capital-amount">{format(s.valueBase)}</span>
+              {s.extra ? <span className="kit-capital-extra">{s.extra}</span> : null}
             </>
           );
           return onFilter && !s.fixed ? (

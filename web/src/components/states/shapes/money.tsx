@@ -27,7 +27,13 @@ export const portfolio = () => (
 /** /earn: the reserve card, the action card (its field, the chip row, the CTA), then the first Window rows. */
 export const earn = () => (
   <div className="skel-earn">
-    <Skeleton className="skel-earn-card rounded-xl" bone="card" />
+    <div className="skel-card skel-earn-card" data-bone="card">
+      <Skeleton className="h-8 w-3/4 rounded-md" />
+      <Skeleton className="h-3 w-1/3 rounded-md" />
+      <Skeleton className="skel-earn-chart w-full rounded-lg" />
+      <Skeleton className="h-4 w-1/2 rounded-md" />
+      <Skeleton className="h-2 w-full rounded-full" />
+    </div>
     <div className="skel-card skel-earn-action" data-bone="action">
       <div className="flex gap-2">
         {[0, 1].map((i) => <Skeleton key={i} className="h-9 flex-1 rounded-full" />)}

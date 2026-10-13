@@ -16,7 +16,7 @@ function Placeholder() {
       <div className="ea-tabs flex gap-5">
         {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-11 w-13 rounded-md" />)}
       </div>
-      <LoadingFrame shape="earn" label={EARN.card.loading}>{earnShape()}</LoadingFrame>
+      <LoadingFrame shape="earn" label={EARN.card.label}>{earnShape()}</LoadingFrame>
     </div>
   );
 }

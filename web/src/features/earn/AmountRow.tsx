@@ -66,9 +66,11 @@ export function AmountRow({ value, onChange, maxBase, label, over, hint, keypad 
             className="ea-amount-input numbers"
           />
         )}
-        <button type="button" className="ea-amount-max" disabled={maxBase === null || maxBase <= 0n} onClick={fill}>
-          {EARN.supply.max}
-        </button>
+        {maxBase !== null && maxBase > 0n ? (
+          <button type="button" className="ea-amount-max" onClick={fill}>
+            {EARN.supply.max}
+          </button>
+        ) : null}
       </div>
       <span id={`${id}-note`} role={problem ? "alert" : undefined} className="ea-amount-note" data-problem={problem ? "" : undefined}>
         {problem ?? (maxBase !== null ? hint(mask ?? usd(maxBase)) : " ")}

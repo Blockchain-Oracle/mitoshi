@@ -1,6 +1,6 @@
 // What a supplier earned, in words (R6 money, S09; D-230) — Senryo's EarnScreen rule ported (P5, D-325): the return
 // since launch from the live share price (shares start at par, 1.0000, so it needs no history), a range's change from
-// the reserve's own indexed history (last point over first), and "what $100 did" over the same span. Never an APY or a
+// the reserve's own indexed history (last point over first), and "what $100 did" over the same span. Never a yield figure or a
 // projection: only what the share price already did. Rounded half away from zero to 0.01 %; a change that rounds to
 // zero is flat, never "−0.00%"; the minus is U+2212. Pure; prices are raw share prices (the reserve's decimals).
 

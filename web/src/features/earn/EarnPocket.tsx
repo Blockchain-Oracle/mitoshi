@@ -69,7 +69,7 @@ export function EarnPocket({ wallet }: { wallet: Address }) {
   return <Tile href={href} amount={amount} note={EARN.pocket.note} />;
 }
 
-/** Signed out: what suppliers made, in words and tone ("Suppliers −1.09%"), never an APY. */
+/** Signed out: what suppliers made, in words and tone ("Suppliers −1.09%"), never a projected yield. */
 export function EarnPocketPreview() {
   const ret = useMakerReturn();
   const amount = ret ? <span className={cn(ret.tone === "up" ? "text-up" : ret.tone === "down" ? "text-down" : "text-ink")}>{EARN.pocket.suppliers(ret.text)}</span> : "—";

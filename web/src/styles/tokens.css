@@ -140,6 +140,9 @@
   --plate-ink-soft: rgb(255 255 255 / 0.7);
   --plate-ink-muted: rgb(255 255 255 / 0.6);
   --plate-rule: rgb(255 255 255 / 0.14);
+  /* R6 money: a return's tone on the plate (dark in both themes) — the dark theme's up and down, AA on it. */
+  --plate-up: #34d399;
+  --plate-down: #fb7185;
   --leg-dollars: var(--color-accent);
   --leg-positions: #7dd3fc;
   --leg-collect: #bef264;
