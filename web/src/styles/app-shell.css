@@ -283,6 +283,7 @@ span.top-money, span.top-account { display: contents; }
 .top-account .wallet-pill { width: 44px; height: 44px; padding: 0; justify-content: center; border: 0; }
 .top-account .wallet-pill-id, .top-account .wallet-pill-chevron { display: none; }
 .top-account .wallet-pill-avatar { width: 36px; height: 36px; }
+.top-account .wallet-pill:hover, .top-account .wallet-pill[data-popup-open] { background: var(--color-surface-2); }
 
 /* P0 (D-222/D-223), Owarine 90a91d71 AppRail and FloatingDock: the theme toggle beside Docs · Legal at the rail's foot
  * (R4-8: Docs · Legal on the full rail only — they stacked as text under the 88 px icons); the dock's centre seal. */

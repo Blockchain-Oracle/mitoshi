@@ -65,7 +65,6 @@ export const SHELL = {
   testnetTitle: "Tempo testnet · test dollars, nothing of value.",
   keyHint: (key: string) => `Press ${key}`,
   shortcuts: "Keyboard shortcuts",
-  shortcutsOpen: "Show keyboard shortcuts",
   shortcutsBody: "No shortcut moves money.",
   shortcutRows: [
     ["1 – 6", "Trade, Markets, Portfolio, Games, Automate, Leaderboard"],
