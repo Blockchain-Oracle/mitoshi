@@ -3,8 +3,9 @@
 // The hall's featured cabinet (R4-9, D-227; the games spec's "Gēsen" direction): the next live Window Practice would
 // deal — `selectPracticeDeck(...)[0]` over the venue's lanes — with its disc and cadence, a CountdownRing to its close
 // (Ported from Owarine 90a91d71:web/src/components/kit/CountdownRing.tsx, R4-2), the price rolling on the Odometer, the
-// crowd's lean (hidden when there is no reading) and a 52 px PLAY. The "continue" plate became a chip in its corner;
-// the after-hours line is read from the lanes.
+// crowd's lean (hidden when there is no reading) and a 52 px PLAY, which sticks above the dock while the cabinet is on a
+// phone's screen (`.page-action`, R4-2: the fold is budgeted against 100svh). The "continue" plate became a chip in its
+// corner; the after-hours line is read from the lanes.
 import { isOk } from "@cwf/core";
 import { isTickerSymbol } from "@cwf/core/market";
 import { selectPracticeDeck, type PracticeCandidate } from "@cwf/core/games";
@@ -101,7 +102,7 @@ export function FeaturedCabinet({ nowMs }: { nowMs: number }) {
         </div>
       ) : null}
 
-      <Link href="/games/practice" className="du-cta hall-play" data-primary-action onClick={() => feedback("tap")}>
+      <Link href="/games/practice" className="du-cta hall-play page-action" data-primary-action onClick={() => feedback("tap")}>
         <Play aria-hidden className="hall-play-icon" />
         {GAMES.hall.play}
       </Link>
