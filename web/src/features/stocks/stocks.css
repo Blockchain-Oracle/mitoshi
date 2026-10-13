@@ -55,4 +55,5 @@
 .stk-token { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; padding: 16px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
 .stk-token-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; font-size: 14px; color: var(--color-ink); }
 .stk-token .stk-quiet { margin-top: 0; }
+.stk-token-links { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; }
 .stk-link { align-self: flex-start; min-height: 44px; display: inline-flex; align-items: center; font-size: 13px; color: var(--color-accent); }

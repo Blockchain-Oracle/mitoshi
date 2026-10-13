@@ -29,6 +29,7 @@ import { EarnPocket, useEarnWorth } from "@/features/earn/EarnPocket";
 import { HERO_MONEY, PLATE, PORTFOLIO } from "../copy";
 import { CollectPlate } from "../claims/CollectPlate";
 import { BetsPanel } from "./BetsPanel";
+import { BridgeInFlight } from "@/features/bridge/BridgeInFlight";
 import { RecordChart } from "./RecordChart";
 import { PositionValuers, usePortfolioPositions } from "./usePortfolioPositions";
 
@@ -115,6 +116,7 @@ function Ledger({ wallet }: { wallet: Address }) {
       </Pockets>
       <BetsPanel wallet={wallet} positions={positions} open={{ groups: book.groups, values: book.values, closer }} history={history} index="01" retry={retry} />
       <BoostPositions wallet={wallet} index="" values={book.values} />
+      <BridgeInFlight wallet={wallet} />
       {rows.length > 0 ? (
         <section className="flex flex-col gap-4" aria-label={HERO_MONEY.collectTitle}>
           <SectionHead number="02" title={HERO_MONEY.collectTitle} />
