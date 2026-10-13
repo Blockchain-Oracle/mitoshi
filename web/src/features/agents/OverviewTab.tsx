@@ -1,13 +1,16 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/desk/cockpit/{OverviewTab,LimitGauges}.tsx (R4-6, D-227) — the latest
 // decision as its card (it opens the Decisions tab), the strategy's on-chain limits as figures, and — when this wallet
-// copies it — its own copy's gauges off the live vault grant: spent today against the daily cap, open against the most.
+// copies it — its own copy's gauges off the live vault grant: spent today against the daily cap, open against the most,
+// and its top-up when the budget can't cover one contract at its price cap (R6 #9).
 import { Masked } from "@/components/kit/Masked";
 import { RadialGauge } from "@/components/kit/desk-kit";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
 import { spentTodayOf } from "../strategies/activity";
 import { centsOf, usdCap, usd } from "../strategies/format";
+import { strategyIdentity } from "../strategies/identity";
+import { TopUpCopy } from "../strategies/TopUpCopy";
 import type { StrategyDetailPayload } from "../strategies/protocol";
 import type { CopyWrites } from "../strategies/useCopyWrites";
 import { AGENTS } from "./copy";
@@ -58,6 +61,7 @@ export function OverviewTab({ detail, writes, onOpenDecisions }: { detail: Strat
               <div className="cp-figure"><span className="cp-stat-label">Budget left</span><b><Masked>{usd(grant.budgetBase)}</Masked></b></div>
               <div className="cp-figure"><span className="cp-stat-label">Resets</span><b>00:00 UTC</b></div>
             </div>
+            <TopUpCopy writes={writes} name={strategyIdentity(s).name} />
           </section>
         </div>
       )}

@@ -47,28 +47,28 @@ describe("runnerOrder (S9.5)", () => {
     expect(tight.ok && tight.stakeBase).toBe(1_000_000n);
     const poor = order(grant({ budgetBase: 500_000n }));
     expect(poor.ok && poor.stakeBase).toBe(500_000n);
-    expect(order(grant({ spentDay: today, spentTodayBase: 10_000_000n }))).toEqual({ ok: false, why: "no headroom today" });
-    expect(order(grant({ budgetBase: 0n }))).toEqual({ ok: false, why: "its copy budget is spent" });
+    expect(order(grant({ spentDay: today, spentTodayBase: 10_000_000n }))).toEqual({ ok: false, why: "no headroom today", code: "daily-cap" });
+    expect(order(grant({ budgetBase: 0n }))).toEqual({ ok: false, why: "its copy budget is spent", code: "budget" });
   });
 
   it("names the grant's remainder, not the book, when it is under the Series' smallest order", () => {
     // The live grid's minimum is 1,000 lots — one contract, ~$0.60 here. $0.01 left of a $10 budget can't buy it.
     const live = { ...window, grid: { ...window.grid, minLots: 1_000n } };
     const at = (g: VaultGrant, b = book) => runnerOrder(rv, { grant: g, window: live, side: "down", book: b, held: { up: 0n, down: 0n }, nowSec: NOW, nowMs: NOW * 1000 });
-    expect(at(grant({ budgetBase: 10_000n }))).toEqual({ ok: false, why: "$0.01 left of its copy budget, under the smallest order of DOWN" });
+    expect(at(grant({ budgetBase: 10_000n }))).toEqual({ ok: false, why: "$0.01 left of its copy budget, under the smallest order of DOWN", code: "budget" });
     const today = Math.floor(NOW / 86_400);
-    expect(at(grant({ spentDay: today, spentTodayBase: 9_990_000n }))).toEqual({ ok: false, why: "$0.01 left of today's cap, under the smallest order of DOWN" });
-    expect(at(grant(), { bids: [], asks: book.asks })).toEqual({ ok: false, why: "nothing rests to fill $2.00 of DOWN" });
+    expect(at(grant({ spentDay: today, spentTodayBase: 9_990_000n }))).toEqual({ ok: false, why: "$0.01 left of today's cap, under the smallest order of DOWN", code: "daily-cap" });
+    expect(at(grant(), { bids: [], asks: book.asks })).toEqual({ ok: false, why: "nothing rests to fill $2.00 of DOWN", code: "book" });
   });
 
   it("leaves a subscriber already in the Window alone, and names a grant refusal instead of sending it", () => {
-    expect(order(grant(), "up", { up: 1n, down: 0n })).toEqual({ ok: false, why: "already in this Window" });
-    expect(order(grant({}, { maxPriceRaw: 550_000n }))).toEqual({ ok: false, why: "the grant refuses it (price)" });
-    expect(order(grant({ revoked: true }))).toEqual({ ok: false, why: "the grant refuses it (revoked)" });
+    expect(order(grant(), "up", { up: 1n, down: 0n })).toEqual({ ok: false, why: "already in this Window", code: "in-window" });
+    expect(order(grant({}, { maxPriceRaw: 550_000n }))).toEqual({ ok: false, why: "the grant refuses it (price)", code: "caps" });
+    expect(order(grant({ revoked: true }))).toEqual({ ok: false, why: "the grant refuses it (revoked)", code: "caps" });
   });
 
   it("holds inside the no-entry buffer before lock", () => {
     const late = runnerOrder(rv, { grant: grant(), window: { ...window, lockAtSec: NOW + 20 }, side: "up", book, held: { up: 0n, down: 0n }, nowSec: NOW, nowMs: NOW * 1000 });
-    expect(late).toEqual({ ok: false, why: "inside the no-entry buffer before lock" });
+    expect(late).toEqual({ ok: false, why: "inside the no-entry buffer before lock", code: "late" });
   });
 });

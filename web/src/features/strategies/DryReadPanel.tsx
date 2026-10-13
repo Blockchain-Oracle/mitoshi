@@ -1,9 +1,12 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/strategies/DryReadPanel.tsx (R4-6, D-227) — what one test read saw and
-// said: the Window, its opening print, the move so far and both books, the call, the gate's ruling, the model by name.
-// A deployment with no model key says so (the route's line); nothing here is ever made up.
+// said: the Window, its opening print, the move so far and both books, the call, the gate's ruling in words
+// (`gate-words`, R6 #9 — never its raw line), the model by name. A deployment with no model key says so (the route's
+// line); nothing here is ever made up.
+import { formatClock } from "@cwf/core";
 import { cn } from "@/lib/utils";
 import type { DryRead } from "./dry-read-session";
+import { gateWords } from "./gate-words";
 import type { AgentPreviewResponse } from "./protocol";
 import "./strategies.css";
 
@@ -16,9 +19,9 @@ export const DRY = {
   books: "Books",
   said: "It said",
   gate: "The gate",
-  noAnswer: (why: string) => `No answer · ${why}`,
   outside: "outside its read slot",
-  clock: (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`,
+  /** The one countdown format (core `formatClock`: h:mm:ss past an hour, never negative). */
+  clock: formatClock,
 };
 
 const cents = (v: number | null) => (v === null ? "—" : `${v}¢`);
@@ -53,13 +56,13 @@ function Result({ r }: { r: AgentPreviewResponse }) {
             <p className="mt-1 text-xs leading-snug text-ink-secondary">“{r.verdict.why}”</p>
           </>
         ) : (
-          <div className="strat-mono-11 text-ink/60">{DRY.noAnswer(r.failure ?? "")}</div>
+          <div className="strat-mono-11 text-ink/60">{gateWords(r.gate.reason, "failed")}</div>
         )}
       </div>
       <div className="mt-3 border-t border-hairline pt-3">
         <div className="strat-micro mb-1 text-ink/40">{DRY.gate}</div>
         <div className={cn("strat-mono-12", r.gate.side ? "text-accent" : "text-ink/70")}>{r.gate.side ? `sends ${r.gate.side.toUpperCase()}` : "holds"}</div>
-        <p className="mt-1 text-xs leading-snug text-ink-secondary">{r.gate.reason}</p>
+        {r.verdict && <p className="mt-1 text-xs leading-snug text-ink-secondary">{gateWords(r.gate.reason, r.gate.side ? "trade" : "held")}</p>}
       </div>
       <div className="strat-mono-10 mt-3 truncate text-ink/40">{r.model}</div>
     </>

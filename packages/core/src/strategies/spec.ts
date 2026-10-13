@@ -87,7 +87,7 @@ function isAgentSpec(v: Record<string, unknown>): v is AgentSpec & Record<string
 }
 
 /** Enough of an address to recognise, in the app's own style. */
-function shortTrader(trader: string): string {
+export function shortTrader(trader: string): string {
   return `${trader.slice(0, 6)}…${trader.slice(-4)}`;
 }
 

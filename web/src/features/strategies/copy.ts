@@ -111,9 +111,6 @@ export const COPY = {
   },
   manage: {
     receiptLabel: "Strategy",
-    live: "Copying",
-    fading: "Fading",
-    notLive: "Paused · budget not live",
     pnl: "Your result",
     noFills: "No trades for you yet.",
     sample: (settled: number, open: number) => `${plural(settled, "settled", "settled")}${open > 0 ? ` · ${open} open` : ""}`,
@@ -124,5 +121,14 @@ export const COPY = {
     stopConfirm: "Stopping",
   },
   done: { copied: "Copying.", stopped: "Stopped.", switched: "Switched." },
+  /** A budget short of one contract at its price cap (R6 #9, `budgetStateOf`): the runner still fills a call priced at or
+   *  under what's left and skips one priced over it; a spent budget skips every call. `cents` null: masked. */
+  topUp: {
+    title: (left: string) => `Budget low · ${left} left`,
+    why: (cents: number | null) => (cents === null ? "Calls priced over what's left are skipped until you add to it." : cents < 1 ? "Every call is skipped until you add to it." : `Calls over ${cents}¢ are skipped until you add to it.`),
+    spentWhy: "Every call is skipped until you add to it.",
+    cta: (amount: string) => `Add ${amount} to budget`,
+    done: "Budget added.",
+  },
   runner: (a: string) => `Runner ${a.slice(0, 6)}…${a.slice(-4)}`,
 };

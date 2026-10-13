@@ -15,8 +15,9 @@ export function publishedWire({ id, creator, check, draft, agentId, seriesLabel 
     envelope: { maxStakePerTradeBase: e.maxStakePerTradeBase.toString(), maxDailySpendBase: e.maxDailySpendBase.toString(), maxOpenPositions: e.maxOpenPositions, maxPriceRaw: e.maxPriceRaw.toString(), series: e.series, seriesLabel: e.series ? seriesLabel : null },
     feeBase: check.feeBase.toString(), active: true, subscribers: 0, createdAtSec: Math.floor(Date.now() / 1000), revision: 0,
     record: { fills: 0, settled: 0, wins: 0, losses: 0, voids: 0, netBase: "0", stakedBase: "0", curve: [], lastActiveSec: 0, distinctSubscribers: 0, open: 0, copyTrades: 0, entrustedBase: "0" },
-    health: { kind: "never-started", lastTickMs: null, intervalMs: null, why: null },
-    agent: spec.preset === "agent" ? { model: null, decisions: [] } : null,
+    health: { kind: "never-started", lastTickMs: null, intervalMs: null, why: null, state: null },
+    agent: spec.preset === "agent" ? { model: null } : null,
+    decisions: { total: 0, bets: 0, held: 0, failed: 0, lastAtMs: null, recent: [] },
     feedback: { count: 0, mean: null },
     memory: null,
   };

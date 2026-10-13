@@ -38,6 +38,7 @@
 .desk-numbers > div + div { border-left: 1px solid color-mix(in srgb, var(--color-ink) 6%, transparent); }
 /* border-l-2 pl-3 py-0.5 */
 .desk-pulse { border-left-width: 2px; padding-left: 12px; padding-top: 2px; padding-bottom: 2px; }
+.desk-pulse-line { margin-top: 6px; font-size: 12.5px; line-height: 1.45; color: var(--color-ink-secondary); }
 /* inline-block w-1.5 h-1.5 rounded-full mr-1.5 align-middle */
 .desk-dot { display: inline-block; width: 6px; height: 6px; border-radius: 9999px; margin-right: 6px; vertical-align: middle; }
 /* border border-signal/40 bg-signal/[0.06] px-4 py-3 max-w-md */

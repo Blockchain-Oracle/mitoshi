@@ -1,6 +1,6 @@
 import type { VaultGrant } from "@cwf/core";
 import { describe, expect, it } from "vitest";
-import { copyStateOf, runnerLabelOf } from "./activity";
+import { budgetCentsOf, budgetStateOf, copyStateOf, copyToneOf } from "./activity";
 import { winRateOf } from "./record";
 
 const RUNNER = "0xca7BFA5CBdC7135Ba178ca23cD2B12C123258B9a";
@@ -28,17 +28,24 @@ describe("a copy's state comes from this wallet's consent and grant", () => {
     expect(copyStateOf(card, sub(), grant({ grantId: 9n }), NOW)).toBe("replaced");
     expect(copyStateOf(card, sub(), grant({ expiresAtSec: NOW - 1 }), NOW)).toBe("expired");
     expect(copyStateOf(card, sub(), grant({ budgetBase: 0n }), NOW)).toBe("unfunded");
+    // $0.02 left: under one contract at any price the runner would pay — it skips the call ("under the smallest order").
+    expect(copyStateOf(card, sub(), grant({ budgetBase: 20_000n }), NOW)).toBe("low");
+    // One state for the dot and the top-up under it: never green over a budget warning.
+    expect(copyToneOf("low")).toBe("warn");
+    expect(copyToneOf("unfunded")).toBe("warn");
+    expect(copyToneOf("copying")).toBe("live");
   });
-});
 
-describe("the runner's report, read narrowly", () => {
-  it("names what Mitoshi's runner writes, and nothing it doesn't", () => {
-    expect(runnerLabelOf("published; waiting for a live subscriber")).toBe("Waiting for a copier");
-    expect(runnerLabelOf("2 subscribers, none with a live grant")).toBe("No live budget");
-    expect(runnerLabelOf("read 1 of 2 Windows: BTC/5m held; 0 filled — 0x12 skipped: book thin")).toBe("Held in last scan");
-    expect(runnerLabelOf("scanned 3 markets; 2 filled — filled UP for 0xabc")).toBe("Filled 2");
-    expect(runnerLabelOf("no trading Window on 5m right now; 1 live subscriber")).toBe("Resting");
-    expect(runnerLabelOf("confirmation unknown: 0xdead; holding new entries")).toBe("Held · unconfirmed");
-    expect(runnerLabelOf("something new")).toBe("Runner report");
+  it("is low only when the budget can't cover one contract at its price cap — the runner sizes a call down to it", () => {
+    // $1.50 under a $2 per-trade cap still buys a contract at any price: not low.
+    expect(budgetStateOf(grant({ budgetBase: 1_500_000n }))).toBeNull();
+    // No price cap: a contract can cost up to $1.
+    expect(budgetStateOf(grant({ budgetBase: 990_000n }))).toBe("low");
+    // A 70¢ cap: $0.70 covers one; $0.40 covers calls up to 40¢.
+    const capped = (budgetBase: bigint) => grant({ budgetBase, caps: { maxStakePerTradeBase: 2_000_000n, maxDailySpendBase: 10_000_000n, maxOpenPositions: 1, maxPriceRaw: 700_000n, market: null } });
+    expect(budgetStateOf(capped(700_000n))).toBeNull();
+    expect(budgetStateOf(capped(400_000n))).toBe("low");
+    expect(budgetCentsOf(capped(400_000n))).toBe(40);
+    expect(budgetStateOf(grant({ budgetBase: 0n }))).toBe("unfunded");
   });
 });

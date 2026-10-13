@@ -10,7 +10,7 @@
 import { parseEventLogs, type Address, type Hex } from "viem";
 import { eventVaultV2Abi } from "@cwf/clients/abis/EventVaultV2";
 import { strategyRegistryAbi } from "@cwf/clients/abis/StrategyRegistry";
-import { dailyHeadroomBase, formatBaseUnits, oneUnit, orderExpirySec, ownTermsPriceRaw, simulateCaps, tickerById, USD_DECIMALS, type Quote, type Side, type SubscriptionMode, type VaultGrant } from "@cwf/core";
+import { dailyHeadroomBase, formatBaseUnits, oneUnit, orderExpirySec, ownTermsPriceRaw, simulateCaps, tickerById, USD_DECIMALS, type Quote, type Side, type SkipKind, type SubscriptionMode, type VaultGrant } from "@cwf/core";
 import { BOOK_LEVELS, levelsCall, TAKER_MIN_REST_SEC, zipLevels, type LevelsAnswer } from "../engine/lens";
 import { quoteFromBook, type Grid, type YesBook } from "../engine/quote";
 
@@ -126,7 +126,8 @@ export async function readBooks(client: OpsClient, venue: Venue, marketIds: read
   return out;
 }
 
-export type RunnerOrder = { ok: true; call: Call; quote: Quote; stakeBase: bigint } | { ok: false; why: string };
+/** A refusal names its kind (`SkipKind`), so the runner tallies copiers it could not fill by reason, never by its words. */
+export type RunnerOrder = { ok: true; call: Call; quote: Quote; stakeBase: bigint } | { ok: false; why: string; code: SkipKind };
 
 /**
  * One subscriber's order on one Window: the stake is the smallest of the per-trade cap, today's headroom and the
@@ -135,27 +136,29 @@ export type RunnerOrder = { ok: true; call: Call; quote: Quote; stakeBase: bigin
  */
 export function runnerOrder(rv: RunnerVenue, input: { grant: VaultGrant; window: RunnerWindow; side: Side; book: YesBook | null; held: { up: bigint; down: bigint }; nowSec: number; nowMs: number }): RunnerOrder {
   const { grant, window: w, side, book, held, nowSec, nowMs } = input;
-  if (held.up + held.down > 0n) return { ok: false, why: "already in this Window" };
+  if (held.up + held.down > 0n) return { ok: false, why: "already in this Window", code: "in-window" };
   const headroom = dailyHeadroomBase(grant, nowSec);
   const stakeBase = [grant.caps.maxStakePerTradeBase, headroom, grant.budgetBase].reduce((min, v) => (v < min ? v : min));
-  if (stakeBase <= 0n) return { ok: false, why: grant.budgetBase <= 0n ? "its copy budget is spent" : "no headroom today" };
-  if (!book) return { ok: false, why: "book unreadable" };
+  if (stakeBase <= 0n) return grant.budgetBase <= 0n ? { ok: false, why: "its copy budget is spent", code: "budget" } : { ok: false, why: "no headroom today", code: "daily-cap" };
+  if (!book) return { ok: false, why: "book unreadable", code: "book" };
   const quote = quoteFromBook(book, w.grid, side, stakeBase, nowMs);
   if (!quote) {
     const usd = `$${formatBaseUnits(stakeBase, w.grid.decimals, { minDp: 2, maxDp: 2 })}`;
     // A full-size order would fill: the grant's remainder, not the book, is short — named so the copier knows whether
     // it comes back at 00:00 UTC (today's cap) or needs a new budget.
     const short = stakeBase < grant.caps.maxStakePerTradeBase && quoteFromBook(book, w.grid, side, grant.caps.maxStakePerTradeBase, nowMs) !== null;
-    const limit = grant.budgetBase <= headroom ? "its copy budget" : "today's cap";
-    return { ok: false, why: short ? `${usd} left of ${limit}, under the smallest order of ${side.toUpperCase()}` : `nothing rests to fill ${usd} of ${side.toUpperCase()}` };
+    const budget = grant.budgetBase <= headroom;
+    return short
+      ? { ok: false, why: `${usd} left of ${budget ? "its copy budget" : "today's cap"}, under the smallest order of ${side.toUpperCase()}`, code: budget ? "budget" : "daily-cap" }
+      : { ok: false, why: `nothing rests to fill ${usd} of ${side.toUpperCase()}`, code: "book" };
   }
   const verdict = simulateCaps({
     grant, nowSec, marketId: w.marketId as never, sidePriceRaw: ownTermsPriceRaw(quote.limitPriceRaw, side, w.grid.decimals), quantityRaw: quote.contractsRaw,
     spendBase: quote.maxCostBase, one: oneUnit(w.grid.decimals), opensNewPosition: true,
   });
-  if (!verdict.ok) return { ok: false, why: `the grant refuses it (${verdict.refusal.kind})` };
+  if (!verdict.ok) return { ok: false, why: `the grant refuses it (${verdict.refusal.kind})`, code: "caps" };
   const expirySec = orderExpirySec(nowSec, { lockAtSec: w.lockAtSec, intervalSec: w.cadenceSec });
-  if (expirySec === null) return { ok: false, why: "inside the no-entry buffer before lock" };
+  if (expirySec === null) return { ok: false, why: "inside the no-entry buffer before lock", code: "late" };
   const call = placeForCall(rv.vault, { grantId: grant.grantId, marketId: w.marketId, outcomeIdx: side === "up" ? 0 : 1, isBuy: true, priceRaw: quote.limitPriceRaw, quantityRaw: quote.contractsRaw, expireNs: BigInt(expirySec) * NS });
   return { ok: true, call, quote, stakeBase };
 }

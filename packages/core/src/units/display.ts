@@ -4,8 +4,10 @@ const SEC_PER_MIN = 60;
 
 const pad2 = (n: number): string => String(n).padStart(2, "0");
 
-/** `m:ss`, or `h:mm:ss` once an hour or more remains. */
-export function formatClock(remainingSec: number): string {
+/** `m:ss`, or `h:mm:ss` once an hour or more remains; a negative, fractional or non-finite input reads as whole
+ *  seconds from 0 (never "-1:-5" or "NaN:NaN"). */
+export function formatClock(sec: number): string {
+  const remainingSec = Number.isFinite(sec) ? Math.max(0, Math.floor(sec)) : 0;
   const hours = Math.floor(remainingSec / SEC_PER_HOUR);
   const minutes = Math.floor((remainingSec % SEC_PER_HOUR) / SEC_PER_MIN);
   const seconds = remainingSec % SEC_PER_MIN;
