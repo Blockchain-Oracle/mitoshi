@@ -45,6 +45,20 @@ export const LUCKY = {
     mismatch: "Recomputed here · the draw does NOT match",
   },
   streak: (n: number, best: number) => `Streak ${n} · best ${best}`,
+  /** Before a game (R6 games §4.7): everyone's latest draws, then the top streaks. */
+  floor: {
+    label: "Lucky floor",
+    liveDraws: "Live draws",
+    verdict: { placed: "In play", pending: "In play", won: "Won", lost: "Lost", void: "Void", "cashed-out": "Cashed out" } as Record<string, string>,
+    emptyWhy: "No draws yet",
+    emptyDetail: "The first spin starts the strip.",
+    spin: "Spin",
+    streaks: "Streaks",
+    streakOf: (n: number, best: number) => `${n} in a row · best ${best}`,
+    noStreaksWhy: "No Lucky streaks yet",
+    noStreaksDetail: "Settled wins in a row rank here.",
+    ladder: "See the ladder",
+  },
   settled: {
     verdict: { won: "You won", lost: "Lost", void: "Void · refunded", "cashed-out": "Cashed out" },
     streak: "Streak",

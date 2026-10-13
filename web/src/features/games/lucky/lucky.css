@@ -103,3 +103,21 @@
 .lk-kv dd { font-family: var(--font-data); font-size: 10px; line-height: 1.5; color: var(--gray-400); overflow-wrap: anywhere; }
 
 @media (prefers-reduced-motion: reduce) { .lk-lights, .slot[data-landed] .slot-window { animation: none; } }
+
+/* Lucky before a game (R6 games §4.7): the live draws strip (by hand, no auto-scroll) and the top streaks. */
+.lk-floor { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+.lk-floor-title { margin: 6px 0 0; font: 700 13px/1.2 var(--font-body); letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-ink-secondary); }
+.lk-draws { padding-bottom: 4px; }
+.lk-draw-bones { flex-direction: row; overflow: hidden; }
+.lk-draw { display: inline-flex; flex: none; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border-radius: var(--radius-full); background: var(--color-surface-1); border: 1px solid var(--color-hairline); font: 600 var(--text-data-sm, 12px) / 1 var(--font-data); color: var(--color-ink); white-space: nowrap; }
+.lk-draw-disc { width: 18px; height: 18px; }
+.lk-draw-side[data-side="up"] { color: var(--profit); }
+.lk-draw-side[data-side="down"] { color: var(--loss); }
+.lk-draw-verdict { color: var(--gray-400); }
+.lk-draw[data-result="won"] .lk-draw-verdict { color: var(--profit); }
+.lk-draw[data-result="placed"] .lk-draw-verdict, .lk-draw[data-result="pending"] .lk-draw-verdict { color: var(--color-accent); }
+.lk-streaks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.lk-streak-row { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border-radius: 12px; background: var(--color-surface-1); font: 500 var(--text-data-sm, 12px) / 1 var(--font-data); color: var(--color-ink); }
+.lk-streak-rank { width: 16px; color: var(--gray-400); }
+.lk-streak-who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.lk-streak-n { color: var(--color-ink-secondary); }

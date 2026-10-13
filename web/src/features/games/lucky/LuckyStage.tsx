@@ -19,6 +19,7 @@ import type { LuckyDealWire } from "./lucky-wire";
 import { reelSpin } from "./reel-sfx";
 import { useLuckyDraw, verifyDeal } from "./useLuckyDraw";
 import "./lucky.css";
+import { LuckyFloor } from "./LuckyFloor";
 
 /** The four chips, in pathUSD base units (6 decimals): $1, $5, $10, $25. */
 const CHIPS: readonly { dollars: number; base: bigint }[] = [
@@ -104,6 +105,9 @@ export function LuckyStage() {
           {history.data && history.data.best > 0 ? <p className="lk-note lk-streak">{LUCKY.streak(history.data.streak, history.data.best)}</p> : null}
           {draw.phase === "refused" && draw.deal ? <p className="lk-note">{LUCKY.refused(draw.deal.refusal ?? "")}</p> : null}
           {draw.phase === "error" && draw.error ? <p className="lk-note">{draw.error}</p> : null}
+          {draw.phase === "idle" || draw.phase === "refused" || draw.phase === "error" ? (
+            <LuckyFloor onSpin={() => document.querySelector<HTMLElement>(".lk-cta")?.focus()} />
+          ) : null}
         </>
       )}
 

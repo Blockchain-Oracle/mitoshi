@@ -16,6 +16,7 @@ import { SIDE_WORD } from "@/features/markets/side-styles";
 import { useGames } from "../GamesProvider";
 import { LUCKY } from "./copy";
 import { reelLock, reelPick, reelTick } from "./reel-sfx";
+import { announce } from "@/components/states/LiveRegion";
 
 const STOPS_MS: readonly number[] = [720, 980, 1_240];
 /** Pips' lock-in: the pick held lit before the machine commits. */
@@ -64,7 +65,6 @@ export interface ReelTarget {
 export function LuckyReels({ cycling, landing, target, onLanded }: { cycling: boolean; landing: boolean; target: ReelTarget | null; onLanded: () => void }) {
   const { feedback, reducedMotion } = useGames();
   const [spinId, setSpinId] = useState(0);
-  const [announce, setAnnounce] = useState("");
   const stopped = useRef(0);
   const [toSec, setToSec] = useState(minuteNow);
   const landedRef = useRef(onLanded);
@@ -80,7 +80,6 @@ export function LuckyReels({ cycling, landing, target, onLanded }: { cycling: bo
   useEffect(() => {
     if (!cycling) return;
     stopped.current = 0;
-    setAnnounce("");
     setSpinId((n) => n + 1);
   }, [cycling]);
 
@@ -93,7 +92,8 @@ export function LuckyReels({ cycling, landing, target, onLanded }: { cycling: bo
     window.setTimeout(
       () => {
         reelPick();
-        setAnnounce(LUCKY.reels.announce(target.asset, SIDE_WORD[target.side], target.multiplier));
+        // One polite announcement for the draw, through the shell's live region (T23: the reels are no live regions).
+        announce(LUCKY.reels.announce(target.asset, SIDE_WORD[target.side], target.multiplier));
         landedRef.current();
       },
       reducedMotion ? 0 : LOCKIN_MS,
@@ -103,6 +103,7 @@ export function LuckyReels({ cycling, landing, target, onLanded }: { cycling: bo
   return (
     <div className="lk-reels" role="group" aria-label={LUCKY.title}>
       <SlotReel<string>
+        announce={false}
         items={LUCKY_ASSETS}
         target={live ? target.asset : null}
         spinId={spinId}
@@ -122,6 +123,7 @@ export function LuckyReels({ cycling, landing, target, onLanded }: { cycling: bo
         )}
       />
       <SlotReel<Side>
+        announce={false}
         items={SIDES}
         target={live ? target.side : null}
         spinId={spinId}
@@ -136,6 +138,7 @@ export function LuckyReels({ cycling, landing, target, onLanded }: { cycling: bo
         )}
       />
       <SlotReel<number>
+        announce={false}
         items={LUCKY_MULTIPLIERS}
         target={live ? target.multiplier : null}
         spinId={spinId}
@@ -145,9 +148,6 @@ export function LuckyReels({ cycling, landing, target, onLanded }: { cycling: bo
         onLand={onLand(2)}
         face={(m) => <span className="lk-slot-face lk-slot-face--reach">{LUCKY.reels.multiple(m)}</span>}
       />
-      <span className="sr-only" aria-live="polite">
-        {announce}
-      </span>
     </div>
   );
 }

@@ -42,7 +42,13 @@ export function SlotReel<T extends string | number>(p: {
   /** The landed row's tone, for its light. */
   tone?: string;
   className?: string;
+  /**
+   * `false` (R6 games T23): the host announces the landing once itself (Lucky, through the shell's LiveRegion), so this
+   * reel is no live region and is hidden from assistive tech while it spins; landed, it is labelled by its value.
+   */
+  announce?: boolean;
 }) {
+  const announces = p.announce ?? true;
   const osReduce = useReducedMotion() === true;
   const root = useRef<HTMLDivElement>(null);
   const frame = useFrameReducedMotion(root);
@@ -133,9 +139,9 @@ export function SlotReel<T extends string | number>(p: {
   }, [row, p.spinId, p.target, reduce]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div ref={root} className={cn("slot", p.className)} data-landed={landed && p.target !== null ? "" : undefined} data-tone={p.tone}>
+    <div ref={root} className={cn("slot", p.className)} data-landed={landed && p.target !== null ? "" : undefined} data-tone={p.tone} aria-hidden={announces ? undefined : !(landed && p.target !== null)}>
       <span className="slot-label">{p.label}</span>
-      <div role="status" className="slot-window" style={{ height: row ? row * ROWS : undefined }} aria-live="polite" aria-label={landed && p.target !== null ? `${p.label}: ${p.target}` : p.label}>
+      <div role={announces ? "status" : undefined} className="slot-window" style={{ height: row ? row * ROWS : undefined }} aria-live={announces ? "polite" : undefined} aria-label={landed && p.target !== null ? `${p.label}: ${p.target}` : p.label}>
         <div ref={probe} aria-hidden className="slot-row slot-probe">
           M
         </div>

@@ -5,7 +5,7 @@
 // the replayed-run boards, 50 deep — and Streaks, the venue's best runs of settled wins (`/api/leaderboard?sort=streak`).
 // Each on the owner-approved LeaderboardPodium and LeaderboardRankings with the marble AccountAvatar. A Duel tab joins
 // with the arena: the duel ladder is the first tab. Lucky's streak ladder is its own tab.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TextTabs } from "@/components/kit/TextTabs";
 import { LeaderboardPodium, type PodiumPlace } from "@/components/ui/leaderboard-podium";
 import { LeaderboardRankings, type RankingRow } from "@/components/ui/leaderboard-rankings";
@@ -122,6 +122,12 @@ function DuelBoard({ address }: { address: string | null }) {
 
 export function GamesRank() {
   const [tab, setTab] = useState<Tab>("duel");
+  // `?tab=lucky` (Lucky's floor, "See the ladder"; R6 games §4.7) opens on that tab — read after mount, so the page
+  // stays static.
+  useEffect(() => {
+    const asked = new URLSearchParams(window.location.search).get("tab");
+    if (TABS.some((t) => t.value === asked)) setTab(asked as Tab);
+  }, []);
   const { address } = useWalletSession();
   return (
     <div className="gm-page rk">

@@ -50,8 +50,8 @@ const COPY: Record<DiagnosisKind, DiagnosisCopy> = {
 /** The read voice (a page load, a poll): what the screen shows meanwhile, never "sent" or "taken". */
 export const READ_DIAGNOSIS: Readonly<Partial<Record<DiagnosisKind, DiagnosisCopy>>> = {
   "rate-limited": { headline: "Prices are busy", body: "Retrying." },
-  "rpc-down": { headline: "Reconnecting", body: "Showing the last good prices." },
-  "indexer-down": { headline: "History is catching up", body: "Showing the last good numbers." },
+  "rpc-down": { headline: "Reconnecting", body: "Retrying on its own." },
+  "indexer-down": { headline: "History is catching up", body: "Nothing is lost. Retrying shortly." },
   "not-deployed": { headline: "Not live here yet", body: "This part isn't on this network." },
   "contract-revert": { headline: "Couldn't read this", body: "The contract refused the read." },
   "wrong-chain": { headline: "Wrong network", body: "Switch to Tempo to see this." },
