@@ -19,6 +19,8 @@
     "@cwf/db": "workspace:*",
     "@cwf/markets": "workspace:*",
     "@cwf/tokens": "workspace:*",
+    "@dicebear/core": "catalog:",
+    "@dicebear/notionists": "catalog:",
     "@number-flow/react": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@wagmi/core": "catalog:",

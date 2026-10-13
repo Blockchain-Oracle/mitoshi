@@ -25,6 +25,24 @@
 .skel-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-hairline); }
 .skel-row:last-child { border-bottom: 0; }
 .skel-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 12px; }
+/* Automate (R4-6): each body placeholder sits where its content lands — the archive (StrategyGrid: 1 / 2 from 768 / 3
+ * from 1280), the creator studio (builder.css: the four-step rail, the panel beside a 19 rem preview to 850, the strip
+ * under it), the agents board (the stat strip 2 × 2 then 4-up from 768, the runner rows). */
+.skel-section-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 24px; border-top: 1px solid var(--color-hairline); }
+.skel-tabs { display: flex; align-items: center; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--color-hairline); }
+.skel-strat-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 768px) { .skel-strat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; } }
+@media (min-width: 1280px) { .skel-strat-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.skel-strat-card { padding: 24px; border-radius: 18px; min-height: 13rem; }
+.skel-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 2rem 0; padding-bottom: .9rem; border-bottom: 1px solid var(--color-hairline); }
+.skel-studio { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; gap: 2rem; align-items: start; }
+.skel-studio-strip { display: none; }
+.skel-studio-actions { display: flex; justify-content: flex-end; margin-top: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--color-hairline); }
+@media (max-width: 850px) { .skel-studio { grid-template-columns: minmax(0, 1fr); } .skel-studio-aside { display: none; } .skel-studio-strip { display: block; } }
+@media (max-width: 767px) { .skel-steps { margin: 1rem 0; } }
+.skel-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 768px) { .skel-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.skel-board-row { flex-direction: row; align-items: center; gap: 16px; padding: 20px; border-radius: 4px; }
 
 /* The first-load splash (components/shell/Splash.tsx; the terminal's `.tm-splash`, app-wide). It also leaves on its own
  * at 4 s, so a page whose script never runs is never stuck under it. */
@@ -42,3 +60,13 @@
 @keyframes app-splash-draw { 0% { stroke-dashoffset: 1; opacity: 0.4; } 55% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0.4; } }
 @media (prefers-reduced-motion: reduce) { .app-splash { display: none; } }
 html[data-splash-seen] .app-splash { display: none; }
+
+/* /portfolio's outline (R4-4, D-227): the money card as the plate it stands in for (radius 28, its pill pair at the
+ * foot), drawn on the plate's own colours so it reads on the dark stage. */
+.skel-money { display: flex; flex-direction: column; gap: 12px; min-height: 300px; justify-content: flex-end; padding: 20px; border-radius: 28px; background: var(--plate-black); box-shadow: inset 0 0 0 1px var(--plate-black-edge); }
+@media (min-width: 640px) { .skel-money { padding: 32px; } }
+.skel-money-line { height: 12px; border-radius: 6px; background: var(--plate-rule); }
+.skel-money-figure { width: 60%; height: 44px; border-radius: 12px; background: var(--plate-rule); }
+.skel-money-pills { display: grid; grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); gap: 8px; margin-top: 16px; }
+.skel-money-pill { height: var(--ticket-cta-height); border-radius: var(--radius-full); background: var(--plate-rule); }
+@media (min-width: 640px) { .skel-money-pills { display: flex; } .skel-money-pill { width: 10rem; } }

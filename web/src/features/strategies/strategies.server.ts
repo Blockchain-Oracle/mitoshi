@@ -66,7 +66,7 @@ function strategyWire(s: IndexedStrategy, fills: StrategyFill[], facts: Map<stri
   const seriesLabel = s.seriesSymbol && s.seriesCadenceSec ? `${s.seriesSymbol} ${formatCadence(s.seriesCadenceSec)}` : null;
   return {
     strategyId: s.strategyId, creator: s.creator, runner: s.runner, agentId: s.agentId,
-    name: meta?.name ?? `Strategy #${s.strategyId}`, description: meta?.description ?? "", spec: meta?.spec ?? null,
+    name: meta?.name ?? `Strategy #${s.strategyId}`, description: meta?.description ?? "", portraitSeed: meta?.portraitSeed ?? null, feesEarnedBase: s.feesEarnedBase, spec: meta?.spec ?? null,
     specText: meta ? describeSpec(meta.spec, s.seriesSymbol ?? "the asset") : null,
     envelope: { maxStakePerTradeBase: s.maxStakePerTradeBase, maxDailySpendBase: s.maxDailySpendBase, maxOpenPositions: s.maxOpenPositions, maxPriceRaw: s.maxPriceRaw, series: s.series, seriesLabel },
     feeBase: s.feeBase, active: s.active, subscribers: s.subscribers, createdAtSec: s.createdAtSec, revision: s.revision,

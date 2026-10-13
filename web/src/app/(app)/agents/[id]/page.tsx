@@ -10,18 +10,18 @@ type Params = Promise<{ id: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { id } = await params;
-  return { title: /^\d+$/.test(id) ? `Agent #${id}` : "Agent", description: "An agent's identity, record, decisions and feedback on Mitoshi." };
+  return { title: /^\d+$/.test(id) ? `Agent #${id}` : "Agent", description: "An agent's record, decisions and identity." };
 }
 
 async function Agent({ params }: { params: Params }) {
   const { id } = await params;
-  if (!/^\d{1,18}$/.test(id)) return <p className="mx-auto max-w-(--content-reading) px-gutter py-10 type-body text-ink-secondary">That isn&apos;t an agent: an agent link ends in its strategy number.</p>;
+  if (!/^\d{1,18}$/.test(id)) return <p className="type-body text-ink-secondary">No such agent.</p>;
   return <AgentProfilePage strategyId={id} />;
 }
 
 export default function Page({ params }: { params: Params }) {
   return (
-    <Suspense fallback={<LoadingState shape="page" label="Reading the agent" />}>
+    <Suspense fallback={<LoadingState shape="cockpit" label="Reading the agent" />}>
       <Agent params={params} />
     </Suspense>
   );

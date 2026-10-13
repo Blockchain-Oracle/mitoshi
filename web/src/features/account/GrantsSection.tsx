@@ -4,12 +4,14 @@
 // "grants you allow" + the session manager's details): every live grant with what it may do, what is left, when it
 // ends and which key holds it, each stoppable in one step (the relay pays — an exit never needs funds), hold-to-stop-all
 // (21st 23527, reused) when there are several, and the stopped ones from the index with their transactions.
-import type { Address, Network, VaultGrant } from "@cwf/core";
+import { GRANT_KIND_INDEX, type Address, type Network, type VaultGrant } from "@cwf/core";
 import { txUrl } from "@cwf/core";
 import { shortHex } from "@cwf/core/units";
 import { useVaultSnapshot } from "@cwf/markets/react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { Masked } from "@/components/kit";
+import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { MotionScope } from "@/components/motion-scope";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { HoldToConfirm, PillButton } from "@/components/kit";
@@ -65,7 +67,7 @@ function LiveGrant({ grant, thisDevice, nowSec, onStop, stopping, busy }: { gran
             : G.scopeValue(usd(grant.caps.maxStakePerTradeBase), usd(grant.caps.maxDailySpendBase), grant.caps.maxOpenPositions)}
         </span>
         <span className="acct-grant-meta numbers">
-          {grant.kind === "exit" ? null : <>{G.left} {usd(leftNowBase(grant, nowSec))} · </>}
+          {grant.kind === "exit" ? null : <>{G.left} <Masked>{usd(leftNowBase(grant, nowSec))}</Masked> · </>}
           {G.expires} {whenText(BigInt(grant.expiresAtSec))} · {G.key} {shortHex(grant.actor)}
         </span>
       </div>
@@ -94,6 +96,8 @@ export function GrantsSection({ account, network }: { account: Address; network:
       setStopping([g.grantId.toString()]);
       const outcome = await tx.run({ kind: "vault-revoke", grantId: g.grantId });
       if (outcome?.status !== "confirmed") break;
+      // The success receipt (R4-4, D-227; critic gap 21): the grant stopped, its budget back in the Trading Balance.
+      notifyReceipt({ title: G.receipt(G.kindByIndex[GRANT_KIND_INDEX[g.kind]] ?? g.kind), figure: usd(g.budgetBase), figureLabel: G.receiptLabel, txHash: outcome.txHash, atMs: Date.now(), signer: "passkey", sponsored: true });
     }
     setStopping([]);
     await actions.refresh();

@@ -13,7 +13,7 @@ import { useState } from "react";
 import { pillButtonVariants } from "@/components/kit";
 import { signerOfKind as signerOf, TxCta, TxFailureCard, TypedConfirm, useTxLifecycle } from "@/components/tx";
 import { ImageDropzone, type UploadedLogo } from "@/components/ui/image-dropzone";
-import { StudioWizard } from "@/features/strategies/StudioWizard";
+import { StudioWizard } from "@/components/ui/wizard-steps";
 import { useWalletSession } from "@/lib/wallet-session";
 import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
 import { LAUNCH } from "./copy";

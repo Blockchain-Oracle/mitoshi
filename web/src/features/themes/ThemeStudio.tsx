@@ -13,7 +13,7 @@ import { useState } from "react";
 import { pillButtonVariants } from "@/components/kit";
 import { Donut, PartitionBar, RadioCards, Slider } from "@/components/kit/desk-kit";
 import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
-import { StudioWizard } from "@/features/strategies/StudioWizard";
+import { StudioWizard } from "@/components/ui/wizard-steps";
 import { useWalletSession } from "@/lib/wallet-session";
 import { THEMES } from "./copy";
 import { pct, sliceColor, usd18 } from "./format";

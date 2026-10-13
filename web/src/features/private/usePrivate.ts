@@ -13,6 +13,7 @@ import { getPrivateBudget, secretCommitment } from "@cwf/markets/private";
 import { invalidateAfterWrite, useReadingQuery, useSubmitter } from "@cwf/markets/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
+import { notifyReceipt, type WriteReceipt } from "@/features/receipts/write-receipt";
 import { notify } from "@/lib/toast";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 
@@ -130,15 +131,19 @@ export function usePrivateActions(owner: Address | null) {
     [refresh],
   );
 
-  /** The owner's own budget writes: a top-up (and its allowance) is self-paid; withdraw and revoke are sponsored (D-177). */
+  /**
+   * The owner's own budget writes: a top-up (and its allowance) is self-paid; withdraw and revoke are sponsored (D-177).
+   * With a receipt, the confirmation is the toast with its Receipt action (R4-4, D-227; critic gap 21).
+   */
   const write = useCallback(
-    async (key: string, intent: TxIntent, ok: string): Promise<boolean> => {
+    async (key: string, intent: TxIntent, ok: string, receipt?: Omit<WriteReceipt, "txHash" | "atMs">): Promise<boolean> => {
       if (!submitter) return false;
       setBusy(key);
       try {
         const r = await submitter.submitTx(intent);
         if (r.status === "confirmed") {
-          notify.neutral(ok);
+          if (receipt) notifyReceipt({ ...receipt, txHash: r.txHash, atMs: Date.now() });
+          else notify.neutral(ok);
           return true;
         }
         const c = diagnosisCopy(r.diagnosis.kind);

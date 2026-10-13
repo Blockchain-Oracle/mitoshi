@@ -8,13 +8,16 @@
  * R4-7 (D-227): the last row action is kept after it ends (`lastRow`), so a failure renders in the row that was tapped;
  * Settle-all sends each settleable Window in turn through the same row lane and stops at the first that fails.
  */
-import type { Address, MarketId, ReserveKind, TxIntent } from "@cwf/core";
+import { USD_DECIMALS, formatBaseUnits, type Address, type MarketId, type ReserveKind, type TxIntent } from "@cwf/core";
 import { getMakerUnsettledExpired, isMakerWindowSettleable } from "@cwf/markets/maker";
 import { invalidateAfterWrite, useSubmitter } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { useTxLifecycle } from "@/components/tx";
+import { accountSigner, notifyReceipt } from "@/features/receipts/write-receipt";
+import { money } from "@/features/terminal/format";
 import { notify } from "@/lib/toast";
+import { useWalletSession } from "@/lib/wallet-session";
 import { EARN } from "./copy";
 import { earnKeys, RESERVE_KEYS } from "./data";
 
@@ -32,6 +35,7 @@ export type RowAction = `merge:${string}` | `settle:${string}`;
 
 export function useEarnWrites(kind: ReserveKind, wallet: Address | null) {
   const submitter = useSubmitter();
+  const account = useWalletSession().kind;
   const queryClient = useQueryClient();
   const supplyTx = useTxLifecycle();
   const withdrawTx = useTxLifecycle();
@@ -49,11 +53,15 @@ export function useEarnWrites(kind: ReserveKind, wallet: Address | null) {
   const supply = useCallback(
     async (amountBase: bigint): Promise<boolean> => {
       const outcome = await supplyTx.run({ kind: `${PROGRAM[kind]}-supply`, amountBase } as TxIntent);
-      if (outcome?.status === "confirmed") notify.neutral(EARN.supply.done);
+      if (outcome?.status === "confirmed") {
+        // The success receipt (R4-4, D-227; critic gap 21): capital in is self-paid.
+        const amount = money(amountBase);
+        notifyReceipt({ title: EARN.supply.receipt(amount), figure: amount, figureLabel: EARN.supply.receiptLabel, txHash: outcome.txHash, atMs: Date.now(), signer: accountSigner(account), sponsored: false });
+      }
       await refresh();
       return outcome?.status === "confirmed";
     },
-    [supplyTx, kind, refresh],
+    [supplyTx, kind, refresh, account],
   );
 
   const withdraw = useCallback(
@@ -87,11 +95,14 @@ export function useEarnWrites(kind: ReserveKind, wallet: Address | null) {
         setNote(null);
       }
       const outcome = await withdrawTx.run({ kind: `${PROGRAM[kind]}-withdraw`, shares } as TxIntent);
-      if (outcome?.status === "confirmed") notify.neutral(EARN.withdraw.done);
+      if (outcome?.status === "confirmed") {
+        const amount = `${formatBaseUnits(shares, USD_DECIMALS, { minDp: 2, maxDp: 2 })} ${EARN.withdraw.sharesUnit}`;
+        notifyReceipt({ title: EARN.withdraw.done, figure: amount, figureLabel: EARN.withdraw.receiptLabel, txHash: outcome.txHash, atMs: Date.now(), signer: accountSigner(account), sponsored: true });
+      }
       await refresh();
       return outcome?.status === "confirmed";
     },
-    [withdrawTx, kind, refresh],
+    [withdrawTx, kind, refresh, account],
   );
 
   const send = useCallback(

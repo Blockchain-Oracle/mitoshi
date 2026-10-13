@@ -68,7 +68,33 @@ function HeadBones() {
   );
 }
 
-export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards" | "page" | "hero" | "tiles" | "table" | "podium" | "earn";
+/** A strategy card (R4-6): the portrait, the name and instinct, the one bold figure, the foot. */
+function StrategyBones() {
+  return (
+    <div className="skel-card skel-strat-card">
+      <div className="flex items-start gap-3">
+        <Skeleton className="size-14 rounded-xl" />
+        <div className="flex flex-1 flex-col gap-2 pt-1">
+          <Skeleton className="h-4 w-1/2 rounded-md" />
+          <Skeleton className="h-3 w-2/3 rounded-md" />
+        </div>
+      </div>
+      <Skeleton className="h-8 w-28 rounded-md" />
+      <Skeleton className="h-3 w-full rounded-md" />
+    </div>
+  );
+}
+
+/** A row of underline tabs (the archive's filters, the board's order). */
+function TabBones({ n }: { n: number }) {
+  return (
+    <div className="skel-tabs">
+      {Array.from({ length: n }, (_, i) => <Skeleton key={i} className="h-3 w-16 rounded-md" />)}
+    </div>
+  );
+}
+
+export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards" | "page" | "hero" | "tiles" | "table" | "podium" | "strategy-grid" | "studio" | "agents-board" | "cockpit" | "portfolio" | "earn";
 
 const SHAPES: Record<LoadingShape, () => ReactNode> = {
   line: () => <Skeleton className="h-4 w-2/3 rounded-md" />,
@@ -144,6 +170,126 @@ const SHAPES: Record<LoadingShape, () => ReactNode> = {
   table: () => (
     <div className="skel-card gap-0 py-1">
       {[0, 1, 2, 3, 4].map((i) => <RowBones key={i} />)}
+    </div>
+  ),
+  // /portfolio (R4-4, D-227): the full-width money card with its pill pair, the two pockets, the first bet rows — the
+  // page's own outline, so nothing jumps when it lands.
+  portfolio: () => (
+    <div className="flex flex-col gap-6">
+      <div className="skel-money">
+        <div className="skel-money-line w-24" />
+        <div className="skel-money-figure" />
+        <div className="skel-money-line w-40" />
+        <div className="skel-money-pills">
+          <div className="skel-money-pill" />
+          <div className="skel-money-pill" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Skeleton className="h-24 rounded-xl" />
+        <Skeleton className="h-24 rounded-xl" />
+      </div>
+      <div className="skel-card gap-0 py-1">
+        {[0, 1, 2].map((i) => <RowBones key={i} />)}
+      </div>
+    </div>
+  ),
+  // /strategies' body under its nameplate and pills (R4-6; the head stands from the first paint): the archive's head,
+  // its filter tabs, the portrait cards — drawn by the island's placeholder and the screen's reading state alike.
+  "strategy-grid": () => (
+    <div className="flex flex-col gap-5">
+      <div className="skel-section-head">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-5 w-44 rounded-md" />
+          <Skeleton className="h-3 w-16 rounded-md" />
+        </div>
+        <Skeleton className="h-8 w-20 rounded-full" />
+      </div>
+      <TabBones n={4} />
+      <div className="skel-strat-grid">
+        <StrategyBones />
+        <StrategyBones />
+        <StrategyBones />
+      </div>
+    </div>
+  ),
+  // The creator studio (R4-6): the four-step rail, the panel (the one-line preview strip on phones, a field, the four
+  // approach cards 2-up, the actions) beside the sticky preview aside.
+  studio: () => (
+    <div className="flex flex-col">
+      <div className="skel-steps">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="flex flex-col gap-2">
+            <Skeleton className="h-2.5 w-5 rounded-sm" />
+            <Skeleton className="h-3 w-4/5 rounded-md" />
+          </div>
+        ))}
+      </div>
+      <div className="skel-studio">
+        <div className="flex min-w-0 flex-col gap-4">
+          <Skeleton className="skel-studio-strip h-12 w-full rounded-lg" />
+          <Skeleton className="h-3 w-16 rounded-md" />
+          <Skeleton className="h-12 w-full rounded-md" />
+          <div className="grid grid-cols-2 gap-2.5">
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-20 rounded-lg" />)}
+          </div>
+          <div className="skel-studio-actions">
+            <Skeleton className="h-12 w-full max-w-88 rounded-full" />
+          </div>
+        </div>
+        <div className="skel-card skel-studio-aside">
+          <Skeleton className="h-2.5 w-16 rounded-sm" />
+          <div className="flex items-center gap-3">
+            <Skeleton className="size-14 rounded-xl" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton className="h-4 w-3/4 rounded-md" />
+              <Skeleton className="h-3 w-1/2 rounded-md" />
+            </div>
+          </div>
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-3 w-full rounded-md" />)}
+        </div>
+      </div>
+    </div>
+  ),
+  // /agents' body under its title and entry links (R4-6; the head stands from the first paint): the four stat tiles,
+  // the order tabs, the first runner rows — drawn by the island's placeholder and the board's reading state alike.
+  "agents-board": () => (
+    <div className="flex flex-col gap-6">
+      <div className="skel-stats">
+        {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-md" />)}
+      </div>
+      <TabBones n={2} />
+      <div className="flex flex-col gap-2">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="skel-card skel-board-row">
+            <Skeleton className="h-6 w-8 rounded-md" />
+            <Skeleton className="size-11 rounded-xl" />
+            <div className="flex flex-1 flex-col gap-2">
+              <Skeleton className="h-3.5 w-1/3 rounded-md" />
+              <Skeleton className="h-3 w-1/4 rounded-md" />
+            </div>
+            <Skeleton className="h-8 w-20 rounded-md max-md:hidden" />
+          </div>
+        ))}
+      </div>
+    </div>
+  ),
+  // /agents/[id] (R4-6): the head with its portrait and toolbar, the record beside the next read, the tabs.
+  cockpit: () => (
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center gap-4">
+        <Skeleton className="size-16 rounded-2xl" />
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <Skeleton className="h-3 w-32 max-w-full rounded-md" />
+          <Skeleton className="h-8 w-56 max-w-full rounded-md" />
+        </div>
+        <Skeleton className="h-10 w-24 rounded-full" />
+      </div>
+      <div className="skel-hero">
+        <Skeleton className="h-72 w-full rounded-lg" />
+        <Skeleton className="h-40 w-full rounded-lg max-lg:hidden" />
+      </div>
+      <Skeleton className="h-10 w-full rounded-md" />
     </div>
   ),
   // /earn (R4-7, D-227): the black reserve card, the action card and the first Window rows, in the page's own grid.

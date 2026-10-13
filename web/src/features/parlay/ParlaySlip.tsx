@@ -23,6 +23,8 @@ import { OrderSummary } from "@/components/ui/order-summary";
 import { AmountField, QuickAdds } from "@/components/ui/prediction-ticket";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useWalletSession } from "@/lib/wallet-session";
+import { FUNDING } from "@/features/funding/copy";
+import { useFirstFunding } from "@/features/funding/first-fund-state";
 import { PARLAY } from "./copy";
 import type { LegWindow } from "./data";
 import { formatMultiplier, formatProbPct, usd, utilizationPct } from "./format";
@@ -52,6 +54,8 @@ export function ParlaySlip({ reserve, windows }: { reserve: ParlayReserveState; 
   const refusal = parseRefusal(q.error);
   const figures = slip.legs.map((_, i) => ({ priceRaw: quote?.legPricesRaw[i] ?? null, fairRaw: q.fair?.fairRaw[i] ?? null }));
   const spendable = sheet?.ok ? sheet.value.spendableBase : null;
+  // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
+  const funding = useFirstFunding();
 
   const blocker = ((): string | null => {
     if (!session.isConnected) return PARLAY.cta.signIn;
@@ -69,6 +73,7 @@ export function ParlaySlip({ reserve, windows }: { reserve: ParlayReserveState; 
     if (q.spotsDown) return PARLAY.cta.spotsDown;
     if (q.fair?.blockedLeg != null) return PARLAY.cta.belowFairShort(q.fair.blockedLeg + 1);
     if (!q.fair) return PARLAY.cta.pricing;
+    if (funding && (spendable === null || spendable < quote.stakeBase)) return FUNDING.firstFund.funding;
     if (spendable !== null && spendable < quote.stakeBase) return PARLAY.cta.topUp;
     return null;
   })();

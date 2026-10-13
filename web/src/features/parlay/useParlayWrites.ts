@@ -15,7 +15,10 @@ import { invalidateAfterWrite, useSubmitter } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useReducer, useRef, useState } from "react";
 import { announce } from "@/components/states/LiveRegion";
+import { WRITE_RECEIPT } from "@/features/receipts/copy";
+import { accountSigner, notifyReceipt } from "@/features/receipts/write-receipt";
 import { notify } from "@/lib/toast";
+import { useWalletSession } from "@/lib/wallet-session";
 import { PARLAY } from "./copy";
 import { parlayKeys } from "./data";
 import { usd } from "./format";
@@ -39,6 +42,7 @@ export interface OpenRequest {
 export function useParlayWrites(wallet: Address | null) {
   // The account's own session (passkey): the wallet-mode key is scoped to the engine (D-136) and cannot sign a parlay.
   const submitter = useSubmitter();
+  const account = useWalletSession().kind;
   const queryClient = useQueryClient();
   const [tx, dispatch] = useReducer(reduceTx, TX_IDLE);
   const [outcome, setOutcome] = useState<OpenOutcome | null>(null);
@@ -87,7 +91,8 @@ export function useParlayWrites(wallet: Address | null) {
           const stakeBase = booked?.stakeBase ?? fresh.value.stakeBase;
           setOutcome({ status: "confirmed", txHash: result.txHash, parlayId: booked?.parlayId ?? null, stakeBase });
           const line = PARLAY.outcome.placed(booked ? String(booked.parlayId) : "", req.legs.length, usd(stakeBase), usd(req.maxPayoutBase));
-          notify.neutral(line);
+          // The success receipt (R4-4, D-227; critic gap 21): the toast names the bet, its Receipt opens the stub.
+          notifyReceipt({ title: line, figure: usd(stakeBase), figureLabel: WRITE_RECEIPT.staked, txHash: result.txHash, atMs: Date.now(), signer: accountSigner(account), sponsored: true });
           announce(line);
         } else if (result.status === "unknown") {
           setOutcome({ status: "failed", diagnosis: result.diagnosis, txHash: result.txHash ?? null });
@@ -107,7 +112,7 @@ export function useParlayWrites(wallet: Address | null) {
         await refresh();
       }
     },
-    [submitter, wallet, refresh],
+    [submitter, wallet, refresh, account],
   );
 
   const reset = useCallback(() => {

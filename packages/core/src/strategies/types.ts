@@ -91,6 +91,9 @@ export interface StrategyMetadata {
   spec: StrategySpec;
   /** Plain text, stored by Masayume in the open. Nothing here is encrypted. */
   playbook?: string;
+  /** The seed its portrait is drawn from (R4-6, D-227; Owarine's `portraitSeed`), at most 128 characters; absent, the
+   *  app draws from `mitoshi-strategy:<id>`, so the face stays with the strategy whoever runs it. */
+  portraitSeed?: string;
 }
 
 export interface StrategySubscription {

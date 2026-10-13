@@ -10,7 +10,9 @@ import { useEffect, useState } from "react";
 import type { Address } from "@cwf/core";
 import { useVaultSnapshot } from "@cwf/markets/react";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
-import { HoldToConfirm } from "@/components/kit";
+import { HoldToConfirm, Masked } from "@/components/kit";
+import { notifyReceipt } from "@/features/receipts/write-receipt";
+import { GRANT_KIND_INDEX } from "@cwf/core";
 import { AccountAvatar } from "@/components/shell/header/AccountAvatar";
 import { leftNowBase, usd } from "@/features/session/caps";
 import { useSessionActions } from "@/features/session/context";
@@ -87,6 +89,8 @@ export function AccountSummary({ account }: { account: Address }) {
       if (!ok) break;
       const outcome = await tx.run({ kind: "vault-revoke", grantId: g.grantId });
       ok = outcome?.status === "confirmed";
+      // The same success receipt as one grant's Stop (R4-4): the budget back in the Trading Balance.
+      if (outcome?.status === "confirmed") notifyReceipt({ title: P.grants.receipt(P.grants.kindByIndex[GRANT_KIND_INDEX[g.kind]] ?? g.kind), figure: usd(g.budgetBase), figureLabel: P.grants.receiptLabel, txHash: outcome.txHash, atMs: Date.now(), signer: "passkey", sponsored: true });
     }
     setBusy(false);
     await Promise.all([queryClient.invalidateQueries({ queryKey: keysQueryKey(account) }), actions.refresh()]);
@@ -101,7 +105,7 @@ export function AccountSummary({ account }: { account: Address }) {
         {leftToday !== null && leftToday > 0n ? (
           <>
             <span aria-hidden>·</span>
-            <span>{P.summary.left(usd(leftToday))}</span>
+            <span><Masked>{P.summary.left(usd(leftToday))}</Masked></span>
           </>
         ) : null}
       </p>

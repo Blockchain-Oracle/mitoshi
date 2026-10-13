@@ -13,6 +13,8 @@ export const BLOCKER_KINDS = [
   "locked",
   "settling",
   "no-funds",
+  /** A brand-new account's first test dollars are landing (R4-4, D-227): the order waits for them, it isn't short. */
+  "funding",
   "fee-token",
   "region-restricted",
   "no-side",
@@ -98,6 +100,8 @@ export function blockerLabel(kind: BlockerKind, ctx: BlockerContext = {}): strin
       return SETTLING;
     case "no-funds":
       return "No funds yet — add funds";
+    case "funding":
+      return "Funding your account…";
     case "fee-token":
       return "Fee not covered — add funds";
     case "region-restricted":

@@ -1,0 +1,21 @@
+/* Ported from Owarine 90a91d71:web/src/features/strategies/strategies.css + builder.css (R4-6, D-227) — the parts of
+ * /strategies and /agents that stand before the island loads: the nameplate (`.strat-meta` eyebrow, `.strat-h1`, the
+ * board pill), the workspace pills / entry links (`.agent-entry`) and the not-advice line. Imported by StrategiesHead and
+ * AgentsHead, so it is in each route's first paint and the placeholder below the head is the only thing replaced. */
+/* font-mono text-[10px] uppercase tracking-[0.14em] */
+.strat-meta { font-family: var(--font-data); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; font-stretch: 112.5%; }
+/* h1 font-display font-[800] text-[1.9rem] md:text-[2.6rem] xl:text-[3rem] leading-[1.0] tracking-tight */
+.strat-h1 { font-family: var(--font-heading); font-weight: 800; font-size: 1.9rem; line-height: 1; letter-spacing: -0.025em; max-width: 48rem; color: var(--color-ink); font-stretch: 100%; }
+@media (min-width: 768px) { .strat-h1 { font-size: 2.6rem; } }
+@media (min-width: 1280px) { .strat-h1 { font-size: 3rem; } }
+/* The nameplate's head row: the h1 with the board pill beside it; the closing not-advice line. */
+.strat-head-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.strat-board-link { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 9999px; border: 1px solid var(--color-hairline); font-family: var(--font-data); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-ink-secondary); transition: color 0.2s, border-color 0.2s; }
+.strat-board-link:hover { color: var(--color-ink); border-color: var(--color-ink-muted); }
+.strat-advice { font-family: var(--font-data); font-size: 10px; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+/* The workspace pills (/strategies) and the entry links (/agents): bordered mono buttons, the pressed one in the accent. */
+.agent-entry { display: flex; flex-wrap: wrap; gap: .65rem; }
+.agent-entry button, .agent-entry a { min-height: 44px; display: inline-flex; align-items: center; border: 1px solid var(--color-hairline); padding: .8rem 1rem; font-family: var(--font-data); font-size: .75rem; color: var(--color-ink); background: transparent; border-radius: .4rem; font-variant-numeric: tabular-nums; }
+.agent-entry button[aria-pressed="true"] { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent-fill) 7%, transparent); }
+.agent-entry a:hover { border-color: var(--color-ink-muted); }
+.agent-entry button:focus-visible, .agent-entry a:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
