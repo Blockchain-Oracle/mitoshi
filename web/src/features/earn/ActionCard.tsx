@@ -12,7 +12,7 @@ import { withdrawSharesFor, type ReserveSheet, type SupplierPosition, type TxSta
 import { useState } from "react";
 import { CapitalBar, PillButton } from "@/components/kit";
 import { TxCta, TxFailureCard, type SignerKind, type TxRunner } from "@/components/tx";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { cn } from "@/lib/utils";
 import { AmountRow } from "./AmountRow";
