@@ -52,7 +52,7 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
  * one of these surfaces drops it here; `nav-items.test.ts` fails while this set and the pages disagree.
  */
 export const PENDING_ROUTES: ReadonlySet<string> = new Set([
-  "/claim", "/games/duel", "/games/duel/[matchId]", "/games/history", "/games/lucky", "/games/rank", "/launch", "/launch/[token]",
+  "/claim", "/launch", "/launch/[token]",
   "/launch/meme", "/launch/stablecoin", "/native-auth", "/themes", "/themes/[slug]", "/themes/create", "/trade-from-x",
 ]);
 
