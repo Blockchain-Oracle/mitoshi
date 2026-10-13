@@ -4,6 +4,7 @@
 // Every consumer reads this; only `web/src/providers/wallet/WalletRuntime` (a lazy island, §3.1) touches wagmi.
 import type { Address, Hex } from "@cwf/core";
 import type { SignerCaps } from "@cwf/markets";
+import type { SideWallet } from "@cwf/markets/stocks";
 import { createContext, useContext } from "react";
 import type { WalletKeyState } from "./wallet-key-store";
 
@@ -54,6 +55,12 @@ export interface WalletShellActions {
   openPicker(mode?: "tempo" | "robinhood", intent?: string | null): void;
   disconnect(): Promise<void>;
   switchToTempo(): Promise<void>;
+  /** Asks the linked Robinhood wallet to switch chain (R4-12 bridge); rejects with none linked. */
+  switchSide(chainId: number): Promise<void>;
+  /** The linked Robinhood wallet as a viem wallet client on `chainId` (bridge-in signs through `@cwf/markets/stocks`). */
+  sideWallet(chainId: number): Promise<SideWallet>;
+  /** Where to send the user back to their wallet app while it holds a request (a WalletConnect session's own redirect); null when there's none. */
+  sideReopenUrl(): Promise<string | null>;
   /** EIP-191 personal_sign with the connected Tempo account (the faucet challenge); rejects with no account. */
   signMessage(message: string): Promise<Hex>;
   /** One passkey prompt: authorise the wallet-mode key so later calls sign with no prompt (D-046 arm slot). */
@@ -69,6 +76,13 @@ export const WalletShellContext = createContext<WalletShell>({
   openPicker: () => undefined,
   disconnect: async () => undefined,
   switchToTempo: async () => undefined,
+  switchSide: async () => {
+    throw new Error("no Robinhood wallet linked");
+  },
+  sideWallet: async () => {
+    throw new Error("no Robinhood wallet linked");
+  },
+  sideReopenUrl: async () => null,
   signMessage: async () => {
     throw new Error("no wallet connected");
   },

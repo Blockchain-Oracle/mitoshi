@@ -9,6 +9,7 @@ import type postgres from "postgres";
 import type { IdxEvent } from "./types";
 import { applyStrategyEvent, FEEDBACK_EVENTS, STRATEGY_EVENTS } from "./apply-strategies";
 import { applyVaultEvent, VAULT_EVENTS } from "./apply-vault";
+import { applyBridgeEvent, BRIDGE_EVENTS } from "./apply-bridge";
 
 type Tx = postgres.TransactionSql;
 type Data = Record<string, unknown>;
@@ -159,6 +160,11 @@ export async function applyEvent(tx: Tx, e: IdxEvent): Promise<void> {
   // The EventVault's events (index/0002, S7) have their own projections; they carry no engine `seq`.
   if (VAULT_EVENTS.has(e.name)) {
     await applyVaultEvent(tx, e);
+    return;
+  }
+  // The bridge adapters' mints, burns and held credits (index/0007, R4-12): no engine `seq`; no other source emits these.
+  if (e.market === null && BRIDGE_EVENTS.has(e.name)) {
+    await applyBridgeEvent(tx, e);
     return;
   }
   // The StrategyRegistry's and ERC-8004 feedback (index/0006, S9): no engine `seq` either; no other source emits these names.

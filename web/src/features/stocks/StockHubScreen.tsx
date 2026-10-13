@@ -84,7 +84,8 @@ function Windows({ symbol }: { symbol: StockSymbol }) {
   );
 }
 
-/** The stock's token on Tempo: the Mirror token's address where S15 minted one, and the one true line on trading it. */
+/** The stock's token on Tempo: the Mirror token's address where S15 minted one, the one true line on trading it, and
+ *  "Bridge →" as its primary action (R4-12, D-227). */
 function TokenCard({ symbol }: { symbol: StockSymbol }) {
   const mirror = deploymentOf("stocks", TEMPO_CHAIN_ID)?.[`Mirror${symbol}`]?.address ?? null;
   return (
@@ -100,7 +101,10 @@ function TokenCard({ symbol }: { symbol: StockSymbol }) {
       ) : (
         <p className="stk-quiet">{STOCKS.token.none}</p>
       )}
-      <Link href="/reserves" className="stk-link">{STOCKS.token.reserves}</Link>
+      <div className="stk-token-links">
+        {mirror ? <Link href={`/bridge?t=${symbol}`} className="stk-trade">{STOCKS.token.bridge}</Link> : null}
+        <Link href="/reserves" className="stk-link">{STOCKS.token.reserves}</Link>
+      </div>
     </div>
   );
 }

@@ -14,6 +14,7 @@ import { createOpsClient, fetchEngineEvents, headBlock, venueOf, type ChainEvent
 import { runActor, type PassResult, type VenueDeps } from "../../runtime";
 import { BACKFILL_MAX, grow, nextRange, shrink, topicsOf, type WindowState } from "./window";
 import { strategyFollowers } from "./strategies";
+import { bridgeFollowers } from "./bridge";
 import { vaultFollowers } from "./vault";
 
 const LIVE_MS = 1_000;
@@ -40,8 +41,9 @@ export function startIndexer(deps: VenueDeps): { stop: () => void } {
     return lastStatus.row;
   };
   const vaults = vaultFollowers(deps, client, writer);
-  // The other sources, each on its own cursor: the Trading Balances (S7), the strategy registry and its agents' feedback (S9).
-  const sources = [...vaults, ...strategyFollowers(deps, client, writer)];
+  // The other sources, each on its own cursor: the Trading Balances (S7), the strategy registry and its agents' feedback (S9),
+  // and the bridge adapters (R4-12).
+  const sources = [...vaults, ...strategyFollowers(deps, client, writer), ...bridgeFollowers(deps, client, writer)];
   const vaultPass = async (head: number): Promise<string> => {
     if (sources.length === 0) return "vault not deployed";
     const lines: string[] = [];

@@ -60,11 +60,12 @@ Subject: Enable default config for Robinhood Chain testnet (EID 40451) ↔ Tempo
 > receiver `0xE1576984eA22F1E620CFCCa6bf6154C4b9a3693e`) if you want to check traffic once it's enabled.
 >
 >
-> Related: a Base Sepolia (40245) → Moderato (40444) message on default config (LayerZero Labs DVN, 2 confirmations) has
-> been "INFLIGHT — Ready for DVNs to verify" since 2026-09-29 04:47 UTC (src tx
-> `0xec1ffa9fc18f0b094565411ef8c250c78dbab98fae86e0441c9ae925313575ed`, guid
-> `0xc135f54ecd02e666e234748e4d0709f186d6267cd92deec161be0dd9ce9ece84`), while Moderato → Base Sepolia delivered in 20 s.
-> Is the testnet DVN servicing 40245 → 40444?
+> Related: a Base Sepolia (40245) → Moderato (40444) message (guid
+> `0xc135f54ecd02e666e234748e4d0709f186d6267cd92deec161be0dd9ce9ece84`, src tx
+> `0xec1ffa9fc18f0b094565411ef8c250c78dbab98fae86e0441c9ae925313575ed`) took 7.7 days to verify (2026-09-29 →
+> 2026-10-06), while a fresh one on 2026-10-12 verified in 14 s and delivered in 23 s (guid
+> `0x4e74711ae51aa6c9a477bbb9106f37e23c5f06a348f0b2a6f32e99afd2875f71`). Is a multi-day DVN delay expected on
+> 40245 → 40444?
 >
 > Thanks!
 
@@ -110,10 +111,14 @@ the VAA doesn't appear; then ask in the Wormhole Discord `#developers` whether t
 - **F14-9 Shared deployer key across lanes:** a Moderato broadcast failed with "EOA nonce changed unexpectedly" while
   another lane used the same deployer; a re-run of the ensure-style script finished cleanly. Parallel lanes should
   broadcast with distinct keys or serialise.
-- **F14-10 Live leg latency:** Moderato → Base Sepolia ping delivered in **20 s** (source timestamp → receive block).
-  Base Sepolia → Moderato (default config: LZ Labs DVN, **2** confirmations — not the table's 1) sat "Ready for DVNs to
-  verify" for > 1 h; if it never verifies, the hop's Base → Moderato leg is blocked by DVN service, not by our contracts
-  (question added to the LayerZero draft).
+- **F14-10 Live leg latency (rewritten R4-12, 2026-10-12):** Moderato → Base Sepolia ping delivered in **20 s** (source
+  timestamp → receive block). Base Sepolia → Moderato (default config: LZ Labs DVN, **2** confirmations — not the
+  table's 1): the 2026-09-29 ping was **not** blocked by DVN service. The DVN verified it on 2026-10-06 22:36Z (7.7 days
+  late), then our own receive failed: the ping asked for 700k lzReceive gas and the executor forwarded 750,111, but the
+  first message into Tempo costs ~0.82M (`cast estimate`; F14-6) — `LzReceiveAlert`, reason `0x`. Re-run by hand with
+  1.2M gas on 2026-10-12 (status 1, 563,574 gas used). A fresh ping with 1,000,000 lzReceive gas verified in **14 s** and
+  delivered in **23 s** (81,403 gas, warm). The hop's Base → Tempo leg works; the 7.7-day verification is the open
+  question for LayerZero (§14c.13 A). Evidence: `acceptance/R4-12.md`.
 - **F14-11 Sizes (runtime / initcode, 24,576 B limit; our cap 23.5 KB):** Tempo — TIP20MintBurnAdapter 15,946 / 16,755,
   StockSyncReceiver 6,243 / 6,638, ScaledUIView 1,988 / 2,248, LzPingTempo 6,981 / 7,547; evm — StockLockbox 12,831 /
   13,637, TransitOFT 10,754 / 12,063, StockSyncSender 8,555 / 8,947, StockSyncForwarder 8,207 / 8,694, HopComposer
@@ -153,8 +158,9 @@ open only for the Robinhood testnet side, which waits on ETH.
   `DeployLzPing` + `WireLzPing`) and the dummy/faucet OFT round trip RH → Base → Moderato → back → tick 14c.1–2;
   (7) the S14 gate items (real faucet TSLA lock → mint → burn → unlock, sync via the forwarder + duplicate, a deferral
   then `claimDeferred`).
-- **Watch:** the Base → Moderato ping (src `0xec1ffa9f…75ed`) was still waiting on the DVN after 1 h (F14-10); if it
-  never verifies, raise it with LayerZero (question is in the §14c.13 A draft) — it gates the hop's second leg.
+- **Watch (R4-12, 2026-10-12):** the Base → Moderato leg is proven — the old ping (src `0xec1ffa9f…75ed`) verified
+  after 7.7 days and failed only on our 700k gas (re-run, delivered); a fresh 1M-gas ping delivered in 23 s (F14-10).
+  Into-Tempo gas stays 1,000,000 (D-080). Ask LayerZero only about the multi-day verification (§14c.13 A).
 - **Scripts:** `ALLOW_PARTIAL=true` wires a partial mesh; `TICKERS=TSLA` narrows a deploy (a later full run re-records
   everything); `REDEPLOY=<Name,...>` replaces contracts (old address → `history[]`). Moderato broadcasts need
   `--tempo.fee-token 0x20C0…0000 --priority-gas-price 1`; the deployer key is shared with other lanes (F14-9), so a
