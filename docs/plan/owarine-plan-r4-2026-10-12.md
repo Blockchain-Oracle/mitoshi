@@ -185,6 +185,30 @@ runner's agent context moved into @cwf/markets/strategies (ops redeployed). Chec
 /strategies 224.8 KB, /agents 221.1 KB); /strategies at 375 and 1440 clean (Continue on the first phone screen, sweep
 empty). Open: a signed-in Copy, Publish and Hold to stop on testnet — not driven in this merge (no wallet on the dev
 server).
+R4-4 (Portfolio) merged at `4b091ff`: useMoney as the one money reading (card, tiles, sheets, rows), MoneyHero rebuilt,
+pockets on the kit SlideOver (Trading Balance, Private as PrivateBalancePanel, Earn), one Your bets (Open/History with
+Owarine's HistoryRows and receipt), the record and Trader Edge, Add money with the receive QR, one success receipt after
+a write, the balance eye on every own-money figure, the first funding as a toast and a CTA wait. Checks clean (71 routes
+within budget, /portfolio 219.7 KB, /portfolio/edge 220.8 KB); /portfolio at 375 and 1440 clean (signed out, sweep
+empty). Open: a signed-in pass (the figure against chain reads, Close/Collect, a pocket's Add/Withdraw, a write's
+receipt) on testnet — not driven in this merge (no wallet on the dev server).
+R4-5 (Range · Moonshot · Parlay) merged at `cc3eeba`: the RangeReserve prices on the guard's Series σ, redeployed on
+Moderato (`0xebBD…5A05`, the old one read-only in Your rounds); BTC, ETH and SOL at 15m and 1h registered with guard
+models; Range and Moonshot on one phone screen (GameHead, WindowPicker on the kit ScrollRail, anchored BandCard,
+TicketStrip, the hold above the dock); the parlay slip bar carries the hold. Three real rounds settled and claimed
+(docs/plan/acceptance/R4-5.md). Checks clean (71 routes within budget, /games/range 237.9 KB, /games/moonshot 238.0 KB,
+/parlay 221.7 KB; range forge 47/47); /games/range at 375 and 1440 clean (hold on the first phone screen; the phone
+sweep's overlaps are the sticky action over the band, which clears at the scroll end). Web and ops deploys triggered
+(ops for the new reserve in the indexer sources). Open: a signed-in hold on the web on testnet — not driven in this
+merge (no wallet on the dev server).
+R4-8 (Palette and shell) merged at `d3236fc`: Owarine's ⌘K palette with a live Trade group (`useLanes` takes
+`enabled`), More's search pill opens it, the top line (no ? or theme; the money chip with its +), the rail's mode plate
+and stamp (練 DEMO / 試 TESTNET, Noto Serif JP subsets regenerated), rail/dock/account menu restyled (dock item 52 px
+token), the phone sign-in sheet, /trade-from-x in the app shell, the first frame paints a returning account's world.
+Checks clean (tokens:check clean; 71 routes within budget, /markets 227.1 KB with css 52.4 / 55 KB, /trade/[symbol]
+232.1 KB); /markets at 375 and 1440 clean (phone sweep empty; the desktop sweep's two hits are the hero countdown's digit
+roller and Sensei's collapsed label, not the shell). Open: a signed-in pass (account menu, the phone sign-in sheet's
+Create/Connect, the TESTNET stamp) on testnet — not driven in this merge (no wallet on the dev server).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on

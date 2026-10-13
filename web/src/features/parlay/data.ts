@@ -5,11 +5,11 @@
  * entry still open, and modelled by the fair-value guard (a leg on a lane without σ or a spot source is refused
  * `SigmaNotSet`/`NoSpotSource`, so the list says so instead of offering it) — and the wallet's tickets.
  */
-import { isOk, statusOf, type Address, type EventMarket, type MarketId, type ParlayReserveState, type Reading } from "@cwf/core";
+import { isOk, statusOf, type Address, type Diagnosis, type EventMarket, type MarketId, type ParlayReserveState, type Reading } from "@cwf/core";
 import { MARKETS_POLL_MS } from "@cwf/core/constants";
 import { listParlaysOf, readFairModels, readParlayReserve, type FairModel, type ParlayTicketView } from "@cwf/markets/parlay";
 import { useLanes, useReadingQuery } from "@cwf/markets/react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import type { Hex } from "viem";
 
@@ -41,8 +41,12 @@ export interface ParlayWindows {
   /** Trading, print in, entry open — soonest close first; `model` null means it cannot be priced into a parlay. */
   windows: LegWindow[];
   byId: Map<MarketId, LegWindow>;
+  /** When the next Window opens on any lane (the empty line), or null when none is listed (R4-5). */
+  nextOpenSec: number | null;
   loading: boolean;
   error: boolean;
+  /** The lanes read failed with nothing to show (R4-5 review: it read as "No open Window"). */
+  failure: Diagnosis | null;
 }
 
 export function useParlayWindows(nowMs: number): ParlayWindows {
@@ -61,6 +65,9 @@ export function useParlayWindows(nowMs: number): ParlayWindows {
     queryFn: () => readFairModels(seriesIds as Hex[]),
     enabled: seriesIds.length > 0,
     staleTime: 60_000,
+    // R4-5 review: a lane opening or closing changes the Series set; the models it already has stay while the new set
+    // is read (every Window flashed "can't be priced" and the slip's legs lost their price for that read).
+    placeholderData: keepPreviousData,
   });
   return useMemo(() => {
     const byModel = models.data;
@@ -68,8 +75,9 @@ export function useParlayWindows(nowMs: number): ParlayWindows {
       const m = byModel?.get(market.seriesId.toLowerCase()) ?? null;
       return { market, model: m && m.sigmaE8 > 0n && m.feed ? m : null };
     });
-    return { windows, byId: new Map(windows.map((w) => [w.market.marketId, w])), loading: reading === null || (seriesIds.length > 0 && models.isPending), error: models.isError };
-  }, [live, models.data, models.isPending, models.isError, reading, seriesIds.length]);
+    const upcoming = (reading && isOk(reading) ? reading.value.lanes.flatMap((l) => l.markets) : []).filter((m) => m.tradingStartSec > nowSec).map((m) => m.tradingStartSec);
+    return { windows, byId: new Map(windows.map((w) => [w.market.marketId, w])), nextOpenSec: upcoming.length ? Math.min(...upcoming) : null, loading: reading === null || (seriesIds.length > 0 && models.isPending), error: models.isError, failure: reading && !isOk(reading) ? reading.error : null };
+  }, [live, models.data, models.isPending, models.isError, reading, seriesIds.length, nowSec]);
 }
 
 export function useParlayTickets(wallet: Address | null): Reading<ParlayTicketView[]> | null {

@@ -1,12 +1,21 @@
+/** `/activity` — Owarine 90a91d71 `features/activity/copy.ts` at its counts (R4-10, D-227). */
 export const NOTICES = {
   title: "Activity",
-  lead: "Your fills, settlements and voids, and people you follow.",
+  live: "Updated live",
+  heading: "Your",
+  headingAccent: "Activity",
+  headingJp: "取引の記録。",
+  lead: "Fills, verdicts and payouts.",
+  inbox: "Inbox",
+  notifications: { enable: "Turn on notifications", on: "Notifications on", blocked: "Notifications blocked" },
+  settings: "Settings",
   signedOut: "Sign in to see what happened to your calls.",
   signIn: "Sign in",
   loading: "Reading your week…",
-  error: "Your activity can't be read right now. It refreshes by itself.",
-  empty: "Nothing yet this week. Make a call and it shows here.",
-  trade: "Open the terminal",
+  error: "Can't read activity. Retrying.",
+  empty: "Nothing this week.",
+  trade: "Trade →",
+  word: { filled: "Fill", won: "Won", lost: "Lost", void: "Void", follower: "Follower", take: "Take" },
   badge: (n: number) => `${n} new`,
 } as const;
 

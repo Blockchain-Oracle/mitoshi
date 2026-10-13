@@ -19,9 +19,12 @@ export interface Notice {
   atSec: number;
   title: string;
   href: string | null;
+  /** Whose face the row wears when it isn't the wallet's own (R4-10, D-227): the follower, the take's author. */
+  actor?: string;
 }
 
-const side = (kind: number) => (kind === 0 || kind === 3 ? "UP" : "DOWN");
+/** The outcome the side traded: kinds 0/1 are YES (UP), 2/3 NO (DOWN) — a SELL_YES sold your UP (R4-10 review, D-227). */
+const side = (kind: number) => (kind <= 1 ? "UP" : "DOWN");
 const bought = (kind: number) => kind === 0 || kind === 2;
 const cents = (kind: number, priceTicks: number) => Math.round((kind <= 1 ? priceTicks : 1000 - priceTicks) / 10);
 const money = (base: bigint) => `$${(Number(base) / 1e6).toFixed(2)}`;
@@ -58,8 +61,8 @@ export async function readNotices(address: string, sinceSec: number): Promise<No
         : `${r.symbol} ${formatCadence(r.cadenceSec)} voided — both sides paid 0.5, ${money(r.payoutBase)} to you`,
       href: `/proof/${r.market}`,
     })),
-    ...followers.map((f): Notice => ({ id: `follower:${f.follower}`, kind: "follower", atSec: Number(f.at), title: `${who(f.follower)} followed you`, href: `/u/${f.follower}` })),
-    ...takes.filter((t) => t.createdAtMs / 1000 >= sinceSec).map((t): Notice => ({ id: `take:${t.id}`, kind: "take", atSec: Math.floor(t.createdAtMs / 1000), title: `${who(t.author)} took ${t.side.toUpperCase()} on ${t.asset} ${formatCadence(t.intervalSec)}`, href: `/trade/${t.asset}?w=${t.marketId}` })),
+    ...followers.map((f): Notice => ({ id: `follower:${f.follower}`, kind: "follower", atSec: Number(f.at), title: `${who(f.follower)} followed you`, href: `/u/${f.follower}`, actor: f.follower })),
+    ...takes.filter((t) => t.createdAtMs / 1000 >= sinceSec).map((t): Notice => ({ id: `take:${t.id}`, kind: "take", atSec: Math.floor(t.createdAtMs / 1000), title: `${who(t.author)} took ${t.side.toUpperCase()} on ${t.asset} ${formatCadence(t.intervalSec)}`, href: `/trade/${t.asset}?w=${t.marketId}`, actor: t.author })),
   ];
   return items.sort((x, y) => y.atSec - x.atSec).slice(0, 80);
 }

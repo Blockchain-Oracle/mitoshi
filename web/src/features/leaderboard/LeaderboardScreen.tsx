@@ -49,7 +49,7 @@ export function LeaderboardScreen() {
   const rows = board.data?.rankings.map((r) => toRow(r, sort)) ?? [];
 
   return (
-    <div className="mx-auto flex w-full max-w-(--content-wide) flex-col gap-6 px-gutter py-8 lg:px-gutter-desktop">
+    <div className="mx-auto flex w-full max-w-(--content-wide) flex-col gap-6">
       <header className="flex flex-col gap-2">
         <h1 className="type-display text-ink">{L.title}</h1>
         <p className="max-w-(--content-reading) type-body text-ink-secondary">{L.lead}</p>

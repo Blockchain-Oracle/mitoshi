@@ -6,13 +6,16 @@
  * (`/api/prices/redstone-payload`), and the guard's model for each leg (`previewFairUpE6` at that spot) is compared with
  * the book's price + the reserve's slack — the same floor `openParlay` enforces — so a leg the reserve would refuse is
  * named on the CTA before anyone holds to place. The same payloads are what the open carries when they are fresh.
+ * R4-5 (D-227): no flicker. The fair check and the caps keep their last answer for the same legs and amount while a
+ * spot refresh or a requote poll re-reads them (they blanked every 15 s and dropped a hold); `shown` keeps the last
+ * quote on screen while a changed slip is requoted.
  */
 import { REQUOTE_MS } from "@cwf/core/constants";
 import type { Diagnosis, ParlayLegInput, ParlayMode, ParlayParams, ParlayQuote } from "@cwf/core";
 import { checkParlayCapacity, previewLegFair, quoteParlayOnchain } from "@cwf/markets/parlay";
 import { useReadingQuery } from "@cwf/markets/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useQuery, useQueryClient, type QueryKey } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
 import type { Hex } from "viem";
 import { useDebounced } from "../markets/ticket/useDebounced";
 import { parlayKeys } from "./data";
@@ -20,6 +23,8 @@ import { parlayKeys } from "./data";
 const DEBOUNCE_MS = 400;
 /** A signed spot is re-read this often while a slip is open; the guard accepts one up to 120 s old. */
 const SPOT_REFRESH_MS = 15_000;
+/** The guard takes a signed spot up to this old. */
+const SPOT_MAX_AGE_MS = 120_000;
 /** At the hold, a payload younger than this is sent as is; older, a fresh one is fetched first. */
 export const SPOT_REUSE_SEC = 60;
 
@@ -55,8 +60,14 @@ export interface FairCheck {
   blockedLeg: number | null;
 }
 
+/** Keep a previous answer only while it is for the same slip (`signature` leads the key's last part). */
+const sameSlip = (signature: string) => <T,>(prev: T | undefined, prevQuery?: { queryKey: QueryKey }): T | undefined =>
+  prevQuery && String(prevQuery.queryKey.at(-1)).startsWith(`${signature}|`) ? prev : undefined;
+
 export interface ParlayQuoteState {
   quote: ParlayQuote | null;
+  /** `quote`, or the last one while a changed slip is requoted (display only). */
+  shown: ParlayQuote | null;
   loading: boolean;
   error: Diagnosis | null;
   fair: FairCheck | null;
@@ -76,6 +87,8 @@ export function useParlayQuote({ legs, mode, params, enabled }: { legs: readonly
   const active = askable && debounced === signature;
   const reading = useReadingQuery(parlayKeys.quote(debounced), () => quoteParlayOnchain(legs, mode, params!), { enabled: active, pollMs: REQUOTE_MS });
   const quote = active && reading?.ok ? reading.value : null;
+  const [last, setLast] = useState<ParlayQuote | null>(null);
+  if (quote && quote !== last) setLast(quote);
 
   const feeds = [...new Set(legs.map((l) => l.feed))].sort();
   const spotsQuery = useQuery({ queryKey: ["cwf", "parlay", "spots", feeds.join(",")], queryFn: () => fetchSpots(feeds), enabled: askable, refetchInterval: SPOT_REFRESH_MS, staleTime: SPOT_REFRESH_MS, retry: 1 });
@@ -91,6 +104,7 @@ export function useParlayQuote({ legs, mode, params, enabled }: { legs: readonly
     },
     enabled: quote !== null && spots !== null && legs.every((l) => spots.has(l.feed)),
     staleTime: Infinity,
+    placeholderData: sameSlip(signature),
   });
 
   // The reserve's own caps for this ticket (liquidity, exposure, per instant) — `previewOpen` prices, it doesn't check them.
@@ -99,6 +113,7 @@ export function useParlayQuote({ legs, mode, params, enabled }: { legs: readonly
     queryFn: async () => ({ refusal: await checkParlayCapacity(quote!.maxPayoutBase - quote!.stakeBase, expiriesOf(legs)) }),
     enabled: quote !== null,
     staleTime: REQUOTE_MS,
+    placeholderData: (prev, prevQuery) => (prevQuery && String(prevQuery.queryKey.at(-1)).endsWith(`|${signature}`) ? prev : undefined),
   });
 
   const retry = useCallback(() => {
@@ -106,14 +121,18 @@ export function useParlayQuote({ legs, mode, params, enabled }: { legs: readonly
     void queryClient.invalidateQueries({ queryKey: ["cwf", "parlay", "spots"] });
   }, [queryClient, debounced]);
 
+  const error = active && reading && !reading.ok ? reading.error : null;
   return {
     quote,
+    shown: error ? null : (quote ?? last),
     loading: askable && (!active || reading === null),
-    error: active && reading && !reading.ok ? reading.error : null,
+    error,
     fair: fairQuery.data ?? null,
     capacity: capacity.data?.refusal ?? null,
     spots,
-    spotsDown: spotsQuery.isError,
+    // R4-5 review: a failed refresh keeps the last payloads (TanStack keeps `data` with `isError`); only none, or none the
+    // guard would still take (120 s), is "down" — one failed 15 s refresh no longer swaps the hold for the blocker.
+    spotsDown: spotsQuery.isError && (spots === null || Date.now() - spotsQuery.dataUpdatedAt > SPOT_MAX_AGE_MS),
     retry,
   };
 }

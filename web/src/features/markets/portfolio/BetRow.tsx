@@ -57,12 +57,14 @@ function HomeTag({ p }: { p: TerminalPosition }) {
 export interface BetRowProps {
   legs: readonly TerminalPosition[];
   values: ReadonlyMap<string, PositionValue>;
-  closer: ReturnType<typeof useTerminalClose>;
+  closer?: ReturnType<typeof useTerminalClose>;
   /** A Boost past its close settles by anyone's crank (the reserve's `settle`): offered on its row. */
-  boosts: ReturnType<typeof useBoostWrites>;
+  boosts?: ReturnType<typeof useBoostWrites>;
+  /** Someone else's profile (R4-10): the row without its Close or settle — only the holder can close it. */
+  readOnly?: boolean;
 }
 
-export function BetRow({ legs, values, closer, boosts }: BetRowProps) {
+export function BetRow({ legs, values, closer, boosts, readOnly = false }: BetRowProps) {
   const nowMs = useNowMs();
   const p = legs[0]!;
   const state = nowMs > 0 ? countdown(nowMs, p.expirySec, p.intervalSec) : null;
@@ -77,10 +79,12 @@ export function BetRow({ legs, values, closer, boosts }: BetRowProps) {
   const unpriced = vs.find((v) => v === null || v.valueBase === null);
   const why = unpriced ? statusText(unpriced.status, p.expirySec, unpriced.fillablePct, unpriced.settled, unpriced.valueBase) : "";
   const v0 = vs[0] ?? null;
-  const closable = side !== null && !settling && v0 !== null && canTrade(v0.status);
-  const busy = closer.busy === p.id;
+  const closeWith = readOnly ? undefined : closer;
+  const settleWith = readOnly ? undefined : boosts;
+  const closable = closeWith !== undefined && side !== null && !settling && v0 !== null && canTrade(v0.status);
+  const busy = closeWith?.busy === p.id;
   const settleKey = p.boost ? `settle:${p.boost.positionId}` : "";
-  const settleBoost = p.boost && nowMs >= p.expirySec * 1000 ? p.boost : null;
+  const settleBoost = settleWith && p.boost && nowMs >= p.expirySec * 1000 ? p.boost : null;
   return (
     <li className="bets-row bet-row">
       <span className={cn("bet-status type-label-micro", settling ? "text-ink" : "text-ink-secondary")}>
@@ -112,13 +116,13 @@ export function BetRow({ legs, values, closer, boosts }: BetRowProps) {
           <Masked>{livePnlText(pnl, p.decimals)}</Masked>
         </span>
       )}
-      {closable ? (
-        <PillButton tone="ghost" size="sm" className="bet-act" disabled={busy} aria-busy={busy} onClick={() => void closer.close(p, v0?.exit ?? null)}>
+      {closable && closeWith ? (
+        <PillButton tone="ghost" size="sm" className="bet-act" disabled={busy} aria-busy={busy} onClick={() => void closeWith.close(p, v0?.exit ?? null)}>
           {busy ? CASH_OUT.cashingOut : PORTFOLIO.close}
         </PillButton>
-      ) : settleBoost ? (
-        <PillButton tone="ghost" size="sm" className="bet-act" disabled={boosts.busy === settleKey} aria-busy={boosts.busy === settleKey} onClick={() => void boosts.settle(settleBoost.positionId, p.marketId)}>
-          {boosts.busy === settleKey ? BOOST.bets.settling : BOOST.bets.settle}
+      ) : settleBoost && settleWith ? (
+        <PillButton tone="ghost" size="sm" className="bet-act" disabled={settleWith.busy === settleKey} aria-busy={settleWith.busy === settleKey} onClick={() => void settleWith.settle(settleBoost.positionId, p.marketId)}>
+          {settleWith.busy === settleKey ? BOOST.bets.settling : BOOST.bets.settle}
         </PillButton>
       ) : null}
     </li>

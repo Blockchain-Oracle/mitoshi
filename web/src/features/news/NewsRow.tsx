@@ -56,28 +56,43 @@ export interface NewsRowProps {
   /** 1-based; the lead is 01, so the wire starts at 02. */
   index: number;
   title: string;
-  href: string;
+  /** Where the title goes: an article, a transaction, a Window; null for a row that is only a record. */
+  href: string | null;
+  /** Opens in a new tab with ↗ (an article, the explorer); default true, so the wire's callers are unchanged. */
+  external?: boolean;
+  /** What sits in the mark slot: an asset cluster, a wallet avatar. Nothing still keeps the column. */
   mark?: ReactNode;
   meta: ReactNode;
   tone: Sentiment;
   toneWord: string;
+  /** `data-kind` for a feed that styles by event kind. */
+  kind?: string;
 }
 
-export function NewsRow({ index, title, href, mark, meta, tone, toneWord }: NewsRowProps) {
+/** Owarine's widened row (R4-10, D-227): `href` may be null (a record), internal (→, a Link) or external (↗). */
+export function NewsRow({ index, title, href, external = true, mark, meta, tone, toneWord, kind }: NewsRowProps) {
   return (
-    <li className="news-row" data-tone={tone}>
+    <li className="news-row" data-tone={tone} data-kind={kind}>
       <span className="news-index">{String(index).padStart(2, "0")}</span>
       <span className="news-row-mark">{mark}</span>
       <span className="news-row-body">
-        <a href={href} target="_blank" rel="noopener noreferrer" className="news-row-title">
-          {title}
-        </a>
+        {href === null ? (
+          <span className="news-row-title">{title}</span>
+        ) : external ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="news-row-title">
+            {title}
+          </a>
+        ) : (
+          <Link href={href} className="news-row-title">
+            {title}
+          </Link>
+        )}
         <span className="news-row-meta">{meta}</span>
       </span>
       <span className="news-row-tone">
         <Tone tone={tone} word={toneWord} />
       </span>
-      <span className="news-row-arrow" aria-hidden>↗</span>
+      <span className="news-row-arrow" aria-hidden>{href === null ? "" : external ? "↗" : "→"}</span>
     </li>
   );
 }

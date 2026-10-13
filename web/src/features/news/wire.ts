@@ -104,3 +104,10 @@ export async function readWire(): Promise<Wire> {
   const feeds = await Promise.all([...FEEDS.map((f) => rss(f.url, f.source)), ...finnhub]);
   return { articles: merge(feeds), partial: !finnhubConfigured() || feeds.some((f) => f === null), readAtMs: Date.now() };
 }
+
+/** A coin's headlines (the ticker hub, R4-10): the two crypto feeds, the stories whose headline names the coin. */
+export async function readCoinWire(symbol: TickerSymbol, limit: number): Promise<Article[] | null> {
+  const feeds = await Promise.all(FEEDS.map((f) => rss(f.url, f.source)));
+  if (feeds.every((f) => f === null)) return null;
+  return merge(feeds).filter((a) => a.symbols.includes(symbol)).slice(0, limit);
+}

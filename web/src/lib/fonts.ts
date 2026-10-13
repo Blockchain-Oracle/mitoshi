@@ -5,8 +5,9 @@
 //
 // Noto Serif JP is self-hosted as a SUBSET (§3.1): next/font/google's CJK slicing emitted ~250 @font-face rules (185 KB
 // of CSS on every route) for a product that uses eight Japanese glyphs. `src/fonts/noto-serif-jp/{500,700}.woff2` are
-// Google Fonts' own subsets (css2 `text=`: printable ASCII, · — – … ’ “ ” ← → ↗ ✓ ×, and し効夢正無見逆通), ~18 KB each,
-// SIL OFL 1.1 (`OFL.txt` beside them). A new Japanese glyph in copy means regenerating them with the same `text=` call.
+// Google Fonts' own subsets (css2 `text=`: printable ASCII, · — – … ’ “ ” ← → ↗ ✓ ×, and し効夢正無見逆通 練試 (the mode
+// stamps, R4-8) かすを一不付値出動場市終裏足部 (the seals and copy in use, D-227)), ~20 KB each, SIL OFL 1.1 (`OFL.txt`
+// beside them). A new Japanese glyph in copy means regenerating them with the same `text=` call.
 import { Inter, JetBrains_Mono, Sora } from "next/font/google";
 import localFont from "next/font/local";
 

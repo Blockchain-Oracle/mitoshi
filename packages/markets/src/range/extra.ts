@@ -1,17 +1,18 @@
 /**
  * Range reads the Tempo seam adds: the PD-2/D-119 drift preview at a live spot (the rule `openRange` enforces with a
  * signed one, so the ticket names a `StaleBasis` before the hold), what the reserve holds after a refused payout
- * (P12), and the round an open booked (from its receipt's `RangeOpened`).
+ * (P12), and the round an open booked (from its receipt's `RangeOpened`). R4-5 (D-227): a Window's model is read per
+ * Series, σ falling back to the guard's as the redeployed reserve does.
  */
 import { keccak256, parseEventLogs, toBytes, type Address, type Hex } from "viem";
 import { deployments } from "@cwf/clients";
-import { fairValueGuardAbi } from "@cwf/clients/abis/FairValueGuard";
 import type { Reading } from "@cwf/core";
 import type { RangeRound } from "@cwf/core/range";
 import { readWindows } from "../engine/lens";
 import { rangeReserveAbi } from "@cwf/clients/abis/RangeReserve";
 import { getPublicClient } from "../runtime/read-runtime";
 import { withReading } from "../runtime/reading";
+import { readFairModels } from "../parlay/read";
 import { listRangesOf, reserveContract } from "./read";
 
 const byChain = deployments as unknown as Record<string, Record<string, { contracts: Record<string, { address: string }> } | undefined>>;
@@ -39,39 +40,42 @@ export async function readRangeOpened(txHash: Hex): Promise<{ roundId: bigint; s
 }
 
 export interface RangeModel {
+  /** The σ the reserve prices this Window on: its own for the asset when set, else the guard's for the Series (R4-5). */
   sigmaE8: bigint;
   ticker: number;
   /** The guard's RedStone feed for the ticker (the open's spot proof), or null when it has none. */
   feed: string | null;
 }
 
-/** Which assets the reserve can price (its own σ and ticker) with a spot the guard can verify; the rest refuse by name. */
-export async function readRangeModels(assets: readonly string[]): Promise<Map<string, RangeModel>> {
+/**
+ * Which Windows the reserve can price, keyed by Series id (lower case): the reserve's ticker for the asset, σ as
+ * `RangePricing._sigma` reads it (the reserve's own for the asset, else the FairValueGuard's for the Series — R4-5,
+ * D-227) and a spot the guard can verify; the rest refuse by name.
+ */
+export async function readRangeModels(windows: readonly { asset: string; seriesId: Hex }[]): Promise<Map<string, RangeModel>> {
   const out = new Map<string, RangeModel>();
   const c = await reserveContract();
   const client = await getPublicClient();
   const guard = byChain[String(client.chain.id)]?.fair?.contracts.FairValueGuard?.address as Address | undefined;
-  if (!c || !guard || assets.length === 0) return out;
+  if (!c || !guard || windows.length === 0) return out;
+  const assets = [...new Set(windows.map((w) => w.asset))];
   const keys = assets.map((a) => keccak256(toBytes(a)));
-  const res = await client.multicall({
-    allowFailure: false,
-    contracts: keys.flatMap((k) => [
-      { ...c, functionName: "volatilityOf" as const, args: [k] as const },
-      { ...c, functionName: "tickerOf" as const, args: [k] as const },
-    ]),
-  });
-  const tickers = assets.map((_, i) => Number(res[2 * i + 1] as number));
-  const sources = await client.multicall({ allowFailure: false, contracts: tickers.map((t) => ({ address: guard, abi: fairValueGuardAbi, functionName: "spotSourceOf" as const, args: [t] as const })) });
-  assets.forEach((a, i) => {
-    const [verifier, feedId] = sources[i] as unknown as readonly [Address, Hex];
-    let feed = "";
-    for (let j = 2; j < feedId.length; j += 2) {
-      const ch = parseInt(feedId.slice(j, j + 2), 16);
-      if (ch === 0) break;
-      feed += String.fromCharCode(ch);
-    }
-    out.set(a, { sigmaE8: res[2 * i] as bigint, ticker: tickers[i]!, feed: /^0x0+$/.test(verifier) || tickers[i] === 0 ? null : feed });
-  });
+  const [res, fair] = await Promise.all([
+    client.multicall({
+      allowFailure: false,
+      contracts: keys.flatMap((k) => [
+        { ...c, functionName: "volatilityOf" as const, args: [k] as const },
+        { ...c, functionName: "tickerOf" as const, args: [k] as const },
+      ]),
+    }),
+    readFairModels([...new Set(windows.map((w) => w.seriesId.toLowerCase() as Hex))]),
+  ]);
+  const byAsset = new Map(assets.map((a, i) => [a, { sigmaE8: res[2 * i] as bigint, ticker: Number(res[2 * i + 1] as number) }]));
+  for (const w of windows) {
+    const own = byAsset.get(w.asset)!;
+    const series = fair.get(w.seriesId.toLowerCase());
+    out.set(w.seriesId.toLowerCase(), { sigmaE8: own.sigmaE8 > 0n ? own.sigmaE8 : (series?.sigmaE8 ?? 0n), ticker: own.ticker, feed: own.ticker > 0 ? (series?.feed ?? null) : null });
+  }
   return out;
 }
 

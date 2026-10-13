@@ -2,9 +2,11 @@
 // floating rail on the left (Slush), the top line, and ONE bordered stage that holds the page; on phones the rail
 // hides, the top line carries the mark and the dock sits at the bottom. Mitoshi's colours; the account, money and
 // notices are slots the route group fills (the site group carries no wallet stack, D-050). The frame is synchronous;
-// everything that reads the path or the wallet is a client island inside it.
+// everything that reads the path or the wallet is a client island inside it. R4-8 (D-227): `EnvironmentMode` paints
+// which world you are in (demo / testnet) on <html>, Owarine's environment.
 import { Suspense, type ReactNode } from "react";
 import { SHELL } from "@/lib/copy";
+import { EnvironmentMode } from "./EnvironmentMode";
 import { EverythingHost } from "./EverythingHost";
 import { FeedbackPreload } from "./FeedbackPreload";
 import { MobileDock } from "./MobileDock";
@@ -42,6 +44,7 @@ export function AppShell({ children, railFoot, account, notices }: AppShellProps
       </div>
       <MobileDock />
       <EverythingHost />
+      <EnvironmentMode />
       <FeedbackPreload />
     </div>
   );

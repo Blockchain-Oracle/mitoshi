@@ -1,29 +1,29 @@
 "use client";
 /**
- * /stocks/[SYMBOL] (P5, D-224): Owarine 90a91d71 `ticker-hub/TickerHubScreen.tsx` on Mitoshi's data — the eyebrow and
- * session chip, the mark and the name, one line, the facts bar (spot, next report, the signed source), the ticker's
- * Room and Trade it; then 01 its live Windows (the lane cards, additive: Owarine's stock hub lists none), 02 the
- * headlines Finnhub files under it, 03 the token on Tempo — the Mirror token where one exists, and the one true line
- * on why buy and sell wait (no bridged supply on Moderato). Nothing invented.
+ * The ticker hub's live parts — Ported from Owarine 90a91d71:web/src/features/ticker-hub/TickerHubScreen.tsx on
+ * Mitoshi's data (P5, D-224; R4-10, D-227). The session chip reads the lanes: a coin and a stock with a 24/7 Window
+ * trading say so (the owner's "stocks say closed while their 24/7 price moves"); a stock without one shows NYSE's hours.
+ * The facts bar: the spot rolling on the Odometer beside a six-hour sparkline, the next report (a stock), the Mirror token
+ * where S15 minted one, and the source with Bridge (R4-12) and Reserves. Then 01 its Windows (the lane cards), 02 Calls (fills and takes),
+ * 03 Headlines. Nothing invented: every figure is a read.
  */
-import { TICKERS, type StockSymbol } from "@cwf/core";
+import { TICKERS, type LaneSet, type TickerSymbol } from "@cwf/core";
 import { phase } from "@cwf/core/lifecycle";
 import { addressUrl } from "@cwf/core/urls";
 import { deploymentOf } from "@cwf/markets";
-import { useLanes } from "@cwf/markets/react";
-import { MessageCircle } from "lucide-react";
+import { useLanes, usePriceHistory } from "@cwf/markets/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { Suspense, use, useMemo } from "react";
+import { Odometer, SectionHeader } from "@/components/kit";
 import { Hash } from "@/components/data";
-import SectionHead from "@/components/shell/SectionHead";
+import { LoadingState } from "@/components/states";
+import { Sparkline } from "@/components/ui/sparkline";
 import { tickerMarkets } from "@/features/markets/data/lane-view";
 import { useTopsOfBook } from "@/features/markets/data/useTopOfBook";
-import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { MarketCard } from "@/features/markets/lanes/MarketCard";
 import { MarketSessionChip } from "@/features/markets/session/MarketSessionChip";
 import { usd2 } from "@/features/markets/units";
-import type { Article } from "@/features/news/wire";
 import { NEWS, timeAgo } from "@/features/news/copy";
 import { articleSymbols, Cashtags, MarkCluster, NewsRow } from "@/features/news/NewsRow";
 import { useCommittedSpot } from "@/features/terminal/live";
@@ -33,45 +33,115 @@ import { closeDrawer, openDrawer, useOpenDrawerName } from "@/lib/drawer-param";
 import { webEnv } from "@/lib/env";
 import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
 import { STOCKS } from "./copy";
+import { HubCalls } from "./HubCalls";
+import type { StockHubProps } from "./StockHubPage";
 import { useNextReport } from "./useNextReport";
-import "@/styles/market-card.css";
-import "@/styles/news.css";
-import "@/styles/news-wire.css";
-import "./stocks.css";
 
 const WINDOWS = 6;
 const CARD_BOOK_POLL_MS = 15_000;
+const SPARK_BUCKET_SEC = 300;
+const SPARK_SPAN_SEC = 6 * 3600;
 
-export interface StockHubProps {
-  symbol: StockSymbol;
-  /** The ticker's headlines from the server's Finnhub read; null when the wire couldn't be read. */
-  articles: Article[] | null;
-  /** No Finnhub key on this deployment: the section says so instead of showing nothing. */
-  headlinesOff: boolean;
-  readAtMs: number;
+const live = (nowMs: number, m: Parameters<typeof phase>[0]) => {
+  const p = phase(m, nowMs);
+  return p === "trading" || p === "upcoming" || p === "pendingOpeningPrint";
+};
+
+/** True when a 24/7 stock lane has a Window trading or about to for this ticker — its price moves off-hours. */
+function trades24(set: LaneSet | null, symbol: string, nowMs: number): boolean {
+  if (!set || nowMs === 0) return false;
+  return set.lanes.some((lane) => lane.basis === "stock24" && tickerMarkets(lane, symbol).some((m) => live(nowMs, m)));
+}
+
+function useBasis(symbol: TickerSymbol) {
+  const lanes = useLanes();
+  const nowMs = useClockValue((ms) => Math.floor(ms / 10_000) * 10_000);
+  return TICKERS[symbol].kind === "crypto" ? "crypto24" : trades24(lanes?.ok ? lanes.value : null, symbol, nowMs) ? "stock24" : "regular";
+}
+
+export function HubSessionChip({ symbol }: { symbol: TickerSymbol }) {
+  const basis = useBasis(symbol);
+  return <MarketSessionChip asset={symbol} basis={basis} />;
+}
+
+function Spark({ symbol, feed }: { symbol: string; feed: string }) {
+  const bucket = useClockValue((ms) => Math.floor(ms / 1000 / SPARK_BUCKET_SEC));
+  const toSec = bucket * SPARK_BUCKET_SEC;
+  const history = usePriceHistory(bucket === 0 ? null : feed, toSec - SPARK_SPAN_SEC, toSec);
+  const points = useMemo(() => (history?.ok ? history.value.map((p) => ({ tSec: p.blockTimestampSec, priceE8: p.priceRaw })) : []), [history]);
+  if (points.length < 2) return null;
+  const time = (t: number) => new Date(t * 1000).toISOString().slice(11, 16);
+  return <Sparkline points={points} baselineE8={null} format={usd2} formatTime={time} label={STOCKS.sparkLabel(symbol)} className="stk-spark" />;
+}
+
+export function HubFacts({ symbol }: { symbol: TickerSymbol }) {
+  const ticker = TICKERS[symbol];
+  const stock = ticker.kind === "stock";
+  const basis = useBasis(symbol);
+  const spot = useCommittedSpot(symbol);
+  const report = useNextReport(symbol);
+  const mirror = stock ? (deploymentOf("stocks", TEMPO_CHAIN_ID)?.[`Mirror${symbol}`]?.address ?? null) : null;
+  return (
+    <div className="stk-facts">
+      <dl className="stk-stats">
+        <div className="stk-stat">
+          <dt>{spot.priceE8 !== null && spot.stale ? `${STOCKS.spot} · ${STOCKS.spotStale}` : STOCKS.spot}</dt>
+          <dd className="stk-spot numbers">
+            {spot.price !== null ? <Odometer value={spot.price} kind="usd" /> : STOCKS.dash}
+            <Spark symbol={symbol} feed={basis === "stock24" ? `${symbol}-24` : symbol} />
+          </dd>
+        </div>
+        {stock && (
+          <div className="stk-stat stk-stat-long">
+            <dt>{STOCKS.report}</dt>
+            <dd>{report.text}</dd>
+          </div>
+        )}
+        {mirror && (
+          <div className="stk-stat stk-stat-long">
+            <dt>{STOCKS.token}</dt>
+            <dd>
+              <Hash value={mirror} href={addressUrl(mirror, webEnv.markets.network)} lead={6} tail={4} className="numbers" />
+            </dd>
+          </div>
+        )}
+      </dl>
+      <p className="stk-source">
+        {ticker.redstoneFeedId ? STOCKS.source : STOCKS.noSource}
+        {mirror && (
+          <>
+            {" · "}
+            <Link href={`/bridge?t=${symbol}`} className="stk-link">{STOCKS.bridge}</Link>
+          </>
+        )}
+        {stock && (
+          <>
+            {" · "}
+            <Link href="/reserves" className="stk-link">{STOCKS.reserves}</Link>
+          </>
+        )}
+      </p>
+    </div>
+  );
 }
 
 /** The ticker's Windows trading or about to, soonest first — the lane page's own cards, from its one lane read. */
-function Windows({ symbol }: { symbol: StockSymbol }) {
+function Windows({ symbol }: { symbol: TickerSymbol }) {
   const lanes = useLanes();
   const router = useRouter();
   const tick = useClockValue((ms) => Math.floor(ms / 10_000));
   const markets = useMemo(() => {
     const set = lanes?.ok ? lanes.value : null;
     if (!set || tick === 0) return [];
-    const nowMs = tick * 10_000;
     return set.lanes
       .flatMap((lane) => tickerMarkets(lane, symbol))
-      .filter((m) => {
-        const p = phase(m, nowMs);
-        return p === "trading" || p === "upcoming" || p === "pendingOpeningPrint";
-      })
+      .filter((m) => live(tick * 10_000, m))
       .sort((a, b) => a.tradingStartSec - b.tradingStartSec)
       .slice(0, WINDOWS);
   }, [lanes, symbol, tick]);
   const tops = useTopsOfBook(markets, CARD_BOOK_POLL_MS);
   // Before the lanes answer, and before the chain clock's first tick (no phase can be read yet), it is reading — never "none".
-  if (lanes === null || tick === 0) return <p className="stk-quiet" role="status">{STOCKS.windows.reading}</p>;
+  if (lanes === null || tick === 0) return <LoadingState shape="cards" />;
   if (markets.length === 0) return <p className="stk-quiet">{STOCKS.windows.empty}</p>;
   return (
     <ul className="stk-windows">
@@ -84,117 +154,62 @@ function Windows({ symbol }: { symbol: StockSymbol }) {
   );
 }
 
-/** The stock's token on Tempo: the Mirror token's address where S15 minted one, the one true line on trading it, and
- *  "Bridge →" as its primary action (R4-12, D-227). */
-function TokenCard({ symbol }: { symbol: StockSymbol }) {
-  const mirror = deploymentOf("stocks", TEMPO_CHAIN_ID)?.[`Mirror${symbol}`]?.address ?? null;
+function Headlines({ symbol, headlines }: Pick<StockHubProps, "symbol" | "headlines">) {
+  const { articles, off, readAtMs } = use(headlines);
+  if (articles === null) return <p className="stk-quiet" role="status">{off ? STOCKS.headlines.off : STOCKS.headlines.quiet}</p>;
+  if (articles.length === 0) return <p className="stk-quiet">{STOCKS.headlines.empty}</p>;
   return (
-    <div className="stk-token">
-      {mirror ? (
-        <>
-          <p className="stk-token-row">
-            <span>{STOCKS.token.mirror}</span>
-            <Hash value={mirror} href={addressUrl(mirror, webEnv.markets.network)} lead={6} tail={4} className="numbers" />
-          </p>
-          <p className="stk-quiet">{STOCKS.token.blocked}</p>
-        </>
-      ) : (
-        <p className="stk-quiet">{STOCKS.token.none}</p>
-      )}
-      <div className="stk-token-links">
-        {mirror ? <Link href={`/bridge?t=${symbol}`} className="stk-trade">{STOCKS.token.bridge}</Link> : null}
-        <Link href="/reserves" className="stk-link">{STOCKS.token.reserves}</Link>
-      </div>
-    </div>
+    <ol className="news-wire">
+      {articles.map((a, i) => {
+        const symbols = articleSymbols(a.symbols.length ? a.symbols : [symbol]);
+        return (
+          <NewsRow
+            key={a.url}
+            index={i + 1}
+            title={a.title}
+            href={a.url}
+            mark={<MarkCluster symbols={symbols} />}
+            meta={
+              <>
+                <span className="news-meta">{timeAgo(a.publishedAtSec, readAtMs)} · {a.source}</span>
+                <Cashtags symbols={symbols} />
+              </>
+            }
+            tone={a.sentiment}
+            toneWord={NEWS.sentiment[a.sentiment]}
+          />
+        );
+      })}
+    </ol>
   );
 }
 
-export function StockHubScreen({ symbol, articles, headlinesOff, readAtMs }: StockHubProps) {
-  const ticker = TICKERS[symbol];
-  const spot = useCommittedSpot(symbol);
-  const report = useNextReport(symbol);
+export function HubBody({ symbol, headlines, calls }: StockHubProps) {
   // The Room lives in the URL (`?d=room`, D-190; R4-2, D-227): Back closes it instead of leaving the hub.
   const room = useOpenDrawerName() === "room";
-  const price = spot.priceE8 !== null ? usd2(spot.priceE8) : STOCKS.dash;
+  const crypto = TICKERS[symbol].kind === "crypto";
   return (
-    <div className="container stk-page stk-hub">
-      <div className="stk-live">
-        <span className="stk-eyebrow">{STOCKS.eyebrow}</span>
-        <MarketSessionChip asset={symbol} basis="regular" />
-      </div>
-      <h1 className="stk-h1">
-        <AssetDisc asset={symbol} className="stk-mark" />
-        <span>
-          {ticker.name} <span className="stk-sym numbers">${symbol}</span>
-        </span>
-      </h1>
-      <p className="stk-intro">{STOCKS.intro(ticker.name)}</p>
-
-      <div className="stk-bar">
-        <dl className="stk-stats">
-          <div className="stk-stat">
-            <dt>{spot.priceE8 !== null && spot.stale ? `${STOCKS.spot} · ${STOCKS.spotStale}` : STOCKS.spot}</dt>
-            <dd className="numbers">{price}</dd>
-          </div>
-          <div className="stk-stat">
-            <dt>{STOCKS.report}</dt>
-            <dd>{report.text}</dd>
-          </div>
-        </dl>
-        <p className="stk-source">{ticker.redstoneFeedId ? STOCKS.source : STOCKS.noSource}</p>
-        <div className="stk-actions page-action">
-          <button type="button" className="stk-room" onClick={() => openDrawer("room")}>
-            <MessageCircle aria-hidden className="size-4" />
-            {STOCKS.room(symbol)}
-            <span className="stk-room-meta">{STOCKS.roomQualifier}</span>
-          </button>
-          <Link href={`/trade/${symbol}`} className="stk-trade">{STOCKS.trade}</Link>
-        </div>
-      </div>
-
+    <>
       <section className="stk-section" aria-label={STOCKS.windows.title}>
-        <SectionHead number={STOCKS.windows.number} title={STOCKS.windows.title} />
+        <SectionHeader index={STOCKS.windows.number} title={STOCKS.windows.title} />
         <Windows symbol={symbol} />
       </section>
 
-      <section className="stk-section" aria-label={STOCKS.headlines.title}>
-        <SectionHead number={STOCKS.headlines.number} title={STOCKS.headlines.title} meta={STOCKS.headlines.credit} />
-        {articles === null ? (
-          <p className="stk-quiet" role="status">{headlinesOff ? STOCKS.headlines.off : STOCKS.headlines.quiet}</p>
-        ) : articles.length === 0 ? (
-          <p className="stk-quiet">{STOCKS.headlines.empty}</p>
-        ) : (
-          <ol className="news-wire">
-            {articles.map((a, i) => {
-              const symbols = articleSymbols(a.symbols);
-              return (
-                <NewsRow
-                  key={a.url}
-                  index={i + 1}
-                  title={a.title}
-                  href={a.url}
-                  mark={<MarkCluster symbols={symbols} />}
-                  meta={
-                    <>
-                      <span className="news-meta">{timeAgo(a.publishedAtSec, readAtMs)} · {a.source}</span>
-                      <Cashtags symbols={symbols} />
-                    </>
-                  }
-                  tone={a.sentiment}
-                  toneWord={NEWS.sentiment[a.sentiment]}
-                />
-              );
-            })}
-          </ol>
-        )}
+      <section className="stk-section" aria-label={STOCKS.calls.title}>
+        <SectionHeader index={STOCKS.calls.number} title={STOCKS.calls.title} desc={STOCKS.calls.desc} />
+        <Suspense fallback={<LoadingState shape="row" />}>
+          <HubCalls symbol={symbol} calls={calls} />
+        </Suspense>
       </section>
 
-      <section className="stk-section" aria-label={STOCKS.token.title}>
-        <SectionHead number={STOCKS.token.number} title={STOCKS.token.title} />
-        <TokenCard symbol={symbol} />
+      <section className="stk-section" aria-label={STOCKS.headlines.title}>
+        <SectionHeader index={STOCKS.headlines.number} title={STOCKS.headlines.title} eyebrow={crypto ? STOCKS.headlines.creditCrypto : STOCKS.headlines.credit} />
+        <Suspense fallback={<LoadingState shape="row" />}>
+          <Headlines symbol={symbol} headlines={headlines} />
+        </Suspense>
       </section>
 
       <RoomDrawer open={room} onOpenChange={(o) => (o ? openDrawer("room") : closeDrawer())} symbol={symbol} window={null} />
-    </div>
+    </>
   );
 }

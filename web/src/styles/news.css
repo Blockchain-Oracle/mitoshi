@@ -330,3 +330,14 @@
 
 /* The wire's one credit line (Finnhub's terms), under the last row. */
 .news-credit { margin-top: 24px; font-family: var(--font-mono); font-size: 11px; color: var(--gray-500); }
+
+/* R4-10 (D-227): the head row carries Trade it when narrowed; the ticker strip under it is the kit's TextTabs look as
+ * links (the current word in ink with the accent bar), scrolling sideways on a phone. */
+.news-head-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.news-head-row .news-title { margin-bottom: 0; }
+.news-tickers { margin: 12px 0 20px; border-bottom: 1px solid var(--news-hairline); }
+.news-tickers .kit-tabs-list { gap: 18px; padding-bottom: 0; }
+.news-tickers .kit-tab { gap: 6px; font-size: 14px; }
+.news-tickers .kit-tab[aria-current="page"] { color: var(--color-ink); box-shadow: inset 0 -3px 0 0 var(--color-accent); }
+.news-ticker-mark { display: grid; flex: none; place-items: center; width: 18px; height: 18px; border-radius: 9999px; }
+.news-ticker-mark.generic { background: var(--color-surface-2); font-size: 10px; }

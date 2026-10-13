@@ -1,13 +1,13 @@
-// `/stats` (S5, L-15) — Masayume 68f7a09 `features/stats/StatsPage.tsx`'s order (hero, Growth, Adoption, Live
-// activity), server-rendered in the site group: the hero answers "can they get users?" in five seconds with the 21st
-// 7870 card (`components/ui/stats-card.tsx`), then the curve, the venue's own counts and the latest calls, each with its
-// receipt. Every figure is `readStats()`; when the index can't be read the page shows no number.
-import { ArrowUpRight } from "lucide-react";
-import { connection } from "next/server";
-import type { ReactNode } from "react";
+// `/stats` (S5, L-15) — Ported from Owarine 90a91d71:web/src/features/stats/StatsPage.tsx (`StatsView`) and
+// styles/stats.css (R4-10, D-227): the hero answers "can they get users?" in five seconds — the lede beside the headline
+// card (wallets at 88 px, who was active in 24 h, calls and the 14-day strip under its foot) — then 01 Growth, 02
+// Adoption (2×2), 03 Live activity (each row opens its receipt), 04 Venue, and one footnote. Every figure is
+// `readStats()`, read on the server; when the index can't be read the page shows no number.
 import { addressUrl, formatBaseUnits, txUrl, USD_DECIMALS, type Network } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
-import { StatsCard } from "@/components/ui/stats-card";
+import Link from "next/link";
+import { connection } from "next/server";
+import { SectionHeader } from "@/components/kit";
 import { webEnv } from "@/lib/env";
 import { STATS } from "./copy";
 import { readStats } from "./data";
@@ -17,128 +17,141 @@ const DAY_MS = 86_400_000;
 const usd = (base: string) => `$${formatBaseUnits(BigInt(base), USD_DECIMALS, { maxDp: 2, minDp: 2 })}`;
 const count = (n: number) => n.toLocaleString("en-US");
 const dayLabel = (day: number) => new Date(day * DAY_MS).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
-const when = (sec: number) => {
-  const d = new Date(sec * 1000);
-  return `${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })} ${d.toISOString().slice(11, 16)}`;
+const ago = (sec: number, nowMs: number) => {
+  const m = Math.max(0, Math.floor((nowMs - sec * 1000) / 60_000));
+  return m < 60 ? `${m}m` : m < 1440 ? `${Math.floor(m / 60)}h` : `${Math.floor(m / 1440)}d`;
 };
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
+/** A bar's height as one of eight steps of the strip's highest day (a token class, no inline px). */
+const STEP = ["h-1/8", "h-2/8", "h-3/8", "h-4/8", "h-5/8", "h-6/8", "h-7/8", "h-full"] as const;
 
-function SectionHead({ index, title, tag }: { index: string; title: string; tag: string }) {
-  return (
-    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-hairline pb-3">
-      <span className="type-label-micro text-ink-secondary tabular-nums">{index}</span>
-      <h2 className="type-title text-ink">{title}</h2>
-      <span className="type-caption text-ink-secondary">{tag}</span>
-    </div>
+function Stat({ label, value, sub, accent = false, href }: { label: string; value: string; sub?: string; accent?: boolean; href?: string }) {
+  const body = (
+    <>
+      <div className="stat-label">{label}</div>
+      <div className="stat-value">{value}</div>
+      {sub ? <div className="stat-sub">{sub}</div> : null}
+    </>
   );
-}
-
-function Tile({ label, value, sub }: { label: string; value: string; sub: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-2 rounded-lg border border-hairline bg-surface-1 p-5">
-      <span className="type-label-micro text-ink-secondary">{label}</span>
-      <span className="type-title text-ink tabular-nums">{value}</span>
-      <span className="type-caption text-ink-secondary">{sub}</span>
-    </div>
-  );
+  const cls = accent ? "stat-card accent" : "stat-card";
+  return href ? <Link href={href} className={cls}>{body}</Link> : <div className={cls}>{body}</div>;
 }
 
 export async function StatsScreen() {
   await connection();
   const s = await readStats();
-  if (!s) return <p className="rounded-lg border border-hairline bg-surface-1 p-4 type-body text-ink-secondary">{STATS.unreachable}</p>;
+  if (!s) return <p className="stats-unreachable">{STATS.unreachable}</p>;
   const network: Network = webEnv.markets.network;
   let running = 0;
   const curve = s.days.map((d) => ({ label: dayLabel(d.day), cumulative: (running += d.newWallets) }));
   const bars = s.days.slice(-14);
+  const top = Math.max(1, ...bars.map((d) => d.calls));
+  const nowMs = s.computedAtMs;
+  const H = STATS.hero;
   const C = STATS.card;
   const V = STATS.venue;
+  const S = STATS.sections;
 
   return (
-    <div className="flex flex-col gap-14">
-      <section className="grid items-start gap-10 lg:grid-cols-[1fr_minmax(0,26rem)]">
-        <div className="flex flex-col gap-5">
-          <p className="flex items-center gap-2 type-label-micro text-ink-secondary">
-            <span aria-hidden className="inline-block size-2 rounded-full bg-up" />
-            {STATS.hero.eyebrow}
+    <div className="stats">
+      <section className="stats-hero">
+        <div>
+          <p className="stats-eyebrow">
+            <span className="stats-eyebrow-dash" aria-hidden />
+            <span className="stats-live-dot" aria-hidden />
+            {H.eyebrow}
           </p>
-          <h1 className="type-display text-ink">
-            {STATS.hero.titleLead} <span className="text-accent">{STATS.hero.titleAccent}</span>.
+          <h1 className="mt-4 type-display text-ink">
+            {H.titleLead}
+            <br />
+            <span className="text-accent">{H.titleAccent}</span>.
           </h1>
-          <p className="max-w-xl type-body text-ink-secondary">{STATS.hero.lede}</p>
+          <p className="stats-lede">{H.lede}</p>
         </div>
-        <StatsCard
-          title={C.title}
-          timeFrame={C.timeFrame}
-          headline={{ value: count(s.wallets), caption: C.active(s.wallets24h) }}
-          subStats={[
-            { value: count(s.calls), label: C.calls.label, sub: C.calls.sub },
-            { value: usd(s.tradedBase), label: C.traded.label, sub: C.traded.sub },
-          ]}
-          band={{ value: usd(s.paidBase), label: C.paid.label, sub: C.paid.sub }}
-          bars={{
-            title: C.bars,
-            counts: bars.map((d) => d.calls),
-            label: C.barsLabel(bars[0] ? dayLabel(bars[0].day) : "—"),
-            aria: C.barsAria(bars.map((d) => `${dayLabel(d.day)} ${d.calls}`).join(", ")),
-          }}
-        />
+        <div className="stats-headline">
+          <div className="stats-headline-eyebrow">
+            <span className="stats-live-dot" aria-hidden />
+            {H.headline}
+          </div>
+          <div className="stats-headline-value">{count(s.wallets)}</div>
+          <div className="stats-headline-caption">{H.caption(s.wallets24h)}</div>
+          <div className="stats-headline-foot">
+            <div>
+              <div className="stats-headline-foot-label">{H.foot}</div>
+              <div className="stats-headline-foot-value">{count(s.calls)}</div>
+            </div>
+            {bars.length > 0 ? (
+              <div className="flex min-w-0 flex-1 flex-col items-end">
+                <div className="stats-bars" role="img" aria-label={STATS.barsAria(bars.map((d) => `${dayLabel(d.day)} ${d.calls}`).join(", "))}>
+                  {bars.map((d) => (
+                    <span key={d.day} data-zero={d.calls === 0} className={`stats-bar ${d.calls === 0 ? "h-1/8" : STEP[Math.min(7, Math.ceil((d.calls / top) * 8) - 1)]}`} />
+                  ))}
+                </div>
+                <div className="stats-bars-label">{STATS.bars(dayLabel(bars[0]!.day))}</div>
+              </div>
+            ) : null}
+          </div>
+        </div>
       </section>
 
-      <section className="flex flex-col gap-5" aria-label={STATS.sections.growth.title}>
-        <SectionHead {...STATS.sections.growth} />
-        <div className="rounded-lg border border-hairline bg-surface-1 p-5">
+      <section className="stats-section" aria-label={S.growth.title}>
+        <SectionHeader index={S.growth.index} title={S.growth.title} desc={S.growth.desc} />
+        <div className="stats-curve-card">
           <GrowthCurve points={curve} />
         </div>
       </section>
 
-      <section className="flex flex-col gap-5" aria-label={STATS.sections.venue.title}>
-        <SectionHead {...STATS.sections.venue} />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Tile label={V.opened.label} value={count(s.windowsOpened)} sub={V.opened.sub(s.windowsOpen)} />
-          <Tile label={V.settled.label} value={count(s.windowsResolved)} sub={V.settled.sub(s.windowsVoided)} />
-          <Tile label={V.prints.label} value={count(s.prints)} sub={V.prints.sub} />
-          <Tile label={V.house.label} value={count(s.houseFills)} sub={V.house.sub} />
+      <section className="stats-section" aria-label={S.adoption.title}>
+        <SectionHeader index={S.adoption.index} title={S.adoption.title} />
+        <div className="stats-grid">
+          <Stat label={C.wallets.label} value={count(s.wallets)} accent />
+          <Stat label={C.calls.label} value={count(s.calls)} />
+          <Stat label={C.traded.label} value={usd(s.tradedBase)} sub={C.traded.sub} />
+          <Stat label={C.paid.label} value={usd(s.paidBase)} sub={C.paid.sub} />
         </div>
       </section>
 
-      <section className="flex flex-col gap-5" aria-label={STATS.sections.activity.title}>
-        <SectionHead {...STATS.sections.activity} />
-        {s.recent.length === 0 ? (
-          <p className="type-body text-ink-secondary">{STATS.activity.empty}</p>
-        ) : (
-          <ol className="flex flex-col overflow-hidden rounded-lg border border-hairline">
-            {s.recent.map((c) => (
-              <li key={`${c.txHash}-${c.kind}-${c.wallet ?? ""}`} className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-hairline px-4 py-3 first:border-t-0">
-                <span className={`inline-block size-2 shrink-0 rounded-full ${c.kind <= 1 ? "bg-up" : "bg-down"}`} aria-hidden />
-                <span className="min-w-36 type-body-strong text-ink">
+      <section className="stats-section" aria-label={S.activity.title}>
+        <SectionHeader index={S.activity.index} title={S.activity.title} desc={S.activity.desc} />
+        <div className="stats-activity">
+          {s.recent.length === 0 ? (
+            <p className="stats-activity-empty">{STATS.activity.empty}</p>
+          ) : (
+            s.recent.map((c) => (
+              <div key={`${c.txHash}-${c.kind}-${c.wallet ?? ""}`} className="stats-row">
+                <span className="stats-dot" data-side={c.kind <= 1 ? "up" : "down"} aria-hidden />
+                <a href={txUrl(c.txHash as `0x${string}`, network)} target="_blank" rel="noopener noreferrer" className="stats-row-kind">
                   {STATS.activity.kind[c.kind] ?? "Call"} · {c.symbol} {formatCadence(c.cadenceSec)}
-                </span>
-                {c.wallet ? (
-                  <a href={addressUrl(c.wallet as `0x${string}`, network)} target="_blank" rel="noopener noreferrer" className="font-mono type-caption text-ink-secondary underline-offset-4 hover:underline">
-                    {short(c.wallet)}
-                  </a>
-                ) : (
-                  <span className="type-caption text-ink-secondary">{STATS.activity.product}</span>
-                )}
-                <span className="ml-auto type-body text-ink tabular-nums">{usd(c.cashBase)}</span>
-                <span className="w-28 text-right type-caption text-ink-secondary tabular-nums">{when(c.tsSec)}</span>
-                <a href={txUrl(c.txHash as `0x${string}`, network)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-touch items-center gap-1 type-caption text-ink underline-offset-4 hover:underline">
-                  {STATS.activity.receipt} <ArrowUpRight aria-hidden className="size-3.5" />
                 </a>
-              </li>
-            ))}
-          </ol>
-        )}
+                {c.wallet ? (
+                  <a href={addressUrl(c.wallet as `0x${string}`, network)} target="_blank" rel="noopener noreferrer" className="stats-row-wallet">{short(c.wallet)}</a>
+                ) : (
+                  <span className="stats-row-wallet">{STATS.activity.product}</span>
+                )}
+                <span className="stats-row-spacer" />
+                <span className="stats-row-amount">{usd(c.cashBase)}</span>
+                <span className="stats-row-time">{ago(c.tsSec, nowMs)}</span>
+                <span className="stats-row-arrow" aria-hidden>↗</span>
+              </div>
+            ))
+          )}
+        </div>
       </section>
 
-      <footer className="flex max-w-3xl flex-col gap-3 type-caption text-ink-secondary">
-        <p>{STATS.attribution(s.unattributed)}</p>
-        <p>{STATS.testnet}</p>
-        <p>
-          {STATS.foot} {STATS.computed(new Date(s.computedAtMs).toISOString().replace("T", " ").slice(0, 16))}
-        </p>
-      </footer>
+      <section className="stats-section" aria-label={S.venue.title}>
+        <SectionHeader index={S.venue.index} title={S.venue.title} />
+        <div className="stats-grid">
+          <Stat label={V.opened.label} value={count(s.windowsOpened)} sub={V.opened.sub(s.windowsOpen)} />
+          <Stat label={V.settled.label} value={count(s.windowsResolved)} sub={V.settled.sub(s.windowsVoided)} />
+          <Stat label={V.prints.label} value={count(s.prints)} sub={V.prints.sub} href="/proof" />
+          <Stat label={V.house.label} value={count(s.houseFills)} sub={V.house.sub} />
+        </div>
+      </section>
+
+      <p className="stats-foot">
+        {STATS.foot(s.unattributed, new Date(s.computedAtMs).toISOString().replace("T", " ").slice(0, 16))}{" "}
+        <Link href="/docs/record">{STATS.how}</Link>
+      </p>
     </div>
   );
 }

@@ -8,7 +8,7 @@ export default function Page() {
   return (
     <>
       <H1>Windows and lanes</H1>
-      <Lead>A Window is one asset over a fixed stretch of time. UP wins if it closes at or above where it opened; DOWN wins if below.</Lead>
+      <Lead>One asset over a fixed stretch: UP wins at or above the open, DOWN below.</Lead>
       <H2>Lanes</H2>
       <Table
         head={["Assets", "Lanes", "When"]}

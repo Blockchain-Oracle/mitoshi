@@ -10,7 +10,7 @@ import { LEADERBOARD } from "./copy";
 
 function Placeholder() {
   return (
-    <div className="mx-auto w-full max-w-(--content-wide) px-gutter py-8 lg:px-gutter-desktop">
+    <div className="mx-auto w-full max-w-(--content-wide)">
       <LoadingState shape="podium" label={LEADERBOARD.loading} />
     </div>
   );

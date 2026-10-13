@@ -1,83 +1,132 @@
-// `/status/halts` (S6): From 21st.dev 5693 preetsuthar17/system-status-block, revamped per D-044 — its one row per
-// service (status icon, name, state, "Last:" incident) and its uptime strip become one row per ticker with 30 ET days;
-// its incident-history toggle becomes a native <details> list. The strip is 5693's plain cells (a `title` per day), not
-// 26906's hover-card buttons: 30 tappable days can't meet the 44 px target rule at 320 px, so each strip is one image
-// whose label names its halted days, and every halt is listed in full below. No client JS (a site route, §3.1).
+// `/status/halts` (S6) — on the status board's parts (R4-10, D-227; Owarine 90a91d71 `StatusRows.tsx`'s banner, tally and
+// system accordion): the verdict ("No halts" / "Halted: TSLA" / warn when only a signed price is stale), a tally, one bar
+// per ticker, then one dropdown per ticker — its mark, name, now or last — whose 30-day strip sits in the trigger on a
+// wide screen and in the panel on a phone, with that ticker's halts listed under it; every halt last. The strip is
+// From 21st.dev 5693 preetsuthar17/system-status-block's plain cells, one image whose label names its halted days.
 import { ET_WEEKDAY_SHORT, etDateOf, formatEtClock, haltLabel, weekdayOfDate } from "@cwf/core";
-import { CheckCircleIcon, TriangleAlertIcon } from "lucide-react";
-import { H1, Lead, Note } from "@/features/docs/Prose";
+import { History } from "lucide-react";
+import Link from "next/link";
+import { AssetDisc } from "@/features/markets/hero/AssetDisc";
+import { BoardBanner, BoardStack, SystemItem, type BoardTone } from "@/features/status/BoardParts";
 import type { BoardRow, DayTone } from "./board";
 import { episodeLine } from "./board";
-import { HALTS } from "./copy";
 import type { HaltsBoard as Board } from "./board.server";
+import { HALTS } from "./copy";
 
 const CELL: Record<DayTone, string> = { none: "bg-surface-2", clear: "bg-up/70", stale: "bg-warning", halted: "bg-down" };
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 /** "Wed Oct 7" from an ET date. */
 const dayWords = (date: string) => `${ET_WEEKDAY_SHORT[weekdayOfDate(date)]} ${MONTHS[Number(date.slice(5, 7)) - 1]} ${Number(date.slice(8))}`;
 
-function Row({ row }: { row: BoardRow }) {
+function toneOf(row: BoardRow): BoardTone {
+  if (row.unwatched) return "off";
+  if (!row.now) return "good";
+  return haltLabel(row.now.reason) === "Trading halted" ? "bad" : "warn";
+}
+
+function Strip({ row }: { row: BoardRow }) {
   const marked = row.days.filter((d) => d.tone === "stale" || d.tone === "halted");
-  const state = row.unwatched ? HALTS.unwatched : row.now ? HALTS.now(haltLabel(row.now.reason), row.now.feed, `${formatEtClock(row.now.sinceSec)} ET`) : HALTS.clear;
   return (
-    <li className="flex flex-col gap-2 border-t border-hairline py-4 first:border-t-0">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        {row.now ? <TriangleAlertIcon aria-hidden className="size-4 text-warning" /> : <CheckCircleIcon aria-hidden className={`size-4 ${row.unwatched ? "text-ink-secondary" : "text-up"}`} />}
-        <b className="type-body-strong">{row.symbol}</b>
-        <span className="type-caption text-ink-secondary">{row.name}</span>
-        <span className="type-caption text-ink">{state}</span>
-        {row.last ? <span className="type-caption ml-auto text-ink-secondary">{HALTS.last(dayWords(etDateOf(row.last.startSec)), haltLabel(row.last.reason))}</span> : null}
-      </div>
+    <div role="img" aria-label={HALTS.strip(row.symbol, marked.map((d) => dayWords(d.date)))} className="flex h-6 w-full gap-px">
+      {row.days.map((d) => (
+        <div key={d.date} title={`${dayWords(d.date)} — ${d.tone === "none" ? HALTS.noRecord : d.lines.length ? d.lines.join("; ") : HALTS.noHalt}`} className={`h-full flex-1 rounded-sm ${CELL[d.tone]}`} />
+      ))}
+    </div>
+  );
+}
+
+function TickerItem({ row, nowSec, episodes }: { row: BoardRow; nowSec: number; episodes: Board["episodes"] }) {
+  const tone = toneOf(row);
+  const summary = row.unwatched
+    ? HALTS.unwatched
+    : row.now
+      ? HALTS.now(haltLabel(row.now.reason), row.now.feed, `${formatEtClock(row.now.sinceSec)} ET`)
+      : row.last
+        ? `${HALTS.clear} · ${HALTS.last(dayWords(etDateOf(row.last.startSec)))}`
+        : HALTS.clear;
+  const mine = episodes.filter((e) => e.asset.replace(/-24$/, "") === row.symbol);
+  return (
+    <SystemItem
+      value={row.symbol}
+      glyph={<AssetDisc asset={row.symbol} className="halts-mark" />}
+      name={`${row.symbol} · ${row.name}`}
+      summary={summary}
+      summaryTone={tone}
+      wide={row.unwatched ? null : <Strip row={row} />}
+    >
       {row.unwatched ? null : (
-        <div role="img" aria-label={HALTS.strip(row.symbol, marked.map((d) => dayWords(d.date)))} className="flex h-6 gap-px">
-          {row.days.map((d) => (
-            <div key={d.date} title={`${dayWords(d.date)} — ${d.tone === "none" ? HALTS.noRecord : d.lines.length ? d.lines.join("; ") : HALTS.noHalt}`} className={`h-full flex-1 rounded-sm ${CELL[d.tone]}`} />
-          ))}
+        <div className="flex flex-col gap-3 py-3">
+          <div className="sm:hidden">
+            <Strip row={row} />
+          </div>
+          {mine.length === 0 ? (
+            <p className="type-caption text-ink-secondary">{HALTS.none}</p>
+          ) : (
+            <ol className="flex flex-col gap-1.5">
+              {mine.map((e) => (
+                <li key={`${e.asset}-${e.startSec}`} className="type-caption text-ink-secondary">
+                  <b className="text-ink">{dayWords(etDateOf(e.startSec))}</b> · {episodeLine(e, nowSec)}
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
       )}
-    </li>
+    </SystemItem>
   );
 }
 
 export function HaltsBoard({ board }: { board: Board | null }) {
   if (!board) {
-    return (
-      <>
-        <H1>{HALTS.title}</H1>
-        <Note>{HALTS.unreadable}</Note>
-      </>
-    );
+    return <BoardBanner tone="bad" eyebrow={HALTS.eyebrow} verdict={HALTS.unreadable} sub={HALTS.sub} figureLabel={HALTS.watched} figure="—" tally={[]} pulse={[]} aside={<Back />} />;
   }
-  const halted = board.rows.filter((r) => r.now);
+  const tones = board.rows.map(toneOf);
+  const n = (t: BoardTone) => tones.filter((x) => x === t).length;
+  const halted = board.rows.filter((_, i) => tones[i] === "bad").map((r) => r.symbol);
+  const stale = board.rows.filter((_, i) => tones[i] === "warn").map((r) => r.symbol);
+  const tone: BoardTone = halted.length ? "bad" : stale.length ? "warn" : "good";
+  const verdict = halted.length ? HALTS.someNow(halted) : stale.length ? HALTS.staleNow(stale) : HALTS.noneNow;
+  const open = board.rows.filter((_, i) => tones[i] === "bad" || tones[i] === "warn").map((r) => r.symbol);
   return (
     <>
-      <H1>{HALTS.title}</H1>
-      <Lead>{HALTS.lead}</Lead>
-      <div className="flex items-start gap-3 rounded-lg border border-hairline bg-surface-1 p-4">
-        {halted.length ? <TriangleAlertIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-warning" /> : <CheckCircleIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-up" />}
-        <p className="type-body text-ink">{halted.length ? HALTS.someNow(halted.map((r) => r.symbol)) : HALTS.noneNow}</p>
-      </div>
-      <ul aria-label={HALTS.rowsLabel} className="flex flex-col">
+      <BoardBanner
+        tone={tone}
+        eyebrow={HALTS.eyebrow}
+        verdict={verdict}
+        sub={HALTS.sub}
+        figureLabel={HALTS.watched}
+        figure={`${board.rows.length - n("off")} / ${board.rows.length}`}
+        tally={(["bad", "warn", "good", "off"] as const).map((t) => ({ tone: t, n: n(t), word: HALTS.tally[t] }))}
+        pulse={board.rows.map((r, i) => ({ id: r.symbol, label: r.symbol, tone: tones[i] ?? "off" }))}
+        aside={<Back />}
+      />
+      <BoardStack open={open} label={HALTS.title}>
         {board.rows.map((r) => (
-          <Row key={r.symbol} row={r} />
+          <TickerItem key={r.symbol} row={r} nowSec={board.nowSec} episodes={board.episodes} />
         ))}
-      </ul>
-      <p className="type-caption flex flex-wrap gap-x-4 gap-y-1 text-ink-secondary">
+        <SystemItem value="history" glyph={<History aria-hidden className="size-4.5 text-ink" />} name={HALTS.history(board.episodes.length)} summary={HALTS.sub} summaryTone="good">
+          {board.episodes.length === 0 ? <p className="py-3 type-caption text-ink-secondary">{HALTS.noneLogged}</p> : null}
+          <ol className="flex flex-col gap-1.5 py-3 empty:hidden">
+            {board.episodes.map((e) => (
+              <li key={`${e.asset}-${e.startSec}`} className="type-caption text-ink-secondary">
+                <b className="text-ink">{dayWords(etDateOf(e.startSec))} · {e.asset.replace(/-24$/, "")}</b> · {episodeLine(e, board.nowSec)}
+              </li>
+            ))}
+          </ol>
+        </SystemItem>
+      </BoardStack>
+      <p className="flex flex-wrap justify-center gap-x-4 gap-y-1 type-caption text-ink-secondary">
         {(["clear", "stale", "halted", "none"] as const).map((t) => (
           <span key={t} className="inline-flex items-center gap-1.5"><span aria-hidden className={`inline-block size-2.5 rounded-sm ${CELL[t]}`} />{HALTS.legend[t]}</span>
         ))}
       </p>
-      <details className="rounded-lg border border-hairline bg-surface-1 p-4">
-        <summary className="type-body-strong min-h-11 cursor-pointer content-center">{HALTS.history(board.episodes.length)}</summary>
-        <ol className="mt-2 flex flex-col gap-1.5">
-          {board.episodes.map((e) => (
-            <li key={`${e.asset}-${e.startSec}`} className="type-caption text-ink-secondary">
-              <b className="text-ink">{dayWords(etDateOf(e.startSec))} · {e.asset.replace(/-24$/, "")}</b> · {episodeLine(e, board.nowSec)}
-            </li>
-          ))}
-        </ol>
-      </details>
-      <Note>{HALTS.checked(new Date(board.nowSec * 1000).toISOString().replace("T", " ").slice(0, 16))}</Note>
+      <p className="status-checked">{HALTS.checked(new Date(board.nowSec * 1000).toISOString().replace("T", " ").slice(0, 16))}</p>
     </>
+  );
+}
+
+function Back() {
+  return (
+    <Link href="/status" className="self-start type-caption text-accent underline-offset-4 hover:underline">{HALTS.back}</Link>
   );
 }

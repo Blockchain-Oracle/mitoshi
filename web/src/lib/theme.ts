@@ -35,7 +35,28 @@ export function resolveTheme(): Theme {
 function apply(theme: Theme): void {
   if (typeof document !== "undefined") {
     document.documentElement.setAttribute("data-theme", theme);
+    syncThemeColor();
   }
+}
+
+/** `rgb(…)` passes; `color(srgb r g b)` (how a `color-mix` computes) becomes `#rrggbb`; anything else is null. */
+function chromeColor(css: string): string | null {
+  if (/^rgba?\(/.test(css)) return /,\s*0\)$|\/\s*0\)$/.test(css) ? null : css;
+  const m = /^color\(srgb ([\d.]+) ([\d.]+) ([\d.]+)/.exec(css);
+  if (!m) return null;
+  return `#${m.slice(1, 4).map((v) => Math.round(Math.min(1, Number(v)) * 255).toString(16).padStart(2, "0")).join("")}`;
+}
+
+/**
+ * The phone browser's bar takes the page's ground: the chosen theme, and the testnet canvas once the shell floods it
+ * (critic bug 17, R4-8 D-227). `viewport.themeColor` keys it to the OS scheme only, so a toggled theme left the bar in
+ * the other colour. Reads the computed ground, so it follows the tokens.
+ */
+export function syncThemeColor(): void {
+  if (typeof document === "undefined" || !document.body) return;
+  const color = chromeColor(getComputedStyle(document.body).backgroundColor);
+  if (!color) return;
+  for (const meta of document.querySelectorAll('meta[name="theme-color"]')) meta.setAttribute("content", color);
 }
 
 export function setStoredTheme(theme: Theme): void {
@@ -60,6 +81,23 @@ export function initTheme(): Theme {
   return theme;
 }
 
+/** Pages outside the app shell (D-226: the landing and the pitch; the dev pages): no world is painted there. */
+const SHELL_LESS = /^\/(?:(?:pitch|dev)(?:\/|$)|$)/;
+/** wagmi's persisted store (`cookieStorage`, `wagmi.store`) names a current connection: a session will restore. */
+const STORED_SESSION = /(?:^|;\s*)wagmi\.store=[^;]*"current":"/;
+
+/**
+ * The world the first paint guesses (R4-8, D-227; Ported from Owarine 90a91d71:web/src/lib/theme.ts, whose init script
+ * reads the stored seat): `testnet` when wagmi kept a current connection, `demo` otherwise, nothing outside the shell.
+ * `EnvironmentMode` corrects the guess at once on the session's first settled answer, so a returning account paints
+ * its own world on the first frame instead of demo and then testnet.
+ */
+export function guessMode(pathname: string, cookie: string): "demo" | "testnet" | null {
+  if (SHELL_LESS.test(pathname)) return null;
+  return STORED_SESSION.test(cookie) ? "testnet" : "demo";
+}
+
 // Blocking snippet injected before the app renders so the correct theme paints on the
-// FIRST frame — no flash of dark. Kept tiny and dependency-free; mirrors resolveTheme().
-export const THEME_INIT_SCRIPT = `(()=>{try{var t=localStorage.getItem('${STORAGE_KEY}');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('${EXPLAINED_PREFIX}')===0&&localStorage.getItem(k)==='1')document.documentElement.classList.add('cwf-explained-'+k.slice(${EXPLAINED_PREFIX.length}));}}catch(e){}})();`;
+// FIRST frame — no flash of dark. Kept tiny and dependency-free; mirrors resolveTheme() and guessMode(); the phone
+// bar takes the ground as syncThemeColor() does (a testnet canvas computes as `color(srgb …)`).
+export const THEME_INIT_SCRIPT = `(()=>{try{var t=localStorage.getItem('${STORAGE_KEY}');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}try{if(!/${SHELL_LESS.source}/.test(location.pathname))document.documentElement.setAttribute('data-mode',/${STORED_SESSION.source}/.test(document.cookie)?'testnet':'demo');}catch(e){}try{var c=getComputedStyle(document.body).backgroundColor,s=/^color\\(srgb ([\\d.]+) ([\\d.]+) ([\\d.]+)/.exec(c);if(s)c='#'+[1,2,3].map(function(i){return ('0'+Math.round(Math.min(1,+s[i])*255).toString(16)).slice(-2)}).join('');if(/^rgb\\(|^#/.test(c))document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){m.setAttribute('content',c)});}catch(e){}try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.indexOf('${EXPLAINED_PREFIX}')===0&&localStorage.getItem(k)==='1')document.documentElement.classList.add('cwf-explained-'+k.slice(${EXPLAINED_PREFIX.length}));}}catch(e){}})();`;

@@ -174,7 +174,7 @@
   --spacing-drawer-wide: 560px;
   --spacing-drawer-inset: 16px;
   --spacing-dock-item-w: 60px;
-  --spacing-dock-item-h: 56px;
+  --spacing-dock-item-h: 52px;
   --spacing-modal: 440px;
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }

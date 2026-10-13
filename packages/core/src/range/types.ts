@@ -55,6 +55,8 @@ export interface RangeRound {
   houseLockedBase: bigint;
   /** The fair win probability the contract priced the round at, per whole unit of collateral. */
   probRaw: bigint;
+  /** Set when the round lives on a retired RangeReserve (R4-5): a record to show, not a round to act on. */
+  retiredReserve?: Address;
 }
 
 export interface RangeParams {

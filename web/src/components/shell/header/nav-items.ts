@@ -3,7 +3,7 @@
 // places (Trade · Markets · Portfolio · Games · Automate · Leaderboard), the dock, and More, one home per destination.
 // No Stocks place: stocks trade in Markets' 24/7 lanes beside crypto and each ticker's hub is `/tickers/[symbol]`.
 import {
-  Activity, ArrowLeftRight, BarChart3, Bell, BookOpen, Bot, CandlestickChart, CirclePause, ChartCandlestick, ChartLine, ChartNoAxesCombined,
+  Activity, ArrowLeftRight, BadgeCheck, BarChart3, Bell, BookOpen, Bot, CandlestickChart, CirclePause, ChartCandlestick, ChartLine, ChartNoAxesCombined,
   CircleHelp, Clapperboard, Coins, Dices, Download, FileText, GalleryVerticalEnd, Gamepad2, Goal, Handshake, History, KeyRound,
   Layers3, MessageSquare, Mountain, Newspaper, Palette, Presentation, Rocket, ScanSearch, Settings, ShieldCheck, Sparkles, Trophy,
   WalletCards, X as XLogo, type LucideIcon,
@@ -73,6 +73,7 @@ export const NAV_ITEMS = {
   gamesHistory: item({ id: "games-history", name: "Games history", href: "/games/history", description: "Your runs and draws.", icon: History, match: { paths: ["/games/history"], exact: true } }),
   status: item({ id: "status", name: "Status", href: "/status", description: "Every service Mitoshi runs on, live.", icon: Activity }),
   halts: item({ id: "halts", name: "Trading halts", href: "/status/halts", description: "Halts on the listed stocks.", icon: CirclePause, keywords: "halt luld paused stock" }),
+  proofs: item({ id: "proofs", name: "Print proofs", href: "/proof", description: "Every settled Window, re-verifiable.", icon: BadgeCheck, keywords: "proof prints redstone verify settled" }),
 
   account: item({ id: "account", name: "Account & keys", href: "/settings/account", description: "Passkeys, keys and grants.", icon: Settings, keywords: "settings revoke passkey security" }),
   notifications: item({ id: "notifications", name: "Notifications", href: "/settings/notifications", description: "Choose what reaches you.", icon: Bell }),
@@ -94,7 +95,7 @@ export const EVERYTHING_SECTIONS: readonly NavSection[] = [
   { id: "learn", name: "Learn", items: [NAV_ITEMS.demo, NAV_ITEMS.news, NAV_ITEMS.howItWorks, NAV_ITEMS.download, NAV_ITEMS.reels, NAV_ITEMS.docs, NAV_ITEMS.reference, NAV_ITEMS.pitch] },
   { id: "games", name: "Games", items: [NAV_ITEMS.practice, NAV_ITEMS.duel, NAV_ITEMS.lucky, NAV_ITEMS.range, NAV_ITEMS.moonshot, NAV_ITEMS.lineRider, NAV_ITEMS.candleHop] },
   { id: "automate", name: "Automate", items: [NAV_ITEMS.agents] },
-  { id: "records", name: "Records and proof", items: [NAV_ITEMS.activity, NAV_ITEMS.edge, NAV_ITEMS.stats, NAV_ITEMS.gamesRank, NAV_ITEMS.gamesHistory, NAV_ITEMS.status, NAV_ITEMS.halts] },
+  { id: "records", name: "Records and proof", items: [NAV_ITEMS.activity, NAV_ITEMS.edge, NAV_ITEMS.stats, NAV_ITEMS.gamesRank, NAV_ITEMS.gamesHistory, NAV_ITEMS.status, NAV_ITEMS.halts, NAV_ITEMS.proofs] },
   { id: "account", name: "Account", items: [NAV_ITEMS.account, NAV_ITEMS.notifications, NAV_ITEMS.xRecovery] },
 ];
 export const EVERYTHING_ITEMS: readonly NavItem[] = EVERYTHING_SECTIONS.flatMap((section) => section.items);
@@ -103,7 +104,7 @@ export const EVERYTHING_ITEMS: readonly NavItem[] = EVERYTHING_SECTIONS.flatMap(
 export const NAVIGABLE_ROUTE_PATHS = [
   "/activity", "/agents", "/bridge", "/claim", "/demo", "/docs", "/download", "/earn", "/games", "/games/candle-hop", "/games/duel",
   "/games/history", "/games/line-rider", "/games/lucky", "/games/moonshot", "/games/practice", "/games/range", "/games/rank",
-  "/how-it-works", "/launch", "/leaderboard", "/markets", "/news", "/parlay", "/pitch", "/portfolio", "/portfolio/edge",
+  "/how-it-works", "/launch", "/leaderboard", "/markets", "/news", "/parlay", "/pitch", "/portfolio", "/portfolio/edge", "/proof",
   "/reels", "/reserves", "/settings/account", "/settings/notifications", "/stats", "/status", "/status/halts", "/strategies",
   "/surface", "/themes", "/trade", "/trade-from-x",
 ] as const;
@@ -116,14 +117,14 @@ export function isActiveNavItem(pathname: string | null, item: NavItem): boolean
 }
 
 /**
- * Where the back chevron goes from a nested page whose parent path is no page (R4-0, D-227): `/tickers`, `/u`, `/proof`
- * and `/settings` have none, so dropping the last segment opened a 404. First match wins; anything else goes up a
+ * Where the back chevron goes from a nested page whose parent path is no page (R4-0, D-227): `/tickers`, `/u` and
+ * `/settings` have none (`/proof` is the settled feed since R4-10, so a proof goes back to it), so dropping the last segment opened a 404. First match wins; anything else goes up a
  * segment (`/games/duel/abc` → `/games/duel`).
  */
 export const PARENTS: readonly (readonly [prefix: string, href: string])[] = [
   ["/tickers/", "/markets"],
   ["/u/", "/leaderboard"],
-  ["/proof/", "/status"],
+  ["/proof/", "/proof"],
   ["/settings/", "/portfolio"],
 ];
 

@@ -1,23 +1,42 @@
-/* The command palette (components/ui/command-palette.tsx; From 21st.dev 31354 wensity/command) in Masayume tokens. */
-.command-backdrop { position: fixed; inset: 0; z-index: var(--z-command); background: var(--color-scrim); transition: opacity 120ms ease-out; }
+/* The ⌘K palette (components/ui/command-palette.tsx) — Ported from Owarine 90a91d71:web/src/components/ui/command.tsx's
+ * sizes on Mitoshi tokens (R4-8, D-227): a card a third of the way down, a recessed pill field, one-line rows that fill
+ * recessed when picked; on the command layer (tokens.css), above the account menu and below modals. */
+.command-backdrop {
+  position: fixed; inset: 0; z-index: var(--z-command); background: rgb(0 0 0 / 0.4); transition: opacity 150ms var(--ease-out);
+}
+@supports (backdrop-filter: blur(4px)) { .command-backdrop { backdrop-filter: blur(4px); } }
 .command-backdrop[data-starting-style], .command-backdrop[data-ending-style] { opacity: 0; }
-.command-viewport { position: fixed; inset: 0; z-index: calc(var(--z-command) + 1); display: flex; align-items: flex-start; justify-content: center; padding: calc(var(--safe-top, 0px) + 12svh) 16px 16px; }
-.command-popup { width: min(100%, 560px); overflow: hidden; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); color: var(--white); transition: opacity 80ms ease-out; }
-.command-popup[data-starting-style], .command-popup[data-ending-style] { opacity: 0; }
-.command-input-row { display: flex; align-items: center; gap: 10px; padding: 0 14px; border-bottom: 1px solid var(--color-hairline); }
-.command-input-icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--gray-400); }
-.command-input { height: 52px; width: 100%; min-width: 0; border: 0; background: transparent; color: var(--white); font-size: 16px; outline: none; }
-.command-list { max-height: min(60svh, 420px); overflow-y: auto; overscroll-behavior: contain; padding: 6px; }
-.command-group + .command-group { margin-top: 4px; }
-.command-group-label { padding: 8px 10px 4px; color: var(--gray-400); font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
-.command-item { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 6px 10px; border-radius: var(--radius-md); cursor: default; outline: none; }
+.command-popup {
+  position: fixed; top: calc(var(--safe-top, 0px) + min(18dvh, 9rem)); left: 50%; z-index: calc(var(--z-command) + 1); translate: -50% 0;
+  display: flex; flex-direction: column; width: min(36rem, calc(100vw - 1.5rem)); overflow: hidden; padding: 8px; border-radius: 1.75rem;
+  background: var(--color-surface-1); color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-hairline), 0 24px 48px -24px var(--color-scrim);
+  outline: none; transition: scale 150ms var(--ease-out), opacity 150ms var(--ease-out);
+}
+.command-popup[data-starting-style], .command-popup[data-ending-style] { scale: 0.97; opacity: 0; }
+
+.command-field { display: flex; flex: none; height: 48px; align-items: center; gap: 10px; padding: 0 16px; border-radius: var(--radius-full); background: var(--color-surface-2); }
+.command-field-icon { width: 18px; height: 18px; flex: none; color: var(--color-ink-secondary); }
+/* 16 px: iOS never zooms the field (§2.5). */
+.command-input { height: 100%; width: 100%; min-width: 0; border: 0; background: transparent; color: var(--color-ink); font: 400 16px/1.4 var(--font-body); outline: none; }
+.command-input::placeholder { color: var(--color-ink-secondary); }
+
+.command-list { max-height: min(26rem, 60dvh); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scroll-padding-block: 8px; padding: 8px 4px 4px; outline: none; }
+.command-group { padding: 4px 0; }
+.command-group-label { padding: 8px 12px 6px; color: var(--color-ink-secondary); font: 700 12px/1.2 var(--font-body); letter-spacing: 0.08em; text-transform: uppercase; }
+.command-item {
+  display: flex; min-height: 44px; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 14px;
+  color: var(--color-ink); font: 400 15px/1.3 var(--font-body); cursor: default; outline: none; user-select: none;
+}
 .command-item[data-highlighted] { background: var(--color-surface-2); }
-.command-item-icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--gray-400); }
-.command-item[data-highlighted] .command-item-icon { color: var(--vermilion); }
-.command-item-copy { display: flex; min-width: 0; flex-direction: column; }
-.command-item-label { font-size: 14px; font-weight: 600; }
-.command-item-desc { overflow: hidden; color: var(--gray-400); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
-.command-empty { padding: 28px 12px; color: var(--gray-400); font-size: 13px; text-align: center; }
-.command-hints { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-top: 1px solid var(--color-hairline); color: var(--gray-400); font-size: 11px; }
-.command-hints kbd { display: inline-flex; min-width: 20px; height: 20px; align-items: center; justify-content: center; padding: 0 4px; border: 1px solid var(--color-hairline); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: 11px; }
+.command-icon { width: 18px; height: 18px; flex: none; color: var(--color-ink); pointer-events: none; }
+/* Mitoshi's mark of the picked row: its icon turns vermilion. */
+.command-item[data-highlighted] .command-icon { color: var(--color-accent); }
+.command-disc { display: grid; flex: none; width: 24px; height: 24px; place-items: center; overflow: hidden; border-radius: var(--radius-full); }
+.command-disc.generic { background: var(--color-surface-2); font: 700 11px/1 var(--font-body); }
+.command-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.command-shortcut { min-width: 0; max-width: 60%; margin-left: auto; padding-left: 12px; overflow: hidden; color: var(--color-ink-secondary); font: 400 13px/1.3 var(--font-body); text-overflow: ellipsis; white-space: nowrap; }
+.command-shortcut[data-kind="data"], .command-shortcut[data-kind="key"] { font-family: var(--font-data); }
+@media (max-width: 639px) { .command-shortcut[data-kind="desc"] { display: none; } }
+.command-empty { padding: 32px 0; color: var(--color-ink-secondary); font: 400 14px/1.4 var(--font-body); text-align: center; }
+
 @media (prefers-reduced-motion: reduce) { .command-popup, .command-backdrop { transition: none; } }

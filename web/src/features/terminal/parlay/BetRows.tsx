@@ -14,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Odometer } from "@/components/kit";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { usdBand } from "@/features/range/format";
+import { rangeBetId } from "./useTerminalBets";
 import { useClockValue } from "@/lib/clock";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
@@ -115,7 +116,7 @@ export function RangeRow({ r, onValue }: { r: RangeRoundView; onValue: (id: stri
   const kind = classifyRangeBand(r.openingPrint, r.lowPrint, r.highPrint);
   const chance = bandChanceE6(f.spotE8, printToE8(r.lowPrint), printToE8(r.highPrint), f.sigmaE8, f.tauSec, r.side);
   const markBase = markRangeBase(chance, r.probRaw, r.maxPayoutBase);
-  const id = `range:${r.roundId}`;
+  const id = rangeBetId(r);
   useEffect(() => onValue(id, valued(markBase, r.stakeBase)), [id, markBase, r.stakeBase, onValue]);
   const band = kind.kind === "moonshot" ? `${kind.direction === "long" ? "≥" : "≤"} ${usdBand(kind.strikePrint)}` : `${usdBand(r.lowPrint)}–${usdBand(r.highPrint)}`;
   return (

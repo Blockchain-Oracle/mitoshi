@@ -286,8 +286,8 @@ export const indexerSources = {
     {
       area: "range",
       contract: "RangeReserve",
-      address: "0xf19342733Bb451503f3806b0d44CC58A3D345052",
-      deployBlock: 37532233,
+      address: "0xebBDfAbDffC0D894Cd61BeAd2308E48F16985A05",
+      deployBlock: 39352148,
       events: [
         {"name":"AdminChanged","signature":"AdminChanged(address indexed admin)","topic0":"0x7ce7ec0b50378fb6c0186ffb5f48325f6593fcb4ca4386f21861af3129188f5c"},
         {"name":"AssetTickerSet","signature":"AssetTickerSet(string asset, uint16 ticker)","topic0":"0x5c0d8c21dbbf6c6e7060e4384d3c6dfc6e9b8035df200cd234846d7febe8060a"},

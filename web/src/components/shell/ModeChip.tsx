@@ -1,29 +1,19 @@
 "use client";
 // Owarine 90a91d71 `components/shell/app/ModeChip.tsx` (P6, D-224): on phones, which world you are in, beside the
-// mark — DEMO (paper dollars, signed out; it opens sign-in) or TESTNET (test dollars; it opens /status). Not a picker:
-// the connection decides. The label is its own span: at ≤ 360 px TESTNET keeps its dot and the word goes to screen
-// readers only (R4-0, D-227).
-import Link from "next/link";
+// mark — DEMO (paper dollars, signed out) or TESTNET (test dollars). Not a picker: the connection decides. R4-8 (D-227):
+// a plain chip as Owarine's (the DEMO chip was a 28 px button repeating the Sign in beside it), with the world's hanko;
+// at ≤ 360 px the word goes to screen readers and the hanko stays.
 import { SHELL } from "@/lib/copy";
-import { webEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
-import { useWalletSession } from "@/lib/wallet-session";
+import { modeWords, useShellMode } from "./ModePlate";
 
 export function ModeChip({ className }: { className?: string }) {
-  const session = useWalletSession();
-  const demo = !session.isConnected && !session.isConnecting;
-  const cls = cn("mode-chip", className);
-  if (demo) {
-    return (
-      <button type="button" className={cls} data-mode="demo" title={SHELL.demoLabel} onClick={() => session.connect()}>
-        {SHELL.modeDemo}
-      </button>
-    );
-  }
+  const mode = useShellMode();
+  const words = modeWords(mode);
   return (
-    <Link href="/status" className={cls} data-mode="live" title={SHELL.testnetTitle}>
-      <span aria-hidden className="mode-chip-dot" />
-      <span className="mode-chip-label">{webEnv.markets.network === "testnet" ? SHELL.modeTestnet : SHELL.modeMainnet}</span>
-    </Link>
+    <span className={cn("mode-chip", className)} data-mode={mode} title={words.hint}>
+      <span aria-hidden className="mode-chip-kanji">{SHELL.mode[mode].kanji}</span>
+      <span className="mode-chip-label">{words.label}</span>
+    </span>
   );
 }

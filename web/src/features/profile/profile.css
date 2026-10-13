@@ -1,0 +1,41 @@
+/* /u/[address] (R4-10, D-227) — Ported from Owarine 90a91d71:web/src/features/profile/profile.css on Mitoshi's tokens:
+ * /news's frame (styles/news.css), the marble avatar beside a mono title, the figures in one row with the actions on
+ * the right; Owarine's signal ink is Mitoshi's accent. */
+
+.prf-ident { display: flex; align-items: center; gap: 16px; }
+.prf-avatar { flex-shrink: 0; border-radius: 9999px; box-shadow: 0 0 0 1px var(--news-hairline); }
+.prf-title { margin-bottom: 0; overflow-wrap: anywhere; font-family: var(--font-mono); font-size: 28px; }
+@media (min-width: 768px) { .prf-title { font-size: 36px; } }
+.prf-sub { display: block; margin-top: 4px; font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.02em; color: var(--color-ink-secondary); }
+.prf-bio { max-width: 36rem; margin-top: 8px; font-size: 14px; line-height: 1.55; color: var(--color-ink-secondary); }
+
+.prf-bar {
+  display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px 24px;
+  margin-top: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--news-hairline);
+}
+.prf-stats {
+  display: flex; flex-wrap: wrap; gap: 32px; margin: 0; font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-secondary); font-variant-numeric: tabular-nums;
+}
+.prf-stat dd { margin: 8px 0 0; }
+.prf-stat .big {
+  font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1; letter-spacing: -0.02em;
+  text-transform: none; color: var(--color-ink);
+}
+.prf-stat .big.is-up { color: var(--color-up); }
+.prf-stat .big.is-down { color: var(--color-down); }
+.prf-stats.small .big { font-size: 22px; }
+.prf-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+@media (max-width: 767px) { .prf-actions.page-action { padding-block: 8px; background: var(--color-stage); } }
+
+.prf-section { margin-top: 32px; display: flex; flex-direction: column; gap: 16px; }
+.prf-quiet { margin: 0; font-size: 14px; color: var(--color-ink-secondary); }
+.prf-more { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 9999px; color: var(--color-ink-secondary); }
+.prf-more:hover, .prf-more[data-popup-open] { background: var(--color-surface-2); color: var(--color-ink); }
+.prf-menu { width: min(14rem, calc(100vw - 1.5rem)); }
+
+@media (max-width: 640px) {
+  .prf-avatar { width: 32px; height: 32px; }
+  .prf-stats { gap: 24px; }
+  .prf-stat .big { font-size: 22px; }
+}

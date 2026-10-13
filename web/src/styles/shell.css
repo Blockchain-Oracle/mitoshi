@@ -65,7 +65,9 @@
 .am-copy:hover { background: var(--color-hairline); color: var(--color-ink); }
 .am-link { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; font-weight: 600; color: var(--color-ink); text-decoration: underline; text-underline-offset: 4px; }
 .am-items { display: flex; flex-direction: column; margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--color-hairline); }
-.am-item { display: flex; width: 100%; height: 44px; align-items: center; gap: 12px; padding: 0 12px; border-radius: 0.875rem; text-align: left; font: 500 14px/1 var(--font-body); color: var(--color-ink); outline: none; transition: background-color 160ms var(--ease); }
+.am-item { display: flex; width: 100%; height: 44px; align-items: center; gap: 12px; padding: 0 12px; border-radius: 0.875rem; text-align: left; font: 500 15px/1 var(--font-body); color: var(--color-ink); outline: none; transition: background-color 160ms var(--ease); }
+.am-item svg { width: 18px; height: 18px; flex: none; color: var(--color-ink-secondary); }
+.am-item--danger svg { color: currentColor; }
 .am-item:hover, .am-item[data-highlighted] { background: var(--color-surface-2); }
 .am-item--danger { color: var(--color-loss, var(--vermilion)); }
 
@@ -131,8 +133,6 @@
    { top: 0 }`, part-02) on the assumption that the ticker went with it — but the ticker stays, so the
    header covers it and the page's first line hides under the header. Verified on yosuku.xyz itself
    (2026-09-02). The header hangs under the ticker instead; the ticker's height is the reference's own. */
-/* An island route: no ticker, no header, so nothing to offset. */
-.page-island { min-height: 100svh; }
 
 [data-strip="off"] .header { top: 28px; }
 @media (max-width: 767px) {
