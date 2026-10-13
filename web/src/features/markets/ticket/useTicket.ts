@@ -21,7 +21,7 @@ export function useTicket({ market, side: urlSide, wallet, nowMs }: { market: Ev
   const [stakeText, setStakeText] = useState("");
   const [remembered, setRemembered] = useState(false);
   const [advancedFrom, setAdvancedFrom] = useState<EventMarket | null>(null);
-  const { phase, openingRaw } = useWindowPhase(market, nowMs);
+  const { phase, openingRaw, openingUnread } = useWindowPhase(market, nowMs);
   const successor = useNextWindow(phase === "noEntryBuffer" ? market : null);
 
   useEffect(() => setSide(urlSide), [urlSide]);
@@ -58,7 +58,7 @@ export function useTicket({ market, side: urlSide, wallet, nowMs }: { market: Ev
     [market.marketId],
   );
 
-  return { market, side, stakeText, stakeBase, remembered, phase, openingRaw, advancedFrom, setStakeText: edit, setStakeBase, selectSide };
+  return { market, side, stakeText, stakeBase, remembered, phase, openingRaw, openingUnread, advancedFrom, setStakeText: edit, setStakeBase, selectSide };
 }
 
 export type TicketApi = ReturnType<typeof useTicket>;

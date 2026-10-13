@@ -29,7 +29,6 @@ export const TERMINAL = {
     trades: (left: string) => `trades ${left}`,
     closes: (left: string) => `closes ${left}`,
     opens: (left: string) => `opens ${left}`,
-    pricing: "pricing…",
     none: "no Window",
     settling: "settling…",
     /** The switch to the same cadence on the 24/7 feed, where a stock lists both. */
@@ -40,6 +39,8 @@ export const TERMINAL = {
     regularOnly: (open: string) => `Opens ${open}`,
     gap0400: (next: string) => `04:00 ET gap · opens ${next}`,
     none: "Next Window soon",
+    /** The Windows' read failed (the public RPC busy, D-230): said plainly, retried on its own — never "Next Window soon". */
+    unreachable: "Can't reach Tempo right now — retrying",
   },
   buttons: {
     up: "UP",
@@ -53,6 +54,8 @@ export const TERMINAL = {
     needMove: (pct: string) => `Need +${pct}% past break-even`,
     tabOnly: "Only while Mitoshi is open",
     locked: (at: string) => `Locked — pays at ${at}`,
+    /** An empty book in a Window's last stretch: the tap's toast offers the next Window (D-230). */
+    nextWindow: "Call the next Window",
   },
   stack: {
     label: (symbol: string) => `${symbol} order settings`,
@@ -108,6 +111,8 @@ export const TERMINAL = {
     /** D36: every failure says whether money moved. A refused or reverted order takes nothing (the relay pays its fee). */
     nothingTaken: "Nothing was taken.",
     gettingPrice: "Getting a price…",
+    noPrice: "No price yet",
+    tapAgainPlain: "The book didn't answer in time. Tap again.",
   },
   add: {
     title: (side: string, symbol: string) => `Add to ${side} ${symbol}`,
@@ -378,7 +383,7 @@ export const TERMINAL = {
     stake: "Stake",
     paysIfRight: "Pays if right",
     fees: "Fees",
-    sizeReset: "Follow 5 %",
+    sizeReset: "Default size",
     trailing: "Trailing stop",
     trailingHint: "How far price may come back before Trail closes.",
     tolerance: "Close tolerance",

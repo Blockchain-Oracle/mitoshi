@@ -127,6 +127,26 @@ export const HERO = {
   },
 } as const;
 
+/**
+ * While a Window waits for its opening print (D-230 item 1): when it opened, a live count and why — never a bare wait.
+ * `at` is the open in the reader's clock; `left` and `waited` count each second.
+ */
+export const OPENING_WAIT = {
+  soon: (at: string, left: string) => `Opened ${at} · opening price in ~${left}`,
+  late: (at: string, waited: string) => `Opened ${at} · waiting ${waited} for RedStone's opening price`,
+  refused: (at: string, waited: string) => `Opened ${at} · waiting ${waited} — RedStone is refusing requests`,
+  unreachable: (at: string, waited: string) => `Opened ${at} · waiting ${waited} — RedStone is unreachable`,
+  /** The chain didn't answer the read (a rate-limited RPC): the print may be in; reads retry on their own. */
+  unread: (at: string) => `Opened ${at} · can't reach Tempo to read its opening price — retrying`,
+} as const;
+
+/** An empty side of a trading Window's book (D-230 item 2), said instead of a bare "—". */
+export const EMPTY_BOOK = {
+  quoting: "No offers yet — the house quotes within seconds of the open",
+  closing: (next: string) => `No offers left on this Window — the next opens ${next}`,
+  none: "No offers on this side right now",
+} as const;
+
 /** The hero-as-ticket head (Yosuku /markets): the opening print is the line. */
 export const HERO_HEAD = {
   alert: "Alert",

@@ -29,7 +29,9 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { useTapArmed } from "@/providers/wallet/tap-session";
 import { CALL, TICKET, TICKET_PENDING } from "../copy";
 import { CallCard } from "../calls/CallCard";
+import { emptyBookWhy, openingWaitLine } from "../data/opening-wait";
 import { useTopOfBook } from "../data/useTopOfBook";
+import { usePrintsState } from "../session";
 import { AmountBlock, BetModes, RouteToggle, SideSegments, type BetMode } from "./ComposeBlocks";
 import { BoostCta, BoostOutcome, boostCells, boostWhy } from "./BoostBlocks";
 import { BOOST } from "@/features/boost/copy";
@@ -130,6 +132,14 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
     fillableStakeText: displayed?.partial ? usd(displayed.fillableStakeBase, decimals) : undefined,
   };
 
+  // D-230: the opening print's wait and an empty book say when and why, live — never a bare "waiting" or "no liquidity".
+  const prints = usePrintsState();
+  const nowSec = Math.floor(nowMs / 1000);
+  const empty = emptyBookWhy(market, nowSec).text;
+  const reason = blocker === "pending-opening-print" ? openingWaitLine({ startSec: market.tradingStartSec, nowSec, prints, unread: t.openingUnread }) : blocker === "no-liquidity-at-size" ? empty : null;
+  // A thin book fills part of the stake: one tap stakes what it fills now, instead of a dead "above what fills".
+  const fillable = !listed && displayed?.partial && !belowMinStake(displayed.fillableStakeBase, decimals) ? displayed.fillableStakeBase : null;
+
   const failed = quoteState.reading && !quoteState.reading.ok ? quoteState.reading.error : null;
   const caption = listed
     ? resting && !resting.ok && resting.blocker === "too-small" ? TICKET.scheduled.tooSmall : TICKET.scheduled.note(new Date(market.tradingStartSec * 1000).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }))
@@ -137,7 +147,7 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
       ? TICKET.quoteFailed(diagnosisCopy(failed.kind).headline)
       : displayed
         ? displayed.partial ? TICKET.partial(usd(displayed.fillableStakeBase, decimals)) : quoteState.stale || quoteState.pending ? TICKET.requoting : TICKET.liveOdds
-        : quoteState.pending ? TICKET.gettingQuote : side && stakeBase > 0n && hasSigner && phase === "trading" ? TICKET.noLiquidity : TICKET.enterAmount;
+        : quoteState.pending ? TICKET.gettingQuote : side && stakeBase > 0n && hasSigner && phase === "trading" ? empty : TICKET.enterAmount;
 
   const place = () => {
     if (!side || !displayed) return;
@@ -199,6 +209,9 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
             chance={!boosted && displayed ? TICKET.chance(Math.round(displayed.avgPriceBps / 100)) : null}
             note={boosted ? BOOST.knockout(multiple) : null}
           />
+          {!boosted && fillable !== null ? (
+            <button type="button" className="tk-add tk-fill" onClick={() => t.setStakeBase(fillable)}>{TICKET.useFillable(usd(fillable, decimals))}</button>
+          ) : null}
           <AccountGate connected={session.isConnected} availableBase={spendBase} stakeBase={stakeBase} decimals={decimals} chip={<TapTradingChip />} />
           {routeToggle}
           {t.advancedFrom ? <p role="status" className="type-caption text-ink-secondary">{TICKET.advanced(formatCadence(t.advancedFrom.intervalSec), formatCadence(market.intervalSec))}</p> : null}
@@ -220,6 +233,7 @@ export function Ticket({ market, side: urlSide, head, variant = "rail" }: Ticket
                 signer={signer}
                 onConfirm={signedOut ? () => (side ? session.connectFor(TICKET.signInFor(SIDE_WORD[side], usd(stakeBase, decimals))) : session.connect()) : place}
                 action={listed ? TICKET.scheduled.cta : TICKET.buy}
+                reason={reason}
               />
             )}
             <p className="tk-foot">{boosted ? BOOST.footnote : tb.viaBalance ? SESSION.footnote : tapArmed ? TICKET.footnoteArmed : session.kind === "passkey" ? TICKET.footnotePasskey : TICKET.footnote}</p>

@@ -8,10 +8,11 @@ import { CANDLE_INTERVALS, type CandleInterval } from "./chart/candles";
 /**
  * The terminal's settings, to Tradash's (`settings` slice): one object, persisted per browser behind try/catch (a
  * private window simply uses the defaults). The stake, while untouched, follows 5 % of what is spendable, as the
- * reference re-derives it on every balance change.
+ * reference re-derives it on every balance change — at most $10 (D-230): a new account's $1M of test dollars made it
+ * $50,000, far past any book, and every balance read moved it and threw away the quote.
  */
 export interface TradeSettings {
-  /** The stake once the user set one, base units as a decimal string; null while it follows 5 % of spendable. */
+  /** The stake once the user set one, base units as a decimal string; null while it follows the default. */
   sizeBase: string | null;
   /** Trail distance as a fraction (0.001 = 0.10 %). */
   trailPct: number;
@@ -38,9 +39,12 @@ export const TRAIL_CHOICES = [0.001, 0.005, 0.01, 0.02] as const;
 export const TRAIL_MIN = 0.001;
 export const TRAIL_MAX = 0.1;
 export const CLOSE_TOLERANCE_CHOICES_BPS = [50, 100, 200, 500] as const;
-/** Default stake: this share of spendable (Tradash's 5 %), in basis points, never under the minimum. */
+/** Default stake: this share of spendable (Tradash's 5 %), in basis points, never under the minimum… */
 export const DEFAULT_SIZE_SHARE_BPS = 500n;
+/** …and never over $10 (base units, 6 dp): what the house's book fills at any price from 40¢ (D-230). */
+export const DEFAULT_SIZE_CAP_BASE = 10_000_000n;
 
+const CENT_BASE = 10_000n;
 const KEY = "cwf.trade.settings.v1";
 const DEFAULTS: TradeSettings = { sizeBase: null, trailPct: 0.001, closeToleranceBps: 100, musicTrack: "arcade", tutorialSeen: false, favourites: [], chartView: "line", chartInterval: "1m", boostX: 1, scheduledCents: 50 };
 
@@ -110,9 +114,10 @@ export function useTradeSettings(): TradeSettings {
   return useTradeSettingsState() ?? DEFAULTS;
 }
 
-/** The stake a tap wants before caps: the set size, or 5 % of spendable, never under `minBase`. */
+/** The stake a tap wants before caps: the set size, or 5 % of spendable up to $10 in whole cents, never under `minBase`. */
 export function wantedStakeBase(settings: Pick<TradeSettings, "sizeBase">, spendableBase: bigint | null, minBase: bigint): bigint {
   if (settings.sizeBase !== null) return BigInt(settings.sizeBase);
-  const auto = ((spendableBase ?? 0n) * DEFAULT_SIZE_SHARE_BPS) / 10_000n;
+  const share = ((spendableBase ?? 0n) * DEFAULT_SIZE_SHARE_BPS) / 10_000n;
+  const auto = share > DEFAULT_SIZE_CAP_BASE ? DEFAULT_SIZE_CAP_BASE : share - (share % CENT_BASE);
   return auto > minBase ? auto : minBase;
 }

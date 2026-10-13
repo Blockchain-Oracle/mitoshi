@@ -21,8 +21,9 @@ export const TICKET = {
   enterAmount: "Enter an amount to quote",
   gettingQuote: "Getting live quote…",
   requoting: "requoting…",
-  noLiquidity: "No liquidity at this size.",
   partial: (fillableText: string) => `Fills up to ${fillableText}; the rest stays.`,
+  /** One tap to the size the book fills now (D-230). */
+  useFillable: (fillableText: string) => `Stake ${fillableText} — fills now`,
   quoteFailed: (why: string) => `Quote failed: ${why}`,
   chance: (pct: number) => `${pct}% chance`,
   buy: (side: string) => `Buy ${side} for`,

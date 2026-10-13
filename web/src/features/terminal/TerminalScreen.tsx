@@ -315,10 +315,10 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           ) : market && s.phase === "upcoming" ? (
             <ScheduledTrade market={market} stakeBase={s.stakeBase} />
           ) : market ? (
-            <TerminalTrade market={market} phase={s.phase} stakeBase={s.stakeBase} spot={s.spot.price} boostX={s.settings.boostX} onPays={setPays} />
+            <TerminalTrade market={market} phase={s.phase} openingUnread={s.openingUnread} stakeBase={s.stakeBase} spot={s.spot.price} boostX={s.settings.boostX} onPays={setPays} />
           ) : (
             // No Window listed: the pair stays, off, with why (Owarine `TradeButtons` `why`).
-            <TradeButtons mode="flat" disabled onUp={noop} onDown={noop} busy={null} upSub={null} downSub={null} upNote={null} downNote={null} why={s.win.loading ? null : laneGapNext !== null ? TERMINAL.noWindow.gap0400(clockText(laneGapNext)) : noWindowNote(s.ticker, nyse, s.nowSec)} />
+            <TradeButtons mode="flat" disabled onUp={noop} onDown={noop} busy={null} upSub={null} downSub={null} upNote={null} downNote={null} why={s.win.loading ? null : s.win.failure ? TERMINAL.noWindow.unreachable : laneGapNext !== null ? TERMINAL.noWindow.gap0400(clockText(laneGapNext)) : noWindowNote(s.ticker, nyse, s.nowSec)} />
           )}
         </aside>
       </div>
