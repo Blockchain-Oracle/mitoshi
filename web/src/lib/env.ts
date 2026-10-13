@@ -19,8 +19,17 @@ function origin(raw: string | undefined): string {
 
 // Every NEXT_PUBLIC_* variable is referenced literally so Next can inline it into the client bundle. Each one is
 // optional: with no .env the app boots read-only against Moderato from baked defaults.
+/**
+ * In the browser, reads go first to this site's own RPC (round 7, app/api/rpc → the server's private RPC), with the
+ * public RPC behind it: the public one answers a phone with 429s. Only when no RPC list is configured.
+ */
+function withOwnRpc(markets: WebEnv["markets"]): WebEnv["markets"] {
+  if (typeof window === "undefined" || process.env.NEXT_PUBLIC_TEMPO_RPC_HTTP_URLS) return markets;
+  return { ...markets, rpcHttpUrls: [`${window.location.origin}/api/rpc`, ...markets.rpcHttpUrls] };
+}
+
 export const webEnv: WebEnv = {
-  markets: parseMarketsEnv({
+  markets: withOwnRpc(parseMarketsEnv({
     network: process.env.NEXT_PUBLIC_NETWORK,
     rpcHttpUrls: process.env.NEXT_PUBLIC_TEMPO_RPC_HTTP_URLS,
     rpcWsUrls: process.env.NEXT_PUBLIC_TEMPO_RPC_WS_URLS,
@@ -28,7 +37,7 @@ export const webEnv: WebEnv = {
     streamUrl: process.env.NEXT_PUBLIC_STREAM_URL,
     // Our index API (default `/api/index`, same origin); a deployment whose indexer lives elsewhere points here.
     indexUrl: process.env.NEXT_PUBLIC_INDEX_URL,
-  }),
+  })),
   ...(process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ? { walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID } : {}),
   appOrigin: origin(process.env.NEXT_PUBLIC_APP_ORIGIN),
 };
