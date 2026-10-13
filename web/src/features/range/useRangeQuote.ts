@@ -37,6 +37,30 @@ export interface RangeQuoteState {
   retry: () => void;
 }
 
+/**
+ * |σ × 1e4| between the Window's book centre and the live spot (`previewDriftE4`), keyed by Window and re-read every
+ * 10 s with the latest spot, kept through a refetch. Shared by Range and Moonshot (R4-5 review: Moonshot opens through
+ * the same lane and the same 2σ bound, and met it only after the passkey).
+ */
+export function useRangeDrift(marketId: string | null, asset: string | null, spotE8: bigint | null, enabled: boolean): bigint | null {
+  const spotRef = useRef(spotE8);
+  useEffect(() => {
+    spotRef.current = spotE8;
+  }, [spotE8]);
+  const driftQ = useQuery({
+    queryKey: [...rangeKeys.all, "drift", marketId ?? "", asset ?? ""],
+    queryFn: async () => {
+      const d = await previewRangeDrift(marketId as Hex, asset!, (spotRef.current ?? spotE8)!);
+      return d < 0n ? -d : d;
+    },
+    enabled: enabled && marketId !== null && asset !== null && spotE8 !== null,
+    refetchInterval: DRIFT_MS,
+    staleTime: DRIFT_MS,
+    placeholderData: keepPreviousData,
+  });
+  return driftQ.data ?? null;
+}
+
 export function useRangeQuote({ band, expirySec, mode, params, spotE8, enabled }: { band: RangeBand | null; expirySec: number | null; mode: RangeMode; params: RangeParams | null; spotE8: bigint | null; enabled: boolean }): RangeQuoteState {
   const queryClient = useQueryClient();
   const amount = mode.kind === "fixStake" ? mode.stakeBase : mode.maxPayoutBase;
@@ -48,10 +72,7 @@ export function useRangeQuote({ band, expirySec, mode, params, spotE8, enabled }
   const quote = active && reading?.ok ? reading.value : null;
   const [last, setLast] = useState<RangeQuote | null>(null);
   if (quote && quote !== last) setLast(quote);
-  const spotRef = useRef(spotE8);
-  useEffect(() => {
-    spotRef.current = spotE8;
-  }, [spotE8]);
+  const driftE4 = useRangeDrift(band?.marketId ?? null, band?.asset ?? null, spotE8, enabled && band !== null);
   const basisQ = useQuery({
     queryKey: [...rangeKeys.all, "basis", band?.marketId ?? "", band?.asset ?? ""],
     queryFn: async () => {
@@ -60,17 +81,6 @@ export function useRangeQuote({ band, expirySec, mode, params, spotE8, enabled }
     },
     enabled: enabled && band !== null,
     refetchInterval: REQUOTE_MS,
-    placeholderData: keepPreviousData,
-  });
-  const driftQ = useQuery({
-    queryKey: [...rangeKeys.all, "drift", band?.marketId ?? "", band?.asset ?? ""],
-    queryFn: async () => {
-      const d = await previewRangeDrift(band!.marketId as Hex, band!.asset, spotRef.current!);
-      return d < 0n ? -d : d;
-    },
-    enabled: enabled && band !== null && spotE8 !== null,
-    refetchInterval: DRIFT_MS,
-    staleTime: DRIFT_MS,
     placeholderData: keepPreviousData,
   });
   const capQ = useQuery({
@@ -93,7 +103,7 @@ export function useRangeQuote({ band, expirySec, mode, params, spotE8, enabled }
     loading: askable && (!active || reading === null),
     error,
     basis: basisQ.data ?? null,
-    driftE4: driftQ.data ?? null,
+    driftE4,
     capacity: capQ.data ?? null,
     retry,
   };

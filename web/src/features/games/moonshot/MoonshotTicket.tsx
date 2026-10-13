@@ -9,14 +9,16 @@
  * TicketStrip — Pays ×N over "long · above $X · +0.42%", Stake or Payout (the rung's cap, one tap to set it) — and the
  * hold. The reserve's caps are read before the popup ("Won't fit this expiry"), every refusal is named by the Range
  * mapping, the last quote stays on screen through a requote, and signed out the hold opens sign-in for the order.
+ * R4-5 review (D-227): the book's drift from the live price is tested as Range's is (the open's 2σ bound), and the cap
+ * is set in base units (a rounded float could land a cent over it).
  */
 import { USD_DECIMALS, type EventMarket } from "@cwf/core";
 import { moonshotPayoutCapBase, RANGE_STAKE_HEADROOM_BPS, type RangeReserveState } from "@cwf/core/range";
 import { REQUOTE_MS } from "@cwf/core/constants";
-import { mulBpsCeil, oneUnit, parseDecimalToBaseUnits } from "@cwf/core/units";
+import { formatBaseUnits, mulBpsCeil, oneUnit, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import { quoteMoonshotOnchain, readRangeCapacity, type MoonshotQuote, type RangeModel } from "@cwf/markets/range";
-import { useAssetPrice, useBalanceSheet, useReadingQuery } from "@cwf/markets/react";
+import { useBalanceSheet, useReadingQuery } from "@cwf/markets/react";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
@@ -28,13 +30,14 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { FUNDING } from "@/features/funding/copy";
 import { useFirstFunding } from "@/features/funding/first-fund-state";
 import { useDebounced } from "../../markets/ticket/useDebounced";
-import { feedKeyOf } from "../../markets/units";
 import { usd } from "../../parlay/format";
 import { capacityLabel, refusalLabel } from "../../range/blockers";
 import { RANGE } from "../../range/copy";
 import { rangeKeys } from "../../range/data";
 import { usdBand } from "../../range/format";
 import { TicketStrip, type SolveMode } from "../../range/TicketStrip";
+import { useRangeDrift } from "../../range/useRangeQuote";
+import { useRangeSpot } from "../../range/useRangeSpot";
 import { useRangeWrites } from "../../range/useRangeWrites";
 import { AimPad, useRememberedCall } from "./AimPad";
 import { MOONSHOT } from "./copy";
@@ -76,8 +79,10 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
   const session = useWalletSession();
   const sheet = useBalanceSheet(session.address);
   const writes = useRangeWrites(session.address);
-  const price = useAssetPrice(feedKeyOf(market), nowMs);
-  const spotCents = price?.ok && price.value ? price.value.priceRaw / 1_000_000n : null;
+  // The live price (stream, else the signed median) — the gauge's dot and the drift test the open makes (R4-5 review).
+  const spotE8 = useRangeSpot(market, model?.feed ?? null, nowMs);
+  const spotCents = spotE8 === null ? null : spotE8 / 1_000_000n;
+  const driftE4 = useRangeDrift(market.marketId, market.asset, spotE8, model !== null && !reserve.paused);
   const [call, setCall] = useRememberedCall();
   const [mode, setMode] = useState<SolveMode>("fixStake");
   const [amountText, setAmountText] = useState("5");
@@ -119,6 +124,8 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
     if (!model) return RANGE.windows.noModel(market.asset);
     if (amountBase === 0n) return RANGE.cta.enterAmount;
     if (overCap) return MOONSHOT.ticket.overCapShort;
+    // The open tests the book's centre against a signed spot (2σ, D-119): a stale book is named here, not after the passkey.
+    if (driftE4 !== null && driftE4 > BigInt(reserve.params.maxDriftE4)) return RANGE.cta.stale;
     if (error) return refusalLabel(error);
     if (!q) return MOONSHOT.ticket.pricing;
     const cap = capacityLabel(capacity.data ?? null);
@@ -154,7 +161,7 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
             <>
               {MOONSHOT.ticket.overCap(call.multiple, usd(capBase))}
               {" · "}
-              <button type="button" onClick={() => setAmountText((Number(capBase) / Number(ONE)).toFixed(2))}>{MOONSHOT.ticket.useCap}</button>
+              <button type="button" onClick={() => setAmountText(formatBaseUnits(capBase, USD_DECIMALS, { group: false, minDp: 0 }))}>{MOONSHOT.ticket.useCap}</button>
             </>
           ) : null
         }

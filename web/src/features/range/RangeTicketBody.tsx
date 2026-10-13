@@ -18,8 +18,7 @@ import { bandProbE6, RANGE_STAKE_HEADROOM_BPS, type RangeReserveState, type Rang
 import { mulBpsCeil, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import type { RangeModel } from "@cwf/markets/range";
-import { useAssetPrice, useBalanceSheet } from "@cwf/markets/react";
-import { useQuery } from "@tanstack/react-query";
+import { useBalanceSheet } from "@cwf/markets/react";
 import { useEffect, useMemo, useState } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
@@ -28,9 +27,7 @@ import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { useNowMs } from "@/lib/clock";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
-import { feedKeyOf } from "../markets/units";
 import { usd } from "../parlay/format";
-import { fetchSpots } from "../parlay/useParlayQuote";
 import { BandCard } from "./BandCard";
 import { publishBand } from "./band-store";
 import { capacityLabel, refusalLabel } from "./blockers";
@@ -39,6 +36,7 @@ import { usdBand, usdOnGrid, usdToPrint } from "./format";
 import { TicketStrip, type SolveMode } from "./TicketStrip";
 import { useRangeDraft } from "./useRangeDraft";
 import { useRangeQuote } from "./useRangeQuote";
+import { useRangeSpot } from "./useRangeSpot";
 import { useRangeWrites } from "./useRangeWrites";
 
 const BUCKETS = 24;
@@ -47,11 +45,8 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
   const nowMs = useNowMs();
   const session = useWalletSession();
   const sheet = useBalanceSheet(session.address);
-  const price = useAssetPrice(feedKeyOf(market), nowMs);
-  // The live price from the stream; when the stream has none (between ticks, or no ops stream), the signed RedStone
-  // median the open's own proof comes from — the same real price, never a placeholder.
-  const signed = useQuery({ queryKey: ["cwf", "range", "spot", model?.feed ?? ""], queryFn: async () => (await fetchSpots([model!.feed!])).get(model!.feed!)!.medianE8, enabled: model?.feed != null && !(price?.ok && price.value), refetchInterval: 15_000 });
-  const spotE8 = price?.ok && price.value ? price.value.priceRaw : (signed.data ?? null);
+  // The live price from the stream, else the signed RedStone median the open's own proof comes from (`useRangeSpot`).
+  const spotE8 = useRangeSpot(market, model?.feed ?? null, nowMs);
   const draft = useRangeDraft(spotE8 === null ? null : spotE8 / 1_000_000n, market.intervalSec);
   const [side, setSide] = useState<RangeSide>("inside");
   const [mode, setMode] = useState<SolveMode>("fixStake");
