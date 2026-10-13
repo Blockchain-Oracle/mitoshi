@@ -46,6 +46,14 @@ function sigmaTable(raw: string | undefined): (symbol: TickerSymbol) => number {
 
 const usd = (raw: string | undefined, fallback: number) => BigInt(num(raw, fallback, 1)) * 1_000_000n;
 
+/**
+ * Depth (D-230): each side quotes `MM_QUOTE_LOTS` lots — a lot pays $0.001, so 25,000 lots pay $25 and cost $5–20 —
+ * enough for the terminal's default stake (5 % of what you can spend, at most $10) to fill at any price from 40¢. It
+ * was 5,000 lots ($2–4 a side): a default stake met "no liquidity at this size" or a $3 cap. Both sides together escrow
+ * ≈ 940 × lots base units, $23.50, inside every lane's cap; the house holds $700k of test dollars for ~60 books.
+ */
+export const DEFAULT_QUOTE_LOTS = 25_000;
+
 export function readSeedMakerEnv(env: NodeJS.ProcessEnv = process.env): SeedMakerEnv {
   const symbols = (env.MM_SYMBOLS ?? "").split(",").map((s) => s.trim().toUpperCase()).filter((s): s is TickerSymbol => (TICKER_SYMBOLS as readonly string[]).includes(s));
   const cadences = (env.MM_CADENCES ?? "").split(",").map(Number).filter((n) => [300, 900, 3_600, 604_800].includes(n));
@@ -54,13 +62,13 @@ export function readSeedMakerEnv(env: NodeJS.ProcessEnv = process.env): SeedMake
     cadencesSec: cadences.length ? cadences : [300, 900, 3_600, 604_800],
     sigmaBps: sigmaTable(env.MM_SIGMA_BPS),
     halfSpreadTicks: num(env.MM_HALF_SPREAD_TICKS, 30, 1),
-    quoteLots: BigInt(num(env.MM_QUOTE_LOTS, 5_000, 1)),
+    quoteLots: BigInt(num(env.MM_QUOTE_LOTS, DEFAULT_QUOTE_LOTS, 1)),
     quoteTtlSec: num(env.MM_QUOTE_TTL_SEC, 120, 30),
     requoteTicks: num(env.MM_REQUOTE_TICKS, 10, 1),
     minTick: num(env.MM_MIN_TICK, 20, 1),
     maxCashPerWindow: usd(env.MM_MAX_CASH_PER_WINDOW, 50),
     gapMaxCash: usd(env.MM_GAP_MAX_CASH, 25),
-    allDayMaxCash: usd(env.MM_ALLDAY_MAX_CASH_PER_WINDOW, 10),
+    allDayMaxCash: usd(env.MM_ALLDAY_MAX_CASH_PER_WINDOW, 50),
     refreshMs: num(env.MM_REFRESH_MS, 10_000, 2_000),
     spotMaxAgeSec: num(env.MM_SPOT_MAX_AGE_SEC, 30, 5),
   };
