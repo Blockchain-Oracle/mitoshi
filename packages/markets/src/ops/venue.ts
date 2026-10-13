@@ -236,7 +236,11 @@ export interface PositionView {
 
 export async function positionsOf(client: OpsClient, venue: Venue, market: Hex, holders: readonly Address[]): Promise<PositionView[]> {
   if (holders.length === 0) return [];
-  const res = (await client.public.multicall({ contracts: holders.map((h) => ({ address: venue.lens, abi: engineLensAbi, functionName: "positionOf" as const, args: [market, h] as const })), allowFailure: false })) as Array<Record<string, bigint | number>>;
+  // One holder (the maker reading its own, per Window) is a plain read, so a pass's Windows coalesce into one multicall
+  // with their other reads (D-230); an explicit multicall per Window was an `eth_call` each.
+  const res = (holders.length === 1
+    ? [await client.public.readContract({ address: venue.lens, abi: engineLensAbi, functionName: "positionOf", args: [market, holders[0]!] })]
+    : await client.public.multicall({ contracts: holders.map((h) => ({ address: venue.lens, abi: engineLensAbi, functionName: "positionOf" as const, args: [market, h] as const })), allowFailure: false })) as Array<Record<string, bigint | number>>;
   return res.map((p) => ({ credit: BigInt(p.credit!), lockedCash: BigInt(p.lockedCash!), yesFree: BigInt(p.yesFree!), noFree: BigInt(p.noFree!), yesLocked: BigInt(p.yesLocked!), noLocked: BigInt(p.noLocked!), openOrders: Number(p.openOrders) }));
 }
 

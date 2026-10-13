@@ -6,6 +6,7 @@
  */
 import { privateKeyToAccount } from "viem/accounts";
 import { chainNowSec, createOpsClient, feedIdToAscii, redstoneGatewayName, venueOf } from "@cwf/markets/ops";
+import { sessionBody } from "../../http/session";
 import { runActor, roleKey, type VenueDeps } from "../../runtime";
 import { BoundaryCache } from "./boundary-cache";
 import { loadDataStreams } from "./proofs";
@@ -19,7 +20,7 @@ export function startPriceRelay(deps: VenueDeps): { stop: () => void } {
   const dryRun = deps.env.dryRun || !key;
   if (!key) deps.log("PRICE_RELAY_PRIVATE_KEY / price-relay.json missing: scanning and reporting only");
   const state: RelayState = {
-    client, venue, dryRun, series: [], listedMs: 0, low: new Map(), failures: new Map(), missed: new Set(), recent: [], log: deps.log,
+    client, venue, dryRun, series: [], listedMs: 0, low: new Map(), failures: new Map(), missed: new Set(), recent: [], openLags: [], stall: null, log: deps.log,
     counters: { recorded: 0, copied: 0, already: 0, failed: 0, missed: 0 },
     proofs: {
       sources: deps.redstone, sql: deps.sql, engine: venue.engine, chainId: client.chainId, network: deps.env.network,
@@ -28,5 +29,15 @@ export function startPriceRelay(deps: VenueDeps): { stop: () => void } {
     },
   };
   deps.log(`relay ${client.address ?? "(no key)"}; RedStone via ${deps.redstone.gateways.map(redstoneGatewayName).join(", ")}; Data Streams ${state.proofs.datastreams ? "on" : "off (no credentials, Q-011)"}; attested ${state.proofs.attested ? "on (demo data)" : "off"}`);
-  return runActor({ name: "price-relay", log: deps.log, dryRun, everyMs: 3_000, pass: async () => relayPass(state, await chainNowSec(client)) });
+  const pass: Parameters<typeof runActor>[0]["pass"] = async (beat) => {
+    const wasStalled = state.stall !== null;
+    const result = await relayPass(state, await chainNowSec(client));
+    // A stall starting or ending reaches the app at once (`/session.prints`), not on the next minute's publish.
+    if ((state.stall !== null) !== wasStalled) {
+      beat.detail = result.detail ?? beat.detail;
+      deps.bus.publish("session", "session", sessionBody({ sessions: deps.sessions, halts: deps.halts, events: deps.events }));
+    }
+    return result;
+  };
+  return runActor({ name: "price-relay", log: deps.log, dryRun, everyMs: 3_000, pass });
 }

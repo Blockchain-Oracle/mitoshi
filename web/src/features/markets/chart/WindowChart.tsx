@@ -214,7 +214,6 @@ export function WindowChart(props: WindowChartProps) {
           times: tt.ticks.map((at) => ({ x: xOf(at), text: timeText(at) })),
           window: p.times ? { openX: xOf(p.times.openMs), closeX: xOf(p.times.closeMs), openLabel: opening ? HERO.chart.opens : HERO.chart.open, closeLabel: closed ? HERO.chart.closed : HERO.chart.closes } : null,
           nowX: p.times && !closed ? xOf(nowMs) : null,
-          pending: p.times && !opening && !closed && reference === null ? HERO.chart.pending : null,
           hover,
           pulse: isLive && !closed && !reduced.matches ? (now % PULSE_MS) / PULSE_MS : null,
         },

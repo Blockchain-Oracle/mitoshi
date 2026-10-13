@@ -113,12 +113,14 @@ export interface TicketCtaProps {
   signer: SignerKind;
   onConfirm: () => void;
   action?: (side: string) => string;
+  /** The blocker in the markets' own live words (D-230: the opening print's wait, an empty book), over the kit's. */
+  reason?: string | null;
 }
 
-export function TicketCta({ blocker, ctx, tx, side, costBase, decimals, signer, onConfirm, action = TICKET.buy }: TicketCtaProps) {
+export function TicketCta({ blocker, ctx, tx, side, costBase, decimals, signer, onConfirm, action = TICKET.buy, reason = null }: TicketCtaProps) {
   const busy = tx.kind === "signing" || tx.kind === "submitted" || tx.kind === "unknown";
   const label = side && costBase !== null ? `${action(SIDE_WORD[side])} $${formatBaseUnits(costBase, decimals, { minDp: 2, maxDp: 2 })}` : TICKET.buyPlain;
   // A blocker names itself; while a write runs, the lifecycle's words do (never a bare spinner).
-  const state: TxState = busy ? tx : blocker && blocker !== "placing" ? { kind: "blocked", reason: blockerLabel(blocker, ctx) } : tx.kind === "failed" || tx.kind === "confirmed" ? { kind: "idle" } : tx;
+  const state: TxState = busy ? tx : blocker && blocker !== "placing" ? { kind: "blocked", reason: reason ?? blockerLabel(blocker, ctx) } : tx.kind === "failed" || tx.kind === "confirmed" ? { kind: "idle" } : tx;
   return <TxCta state={state} action={label} signer={signer} sponsored onConfirm={onConfirm} tone={side ?? "accent"} />;
 }

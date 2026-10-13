@@ -4,6 +4,7 @@
 // R4-0 (D-227): the reference's `why` — while the pair is off, one plain sentence above it — and a reason both sides
 // share is that one line too; a side with nothing to say renders no note row.
 import { ArrowDown, ArrowUp, ArrowUpRight, Info, LoaderCircle, X } from "lucide-react";
+import { CountedText } from "@/features/markets/session/CountedText";
 import { TERMINAL } from "../copy";
 
 /**
@@ -25,7 +26,8 @@ export function TradeButtons(props: TradeButtonsProps) {
         {shared ? (
           <p id="tm-note-both" role="status" className="tm-why">
             <Info aria-hidden />
-            <span>{shared}</span>
+            {/* The wait's count ticks every second; the live region announces the words, not each tick (D-230). */}
+            <span><CountedText text={shared} /></span>
           </p>
         ) : null}
         {(["up", "down"] as const).map((side) => {

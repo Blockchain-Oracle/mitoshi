@@ -2,13 +2,24 @@
 // opening print; before it exists the headline names the pair instead of inventing a level. R4-0 (D-227): the level
 // and its "?" never part (`.mh-question-end`), and a pending line ellipsizes instead of breaking word by word. R4-3
 // (D-227), Owarine 90a91d71 `usdLine`: cents under $10,000 and the distance at its line's scale, so "NVDA holds above
-// $182.37?" and its distance agree near the line.
+// $182.37?" and its distance agree near the line. D-230: while the line is pending, a count in its place (the usual lag
+// left, then how long it has waited), never a bare "Waiting for the opening print."; the reason is under UP/DOWN.
 import { neededMove } from "@cwf/core";
+import { useClockValue } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { HERO, HERO_HEAD } from "../copy";
+import { openingWaitShort } from "../data/opening-wait";
+import { usePrintsState } from "../session";
 import { usdLine } from "../units";
 
-export function HeroQuestion({ asset, openingRaw, currentRaw }: { asset: string; openingRaw: bigint | null; currentRaw: bigint | null }) {
+/** The wait in the distance's place, ticking as its own leaf; nothing before the open (the clock says when). */
+function PendingDistance({ startSec }: { startSec: number }) {
+  const prints = usePrintsState();
+  const text = useClockValue((ms) => (ms > 0 && ms >= startSec * 1000 ? openingWaitShort({ startSec, nowSec: Math.floor(ms / 1000), prints }, HERO.pendingDistance) : null));
+  return text ? <span className="mh-distance-pending">{text}</span> : null;
+}
+
+export function HeroQuestion({ asset, startSec, openingRaw, currentRaw }: { asset: string; startSec: number; openingRaw: bigint | null; currentRaw: bigint | null }) {
   const move = openingRaw !== null && currentRaw !== null ? neededMove(currentRaw, openingRaw) : null;
   const winning = move?.upNeedsRaw === 0n;
   return (
@@ -27,7 +38,7 @@ export function HeroQuestion({ asset, openingRaw, currentRaw }: { asset: string;
       </h2>
       <div className="mh-distance" aria-live="off">
         {openingRaw === null ? (
-          <span className="mh-distance-pending">{HERO.pendingDistance}</span>
+          <PendingDistance startSec={startSec} />
         ) : currentRaw === null || move === null ? (
           <span className="mh-distance-pending">{HERO.noLivePrice}</span>
         ) : (

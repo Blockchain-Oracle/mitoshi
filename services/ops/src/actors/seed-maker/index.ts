@@ -4,20 +4,30 @@
  * spot-vs-open fair value on every trading Window, from the `seed-maker` key. Books have quotes; that is the job.
  * Regular Windows quote in session only; the 24/7 lanes (stock `<T>---24_7`, crypto) around the clock; the Gap against
  * the 24/7 feed over the weekend. A halted asset pulls. Our own quotes are budgeted per Window.
+ * D-230: a pass plans every Window at once (its reads coalesce into a few multicalls) and sends the plans packed —
+ * fresh books first — a few transactions a pass instead of one per Window, so a boundary's 38 new books fill within
+ * seconds of their opening prints instead of minutes; and while a Window that just opened waits for its open, the pass
+ * comes back in 2 s (`pace.ts`: only in its first 30 s — through a stall the maker keeps its own cadence).
  */
 import { erc20Abi, encodeFunctionData, maxUint256, type Address } from "viem";
 import { TEMPO } from "@cwf/clients";
-import { chainNowSec, createOpsClient, fetchMarkets, listSeries, marketIdOf, sendOps, venueOf, type SeriesView } from "@cwf/markets/ops";
+import { chainNowSec, createOpsClient, fetchMarkets, listSeries, marketIdOf, sendOps, venueOf, type MarketView, type SeriesView } from "@cwf/markets/ops";
 import { laneKey } from "@cwf/core";
 import { errorText, runActor, roleKey, type VenueDeps } from "../../runtime";
+import { chainRefused, packUnits, sendPacked, type PackSender, type PackUnit } from "../../runtime/pack";
 import { createBasisTracker } from "./basis";
 import { readSeedMakerEnv } from "./env";
 import { laneQuote } from "./lanes";
+import { makerDelayMs } from "./pace";
 import type { Placed } from "./quote";
-import { tendWindow } from "./window";
+import { planWindow, type Step, type WindowPlan, type WindowResult } from "./window";
 
 const SERIES_LIST_MS = 5 * 60_000;
-const CONCURRENCY = 6;
+/** A requote is 2–4 calls (cancel, merge, the pair): four or five Windows a transaction, ≈ 3 M gas. */
+const CALLS_PER_TX = 16;
+
+type Planned = { s: SeriesView; m: MarketView; label: string; plan: WindowPlan | null; error: unknown };
+type Item = { w: Planned; step: Step };
 /** Keep at least this much pathUSD allowance for the engine; top up to the full balance's order of magnitude. */
 const ALLOWANCE_FLOOR = 100_000n * 1_000_000n;
 
@@ -68,30 +78,84 @@ export function startSeedMaker(deps: VenueDeps): { stop: () => void } {
     const notes: string[] = [];
     const live = new Set<string>();
     const jobs = refs.flatMap((r, i) => (views[i] && views[i]!.state === 0 ? [{ ...r, m: views[i]! }] : []));
-    for (let i = 0; i < jobs.length; i += CONCURRENCY) {
-      await Promise.all(jobs.slice(i, i + CONCURRENCY).map(async ({ s, m }) => {
-        const label = `${laneKey(s.symbol!, s.lane!, s.cadenceSec)} #${m.index}`;
-        const at = clockSec();
-        const lane = laneQuote({ lane: s.lane!, symbol: s.symbol!, market: m, nowSec: at, status, spot: deps.spot, display: deps.display, basis, halts, env });
-        try {
-          const r = await tendWindow({ client, venue, env, dryRun, nowSec: at, clockSec, log: deps.log }, s, m, lane, placed.get(m.marketId) ?? null, label);
-          txCount += r.txs.length;
-          if (r.txs.length) recent = [...r.txs.map((t) => `${label} ${t}`), ...recent].slice(0, 20);
-          if (r.placed) placed.set(m.marketId, r.placed);
-          else if (r.state !== "resting") placed.delete(m.marketId);
-          if (r.state === "quoting" || r.state === "resting") {
-            live.add(m.marketId);
-            notes.push(`${label} ${r.note}`);
+    const trading = jobs.filter(({ m }) => m.tradingStartSec <= nowSec && nowSec < m.lockAtSec).length;
+    const awaiting: MarketView[] = [];
+    // Every Window planned at once: the reads of a whole pass coalesce into a few multicalls.
+    const planned: Planned[] = await Promise.all(jobs.map(async ({ s, m }) => {
+      const label = `${laneKey(s.symbol!, s.lane!, s.cadenceSec)} #${m.index}`;
+      const lane = laneQuote({ lane: s.lane!, symbol: s.symbol!, market: m, nowSec: clockSec(), status, spot: deps.spot, display: deps.display, basis, halts, env });
+      if (lane.why.startsWith("waiting for the open") && m.tradingStartSec <= nowSec) awaiting.push(m);
+      try {
+        return { s, m, label, plan: await planWindow({ client, venue, env, dryRun, nowSec: clockSec(), clockSec, log: deps.log }, s, m, lane, placed.get(m.marketId) ?? null, label), error: null };
+      } catch (error) {
+        return { s, m, label, plan: null, error };
+      }
+    }));
+    // Fresh books first (no pair resting), then requotes, shortest cadence first; then pulls and cancels.
+    const rank = (w: Planned) => (w.plan && "steps" in w.plan && w.plan.fallback ? (placed.has(w.m.marketId) ? 1 : 0) : 2) * 1e7 + w.s.cadenceSec;
+    const sending = planned.filter((w) => w.plan && "steps" in w.plan).sort((a, b) => rank(a) - rank(b));
+    const results = new Map<Planned, WindowResult>();
+    const landed = new Map<Planned, { n: number; hash: string }>();
+    if (dryRun) {
+      for (const w of sending) {
+        const plan = w.plan as Extract<WindowPlan, { steps: Step[] }>;
+        deps.log(`DRY ${plan.why} ${w.label}`);
+        results.set(w, plan.done("dry"));
+      }
+    } else {
+      const sender: PackSender<Item> = {
+        send: async (items) => (await sendOps(client, items.map((i) => i.step.call), { nowSec: clockSec() })).hash,
+        refused: chainRefused,
+        landed: (i, hash, inTx) => {
+          const was = landed.get(i.w);
+          landed.set(i.w, { n: (was?.n ?? 0) + 1, hash });
+          return `${i.w.label} ${i.step.what} ✓${inTx > 1 ? ` (${inTx} in tx)` : ""}`;
+        },
+        failed: (i, error) => ((i.w.error ??= error), `${i.w.label} ${i.step.what} failed: ${errorText(error).slice(0, 120)}`),
+        skipped: (i, after) => `${i.w.label} ${i.step.what} waits for ${after.step.what}`,
+        // One Window's steps refused on their own: one call at a time, against the book after the cancel.
+        unitRefused: async (unit, error) => {
+          const w = unit.items[0]!.w;
+          const plan = w.plan as Extract<WindowPlan, { steps: Step[] }>;
+          if (!plan.fallback) return [((w.error = error), `${w.label} refused: ${errorText(error).slice(0, 120)}`)];
+          deps.log(`${w.label}: one-transaction requote refused (${errorText(error).slice(0, 80)}), one call at a time`);
+          try {
+            results.set(w, await plan.fallback());
+          } catch (e) {
+            w.error = e;
           }
-        } catch (error) {
-          deps.log(`${label}: ${errorText(error)}`);
-        }
-      }));
+          return [`${w.label} one call at a time`];
+        },
+      };
+      const units: PackUnit<Item>[] = sending.map((w) => ({ items: (w.plan as Extract<WindowPlan, { steps: Step[] }>).steps.map((step) => ({ w, step })) }));
+      await sendPacked(packUnits(units, CALLS_PER_TX), sender, 4);
+      for (const w of sending) {
+        const plan = w.plan as Extract<WindowPlan, { steps: Step[] }>;
+        const got = landed.get(w);
+        if (!results.has(w) && got && got.n === plan.steps.length) results.set(w, plan.done(got.hash));
+      }
+    }
+    for (const w of planned) {
+      const r = w.plan && "result" in w.plan ? w.plan.result : (results.get(w) ?? null);
+      if (!r) {
+        deps.log(`${w.label}: ${errorText(w.error ?? "not sent")}`);
+        continue;
+      }
+      txCount += r.txs.length;
+      if (r.txs.length) recent = [...r.txs.map((t) => `${w.label} ${t}`), ...recent].slice(0, 20);
+      if (r.placed) placed.set(w.m.marketId, r.placed);
+      else if (r.state !== "resting") placed.delete(w.m.marketId);
+      if (r.state === "quoting" || r.state === "resting") {
+        live.add(w.m.marketId);
+        notes.push(`${w.label} ${r.note}`);
+      }
     }
     for (const k of placed.keys()) if (!live.has(k)) placed.delete(k);
     return {
-      why: `${notes.length} Windows quoted of ${jobs.length} open · session ${status?.state ?? "no calendar"} · ${txCount} txs${deps.spot ? "" : " · no spot feed"}${dryRun ? " · DRY RUN" : ""}${notes.length ? ` | ${notes.slice(0, 12).join("; ")}` : ""}`,
-      detail: { quoting: notes.length, open: jobs.length, txs: txCount, recent },
+      // Honest counts: the Windows trading now, and those listed ahead of their start (quoted once they open).
+      why: `${notes.length} of ${trading} trading Windows quoted · ${jobs.length - trading} listed ahead${awaiting.length ? ` · ${awaiting.length} awaiting their opening print` : ""} · session ${status?.state ?? "no calendar"} · ${txCount} txs${deps.spot ? "" : " · no spot feed"}${dryRun ? " · DRY RUN" : ""}${notes.length ? ` | ${notes.slice(0, 12).join("; ")}` : ""}`,
+      detail: { quoting: notes.length, trading, listedAhead: jobs.length - trading, awaitingOpen: awaiting.length, txs: txCount, recent },
+      nextDelayMs: makerDelayMs(awaiting, clockSec(), env.refreshMs, jobs.map((j) => j.m)),
     };
   };
   deps.log(`seed maker ${client.address ?? "(no key)"}: ${env.quoteLots} lots, ±${env.halfSpreadTicks} ticks, caps ${env.maxCashPerWindow}/${env.gapMaxCash}/${env.allDayMaxCash} base`);

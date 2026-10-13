@@ -32,6 +32,21 @@ export interface SessionBody {
   /** Report dates 14 days ahead; null = unknown, never "none". */
   earnings: readonly EarningsEvent[] | null;
   skips: readonly CorporateSkip[];
+  /** The price relay's word (D-230): how long an opening print usually takes, and whether prints are stalled. */
+  prints?: PrintsState | null;
+}
+
+/**
+ * Why prints stall (ops `http/session.ts`): RedStone refuses us, hasn't signed T yet, or can't be reached; or the print
+ * is in hand and Tempo's RPC keeps refusing the sends (`sending`).
+ */
+export type PrintStallKind = "refused" | "unsigned" | "unreachable" | "sending";
+
+export interface PrintsState {
+  /** Median seconds from a Window's start to its opening print, over the relay's last opens; null before any. */
+  openLagSec: number | null;
+  /** Due prints stuck for over 20 s (on the price network, or on sends Tempo refuses): since when, and why; null while they land. */
+  stall: { sinceSec: number; kind: PrintStallKind } | null;
 }
 
 export interface MarketSession {
@@ -73,6 +88,15 @@ export function parseHaltBoard(v: unknown): HaltBoard {
   return board;
 }
 
+const STALL_KINDS: readonly PrintStallKind[] = ["refused", "unsigned", "unreachable", "sending"];
+
+/** `/session.prints`, or null when ops doesn't send it (an older deploy): the app then words the wait without it. */
+export function parsePrints(v: unknown): PrintsState | null {
+  if (!isObj(v)) return null;
+  const stall = isObj(v.stall) && isNum(v.stall.sinceSec) && (STALL_KINDS as readonly unknown[]).includes(v.stall.kind) ? { sinceSec: v.stall.sinceSec, kind: v.stall.kind as PrintStallKind } : null;
+  return { openLagSec: isNum(v.openLagSec) ? v.openLagSec : null, stall };
+}
+
 /** The `/session` body, or null when it isn't one (the surfaces then say nothing about hours). */
 export function parseSessionBody(v: unknown): SessionBody | null {
   if (!isObj(v) || !isNum(v.nowSec)) return null;
@@ -102,7 +126,7 @@ export function parseSessionBody(v: unknown): SessionBody | null {
           : [],
       )
     : [];
-  return { nowSec: v.nowSec, today: status ? sessionOf(status.session) : null, calendar, lanes, halts: parseHaltBoard(v.halts), earnings, skips };
+  return { nowSec: v.nowSec, today: status ? sessionOf(status.session) : null, calendar, lanes, halts: parseHaltBoard(v.halts), earnings, skips, prints: parsePrints(v.prints) };
 }
 
 /** The recent sessions, today's (kept once it has closed) and the upcoming ones: every date the core rules will ask about. */

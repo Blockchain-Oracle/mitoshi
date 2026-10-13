@@ -27,14 +27,17 @@ import { useDemoState } from "./demo";
 
 const COOKIE_MAX_AGE_SEC = 365 * 86_400;
 
-/** The Window chip's words for the Window on screen. */
+/**
+ * The Window chip's words for the Window on screen. A Window waiting for its opening print is already running: its
+ * clock counts down like a trading one (D-230 — it read "pricing…", like a stuck tab), and why it can't take a call yet
+ * sits above UP/DOWN with the time it opened (`openingWaitLine`).
+ */
 export function windowStateText(market: EventMarket | null, phase: string | null, nowSec: number): string {
   if (!market || !phase) return TERMINAL.window.none;
   switch (phase) {
     case "upcoming":
       return TERMINAL.window.opens(untilText(market.tradingStartSec, nowSec));
     case "pendingOpeningPrint":
-      return TERMINAL.window.pricing;
     case "trading":
       return TERMINAL.window.trades(untilText(noEntryCutoffSec(market), nowSec));
     case "noEntryBuffer":
@@ -54,7 +57,7 @@ export function useTerminalState(symbol: string) {
   const name = ticker?.name ?? symbol;
   const win = useTerminalWindow(symbol);
   const market = win.market;
-  const { phase, openingRaw } = useWindowPhase(market, nowMs);
+  const { phase, openingRaw, openingUnread } = useWindowPhase(market, nowMs);
   const spot = useCommittedSpot(symbol);
   const signedE8 = useSpot(market);
 
@@ -118,7 +121,7 @@ export function useTerminalState(symbol: string) {
   }, [name, symbol]);
 
   return {
-    nowSec, settings, name, ticker, win, market, phase, openingRaw, spot, signedE8, address,
+    nowSec, settings, name, ticker, win, market, phase, openingRaw, openingUnread, spot, signedE8, address,
     walletBase, cashBase, spendableBase, minBase, stakeBase, capped, capReason, positions, active, overlay,
     windowText: windowStateText(market, phase, nowSec),
   };

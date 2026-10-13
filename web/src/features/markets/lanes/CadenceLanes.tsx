@@ -95,7 +95,7 @@ export function CadenceLanes({ state, selectedMarketId, onSelect, onOpenRoom }: 
               <>
                 <div className="markets-grid markets-grid-live">
                   {pager.slice.map((m) => (
-                    <MarketCard key={m.marketId} market={m} selected={m.marketId === selectedMarketId} onSelect={onSelect} onOpenRoom={onOpenRoom} upCents={topById.get(m.marketId)?.upCents ?? null} downCents={topById.get(m.marketId)?.downCents ?? null} hydrating={topById.get(m.marketId)?.hydrating ?? true} />
+                    <MarketCard key={m.marketId} market={m} selected={m.marketId === selectedMarketId} onSelect={onSelect} onOpenRoom={onOpenRoom} upCents={topById.get(m.marketId)?.upCents ?? null} downCents={topById.get(m.marketId)?.downCents ?? null} hydrating={topById.get(m.marketId)?.hydrating ?? true} failed={topById.get(m.marketId)?.failed ?? false} />
                   ))}
                   {!pager.canNext ? standIns.map(([t, st]) => <PausedCard key={`paused:${t}`} asset={t} intervalSec={lane.intervalSec} state={st} />) : null}
                 </div>

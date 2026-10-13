@@ -11,7 +11,7 @@ import { subscribeTopic } from "@cwf/markets/stream";
 import { useRef, useSyncExternalStore } from "react";
 import { nowMs, useClockValue } from "@/lib/clock";
 import { ensureStream } from "@/features/prices/stream-config";
-import { parseHaltBoard, parseSessionBody, toMarketSession, type MarketSession, type SessionBody } from "./model";
+import { parseHaltBoard, parseSessionBody, toMarketSession, type MarketSession, type PrintsState, type SessionBody } from "./model";
 
 let body: SessionBody | null = null;
 /** The `halts` topic's board, newer than the body's own copy until the next `session` event carries it. */
@@ -84,4 +84,10 @@ export function useMarketSession(asset?: HaltAsset): MarketSession | null {
     held.current = { key, value: b && signature && signature !== "none" ? toMarketSession(b, Math.floor(nowMs() / 1000), asset) : null };
   }
   return held.current.value;
+}
+
+/** The price relay's word on the prints (`/session.prints`, D-230), or null before ops answers. */
+export function usePrintsState(): PrintsState | null {
+  useSyncExternalStore(subscribe, getVersion, noVersion);
+  return body?.prints ?? null;
 }

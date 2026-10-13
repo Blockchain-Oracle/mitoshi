@@ -5,6 +5,9 @@ import type { EventMarket } from "@cwf/core";
 import type { MarketPhase } from "@cwf/core/lifecycle";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
+import { openingWaitLine } from "@/features/markets/data/opening-wait";
+import { usePrintsState } from "@/features/markets/session";
+import { useClockValue } from "@/lib/clock";
 import { TERMINAL } from "../copy";
 import { money, multipleOf } from "../format";
 import { useTerminalBoost } from "../useTerminalBoost";
@@ -15,8 +18,8 @@ import { TradeButtons } from "./TradeButtons";
 const paysText = (multiple: number | null, cappedTo: string | null = null) =>
   multiple && Number.isFinite(multiple) ? `${TERMINAL.buttons.pays(multipleOf(1000 / multiple))}${cappedTo ? ` · ${TERMINAL.buttons.max(cappedTo)}` : ""}` : null;
 
-export function TerminalTrade({ market, phase, stakeBase, spot, boostX, onPays }: { market: EventMarket; phase: MarketPhase | null; stakeBase: bigint; spot: number | null; boostX: number; onPays: (text: string) => void }) {
-  const t = useTerminalOpen({ market, phase, stakeBase, spot });
+export function TerminalTrade({ market, phase, openingUnread = false, stakeBase, spot, boostX, onPays }: { market: EventMarket; phase: MarketPhase | null; openingUnread?: boolean; stakeBase: bigint; spot: number | null; boostX: number; onPays: (text: string) => void }) {
+  const t = useTerminalOpen({ market, phase, stakeBase, spot, openingUnread });
   // A Boost set in the stack (RV-41): UP/DOWN open it, with its own refusals under each button.
   const b = useTerminalBoost({ market, phase, stakeBase, multiple: boostX, enabled: phase === "trading" });
   const pair = paysPair(t.sides.up.multiple, t.sides.down.multiple);
@@ -24,9 +27,12 @@ export function TerminalTrade({ market, phase, stakeBase, spot, boostX, onPays }
   const pickParam = useSearchParams().get("pick");
   const picked = pickParam === "up" || pickParam === "down" ? pickParam : null;
   useEffect(() => onPays(pair), [pair, onPays]);
+  // A Boost waits for the line like a plain call, said the same way (D-230); the plain pair says it through its notes.
+  const prints = usePrintsState();
+  const waiting = useClockValue((ms) => (phase === "pendingOpeningPrint" && ms > 0 ? openingWaitLine({ startSec: market.tradingStartSec, nowSec: Math.floor(ms / 1000), prints, unread: openingUnread }) : null));
   if (b.on) {
     return (
-      <TradeButtons mode="flat" onUp={() => b.open("up")} onDown={() => b.open("down")} busy={b.busy} upSub={TERMINAL.boost.sub(boostX)} downSub={TERMINAL.boost.sub(boostX)} upNote={b.blocked.up} downNote={b.blocked.down} />
+      <TradeButtons mode="flat" onUp={() => b.open("up")} onDown={() => b.open("down")} busy={b.busy} upSub={TERMINAL.boost.sub(boostX)} downSub={TERMINAL.boost.sub(boostX)} upNote={b.blocked.up} downNote={b.blocked.down} why={waiting} />
     );
   }
   return (

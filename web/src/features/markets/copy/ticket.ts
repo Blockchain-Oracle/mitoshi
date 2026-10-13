@@ -21,8 +21,11 @@ export const TICKET = {
   enterAmount: "Enter an amount to quote",
   gettingQuote: "Getting live quote…",
   requoting: "requoting…",
-  noLiquidity: "No liquidity at this size.",
   partial: (fillableText: string) => `Fills up to ${fillableText}; the rest stays.`,
+  /** One tap to the size the book fills now (D-230). */
+  useFillable: (fillableText: string) => `Stake ${fillableText} — fills now`,
+  /** A Window's last stretch with nothing left to take (D-230): one tap moves the ticket to the next, never a dead CTA. */
+  nextWindow: "Call the next Window",
   quoteFailed: (why: string) => `Quote failed: ${why}`,
   chance: (pct: number) => `${pct}% chance`,
   buy: (side: string) => `Buy ${side} for`,

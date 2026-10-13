@@ -35,7 +35,7 @@ export function HeroChartHead({ market, openingRaw, currentRaw, lanes, activeKey
           <HeroCadenceTabs market={market} lanes={lanes} activeKey={activeKey} onPick={onPickLane} />
           <MarketSessionChip asset={market.asset} basis={market.lane} />
         </div>
-        <HeroQuestion asset={market.asset} openingRaw={openingRaw} currentRaw={currentRaw} />
+        <HeroQuestion asset={market.asset} startSec={market.tradingStartSec} openingRaw={openingRaw} currentRaw={currentRaw} />
         <SourceLine label={{ text: HERO.source(source), href: null }} className="pair-meta" />
       </div>
       <HeroSettlesIn tradingStartSec={market.tradingStartSec} expirySec={market.expirySec} intervalSec={market.intervalSec} />

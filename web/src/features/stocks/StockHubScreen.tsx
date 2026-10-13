@@ -133,7 +133,7 @@ function Windows({ symbol }: { symbol: TickerSymbol }) {
     <ul className="stk-windows">
       {markets.map((market, i) => (
         <li key={market.marketId}>
-          <MarketCard market={market} selected={false} onSelect={(id) => router.push(`/markets/${id}`)} upCents={tops[i]?.upCents ?? null} downCents={tops[i]?.downCents ?? null} hydrating={tops[i]?.hydrating ?? true} />
+          <MarketCard market={market} selected={false} onSelect={(id) => router.push(`/markets/${id}`)} upCents={tops[i]?.upCents ?? null} downCents={tops[i]?.downCents ?? null} hydrating={tops[i]?.hydrating ?? true} failed={tops[i]?.failed ?? false} />
         </li>
       ))}
     </ul>

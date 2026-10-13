@@ -51,8 +51,6 @@ export interface Frame {
   times: Array<{ x: number; text: string }>;
   window: { openX: number | null; closeX: number | null; openLabel: string; closeLabel: string } | null;
   nowX: number | null;
-  /** Shown at the open while the opening print is pending. */
-  pending: string | null;
   hover: { x: number; y: number; lines: Array<{ text: string; tone: "ink" | "up" | "down" | "muted" }> } | null;
   /** 0..1 through the head's pulse; null holds it still (reduced motion, or not live). */
   pulse: number | null;
@@ -223,22 +221,6 @@ export function drawFrame(ctx: CanvasRenderingContext2D, pal: ChartPalette, f: F
     ctx.setLineDash([5, 4]);
     hline(ctx, refY, plot.left, plot.right);
     ctx.setLineDash([]);
-  }
-
-  // A pending print, said at the open in the half of the plot the price is not in, and under the line, never over it.
-  if (f.pending && f.window?.openX != null && !f.compact) {
-    ctx.font = pal.tagFont;
-    const tw = ctx.measureText(f.pending).width + 16;
-    // A plot narrower than the words lends them the axis column (R4-0, D-227: at 320 px it read "aiting for…").
-    const right = tw <= plot.right - plot.left - 8 ? plot.right - 4 : f.w - 4;
-    const x = Math.max(4, Math.min(right - tw, Math.max(plot.left + 4, f.window.openX - tw / 2)));
-    const low = f.head !== null && f.head.y > (plot.top + plot.bottom) / 2;
-    const y = low ? plot.top + 22 : plot.bottom - TAG_H - 6;
-    capsule(ctx, x, y, tw, TAG_H, pal.card, pal.hairline);
-    ctx.fillStyle = pal.muted;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillText(f.pending, x + 8, y + TAG_H / 2 + 0.5);
   }
 
   // The line: green above the print, red below; ink when there is no print to measure against.
