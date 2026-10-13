@@ -33,6 +33,13 @@ describe("planCopy (one transaction, D-219)", () => {
     expect(p.intent).toMatchObject({ kind: "strategy-copy", strategyId: 1n, budgetBase: 10n * ONE, depositBase: 6n * ONE, expiresAtSec: NOW + COPY_TERM_SEC, carry: [], caps: { maxStakePerTradeBase: 2n * ONE, maxDailySpendBase: 50n * ONE, maxOpenPositions: 3, maxPriceRaw: 900_000n } });
   });
 
+  it("a new account's first funding names the wait, not a short wallet, and steps aside once the wallet covers it (R4-4)", () => {
+    expect(planCopy(base({ walletBase: 0n, funding: true })).blockedBy).toBe("Funding your account…");
+    expect(planCopy(base({ walletBase: null, funding: true })).blockedBy).toBe("Funding your account…");
+    expect(planCopy(base({ walletBase: 0n })).blockedBy).toMatch(/needs \$10\.00/);
+    expect(planCopy(base({ funding: true })).blockedBy).toBeNull();
+  });
+
   it("shares a live grant to the same runner whose caps fit — nothing moves", () => {
     const p = planCopy(base({ strategy: s1, grant: grant(), mine: [{ strategyId: "2", grantId: "8", mode: "follow", active: true, feesPaidBase: "0", subscribedAtSec: 0 }], choice: "share" }));
     expect(p.route).toBe("share");

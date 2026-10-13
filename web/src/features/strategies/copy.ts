@@ -101,6 +101,7 @@ export const COPY = {
     busy: "Working…",
     inactive: "This strategy is closed to new copiers",
     checking: "Checking your balances…",
+    funding: "Funding your account…",
     noBudget: "Enter a budget",
     noPerTrade: "Enter the most per trade",
   },

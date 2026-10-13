@@ -8,6 +8,7 @@ import { TxCta, TxFailureCard } from "@/components/tx";
 import { SheetFooter } from "@/components/ui/overlay-footer";
 import { Input } from "@/components/ui/input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { useFirstFunding } from "@/features/funding/first-fund-state";
 import { usePrivacy } from "@/lib/privacy";
 import { COPY } from "./copy";
 import { COPY_TERM_SEC, planCopy } from "./copy-plan";
@@ -38,8 +39,10 @@ export function CopyForm({ card, strategies, writes }: { card: StrategyWire; str
   const [done, setDone] = useState(false);
   const busy = writes.tx.state.kind !== "idle" && writes.tx.state.kind !== "failed" && writes.tx.state.kind !== "confirmed";
   const hidden = usePrivacy();
+  // A brand-new account's first test dollars are landing: the CTA says so rather than reading short (R4-4, gap 10).
+  const funding = useFirstFunding();
   const plan = planCopy({
-    strategy: card, strategies, mine: writes.mine, grant: writes.grant, availableBase: writes.availableBase, walletBase: writes.walletBase, hideWallet: hidden,
+    strategy: card, strategies, mine: writes.mine, grant: writes.grant, availableBase: writes.availableBase, walletBase: writes.walletBase, hideWallet: hidden, funding,
     mode, choice, budgetText, perTradeText, nowSec: Math.floor(Date.now() / 1000), busy, signedIn: writes.signedIn,
   });
   const canShare = writes.grant !== null && plan.shareBlocked === null && writes.grant.actor.toLowerCase() === card.runner.toLowerCase();

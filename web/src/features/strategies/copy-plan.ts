@@ -29,6 +29,8 @@ export interface CopyPlanInput {
   walletBase: bigint | null;
   /** Privacy mode (the balance eye): a refusal says the wallet is short without printing what it holds. */
   hideWallet?: boolean;
+  /** A brand-new account's first test dollars are landing (R4-4, critic gap 10): a short wallet waits, it isn't short. */
+  funding?: boolean;
   mode: SubscriptionMode;
   /** "share" uses the live grant; "new" sets a fresh budget. Ignored when sharing is not possible. */
   choice: "share" | "new";
@@ -110,11 +112,13 @@ export function planCopy(i: CopyPlanInput): CopyPlan {
     else if (perTradeBase > maxPerTrade) perTradeError = COPY.form.aboveStrategy(maxPerTrade);
     else if (budgetBase > 0n && perTradeBase > budgetBase) perTradeError = COPY.form.aboveBudget;
   } else if (i.walletBase !== null && feeBase > i.walletBase) budgetError = COPY.form.walletShort(i.hideWallet ? null : i.walletBase, feeBase);
+  const walletShort = i.walletBase !== null && (route === "new" ? depositBase : 0n) + feeBase > i.walletBase;
 
   const blockedBy =
     !i.signedIn ? COPY.blocked.signIn
     : i.busy ? COPY.blocked.busy
     : !s.active ? COPY.blocked.inactive
+    : i.funding && (i.walletBase === null || walletShort) ? COPY.blocked.funding
     : i.availableBase === null || i.walletBase === null ? COPY.blocked.checking
     : budgetError === COPY.form.notANumber ? budgetError
     : perTradeError === COPY.form.notANumber ? perTradeError
