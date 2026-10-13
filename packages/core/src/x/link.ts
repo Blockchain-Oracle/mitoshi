@@ -1,24 +1,35 @@
-// Ported from Masayume 68f7a09:packages/core/src/x/link.ts
+// Ported from Masayume 68f7a09:packages/core/src/x/link.ts and Owarine 90a91d71:packages/core/src/x/link.ts — S11
+// (D-227): Mitoshi's signed-message shape (the network named, the account lowercased). Owarine's seat party becomes the
+// Mitoshi account: the Tempo address whose passkey or wallet signs (EIP-191 over the text, verified with Tempo's rules).
+import { networkLine, type Network } from "../constants/network";
+
 /**
- * The exact text a wallet signs to point an X account at itself, and to remove that route.
- *
- * Ported from the reference's `lib/xLink.ts` with the brand substituted. The reference signs
- * only the pair; the timestamp is added here so a captured signature cannot be replayed later
- * (doc 02: nonce-backed signed challenges). Built once so the browser and the route produce
- * the same string from the same fields.
+ * The exact text an account signs to point an X account at itself, and to remove that route. The timestamp stops a
+ * captured signature being replayed later; the network stops a testnet signature binding on mainnet. Built once so the
+ * browser and the route produce the same string from the same fields.
  */
 export const X_LINK_SIGNATURE_TTL_MS = 5 * 60_000;
 
-export function xLinkMessage(authorId: string, wallet: string, issuedAtMs: number): string {
-  return ["Masayume X account link", `X user: ${authorId}`, `Wallet: ${wallet.toLowerCase()}`, `Issued: ${new Date(issuedAtMs).toISOString()}`].join("\n");
+/** The header the app sends its X session in (the `/native-auth` handoff): validated exactly like the web's cookie. */
+export const X_SESSION_HEADER = "x-cwf-x-session";
+
+export interface XLinkFields {
+  network: Network;
+  authorId: string;
+  /** The Mitoshi account (Tempo address). */
+  account: string;
+  issuedAtMs: number;
 }
 
-export function xUnlinkMessage(authorId: string, wallet: string, issuedAtMs: number): string {
-  return [
-    "Masayume X account disconnect",
-    `X user: ${authorId}`,
-    `Wallet: ${wallet.toLowerCase()}`,
-    `Issued: ${new Date(issuedAtMs).toISOString()}`,
-    "This removes the X route only. Funds remain in your Trading Balance.",
-  ].join("\n");
+export function xLinkMessage(f: XLinkFields): string {
+  return ["Link my X account to Mitoshi", networkLine(f.network), `X user: ${f.authorId}`, `Account: ${f.account.toLowerCase()}`, `Issued: ${f.issuedAtMs}`, "Mentions of the Mitoshi bot may trade from my X trading balance only."].join("\n");
+}
+
+export function xUnlinkMessage(f: XLinkFields): string {
+  return ["Unlink my X account from Mitoshi", networkLine(f.network), `X user: ${f.authorId}`, `Account: ${f.account.toLowerCase()}`, `Issued: ${f.issuedAtMs}`, "This removes the X route only. Funds stay in my Trading Balance."].join("\n");
+}
+
+/** A signature's moment is accepted within five minutes either side of the server's clock. */
+export function xSignatureFresh(issuedAtMs: number, nowMs: number): boolean {
+  return Number.isSafeInteger(issuedAtMs) && Math.abs(nowMs - issuedAtMs) <= X_LINK_SIGNATURE_TTL_MS;
 }

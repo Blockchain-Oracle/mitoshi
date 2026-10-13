@@ -15,6 +15,7 @@
     "@cwf/core": "workspace:*",
     "@cwf/db": "workspace:*",
     "@cwf/markets": "workspace:*",
+    "rettiwt-api": "catalog:",
     "tsx": "catalog:",
     "viem": "catalog:"
   },

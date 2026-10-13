@@ -1,7 +1,7 @@
 /**
  * Every actor ops can run (plan C.5.2), by `OPS_ACTORS` name. `spot: true` asks main for the process's spot feed.
- * The default set is the venue (`all` = the default set plus any named extra); `house-taker`, `launch-keeper` and
- * `reference-writer` are opt-in only.
+ * The default set is the venue (`all` = the default set plus any named extra); `house-taker`, `launch-keeper`,
+ * `reference-writer` and `x-relay` are opt-in only.
  */
 import { archivePass, ARCHIVE_EVERY_MS } from "./actors/archive";
 import { chainHeadPass, CHAIN_HEAD_EVERY_MS } from "./actors/chain-head";
@@ -14,6 +14,7 @@ import { startLeverageKeeper } from "./actors/leverage-keeper";
 import { startDuelSettler } from "./actors/duel-settler";
 import { startExitKeeper } from "./actors/exit-keeper";
 import { startStrategyRunner } from "./actors/strategy-runner";
+import { startXRelay } from "./actors/x-relay";
 import { startAgentRater } from "./actors/agent-rater";
 import { startEarnQuoter } from "./actors/earn-quoter";
 import { startHaltWatch } from "./actors/halt-watch";
@@ -69,6 +70,10 @@ export const ACTORS: Record<string, ActorEntry> = {
   // S9.5: the house strategy runner — places for each live subscriber through their STRATEGY grant (`placeFor`) on the
   // opening print vs the RedStone spot; `strategy-runner` role key; opt-in (not in the default set).
   "strategy-runner": { start: (d) => startStrategyRunner(d), spot: true },
+  // S11 (D-227): trade from X — reads the bot's mentions and places each once for the linked account through its
+  // EXECUTOR grant (`placeFor`) with `X_EXECUTOR_PRIVATE_KEY` (else the `x-relay` role key); opt-in, and dry unless
+  // X_RELAY_LIVE=1 with DRY_RUN=0. Needs DATABASE_URL (receipts, the cursor, the links the web writes).
+  "x-relay": { start: (d) => startXRelay(d) },
   // S9.6: rates each strategy's ERC-8004 agent once per completed UTC day (AG-15, D-218.6); `agent-rater` role key;
   // opt-in and dry unless AGENT_RATER_LIVE=1.
   "agent-rater": { start: (d) => startAgentRater(d) },

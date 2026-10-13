@@ -11,6 +11,7 @@ export * from "./logs";
 export * from "./vault";
 export * from "./strategies";
 export * from "./strategy-runner";
+export * from "./x-relay";
 export * from "./exits";
 export * from "./bridge";
 export * from "../prices/redstone";

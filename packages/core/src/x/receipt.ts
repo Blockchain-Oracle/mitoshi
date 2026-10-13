@@ -1,4 +1,4 @@
-// Ported from Masayume 68f7a09:packages/core/src/x/receipt.ts
+// Ported from Masayume 68f7a09:packages/core/src/x/receipt.ts — `lane` and `dryRun` added (S11, D-227).
 import type { Side } from "../types/market";
 import type { XRefusalReason } from "./parse";
 
@@ -35,6 +35,9 @@ export interface XReceiptDetails {
   journalState?: "recorded" | "sent" | "confirmed" | "failed" | "unknown" | null;
   recoveryFromBlock?: string | null;
   expectedNonce?: number | null;
+  /** S11 (D-227): the lane the Window was found on, and whether the relay only planned it (dry run: nothing signed). */
+  lane?: string | null;
+  dryRun?: boolean | null;
 }
 
 /** A receipt links the instruction to the grant, the Window, the transaction and the beneficiary. */

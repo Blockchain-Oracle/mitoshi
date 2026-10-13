@@ -100,7 +100,7 @@ export async function readSubscriberStates(client: OpsClient, rv: RunnerVenue, s
 }
 
 /** What each owner already holds in each Window (both sides), keyed `owner:market`. */
-export async function readHoldings(client: OpsClient, rv: RunnerVenue, pairs: readonly { owner: Address; marketId: Hex }[]): Promise<Map<string, { up: bigint; down: bigint }>> {
+export async function readHoldings(client: OpsClient, rv: Pick<RunnerVenue, "vault">, pairs: readonly { owner: Address; marketId: Hex }[]): Promise<Map<string, { up: bigint; down: bigint }>> {
   const out = new Map<string, { up: bigint; down: bigint }>();
   if (pairs.length === 0) return out;
   const res = (await client.public.multicall({
@@ -161,7 +161,7 @@ export function runnerOrder(rv: RunnerVenue, input: { grant: VaultGrant; window:
 }
 
 /** What the vault booked for one runner order (its `Executed` event): collateral spent and contracts gained. */
-export function runnerFillOf(logs: readonly { address: Address; topics: readonly Hex[]; data: Hex }[], rv: RunnerVenue, owner: Address, marketId: Hex, grantId: bigint): { cashDeltaBase: bigint; tokenDeltaRaw: bigint; outcomeIdx: number } | null {
+export function runnerFillOf(logs: readonly { address: Address; topics: readonly Hex[]; data: Hex }[], rv: Pick<RunnerVenue, "vault">, owner: Address, marketId: Hex, grantId: bigint): { cashDeltaBase: bigint; tokenDeltaRaw: bigint; outcomeIdx: number } | null {
   const hit = parseEventLogs({ abi: eventVaultV2Abi, eventName: "Executed", logs: logs as never }).find(
     (l) => l.address.toLowerCase() === rv.vault.toLowerCase() && l.args.owner.toLowerCase() === owner.toLowerCase() && l.args.marketId.toLowerCase() === marketId.toLowerCase() && l.args.grantId === grantId && l.args.isBuy,
   );
