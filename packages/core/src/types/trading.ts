@@ -122,6 +122,15 @@ export interface BalanceSheet {
   engineCreditByMarket: EngineCredit[];
   /** `EventVault.accountOf`; null on a network with no EventVault deployment (S7). */
   vaultBase: bigint | null;
+  /**
+   * What waits to be collected (the claimables' net payout: a winning side, a void's half, engine credit), read with the
+   * wallet's balance: a Window that has its answer leaves the open positions, and its payout reaches the wallet only when
+   * the settler pays it (after its claim grace) or the owner collects — equity counts it meanwhile (D-227).
+   */
+  collectBase: bigint;
+  /** The answered Windows' part of it (a winning side, a void's half, with that Window's credit), per Window: a positions
+   *  list that still shows one of them must not count it twice. Credit alone on a Window is never a position. */
+  collectByMarket: EngineCredit[];
 }
 
 export type VerdictOutcome = "win" | "loss" | "void";

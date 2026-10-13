@@ -64,7 +64,7 @@ export function PositionDetails({ p, value, open, onOpenChange, onReduce, onShow
   const hide = (text: string) => (masked ? SHELL.masked : text);
   const avg = avgTicksOf(p);
   const tradable = value !== null && canTrade(value.status);
-  const why = value ? statusText(value.status, p.expirySec, value.fillablePct, value.settled) : "";
+  const why = value ? statusText(value.status, p.expirySec, value.fillablePct, value.settled, value.valueBase) : "";
   const pnl = value?.pnlBase != null ? Number(value.pnlBase) / 10 ** p.decimals : null;
   const rows: Array<[string, ReactNode]> = [
     [TERMINAL.details.window, market ? `${formatCadence(market.intervalSec)} · ${market.lane === "stock24" ? "24/7" : market.lane === "gap" ? "Gap" : market.lane === "crypto24" ? "Crypto" : "Regular"}` : formatCadence(p.intervalSec)],

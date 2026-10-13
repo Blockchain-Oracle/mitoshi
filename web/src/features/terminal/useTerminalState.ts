@@ -21,6 +21,7 @@ import { TRADE_COOKIE } from "./route";
 import { useTradeSettings, wantedStakeBase } from "./settings";
 import { useServerExitFeed } from "./server-exits";
 import { useTerminalPositions } from "./terminal-positions";
+import { useOwed } from "./useOwed";
 import { useTerminalWindow } from "./useTerminalWindow";
 import { useDemoState } from "./demo";
 
@@ -79,9 +80,12 @@ export function useTerminalState(symbol: string) {
   const wanted = wantedStakeBase(settings, spendableBase, minBase);
   const capped = spendableBase !== null && spendableBase >= minBase && wanted > spendableBase;
   const stakeBase = capped ? spendableBase! : wanted;
-  const cashBase = demoCashBase ?? (walletBase === null && view.availableBase === null ? null : (walletBase ?? 0n) + (view.deployed ? (view.availableBase ?? 0n) : 0n));
-
   const positions = useTerminalPositions(address, win.set);
+  // Equity's cash leg (D-227): with the wallet and the Trading Balance, what Windows that have their answer still owe
+  // (`useOwed`), so a position never leaves equity at the answer and comes back at the payout.
+  const owed = useOwed(address, positions);
+  const cashBase = demoCashBase ?? (walletBase === null && view.availableBase === null ? null : (walletBase ?? 0n) + (view.deployed ? (view.availableBase ?? 0n) : 0n) + owed.collectBase + owed.vaultBase);
+
   // Every position on the Window on screen (D-227: a wallet row, a Trading Balance row and Boosts can share one).
   const active = useMemo(() => positions.filter((p) => p.marketId === market?.marketId), [positions, market?.marketId]);
   const lead = active[0] ?? null;
