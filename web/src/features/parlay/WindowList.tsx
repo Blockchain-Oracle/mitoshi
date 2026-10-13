@@ -23,7 +23,7 @@ import { useFlyToTarget } from "@/components/ui/fly-to-target";
 import { cn } from "@/lib/utils";
 import { AssetDisc } from "../markets/hero/AssetDisc";
 import { usd0 } from "../markets/units";
-import { cadenceKeyOf } from "../range/WindowPicker";
+import { cadenceKeyOf, cadenceKeysOf } from "../range/WindowPicker";
 import { PARLAY } from "./copy";
 import type { LegWindow } from "./data";
 import { useSlip } from "./slip-state";
@@ -90,7 +90,7 @@ function Row({ w, nowMs }: { w: LegWindow; nowMs: number }) {
 export function WindowList({ windows, loading, failure = null, nowMs, nextOpenText }: { windows: readonly LegWindow[]; loading: boolean; failure?: Diagnosis | null; nowMs: number; nextOpenText: string }) {
   const slip = useSlip();
   const all = useMemo(() => windows.filter((w) => w.model !== null), [windows]);
-  const keys = [...new Set(all.map((w) => cadenceKeyOf(w.market)))];
+  const keys = cadenceKeysOf(all);
   const [picked, setPicked] = useState<string>("");
   const cadence = keys.includes(picked) ? picked : (keys[0] ?? "");
   const priced = all.filter((w) => cadenceKeyOf(w.market) === cadence);

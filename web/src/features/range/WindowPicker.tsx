@@ -17,13 +17,17 @@ import { RANGE } from "./copy";
 import type { BandWindow } from "./data";
 
 export const cadenceKeyOf = (m: EventMarket): string => (m.lane === "gap" ? "gap" : formatCadence(m.intervalSec));
+/** The cadences these Windows run on, shortest first and the Gap last — a fixed order, not the soonest close's (R4-5
+ *  review: a 15m and a 1h Window closing at the same instant swapped the two tabs as the list re-sorted). */
+export const cadenceKeysOf = (ws: readonly { market: EventMarket }[]): string[] =>
+  [...new Map(ws.map((w) => [cadenceKeyOf(w.market), w.market.lane === "gap" ? Number.POSITIVE_INFINITY : w.market.intervalSec] as const))].sort((a, b) => a[1] - b[1]).map(([k]) => k);
 /** "3d", "20h" — when a Gap Window comes inside the reserve's horizon. */
 const formatDays = (sec: number) => (sec >= 86_400 ? `${Math.ceil(sec / 86_400)}d` : `${Math.max(1, Math.ceil(sec / 3_600))}h`);
 const cadenceLabel = (key: string) => (key === "gap" ? RANGE.windows.gap : key);
 
 export function WindowPicker({ windows, pickedId, onPick, gapInSec = null }: { windows: readonly BandWindow[]; pickedId: MarketId | null; onPick: (id: MarketId) => void; gapInSec?: number | null }) {
   const priced = windows.filter((w) => w.model !== null);
-  const keys = [...new Set(priced.map((w) => cadenceKeyOf(w.market)))];
+  const keys = cadenceKeysOf(priced);
   const picked = priced.find((w) => w.market.marketId === pickedId) ?? null;
   const cadence = picked ? cadenceKeyOf(picked.market) : (keys[0] ?? "");
   const chips = windows.filter((w) => cadenceKeyOf(w.market) === cadence);
