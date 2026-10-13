@@ -340,5 +340,53 @@ export const events = {
     "PeerSet(uint32,bytes32)",
     "PreCrimeSet(address)",
     "Transfer(address,address,uint256)"
+  ],
+  "StockLockbox": [
+    "EnforcedOptionSet(tuple[])",
+    "GuardianSet(address)",
+    "LocksPaused(bool,address)",
+    "MinLockSet(uint256)",
+    "MsgInspectorSet(address)",
+    "OFTReceived(bytes32,uint32,address,uint256)",
+    "OFTSent(bytes32,uint32,address,uint256,uint256)",
+    "OwedClaimed(address,uint256)",
+    "OwedResent(address,bytes32,uint32,uint256)",
+    "OwnershipTransferred(address,address)",
+    "PeerSet(uint32,bytes32)",
+    "PreCrimeSet(address)",
+    "RateLimitSet(uint32,uint128,uint64)",
+    "UnlockDeferred(address,uint32,uint256,bytes)"
+  ],
+  "StockSyncSender": [
+    "EnforcedOptionSet(tuple[])",
+    "OwnershipTransferred(address,address)",
+    "PeerSet(uint32,bytes32)",
+    "Synced(bytes32,uint32,uint64,uint256)",
+    "TokenRegistered(address,address)"
+  ],
+  "ILayerZeroEndpointV2": [
+    "ComposeDelivered(address,address,bytes32,uint16)",
+    "ComposeSent(address,address,bytes32,uint16,bytes)",
+    "DefaultReceiveLibrarySet(uint32,address)",
+    "DefaultReceiveLibraryTimeoutSet(uint32,address,uint256)",
+    "DefaultSendLibrarySet(uint32,address)",
+    "DelegateSet(address,address)",
+    "InboundNonceSkipped(uint32,bytes32,address,uint64)",
+    "LibraryRegistered(address)",
+    "LzComposeAlert(address,address,address,bytes32,uint16,uint256,uint256,bytes,bytes,bytes)",
+    "LzReceiveAlert(address,address,tuple,bytes32,uint256,uint256,bytes,bytes,bytes)",
+    "LzTokenSet(address)",
+    "PacketBurnt(uint32,bytes32,address,uint64,bytes32)",
+    "PacketDelivered(tuple,address)",
+    "PacketNilified(uint32,bytes32,address,uint64,bytes32)",
+    "PacketSent(bytes,bytes,address)",
+    "PacketVerified(tuple,address,bytes32)",
+    "ReceiveLibrarySet(address,uint32,address)",
+    "ReceiveLibraryTimeoutSet(address,uint32,address,uint256)",
+    "SendLibrarySet(address,uint32,address)"
+  ],
+  "ITIP20RolesAuth": [
+    "RoleAdminUpdated(bytes32,bytes32,address)",
+    "RoleMembershipUpdated(bytes32,address,address,bool)"
   ]
 } as const;

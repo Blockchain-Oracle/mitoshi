@@ -14,7 +14,7 @@ import { txUrl } from "@cwf/core/urls";
 import { sizePrivateForStake } from "@cwf/markets/private";
 import { useBalanceSheet, useReadingQuery } from "@cwf/markets/react";
 import { useState, type ReactNode } from "react";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { OrderSummary } from "@/components/ui/order-summary";
 import { AmountField, OutcomePills, QuickAdds } from "@/components/ui/prediction-ticket";

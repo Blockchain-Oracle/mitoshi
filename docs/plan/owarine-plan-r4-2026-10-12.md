@@ -135,6 +135,28 @@ the app's figures equal the chain's to the base unit. Spec check: a Window that 
 payout until it is paid (the wallet's collect read with its balance in one block; the Trading Balance's until its crank),
 proven on two live hedges through lock, answer and the settler's payout; Close all skips rows no book can take; a
 settled row that pays nothing reads "Settled · lost". The ops exit keeper changed (`decide.ts`): ops needs a deploy.
+R4-1 closed out at `1be4aba` (built on the trunk: `8dfd1b2` · `0d150c0` · `9002c8c` · `bd8586a` · `1be4aba`): tsc,
+core/markets/ops/scripts typecheck, invariants, 59 test files, build and 70 route budgets clean; /trade/BTC and
+/portfolio at 375 and 1440 clean (locally the stack's icons sit 2 px past the edge while "Syncing the chain clock…" —
+R4-0's open sync-state item). Web and ops deploys triggered. Open, the owner's call: a Boost's "Close pays now" reads
+the reserve's `markOf` (rested bids only), so it can sit below what Close pays, never above; a Boost that paid back more
+than its stake shows a negative Staked (the P&L is right; a $0.00 floor is a display choice). Seen, outside the spec: a
+wallet row and a Trading Balance row on one Window and side share one TP/SL entry.
+R4-2 (Kit) merged at `b3653d2`: components/kit (one barrel, kit.css), the desk kit, the overlay grammar (pinned
+footer, `urlKey`, keyboard inset, a phone modal is the sheet). Merge fix `79202e7`: SheetFooter moved to
+`components/ui/overlay-footer.tsx` and /dev/kit's sections lazy (three routes were over 250 KB; all 71 within budget).
+/markets at 375 and 1440 clean. Open: sticky PLAY on the games' featured cabinet (R4-9 builds it), the Trading Balance
+panel's two actions stay in the body (R4-4 ports the pocket panel), Sensei's aside isn't a sheet — rejected for now
+(moving it changes its look at every width); CadenceLanes' and Surface's chip rails not yet on ScrollRail (R4-3, R4-11).
+R4-12 (Bridge and reserves) merged at `735f553`: /bridge as one card tracked to delivery, /reserves with its verdict,
+bridge-watch / reserve-watch / stock-sync in ops (migrations bridge/0001 and index/0007; ops redeployed). /bridge at 375
+and 1440 clean (the CTA on the first phone screen). Open, blocked-owner: Robinhood testnet test ETH (deployer 0 ETH,
+nonce 0) for the Handoff and the driven UI pass (14w/14o/UX-08); the Reown project ID for WalletConnect on phones.
+MOBILE (Expo app) merged at `83058f9`: mobile/ in the workspace (frozen install and the web build pass), the testnet site
+in one web view, and the web's /.well-known AASA and assetlinks (200 JSON locally). Open, blocked-owner: the App Store
+Connect app record and TestFlight submit; the Play Console app, its first AAB by hand and the app-signing SHA-256;
+`https://mitoshi.xyz` on the Coolify web app's domains so the passkey rpId host serves the association files; a check
+on real phones.
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on

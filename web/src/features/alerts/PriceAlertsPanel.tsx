@@ -6,7 +6,7 @@
 import { isStockSymbol } from "@cwf/core";
 import { Bell, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 import { ALERTS } from "./copy";
 import { notificationState, requestNotificationPermission, type NotificationState } from "./notifications";
 import { addAlert, loadAlerts, parseTargetCents, removeAlert, subscribeAlerts, type AlertBasis, type AlertDirection, type PriceAlert } from "./store";

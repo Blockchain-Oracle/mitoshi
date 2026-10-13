@@ -11,7 +11,7 @@ import { useState } from "react";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { walletKeyTerms } from "@/providers/wallet/access-key";
 import { TAP } from "./copy";
-import { SheetFooter } from "@/components/ui/drawer";
+import { SheetFooter } from "@/components/ui/overlay-footer";
 
 const primary = "inline-flex h-(--ticket-cta-height) w-full items-center justify-center gap-2 rounded-md bg-accent-fill px-5 type-body-strong text-on-accent disabled:opacity-60";
 

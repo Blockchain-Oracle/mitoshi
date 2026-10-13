@@ -15,8 +15,11 @@ import { TX } from "./copy";
 export interface TxRunner {
   state: TxState;
   dispatch: (event: TxEvent) => void;
-  /** Runs one intent through the session's submitter; resolves with the chain's outcome (or null with no session). */
-  run: (intent: TxIntent) => Promise<TxOutcome | null>;
+  /**
+   * Runs one intent through the session's submitter; resolves with the chain's outcome (or null with no session).
+   * `onSubmitted` hears the hash as soon as the transaction is sent, before its receipt (the bridge records it then).
+   */
+  run: (intent: TxIntent, onSubmitted?: (txHash: `0x${string}`) => void) => Promise<TxOutcome | null>;
 }
 
 export function useTxLifecycle(options: { optimistic?: boolean; submitter?: MarketsSubmitter | null } = {}): TxRunner {
@@ -24,11 +27,14 @@ export function useTxLifecycle(options: { optimistic?: boolean; submitter?: Mark
   const own = useSubmitter();
   const submitter = options.submitter === undefined ? own : options.submitter;
   const run = useCallback(
-    async (intent: TxIntent) => {
+    async (intent: TxIntent, onSubmitted?: (txHash: `0x${string}`) => void) => {
       if (!submitter) return null;
       dispatch({ type: "confirm", nowMs: Date.now() });
       const outcome = await submitter.submitTx(intent, (phase, detail) => {
-        if (phase === "submitted") dispatch({ type: "submitted", txHash: detail?.txHash ?? null, validBeforeSec: null, optimistic: options.optimistic });
+        if (phase === "submitted") {
+          dispatch({ type: "submitted", txHash: detail?.txHash ?? null, validBeforeSec: null, optimistic: options.optimistic });
+          if (detail?.txHash) onSubmitted?.(detail.txHash);
+        }
       });
       switch (outcome.status) {
         case "confirmed":
