@@ -8,6 +8,7 @@ import { useDataReady } from "@/providers/data/context";
 const Wait = () => <div className="container"><LoadingState shape="page" label="Loading" /></div>;
 const Hub = dynamic(() => import("./GamesHub").then((m) => m.GamesHub), { ssr: false, loading: Wait });
 const Practice = dynamic(() => import("./practice/PracticeStage").then((m) => m.PracticeStage), { ssr: false, loading: Wait });
+const Lucky = dynamic(() => import("./lucky/LuckyStage").then((m) => m.LuckyStage), { ssr: false, loading: Wait });
 
 export function GamesHubIsland() {
   return useDataReady() ? <Hub /> : <Wait />;
@@ -15,4 +16,8 @@ export function GamesHubIsland() {
 
 export function PracticeIsland() {
   return useDataReady() ? <Practice /> : <Wait />;
+}
+
+export function LuckyIsland() {
+  return useDataReady() ? <Lucky /> : <Wait />;
 }

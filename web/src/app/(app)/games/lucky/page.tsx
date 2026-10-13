@@ -1,9 +1,9 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// /games/lucky — the machine: three reels draw a live Window, a side and a reach; the lever places one real call
+// (R4-9, D-227; Owarine 90a91d71 app/games/lucky, Masayume 68f7a09's commit-reveal draw).
+import { LuckyIsland } from "@/features/games/GamesIsland";
 
-export const metadata = { title: pendingFor("/games/lucky").title };
+export const metadata = { title: "Lucky" };
 
 export default function GamesLuckyPage() {
-  return <PendingRoute route="/games/lucky" />;
+  return <LuckyIsland />;
 }

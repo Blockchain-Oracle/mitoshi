@@ -29,6 +29,22 @@ export function GamesRail() {
   const muted = useMuted();
   // Pips remembers the last game opened; the hub offers it first.
   useEffect(() => rememberGame(pathname), [pathname]);
+  const page = pathname === "/games/rank" ? GAMES.rank.title : pathname === "/games/history" ? GAMES.history.title : null;
+  if (page) {
+    return (
+      <div className="gm-rail">
+        <div className="gm-rail-inner">
+          <Link href="/games" className="gm-rail-icon" aria-label={GAMES.rail.back} title={GAMES.rail.back}>
+            <ChevronLeft aria-hidden />
+          </Link>
+          <h1 className="gm-rail-mode">{page}</h1>
+          <div className="gm-rail-right">
+            <SettingsButton onOpen={() => { feedback("tap"); setSettingsOpen(true); }} />
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!entry) return null;
 
   return (

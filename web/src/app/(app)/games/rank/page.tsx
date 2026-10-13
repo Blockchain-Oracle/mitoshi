@@ -1,9 +1,8 @@
-// Registered from S1 (every nav route exists from day one); the stage named in `lib/capabilities.ts` replaces it.
-import { PendingRoute } from "@/components/shell/CapabilityPending";
-import { pendingFor } from "@/lib/capabilities";
+// /games/rank — the arcade boards and the venue's streaks on real records (R4-9, D-227; Owarine 90a91d71 app/games/rank).
+import { GamesRank } from "@/features/games/rank/GamesRank";
 
-export const metadata = { title: pendingFor("/games/rank").title };
+export const metadata = { title: "Rank" };
 
 export default function GamesRankPage() {
-  return <PendingRoute route="/games/rank" />;
+  return <GamesRank />;
 }

@@ -68,8 +68,8 @@ export const NAV_ITEMS = {
   activity: item({ id: "activity", name: "Activity", href: "/activity", description: "Your fills, verdicts and payouts.", icon: Activity, keywords: "notifications feed social inbox" }),
   edge: item({ id: "edge", name: "Trader Edge", href: "/portfolio/edge", description: "Your trading edge report.", icon: ChartCandlestick }),
   stats: item({ id: "stats", name: "Stats", href: "/stats", description: "Protocol and market activity.", icon: BarChart3 }),
-  gamesRank: item({ id: "games-rank", name: "Game ranks", href: "/games/rank", description: "Season standings for duels.", icon: Trophy, match: { paths: ["/games/rank"], exact: true } }),
-  gamesHistory: item({ id: "games-history", name: "Games history", href: "/games/history", description: "Every duel and run you played.", icon: History, match: { paths: ["/games/history"], exact: true } }),
+  gamesRank: item({ id: "games-rank", name: "Game ranks", href: "/games/rank", description: "Arcade boards and streaks.", icon: Trophy, match: { paths: ["/games/rank"], exact: true } }),
+  gamesHistory: item({ id: "games-history", name: "Games history", href: "/games/history", description: "Your runs and draws.", icon: History, match: { paths: ["/games/history"], exact: true } }),
   status: item({ id: "status", name: "Status", href: "/status", description: "Every service Mitoshi runs on, live.", icon: Activity }),
   halts: item({ id: "halts", name: "Trading halts", href: "/status/halts", description: "Halts on the listed stocks.", icon: CirclePause, keywords: "halt luld paused stock" }),
 
