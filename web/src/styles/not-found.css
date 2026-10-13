@@ -1,7 +1,7 @@
 /* The 404 (features/not-found/NotFoundScreen.tsx; Ported from Owarine 90a91d71 NotFoundScreen, R4-0, D-227) on
  * Mitoshi's tokens: a display "404" with a stamped VOID, the voided Window's ticket under the seal, three pills. In the
  * stage it adds no inset of its own (one inset, D-226). */
-.nf { display: flex; min-height: 70vh; align-items: center; justify-content: center; padding-block: 48px; }
+.nf { display: flex; min-height: 70svh; align-items: center; justify-content: center; padding-block: 48px; }
 /* Before the root 404's frame has loaded (`NotFoundPage`) the page pads and paints itself. */
 .nf-bare { min-height: 100dvh; padding-inline: 16px; background: var(--color-canvas); color: var(--color-ink); }
 .nf-col { display: flex; width: 100%; max-width: 28rem; flex-direction: column; align-items: center; gap: 28px; text-align: center; }

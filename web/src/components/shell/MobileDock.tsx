@@ -61,7 +61,7 @@ const SEAL_AT = 2;
 function SealSlot() {
   return (
     <li>
-      <Link href="/" aria-label={`${BRAND.name} home`} className="dock-item dock-seal" onClick={tapFeedback}>
+      <Link href="/" aria-label={`${BRAND.name} home`} title={`${BRAND.name} home`} className="dock-item dock-seal" onClick={tapFeedback}>
         <span className="dock-seal-disc"><MitoshiMark /></span>
       </Link>
     </li>

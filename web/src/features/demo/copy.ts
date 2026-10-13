@@ -69,7 +69,7 @@ export const DEMO = {
       headline: "Real actions. ",
       headlineSerif: "Open receipts.",
       body: "Taps, a close, an exit sold by the keeper with the tab closed, a Range band and a Moonshot, each a transaction on Tempo testnet's explorer.",
-      readOn: (date: string) => `From the test accounts of the live runs recorded in docs/plan/acceptance · every receipt read status 1 on ${date}. These record completed actions, not current positions.`,
+      readOn: (date: string) => `Test-account receipts, each read on ${date}.`,
       contracts: "The contracts every Window runs on",
     },
   },

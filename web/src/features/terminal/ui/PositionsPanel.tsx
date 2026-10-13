@@ -8,7 +8,7 @@
 import { useOpeningPrice } from "@cwf/markets/react";
 import { ArrowDown, ArrowDownRight, ArrowUp, ArrowUpRight, CandlestickChart, ChevronDown, LoaderCircle, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Odometer } from "@/components/data/Odometer";
+import { Odometer } from "@/components/kit";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";

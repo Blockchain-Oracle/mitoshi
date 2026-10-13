@@ -2,6 +2,7 @@
 // Ported in role from Agari 03b30ab:web/src/features/strategies/{CopyDrawer,CopyFormFields}.tsx — the drawer reads the
 // strategy (what it does, its hard limits, its record, its runner, an agent's last reads) above a sticky action: the
 // copy form (`planCopy`, one transaction) or, once copying, the copier's own result, switch follow ↔ fade, and stop.
+// R4-2 (D-227): `?d=copy` so Back closes it; it holds fields, so a phone sheet drags only from its grab bar.
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { CopyForm } from "./CopyForm";
 import { COPY } from "./copy";
@@ -26,8 +27,8 @@ export function CopyDrawer({ card, strategies, writes, open, onOpenChange }: { c
   const sub = writes.mine.find((m) => m.strategyId === card.strategyId && m.active) ?? null;
   const e = card.envelope;
   return (
-    <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={COPY.drawerTitle(card.name)} description={card.envelope.seriesLabel ?? undefined}>
+    <SlideOver open={open} onOpenChange={onOpenChange} urlKey="copy">
+      <SlideOverContent title={COPY.drawerTitle(card.name)} description={card.envelope.seriesLabel ?? undefined} fields>
         <div className="flex flex-col gap-4 pb-4">
           {card.description && <p className="type-body text-ink">{card.description}</p>}
           <Section title={COPY.what}>

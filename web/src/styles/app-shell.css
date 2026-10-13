@@ -9,7 +9,7 @@
 .app-rail { display: none; }
 @media (min-width: 768px) {
   .app-rail {
-    position: fixed; top: var(--spacing-rail-inset); bottom: var(--spacing-rail-inset); left: var(--spacing-rail-inset); z-index: 40;
+    position: fixed; top: var(--spacing-rail-inset); bottom: var(--spacing-rail-inset); left: var(--spacing-rail-inset); z-index: var(--z-chrome);
     display: flex; flex-direction: column; gap: 24px; width: var(--spacing-rail-compact); padding: 24px 12px;
     border-radius: 32px; background: var(--color-rail); overflow-y: auto; scrollbar-width: none;
   }
@@ -78,7 +78,7 @@
 @media (max-width: 1279px) { .rail-network { width: 24px; padding: 0; justify-content: center; } .rail-network .network-label { display: none; } }
 
 /* ── the column: the top line, notices, the stage ──────────────────────────────────────────────────────────────── */
-.app-column { display: flex; min-width: 0; min-height: 100dvh; flex-direction: column; padding: 0 12px calc(96px + env(safe-area-inset-bottom, 0px)); }
+.app-column { display: flex; min-width: 0; min-height: 100dvh; flex-direction: column; padding: 0 12px calc(var(--dock-clearance) + 16px); }
 @media (min-width: 768px) {
   .app-column { padding: 0 var(--spacing-rail-inset) var(--spacing-rail-inset) calc(var(--spacing-rail-compact) + var(--spacing-rail-inset) * 2); }
 }
@@ -149,9 +149,13 @@ span.top-money, span.top-account { display: contents; }
 @media (max-width: 767px) { :root { --stage-sticky-top: calc(var(--spacing-topline) + env(safe-area-inset-top, 0px)); } }
 /* The reference hero's top padding cleared the old fixed header; inside the stage it doesn't. */
 .app-stage .page-hero { padding-top: 0; }
+/* A page's primary action strip (R4-2, D-227; plan "one fold budget against 100svh"): where a phone's fold can't hold
+ * the action with the browser's bars shown, the action sticks above the dock while its section is on screen — one strip
+ * per page. Desktop leaves it in the flow. */
+@media (max-width: 767px) { .page-action { position: sticky; bottom: var(--dock-strip-offset); z-index: var(--z-sticky); } }
 
 /* ── the phone dock ────────────────────────────────────────────────────────────────────────────────────────────── */
-.app-dock { position: fixed; inset: auto 0 max(12px, env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; justify-content: center; padding: 0 12px; pointer-events: none; }
+.app-dock { position: fixed; inset: auto 0 max(12px, env(safe-area-inset-bottom, 0px)); z-index: var(--z-chrome); display: flex; justify-content: center; padding: 0 12px; pointer-events: none; }
 @media (min-width: 768px) { .app-dock { display: none; } }
 .dock-list {
   --dock-w: var(--spacing-dock-item-w);
@@ -180,7 +184,7 @@ span.top-money, span.top-account { display: contents; }
 
 /* ── a Sign in tapped before the wallet runtime has loaded: answered at once ──────────────────────────────────── */
 .sign-in-pending {
-  position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: 70; transform: translateX(-50%);
+  position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: var(--z-toast); transform: translateX(-50%);
   display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: var(--radius-full);
   border: 1px solid var(--color-hairline); background: var(--color-stage); color: var(--color-ink); font: 500 14px/1.2 var(--font-body);
   box-shadow: 0 12px 32px -12px var(--color-scrim);
@@ -214,7 +218,7 @@ span.top-money, span.top-account { display: contents; }
 /* Phones: the terminal ends above the dock — its 56 px item, 12 px of list padding and 8 px of air (Owarine
  * `pb-[calc(var(--dock-h)+safe-area)]`); the stage stops growing into the column's full height. */
 @media (max-width: 767px) {
-  .app-stage:has(> .terminal-surface:not([style*="display: none"])) { flex: none; height: calc(100dvh - var(--spacing-dock-item-h) - 20px - max(12px, env(safe-area-inset-bottom, 0px))); }
+  .app-stage:has(> .terminal-surface:not([style*="display: none"])) { flex: none; height: calc(100dvh - var(--dock-strip-offset)); }
 }
 @media (min-width: 768px) {
   .app-column:has(.terminal-surface:not([style*="display: none"])) { padding: var(--spacing-rail-inset) var(--spacing-rail-inset) var(--spacing-rail-inset) calc(var(--spacing-rail-compact) + var(--spacing-rail-inset) * 2); }
@@ -294,7 +298,7 @@ span.top-money, span.top-account { display: contents; }
 @media (max-width: 767px) {
   .topline-phone { display: contents; }
   .topline-wide { display: none; }
-  .app-topline { position: sticky; top: 0; z-index: 30; margin: 0 -12px; padding-inline: 12px; background: color-mix(in srgb, var(--color-canvas) 90%, transparent); backdrop-filter: blur(12px); }
+  .app-topline { position: sticky; top: 0; z-index: var(--z-sticky); margin: 0 -12px; padding-inline: 12px; background: color-mix(in srgb, var(--color-canvas) 90%, transparent); backdrop-filter: blur(12px); }
   .more-places { display: grid; }
   .more-foot { display: flex; }
 }

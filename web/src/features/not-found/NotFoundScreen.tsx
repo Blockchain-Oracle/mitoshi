@@ -53,7 +53,7 @@ export function NotFoundScreen() {
             {NOT_FOUND.markets} <ArrowRight aria-hidden />
           </Link>
           <Link href="/" className="nf-pill">{NOT_FOUND.home}</Link>
-          <button type="button" className="nf-pill nf-pill--icon" aria-label={NOT_FOUND.search} onClick={openSearch}>
+          <button type="button" className="nf-pill nf-pill--icon" aria-label={NOT_FOUND.search} title={NOT_FOUND.search} onClick={openSearch}>
             <Search aria-hidden />
           </button>
         </div>

@@ -1,0 +1,273 @@
+/* Ported from Owarine 90a91d71:web/src/components/kit/kit.css and the `--ow-*` table of styles/owarine.css (R4-2, D-227).
+ * The kit on Mitoshi's tokens: vermilion accent, Sora headings, Inter body, JetBrains numerals, dark first, light too.
+ * One token table — every `--ow-*` name a ported Owarine piece uses, mapped onto Mitoshi's — so a later port keeps its
+ * names and nothing re-types a colour. Owarine's sky and lime have no Mitoshi hue: sky is the recessed surface, lime the
+ * profit green. Then each piece's rules, in the order of components/kit/index.ts. No motion runtime: every animation is
+ * CSS (or the Web Animations API) and stands still under reduced motion. */
+:root {
+  --ow-canvas: var(--color-canvas);
+  --ow-card: var(--color-surface-1);
+  --ow-recessed: var(--color-surface-2);
+  --ow-hairline: var(--color-hairline);
+  --ow-ink: var(--color-ink);
+  --ow-muted: var(--color-ink-secondary);
+  --ow-helper: var(--color-ink-muted);
+  --ow-inverse: var(--color-stage);
+  --ow-pink: var(--color-accent-fill);
+  --ow-pink-pressed: var(--color-accent-fill-pressed);
+  --ow-pink-ink: var(--color-accent);
+  --ow-on-pink: var(--color-on-accent);
+  --ow-up: var(--color-up);
+  --ow-up-line: var(--color-chart-up);
+  --ow-down: var(--color-down);
+  --ow-down-line: var(--color-chart-down);
+  --ow-sky: var(--color-surface-2);
+  --ow-lime: var(--color-profit);
+  --ow-cream: var(--color-cream);
+  --ow-black: var(--plate-black);
+  --ow-white: var(--color-cream);
+  --ow-scrim: var(--color-scrim);
+  --ow-r-card: var(--radius-lg);
+  --ow-r-feature: var(--radius-xl);
+  --ow-r-sticker: var(--radius-md);
+  --ow-r-pill: var(--radius-full);
+  --ow-spring: var(--ease-drawer);
+  --ow-flip: 120ms;
+}
+/* The faces resolve where next/font's variables live, on <body> (styles/base.css, R4-0): declared on :root they
+ * computed to nothing, and every `font:` shorthand that read them fell back to the parent's size and weight. */
+body {
+  --ow-font-display: var(--font-heading);
+  --ow-font-body: var(--font-body);
+  --ow-font-axis: var(--font-data);
+}
+
+/* ── PillButton: always a pill, never a shadow; accent is THE action on a screen (one per view) ──────────────────── */
+.kit-pill {
+  position: relative; display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 8px;
+  border: 1px solid transparent; border-radius: var(--ow-r-pill); font-family: var(--ow-font-body); font-weight: 700;
+  letter-spacing: -0.02em; line-height: 1; white-space: nowrap; user-select: none; outline: none; cursor: pointer;
+  transition: background-color var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out), transform 150ms var(--ease-out), opacity var(--duration-hover);
+}
+.kit-pill:active { transform: scale(0.97); }
+.kit-pill:disabled, .kit-pill[data-disabled], .kit-pill[aria-disabled="true"] { pointer-events: none; opacity: 0.4; }
+.kit-pill:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.kit-pill svg { pointer-events: none; flex-shrink: 0; }
+.kit-pill--accent { background: var(--ow-pink); color: var(--ow-on-pink); }
+.kit-pill--accent:hover { background: var(--ow-pink-pressed); }
+.kit-pill--ink { background: var(--ow-ink); color: var(--ow-inverse); }
+.kit-pill--ink:hover { opacity: 0.9; }
+.kit-pill--white { background: var(--ow-card); color: var(--ow-ink); border-color: var(--ow-hairline); }
+.kit-pill--white:hover, .kit-pill--ghost:hover { background: var(--color-surface-3); }
+.kit-pill--ghost { background: var(--ow-recessed); color: var(--ow-ink); }
+.kit-pill--up { background: var(--button-up-fill); color: var(--button-up-ink); border-color: var(--button-up-border); }
+.kit-pill--down { background: var(--button-down-fill); color: var(--button-down-ink); border-color: var(--button-down-border); }
+.kit-pill--sm { height: 36px; padding: 0 16px; font-size: 14px; }
+.kit-pill--sm::before { content: ""; position: absolute; inset: -4px; }
+.kit-pill--sm svg { width: 16px; height: 16px; }
+.kit-pill--md { height: var(--button-primary-height); padding: 0 20px; font-size: 16px; }
+.kit-pill--md svg { width: 18px; height: 18px; }
+.kit-pill--lg { height: var(--ticket-cta-height); padding: 0 28px; font-size: 17px; }
+.kit-pill--lg svg, .kit-pill--icon svg { width: 20px; height: 20px; }
+.kit-pill--icon { width: var(--button-primary-height); height: var(--button-primary-height); padding: 0; }
+.kit-pill--block { width: 100%; min-width: 0; flex: 1 1 0%; }
+
+/* ── Card, FeatureCard, Eyebrow ───────────────────────────────────────────────────────────────────────────────── */
+.kit-card { border: 1px solid var(--ow-hairline); border-radius: var(--ow-r-card); background: var(--ow-card); color: var(--ow-ink); }
+.kit-card:not([data-flat]) { padding: 20px; }
+.kit-feature { position: relative; overflow: hidden; padding: 28px; border-radius: var(--ow-r-feature); }
+:is(.kit-feature, .kit-sticker)[data-tone="accent"] { background: var(--ow-pink); color: var(--ow-on-pink); }
+:is(.kit-feature, .kit-sticker)[data-tone="profit"] { background: var(--ow-lime); color: var(--color-stage); }
+:is(.kit-feature, .kit-sticker)[data-tone="surface"] { background: var(--ow-sky); color: var(--ow-ink); }
+:is(.kit-feature, .kit-sticker)[data-tone="cream"] { background: var(--ow-cream); color: var(--color-cream-ink); }
+:is(.kit-feature, .kit-sticker)[data-tone="black"] { background: var(--ow-black); color: var(--ow-white); box-shadow: inset 0 0 0 1px var(--plate-black-edge); }
+:is(.kit-feature, .kit-sticker)[data-tone="white"] { background: var(--ow-card); color: var(--ow-ink); box-shadow: inset 0 0 0 1px var(--ow-hairline); }
+.kit-eyebrow { font: 500 14px/1.4 var(--ow-font-body); color: var(--ow-muted); }
+
+/* ── TextTabs: words, not chips; the active word is ink with a short accent bar under it ─────────────────────── */
+.kit-tabs { min-width: 0; }
+.kit-tabs-list { position: relative; display: flex; gap: 20px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
+.kit-tabs-list::-webkit-scrollbar { display: none; }
+.kit-tab {
+  display: inline-flex; flex-shrink: 0; align-items: center; min-height: 44px; padding: 0; border: 0; background: none;
+  font: 700 16px/1.2 var(--ow-font-display); color: var(--ow-helper); white-space: nowrap; cursor: pointer; outline: none;
+  transition: color 150ms var(--ease-out);
+}
+.kit-tabs[data-size="lg"] .kit-tab { font-size: 20px; }
+.kit-tab:hover { color: var(--ow-muted); }
+.kit-tab[aria-selected="true"] { color: var(--ow-ink); }
+.kit-tab:focus-visible { color: var(--ow-ink); box-shadow: 0 2px 0 0 var(--color-accent); }
+.kit-tabs-bar {
+  position: absolute; bottom: 0; left: 0; width: var(--active-tab-width); height: 3px; border-radius: var(--radius-full);
+  background: var(--color-accent); translate: var(--active-tab-left) 0; transition: translate 200ms var(--ow-spring), width 200ms var(--ow-spring);
+}
+
+/* ── Odometer (R4-1's, folded in — one rolling figure in the app): the data face, tabular, toned by sign ────────── */
+.odometer { display: inline-flex; white-space: nowrap; font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.odometer[data-dir="up"] { color: var(--chart-up); }
+.odometer[data-dir="down"] { color: var(--chart-down); }
+
+/* ── GroupedList: a titled group of 48 px rows (the account drawer, /settings); a toggle row is the switch ──────── */
+.kit-group { display: flex; flex-direction: column; gap: 6px; }
+.kit-group-title { padding: 0 4px; color: var(--ow-muted); font: 700 11px/1 var(--ow-font-body); letter-spacing: 0.1em; text-transform: uppercase; }
+.kit-group-body { overflow: hidden; border: 1px solid var(--ow-hairline); border-radius: var(--ow-r-card); background: var(--ow-card); }
+.kit-item { display: flex; width: 100%; min-height: 48px; align-items: center; gap: 12px; padding: 0 14px; border-bottom: 1px solid var(--ow-hairline); font: 500 14px/1.2 var(--ow-font-body); color: var(--ow-ink); text-align: left; }
+.kit-item:last-child { border-bottom: 0; }
+.kit-item:hover { background: var(--ow-recessed); }
+.kit-item:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.kit-item:disabled { opacity: 0.45; pointer-events: none; }
+.kit-item--toggle { padding-block: 10px; }
+.kit-item-icon { width: 18px; height: 18px; flex: none; color: var(--ow-muted); }
+.kit-item-label { flex: 1; min-width: 0; }
+.kit-item-detail { color: var(--ow-muted); font-size: 12px; }
+.kit-item-chevron { width: 16px; height: 16px; flex: none; color: var(--ow-muted); }
+.kit-toggle { position: relative; flex: none; width: 48px; height: 28px; border-radius: var(--ow-r-pill); background: var(--ow-hairline); transition: background-color var(--duration-state) var(--ease-out); }
+.kit-toggle[data-on] { background: var(--ow-pink); }
+.kit-toggle-knob { position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; border-radius: var(--ow-r-pill); background: var(--ow-white); transition: translate var(--duration-state) var(--ease-out); }
+.kit-toggle[data-on] .kit-toggle-knob { translate: 20px 0; }
+
+/* ── CapitalBar: a whole split into what takes it (the money card's bar grammar), a cap tick, filter chips ──────── */
+.kit-capital { display: flex; flex-direction: column; gap: 10px; }
+.kit-capital-bar { position: relative; display: flex; gap: 4px; height: 12px; overflow: hidden; border-radius: var(--ow-r-pill); background: var(--ow-recessed); }
+.kit-capital-seg { flex: 0 1 auto; width: calc(var(--kit-share) * 1%); min-width: 4px; height: 100%; border-radius: var(--ow-r-pill); transition: width 350ms var(--ease-out), opacity var(--duration-state); }
+.kit-capital-seg[data-dim] { opacity: 0.3; }
+.kit-capital-cap { position: absolute; top: 0; bottom: 0; left: calc(var(--kit-share) * 1%); width: 2px; background: var(--ow-ink); }
+.kit-capital-legend { display: flex; flex-wrap: wrap; gap: 6px; }
+.kit-capital-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border-radius: var(--ow-r-pill); background: var(--ow-recessed); font: 500 12px/1 var(--ow-font-body); color: var(--ow-muted); }
+button.kit-capital-chip { position: relative; cursor: pointer; }
+button.kit-capital-chip::before { content: ""; position: absolute; inset: -6px 0; }
+button.kit-capital-chip:hover { color: var(--ow-ink); background: var(--color-surface-3); }
+button.kit-capital-chip[aria-pressed="true"] { background: var(--ow-ink); color: var(--ow-inverse); }
+button.kit-capital-chip:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.kit-capital-dot { width: 8px; height: 8px; border-radius: var(--ow-r-pill); }
+.kit-capital-amount { font-family: var(--font-data); color: inherit; }
+
+/* ── PositionCard (R4-1's, folded in): worth now, the P&L toned by sign, avg in and invested ─────────────────────── */
+.position-card { border: 1px solid var(--ow-hairline); border-radius: var(--ow-r-card); background: var(--ow-card); padding: 20px; color: var(--ow-ink); }
+.position-card-side { flex: none; border-radius: var(--radius-full); padding: 4px 10px; font: 700 12px/1.2 var(--font-heading); }
+.position-card-side[data-dir="up"] { background: color-mix(in oklab, var(--chart-up) 16%, transparent); color: var(--chart-up); }
+.position-card-side[data-dir="down"] { background: color-mix(in oklab, var(--chart-down) 16%, transparent); color: var(--chart-down); }
+.position-card-figure { display: block; font: 800 28px/1.1 var(--font-data); letter-spacing: -0.02em; }
+.position-card-pnl { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; font: 700 14px/1.2 var(--font-data); }
+.position-card-pnl .odometer:last-child { font-size: 12px; font-weight: 600; }
+.position-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--ow-hairline); font: 500 12px/1.3 var(--font-body); }
+.position-card-grid dt { color: var(--ow-muted); }
+.position-card-grid dd { margin-top: 2px; font: 700 13px/1.3 var(--font-data); }
+
+/* ── Sticker: condensed caps on a bright tone with a cream cut line, tilted a few degrees ────────────────────── */
+.kit-sticker {
+  display: inline-flex; align-items: center; gap: 6px; border-radius: var(--ow-r-sticker); outline: 3px solid var(--ow-white);
+  font-family: var(--ow-font-display); font-weight: 800; line-height: 1; letter-spacing: -0.01em; text-transform: uppercase;
+  white-space: nowrap; rotate: var(--kit-tilt, -4deg);
+}
+.kit-sticker[data-size="sm"] { padding: 6px 10px 5px; font-size: 13px; }
+.kit-sticker[data-size="md"] { padding: 8px 14px 7px; font-size: 16px; }
+.kit-sticker[data-size="lg"] { padding: 12px 20px 10px; font-size: 28px; }
+
+/* ── Seal: the 見通し mark in a disc, stamped (a press, a small overshoot, settled) ─────────────────────────────── */
+.kit-seal { display: inline-grid; flex: none; place-items: center; border-radius: var(--radius-full); rotate: var(--kit-tilt, -6deg); }
+.kit-seal svg { width: 50%; height: auto; }
+.kit-seal[data-size="sm"] { width: 32px; height: 32px; }
+.kit-seal[data-size="md"] { width: 48px; height: 48px; }
+.kit-seal[data-size="lg"] { width: 96px; height: 96px; }
+.kit-seal[data-tone="accent"] { background: var(--ow-pink); color: var(--ow-on-pink); }
+.kit-seal[data-tone="ink"] { background: var(--ow-ink); color: var(--ow-inverse); }
+.kit-seal[data-tone="stage"] { background: var(--color-stage); color: var(--ow-ink); box-shadow: inset 0 0 0 2px var(--ow-pink); }
+@keyframes kit-seal-stamp { 0% { scale: 1.6; opacity: 0; } 55% { scale: 0.92; opacity: 1; } 100% { scale: 1; opacity: 1; } }
+.kit-seal[data-stamp] { animation: kit-seal-stamp 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+/* ── SwipeToConfirm: drag the thumb to the end; Enter or Space confirms ───────────────────────────────────────── */
+.kit-swipe {
+  --kit-thumb: 56px; --kit-pad: 4px; --kit-x: 0px;
+  position: relative; height: 64px; width: 100%; overflow: hidden; border-radius: var(--ow-r-pill); user-select: none;
+  touch-action: pan-y; background: color-mix(in srgb, var(--ow-pink) 15%, transparent);
+}
+.kit-swipe[data-tone="ink"] { background: var(--ow-recessed); }
+.kit-swipe[data-disabled] { opacity: 0.4; }
+.kit-swipe-fill {
+  position: absolute; inset: 0 auto 0 0; width: calc(var(--kit-x) + var(--kit-thumb) + var(--kit-pad) * 2);
+  border-radius: var(--ow-r-pill); background: var(--ow-pink);
+}
+.kit-swipe[data-tone="ink"] .kit-swipe-fill { background: var(--ow-ink); }
+.kit-swipe-label {
+  position: absolute; inset: 0; display: grid; place-items: center; padding-left: 48px; pointer-events: none;
+  font: 700 17px/1 var(--ow-font-body); color: var(--ow-ink); opacity: var(--kit-label, 1);
+}
+.kit-swipe:not([data-state="idle"]) .kit-swipe-label { color: var(--ow-on-pink); opacity: 1; }
+.kit-swipe[data-tone="ink"]:not([data-state="idle"]) .kit-swipe-label { color: var(--ow-inverse); }
+.kit-swipe-thumb {
+  position: absolute; top: var(--kit-pad); left: var(--kit-pad); display: grid; place-items: center;
+  width: var(--kit-thumb); height: var(--kit-thumb); border-radius: var(--ow-r-pill); background: var(--ow-white);
+  color: var(--color-cream-ink); cursor: grab; outline: none; touch-action: none; translate: var(--kit-x) 0;
+}
+.kit-swipe-thumb:active { cursor: grabbing; }
+.kit-swipe-thumb:disabled { cursor: default; }
+.kit-swipe-thumb:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.kit-swipe-thumb svg { width: 24px; height: 24px; }
+.kit-swipe:not([data-dragging]) :is(.kit-swipe-thumb, .kit-swipe-fill) { transition: translate 320ms var(--ease-bounce), width 320ms var(--ease-bounce); }
+
+/* ── Keypad: three columns of large digits, a point and delete, no key borders ───────────────────────────────── */
+.kit-keypad { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.kit-key {
+  display: grid; place-items: center; height: 64px; border: 0; border-radius: var(--radius-lg); background: none;
+  font: 700 28px/1 var(--font-data); color: var(--ow-ink); user-select: none; cursor: pointer; transition: background-color 120ms;
+}
+.kit-key:active { background: var(--ow-recessed); }
+.kit-key:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+.kit-key svg { width: 28px; height: 28px; }
+
+/* ── InfiniteSlider: an endless row; reduced motion stands still and scrolls by hand ─────────────────────────── */
+.kit-slider { overflow: hidden; }
+.kit-slider[data-still] { overflow-x: auto; scrollbar-width: none; }
+.kit-slider-track, .kit-slider-copy { display: flex; width: max-content; gap: var(--kit-gap, 1rem); }
+
+/* ── Masked: a money figure in privacy mode (the value is not in the DOM) ─────────────────────────────────────── */
+.kit-masked { font-family: var(--font-data); font-weight: 700; letter-spacing: 0.12em; }
+.kit-privacy { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-full); color: var(--ow-muted); }
+.kit-privacy:hover { background: var(--ow-recessed); color: var(--ow-ink); }
+.kit-privacy:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+/* ── ScrollRail: a sideways rail that is a named region, keyboard-scrollable, with an edge fade ─────────────────── */
+.kit-rail {
+  display: flex; gap: var(--kit-gap, 8px); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity;
+  scrollbar-width: none; outline: none; --kit-fade: 24px;
+  mask-image: linear-gradient(90deg, transparent, #000 var(--kit-fade-start, 0px), #000 calc(100% - var(--kit-fade-end, 0px)), transparent);
+}
+.kit-rail::-webkit-scrollbar { display: none; }
+.kit-rail > * { flex: none; scroll-snap-align: start; }
+.kit-rail:not([data-at-start]) { --kit-fade-start: var(--kit-fade); }
+.kit-rail:not([data-at-end]) { --kit-fade-end: var(--kit-fade); }
+.kit-rail:focus-visible { box-shadow: 0 0 0 2px var(--color-accent); border-radius: var(--radius-md); }
+
+/* ── CountdownRing: the data ring face, sized, with the time left inside in the figures' face ─────────────────── */
+.kit-ring { position: relative; display: inline-grid; flex: none; place-items: center; }
+.kit-ring[data-size="sm"] { width: 28px; height: 28px; }
+.kit-ring[data-size="md"] { width: 44px; height: 44px; }
+.kit-ring[data-size="lg"] { width: 64px; height: 64px; }
+.kit-ring-left { font: 700 11px/1 var(--font-data); font-variant-numeric: tabular-nums; color: var(--ow-ink); }
+.kit-ring[data-size="sm"] .kit-ring-left { font-size: 8px; }
+.kit-ring[data-size="lg"] .kit-ring-left { font-size: 14px; }
+
+/* ── ShareCharm: the share card as DOM — the cream receipt share-png.ts draws, tilted, in either theme ──────────── */
+.kit-charm {
+  position: relative; width: min(100%, 300px); margin-inline: auto; padding: 40px 28px 24px; border-radius: var(--radius-xl);
+  background: var(--receipt-surface); color: var(--receipt-ink); box-shadow: 0 0 0 4px var(--receipt-hairline), var(--receipt-shadow);
+  rotate: var(--kit-tilt, -3deg);
+}
+.kit-charm-punch { position: absolute; top: 18px; left: 24px; width: 12px; height: 12px; border-radius: var(--radius-full); background: var(--color-accent); }
+.kit-charm-call { font: 800 24px/1.05 var(--ow-font-display); letter-spacing: -0.02em; text-transform: uppercase; overflow-wrap: anywhere; }
+.kit-charm-result { margin-top: 10px; font: 800 44px/1 var(--ow-font-display); letter-spacing: -0.03em; color: var(--receipt-down); overflow-wrap: anywhere; }
+.kit-charm[data-win] .kit-charm-result { color: var(--receipt-up); }
+.kit-charm-lines { margin-top: 12px; font: 600 13px/1.45 var(--font-data); opacity: 0.7; }
+.kit-charm-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 20px; }
+.kit-charm-meta { min-width: 0; font: 600 12px/1.35 var(--ow-font-body); color: color-mix(in srgb, var(--receipt-ink) 60%, transparent); }
+.kit-charm-handle { color: var(--receipt-ink); }
+.kit-charm-stamp { flex: none; font: 700 28px/1 var(--font-stamp); color: var(--color-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .kit-pill, .kit-tab, .kit-tabs-bar, .kit-key, .kit-toggle, .kit-toggle-knob, .kit-capital-seg { transition: none; }
+  .kit-pill:active { transform: none; }
+  .kit-seal[data-stamp] { animation: none; }
+  .kit-swipe :is(.kit-swipe-thumb, .kit-swipe-fill) { transition: none !important; }
+  .kit-rail { scroll-behavior: auto; }
+}

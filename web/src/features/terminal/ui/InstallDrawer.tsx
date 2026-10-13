@@ -2,9 +2,9 @@
 // Tradash's install sheet (RV-91) as a right-edge drawer (D-190), on Mitoshi's own install machinery: the app-wide store
 // that keeps the browser's install prompt (`features/install`), and `/download`'s words. One tap installs where the
 // browser offers it; iOS gets the Safari steps; anything else names where its browser keeps "Install"; an installed
-// app says so (Tradash's "Already installed").
+// app says so (Tradash's "Already installed"). R4-2 (D-227): Install sits in the sheet's pinned footer.
 import Link from "next/link";
-import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
+import { SheetFooter, SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { INSTALL } from "@/features/install/copy";
 import { useInstallPrompt } from "@/features/install/useInstallPrompt";
 import { tapFeedback } from "@/lib/feedback";
@@ -15,9 +15,11 @@ function Body() {
   if (state === "installed") return <p className="tm-field-hint">{INSTALL.cta.installed}</p>;
   if (state === "prompt")
     return (
-      <button type="button" className="tm-btn tm-btn-cta" disabled={busy} aria-busy={busy} onClick={() => (tapFeedback(), void install())}>
-        {busy ? INSTALL.cta.installing : INSTALL.cta.prompt}
-      </button>
+      <SheetFooter>
+        <button type="button" className="tm-btn tm-btn-cta" disabled={busy} aria-busy={busy} onClick={() => (tapFeedback(), void install())}>
+          {busy ? INSTALL.cta.installing : INSTALL.cta.prompt}
+        </button>
+      </SheetFooter>
     );
   if (state === "ios")
     return (

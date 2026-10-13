@@ -137,7 +137,7 @@
 .you-bar {
   position: sticky;
   bottom: 16px;
-  z-index: 100;
+  z-index: var(--z-sticky);
   margin: 24px 0 0;
   background: var(--vermilion);
   color: var(--white);

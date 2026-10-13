@@ -11,7 +11,7 @@ import { useMarket } from "@cwf/markets/react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDownRight, ArrowUpRight, Check, ChevronDown, Layers, Target, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Odometer } from "@/components/data/Odometer";
+import { Odometer } from "@/components/kit";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { usdBand } from "@/features/range/format";
 import { useClockValue } from "@/lib/clock";

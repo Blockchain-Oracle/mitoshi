@@ -5,6 +5,7 @@
  * (21st 31347 + 32784, `BandSlider`) — the side, the amount (16240 chips), the chain's quote in the 29356 totals, and
  * the 23527 hold. Used as the markets ticket's Range mode (inside only, as the reference) and on /games/range (inside
  * or outside). Every blocker is the CTA's label (D-045); a stale book (D-119, 2σ from the signed spot) is named.
+ * R4-2 (D-227): in a phone sheet the hold sits in the pinned footer (`SheetFooter`); on a page or the rail, in place.
  */
 import { USD_DECIMALS, type EventMarket } from "@cwf/core";
 import { bandProbE6, RANGE_STAKE_HEADROOM_BPS, type RangeReserveState, type RangeSide } from "@cwf/core/range";
@@ -17,6 +18,7 @@ import { useEffect, useMemo, useState } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
 import { BandSlider } from "@/components/ui/band-slider";
+import { SheetFooter } from "@/components/ui/drawer";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { OrderSummary } from "@/components/ui/order-summary";
 import { AmountField, QuickAdds } from "@/components/ui/prediction-ticket";
@@ -148,18 +150,20 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
         ]}
         total={{ label: RANGE.ticket.total, value: quote ? usd(quote.maxPayoutBase) : null, tone: "profit" }}
       />
-      {!session.isConnected ? (
-        <button type="button" onClick={session.connect} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{RANGE.cta.signIn}</button>
-      ) : busy || writes.fetchingSpot ? (
-        <TxCta state={writes.tx} action={writes.fetchingSpot ? RANGE.cta.fetchingSpot : RANGE.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
-      ) : blocker ? (
-        <button type="button" disabled aria-disabled className="min-h-touch w-full cursor-not-allowed rounded-md border border-hairline bg-surface-2 px-4 type-body-strong text-ink-secondary">{blocker}</button>
-      ) : (
-        <HoldToConfirm className="w-full" confirmLabel={RANGE.cta.placing} onConfirm={place}>
-          {RANGE.cta.place(usd(quote!.stakeBase), usd(quote!.maxPayoutBase))}
-        </HoldToConfirm>
-      )}
-      {session.isConnected && !blocker && !busy ? <p className="text-center type-caption text-ink-secondary">{TX.noFees}</p> : null}
+      <SheetFooter>
+        {!session.isConnected ? (
+          <button type="button" onClick={session.connect} className="min-h-touch w-full rounded-md bg-accent-fill px-4 type-body-strong text-on-accent">{RANGE.cta.signIn}</button>
+        ) : busy || writes.fetchingSpot ? (
+          <TxCta state={writes.tx} action={writes.fetchingSpot ? RANGE.cta.fetchingSpot : RANGE.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
+        ) : blocker ? (
+          <button type="button" disabled aria-disabled className="min-h-touch w-full cursor-not-allowed rounded-md border border-hairline bg-surface-2 px-4 type-body-strong text-ink-secondary">{blocker}</button>
+        ) : (
+          <HoldToConfirm className="w-full" confirmLabel={RANGE.cta.placing} onConfirm={place}>
+            {RANGE.cta.place(usd(quote!.stakeBase), usd(quote!.maxPayoutBase))}
+          </HoldToConfirm>
+        )}
+        {session.isConnected && !blocker && !busy ? <p className="text-center type-caption text-ink-secondary">{TX.noFees}</p> : null}
+      </SheetFooter>
       {writes.outcome?.status === "confirmed" ? (
         <div role="status" className="rg-receipt">
           <p className="type-body-strong">{RANGE.outcome.placed(writes.outcome.roundId?.toString() ?? "", bandText, usd(writes.outcome.stakeBase), quote ? usd(quote.maxPayoutBase) : "")}</p>

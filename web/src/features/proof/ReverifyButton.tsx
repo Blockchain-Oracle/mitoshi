@@ -31,7 +31,6 @@ export function ReverifyButton({ input, expectedE8 }: { input: ReverifyInput; ex
       <p role="status" aria-live="polite" className="type-caption text-ink-secondary">
         {state.kind === "ok" ? <span className="inline-flex items-start gap-1.5 text-ink"><ShieldCheckIcon aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />{state.text}</span> : null}
         {state.kind === "bad" ? <span className="inline-flex items-start gap-1.5 text-warning"><TriangleAlertIcon aria-hidden className="mt-0.5 size-4 shrink-0" />{state.text}</span> : null}
-        {state.kind === "idle" || state.kind === "busy" ? PROOF.how : null}
       </p>
     </div>
   );
