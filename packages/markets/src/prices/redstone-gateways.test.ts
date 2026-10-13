@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchRedstoneAt, fetchRedstoneLatest, PUBLIC_REDSTONE_GATEWAYS, REDSTONE_BLOCK_COOLDOWN_MS, REDSTONE_COOLDOWN_MS, redstoneAnswerName, redstoneGatewayName, redstoneGatewaysFromEnv, REDSTONE_KEY_INTERVAL_MS, resetRedstoneCooldowns } from "./redstone-gateways";
+import { fetchRedstoneAt, fetchRedstoneLatest, PUBLIC_REDSTONE_GATEWAYS, REDSTONE_BLOCK_COOLDOWN_MS, REDSTONE_COOLDOWN_MS, redstoneAnswerName, redstoneGatewayName, redstoneGatewaysFromEnv, REDSTONE_KEY_INTERVAL_MS, redstoneCoolingUntilMs, resetRedstoneCooldowns } from "./redstone-gateways";
 
 const KEY = "rk_live_secret_value";
 const PAIRS = JSON.stringify([{ url: "https://gw-a.example/", apiKey: KEY }, { url: "https://gw-b.example", apiKey: "rk_two" }]);
@@ -100,5 +100,19 @@ describe("RedStone gateways (D-210)", () => {
     }
     await expect(fetchRedstoneAt(9, [two[0]!])).rejects.toThrow(/resting 120 s/);
     expect(asked.filter((h) => h === "gw-r.example")).toHaveLength(5);
+  });
+
+  it("says when every gateway rests, and until when — null while one can still be asked (the relay sleeps to it)", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => (url.startsWith("https://gw-t.example") ? new Response('{"error":"public_gateway_rejected"}', { status: 403 }) : new Response("<HTML>Request blocked.</HTML>", { status: 403 }))));
+    const two = [{ url: "https://gw-t.example", apiKey: null }, { url: "https://gw-u.example", apiKey: null }];
+    expect(redstoneCoolingUntilMs(two)).toBeNull();
+    await expect(fetchRedstoneAt(1, [two[0]!])).rejects.toThrow(/HTTP 403/);
+    // One rests 30 s, the other is still askable: nothing to wait for.
+    expect(redstoneCoolingUntilMs(two)).toBeNull();
+    await expect(fetchRedstoneAt(2, [two[1]!])).rejects.toThrow(/blocked by the CDN/);
+    expect(redstoneCoolingUntilMs(two)).toBe(Date.now() + REDSTONE_COOLDOWN_MS.first);
+    vi.setSystemTime(Date.now() + REDSTONE_COOLDOWN_MS.first);
+    expect(redstoneCoolingUntilMs(two)).toBeNull();
   });
 });

@@ -6,9 +6,14 @@
  * pass's prints pack into a few transactions, check slots and short cadences first (`pack.ts`, D-230).
  * A slot past its deadline, or refused by the engine `MAX_FAILED_ATTEMPTS` times, is reported missed once; the settler
  * voids the Window. Transport failures never count toward giving up (D-131).
+ * A due print stuck past `STALL_AFTER_SEC` is a stall, said in `/health` and `/session.prints` with its kind: `source`
+ * (RedStone has no packages for T yet: refusing, unsigned, unreachable) or `sending` (the print is in hand and Tempo's
+ * RPC keeps refusing the sends — Mitoshi's own backlog, never blamed on RedStone). While stalled the relay paces itself
+ * (`relayDelayMs`): it sleeps to the end of the gateways' rest, or 5 s, instead of re-reading every Window every 1.5 s
+ * on the shared RPC budget while nothing can land.
  */
 import type { Address } from "viem";
-import { copyOpenFromPrevCall, fetchMarkets, fetchSeries, listSeries, marketIdOf, OpsSendError, recordPrintCall, sendOps, simulateOps, type MarketView, type OpsClient, type SeriesView, type Venue } from "@cwf/markets/ops";
+import { copyOpenFromPrevCall, fetchMarkets, fetchSeries, listSeries, marketIdOf, OpsSendError, recordPrintCall, redstoneCoolingUntilMs, sendOps, simulateOps, type MarketView, type OpsClient, type SeriesView, type Venue } from "@cwf/markets/ops";
 import type { PassResult } from "../../runtime/actor";
 import { errorText } from "../../runtime/env";
 import { chainRefused, sendPacked, type PackSender } from "../../runtime/pack";
@@ -19,8 +24,10 @@ import { copyableOpen, emptySlots, relayFinished, WHICH, type PrintSlot } from "
 const LOOK_BACK = 8n;
 const SERIES_LIST_MS = 5 * 60_000;
 const MAX_FAILED_ATTEMPTS = 5;
-/** A due print still without its source's data this long after T is a stall: `/health` and `/session` say so. */
+/** A due print still without its source's data (or still unsent) this long after T is a stall: `/health` and `/session` say so. */
 export const STALL_AFTER_SEC = 20;
+/** While stalled, a pass at most this often (unless a print lands, or a boundary comes due sooner). */
+export const STALLED_PASS_MS = 5_000;
 /** Opens landed lately, seconds after their Window's start (`/session` tells the app how long a Window usually prices). */
 const OPEN_LAG_KEEP = 30;
 
@@ -38,7 +45,7 @@ export interface RelayState {
   recent: Array<{ key: string; slot: string; tx: string }>;
   /** Seconds from a Window's start to its opening print, newest first (`OPEN_LAG_KEEP`). */
   openLags: number[];
-  /** Due prints waiting on their source past `STALL_AFTER_SEC`: since when (the oldest T) and why. */
+  /** Due prints stuck past `STALL_AFTER_SEC` (on their source, or on sends the RPC refuses): since when, what kind, why. */
   stall: RelayStall | null;
   /** A dry run fills each pack as this address (the role's), never signing or sending (`simulateOps`). */
   simulateFrom?: Address | null;
@@ -47,6 +54,8 @@ export interface RelayState {
 
 export interface RelayStall {
   sinceSec: number;
+  /** `source`: RedStone has nothing for T yet; `sending`: the print is in hand, the RPC keeps refusing its sends. */
+  kind: "source" | "sending";
   reason: string;
 }
 
@@ -151,7 +160,7 @@ function failed(st: RelayState, c: PrintCall<Job>, error: unknown): string {
  * How the pass's packs go out: from the role key, stamped with the chain clock; in a dry run with `simulateFrom`, each
  * pack filled as that address instead (every call executed, nothing signed or sent) and reported, touching no counter.
  */
-function sender(st: RelayState, clockSec: () => number): PackSender<PrintCall<Job>> {
+function sender(st: RelayState, clockSec: () => number, sendFails: PrintSlot[]): PackSender<PrintCall<Job>> {
   const simulate = st.dryRun ? (st.simulateFrom ?? null) : null;
   return {
     send: async (items) => {
@@ -162,7 +171,11 @@ function sender(st: RelayState, clockSec: () => number): PackSender<PrintCall<Jo
     },
     refused: chainRefused,
     landed: (c, hash, inTx) => (st.dryRun ? `DRY ${label(c.job.slot)} ${c.note}${simulate ? ` · fills (${hash}, ${inTx} in tx)` : ""}` : landed(st, c, hash, inTx)),
-    failed: (c, error) => (st.dryRun ? `DRY ${label(c.job.slot)} refused: ${error instanceof OpsSendError ? (error.errorName ?? errorText(error).slice(0, 120)) : errorText(error).slice(0, 120)}` : failed(st, c, error)),
+    failed: (c, error) => {
+      // The transport's answer (429, -32005, a timeout): the print is ready and the send never reached the engine.
+      if (!chainRefused(error)) sendFails.push(c.job.slot);
+      return st.dryRun ? `DRY ${label(c.job.slot)} refused: ${error instanceof OpsSendError ? (error.errorName ?? errorText(error).slice(0, 120)) : errorText(error).slice(0, 120)}` : failed(st, c, error);
+    },
     skipped: (c, after) => `${label(c.job.slot)} waits for ${label(after.job.slot)}`,
   };
 }
@@ -200,13 +213,38 @@ async function unitsOf(st: RelayState, jobs: Job[], nowSec: number): Promise<{ u
   return { units, lines, waits };
 }
 
-/** The oldest due print still waiting on its source past `STALL_AFTER_SEC`, with the source's last word; else null. */
-function stallOf(st: RelayState, waits: readonly PrintSlot[], nowSec: number): RelayStall | null {
-  const late = waits.filter((s) => nowSec - s.boundarySec >= STALL_AFTER_SEC);
-  if (!late.length) return null;
-  const oldest = late.reduce((a, b) => (b.boundarySec < a.boundarySec ? b : a));
-  const reason = st.proofs.cache.error(oldest.boundarySec) ?? "the price network has not signed it yet";
-  return { sinceSec: st.stall && st.stall.sinceSec <= oldest.boundarySec ? st.stall.sinceSec : oldest.boundarySec, reason: reason.slice(0, 200) };
+/**
+ * The oldest due print stuck past `STALL_AFTER_SEC`, with why; else null. A print with no source data is the price
+ * network's stall (its last word); a print in hand whose sends the RPC refuses is a `sending` stall. Source first: with
+ * both, the network is what holds the Windows.
+ */
+export function stallOf(st: Pick<RelayState, "stall" | "proofs" | "failures">, waits: readonly PrintSlot[], sendFails: readonly PrintSlot[], nowSec: number): RelayStall | null {
+  const lateOf = (xs: readonly PrintSlot[]) => xs.filter((s) => nowSec - s.boundarySec >= STALL_AFTER_SEC);
+  const source = lateOf(waits);
+  const sending = lateOf(sendFails);
+  const kind = source.length ? "source" : sending.length ? "sending" : null;
+  if (!kind) return null;
+  const oldest = (kind === "source" ? source : sending).reduce((a, b) => (b.boundarySec < a.boundarySec ? b : a));
+  const reason = kind === "source" ? (st.proofs.cache.error(oldest.boundarySec) ?? "the price network has not signed it yet") : `Tempo's RPC refuses the sends: ${st.failures.get(slotKey(oldest))?.reason ?? "transport failure"}`;
+  const sinceSec = st.stall && st.stall.kind === kind && st.stall.sinceSec <= oldest.boundarySec ? st.stall.sinceSec : oldest.boundarySec;
+  return { sinceSec, kind, reason: reason.slice(0, 200) };
+}
+
+/**
+ * When the next pass comes. A print landed: at once (more may be ready). Waiting on RedStone inside its usual few
+ * seconds: 1.5 s. Stalled: 5 s — or, when every gateway is resting, the end of that rest — so a stall that lasts a
+ * RedStone refusal window doesn't spend the shared RPC budget the settler and the house need; but never past the next
+ * boundary's first ask (at most 15 s). Otherwise: that first ask, within 1–15 s.
+ */
+export function relayDelayMs(i: { sent: number; waiting: number; stall: RelayStall | null; nowSec: number; nextSec: number; coolUntilMs: number | null; nowMs?: number }): number {
+  const boundaryMs = Math.max(1_000, Math.min(15_000, (i.nextSec + REDSTONE_FETCH_AFTER_SEC - i.nowSec) * 1000));
+  if (i.sent > 0) return 500;
+  if (i.stall) {
+    const rest = i.stall.kind === "source" && i.coolUntilMs !== null ? i.coolUntilMs - (i.nowMs ?? Date.now()) : 0;
+    return Math.min(Math.max(STALLED_PASS_MS, rest), boundaryMs);
+  }
+  if (i.waiting) return 1_500;
+  return boundaryMs;
 }
 
 export async function relayPass(st: RelayState, nowSec: number): Promise<PassResult> {
@@ -231,18 +269,18 @@ export async function relayPass(st: RelayState, nowSec: number): Promise<PassRes
   }
   const { units, lines, waits } = await unitsOf(st, jobs, nowSec);
   const packs = packPrints(units);
-  lines.push(...(await sendPacked(packs, sender(st, clockSec))));
+  const sendFails: PrintSlot[] = [];
+  lines.push(...(await sendPacked(packs, sender(st, clockSec, sendFails))));
   st.proofs.cache.prune(nowSec);
-  const stall = stallOf(st, waits, nowSec);
-  if (stall && !st.stall) st.log(`stalled: prints due since ${stall.sinceSec} have no source data (${stall.reason})`);
+  const stall = stallOf(st, waits, sendFails, nowSec);
+  if (stall && (!st.stall || st.stall.kind !== stall.kind)) st.log(`stalled (${stall.kind}): prints due since ${stall.sinceSec} ${stall.kind === "source" ? "have no source data" : "can't be sent"} (${stall.reason})`);
   if (!stall && st.stall) st.log(`stall over: prints land again (since ${st.stall.sinceSec})`);
   st.stall = stall;
   const sent = lines.filter((l) => l.includes("✓")).length;
   const lags = [...st.openLags].sort((a, b) => a - b);
   return {
-    why: `${live.length} live Windows · due ${jobs.length} · pending ${pending}${packs.length ? ` · ${packs.length} tx` : ""}${stall ? ` · STALLED since ${stall.sinceSec}` : ""}${lines.length ? ` | ${lines.join(" | ")}` : ""}${st.dryRun ? " · DRY RUN" : ""}`,
+    why: `${live.length} live Windows · due ${jobs.length} · pending ${pending}${packs.length ? ` · ${packs.length} tx` : ""}${stall ? ` · STALLED (${stall.kind}) since ${stall.sinceSec}` : ""}${lines.length ? ` | ${lines.join(" | ")}` : ""}${st.dryRun ? " · DRY RUN" : ""}`,
     detail: { ...st.counters, liveWindows: live.length, due: jobs.length, pending, txs: packs.length, stall, openLagSec: lags.length ? { p50: lags[Math.floor(lags.length / 2)]!, max: lags.at(-1)!, n: lags.length } : null, recent: st.recent },
-    // Due prints ask again soon: RedStone carries every signer at T within a few seconds (REDSTONE_FETCH_AFTER_SEC).
-    nextDelayMs: sent > 0 ? 500 : waits.length ? 1_500 : Math.max(1_000, Math.min(15_000, (nextSec + REDSTONE_FETCH_AFTER_SEC - nowSec) * 1000)),
+    nextDelayMs: relayDelayMs({ sent, waiting: waits.length + sendFails.length, stall, nowSec, nextSec, coolUntilMs: redstoneCoolingUntilMs(st.proofs.sources.gateways) }),
   };
 }

@@ -6,7 +6,8 @@
  * the 24/7 feed over the weekend. A halted asset pulls. Our own quotes are budgeted per Window.
  * D-230: a pass plans every Window at once (its reads coalesce into a few multicalls) and sends the plans packed —
  * fresh books first — a few transactions a pass instead of one per Window, so a boundary's 38 new books fill within
- * seconds of their opening prints instead of minutes; and while a Window waits for its open, the pass comes back in 2 s.
+ * seconds of their opening prints instead of minutes; and while a Window that just opened waits for its open, the pass
+ * comes back in 2 s (`pace.ts`: only in its first 30 s — through a stall the maker keeps its own cadence).
  */
 import { erc20Abi, encodeFunctionData, maxUint256, type Address } from "viem";
 import { TEMPO } from "@cwf/clients";
@@ -17,14 +18,13 @@ import { chainRefused, packUnits, sendPacked, type PackSender, type PackUnit } f
 import { createBasisTracker } from "./basis";
 import { readSeedMakerEnv } from "./env";
 import { laneQuote } from "./lanes";
+import { makerDelayMs } from "./pace";
 import type { Placed } from "./quote";
 import { planWindow, type Step, type WindowPlan, type WindowResult } from "./window";
 
 const SERIES_LIST_MS = 5 * 60_000;
 /** A requote is 2–4 calls (cancel, merge, the pair): four or five Windows a transaction, ≈ 3 M gas. */
 const CALLS_PER_TX = 16;
-/** While a trading Window waits for its opening print, the next pass comes this soon (the relay lands it in seconds). */
-const OPEN_WAIT_PASS_MS = 2_000;
 
 type Planned = { s: SeriesView; m: MarketView; label: string; plan: WindowPlan | null; error: unknown };
 type Item = { w: Planned; step: Step };
@@ -79,12 +79,12 @@ export function startSeedMaker(deps: VenueDeps): { stop: () => void } {
     const live = new Set<string>();
     const jobs = refs.flatMap((r, i) => (views[i] && views[i]!.state === 0 ? [{ ...r, m: views[i]! }] : []));
     const trading = jobs.filter(({ m }) => m.tradingStartSec <= nowSec && nowSec < m.lockAtSec).length;
-    let awaitingOpen = 0;
+    const awaiting: MarketView[] = [];
     // Every Window planned at once: the reads of a whole pass coalesce into a few multicalls.
     const planned: Planned[] = await Promise.all(jobs.map(async ({ s, m }) => {
       const label = `${laneKey(s.symbol!, s.lane!, s.cadenceSec)} #${m.index}`;
       const lane = laneQuote({ lane: s.lane!, symbol: s.symbol!, market: m, nowSec: clockSec(), status, spot: deps.spot, display: deps.display, basis, halts, env });
-      if (lane.why.startsWith("waiting for the open") && m.tradingStartSec <= nowSec) awaitingOpen++;
+      if (lane.why.startsWith("waiting for the open") && m.tradingStartSec <= nowSec) awaiting.push(m);
       try {
         return { s, m, label, plan: await planWindow({ client, venue, env, dryRun, nowSec: clockSec(), clockSec, log: deps.log }, s, m, lane, placed.get(m.marketId) ?? null, label), error: null };
       } catch (error) {
@@ -153,9 +153,9 @@ export function startSeedMaker(deps: VenueDeps): { stop: () => void } {
     for (const k of placed.keys()) if (!live.has(k)) placed.delete(k);
     return {
       // Honest counts: the Windows trading now, and those listed ahead of their start (quoted once they open).
-      why: `${notes.length} of ${trading} trading Windows quoted · ${jobs.length - trading} listed ahead${awaitingOpen ? ` · ${awaitingOpen} awaiting their opening print` : ""} · session ${status?.state ?? "no calendar"} · ${txCount} txs${deps.spot ? "" : " · no spot feed"}${dryRun ? " · DRY RUN" : ""}${notes.length ? ` | ${notes.slice(0, 12).join("; ")}` : ""}`,
-      detail: { quoting: notes.length, trading, listedAhead: jobs.length - trading, awaitingOpen, txs: txCount, recent },
-      nextDelayMs: awaitingOpen ? OPEN_WAIT_PASS_MS : env.refreshMs,
+      why: `${notes.length} of ${trading} trading Windows quoted · ${jobs.length - trading} listed ahead${awaiting.length ? ` · ${awaiting.length} awaiting their opening print` : ""} · session ${status?.state ?? "no calendar"} · ${txCount} txs${deps.spot ? "" : " · no spot feed"}${dryRun ? " · DRY RUN" : ""}${notes.length ? ` | ${notes.slice(0, 12).join("; ")}` : ""}`,
+      detail: { quoting: notes.length, trading, listedAhead: jobs.length - trading, awaitingOpen: awaiting.length, txs: txCount, recent },
+      nextDelayMs: makerDelayMs(awaiting, clockSec(), env.refreshMs, jobs.map((j) => j.m)),
     };
   };
   deps.log(`seed maker ${client.address ?? "(no key)"}: ${env.quoteLots} lots, ±${env.halfSpreadTicks} ticks, caps ${env.maxCashPerWindow}/${env.gapMaxCash}/${env.allDayMaxCash} base`);

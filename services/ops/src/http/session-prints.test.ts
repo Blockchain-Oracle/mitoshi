@@ -13,6 +13,9 @@ describe("/session.prints", () => {
   it("reads the relay's heartbeat, and says nothing it doesn't know", () => {
     expect(printsState({ openLagSec: { p50: 6, max: 9, n: 30 }, stall: { sinceSec: 1_791_904_500, reason: "HTTP 403 public_gateway_rejected" } })).toEqual({ openLagSec: 6, stall: { sinceSec: 1_791_904_500, kind: "refused" } });
     expect(printsState({ openLagSec: null, stall: null })).toEqual({ openLagSec: null, stall: null });
+    // The print is in hand and Tempo's RPC refuses the sends (a 429 in the reason is Tempo's, not RedStone's refusal).
+    expect(printsState({ openLagSec: { p50: 6 }, stall: { sinceSec: 1_791_904_500, kind: "sending", reason: "Tempo's RPC refuses the sends: HTTP 429" } })).toEqual({ openLagSec: 6, stall: { sinceSec: 1_791_904_500, kind: "sending" } });
+    expect(printsState({ openLagSec: null, stall: { sinceSec: 1_791_904_500, kind: "source", reason: "the price network has not signed it yet" } })).toEqual({ openLagSec: null, stall: { sinceSec: 1_791_904_500, kind: "unsigned" } });
     expect(printsState(undefined)).toEqual({ openLagSec: null, stall: null });
   });
 });

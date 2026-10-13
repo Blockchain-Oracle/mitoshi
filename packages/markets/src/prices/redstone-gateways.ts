@@ -82,6 +82,20 @@ export const REDSTONE_COOLDOWN_MS = { first: 30_000, max: 120_000 } as const;
 export const REDSTONE_BLOCK_COOLDOWN_MS = { first: 60_000, max: 600_000 } as const;
 const cooling = new Map<string, { untilMs: number; backoffMs: number; reason: string }>();
 
+/**
+ * When every one of `gateways` is resting, the first moment one may be asked again; null while any is askable. A caller
+ * that can only wait on RedStone (the relay during a stall) sleeps until then instead of polling into the rest (D-230).
+ */
+export function redstoneCoolingUntilMs(gateways: readonly RedstoneGateway[], nowMs = Date.now()): number | null {
+  let until = Number.POSITIVE_INFINITY;
+  for (const g of gateways) {
+    const cool = cooling.get(g.url);
+    if (!cool || cool.untilMs <= nowMs) return null;
+    until = Math.min(until, cool.untilMs);
+  }
+  return Number.isFinite(until) ? until : null;
+}
+
 /** Forgets every cooldown (tests). */
 export function resetRedstoneCooldowns(): void {
   cooling.clear();
