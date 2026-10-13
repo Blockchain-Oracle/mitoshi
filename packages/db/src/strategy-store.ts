@@ -138,13 +138,14 @@ export function createPgStrategyStore(sql: Sql) {
         on conflict (tx_hash) do nothing`;
     },
 
-    /** Newest first; all strategies when `strategyId` is null; one owner's when `owner` is set. Dry-run rows are not trades. */
-    async listFills(q: { strategyId: string | null; owner?: string; limit: number }): Promise<StrategyFillRecord[]> {
+    /** Newest first; all strategies when `strategyId` is null; one owner's when `owner` is set. Dry-run rows are not trades.
+     *  No `limit`: every fill — what a record counts (a page of the latest would undercount a busy strategy's). */
+    async listFills(q: { strategyId: string | null; owner?: string; limit?: number }): Promise<StrategyFillRecord[]> {
       const rows = await sql<FillRow[]>`
         select * from strategy_fills where dry_run = false
           ${q.strategyId ? sql`and strategy_id = ${q.strategyId}` : sql``}
           ${q.owner ? sql`and owner = ${q.owner.toLowerCase()}` : sql``}
-        order by at_sec desc limit ${q.limit}`;
+        order by at_sec desc ${q.limit === undefined ? sql`` : sql`limit ${q.limit}`}`;
       return rows.map(toFill);
     },
 

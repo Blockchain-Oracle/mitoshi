@@ -57,6 +57,8 @@ describe.skipIf(!url)("strategy store (runner records)", () => {
     expect(await attempts.unresolved(RUNNER)).toEqual([]);
     const [fill] = await store.listFills({ strategyId: "3", limit: 10 });
     expect(fill).toMatchObject({ side: "down", mode: "fade", owner: OWNER.toLowerCase() });
+    // No limit: every fill, for a record.
+    expect(await store.listFills({ strategyId: "3" })).toEqual([fill]);
     expect((await store.decisionOf("3", MARKET, false))?.filled).toBe(1);
   });
 

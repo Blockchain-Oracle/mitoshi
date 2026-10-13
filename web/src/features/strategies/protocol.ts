@@ -52,7 +52,8 @@ export interface RecordWire {
   distinctSubscribers: number;
   /** Fills still waiting on their Window. */
   open: number;
-  /** Copy trades placed for anyone (follow or fade) and the collateral they put to work — Q-001's inherited ranking. */
+  /** Every copy trade placed for anyone (follow or fade) and the collateral they put to work — Q-001's inherited
+   *  ranking, and the Copies tab's count (the payload lists only the latest). */
   copyTrades: number;
   entrustedBase: string;
 }
@@ -149,6 +150,7 @@ export interface StrategyDetailPayload {
   heartbeats: { atMs: number; why: string; state: RunnerBeat | null }[];
   /** Its latest decisions, newest first (the count is `strategy.decisions.total`). */
   decisions: DecisionDetailWire[];
+  /** Its latest copy fills, newest first (the count is `strategy.record.copyTrades`). */
   fills: FillWire[];
   feedback: { client: string; value: string; valueDecimals: number; tag1: string; tag2: string; revoked: boolean; txHash: string; atSec: number }[];
   computedAtMs: number;

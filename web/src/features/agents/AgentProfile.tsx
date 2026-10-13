@@ -3,7 +3,8 @@
 // the head with its toolbar (Copy, More: Report · Block · Share), the record as the plate beside the next decision (a
 // real countdown, the runner's pass in words, the last decision — R6 #9, D-230), then tabs — Overview (the latest
 // decision, its limits, your copy's), Decisions · N (every decision it made, an agent's reads and a rule's calls; each
-// opens in full, an agent's with what paid for it, an MPP receipt or "unpaid · testnet", D-218.4), Copies · N and
+// opens in full, an agent's with what paid for it, an MPP receipt or "unpaid · testnet", D-218.4), Copies · N (every copy
+// trade, the latest listed) and
 // Identity (the ERC-8004 card, its registry, ratings, sealed memory). Copy opens the desk's drawer. The stage is the one
 // inset.
 import { useQuery } from "@tanstack/react-query";
@@ -82,7 +83,7 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
   const items = [
     { value: "overview" as const, label: C.tabs.overview },
     { value: "decisions" as const, label: C.tabs.decisions, count: s.decisions.total },
-    { value: "copies" as const, label: C.tabs.copies, count: d.fills.length },
+    { value: "copies" as const, label: C.tabs.copies, count: s.record.copyTrades },
     { value: "identity" as const, label: C.tabs.identity },
   ];
 
@@ -97,7 +98,7 @@ export function AgentProfile({ strategyId }: { strategyId: string }) {
       <UnderlineTabs value={tab} onChange={setTab} items={items} label={C.tabsLabel}>
         <TabsPanel value="overview" className="pt-4"><OverviewTab detail={d} writes={writes} onOpenDecisions={() => setTab("decisions")} /></TabsPanel>
         <TabsPanel value="decisions" className="pt-4"><DecisionTimeline decisions={d.decisions} counts={s.decisions} fills={d.fills} agentName={name} /></TabsPanel>
-        <TabsPanel value="copies" className="pt-4"><FillRows fills={d.fills} /></TabsPanel>
+        <TabsPanel value="copies" className="pt-4"><FillRows fills={d.fills} total={s.record.copyTrades} /></TabsPanel>
         <TabsPanel value="identity" className="pt-4"><IdentityTab detail={d} wallet={writes.wallet} copying={copying} onCopy={() => setCopyOpen(true)} /></TabsPanel>
       </UnderlineTabs>
       <p className="strat-advice">{AGENTS.advice}</p>

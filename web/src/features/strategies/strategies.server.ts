@@ -6,12 +6,14 @@ import "server-only";
 /**
  * The desk's catalogue: every strategy on the registry with its own record (follow fills — a fade is a subscriber's bet
  * against it), its runner's health in its own words, an agent's last Windows, and its ERC-8004 feedback; plus the
- * latest copy fills. A store that cannot be read fails the whole read (503) rather than serving "empty".
+ * latest copy fills. A record counts every fill it has, never a page of the latest (a busy strategy's used to crowd a
+ * quiet one's out); its curve travels thinned. A store that cannot be read fails the whole read (503) rather than
+ * serving "empty".
  */
 import { cacheLife, cacheTag } from "next/cache";
 import { getAddress, isAddress } from "viem";
 import { CHAIN } from "@cwf/clients";
-import { decisionIdOf, deriveRunnerHealth, describeSpec, formatCadence, isRuleModel, laneBasisOf, parseStrategyMetadata, scoreFillByPayout, strategyRecord, type Address, type AgentWindowOutcome, type MarketId, type StrategyFill } from "@cwf/core";
+import { decisionIdOf, deriveRunnerHealth, describeSpec, formatCadence, isRuleModel, laneBasisOf, parseStrategyMetadata, scoreFillByPayout, strategyRecord, thinCurve, type Address, type AgentWindowOutcome, type MarketId, type StrategyFill } from "@cwf/core";
 import { createPgSealedMemory, createPgStrategyStore, receiptsForDecision, type DecisionCounts, type SealedMemoryIndexRow, type StrategyDecisionRecord } from "@cwf/db";
 import { readAgentFeedback, readCopierCount, readIndexedStrategies, readSeriesList, readSubscriptionsOf, readWindowFacts, type IndexedStrategy, type WindowFacts } from "@cwf/db/idx";
 import { strategyVenueOf } from "@cwf/markets/strategies";
@@ -19,7 +21,12 @@ import { db } from "@/server/db";
 import { serverEnv } from "@/server/env";
 import type { DecisionDetailWire, DecisionsWire, DecisionWire, FillWire, MinePayload, StrategiesPayload, StrategyDetailPayload, StrategyWire } from "./protocol";
 
+/** One wallet's own fills (`readMine`). */
 const FILL_LIMIT = 500;
+/** The fills a payload lists (the latest); the records and counts are every fill's. */
+const FILLS_LISTED = 50;
+/** An equity curve's points on the wire. */
+const CURVE_POINTS = 500;
 const DECISIONS_PER_CARD = 8;
 /** The agent page's Decisions tab: its latest this many (the tab's count is the whole total). */
 const DECISIONS_PER_PAGE = 60;
@@ -82,7 +89,7 @@ function strategyWire(s: IndexedStrategy, fills: StrategyFill[], facts: Map<stri
     feeBase: s.feeBase, active: s.active, subscribers: s.subscribers, createdAtSec: s.createdAtSec, revision: s.revision,
     record: {
       fills: r.fills, settled: r.settled, wins: r.wins, losses: r.losses, voids: r.voids, netBase: r.netBase.toString(), stakedBase: r.stakedBase.toString(),
-      curve: r.curve.map((p) => ({ atSec: p.atSec, cumBase: p.cumBase.toString() })), lastActiveSec: r.lastActiveSec, distinctSubscribers: r.distinctSubscribers, open: r.fills - r.settled,
+      curve: thinCurve(r.curve, CURVE_POINTS).map((p) => ({ atSec: p.atSec, cumBase: p.cumBase.toString() })), lastActiveSec: r.lastActiveSec, distinctSubscribers: r.distinctSubscribers, open: r.fills - r.settled,
       copyTrades: all.length, entrustedBase: all.reduce((sum, f) => sum + f.cashDeltaBase, 0n).toString(),
     },
     health: { ...deriveRunnerHealth({ lastTickMs: beat?.tickAtMs ?? null, intervalMs: beat?.intervalMs ?? null, why: beat?.why ?? null, nowMs, reachable: true }), state: beat?.state ?? null },
@@ -107,7 +114,7 @@ export async function readStrategies(): Promise<StrategiesPayload> {
   const sql = db();
   const store = createPgStrategyStore(sql);
   const [rows, fillRows, beats, decisionRows, counts, seriesRows, sealedRows, copiers] = await Promise.all([
-    readIndexedStrategies(sql, { registry: venue.strategyRegistry }), store.listFills({ strategyId: null, limit: FILL_LIMIT }), store.latestHeartbeats(), store.latestDecisionsPerStrategy(DECISIONS_PER_CARD),
+    readIndexedStrategies(sql, { registry: venue.strategyRegistry }), store.listFills({ strategyId: null }), store.latestHeartbeats(), store.latestDecisionsPerStrategy(DECISIONS_PER_CARD),
     store.decisionCounts(), readSeriesList(sql), createPgSealedMemory(sql).index(), readCopierCount(sql, venue.strategyRegistry),
   ]);
   const fills = fillRows.map(toFill);
@@ -126,7 +133,7 @@ export async function readStrategies(): Promise<StrategiesPayload> {
     series: seriesRows.filter((r) => r.symbol).map((r) => ({ seriesId: r.series, label: seriesLabel(r.symbol!, r.cadenceSec, r.basis), symbol: r.symbol!, cadenceSec: r.cadenceSec })),
     copiers,
     strategies: rows.map((s) => strategyWire(s, fills, facts, beatBy.get(s.strategyId), decisionsWire(counts.find((c) => c.strategyId === s.strategyId), decisionsBy.get(s.strategyId) ?? []), nowMs, sealedRows.find((m) => m.strategyId === s.strategyId))),
-    fills: fills.slice(0, 50).map((f) => fillWire(f, facts)),
+    fills: fills.slice(0, FILLS_LISTED).map((f) => fillWire(f, facts)),
     computedAtMs: nowMs,
   };
 }
@@ -158,7 +165,7 @@ export async function readStrategyDetail(strategyId: string): Promise<StrategyDe
   const [row] = await readIndexedStrategies(sql, { registry: venue.strategyRegistry, strategyId });
   if (!row) return null;
   const [fillRows, beats, decisionRows, [counts], sealedRows] = await Promise.all([
-    store.listFills({ strategyId, limit: 200 }), store.recentHeartbeats(strategyId, 12), store.listDecisions(strategyId, DECISIONS_PER_PAGE), store.decisionCounts(strategyId), createPgSealedMemory(sql).index(),
+    store.listFills({ strategyId }), store.recentHeartbeats(strategyId, 12), store.listDecisions(strategyId, DECISIONS_PER_PAGE), store.decisionCounts(strategyId), createPgSealedMemory(sql).index(),
   ]);
   const fills = fillRows.map(toFill);
   const facts = await readWindowFacts(sql, [...new Set([...fills.map((f) => f.marketId), ...decisionRows.map((d) => d.marketId)])]);
@@ -173,7 +180,7 @@ export async function readStrategyDetail(strategyId: string): Promise<StrategyDe
     strategy: strategyWire(row, fills, facts, live[0], decisionsWire(counts, decisions.slice(0, DECISIONS_PER_CARD)), nowMs, sealedRows.find((m) => m.strategyId === strategyId)),
     heartbeats: live.map((b) => ({ atMs: b.tickAtMs, why: b.why, state: b.state })),
     decisions,
-    fills: fills.slice(0, 50).map((f) => fillWire(f, facts)),
+    fills: fills.slice(0, FILLS_LISTED).map((f) => fillWire(f, facts)),
     feedback: feedback.map((f) => ({ client: f.client, value: f.value, valueDecimals: f.valueDecimals, tag1: f.tag1, tag2: f.tag2, revoked: f.revoked, txHash: f.txHash, atSec: f.atSec })),
     computedAtMs: nowMs,
   };

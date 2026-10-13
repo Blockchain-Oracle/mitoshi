@@ -70,6 +70,14 @@ export function strategyRecord(fills: readonly ScoredFill[]): StrategyRecordStat
   return stats;
 }
 
+/** At most `max` points of an equity curve, evenly by index with its first and last kept: a long record's chart
+ *  without every settled fill on the wire. */
+export function thinCurve<T>(curve: readonly T[], max: number): T[] {
+  if (curve.length <= max) return [...curve];
+  const step = (curve.length - 1) / (max - 1);
+  return Array.from({ length: max }, (_, i) => curve[Math.round(i * step)]!);
+}
+
 /** Fills grouped by Window, so settlement facts are read once per market rather than once per fill. */
 export function marketsOfFills(fills: readonly StrategyFill[]): MarketId[] {
   return [...new Set(fills.map((f) => f.marketId))];
