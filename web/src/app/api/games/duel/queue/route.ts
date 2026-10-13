@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   const w = await wallet(req);
   if (!w) return NextResponse.json({ error: "sign in to duel" }, { status: 401, headers: noStore });
   try {
-    const out = await enterQueue({ wallet: w, tier: parsed.data.tier, clientSeed: parsed.data.clientSeed as `0x${string}`, origin: new URL(req.url).origin });
+    const out = await enterQueue({ wallet: w, tier: parsed.data.tier, clientSeed: parsed.data.clientSeed as `0x${string}` });
     return out.ok ? NextResponse.json(out.wire, { headers: noStore }) : NextResponse.json({ error: out.error }, { status: out.status, headers: noStore });
   } catch {
     return NextResponse.json({ error: "the duel server did not answer" }, { status: 503, headers: noStore });

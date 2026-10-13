@@ -16,12 +16,12 @@ import {
   type LuckyDrawInput,
 } from "@cwf/core/games";
 import { createPgLuckyStore, type LuckyDrawRow, type LuckyStore } from "@cwf/db";
-import { configureMarkets, createMarketsProvider, marketsEnv } from "@cwf/markets";
+import { createMarketsProvider } from "@cwf/markets";
 import { keccak256 } from "viem";
-import { webEnv } from "@/lib/env";
 import { ceremonyLimiter } from "@/server/auth";
 import { db } from "@/server/db";
 import { serverEnv } from "@/server/env";
+import { ensureServerReads } from "../server-reads";
 import type { LuckyBoardWire, LuckyCommitWire, LuckyDealWire, LuckyHistoryWire, LuckyRowWire } from "./lucky-wire";
 
 /**
@@ -67,17 +67,6 @@ export async function commitDraw(input: { wallet: Address; stakeBase: bigint; ip
   const serverSeed = freshSeed();
   const created = await draws.create({ drawId: freshSeed(), wallet: input.wallet, policyVersion: LUCKY_POLICY_VERSION, stakeBase: input.stakeBase.toString(), commitment: keccak256(serverSeed), serverSeed });
   return { ok: true, wire: { drawId: created.drawId as Bytes32, commitment: created.commitment as Bytes32, nonce: created.nonce, policyVersion: created.policyVersion, stakeBase: created.stakeBase } };
-}
-
-/**
- * The server's reads take the app's own config (`webEnv.markets`: network, RPC, ops), and read the index over HTTP from
- * itself — a relative base only resolves in a browser.
- */
-function ensureReads(origin: string): void {
-  const env = webEnv.markets;
-  const indexUrl = /^https?:\/\//.test(env.indexUrl) ? env.indexUrl : `${origin}${env.indexUrl}`;
-  if (marketsEnv().indexUrl === indexUrl && marketsEnv().network === env.network) return;
-  configureMarkets({ ...env, indexUrl });
 }
 
 interface Scanned {
@@ -136,7 +125,7 @@ function dealWire(row: LuckyDrawRow, extra: { candidateCount: number; quote: Quo
   };
 }
 
-export async function revealDraw(input: { drawId: string; clientSeed: Bytes32; wallet: Address; origin: string }): Promise<Outcome<LuckyDealWire>> {
+export async function revealDraw(input: { drawId: string; clientSeed: Bytes32; wallet: Address }): Promise<Outcome<LuckyDealWire>> {
   const draws = luckyStore();
   if (!draws) return { ok: false, status: 503, error: "This deployment keeps no draws." };
   const row = await draws.get(input.drawId);
@@ -147,7 +136,7 @@ export async function revealDraw(input: { drawId: string; clientSeed: Bytes32; w
   }
   const digest = luckyDigest(row.serverSeed as Bytes32, { clientSeed: input.clientSeed, wallet: row.wallet as Address, nonce: row.nonce, policyVersion: row.policyVersion });
   const draw = mapLuckyDraw(digest, { assets: LUCKY_ASSETS, multipliers: LUCKY_MULTIPLIERS });
-  ensureReads(input.origin);
+  ensureServerReads();
   const scanned = await scan(draw.asset, draw.side, draw.multiplier, BigInt(row.stakeBase)).catch(() => null);
   const chosen = scanned?.chosen ?? null;
   const refusal = refusalOf(scanned);
@@ -178,10 +167,10 @@ const rowWire = (r: LuckyDrawRow): LuckyRowWire => ({ drawId: r.drawId as Bytes3
  * history): the wallet's round on the dealt Window says what happened — sold on the book before expiry is a cash-out,
  * otherwise the settlement's win, loss or void. A row the chain has not decided stays what it was; nothing is guessed.
  */
-async function reconcile(draws: LuckyStore, wallet: Address, rows: LuckyDrawRow[], origin: string): Promise<boolean> {
+async function reconcile(draws: LuckyStore, wallet: Address, rows: LuckyDrawRow[]): Promise<boolean> {
   const open = rows.filter((r) => r.marketId && (r.result === "placed" || r.result === "pending" || r.result === "unknown"));
   if (open.length === 0) return false;
-  ensureReads(origin);
+  ensureServerReads();
   const history = await createMarketsProvider().listWalletHistory(wallet);
   if (!isOk(history)) return false;
   const byMarket = new Map(history.value.rounds.map((r) => [r.marketId.toLowerCase(), r.outcome]));
@@ -195,11 +184,11 @@ async function reconcile(draws: LuckyStore, wallet: Address, rows: LuckyDrawRow[
   return moved;
 }
 
-export async function readHistory(wallet: Address, origin: string): Promise<LuckyHistoryWire> {
+export async function readHistory(wallet: Address): Promise<LuckyHistoryWire> {
   const draws = luckyStore();
   if (!draws) return { configured: false, rows: [], streak: 0, best: 0 };
   let rows = await draws.history(wallet, 50);
-  if (await reconcile(draws, wallet, rows, origin).catch(() => false)) rows = await draws.history(wallet, 50);
+  if (await reconcile(draws, wallet, rows).catch(() => false)) rows = await draws.history(wallet, 50);
   const results = rows.map((r) => ({ result: r.result }));
   return { configured: true, rows: rows.map(rowWire), streak: luckyStreak(results), best: luckyBestStreak([...results].reverse()) };
 }

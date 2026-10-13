@@ -15,7 +15,7 @@ export async function POST(req: Request) {
   const session = await callerSession(req).catch(() => null);
   if (!session?.address) return NextResponse.json({ error: "sign in to spin" }, { status: 401, headers: noStore });
   try {
-    const out = await revealDraw({ drawId: parsed.data.drawId.toLowerCase(), clientSeed: parsed.data.clientSeed as Bytes32, wallet: session.address, origin: new URL(req.url).origin });
+    const out = await revealDraw({ drawId: parsed.data.drawId.toLowerCase(), clientSeed: parsed.data.clientSeed as Bytes32, wallet: session.address });
     return out.ok ? NextResponse.json(out.wire, { headers: noStore }) : NextResponse.json({ error: out.error }, { status: out.status, headers: noStore });
   } catch {
     return NextResponse.json({ error: "the draw server did not answer" }, { status: 503, headers: noStore });

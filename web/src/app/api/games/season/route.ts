@@ -4,10 +4,10 @@ import { seasonView } from "@/features/games/duel/season.server";
 
 const noStore = { "cache-control": "no-store" };
 
-export async function GET(req: Request) {
+export async function GET() {
   await connection();
   try {
-    return NextResponse.json(await seasonView(new URL(req.url).origin), { headers: noStore });
+    return NextResponse.json(await seasonView(), { headers: noStore });
   } catch {
     return NextResponse.json({ error: "the season could not be read" }, { status: 503, headers: noStore });
   }

@@ -3,12 +3,13 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:
 import { isOk, type Address, type Bytes32, type MarketId } from "@cwf/core";
 import { applyResult, arenaWinnerOf, DECK_MAX, deckCommitmentPreimage, DUEL_POLICY_VERSION, INTERVAL_15M_SEC, INTERVAL_1H_SEC, NEW_RATING, type RatingRecord, nextDealableSec, selectDeck, STAKE_TIERS, toBaseUnits, type DeckCandidate, type DeckCard, type DeckPolicy, type StakeTierId } from "@cwf/core/games";
 import { createPgDuelStore, type DuelMatchRow, type DuelStore } from "@cwf/db";
-import { configureMarkets, createMarketsProvider, marketsEnv, tempoChain } from "@cwf/markets";
+import { createMarketsProvider, tempoChain } from "@cwf/markets";
 import { arenaOf, getArenaCredit, getArenaMatch, getArenaState } from "@cwf/markets/arena";
 import { keccak256 } from "viem";
 import { webEnv } from "@/lib/env";
 import { db } from "@/server/db";
 import { serverEnv } from "@/server/env";
+import { ensureServerReads } from "../server-reads";
 import type { DuelMatchWire, DuelPairedWire, DuelQueueWire } from "./duel-wire";
 
 /**
@@ -65,14 +66,6 @@ function open(sealed: string, key: Buffer): RevealMaterial {
 }
 
 const freshSeed = (): Bytes32 => `0x${randomBytes(32).toString("hex")}`;
-
-/** The server's reads take the app's own config, and read the index over HTTP from itself (as Lucky's). */
-function ensureReads(origin: string): void {
-  const env = webEnv.markets;
-  const indexUrl = /^https?:\/\//.test(env.indexUrl) ? env.indexUrl : `${origin}${env.indexUrl}`;
-  if (marketsEnv().indexUrl === indexUrl && marketsEnv().network === env.network) return;
-  configureMarkets({ ...env, indexUrl });
-}
 
 export type Outcome<T> = { ok: true; wire: T } | { ok: false; status: number; error: string };
 
@@ -136,7 +129,7 @@ async function candidates(capBase: bigint): Promise<{ list: DeckCandidate[]; sch
 const chainId = (): number => tempoChain(webEnv.markets.network).id;
 
 /** Joins the queue at a tier, and pairs with whoever waits longest there when a deck can be dealt now. */
-export async function enterQueue(input: { wallet: Address; tier: StakeTierId; clientSeed: Bytes32; origin: string }): Promise<Outcome<DuelQueueWire>> {
+export async function enterQueue(input: { wallet: Address; tier: StakeTierId; clientSeed: Bytes32 }): Promise<Outcome<DuelQueueWire>> {
   const duels = duelStore();
   const key = deckKey();
   if (!duels || !key) return { ok: false, status: 503, error: "This deployment keeps no duels." };
@@ -152,7 +145,7 @@ export async function enterQueue(input: { wallet: Address; tier: StakeTierId; cl
   const waiting = (refusal: string | null, nextDealSec: number | null): Outcome<DuelQueueWire> => ({ ok: true, wire: { status: "waiting", tier: input.tier, queuedAt: mine.queuedAt, nextDealSec, refusal } });
   if (!opponent) return waiting(null, null);
 
-  ensureReads(input.origin);
+  ensureServerReads();
   const capBase = toBaseUnits(tier.perCardCapUnits, DECIMALS);
   const dealt = await candidates(capBase).catch(() => null);
   const selection = dealt ? selectDeck(dealt.list, dealt.policy, dealt.nowSec) : null;
@@ -218,12 +211,12 @@ export async function leaveQueue(wallet: Address): Promise<void> {
 const FINISHED = new Set(["finalized", "refunded"]);
 
 /** One match: what was committed, what the chain says now, and — once both pots are in — the reveal material. */
-export async function readMatch(input: { matchId: Bytes32; wallet: Address | null; origin: string }): Promise<Outcome<DuelMatchWire>> {
+export async function readMatch(input: { matchId: Bytes32; wallet: Address | null }): Promise<Outcome<DuelMatchWire>> {
   const duels = duelStore();
   if (!duels) return { ok: false, status: 503, error: "This deployment keeps no duels." };
   const row = await duels.match(input.matchId);
   if (!row) return { ok: false, status: 404, error: "no duel by that id" };
-  ensureReads(input.origin);
+  ensureServerReads();
   const chain = await getArenaMatch(input.matchId);
   if (!isOk(chain)) return { ok: false, status: 503, error: "the arena could not be read" };
   const view = chain.value;
