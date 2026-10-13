@@ -80,11 +80,9 @@ html[data-shell="app"] .grain { display: none; }
 }
 
 /* Small vermilion labels: light-theme vermilion is 3.9:1 on cream at 11 px, so they take the pressed vermilion there
- * (5.3:1); gray-500 small text takes gray-400. The download CTA is an accent fill with the AA-safe pair. */
-[data-theme="light"] .capability-pending .cp-eyebrow,
-[data-theme="light"] .dl-meta b { color: var(--vermilion-d); }
-.section-eyebrow, .dl-meta span, .dl-points p, .dl-foot { color: var(--gray-400); }
-.dl-cta { background: var(--color-accent-fill); color: var(--color-on-accent) !important; }
+ * (5.3:1); gray-500 small text takes gray-400. (`/download`'s `.dl-*` left with D-230: it is `styles/download.css`.) */
+[data-theme="light"] .capability-pending .cp-eyebrow { color: var(--vermilion-d); }
+.section-eyebrow { color: var(--gray-400); }
 
 /* The pending panel keeps the page gutter (shell.css's `padding: 48px 0` beat the layered utility). */
 .capability-pending { padding: 48px var(--spacing-gutter); }

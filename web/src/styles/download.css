@@ -1,68 +1,146 @@
-/* Ported from Masayume 68f7a09:web/src/styles/download.css */
-/* /download — what the reference's .dl-* block (part-18.css, ported verbatim) does not cover.
- * Each rule names the source it corrects or the piece that is ours. */
+/* /download — the place to get the app (D-230; features/install). The head on /demo's grammar (demo.css), then one card
+ * per platform: From 21st.dev 18105 shadcnspace/download-01's card (icon tile, name over one line, one action) on
+ * Mitoshi's tokens, a status chip, and a foot row holding the action and, from 768 px, a QR code on cream paper. The
+ * store button is From 21st.dev 8280 efferd/app-store-button: the mark beside a two-line label, an ink pill. Every
+ * colour is a token, so light reads as well as dark. Imported by the page only. */
 
-/* .dl-cta takes `color: var(--white)`, which the light theme remaps to ink (part-13). The
-   button is vermilion in both themes, so its ink is a literal — the .reel-take rule. */
-.dl-cta { color: #fff; }
+.get { display: flex; flex-direction: column; gap: 24px; padding-block: 8px 24px; }
+@media (min-width: 1024px) { .get { gap: 40px; padding-block: 16px 48px; } }
 
-/* Ours: the CTA once the app is installed — a statement, not an action. Same shape, no lift. */
-.dl-cta.is-inert {
-  background: transparent;
-  color: var(--white);
-  border-color: var(--gray-700);
-  cursor: default;
-}
-.dl-cta.is-inert:hover { background: transparent; transform: none; box-shadow: none; }
-.dl-cta:disabled { opacity: 0.7; cursor: progress; }
+/* The head: the seal, one headline with its accent half, one line. */
+.get-head { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.get-title { font: 800 clamp(2rem, 6vw, 3.75rem)/1 var(--font-heading); letter-spacing: -0.04em; color: var(--color-ink); }
+.get-title em { font-style: normal; color: var(--color-accent); }
+.get-line { max-width: 34rem; font: 400 17px/1.45 var(--font-body); color: var(--color-ink-secondary); }
+@media (min-width: 1024px) { .get-line { font-size: 18px; } }
 
-/* Ours: the numbered steps under "Add to Home Screen" (iOS), in the page's own eyebrow voice. */
-.dl-steps {
-  list-style: none;
-  counter-reset: step;
-  margin: 18px 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 46ch;
+/* The cards: one column on phones, two from 768 (the third spans both), three from 1024. When the web app leads (no
+ * store test open yet, `data-lead="web"`), it takes the wide cell — full width at 768, the left cell two rows tall from
+ * 1024 — and the two stores still coming stack beside it (Amie's and Skiff's download pages: the one way in that works,
+ * large, with its QR; the rest quiet). */
+.get-grid { display: grid; gap: 12px; }
+@media (min-width: 768px) {
+  .get-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .get-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .get-grid[data-lead="web"] > :first-child { grid-column: 1 / -1; }
+  .get-grid[data-lead="web"] > :last-child:nth-child(odd) { grid-column: auto; }
 }
-.dl-steps li {
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-  color: var(--gray-400);
-  font-size: 0.92rem;
-  line-height: 1.5;
-}
-.dl-steps li::before {
-  counter-increment: step;
-  content: counter(step, decimal-leading-zero);
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: var(--vermilion);
+@media (min-width: 1024px) {
+  .get-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .get-grid > :last-child:nth-child(odd) { grid-column: auto; }
+  .get-grid[data-lead="web"] { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+  .get-grid[data-lead="web"] > :first-child { grid-column: auto; grid-row: span 2; }
+  .get-grid[data-lead="web"] > :first-child .get-card-name { font-size: 30px; }
+  .get-grid[data-lead="web"] > :first-child .get-qr-code { width: 9rem; height: 9rem; }
 }
 
-/* Ours: the one-line hint under "Install from your browser menu". */
-.dl-hint {
-  margin: 14px 0 0;
-  max-width: 46ch;
-  color: var(--gray-500);
-  font-size: 0.9rem;
-  line-height: 1.55;
+.get-card {
+  display: flex; flex-direction: column; gap: 18px; min-width: 0; padding: 20px; border-radius: var(--radius-xl);
+  background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline);
+  scroll-margin-top: 96px;
+}
+@media (min-width: 768px) { .get-card { gap: 24px; padding: 28px; } }
+.get-card:target { box-shadow: inset 0 0 0 2px var(--color-accent); }
+.get-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.get-card-icon {
+  display: grid; width: 48px; height: 48px; flex: none; place-items: center; border-radius: var(--radius-lg);
+  background: var(--color-surface-2); box-shadow: inset 0 0 0 1px var(--color-hairline); color: var(--color-ink);
+}
+.get-card-icon svg { width: 24px; height: 24px; }
+
+/* The status chip: live (profit), coming (quiet), the one in use (ink on the accent wash, an accent
+ * dot). Every pair is AA (4.5:1) at 12 px in both themes: the accent itself is 4.0:1 on its wash in dark and 3.4:1 in
+ * light, so the word stays ink and the dot carries the colour. */
+.get-chip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 10px; border-radius: var(--radius-full);
+  background: var(--color-surface-2); color: var(--color-ink-secondary); font: 600 12px/1 var(--font-body); white-space: nowrap;
+}
+.get-chip::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: var(--radius-full); background: currentColor; }
+.get-chip[data-tone="live"] { background: var(--color-profit-wash); color: var(--color-profit); }
+.get-chip[data-tone="here"] { background: var(--color-accent-wash); color: var(--color-ink); }
+.get-chip[data-tone="here"]::before { background: var(--color-accent); }
+.get-chip[data-tone="soon"]::before { background: var(--color-ink-muted); }
+
+.get-card-copy { display: flex; flex: 1; flex-direction: column; gap: 6px; }
+.get-card-name { font: 700 22px/1.15 var(--font-heading); letter-spacing: -0.02em; color: var(--color-ink); }
+.get-card-line { font: 400 15px/1.45 var(--font-body); color: var(--color-ink-secondary); }
+
+/* The foot: the action, and beside it the QR for a desktop reader. Actions sit on one line across the row of cards. */
+.get-card-foot { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.get-card-action { display: flex; min-width: 0; flex: 1 1 100%; flex-direction: column; align-items: stretch; gap: 12px; }
+/* On a phone the action is the card's full width (a long label never runs past the card); from 768 it is its own size. */
+.get-card-action .kit-pill, .get-card-action .get-store { width: 100%; }
+@media (min-width: 768px) {
+  .get-card-action { flex: 1 1 12rem; align-items: flex-start; }
+  .get-card-action .kit-pill, .get-card-action .get-store { width: auto; }
 }
 
-/* Ours: the status-bar band above the capture (PhoneShot.tsx) — 47 of a 390-wide screen. It
-   stays transparent so it takes the screen's own #050505 ground from part-18. */
-.dl-phone-bar { width: 100%; aspect-ratio: 390 / 47; }
+/* The store button (21st 8280): mark + "Join the beta on" over "TestFlight", 52 px — ink on the page, the accent fill
+ * when it is the page's one primary action. The kicker keeps the button's full colour: at 0.8 it fell to 3.8:1 on the
+ * accent fill. */
+.get-store {
+  display: inline-flex; height: var(--ticket-cta-height); align-items: center; justify-content: center; gap: 10px; padding: 0 22px 0 16px;
+  border-radius: var(--radius-full); background: var(--color-ink); color: var(--color-stage);
+  transition: opacity var(--duration-hover) var(--ease-out), transform 150ms var(--ease-out);
+}
+.get-store--accent { background: var(--color-accent-fill); color: var(--color-on-accent); }
+.get-store:hover { opacity: 0.88; }
+.get-store:active { transform: scale(0.97); }
+.get-store:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.get-store-glyph { display: grid; width: 24px; height: 24px; flex: none; place-items: center; }
+.get-store-glyph svg { width: 100%; height: 100%; }
+.get-store-text { display: flex; flex-direction: column; gap: 3px; text-align: left; }
+.get-store-text small { font: 500 11px/1 var(--font-body); letter-spacing: 0.01em; }
+.get-store-text b { font: 700 17px/1 var(--font-heading); letter-spacing: -0.02em; }
 
-/* .dl-points { border-top: 1px solid rgba(255,255,255,0.08) } is invisible on cream:
-   part-14's border-white/[0.08] light value. */
-[data-theme="light"] .dl-points { border-top-color: rgba(20, 18, 16, 0.11); }
+/* The web app's install: the pill (and Safari's steps when opened), or — no prompt held — where this browser keeps it,
+ * its menu path in keys, never an accent; "Installed" as a fact. The hint is the pill's height, so the browser's
+ * answer (a prompt arriving) moves nothing. Step numerals are the accent at AA: vermilion is 4.5:1 on the dark card
+ * and 4.0:1 on the light one, so dark takes the lifted accent and light the pressed one. */
+.get-install { display: flex; flex-direction: column; align-items: stretch; gap: 12px; }
+@media (min-width: 768px) { .get-install { align-items: flex-start; } }
+.get-done { font: 600 15px/1.4 var(--font-body); color: var(--color-ink); }
+.get-steps { display: flex; flex-direction: column; gap: 8px; max-width: 30rem; counter-reset: step; }
+.get-steps li { display: flex; align-items: baseline; gap: 12px; font: 400 15px/1.45 var(--font-body); color: var(--color-ink-secondary); }
+.get-steps li::before { counter-increment: step; content: counter(step, decimal-leading-zero); font: 600 12px/1 var(--font-data); color: var(--color-accent-hover); }
+[data-theme="light"] .get-steps li::before { color: var(--color-accent-pressed); }
+.get-how {
+  display: flex; min-height: var(--button-primary-height); max-width: 30rem; flex-wrap: wrap; align-items: center; gap: 6px;
+  font: 400 14px/1.5 var(--font-body); color: var(--color-ink-secondary);
+}
+.get-how-icon { width: 16px; height: 16px; flex: none; color: var(--color-ink-secondary); }
+/* The menu path: From 21st.dev 28308 ai2/kbd-combo (SequenceKbd) — caps on the raised surface with a hairline, joined
+ * by an arrow, in the body face (menu items are words, not keys). */
+.get-path { display: inline-flex; min-width: 0; max-width: 100%; font: inherit; }
+.get-path-keys { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.get-path-keys kbd {
+  padding: 2px 8px; border-radius: var(--radius-md); background: var(--color-surface-2); box-shadow: inset 0 0 0 1px var(--color-hairline);
+  color: var(--color-ink); font: 600 13px/1.3 var(--font-body); white-space: nowrap;
+}
+.get-path-then { color: var(--color-ink-secondary); }
 
-/* Ours (R4-13, the action on the first phone screen): the reference stacks the phone above the copy under 860 px, which
-   pushed the title and the install button below a 375 × 667 phone's first screen. The copy leads; the phone follows. */
-@media (max-width: 860px) {
-  .dl-hero > .dl-stage { order: 0; }
+/* The QR: cream paper with its ink in both themes (any camera reads dark on light), from 768 px only. */
+.get-qr { display: none; margin: 0; }
+@media (min-width: 768px) {
+  .get-qr { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+}
+.get-qr-code { width: 7rem; height: 7rem; border-radius: var(--radius-md); box-shadow: inset 0 0 0 1px var(--color-hairline); }
+.get-qr-bg { fill: var(--color-cream); }
+.get-qr-ink { fill: var(--color-cream-ink); }
+/* The caption is secondary ink: the muted grey was 3.8:1 (dark) and 4.1:1 (light) at 12 px. */
+.get-qr-caption { max-width: 8rem; font: 500 12px/1.3 var(--font-body); color: var(--color-ink-secondary); text-align: center; }
+
+/* While the request is read: the shape a desk gets from what the deployment knows (`waitShapes`; today the web app wide,
+ * the two stores stacked beside it), each text block its real words unseen, so the cards land without a shift. */
+.get-card--wait .get-chip { color: transparent; }
+.get-card--wait .get-chip::before { content: none; }
+.get-card--wait :is(.get-card-name, .get-card-line, .get-qr-caption) > .skel {
+  display: inline-block; max-width: 100%; vertical-align: top; border-radius: var(--radius-md); color: transparent;
+}
+.get-wait-pill { display: block; height: var(--button-primary-height); width: 11rem; border-radius: var(--radius-full); }
+.get-wait-pill--store { height: var(--ticket-cta-height); }
+
+@media (prefers-reduced-motion: reduce) {
+  .get-store { transition: none; }
+  .get-store:active { transform: none; }
 }

@@ -8,7 +8,7 @@
 // drawer. The path is read inside Suspense (cacheComponents keeps the static shell). R4-8 (D-227), to Owarine 90a91d71
 // `components/shell/app/AppRail.tsx`: the head is the vermilion seal disc and the mode plate (DEMO / TESTNET, its
 // hanko) instead of a static pill; rows at 16 px/600 with 22 px icons; More is lit as "here" on any page that is not a
-// place and says whether it is open; the foot ends in the theme toggle beside Docs · Legal (full rail only).
+// place and says whether it is open; the foot ends in the theme toggle beside App · Docs · Legal (full rail only; App is /download, D-230).
 import { NOTICES } from "@/features/notifications/copy";
 import { useUnread } from "@/features/notifications/store";
 import { History, LayoutGrid, LineChart, SlidersHorizontal } from "lucide-react";
@@ -16,7 +16,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, type CSSProperties, type ReactNode } from "react";
 import { BRAND, FOOTER, SHELL } from "@/lib/copy";
-import { DOCS_EXTERNAL, DOCS_URL } from "@/lib/docs-url";
+import { DOCS_URL } from "@/lib/docs-url";
 import { openDrawer, useDrawerParam } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { ExternalLink } from "./ExternalLink";
@@ -147,8 +147,10 @@ export function Rail({ foot }: { foot?: ReactNode }) {
         <div className="rail-tools">
           <ThemeToggle />
           <nav className="rail-legal" aria-label={SHELL.legalNav}>
-            {/* The guides site, where Owarine 90a91d71 AppRail links its docs (D-227). */}
-            {DOCS_EXTERNAL ? <ExternalLink href={DOCS_URL}>{FOOTER.links.docs}</ExternalLink> : <Link href={DOCS_URL}>{FOOTER.links.docs}</Link>}
+            {/* Get the app (D-230), then the guides site, where Owarine 90a91d71 AppRail links its docs (D-227). */}
+            <Link href="/download" title={FOOTER.links.app}>{SHELL.railApp}</Link>
+            <span aria-hidden>·</span>
+            <ExternalLink href={DOCS_URL}>{FOOTER.links.docs}</ExternalLink>
             <span aria-hidden>·</span>
             <Link href="/terms">{SHELL.legal}</Link>
           </nav>

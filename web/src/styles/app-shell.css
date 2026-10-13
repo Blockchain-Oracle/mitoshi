@@ -298,14 +298,15 @@ span.top-money, span.top-account { display: contents; }
 .top-account .wallet-pill-avatar { width: 36px; height: 36px; }
 .top-account .wallet-pill:hover, .top-account .wallet-pill[data-popup-open] { background: var(--color-surface-2); }
 
-/* P0 (D-222/D-223), Owarine 90a91d71 AppRail and FloatingDock: the theme toggle beside Docs · Legal at the rail's foot
- * (R4-8: Docs · Legal on the full rail only — they stacked as text under the 88 px icons); the dock's centre seal. */
+/* P0 (D-222/D-223), Owarine 90a91d71 AppRail and FloatingDock: the theme toggle beside App · Docs · Legal at the rail's
+ * foot (R4-8: on the full rail only — they stacked as text under the 88 px icons; App is /download, D-230); the dock's
+ * centre seal. The links are secondary ink: the muted grey was 3.2:1 on the rail in dark (2.9:1 on the testnet rail). */
 .rail-tools { display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 4px; }
 @media (min-width: 1280px) { .rail-tools { justify-content: flex-start; padding-left: 4px; } }
 .rail-tools .theme-toggle { border-color: color-mix(in oklab, var(--color-rail-active) 80%, transparent); }
-.rail-legal { display: none; align-items: center; gap: 6px; color: var(--color-ink-muted); font: 500 13px/1.2 var(--font-body); }
+.rail-legal { display: none; align-items: center; gap: 6px; color: var(--color-ink-secondary); font: 500 13px/1.2 var(--font-body); white-space: nowrap; }
 @media (min-width: 1280px) { .rail-legal { display: flex; } }
-.rail-legal a { color: var(--color-ink-muted); }
+.rail-legal a { color: var(--color-ink-secondary); }
 .rail-legal a:hover { color: var(--color-ink); }
 .dock-seal { justify-content: center; }
 .dock-seal-disc { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--radius-full); background: var(--accent-fill); color: var(--on-accent); }

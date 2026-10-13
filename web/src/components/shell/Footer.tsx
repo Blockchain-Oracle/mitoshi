@@ -1,8 +1,8 @@
 // Ported from Masayume 68f7a09:web/src/components/shell/Footer.tsx — the docs link kept, the disclosure and the
-// legal/contact links added (D-043), external links routed through `open-external` (fix 5).
+// legal/contact links added (D-043), external links routed through `open-external` (fix 5); Get the app first (D-230).
 import Link from "next/link";
 import { BRAND, FOOTER } from "@/lib/copy";
-import { DOCS_EXTERNAL, DOCS_URL } from "@/lib/docs-url";
+import { DOCS_URL } from "@/lib/docs-url";
 import { ExternalLink } from "./ExternalLink";
 
 export default function Footer() {
@@ -10,7 +10,8 @@ export default function Footer() {
     <footer className="footer">
       <div className="container">
         <nav className="footer-links" aria-label="Footer">
-          {DOCS_EXTERNAL ? <ExternalLink href={DOCS_URL}>{FOOTER.links.docs}</ExternalLink> : <Link href={DOCS_URL}>{FOOTER.links.docs}</Link>}
+          <Link href="/download">{FOOTER.links.app}</Link>
+          <ExternalLink href={DOCS_URL}>{FOOTER.links.docs}</ExternalLink>
           <Link href="/status">{FOOTER.links.status}</Link>
           <Link href="/privacy">{FOOTER.links.privacy}</Link>
           <Link href="/terms">{FOOTER.links.terms}</Link>
