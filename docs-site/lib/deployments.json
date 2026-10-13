@@ -2,6 +2,18 @@
   "42431": {
     "name": "Tempo testnet (Moderato)",
     "areas": {
+      "arena": {
+        "commit": "5db3dcda",
+        "deployedAtUtc": "2026-10-13T03:18:05.800Z",
+        "contracts": {
+          "GameArena": {
+            "address": "0xbCd862D7B90663700e7BB5d542d5bcEFd1b03DB4",
+            "deployBlock": 39358010,
+            "txHash": "0x328bd2d7ba1f965ec265f89f4a0626caa3e7d93f6d7ebbb9a0b07b7e8e76ee82",
+            "history": []
+          }
+        }
+      },
       "engine": {
         "commit": "6b78abe",
         "deployedAtUtc": "2026-09-29T06:28:19.747Z",
@@ -259,14 +271,20 @@
         }
       },
       "range": {
-        "commit": "e16cdfa",
-        "deployedAtUtc": "2026-09-30T08:02:32.696Z",
+        "commit": "741a58d",
+        "deployedAtUtc": "2026-10-13T02:18:54.693Z",
         "contracts": {
           "RangeReserve": {
-            "address": "0xf19342733Bb451503f3806b0d44CC58A3D345052",
-            "deployBlock": 37532233,
-            "txHash": "0xc98f25d91fb31cce83f846d0acf00e1197ec5947566cf725e3b4d8afd81bcccc",
-            "history": []
+            "address": "0xebBDfAbDffC0D894Cd61BeAd2308E48F16985A05",
+            "deployBlock": 39352148,
+            "txHash": "0x5c48288b88daa7e27b2c81c335593f37e842c0399aa0d7f95a2ec239082d07b1",
+            "history": [
+              {
+                "address": "0xf19342733Bb451503f3806b0d44CC58A3D345052",
+                "deployBlock": 37532233,
+                "retiredAtUtc": "2026-10-13T02:18:54.693Z"
+              }
+            ]
           }
         }
       },

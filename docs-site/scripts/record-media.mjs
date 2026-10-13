@@ -164,8 +164,13 @@ async function recordWalkthrough(browser, w) {
     rec.start();
     if (first.chapter) rec.mark(first.chapter);
     for (const [index, step] of w.steps.slice(1).entries()) {
+      // A click's chapter starts when the click lands (after any wait for the control to enable), so its caption never
+      // sits over the wait before it; every other step's chapter starts with the step.
+      let marked = false;
+      const markNow = () => { if (step.chapter && !marked) { rec.mark(step.chapter); marked = true; } };
+      const enabledNow = async target => page.waitForFunction(el => el && !el.disabled && el.getAttribute('aria-disabled') !== 'true', await target.elementHandle(), { timeout: step.timeout ?? 15000 });
       try {
-        if (step.chapter) rec.mark(step.chapter);
+        if (step.do !== 'click') markNow();
         if (step.do === 'wait') await sleep(step.ms);
         else if (step.do === 'open') await open(page, step.route);
         else if (step.do === 'follow') {
@@ -183,14 +188,16 @@ async function recordWalkthrough(browser, w) {
         else if (step.do === 'waitFor') {
           const target = locate(page, step);
           await target.waitFor({ state: 'visible', timeout: step.timeout ?? 15000 });
-          if (step.enabled) await page.waitForFunction(el => el && !el.disabled && el.getAttribute('aria-disabled') !== 'true', await target.elementHandle(), { timeout: step.timeout ?? 15000 });
+          if (step.enabled) await enabledNow(target);
         } else if (step.do === 'click') {
           const target = locate(page, step);
           await target.waitFor({ state: 'visible', timeout: step.optional ? 3000 : 15000 });
-          await target.click();
+          if (step.enabled) await enabledNow(target);
+          markNow();
+          await target.click({ timeout: 5000 });
         } else throw new Error(`Unknown step ${step.do}`);
       } catch (error) {
-        if (step.optional) { if (step.chapter) rec.marks.pop(); continue; }
+        if (step.optional) { if (marked) rec.marks.pop(); continue; }
         throw new Error(`step ${index + 1} (${step.do} ${step.name ?? step.text ?? step.selector ?? step.route ?? ''}): ${error.message}`);
       }
     }

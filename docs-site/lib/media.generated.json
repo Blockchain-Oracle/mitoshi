@@ -1,4 +1,250 @@
 {
-  "captures": {},
-  "walkthroughs": {}
+  "captures": {
+    "marketsDesk": {
+      "title": "Markets on a desk",
+      "file": "markets-desk-2026-10-13.png",
+      "alt": "Mitoshi's Markets page at 1440 × 900, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "marketsPhone": {
+      "title": "Markets on a phone",
+      "file": "markets-phone-2026-10-13.png",
+      "alt": "Mitoshi's Markets page at 390 × 844, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 390,
+      "height": 844
+    },
+    "terminalDesk": {
+      "title": "The BTC terminal on a desk",
+      "file": "terminal-desk-2026-10-13.png",
+      "alt": "The BTC terminal at 1440 × 900, signed out in DEMO, after the tour was skipped.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "terminalPhone": {
+      "title": "The BTC terminal on a phone",
+      "file": "terminal-phone-2026-10-13.png",
+      "alt": "The BTC terminal at 390 × 844, signed out in DEMO, after the tour was skipped.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 390,
+      "height": 844
+    },
+    "earnDesk": {
+      "title": "Earn",
+      "file": "earn-desk-2026-10-13.png",
+      "alt": "The Earn page at 1440 × 900, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "rangePhone": {
+      "title": "Range on a phone",
+      "file": "range-phone-2026-10-13.png",
+      "alt": "The Range page at 390 × 844, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 390,
+      "height": 844
+    },
+    "parlayDesk": {
+      "title": "Parlay",
+      "file": "parlay-desk-2026-10-13.png",
+      "alt": "The Parlay page at 1440 × 900, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "strategiesDesk": {
+      "title": "Automate: strategies",
+      "file": "strategies-desk-2026-10-13.png",
+      "alt": "The strategies page at 1440 × 900, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "agentsDesk": {
+      "title": "Automate: agents",
+      "file": "agents-desk-2026-10-13.png",
+      "alt": "The agents page at 1440 × 900, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "gamesPhone": {
+      "title": "Games on a phone",
+      "file": "games-phone-2026-10-13.png",
+      "alt": "The games hall at 390 × 844, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 390,
+      "height": 844
+    },
+    "proofDesk": {
+      "title": "A settled Window's proof",
+      "file": "proof-desk-2026-10-13.png",
+      "alt": "The proof page of a settled Window at 1440 × 900, reached from the leaderboard's first trader's record.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "leaderboardDesk": {
+      "title": "The leaderboard",
+      "file": "leaderboard-desk-2026-10-13.png",
+      "alt": "The leaderboard at 1440 × 900, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "reservesDesk": {
+      "title": "Reserves",
+      "file": "reserves-desk-2026-10-13.png",
+      "alt": "The reserves page at 1440 × 900, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "bridgeDesk": {
+      "title": "Bridge",
+      "file": "bridge-desk-2026-10-13.png",
+      "alt": "The bridge page at 1440 × 900, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "themesDesk": {
+      "title": "Themes",
+      "file": "themes-desk-2026-10-13.png",
+      "alt": "The themes page at 1440 × 900, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "launchDesk": {
+      "title": "Launch",
+      "file": "launch-desk-2026-10-13.png",
+      "alt": "The launch page at 1440 × 900, signed out.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    },
+    "statusDesk": {
+      "title": "Status",
+      "file": "status-desk-2026-10-13.png",
+      "alt": "The status page at 1440 × 900.",
+      "state": "Signed out; live testnet data as the page showed it.",
+      "date": "13 October 2026",
+      "width": 1440,
+      "height": 900
+    }
+  },
+  "walkthroughs": {
+    "first-call-demo": {
+      "title": "A first call in DEMO",
+      "description": "Signed out on a phone: the terminal's tour, then UP on BTC and CLOSE, on paper at the live book's price.",
+      "poster": "/videos/first-call-demo-2026-10-13.jpg",
+      "duration": 20.1,
+      "capturedAt": "2026-10-13T07:27:40.805Z",
+      "origin": "https://testnet.mitoshi.xyz",
+      "chapters": [
+        {
+          "time": 0,
+          "title": "Open the terminal",
+          "text": "Signed out, it trades paper dollars on live prices."
+        },
+        {
+          "time": 2.5,
+          "title": "Skip the tour",
+          "text": "Five steps explain the line, UP and DOWN, the value pill, Trail and Close."
+        },
+        {
+          "time": 5.3,
+          "title": "Wait for the book",
+          "text": "UP lights once someone is on the other side at this size."
+        },
+        {
+          "time": 8.3,
+          "title": "Tap UP",
+          "text": "A paper call fills at the live book's price."
+        },
+        {
+          "time": 10.9,
+          "title": "Watch what it's worth",
+          "text": "The pill shows what CLOSE pays now."
+        },
+        {
+          "time": 15.9,
+          "title": "Close it",
+          "text": "CLOSE sells it back at what the book pays."
+        }
+      ],
+      "sources": [
+        {
+          "src": "/videos/first-call-demo-2026-10-13.mp4",
+          "type": "video/mp4"
+        }
+      ],
+      "captions": "/videos/first-call-demo-2026-10-13.vtt",
+      "metadata": "/videos/first-call-demo-2026-10-13.json"
+    },
+    "proof-reverify": {
+      "title": "Re-verify a settled Window",
+      "description": "From the leaderboard to a trader's record to a settled Window's proof, then the closing print re-verified in the browser against the chain.",
+      "poster": "/videos/proof-reverify-2026-10-13.jpg",
+      "duration": 34.1,
+      "capturedAt": "2026-10-13T07:23:46.499Z",
+      "origin": "https://testnet.mitoshi.xyz",
+      "chapters": [
+        {
+          "time": 0,
+          "title": "Open the leaderboard",
+          "text": "Records ranked from their settled calls."
+        },
+        {
+          "time": 2.5,
+          "title": "Open a record",
+          "text": "Each row links its calls and their proofs."
+        },
+        {
+          "time": 13.9,
+          "title": "Open a proof",
+          "text": "The verdict, the settlement transaction and both signed prints."
+        },
+        {
+          "time": 25.6,
+          "title": "Re-verify the close",
+          "text": "The browser reads the recording transaction and asks the verifier contract again."
+        },
+        {
+          "time": 27.7,
+          "title": "Verified",
+          "text": "The close passes twice: its record transaction and the archive. This open is the previous Window's close."
+        }
+      ],
+      "sources": [
+        {
+          "src": "/videos/proof-reverify-2026-10-13.mp4",
+          "type": "video/mp4"
+        }
+      ],
+      "captions": "/videos/proof-reverify-2026-10-13.vtt",
+      "metadata": "/videos/proof-reverify-2026-10-13.json"
+    }
+  }
 }

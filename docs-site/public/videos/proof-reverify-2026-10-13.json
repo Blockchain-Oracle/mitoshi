@@ -1,0 +1,46 @@
+{
+  "name": "proof-reverify",
+  "origin": "https://testnet.mitoshi.xyz",
+  "url": "https://testnet.mitoshi.xyz/proof/0xdb97d34e464a2cf9674eed3b3af003b87f9edd7cfe8a308f8b0bdf41738a8414",
+  "capturedAt": "2026-10-13T07:23:46.499Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "deviceScaleFactor": 2
+  },
+  "sourceFrames": 212,
+  "sourceDurationMs": 32864,
+  "chapters": [
+    {
+      "time": 0,
+      "title": "Open the leaderboard",
+      "text": "Records ranked from their settled calls."
+    },
+    {
+      "time": 2.5,
+      "title": "Open a record",
+      "text": "Each row links its calls and their proofs."
+    },
+    {
+      "time": 13.9,
+      "title": "Open a proof",
+      "text": "The verdict, the settlement transaction and both signed prints."
+    },
+    {
+      "time": 25.6,
+      "title": "Re-verify the close",
+      "text": "The browser reads the recording transaction and asks the verifier contract again."
+    },
+    {
+      "time": 27.7,
+      "title": "Verified",
+      "text": "The close passes twice: its record transaction and the archive. This open is the previous Window's close."
+    }
+  ],
+  "method": "Headless Chromium, signed out; lossless 2× frames every ~150 ms encoded at their recorded timing. No cuts, no speed-ups, no pointer drawn.",
+  "sha256": {
+    "proof-reverify-2026-10-13.mp4": "3c7a0d436f335d31af78de5bb3bb80d01b698143c53632b5f37d7d9af65e3a3f",
+    "proof-reverify-2026-10-13.vtt": "ecb621acef871f188030ab5bc3f9c209ddae2a8f35bdb09c83c71dd5be2c96bf",
+    "proof-reverify-2026-10-13.jpg": "0ff9c6963e012563eae8e0c50a97b144b44a6da77ed20ff439beb0eec589ea15"
+  }
+}

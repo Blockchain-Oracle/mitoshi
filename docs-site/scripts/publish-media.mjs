@@ -89,8 +89,9 @@ for (const w of plan.walkthroughs) {
   const chapters = meta.marks.map(m => ({ time: Math.round(m.t / 100) / 10, title: m.title, text: m.text }));
   const vtt = ['WEBVTT', '', ...chapters.flatMap((c, i) => [`${stamp(c.time)} --> ${stamp(chapters[i + 1]?.time ?? duration)}`, `${c.title}. ${c.text}`, ''])].join('\n');
   writeFileSync(resolve(videosOut, `${base}.vtt`), vtt);
-  // The poster is the clip's own frame half a second into its second chapter (or its last frame).
-  const posterAt = Math.min(duration - 0.1, (chapters[1]?.time ?? duration - 0.6) + 0.5);
+  // The poster is the clip's own frame: `poster.at` seconds into the plan's `poster.chapter` (default half a second into
+  // the second chapter), or its last frame.
+  const posterAt = Math.min(duration - 0.1, (chapters[w.poster?.chapter ?? 1]?.time ?? duration - 0.6) + (w.poster?.at ?? 0.5));
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-ss', posterAt.toFixed(2), '-i', mp4, '-frames:v', '1', '-q:v', '3', resolve(videosOut, `${base}.jpg`)]);
   const files = [`${base}.mp4`, `${base}.vtt`, `${base}.jpg`];
   const hashes = Object.fromEntries(files.map(f => [f, sha256(readFileSync(resolve(videosOut, f)))]));

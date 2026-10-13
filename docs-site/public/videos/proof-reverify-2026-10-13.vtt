@@ -1,0 +1,16 @@
+WEBVTT
+
+00:00:00.000 --> 00:00:02.500
+Open the leaderboard. Records ranked from their settled calls.
+
+00:00:02.500 --> 00:00:13.900
+Open a record. Each row links its calls and their proofs.
+
+00:00:13.900 --> 00:00:25.600
+Open a proof. The verdict, the settlement transaction and both signed prints.
+
+00:00:25.600 --> 00:00:27.700
+Re-verify the close. The browser reads the recording transaction and asks the verifier contract again.
+
+00:00:27.700 --> 00:00:34.100
+Verified. The close passes twice: its record transaction and the archive. This open is the previous Window's close.

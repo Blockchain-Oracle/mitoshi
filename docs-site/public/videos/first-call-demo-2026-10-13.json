@@ -1,0 +1,51 @@
+{
+  "name": "first-call-demo",
+  "origin": "https://testnet.mitoshi.xyz",
+  "url": "https://testnet.mitoshi.xyz/trade/BTC",
+  "capturedAt": "2026-10-13T07:27:40.805Z",
+  "viewport": {
+    "width": 390,
+    "height": 844,
+    "deviceScaleFactor": 2
+  },
+  "sourceFrames": 122,
+  "sourceDurationMs": 18897,
+  "chapters": [
+    {
+      "time": 0,
+      "title": "Open the terminal",
+      "text": "Signed out, it trades paper dollars on live prices."
+    },
+    {
+      "time": 2.5,
+      "title": "Skip the tour",
+      "text": "Five steps explain the line, UP and DOWN, the value pill, Trail and Close."
+    },
+    {
+      "time": 5.3,
+      "title": "Wait for the book",
+      "text": "UP lights once someone is on the other side at this size."
+    },
+    {
+      "time": 8.3,
+      "title": "Tap UP",
+      "text": "A paper call fills at the live book's price."
+    },
+    {
+      "time": 10.9,
+      "title": "Watch what it's worth",
+      "text": "The pill shows what CLOSE pays now."
+    },
+    {
+      "time": 15.9,
+      "title": "Close it",
+      "text": "CLOSE sells it back at what the book pays."
+    }
+  ],
+  "method": "Headless Chromium, signed out; lossless 2× frames every ~150 ms encoded at their recorded timing. No cuts, no speed-ups, no pointer drawn.",
+  "sha256": {
+    "first-call-demo-2026-10-13.mp4": "bb10e158bfe81cc5275b3d2f8a2e0de0d2c03fb829ee44a86df3c3cb101e683a",
+    "first-call-demo-2026-10-13.vtt": "b5fdcbf35c8e66c050e0fa1c6869398d663d07665622d194b609679b10b08331",
+    "first-call-demo-2026-10-13.jpg": "fc21182380f165f2ae28bf3ea28a7be9b11e27f790a3a30f8e7fa114a0ea5f48"
+  }
+}

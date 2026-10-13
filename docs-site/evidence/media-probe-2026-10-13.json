@@ -1,0 +1,212 @@
+{
+  "origin": "https://testnet.mitoshi.xyz",
+  "probedAt": "2026-10-13T07:32:26.688Z",
+  "method": "Headless Chromium, signed out; every capture's page, links and wait, and every walkthrough step, run against the live product with no pixels kept.",
+  "passed": 19,
+  "failed": 0,
+  "results": [
+    {
+      "kind": "capture",
+      "name": "marketsDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/markets",
+      "status": 200,
+      "ms": 10847,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "marketsPhone",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/markets",
+      "status": 200,
+      "ms": 11198,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "terminalDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "status": 200,
+      "ms": 10250,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "terminalPhone",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "status": 200,
+      "ms": 10297,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "earnDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/earn",
+      "status": 200,
+      "ms": 9962,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "rangePhone",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/games/range",
+      "status": 200,
+      "ms": 10975,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "parlayDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/parlay",
+      "status": 200,
+      "ms": 9786,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "strategiesDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/strategies",
+      "status": 200,
+      "ms": 10485,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "agentsDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/agents",
+      "status": 200,
+      "ms": 9268,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "gamesPhone",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/games",
+      "status": 200,
+      "ms": 10002,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "proofDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/proof/0xdb97d34e464a2cf9674eed3b3af003b87f9edd7cfe8a308f8b0bdf41738a8414",
+      "status": 200,
+      "ms": 27424,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "leaderboardDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/leaderboard",
+      "status": 200,
+      "ms": 10036,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "reservesDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/reserves",
+      "status": 200,
+      "ms": 9936,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "bridgeDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/bridge",
+      "status": 200,
+      "ms": 10919,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "themesDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/themes",
+      "status": 200,
+      "ms": 9134,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "launchDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/launch",
+      "status": 200,
+      "ms": 9200,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "capture",
+      "name": "statusDesk",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/status",
+      "status": 200,
+      "ms": 9063,
+      "pageErrors": [],
+      "at": "2026-10-13T07:13:24.364Z"
+    },
+    {
+      "kind": "walkthrough",
+      "name": "first-call-demo",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "ms": 19291,
+      "chapters": [
+        "Open the terminal",
+        "Skip the tour",
+        "Wait for the book",
+        "Tap UP",
+        "Watch what it's worth",
+        "Close it"
+      ],
+      "pageErrors": [],
+      "at": "2026-10-13T07:32:26.688Z"
+    },
+    {
+      "kind": "walkthrough",
+      "name": "proof-reverify",
+      "ok": true,
+      "url": "https://testnet.mitoshi.xyz/proof/0xdb97d34e464a2cf9674eed3b3af003b87f9edd7cfe8a308f8b0bdf41738a8414",
+      "ms": 32344,
+      "chapters": [
+        "Open the leaderboard",
+        "Open a record",
+        "Open a proof",
+        "Re-verify the close",
+        "Verified"
+      ],
+      "pageErrors": [],
+      "at": "2026-10-13T07:32:26.688Z"
+    }
+  ]
+}

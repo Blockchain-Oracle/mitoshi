@@ -32,17 +32,20 @@
       "title": "A first call in DEMO",
       "description": "Signed out on a phone: the terminal's tour, then UP on BTC and CLOSE, on paper at the live book's price.",
       "sources": ["web/src/app/(app)/(terminal)", "web/src/features/terminal", "web/src/features/demo", "web/src/styles/terminal.css", "web/src/styles/chart-engine.css"],
+      "poster": {"chapter": 4, "at": 2},
       "steps": [
-        { "do": "open", "route": "/trade/BTC", "chapter": {"title": "Open the terminal", "text": "Signed out, the terminal trades on paper: the equity pill reads DEMO."} },
+        { "do": "open", "route": "/trade/BTC", "chapter": {"title": "Open the terminal", "text": "Signed out, it trades paper dollars on live prices."} },
         { "do": "waitFor", "role": "button", "name": "^Skip$", "timeout": 20000, "optional": true },
         { "do": "wait", "ms": 2500 },
         { "do": "click", "role": "button", "name": "^Skip$", "optional": true, "chapter": {"title": "Skip the tour", "text": "Five steps explain the line, UP and DOWN, the value pill, Trail and Close."} },
-        { "do": "waitFor", "role": "button", "name": "^UP\\b", "timeout": 30000, "enabled": true },
+        { "do": "wait", "ms": 2500 },
+        { "do": "waitFor", "role": "button", "name": "^UP\\b", "timeout": 30000, "enabled": true, "chapter": {"title": "Wait for the book", "text": "UP lights once someone is on the other side at this size."} },
         { "do": "wait", "ms": 3000 },
-        { "do": "click", "role": "button", "name": "^UP\\b", "chapter": {"title": "Tap UP", "text": "A paper call fills at the live book's price."} },
+        { "do": "click", "role": "button", "name": "^UP\\b", "enabled": true, "timeout": 60000, "chapter": {"title": "Tap UP", "text": "A paper call fills at the live book's price."} },
         { "do": "waitFor", "role": "button", "name": "^CLOSE$", "timeout": 20000, "enabled": true },
+        { "do": "wait", "ms": 2500 },
         { "do": "wait", "ms": 5000, "chapter": {"title": "Watch what it's worth", "text": "The pill shows what CLOSE pays now."} },
-        { "do": "click", "role": "button", "name": "^CLOSE$", "chapter": {"title": "Close it", "text": "CLOSE sells it back at what the book pays."} },
+        { "do": "click", "role": "button", "name": "^CLOSE$", "enabled": true, "timeout": 30000, "chapter": {"title": "Close it", "text": "CLOSE sells it back at what the book pays."} },
         { "do": "waitFor", "role": "button", "name": "^UP\\b", "timeout": 20000 },
         { "do": "wait", "ms": 2500 }
       ]
@@ -53,17 +56,20 @@
       "title": "Re-verify a settled Window",
       "description": "From the leaderboard to a trader's record to a settled Window's proof, then the closing print re-verified in the browser against the chain.",
       "sources": ["web/src/app/(app)/leaderboard", "web/src/features/leaderboard", "web/src/features/profile", "web/src/features/proof"],
+      "poster": {"chapter": 4, "at": 2},
       "steps": [
         { "do": "open", "route": "/leaderboard", "chapter": {"title": "Open the leaderboard", "text": "Records ranked from their settled calls."} },
         { "do": "wait", "ms": 2500 },
         { "do": "follow", "selector": "a[href^='/u/']", "chapter": {"title": "Open a record", "text": "Each row links its calls and their proofs."} },
         { "do": "wait", "ms": 2500 },
         { "do": "follow", "selector": "a[href^='/proof/']", "chapter": {"title": "Open a proof", "text": "The verdict, the settlement transaction and both signed prints."} },
-        { "do": "waitFor", "role": "button", "name": "^Re-verify in this browser", "last": true, "timeout": 30000 },
+        { "do": "waitFor", "role": "button", "name": "^Re-verify$", "last": true, "timeout": 30000 },
         { "do": "wait", "ms": 3000 },
-        { "do": "click", "role": "button", "name": "^Re-verify in this browser", "last": true, "chapter": {"title": "Re-verify the close", "text": "The browser reads the recording transaction and asks the verifier contract again."} },
-        { "do": "waitFor", "text": "^Verified now: ", "timeout": 30000, "chapter": {"title": "Verified", "text": "The verifier answers the same price, from the same signers, that the engine recorded."} },
-        { "do": "wait", "ms": 4000 }
+        { "do": "click", "role": "button", "name": "^Re-verify$", "last": true, "chapter": {"title": "Re-verify the close", "text": "The browser reads the recording transaction and asks the verifier contract again."} },
+        { "do": "waitFor", "text": "^Re-verified: ", "timeout": 30000 },
+        { "do": "wait", "ms": 600 },
+        { "do": "scroll", "y": 900, "chapter": {"title": "Verified", "text": "The close passes twice: its record transaction and the archive. This open is the previous Window's close."} },
+        { "do": "wait", "ms": 5000 }
       ]
     }
   ]

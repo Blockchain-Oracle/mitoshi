@@ -1,0 +1,328 @@
+{
+  "origin": "https://testnet.mitoshi.xyz",
+  "items": [
+    {
+      "kind": "capture",
+      "name": "marketsDesk",
+      "file": "captures/markets-desk-2026-10-13.png",
+      "sha256": "b3b9f3c836e09111f52b9fdc6738b5aff2d80ef8f1e36618885fb06de5a18494",
+      "url": "https://testnet.mitoshi.xyz/markets",
+      "capturedAt": "2026-10-13T07:22:24.808Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "marketsPhone",
+      "file": "captures/markets-phone-2026-10-13.png",
+      "sha256": "2ed66b31cd9b5247b098d6014b4580d604b084181d5a6787fca614861db6f891",
+      "url": "https://testnet.mitoshi.xyz/markets",
+      "capturedAt": "2026-10-13T07:22:38.444Z",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "terminalDesk",
+      "file": "captures/terminal-desk-2026-10-13.png",
+      "sha256": "047c32df15eaa3ed062983296dc13814e5643aa70486aef9e08bbaa36cfa1960",
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "capturedAt": "2026-10-13T07:22:51.863Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "terminalPhone",
+      "file": "captures/terminal-phone-2026-10-13.png",
+      "sha256": "bef9e1cf45237e72fed968f95873393751f9fb87204d45735587482d7269504b",
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "capturedAt": "2026-10-13T07:23:05.010Z",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "earnDesk",
+      "file": "captures/earn-desk-2026-10-13.png",
+      "sha256": "6d1f445873db05e1a1dc3b7da00b9daa8912e0aafca777d8d9332dad8f8f30b2",
+      "url": "https://testnet.mitoshi.xyz/earn",
+      "capturedAt": "2026-10-13T07:15:43.688Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "rangePhone",
+      "file": "captures/range-phone-2026-10-13.png",
+      "sha256": "7a5536676449fcf869e2ae970d75af8c224893695734b909da10bf5f6ccf7caf",
+      "url": "https://testnet.mitoshi.xyz/games/range",
+      "capturedAt": "2026-10-13T07:15:57.322Z",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "parlayDesk",
+      "file": "captures/parlay-desk-2026-10-13.png",
+      "sha256": "e95c200172d96ba840d71c1028bd449b54a8739d4cda0c230de721113788999d",
+      "url": "https://testnet.mitoshi.xyz/parlay",
+      "capturedAt": "2026-10-13T07:16:11.253Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "strategiesDesk",
+      "file": "captures/strategies-desk-2026-10-13.png",
+      "sha256": "5fd0480f66ed396cedfb26c9b6638b2646c22496450ab174f56a9e202985928d",
+      "url": "https://testnet.mitoshi.xyz/strategies",
+      "capturedAt": "2026-10-13T07:16:24.593Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "agentsDesk",
+      "file": "captures/agents-desk-2026-10-13.png",
+      "sha256": "0fb360b5499a288801e873d926a974506d3ccdebe45126f10198a9b7ed54fd64",
+      "url": "https://testnet.mitoshi.xyz/agents",
+      "capturedAt": "2026-10-13T07:16:37.657Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "gamesPhone",
+      "file": "captures/games-phone-2026-10-13.png",
+      "sha256": "9cc5870f7340e26cfe62c65ca26b34c2c9604ca7164091f82adb1962e8ce612f",
+      "url": "https://testnet.mitoshi.xyz/games",
+      "capturedAt": "2026-10-13T07:16:51.676Z",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "proofDesk",
+      "file": "captures/proof-desk-2026-10-13.png",
+      "sha256": "de57dcf4ee03ffaa4fe8b9c39839f1f80e6783b03b70165e7f01da7b67cb738c",
+      "url": "https://testnet.mitoshi.xyz/proof/0xdb97d34e464a2cf9674eed3b3af003b87f9edd7cfe8a308f8b0bdf41738a8414",
+      "capturedAt": "2026-10-13T07:17:22.028Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "leaderboardDesk",
+      "file": "captures/leaderboard-desk-2026-10-13.png",
+      "sha256": "42fcd4b6623a4dd96fdcb14477dc1b75a0c8f8981cf991f2da5146491494d23e",
+      "url": "https://testnet.mitoshi.xyz/leaderboard",
+      "capturedAt": "2026-10-13T07:17:35.031Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "reservesDesk",
+      "file": "captures/reserves-desk-2026-10-13.png",
+      "sha256": "7979eec3745db91ec6dfc334e397f99a0721dc39ff48e25d0176e63acbfdd7fe",
+      "url": "https://testnet.mitoshi.xyz/reserves",
+      "capturedAt": "2026-10-13T07:17:48.588Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "bridgeDesk",
+      "file": "captures/bridge-desk-2026-10-13.png",
+      "sha256": "3ea4d906972a20d3b3b35fa4a04eeefc3edc3f0766aa12c45ac2c23e674043e1",
+      "url": "https://testnet.mitoshi.xyz/bridge",
+      "capturedAt": "2026-10-13T07:18:00.957Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "themesDesk",
+      "file": "captures/themes-desk-2026-10-13.png",
+      "sha256": "da87c4061aefd888eaf6223e35c0480781dd5671ecdefa2a6e353ad31d80ae0f",
+      "url": "https://testnet.mitoshi.xyz/themes",
+      "capturedAt": "2026-10-13T07:18:14.155Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "launchDesk",
+      "file": "captures/launch-desk-2026-10-13.png",
+      "sha256": "b3af673dbccbcf7caff8fb5a0ce167789c53d07e743cb6bc87d1baf2ba30bfc2",
+      "url": "https://testnet.mitoshi.xyz/launch",
+      "capturedAt": "2026-10-13T07:18:27.733Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "capture",
+      "name": "statusDesk",
+      "file": "captures/status-desk-2026-10-13.png",
+      "sha256": "109937d3e102b5adfaf3c5ae7bcc33e195764bc45783e27ded0ccfa9bd1f8882",
+      "url": "https://testnet.mitoshi.xyz/status",
+      "capturedAt": "2026-10-13T07:18:40.692Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Headless Chromium at 2×, lossless PNG, copied unmodified."
+    },
+    {
+      "kind": "walkthrough",
+      "name": "first-call-demo:mp4",
+      "file": "videos/first-call-demo-2026-10-13.mp4",
+      "sha256": "bb10e158bfe81cc5275b3d2f8a2e0de0d2c03fb829ee44a86df3c3cb101e683a",
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "capturedAt": "2026-10-13T07:27:40.805Z",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 2
+      },
+      "method": "Encoded from the recorder's hashed frames."
+    },
+    {
+      "kind": "walkthrough",
+      "name": "first-call-demo:vtt",
+      "file": "videos/first-call-demo-2026-10-13.vtt",
+      "sha256": "b5fdcbf35c8e66c050e0fa1c6869398d663d07665622d194b609679b10b08331",
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "capturedAt": "2026-10-13T07:27:40.805Z",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 2
+      },
+      "method": "Encoded from the recorder's hashed frames."
+    },
+    {
+      "kind": "walkthrough",
+      "name": "first-call-demo:jpg",
+      "file": "videos/first-call-demo-2026-10-13.jpg",
+      "sha256": "fc21182380f165f2ae28bf3ea28a7be9b11e27f790a3a30f8e7fa114a0ea5f48",
+      "url": "https://testnet.mitoshi.xyz/trade/BTC",
+      "capturedAt": "2026-10-13T07:27:40.805Z",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "deviceScaleFactor": 2
+      },
+      "method": "Encoded from the recorder's hashed frames."
+    },
+    {
+      "kind": "walkthrough",
+      "name": "proof-reverify:mp4",
+      "file": "videos/proof-reverify-2026-10-13.mp4",
+      "sha256": "3c7a0d436f335d31af78de5bb3bb80d01b698143c53632b5f37d7d9af65e3a3f",
+      "url": "https://testnet.mitoshi.xyz/proof/0xdb97d34e464a2cf9674eed3b3af003b87f9edd7cfe8a308f8b0bdf41738a8414",
+      "capturedAt": "2026-10-13T07:23:46.499Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Encoded from the recorder's hashed frames."
+    },
+    {
+      "kind": "walkthrough",
+      "name": "proof-reverify:vtt",
+      "file": "videos/proof-reverify-2026-10-13.vtt",
+      "sha256": "ecb621acef871f188030ab5bc3f9c209ddae2a8f35bdb09c83c71dd5be2c96bf",
+      "url": "https://testnet.mitoshi.xyz/proof/0xdb97d34e464a2cf9674eed3b3af003b87f9edd7cfe8a308f8b0bdf41738a8414",
+      "capturedAt": "2026-10-13T07:23:46.499Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Encoded from the recorder's hashed frames."
+    },
+    {
+      "kind": "walkthrough",
+      "name": "proof-reverify:jpg",
+      "file": "videos/proof-reverify-2026-10-13.jpg",
+      "sha256": "0ff9c6963e012563eae8e0c50a97b144b44a6da77ed20ff439beb0eec589ea15",
+      "url": "https://testnet.mitoshi.xyz/proof/0xdb97d34e464a2cf9674eed3b3af003b87f9edd7cfe8a308f8b0bdf41738a8414",
+      "capturedAt": "2026-10-13T07:23:46.499Z",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "deviceScaleFactor": 2
+      },
+      "method": "Encoded from the recorder's hashed frames."
+    }
+  ],
+  "publishedAt": "2026-10-13T07:29:26.767Z"
+}
