@@ -345,7 +345,6 @@ span.top-money, span.top-account { display: contents; }
   .topline-wide { display: none; }
   .app-topline { position: sticky; top: 0; z-index: var(--z-sticky); margin: 0 -12px; padding-inline: 12px; background: color-mix(in srgb, var(--color-canvas) 90%, transparent); backdrop-filter: blur(12px); }
   .more-places { display: grid; }
-  .more-foot { display: flex; }
 }
 
 /* Below the top level a phone's top line carries the back chevron instead of the mark (D-226: back, mark, mode, balance
@@ -381,7 +380,6 @@ span.top-money, span.top-account { display: contents; }
   .rail-nav { --rail-gap: 2px; }
   .rail-foot .rail-tools { display: none; }
   .app-rail .mode-stamp-tile { width: 44px; height: 44px; }
-  .more-foot { display: flex; }
 }
 
 /* ── ultra-wide (critic gap 25, R4-8 D-227): the one inset governs padding, not measure — from 1600 px a reading page's

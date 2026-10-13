@@ -153,7 +153,8 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   // First visit: the five-step tour, once the browser's settings have loaded with it unseen.
   const settingsState = useTradeSettingsState();
   // In a frame (the landing's phone) the tour never opens: that phone shows the app; the tour belongs to a real visit.
-  const tourOpen = settingsState !== null && !settingsState.tutorialSeen && window.self === window.top;
+  // `tour=0` (More's Short, R6 shell S17): a link straight into a mode skips the tour this once, without marking it seen.
+  const tourOpen = settingsState !== null && !settingsState.tutorialSeen && window.self === window.top && !/[?&]tour=0(&|$)/.test(window.location.search);
   const settled = settingsState !== null;
   useEffect(() => void (settled && onTourSettled?.()), [settled, onTourSettled]);
   const endTour = (choice: "start" | "later" | "skip") => {

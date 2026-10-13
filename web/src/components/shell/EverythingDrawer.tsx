@@ -8,15 +8,16 @@
 // `open-external`; a link drops the URL param first so Back from the new page doesn't reopen the drawer. D-230: "Get the
 // app" leads the list (the platforms' marks, to /download) until the app is installed — and stands in for Learn's own
 // tile meanwhile, so /download is offered once.
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Search, Volume2, VolumeX } from "lucide-react";
 import Link from "next/link";
 import { AndroidGlyph, AppleGlyph } from "@/components/icons/StoreGlyphs";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
+import { InfoPopover } from "@/components/ui/info-popover";
 import { useInstallState } from "@/features/install/useInstallPrompt";
 import { isPendingHref } from "@/lib/capabilities";
 import { FOOTER, SHELL } from "@/lib/copy";
 import { closeDrawer, dropDrawerParam } from "@/lib/drawer-param";
-import { tapFeedback } from "@/lib/feedback";
+import { setFeedback, tapFeedback, useFeedback } from "@/lib/feedback";
 import { externalClick } from "@/lib/open-external";
 import { openSearch } from "@/lib/search-event";
 import { DOCK_OMITTED, EVERYTHING_SECTIONS, isActiveNavItem, NAV_ITEMS, type NavItem } from "./header/nav-items";
@@ -28,27 +29,43 @@ export interface EverythingDrawerProps {
   pathname: string | null;
 }
 
+/** An app-library tile (R6 shell S17; 21st 24848 cnippet-dev/quick-actions-grid-drawer): a 44 px disc over one word. */
 function Tile({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon;
   const body = (
     <>
-      <span className="more-tile-disc"><Icon aria-hidden /></span>
-      <span className="more-tile-copy">
-        <span className="more-tile-name">
-          {item.name}
-          {item.beta ? <sup>beta</sup> : null}
-          {isPendingHref(item.href) ? <span className="nav-soon">{SHELL.soon}</span> : null}
-        </span>
-        <span className="more-tile-line">{item.description}</span>
+      <span className="more-tile-disc">
+        <Icon aria-hidden />
+        {item.beta ? <span aria-hidden className="more-tile-beta" /> : null}
       </span>
+      <span className="more-tile-name">
+        {item.tile ?? item.name}
+        {item.external ? <ArrowUpRight aria-hidden className="more-tile-out" /> : null}
+      </span>
+      {isPendingHref(item.href) ? <span className="nav-soon">{SHELL.soon}</span> : null}
     </>
   );
+  const label = `${item.name}. ${item.description}`;
   return item.external ? (
-    <a href={item.href} target="_blank" rel="noopener noreferrer" className="more-tile" onClick={externalClick}>{body}</a>
+    <a href={item.href} target="_blank" rel="noopener noreferrer" className="more-tile" aria-label={label} title={item.description} onClick={externalClick}>{body}</a>
   ) : (
-    <Link href={item.href} className="more-tile" aria-current={active ? "page" : undefined} onClick={() => { tapFeedback(); dropDrawerParam(); }}>
+    <Link href={item.href} className="more-tile" aria-label={label} title={item.description} aria-current={active ? "page" : undefined} onClick={() => { tapFeedback(); dropDrawerParam(); }}>
       {body}
     </Link>
+  );
+}
+
+/** The pinned foot: the theme, the sound and the small print behind ⓘ (it no longer runs as a paragraph). */
+function MoreTools() {
+  const { sound } = useFeedback();
+  return (
+    <div className="more-tools">
+      <ThemeToggle />
+      <button type="button" className="more-tool" aria-pressed={sound} aria-label={sound ? SHELL.soundOn : SHELL.soundOff} title={sound ? SHELL.soundOn : SHELL.soundOff} onClick={() => setFeedback({ sound: !sound })}>
+        {sound ? <Volume2 aria-hidden /> : <VolumeX aria-hidden />}
+      </button>
+      <InfoPopover label={SHELL.about} className="more-tool">{FOOTER.disclosure}</InfoPopover>
+    </div>
   );
 }
 
@@ -74,7 +91,7 @@ export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDra
   const { installed } = useInstallState();
   return (
     <SlideOver open={open} onOpenChange={onOpenChange}>
-      <SlideOverContent title={SHELL.moreTitle} size="lg" fields>
+      <SlideOverContent title={SHELL.moreTitle} size="lg" fields footer={<MoreTools />}>
         <div className="more-body">
           <button
             type="button"
@@ -111,10 +128,6 @@ export function EverythingDrawer({ open, onOpenChange, pathname }: EverythingDra
               </div>
             </section>
           ))}
-          <footer className="more-credit">
-            <p>{FOOTER.disclosure}</p>
-            <span className="more-foot"><ThemeToggle /></span>
-          </footer>
         </div>
       </SlideOverContent>
     </SlideOver>

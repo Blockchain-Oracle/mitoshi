@@ -40,6 +40,10 @@ export const SHELL = {
   openApp: "Open the app",
   searchLabel: "Search destinations",
   searchPlaceholder: "Search markets and pages",
+  /** More's pinned foot (R6 shell S17). */
+  soundOn: "Sound on",
+  soundOff: "Sound off",
+  about: "About Mitoshi",
   /** The palette's keycaps (R6 shell S05; Senryo `useModCombo`): ⌘ K on Apple, Ctrl K elsewhere. */
   searchKey: { apple: ["⌘", "K"], other: ["Ctrl", "K"] } as const,
   searchEmpty: "Nothing matches that.",

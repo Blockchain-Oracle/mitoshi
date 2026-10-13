@@ -61,7 +61,7 @@ export function TourNav({ step, back, next }: { step: number; back: ReactNode; n
  * Marks the page before first paint when this browser has seen the tour (the trade settings' `tutorialSeen`), or when
  * the terminal runs in a frame (the landing's phone, which shows the app rather than teaches it).
  */
-export const TOUR_SEEN_SCRIPT = `try{var s=JSON.parse(localStorage.getItem("cwf.trade.settings.v1")||"{}");if(window.self!==window.top||(s&&s.tutorialSeen===true))document.documentElement.setAttribute("data-tm-tour-seen","")}catch(e){}`;
+export const TOUR_SEEN_SCRIPT = `try{var s=JSON.parse(localStorage.getItem("cwf.trade.settings.v1")||"{}");if(window.self!==window.top||(s&&s.tutorialSeen===true)||/[?&]tour=0(&|$)/.test(location.search))document.documentElement.setAttribute("data-tm-tour-seen","")}catch(e){}`;
 
 /**
  * The tour's first step as the modal paints it (`modal-scrim` / `modal-root` / `modal tm-tour`) and, under 768 px, as the
