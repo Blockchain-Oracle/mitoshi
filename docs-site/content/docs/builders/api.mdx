@@ -41,7 +41,7 @@ These are the app's own routes, not a versioned public API: they can change with
 | `GET /api/games/arcade/{board?game=,recent,runs?address=,tape}` | An arcade board with a fresh seed and its tape; the newest replayed runs; a wallet's runs; a real-price tape for the cabinets. |
 | `GET /api/games/{lucky,duel}/board` · `/{lucky,duel}/history?address=` · `/duel/presence` · `/season` · `/achievements?wallet=` | The Lucky and duel ladders; a wallet's draws and duels; who waits at each pot; the duel season; a wallet's badges. |
 | `GET /api/launch/name?q=` · `/api/launch/logo/<sha256>` | Whether a launch name passes the word filter; a launch's logo. |
-| `GET /api/themes/agent/registration.json` | The theme agent's ERC-8004 registration file. |
+| `GET /api/themes/agent/registration.json` | Agent #82's ERC-8004 registration file: the agent every theme names. |
 | `GET /api/x/status?account=` | Who is signed in with X here, where an X account routes, and the relay's state. |
 | `GET /.well-known/apple-app-site-association` · `assetlinks.json` | The phone app's links and passkey association; also on `mitoshi.xyz`. |
 
@@ -65,7 +65,7 @@ Most need a session: a passkey sign-in is one; a wallet signs one message for a 
 | `POST /api/games/arcade/score` | A finished run, replayed on the server before it counts. |
 | `POST /api/games/lucky/{commit,reveal,placed}` | A Lucky draw: the server's commitment, the reveal with your seed, what was placed. |
 | `GET` · `POST` · `DELETE /api/games/duel/queue` · `GET /api/games/duel/match/<id>` | Join or leave the duel queue; one duel, with its deck once both pots are in. |
-| `POST /api/launch/logo` · `/api/themes/<id>/agent-key` | Store a launch's logo (no session); ask ops for a theme agent's key. |
+| `POST /api/launch/logo` | Store a launch's logo (no session). |
 | `POST /api/strategies/preview` | The studio's test read on a live Window, rate-limited. No session; nothing is sent. |
 | `/api/x/{start,callback,bind,unlink,receipts,native-exchange}` | Sign in with X; link or unlink with your account's signature; your mentions' receipts; the phone app's hand-back. |
 | `GET` · `DELETE /api/account/data` · `/api/account/backup-passkey` | Download or erase your off-chain data; record a backup passkey. |

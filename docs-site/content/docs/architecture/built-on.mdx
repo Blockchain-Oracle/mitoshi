@@ -10,7 +10,6 @@ sources:
   - packages/core/src/faucet/index.ts
   - contracts/src/engine/verifiers/RedStonePrintVerifier.sol
   - contracts/deployments/42431/v4.json
-  - contracts/deployments/42431/pools.json
   - docs/plan/acceptance/S9.md
   - docs/plan/acceptance/R4-11.md
 ---
@@ -21,7 +20,7 @@ Mitoshi runs on Tempo, a payments-first Layer 1 incubated by Stripe and Paradigm
 | --- | --- | --- |
 | **Tempo** | The chain: every contract, every dollar (pathUSD, a TIP-20 stablecoin) and every network fee. Passkeys are accounts, access keys carry limits the chain enforces, another account can pay a call's fee, and the ERC-8004 registries and MPP are built in. | Live on Moderato (chain 42431). Its faucet gives each new account test dollars. |
 | **RedStone** | The signed prints that settle every Window — three of five production signers — plus the fair-value guard's spot and the stock pools' reference. | Live. Its public gateways go dark in growing daily windows and stop on 29 October 2026; the authenticated ones wait on a key ([availability](/help/availability)). |
-| **Uniswap v4** | Graduated memecoins' pools; a pool per stock mirror behind Mitoshi's guard hook. | Replayed at mainnet's addresses on Moderato; a graduated memecoin trades in its pool. The stock pools refuse every swap. |
+| **Uniswap v4** | Graduated memecoins' pools. | Moderato's v4 replayed at mainnet's addresses; a graduated memecoin trades in its pool. |
 
 The chart's live line comes from Coinbase (crypto) and Alpaca (stocks). It settles nothing.
 
@@ -33,7 +32,7 @@ The chart's live line comes from Coinbase (crypto) and Alpaca (stocks). It settl
 - **Someone else can pay the fee.** Mitoshi's relay co-signs as the fee payer. It can't change your call or spend from your account.
 - **Agents and paid reads are native.** The ERC-8004 identity and reputation registries are predeployed; MPP charges per request in pathUSD.
 
-Read on: [the relay and keys](/architecture/relay-and-keys), [prices and prints](/architecture/prices), [pools and the guard](/stocks/pools-and-guard), [agents](/automate/agents), [the Memory Market](/automate/memory-market).
+Read on: [the relay and keys](/architecture/relay-and-keys), [prices and prints](/architecture/prices), [agents](/automate/agents), [the Memory Market](/automate/memory-market).
 
 ## Marks and attribution
 

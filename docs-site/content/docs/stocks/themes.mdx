@@ -1,29 +1,50 @@
 ---
 title: How themes work
-description: A basket of stock tokens an agent rebalances inside your own account — it never takes custody, and its key can do nothing else.
+description: A theme is a weighted stock basket published as a strategy. Its runner makes UP or DOWN calls on each stock's own Windows, sized by weight, inside a budget you grant — no share or token changes hands.
 sources:
-  - contracts/src/themes/ThemeRouter.sol
-  - contracts/src/themes/ThemeRegistry.sol
-  - contracts/src/themes/ThemeTypes.sol
-  - contracts/deployments/42431/themes.json
-  - packages/markets/src/relay/policies/themes.ts
-  - services/ops/src/actors/theme-agent
-  - docs/plan/acceptance/S16.md
-  - docs/plan/acceptance/R4-11.md
+  - packages/core/src/strategies/basket.ts
+  - packages/core/src/strategies/spec.ts
+  - packages/core/src/strategies/basket.vectors.json
+  - services/ops/src/actors/strategy-runner/index.ts
+  - services/ops/src/actors/strategy-runner/series.ts
+  - packages/markets/src/ops/strategy-runner.ts
+  - packages/markets/src/strategies/basket-agent.ts
+  - packages/markets/src/relay/policies/strategies.ts
+  - contracts/deployments/42431/strategies.json
+  - scripts/drive/themes-baskets.ts
 ---
 
-A **theme** is a basket of mirrors with target weights, bands and rules, published by a creator on **ThemeRegistry** with a spec whose hash is on chain. Following it lets the theme's agent keep your account in the basket — trading inside your own account, never holding your money. [Follow a theme](/stocks/follow-a-theme) walks the screens.
+A **theme** is a strategy on the **StrategyRegistry** whose spec is a `basket`: two to eight stocks with weights that add
+to 100 %, the lanes it trades (market hours, 24/7, or both) and one rule — momentum or reversion with a trigger, or an
+agent that reads each Window. The spec's hash and its words are on chain. [Follow a theme](/stocks/follow-a-theme) walks
+the screens.
+
+## What it trades
+
+The house **strategy-runner** reads every Window of every stock in the basket on its lanes: the 5, 15 and 60-minute
+Windows in NYSE hours, and the same lengths 24/7 on RedStone's `<T>---24_7` feeds for the seven stocks that have one
+(not AMD or PLTR). On each Window the rule makes at most one call, UP or DOWN, and keeps it for that Window. Every
+Window opens and settles on RedStone's signed print, like any other.
+
+Each call is sized by the stock's weight: a 60 % stock's call takes 60 % of the most a follower lets one call stake.
+A theme holds no shares and has no price of its own. Its page draws the weighted mix of its stocks' closes, which is a
+view, never a follower's return.
 
 ## Follow
 
-One transaction from your account authorizes the agent's **access key** and records the follow, with your caps, on **ThemeRouter**. The relay sponsors exactly that pair, never the key's authorization alone. A theme past five stocks adds the rest of the key's scopes in chunks of five, which the relay sponsors only after reading your follow.
+Following is copying the strategy: one transaction from your account grants the runner a **STRATEGY** budget on your
+Trading Balance — a cap per call, a cap per day and a term — and subscribes. You pay it; the relay never sponsors a
+grant. The runner can only place calls through that grant. It can't withdraw or transfer, and stopping (revoke and
+unsubscribe, sponsored) ends it at once.
 
-The key may only call the router's `rebalance` and approve tokens to the router. Each token it can approve has its own daily limit, and an approval to anyone else is refused on chain (`CallNotAllowed`).
+## Its agent
 
-## Rebalance
+Every theme published by Mitoshi names ERC-8004 agent **#82**. Its registration file lives at
+`/api/themes/agent/registration.json`, the URI its identity points to.
 
-Ops' **theme-agent** holds each follower's key, sealed. When a stock drifts out of its band inside the theme's hours, it rebalances through the [guarded pools](/stocks/pools-and-guard), within your per-trade, daily and slippage caps — signed by that key as your account, its network fee inside the key's pathUSD limit. The router pulls only the exact approvals the key raised and sends every output to you — it has no recipient argument. The only tokens it ever holds are creator fees owed.
-
-## On testnet today
-
-ThemeRegistry and ThemeRouter are deployed on Moderato and configured: the guard set, the five mirrors' pools registered, the oracle set. On 13 October three themes were published with the app's encoder and followed, and the theme agent was registered as ERC-8004 agent #82 and named on all three; its registration file is served at `/api/themes/agent/registration.json`. Its first rebalance was planned and stopped: the guard reads every member as halted (unsynced), so no rebalance can run (D-231; [evidence](/help/evidence)).
+<Callout title="On testnet today">
+Three themes are republished as baskets: **Builders' Stack** (TSLA 60 %, PLTR 40 %, momentum, market hours),
+**Chips & Clouds** (AMD 45 %, AMZN 35 %, PLTR 20 %, reversion, market hours) and **Around the Clock** (AMZN 40 %, TSLA
+30 %, NVDA 30 %, an agent on hourly Windows, market hours and 24/7). NFLX left with the first themes: it has no Windows.
+The 24/7 lanes pause around 04:00 ET each day with RedStone's feeds, and a call fills only where a maker quotes.
+</Callout>

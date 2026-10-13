@@ -1,52 +1,56 @@
 ---
 title: Follow a theme
-description: Pick a basket of stock tokens, set your caps, and let its agent keep your own account near the weights — or publish a theme of your own.
+description: Pick a stock basket, set a budget, and let its runner call each stock's Windows for you — or publish a theme of your own.
 sources:
   - web/src/features/themes/copy.ts
   - web/src/features/themes/ThemesScreen.tsx
   - web/src/features/themes/ThemeScreen.tsx
   - web/src/features/themes/FollowSheet.tsx
   - web/src/features/themes/ThemeStudio.tsx
+  - web/src/features/strategies/CopyForm.tsx
   - web/src/app/api/themes/agent/registration.json/route.ts
-  - packages/markets/src/relay/policies/themes.ts
-  - packages/markets/src/themes/encoders.ts
-  - docs/plan/acceptance/R4-11.md
 ---
 
-<AppLink href="/themes">Themes</AppLink> lists stock baskets an agent rebalances. Each card shows its stocks, its weighted price and the week's move, how often it rebalances and in which hours, its followers, its creator fee and its agent — or **Paused** when its market is closed or a price is halted.
+<AppLink href="/themes">Themes</AppLink> lists stock baskets an agent trades. Each card shows its stocks and weights,
+the week's move of their weighted mix and its weighted price, its rule, and whether it calls now: **Live** in market
+hours, **24/7**, or **Closed** with when it trades again.
 
 <GuideCapture name="themesDesk" />
 
 ## A theme's page
 
-**Overview** opens on its value and the week's line; **Holdings** gives each stock's target and band; **Activity** lists its rebalances; **Rules** holds the creator fee, the slippage cap, how often it may trade, how old a price may be, its hours, its version and spec hash. Following, **You** shows what you hold and whether every stock sits inside its band.
+The chart draws the weighted mix over a week, a month, three months or a year. **Mix** gives each stock's weight and
+the biggest call it takes. **Calls** lists the Windows the theme took a side on, each with its result. Beside them sit
+its followers, its fee to follow, its biggest call, its copies' record and its rules.
 
 ## Follow
 
 <Steps>
 <Step>
-### Set your caps
+### Set a budget
 
-**Follow** opens the sheet: an allocation, the most per trade and per day.
+**Follow** opens the sheet: a budget and the most one call may stake. Each call takes its stock's weight of that.
 </Step>
 <Step>
 ### Sign once
 
-"What you are signing": one key for this theme's agent. It may only rebalance through the theme router and approve it, within your daily limits — never transfer. One passkey confirmation, and the relay pays the fee. A theme of more than five stocks takes one more signature per five.
+One transaction grants the runner that budget on your Trading Balance and subscribes. You pay its fee.
 </Step>
 <Step>
 ### Let it run
 
-The agent keeps your account near the weights. Your holdings stay in your own account the whole time.
+The runner calls each stock's Windows by the theme's rule. Your calls show on Portfolio and settle on RedStone's
+prints. **Hold to stop** ends it.
 </Step>
 </Steps>
 
-**Unfollow** stops the agent, with five seconds to **Undo**; your holdings stay. **Hold to sell everything** sells the basket back to dollars through the same pools; you sign it and pay its fee.
-
 ## Create one
 
-**Create** walks four steps: **Stocks** (1 to 16, with weights and cash), **Envelope** (Careful ±3 %, Balanced ±7 % or Loose ±15 % around each target, and its hours — market, plus pre and after hours, or around the clock), **Name and fee**, and **Publish**, which you sign and pay for.
+**Create** walks three steps: **Stocks** (where it trades — market hours, 24/7 or all hours — then 2 to 8 stocks and
+their weights), **Rule** (momentum or reversion with a trigger, or an agent with a brief), and **Publish** (a name, a
+line, the biggest call, a daily cap and a fee), which you sign and pay for.
 
 <Callout title="On testnet today">
-Three themes are published, each named to the theme agent's ERC-8004 identity, agent #82, and followed. The guard reads every member as halted (unsynced), so no rebalance can run (D-231). How it all works: [themes](/stocks/themes).
+Calls fill only where a maker quotes the Window. A stock without a 24/7 feed (AMD, PLTR) can't join a 24/7 theme. How
+it all works: [themes](/stocks/themes).
 </Callout>
