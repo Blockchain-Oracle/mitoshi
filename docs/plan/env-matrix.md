@@ -23,8 +23,9 @@
 | `LAUNCH_KEEPER_PRIVATE_KEY` (`launch-keeper`; else `KEEPER_PRIVATE_KEY`) | — | ✓ | unset: the `keeper` key | ✓ |
 | AI provider keys: `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` (either one switches the brain on; Claude first when both), or `AI_GATEWAY_API_KEY`, or `AI_BASE_URL` + `AI_API_KEY`; `AI_MODEL` names another model (D-221) | ✓ (Sensei; `SENSEI_MODEL`, `SENSEI_VIA`) | ✓ (agents; `AGENT_VIA`, `AGENT_MAX_CALLS_PER_HOUR`, `AGENT_TIMEOUT_MS`) | ✓ (2026-10-11: `OPENAI_API_KEY` → `openai/gpt-6-sol`) | ✓ |
 | `DATASTREAMS_API_KEY`, `DATASTREAMS_API_SECRET` | ✓ | ✓ | after Q-011 | ✓ |
-| `FINNHUB_API_KEY`, `ALPACA_*`, `TEMPO_INDEXER_API_KEY` | ✓ | ✓ | ✓ | ✓ |
-| `TIDX_URL`, `TIDX_BASIC_AUTH` (self-hosted tidx), `INDEXER_VIA_MPP` | — | ✓ | optional (D-086) | optional; MPP after Q-020 |
+| `FINNHUB_API_KEY`, `ALPACA_*` | ✓ | ✓ | ✓ | ✓ |
+| `TEMPO_INDEXER_API_KEY` (`indexer-recount`; the base URL `https://api.tempo.xyz/v1/indexer` is in code, no URL variable) | — | ✓ | ✓ (ops, 2026-10-13: a sandbox key, runtime-only) | a production key |
+| `TIDX_URL`, `TIDX_BASIC_AUTH` (self-hosted tidx), `INDEXER_VIA_MPP` | — | ✓ | unset: `TIDX_URL` would win over the key (D-086) | optional; MPP after Q-020 |
 | `APNS_KEY_P8`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `FCM_SERVICE_ACCOUNT` | — | ✓ | SM2 | — |
 | `WALLETCONNECT_PROJECT_ID` | ✓ | — | ✓ | ✓ |
 | `X_OAUTH2_CLIENT_ID`, `X_OAUTH2_CLIENT_SECRET`, `X_SESSION_SECRET`, `X_REDIRECT_URI` (S11) | ✓ | — | app "mitoshi-testnet"; `https://mitoshi.xyz/api/x/callback` (D-228; runtime-only; the X app lists both callbacks) | its own X app; `https://mitoshi.xyz/api/x/callback` |
