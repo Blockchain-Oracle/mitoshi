@@ -25,6 +25,8 @@ export type ExecutionResult =
 export async function executeForSubscriber(input: {
   client: OpsClient; rv: RunnerVenue; attempts: StrategyAttemptStore; strategyId: bigint; sub: SubscriberState; window: RunnerWindow; decision: Decision;
   book: YesBook | null; held: { up: bigint; down: bigint }; nowSec: number; nowMs: number; dryRun: boolean;
+  /** A theme's call: the member's weight, which scales the per-trade cap (D-231). */
+  weightBps?: number;
 }): Promise<ExecutionResult> {
   const { client, rv, attempts, strategyId, sub, window: w, decision, nowSec, nowMs } = input;
   if (!decision.side) return { status: "skipped", reason: "no side", code: "other" };
@@ -36,7 +38,7 @@ export async function executeForSubscriber(input: {
     const reason = `this Window already has ${/^[aeiu]/.test(previous.state) ? "an" : "a"} ${previous.state} attempt; not resending`;
     return previous.state === "unknown" || previous.state === "attempting" ? { status: "unknown", reason } : { status: "skipped", reason, code: "in-window" };
   }
-  const order = runnerOrder(rv, { grant: sub.grant, window: w, side, book: input.book, held: input.held, nowSec, nowMs });
+  const order = runnerOrder(rv, { grant: sub.grant, window: w, side, book: input.book, held: input.held, nowSec, nowMs, ...(input.weightBps === undefined ? {} : { weightBps: input.weightBps }) });
   if (!order.ok) return { status: "skipped", reason: order.why, code: order.code };
   const what = `${side.toUpperCase()}${sub.mode === "fade" ? " (fading)" : ""} $${formatBaseUnits(order.stakeBase, w.grid.decimals, { minDp: 2, maxDp: 2 })} @ ≤${order.quote.oddsCents}¢`;
   if (input.dryRun) return { status: "dry-run", reason: `would place ${what}` };

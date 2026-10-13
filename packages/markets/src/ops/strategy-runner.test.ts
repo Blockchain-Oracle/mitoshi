@@ -41,6 +41,15 @@ describe("runnerOrder (S9.5)", () => {
     expect((decodeFunctionData({ abi: eventVaultV2Abi, data: o.call.data }).args as unknown as unknown[])[2]).toBe(1);
   });
 
+  it("sizes a theme's call by its member's weight before the headroom and the budget (D-231)", () => {
+    const weighted = (weightBps: number, g = grant()) => runnerOrder(rv, { grant: g, window, side: "up", book, held: { up: 0n, down: 0n }, nowSec: NOW, nowMs: NOW * 1000, weightBps });
+    const sixty = weighted(6_000);
+    expect(sixty.ok && sixty.stakeBase).toBe(1_200_000n);
+    const poor = weighted(6_000, grant({ budgetBase: 700_000n }));
+    expect(poor.ok && poor.stakeBase).toBe(700_000n);
+    expect(weighted(0)).toMatchObject({ ok: false, code: "caps" });
+  });
+
   it("sizes at the smallest of the per-trade cap, today's headroom and the budget", () => {
     const today = Math.floor(NOW / 86_400);
     const tight = order(grant({ spentDay: today, spentTodayBase: 9_000_000n }));
