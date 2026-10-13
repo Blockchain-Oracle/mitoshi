@@ -8,6 +8,7 @@
 // moved to /portfolio's record. Every figure is the account's own: privacy mode (the balance eye) masks them all, the
 // chart's axis and table included (critic gap 15).
 import type { TraderEdge, WalletHistory } from "@cwf/core";
+import { createContext, useContext } from "react";
 import { ExternalLink } from "@/components/shell/ExternalLink";
 import { PortfolioChart } from "@/components/ui/portfolio-chart";
 import { RECORD_CHART } from "@/features/markets/copy";
@@ -27,9 +28,13 @@ const MIN_BAR_PCT = 4;
 /** `+$1.20` / `−$0.40` / `$0.00`, rounded to the cent as the terminal and the record's curve round (`terminal/format`). */
 const moneyOf = (v: bigint, decimals: number, signed = true): string => moneyText(signed ? v : v < 0n ? -v : v, signed, decimals);
 type Fmt = typeof moneyOf;
+/** Signed out the report is another trader's public record (R6 money, T10): the balance eye masks the viewer's own only. */
+const PublicRecord = createContext(false);
+
 /** The report is the account's own money: with privacy mode on (the balance eye) every figure is the dots. */
 function useMoneyFmt(): Fmt {
-  return usePrivacy() ? () => SHELL.masked : moneyOf;
+  const pub = useContext(PublicRecord);
+  return usePrivacy() && !pub ? () => SHELL.masked : moneyOf;
 }
 const pct = (v: number) => (Math.abs(v) < 0.05 ? "0.0" : `${v > 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}`);
 
@@ -148,10 +153,19 @@ function Payoff({ report, decimals }: { report: TraderEdge; decimals: number }) 
   );
 }
 
-export function EdgeReport({ history, report, onRetry }: { history: WalletHistory; report: TraderEdge; onRetry: () => void }) {
+export function EdgeReport({ history, report, onRetry, publicRecord = false }: { history: WalletHistory; report: TraderEdge; onRetry: () => void; publicRecord?: boolean }) {
+  return (
+    <PublicRecord.Provider value={publicRecord}>
+      <Report history={history} report={report} onRetry={onRetry} />
+    </PublicRecord.Provider>
+  );
+}
+
+function Report({ history, report, onRetry }: { history: WalletHistory; report: TraderEdge; onRetry: () => void }) {
   const { decimals } = history;
   const money = useMoneyFmt();
-  const hidden = usePrivacy();
+  const pub = useContext(PublicRecord);
+  const hidden = usePrivacy() && !pub;
   const tone = toneOf(report.netBase, decimals);
   const m = EDGE.report.metrics;
   return (

@@ -8,22 +8,6 @@ export function formatSharePrice(sharePriceRaw: bigint, decimals = DECIMALS): st
   return formatBaseUnits(sharePriceRaw, decimals, { minDp: 4, maxDp: 4, group: false });
 }
 
-/** `((sharePrice − 1) × 100).toFixed(2)` — the change chip; null at or below par (within one basis point). */
-export function sharePriceDeltaPct(sharePriceRaw: bigint, one: bigint): string | null {
-  if (sharePriceRaw <= one + one / 10_000n) return null;
-  const hundredths = ((sharePriceRaw - one) * 10_000n) / one;
-  return `${hundredths / 100n}.${(hundredths % 100n).toString().padStart(2, "0")}%`;
-}
-
-/**
- * The caption under the share price (R4-7 bug 2, D-227): three states, never "up" when it isn't. A change chip means
- * it is above par; within a basis point of 1.0000 it is at par; under that, with shares out, it is carrying a loss.
- */
-export function parState(sharePriceRaw: bigint, one: bigint, supplyShares: bigint): "from" | "at" | "below" {
-  if (sharePriceDeltaPct(sharePriceRaw, one) !== null) return "from";
-  return supplyShares > 0n && sharePriceRaw < one - one / 10_000n ? "below" : "at";
-}
-
 /** "$1,234.56" — two decimals, grouped, unsigned. */
 export function money2(base: bigint, decimals = DECIMALS): string {
   return `$${formatBaseUnits(base < 0n ? -base : base, decimals, { minDp: 2, maxDp: 2 })}`;

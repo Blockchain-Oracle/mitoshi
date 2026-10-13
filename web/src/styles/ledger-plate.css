@@ -65,16 +65,6 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .lp-disclosure-summary { display: flex; cursor: pointer; list-style: none; align-items: center; justify-content: space-between; padding: 14px 0; font-family: var(--font-display); font-size: 14px; font-weight: 700; color: var(--lp-ink); }
 .lp-disclosure-summary::-webkit-details-marker { display: none; }
 
-/* The disconnected card (reference page L277–292): border border-white/[0.08] rounded bg-bg p-10 text-center;
-   icon ring w-16 h-16 border border-white/10 rounded-full; text-gray-500 icon; text-[11px] text-gray-600 link */
-/* D-226: the way-in card is the demo card's sibling (Owarine's two-card grid), a surface tile — not a black box inset in
-   the stage. */
-.connect-card { width: 100%; border-radius: 20px; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); padding: 32px 20px; text-align: center; }
-.connect-card-ring { width: 64px; height: 64px; margin: 0 auto 24px; border: 1px solid var(--ms-hairline); border-radius: 999px; display: flex; align-items: center; justify-content: center; color: var(--gray-500); }
-.connect-card-title { font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--white); margin-bottom: 24px; }
-.connect-card-link { font-size: 11px; color: var(--gray-600); transition: color 180ms var(--ease); }
-.connect-card-link:hover { color: var(--white); }
-
 /* P2 (D-223), Owarine 90a91d71 plate/MoneyHero + Pockets on Mitoshi's tokens; R4-4 (D-227): one black card with the
    figure, its three legs and the split bar; pockets as equal tiles. Sticker colours identify the legs (tokens.css
    --leg-*), so the bar needs no legend. The card is --plate-black with its edge, so it reads on the dark stage. */
@@ -83,14 +73,18 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 @media (min-width: 640px) { .money-hero { padding: 32px; } }
 .money-hero-top { display: flex; flex-direction: column; gap: 20px; }
 @media (min-width: 640px) { .money-hero-top { flex-direction: row; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; column-gap: 40px; row-gap: 32px; } }
-.money-hero-eyebrow { font: 500 13px/1.2 var(--font-body); color: var(--plate-ink-muted); }
-/* Fluid: an 11-character figure ($123,456.78) fits a 320 px phone's card. */
-.money-hero-figure { min-width: 0; font: 700 clamp(30px, 10.5vw, 56px)/1 var(--font-data); letter-spacing: -0.02em; }
-@media (min-width: 1024px) { .money-hero-figure { font-size: 64px; } }
+.money-hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; font: 500 13px/1.2 var(--font-body); color: var(--plate-ink-muted); }
+/* Fluid to the card, not the viewport (R6 money, round 7: "$1,000,004.69" ran out of a 402 px phone's card): the card is
+   an inline-size container and the figure sizes to its own length (`--fig-len`, characters), so any amount fits on one
+   line from 320 px up; 56 px at most, 64 from 1024. */
+.money-hero { container-type: inline-size; }
+.money-hero-figure { min-width: 0; white-space: nowrap; font: 700 clamp(26px, calc(100cqi / (var(--fig-len, 10) * 0.66)), 56px)/1 var(--font-data); letter-spacing: -0.02em; }
+@media (min-width: 1024px) { .money-hero-figure { font-size: clamp(26px, calc(100cqi / (var(--fig-len, 10) * 0.66)), 64px); } }
 .money-hero-skel { display: block; width: 60%; height: 44px; border-radius: 12px; opacity: 0.35; }
 .money-hero-line { font: 400 15px/1.4 var(--font-body); color: var(--plate-ink-soft); }
 .money-hero-strong { font-weight: 700; color: var(--plate-ink); }
 .money-hero-counts-inline { white-space: nowrap; }
+.money-hero-counts-inline > span[aria-hidden] { margin: 0 0.3em; }
 @media (min-width: 640px) { .money-hero-counts-inline { display: none; } }
 /* The pair sits as one even row and stacks cleanly at 320 (Owarine's PillButtons under the line). */
 /* Side by side whenever both labels fit (375: "Add money" + "Trade →" on one row), each growing to fill; a label that
@@ -101,7 +95,8 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .money-hero .money-hero-white { background: var(--plate-ink); color: var(--plate-black); border-color: transparent; }
 .money-hero .money-hero-white:hover, .money-hero .money-hero-white:focus-visible { background: var(--plate-ink); opacity: 0.9; }
 .money-hero-dot { width: 12px; height: 12px; flex: none; border-radius: 50%; }
-/* The legs: a compact list under 400 px, three mini cells to 640, Owarine's right-hand list from 640. */
+/* The legs: a compact list (dot, name, amount) under 640 px — R6 money dropped the three mini cells, whose amounts ran
+   into each other at 402 — and Owarine's right-hand list from 640. */
 .money-hero-legs { display: grid; gap: 6px; width: 100%; }
 .mh-leg { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "dot lab amt" "act act act"; align-items: center; column-gap: 10px; }
 .mh-leg .money-hero-dot { grid-area: dot; width: 8px; height: 8px; }
@@ -115,12 +110,6 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .mh-leg-act:hover:not(:disabled) { opacity: 0.9; }
 .mh-leg-act:disabled { opacity: 0.6; }
 .money-hero-counts { display: none; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid var(--plate-rule); font: 500 13px/1.2 var(--font-body); color: var(--plate-ink-soft); }
-@media (min-width: 400px) and (max-width: 639px) {
-  .money-hero-legs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-  /* A third of ~300 px at 400: "$123,456.78" fits its cell at 12 px, 14 px from ~470. */
-  .mh-leg-amount { min-width: 0; font-size: clamp(12px, 3vw, 14px); }
-  .mh-leg { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "dot amt" "lab lab" "act act"; row-gap: 4px; column-gap: 6px; }
-}
 @media (min-width: 640px) {
   .money-hero-legs { max-width: 22rem; gap: 12px; }
   .mh-leg { grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "dot lab amt act"; column-gap: 12px; }
@@ -153,17 +142,20 @@ details[open] > .pool-summary .pool-chevron { transform: rotate(90deg); }
 .pocket-note.is-blocked { display: -webkit-box; }
 @media (min-width: 640px) { .pocket-note { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } }
 .pocket-chip { display: none; }
-/* Under 400 px two chips share ~256 px, so a chip is a small grid: the mark, the name and the chevron on top, the amount
-   under them across the chip's full width (side by side, the amount had ~36 px at 320 and spilled over the chevron). */
-@media (max-width: 399px) {
+/* R6 money (D-230, round 7: "feel like a mobile app"): under 640 px the pockets are one inset grouped list, the iOS
+   Wallet grammar — a 64 px row per pocket (its mark, the name over one line, the amount, a chevron), separators inset
+   past the mark — instead of two half tiles. The tile (.pocket) takes over from 640. */
+@media (max-width: 639px) {
+  .pockets-grid, .pockets-grid.is-single { grid-template-columns: minmax(0, 1fr); gap: 0; overflow: hidden; border-radius: 20px; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
   .pocket { display: none; }
-  .pocket-chip { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "icon label chev" "amt amt amt" "why why why"; align-items: center; gap: 6px 8px; min-height: 64px; min-width: 0; padding: 10px 12px; border-radius: 16px; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); color: var(--color-ink); text-align: left; }
-  .pocket-chip .pocket-icon { grid-area: icon; width: 24px; height: 24px; }
+  .pocket-chip { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "icon label amt chev" "icon why why chev"; align-items: center; column-gap: 12px; row-gap: 2px; min-height: 64px; min-width: 0; padding: 12px 14px 12px 16px; color: var(--color-ink); text-align: left; background-image: linear-gradient(var(--color-hairline), var(--color-hairline)); background-size: calc(100% - 64px) 1px; background-position: right top; background-repeat: no-repeat; transition: background-color 120ms var(--ease); }
+  .pockets-grid > :first-child > .pocket-chip { background-image: none; }
+  .pocket-chip .pocket-icon { grid-area: icon; width: 36px; height: 36px; }
   .pocket-chip-body { display: contents; }
-  .pocket-chip-label { grid-area: label; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12px/1.2 var(--font-body); color: var(--color-ink-secondary); }
-  .pocket-chip-amount { grid-area: amt; min-width: 0; font: 700 clamp(14px, 4.6vw, 16px)/1 var(--font-data); }
-  .pocket-chip-why { grid-area: why; font: 400 11px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+  .pocket-chip-label { grid-area: label; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 15px/1.25 var(--font-body); color: var(--color-ink); }
+  .pocket-chip-amount { grid-area: amt; justify-self: end; min-width: 0; white-space: nowrap; font: 700 15px/1.2 var(--font-data); color: var(--color-ink); }
+  .pocket-chip-why { grid-area: why; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 400 12px/1.3 var(--font-body); color: var(--color-ink-secondary); }
   .pocket-chip-chev { grid-area: chev; }
-  .pocket-chip:hover:not(:disabled) { background: var(--color-surface-2); }
+  .pocket-chip:disabled { cursor: default; }
+  .pocket-chip:active:not(:disabled) { background-color: var(--color-surface-2); }
 }
-.connect-card-icon { display: grid; place-items: center; width: 48px; height: 48px; margin: 0 auto 12px; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink); box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-surface-2) 40%, transparent); }

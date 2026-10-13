@@ -14,7 +14,7 @@ export interface ReserveWords {
   committed: string;
   /** Shown when a house reserve's contract is not on this network: what it is, in one line (the vault has its pending page). */
   blurb?: string;
-  /** Why a supplier can lose money here, in one caption. Never an APY. */
+  /** Why a supplier can lose money here, in one caption. Never a projected yield. */
   risk: string;
 }
 

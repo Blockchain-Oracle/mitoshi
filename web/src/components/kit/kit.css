@@ -22,6 +22,10 @@
 .kit-tabs { min-width: 0; }
 .kit-tabs-list { position: relative; display: flex; gap: 20px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
 .kit-tabs-list::-webkit-scrollbar { display: none; }
+/* R6 money (S08): the side with more words fades (21st 10484, as ScrollRail); a list that fits shows no fade. */
+.kit-tabs-list { --kit-fade: 28px; mask-image: linear-gradient(90deg, transparent, #000 var(--kit-fade-start, 0px), #000 calc(100% - var(--kit-fade-end, 0px)), transparent); }
+.kit-tabs-list[data-fade-start] { --kit-fade-start: var(--kit-fade); }
+.kit-tabs-list[data-fade-end] { --kit-fade-end: var(--kit-fade); }
 .kit-tab {
   display: inline-flex; flex-shrink: 0; align-items: center; min-height: 44px; padding: 0; border: 0; background: none;
   font: 700 16px/1.2 var(--ow-font-display); color: var(--ow-helper); white-space: nowrap; cursor: pointer; outline: none;
@@ -45,6 +49,8 @@
 .kit-group { display: flex; flex-direction: column; gap: 6px; }
 .kit-group-title { padding: 0 4px; color: var(--ow-muted); font: 700 11px/1 var(--ow-font-body); letter-spacing: 0.1em; text-transform: uppercase; }
 .kit-group-body { overflow: hidden; border: 1px solid var(--ow-hairline); border-radius: var(--ow-r-card); background: var(--ow-card); }
+/* R6 money (S21): Apple's grouped-list footer — one caption line under the card, saying what the setting gates. */
+.kit-group-foot { margin: 0; padding: 2px 4px 0; color: var(--color-ink-secondary); font: 400 12px/1.4 var(--ow-font-body); }
 .kit-item { display: flex; width: 100%; min-height: 48px; align-items: center; gap: 12px; padding: 0 14px; border-bottom: 1px solid var(--ow-hairline); font: 500 14px/1.2 var(--ow-font-body); color: var(--ow-ink); text-align: left; }
 .kit-item:last-child { border-bottom: 0; }
 .kit-item:hover { background: var(--ow-recessed); }

@@ -13,6 +13,7 @@ import { indexWriter, indexReader, type IdxEvent } from "@cwf/db/idx";
 import { createOpsClient, fetchEngineEvents, headBlock, venueOf, type ChainEvent, type OpsClient, type Venue } from "@cwf/markets/ops";
 import { runActor, type PassResult, type VenueDeps } from "../../runtime";
 import { BACKFILL_MAX, grow, nextRange, shrink, topicsOf, type WindowState } from "./window";
+import { launchFollowers } from "./launch";
 import { strategyFollowers } from "./strategies";
 import { vaultFollowers } from "./vault";
 
@@ -41,7 +42,7 @@ export function startIndexer(deps: VenueDeps): { stop: () => void } {
   };
   const vaults = vaultFollowers(deps, client, writer);
   // The other sources, each on its own cursor: the Trading Balances (S7), the strategy registry and its agents' feedback (S9).
-  const sources = [...vaults, ...strategyFollowers(deps, client, writer)];
+  const sources = [...vaults, ...strategyFollowers(deps, client, writer), ...launchFollowers(deps, client, writer)];
   const vaultPass = async (head: number): Promise<string> => {
     if (sources.length === 0) return "vault not deployed";
     const lines: string[] = [];

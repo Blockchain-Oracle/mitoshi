@@ -110,6 +110,7 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
       network: webEnv.markets.network,
       wrongChain,
       pickerIntent,
+      pickerOpen,
       openPicker,
       disconnect,
       switchToTempo,
@@ -121,7 +122,7 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
       signInPasskey,
       prepare: () => undefined,
     }),
-    [hydrated, restoring, tempo, wrongChain, pickerIntent, openPicker, disconnect, switchToTempo, signMessage, walletKey.key, walletKey.canArm, walletKey.arm, createPasskey, signInPasskey],
+    [hydrated, restoring, tempo, wrongChain, pickerIntent, pickerOpen, openPicker, disconnect, switchToTempo, signMessage, walletKey.key, walletKey.canArm, walletKey.arm, createPasskey, signInPasskey],
   );
   useEffect(() => publish(shell), [publish, shell]);
 

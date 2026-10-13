@@ -25,7 +25,8 @@ export function groupBets(positions: readonly TerminalPosition[]): BetGroup[] {
   return [...groups].map(([key, legs]) => ({ key, legs }));
 }
 
-export function usePortfolioPositions(wallet: Address) {
+/** `null` signed out: DEMO's paper positions (R6 money, S07), valued by the same engine. */
+export function usePortfolioPositions(wallet: Address | null) {
   const lanes = useLanes();
   const positions = useTerminalPositions(wallet, lanes?.ok ? lanes.value : null);
   const [values, setValues] = useState<ReadonlyMap<string, PositionValue>>(() => new Map());

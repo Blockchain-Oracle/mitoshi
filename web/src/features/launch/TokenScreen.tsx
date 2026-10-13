@@ -1,73 +1,41 @@
 "use client";
-// `/launch/[token]` (S17; R4-11, D-227), laid out like the terminal (chart first, the action pinned at the bottom): the
-// head row (logo, $SYM, price, Report), the curve's price from its own trades, the 23549 progress to graduation and the
-// stage line, a Buy/Sell bar above the dock that opens the trade sheet, then TextTabs Trades · Holders · You · Safety
-// (Ported from Owarine 90a91d71:web/src/components/kit/TextTabs.tsx). Claims show only when one is owed. A stablecoin
-// branches to its own short view (StablecoinView). Everything is read from the chain; nothing is sampled.
+// `/launch/[token]` (S17; R4-11, D-227; R6 money S02, D-230) — a pump.fun-grade token page. The head (logo, $SYM, the
+// creator, the price and its move, the graduation bar) from the chain, head-fresh (`useMemeLaunch`: every quote and
+// trade reads the chain; the index never gates a write); the candles, the trade tape and the holders from the index in
+// ONE request (`useLaunchFeed`, `/api/launch?token=`), so the chart and the tabs always tell the same story — never "No
+// trades yet" beside a read that hasn't answered. From 1024 px: the chart and tabs on the left, the trade card and the
+// facts in a sticky 22 rem column (Coinbase, Kraken). On a phone: head, graduation, chart, facts, the Buy · Sell bar
+// above the dock (it opens the trade sheet), then the tabs. A stablecoin has its own view; no launch here is the VOID.
 import type { Address } from "@cwf/core";
-import { txUrl } from "@cwf/core";
-import { shortHex } from "@cwf/core/units";
-import type { MemeLaunch, TimedMemeTrade as MemeTrade } from "@cwf/markets/launch";
-import { useMemeLaunch, useMemeTrades } from "@cwf/markets/react";
-import { Flag } from "lucide-react";
+import type { MemeLaunch } from "@cwf/markets/launch";
+import { launchKeys, useLaunchFeed, useMemeLaunch } from "@cwf/markets/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { PillButton } from "@/components/kit/PillButton";
+import { Pill } from "@/components/kit/Pill";
 import { TextTabs, TextTabPanel } from "@/components/kit/TextTabs";
-import { Sparkline } from "@/components/kit/desk-kit";
-import { ProgressBar } from "@/components/ui/progress-bar";
+import { BlockedCta } from "@/components/states/BlockedCta";
+import { ErrorState } from "@/components/states/ErrorState";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { launchToken } from "@/components/states/shapes/launch";
+import { useIsDesktop } from "@/features/terminal/useIsDesktop";
 import { ReportDialog } from "@/features/social/report-dialog-lazy";
-import { webEnv } from "@/lib/env";
+import { shortHex } from "@cwf/core/units";
 import { LAUNCH } from "./copy";
-import { bpsText, capBase, changeText, coinText, priceText, usdText } from "./format";
-import { LogoDisc } from "./LogoDisc";
+import { feedState } from "./feed-state";
+import { coinText } from "./format";
+import { HolderList } from "./HolderList";
 import { StablecoinView } from "./StablecoinView";
+import { TokenChart } from "./TokenChart";
+import { TokenHead } from "./TokenHead";
+import { TokenFacts, TokenTradeCard } from "./TokenSide";
 import { TokenYou } from "./TokenYou";
 import { TradeSheet } from "./TradeSheet";
+import { TradeTape } from "./TradeTape";
 import "@/styles/launch.css";
 import "@/components/kit/kit.css";
 
 const K = LAUNCH.token;
 type Tab = "trades" | "holders" | "you" | "safety";
-
-function Trades({ trades }: { trades: MemeTrade[] }) {
-  const network = webEnv.markets.network;
-  if (trades.length === 0) return <p className="lp-note">{K.tradesEmpty}</p>;
-  return (
-    <ol className="lp-trades">
-      {[...trades].reverse().slice(0, 50).map((t) => (
-        <li key={`${t.txHash}-${t.coin}`} className="lp-trade">
-          <span className="lp-chip" data-side={t.isBuy ? "buy" : "sell"}>{t.isBuy ? K.buy : K.sell}</span>
-          <span className="numbers">{usdText(t.quote)}</span>
-          <span className="numbers text-ink-secondary">{coinText(t.coin)}</span>
-          <a className="numbers lp-link" href={txUrl(t.txHash, network)} target="_blank" rel="noreferrer">{shortHex(t.trader)}</a>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
-/** Net coin bought on the curve per trader — the curve's own record, not every transfer (said under the list). */
-function Holders({ trades, sold }: { trades: MemeTrade[]; sold: bigint }) {
-  const net = new Map<string, bigint>();
-  for (const t of trades) net.set(t.trader, (net.get(t.trader) ?? 0n) + (t.isBuy ? t.coin : -t.coin));
-  const rows = [...net.entries()].filter(([, v]) => v > 0n).sort((a, b) => (b[1] > a[1] ? 1 : -1)).slice(0, 20);
-  if (rows.length === 0) return <p className="lp-note">{K.tradesEmpty}</p>;
-  return (
-    <div className="lp-holders">
-      {rows.map(([who, coin]) => {
-        const bps = sold > 0n ? Number((coin * 10_000n) / sold) : 0;
-        return (
-          <div key={who} className="lp-holder">
-            <span className="numbers">{shortHex(who)}</span>
-            <span className="lp-holder-bar" aria-hidden><span style={{ width: `${Math.min(100, bps / 100)}%` }} /></span>
-            <span className="numbers">{bpsText(bps)}</span>
-          </div>
-        );
-      })}
-      <p className="lp-note">{K.holdersLine}</p>
-    </div>
-  );
-}
 
 function Safety({ m }: { m: MemeLaunch }) {
   const S = K.safety;
@@ -82,45 +50,50 @@ function Safety({ m }: { m: MemeLaunch }) {
 }
 
 function MemeView({ m }: { m: MemeLaunch }) {
-  const trades = useMemeTrades(m.token);
-  const list = trades?.ok ? trades.value : [];
+  const feedReading = useLaunchFeed(m.token);
+  const queryClient = useQueryClient();
+  const desktop = useIsDesktop();
   const [tab, setTab] = useState<Tab>("trades");
   const [sheet, setSheet] = useState<"buy" | "sell" | null>(null);
   const [reporting, setReporting] = useState(false);
-  const values = list.map((t) => Number(t.priceE18 / 1_000_000n));
-  const change = changeText(m.priceE18, list, Math.floor(Date.now() / 1000));
-  const stageLine = m.stage === "trading" ? LAUNCH.toGraduation(`${Math.floor(m.progressBps / 100)}%`) : m.stage === "complete" ? K.graduating : K.onUniswap;
+  const feed = feedReading?.ok ? feedReading.value : null;
+  const state = feedState(feedReading, null);
+  const retry = () => void queryClient.invalidateQueries({ queryKey: launchKeys.feed(m.token) });
+  const buy = () => setSheet("buy");
+  const graduating = m.stage === "complete";
   return (
-    <section className="lp-page lp-token">
-      <header className="lp-token-head">
-        <LogoDisc uri={m.meta.logoURI} symbol={m.meta.symbol} size="lg" />
-        <span className="lp-row-id">
-          <span className="lp-row-name">{m.meta.name}</span>
-          <span className="lp-row-sym">${m.meta.symbol}</span>
-        </span>
-        <span className="lp-token-price numbers">
-          {priceText(m.priceE18)}
-          {change ? <span className="lp-change" data-up={change.up ? "" : undefined}>{change.text} {change.since === "24h" ? K.day : K.sinceLaunch}</span> : null}
-        </span>
-        <button type="button" className="lp-icon" aria-label={K.report} title={K.report} onClick={() => setReporting(true)}><Flag aria-hidden className="size-4" /></button>
-      </header>
-      <div className="lp-chart">{values.length >= 2 ? <Sparkline values={values} width={640} height={180} className="lp-chart-line" stretch /> : <p className="lp-note">{trades === null ? K.reading : K.tradesEmpty}</p>}</div>
-      {m.stage === "trading" ? <ProgressBar value={m.progressBps} max={10_000} label={stageLine} valueText={`${usdText(m.quoteReserve)} / ${usdText(m.config.migrationQuoteThreshold)}`} /> : <p className="lp-stage" data-stage={m.stage}>{stageLine}</p>}
-      <dl className="lp-facts">
-        <div><dt>{K.marketCap}</dt><dd className="numbers">{usdText(capBase(m.config.totalSupply, m.priceE18))}</dd></div>
-        <div><dt>{K.raised}</dt><dd className="numbers">{usdText(m.quoteReserve)}</dd></div>
-        <div><dt>{K.feeNow}</dt><dd className="numbers">{bpsText(m.feeBpsNow)}</dd></div>
-      </dl>
-      <div className="lp-action page-action">
-        <PillButton tone="up" size="lg" block disabled={m.stage === "complete"} onClick={() => setSheet("buy")}>{K.buy}</PillButton>
-        <PillButton tone="down" size="lg" block disabled={m.stage === "complete"} onClick={() => setSheet("sell")}>{K.sell}</PillButton>
+    <section className="lp-token-page">
+      <div className="lp-token-grid">
+        <div className="lp-token-main">
+          <TokenHead m={m} trades={feed?.trades ?? null} onReport={() => setReporting(true)} />
+          <TokenChart feed={feed} state={state} symbol={m.meta.symbol} onRetry={retry} onBuy={buy} />
+          {desktop ? null : <TokenFacts m={m} feed={feed} />}
+          {desktop ? null : (
+            <div className="lp-action page-action">
+              {graduating ? (
+                <BlockedCta blocker={{ label: K.graduating, reason: K.graduatingWhy, fix: null }} className="col-span-2" />
+              ) : (
+                <>
+                  <Pill tone="up" size="lg" block data-primary-action="" onClick={buy}>{K.buy}</Pill>
+                  <Pill tone="down" size="lg" block onClick={() => setSheet("sell")}>{K.sell}</Pill>
+                </>
+              )}
+            </div>
+          )}
+          <TextTabs value={tab} onChange={setTab} label={m.meta.symbol} tabs={(Object.keys(K.tabs) as Tab[]).map((value) => ({ value, label: K.tabs[value] }))}>
+            <TextTabPanel value="trades"><TradeTape feed={feed} state={state} symbol={m.meta.symbol} onRetry={retry} onBuy={buy} /></TextTabPanel>
+            <TextTabPanel value="holders"><HolderList feed={feed} state={state} onRetry={retry} onBuy={buy} /></TextTabPanel>
+            <TextTabPanel value="you"><TokenYou m={m} onBuy={graduating ? undefined : buy} /></TextTabPanel>
+            <TextTabPanel value="safety"><Safety m={m} /></TextTabPanel>
+          </TextTabs>
+        </div>
+        {desktop ? (
+          <aside className="lp-token-side">
+            <TokenTradeCard m={m} />
+            <TokenFacts m={m} feed={feed} />
+          </aside>
+        ) : null}
       </div>
-      <TextTabs value={tab} onChange={setTab} label={m.meta.symbol} tabs={(Object.keys(K.tabs) as Tab[]).map((value) => ({ value, label: K.tabs[value] }))}>
-        <TextTabPanel value="trades"><Trades trades={list} /></TextTabPanel>
-        <TextTabPanel value="holders"><Holders trades={list} sold={m.coinSold} /></TextTabPanel>
-        <TextTabPanel value="you"><TokenYou m={m} /></TextTabPanel>
-        <TextTabPanel value="safety"><Safety m={m} /></TextTabPanel>
-      </TextTabs>
       {sheet ? <TradeSheet m={m} side={sheet} open onOpenChange={(o) => !o && setSheet(null)} /> : null}
       {reporting ? <ReportDialog open onOpenChange={setReporting} target={{ kind: "token", id: m.token }} urlKey="report" /> : null}
     </section>
@@ -129,9 +102,12 @@ function MemeView({ m }: { m: MemeLaunch }) {
 
 export function TokenScreen({ token }: { token: Address }) {
   const meme = useMemeLaunch(token);
-  if (meme === null) return <section className="lp-page"><p role="status" className="lp-note">{K.reading}</p></section>;
-  // A failed read is not "no memecoin here": say so (the read polls again) instead of trying the stablecoin view.
-  if (!meme.ok) return <section className="lp-page"><p role="alert" className="lp-note">{K.failed}</p></section>;
+  // The feed starts beside the chain read, not after it (same query as MemeView's): the chart lands with the head.
+  useLaunchFeed(token);
+  const queryClient = useQueryClient();
+  if (meme === null) return <LoadingFrame shape="launch-token" className="lp-token-page">{launchToken()}</LoadingFrame>;
+  // A failed read is not "no memecoin here": say so with Retry (the read also polls) instead of trying the stablecoin view.
+  if (!meme.ok) return <section className="lp-token-page"><ErrorState diagnosis={meme.error} retry={() => void queryClient.invalidateQueries({ queryKey: launchKeys.meme(token) })} /></section>;
   if (meme.value) return <MemeView m={meme.value} />;
   return <StablecoinView token={token} />;
 }

@@ -23,6 +23,7 @@ import { startEarnings } from "./calendar/earnings";
 import { startCalendar } from "./calendar";
 import { startFundsWatch } from "./actors/funds-watch";
 import { startHouseTaker } from "./actors/house-taker";
+import { startReservePricer } from "./actors/reserve-pricer";
 import { indexerRecountPass, INDEXER_RECOUNT_EVERY_MS } from "./actors/indexer-recount";
 import { keeperDeps, launchKeeperPass, LAUNCH_KEEPER_EVERY_MS, type GraduateSender } from "./actors/launch-keeper";
 import { moderationPass, MODERATION_EVERY_MS } from "./actors/moderation";
@@ -74,6 +75,9 @@ export const ACTORS: Record<string, ActorEntry> = {
   // S8: the maker vault's quotes (the depth Range, Moonshot and Parlay price against) and its closed-Window settles,
   // on the FairValueGuard's model at the signed spot; `earn-quoter` role key, the vault's maker.
   "earn-quoter": { start: (d) => startEarnQuoter(d), spot: true },
+  // R6 money (S09): Earn's share-price history — each reserve sampled hourly from its deploy block, then every 10 minutes
+  // (historical eth_call). Reads only; needs DATABASE_URL (reserve_prices).
+  "reserve-pricer": { start: (d) => startReservePricer(d) },
   // S3.5: the hourly Tempo Indexer API / tidx recount. Reads only on an API key or self-hosted tidx (idles with the
   // reason until one is configured); a paid MPP route honours DRY_RUN inside the pass. Needs DATABASE_URL.
   "indexer-recount": {
@@ -122,4 +126,4 @@ export const ACTORS: Record<string, ActorEntry> = {
   },
 };
 
-export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "duel-settler", "exit-keeper", "earn-quoter", "moderation"] as const;
+export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "duel-settler", "exit-keeper", "earn-quoter", "moderation", "reserve-pricer"] as const;

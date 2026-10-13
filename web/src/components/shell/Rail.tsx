@@ -9,7 +9,6 @@
 // `components/shell/app/AppRail.tsx`: the head is the vermilion seal disc and the mode plate (DEMO / TESTNET, its
 // hanko) instead of a static pill; rows at 16 px/600 with 22 px icons; More is lit as "here" on any page that is not a
 // place and says whether it is open; the foot ends in the theme toggle beside App · Docs · Legal (full rail only; App is /download, D-230).
-import { NOTICES } from "@/features/notifications/copy";
 import { useUnread } from "@/features/notifications/store";
 import { History, LayoutGrid, LineChart, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -74,7 +73,7 @@ function RailNav({ pathname, moreOpen = false }: { pathname: string | null; more
           >
             <Icon aria-hidden className="rail-icon" />
             <span className="rail-label">{item.name}</span>
-            {item.id === "portfolio" && unread > 0 ? <span className="rail-badge" aria-label={NOTICES.badge(unread)}>{unread > 9 ? "9+" : unread}</span> : null}
+            {item.id === "portfolio" && unread > 0 ? <span className="rail-badge" aria-label={SHELL.unread(unread)}>{unread > 9 ? "9+" : unread}</span> : null}
             <kbd aria-hidden className="rail-key">{i + 1}</kbd>
           </Link>
         );

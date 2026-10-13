@@ -2,5 +2,11 @@
  * out (the bars keep their width at 320), and the back link is its arrow (its word stays for assistive tech). */
 @media (max-width: 399px) {
   .edge-xs-hide { display: none; }
-  .edge-xs-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
+
+/* R6 money (T10): whose public record the report shows signed out — the trader (to their profile) and one sign-in. */
+.edge-strip { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.edge-strip-who { display: flex; min-width: 0; min-height: 44px; align-items: center; gap: 10px; color: var(--color-ink); }
+.edge-strip-addr { font: 600 14px/1.2 var(--font-data); }
+.edge-strip-meta { font: 500 13px/1.2 var(--font-data); color: var(--color-ink-secondary); }
+@media (max-width: 479px) { .edge-strip > [data-slot="pill-button"] { width: 100%; } }

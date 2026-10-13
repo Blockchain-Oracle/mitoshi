@@ -2,6 +2,8 @@
 export { applyEvent, leg } from "./apply";
 export { applyStrategyEvent, FEEDBACK_EVENTS, STRATEGY_EVENTS } from "./apply-strategies";
 export { applyVaultEvent, VAULT_EVENTS } from "./apply-vault";
+export { applyLaunchEvent, LAUNCH_EVENTS } from "./apply-launch";
+export { readLaunchBoard, readLaunchFeed, type BoardQuery, type LaunchSpecial } from "./launch";
 export { readCrowdLean, type CrowdLean, type CrowdQuery } from "./crowd";
 export { indexReader, type IdxMarketQuery, type IdxPage, type IdxRow, type IndexReader } from "./read";
 export { readSettledRounds, type RoundRow, type RoundsQuery } from "./rounds";

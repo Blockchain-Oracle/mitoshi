@@ -9,6 +9,7 @@ import type postgres from "postgres";
 import type { IdxEvent } from "./types";
 import { applyStrategyEvent, FEEDBACK_EVENTS, STRATEGY_EVENTS } from "./apply-strategies";
 import { applyVaultEvent, VAULT_EVENTS } from "./apply-vault";
+import { applyLaunchEvent, LAUNCH_EVENTS } from "./apply-launch";
 
 type Tx = postgres.TransactionSql;
 type Data = Record<string, unknown>;
@@ -164,6 +165,11 @@ export async function applyEvent(tx: Tx, e: IdxEvent): Promise<void> {
   // The StrategyRegistry's and ERC-8004 feedback (index/0006, S9): no engine `seq` either; no other source emits these names.
   if (e.market === null && (STRATEGY_EVENTS.has(e.name) || FEEDBACK_EVENTS.has(e.name))) {
     await applyStrategyEvent(tx, e);
+    return;
+  }
+  // The launchpads (index/0010, R6 money): the registry, the curve, the tokens' transfers and the graduated pools.
+  if (e.market === null && LAUNCH_EVENTS.has(e.name)) {
+    await applyLaunchEvent(tx, e);
     return;
   }
   const d = e.data;

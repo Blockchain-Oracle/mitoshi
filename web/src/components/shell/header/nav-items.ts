@@ -5,7 +5,7 @@
 import {
   Activity, BadgeCheck, BarChart3, Bell, BookOpen, Bot, CandlestickChart, CirclePause, ChartCandlestick, ChartLine, ChartNoAxesCombined,
   CircleHelp, Clapperboard, Coins, Dices, Download, GalleryVerticalEnd, Gamepad2, Goal, Handshake, History, KeyRound,
-  Layers3, MessageSquare, Mountain, Newspaper, Palette, Presentation, Rocket, ScanSearch, Settings, Sparkles, Trophy,
+  Layers3, MessageSquare, Mountain, Newspaper, Palette, Presentation, Rocket, ScanSearch, Settings, Smartphone, Sparkles, Trophy,
   TrendingDown, WalletCards, X as XLogo, type LucideIcon,
 } from "lucide-react";
 import { DOCS_URL } from "../../../lib/docs-url";
@@ -78,6 +78,8 @@ export const NAV_ITEMS = {
 
   account: item({ id: "account", name: "Account & keys", href: "/settings/account", description: "Passkeys, keys and grants.", icon: Settings, keywords: "settings revoke passkey security" }),
   notifications: item({ id: "notifications", name: "Notifications", href: "/settings/notifications", description: "Choose what reaches you.", icon: Bell }),
+  // R6 money (S21): this device's settings — sound, privacy, region — split from the account page.
+  device: item({ id: "device", name: "Device", href: "/settings/device", description: "Sound, privacy and region.", icon: Smartphone, keywords: "settings sound haptics privacy region" }),
   xRecovery: item({ id: "x-recovery", name: "X recovery", href: "/claim", description: "Recover a trade created from X.", icon: KeyRound }),
 } as const satisfies Record<string, NavItem>;
 
@@ -97,7 +99,7 @@ export const EVERYTHING_SECTIONS: readonly NavSection[] = [
   { id: "games", name: "Games", items: [NAV_ITEMS.practice, NAV_ITEMS.duel, NAV_ITEMS.lucky, NAV_ITEMS.range, NAV_ITEMS.moonshot, NAV_ITEMS.lineRider, NAV_ITEMS.candleHop] },
   { id: "automate", name: "Automate", items: [NAV_ITEMS.agents] },
   { id: "records", name: "Records and proof", items: [NAV_ITEMS.activity, NAV_ITEMS.edge, NAV_ITEMS.stats, NAV_ITEMS.gamesRank, NAV_ITEMS.gamesHistory, NAV_ITEMS.status, NAV_ITEMS.halts, NAV_ITEMS.proofs] },
-  { id: "account", name: "Account", items: [NAV_ITEMS.account, NAV_ITEMS.notifications, NAV_ITEMS.xRecovery] },
+  { id: "account", name: "Account", items: [NAV_ITEMS.account, NAV_ITEMS.notifications, NAV_ITEMS.device, NAV_ITEMS.xRecovery] },
 ];
 export const EVERYTHING_ITEMS: readonly NavItem[] = EVERYTHING_SECTIONS.flatMap((section) => section.items);
 
@@ -106,7 +108,7 @@ export const NAVIGABLE_ROUTE_PATHS = [
   "/activity", "/agents", "/claim", "/demo", "/download", "/earn", "/games", "/games/candle-hop", "/games/duel",
   "/games/history", "/games/line-rider", "/games/lucky", "/games/moonshot", "/games/practice", "/games/range", "/games/rank",
   "/how-it-works", "/launch", "/leaderboard", "/markets", "/news", "/parlay", "/pitch", "/portfolio", "/portfolio/edge", "/proof",
-  "/reels", "/settings/account", "/settings/notifications", "/stats", "/status", "/status/halts", "/strategies",
+  "/reels", "/settings/account", "/settings/device", "/settings/notifications", "/stats", "/status", "/status/halts", "/strategies",
   "/surface", "/themes", "/trade", "/trade-from-x",
 ] as const;
 

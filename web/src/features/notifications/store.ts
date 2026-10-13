@@ -17,8 +17,9 @@ export interface Notice {
 }
 
 const POLL_MS = 15_000;
-type Snap = { wallet: string | null; items: Notice[]; read: boolean; seenSec: number; error: boolean };
-let snap: Snap = { wallet: null, items: [], read: false, seenSec: 0, error: false };
+/** `atMs`: when the last read answered (R6 money: the page's "Updated 12 s ago"). */
+type Snap = { wallet: string | null; items: Notice[]; read: boolean; seenSec: number; error: boolean; atMs: number | null };
+let snap: Snap = { wallet: null, items: [], read: false, seenSec: 0, error: false, atMs: null };
 const listeners = new Set<() => void>();
 const newListeners = new Set<(items: Notice[]) => void>();
 let timer: ReturnType<typeof setInterval> | null = null;
@@ -45,7 +46,7 @@ async function poll() {
   const items = ((await res.json()) as { items: Notice[] }).items;
   const known = new Set(snap.items.map((i) => i.id));
   const fresh = snap.read ? items.filter((i) => !known.has(i.id)) : [];
-  set({ items, read: true, error: false });
+  set({ items, read: true, error: false, atMs: Date.now() });
   if (fresh.length) newListeners.forEach((l) => l(fresh));
 }
 
@@ -55,7 +56,7 @@ export function watchWallet(wallet: string | null): void {
   if (w === snap.wallet) return;
   if (timer) clearInterval(timer);
   timer = null;
-  set({ wallet: w, items: [], read: false, seenSec: w ? readSeen(w) : 0, error: false });
+  set({ wallet: w, items: [], read: false, seenSec: w ? readSeen(w) : 0, error: false, atMs: null });
   if (!w) return;
   void poll();
   timer = setInterval(() => void poll(), POLL_MS);

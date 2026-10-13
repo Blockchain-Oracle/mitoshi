@@ -8,6 +8,7 @@ import { COUNTRY_HEADERS, encodePosture, GEOFENCE_PILLARS, postureOf, REGION_COO
 import { TRADE_COOKIE, tradeRedirect } from "./features/terminal/route";
 import { appHome, SHELL_UA } from "./lib/app-shell";
 import { canonicalRedirect } from "./lib/canonical-host";
+import { isLaunchVoid } from "./lib/launch-route";
 import { docsRedirect } from "./lib/docs-url";
 import { tickerHubRoute } from "./lib/ticker-href";
 
@@ -54,6 +55,12 @@ export function proxy(request: NextRequest): NextResponse {
     const url = request.nextUrl.clone();
     url.pathname = hub === "missing" ? "/tickers" : hub.redirect;
     return hub === "missing" ? NextResponse.rewrite(url) : NextResponse.redirect(url, 307);
+  }
+  // A launch address that can't be one (R6 money): rewritten to `/launch/void`, a 404 with the VOID ticket; the URL stays.
+  if (isLaunchVoid(request.nextUrl.pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/launch/void";
+    return NextResponse.rewrite(url, { status: 404 });
   }
   const country = process.env.CWF_REGION_OVERRIDE || COUNTRY_HEADERS.map((h) => request.headers.get(h)).find(Boolean) || null;
   const posture = postureOf(country);

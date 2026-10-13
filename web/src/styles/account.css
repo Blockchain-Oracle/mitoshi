@@ -43,4 +43,21 @@
 .nt-alert-fired { padding: 1px 8px; border-radius: 9999px; background: var(--color-surface-2); font-size: 11px; color: var(--color-ink-secondary); }
 .nt-alert-x { display: grid; width: 44px; height: 44px; flex: none; place-items: center; border-radius: 9999px; color: var(--color-ink-secondary); }
 .nt-alert-x:hover { background: var(--color-surface-2); color: var(--color-ink); }
-.nt-alert-foot { padding: 0 4px; font-size: 12px; color: var(--color-ink-muted); }
+.nt-alert-empty { padding: 8px 14px; }
+
+/* R6 money (S21, D-230): the settings shell — the large title, then the Account · Notifications · Device tabs as links
+   on the segmented control's look (a sliding ink thumb, From 21st.dev 23552), full width and 44 px on a phone, its
+   natural width from 640; the page's groups under it. */
+.set-shell { display: flex; width: 100%; max-width: 40rem; flex-direction: column; gap: 16px; margin-inline: auto; }
+.set-shell > .acct-page { max-width: none; }
+.set-nav { position: relative; display: grid; grid-template-columns: repeat(var(--set-count), minmax(0, 1fr)); width: 100%; padding: 2px; border: 1px solid var(--color-hairline); border-radius: var(--radius-md); background: var(--color-surface-2); }
+@media (min-width: 640px) { .set-nav { width: auto; align-self: flex-start; } }
+.set-nav-thumb { position: absolute; inset-block: 2px; left: 2px; width: calc((100% - 4px) / var(--set-count)); border-radius: var(--radius-sm); background: var(--color-ink); transform: translateX(calc(var(--set-index) * 100%)); transition: transform 280ms var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { .set-nav-thumb { transition: none; } }
+.set-nav-tab { position: relative; z-index: 1; display: flex; min-height: 44px; align-items: center; justify-content: center; padding: 0 16px; font: 600 13px/1 var(--font-body); color: var(--color-ink-secondary); white-space: nowrap; transition: color 200ms var(--ease-out); }
+.set-nav-tab[aria-current="page"] { color: var(--color-ground); }
+.set-nav-tab:focus-visible { outline: var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+/* signed out: the inline sign-in heads the Security group; the rows under it are the layout, not controls */
+.acct-signin-row { min-height: 60px; }
+.acct-row-preview { cursor: default; }
+.acct-row-preview .kit-item-detail { margin-left: auto; }

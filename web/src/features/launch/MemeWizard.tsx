@@ -4,6 +4,8 @@
 // filter, live) and a hosted logo (21st 377); 2 Curve — the launchpad's published templates, each with its price range,
 // graduation threshold and anti-snipe fee curve, read from the chain; 3 Review — the predicted address and an optional
 // creator buy within the template's cap, then `launch-meme-create` through the TxLifecycle. Sign-in comes at the CTA.
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { templateCards } from "@/components/states/shapes/launch";
 import { checkMemecoinCurrency, quoteBuy, type TxState } from "@cwf/core";
 import { feeTimeline, memeAddresses, predictMemecoinAddress, randomSalt, withSlippage, type MemeTemplate } from "@cwf/markets/launch";
 import { invalidateLaunch, useMemeTemplates } from "@cwf/markets/react";
@@ -122,10 +124,10 @@ export function MemeWizard() {
           {
             id: "curve",
             label: M.steps.curve,
-            blocker: template ? null : templates === null ? M.templatesReading : M.needTemplate,
+            blocker: template ? null : M.needTemplate,
             content: (
               <div role="radiogroup" aria-label={M.steps.curve} className="lp-templates">
-                {templates === null ? <p className="lp-note">{M.templatesReading}</p> : null}
+                {templates === null ? <LoadingFrame shape="template-cards" layout="contents">{templateCards()}</LoadingFrame> : null}
                 {list.map((t) => <TemplateCard key={t.configId} t={t} on={template?.configId === t.configId} onPick={() => setConfigId(t.configId)} />)}
               </div>
             ),

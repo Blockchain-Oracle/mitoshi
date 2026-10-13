@@ -3,7 +3,8 @@
 // the flip switches buying and selling. On the curve the quote is the curve's own maths at the fee now (anti-snipe
 // included) — `quoteMemeBuy` / `quoteMemeSell` over the launch just read — sent as `launch-meme-buy` / `-sell` (the relay
 // pays). After graduation it is Uniswap's V4Quoter on the pool, sent as `launch-pool-swap` (the trader pays). Minimum
-// received is 1% under the quote. Sign-in comes at the CTA.
+// received is 1% under the quote. Sign-in comes at the CTA. R6 money (S02, D-230): the form is its own piece
+// (`TradeForm`) — inline in the token page's side column on desktop, inside this sheet from the phone's Buy · Sell bar.
 import type { Address } from "@cwf/core";
 import { quoteMemeBuy, quoteMemeSell, withSlippage, type MemeLaunch } from "@cwf/markets/launch";
 import { invalidateLaunch, invalidateAfterWrite, useBalanceSheet, useMemePosition, usePoolQuote } from "@cwf/markets/react";
@@ -21,6 +22,19 @@ const T = LAUNCH.trade;
 const SLIPPAGE_BPS = 100;
 
 export function TradeSheet({ m, open, onOpenChange, side }: { m: MemeLaunch; open: boolean; onOpenChange: (o: boolean) => void; side: "buy" | "sell" }) {
+  return (
+    <SlideOver open={open} onOpenChange={onOpenChange} urlKey="trade">
+      <SlideOverContent title={T.title(m.meta.symbol)} description={tradeLine(m)} fields>
+        <TradeForm m={m} side={side} />
+      </SlideOverContent>
+    </SlideOver>
+  );
+}
+
+/** The fee and slippage line (on the curve), or where the swap goes (after graduation). */
+export const tradeLine = (m: MemeLaunch) => (m.stage === "graduated" && m.graduation !== null ? T.poolSwap : `${T.fee(bpsText(m.feeBpsNow))} · ${T.slippage}`);
+
+export function TradeForm({ m, side }: { m: MemeLaunch; side: "buy" | "sell" }) {
   const session = useWalletSession();
   const address = session.address as Address | null;
   const queryClient = useQueryClient();
@@ -65,8 +79,7 @@ export function TradeSheet({ m, open, onOpenChange, side }: { m: MemeLaunch; ope
   };
 
   return (
-    <SlideOver open={open} onOpenChange={onOpenChange} urlKey="trade">
-      <SlideOverContent title={T.title(sym)} description={graduated ? T.poolSwap : `${T.fee(bpsText(m.feeBpsNow))} · ${T.slippage}`} fields>
+    <>
         <SwapTicket
           assets={[usd, coin]}
           pay={buying ? usd : coin}
@@ -83,7 +96,6 @@ export function TradeSheet({ m, open, onOpenChange, side }: { m: MemeLaunch; ope
           pending={tx.state.kind === "signing" || tx.state.kind === "submitted"}
         />
         {tx.state.kind === "failed" ? <TxFailureCard state={tx.state} onRetry={() => tx.dispatch({ type: "reset" })} /> : null}
-      </SlideOverContent>
-    </SlideOver>
+    </>
   );
 }

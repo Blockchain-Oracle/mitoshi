@@ -1,0 +1,684 @@
+{
+ "_doc": "Every launchpad log on Moderato to block 39461493 \u2014 the CurveLaunchpad (0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76), the LaunchRegistry (0x82480CCE69a9a85D0c8515C5b2ddDED6e0Ea94A3), the launched tokens' Transfers and the graduated pool's v4 Swaps \u2014 decoded by @cwf/markets/ops as the indexer stores them (scripts/drive/r7-launch-index.ts), and the chain's own totalSupply and top holder's balanceOf at that block. Fixture for the launch projection test.",
+ "toBlock": 39461493,
+ "chain": {
+  "0x20c00000000000000000000044f3487d7d5d8143": {
+   "stage": "graduated",
+   "totalSupply": "2000000000000000",
+   "topHolder": "0x33620f62c5b9b2086dd6b62f4a297a9f30347029",
+   "topBalance": "336768442904644"
+  },
+  "0x20c000000000000000000000481a1099d2183bc4": {
+   "stage": "trading",
+   "totalSupply": "7372576309831",
+   "topHolder": "0x64b70cdd6dc30c3ff3eb79493ba17487a1071c96",
+   "topBalance": "7372576309831"
+  }
+ },
+ "events": [
+  {
+   "chainId": 42431,
+   "txHash": "0x700f78cc574a011db91704cd35e75983a829f57e52aeeafb4198301f19c3c0a5",
+   "logIndex": 6,
+   "blockNumber": 37380134,
+   "blockTimeSec": 1790664074,
+   "address": "0x82480cce69a9a85d0c8515c5b2ddded6e0ea94a3",
+   "name": "MemecoinRecorded",
+   "market": null,
+   "seq": null,
+   "data": {
+    "meta": {
+     "name": "Mitoshi Meme MITO1602",
+     "symbol": "MITO1602",
+     "logoURI": "",
+     "configId": 1,
+     "decimals": 6,
+     "totalSupply": "2000000000000000",
+     "thresholdQuote": "5000000000"
+    },
+    "index": "0",
+    "token": "0x20c00000000000000000000044F3487d7d5D8143",
+    "creator": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "metadataURI": "https://testnet.mitoshi.xyz/launch/MITO1602"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x700f78cc574a011db91704cd35e75983a829f57e52aeeafb4198301f19c3c0a5",
+   "logIndex": 7,
+   "blockNumber": 37380134,
+   "blockTimeSec": 1790664074,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "LaunchCreated",
+   "market": null,
+   "seq": null,
+   "data": {
+    "token": "0x20c00000000000000000000044F3487d7d5D8143",
+    "symbol": "MITO1602",
+    "creator": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "configId": 1
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x700f78cc574a011db91704cd35e75983a829f57e52aeeafb4198301f19c3c0a5",
+   "logIndex": 9,
+   "blockNumber": 37380134,
+   "blockTimeSec": 1790664074,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "from": "0x0000000000000000000000000000000000000000",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "24460121720311"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x700f78cc574a011db91704cd35e75983a829f57e52aeeafb4198301f19c3c0a5",
+   "logIndex": 11,
+   "blockNumber": 37380134,
+   "blockTimeSec": 1790664074,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "Trade",
+   "market": null,
+   "seq": null,
+   "data": {
+    "fee": "250000",
+    "coin": "24460121720311",
+    "isBuy": true,
+    "quote": "25000000",
+    "token": "0x20c00000000000000000000044F3487d7d5D8143",
+    "trader": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "priceE18": "1023842560141",
+    "quoteReserve": "24750000",
+    "sqrtPriceX96": "80167099929012885832654936"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xaa9d69fea2eb8471c1cf3f9331ff89aa8ea2f6f7a7d6542ec29132adac777027",
+   "logIndex": 4,
+   "blockNumber": 37380146,
+   "blockTimeSec": 1790664081,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "from": "0x0000000000000000000000000000000000000000",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "9721124159972"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xaa9d69fea2eb8471c1cf3f9331ff89aa8ea2f6f7a7d6542ec29132adac777027",
+   "logIndex": 6,
+   "blockNumber": 37380146,
+   "blockTimeSec": 1790664081,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "Trade",
+   "market": null,
+   "seq": null,
+   "data": {
+    "fee": "10000000",
+    "coin": "9721124159972",
+    "isBuy": true,
+    "quote": "20000000",
+    "token": "0x20c00000000000000000000044F3487d7d5D8143",
+    "trader": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "priceE18": "1033555592124",
+    "quoteReserve": "34750000",
+    "sqrtPriceX96": "80546468581436541686841193"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xfdd296a2cbfb64cc6e56f9657bf0915f1a0a5aba851490d0f369c723de49ceea",
+   "logIndex": 3,
+   "blockNumber": 37380325,
+   "blockTimeSec": 1790664188,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "from": "0x0000000000000000000000000000000000000000",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "845455027626621"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xfdd296a2cbfb64cc6e56f9657bf0915f1a0a5aba851490d0f369c723de49ceea",
+   "logIndex": 5,
+   "blockNumber": 37380325,
+   "blockTimeSec": 1790664188,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "Trade",
+   "market": null,
+   "seq": null,
+   "data": {
+    "fee": "15000000",
+    "coin": "845455027626621",
+    "isBuy": true,
+    "quote": "1500000000",
+    "token": "0x20c00000000000000000000044F3487d7d5D8143",
+    "trader": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "priceE18": "2984956758034",
+    "quoteReserve": "1519750000",
+    "sqrtPriceX96": "136882713466349436033500360"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xcc82bff961de1fb27f84db2f58824bb728bac3a2e5b2e44738a6c07b211a9968",
+   "logIndex": 1,
+   "blockNumber": 37380335,
+   "blockTimeSec": 1790664194,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+    "from": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "219909068376726"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xcc82bff961de1fb27f84db2f58824bb728bac3a2e5b2e44738a6c07b211a9968",
+   "logIndex": 2,
+   "blockNumber": 37380335,
+   "blockTimeSec": 1790664194,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x0000000000000000000000000000000000000000",
+    "from": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "219909068376726"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xcc82bff961de1fb27f84db2f58824bb728bac3a2e5b2e44738a6c07b211a9968",
+   "logIndex": 5,
+   "blockNumber": 37380335,
+   "blockTimeSec": 1790664194,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "Trade",
+   "market": null,
+   "seq": null,
+   "data": {
+    "fee": "5553810",
+    "coin": "219909068376726",
+    "isBuy": false,
+    "quote": "549827182",
+    "token": "0x20c00000000000000000000044F3487d7d5D8143",
+    "trader": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "priceE18": "2136769631935",
+    "quoteReserve": "964369008",
+    "sqrtPriceX96": "115813299602179663868907774"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xf4873419af38937088464d3cd2c0fe64a060b700d97758a0519650fe76f782cf",
+   "logIndex": 7,
+   "blockNumber": 37380340,
+   "blockTimeSec": 1790664197,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "from": "0x0000000000000000000000000000000000000000",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "813394457786788"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xf4873419af38937088464d3cd2c0fe64a060b700d97758a0519650fe76f782cf",
+   "logIndex": 9,
+   "blockNumber": 37380340,
+   "blockTimeSec": 1790664197,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "Trade",
+   "market": null,
+   "seq": null,
+   "data": {
+    "fee": "40763950",
+    "coin": "813394457786788",
+    "isBuy": true,
+    "quote": "4076394943",
+    "token": "0x20c00000000000000000000044F3487d7d5D8143",
+    "trader": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "priceE18": "11520273151731",
+    "quoteReserve": "5000000001",
+    "sqrtPriceX96": "268912488726092264686672459"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xf4873419af38937088464d3cd2c0fe64a060b700d97758a0519650fe76f782cf",
+   "logIndex": 10,
+   "blockNumber": 37380340,
+   "blockTimeSec": 1790664197,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "Completed",
+   "market": null,
+   "seq": null,
+   "data": {
+    "token": "0x20c00000000000000000000044F3487d7d5D8143",
+    "quoteReserve": "5000000001"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x60959bce3298a7a2b176eddc61455e2374a7c861e63dde28d44840353c662aa2",
+   "logIndex": 2,
+   "blockNumber": 37380348,
+   "blockTimeSec": 1790664202,
+   "address": "0x33620f62c5b9b2086dd6b62f4a297a9f30347029",
+   "name": "Swap",
+   "market": null,
+   "seq": null,
+   "data": {
+    "id": "0x264fe34d5f790bc1d8ab6c2108a6770e4bfe6ab43902d249307f6de464a2cff3",
+    "fee": "0",
+    "coin": "461190530723",
+    "isBuy": false,
+    "quote": "49499999",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "trader": "0x64b70cdd6dc30c3ff3eb79493ba17487a1071c96",
+    "priceE18": "11520273151731"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x60959bce3298a7a2b176eddc61455e2374a7c861e63dde28d44840353c662aa2",
+   "logIndex": 4,
+   "blockNumber": 37380348,
+   "blockTimeSec": 1790664202,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+    "from": "0x0000000000000000000000000000000000000000",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "461190530723"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x60959bce3298a7a2b176eddc61455e2374a7c861e63dde28d44840353c662aa2",
+   "logIndex": 6,
+   "blockNumber": 37380348,
+   "blockTimeSec": 1790664202,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x33620f62C5b9B2086dD6b62F4A297A9f30347029",
+    "from": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "461190530723"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x60959bce3298a7a2b176eddc61455e2374a7c861e63dde28d44840353c662aa2",
+   "logIndex": 8,
+   "blockNumber": 37380348,
+   "blockTimeSec": 1790664202,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+    "from": "0x0000000000000000000000000000000000000000",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "428809276910049"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x60959bce3298a7a2b176eddc61455e2374a7c861e63dde28d44840353c662aa2",
+   "logIndex": 17,
+   "blockNumber": 37380348,
+   "blockTimeSec": 1790664202,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x33620f62C5b9B2086dD6b62F4A297A9f30347029",
+    "from": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "428809276910049"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x60959bce3298a7a2b176eddc61455e2374a7c861e63dde28d44840353c662aa2",
+   "logIndex": 19,
+   "blockNumber": 37380348,
+   "blockTimeSec": 1790664202,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+    "from": "0x0000000000000000000000000000000000000000",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "97607869642262"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x60959bce3298a7a2b176eddc61455e2374a7c861e63dde28d44840353c662aa2",
+   "logIndex": 23,
+   "blockNumber": 37380348,
+   "blockTimeSec": 1790664202,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "Graduated",
+   "market": null,
+   "seq": null,
+   "data": {
+    "tier": 0,
+    "token": "0x20c00000000000000000000044F3487d7d5D8143",
+    "poolId": "0x264fe34d5f790bc1d8ab6c2108a6770e4bfe6ab43902d249307f6de464a2cff3",
+    "leftover": "97607869642262",
+    "liquidity": "1455444202962",
+    "coinToPool": "428809276910049",
+    "positionId": "5",
+    "quoteToPool": "4940000001",
+    "sqrtPriceX96": "23342544502573788103186012541781"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x3310c5e8bcd0f5969c58683b0be81a7df7dc1fee13268d0d970ca910ac71d746",
+   "logIndex": 6,
+   "blockNumber": 37380354,
+   "blockTimeSec": 1790664206,
+   "address": "0x33620f62c5b9b2086dd6b62f4a297a9f30347029",
+   "name": "Swap",
+   "market": null,
+   "seq": null,
+   "data": {
+    "id": "0x264fe34d5f790bc1d8ab6c2108a6770e4bfe6ab43902d249307f6de464a2cff3",
+    "fee": "0",
+    "coin": "8424718387452",
+    "isBuy": true,
+    "quote": "100000000",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "trader": "0x64b70cdd6dc30c3ff3eb79493ba17487a1071c96",
+    "priceE18": "11986531633584"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x3310c5e8bcd0f5969c58683b0be81a7df7dc1fee13268d0d970ca910ac71d746",
+   "logIndex": 8,
+   "blockNumber": 37380354,
+   "blockTimeSec": 1790664206,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "from": "0x33620f62C5b9B2086dD6b62F4A297A9f30347029",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "8424718387452"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xd2bef9c38c1b491d78018c09162acbd55a82b9abdc7a9143d8334298f9fce874",
+   "logIndex": 11,
+   "blockNumber": 37380365,
+   "blockTimeSec": 1790664212,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0xf60F444952aE9573827Ef6aCE9601F18784206AA",
+    "from": "0x33620f62C5b9B2086dD6b62F4A297A9f30347029",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "84077306148676"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0xd2bef9c38c1b491d78018c09162acbd55a82b9abdc7a9143d8334298f9fce874",
+   "logIndex": 13,
+   "blockNumber": 37380365,
+   "blockTimeSec": 1790664212,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "from": "0xf60F444952aE9573827Ef6aCE9601F18784206AA",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "84077306148676"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x33c39d971e547481338ac378ee5e48a18ec082ad9441798a226ee5b345af40ce",
+   "logIndex": 5,
+   "blockNumber": 37380373,
+   "blockTimeSec": 1790664217,
+   "address": "0x20c00000000000000000000044f3487d7d5d8143",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "from": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+    "token": "0x20c00000000000000000000044f3487d7d5d8143",
+    "amount": "97607869642262"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x2bce82e8af0dfbe05b12870c8ac3c64487efe604181df9da8f56cb1a5cd6a010",
+   "logIndex": 41,
+   "blockNumber": 39352228,
+   "blockTimeSec": 1791857935,
+   "address": "0x82480cce69a9a85d0c8515c5b2ddded6e0ea94a3",
+   "name": "MemecoinRecorded",
+   "market": null,
+   "seq": null,
+   "data": {
+    "meta": {
+     "name": "R4-11 Launch Check",
+     "symbol": "R4L3902",
+     "logoURI": "",
+     "configId": 1,
+     "decimals": 6,
+     "totalSupply": "7372576309831",
+     "thresholdQuote": "5000000000"
+    },
+    "index": "1",
+    "token": "0x20C000000000000000000000481A1099D2183bc4",
+    "creator": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "metadataURI": ""
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x2bce82e8af0dfbe05b12870c8ac3c64487efe604181df9da8f56cb1a5cd6a010",
+   "logIndex": 42,
+   "blockNumber": 39352228,
+   "blockTimeSec": 1791857935,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "LaunchCreated",
+   "market": null,
+   "seq": null,
+   "data": {
+    "token": "0x20C000000000000000000000481A1099D2183bc4",
+    "symbol": "R4L3902",
+    "creator": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "configId": 1
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x2bce82e8af0dfbe05b12870c8ac3c64487efe604181df9da8f56cb1a5cd6a010",
+   "logIndex": 44,
+   "blockNumber": 39352228,
+   "blockTimeSec": 1791857935,
+   "address": "0x20c000000000000000000000481a1099d2183bc4",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "from": "0x0000000000000000000000000000000000000000",
+    "token": "0x20c000000000000000000000481a1099d2183bc4",
+    "amount": "9853291236314"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x2bce82e8af0dfbe05b12870c8ac3c64487efe604181df9da8f56cb1a5cd6a010",
+   "logIndex": 46,
+   "blockNumber": 39352228,
+   "blockTimeSec": 1791857935,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "Trade",
+   "market": null,
+   "seq": null,
+   "data": {
+    "fee": "100000",
+    "coin": "9853291236314",
+    "isBuy": true,
+    "quote": "10000000",
+    "token": "0x20C000000000000000000000481A1099D2183bc4",
+    "trader": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "priceE18": "1009503316648",
+    "quoteReserve": "9900000",
+    "sqrtPriceX96": "79603737480163756889188344"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x50e5cec0e67dec49c1cd3affa5bbe2fca6764f3733d0bd3b6b4d8fb83908d8b2",
+   "logIndex": 2,
+   "blockNumber": 39352414,
+   "blockTimeSec": 1791858048,
+   "address": "0x20c000000000000000000000481a1099d2183bc4",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "from": "0x0000000000000000000000000000000000000000",
+    "token": "0x20c000000000000000000000481a1099d2183bc4",
+    "amount": "4891861383348"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x50e5cec0e67dec49c1cd3affa5bbe2fca6764f3733d0bd3b6b4d8fb83908d8b2",
+   "logIndex": 4,
+   "blockNumber": 39352414,
+   "blockTimeSec": 1791858048,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "Trade",
+   "market": null,
+   "seq": null,
+   "data": {
+    "fee": "50000",
+    "coin": "4891861383348",
+    "isBuy": true,
+    "quote": "5000000",
+    "token": "0x20C000000000000000000000481A1099D2183bc4",
+    "trader": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "priceE18": "1014271828676",
+    "quoteReserve": "14850000",
+    "sqrtPriceX96": "79791524963113466537010541"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x04b71725980298b4c461273470858e909ed6007229ef7ab0bc2f878dba2435ef",
+   "logIndex": 6,
+   "blockNumber": 39352423,
+   "blockTimeSec": 1791858054,
+   "address": "0x20c000000000000000000000481a1099d2183bc4",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+    "from": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "token": "0x20c000000000000000000000481a1099d2183bc4",
+    "amount": "7372576309831"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x04b71725980298b4c461273470858e909ed6007229ef7ab0bc2f878dba2435ef",
+   "logIndex": 7,
+   "blockNumber": 39352423,
+   "blockTimeSec": 1791858054,
+   "address": "0x20c000000000000000000000481a1099d2183bc4",
+   "name": "Transfer",
+   "market": null,
+   "seq": null,
+   "data": {
+    "to": "0x0000000000000000000000000000000000000000",
+    "from": "0x77440B9970E470665a16bEAE610Ffdb9bBcc6c76",
+    "token": "0x20c000000000000000000000481a1099d2183bc4",
+    "amount": "7372576309831"
+   }
+  },
+  {
+   "chainId": 42431,
+   "txHash": "0x04b71725980298b4c461273470858e909ed6007229ef7ab0bc2f878dba2435ef",
+   "logIndex": 10,
+   "blockNumber": 39352423,
+   "blockTimeSec": 1791858054,
+   "address": "0x77440b9970e470665a16beae610ffdb9bbcc6c76",
+   "name": "Trade",
+   "market": null,
+   "seq": null,
+   "data": {
+    "fee": "74514",
+    "coin": "7372576309831",
+    "isBuy": false,
+    "quote": "7376790",
+    "token": "0x20C000000000000000000000481A1099D2183bc4",
+    "trader": "0x64B70CDD6dC30C3ff3eB79493ba17487a1071c96",
+    "priceE18": "1007097993662",
+    "quoteReserve": "7398696",
+    "sqrtPriceX96": "79508845820588958485691254"
+   }
+  }
+ ]
+}

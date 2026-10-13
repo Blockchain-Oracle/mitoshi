@@ -2,11 +2,19 @@ import type { EdgeWindow } from "@cwf/core";
 
 /** `/portfolio/edge` — ported from Masayume 68f7a09:web/src/features/edge/copy.ts (Yosuku's Trader Edge), for Mitoshi. */
 export const EDGE = {
-  back: "Portfolio",
   intro: {
     eyebrow: "Trader Edge",
     title: "Know your edge.",
     lede: "What pays, what costs, when you trade best.",
+    /** Signed out (R6 money, T10): a top trader's real record. */
+    ledePublic: "A top trader's record: what pays, what costs, when.",
+  },
+  /** The public record shown signed out, and whose it is. */
+  exemplar: {
+    meta: (rank: number, settled: number) => `#${rank} · ${settled} settled`,
+    signIn: "Sign in to see yours",
+    intent: "to see your edge",
+    none: "No record to show yet.",
   },
   states: {
     connect: {

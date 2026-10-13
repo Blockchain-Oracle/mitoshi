@@ -58,6 +58,8 @@ export const SHELL = {
   close: "Close",
   // The rail, top line and dock (S22, D-189).
   railLabel: "Mitoshi",
+  /** The rail's unread count on Portfolio (the inbox lives on /activity). */
+  unread: (n: number) => `${n} new`,
   railNav: "Places",
   everything: "More",
   everythingHint: "Every other page",

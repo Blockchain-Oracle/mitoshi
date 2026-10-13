@@ -15,3 +15,17 @@ export const HOUSE_TRADERS: Record<Network, readonly `0x${string}`[]> = {
   ],
   mainnet: [],
 };
+
+/**
+ * Keys whose launches are the team's own — QA and drive runs, not the market (R6 money, S08; D-230): the launch area's
+ * deployer (`contracts/deployments/42431/launch.json`, also the drive scripts' launch lane key, `deployer-launch`) and
+ * the house's trading keys. `/launch` hides their launches unless asked (`?test=1`) and tags them "Test" when shown;
+ * a link to one always opens.
+ */
+export const TEAM_LAUNCHERS: Record<Network, readonly `0x${string}`[]> = {
+  testnet: ["0x64b70cdd6dc30c3ff3eb79493ba17487a1071c96", ...HOUSE_TRADERS.testnet],
+  mainnet: [...HOUSE_TRADERS.mainnet],
+};
+
+/** Whether `creator` is one of the team's keys on `network`. */
+export const isTeamLauncher = (network: Network, creator: string): boolean => TEAM_LAUNCHERS[network].includes(creator.toLowerCase() as `0x${string}`);
