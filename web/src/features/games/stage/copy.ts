@@ -17,7 +17,7 @@ export const STAGE = {
   cardOf: (n: number, total: number) => `Card ${n} of ${total}`,
   cardLabel: (asset: string, cadence: string) => `${asset}, ${cadence} Window`,
   /** The title band's pair, as the reference writes `btc / usd`. Every Window here is quoted in dollars. */
-  pair: (asset: string) => `${asset} / USD`,
+  pair: (asset: string) => (asset.endsWith("-24") ? `${asset.slice(0, -3)} / USD · 24/7` : `${asset} / USD`),
   settlesIn: (clock: string) => `settles in ${clock}`,
   settling: "settling…",
   clockPending: "–:––",

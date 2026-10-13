@@ -11,6 +11,7 @@ import { useMemo } from "react";
 import { Sparkline } from "@/components/ui/sparkline";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { usd2 } from "@/features/markets/units";
+import { tickerOf } from "../lanes";
 import { cadenceLabel } from "../stage/SwipeDeck";
 import { PRACTICE } from "./copy";
 import { movePercent } from "./move";
@@ -31,7 +32,7 @@ export function CardLine({ asset, nowMs, entryE8 }: { asset: string; nowMs: numb
       baselineE8={entryE8}
       format={(e8) => usd2(e8)}
       formatTime={(t) => new Date(t * 1_000).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-      label={`${asset}, last 30 minutes`}
+      label={`${tickerOf(asset)}, last 30 minutes`}
       className="pr-line"
     />
   );

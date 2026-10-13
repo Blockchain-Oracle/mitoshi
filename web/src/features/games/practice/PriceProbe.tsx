@@ -21,7 +21,8 @@ import { useNowMs } from "@/lib/clock";
  */
 export function PriceProbe({ asset, onPrice }: { asset: string; onPrice: (price: AssetPrice) => void }) {
   const nowMs = useNowMs();
-  const reading = useAssetPrice(isTickerSymbol(asset) ? asset : null, nowMs);
+  // `asset` is the feed key: a ticker, or its 24/7 feed (`TSLA-24`).
+  const reading = useAssetPrice(isTickerSymbol(asset.replace(/-24$/, "")) ? asset : null, nowMs);
 
   useEffect(() => {
     if (reading && isOk(reading) && reading.value) onPrice(reading.value);

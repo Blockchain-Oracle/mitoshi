@@ -12,6 +12,7 @@ import { startBgm, stopBgm } from "../audio";
 import { useImmersive, useGames } from "../GamesProvider";
 import { useCrowdPct } from "../hall/data";
 import { gameKey } from "../keys";
+import { tickerOf } from "../lanes";
 import { StageFace } from "../stage/StageFace";
 import { SwipeDeck, type DeckPlace } from "../stage/SwipeDeck";
 import { CardLine, Slots } from "./BeatParts";
@@ -37,7 +38,7 @@ const DEAL_GAP_MS = 90;
 const priceNumber = (raw: bigint, decimals: number): number => Number(raw) / 10 ** decimals;
 
 function CrowdPill({ asset }: { asset: string }) {
-  const pct = useCrowdPct(asset);
+  const pct = useCrowdPct(tickerOf(asset));
   return pct === null ? <span className="st-question-pending">—</span> : <span>{PRACTICE.card.crowdUp(pct)}</span>;
 }
 
@@ -80,7 +81,7 @@ export function PracticeStage() {
           card={card}
           place={place}
           nowMs={session.nowMs || undefined}
-          eyebrow={PRACTICE.card.eyebrow(card.asset)}
+          eyebrow={PRACTICE.card.eyebrow(tickerOf(card.asset))}
           question={PRACTICE.card.question}
           line={<CardLine asset={card.asset} nowMs={session.nowMs} entryE8={null} />}
           coach={hydrated && !seen && place.position === 1 ? PRACTICE.card.coach : null}

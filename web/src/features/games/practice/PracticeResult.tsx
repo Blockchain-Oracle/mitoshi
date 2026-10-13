@@ -7,6 +7,7 @@ import { Odometer } from "@/components/kit";
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { useGames } from "../GamesProvider";
 import { RaceRow } from "./BeatParts";
+import { tickerOf } from "../lanes";
 import { PRACTICE } from "./copy";
 
 const REVEAL_MS = 220;
@@ -48,7 +49,7 @@ export function PracticeResult({ round, score, shown, onAgain }: { round: Practi
   const done = shown > score.cards.length;
   const verdict = score.winner === "you" ? PRACTICE.result.won : score.winner === "bot" ? PRACTICE.result.lost : PRACTICE.result.tied;
   const best = score.cards.find((c) => c.you === "won") ?? score.cards[0];
-  const asset = best?.card.asset ?? round.cards[0]?.asset ?? "BTC";
+  const asset = tickerOf(best?.card.asset ?? round.cards[0]?.asset ?? "BTC");
 
   return (
     <section className="pr-watch" aria-label={PRACTICE.result.title}>
