@@ -47,17 +47,28 @@ function withLive(points: readonly { atSec: number; sharePriceRaw: bigint }[], l
   return last && nowSec > last.atSec ? [...points, { atSec: nowSec, sharePriceRaw: live }] : [...points];
 }
 
+/** The reserve's launch time and its default range: All while it is younger than a month (30D would be all of it). */
+function useDefaultRange(kind: ReserveKind): { age: number | null; range: HistoryRange } {
+  const nowMs = useNowMs();
+  const launched = useReserveLaunchedAt(kind);
+  const launchedAtSec = launched?.ok ? launched.value : null;
+  const age = launchedAtSec !== null && nowMs > 0 ? ageDays(launchedAtSec, Math.floor(nowMs / 1000)) : null;
+  return { age, range: age !== null && age >= MONTH_DAYS ? "30d" : "all" };
+}
+
+/** Starts the card's reads beside the page's vault read, so the line lands with the card instead of after it. */
+export function useReserveCardEarly(kind: ReserveKind) {
+  useReserveHistory(kind, useDefaultRange(kind).range);
+}
+
 export function ReserveCard({ sheet, words, makerOff = false }: ReserveCardProps) {
   const { card } = EARN;
   const kind = sheet.kind as ReserveKind;
   const one = oneUnit(sheet.decimals);
   const nowMs = useNowMs();
   const [picked, setPicked] = useState<HistoryRange | null>(null);
-  const launched = useReserveLaunchedAt(kind);
-  const launchedAtSec = launched?.ok ? launched.value : null;
-  const age = launchedAtSec !== null && nowMs > 0 ? ageDays(launchedAtSec, Math.floor(nowMs / 1000)) : null;
-  // All while the reserve is younger than a month (a 30D view would be the whole of it), 30D after.
-  const range: HistoryRange = picked ?? (age !== null && age >= MONTH_DAYS ? "30d" : "all");
+  const { age, range: fallback } = useDefaultRange(kind);
+  const range: HistoryRange = picked ?? fallback;
   const history = useReserveHistory(kind, range);
   const queryClient = useQueryClient();
   const status = sheet.paused ? card.paused : makerOff ? card.noMaker : null;

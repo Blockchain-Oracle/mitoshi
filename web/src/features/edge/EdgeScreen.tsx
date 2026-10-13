@@ -93,7 +93,7 @@ export function EdgeScreen({ exemplar }: { exemplar?: Exemplar | null }) {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-1">
         <h1 className="min-w-0 type-display text-ink">{I.title}</h1>
-        <p className="type-body text-ink-secondary">{own ? I.lede : I.ledePublic}</p>
+        <p className="type-body text-ink-secondary">{!own && exemplar ? I.ledePublic : I.lede}</p>
       </header>
       {!own && exemplar ? <ExemplarStrip exemplar={exemplar} onSignIn={() => session.connectFor(EDGE.exemplar.intent)} /> : null}
       {body}

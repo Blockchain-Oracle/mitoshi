@@ -14,7 +14,7 @@ import { ActionCard } from "./ActionCard";
 import { CapitalMap } from "./CapitalMap";
 import { useMakerVault, useMakerWindows, useReserveShares, useSupplyLedger } from "./data";
 import { EarnLayout, signerOf } from "./EarnLayout";
-import { NotDeployed, ReserveCard } from "./ReserveCard";
+import { NotDeployed, ReserveCard, useReserveCardEarly } from "./ReserveCard";
 import { RESERVES } from "./reserves";
 import { hasPosition, SupplyPosition } from "./SupplyPosition";
 import { useEarnWrites } from "./useEarnWrites";
@@ -26,6 +26,7 @@ const HISTORY = 10;
 
 export function MakerEarn() {
   const reading = useMakerVault();
+  useReserveCardEarly("maker");
   return (
     <ReadingBoundary reading={reading} placeholder={<LoadingFrame shape="earn">{earnShape()}</LoadingFrame>}>
       {(state) => (state ? <Page vault={state} /> : <NotDeployed />)}

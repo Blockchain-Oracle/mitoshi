@@ -10,7 +10,7 @@ import { useEffect } from "react";
 import { Pill } from "@/components/kit/Pill";
 import { EmptyState, StateFrame } from "@/components/states/EmptyState";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
-import { timeAgo } from "@/features/news/copy";
+import { timeAgo } from "@/features/markets/history/time-ago";
 import { NewsRow } from "@/features/news/NewsRow";
 import type { Sentiment } from "@/features/news/wire";
 import { useClockValue } from "@/lib/clock";
@@ -45,7 +45,7 @@ export function JustSettled({ feed }: { feed: PublicFeed | null }) {
               href={`/proof/${s.market}`}
               external={false}
               mark={<AssetDisc asset={s.symbol} className="news-mark" />}
-              meta={<span className="news-meta">{nowMs > 0 ? timeAgo(s.atSec, nowMs) : ""}</span>}
+              meta={<span className="news-meta">{nowMs > 0 ? timeAgo(s.atSec * 1000, nowMs) : ""}</span>}
               tone={TONE[s.outcome]}
               toneWord={w.word[s.outcome]}
             />

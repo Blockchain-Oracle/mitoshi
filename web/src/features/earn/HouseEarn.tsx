@@ -14,7 +14,7 @@ import { EARN } from "./copy";
 import { useBoostReserveFor, useParlayReserveFor, useRangeReserveFor, useReserveShares, useSupplyLedger } from "./data";
 import { EarnLayout, signerOf } from "./EarnLayout";
 import { ReserveBounds } from "./ReserveBounds";
-import { ReserveCard } from "./ReserveCard";
+import { ReserveCard, useReserveCardEarly } from "./ReserveCard";
 import { RESERVES, type ReserveWords } from "./reserves";
 import { hasPosition, SupplyPosition } from "./SupplyPosition";
 import { useEarnWrites } from "./useEarnWrites";
@@ -49,6 +49,7 @@ function useHouseReserve(kind: HouseKind): Reading<HouseReading | null> | null {
 export function HouseEarn({ kind }: { kind: HouseKind }) {
   const words = RESERVES[kind];
   const reading = useHouseReserve(kind);
+  useReserveCardEarly(kind);
   return (
     <ReadingBoundary reading={reading} placeholder={<LoadingFrame shape="earn">{earnShape()}</LoadingFrame>}>
       {(state) => (state ? <Page kind={kind} words={words} reading={state} /> : <NotOnThisNetwork words={words} />)}
