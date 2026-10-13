@@ -1,5 +1,5 @@
 // Ported from Masayume 68f7a09:packages/core/src/games/arcade/ride.ts
-import { clamp, clamp01, FIELD_H, FIELD_W, lerp, STEP_SEC, TARGET_Q_MAX, type ArcadeRunConfig } from "./field";
+import { clamp, clamp01, FIELD_H, FIELD_W, lerp, STEP_SEC, TAPE_MIN_POINTS, tapeAt, TARGET_Q_MAX, type ArcadeRunConfig } from "./field";
 import type { Rng } from "./rng";
 
 /**
@@ -16,7 +16,8 @@ import type { Rng } from "./rng";
  * tick — where the wheel is. Nothing visual lives here; trails, sparks and heat colour are the draw
  * module's, and they read this state rather than steer it.
  */
-export const RIDE_ENGINE_VERSION = 1;
+/** v2 (R4-9, D-227): the line rides a server-issued tape of real RedStone prints when one is given — its own board. */
+export const RIDE_ENGINE_VERSION = 2;
 
 interface RideTuning {
   warmupSec: number;
@@ -74,6 +75,8 @@ export interface RideState {
   genCur: number;
   genGoal: number;
   segsToGoal: number;
+  /** How far along the tape the line has read, in tape points (v2). */
+  tapeAt: number;
   score: number;
   mult: number;
   grip: number;
@@ -108,7 +111,19 @@ function overrunOf(elapsedSec: number, t: RideTuning): number {
  * difficulty rises), with rare sharp spikes late so the line can jab. The generator is drawn in a fixed
  * order and only here, so a seed fixes the line and nothing else spends its draws.
  */
-function nextY(state: RideState, rng: Rng, d: number): number {
+function nextY(state: RideState, rng: Rng, d: number, config: ArcadeRunConfig): number {
+  const tape = config.tape;
+  if (tape && tape.length >= TAPE_MIN_POINTS) {
+    // The flat opening, then the real chart: high prices high on the field, read faster (and so steeper) as it ramps.
+    if (state.segsToGoal > 0) {
+      state.segsToGoal -= 1;
+      return clamp(state.genCur, RIDE.yMin, RIDE.yMax);
+    }
+    state.tapeAt += lerp(0.35, 1.1, d);
+    const goal = lerp(RIDE.yMax, RIDE.yMin, tapeAt(tape, state.tapeAt));
+    state.genCur += (goal - state.genCur) * lerp(0.35, 0.6, d);
+    return clamp(state.genCur, RIDE.yMin, RIDE.yMax);
+  }
   if (state.segsToGoal <= 0) {
     const spike = d > 0.35 && rng.next() < 0.05 + d * 0.12;
     const span = lerp(0.16, 0.52, d) * (spike ? 1.7 : 1);
@@ -124,8 +139,8 @@ function nextY(state: RideState, rng: Rng, d: number): number {
   return clamp(state.genCur, RIDE.yMin, RIDE.yMax);
 }
 
-function fill(state: RideState, rng: Rng, d: number): void {
-  while (state.pts.length < RIDE.points) state.pts.push(nextY(state, rng, d));
+function fill(state: RideState, rng: Rng, d: number, config: ArcadeRunConfig): void {
+  while (state.pts.length < RIDE.points) state.pts.push(nextY(state, rng, d, config));
 }
 
 /**
@@ -174,6 +189,7 @@ export function createRideState(rng: Rng, config: ArcadeRunConfig): RideState {
     genCur: startY,
     genGoal: startY,
     segsToGoal: 30,
+    tapeAt: 0,
     score: 0,
     mult: 1,
     grip: 1,
@@ -187,7 +203,7 @@ export function createRideState(rng: Rng, config: ArcadeRunConfig): RideState {
     regained: false,
     milestoneHit: 0,
   };
-  fill(state, rng, 0);
+  fill(state, rng, 0, config);
   return state;
 }
 
@@ -215,7 +231,7 @@ export function stepRide(state: RideState, targetQ: number, rng: Rng, config: Ar
     state.pts.shift();
     state.head += 1;
   }
-  fill(state, rng, d);
+  fill(state, rng, d, config);
 
   // The pip eases toward the wheel.
   const targetY = lerp(RIDE.pipLo, RIDE.pipHi, state.target);

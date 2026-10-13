@@ -14,7 +14,7 @@ export { createPgFaucetStore, type FaucetStore } from "./faucet-store";
 export { createPgKeychainStore, type KeychainStore, type ScanRange } from "./keychain-store";
 export { createPgTransferStore, type TransferStore } from "./transfer-store";
 export { createPgLuckyStore, type LuckyDrawRow, type LuckyRowResult, type LuckyStore } from "./lucky-store";
-export { createPgArcadeStore, type ArcadeBoardRow, type ArcadeGameId, type ArcadeRunRow, type ArcadeScoreInput, type ArcadeStore } from "./arcade-store";
+export { createPgArcadeStore, type ArcadeBoardRow, type ArcadeGameId, type ArcadeRunRow, type ArcadeScoreInput, type ArcadeTapeRow, type ArcadeStore } from "./arcade-store";
 export { createPgVitalsStore, VITAL_METRICS, type VitalMetric, type VitalSample, type VitalSummary, type VitalsStore } from "./vitals-store";
 export { insertMppReceipt, receiptsForDecision, type MppReceiptInsert, type MppReceiptRecord } from "./mpp";
 export { createPgMppStore, type PgMppStore } from "./mpp-store";

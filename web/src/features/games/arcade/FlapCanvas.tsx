@@ -82,7 +82,7 @@ export function FlapCanvas({ run, reduced, onHud, onEnd, onCue, paused = false }
     if (!run) return;
     runRef.current = run;
     rngRef.current = createRng(run.seed);
-    configRef.current = { calm: run.calm };
+    configRef.current = run.tape ? { calm: run.calm, tape: run.tape } : { calm: run.calm };
     stateRef.current = createFlapState(rngRef.current, configRef.current);
     traceRef.current = [];
     pressedRef.current = false;

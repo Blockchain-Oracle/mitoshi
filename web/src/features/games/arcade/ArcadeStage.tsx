@@ -81,6 +81,7 @@ export function ArcadeStage({ game }: { game: ArcadeGame }) {
         <RunLayer
           game={game}
           seed={board?.seed ?? null}
+          tape={board?.tape ?? null}
           calm={calm}
           best={best}
           ability={ability}

@@ -16,7 +16,8 @@ export async function GET(req: Request) {
   const valid = address && /^0x[0-9a-fA-F]{40}$/.test(address) ? address : null;
   try {
     const limit = Number(url.searchParams.get("limit") ?? "") || undefined;
-    return NextResponse.json(await readBoard(game, valid, limit), { headers: noStore });
+    // `run=1` issues the next run's seed with its real-price tape (engine v2); a plain read only shows the board.
+    return NextResponse.json(await readBoard(game, valid, limit, url.searchParams.get("run") === "1"), { headers: noStore });
   } catch {
     return NextResponse.json({ error: "the board did not answer" }, { status: 503, headers: noStore });
   }

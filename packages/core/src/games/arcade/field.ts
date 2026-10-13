@@ -45,6 +45,31 @@ export function isArcadeGame(value: string): value is ArcadeGame {
  */
 export interface ArcadeRunConfig {
   calm: boolean;
+  /**
+   * Engine v2 (R4-9, D-227): the run's terrain as a server-issued tape — real prices normalised over the tape's own
+   * range to 0..TAPE_Q (TAPE_Q = the tape's high). Line Rider rides it; Candle Hop cuts its gaps from it. Absent, the
+   * seed draws the terrain (a guest's run, or a deployment without an index). The server replays against the tape it
+   * stored for the seed, so the run it checks is the run that was played.
+   */
+  tape?: readonly number[];
+}
+
+/** A tape point's scale: 0 is the tape's low, TAPE_Q its high. */
+export const TAPE_Q = 1_000;
+/** A tape needs two points to have a slope; the server issues at most this many. */
+export const TAPE_MIN_POINTS = 2;
+export const TAPE_MAX_POINTS = 480;
+
+/** The tape's value at a fractional index, played forward then back (ping-pong), as 0..1 of its range. */
+export function tapeAt(tape: readonly number[], at: number): number {
+  const n = tape.length;
+  if (n < TAPE_MIN_POINTS) return 0.5;
+  const period = 2 * (n - 1);
+  let p = ((at % period) + period) % period;
+  if (p > n - 1) p = period - p;
+  const i = Math.min(n - 2, Math.floor(p));
+  const f = p - i;
+  return ((tape[i] as number) + ((tape[i + 1] as number) - (tape[i] as number)) * f) / TAPE_Q;
 }
 
 export function ticksToMs(ticks: number): number {

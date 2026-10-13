@@ -41,6 +41,14 @@ export interface ArcadeRunRow {
   at: string;
 }
 
+/** A run's terrain as issued with its seed (engine v2, R4-9, D-227). */
+export interface ArcadeTapeRow {
+  feed: string;
+  fromSec: number;
+  toSec: number;
+  points: number[];
+}
+
 export interface ArcadeStore {
   record(input: ArcadeScoreInput): Promise<void>;
   /** Each wallet's best on this build, greatest first, the earlier of equals ahead. */
@@ -52,6 +60,10 @@ export interface ArcadeStore {
   recent(limit: number): Promise<ArcadeRunRow[]>;
   /** One wallet's runs, newest first — its history. */
   byWallet(wallet: string, limit: number): Promise<ArcadeRunRow[]>;
+  /** Keeps the tape issued with `seed`; false when the seed was already issued (the caller draws another). */
+  issueTape(seed: string, game: ArcadeGameId, tape: ArcadeTapeRow): Promise<boolean>;
+  /** The tape a seed was issued with; null when the seed was never issued here. */
+  tape(seed: string): Promise<(ArcadeTapeRow & { game: ArcadeGameId }) | null>;
 }
 
 type RunDb = { game: ArcadeGameId; wallet: string; score: number; engine_version: number; duration_ms: number; seed: string | null; calm: boolean; created_at: Date };
@@ -99,6 +111,19 @@ export function createPgArcadeStore(sql: Sql): ArcadeStore {
         select game, wallet, score, engine_version, duration_ms, seed, calm, created_at from arcade_scores
         order by created_at desc limit ${limit}`;
       return rows.map(runRow);
+    },
+    async issueTape(seed, game, tape) {
+      const rows = await sql<{ seed: string }[]>`
+        insert into arcade_tapes (seed, game, feed, from_sec, to_sec, points)
+        values (${seed}, ${game}, ${tape.feed}, ${tape.fromSec}, ${tape.toSec}, ${sql.json(tape.points)})
+        on conflict (seed) do nothing returning seed`;
+      return rows.length > 0;
+    },
+    async tape(seed) {
+      const rows = await sql<{ game: ArcadeGameId; feed: string; from_sec: string; to_sec: string; points: number[] }[]>`
+        select game, feed, from_sec::text, to_sec::text, points from arcade_tapes where seed = ${seed}`;
+      const r = rows[0];
+      return r ? { game: r.game, feed: r.feed, fromSec: Number(r.from_sec), toSec: Number(r.to_sec), points: r.points } : null;
     },
     async byWallet(wallet, limit) {
       const rows = await sql<RunDb[]>`

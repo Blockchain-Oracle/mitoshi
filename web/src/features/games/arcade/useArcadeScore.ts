@@ -29,7 +29,7 @@ export function useArcadeScore(game: ArcadeGame) {
   const [board, setBoard] = useState<BoardWire | null | undefined>(undefined);
 
   const refresh = useCallback(() => {
-    return fetch(`${BOARD_ENDPOINT}?game=${game}${address ? `&address=${address}` : ""}`, { cache: "no-store" })
+    return fetch(`${BOARD_ENDPOINT}?game=${game}&run=1${address ? `&address=${address}` : ""}`, { cache: "no-store" })
       .then((response) => (response.ok ? (response.json() as Promise<BoardWire>) : Promise.reject(new Error(String(response.status)))))
       .then(setBoard)
       .catch(() => setBoard(null));

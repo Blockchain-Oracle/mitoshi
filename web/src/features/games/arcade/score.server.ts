@@ -17,6 +17,7 @@ import { z } from "zod";
 import { ceremonyLimiter } from "@/server/auth";
 import { db } from "@/server/db";
 import { serverEnv } from "@/server/env";
+import { cutTape } from "./tape.server";
 import type { BoardWire, ScoreAcceptedWire } from "./wire";
 
 /**
@@ -64,18 +65,34 @@ export function freshSeed(): string {
 /** The rank page's longer board (R4-9, D-227); the cabinet keeps BOARD_LIMIT. */
 export const RANK_LIMIT = 50;
 
-export async function readBoard(game: ArcadeGame, address: string | null, limit: number = BOARD_LIMIT): Promise<BoardWire> {
+const ISSUE_TRIES = 4;
+
+/**
+ * A seed for the next run with the tape it rides (engine v2): drawn, the tape cut from the index's prints, both kept so
+ * the score check replays the same terrain. A seed is rankable only if it was issued here.
+ */
+async function issueRun(scores: ArcadeStore, game: ArcadeGame): Promise<Pick<BoardWire, "seed" | "tape">> {
+  for (let i = 0; i < ISSUE_TRIES; i++) {
+    const seed = freshSeed();
+    const tape = await cutTape(seed, Math.floor(Date.now() / 1_000)).catch(() => null);
+    if (!tape) return { seed, tape: null };
+    if (await scores.issueTape(seed, game, tape)) return { seed, tape: tape.points.length ? tape : null };
+  }
+  return { seed: freshSeed(), tape: null };
+}
+
+export async function readBoard(game: ArcadeGame, address: string | null, limit: number = BOARD_LIMIT, issue = false): Promise<BoardWire> {
   const engineVersion = ENGINE_VERSION[game];
-  const seed = freshSeed();
   const scores = arcadeStore();
-  if (!scores) return { configured: false, seed, engineVersion, rows: [], me: null };
+  if (!scores) return { configured: false, seed: freshSeed(), tape: null, engineVersion, rows: [], me: null };
+  const { seed, tape } = issue ? await issueRun(scores, game) : { seed: freshSeed(), tape: null };
   const rows = await scores.board(game, engineVersion, Math.min(Math.max(1, limit), RANK_LIMIT));
   let me: BoardWire["me"] = null;
   if (address) {
     const best = await scores.best(address, game, engineVersion);
     if (best !== null) me = { best, rank: await scores.rank(game, engineVersion, best) };
   }
-  return { configured: true, seed, engineVersion, rows, me };
+  return { configured: true, seed, tape, engineVersion, rows, me };
 }
 
 export async function acceptScore(claim: ScoreClaim, wallet: string | null, ip: string): Promise<ScoreVerdict> {
@@ -89,7 +106,10 @@ export async function acceptScore(claim: ScoreClaim, wallet: string | null, ip: 
   const envelope = envelopeCheck(claim.game, claim.durationMs, claim.trace, claim.score);
   if (!envelope.ok) return { ok: false, status: 422, error: envelope.why };
 
-  const replay = replayArcade(claim.game, claim.seed, claim.trace, { calm: claim.calm });
+  // Engine v2: the run is replayed on the tape issued with its seed; a seed never issued here is not rankable.
+  const issued = await scores.tape(claim.seed);
+  if (!issued || issued.game !== claim.game) return { ok: false, status: 422, error: "that run's seed was not issued by this board" };
+  const replay = replayArcade(claim.game, claim.seed, claim.trace, issued.points.length ? { calm: claim.calm, tape: issued.points } : { calm: claim.calm });
   if (!replay.ended) return { ok: false, status: 422, error: "the run never ended" };
   if (replay.score !== claim.score) return { ok: false, status: 422, error: "the replay does not reproduce that score" };
   if (Math.abs(replay.ticks - envelope.ticks) > 1) return { ok: false, status: 422, error: "the replay does not reproduce that length" };
@@ -111,7 +131,7 @@ export async function acceptScore(claim: ScoreClaim, wallet: string | null, ip: 
     calm: claim.calm,
   });
   const rank = await scores.rank(claim.game, engineVersion, claim.score);
-  const board = await readBoard(claim.game, wallet);
+  const board = await readBoard(claim.game, wallet, BOARD_LIMIT, true);
   return { ok: true, body: { rank, isBest, board } };
 }
 

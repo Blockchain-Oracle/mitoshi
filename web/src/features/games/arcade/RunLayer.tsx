@@ -25,6 +25,8 @@ const COUNT_FROM = 3;
 export interface RunLayerProps {
   game: ArcadeGame;
   seed: string | null;
+  /** The real-price tape issued with the seed (engine v2), and what it is of — shown under the run. */
+  tape: { feed: string; fromSec: number; toSec: number; points: readonly number[] } | null;
   calm: boolean;
   best: number | null;
   ability: PostAbility;
@@ -42,7 +44,7 @@ function noteOf(ability: PostAbility, outcome: PostOutcome | null): Pick<StageRe
   return { note: ability === "signedOut" ? ARCADE.over.local.signedOut : ARCADE.over.local.noStore, tone: null };
 }
 
-export function RunLayer({ game, seed, calm, best, ability, post, refresh, onSignIn, onFinished, onClose }: RunLayerProps) {
+export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh, onSignIn, onFinished, onClose }: RunLayerProps) {
   const { reducedMotion, feedback } = useGames();
   const words = ARCADE.games[game];
   const [phase, setPhase] = useState<Phase>("countdown");
@@ -64,7 +66,8 @@ export function RunLayer({ game, seed, calm, best, ability, post, refresh, onSig
         if (game === "line-rider") rideStartSfx();
         streak.current = 0;
         runId.current += 1;
-        setRun({ id: runId.current, seed: seed ?? localSeed(), calm });
+        // The issued tape rides only with its own seed; a local seed plays the seed's line.
+        setRun(seed && tape ? { id: runId.current, seed, calm, tape: tape.points } : { id: runId.current, seed: seed ?? localSeed(), calm });
         setPhase("playing");
       }, COUNT_MS);
       return () => window.clearTimeout(t);
@@ -72,7 +75,7 @@ export function RunLayer({ game, seed, calm, best, ability, post, refresh, onSig
     countSfx(false);
     const t = window.setTimeout(() => setCount((n) => n - 1), COUNT_MS);
     return () => window.clearTimeout(t);
-  }, [phase, count, game, seed, calm]);
+  }, [phase, count, game, seed, tape, calm]);
 
   const onEnd = useCallback(
     (end: RunEnd) => {
@@ -165,7 +168,9 @@ export function RunLayer({ game, seed, calm, best, ability, post, refresh, onSig
       </div>
       <div className="as-hud">
         <StageTop score={hud.score} combo={combo} best={best} canPause={canPause && phase === "playing"} onPause={() => setPhase("paused")} onExit={onClose} />
-        <span className="as-dim as-hint">{phase === "playing" || phase === "countdown" ? words.control : ""}</span>
+        <span className="as-dim as-hint">
+          {phase === "playing" || phase === "countdown" ? [words.control, tape ? ARCADE.stage.tapeOf(tape.feed, tape.fromSec, tape.toSec) : null].filter(Boolean).join(" · ") : ""}
+        </span>
       </div>
       {phase === "countdown" ? <Countdown n={count} /> : null}
       {phase === "paused" ? <PausePlate onResume={() => setPhase("playing")} onExit={onClose} /> : null}

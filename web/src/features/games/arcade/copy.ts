@@ -15,12 +15,12 @@ export const ARCADE = {
   games: {
     "line-rider": {
       title: "Line Rider",
-      line: "Ride the line · hold your grip",
+      line: "Ride the real chart",
       control: "Drag, scroll or hold ↑ ↓",
     },
     "candle-hop": {
       title: "Candle Hop",
-      line: "Hop the candle gaps",
+      line: "Hop the real chart's gaps",
       control: "Tap or Space to hop",
     },
   } satisfies Record<ArcadeGame, { title: string; line: string; control: string }>,
@@ -38,6 +38,11 @@ export const ARCADE = {
     length: "Length",
     seed: "Seed",
     shareText: (score: string, title: string) => `I scored ${score} on ${title} at Mitoshi. Beat it:`,
+    /** The tape's provenance under the run: whose prints and when (engine v2). */
+    tapeOf: (feed: string, fromSec: number, toSec: number) => {
+      const t = (s: number) => new Date(s * 1_000).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      return `${feed} prints ${t(fromSec)}–${t(toSec)}`;
+    },
   },
 
   hud: {

@@ -11,6 +11,8 @@ export interface ArcadeRun {
   id: number;
   seed: string;
   calm: boolean;
+  /** Engine v2: the real-price tape the server issued with the seed (R4-9, D-227); absent, the seed draws the line. */
+  tape?: readonly number[];
 }
 
 export interface RunEnd {
