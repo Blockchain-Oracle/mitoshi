@@ -5,6 +5,8 @@
  * reserves; merge and settle on a Window the maker vault is on (sponsored, anyone may). The vault refuses a withdraw
  * while a closed Window is unsettled and names them one at a time, so the maker's withdraw settles each first. After
  * every outcome the page re-reads the chain — a refused signature leaves it reading, not the figure the form held.
+ * R4-7 (D-227): the last row action is kept after it ends (`lastRow`), so a failure renders in the row that was tapped;
+ * Settle-all sends each settleable Window in turn through the same row lane and stops at the first that fails.
  */
 import type { Address, MarketId, ReserveKind, TxIntent } from "@cwf/core";
 import { getMakerUnsettledExpired, isMakerWindowSettleable } from "@cwf/markets/maker";
@@ -35,6 +37,7 @@ export function useEarnWrites(kind: ReserveKind, wallet: Address | null) {
   const withdrawTx = useTxLifecycle();
   const rowTx = useTxLifecycle();
   const [busyRow, setBusyRow] = useState<RowAction | null>(null);
+  const [lastRow, setLastRow] = useState<RowAction | null>(null);
   const [note, setNote] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
@@ -63,17 +66,17 @@ export function useEarnWrites(kind: ReserveKind, wallet: Address | null) {
           // closing print: wait for the settler (every print lands < 60 s after T), and say so if it doesn't.
           let ready = await isMakerWindowSettleable(stale.value);
           for (let waited = 0; ready.ok && !ready.value && waited < PRINT_WAIT_MS; waited += PRINT_POLL_MS) {
-            setNote(EARN.position.printPending);
+            setNote(EARN.withdraw.printPending);
             await sleep(PRINT_POLL_MS);
             ready = await isMakerWindowSettleable(stale.value);
           }
           if (!ready.ok || !ready.value) {
             setNote(null);
-            notify.neutral(EARN.position.printLate);
+            notify.neutral(EARN.withdraw.printLate);
             await refresh();
             return false;
           }
-          setNote(EARN.position.settling);
+          setNote(EARN.withdraw.settling);
           const settled = await withdrawTx.run({ kind: "maker-settle", marketId: stale.value });
           if (settled?.status !== "confirmed") {
             setNote(null);
@@ -84,24 +87,45 @@ export function useEarnWrites(kind: ReserveKind, wallet: Address | null) {
         setNote(null);
       }
       const outcome = await withdrawTx.run({ kind: `${PROGRAM[kind]}-withdraw`, shares } as TxIntent);
-      if (outcome?.status === "confirmed") notify.neutral(EARN.position.done);
+      if (outcome?.status === "confirmed") notify.neutral(EARN.withdraw.done);
       await refresh();
       return outcome?.status === "confirmed";
     },
     [withdrawTx, kind, refresh],
   );
 
+  const send = useCallback(
+    async (action: "merge" | "settle", marketId: MarketId): Promise<boolean> => {
+      setBusyRow(`${action}:${marketId}`);
+      setLastRow(`${action}:${marketId}`);
+      const outcome = await rowTx.run({ kind: `maker-${action}`, marketId });
+      return outcome?.status === "confirmed";
+    },
+    [rowTx],
+  );
+
   const row = useCallback(
     async (action: "merge" | "settle", marketId: MarketId) => {
-      setBusyRow(`${action}:${marketId}`);
       try {
-        await rowTx.run({ kind: `maker-${action}`, marketId });
+        await send(action, marketId);
       } finally {
         setBusyRow(null);
         await refresh();
       }
     },
-    [rowTx, refresh],
+    [send, refresh],
+  );
+
+  const settleAll = useCallback(
+    async (marketIds: readonly MarketId[]) => {
+      try {
+        for (const id of marketIds) if (!(await send("settle", id))) break;
+      } finally {
+        setBusyRow(null);
+        await refresh();
+      }
+    },
+    [send, refresh],
   );
 
   return {
@@ -109,10 +133,12 @@ export function useEarnWrites(kind: ReserveKind, wallet: Address | null) {
     withdraw,
     merge: (marketId: MarketId) => void row("merge", marketId),
     settle: (marketId: MarketId) => void row("settle", marketId),
+    settleAll: (marketIds: readonly MarketId[]) => void settleAll(marketIds),
     supplyTx,
     withdrawTx,
     rowTx,
     busyRow,
+    lastRow,
     note,
     canSign: submitter !== null,
   };

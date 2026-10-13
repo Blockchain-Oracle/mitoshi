@@ -165,6 +165,12 @@ clean (71 routes within budget, the docs site's own build too); /docs at 375 and
 after R4's last web deploy (`cd docs-site && pnpm media:record && pnpm media:publish`); re-run `pnpm check` and move
 the pin (595e40d) as later slices land. Seen, R4-9's area: Practice's how-to says "the real closing prints" (the code
 scores the live feed after a 30 s watch).
+R4-7 (Earn) merged at `09aa685`: the action card beside the ReserveCard (sticky from 1024, inside the first phone
+screen), the capital map (CapitalBar by asset, one-DOM WindowRow with its book, Settle-{k}), the reserve tiles, the phone
+dock that steps aside for any modal, partial withdraw via core `withdrawSharesFor`, Portfolio's Earn pocket. Checks clean
+(71 routes within budget, /earn 220.9 KB); /earn at 375 and 1440 clean (the sweep's overlaps are the collapsed, inert
+Window books). Open: a signed-in Supply / partial Withdraw / Settle on testnet with P&L checked against chain reads — not
+driven in this merge (no wallet on the dev server).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
