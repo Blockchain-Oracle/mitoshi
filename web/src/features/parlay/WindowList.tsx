@@ -7,17 +7,23 @@
  * images, no cart beside it (the slip is its own rail / slide-over), `m.*` entrance only for rows that appear, 44 px
  * buttons with the side word and an arrow (colour is never the only signal), and Windows the reserve can't price —
  * no fair-value model for their lane — are listed apart, disabled, with the reason.
+ * R4-5 (D-227, Ported from Owarine 90a91d71:web/src/features/parlay/ParlayBuilder.tsx): the list head is the cadence
+ * words (5m · 15m · 1h · Gap, from the live lanes) over the rows, and ⚡ "{asset} close streak" loads the soonest
+ * Windows of the stock with the most live, Up, at $5 (`loadStreakPreset`); each row carries its asset's disc.
  */
 import type { Side } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
-import { ArrowDown, ArrowUp, Check } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Zap } from "lucide-react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { useRef } from "react";
+import { useMemo, useRef, useState } from "react";
+import { TextTabs } from "@/components/kit";
 import { Countdown } from "@/components/data";
 import { EmptyState, LoadingState } from "@/components/states";
 import { useFlyToTarget } from "@/components/ui/fly-to-target";
 import { cn } from "@/lib/utils";
+import { AssetDisc } from "../markets/hero/AssetDisc";
 import { usd0 } from "../markets/units";
+import { cadenceKeyOf } from "../range/WindowPicker";
 import { PARLAY } from "./copy";
 import type { LegWindow } from "./data";
 import { useSlip } from "./slip-state";
@@ -62,6 +68,7 @@ function Row({ w, nowMs }: { w: LegWindow; nowMs: number }) {
   };
   return (
     <m.li layout={reduce ? false : "position"} initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.97 }} className={cn("pw-row", held && "is-held")}>
+      <AssetDisc asset={m0.asset} className="gw-disc pw-disc" />
       <div className="pw-main">
         <span className="pw-name">
           {m0.asset} <span className="pw-cadence">{formatCadence(m0.intervalSec)}</span>
@@ -80,13 +87,33 @@ function Row({ w, nowMs }: { w: LegWindow; nowMs: number }) {
   );
 }
 
-export function WindowList({ windows, loading, nowMs }: { windows: readonly LegWindow[]; loading: boolean; nowMs: number }) {
-  const priced = windows.filter((w) => w.model !== null);
+export function WindowList({ windows, loading, nowMs, nextOpenText }: { windows: readonly LegWindow[]; loading: boolean; nowMs: number; nextOpenText: string }) {
+  const slip = useSlip();
+  const all = useMemo(() => windows.filter((w) => w.model !== null), [windows]);
+  const keys = [...new Set(all.map((w) => cadenceKeyOf(w.market)))];
+  const [picked, setPicked] = useState<string>("");
+  const cadence = keys.includes(picked) ? picked : (keys[0] ?? "");
+  const priced = all.filter((w) => cadenceKeyOf(w.market) === cadence);
   const unpriced = windows.filter((w) => w.model === null);
+  // The stock with the most Windows live, the soonest-settling on a tie (`windows` is soonest first).
+  const streak = useMemo(() => {
+    const byAsset = new Map<string, LegWindow[]>();
+    for (const w of all) byAsset.set(w.market.asset, [...(byAsset.get(w.market.asset) ?? []), w]);
+    let best: { asset: string; picks: LegWindow[] } | null = null;
+    for (const [asset, list] of byAsset) if (list.length >= 2 && (best === null || list.length > best.picks.length)) best = { asset, picks: list };
+    return best;
+  }, [all]);
   if (loading && windows.length === 0) return <LoadingState shape="row" label={PARLAY.windows.loading} />;
-  if (windows.length === 0) return <EmptyState why={PARLAY.windows.none} />;
+  if (windows.length === 0) return <EmptyState why={nextOpenText} />;
   return (
     <div className="pw">
+      <div className="pw-head">
+        {keys.length > 0 ? <TextTabs value={cadence} onChange={setPicked} label={PARLAY.windows.cadence} tabs={keys.map((k) => ({ value: k, label: k === "gap" ? PARLAY.windows.gap : k }))} className="pw-tabs" /> : null}
+        <button type="button" className="pw-streak" disabled={streak === null} onClick={() => streak && slip.loadStreak(streak.picks)}>
+          <Zap aria-hidden className="size-4" />
+          {PARLAY.windows.streak(streak?.asset ?? null)}
+        </button>
+      </div>
       <ul className="pw-list" aria-label={PARLAY.windows.title}>
         <AnimatePresence initial={false}>
           {priced.map((w) => (

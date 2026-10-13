@@ -41,6 +41,8 @@ export interface ParlayWindows {
   /** Trading, print in, entry open — soonest close first; `model` null means it cannot be priced into a parlay. */
   windows: LegWindow[];
   byId: Map<MarketId, LegWindow>;
+  /** When the next Window opens on any lane (the empty line), or null when none is listed (R4-5). */
+  nextOpenSec: number | null;
   loading: boolean;
   error: boolean;
 }
@@ -68,8 +70,9 @@ export function useParlayWindows(nowMs: number): ParlayWindows {
       const m = byModel?.get(market.seriesId.toLowerCase()) ?? null;
       return { market, model: m && m.sigmaE8 > 0n && m.feed ? m : null };
     });
-    return { windows, byId: new Map(windows.map((w) => [w.market.marketId, w])), loading: reading === null || (seriesIds.length > 0 && models.isPending), error: models.isError };
-  }, [live, models.data, models.isPending, models.isError, reading, seriesIds.length]);
+    const upcoming = (reading && isOk(reading) ? reading.value.lanes.flatMap((l) => l.markets) : []).filter((m) => m.tradingStartSec > nowSec).map((m) => m.tradingStartSec);
+    return { windows, byId: new Map(windows.map((w) => [w.market.marketId, w])), nextOpenSec: upcoming.length ? Math.min(...upcoming) : null, loading: reading === null || (seriesIds.length > 0 && models.isPending), error: models.isError };
+  }, [live, models.data, models.isPending, models.isError, reading, seriesIds.length, nowSec]);
 }
 
 export function useParlayTickets(wallet: Address | null): Reading<ParlayTicketView[]> | null {

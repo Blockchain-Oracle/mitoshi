@@ -6,6 +6,8 @@
  * the per-leg Window stepper (21st 29940, `WindowStepper`) over the live Windows of the leg's lane, so a leg can move
  * to a later round without leaving the slip. Ported beside Masayume 68f7a09:web/src/features/parlay/LegRow.tsx (the
  * numbered stamp, the Up/Down pair, the per-leg probability, the thin-book line on its own row).
+ * R4-5 (D-227): the model-vs-book line is the price's title now (the ⓘ sheet says how legs are priced); thin and
+ * under-fair stay as one line each.
  */
 import type { Side } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
@@ -68,7 +70,7 @@ export function SlipLegs({ windows, figures, refusal }: { windows: readonly LegW
                 <span className="ps-leg-name">
                   {w ? `${w.market.asset} ${formatCadence(w.market.intervalSec)}` : PARLAY.slip.legLeft(i + 1)}
                 </span>
-                <span className="ps-leg-prob numbers">{f?.priceRaw != null ? formatCents(f.priceRaw) : "—"}</span>
+                <span className="ps-leg-prob numbers" title={f?.fairRaw != null && f.priceRaw != null ? PARLAY.slip.modelBook(formatCents(f.fairRaw), formatCents(f.priceRaw)) : undefined}>{f?.priceRaw != null ? formatCents(f.priceRaw) : "—"}</span>
                 <button type="button" onClick={() => slip.remove(leg.key)} aria-label={PARLAY.slip.remove(i + 1)} title={PARLAY.slip.remove(i + 1)} className="ps-remove size-touch">
                   <X aria-hidden className="size-4" />
                 </button>
@@ -91,9 +93,6 @@ export function SlipLegs({ windows, figures, refusal }: { windows: readonly LegW
               {leg.moved ? <p className="ps-note">{PARLAY.slip.moved}</p> : null}
               {thin ? <p className="ps-note ps-note--warn">{PARLAY.cta.thin(i + 1, contracts(thin.filledRaw), contracts(thin.depthRaw))}</p> : null}
               {below ? <p className="ps-note ps-note--warn">{PARLAY.cta.belowFair(i + 1, formatCents(below.priceRaw), formatCents(below.fairRaw))}</p> : null}
-              {!thin && !below && f?.fairRaw != null && f.priceRaw != null ? (
-                <p className="ps-note">{PARLAY.slip.modelBook(formatCents(f.fairRaw), formatCents(f.priceRaw))}</p>
-              ) : null}
             </m.li>
           );
         })}

@@ -39,6 +39,8 @@ interface SlipValue {
   setWindow: (key: string, w: LegWindow) => void;
   setMode: (mode: SolveMode) => void;
   setAmountText: (text: string) => void;
+  /** Replaces the slip with these Windows, all Up, at a $5 stake (Owarine's ⚡ close streak). */
+  loadStreak: (picks: readonly LegWindow[]) => void;
   clear: () => void;
 }
 
@@ -77,6 +79,17 @@ export function SlipProvider({ windows, maxLegs, initialLegs, onLegsChange, chil
     [],
   );
   const clear = useCallback(() => setLegs([]), []);
+  // Ported from Owarine 90a91d71:web/src/features/parlay/ParlayBuilder.tsx `loadStreakPreset` (R4-5, D-227).
+  const loadStreak = useCallback(
+    (picks: readonly LegWindow[]) => {
+      const legsOf = picks.slice(0, cap).flatMap((w) => (w.model?.feed ? [{ key: newKey(), marketId: w.market.marketId, side: "up" as const, laneKey: laneKeyOf(w), feed: w.model.feed, moved: false }] : []));
+      if (legsOf.length < 2) return;
+      setLegs(legsOf);
+      setMode("fixStake");
+      setAmountText("5");
+    },
+    [cap],
+  );
 
   useEffect(() => {
     const live = new Set(windows.map((w) => w.market.marketId));
@@ -95,6 +108,6 @@ export function SlipProvider({ windows, maxLegs, initialLegs, onLegsChange, chil
     });
   }, [windows]);
 
-  const value = useMemo(() => ({ legs, maxLegs: cap, mode, amountText, add, remove, setSide, setWindow, setMode, setAmountText, clear }), [legs, cap, mode, amountText, add, remove, setSide, setWindow, clear]);
+  const value = useMemo(() => ({ legs, maxLegs: cap, mode, amountText, add, remove, setSide, setWindow, setMode, setAmountText, loadStreak, clear }), [legs, cap, mode, amountText, add, remove, setSide, setWindow, loadStreak, clear]);
   return <SlipContext.Provider value={value}>{children}</SlipContext.Provider>;
 }
