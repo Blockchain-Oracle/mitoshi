@@ -17,9 +17,9 @@
 @media (min-width: 1024px) { .skel-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .skel-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 @media (min-width: 1024px) { .skel-hero { grid-template-columns: minmax(0, 1fr) clamp(20rem, 36%, 25rem); } }
-/* /earn (R4-7, D-227): the reserve card's 138 px slab and the action card, then the rows — the page's own grid. */
+/* /earn (R4-7, D-227): the reserve card's 128 px slab (a phone's) and the action card, then the rows — the page's own grid. */
 .skel-earn { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
-.skel-earn-card { height: 138px; }
+.skel-earn-card { height: 128px; }
 @media (min-width: 768px) { .skel-earn { grid-template-columns: repeat(2, minmax(0, 1fr)); } .skel-earn-card { height: auto; min-height: 200px; } .skel-earn-rows { grid-column: 1 / -1; } }
 @media (min-width: 1024px) { .skel-earn { grid-template-columns: minmax(0, 1fr) 22rem; } }
 .skel-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--color-hairline); }

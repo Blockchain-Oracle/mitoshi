@@ -53,10 +53,11 @@ export function ReserveCard({ sheet, words, makerOff = false }: ReserveCardProps
               {delta}
             </span>
           ) : null}
+          {/* beside the chip, so the card keeps one line for the figure: it wraps under only where the row is full */}
+          <span className="ea-rc-caption">{caption}</span>
         </div>
         {status ? <span className="ea-rc-status">{status}</span> : null}
       </div>
-      <p className="ea-rc-caption">{caption}</p>
       <dl className="ea-rc-legs">
         {legs.map((leg) => (
           <div key={leg.id} className="ea-rc-leg">

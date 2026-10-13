@@ -5,7 +5,9 @@
  * from 1024 the card and §02 on the left and the action with the position in a sticky 22rem column (Owarine 90a91d71
  * `features/earn/MakerEarn.tsx`'s order, its trade-column width). Under 768, once the inline action scrolls away, a
  * dock (the parlay slip's `.pl-dock`) opens the same card in the phone sheet with the kit Keypad, its button pinned in
- * the sheet's footer. The dock steps aside while any modal is open (`useAnyModalOpen`).
+ * the sheet's footer. The dock steps aside while any modal is open (`useAnyModalOpen`). It also shows while the inline
+ * card's foot (its button) is under the phone dock — on a short phone a supplier's Supply | Withdraw switch can push it
+ * there — so the action is on the first screen at every height.
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { SignerKind } from "@/components/tx";
@@ -30,6 +32,7 @@ interface EarnLayoutProps {
 
 export function EarnLayout({ card, action, position, map, title }: EarnLayoutProps) {
   const inline = useRef<HTMLDivElement>(null);
+  const probe = useRef<HTMLSpanElement>(null);
   const phone = usePhoneLayout();
   const [away, setAway] = useState(false);
   const [sheet, setSheet] = useState(false);
@@ -37,7 +40,12 @@ export function EarnLayout({ card, action, position, map, title }: EarnLayoutPro
   useEffect(() => {
     const node = inline.current;
     if (!phone || !node || typeof IntersectionObserver === "undefined") return setAway(false);
-    const io = new IntersectionObserver(([entry]) => setAway(entry ? !entry.isIntersecting : false));
+    // The viewport less the phone dock (measured off `--dock-strip-offset`): gone, or cut at the foot, is away.
+    const clearance = probe.current?.offsetHeight ?? 0;
+    const io = new IntersectionObserver(
+      ([entry]) => setAway(entry ? !entry.isIntersecting || (entry.rootBounds !== null && entry.boundingClientRect.bottom > entry.rootBounds.bottom) : false),
+      { rootMargin: `0% 0% -${clearance}px 0%`, threshold: [0, 1] },
+    );
     io.observe(node);
     return () => io.disconnect();
   }, [phone]);
@@ -51,6 +59,7 @@ export function EarnLayout({ card, action, position, map, title }: EarnLayoutPro
         </div>
         <div className="ea-a-map">{map}</div>
       </div>
+      {phone ? <span ref={probe} aria-hidden className="ea-dock-probe" /> : null}
       {phone && away && !sheet && !covered ? (
         <div className="ea-dock">
           <button type="button" className="ea-dock-btn" onClick={() => setSheet(true)}>

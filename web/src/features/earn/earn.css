@@ -12,6 +12,9 @@
 .ea-head { margin: 0; font: 700 24px/1.2 var(--font-display); letter-spacing: -0.02em; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (min-width: 768px) { .ea-head { font-size: 32px; } }
 .ea-tabs { margin-top: -4px; }
+/* a phone: the tab words sit under the head with the 44 px rows touching it, and the bar right under them — the
+   action's button stays on the first screen (≤ 480 px at 375×667, the earn spec's fold) */
+@media (max-width: 767px) { .ea-tabs { margin-top: -12px; } .ea-tabs .kit-tabs-list { padding-bottom: 0; } }
 
 /* one DOM, three layouts: stacked < 768; card | action 768–1023; card + §02 | sticky action column ≥ 1024 */
 .ea-layout { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "card" "action" "pos" "map"; gap: 12px; align-items: start; }
@@ -35,15 +38,16 @@
 .ea-rc.money-hero { display: flex; flex-direction: column; padding: 16px; }
 @media (min-width: 640px) { .ea-rc.money-hero { padding: 24px; } }
 .ea-rc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.ea-rc-price { display: flex; min-width: 0; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 4px; }
+.ea-rc-price { display: flex; min-width: 0; flex-wrap: wrap; align-items: baseline; column-gap: 6px; row-gap: 4px; }
+@media (min-width: 640px) { .ea-rc-price { column-gap: 8px; } }
 .ea-rc-figure { font: 700 32px/1 var(--font-data); letter-spacing: -0.02em; color: #fff; }
 @media (min-width: 640px) { .ea-rc-figure { font-size: 44px; } }
 .ea-rc-unit { font: 500 13px/1 var(--font-body); color: rgba(255, 255, 255, 0.6); }
 .ea-rc-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: var(--radius-full); background: color-mix(in srgb, var(--chart-up) 18%, transparent); font: 700 12px/1.2 var(--font-data); color: var(--chart-up); }
 .ea-rc-tri { width: 8px; height: 8px; }
 .ea-rc-status { flex: none; padding: 4px 10px; border-radius: var(--radius-full); background: rgba(255, 255, 255, 0.12); font: 700 12px/1.2 var(--font-body); color: #fff; }
-.ea-rc-caption { margin: 4px 0 0; font: 500 12px/1.3 var(--font-body); color: rgba(255, 255, 255, 0.6); }
-.ea-rc-legs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; }
+.ea-rc-caption { font: 500 12px/1.3 var(--font-body); color: rgba(255, 255, 255, 0.6); white-space: nowrap; }
+.ea-rc-legs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 10px 0 0; }
 .ea-rc-leg { min-width: 0; }
 .ea-rc-leg-label { display: flex; align-items: center; gap: 6px; font: 500 12px/1.2 var(--font-body); color: rgba(255, 255, 255, 0.7); white-space: nowrap; }
 .ea-rc-dot { width: 8px; height: 8px; }
@@ -53,19 +57,20 @@
 .ea-rc-leg-amount { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; margin: 4px 0 0; font: 700 14px/1.2 var(--font-data); color: #fff; overflow-wrap: anywhere; }
 .ea-rc-leg-pct { font-size: 12px; font-weight: 600; color: var(--color-accent); }
 @media (min-width: 640px) { .ea-rc-leg-amount { font-size: 17px; } .ea-rc-dot { width: 12px; height: 12px; } }
-.money-hero-bar.ea-rc-bar { height: 8px; margin-top: 12px; }
-@media (min-width: 640px) { .money-hero-bar.ea-rc-bar { height: 12px; margin-top: auto; } .ea-rc-legs { margin-bottom: 20px; } }
+.money-hero-bar.ea-rc-bar { height: 8px; margin-top: 10px; }
+@media (min-width: 640px) { .money-hero-bar.ea-rc-bar { height: 12px; margin-top: auto; } .ea-rc-legs { margin: 12px 0 20px; } }
 .ea-rc-seg { width: calc(var(--ea-share) * 1%); min-width: 4px; transition: width 350ms var(--ease-out); }
 .ea-rc-seg[data-leg="idle"] { background: rgba(255, 255, 255, 0.4); }
 .ea-rc-seg[data-leg="committed"] { background: var(--color-accent); }
 
 /* ── the action card: switch, amount, quick amounts, one button ───────────────────────────────────────────────── */
-.ea-action { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+.ea-action { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
 @media (min-width: 640px) { .ea-action { gap: 12px; padding: 16px; } }
 .ea-action--sheet { padding: 0; border: 0; background: none; }
 .ea-switch { width: 100%; }
 .ea-amount { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
-.ea-amount-pill { display: flex; align-items: center; gap: 6px; min-height: 52px; padding: 0 4px 0 16px; border: 1px solid var(--color-border-strong); border-radius: var(--radius-full); background: var(--color-surface-2); }
+.ea-amount-pill { display: flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 4px 0 16px; border: 1px solid var(--color-border-strong); border-radius: var(--radius-full); background: var(--color-surface-2); }
+@media (min-width: 640px) { .ea-amount-pill { min-height: 52px; } }
 .ea-amount-pill:focus-within { border-color: var(--color-accent); }
 .ea-amount-pill[data-problem] { border-color: var(--color-loss); }
 .ea-amount-unit { font: 600 20px/1 var(--font-data); color: var(--color-ink-secondary); }
@@ -105,4 +110,6 @@
   display: flex; align-items: center; justify-content: center; width: 100%; height: 52px; padding: 0 16px; border-radius: var(--radius-full);
   background: var(--accent-fill); color: var(--on-accent); box-shadow: 0 8px 24px rgb(0 0 0 / 0.35); font: 700 15px/1 var(--font-display); cursor: pointer;
 }
+/* where the phone dock ends, measured: the action counts as on screen only above it */
+.ea-dock-probe { position: fixed; left: 0; bottom: 0; width: 0; height: var(--dock-strip-offset); visibility: hidden; pointer-events: none; }
 .ea-dock-btn:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 2px; }
