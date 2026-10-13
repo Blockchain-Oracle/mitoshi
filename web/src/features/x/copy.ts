@@ -73,7 +73,7 @@ export const TFX = {
   unlinked: "X unlinked. Your funds stay.",
   builder: { title: "Make your call", copy: "Copy", copied: "Copied", post: "Post on X", setup: "Finish the steps above first.", closed: "No open Window for that right now." },
   receipts: { title: "Receipts", empty: "No mentions yet.", signIn: "Sign in with X to see yours." },
-  testnet: "Testnet · test dollars",
+  testMoney: "Test dollars · no cash value",
   waitsOn: "X sign-in isn't switched on here yet.",
   unreadable: "Couldn't read your X link. Retrying.",
 } as const;
@@ -89,7 +89,7 @@ export const CLAIM = {
   signInAs: (a: string) => `Sign in as ${a}`,
   openPortfolio: "Open Portfolio",
   setUp: "Set up Trade from X",
-  card: { brand: "mitoshi", claimed: "CLAIMED", waiting: "WAITING", balance: "TRADING BALANCE", x: "X BALANCE", hidden: "• •", reveal: "Sign in with X to see it", only: "Only you can cash out.", network: "Tempo testnet" },
+  card: { brand: "mitoshi", claimed: "CLAIMED", waiting: "WAITING", balance: "TRADING BALANCE", x: "X BALANCE", hidden: "• •", reveal: "Sign in with X to see it", only: "Only you can cash out.", network: "Tempo" },
 } as const;
 
 export const XCARD = {

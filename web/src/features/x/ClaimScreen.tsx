@@ -81,7 +81,7 @@ export function ClaimScreen() {
       </div>
       {here ? <Link href="/portfolio" className={pillButtonVariants({ tone: "accent", size: "lg", block: true })}>{CLAIM.openPortfolio}</Link> : null}
       {link.error ? <p className="xt-err" role="alert">{link.error}</p> : null}
-      <p className="xt-foot">{TFX.testnet}</p>
+      <p className="xt-foot">{TFX.testMoney}</p>
     </section>
   );
 }

@@ -4,7 +4,7 @@
 // place's key on hover), in Mitoshi's colours (D-189); Owarine's six places and More (D-226). Changed (D-198): lucide icons instead of Phosphor; the active
 // pill moves by a CSS transform (no motion runtime in the shell's first load, components.md row 21) instead of
 // roy-chain's `layoutId` spring from 21st.dev 21517 (unlumen/animated-sidebar); the mode switch is gone (Mitoshi has
-// one network per deployment — the Testnet pill says which); places come from the nav registry; More opens the More
+// one network per deployment — the mode plate says which); places come from the nav registry; More opens the More
 // drawer. The path is read inside Suspense (cacheComponents keeps the static shell). R4-8 (D-227), to Owarine 90a91d71
 // `components/shell/app/AppRail.tsx`: the head is the vermilion seal disc and the mode plate (DEMO / TESTNET, its
 // hanko) instead of a static pill; rows at 16 px/600 with 22 px icons; More is lit as "here" on any page that is not a

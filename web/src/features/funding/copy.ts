@@ -10,7 +10,7 @@ export const FUNDING = {
     mainnetTitle: "Add dollars",
     mainnetBody: "Send USD stablecoins on Tempo to this address.",
     balance: "In your account",
-    tag: "Tempo testnet · no cash value",
+    tag: "No cash value",
     account: "Your address",
     copy: "Copy",
     copied: "Copied",
@@ -45,7 +45,7 @@ export const FUNDING = {
     title: "Test dollars",
     figureLabel: "In your account now",
     transfer: (n: number, of: number) => `Transfer ${n} of ${of}`,
-    footer: "Tempo testnet faucet.",
+    footer: "Tempo faucet.",
   },
   /** Owarine's `CreditWelcome`: a title and one button, gone in eight seconds. */
   welcome: {

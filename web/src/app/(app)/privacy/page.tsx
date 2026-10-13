@@ -1,4 +1,4 @@
-// /privacy (S20; R4-13a, D-227: Owarine 90a91d71's /legal frame — `features/legal`): the title, a TESTNET sticker and
+// /privacy (S20; R4-13a, D-227: Owarine 90a91d71's /legal frame — `features/legal`): the title, a BETA sticker and
 // three facts, then one card per section with its gist. What it says comes from what the code stores (`privacy.tsx`).
 import type { Metadata } from "next";
 import { LEGAL } from "@/features/legal/copy";

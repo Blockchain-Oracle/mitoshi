@@ -133,7 +133,7 @@ export interface ArchitectureCard {
 
 export const ARCHITECTURE: readonly ArchitectureCard[] = [
   { title: "Positions you hold", body: "Contracts are balances in the engine held by your account — or by your Trading Balance for you — and every fill links to its Tempo receipt.", icon: CoinsIcon },
-  { title: "Receipts in half a second", body: "A tap's transaction is in a block about half a second after it is sent on Tempo testnet, so the position on screen is the one on chain.", icon: ZapIcon },
+  { title: "Receipts in half a second", body: "A tap's transaction is in a block about half a second after it is sent on Tempo, so the position on screen is the one on chain.", icon: ZapIcon },
   { title: "Rules in the contract", body: "Settlement, voids and payouts are contract calls anyone can make once a Window's prints are in or its time is up; Mitoshi's keepers just make them first.", icon: ShieldIcon },
 ];
 

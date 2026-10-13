@@ -137,7 +137,7 @@ export async function renderSharePng(card: ShareCard): Promise<Blob> {
   ctx.font = font(600, 34, f.body);
   ctx.fillText("Call where a price closes.", 1080, 572);
   ctx.fillStyle = C.soft;
-  ctx.fillText("On Tempo testnet.", 1080, 614);
+  ctx.fillText("On Tempo.", 1080, 614);
   const link = card.url.replace(/^https?:\/\//, "");
   fit(ctx, link, (px) => font(600, px, f.body), W - 1080 - 40, 30);
   ctx.fillText(link, 1080, 668);

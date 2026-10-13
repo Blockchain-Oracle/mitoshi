@@ -39,7 +39,7 @@ export const HOW_IT_WORKS = {
   },
   cta: {
     title: "Ready to call it?",
-    body: "Sign up with a passkey, take testnet dollars from the faucet, and tap.",
+    body: "Sign up with a passkey, take test dollars from the faucet, and tap.",
     action: "Open the terminal",
   },
 } as const;

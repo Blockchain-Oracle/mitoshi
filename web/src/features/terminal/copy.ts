@@ -154,7 +154,7 @@ export const TERMINAL = {
     step: (n: number) => `Step ${n}`,
     start: "Start trading",
     later: "Look around first",
-    network: "Tempo testnet · test dollars, no real money.",
+    network: "Test dollars, no real money.",
     steps: [
       { title: "Watch the market", body: "A live price line is the whole workspace — Coinbase and exchange trades, with RedStone's signed value marked beside it. No forms, no clutter." },
       { title: "Tap UP or DOWN", body: "Think it closes above the line? Tap UP. Below? Tap DOWN. One tap buys the call on this Window — no prompt once one-tap is on." },

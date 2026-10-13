@@ -47,7 +47,8 @@ export const WALLET_MODAL = {
 /** The account popover (Owarine 90a91d71 `SeatAccountMenu`; O-10, D-224). */
 export const ACCOUNT = {
   kinds: { passkey: "Passkey", "tempo-wallet": "Tempo Wallet", injected: "Browser wallet", walletconnect: "WalletConnect" },
-  network: { testnet: "Tempo testnet", mainnet: "Tempo" },
+  /** The chain, never the network: the mode plate is the one place the app says testnet (D-228). */
+  network: { testnet: "Tempo", mainnet: "Tempo" },
   address: "Address",
   wallet: "Wallet",
   tradingBalance: "Trading Balance",

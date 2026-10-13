@@ -85,7 +85,7 @@ export function TradeFromXScreen() {
       {link.linkedHere ? (
         <PillButton tone="ghost" size="sm" className="self-start" disabled={link.busy !== ""} onClick={() => void link.unlink()}>{TFX.unlink}</PillButton>
       ) : null}
-      <p className="xt-foot">{TFX.testnet}</p>
+      <p className="xt-foot">{TFX.testMoney}</p>
     </section>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 // `/docs` — Ported from Owarine 90a91d71:web/src/features/legal/LegalScreen.tsx (R4-10, D-227): a sticky header beside
-// one dropdown per docs section. The header: "Docs" with the TESTNET sticker, one line, three fact chips and the full
+// one dropdown per docs section. The header: "Docs" with the BETA sticker, one line, three fact chips and the full
 // docs site; each card: glyph, title, its gist, opening to its pages with a one-line gist each. Panels are
 // `hidden="until-found"`, so the browser's find still reaches every line.
 import { Accordion } from "@base-ui/react/accordion";
@@ -14,8 +14,8 @@ import "@/components/kit/kit.css";
 const ICON: Record<string, LucideIcon> = { "Get started": Rocket, Trade: BookOpen, Settle: Coins, Reference: FileText };
 const HOME = {
   heading: "Docs",
-  sticker: "TESTNET",
-  lede: "Mitoshi on Tempo testnet. Test dollars only.",
+  sticker: "BETA",
+  lede: "Mitoshi on Tempo. Test dollars only.",
   facts: ["Passkey sign-in", "pathUSD", "Signed RedStone prints"],
   site: "The full guides ↗",
 } as const;

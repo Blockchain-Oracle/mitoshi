@@ -56,7 +56,7 @@ const WORDS = {
   winIfLands: "Win if it lands.",
   closes: (utc: string) => `Closes ${utc}`,
   tagline: "Call where a price closes.",
-  network: "On Tempo testnet.",
+  network: "On Tempo.",
   verify: "VERIFY ON THE PROOF PAGE",
   scan: "SCAN TO MAKE YOUR CALL",
   beat: "SCAN TO BEAT IT",

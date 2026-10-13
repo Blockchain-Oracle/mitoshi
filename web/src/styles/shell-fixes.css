@@ -78,12 +78,6 @@ html[data-shell="app"] .grain { display: none; }
 @media (max-width: 420px) {
   .site-header .logo > span:last-child { display: none; }
 }
-/* The narrowest phones: the network pill keeps its dot and says TESTNET to a screen reader only, as the app's top line
-   does — beside the mark, the theme and "Open the app" it ran under the theme toggle at 320 px (R4-0, D-227). */
-@media (max-width: 360px) {
-  .site-header .network-pill { padding: 0 9px; }
-  .site-header .network-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-}
 
 /* Small vermilion labels: light-theme vermilion is 3.9:1 on cream at 11 px, so they take the pressed vermilion there
  * (5.3:1); gray-500 small text takes gray-400. The download CTA is an accent fill with the AA-safe pair. */

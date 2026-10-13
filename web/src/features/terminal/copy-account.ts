@@ -8,7 +8,7 @@ export const TERMINAL_ACCOUNT = {
     title: "Activity",
     none: "No activity yet",
     scanning: "Reading older activity…",
-    since: "Money moves on Tempo testnet. Tap a row for its receipt.",
+    since: "Money moves on Tempo. Tap a row for its receipt.",
     error: "Couldn't read your activity. Nothing changed; try again.",
     retry: "Try again",
     kinds: { faucet: "Test dollars", received: "Received", sent: "Sent", "to-balance": "To Trading Balance", "from-balance": "From Trading Balance", "to-earn": "To Earn", "from-earn": "From Earn", fee: "Network fee" },
@@ -71,7 +71,7 @@ export const TERMINAL_ACCOUNT = {
     signOutConfirm: "Sign out of Mitoshi?",
     signOutBody: "Your passkey stays on this device. One-tap keys here stop.",
     cancel: "Stay signed in",
-    testnet: "Tempo testnet",
+    chain: "Tempo",
   },
   send: {
     title: "Withdraw",

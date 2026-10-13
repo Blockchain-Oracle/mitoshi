@@ -18,7 +18,7 @@ export function AccountProfile({ wallet }: { wallet: string }) {
         <span aria-hidden className="tm-avatar tm-avatar-lg" style={{ "--tm-hue": addressHue(wallet) } as CSSProperties}>{wallet.slice(2, 4).toUpperCase()}</span>
         <span className="tm-pos-main">
           <span className="tm-pos-title">{profile?.displayName ? `@${profile.displayName}` : <span className="tm-mono">{short}</span>}</span>
-          <span className="tm-pos-meta">{profile?.displayName ? `${short} · ${TERMINAL.account.testnet}` : TERMINAL.account.testnet}</span>
+          <span className="tm-pos-meta">{profile?.displayName ? `${short} · ${TERMINAL.account.chain}` : TERMINAL.account.chain}</span>
         </span>
         <button type="button" className="tm-choice ml-auto" aria-expanded={editing} onClick={() => setEditing((v) => !v)}>{SOCIAL.profile.edit}</button>
       </div>

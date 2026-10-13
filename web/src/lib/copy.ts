@@ -61,8 +61,6 @@ export const SHELL = {
   railNav: "Places",
   everything: "More",
   everythingHint: "Every other page",
-  testnet: "Testnet",
-  testnetTitle: "Tempo testnet · test dollars, nothing of value.",
   keyHint: (key: string) => `Press ${key}`,
   shortcuts: "Keyboard shortcuts",
   shortcutsBody: "No shortcut moves money.",
@@ -82,15 +80,17 @@ export const SHELL = {
   legal: "Legal",
   legalNav: "Docs and legal",
   health: { healthy: "All systems live", degraded: "Running degraded", unreachable: "Venue unreachable", unread: "Checking…" },
-  network: "Tempo testnet",
-  /** The rail's money tile (O-10): testnet dollars are never "Live" money. */
-  moneyLabel: "Balance · Tempo testnet",
+  /** The top line's health chip names the chain; the network itself is said once, by the mode plate (D-228). */
+  network: "Tempo",
+  /** The rail's money tile (O-10). */
+  moneyLabel: "Balance",
   demoLabel: "Demo · paper dollars",
   /** The phone's mode chip (Owarine `ModeChip`; P6, D-224). */
   modeDemo: "DEMO",
   modeTestnet: "TESTNET",
   modeMainnet: "TEMPO",
-  /** The rail's mode plate (Owarine `NetworkPlate`; R4-8): the world's hanko, its money, and where a tap goes. */
+  /** The rail's mode plate (Owarine `NetworkPlate`; R4-8): the world's hanko, its money, and where a tap goes. The one
+   *  place the app names its network (D-228): the plate, the icon rail's stamp and the phone's chip are its three widths. */
   mode: {
     demo: { label: "DEMO", kanji: "練", line: "Paper dollars", hint: "Demo: paper dollars on live prices. Sign in to trade test dollars." },
     testnet: { label: "TESTNET", kanji: "試", line: "Test dollars", hint: "Tempo testnet: test dollars, nothing of value. Open the network's status." },
@@ -134,7 +134,7 @@ export const APP_STRIP = {
 } as const;
 
 export const FOOTER = {
-  disclosure: "Testnet. Not investment advice. Prices come from signed oracle feeds; receipts link to the chain.",
+  disclosure: "Not investment advice. Prices come from signed oracle feeds; receipts link to the chain.",
   links: { privacy: "Privacy", terms: "Terms", contact: "Contact", status: "Status", docs: "Docs" },
 } as const;
 

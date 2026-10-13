@@ -4,7 +4,7 @@
  * reach a card (satori would otherwise fetch a fallback face at request time).
  */
 export const OG_COPY = {
-  honesty: "Tempo testnet · test pathUSD",
+  honesty: "On Tempo",
   site: {
     alt: "Mitoshi: call where a price closes on Tempo — crypto and US stocks in Windows settled on a signed oracle print.",
     eyebrow: "Prediction markets on Tempo",

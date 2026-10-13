@@ -20,7 +20,7 @@ export const STRATEGIES = {
   error: "The strategies couldn't be read just now.",
   retry: "Try again",
   notDeployed: "The strategy registry isn't on this network yet.",
-  advice: "Testnet money. Strategies can lose. Not advice.",
+  advice: "Test money. Strategies can lose. Not advice.",
   yours: {
     signedOutTitle: "Your strategies, in one place.",
     unreadable: "Your copies couldn't be read just now.",

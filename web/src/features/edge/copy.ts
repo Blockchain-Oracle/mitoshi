@@ -73,7 +73,7 @@ export const EDGE = {
       provenanceLabel: "How this is verified",
       provenance: "From your fills, in your browser.",
       proof: "Each Window has a proof →",
-      source: { label: "Source", value: "Mitoshi's engine on Tempo testnet" },
+      source: { label: "Source", value: "Mitoshi's engine on Tempo" },
       method: { label: "Method", value: "Your fills and the settlement rule" },
     },
   },

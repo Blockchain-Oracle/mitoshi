@@ -7,7 +7,7 @@
 export const WORDS = {
   nav: { markets: "Markets", how: "How it works", docs: "Docs", start: "Start trading", home: "Mitoshi home" },
   hero: {
-    kicker: "On Tempo testnet",
+    kicker: "On Tempo",
     title: ["See where", "it's going.", "Call the close."],
     line: "Up or down in minutes. Close in one tap.",
     assets: ["BTC", "ETH", "SOL", "TSLA", "NVDA"],

@@ -1,5 +1,5 @@
 // Ported from Owarine 90a91d71:web/src/features/legal/LegalScreen.tsx (R4-13a, D-227) — /privacy and /terms in /legal's
-// frame: the title, a TESTNET sticker and three facts first (sticky beside the list from `lg`), then one card per
+// frame: the title, a BETA sticker and three facts first (sticky beside the list from `lg`), then one card per
 // section with a one-line gist, opening to its points. Inside the app shell, so it adds no inset of its own.
 import { AtSign } from "lucide-react";
 import Link from "next/link";

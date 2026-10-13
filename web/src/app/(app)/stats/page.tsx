@@ -6,7 +6,7 @@ import { StatsScreen } from "@/features/stats/StatsScreen";
 import { StatsFrame, StatsReading } from "@/features/stats/StatsLoading";
 import "@/styles/stats.css";
 
-export const metadata: Metadata = { title: "Stats", description: "Wallets that made a call on Mitoshi, read from the engine's fills on Tempo testnet, each with its receipt." };
+export const metadata: Metadata = { title: "Stats", description: "Wallets that made a call on Mitoshi, read from the engine's fills on Tempo, each with its receipt." };
 
 export default function Page() {
   return (

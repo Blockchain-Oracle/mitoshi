@@ -44,7 +44,7 @@ export const PITCH = {
       ["Play", "Range, Moonshot, Parlay and Boost, priced against the same order book"],
       ["Check", "every fill links to its Tempo receipt; a Window pays only on its signed print"],
     ] as const,
-    foot: "LIVE ON TEMPO TESTNET (MODERATO) · LET ME SHOW YOU",
+    foot: "LIVE ON TEMPO · LET ME SHOW YOU",
   },
 
   ahead: {
@@ -52,9 +52,9 @@ export const PITCH = {
     kicker: "Where it goes from here",
     h1a: "Now. Next. ",
     emph: "Mainnet",
-    now: { tag: "NOW", title: "On your phone", body: "Open testnet.mitoshi.xyz in your phone's browser, sign up with a passkey and tap. Nothing to install." },
+    now: { tag: "NOW", title: "On your phone", body: "Open mitoshi.xyz in your phone's browser, sign up with a passkey and tap. Nothing to install." },
     later: { tag: "NEXT", title: "Stocks you hold", body: "Tokenized stocks traded on Tempo beside the Windows. The pools and their price guard are already deployed on Moderato; the screens come next." },
-    then: { tag: "THEN", title: "Mainnet", body: "The same contracts and keepers on Tempo mainnet, at mitoshi.xyz." },
-    foot: "testnet.mitoshi.xyz",
+    then: { tag: "THEN", title: "Mainnet", body: "The same contracts and keepers on Tempo mainnet, at the same address." },
+    foot: "mitoshi.xyz",
   },
 } as const;

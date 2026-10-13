@@ -26,7 +26,7 @@ export const AGENTS = {
   cells: { entrusted: "Entrusted", net: "Net", max: "Max / trade", last: "Last active" },
   settled: (n: number) => `${n} settled`,
   net: (net: bigint, settled: number) => (settled === 0 ? "—" : `${net > 0n ? "+" : net < 0n ? "−" : ""}${usd(net)}`),
-  advice: "Testnet money. Strategies can lose. Not advice.",
+  advice: "Test money. Strategies can lose. Not advice.",
   cockpit: {
     back: "All agents",
     eyebrow: (agentId: string | null, series: string | null) => `${agentId ? `AGENT #${agentId}` : "STRATEGY"} · ${series ?? "ANY WINDOW"}`,
