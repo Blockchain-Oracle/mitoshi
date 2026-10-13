@@ -1,5 +1,15 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
+**2026-10-13, S11 shipped (D-227, `stage-11-trade-from-x.md`, `acceptance/S11.md`): sign in with X, trade from X,
+`/claim` and the share-to-sign links are on testnet — merge `cbf5c9dd`, ship fixes `64f5567a` (the X screens waited for
+no data layer: `/claim` hit the error page) and `4022e80a` (22 px CTAs); web `4022e80a`, ops `11d85e07`. The x-relay is
+ops' 27th actor, live: it reads @Mitoshi_app's mentions through the bot's session (the X API answers 402 until
+credits), signs from the funded `x-relay` key and replies as the bot. Live check: Sign in with X → X's authorize URL
+(the app's client, `tweet.read users.read`, S256, the testnet callback); the X routes at 375 × 667 and 1440 × 900 with
+no console errors; the signed-in X account card checked on a local build. Waits on the owner: the first mention from
+X, one real consent, rotating the X pairs, whether the bot replies (on now), credits only if the session stops. Open
+for an agent: the app's X handoff on a device or simulator (stage-11 Handoff step 4).**
+
 **2026-10-13, round 4 (D-227, `owarine-plan-r4-2026-10-12.md`): every slice built and deployed to testnet — R4-0 → R4-13,
 MOBILE and DOCS (web deploy of `6aaeae1`, ops and docs of `813b924`; the last code change is `a5f8b74`). Live check
 07:15Z: nine routes at 375 × 667 and 1440 × 900 with no console errors and ticking prices, ops /health 29/29 ok, the

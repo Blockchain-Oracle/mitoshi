@@ -11,6 +11,9 @@
   account.
 - **Gate:** a mention executes once from the EXECUTOR grant; a bind with a passkey signature verifies. **Rows:** L-58,
   L-59, L-60, A-3d, A-3e.
+- [x] **Shipped 2026-10-13** (`merge(S11)` `cbf5c9dd`; ship fixes `64f5567a`, `4022e80a`): web and ops on testnet with
+  the X names, `x-relay` the 27th ops actor, live (reading through the bot's session, signing from the `x-relay` key,
+  posting). Evidence: acceptance/S11.md (ship rows).
 
 ## Findings
 
@@ -59,6 +62,21 @@
   could both stay live (an unlink then revived the other); `upsertLink` now takes a lock per X account and per account
   (the store test races eight binds: one live route; without the lock it failed every run).
 
+- **F-S11-09 — the X screens read before the data layer existed.** The app's TanStack Query client arrives with the
+  late data layer (`DataRuntime`, after first paint, D-071); `/earn` and `/bridge` wait for `useDataReady()`, the X
+  islands didn't. On the deployed site `/claim` threw "No QueryClient set" into the error page on 3 of 4 loads (its chunk
+  landed first); `/trade-from-x` only escaped by load order. `XIsland.tsx` now gates all four X screens on
+  `useDataReady()` behind the same placeholder (`64f5567a`); re-checked: 0 errors in 16 loads.
+- **F-S11-10 — the block CTAs collapsed to 22 px.** The kit's block pill is `flex: 1 1 0%` (pills sharing a row); every
+  block CTA in the X steps (Sign in with X, Link, Enable X trading, Sign in as …, Open Portfolio, Continue in the app)
+  sits in a column stack, where the zero basis beat the 52 px height. `.xt .kit-pill--block { flex: none; }` (`4022e80a`).
+  Other features' block pills in column stacks may share it — not checked here.
+- **F-S11-11 — the relay ships live.** `X_RELAY_LIVE=1` with ops' `DRY_RUN=0` (a dry relay would be a simulation, the
+  owner's rule) and `X_POSTING_ENABLED=1` as the owner's `x-testnet.env` has it: a call that mentions @Mitoshi_app is
+  placed once through its author's EXECUTOR grant and answered as the bot, with the receipt card. Turning replies off
+  is `X_POSTING_ENABLED=0` on ops and a restart. The web gets no `X_BEARER_TOKEN` (F-S11-07). The box ran the web build at
+  load average 56 with 80 MB free though nothing else was building; one deploy at a time held.
+
 ## Handoff
 
 Built on `r4/s11-x` (commits `6999be95` relay, `494fe6c9` web, `f134a708` gate, `f5fd7cdd` calls only, then the
@@ -87,3 +105,13 @@ For the integrator (deploy):
 
 Open: the deploy and the app handoff on a device (steps above, the integrator's); the first mention from X, one real
 sign-in, the X pairs' rotation, and turning posting on (owner-actions).
+
+**Shipped (2026-10-13, the integrator):** merged `cbf5c9dd`; checks green (web tsc, the five packages' typecheck,
+invariants 0/0, S11 vitest 88/88, `next build`, budgets 76/76). Coolify: the web and ops names above set (values from
+the owner's files, names only in `infra/secrets.md`); `OPS_ACTORS` gained `x-relay`; `X_RELAY_LIVE=1`,
+`X_POSTING_ENABLED=1`. Deployed one at a time: web `cbf5c9dd` → `64f5567a` → `4022e80a`, ops `11d85e07`. Live: ops /health
+30 actors ok, x-relay live and reading through the session (the X API 402s); Sign in with X answers 303 to X's
+authorize URL with the app's client, `tweet.read users.read`, S256 and the testnet callback; the X routes render in
+the shell at 375 × 667 and 1440 × 900 with no console errors (after F-S11-09 and F-S11-10). Still open: step 4 (the app
+on a device) and the owner's rows (the first mention from X, one real consent, rotating the X pairs, credits only if
+the session stops reading).
