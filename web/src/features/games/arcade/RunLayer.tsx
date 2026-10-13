@@ -51,7 +51,7 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
   const [phase, setPhase] = useState<Phase>("countdown");
   const [count, setCount] = useState(COUNT_FROM);
   const [run, setRun] = useState<ArcadeRun | null>(null);
-  const [hud, setHud] = useState({ score: 0, combo: 1, grip: 1 });
+  const [hud, setHud] = useState({ score: 0, combo: 1, grip: 0 });
   const [result, setResult] = useState<StageResult | null>(null);
   const streak = useRef(0);
   const runId = useRef(0);
@@ -156,7 +156,7 @@ export function RunLayer({ game, seed, tape, calm, best, ability, post, refresh,
   const again = () => {
     feedback("tap");
     setResult(null);
-    setHud({ score: 0, combo: 1, grip: 1 });
+    setHud({ score: 0, combo: 1, grip: 0 });
     setCount(COUNT_FROM);
     setPhase("countdown");
   };
