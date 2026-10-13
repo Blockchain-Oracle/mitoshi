@@ -4,6 +4,12 @@ import type { TempoAccountKind } from "./wallet-shell-context";
 
 export const PASSKEY_CONNECTOR_ID = "webAuthn";
 export const TEMPO_WALLET_CONNECTOR_ID = "xyz.tempo";
+/**
+ * The passkey provider announces itself to the page over EIP-6963 (accounts' Provider, "Injected Wallet" /
+ * `com.injectedwallet` by default), and wagmi would list that announcement as a second, browser-wallet row that runs
+ * the passkey ceremony by another path (Codex QA B1). Naming the connector's rdns makes wagmi skip it.
+ */
+export const PASSKEY_RDNS = "xyz.mitoshi.passkey";
 
 export function kindOf(connector: { id: string; type: string }): TempoAccountKind {
   if (connector.id === PASSKEY_CONNECTOR_ID) return "passkey";

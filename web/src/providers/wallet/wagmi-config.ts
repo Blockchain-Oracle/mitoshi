@@ -12,7 +12,7 @@ import { injected, walletConnect } from "wagmi/connectors";
 import { tempoWallet, webAuthn } from "wagmi/tempo";
 import { webEnv } from "@/lib/env";
 import { accessKeyPolicy } from "./access-key";
-import { TEMPO_WALLET_CONNECTOR_ID } from "./connector-kind";
+import { PASSKEY_RDNS, TEMPO_WALLET_CONNECTOR_ID } from "./connector-kind";
 import { lazyConnector } from "./lazy-connector";
 
 const env = webEnv.markets;
@@ -37,6 +37,8 @@ export function getWagmiConfig(): Config {
     chains: [TEMPO_CHAIN],
     connectors: [
       webAuthn({
+        name: "Passkey",
+        rdns: PASSKEY_RDNS,
         testnet: env.network === "testnet",
         authUrl: env.authUrl,
         feePayer: env.relayUrl,
