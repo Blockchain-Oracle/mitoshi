@@ -4,7 +4,7 @@ import { PRICE_STALE_AFTER_MS } from "@cwf/core/constants";
 import type { DeckCard } from "@cwf/core/games";
 import { secToMs } from "@cwf/core/units";
 import { useCallback, useEffect, useRef } from "react";
-import { Odometer } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
 import { StaleTick } from "@/components/states";
 import { useMarketSession } from "@/features/markets/session/useMarketSession";
 import { booleanCodec, usePersistedState } from "@/lib/persisted";
@@ -22,6 +22,7 @@ import { PracticeWatch } from "./PracticeWatch";
 import { PriceProbe } from "./PriceProbe";
 import { usePracticeRound } from "./usePracticeRound";
 import "./practice.css";
+import "@/components/kit/kit.css";
 
 /**
  * `/games/practice` — Beat the coin (R4-9, D-227; ported from Senryo:apps/web/src/features/games/WarmUpScreen.tsx, on

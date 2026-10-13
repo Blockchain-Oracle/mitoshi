@@ -12,7 +12,9 @@ import { useAssetPrice, useLanes } from "@cwf/markets/react";
 import { Play } from "lucide-react";
 import Link from "next/link";
 import { useMemo, type CSSProperties } from "react";
-import { CountdownRing, Odometer, Sticker } from "@/components/kit";
+import { CountdownRing } from "@/components/kit/CountdownRing";
+import { Odometer } from "@/components/kit/Odometer";
+import { Sticker } from "@/components/kit/Sticker";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { useMarketSession } from "@/features/markets/session/useMarketSession";
 import { feedKeyOf } from "@/features/markets/units";
@@ -22,6 +24,7 @@ import { allDayLive, isAllDayFeed, tickerOf } from "../lanes";
 import { useLastGame } from "../last-game";
 import { cadenceLabel } from "../stage/SwipeDeck";
 import { useCrowdPct } from "./data";
+import "@/components/kit/kit.css";
 
 function LivePrice({ asset, nowMs }: { asset: string; nowMs: number }) {
   const reading = useAssetPrice(isTickerSymbol(tickerOf(asset)) ? asset : null, nowMs);

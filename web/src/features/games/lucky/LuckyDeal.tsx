@@ -11,7 +11,7 @@ import { isOk, type Address } from "@cwf/core";
 import { useLanes } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef } from "react";
-import { SwipeToConfirm } from "@/components/kit";
+import { SwipeToConfirm } from "@/components/kit/SwipeToConfirm";
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { useQuote } from "@/features/markets/ticket/useQuote";
 import { usePlaceBet } from "@/features/markets/ticket/usePlaceBet";
@@ -21,6 +21,7 @@ import { cadenceLabel } from "../stage/SwipeDeck";
 import { LUCKY } from "./copy";
 import type { LuckyDealWire } from "./lucky-wire";
 import { reportPlaced } from "./useLuckyDraw";
+import "@/components/kit/kit.css";
 
 const multiple = (bps: number) => `×${(impliedMultipleHundredths(bps) / 100).toFixed(2)}`;
 /** pathUSD has 6 decimals; the stake prints from its base units. */

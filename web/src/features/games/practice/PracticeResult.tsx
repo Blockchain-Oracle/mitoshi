@@ -3,12 +3,13 @@
 import type { PracticeRound, PracticeScore } from "@cwf/core/games";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Odometer } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { useGames } from "../GamesProvider";
 import { RaceRow } from "./BeatParts";
 import { tickerOf } from "../lanes";
 import { PRACTICE } from "./copy";
+import "@/components/kit/kit.css";
 
 const REVEAL_MS = 220;
 

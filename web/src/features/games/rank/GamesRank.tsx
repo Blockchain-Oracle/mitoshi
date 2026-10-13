@@ -6,7 +6,7 @@
 // Each on the owner-approved LeaderboardPodium and LeaderboardRankings with the marble AccountAvatar. A Duel tab joins
 // with the arena: the duel ladder is the first tab. Lucky's streak ladder is its own tab.
 import { useState } from "react";
-import { TextTabs } from "@/components/kit";
+import { TextTabs } from "@/components/kit/TextTabs";
 import { LeaderboardPodium, type PodiumPlace } from "@/components/ui/leaderboard-podium";
 import { LeaderboardRankings, type RankingRow } from "@/components/ui/leaderboard-rankings";
 import { useLeaderboard } from "@/features/leaderboard/useLeaderboard";
@@ -19,6 +19,7 @@ import type { LuckyBoardWire } from "../lucky/lucky-wire";
 import { SeasonBanner } from "../duel/SeasonBanner";
 import "../duel/duel.css";
 import "./rank.css";
+import "@/components/kit/kit.css";
 
 type Tab = "duel" | "line-rider" | "candle-hop" | "streaks" | "lucky";
 const TABS = (Object.keys(GAMES.rank.tabs) as Tab[]).map((value) => ({ value, label: GAMES.rank.tabs[value] }));

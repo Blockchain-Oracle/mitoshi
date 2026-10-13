@@ -5,11 +5,12 @@
 // venue's real fills of the last ten minutes ("0x3f…a1 · UP · BTC 5m · 12s") with the arcade's newest replayed runs
 // ("0x…a1 · Line Rider 1,240"), a wallet's best flagged. Hidden when both are empty; still under reduced motion.
 import { useMemo } from "react";
-import { InfiniteSlider } from "@/components/kit";
+import { InfiniteSlider } from "@/components/kit/InfiniteSlider";
 import { cadenceLabel } from "../stage/SwipeDeck";
 import { ARCADE } from "../arcade/copy";
 import { GAMES } from "../copy";
 import { shortHex, takerLeansUp, useRecentRuns, useTape } from "./data";
+import "@/components/kit/kit.css";
 
 const WINDOW_SEC = 600;
 

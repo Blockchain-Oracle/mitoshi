@@ -10,7 +10,7 @@ import { RANGE_NOT_DEPLOYED, type RangeReserveState } from "@cwf/core/range";
 import { useLanes } from "@cwf/markets/react";
 import Link from "next/link";
 import { useCallback, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { Sticker } from "@/components/kit";
+import { Sticker } from "@/components/kit/Sticker";
 import { useRangeReserve } from "@/features/range/data";
 import { useWalletSession } from "@/lib/wallet-session";
 import { ARCADE } from "../arcade/copy";
@@ -24,6 +24,7 @@ import { windowsLive } from "../lanes";
 import { useBoard, usePreviewTape, type PreviewTape } from "./data";
 import { DUEL } from "../duel/copy";
 import { useDuelPresence } from "../duel/MatchTile";
+import "@/components/kit/kit.css";
 
 const ORDER: readonly GameId[] = ["line-rider", "candle-hop", "lucky", "range", "moonshot", "duel", "practice"];
 

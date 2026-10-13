@@ -4,13 +4,14 @@ import { ChevronLeft, CircleHelp, SlidersHorizontal, Volume2, VolumeX } from "lu
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Sticker } from "@/components/kit";
+import { Sticker } from "@/components/kit/Sticker";
 import { toggleMute, useMuted } from "./audio";
 import { gameEntry, gameIdFromPath } from "./catalog";
 import { GAMES } from "./copy";
 import { useGames } from "./GamesProvider";
 import { HowToSheet } from "./HowToSheet";
 import { rememberGame } from "./last-game";
+import "@/components/kit/kit.css";
 
 /** The cabinet sticker's tone by whose money is at risk: free reads profit, your stake the accent, the house's quiet. */
 export const ECON_TONE = { none: "profit", "market-order": "accent", "market-order-and-pot": "accent", "house-position": "surface" } as const;

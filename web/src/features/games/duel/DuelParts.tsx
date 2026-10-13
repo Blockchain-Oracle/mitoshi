@@ -9,7 +9,7 @@ import { STAKE_TIERS, type StakeTierId } from "@cwf/core/games";
 import { formatBaseUnits } from "@cwf/core/units";
 import { Info } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
-import { Odometer } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { AccountAvatar } from "@/components/shell/header/AccountAvatar";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
@@ -17,6 +17,7 @@ import { SearchingBanner } from "../art/PixelArt";
 import { tickerOf } from "../lanes";
 import { DUEL } from "./copy";
 import type { DuelMatchWire, DuelQueueWire } from "./duel-wire";
+import "@/components/kit/kit.css";
 
 export const dollars = (base: string | bigint) => `$${formatBaseUnits(BigInt(base), 6, { minDp: 0 })}`;
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;

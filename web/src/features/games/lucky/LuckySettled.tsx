@@ -10,13 +10,15 @@ import type { Address } from "@cwf/core";
 import { formatBaseUnits } from "@cwf/core/units";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Modal, Odometer } from "@/components/kit";
+import { Modal } from "@/components/ui/modal";
+import { Odometer } from "@/components/kit/Odometer";
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { SIDE_WORD } from "@/features/markets/side-styles";
 import { gameKey } from "../keys";
 import { LUCKY } from "./copy";
 import { useLuckyHistory } from "./LuckyHistory";
 import type { LuckyRowWire } from "./lucky-wire";
+import "@/components/kit/kit.css";
 
 const DECIDED = new Set(["won", "lost", "void", "cashed-out"]);
 const OPEN = new Set(["placed", "pending", "unknown"]);

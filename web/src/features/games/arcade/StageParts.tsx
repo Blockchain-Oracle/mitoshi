@@ -6,9 +6,10 @@
 // numbers, Play again, Share, Exit). In the arena's ink; every control a 44 px button.
 import { Pause, Play, Share2, Trophy, Volume2, VolumeX, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Odometer } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
 import { toggleMute, useMuted } from "../audio";
 import { ARCADE } from "./copy";
+import "@/components/kit/kit.css";
 
 const CARD_READY_MS = 600;
 
