@@ -10,11 +10,12 @@ export const TERMINAL = {
   chartLabel: (name: string, price: string) => `${name} live price ${price}`,
   waiting: (symbol: string) => `Waiting for ${symbol}…`,
   feed: {
-    coinbase: "Coinbase trades",
-    venues: "Median of 5 exchanges",
+    // R4-3 (D-227): Owarine's word count — the chip names the source and its cadence, nothing more.
+    coinbase: "Coinbase",
+    venues: "5-exchange median",
     bitstamp: "Bitstamp",
-    alpaca: "IEX trades",
-    redstone: "RedStone · updates every 10 s",
+    alpaca: "IEX",
+    redstone: "RedStone · 10 s",
     /** A stock off NYSE hours: the chip names the source, and §8's note sits under it (the display is RedStone's 24/7). */
     redstoneStock: "RedStone",
     offHoursNote: "Updates every 10 s outside NYSE hours",
@@ -35,10 +36,10 @@ export const TERMINAL = {
     allDay: "24/7",
   },
   noWindow: {
-    spcx: "No Windows — no signed price source",
-    regularOnly: (open: string) => `No 24/7 lane — next Regular opens ${open}`,
-    gap0400: (next: string) => `No 24/7 Window over the 04:00 ET gap — opens ${next}`,
-    none: "No Window right now — the next one opens soon",
+    spcx: "No signed price yet",
+    regularOnly: (open: string) => `Opens ${open}`,
+    gap0400: (next: string) => `04:00 ET gap · opens ${next}`,
+    none: "Next Window soon",
   },
   buttons: {
     up: "UP",
@@ -121,15 +122,14 @@ export const TERMINAL = {
   },
   modes: {
     label: "Ways to call this Window",
-    names: { updown: "Up / Down", range: "Range", boost: "Boost", private: "Private", parlay: "Parlay" },
+    names: { updown: "Up/Down", range: "Range", boost: "Boost", private: "Private", parlay: "Parlay" },
     bandHigh: "Band ↑",
     bandLow: "Band ↓",
-    moonshot: "Moonshot ↗",
     prompt: {
-      parlay: "One Window per leg. Your passkey confirms the ticket.",
-      range: "A band the close lands inside. Passkey confirms.",
-      boost: "More exposure, with a knock-out line. Passkey confirms.",
-      private: "Off the public tape. Passkey confirms.",
+      parlay: "One Window per leg.",
+      range: "Close inside a band.",
+      boost: "More exposure, knock-out line.",
+      private: "Off the public tape.",
     },
   },
   install: {
@@ -198,15 +198,15 @@ export const TERMINAL = {
     musicOn: "Turn music on",
     musicOff: "Turn music off",
     recentre: "Recentre",
+    /** The ⋯ overflow (R4-3): one word each. */
+    more: "More", moreDepth: "Depth", moreRoom: "Room", moreSensei: "Sensei", moreAlerts: "Alerts",
   },
   scheduled: {
-    note: (opens: string) => `Opens ${opens}. Fills at your price then.`,
+    note: (opens: string) => `Opens ${opens} · fills at your price`,
     scheduling: (side: string, symbol: string) => `Scheduling ${side} ${symbol}…`,
   },
-  arm: {
-    lead: "One passkey prompt now; every tap signs itself.",
-    cta: "Turn on one-tap",
-  },
+  /** R4-3 (D-227): no card above UP/DOWN — one toast a session after the first prompted trade; the switch is in settings. */
+  arm: { lead: "One prompt, then taps sign themselves.", cta: "Turn on one-tap", toastTitle: "One-tap is off", toastAction: "Turn on" },
   exits: {
     title: (side: string, symbol: string) => `TP / SL · ${side} ${symbol}`,
     open: "TP / SL",
@@ -382,6 +382,8 @@ export const TERMINAL = {
     trailing: "Trailing stop",
     trailingHint: "How far price may come back before Trail closes.",
     tolerance: "Close tolerance",
+    /** R4-3 (D-227): one-tap and the scheduled call's price, moved off the footer. */
+    oneTap: "One-tap", oneTapRight: "one passkey prompt", scheduledPrice: "Scheduled price", scheduledRight: "before the open",
     toleranceHint: "How far below the shown value a Close may land.",
     min: "Min",
     max: "Max",

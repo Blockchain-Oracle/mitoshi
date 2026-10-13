@@ -16,14 +16,15 @@ import { ArmTradingBalance } from "./ArmTradingBalance";
 import { SESSION } from "./copy";
 import { useSessionView } from "./context";
 
-/** `className` and `offLabel` restyle the off trigger where the ticket's `tk-*` styles aren't loaded (the terminal). */
-export function TapTradingChip({ className, offLabel }: { className?: string; offLabel?: string } = {}) {
+/** `className` and `offLabel` restyle the off trigger where the ticket's `tk-*` styles aren't loaded (the terminal);
+ *  `defaultOpen` mounts it with its modal open (R4-3: the terminal's "One-tap is off · Turn on" toast). */
+export function TapTradingChip({ className, offLabel, defaultOpen = false }: { className?: string; offLabel?: string; defaultOpen?: boolean } = {}) {
   const view = useSessionView();
   const shell = useWalletShell();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   if (view.grant && view.status !== "disarmed") return <AllowancePill />;
   const offerBalance = view.status === "disarmed";
-  if (!offerBalance) return <TapChip className={className} offLabel={offLabel} />;
+  if (!offerBalance) return <TapChip className={className} offLabel={offLabel} defaultOpen={defaultOpen} />;
   const walletKeyOn = shell.walletKey !== null;
   return (
     <>

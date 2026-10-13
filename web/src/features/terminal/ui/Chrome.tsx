@@ -51,7 +51,8 @@ export function AssetChip({ asset, name, price, feed, stale, connecting, onOpen 
 }
 
 /** The Window chip: which lane (Regular, 24/7, the Gap) and how long this Window has. */
-export function WindowChip({ lanes, laneKey, onPick, state }: { lanes: readonly TerminalLane[]; laneKey: string | null; onPick: (lane: TerminalLane) => void; state: string }) {
+/** `sessionWord` (R4-3): the NYSE state or the halt, folded into the state on a phone (the session cell is desktop's). */
+export function WindowChip({ lanes, laneKey, onPick, state, sessionWord = null }: { lanes: readonly TerminalLane[]; laneKey: string | null; onPick: (lane: TerminalLane) => void; state: string; sessionWord?: string | null }) {
   const { shown, toggle } = windowChips(lanes, laneKey);
   return (
     <div className="tm-glass tm-window" role="group" aria-label="Window">
@@ -67,7 +68,10 @@ export function WindowChip({ lanes, laneKey, onPick, state }: { lanes: readonly 
           </button>
         ) : null}
       </div>
-      <span className="tm-window-state" aria-live="off">{state}</span>
+      <span className="tm-window-state" aria-live="off">
+        {sessionWord ? <span className="tm-phone">{sessionWord} · </span> : null}
+        {state}
+      </span>
     </div>
   );
 }

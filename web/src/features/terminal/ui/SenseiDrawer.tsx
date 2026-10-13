@@ -3,7 +3,8 @@
 // figures a question carries are read the moment it is asked: the spot, the Window on screen with its line and each
 // side's price from the book, the NYSE session for a stock, the open positions with what Close pays, the settled
 // record (Sensei's brake reads a losing run) and the stock's next report. Mounted only while open, so its reads cost
-// nothing otherwise.
+// nothing otherwise. R4-3 (D-227): the crowd and the next report ride in its head — on a phone they left the terminal's
+// header, which keeps Owarine's two rows.
 import { EARNINGS_LOOKAHEAD_DAYS, addDays, etDateOf, formatCadence, isStockSymbol, type Address, type EventMarket, type Side } from "@cwf/core";
 import { useAccountHistory } from "@cwf/markets/react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -14,6 +15,8 @@ import { recordOf } from "@/features/sensei/record";
 import { SenseiSheet } from "@/features/sensei/SenseiSheet";
 import type { TerminalPosition } from "../terminal-positions";
 import type { PositionValue } from "../usePositionValue";
+import { CrowdCell } from "./CrowdCell";
+import { EarningsCell } from "./EarningsCell";
 
 export interface SenseiDrawerProps {
   open: boolean;
@@ -64,7 +67,13 @@ function SenseiBody({ open, onClose, ...p }: Omit<SenseiDrawerProps, "onOpenChan
         : {}),
     };
   }, []);
-  return <SenseiSheet open={open} onClose={onClose} read={read} market={p.market} openingRaw={p.openingRaw} onAct={p.onAct} />;
+  const cells = (
+    <>
+      <CrowdCell symbol={p.symbol} />
+      <EarningsCell symbol={p.symbol} market={p.market} />
+    </>
+  );
+  return <SenseiSheet open={open} onClose={onClose} read={read} market={p.market} openingRaw={p.openingRaw} onAct={p.onAct} cells={cells} />;
 }
 
 export function SenseiDrawer({ open, onOpenChange, ...rest }: SenseiDrawerProps) {

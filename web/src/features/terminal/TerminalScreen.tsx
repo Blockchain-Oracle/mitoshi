@@ -5,7 +5,12 @@
 // (D-227): the phone dock stays under it (the mark disc left the header), the stack sits under the chart controls and
 // hides while the interval menu is open, UP/DOWN stay with the reason when no Window is listed, and signed-out History
 // is DEMO's paper history. R4-1 (D-227): the book of positions is `useTerminalBook` — totals over priced rows, equity
-// with every row at what it counts for, the Window's positions summed on the chart.
+// with every row at what it counts for, the Window's positions summed on the chart. R4-3 (D-227), Owarine 90a91d71
+// TerminalScreen's phone: the chart is full-bleed under the floating header and footer (`--tm-foot` keeps its pins,
+// the depth card and the callouts clear); the footer reads controls → View pill → the mode words → UP/DOWN (the chart
+// controls mount once per breakpoint, `useIsDesktop`); the header is two rows (the session folds into the Window chip,
+// crowd and earnings ride in Sensei's head); no one-tap card above the buttons — after the first prompted trade one
+// toast a session offers it, and the switch lives in the trade settings; Markets · History · Settings is desktop's.
 import { isStockSymbol, type TickerSymbol } from "@cwf/core";
 import { usePathname } from "next/navigation";
 import { holdStreamAwake } from "@cwf/markets/stream";
@@ -28,7 +33,9 @@ import { replaceTradeParams } from "./useTerminalWindow";
 import { useMarketSession, type MarketSession } from "@/features/markets/session";
 import { useTerminalState } from "./useTerminalState";
 import { AssetChip, EquityPill, SettingsStack, ViewPositionPill, WindowChip } from "./ui/Chrome";
-import { SessionCell } from "./ui/SessionCell";
+import { SessionCell, useSessionWord } from "./ui/SessionCell";
+import { useIsDesktop } from "./useIsDesktop";
+import "@/styles/terminal-phone.css";
 import { useDemoSettle } from "./useDemoSettle";
 import { HaltNotice } from "./ui/HaltNotice";
 import { CrowdCell } from "./ui/CrowdCell";
@@ -95,6 +102,24 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   // Signed in but neither one-tap path on: every tap would prompt. The card says so and arms in one passkey prompt. A
   // browser wallet signs each call itself and can never arm (D-140), so it gets no card with a dead button (R4-0).
   const needsArm = session.isConnected && sessionView.status !== "not-passkey" && !tapArmed && sessionView.status !== "armed";
+  // R4-3 (D-227): after the first passkey-prompted open, one toast a session — "One-tap is off · Turn on" — whose action
+  // mounts the arm chip with its modal open. A fresh fill (`usePendingFills`) is a trade this tab just opened.
+  const [armAsk, setArmAsk] = useState(0);
+  const fillsSeen = useRef(pendingFills.length);
+  useEffect(() => {
+    const grew = pendingFills.length > fillsSeen.current;
+    fillsSeen.current = pendingFills.length;
+    if (!grew || !needsArm) return;
+    try {
+      if (window.sessionStorage.getItem(ARM_TOAST_KEY)) return;
+      window.sessionStorage.setItem(ARM_TOAST_KEY, "1");
+    } catch {
+      // No session storage (a private window): the toast still says it once per mount.
+    }
+    notify.item({ id: "terminal-one-tap", title: TERMINAL.arm.toastTitle, action: { label: TERMINAL.arm.toastAction, onClick: () => setArmAsk((n) => n + 1) } });
+  }, [pendingFills.length, needsArm]);
+  const desktop = useIsDesktop();
+  const sessionWord = useSessionWord(symbol, s.win.lane?.basis ?? null);
   const chartHandle = useRef<ChartHandle | null>(null);
   const market = s.market;
   const [pays, setPays] = useState("—");
@@ -180,6 +205,21 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   // toasts under it on a phone (toast.css `--tm-head`).
   const [menuOpen, setMenuOpen] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
+  // The phone's footer floats over the full-bleed chart: its height keeps the chart's pins, the depth card and the
+  // callouts clear of it (`--tm-foot`, terminal-phone.css).
+  const sideRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = sideRef.current;
+    if (!el || desktop) return;
+    const root = document.documentElement.style;
+    const ro = new ResizeObserver(() => root.setProperty("--tm-foot", `${Math.round(el.getBoundingClientRect().height)}px`));
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.removeProperty("--tm-foot");
+    };
+  }, [desktop]);
+  const controls = <ChartControls handle={chartHandle} depthOn={depth} onDepth={setDepth} onRoom={() => drawer.show(DRAWERS.room)} onAlerts={() => drawer.show(DRAWERS.alerts)} onSensei={() => drawer.show(DRAWERS.sensei)} onMenu={setMenuOpen} />;
   useEffect(() => {
     const el = topRef.current;
     if (!el) return;
@@ -206,9 +246,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           <div className="tm-stack-slot">
             <SettingsStack asset={symbol} size={stakeText} pays={s.settings.boostX > 1 ? TERMINAL.positions.boost(s.settings.boostX) : market ? pays : "—"} trailing={`${trailWords(s.settings.trailPct)}%`} onOpen={() => drawer.show(DRAWERS.settings)} />
           </div>
-          <div className="tm-controls-slot">
-            <ChartControls handle={chartHandle} depthOn={depth} onDepth={setDepth} onRoom={() => drawer.show(DRAWERS.room)} onAlerts={() => drawer.show(DRAWERS.alerts)} onSensei={() => drawer.show(DRAWERS.sensei)} onMenu={setMenuOpen} />
-          </div>
+          {desktop ? <div className="tm-controls-slot">{controls}</div> : null}
           <div className="tm-top" ref={topRef}>
             <div className="tm-top-row">
               <span className="tm-lead">
@@ -218,21 +256,22 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             </div>
             <div className="tm-window-row">
               {s.win.lanes.length ? (
-                <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText === TERMINAL.window.none ? (laneNote ?? s.windowText) : s.windowText} />
+                <WindowChip lanes={s.win.lanes} laneKey={s.win.lane?.key ?? null} onPick={(l) => replaceTradeParams({ lane: l.key, w: null })} state={s.windowText === TERMINAL.window.none ? (laneNote ?? s.windowText) : s.windowText} sessionWord={sessionWord} />
               ) : null}
-              <div className="tm-cells">
+              <div className="tm-cells tm-desk">
                 <SessionCell symbol={symbol} basis={s.win.lane?.basis ?? null} />
                 <CrowdCell symbol={symbol} />
                 <EarningsCell symbol={symbol} market={market ?? null} />
               </div>
             </div>
-            {laneGapNext !== null ? <span className="tm-glass tm-note">{TERMINAL.noWindow.gap0400(clockText(laneGapNext))}</span> : null}
-            {s.win.lane?.basis === "stock24" ? <span className="tm-glass tm-note tm-note-feed">{TERMINAL.feed.lane247(symbol)}</span> : offHours ? <span className="tm-glass tm-note tm-note-feed">{TERMINAL.feed.offHoursNote}</span> : null}
+            {s.win.lane?.basis === "stock24" ? <span className="tm-glass tm-note tm-note-feed tm-desk">{TERMINAL.feed.lane247(symbol)}</span> : offHours ? <span className="tm-glass tm-note tm-note-feed tm-desk">{TERMINAL.feed.offHoursNote}</span> : null}
           </div>
         </section>
-        <aside className="tm-side" aria-label={TERMINAL.positions.title}>
-          {/* Owarine 90a91d71 terminal sidebar (P3, D-223): Markets · History · Settings, then the balance. */}
-          <nav className="tm-side-tabs" aria-label={TERMINAL.sideTabs.label}>
+        <aside className="tm-side" aria-label={TERMINAL.positions.title} ref={sideRef}>
+          {/* Owarine 90a91d71 terminal sidebar (P3, D-223): Markets · History · Settings, then the balance — desktop only;
+              a phone reaches them through the asset chip, the stack and the equity pill (R4-3). */}
+          {desktop ? null : controls}
+          <nav className="tm-side-tabs tm-desk" aria-label={TERMINAL.sideTabs.label}>
             <button type="button" onClick={() => drawer.show(DRAWERS.markets)}><LineChart aria-hidden />{TERMINAL.sideTabs.markets}</button>
             <button type="button" onClick={() => drawer.show(DRAWERS.history)}><History aria-hidden />{TERMINAL.sideTabs.history}</button>
             {/* The app's settings — sound, haptics (Owarine's sidebar Settings is the account's); the trade's own are the stack. */}
@@ -246,11 +285,10 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             <PositionsList positions={s.positions} bets={bets} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={onTrailHit} onValue={onValue} onBetValue={book.onBetValue} />
           </div>
           {count > 0 ? <ViewPositionPill count={count} roiPct={totalRoiBps === null ? null : totalRoiBps / 100} onOpen={() => drawer.show(DRAWERS.positions)} /> : null}
-          {needsArm ? (
-            <div className="tm-arm" role="note">
-              <span className="tm-field-hint">{TERMINAL.arm.lead}</span>
-              <TapTradingChip className="tm-choice tm-arm-cta" offLabel={TERMINAL.arm.cta} />
-            </div>
+          {armAsk > 0 && needsArm ? (
+            <span className="sr-only">
+              <TapTradingChip key={armAsk} defaultOpen className="tm-choice tm-arm-cta" offLabel={TERMINAL.arm.cta} />
+            </span>
           ) : null}
           <HaltNotice symbol={symbol} basis={s.win.lane?.basis ?? null} />
           {market ? <ModeChips mode={mode} onMode={chooseMode} /> : null}
@@ -273,7 +311,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
             <TerminalTrade market={market} phase={s.phase} stakeBase={s.stakeBase} spot={s.spot.price} boostX={s.settings.boostX} onPays={setPays} />
           ) : (
             // No Window listed: the pair stays, off, with why (Owarine `TradeButtons` `why`).
-            <TradeButtons mode="flat" disabled onUp={noop} onDown={noop} busy={null} upSub={null} downSub={null} upNote={null} downNote={null} why={s.win.loading ? null : noWindowNote(s.ticker, nyse, s.nowSec)} />
+            <TradeButtons mode="flat" disabled onUp={noop} onDown={noop} busy={null} upSub={null} downSub={null} upNote={null} downNote={null} why={s.win.loading ? null : laneGapNext !== null ? TERMINAL.noWindow.gap0400(clockText(laneGapNext)) : noWindowNote(s.ticker, nyse, s.nowSec)} />
           )}
         </aside>
       </div>
@@ -340,6 +378,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
 }
 
 const noop = () => {};
+const ARM_TOAST_KEY = "cwf.terminal.oneTapToast";
 
 /** Why a symbol lists no Window right now (the state table, stage-23 "Window rule"). */
 function noWindowNote(ticker: { redstoneFeedId: string | null; redstone24x7FeedId: string | null; kind: string } | null, nyse: MarketSession | null, nowSec: number): string {
