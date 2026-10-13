@@ -3,6 +3,7 @@
 import {
   PRACTICE_IDLE,
   PRACTICE_WATCH_SEC,
+  practiceClosesAtMs,
   practiceScore,
   practiceTransition,
   nextPracticeCard,
@@ -10,7 +11,6 @@ import {
   type DeckCard,
   type Pick,
   type PracticeCandidate,
-  type PracticeClose,
   type PracticeRound,
   type PracticeScore,
 } from "@cwf/core/games";
@@ -25,10 +25,10 @@ import { useNowMs } from "@/lib/clock";
  * One practice round, from the venue's live Windows to the scoreboard.
  *
  * The round's state is core's reducer; everything this hook adds is the live feed and the two
- * moments that read it — the entry price at a swipe, and the one close price for every card when
- * the watch ends. Both are real readings. If a reading is missing at either moment the card is not
- * scored rather than being given a made-up number, which is why `practiceScore` tolerates a missing
- * close in the first place.
+ * moments that read it — the entry price at a swipe, and the card's own close 30 s after that swipe
+ * (R6 games §4.2.1: every card's "30 s" is true). Both are real readings. If a reading is missing at
+ * either moment the card is not scored rather than being given a made-up number, which is why
+ * `practiceScore` tolerates a missing close in the first place.
  */
 
 export type PracticeReadiness =
@@ -51,6 +51,8 @@ export interface PracticeSession {
   deal: () => void;
   reportPrice: (price: AssetPrice) => void;
   watchLeftSec: number;
+  /** When a swiped card's own race closes (its swipe + 30 s); null before its swipe. */
+  closesAtMs: (cardIndex: number) => number | null;
   score: PracticeScore | null;
   nowMs: number;
 }
@@ -127,21 +129,43 @@ export function usePracticeRound(): PracticeSession {
     [prices],
   );
 
-  // The watch closes once, on the clock the last swipe started. Reading `prices` here rather than
-  // holding a subscription means the close is whatever the feed last said at that moment.
+  // Each card closes 30 s after its own swipe, on the latest price (a ref, not the closure the swipe saw). The
+  // timers are keyed by card and live as long as the deal; a new deal or unmount clears them.
+  const pricesRef = useRef(prices);
+  pricesRef.current = prices;
+  const timers = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  useEffect(() => {
+    const live = timers.current;
+    return () => {
+      live.forEach(clearTimeout);
+      live.clear();
+    };
+  }, [round.seed]);
+  useEffect(() => {
+    for (const p of round.picks) {
+      if (timers.current.has(p.cardIndex) || round.closes.some((c) => c.cardIndex === p.cardIndex)) continue;
+      const asset = round.cards.find((c) => c.index === p.cardIndex)?.asset;
+      const id = setTimeout(() => {
+        const price = asset ? pricesRef.current.get(asset) : undefined;
+        if (price) dispatch({ kind: "close", close: { cardIndex: p.cardIndex, closeRaw: price.priceRaw, atMs: Date.now() } });
+      }, Math.max(0, p.atMs + PRACTICE_WATCH_SEC * 1_000 - Date.now()));
+      timers.current.set(p.cardIndex, id);
+    }
+  }, [round.picks, round.closes, round.cards]);
+
+  // The round scores as soon as every swiped card has its close; a card whose price was missing at its close is
+  // left unscored, so a safety timer a second after the watch ends scores with whatever closed.
   useEffect(() => {
     if (round.phase !== "watching" || round.watchEndsAtMs === null) return;
-    const left = round.watchEndsAtMs - Date.now();
-    const id = setTimeout(() => {
-      const closes: PracticeClose[] = [];
-      for (const card of round.cards) {
-        const price = prices.get(card.asset);
-        if (price) closes.push({ cardIndex: card.index, closeRaw: price.priceRaw });
-      }
-      dispatch({ kind: "score", closes });
-    }, Math.max(0, left));
+    if (round.picks.every((p) => round.closes.some((c) => c.cardIndex === p.cardIndex))) {
+      dispatch({ kind: "score", closes: [] });
+      return;
+    }
+    const id = setTimeout(() => dispatch({ kind: "score", closes: [] }), Math.max(0, round.watchEndsAtMs + 1_000 - Date.now()));
     return () => clearTimeout(id);
-  }, [round.phase, round.watchEndsAtMs, round.cards, prices]);
+  }, [round.phase, round.watchEndsAtMs, round.picks, round.closes]);
+
+  const closesAtMs = useCallback((cardIndex: number) => practiceClosesAtMs(round, cardIndex), [round]);
 
   const playedSide = useCallback((cardIndex: number) => round.picks.find((p) => p.cardIndex === cardIndex)?.side ?? null, [round.picks]);
 
@@ -170,6 +194,7 @@ export function usePracticeRound(): PracticeSession {
     deal,
     reportPrice,
     watchLeftSec,
+    closesAtMs,
     score: round.phase === "scored" ? practiceScore(round) : null,
     nowMs,
   };

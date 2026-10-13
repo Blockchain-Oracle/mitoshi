@@ -6,6 +6,7 @@ import {
   PRACTICE_IDLE,
   PRACTICE_WATCH_SEC,
   practiceBotSide,
+  practiceClosesAtMs,
   practiceMove,
   practiceResult,
   practiceScore,
@@ -170,5 +171,32 @@ describe("the practice round", () => {
     const score = practiceScore(round);
     expect(score.cards.map((c) => c.card.index)).toEqual([1]);
     expect(score.youWon).toBe(1);
+  });
+  it("closes every card 30 s after its own swipe, whatever the deck's order (R6 games §4.2.1)", () => {
+    const five = Array.from({ length: 5 }, (_, i) => ({ index: i, marketId: candidate(i).marketId, asset: "SOL", intervalSec: 900, expirySec: NOW_SEC + 900 }));
+    const offsets = [0, 5_000, 12_000, 20_000, 40_000];
+    let round = dealt(five);
+    offsets.forEach((dt, i) => {
+      round = practiceTransition(round, { kind: "pick", pick: pick(i, "up", 100n, NOW_MS + dt) });
+    });
+    expect(round.phase).toBe("watching");
+    // The round ends 30 s after the last swipe, unchanged.
+    expect(round.watchEndsAtMs).toBe(NOW_MS + 40_000 + PRACTICE_WATCH_SEC * 1_000);
+    expect(five.map((c) => practiceClosesAtMs(round, c.index))).toEqual(offsets.map((dt) => NOW_MS + dt + 30_000));
+    // Each card's own close, read at its own +30 s; card 3's price was missing then.
+    for (const i of [0, 1, 2, 4]) round = practiceTransition(round, { kind: "close", close: { cardIndex: i, closeRaw: i % 2 ? 90n : 110n, atMs: NOW_MS + offsets[i]! + 30_000 } });
+    // A second close for the same card is a no-op.
+    round = practiceTransition(round, { kind: "close", close: { cardIndex: 0, closeRaw: 1n } });
+    const scored = practiceTransition(round, { kind: "score", closes: [] });
+    const score = practiceScore(scored);
+    expect(score.cards.map((c) => [c.card.index, c.you])).toEqual([[0, "won"], [1, "lost"], [2, "won"], [4, "won"]]);
+  });
+
+  it("takes a close only for a picked card, and only while the round is live", () => {
+    const two = [0, 1].map((i) => ({ index: i, marketId: candidate(i).marketId, asset: "BTC", intervalSec: 900, expirySec: NOW_SEC + 900 }));
+    const one = practiceTransition(dealt(two), { kind: "pick", pick: pick(0, "down", 100n) });
+    expect(practiceTransition(one, { kind: "close", close: { cardIndex: 1, closeRaw: 5n } }).closes).toEqual([]);
+    expect(practiceTransition(dealt(two), { kind: "close", close: { cardIndex: 0, closeRaw: 5n } }).closes).toEqual([]);
+    expect(practiceTransition(one, { kind: "close", close: { cardIndex: 0, closeRaw: 99n } }).closes).toHaveLength(1);
   });
 });

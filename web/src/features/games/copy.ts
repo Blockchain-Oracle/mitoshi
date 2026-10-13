@@ -69,7 +69,7 @@ export const GAMES = {
   howToWords: { open: "How to play", close: "Close", got: "Got it" },
   /** Three fragments per mode (copyCuts #7, #10, #15): what a first-time player needs, and the proof line. */
   howTo: {
-    practice: ["Swipe ↑ if it'll be higher in 30 s, ↓ if lower.", "Beat the coin's picks.", "Scored on the live price 30 s after your last swipe · free."],
+    practice: ["Swipe ↑ if it'll be higher in 30 s, ↓ if lower.", "Beat the coin's picks.", "Scored on the live price 30 s after each swipe · free."],
     duel: ["Same sealed deck for both players.", "Each swipe is a real order, capped per card.", "Higher measured PnL takes the side-pot."],
     lucky: ["Reels draw a live Window, a side and a reach.", "You see the real quote; pull the lever to place it.", "Settles like any call · the draw is checkable."],
     range: ["Pick a Window and a band.", "Closes inside: the house pays the multiple.", "Payout set aside; claim when it lands."],

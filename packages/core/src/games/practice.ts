@@ -13,10 +13,11 @@ import type { DeckCard, Pick } from "./types";
  * feed reading; nothing is simulated. What is *not* claimed is that this is a settlement, a payout,
  * a position or a real opponent (`04-game-system.md` §Practice and arcade state).
  *
- * **Why one close moment for every card.** Each card records its own entry price when it is swiped,
- * and every card is then scored at the same instant the watch ends. A per-card timer would give the
- * first card a longer run than the last, which would make the deck's order part of the result — a
- * bias the player never chose.
+ * **Why every card closes 30 s after its own swipe** (R6 games §0.1). Each card records its entry price when
+ * it is swiped and its close exactly `PRACTICE_WATCH_SEC` later, so the card's question — "higher in 30 s?" —
+ * is true for every card, and every race has the same length whatever the deck's order. (One close moment
+ * for the whole deck, as before, gave the first card swiped the longest race: five swipes over 40 s made
+ * card one a 70 s race.) The round still ends 30 s after the last swipe.
  */
 
 /** How long the round watches the live feed before it scores. Short enough to be one sitting. */
@@ -59,10 +60,12 @@ export interface PracticePick {
   atMs: number;
 }
 
-/** Where a card's asset ended up when the watch closed — one reading per card, taken at one moment. */
+/** Where a card's asset ended up 30 s after its own swipe — one reading per card. */
 export interface PracticeClose {
   cardIndex: number;
   closeRaw: bigint;
+  /** When the close was read: the card's swipe plus `PRACTICE_WATCH_SEC`. */
+  atMs?: number;
 }
 
 export type PracticeMove = "up" | "down" | "flat";
@@ -90,6 +93,9 @@ export interface PracticeRound {
 export type PracticeEvent =
   | { kind: "deal"; seed: string; cards: readonly DeckCard[] }
   | { kind: "pick"; pick: PracticePick }
+  /** One card's own close, read 30 s after its swipe (while the rest are still being swiped or watched). */
+  | { kind: "close"; close: PracticeClose }
+  /** The round's end: every pick has a close, or the watch ran out; closes given here fill any still missing. */
   | { kind: "score"; closes: readonly PracticeClose[] };
 
 export const PRACTICE_IDLE: PracticeRound = { phase: "dealt", seed: "", cards: [], picks: [], watchEndsAtMs: null, closes: [] };
@@ -183,8 +189,22 @@ export function practiceTransition(round: PracticeRound, event: PracticeEvent): 
     return { ...round, phase: "watching", picks, watchEndsAtMs: event.pick.atMs + PRACTICE_WATCH_SEC * 1_000 };
   }
 
+  if (event.kind === "close") {
+    if (round.phase !== "picking" && round.phase !== "watching") return round;
+    const picked = round.picks.some((p) => p.cardIndex === event.close.cardIndex);
+    if (!picked || round.closes.some((c) => c.cardIndex === event.close.cardIndex)) return round;
+    return { ...round, closes: [...round.closes, event.close] };
+  }
+
   if (round.phase !== "watching") return round;
-  return { ...round, phase: "scored", closes: event.closes };
+  const have = new Set(round.closes.map((c) => c.cardIndex));
+  return { ...round, phase: "scored", closes: [...round.closes, ...event.closes.filter((c) => !have.has(c.cardIndex))] };
+}
+
+/** When a picked card's own race closes: its swipe plus the watch. */
+export function practiceClosesAtMs(round: PracticeRound, cardIndex: number): number | null {
+  const pick = round.picks.find((p) => p.cardIndex === cardIndex);
+  return pick ? pick.atMs + PRACTICE_WATCH_SEC * 1_000 : null;
 }
 
 export interface PracticeCardScore {
