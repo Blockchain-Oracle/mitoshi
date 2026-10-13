@@ -18,6 +18,7 @@ import {
 import { createPgLuckyStore, type LuckyDrawRow, type LuckyStore } from "@cwf/db";
 import { configureMarkets, createMarketsProvider, marketsEnv } from "@cwf/markets";
 import { keccak256 } from "viem";
+import { webEnv } from "@/lib/env";
 import { ceremonyLimiter } from "@/server/auth";
 import { db } from "@/server/db";
 import { serverEnv } from "@/server/env";
@@ -68,11 +69,15 @@ export async function commitDraw(input: { wallet: Address; stakeBase: bigint; ip
   return { ok: true, wire: { drawId: created.drawId as Bytes32, commitment: created.commitment as Bytes32, nonce: created.nonce, policyVersion: created.policyVersion, stakeBase: created.stakeBase } };
 }
 
-/** The server reads the index over HTTP from itself: a relative base only resolves in a browser. */
+/**
+ * The server's reads take the app's own config (`webEnv.markets`: network, RPC, ops), and read the index over HTTP from
+ * itself — a relative base only resolves in a browser.
+ */
 function ensureReads(origin: string): void {
-  const env = marketsEnv();
-  if (/^https?:\/\//.test(env.indexUrl)) return;
-  configureMarkets({ ...env, indexUrl: `${origin}${env.indexUrl}` });
+  const env = webEnv.markets;
+  const indexUrl = /^https?:\/\//.test(env.indexUrl) ? env.indexUrl : `${origin}${env.indexUrl}`;
+  if (marketsEnv().indexUrl === indexUrl && marketsEnv().network === env.network) return;
+  configureMarkets({ ...env, indexUrl });
 }
 
 interface Scanned {
