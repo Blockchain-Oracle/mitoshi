@@ -1,43 +1,66 @@
-/* `/parlay` — Ported from Masayume 68f7a09:web/src/features/parlay/parlay-page.css (hero, blocks, how cards, the
- * tickets' cards and legs, the settle pill, the claim) with the S10a composition (E.4): the Windows list (21st 109),
- * the slip rail / dock / slide-over, the per-leg controls, and the 24524 fly chip. The reference's inline Tailwind
+/* `/parlay` — Ported from Masayume 68f7a09:web/src/features/parlay/parlay-page.css (the tickets' cards and legs, the
+ * settle pill, the claim) with the S10a composition (E.4): the Windows list (21st 109), the slip rail / SlipBar /
+ * sheet, the per-leg controls, and the 24524 fly chip. R4-5 (D-227): the hero, blocks and how cards are gone (GameHead
+ * and its ⓘ sheet); the page adds no inset of its own. The reference's inline Tailwind
  * values live here (design-literals keeps px out of TSX); colours are the token variables, Up/Down are the direction
  * colours (never the only signal: every side carries its word and arrow). Touch targets ≥ 44 px (§2.5). */
 
-.pl-page { padding-top: 28px; padding-bottom: 96px; }
-.pl-hero { margin-bottom: 40px; }
-.pl-eyebrow {
-  display: block; margin-bottom: 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.22em;
-  text-transform: uppercase; color: var(--gray-400);
-}
-/* AA on the ground in both themes: the shared section description's gray-500 is 4.29:1 here (axe). */
-.pl-page .section-desc { color: var(--gray-400); }
-/* Named `pl-block`, not `pl-section`: `pl-` is Tailwind's padding-left namespace (Masayume's finding). */
-.pl-block { margin-bottom: 40px; }
-.pl-block-body { margin-top: 24px; }
-
-/* §01: the Windows beside the slip — one column on phones (the slip is the dock + slide-over), rail from lg */
-.pl-grid { display: grid; gap: 24px; }
+.pl-page { padding: 0; }
+/* The Windows beside the slip — one column on phones (the slip is the SlipBar + sheet), rail from lg */
+.pl-grid { display: grid; gap: 16px; }
 @media (min-width: 64rem) { .pl-grid { grid-template-columns: minmax(0, 1fr) 400px; align-items: start; } }
 .pl-windows { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .pl-rail {
-  position: sticky; top: 96px; border-radius: 16px; border: 1px solid var(--ms-hairline); background: var(--ms-surface-1);
+  position: sticky; top: calc(var(--stage-sticky-top) + 12px); border-radius: 16px; border: 1px solid var(--ms-hairline); background: var(--ms-surface-1);
   padding: 20px;
 }
 
-/* the dock below lg: a floating pill above the safe area (and above the phone's bottom nav), where an added leg's
-   chip lands — the slip itself opens as the right-edge slide-over */
-.pl-dock {
-  position: fixed; z-index: var(--z-float); left: 50%; transform: translateX(-50%); width: min(26rem, calc(100vw - 1.25rem));
-  bottom: var(--dock-strip-offset);
+/* R4-5 (D-227): the rail from 1024 is a column that fits the screen — the legs scroll, the action block stays pinned
+   at its foot (Owarine `.pl-ticket-col` sticky); 3 legs no longer push the hold below the fold at 1024 × 768. */
+.pl-rail { display: flex; flex-direction: column; max-height: calc(100dvh - var(--stage-sticky-top) - 32px); overflow-y: auto; overscroll-behavior: contain; }
+.game-page .pl-rail .game-action { bottom: 0; }
+
+/* The SlipBar below 1024: fixed above the phone dock (16 px from the bottom from 768), the legs and what the ticket
+   pays on row one (it opens the sheet), the stake chips and the hold on row two. The column clears it — not for a
+   copy of /parlay kept hidden in an <Activity> after navigating away (R4-0's guard, as pitch.css and toast.css). */
+.pl-slipbar {
+  position: fixed; z-index: var(--z-float); left: 50%; transform: translateX(-50%); bottom: var(--dock-strip-offset);
+  width: min(30rem, calc(100vw - 24px)); display: flex; flex-direction: column; gap: 6px; padding: 8px;
+  border-radius: var(--radius-lg); border: 1px solid var(--color-hairline); background: var(--color-surface-1);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
 }
-/* No phone pad of its own (it was 180 px before the column cleared the dock): the column pads by --dock-clearance and
-   the page's 96 px clears the slip strip above the dock (R4-2, D-227). */
-.pl-dock-btn {
-  display: flex; align-items: center; gap: 10px; width: 100%; padding: 0 16px; border-radius: 9999px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
-  background: var(--accent-fill); color: var(--on-accent); font-family: var(--font-display); font-weight: 700; font-size: 15px;
+.app-column:has(.pl-slipbar:not([style*="display: none"] *)) { padding-bottom: calc(var(--dock-clearance) + 140px); }
+.sb-row { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 4px; width: 100%; text-align: left; color: var(--color-ink); }
+.sb-legs { display: flex; gap: 4px; flex: none; }
+.sb-leg { display: inline-flex; align-items: center; gap: 2px; padding: 2px 4px; border-radius: var(--radius-full); background: var(--color-surface-2); font-size: 10px; }
+.sb-leg.is-up { color: var(--color-up); }
+.sb-leg.is-down { color: var(--color-down); }
+.sb-pays { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex: 1; min-width: 0; }
+.sb-mult { font-family: var(--font-heading); font-weight: 800; font-size: 18px; }
+.sb-win { font-family: var(--font-data); font-size: 13px; color: var(--color-up); white-space: nowrap; }
+.sb-one { flex: 1; font-size: 13px; color: var(--color-ink-secondary); }
+.sb-act { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px; align-items: center; }
+.sb-chips { display: flex; gap: 4px; }
+.sb-chips .ts-chip { min-width: 40px; padding: 0 6px; }
+.sb-cta { min-width: 0; }
+@media (max-width: 359px) {
+  .sb-act { grid-template-columns: minmax(0, 1fr); }
+  /* R4-5 review: stacked, the bar is ~170 px tall (legs 44, chips 44, the hold 52), so 140 px left the last ticket under it */
+  .app-column:has(.pl-slipbar:not([style*="display: none"] *)) { padding-bottom: calc(var(--dock-clearance) + 188px); }
 }
-.pl-dock-open { margin-left: auto; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* the list head: the cadence words and the ⚡ streak preset */
+.pw-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.pw-tabs { flex: 1; min-width: 0; }
+.pw-streak {
+  flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 50%, transparent); color: var(--color-ink); font-size: 13px; font-weight: 600;
+}
+.pw-streak svg { color: var(--color-accent); }
+.pw-streak:disabled { opacity: 0.45; cursor: not-allowed; }
+.pw-row { justify-content: flex-start; }
+.pw-row .pw-main { flex: 1; }
+.pw-disc { flex: none; width: 28px; height: 28px; }
 
 /* ── the Windows list (109's product rows) ── */
 .pw { display: flex; flex-direction: column; gap: 12px; }
@@ -180,13 +203,6 @@
 .pl-card-note { margin-top: 12px; font-size: 13px; color: var(--gray-400); text-align: center; }
 
 /* §03 how a parlay pays */
-.pl-how { display: grid; gap: 16px; }
-@media (min-width: 40rem) { .pl-how { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.pl-how-card { border-radius: 16px; border: 1px solid var(--ms-hairline); background: var(--ms-surface-1); padding: 20px; }
-.pl-how-n { font-family: var(--font-display); font-weight: 800; font-size: 24px; line-height: 1; color: var(--vermilion); margin-bottom: 8px; }
-.pl-how-t { font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--white); margin-bottom: 6px; }
-.pl-how-d { font-size: 13px; line-height: 1.6; color: var(--gray-400); }
-.pl-trophy { grid-column: 1 / -1; }
 
 @keyframes pl-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .pl-rise { animation: pl-rise 220ms var(--easeOut) both; }

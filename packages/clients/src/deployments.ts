@@ -469,20 +469,26 @@ export const deployments = {
     "range": {
       "contracts": {
         "RangeReserve": {
-          "address": "0xf19342733Bb451503f3806b0d44CC58A3D345052",
+          "address": "0xebBDfAbDffC0D894Cd61BeAd2308E48F16985A05",
           "artifact": "RangeReserve.sol:RangeReserve",
           "profile": "default",
           "proxy": false,
-          "txHash": "0xc98f25d91fb31cce83f846d0acf00e1197ec5947566cf725e3b4d8afd81bcccc",
-          "deployBlock": 37532233,
-          "history": []
+          "txHash": "0x5c48288b88daa7e27b2c81c335593f37e842c0399aa0d7f95a2ec239082d07b1",
+          "deployBlock": 39352148,
+          "history": [
+            {
+              "address": "0xf19342733Bb451503f3806b0d44CC58A3D345052",
+              "deployBlock": 37532233,
+              "retiredAtUtc": "2026-10-13T02:18:54.693Z"
+            }
+          ]
         }
       },
       "roles": {
         "ADMIN": "0x5DFC4211902A8EE7932286861e2D8C66841441E8"
       },
       "params": {
-        "centerDepthRaw": 20000000,
+        "centerDepthRaw": 5000000,
         "collateral": "0x20C0000000000000000000000000000000000000",
         "engine": "0x113Ca86bE942671E5290Ed57d86297F0Ecd61b6a",
         "guard": "0xaCA8d3b3d5314a7656Ac2A30df07e066456847B1",
@@ -506,10 +512,19 @@ export const deployments = {
         "staleAfterSec": 21600,
         "ticker.BTC": 101,
         "ticker.ETH": 102,
-        "ticker.SOL": 103
+        "ticker.SOL": 103,
+        "ticker.AAPL": 3,
+        "ticker.AMD": 9,
+        "ticker.AMZN": 7,
+        "ticker.GOOGL": 6,
+        "ticker.META": 5,
+        "ticker.MSFT": 4,
+        "ticker.NVDA": 2,
+        "ticker.PLTR": 8,
+        "ticker.TSLA": 1
       },
       "external": {},
-      "commit": "e16cdfa"
+      "commit": "741a58d"
     },
     "stocks": {
       "contracts": {

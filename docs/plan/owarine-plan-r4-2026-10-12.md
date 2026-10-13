@@ -192,6 +192,15 @@ a write, the balance eye on every own-money figure, the first funding as a toast
 within budget, /portfolio 219.7 KB, /portfolio/edge 220.8 KB); /portfolio at 375 and 1440 clean (signed out, sweep
 empty). Open: a signed-in pass (the figure against chain reads, Close/Collect, a pocket's Add/Withdraw, a write's
 receipt) on testnet — not driven in this merge (no wallet on the dev server).
+R4-5 (Range · Moonshot · Parlay) merged at `cc3eeba`: the RangeReserve prices on the guard's Series σ, redeployed on
+Moderato (`0xebBD…5A05`, the old one read-only in Your rounds); BTC, ETH and SOL at 15m and 1h registered with guard
+models; Range and Moonshot on one phone screen (GameHead, WindowPicker on the kit ScrollRail, anchored BandCard,
+TicketStrip, the hold above the dock); the parlay slip bar carries the hold. Three real rounds settled and claimed
+(docs/plan/acceptance/R4-5.md). Checks clean (71 routes within budget, /games/range 237.9 KB, /games/moonshot 238.0 KB,
+/parlay 221.7 KB; range forge 47/47); /games/range at 375 and 1440 clean (hold on the first phone screen; the phone
+sweep's overlaps are the sticky action over the band, which clears at the scroll end). Web and ops deploys triggered
+(ops for the new reserve in the indexer sources). Open: a signed-in hold on the web on testnet — not driven in this
+merge (no wallet on the dev server).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
