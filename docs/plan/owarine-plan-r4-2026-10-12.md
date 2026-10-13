@@ -152,6 +152,14 @@ R4-12 (Bridge and reserves) merged at `735f553`: /bridge as one card tracked to 
 bridge-watch / reserve-watch / stock-sync in ops (migrations bridge/0001 and index/0007; ops redeployed). /bridge at 375
 and 1440 clean (the CTA on the first phone screen). Open, blocked-owner: Robinhood testnet test ETH (deployer 0 ETH,
 nonce 0) for the Handoff and the driven UI pass (14w/14o/UX-08); the Reown project ID for WalletConnect on phones.
+2026-10-13 05:17Z: testnet ops' explicit OPS_ACTORS had left out four default-set actors, so they never started —
+indexer-recount, bridge-watch, reserve-watch, stock-sync; now appended (25 actors, every earlier one kept; no new env).
+They start on the next ops deploy (R4's final deploy; the one triggered here was cancelled while queued, box
+memory-starved). Expected on /health: reserve-watch "5 tickers partial at Tempo #… · Robinhood side not deployed",
+bridge-watch "0 open…", stock-sync "idle: StockSyncSender is not deployed…", indexer-recount "idle: no indexer
+configured" (needs the owner's TEMPO_INDEXER_API_KEY or a self-hosted tidx, D-086). STOCK_SYNC_PRIVATE_KEY is unset
+on Coolify (role key in `~/.config/cwf/testnet/`; nothing to sign until the Robinhood side lands). `duel-settler` is
+still out of OPS_ACTORS (see R4-9).
 MOBILE (Expo app) merged at `83058f9`: mobile/ in the workspace (frozen install and the web build pass), the testnet site
 in one web view, and the web's /.well-known AASA and assetlinks (200 JSON locally). Open, blocked-owner: the App Store
 Connect app record and TestFlight submit; the Play Console app, its first AAB by hand and the app-signing SHA-256;
