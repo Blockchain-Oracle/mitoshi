@@ -28,11 +28,16 @@ export function useHouseWindows(reserve: RangeReserveState, storageKey: string) 
   const { windows, nextOpenSec, gapInSec, loading, error } = useRangeWindows(nowMs, reserve.params.minTimeLeftSec, reserve.params.maxHorizonSec);
   const [picked, setPickedState] = useState<{ id: MarketId; lane: string } | null>(null);
   const [cadence, setCadence] = usePersistedState<string>(`cwf:${storageKey}:cadence`, "", KEY_CODEC);
+  // The last pick's lane, remembered too (R4-5 review: the spec persists the pick; the cadence alone reopened the page
+  // on that cadence's soonest Window, often another asset).
+  const [lastLane, setLastLane] = usePersistedState<string>(`cwf:${storageKey}:lane`, "", KEY_CODEC);
   const priced = windows.filter((w) => w.model !== null);
-  // The pick; when its Window closes, the next one of the same lane; else the remembered cadence's soonest; else the soonest.
+  // The pick; when its Window closes, the next one of the same lane; else the remembered lane's, then the remembered
+  // cadence's soonest; else the soonest.
   const current: BandWindow | null =
     priced.find((w) => w.market.marketId === picked?.id) ??
     (picked ? priced.find((w) => laneOf(w) === picked.lane) : undefined) ??
+    (lastLane ? priced.find((w) => laneOf(w) === lastLane) : undefined) ??
     priced.find((w) => cadenceKeyOf(w.market) === cadence) ??
     priced[0] ??
     null;
@@ -40,6 +45,7 @@ export function useHouseWindows(reserve: RangeReserveState, storageKey: string) 
     const w = priced.find((x) => x.market.marketId === id);
     if (!w) return;
     setPickedState({ id, lane: laneOf(w) });
+    setLastLane(laneOf(w));
     setCadence(cadenceKeyOf(w.market));
   };
   const empty = loading && priced.length === 0 ? <LoadingState shape="row" label={RANGE.band.waiting} /> : error && priced.length === 0 ? <ErrorState diagnosis={error} /> : priced.length === 0 ? <p className="gw-empty">{nextOpenSec !== null ? RANGE.windows.none(formatLeft(nextOpenSec * 1000 - nowMs)) : RANGE.windows.noneLater}</p> : null;

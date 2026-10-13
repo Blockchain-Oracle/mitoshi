@@ -167,7 +167,7 @@
 @media (min-width: 768px) {
   .ms-aim { display: grid; grid-template-columns: 128px minmax(0, 1fr); gap: 16px; align-items: start; }
   .ms-pad { display: flex; flex-direction: column; gap: 4px; }
-  .ms-pad .ms-side { justify-content: start; min-height: 20px; }
+  .ms-pad .ms-side { place-items: center start; min-height: 20px; }
   .ms-pad .ms-rung { position: relative; min-height: 40px; }
   .ms-pad .ms-rung::before { content: ""; position: absolute; inset: -2px 0; }
   .ms-side--long { order: 0; }
