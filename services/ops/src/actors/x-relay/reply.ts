@@ -40,6 +40,9 @@ export function replyText(r: XReceipt, network: Network, site: string): string {
   return text.replace(/[^\x20-\x7E\n]/g, "-").slice(0, REPLY_LIMIT);
 }
 
+/** A reply goes to a linked account's mention, or to anyone's mention that parsed as a call. */
+export const isCall = (r: XReceipt): boolean => r.wallet !== null || r.side !== null;
+
 const DEADLINE_MS = 45_000;
 async function withDeadline<T>(operation: Promise<T>): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -71,6 +74,11 @@ export async function deliverReplies(ctx: ReplyContext, limit = 5): Promise<numb
   for (const mentionId of await ctx.delivery.ready(limit)) {
     const receipt = await ctx.store.receiptByMention(mentionId);
     if (!receipt || !/^\d+$/.test(mentionId)) continue;
+    if (!isCall(receipt)) {
+      // Not a call from anyone linked: nothing is posted (X's automation rules; the bot doesn't answer every mention).
+      if (await ctx.delivery.beginPost(mentionId, "")) await ctx.delivery.finish(mentionId, "failed", null, "not-a-call");
+      continue;
+    }
     const text = replyText(receipt, ctx.network, ctx.site);
     if (!(await ctx.delivery.beginPost(mentionId, text))) continue;
     try {

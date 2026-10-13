@@ -43,11 +43,13 @@ const usd = (base: bigint) => `$${formatBaseUnits(base, USD_DECIMALS, { minDp: 2
 export async function executeMention(ctx: ExecuteContext, mention: Mention): Promise<XReceipt> {
   const nowMs = (ctx.nowMs ?? Date.now)();
   const nowSec = Math.floor(nowMs / 1000);
+  const parsed = parseInstruction(mention.text, { decimals: USD_DECIMALS });
   const link = await ctx.store.linkByAuthor(mention.authorId);
-  if (!link) return refused(mention, "account-not-linked");
+  // An unlinked author's call keeps what it asked for (a reply can then say "link first"); a mention that isn't a call
+  // keeps only why, and gets no reply (`reply.ts`): the bot answers calls, not every mention.
+  if (!link) return refused(mention, "account-not-linked", parsed.ok ? { side: parsed.instruction.side, stakeBase: parsed.instruction.stakeBase.toString(), asset: parsed.instruction.asset, intervalSec: parsed.instruction.intervalSec } : { parseRefusal: parsed.reason });
   const owner = link.account as Address;
 
-  const parsed = parseInstruction(mention.text, { decimals: USD_DECIMALS });
   if (!parsed.ok) return refused(mention, "instruction-invalid", { wallet: owner, parseRefusal: parsed.reason, reason: describeRefusal(parsed.reason, parsed.token) });
   const call = parsed.instruction;
   const base: Partial<XReceipt> = { wallet: owner, side: call.side, stakeBase: call.stakeBase.toString(), asset: call.asset, intervalSec: call.intervalSec };

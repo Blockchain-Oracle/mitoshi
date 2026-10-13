@@ -1,6 +1,6 @@
 import type { XReceipt } from "@cwf/core";
 import { describe, expect, it } from "vitest";
-import { replyText } from "./reply";
+import { isCall, replyText } from "./reply";
 
 const SITE = "https://testnet.mitoshi.xyz";
 const r = (over: Partial<XReceipt>): XReceipt => ({
@@ -17,6 +17,11 @@ describe("receipt replies", () => {
     expect(text).toContain(`/tx/0x${"ab".repeat(32)}`);
     expect(text.length).toBeLessThanOrEqual(280);
     expect(/^[\x20-\x7E\n]*$/.test(text)).toBe(true);
+  });
+  it("answers calls, not every mention", () => {
+    expect(isCall(r({ wallet: null, side: null, status: "refused", refusalCode: "account-not-linked" }))).toBe(false);
+    expect(isCall(r({ wallet: null, side: "up", status: "refused", refusalCode: "account-not-linked" }))).toBe(true);
+    expect(isCall(r({ wallet: "0xabc", side: null, status: "refused", refusalCode: "instruction-invalid" }))).toBe(true);
   });
   it("never claims a fill without a hash, and points a refusal at its fix", () => {
     expect(replyText(r({ txHash: null }), "testnet", SITE)).toContain("Needs checking");
