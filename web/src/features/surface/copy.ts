@@ -1,7 +1,7 @@
 // `/surface` (S10e; Ported in role from Masayume 68f7a09:web/src/features/surface/copy.ts): the reference's page read a
 // volatility model back; Masayume swapped it for the venue's book. Here both are real on Tempo: every Window is priced
-// by the engine's own order book, and the crypto 5-minute Windows also carry the fair-value guard's model (PD-2: the
-// signed RedStone spot, the Series' σ and the time left). The words say which figure is which; nothing is estimated.
+// by the engine's own order book, and every Series the fair-value guard models also carries its model (PD-2: the
+// signed RedStone spot, the Series' σ and the time left; every Series since S24.1). The words say which figure is which; nothing is estimated.
 export const SURFACE = {
   eyebrow: "Market Surface",
   title: "The market's shape",

@@ -32,7 +32,7 @@ export const BOOST = {
     enterAmount: "Enter an amount",
     one: "Choose 2× or more to boost",
     pricing: "Sizing the boost…",
-    noModel: "This Window has no fair-value model yet — Boost opens on the crypto 5-minute lanes",
+    noModel: "This Window has no fair-value model yet",
     thin: "The book is too thin to open this boost healthy",
     unhealthy: "At this size the position would open under its knock-out line",
     voidShort: "A void would short the reserve at this multiple — lower it",
