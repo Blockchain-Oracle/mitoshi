@@ -2,6 +2,8 @@ import "server-only";
 import { createHmac, randomBytes } from "node:crypto";
 import { isOk, toMarketId, type Address, type Bytes32, type EventMarket, type Hex, type Quote, type Side } from "@cwf/core";
 import {
+  luckyBestStreak,
+  luckyStreak,
   chooseLuckyWindow,
   eligibleLuckyWindows,
   LUCKY_ASSETS,
@@ -19,7 +21,7 @@ import { keccak256 } from "viem";
 import { ceremonyLimiter } from "@/server/auth";
 import { db } from "@/server/db";
 import { serverEnv } from "@/server/env";
-import type { LuckyCommitWire, LuckyDealWire, LuckyHistoryWire, LuckyRowWire } from "./lucky-wire";
+import type { LuckyBoardWire, LuckyCommitWire, LuckyDealWire, LuckyHistoryWire, LuckyRowWire } from "./lucky-wire";
 
 /**
  * The draw — server only (R4-9, D-227). Ported from Masayume 68f7a09 web/src/features/games/lucky/{lucky.server.ts,
@@ -166,8 +168,47 @@ export async function recordPlaced(input: { drawId: string; wallet: Address; sta
 
 const rowWire = (r: LuckyDrawRow): LuckyRowWire => ({ drawId: r.drawId as Bytes32, nonce: r.nonce, asset: r.asset, side: r.side, multiplier: r.multiplier, marketId: r.marketId ? toMarketId(r.marketId) : null, txHash: (r.txHash ?? null) as Hex | null, stakeBase: r.stakeBase, costBase: r.costBase, result: r.result, refusal: r.refusal, createdAt: r.createdAt });
 
-export async function readHistory(wallet: Address): Promise<LuckyHistoryWire> {
+/**
+ * Open rows re-read against the chain on the history read (Masayume 68f7a09 `reconcileDraws`, on Mitoshi's account
+ * history): the wallet's round on the dealt Window says what happened — sold on the book before expiry is a cash-out,
+ * otherwise the settlement's win, loss or void. A row the chain has not decided stays what it was; nothing is guessed.
+ */
+async function reconcile(draws: LuckyStore, wallet: Address, rows: LuckyDrawRow[], origin: string): Promise<boolean> {
+  const open = rows.filter((r) => r.marketId && (r.result === "placed" || r.result === "pending" || r.result === "unknown"));
+  if (open.length === 0) return false;
+  ensureReads(origin);
+  const history = await createMarketsProvider().listWalletHistory(wallet);
+  if (!isOk(history)) return false;
+  const byMarket = new Map(history.value.rounds.map((r) => [r.marketId.toLowerCase(), r.outcome]));
+  let moved = false;
+  for (const row of open) {
+    const outcome = byMarket.get(row.marketId!.toLowerCase());
+    if (!outcome) continue;
+    await draws.settle(row.drawId, outcome === "closed" ? "cashed-out" : outcome === "win" ? "won" : outcome === "loss" ? "lost" : "void");
+    moved = true;
+  }
+  return moved;
+}
+
+export async function readHistory(wallet: Address, origin: string): Promise<LuckyHistoryWire> {
+  const draws = luckyStore();
+  if (!draws) return { configured: false, rows: [], streak: 0, best: 0 };
+  let rows = await draws.history(wallet, 50);
+  if (await reconcile(draws, wallet, rows, origin).catch(() => false)) rows = await draws.history(wallet, 50);
+  const results = rows.map((r) => ({ result: r.result }));
+  return { configured: true, rows: rows.map(rowWire), streak: luckyStreak(results), best: luckyBestStreak([...results].reverse()) };
+}
+
+/** The ladder of current streaks, best as the tiebreak, over settled draws only (core's rule). */
+export async function readLuckyBoard(): Promise<LuckyBoardWire> {
   const draws = luckyStore();
   if (!draws) return { configured: false, rows: [] };
-  return { configured: true, rows: (await draws.history(wallet, 50)).map(rowWire) };
+  const byWallet = new Map<string, { result: LuckyDrawRow["result"] }[]>();
+  for (const r of await draws.verified(2_000)) byWallet.set(r.wallet, [...(byWallet.get(r.wallet) ?? []), { result: r.result }]);
+  const rows = [...byWallet.entries()]
+    .map(([w, list]) => ({ wallet: w, streak: luckyStreak(list), best: luckyBestStreak([...list].reverse()), draws: list.length }))
+    .filter((r) => r.best > 0)
+    .sort((a, b) => b.streak - a.streak || b.best - a.best || b.draws - a.draws || a.wallet.localeCompare(b.wallet))
+    .slice(0, 50);
+  return { configured: true, rows };
 }

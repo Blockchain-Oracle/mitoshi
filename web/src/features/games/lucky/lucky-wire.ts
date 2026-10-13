@@ -53,4 +53,12 @@ export interface LuckyRowWire {
 export interface LuckyHistoryWire {
   configured: boolean;
   rows: LuckyRowWire[];
+  /** Consecutive settled wins from the newest, and the longest run (core `luckyStreak` / `luckyBestStreak`). */
+  streak: number;
+  best: number;
+}
+
+export interface LuckyBoardWire {
+  configured: boolean;
+  rows: { wallet: string; streak: number; best: number; draws: number }[];
 }

@@ -83,7 +83,8 @@ export const GAMES = {
 
   rank: {
     title: "Rank",
-    tabs: { "line-rider": "Line Rider", "candle-hop": "Candle Hop", streaks: "Streaks" },
+    tabs: { "line-rider": "Line Rider", "candle-hop": "Candle Hop", streaks: "Streaks", lucky: "Lucky" },
+    luckyBest: (best: number, draws: number) => `best ${best} · ${draws} settled`,
     empty: "No ranked runs yet. Set the first.",
     noStore: "No board on this deployment.",
     offline: "Board offline · retrying",

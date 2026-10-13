@@ -12,6 +12,7 @@ import { startBgm, stopBgm } from "../audio";
 import { useImmersive, useGames } from "../GamesProvider";
 import { LUCKY } from "./copy";
 import { LuckyDeal } from "./LuckyDeal";
+import { useLuckyHistory } from "./LuckyHistory";
 import { LuckyReels } from "./LuckyReels";
 import type { LuckyDealWire } from "./lucky-wire";
 import { reelSpin } from "./reel-sfx";
@@ -62,6 +63,7 @@ export function LuckyStage() {
   const { address, connectFor } = useWalletSession();
   const { feedback } = useGames();
   const draw = useLuckyDraw();
+  const history = useLuckyHistory(address);
   const [chip, setChip] = useState(1);
   const busy = draw.phase === "spinning" || draw.phase === "landing";
   useImmersive(draw.phase !== "idle" && draw.phase !== "error");
@@ -98,6 +100,7 @@ export function LuckyStage() {
           <button type="button" className={`lk-cta${busy ? " lk-cta--busy" : ""}`} disabled={busy} onClick={spin} data-primary-action>
             {busy ? LUCKY.spinning : draw.phase === "refused" ? LUCKY.again : LUCKY.spin}
           </button>
+          {history.data && history.data.best > 0 ? <p className="lk-note lk-streak">{LUCKY.streak(history.data.streak, history.data.best)}</p> : null}
           {draw.phase === "refused" && draw.deal ? <p className="lk-note">{LUCKY.refused(draw.deal.refusal ?? "")}</p> : null}
           {draw.phase === "error" && draw.error ? <p className="lk-note">{draw.error}</p> : null}
         </>

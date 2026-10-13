@@ -11,20 +11,29 @@ import type { LuckyHistoryWire } from "./lucky-wire";
 
 const when = (iso: string) => new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
-export function LuckyHistory({ address }: { address: string }) {
-  const q = useQuery({
+/** A wallet's draws, reconciled against the chain on read; shared by History and the machine's streak line. */
+export function useLuckyHistory(address: string | null) {
+  return useQuery({
     queryKey: ["games", "lucky", "history", address],
     queryFn: async () => {
       const res = await fetch(`/api/games/lucky/history?address=${address}`, { cache: "no-store" });
       if (!res.ok) throw new Error(String(res.status));
       return (await res.json()) as LuckyHistoryWire;
     },
+    enabled: address !== null,
     retry: 1,
   });
+}
+
+const RESULT_WORD: Record<string, string> = { won: LUCKY.history.won, lost: LUCKY.history.lost, void: LUCKY.history.void, "cashed-out": LUCKY.history.cashedOut, placed: LUCKY.history.placed, pending: LUCKY.history.placed, refused: LUCKY.history.refused, unknown: LUCKY.history.unknown, drawn: LUCKY.history.drawn };
+
+export function LuckyHistory({ address }: { address: string }) {
+  const q = useLuckyHistory(address);
   if (q.data && !q.data.configured) return null;
   return (
     <section className="rk-section" aria-label={GAMES.history.luckyTitle}>
       <h2 className="rk-section-title">{GAMES.history.luckyTitle}</h2>
+      {q.data && q.data.best > 0 ? <p className="rk-row-sub">{LUCKY.streak(q.data.streak, q.data.best)}</p> : null}
       {q.isLoading ? (
         <p className="rk-note">{GAMES.history.loading}</p>
       ) : q.isError || !q.data ? (
@@ -41,7 +50,7 @@ export function LuckyHistory({ address }: { address: string }) {
               </span>
               <span className="rk-row-side">
                 <span className="rk-row-figure">${formatBaseUnits(BigInt(r.costBase ?? r.stakeBase), 6, { minDp: 0 })}</span>
-                <span className="rk-row-sub">{r.result === "placed" ? LUCKY.history.placed : r.result === "refused" ? LUCKY.history.refused : r.result === "unknown" ? LUCKY.history.unknown : LUCKY.history.drawn}</span>
+                <span className="rk-row-sub" data-result={r.result}>{RESULT_WORD[r.result] ?? r.result}</span>
               </span>
             </li>
           ))}

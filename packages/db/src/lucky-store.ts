@@ -42,6 +42,10 @@ export interface LuckyStore {
   /** Only a dealt draw moves to placed (or refused), once. */
   placed(drawId: string, wallet: string, outcome: { result: "placed" | "refused" | "unknown"; txHash: string | null; costBase: string | null; quantityRaw: string | null; refusal: string | null }): Promise<boolean>;
   history(wallet: string, limit: number): Promise<LuckyDrawRow[]>;
+  /** A placed row's verdict, once the chain decided it: won, lost, void or cashed out. Only an open row moves. */
+  settle(drawId: string, result: "won" | "lost" | "void" | "cashed-out"): Promise<void>;
+  /** Every wallet's verified rows (won, lost, void), newest first — the streak board's input. */
+  verified(limit: number): Promise<{ wallet: string; result: LuckyRowResult }[]>;
 }
 
 type Db = {
@@ -84,6 +88,13 @@ export function createPgLuckyStore(sql: Sql): LuckyStore {
         where draw_id = ${drawId} and wallet = ${wallet.toLowerCase()} and result = 'drawn' and market_id is not null
         returning draw_id`;
       return rows.length > 0;
+    },
+    async settle(drawId, result) {
+      await sql`update lucky_draws set result = ${result}, settled_at = now() where draw_id = ${drawId} and result in ('placed', 'pending', 'unknown')`;
+    },
+    async verified(limit) {
+      return sql<{ wallet: string; result: LuckyRowResult }[]>`
+        select wallet, result from lucky_draws where result in ('won', 'lost', 'void') order by created_at desc limit ${limit}`;
     },
     async history(wallet, limit) {
       const rows = await sql<Db[]>`select * from lucky_draws where wallet = ${wallet.toLowerCase()} and client_seed is not null order by created_at desc limit ${limit}`;
