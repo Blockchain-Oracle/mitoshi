@@ -73,6 +73,7 @@ export const CLAIM = {
   done: (n: number) => `Collected ${n} ${n === 1 ? "Window" : "Windows"}`,
   partial: (done: number, total: number) => `${done} of ${total} batches landed. Nothing was taken.`,
   receipt: { title: "Collect receipt", figureLabel: "Paid to your wallet", batch: (i: number) => `batch ${i}` },
+  toast: (amount: string) => `Collected · ${amount}`,
   empty: { why: "Nothing to collect." },
   disconnected: { why: "Sign in to see what's waiting for you." },
 } as const;

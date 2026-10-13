@@ -8,4 +8,5 @@ export const WRITE_RECEIPT = {
   sponsored: "No fees to pay",
   selfPaid: "A fraction of a cent",
   tx: "Transaction",
+  staked: "Staked",
 } as const;

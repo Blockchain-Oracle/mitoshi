@@ -55,6 +55,8 @@ export const ACCOUNT_PAGE = {
     none: "No live grants.",
     kind: { session: "Tap-trading key", executor: "Reply trading (X)", strategy: "Strategy agent", exit: "Exits with the app closed" } as const,
     kindByIndex: ["Tap-trading key", "Reply trading (X)", "Strategy agent", "Exits with the app closed"] as readonly string[],
+    receipt: (kind: string) => `Stopped · ${kind}`,
+    receiptLabel: "Budget back in your Trading Balance",
     thisDevice: "this device",
     key: "Key",
     active: "Active",

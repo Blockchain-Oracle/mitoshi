@@ -105,6 +105,7 @@ export const COPY = {
   },
   cta: (mode: "follow" | "fade") => (mode === "fade" ? "Fade this strategy" : "Copy this strategy"),
   manage: {
+    receiptLabel: "Strategy",
     live: "Copying now",
     notLive: "Copy paused — its budget isn't live",
     mode: (mode: "follow" | "fade") => (mode === "fade" ? "Fading it" : "Following it"),

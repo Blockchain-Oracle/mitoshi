@@ -25,6 +25,9 @@ export interface WriteReceipt {
   key?: { left: string; limit: string; expires: string } | null;
 }
 
+/** Who signs a write from the account itself: its passkey, or the connected wallet. */
+export const accountSigner = (kind: string | null): WriteReceipt["signer"] => (kind === "passkey" ? "passkey" : "wallet");
+
 let current: WriteReceipt | null = null;
 const listeners = new Set<() => void>();
 

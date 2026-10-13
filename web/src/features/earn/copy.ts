@@ -38,6 +38,8 @@ export const EARN = {
     noFunds: "Nothing in your account. Get test dollars first.",
     over: (held: string) => `Your account holds ${held}`,
     done: "Supplied.",
+    receipt: (amount: string) => `Supplied · ${amount}`,
+    receiptLabel: "Supplied to the reserve",
   },
   position: {
     title: "Your position",
@@ -61,6 +63,8 @@ export const EARN = {
     unsettledNote: "A Window has closed but is not settled yet. Withdrawing settles it first — anyone may.",
     receivePolicy: "Your account's receive policy blocks this payment, so nothing moved. Allow the reserve in your policy and withdraw again.",
     done: "Withdrawn to your account.",
+    receiptLabel: "Shares withdrawn",
+    sharesUnit: "shares",
   },
   windows: {
     empty: "The vault holds nothing on any Window. It quotes the live crypto Windows while the maker is on.",

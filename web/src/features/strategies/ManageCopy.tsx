@@ -5,6 +5,7 @@
 import { formatBaseUnits, USD_DECIMALS, type SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
 import { Masked } from "@/components/kit";
+import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { TxFailureCard } from "@/components/tx";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { cn } from "@/lib/utils";
@@ -28,7 +29,11 @@ export function ManageCopy({ card, strategies, sub, writes }: { card: StrategyWi
   const act = async (intent: Parameters<CopyWrites["run"]>[0], ok: string) => {
     setSaid(null);
     const outcome = await writes.run(intent);
-    if (outcome?.status === "confirmed") setSaid(ok);
+    if (outcome?.status === "confirmed") {
+      setSaid(ok);
+      // The success receipt (R4-4, D-227; critic gap 21): what changed, for which strategy, and who signed it.
+      notifyReceipt({ title: ok, figure: card.name, figureLabel: COPY.manage.receiptLabel, txHash: outcome.txHash, atMs: Date.now(), signer: writes.signer === "passkey" ? "passkey" : "wallet", sponsored: true });
+    }
   };
 
   return (
