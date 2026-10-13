@@ -295,7 +295,7 @@
 .badge-seal-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 11px/1.2 var(--font-body); color: var(--color-ink-secondary); }
 .badge-seal.is-earned .badge-seal-icon { border-color: color-mix(in srgb, var(--color-accent) 35%, transparent); background: color-mix(in srgb, var(--color-accent) 8%, transparent); color: var(--color-accent); }
 .badge-seal.is-earned .badge-seal-name { color: var(--color-ink); }
-.badge-seal.is-locked { opacity: 0.55; }
+.badge-seal.is-locked { opacity: 0.55; filter: grayscale(1); }
 @media (max-width: 639px) { .badge-grid { display: none; } }
 @media (min-width: 640px) { .badge-seals { display: none; } }
 @media (max-width: 639px) { .badge-rank { min-height: 0; gap: 12px; padding: 16px; } .badge-rank-figure { font-size: 36px; } }

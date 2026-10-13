@@ -1,7 +1,9 @@
 // Ported from Owarine 90a91d71:web/src/features/markets/history/BadgeGrid.tsx (R4-4, D-227; over Masayume 68f7a09's) —
 // the rank cell (N/5 and its bar), then one numbered card per badge, each saying Unlocked or Locked in words; a badge
 // whose source isn't connected says what it waits on. Under 640 px the cards (144 px each, ~720 px stacked) give way to
-// one row of five 44 px seals with their names under them — the same badges, earned in the accent, locked muted.
+// one row of five 44 px seals with their names under them — the same badges, earned in the accent, locked muted. The
+// seal is From 21st.dev 12996 trophyso/achievement-badge (its `sm` icon disc, the name under it, the locked state dimmed
+// and each item read as "Name - Unlocked/Locked"), revamped to Mitoshi tokens without its progress ring or rarity line.
 import type { Badge, BadgeId } from "@cwf/core";
 import { BadgeCheck, ChartNoAxesCombined, Crown, Droplets, Flame, Target, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -36,10 +38,9 @@ export function BadgeGrid({ badges }: { badges: readonly Badge[] }) {
         {badges.map((b) => {
           const Icon = ICONS[b.id] ?? BadgeCheck;
           return (
-            <li key={b.id} className={cn("badge-seal", b.earned ? "is-earned" : "is-locked")} title={`${words(b.id).description} · ${state(b)}`}>
+            <li key={b.id} className={cn("badge-seal", b.earned ? "is-earned" : "is-locked")} title={`${words(b.id).description} · ${state(b)}`} aria-label={`${words(b.id).name} - ${state(b)}`}>
               <span className="badge-seal-icon" aria-hidden><Icon strokeWidth={1.9} /></span>
-              <span className="badge-seal-name">{words(b.id).name}</span>
-              <span className="sr-only">{state(b)}</span>
+              <span className="badge-seal-name" aria-hidden>{words(b.id).name}</span>
             </li>
           );
         })}
