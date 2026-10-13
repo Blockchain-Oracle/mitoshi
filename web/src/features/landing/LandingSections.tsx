@@ -1,12 +1,12 @@
 // Ported from Owarine 90a91d71:web/src/features/landing/{LandingLoop,LandingMarkets}.tsx (R4-13a, D-227) — under the
 // hero: the tape of what is open now, the three steps, and what trades with each kind's Windows open. Owarine reads a
 // client board; here every figure is the index's, read on the server (`board.ts`), so the site group ships no markets
-// runtime. The tape slides on the kit's InfiniteSlider (still under reduced motion). On Mitoshi's tokens (`landing.css`).
+// runtime. The tape is Owarine's InfiniteSlider as CSS alone — two copies sliding by one, paused under the pointer,
+// still (and scrollable by hand) under reduced motion — so it adds no JS to the site budget. On Mitoshi's tokens.
 import { ArrowUpRight } from "lucide-react";
 import { connection } from "next/server";
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { InfiniteSlider } from "@/components/kit/InfiniteSlider";
+import type { CSSProperties, ReactNode } from "react";
 import { FluentArt } from "@/components/kit/SkyCollage";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import type { FluentName } from "@/lib/art/fluent";
@@ -20,19 +20,24 @@ export async function LandingTape() {
   const board = await landingBoard();
   const rows = board?.assets ?? [];
   if (rows.length === 0) return <div className="lp-tape" aria-hidden />;
+  const items = (copy: boolean) =>
+    rows.map((r) => (
+      <Link key={r.symbol} href={`/trade/${r.symbol}`} className="lp-tape-item" tabIndex={copy ? -1 : undefined}>
+        <AssetDisc asset={r.symbol} className="lp-disc lp-disc--sm" />
+        <span className="lp-tape-symbol">{r.symbol}</span>
+        {r.printE8 ? <span className="lp-tape-print" title={WORDS.tape.print}>{printUsd(r.printE8)}</span> : null}
+        <span className="lp-tape-chip">{formatCadence(r.cadenceSec)}</span>
+        <span className="lp-tape-open">{WORDS.tape.open(r.open)}</span>
+      </Link>
+    ));
   return (
     <section aria-label={WORDS.tape.label} className="lp-tape">
-      <InfiniteSlider gapRem={0} duration={Math.max(30, rows.length * 4)} durationOnHover={Math.max(90, rows.length * 12)} className="lp-tape-track">
-        {rows.map((r) => (
-          <Link key={r.symbol} href={`/trade/${r.symbol}`} className="lp-tape-item">
-            <AssetDisc asset={r.symbol} className="lp-disc lp-disc--sm" />
-            <span className="lp-tape-symbol">{r.symbol}</span>
-            {r.printE8 ? <span className="lp-tape-print" title={WORDS.tape.print}>{printUsd(r.printE8)}</span> : null}
-            <span className="lp-tape-chip">{formatCadence(r.cadenceSec)}</span>
-            <span className="lp-tape-open">{WORDS.tape.open(r.open)}</span>
-          </Link>
-        ))}
-      </InfiniteSlider>
+      <div className="lp-tape-viewport">
+        <div className="lp-tape-track" style={{ "--lp-tape-dur": `${Math.max(30, rows.length * 4)}s` } as CSSProperties}>
+          <div className="lp-tape-copy">{items(false)}</div>
+          <div className="lp-tape-copy" aria-hidden inert>{items(true)}</div>
+        </div>
+      </div>
     </section>
   );
 }
