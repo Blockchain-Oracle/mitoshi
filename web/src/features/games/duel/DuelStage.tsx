@@ -40,8 +40,13 @@ export function cranksFor(m: DuelMatchWire, address: string | null, nowMs: numbe
   return out;
 }
 
-function Lobby({ paired, match, me, write, busy, failed }: { paired: DuelPairedWire; match: DuelMatchWire | null; me: string; write: ReturnType<typeof useDuelWrite>["write"]; busy: string | null; failed: string | null }) {
+/** A paired duel the creator never opened is let go after this (the server drops the pair at 120 s), and the challenger may find another. */
+const UNOPENED_SEC = 125;
+
+function Lobby({ paired, match, me, write, busy, failed, onRequeue }: { paired: DuelPairedWire; match: DuelMatchWire | null; me: string; write: ReturnType<typeof useDuelWrite>["write"]; busy: string | null; failed: string | null; onRequeue: () => void }) {
   const status = match?.status ?? "pending";
+  const nowMs = useNowMs();
+  const unopened = status === "pending" && match !== null && nowMs > 0 && Math.floor(nowMs / 1_000) - match.createdAtSec > UNOPENED_SEC;
   const opponent = paired.role === "creator" ? paired.challenger : paired.creator;
   const pot = paired.potBase === "0" ? DUEL.entry.tierWord("free", 0) : dollars(paired.potBase);
   const autoRevealed = useRef(false);
@@ -87,6 +92,11 @@ function Lobby({ paired, match, me, write, busy, failed }: { paired: DuelPairedW
         </p>
       )}
       {failed ? <p className="du-fail">{DUEL.failed(failed)}</p> : null}
+      {unopened ? (
+        <button type="button" className="du-ghost" onClick={onRequeue}>
+          {DUEL.lobby.another}
+        </button>
+      ) : null}
       {match ? <Proof match={match} /> : null}
     </section>
   );
@@ -201,7 +211,7 @@ export function DuelStage() {
           <DuelEntry tier={tier} onTier={setTier} onFind={() => void onFind()} busy={finding} error={error} />
         )
       ) : !address ? null : PRE_PICK.has(m?.status ?? "pending") ? (
-        <Lobby paired={paired} match={m} me={address} write={write} busy={busy} failed={failed} />
+        <Lobby paired={paired} match={m} me={address} write={write} busy={busy} failed={failed} onRequeue={() => void find(paired.tier)} />
       ) : m && m.status === "picking" && m.picks.filter((p) => p.seat === (m.creator.toLowerCase() === address.toLowerCase() ? 0 : 1)).length < m.deck.length ? (
         <Picking match={m} me={address} write={write} busy={busy} failed={failed} />
       ) : m ? (

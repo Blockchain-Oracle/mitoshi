@@ -28,6 +28,7 @@ export const DUEL = {
     reveal: "Open the deck",
     revealing: "Opening the deck…",
     cards: (n: number) => `${n} cards · 5m Windows`,
+    another: "Not opened · find another duel",
   },
   pick: {
     eyebrow: (asset: string) => `${asset} · duel`,
