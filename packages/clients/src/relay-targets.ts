@@ -2,6 +2,9 @@
 /** Contract addresses per chain and area; relay policies allowlist from here. */
 export const relayTargets = {
   "42431": {
+    "arena": [
+      "0xbCd862D7B90663700e7BB5d542d5bcEFd1b03DB4"
+    ],
     "engine": [
       "0x295Bba557cB1BF159Fdb9A62AB399b0012b12526",
       "0xCa30Dd5b56C80757a7cd121cab75B06c39861585",
