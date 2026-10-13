@@ -1,25 +1,20 @@
 import type { Sentiment } from "./wire";
 
-/** `/news` — Masayume's and Agari's words (Yosuku's own deleted page, `app/news/page.tsx` at 93d09c1^), for Mitoshi. */
+/** `/news` (R4-10, D-227: at Owarine's counts) — Masayume's and Agari's words (Yosuku's own deleted page, `app/news/page.tsx` at 93d09c1^), for Mitoshi. */
 export const NEWS = {
-  eyebrow: "News",
   live: "Updated live",
   heading: "Market",
   headingAccent: "News",
   /** Verbatim from the reference: "headlines that move the market". */
   headingJp: "市場を動かす見出し。",
-  intro: "The stories on the coins and stocks Mitoshi lists, newest first, each tagged by the words in its headline. Read the room before you call the close.",
   credit: "Headlines via Finnhub, Cointelegraph and Decrypt.",
-  lead: "Latest",
-  list: "The wire",
-  refreshed: (at: string) => `Read ${at} UTC; refreshed every few minutes.`,
-  partial: "One of the sources couldn't be read just now, so this is what the others carry.",
+  partial: "One source didn't answer.",
   quiet: "The wire is quiet. Headlines return shortly.",
   reading: "Reading the wire…",
   sentiment: { positive: "bullish", negative: "bearish", neutral: "neutral" } satisfies Record<Sentiment, string>,
-  tone: "Tagged from the headline's words, not a market signal.",
-  trade: (symbol: string) => `Trade ${symbol}`,
-  story: "Story",
+  trade: "Trade it →",
+  all: "All",
+  tickers: "Narrow the wire",
 } as const;
 
 /** "now", "5m", "2h", "3d" — the reference's `timeAgo`, against a fixed instant so server and client agree. */
