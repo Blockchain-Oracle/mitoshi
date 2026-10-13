@@ -75,3 +75,7 @@ Owarine 90a91d71 with their provenance files:
 | --- | --- | --- |
 | `sounds/{click,modal-open,modal-close,card-win,card-loss,swipe-up,swipe-down,match-found,duel-win,duel-lose}.mp3` | Kenney — Interface Sounds, Digital Audio, Music Jingles (kenney.nl) | CC0 1.0 (`web/public/sounds/SOURCES.md`) |
 | `fonts/m6x11plus.ttf` | m6x11plus by Daniel Linssen (managore.itch.io/m6x11) | Free to use with attribution; the credit is shown in the games' settings sheet (`web/public/fonts/SOURCES.md`) |
+
+## Agent portraits (R4-6, D-227)
+
+Each strategy's portrait is drawn in the browser from a seed by **DiceBear** ([dicebear/dicebear](https://github.com/dicebear/dicebear)): `@dicebear/core` 9.4.3 (MIT, Copyright (c) Florian Körner) and the **Notionists** style `@dicebear/notionists` 9.4.2 (the code MIT; the artwork "Notionists" by Zoish, CC0 1.0). Drawn inline as SVG, never fetched from api.dicebear.com. Ported from Owarine 90a91d71 (`features/strategies/AgentPortrait.tsx`).

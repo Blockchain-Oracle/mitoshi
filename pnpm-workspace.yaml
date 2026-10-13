@@ -92,6 +92,8 @@ catalog:
   "@layerzerolabs/test-devtools-evm-foundry": ^8.0.1
   solidity-bytes-utils: ^0.8.4
   obscenity: 0.4.6
+  '@dicebear/core': 9.4.3
+  '@dicebear/notionists': 9.4.2
 
 # Expo SDK 57 pins for mobile/ (kept apart from the web's React; plan Appendix D.1).
 catalogs:

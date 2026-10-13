@@ -1,8 +1,9 @@
 // Ported in role from Agari 03b30ab:web/src/features/strategies/{studio-draft,StudioForm}.ts — the builder's draft and
 // every reason a step can't advance, checked in one pure place; on Tempo the result is one `strategy-publish` (plus,
-// first, an optional sponsored ERC-8004 `register`, D-218.7).
+// first, an optional sponsored ERC-8004 `register`, D-218.7). R4-6 (D-227): the portrait seed rides in the metadata,
+// and the risk modes (Owarine 90a91d71 RiskModePicker) set the open Windows and the price cap; Balanced by default.
 import {
-  AGENT_PERSONA_MAX_CHARS, isSpec, LOOKBACK_MAX, LOOKBACK_MIN, MIRROR_WITHIN_MAX_SEC, MIRROR_WITHIN_MIN_SEC, parseDecimalToBaseUnits, USD_DECIMALS,
+  AGENT_PERSONA_MAX_CHARS, isSpec, LOOKBACK_MAX, PORTRAIT_SEED_MAX, LOOKBACK_MIN, MIRROR_WITHIN_MAX_SEC, MIRROR_WITHIN_MIN_SEC, parseDecimalToBaseUnits, USD_DECIMALS,
   type AgentPosture, type PresetKey, type StrategyEnvelope, type StrategyMetadata, type StrategySpec,
 } from "@cwf/core";
 import { isAddress } from "viem";
@@ -30,6 +31,20 @@ export interface Draft {
   identity: boolean;
   runner: "house" | "own";
   ownRunner: string;
+  /** The portrait's seed (R4-6): rerolled in the studio, published in the metadata. */
+  portraitSeed: string;
+}
+
+/** The studio's risk modes (Owarine RiskModePicker): each sets the open Windows and the price cap; Custom edits both. */
+export type RiskMode = "guarded" | "balanced" | "active" | "custom";
+export const RISK_MODES: Record<Exclude<RiskMode, "custom">, { openText: string; priceCentsText: string }> = {
+  guarded: { openText: "1", priceCentsText: "70" },
+  balanced: { openText: "1", priceCentsText: "85" },
+  active: { openText: "2", priceCentsText: "" },
+};
+export function riskModeOf(d: Pick<Draft, "openText" | "priceCentsText">): RiskMode {
+  for (const [k, v] of Object.entries(RISK_MODES)) if (v.openText === d.openText.trim() && v.priceCentsText === d.priceCentsText.trim()) return k as RiskMode;
+  return "custom";
 }
 
 export const NAME_MAX = 60;
@@ -38,12 +53,14 @@ const MAX_FEE_BASE = 100_000_000n;
 
 export const EMPTY_DRAFT: Draft = {
   preset: "momentum", lookback: 6, thresholdBps: 20, persona: "", posture: "guarded", cadences: [300], trader: "", withinSec: 120, seriesId: "",
-  perTradeText: "5", dailyText: "50", openText: "3", priceCentsText: "90", feeText: "0", name: "", description: "", identity: true, runner: "house", ownRunner: "",
+  perTradeText: "5", dailyText: "50", openText: "1", priceCentsText: "85", feeText: "0", name: "", description: "", identity: true, runner: "house", ownRunner: "", portraitSeed: "",
 };
 
 export interface DraftCheck {
   /** The first problem per step (instinct, tune, limits, publish); null when the step is complete. */
   steps: [string | null, string | null, string | null, string | null];
+  /** The name's own problem (the studio's first step asks for it). */
+  name: string | null;
   spec: StrategySpec | null;
   envelope: StrategyEnvelope | null;
   feeBase: bigint;
@@ -90,17 +107,19 @@ export function checkDraft(d: Draft, ctx: { houseRunner: string | null; series: 
   else if (fee === null || fee > MAX_FEE_BASE) limits = "The fee is $0 to $100.";
 
   const runner = d.runner === "house" ? (ctx.houseRunner as `0x${string}` | null) : isAddress(d.ownRunner.trim()) ? (d.ownRunner.trim() as `0x${string}`) : null;
-  let publish: string | null = null;
-  if (d.name.trim().length === 0) publish = "Give it a name.";
-  else if (d.name.length > NAME_MAX) publish = `Keep the name under ${NAME_MAX} characters.`;
-  else if (d.description.length > DESCRIPTION_MAX) publish = `Keep the description under ${DESCRIPTION_MAX} characters.`;
-  else if (!runner) publish = d.runner === "house" ? "The house runner isn't configured on this deployment; name your own." : "Paste your runner's address.";
+  const name = d.name.trim().length === 0 ? "Give it a name." : d.name.length > NAME_MAX ? `Keep the name under ${NAME_MAX} characters.` : null;
+  const publish: string | null =
+    name ??
+    (d.description.length > DESCRIPTION_MAX ? `Keep the description under ${DESCRIPTION_MAX} characters.`
+    : !runner ? (d.runner === "house" ? "The house runner isn't configured on this deployment; name your own." : "Paste your runner's address.")
+    : null);
 
   const envelope: StrategyEnvelope | null = limits || perTrade === null || daily === null
     ? null
     : { maxStakePerTradeBase: perTrade, maxDailySpendBase: daily, maxOpenPositions: open, maxPriceRaw: BigInt(cents) * 10_000n, series: (series?.seriesId ?? null) as StrategyEnvelope["series"] };
-  const metadata: StrategyMetadata | null = tune ? null : { name: d.name.trim(), description: d.description.trim(), spec };
-  return { steps: [null, tune, limits, publish], spec: tune ? null : spec, envelope, feeBase: fee ?? 0n, runner, metadata };
+  const seed = d.portraitSeed.trim();
+  const metadata: StrategyMetadata | null = tune ? null : { name: d.name.trim(), description: d.description.trim(), spec, ...(seed && seed.length <= PORTRAIT_SEED_MAX ? { portraitSeed: seed } : {}) };
+  return { steps: [null, tune, limits, publish], name, spec: tune ? null : spec, envelope, feeBase: fee ?? 0n, runner, metadata };
 }
 
 /**

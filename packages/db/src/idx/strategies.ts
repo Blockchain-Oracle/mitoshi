@@ -31,6 +31,8 @@ export interface IndexedStrategy {
   /** Non-revoked ERC-8004 feedback on the strategy's agent: how many, and their mean as a decimal string (null: none). */
   feedbackCount: number;
   feedbackMean: string | null;
+  /** Every fee its copiers paid to subscribe, summed over its subscriptions (base units, R4-6). */
+  feesEarnedBase: string;
 }
 
 export interface IndexedSubscription {
@@ -62,12 +64,12 @@ export interface AgentFeedback {
 type StrategyRaw = {
   registry: string; strategy_id: string; creator: string; runner: string; spec_hash: string; metadata_hash: string | null; metadata: string | null; agent_id: string | null;
   max_stake_per_trade_base: string; max_daily_spend_base: string; max_open_positions: number; max_price_raw: string; series: string | null; series_symbol: string | null; series_cadence_sec: number | null; fee_base: string;
-  active: boolean; subscribers: number; revision: number; created_at_sec: string; feedback_count: number; feedback_mean: string | null;
+  active: boolean; subscribers: number; revision: number; created_at_sec: string; feedback_count: number; feedback_mean: string | null; fees_earned_base: string;
 };
 const fromStrategy = (r: StrategyRaw): IndexedStrategy => ({
   registry: r.registry, strategyId: r.strategy_id, creator: r.creator, runner: r.runner, specHash: r.spec_hash, metadataHash: r.metadata_hash, metadata: r.metadata, agentId: r.agent_id,
   maxStakePerTradeBase: r.max_stake_per_trade_base, maxDailySpendBase: r.max_daily_spend_base, maxOpenPositions: r.max_open_positions, maxPriceRaw: r.max_price_raw, series: r.series, seriesSymbol: r.series_symbol, seriesCadenceSec: r.series_cadence_sec,
-  feeBase: r.fee_base, active: r.active, subscribers: r.subscribers, revision: r.revision, createdAtSec: Number(r.created_at_sec), feedbackCount: r.feedback_count, feedbackMean: r.feedback_mean,
+  feeBase: r.fee_base, active: r.active, subscribers: r.subscribers, revision: r.revision, createdAtSec: Number(r.created_at_sec), feedbackCount: r.feedback_count, feedbackMean: r.feedback_mean, feesEarnedBase: r.fees_earned_base,
 });
 
 type SubscriptionRaw = { registry: string; strategy_id: string; subscriber: string; grant_id: string; mode: number; active: boolean; fees_paid_base: string; first_subscribed_at_sec: string; subscribed_at_sec: string; unsubscribed_at_sec: string | null };
@@ -81,7 +83,8 @@ export async function readIndexedStrategies(sql: Sql, q: { registry: string; act
   const rows = await sql<StrategyRaw[]>`
     select s.registry, s.strategy_id::text, s.creator, s.runner, s.spec_hash, s.metadata_hash, s.metadata, s.agent_id::text, s.max_stake_per_trade_base::text,
       s.max_daily_spend_base::text, s.max_open_positions, s.max_price_raw::text, s.series, sr.symbol as series_symbol, sr.cadence_sec as series_cadence_sec, s.fee_base::text, s.active, s.subscribers, s.revision, s.created_at_sec::text,
-      coalesce(f.n, 0)::int as feedback_count, f.mean::text as feedback_mean
+      coalesce(f.n, 0)::int as feedback_count, f.mean::text as feedback_mean,
+      coalesce((select sum(fees_paid_base) from idx_subscriptions x where x.registry = s.registry and x.strategy_id = s.strategy_id), 0)::text as fees_earned_base
     from idx_strategies s
     left join idx_series sr on sr.series = s.series
     left join lateral (

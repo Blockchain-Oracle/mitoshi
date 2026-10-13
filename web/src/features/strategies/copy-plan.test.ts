@@ -8,7 +8,7 @@ const OTHER = "0x00000000000000000000000000000000000000b2";
 const NOW = 1_791_700_000;
 const ONE = 1_000_000n;
 const strategy = (id: string, over: Partial<StrategyWire["envelope"]> = {}, runner = RUNNER, feeBase = "0"): StrategyWire => ({
-  strategyId: id, creator: RUNNER, runner, agentId: "7", name: `S${id}`, description: "", spec: null, specText: null,
+  strategyId: id, creator: RUNNER, runner, agentId: "7", name: `S${id}`, description: "", portraitSeed: null, feesEarnedBase: "0", spec: null, specText: null,
   envelope: { maxStakePerTradeBase: "5000000", maxDailySpendBase: "50000000", maxOpenPositions: 3, maxPriceRaw: "900000", series: null, seriesLabel: null, ...over },
   feeBase, active: true, subscribers: 0, createdAtSec: 0, revision: 0,
   record: { fills: 0, settled: 0, wins: 0, losses: 0, voids: 0, netBase: "0", stakedBase: "0", curve: [], lastActiveSec: 0, distinctSubscribers: 0, open: 0, copyTrades: 0, entrustedBase: "0" },

@@ -68,7 +68,24 @@ function HeadBones() {
   );
 }
 
-export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards" | "page" | "hero" | "tiles" | "table" | "podium";
+/** A strategy card (R4-6): the portrait, the name and instinct, the one bold figure, the foot. */
+function StrategyBones() {
+  return (
+    <div className="skel-card">
+      <div className="flex items-start gap-3">
+        <Skeleton className="size-14 rounded-xl" />
+        <div className="flex flex-1 flex-col gap-2 pt-1">
+          <Skeleton className="h-4 w-1/2 rounded-md" />
+          <Skeleton className="h-3 w-2/3 rounded-md" />
+        </div>
+      </div>
+      <Skeleton className="h-8 w-28 rounded-md" />
+      <Skeleton className="h-3 w-full rounded-md" />
+    </div>
+  );
+}
+
+export type LoadingShape = "line" | "row" | "plate" | "chart" | "ticket" | "cards" | "page" | "hero" | "tiles" | "table" | "podium" | "strategy-grid" | "agents-board" | "cockpit";
 
 const SHAPES: Record<LoadingShape, () => ReactNode> = {
   line: () => <Skeleton className="h-4 w-2/3 rounded-md" />,
@@ -144,6 +161,50 @@ const SHAPES: Record<LoadingShape, () => ReactNode> = {
   table: () => (
     <div className="skel-card gap-0 py-1">
       {[0, 1, 2, 3, 4].map((i) => <RowBones key={i} />)}
+    </div>
+  ),
+  // /strategies (R4-6): the nameplate, the three workspace pills, the portrait cards.
+  "strategy-grid": () => (
+    <div className="flex flex-col gap-6">
+      <HeadBones />
+      <div className="flex gap-2">
+        {[0, 1, 2].map((i) => <Skeleton key={i} className="h-touch w-32 rounded-md" />)}
+      </div>
+      <div className="skel-grid">
+        <StrategyBones />
+        <StrategyBones />
+        <StrategyBones />
+      </div>
+    </div>
+  ),
+  // /agents (R4-6): the title, the four stat tiles, the first runner rows.
+  "agents-board": () => (
+    <div className="flex flex-col gap-6">
+      <Skeleton className="h-9 w-56 rounded-md" />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-24 rounded-md" />)}
+      </div>
+      <div className="skel-card gap-0 py-1">
+        {[0, 1, 2, 3].map((i) => <RowBones key={i} />)}
+      </div>
+    </div>
+  ),
+  // /agents/[id] (R4-6): the head with its portrait and toolbar, the record beside the next read, the tabs.
+  cockpit: () => (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center gap-4">
+        <Skeleton className="size-16 rounded-2xl" />
+        <div className="flex flex-1 flex-col gap-2">
+          <Skeleton className="h-3 w-32 rounded-md" />
+          <Skeleton className="h-8 w-56 rounded-md" />
+        </div>
+        <Skeleton className="h-10 w-24 rounded-full" />
+      </div>
+      <div className="skel-hero">
+        <Skeleton className="h-72 w-full rounded-lg" />
+        <Skeleton className="h-40 w-full rounded-lg max-lg:hidden" />
+      </div>
+      <Skeleton className="h-10 w-full rounded-md" />
     </div>
   ),
   // The leaderboard: the head, the filters, three on the podium, the first rows.

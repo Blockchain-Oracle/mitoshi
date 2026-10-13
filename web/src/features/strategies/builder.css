@@ -1,0 +1,74 @@
+/* Ported from Owarine 90a91d71:web/src/features/strategies/builder.css (R4-6, D-227) — the workspace pills, the creator
+ * studio's four-step shell with its preview aside, and Yours' strategy picker, on Mitoshi's tokens. */
+.agent-entry { display: flex; flex-wrap: wrap; gap: .65rem; }
+.agent-entry button { border: 1px solid var(--color-hairline); padding: .8rem 1rem; font-family: var(--font-data); font-size: .75rem; color: var(--color-ink); background: transparent; border-radius: .4rem; font-variant-numeric: tabular-nums; }
+.agent-entry button[aria-pressed="true"] { border-color: var(--color-accent); background: color-mix(in srgb, var(--color-accent-fill) 7%, transparent); }
+.agent-builder { }
+.agent-builder-heading { display: flex; align-items: start; justify-content: space-between; gap: 1.5rem; }
+.agent-builder-heading > p { max-width: 24rem; }
+.agent-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 0; margin: 2rem 0; list-style: none; border-bottom: 1px solid var(--color-hairline); }
+.agent-steps li { min-width: 0; padding-bottom: .9rem; border-bottom: 2px solid transparent; }
+.agent-steps li[aria-current] { border-color: var(--color-accent); }
+.agent-steps button { text-align: left; font-size: .75rem; color: var(--color-ink); background: none; border: 0; padding: .5rem .4rem .5rem 0; }
+.agent-steps button span { display: block; margin-bottom: .5rem; font-family: var(--font-data); font-size: .65rem; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+.agent-steps li[aria-current] button span { color: var(--color-accent); }
+.agent-builder-grid { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; gap: 2rem; align-items: start; }
+.agent-builder-panel { min-width: 0; }
+.agent-builder-preview { position: sticky; top: calc(var(--stage-sticky-top) + 1.5rem); min-width: 0; }
+.agent-builder-actions { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--color-hairline); padding-top: 1.5rem; }
+.agent-builder-actions .strat-confirm { width: auto; flex: 1; max-width: 22rem; margin: 0 0 0 auto; }
+.agent-preview-facts { margin: 1.5rem 0; font-size: .75rem; }
+.agent-preview-facts > div { display: flex; justify-content: space-between; gap: .8rem; border-top: 1px solid var(--color-hairline); padding: .8rem 0; }
+.agent-preview-facts dt { color: var(--color-ink-muted); }
+.agent-preview-facts dd { color: var(--color-ink); text-align: right; overflow-wrap: anywhere; }
+.agent-form-error { margin: 1rem 0; font-size: .8rem; color: var(--color-accent); }
+.agent-rule-preview { display: grid; gap: .8rem; padding: 1rem; border: 1px solid var(--color-hairline); font-family: var(--font-data); color: var(--color-ink); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.agent-published { display: grid; gap: 1rem; max-width: 42rem; margin: 2rem 0; }
+.agent-next-steps { padding-left: 1.25rem; display: grid; gap: .8rem; color: var(--color-ink); font-size: .875rem; line-height: 1.6; }
+.copy-progress { border: 1px solid var(--color-accent); padding: 1rem; margin: 1rem 0; color: var(--color-ink); }
+.copy-progress a { overflow-wrap: anywhere; }
+.copy-progress p { font-size: .8rem; line-height: 1.6; }
+.copy-progress button { margin-top: .75rem; }
+.agent-entry button:focus-visible, .agent-steps button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+@media (max-width: 850px) { .agent-builder-grid { grid-template-columns: minmax(0, 1fr); } .agent-builder-preview { position: static; } }
+@media (max-width: 540px) { .agent-builder-heading { display: block; } .agent-builder-heading > p { margin-top: 1rem; } .agent-steps { gap: .5rem; } .agent-steps button { font-size: .65rem; } .agent-builder-actions { gap: .5rem; } }
+
+.agent-builder-error { border-left: 2px solid var(--color-accent); padding: .75rem 1rem; color: var(--color-ink); font-size: .8rem; line-height: 1.6; }
+.desk-btn-primary:disabled, .desk-pill:disabled { opacity: .45; cursor: not-allowed; }
+/* "Manage a strategy": the reference's own dropdown idiom (the parlay Window picker, `.pl-picker`/`.pl-menu`), sized for a portrait row. */
+.strat-picker { position: relative; max-width: 34rem; }
+.strat-picker-btn { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: .75rem; min-height: 3.5rem; padding: .5rem .75rem; border-radius: 8px; background: color-mix(in srgb, var(--color-ink) 3%, transparent); border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent); text-align: left; cursor: pointer; transition: border-color 200ms var(--ease-out); }
+.strat-picker-btn:hover, .strat-picker-btn[aria-expanded="true"] { border-color: color-mix(in srgb, var(--color-ink) 20%, transparent); }
+.strat-picker-btn:focus-visible, .strat-picker-item:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.strat-picker-empty { font-family: var(--font-data); font-size: .75rem; color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+.strat-picker-chevron { width: 14px; height: 14px; color: var(--color-ink-muted); flex-shrink: 0; transition: transform 200ms var(--ease-out); }
+.strat-picker-chevron--open { transform: rotate(180deg); }
+.strat-picker-menu { position: absolute; z-index: var(--z-menu); left: 0; right: 0; margin-top: 4px; max-height: 18rem; overflow-y: auto; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent); background: var(--color-surface-1); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); animation: strat-picker-drop 160ms var(--ease-out) both; }
+.strat-picker-item { width: 100%; display: flex; padding: .5rem .75rem; text-align: left; background: transparent; cursor: pointer; transition: background 200ms var(--ease-out); }
+.strat-picker-item:hover { background: color-mix(in srgb, var(--color-ink) 5%, transparent); }
+.strat-picker-item--on { background: color-mix(in srgb, var(--color-ink) 10%, transparent); }
+.strat-picker-row { display: flex; align-items: center; gap: .75rem; min-width: 0; }
+.strat-picker-name { display: block; font-size: .875rem; font-weight: 600; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.strat-picker-meta { display: block; margin-top: 2px; font-family: var(--font-data); font-size: .65rem; color: var(--color-ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+@keyframes strat-picker-drop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .strat-picker-menu { animation: none; } }
+
+
+.agent-entry button, .agent-entry a { min-height: 44px; display: inline-flex; align-items: center; }
+.agent-entry a { border: 1px solid var(--color-hairline); padding: .8rem 1rem; font-family: var(--font-data); font-size: .75rem; color: var(--color-ink); border-radius: .4rem; }
+.agent-entry a:hover { border-color: var(--color-ink-muted); }
+.agent-steps button:disabled { cursor: default; }
+/* Phones: the preview is one line above the step, the actions stay above the dock (Never scroll to the action). */
+.agent-preview-strip { display: none; }
+@media (max-width: 850px) {
+  .agent-builder-preview { display: none; }
+  .agent-preview-strip { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px 10px; margin-bottom: 16px; border: 1px solid var(--color-hairline); border-radius: 10px; }
+  .agent-preview-strip .strat-sigil { width: 32px; height: 32px; border-radius: 9px; }
+}
+@media (max-width: 767px) {
+  .agent-builder-actions { position: sticky; bottom: var(--dock-clearance); z-index: var(--z-sticky); margin-top: 1.25rem; padding: 12px 0; background: color-mix(in srgb, var(--color-canvas) 92%, transparent); backdrop-filter: blur(12px); }
+  .agent-steps { margin: 1rem 0; }
+}
+.agent-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.agent-choices .strat-choice { padding: 12px; }
+.agent-choices .strat-choice-body { margin-top: 4px; }
