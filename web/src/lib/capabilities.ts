@@ -44,6 +44,21 @@ export const PENDING: Readonly<Record<string, PendingCapability>> = {
   "/native-auth": { eyebrow: "App sign-in", title: "Finishing sign-in in the app", body: "The app hands your sign-in back here.", dependency: "the native app handoff (SM2)" },
 };
 
+/**
+ * The routes whose page renders `PendingRoute` today (critic gap 18, R4-8 D-227; Owarine lists only places that work or
+ * say they wait). Navigation keeps them listed and reachable and marks them "Soon" — never hidden. A slice that ships
+ * one of these surfaces drops it here; `nav-items.test.ts` fails while this set and the pages disagree.
+ */
+export const PENDING_ROUTES: ReadonlySet<string> = new Set([
+  "/claim", "/games/duel", "/games/duel/[matchId]", "/games/history", "/games/lucky", "/games/rank", "/launch", "/launch/[token]",
+  "/launch/meme", "/launch/stablecoin", "/native-auth", "/themes", "/themes/[slug]", "/themes/create", "/trade-from-x",
+]);
+
+/** Whether a nav destination still lands on a pending page (its path, query dropped). */
+export function isPendingHref(href: string): boolean {
+  return PENDING_ROUTES.has(href.split("?")[0] ?? href);
+}
+
 export function pendingFor(route: string): PendingCapability {
   const entry = PENDING[route];
   if (!entry) throw new Error(`no pending capability registered for ${route}`);

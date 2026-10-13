@@ -21,8 +21,13 @@
 @media (min-width: 1280px) { .rail-brand { align-items: flex-start; gap: 10px; padding-left: 4px; } }
 .rail-mark { display: flex; align-items: center; gap: 10px; border-radius: var(--radius-xl); color: var(--color-ink); }
 .rail-mark:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--color-accent); }
-.rail-disc, .topline-mark { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--radius-full); background: var(--color-stage); color: var(--color-ink); }
-.rail-disc svg, .topline-mark svg { width: 18px; height: 22px; }
+/* R4-8 (D-227), Owarine `AppRail`/`TopBar`: the seal is a 40 px vermilion disc, as the dock's centre seal. The phone's
+ * mark keeps a 44 px hit area around it. */
+.rail-disc { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--radius-full); background: var(--accent-fill); color: var(--on-accent); }
+.topline-mark { position: relative; display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--radius-full); color: var(--on-accent); }
+.topline-mark::before { content: ""; position: absolute; inset: 2px; border-radius: var(--radius-full); background: var(--accent-fill); }
+.topline-mark svg { position: relative; }
+.rail-disc svg, .topline-mark svg { width: 17px; height: 21px; }
 .rail-word { display: none; font: 700 17px/1 var(--font-heading); letter-spacing: 0.12em; }
 @media (min-width: 1280px) { .rail-word { display: inline; } }
 
@@ -31,15 +36,18 @@
 .rail-item {
   position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 12px;
   height: var(--spacing-nav-item); padding: 0 12px; border-radius: var(--radius-xl);
-  color: color-mix(in srgb, var(--color-ink) 78%, transparent); font: 500 18px/24px var(--font-body); text-align: left;
+  color: color-mix(in srgb, var(--color-ink) 78%, transparent); font: 600 16px/24px var(--font-body); letter-spacing: -0.01em; text-align: left;
   transition: background-color var(--duration-hover) var(--ease-out), color var(--duration-hover) var(--ease-out);
 }
 .rail-item:hover { color: var(--color-ink); background: color-mix(in srgb, var(--color-rail-active) 45%, transparent); }
 .rail-item[aria-current="page"] { color: var(--color-ink); background: transparent; }
+/* More is "here" on any page that is no place (Owarine `AppRail`, R4-8). */
+.rail-item[data-here] { color: var(--color-ink); background: color-mix(in oklab, var(--color-rail-active) 45%, transparent); }
 .rail-item:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent); }
 /* S13: the notification centre's unread count on Portfolio. */
 .rail-badge { position: absolute; top: 4px; right: 10px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--color-accent-fill); color: var(--color-on-accent); font: 700 11px/18px var(--font-body); text-align: center; }
-.rail-icon { width: 24px; height: 24px; flex-shrink: 0; stroke-width: 1.9; }
+.rail-icon { width: 22px; height: 22px; flex-shrink: 0; stroke-width: 2; }
+.rail-item[aria-current="page"] .rail-icon { stroke-width: 2.5; }
 .rail-label, .rail-key { display: none; }
 @media (min-width: 1280px) {
   .rail-item { justify-content: flex-start; }
@@ -58,9 +66,9 @@
 .rail-foot { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 @media (min-width: 1280px) { .rail-foot { align-items: stretch; } }
 .rail-money { display: none; }
-@media (min-width: 1280px) { .rail-money { display: block; } .rail-money .money-pill { width: 100%; } .rail-money .dusdc-pill { flex: 1; } }
+@media (min-width: 1280px) { .rail-money { display: block; } }
 .rail-account .wallet-pill { width: 100%; justify-content: flex-start; }
-.rail-account.sign-in-button { width: 100%; }
+.rail-account.sign-in-button { width: 100%; height: 44px; font: 700 14px/1 var(--font-body); }
 @media (max-width: 1279px) {
   .rail-account .wallet-pill { width: 44px; height: 44px; padding: 0; justify-content: center; }
   .rail-account .wallet-pill-addr, .rail-account .wallet-pill-chevron { display: none; }
@@ -75,7 +83,7 @@
   font: 600 11px/1 var(--font-data); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap;
 }
 .network-dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--color-warning); }
-@media (max-width: 1279px) { .rail-network { width: 24px; padding: 0; justify-content: center; } .rail-network .network-label { display: none; } }
+
 
 /* ── the column: the top line, notices, the stage ──────────────────────────────────────────────────────────────── */
 .app-column { display: flex; min-width: 0; min-height: 100dvh; flex-direction: column; padding: 0 12px calc(var(--dock-clearance) + 16px); }
@@ -87,7 +95,14 @@
 
 .app-topline { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: var(--spacing-topline); padding: max(10px, env(safe-area-inset-top, 0px)) 0 10px; }
 .topline-lead, .topline-tools { display: flex; min-width: 0; align-items: center; gap: 6px; }
-@media (min-width: 768px) { .topline-mark { display: none; } }
+/* R4-8 review (D-227): beside the rail the lead keeps its size and the search gives way (its label ellipsises) — a
+ * sub-page's back chevron and a seven-figure test balance overflowed 768–1023 px. */
+@media (min-width: 768px) {
+  .topline-mark { display: none; }
+  .topline-lead { flex: none; }
+  .topline-tools { flex: 1 1 auto; justify-content: flex-end; }
+  .topline-search { flex: 0 1 auto; min-width: 0; }
+}
 .topline-icon { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--radius-full); color: var(--color-ink-secondary); }
 .topline-icon:hover { color: var(--color-ink); background: var(--color-surface-2); }
 .topline-icon svg, .topline-search svg { width: 20px; height: 20px; }
@@ -98,14 +113,11 @@
 }
 .topline-search:hover { color: var(--color-ink); border-color: var(--color-border-strong); }
 .topline-search-label, .topline-kbd { display: none; }
-@media (min-width: 1024px) {
-  .topline-search { min-width: 280px; padding: 0 14px; }
-  .topline-search-label { display: inline; }
-  .topline-kbd { display: inline; margin-left: auto; padding: 2px 6px; border-radius: var(--radius-sm); background: var(--color-surface-2); font: 500 11px/1.2 var(--font-data); }
-}
-/* Phones: the keyboard map and the balance eye live elsewhere (no keyboard; the account menu hides balances). */
-@media (max-width: 767px) {
-  .topline-tools [aria-keyshortcuts="?"], .topline-tools .money-eye { display: none; }
+/* Labelled from 768 px, 288 px wide (Owarine `CommandPalette` trigger `md:w-72`; R4-8 — 768–1023 had an unlabeled icon). */
+@media (min-width: 768px) {
+  .topline-search { width: 288px; height: 40px; padding: 0 14px; border-color: transparent; background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
+  .topline-search-label { display: inline; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topline-kbd { display: inline; margin-left: auto; padding: 2px 6px; border-radius: 6px; background: var(--color-surface-2); color: var(--color-ink-secondary); font: 600 12px/1.2 var(--font-body); }
 }
 .sign-in-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 /* R4-0 (D-227): Sign in meets the 44 px floor (the `.btn` was 35 px) with its icon; at ≤ 380 px it is the icon alone
@@ -122,9 +134,24 @@
 span.top-money, span.top-account { display: contents; }
 @media (min-width: 1280px) { span.top-money { display: none; } }
 @media (min-width: 768px) { span.top-account, .top-account { display: none; } }
-.money-pill { display: inline-flex; align-items: center; gap: 2px; }
-.money-eye { display: grid; place-items: center; border-radius: var(--radius-full); color: var(--color-ink-secondary); }
-.money-eye:hover { color: var(--color-ink); background: var(--color-surface-2); }
+/* The top line's money (R4-8, D-227; Owarine 90a91d71 `BalanceChip variant="bar"`): ONE pill — the sum in the figures
+ * face, the eye inside it from 768 px, the 32 px vermilion + (its hit area is the 44 px floor). 44 px tall on a phone,
+ * 40 px beside the rail. */
+.money-chip {
+  display: inline-flex; flex: none; height: 44px; align-items: center; gap: 4px; padding: 0 6px 0 14px; border-radius: var(--radius-full);
+  background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); color: var(--color-ink); white-space: nowrap;
+}
+.money-chip:not(:has(.money-chip-add)) { padding-right: 14px; }
+@media (min-width: 768px) { .money-chip, .money-chip:not(:has(.money-chip-add)) { height: 40px; padding: 0 4px 0 12px; } }
+.money-chip-sum { font: 700 14px/1 var(--font-data); }
+.money-chip-sum.is-dim { opacity: 0.55; }
+.money-chip-eye { display: none; width: 32px; height: 32px; flex: none; place-items: center; border-radius: var(--radius-full); color: var(--color-ink-secondary); }
+@media (min-width: 768px) { .money-chip-eye { display: grid; } }
+.money-chip-eye:hover { color: var(--color-ink); background: var(--color-surface-2); }
+.money-chip-eye svg, .money-chip-add svg { width: 16px; height: 16px; }
+.money-chip-add { position: relative; display: grid; width: 32px; height: 32px; flex: none; place-items: center; border-radius: var(--radius-full); background: var(--accent-fill); color: var(--on-accent); }
+.money-chip-add::after { content: ""; position: absolute; inset: -6px; }
+.money-chip-add:focus-visible, .money-chip-eye:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
 .app-notices:empty { display: none; }
 .app-column > .footer { margin: 0; padding: 12px 4px 0; border: 0; background: none; }
@@ -167,11 +194,11 @@ span.top-money, span.top-account { display: contents; }
 @media (max-width: 360px) { .dock-list { --dock-w: 52px; gap: 2px; padding-inline: 6px; } }
 .dock-item {
   position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-  width: var(--dock-w); height: var(--spacing-dock-item-h); border-radius: var(--radius-xl); color: var(--color-ink-secondary); font: 500 12px/1 var(--font-body);
+  width: var(--dock-w); height: var(--spacing-dock-item-h); border-radius: var(--radius-xl); color: var(--color-ink-secondary); font: 600 12px/1 var(--font-body);
 }
-.dock-item[aria-current="page"] { color: var(--color-ink); }
+.dock-item[aria-current="page"], .dock-item[data-lit] { color: var(--color-ink); }
 .dock-item:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--color-accent); }
-.dock-icon { width: 22px; height: 22px; stroke-width: 1.9; }
+.dock-icon { width: 20px; height: 20px; stroke-width: 2; }
 .dock-pill {
   position: absolute; top: 6px; left: 8px; width: var(--dock-w); height: var(--spacing-dock-item-h); border-radius: var(--radius-xl); background: var(--color-rail-active);
   transform: translateX(calc(var(--dock-i, 0) * (var(--dock-w) + 4px))); opacity: 0;
@@ -180,9 +207,6 @@ span.top-money, span.top-account { display: contents; }
 @media (max-width: 360px) { .dock-pill { left: 6px; transform: translateX(calc(var(--dock-i, 0) * (var(--dock-w) + 2px))); } }
 .dock-pill[data-on] { opacity: 1; }
 
-/* ── the island: the page paints its own top edge; the rail and the dock stay ──────────────────────────────────── */
-@media (min-width: 768px) { .app-shell--island .page-island { padding-left: calc(var(--spacing-rail-compact) + var(--spacing-rail-inset) * 2); } }
-@media (min-width: 1280px) { .app-shell--island .page-island { padding-left: calc(var(--spacing-rail) + var(--spacing-rail-inset) * 2); } }
 
 /* ── a Sign in tapped before the wallet runtime has loaded: answered at once ──────────────────────────────────── */
 .sign-in-pending {
@@ -253,9 +277,13 @@ span.top-money, span.top-account { display: contents; }
 .wallet-pill-id { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; line-height: 1.15; }
 .wallet-pill-kind { font: 700 13px/1.2 var(--font-body); color: var(--color-ink); }
 .wallet-pill .wallet-pill-addr { font-size: 11px; color: var(--color-ink-secondary); }
-.rail-account .wallet-pill { gap: 10px; padding: 8px 12px 8px 8px; border: 0; border-radius: 1.25rem; background: color-mix(in oklab, var(--color-rail-active) 55%, transparent); color: var(--color-ink-secondary); }
-.rail-account .wallet-pill:hover { background: var(--color-rail-active); }
-.rail-account .wallet-pill-chevron { margin-left: auto; }
+/* R4-8 (D-227), Owarine `SeatAccountMenu` rail row: transparent, tinted on hover or while its menu is open, a 36 px
+ * marble, no chevron (the menu opens beside the rail). */
+.rail-account .wallet-pill { gap: 10px; padding: 6px 12px 6px 6px; border: 0; border-radius: 1.25rem; background: transparent; color: var(--color-ink-secondary); }
+.rail-account .wallet-pill:hover, .rail-account .wallet-pill[data-popup-open] { background: color-mix(in oklab, var(--color-rail-active) 55%, transparent); }
+.rail-account .wallet-pill-avatar { width: 36px; height: 36px; }
+.rail-account .wallet-pill-kind { font-size: 14px; }
+.rail-account .wallet-pill-chevron { display: none; }
 /* The compact rail's account is the marble, centred (this rule's padding outranked the 44 px box above). */
 @media (max-width: 1279px) { .rail-account .wallet-pill-id { display: none; } .rail-account .wallet-pill { padding: 0; } }
 .top-account .wallet-pill-kind { display: none; }
@@ -264,23 +292,30 @@ span.top-money, span.top-account { display: contents; }
 .top-account .wallet-pill { width: 44px; height: 44px; padding: 0; justify-content: center; border: 0; }
 .top-account .wallet-pill-id, .top-account .wallet-pill-chevron { display: none; }
 .top-account .wallet-pill-avatar { width: 36px; height: 36px; }
+.top-account .wallet-pill:hover, .top-account .wallet-pill[data-popup-open] { background: var(--color-surface-2); }
 
-/* P0 (D-222/D-223), Owarine 90a91d71 AppRail and FloatingDock: Docs · Legal at the rail's foot; the dock's centre seal. */
-.rail-legal { display: flex; gap: 14px; padding: 10px 6px 2px; font: 500 12px/1.2 var(--font-body); }
+/* P0 (D-222/D-223), Owarine 90a91d71 AppRail and FloatingDock: the theme toggle beside Docs · Legal at the rail's foot
+ * (R4-8: Docs · Legal on the full rail only — they stacked as text under the 88 px icons); the dock's centre seal. */
+.rail-tools { display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 4px; }
+@media (min-width: 1280px) { .rail-tools { justify-content: flex-start; padding-left: 4px; } }
+.rail-tools .theme-toggle { border-color: color-mix(in oklab, var(--color-rail-active) 80%, transparent); }
+.rail-legal { display: none; align-items: center; gap: 6px; color: var(--color-ink-muted); font: 500 13px/1.2 var(--font-body); }
+@media (min-width: 1280px) { .rail-legal { display: flex; } }
 .rail-legal a { color: var(--color-ink-muted); }
 .rail-legal a:hover { color: var(--color-ink); }
-@media (max-width: 1279px) { .rail-legal { flex-direction: column; align-items: center; gap: 6px; } }
 .dock-seal { justify-content: center; }
-.dock-seal-disc { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius-full); background: var(--accent-fill); color: var(--on-accent); }
-.dock-seal-disc svg { width: 22px; height: auto; }
-.health-chip { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: var(--radius-full); font: 500 13px/1 var(--font-body); color: var(--color-ink-secondary); }
+.dock-seal-disc { display: grid; place-items: center; width: 48px; height: 48px; border-radius: var(--radius-full); background: var(--accent-fill); color: var(--on-accent); }
+.dock-seal-disc svg { width: 21px; height: 26px; }
+.health-chip { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border-radius: var(--radius-full); font: 500 13px/1 var(--font-body); color: var(--color-ink-secondary); }
 .health-chip:hover { background: var(--color-surface-2); color: var(--color-ink); }
-.health-dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--color-ink-muted); }
+.health-dot { width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--color-ink-muted); }
 .health-chip[data-state="healthy"] .health-dot { background: var(--color-profit); }
 .health-chip[data-state="degraded"] .health-dot { background: var(--color-warning, #f5a524); }
 .health-chip[data-state="unreachable"] .health-dot { background: var(--color-loss); }
+.health-chip { flex: none; white-space: nowrap; }
 .health-net { font-weight: 600; color: var(--color-ink); }
-@media (max-width: 1023px) { .health-word { display: none; } }
+/* Below 1024 px the verdict is said, not shown (Owarine `HealthChip`: `· word` sr-only below lg). */
+@media (max-width: 1023px) { .health-word { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } }
 /* DEMO (D-223): the paper equity's tag, as Owarine's "DEMO 10,000.00". */
 .tm-demo-tag { padding: 2px 6px; border-radius: var(--radius-full); background: var(--color-accent); color: var(--on-accent); font: 700 10px/1.2 var(--font-body); letter-spacing: 0.06em; }
 
@@ -288,15 +323,7 @@ span.top-money, span.top-account { display: contents; }
  * the theme live in Everything there. Sticky with a blur so the chrome stays while the page scrolls. ───────────── */
 .topline-phone { display: none; }
 .topline-wide { display: contents; }
-.mode-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--radius-full); color: var(--color-ink); font: 800 11px/1 var(--font-data); letter-spacing: 0.08em; white-space: nowrap; }
-.mode-chip[data-mode="demo"] { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
-.mode-chip[data-mode="live"] { background: color-mix(in srgb, var(--color-warning) 16%, transparent); }
-.mode-chip-dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--color-warning); }
-/* The narrowest phones keep TESTNET's dot and say the word to a screen reader only (R4-0, D-227). */
-@media (max-width: 360px) {
-  .mode-chip[data-mode="live"] { padding: 0 11px; }
-  .mode-chip[data-mode="live"] .mode-chip-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-}
+
 @media (max-width: 767px) {
   .topline-phone { display: contents; }
   .topline-wide { display: none; }
@@ -309,5 +336,39 @@ span.top-money, span.top-account { display: contents; }
  * and Sign in didn't fit 375 px and "Sign in" broke over two lines); labels never wrap. */
 @media (max-width: 767px) {
   .topline-lead:has(.topline-back) .topline-mark { display: none; }
-  .app-topline .sign-in-button, .app-topline .dusdc-pill, .app-topline .mode-chip { white-space: nowrap; }
+  .app-topline .sign-in-button, .app-topline .mode-chip { white-space: nowrap; }
+  /* R4-8 review (D-227): the lead takes what the money and the account leave. A new account holds $1,000,000.00 of
+   * faucet dollars, which with TESTNET spelt out ran 365 px into 351 at 375 — so the world's word steps back to its
+   * hanko (still said to a screen reader) when the room is short, wherever the phone. */
+  .topline-lead { flex: 1 1 0; container: topline-lead / inline-size; }
 }
+@container topline-lead (max-width: 148px) {
+  .mode-chip[data-mode="testnet"] { padding: 0 8px; }
+  .mode-chip[data-mode="testnet"] .mode-chip-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@container topline-lead (max-width: 124px) {
+  .mode-chip[data-mode="demo"] { padding: 0 8px; }
+  .mode-chip[data-mode="demo"] .mode-chip-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+/* The narrowest phones tighten the money so a seven-figure sum, the + and the avatar fit 320 px. */
+@media (max-width: 360px) {
+  .money-chip { padding-left: 10px; }
+  .money-chip:not(:has(.money-chip-add)) { padding-right: 10px; }
+  .money-chip-sum { font-size: 13px; }
+}
+
+/* ── short landscape screens (critic gap 23, R4-8 D-227): a landscape phone gets the icon rail with ~9 stacked 44 px
+ * controls in ~360 px — the rail scrolls, its gaps tighten and the theme toggle steps out to More's foot (shown here
+ * too: from 768 px More's foot was hidden, so 844×390 had no theme toggle at all — R4-8 review). ── */
+@media (min-width: 768px) and (max-height: 500px) {
+  .app-rail { gap: 8px; padding-block: 12px; overflow-y: auto; scrollbar-width: none; }
+  .rail-nav { --rail-gap: 2px; }
+  .rail-foot .rail-tools { display: none; }
+  .app-rail .mode-stamp-tile { width: 44px; height: 44px; }
+  .more-foot { display: flex; }
+}
+
+/* ── ultra-wide (critic gap 25, R4-8 D-227): the one inset governs padding, not measure — from 1600 px a reading page's
+ * column (`PageColumn`) stops at 90 rem, centred in the stage; the markets hero, the terminal and the reels stay full
+ * bleed. ── */
+@media (min-width: 100rem) { .app-stage > .page-col { max-width: 90rem; margin-inline: auto; } }

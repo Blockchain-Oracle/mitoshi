@@ -5,7 +5,10 @@
 // pill moves by a CSS transform (no motion runtime in the shell's first load, components.md row 21) instead of
 // roy-chain's `layoutId` spring from 21st.dev 21517 (unlumen/animated-sidebar); the mode switch is gone (Mitoshi has
 // one network per deployment — the Testnet pill says which); places come from the nav registry; More opens the More
-// drawer. The path is read inside Suspense (cacheComponents keeps the static shell).
+// drawer. The path is read inside Suspense (cacheComponents keeps the static shell). R4-8 (D-227), to Owarine 90a91d71
+// `components/shell/app/AppRail.tsx`: the head is the vermilion seal disc and the mode plate (DEMO / TESTNET, its
+// hanko) instead of a static pill; rows at 16 px/600 with 22 px icons; More is lit as "here" on any page that is not a
+// place and says whether it is open; the foot ends in the theme toggle beside Docs · Legal (full rail only).
 import { NOTICES } from "@/features/notifications/copy";
 import { useUnread } from "@/features/notifications/store";
 import { History, LayoutGrid, LineChart, SlidersHorizontal } from "lucide-react";
@@ -14,11 +17,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, type CSSProperties, type ReactNode } from "react";
 import { BRAND, FOOTER, SHELL } from "@/lib/copy";
 import { DOCS_EXTERNAL, DOCS_URL } from "@/lib/docs-url";
-import { openDrawer } from "@/lib/drawer-param";
+import { openDrawer, useDrawerParam } from "@/lib/drawer-param";
 import { tapFeedback } from "@/lib/feedback";
 import { ExternalLink } from "./ExternalLink";
 import MitoshiMark from "./MitoshiMark";
-import { NetworkPill } from "./NetworkPill";
+import { ModePlate, ModeStamp } from "./ModePlate";
+import ThemeToggle from "./ThemeToggle";
 import { isActiveNavItem, RAIL_NAV } from "./header/nav-items";
 
 export const EVERYTHING_DRAWER = "everything";
@@ -47,8 +51,10 @@ function usePlaceKeys(): void {
   }, [router]);
 }
 
-function RailNav({ pathname }: { pathname: string | null }) {
+function RailNav({ pathname, moreOpen = false }: { pathname: string | null; moreOpen?: boolean }) {
   const active = RAIL_NAV.findIndex((item) => isActiveNavItem(pathname, item));
+  // Owarine's here-state: a page that is no place lives under More, so More is lit while you are on it.
+  const moreHere = active < 0 && pathname !== null && pathname !== "/";
   // S13: what arrived since the notification centre was last opened (it lives under Portfolio).
   const unread = useUnread();
   return (
@@ -77,6 +83,8 @@ function RailNav({ pathname }: { pathname: string | null }) {
         type="button"
         className="rail-item"
         aria-haspopup="dialog"
+        aria-expanded={moreOpen}
+        data-here={moreHere ? "" : undefined}
         title={`${SHELL.everything} — ${SHELL.everythingHint}`}
         onClick={() => {
           tapFeedback();
@@ -111,7 +119,8 @@ function TradeSubList() {
 }
 
 function RailNavWithPath() {
-  return <RailNav pathname={usePathname()} />;
+  const { open } = useDrawerParam();
+  return <RailNav pathname={usePathname()} moreOpen={open === EVERYTHING_DRAWER} />;
 }
 
 /**
@@ -123,21 +132,28 @@ export function Rail({ foot }: { foot?: ReactNode }) {
   return (
     <aside className="app-rail" aria-label={SHELL.railLabel}>
       <div className="rail-brand">
-        <Link href="/" aria-label={`${BRAND.name} home`} className="rail-mark">
+        <Link href="/" aria-label={`${BRAND.name} home`} title={`${BRAND.name} home`} className="rail-mark">
           <span className="rail-disc"><MitoshiMark /></span>
           <span className="rail-word">{BRAND.name.toUpperCase()}</span>
         </Link>
-        <NetworkPill className="rail-network" />
+        <ModePlate className="rail-plate" />
+        <ModeStamp className="rail-stamp" />
       </div>
       <Suspense fallback={<RailNav pathname={null} />}>
         <RailNavWithPath />
       </Suspense>
-      {foot ? <div className="rail-foot">{foot}</div> : null}
-      <nav className="rail-legal" aria-label={SHELL.legalNav}>
-        {/* The guides site, where Owarine 90a91d71 AppRail links its docs (D-227). */}
-        {DOCS_EXTERNAL ? <ExternalLink href={DOCS_URL}>{FOOTER.links.docs}</ExternalLink> : <Link href={DOCS_URL}>{FOOTER.links.docs}</Link>}
-        <Link href="/terms">{SHELL.legal}</Link>
-      </nav>
+      <div className="rail-foot">
+        {foot}
+        <div className="rail-tools">
+          <ThemeToggle />
+          <nav className="rail-legal" aria-label={SHELL.legalNav}>
+            {/* The guides site, where Owarine 90a91d71 AppRail links its docs (D-227). */}
+            {DOCS_EXTERNAL ? <ExternalLink href={DOCS_URL}>{FOOTER.links.docs}</ExternalLink> : <Link href={DOCS_URL}>{FOOTER.links.docs}</Link>}
+            <span aria-hidden>·</span>
+            <Link href="/terms">{SHELL.legal}</Link>
+          </nav>
+        </div>
+      </div>
     </aside>
   );
 }

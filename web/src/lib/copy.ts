@@ -40,8 +40,14 @@ export const SHELL = {
   openApp: "Open the app",
   searchLabel: "Search destinations",
   searchPlaceholder: "Search markets and pages",
-  searchEmpty: (q: string) => `Nothing matches “${q}”.`,
-  commandHint: "Jump to…",
+  searchEmpty: "Nothing matches that.",
+  /** The ⌘K palette (Owarine 90a91d71 `CommandPalette`; R4-8, D-227): sr-only title and description, the field's hint. */
+  commandTitle: "Go to",
+  commandDesc: "Jump to any market or page in Mitoshi",
+  commandPlaceholder: "Where to? BTC, Tesla, Leaderboard…",
+  commandGroups: { places: "Go to", trade: "Trade", stocks: "Stocks" },
+  /** A listed destination whose surface is not connected yet (critic gap 18): reachable, marked. */
+  soon: "Soon",
   moreLabel: "More",
   moreTitle: "More",
   mobileNav: "Mobile primary navigation",
@@ -59,7 +65,6 @@ export const SHELL = {
   testnetTitle: "Tempo testnet · test dollars, nothing of value.",
   keyHint: (key: string) => `Press ${key}`,
   shortcuts: "Keyboard shortcuts",
-  shortcutsOpen: "Show keyboard shortcuts",
   shortcutsBody: "No shortcut moves money.",
   shortcutRows: [
     ["1 – 6", "Trade, Markets, Portfolio, Games, Automate, Leaderboard"],
@@ -85,6 +90,11 @@ export const SHELL = {
   modeDemo: "DEMO",
   modeTestnet: "TESTNET",
   modeMainnet: "TEMPO",
+  /** The rail's mode plate (Owarine `NetworkPlate`; R4-8): the world's hanko, its money, and where a tap goes. */
+  mode: {
+    demo: { label: "DEMO", kanji: "練", line: "Paper dollars", hint: "Demo: paper dollars on live prices. Sign in to trade test dollars." },
+    testnet: { label: "TESTNET", kanji: "試", line: "Test dollars", hint: "Tempo testnet: test dollars, nothing of value. Open the network's status." },
+  },
   addMoney: "Add money",
   signInPending: "Getting sign-in ready…",
 } as const;

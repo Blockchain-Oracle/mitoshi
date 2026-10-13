@@ -44,19 +44,28 @@ export function MoneyTile({ total, label = SHELL.moneyLabel, onAdd = openFunds }
   );
 }
 
-export function MoneyPillView({ total }: { total: bigint | null }) {
+/**
+ * The top line's money (Owarine 90a91d71 `BalanceChip variant="bar"`; R4-8, D-227): ONE pill — the sum in the figures
+ * face, the privacy eye inside it (from 768 px; on a phone the account menu hides balances), and the vermilion + that
+ * adds money. No token mark: there is no pathUSD mark, and the USDC disc would misstate it; "$" already says dollars.
+ */
+export function MoneyPillView({ total, onAdd = openFunds, title }: { total: bigint | null; onAdd?: (() => void) | null; title?: string }) {
   const hidden = usePrivacy();
-  const shown = hidden ? SHELL.masked : dollars(total);
   return (
-    <span className="money-pill">
-      <button type="button" onClick={openFunds} aria-label={hidden ? `Balance hidden. Add money` : `Balance ${dollars(total)}. Add money`} className="dusdc-pill min-h-touch">
-        <span className={`dusdc-total numbers${total === null && !hidden ? " dusdc-total--dim" : ""}`}>{shown}</span>
-        <span className="dusdc-plus" aria-hidden>+</span>
-      </button>
+    <span className="money-chip" title={title}>
+      {/* Masked, it is named "Hidden" as the kit's `Masked` is (an aria-label on a bare span is not announced). */}
+      <span className={`money-chip-sum numbers${total === null && !hidden ? " is-dim" : ""}`} role={hidden ? "img" : undefined} aria-label={hidden ? SHELL.privacyHidden : undefined}>
+        {hidden ? SHELL.masked : dollars(total)}
+      </span>
       {/* Slush's balance eye (S22, RV-10): hides every balance and PnL on this device. */}
-      <button type="button" className="money-eye size-touch" aria-pressed={hidden} aria-label={hidden ? SHELL.privacyShow : SHELL.privacyHide} title={hidden ? SHELL.privacyShow : SHELL.privacyHide} onClick={() => setPrivacy(!hidden)}>
-        {hidden ? <EyeOff aria-hidden className="size-4" /> : <Eye aria-hidden className="size-4" />}
+      <button type="button" className="money-chip-eye" aria-pressed={hidden} aria-label={hidden ? SHELL.privacyShow : SHELL.privacyHide} title={hidden ? SHELL.privacyShow : SHELL.privacyHide} onClick={() => setPrivacy(!hidden)}>
+        {hidden ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
       </button>
+      {onAdd ? (
+        <button type="button" className="money-chip-add" onClick={onAdd} aria-label={SHELL.addMoney} title={SHELL.addMoney}>
+          <Plus aria-hidden strokeWidth={3} />
+        </button>
+      ) : null}
     </span>
   );
 }
@@ -64,14 +73,7 @@ export function MoneyPillView({ total }: { total: bigint | null }) {
 /** The top line's demo balance (Owarine `BalanceChip variant="bar"` in DEMO; P6, D-224): the paper dollars, no +. */
 export function DemoMoneyPill() {
   const demo = useDemoState();
-  const hidden = usePrivacy();
-  return (
-    <span className="money-pill">
-      <span className="dusdc-pill min-h-touch" title={SHELL.demoLabel}>
-        <span className="dusdc-total numbers">{hidden ? SHELL.masked : dollars(BigInt(demo.balanceBase))}</span>
-      </span>
-    </span>
-  );
+  return <MoneyPillView total={BigInt(demo.balanceBase)} onAdd={null} title={SHELL.demoLabel} />;
 }
 
 /** Signed out: DEMO's paper dollars (D-223; Owarine's "Demo credits 10,000.00"), with no + — paper is not topped up. */
