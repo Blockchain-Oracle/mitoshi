@@ -78,11 +78,11 @@ function useRounds(wallet: Address | null, kind: RoundKind): Reading<RangeRoundV
   return reading && reading.ok ? { ...reading, value: reading.value.filter((r) => kindOf(r) === kind) } : reading;
 }
 
-/** The head chip's figures: how many rounds this page has, and what the won ones pay when claimed. */
+/** The head chip's figures: how many rounds this page has, and what the won ones pay when claimed (a retired reserve's rounds are read-only). */
 export function useRoundsSummary(wallet: Address | null, kind: RoundKind): { count: number; claimBase: bigint } {
   const reading = useRounds(wallet, kind);
   const rounds = reading && reading.ok ? reading.value : [];
-  return { count: rounds.length, claimBase: rounds.filter((r) => r.status === "won").reduce((sum, r) => sum + r.maxPayoutBase, 0n) };
+  return { count: rounds.length, claimBase: rounds.filter((r) => r.status === "won" && !r.retiredReserve).reduce((sum, r) => sum + r.maxPayoutBase, 0n) };
 }
 
 export function RangeRounds({ wallet, nowMs, staleAfterSec, writes, onSignIn, kind }: { wallet: Address | null; nowMs: number; staleAfterSec: number; writes: ReturnType<typeof useRangeWrites>; onSignIn: () => void; kind: RoundKind }) {

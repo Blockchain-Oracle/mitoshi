@@ -21,14 +21,15 @@
 .game-page .pl-rail .game-action { bottom: 0; }
 
 /* The SlipBar below 1024: fixed above the phone dock (16 px from the bottom from 768), the legs and what the ticket
-   pays on row one (it opens the sheet), the stake chips and the hold on row two. The column clears it. */
+   pays on row one (it opens the sheet), the stake chips and the hold on row two. The column clears it — not for a
+   copy of /parlay kept hidden in an <Activity> after navigating away (R4-0's guard, as pitch.css and toast.css). */
 .pl-slipbar {
   position: fixed; z-index: var(--z-float); left: 50%; transform: translateX(-50%); bottom: var(--dock-strip-offset);
   width: min(30rem, calc(100vw - 24px)); display: flex; flex-direction: column; gap: 6px; padding: 8px;
   border-radius: var(--radius-lg); border: 1px solid var(--color-hairline); background: var(--color-surface-1);
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
 }
-.app-column:has(.pl-slipbar) { padding-bottom: calc(var(--dock-clearance) + 140px); }
+.app-column:has(.pl-slipbar:not([style*="display: none"] *)) { padding-bottom: calc(var(--dock-clearance) + 140px); }
 .sb-row { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 4px; width: 100%; text-align: left; color: var(--color-ink); }
 .sb-legs { display: flex; gap: 4px; flex: none; }
 .sb-leg { display: inline-flex; align-items: center; gap: 2px; padding: 2px 4px; border-radius: var(--radius-full); background: var(--color-surface-2); font-size: 10px; }
