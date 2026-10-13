@@ -7,6 +7,7 @@ import type { SettledRound } from "@cwf/core";
 import { OUTCOME_TO_SIDE, roundSettledAtMs } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import { marketDeepLink, txUrl } from "@cwf/core/urls";
+import { Vault } from "lucide-react";
 import Link from "next/link";
 import { Masked } from "@/components/kit";
 import { money } from "@/features/terminal/format";
@@ -33,7 +34,12 @@ export function HistoryRow({ round, nowMs, onReceipt }: { round: SettledRound; n
         {round.asset} {sidesLabel(round)}
       </Link>
       {round.intervalSec > 0 ? <span className="type-label-micro text-ink-muted">{formatCadence(round.intervalSec)}</span> : null}
-      {via ? <span className="type-label-micro text-accent">{via}</span> : null}
+      {via ? (
+        <span className="bet-tag type-label-micro text-accent">
+          {round.source === "vault" ? <Vault aria-hidden className="size-3" /> : null}
+          <span className={round.source === "vault" ? "bet-tag-word" : undefined}>{via}</span>
+        </span>
+      ) : null}
       {round.payoutBase > 0n ? (
         <span className="type-caption text-ink-secondary">
           {HISTORY.paid} <span className="numbers"><Masked>{money(round.payoutBase, false, round.decimals)}</Masked></span>

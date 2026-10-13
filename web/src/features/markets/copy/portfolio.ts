@@ -20,7 +20,6 @@ export const PORTFOLIO = {
   close: "Close",
   toMarkets: "Go to Markets",
   boosts: "Boosts",
-  boostTag: (x: string) => `${x} Boost`,
 } as const;
 
 /** The record curve (21st 29532) — Trader Edge's, the one place it is drawn. */

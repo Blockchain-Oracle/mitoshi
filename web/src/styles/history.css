@@ -269,6 +269,7 @@
 .bet-row .bet-status { flex-shrink: 0; }
 .bet-row .bet-money { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
 .bet-row .bet-pnl { flex-shrink: 0; }
+.bets-row .bet-tag { display: inline-flex; flex-shrink: 0; align-items: center; gap: 4px; }
 @media (max-width: 639px) {
   .bets-row { gap: 6px 10px; padding: 12px 14px; }
   .bet-row .bet-left { margin-left: auto; }
@@ -276,7 +277,7 @@
   .bet-row .bet-act { margin-left: auto; }
 }
 @media (max-width: 399px) {
-  .bet-row .bet-status-word, .bet-row .bet-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .bet-row .bet-status-word, .bet-row .bet-label, .bets-row .bet-tag-word { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
 @media (min-width: 640px) {
   .bet-row .bet-arrow { display: none; }

@@ -12,6 +12,7 @@ import type { Side } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import { countdown } from "@cwf/core/lifecycle";
 import { marketDeepLink } from "@cwf/core/urls";
+import { Vault } from "lucide-react";
 import Link from "next/link";
 import { Countdown } from "@/components/data";
 import { Masked, PillButton } from "@/components/kit";
@@ -30,11 +31,27 @@ import { SIDE_WORD } from "../side-styles";
 
 const sum = (xs: readonly (bigint | null)[]): bigint | null => (xs.some((x) => x === null) ? null : xs.reduce<bigint>((a, x) => a + x!, 0n));
 
-/** Where the row is held, as a tag: the Trading Balance, or a Boost's multiple. The wallet's own carries none. */
-function homeTag(p: TerminalPosition): string | null {
-  if (p.via === "vault") return HISTORY.via.vault ?? null;
-  if (p.via === "boost" && p.boost) return PORTFOLIO.boostTag(`${(p.boost.leverageBps / 10_000).toFixed(p.boost.leverageBps % 10_000 === 0 ? 0 : 1)}×`);
-  return null;
+/**
+ * Where the row is held, as a tag: the Trading Balance (its pocket's vault mark), or a Boost's multiple. The wallet's own
+ * carries none. Under 400 px the word is read aloud only — the mark or "2×" keeps line 1 on one line at 320.
+ */
+function HomeTag({ p }: { p: TerminalPosition }) {
+  if (p.via === "vault") {
+    return (
+      <span className="bet-tag type-label-micro text-accent">
+        <Vault aria-hidden className="size-3" />
+        <span className="bet-tag-word">{HISTORY.via.vault}</span>
+      </span>
+    );
+  }
+  if (p.via !== "boost" || !p.boost) return null;
+  const x = `${(p.boost.leverageBps / 10_000).toFixed(p.boost.leverageBps % 10_000 === 0 ? 0 : 1)}×`;
+  return (
+    <span className="bet-tag type-label-micro text-accent">
+      {x}
+      <span className="bet-tag-word">{HISTORY.via.boost}</span>
+    </span>
+  );
 }
 
 export interface BetRowProps {
@@ -59,7 +76,6 @@ export function BetRow({ legs, values, closer, boosts }: BetRowProps) {
   // No number: why (locked, no bids, updating), from the first leg without one.
   const unpriced = vs.find((v) => v === null || v.valueBase === null);
   const why = unpriced ? statusText(unpriced.status, p.expirySec, unpriced.fillablePct, unpriced.settled, unpriced.valueBase) : "";
-  const tag = homeTag(p);
   const v0 = vs[0] ?? null;
   const closable = side !== null && !settling && v0 !== null && canTrade(v0.status);
   const busy = closer.busy === p.id;
@@ -74,7 +90,7 @@ export function BetRow({ legs, values, closer, boosts }: BetRowProps) {
         <AssetDisc asset={p.asset} className="bets-mark" />
         {p.asset} {label}
       </Link>
-      {tag ? <span className="type-label-micro text-accent">{tag}</span> : null}
+      <HomeTag p={p} />
       <span className="type-label-micro text-ink-muted">{formatCadence(p.intervalSec)}</span>
       {!settling && (
         <span className="bet-left type-caption text-ink-secondary numbers">
