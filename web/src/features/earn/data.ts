@@ -10,25 +10,22 @@ import { MARKETS_POLL_MS } from "@cwf/core/constants";
 import type { Address, LeverageReserveState, ParlayReserveState, Reading, ReserveKind } from "@cwf/core";
 import type { RangeReserveState } from "@cwf/core/range";
 import type { MakerVaultState } from "@cwf/core/maker";
-import { getLeverageReserveState, getLeverageSharesOf } from "@cwf/markets/leverage";
-import { getMakerSharesOf, getMakerVaultState, getSupplyLedgerOf, listMakerWindows, type MakerWindows, type SupplyLedger } from "@cwf/markets/maker";
-import { getParlaySharesOf, readParlayReserve } from "@cwf/markets/parlay";
-import { getRangeReserveState, getRangeSharesOf } from "@cwf/markets/range";
+import { getLeverageReserveState } from "@cwf/markets/leverage";
+import { getMakerVaultState, getSupplyLedgerOf, listMakerWindows, type MakerWindows, type SupplyLedger } from "@cwf/markets/maker";
+import { readParlayReserve } from "@cwf/markets/parlay";
+import { getRangeReserveState } from "@cwf/markets/range";
 import { useReadingQuery } from "@cwf/markets/react";
 import { boostKeys } from "@/features/boost/useBoostWrites";
 import { parlayKeys } from "@/features/parlay/data";
 import { rangeKeys } from "@/features/range/data";
+import { earnKeys } from "./shares";
+
+export { earnKeys, useEarnWorth, useReserveShares, type EarnWorth } from "./shares";
 
 /** A Window the vault settled can't change; a wallet's supply history changes only when it writes. */
 const LEDGER_STALE_MS = 5 * 60_000;
 
-export const earnKeys = {
-  all: ["cwf", "earn"] as const,
-  vault: () => ["cwf", "earn", "vault"] as const,
-  windows: (limit: number) => ["cwf", "earn", "windows", limit] as const,
-  shares: (kind: ReserveKind, wallet: string | null) => ["cwf", "earn", "shares", kind, wallet] as const,
-  ledger: (kind: ReserveKind, wallet: string | null) => ["cwf", "earn", "ledger", kind, wallet] as const,
-};
+
 
 /** Every key a write on one reserve can change: this page's, and the reserve's own feature's. */
 export const RESERVE_KEYS: Readonly<Record<ReserveKind, readonly string[]>> = { maker: earnKeys.all, range: rangeKeys.all, parlay: parlayKeys.all, boost: boostKeys.all };
@@ -54,45 +51,7 @@ export function useBoostReserveFor(enabled: boolean): Reading<LeverageReserveSta
   return useReadingQuery([...boostKeys.all, "reserve"], getLeverageReserveState, { pollMs: MARKETS_POLL_MS, enabled });
 }
 
-const SHARES_OF = {
-  maker: getMakerSharesOf,
-  range: getRangeSharesOf,
-  parlay: getParlaySharesOf,
-  boost: getLeverageSharesOf,
-} as const satisfies Record<ReserveKind, (wallet: Address) => Promise<Reading<{ shares: bigint; worthBase: bigint }>>>;
-
-/** One wallet's shares in one reserve and their worth today; zeros without a reserve. */
-export function useReserveShares(kind: ReserveKind, wallet: Address | null): Reading<{ shares: bigint; worthBase: bigint }> | null {
-  return useReadingQuery(earnKeys.shares(kind, wallet), () => SHARES_OF[kind](wallet!), { pollMs: MARKETS_POLL_MS, enabled: wallet !== null });
-}
-
 /** Everything the wallet supplied to and withdrew from one reserve, from the reserve's own events (A-2c). */
 export function useSupplyLedger(kind: ReserveKind, wallet: Address | null): Reading<SupplyLedger | null> | null {
   return useReadingQuery(earnKeys.ledger(kind, wallet), () => getSupplyLedgerOf(kind, wallet!), { enabled: wallet !== null, staleTimeMs: LEDGER_STALE_MS });
-}
-
-export interface EarnWorth {
-  /** What the wallet's shares in all four reserves are worth today (base units). */
-  totalBase: bigint;
-  byKind: Readonly<Record<ReserveKind, bigint>>;
-  /** Where most of it is, for the link back to /earn?r=. */
-  largest: ReserveKind;
-}
-
-/**
- * Money supplied to the vault and the three reserves, as Portfolio names it beside the figure (FR-5; R4-7, D-227): the
- * four share reads at today's worth, null until every one has answered (never a partial sum), and the largest for the
- * link. A reserve not on this network reads as zero shares, so it adds nothing.
- */
-export function useEarnWorth(wallet: Address | null): EarnWorth | null {
-  const maker = useReserveShares("maker", wallet);
-  const range = useReserveShares("range", wallet);
-  const parlay = useReserveShares("parlay", wallet);
-  const boost = useReserveShares("boost", wallet);
-  const reads = { maker, range, parlay, boost } as const;
-  if (Object.values(reads).some((r) => r === null || !r.ok)) return null;
-  const byKind = Object.fromEntries(Object.entries(reads).map(([k, r]) => [k, r?.ok ? r.value.worthBase : 0n])) as Record<ReserveKind, bigint>;
-  const kinds = Object.keys(byKind) as ReserveKind[];
-  const largest = kinds.reduce((best, k) => (byKind[k] > byKind[best] ? k : best), "maker" as ReserveKind);
-  return { totalBase: kinds.reduce((sum, k) => sum + byKind[k], 0n), byKind, largest };
 }

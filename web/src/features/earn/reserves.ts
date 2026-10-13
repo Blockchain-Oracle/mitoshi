@@ -12,8 +12,8 @@ export interface ReserveWords {
   accent: string;
   /** What the reserve is holding against: the card's and the bar's second leg. */
   committed: string;
-  /** Shown when the contract is not on this network: what the reserve is, in one line. */
-  blurb: string;
+  /** Shown when a house reserve's contract is not on this network: what it is, in one line (the vault has its pending page). */
+  blurb?: string;
   /** Why a supplier can lose money here, in one caption. Never an APY. */
   risk: string;
 }
@@ -24,8 +24,7 @@ const RESERVE_LIST: readonly ReserveWords[] = [
     label: "Maker",
     accent: "spread",
     committed: "Deployed",
-    blurb: "Quotes both sides of the venue's Windows; earns the gap.",
-    risk: "Inventory left at settlement is the suppliers' loss.",
+    risk: "Inventory left at settlement is suppliers' loss.",
   },
   {
     key: "range",
@@ -49,7 +48,7 @@ const RESERVE_LIST: readonly ReserveWords[] = [
     accent: "premium",
     committed: "Fronted",
     blurb: "Fronts a boost's extra size for a premium up front.",
-    risk: "A boost settling under its knock-out line costs suppliers.",
+    risk: "Boosts settling under knock-out cost suppliers.",
   },
 ];
 

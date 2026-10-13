@@ -83,7 +83,7 @@ function NotOnThisNetwork({ words }: { words: ReserveWords }) {
   return (
     <div className="ea-map-card ea-absent">
       <p className="type-body text-ink">{EARN.notDeployed.reserve(words.label)}</p>
-      <p className="type-caption text-ink-secondary">{words.blurb}</p>
+      {words.blurb ? <p className="type-caption text-ink-secondary">{words.blurb}</p> : null}
     </div>
   );
 }

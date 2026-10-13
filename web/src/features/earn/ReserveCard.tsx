@@ -5,7 +5,7 @@
  * `.money-hero`): the share price rolling with its change chip and a caption that is never "up" when it isn't, then
  * Value, Idle and the reserve's committed word as legend rows with dots, and the split as one bar. A status chip shows
  * only when the reserve is paused or the maker is off. Every number is the reserve's own sheet; while it answers the
- * card is its own outline, the same box.
+ * page's one skeleton (LoadingState "earn") holds the same box.
  */
 import { oneUnit, type ReserveSheet } from "@cwf/core";
 import type { CSSProperties } from "react";
@@ -16,7 +16,7 @@ import { bpsOf, bpsPct, forView, money2, parState, sharePriceDeltaPct } from "./
 import type { ReserveWords } from "./reserves";
 
 interface ReserveCardProps {
-  sheet: ReserveSheet | null;
+  sheet: ReserveSheet;
   words: ReserveWords;
   /** The maker vault's extra state: quoting is off without a maker key, whatever the sheet says. */
   makerOff?: boolean;
@@ -26,18 +26,6 @@ const CAPTION = { from: EARN.card.fromPar, at: EARN.card.atPar, below: EARN.card
 
 export function ReserveCard({ sheet, words, makerOff = false }: ReserveCardProps) {
   const { card } = EARN;
-  if (!sheet) {
-    return (
-      <section className="money-hero ea-rc" role="status" aria-label={card.loading}>
-        <div className="skel ea-rc-skel-price" />
-        <div className="skel ea-rc-skel-line" />
-        <div className="ea-rc-legs">
-          {[0, 1, 2].map((i) => <div key={i} className="skel ea-rc-skel-leg" />)}
-        </div>
-        <div className="money-hero-bar ea-rc-bar" />
-      </section>
-    );
-  }
   const one = oneUnit(sheet.decimals);
   const delta = sharePriceDeltaPct(sheet.sharePriceRaw, one);
   const caption = CAPTION[parState(sheet.sharePriceRaw, one, sheet.supplyShares)];

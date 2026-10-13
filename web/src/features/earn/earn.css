@@ -5,6 +5,8 @@
 
 .earn-page { --ea-idle: repeating-linear-gradient(135deg, var(--color-surface-3) 0 4px, var(--color-surface-2) 4px 8px); display: flex; min-width: 0; flex-direction: column; gap: 12px; }
 @media (min-width: 640px) { .earn-page { gap: 16px; } }
+/* the action dock floats above the phone dock once the card scrolls away: the page's end clears it */
+@media (max-width: 767px) { .earn-page { padding-bottom: 64px; } }
 
 /* the head: one line, the tab's word in the accent */
 .ea-head { margin: 0; font: 700 24px/1.2 var(--font-display); letter-spacing: -0.02em; color: var(--color-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -30,8 +32,8 @@
 }
 
 /* ── the reserve card: the money card's black slab, compact on a phone ─────────────────────────────────────────── */
-.ea-rc { display: flex; flex-direction: column; padding: 16px; border-radius: var(--radius-xl); }
-@media (min-width: 640px) { .ea-rc { padding: 24px; } }
+.ea-rc.money-hero { display: flex; flex-direction: column; padding: 16px; }
+@media (min-width: 640px) { .ea-rc.money-hero { padding: 24px; } }
 .ea-rc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .ea-rc-price { display: flex; min-width: 0; flex-wrap: wrap; align-items: baseline; column-gap: 8px; row-gap: 4px; }
 .ea-rc-figure { font: 700 32px/1 var(--font-data); letter-spacing: -0.02em; color: #fff; }
@@ -51,14 +53,11 @@
 .ea-rc-leg-amount { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; margin: 4px 0 0; font: 700 14px/1.2 var(--font-data); color: #fff; overflow-wrap: anywhere; }
 .ea-rc-leg-pct { font-size: 12px; font-weight: 600; color: var(--color-accent); }
 @media (min-width: 640px) { .ea-rc-leg-amount { font-size: 17px; } .ea-rc-dot { width: 12px; height: 12px; } }
-.ea-rc-bar { height: 8px; margin-top: 12px; }
-@media (min-width: 640px) { .ea-rc-bar { height: 12px; margin-top: 20px; } }
+.money-hero-bar.ea-rc-bar { height: 8px; margin-top: 12px; }
+@media (min-width: 640px) { .money-hero-bar.ea-rc-bar { height: 12px; margin-top: auto; } .ea-rc-legs { margin-bottom: 20px; } }
 .ea-rc-seg { width: calc(var(--ea-share) * 1%); min-width: 4px; transition: width 350ms var(--ease-out); }
 .ea-rc-seg[data-leg="idle"] { background: rgba(255, 255, 255, 0.4); }
 .ea-rc-seg[data-leg="committed"] { background: var(--color-accent); }
-.ea-rc-skel-price { width: 60%; height: 32px; border-radius: var(--radius-md); }
-.ea-rc-skel-line { width: 30%; height: 12px; margin-top: 8px; border-radius: var(--radius-md); }
-.ea-rc-skel-leg { height: 30px; border-radius: var(--radius-md); }
 
 /* ── the action card: switch, amount, quick amounts, one button ───────────────────────────────────────────────── */
 .ea-action { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }

@@ -3,7 +3,7 @@
  * spec copyCuts, copy spec step 7). Mitoshi's words only where Tempo differs: an account and dollars instead of a seat
  * and credits, test dollars from the faucet. A figure says what a sentence used to.
  */
-import { TX } from "@/components/tx";
+import { TX } from "@/components/tx/copy";
 
 export const EARN = {
   /** The head: "Earn the *spread*." The accented word is the tab's (`reserves.ts`). */

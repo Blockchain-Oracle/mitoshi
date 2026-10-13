@@ -41,7 +41,7 @@ export function parlayBounds(state: ParlayReserveState): BoundRow[] {
 export function boostBounds(state: LeverageReserveState): BoundRow[] {
   const { params, decimals } = state;
   return [
-    { label: "Premium", value: bpsPct(params.premiumBps), note: "Taken on the front at open. All suppliers earn." },
+    { label: "Premium", value: bpsPct(params.premiumBps), note: "On the front, at open. All suppliers earn." },
     { label: "Most leverage", value: multiple(params.maxLeverageBps), note: "Past this the contract refuses." },
     { label: "Knock-out line", value: bpsPct(params.maintenanceBps), note: "Of the front; under it anyone may close." },
     { label: "Most fronted", value: money2(params.maxFrontedPerPositionBase, decimals), note: "Cap on one boost's front." },

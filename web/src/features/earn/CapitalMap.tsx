@@ -17,6 +17,7 @@ import { CapitalBar, PillButton, TextTabs, type CapitalSegment } from "@/compone
 import SectionHead from "@/components/shell/SectionHead";
 import { EARN } from "./copy";
 import { bpsOf, bpsPct, money2 } from "./format";
+import { RESERVES } from "./reserves";
 import type { EarnWrites } from "./useEarnWrites";
 import { WindowRow } from "./WindowRow";
 
@@ -136,6 +137,7 @@ export function CapitalMap({ vault, open, history, nowMs, writes, onSignIn }: Ca
           })}
         </ul>
       )}
+      <p className="ea-risk">{RESERVES.maker.risk}</p>
     </section>
   );
 }

@@ -11,7 +11,7 @@ import { formatBaseUnits } from "@cwf/core/units";
 import { Coins } from "lucide-react";
 import Link from "next/link";
 import { EARN } from "./copy";
-import { useEarnWorth } from "./data";
+import { useEarnWorth } from "./shares";
 import { DECIMALS } from "./format";
 
 export { useEarnWorth };
