@@ -21,3 +21,6 @@ const RangeScreen = dynamic(() => import("./RangeScreen").then((m) => m.RangeScr
 export function RangePage() {
   return useDataReady() ? <RangeScreen /> : <Placeholder />;
 }
+
+/** The route's loading boundary draws this same placeholder, so a navigation swaps it once, in place (R4-13a, D-227). */
+export { Placeholder as RangeLoading };

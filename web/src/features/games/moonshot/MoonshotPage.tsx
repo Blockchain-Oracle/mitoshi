@@ -21,3 +21,6 @@ const MoonshotScreen = dynamic(() => import("./MoonshotScreen").then((m) => m.Mo
 export function MoonshotPage() {
   return useDataReady() ? <MoonshotScreen /> : <Placeholder />;
 }
+
+/** The route's loading boundary draws this same placeholder, so a navigation swaps it once, in place (R4-13a, D-227). */
+export { Placeholder as MoonshotLoading };

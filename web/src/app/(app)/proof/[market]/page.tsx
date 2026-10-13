@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { DocsLayout } from "@/features/docs/DocsLayout";
 import { Note } from "@/features/docs/Prose";
+import { PROOF_READING } from "@/features/proof/ProofLoading";
 import { ProofScreen } from "@/features/proof/ProofScreen";
 
 export const metadata: Metadata = { title: "Print proof" };
@@ -14,7 +15,7 @@ export default async function Page({ params }: { params: Promise<{ market: strin
   return (
     <DocsLayout>
       {valid ? (
-        <Suspense fallback={<Note>Reading the prints…</Note>}>
+        <Suspense fallback={<Note>{PROOF_READING}</Note>}>
           <ProofScreen market={market.toLowerCase() as `0x${string}`} />
         </Suspense>
       ) : (

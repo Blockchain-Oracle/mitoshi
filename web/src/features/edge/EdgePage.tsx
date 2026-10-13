@@ -22,3 +22,6 @@ export function EdgePage() {
   const ready = useDataReady();
   return ready ? <EdgeScreen /> : <Placeholder />;
 }
+
+/** The route's loading boundary draws this same placeholder, so a navigation swaps it once, in place (R4-13a, D-227). */
+export { Placeholder as EdgeLoading };

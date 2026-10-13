@@ -15,3 +15,6 @@ export function StockHubPage(props: StockHubProps) {
   const ready = useDataReady();
   return ready ? <StockHubScreen {...props} /> : <Wait />;
 }
+
+/** The route's loading boundary draws this same placeholder, so a navigation swaps it once, in place (R4-13a, D-227). */
+export { Wait as StockHubLoading };

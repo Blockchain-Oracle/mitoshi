@@ -7,6 +7,7 @@ import { DocsLayout } from "@/features/docs/DocsLayout";
 import { Note } from "@/features/docs/Prose";
 import { HaltsBoard } from "@/features/halts/HaltsBoard";
 import { readHaltsBoard } from "@/features/halts/board.server";
+import { HALTS_READING } from "@/features/halts/HaltsLoading";
 
 export const metadata: Metadata = { title: "Trading halts" };
 
@@ -18,7 +19,7 @@ async function Board() {
 export default function Page() {
   return (
     <DocsLayout>
-      <Suspense fallback={<Note>Reading the halt log…</Note>}>
+      <Suspense fallback={<Note>{HALTS_READING}</Note>}>
         <Board />
       </Suspense>
     </DocsLayout>

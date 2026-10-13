@@ -19,3 +19,6 @@ export function PortfolioPage() {
   if (!ready) return <Loading />;
   return wallet ? <SignedInPortfolio wallet={wallet} /> : <PortfolioScreen />;
 }
+
+/** The route's loading boundary draws this same placeholder, so a navigation swaps it once, in place (R4-13a, D-227). */
+export { Loading as PortfolioLoading };

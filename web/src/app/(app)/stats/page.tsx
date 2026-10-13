@@ -3,17 +3,17 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { StatsScreen } from "@/features/stats/StatsScreen";
-import { STATS } from "@/features/stats/copy";
+import { StatsFrame, StatsReading } from "@/features/stats/StatsLoading";
 import "@/styles/stats.css";
 
 export const metadata: Metadata = { title: "Stats", description: "Wallets that made a call on Mitoshi, read from the engine's fills on Tempo testnet, each with its receipt." };
 
 export default function Page() {
   return (
-    <div className="mx-auto flex max-w-(--content-wide) flex-col px-gutter py-12 lg:px-gutter-desktop lg:py-16">
-      <Suspense fallback={<p className="type-body text-ink-secondary">{STATS.reading}</p>}>
+    <StatsFrame>
+      <Suspense fallback={<StatsReading />}>
         <StatsScreen />
       </Suspense>
-    </div>
+    </StatsFrame>
   );
 }

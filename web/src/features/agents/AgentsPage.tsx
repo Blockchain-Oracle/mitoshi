@@ -25,3 +25,6 @@ export function AgentProfilePage({ strategyId }: { strategyId: string }) {
   const ready = useDataReady();
   return ready ? <AgentProfile strategyId={strategyId} /> : <Placeholder />;
 }
+
+/** The route's loading boundary draws this same placeholder, so a navigation swaps it once, in place (R4-13a, D-227). */
+export { Placeholder as AgentsLoading };

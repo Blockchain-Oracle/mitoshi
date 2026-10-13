@@ -42,3 +42,6 @@ export function MarketsPage({ routeMarketId = null }: { routeMarketId?: MarketId
     </Suspense>
   );
 }
+
+/** The route's loading boundary draws this same placeholder, so a navigation swaps it once, in place (R4-13a, D-227). */
+export { Placeholder as MarketsLoading };

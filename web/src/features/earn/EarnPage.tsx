@@ -17,3 +17,6 @@ const EarnScreen = dynamic(() => import("./EarnScreen").then((m) => m.EarnScreen
 export function EarnPage() {
   return useDataReady() ? <EarnScreen /> : <Placeholder />;
 }
+
+/** The route's loading boundary draws this same placeholder, so a navigation swaps it once, in place (R4-13a, D-227). */
+export { Placeholder as EarnLoading };
