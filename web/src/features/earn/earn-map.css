@@ -1,0 +1,85 @@
+/* `/earn` §02 (R4-7, D-227): the maker's capital map — the kit CapitalBar on a card, Live | Settled, one row per Window
+   in one DOM for every width (21st.dev 20110 ssychui/market-watchlist's row grammar), the inventory skew bar (21st.dev
+   29457's midline idea), the per-Window cap meter (21st.dev 29962's stock meter), the Window's book behind a tap —
+   and a house reserve's bar, slots and limit tiles (Owarine 90a91d71 `features/vault/vault.css` `.vault-cells`). */
+
+.ea-map { display: flex; min-width: 0; flex-direction: column; gap: 12px; }
+.ea-map .section-head { margin-bottom: 0; }
+.ea-map-aside { display: inline-flex; align-items: center; gap: 10px; }
+.ea-map-live { font: 600 12px/1 var(--font-data); color: var(--color-ink-secondary); white-space: nowrap; }
+.ea-map-card { display: flex; flex-direction: column; gap: 12px; padding: 14px; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); }
+@media (min-width: 640px) { .ea-map-card { padding: 16px; } }
+.ea-map-figures { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; font: 500 13px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+.ea-map-strong { font: 700 16px/1.2 var(--font-data); color: var(--color-ink); }
+.ea-map-cap { margin-left: auto; font-size: 12px; color: var(--color-ink-muted); }
+.ea-map-empty { margin: 0; padding: 16px 0; font: 500 13px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+.ea-tab-n { margin-left: 4px; font-size: 13px; color: var(--color-ink-muted); }
+.ea-absent { gap: 6px; }
+
+/* ── one row per Window: phone "name name amt" / "inv inv act"; from 768 five columns ─────────────────────────── */
+.ea-rows { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); background: var(--color-surface-1); overflow: hidden; }
+.ea-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "name time amt" "inv inv act" "detail detail detail";
+  column-gap: 12px; row-gap: 4px; padding: 10px 14px; border-top: 1px solid var(--color-hairline); align-items: center;
+}
+.ea-row:first-child { border-top: 0; }
+.ea-row[data-open] { background: var(--color-surface-2); }
+@media (min-width: 768px) {
+  .ea-row { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.2fr) 7rem 4.5rem auto; grid-template-areas: "name inv amt time act" "detail detail detail detail detail"; row-gap: 0; padding: 8px 16px; }
+}
+.ea-row-name { grid-area: name; display: flex; min-width: 0; min-height: 44px; align-items: center; gap: 8px; padding: 0; background: none; text-align: left; cursor: pointer; }
+.ea-row-name:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: var(--radius-md); }
+.ea-row-title { font: 700 14px/1.2 var(--font-body); color: var(--color-ink); white-space: nowrap; }
+.ea-row-sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 11px/1.2 var(--font-data); color: var(--color-ink-muted); }
+.ea-row-chev { width: 16px; height: 16px; flex: none; margin-left: auto; color: var(--color-ink-muted); transition: rotate 200ms var(--ease-out); }
+.ea-row[data-open] .ea-row-chev { rotate: 180deg; }
+@media (min-width: 768px) { .ea-row-chev { margin-left: 0; } }
+.ea-row-inv { grid-area: inv; min-width: 0; }
+.ea-row-amt { grid-area: amt; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.ea-row-figure { font: 700 14px/1.2 var(--font-data); color: var(--color-ink); white-space: nowrap; }
+.ea-row-time { grid-area: time; font: 500 12px/1.2 var(--font-data); color: var(--color-ink-secondary); white-space: nowrap; }
+@media (min-width: 768px) { .ea-row-time { text-align: right; } }
+.ea-row-act { grid-area: act; display: flex; justify-content: flex-end; }
+.ea-row-word { font: 500 12px/1.2 var(--font-body); color: var(--color-ink-muted); white-space: nowrap; }
+.ea-row-pill { min-width: 72px; }
+
+/* the inventory skew: UP unpaired | paired | DOWN unpaired, one 6 px bar */
+.ea-inv { display: flex; min-width: 0; align-items: center; gap: 8px; }
+.ea-inv-bar { display: flex; width: 72px; height: 6px; flex: none; gap: 2px; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-3); }
+@media (min-width: 768px) { .ea-inv-bar { width: 120px; } }
+.ea-inv-seg { width: calc(var(--ea-share) * 1%); min-width: 3px; height: 100%; border-radius: var(--radius-full); }
+.ea-inv-seg[data-part="up"] { background: var(--chart-up); }
+.ea-inv-seg[data-part="paired"] { background: var(--color-ink-muted); }
+.ea-inv-seg[data-part="down"] { background: var(--chart-down); }
+.ea-inv-caption { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 11px/1.2 var(--font-data); color: var(--color-ink-secondary); }
+
+/* the capacity meter: deployed against the per-Window cap; the warning tone from 90 % */
+.ea-capm { display: block; width: 56px; height: 2px; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-3); }
+.ea-capm-fill { display: block; width: calc(var(--ea-share) * 1%); height: 100%; background: var(--color-ink-secondary); transition: width 350ms var(--ease-out); }
+.ea-capm[data-warn] .ea-capm-fill { background: var(--color-warning); }
+
+/* the Window's book: a grid-rows reveal (components/ui/data-table.tsx), inert while closed */
+.ea-row-detail { grid-area: detail; display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 300ms var(--ease-out), opacity 300ms var(--ease-out); }
+.ea-row-detail--open { grid-template-rows: 1fr; opacity: 1; }
+.ea-row-detail-inner { display: flex; min-height: 0; flex-direction: column; gap: 10px; overflow: hidden; }
+.ea-row-detail--open .ea-row-detail-inner { padding: 8px 0 6px; }
+.ea-book { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 0; }
+@media (min-width: 640px) { .ea-book { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.ea-tile { min-width: 0; padding: 8px 10px; border-radius: var(--radius-md); background: var(--color-surface-1); }
+.ea-tile-k { font: 500 12px/1.2 var(--font-body); color: var(--color-ink-secondary); }
+.ea-tile-v { margin: 2px 0 0; font: 700 14px/1.2 var(--font-data); color: var(--color-ink); overflow-wrap: anywhere; }
+
+/* ── a house reserve: slots, then the limits as tiles (Owarine's `.vault-cells`) and the one risk line ──────── */
+.ea-slots { display: flex; align-items: center; gap: 12px; }
+.ea-slots-label { font: 600 13px/1.2 var(--font-data); color: var(--color-ink-secondary); white-space: nowrap; }
+.ea-slots-meter { flex: 1; width: auto; height: 6px; }
+.ea-cells { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+@media (min-width: 640px) { .ea-cells { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.ea-cell { min-width: 0; padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, var(--color-surface-2) 60%, transparent); }
+.ea-cell-label { display: flex; align-items: center; gap: 6px; font: 500 13px/1.3 var(--font-body); color: var(--color-ink-secondary); }
+.ea-cell-value { margin: 2px 0 0; font: 700 18px/1.2 var(--font-body); font-variant-numeric: tabular-nums; color: var(--color-ink); overflow-wrap: anywhere; }
+.ea-risk { margin: 0; font: 500 12px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ea-row-detail, .ea-row-chev, .ea-capm-fill, .ea-rc-seg { transition: none; }
+}

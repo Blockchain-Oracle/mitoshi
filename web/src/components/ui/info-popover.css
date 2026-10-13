@@ -1,0 +1,14 @@
+/* From 21st.dev 398 originui/popover, revamped for R4-7 (D-227): the (i) and its one-line note on Mitoshi's tokens. */
+.ui-info-trigger { position: relative; display: inline-grid; place-items: center; width: 20px; height: 20px; flex: none; border-radius: var(--radius-full); color: var(--color-ink-muted); cursor: pointer; transition: color var(--duration-hover) var(--ease-out); }
+.ui-info-trigger::before { content: ""; position: absolute; inset: -12px; }
+.ui-info-trigger:hover, .ui-info-trigger[data-popup-open] { color: var(--color-ink); }
+.ui-info-trigger:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.ui-info-glyph { width: 16px; height: 16px; }
+.ui-info-pos { z-index: var(--z-popover); }
+.ui-info-popup {
+  max-width: min(16rem, calc(100vw - 32px)); padding: 10px 12px; border: 1px solid var(--color-hairline); border-radius: var(--radius-md);
+  background: var(--color-surface-2); color: var(--color-ink); font: 500 13px/1.4 var(--font-body); box-shadow: 0 8px 24px rgb(0 0 0 / 0.25);
+  transition: opacity 150ms var(--ease-out);
+}
+.ui-info-popup[data-starting-style], .ui-info-popup[data-ending-style] { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .ui-info-popup { transition: none; } }
