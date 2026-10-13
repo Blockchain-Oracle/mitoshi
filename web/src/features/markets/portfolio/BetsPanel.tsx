@@ -67,6 +67,7 @@ export function BetsPanel({ open, history, index, retryHistory }: { open: OpenBe
     <section className="flex flex-col gap-3" aria-labelledby="bets-title">
       <SectionHeader
         id="bets-title"
+        className="section-head-fit"
         index={index}
         title={PORTFOLIO.betsTitle}
         aside={

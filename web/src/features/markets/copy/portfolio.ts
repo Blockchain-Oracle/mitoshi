@@ -86,6 +86,7 @@ export const HISTORY = {
   paid: "paid",
   claim: { paid: "collected", "to-collect": "to collect", none: "", unknown: "collection unread" } as Record<string, string>,
   collectLink: "collect →",
+  vaultSettling: "settling into Trading Balance",
   via: { vault: "Trading Balance", boost: "Boost" } as Record<string, string>,
   receipt: "Receipt",
   receiptTitle: "Settlement receipt",

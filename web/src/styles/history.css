@@ -50,6 +50,9 @@
 .bets-tab::before { content: ""; position: absolute; inset: -12px -2px; }
 .bets-tab--on { background: var(--color-surface-2); color: var(--color-ink); }
 .bets-tab-count { font-variant-numeric: tabular-nums; color: var(--gray-500); }
+/* A section header whose aside can't share the title's line (Your bets' tabs, To collect's count at 320 px) lets the
+   aside take the next line instead of truncating the title; at 375 px and up it stays on one line. */
+.section-head-fit > div:first-child { flex-wrap: wrap; row-gap: 8px; }
 
 /* One row: the reference's flex-wrap px-5 py-3 hover:bg-white/[0.02]. On a phone the money and the
    action wrap to a second line under the call (`.bets-break`), so a row is two readable lines rather

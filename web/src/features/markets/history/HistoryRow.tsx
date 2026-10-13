@@ -45,7 +45,10 @@ export function HistoryRow({ round, nowMs, onReceipt }: { round: SettledRound; n
           {HISTORY.paid} <span className="numbers"><Masked>{money(round.payoutBase, false, round.decimals)}</Masked></span>
         </span>
       ) : null}
-      {round.claim === "to-collect" ? (
+      {round.claim === "to-collect" && round.source === "vault" ? (
+        // The settler pays a Trading Balance Window into the balance itself (D-155): nothing to collect by hand.
+        <span className="type-label-micro text-ink-muted">{HISTORY.vaultSettling}</span>
+      ) : round.claim === "to-collect" ? (
         <Link href={marketDeepLink({ marketId: round.marketId })} className="type-label-micro text-accent">
           {claim} · {HISTORY.collectLink}
         </Link>
