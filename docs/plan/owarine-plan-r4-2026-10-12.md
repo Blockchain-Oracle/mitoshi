@@ -260,6 +260,21 @@ and "Activity →" broke over two lines; the reserves row read "Locked Not live 
 under "Keepers unreachable"; contract addresses were cut mid-hex; the terminal's "Connecting…" was 1.9:1 on cream.
 Checks: web tsc, invariants, the touched tests 40/40, build, 74 routes within budget. Open: none blocked. Seen, not
 changed: /download's phone and /demo's poster are older captures (a Stocks tab in the rail).
+R4 final pass B (ship) at `813b924`, deployed one at a time on the strained box: web `h0ntvj3yysda10i7udibr2lj`
+(built `6aaeae1`, the same code; triggered 06:46Z by another session after a DNS-failed clone), ops
+`ze12rklqgpv9bqzhr9pezg9t`, docs `o9sr0siedzs7xozkxo0nlcij` (after a DNS-failed clone) — all finished. The trunk's
+launch files were R4-11's and went in with its merge. Ops /health on `813b924`: 29 actors ok — duel-settler "no live
+duel", bridge-watch "0 open", reserve-watch "5 tickers partial … Robinhood side not deployed", stock-sync idle (test
+ETH), indexer-recount idle (no indexer key). The apex answers `/.well-known/apple-app-site-association` and
+`assetlinks.json` 200 JSON on a valid certificate and 307s other paths to the testnet host. Live check (headless
+Chromium): /, /markets, /trade/BTC, /portfolio, /games, /games/range, /earn, /strategies, /bridge at 375 × 667 and
+1440 × 900 — 200, no console errors or failed requests, no page overflow (sweep hits are the marquee tapes), the action
+on the first phone screen; prices tick (/trade/BTC's header $83,655 → $83,646 → $83,655; /markets, /games/range,
+/earn); docs.testnet.mitoshi.xyz and its pages 200. Nothing production-only to fix. Open, blocked-owner: the store
+records (TestFlight, Play and the app-signing SHA-256), Robinhood testnet ETH (still 0 at 07:10Z), the passkey phone
+check, RedStone's API key (gateways stop 2026-10-29), TEMPO_INDEXER_API_KEY, the Reown project ID, the duel season.
+Open, not driven: the signed-in passes on testnet (R4-3 → R4-8) need a wallet. Left untracked: `docs/marketing/` and
+`videos/` (the X profile art and the film project, not R4's).
 
 ## Verification per slice
 `tsc`, invariants, vitest on the logic touched, `pnpm build` + route budgets; the overflow sweep at the five widths on
