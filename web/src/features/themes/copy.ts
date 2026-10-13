@@ -58,6 +58,11 @@ export const THEMES = {
     following: "Following",
     unfollow: "Unfollow",
     unfollowLine: "The agent stops. Your holdings stay in your wallet.",
+    unfollowing: (sec: number) => `Unfollowing in ${sec} s`,
+    undo: "Undo",
+    undone: "Still following.",
+    sellAll: "Sell everything",
+    nothingToSell: "Nothing to sell",
     signIn: "Sign in to follow",
   },
   studio: {

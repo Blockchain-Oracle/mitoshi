@@ -4,13 +4,15 @@
 // root transaction `[authorizeKey(the agent's scoped key), follow]` (`theme-follow`, sponsored): the key's address
 // comes from ops' theme-agent (`/api/themes/<id>/agent-key`, which files the request and reads the address back — the
 // key itself never leaves ops), its daily limits from core's plan at each member's reference price. Unfollow stops
-// the agent; holdings stay in the wallet (`theme-unfollow`, sponsored).
+// the agent after a 5 s Undo (the holdings stay in the wallet; `theme-unfollow`, sponsored); "Sell everything" is its
+// own action — the follower's root rebalance of every holding into pathUSD at the reference less the theme's slippage.
 import { pathUsdDailyLimit, parseDecimalToBaseUnits, tokenDailyLimit, type Address } from "@cwf/core";
 import type { ThemeView } from "@cwf/markets/themes";
-import { invalidateThemes } from "@cwf/markets/react";
+import { invalidateThemes, useThemeHoldings } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { SlideOver, SlideOverContent } from "@/components/kit";
+import { PillButton, SlideOver, SlideOverContent } from "@/components/kit";
+import { notify } from "@/lib/toast";
 import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { useSocialSession } from "@/features/social/session";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -21,6 +23,8 @@ const KEY_POLL_MS = 3_000;
 const KEY_WAIT_MS = 75_000;
 const EXPIRY_SEC = 30 * 86_400;
 const usd = (text: string) => parseDecimalToBaseUnits(text.trim() || "0", 6) ?? 0n;
+const UNDO_MS = 5_000;
+const PATH_USD = "0x20C0000000000000000000000000000000000000" as Address;
 
 /** The agent's key address for this follower and theme: filed, then read back until ops issues it (null on time-out). */
 async function agentKey(themeId: bigint): Promise<{ keyId: Address | null; message: string | null }> {
@@ -60,8 +64,20 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
   const [adjust, setAdjust] = useState(false);
   const name = theme.spec?.name ?? `#${theme.themeId}`;
 
-  const unfollow = async () => {
-    const outcome = await tx.run({ kind: "theme-unfollow", themeId: theme.themeId });
+  const holdings = useThemeHoldings(session.address, theme.themeId);
+  const unfollow = () => {
+    const timer = setTimeout(() => void tx.run({ kind: "theme-unfollow", themeId: theme.themeId }).then(async (o) => { if (o?.status === "confirmed") await invalidateThemes(queryClient); }), UNDO_MS);
+    notify.item({ id: "theme-unfollow", title: F.unfollowing(UNDO_MS / 1000), timeout: UNDO_MS, action: { label: F.undo, onClick: () => (clearTimeout(timer), notify.item({ id: "theme-unfollow", title: F.undone })) } });
+  };
+  const prices = new Map(theme.members.map((m) => [m.token.toLowerCase(), m.refPriceE18]));
+  const sellLegs = (holdings?.ok ? holdings.value : []).flatMap((h) => {
+    const p = prices.get(h.token.toLowerCase());
+    if (!p || h.balance <= 0n) return [];
+    const value = (h.balance * p) / 10n ** 18n;
+    return [{ tokenIn: h.token, tokenOut: PATH_USD, amountIn: h.balance, minAmountOut: (value * BigInt(10_000 - theme.maxSlippageBps)) / 10_000n }];
+  });
+  const sellAll = async () => {
+    const outcome = await tx.run({ kind: "theme-sell-all", themeId: theme.themeId, creatorFeeBps: theme.creatorFeeBps, legs: sellLegs });
     if (outcome?.status === "confirmed") await invalidateThemes(queryClient);
   };
   const follow = async () => {
@@ -79,7 +95,7 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
     });
     if (outcome?.status === "confirmed") await invalidateThemes(queryClient);
   };
-  const confirm = () => (session.address ? void (following ? unfollow() : follow()) : session.connectFor(F.signIn));
+  const confirm = () => (session.address ? (following ? unfollow() : void follow()) : session.connectFor(F.signIn));
   const capsBlocker = usd(allocation) <= 0n || usd(perTrade) <= 0n || usd(perDay) < usd(perTrade) ? F.capsBad : null;
   const blocker = !session.address || following ? null : theme.members.length > 5 ? F.tooMany : phase === "key" ? F.preparing : capsBlocker;
 
@@ -88,7 +104,9 @@ export function FollowSheet({ theme, following, open, onOpenChange }: { theme: T
       <SlideOverContent title={F.title(name)} fields footer={<TxCta state={blocker ? { kind: "blocked", reason: blocker } : tx.state} action={!session.address ? F.signIn : following ? F.unfollow : THEMES.card.follow} signer={signerOf(session.kind)} sponsored onConfirm={confirm} />}>
         <div className="th-follow">
           <p className="type-body text-ink">{following ? F.unfollowLine : F.line}</p>
-          {following ? null : (
+          {following ? (
+            <PillButton tone="ghost" block disabled={sellLegs.length === 0 || tx.state.kind === "signing" || tx.state.kind === "submitted"} onClick={() => void sellAll()}>{sellLegs.length === 0 ? F.nothingToSell : F.sellAll}</PillButton>
+          ) : (
             <>
               <Field label={F.allocation} value={allocation} onChange={setAllocation} />
               <button type="button" className="th-adjust" aria-expanded={adjust} onClick={() => setAdjust((a) => !a)}>{F.adjust}</button>

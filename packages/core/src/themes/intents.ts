@@ -9,6 +9,7 @@ import type { ThemeSpec } from "./spec";
 export interface ThemeCaps { expirySec: number; allocationUsd: bigint; maxTradeUsd: bigint; maxDailyUsd: bigint; maxSlippageBps: number; maxFeeBps: number; minIntervalSec: number }
 
 export type ThemeIntent =
+  | ThemeSellAllIntent
   /** A new theme: the spec (its canonical JSON travels as the `specURI` data URI) and one band per mirror token. */
   | { kind: "theme-publish"; spec: ThemeSpec; tokens: Address[] }
   /** Follow with the agent's key (authorised in the same root transaction, D-100). */
@@ -17,3 +18,6 @@ export type ThemeIntent =
   /** Stops the agent; holdings stay in the wallet. */
   | { kind: "theme-unfollow"; themeId: bigint }
   | { kind: "theme-claim-fees" };
+
+/** Sell every holding of a theme back to pathUSD, from the follower's own root (no key, no prompt beyond this one). */
+export interface ThemeSellAllIntent { kind: "theme-sell-all"; themeId: bigint; creatorFeeBps: number; legs: { tokenIn: Address; tokenOut: Address; amountIn: bigint; minAmountOut: bigint }[] }

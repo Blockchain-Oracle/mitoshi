@@ -14,6 +14,7 @@ import { encodeFunctionData, getAddress, keccak256, type Address } from "viem";
 import { deploymentOf } from "../deployments";
 import type { EncodeContext, EncodeResult } from "../submitter/encoders";
 import { themeKeyAuthorizeCall } from "./keyAuth";
+import { buildRebalanceCalls, decisionIdOf } from "./rebalance";
 
 const isTheme = (intent: TxIntent): intent is ThemeIntent => intent.kind.startsWith("theme-");
 
@@ -60,6 +61,8 @@ export function summarizeTheme(intent: ThemeIntent): string {
       return `unfollow theme #${intent.themeId}`;
     case "theme-claim-fees":
       return "claim your theme creator fees";
+    case "theme-sell-all":
+      return `sell every holding of theme #${intent.themeId} to pathUSD`;
   }
 }
 
@@ -85,6 +88,13 @@ export function encodeThemeIntent(intent: TxIntent, ctx: EncodeContext): EncodeR
         return { ok: true, value: { area: "themes", calls: [router("unfollow", [intent.themeId])], sponsored: true, summary } };
       case "theme-claim-fees":
         return { ok: true, value: { area: "themes", calls: [router("claimFees", [])], sponsored: true, summary } };
+      case "theme-sell-all": {
+        // The follower's own root rebalance (no key checks, the theme's slippage): self-paid — the relay sponsors only
+        // the agent's key-signed shape.
+        if (intent.legs.length === 0) return { ok: false, diagnosis: diagnosis("below-min-quantity", "nothing to sell") };
+        const calls = buildRebalanceCalls({ router: v.router, themeId: intent.themeId, legs: intent.legs, creatorFeeBps: intent.creatorFeeBps, decisionId: decisionIdOf(ctx.wallet, intent.themeId, Math.floor(Date.now() / 1000)) });
+        return { ok: true, value: { area: "themes", calls, sponsored: false, summary } };
+      }
     }
   } catch (error) {
     return { ok: false, diagnosis: diagnosis("contract-revert", error instanceof Error ? error.message : String(error)) };

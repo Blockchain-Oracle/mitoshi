@@ -5,7 +5,7 @@
  */
 import type { Address, Reading } from "@cwf/core";
 import type { QueryClient } from "@tanstack/react-query";
-import { getFollow, getTheme, getThemeActivity, listEligibleMirrors, listThemes, type ThemeActivity, type ThemeView } from "../themes/reads";
+import { getFollow, getTheme, getThemeActivity, getThemeHoldings, listEligibleMirrors, listThemes, type ThemeActivity, type ThemeView } from "../themes/reads";
 import { useReadingQuery } from "./useReadingQuery";
 
 const LIST_POLL_MS = 30_000;
@@ -16,6 +16,7 @@ export const themeKeys = {
   one: (id: bigint | null) => ["cwf", "themes", "one", id?.toString() ?? null] as const,
   eligible: () => ["cwf", "themes", "eligible"] as const,
   activity: (id: bigint | null) => ["cwf", "themes", "activity", id?.toString() ?? null] as const,
+  holdings: (who: string | null, id: bigint | null) => ["cwf", "themes", "holdings", who?.toLowerCase() ?? null, id?.toString() ?? null] as const,
   follow: (who: string | null, id: bigint | null) => ["cwf", "themes", "follow", who?.toLowerCase() ?? null, id?.toString() ?? null] as const,
 };
 
@@ -41,4 +42,8 @@ export function useThemeActivity(id: bigint | null): Reading<ThemeActivity> | nu
 
 export function useThemeFollow(who: Address | null, id: bigint | null) {
   return useReadingQuery(themeKeys.follow(who, id), () => getFollow(who!, id!), { enabled: who !== null && id !== null, pollMs: LIST_POLL_MS });
+}
+
+export function useThemeHoldings(who: Address | null, id: bigint | null) {
+  return useReadingQuery(themeKeys.holdings(who, id), () => getThemeHoldings(who!, id!), { enabled: who !== null && id !== null, pollMs: LIST_POLL_MS });
 }

@@ -10,7 +10,7 @@ import { stockReferenceAbi } from "@cwf/clients/abis/StockReference";
 import { themeRegistryAbi } from "@cwf/clients/abis/ThemeRegistry";
 import { themeRouterAbi } from "@cwf/clients/abis/ThemeRouter";
 import { specFromUri, type Reading, type ThemeSpec } from "@cwf/core";
-import { getAddress, type Address, type Hex } from "viem";
+import { erc20Abi, getAddress, type Address, type Hex } from "viem";
 import { getLogClient, getPublicClient } from "../runtime/read-runtime";
 import { withReading } from "../runtime/reading";
 import { themesVenueOf } from "./encoders";
@@ -168,5 +168,16 @@ export async function getFollow(follower: Address, themeId: bigint) {
     const { client, v } = await venue();
     if (!v) return null;
     return client.readContract({ address: v.router, abi: themeRouterAbi, functionName: "followOf", args: [follower, themeId] });
+  });
+}
+
+/** What a follower holds of each of a theme's tokens (the sell-everything sheet), in token base units. */
+export async function getThemeHoldings(follower: Address, themeId: bigint): Promise<Reading<{ token: Address; balance: bigint }[]>> {
+  return withReading(`themeHoldings:${follower.toLowerCase()}:${themeId}`, async () => {
+    const { client, v } = await venue();
+    if (!v) return [];
+    const t = await client.readContract({ address: v.registry, abi: themeRegistryAbi, functionName: "theme", args: [themeId] });
+    const tokens = await client.readContract({ address: v.registry, abi: themeRegistryAbi, functionName: "tokensOf", args: [themeId, t.version] });
+    return Promise.all(tokens.map(async (token) => ({ token: getAddress(token), balance: await client.readContract({ address: token, abi: erc20Abi, functionName: "balanceOf", args: [follower] }) })));
   });
 }
