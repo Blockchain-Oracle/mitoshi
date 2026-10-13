@@ -117,7 +117,9 @@ export function createPgArcadeStore(sql: Sql): ArcadeStore {
     async recent(limit) {
       const rows = await sql<(RunDb & { best: boolean })[]>`
         select game, wallet, score, engine_version, duration_ms, seed, calm, created_at, best from (
-          select *, score = max(score) over (partition by game, engine_version, wallet) as best from arcade_scores
+          -- A new best beats every earlier run of that wallet on that build; a first run sets the best, it is not a new one.
+          select *, score > coalesce(max(score) over (partition by game, engine_version, wallet order by created_at
+            rows between unbounded preceding and 1 preceding), score) as best from arcade_scores
         ) runs order by created_at desc limit ${limit}`;
       return rows.map((r) => ({ ...runRow(r), best: r.best }));
     },
