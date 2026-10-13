@@ -1,0 +1,78 @@
+---
+title: Who can move what
+description: What you, your keys and grants, Mitoshi's keepers and the contracts' admins can and can never do — read from the contracts on Tempo testnet.
+sources:
+  - contracts/src/engine/EventsEngine.sol
+  - contracts/src/engine/libs/AdminLib.sol
+  - contracts/src/engine/libs/MatchLib.sol
+  - contracts/src/engine/verifiers/RedStonePrintVerifier.sol
+  - contracts/src/products/vault/EventVault.sol
+  - contracts/src/products/vault/VaultExits.sol
+  - contracts/src/products/maker/MarketMakerVault.sol
+  - contracts/src/products/range/RangePricing.sol
+  - contracts/src/products/parlay/ParlayPricing.sol
+  - contracts/src/products/leverage/LeverageGateway.sol
+  - contracts/src/products/leverage/LeverageReserve.sol
+  - contracts/src/products/private/PrivateDesk.sol
+  - contracts/src/products/strategy/StrategyRegistry.sol
+  - contracts/src/fair/FairValueGuard.sol
+  - packages/markets/src/keys/wallet-key.ts
+  - packages/markets/src/ops/strategy-runner.ts
+  - contracts/deployments/42431/engine.json
+  - contracts/deployments/42431/stocks.json
+  - docs/plan/acceptance/S0.md
+  - docs/plan/acceptance/S10.md
+---
+
+Every power here is enforced by a contract on Tempo testnet, not by Mitoshi's servers. Read on 13 October 2026, block 39,348,596.
+
+## Always true
+
+- **Money leaves only to its owner.** No withdrawal or payout in the engine, the Trading Balance, Earn, Range, Parlay, Boost or the private desk takes a destination: each pays the account the money belongs to.
+- **Signed prints decide.** A print needs three of RedStone's five production signers, a set fixed at deployment. A Window's rules freeze when it opens. Anyone can post a print, settle, or void a Window whose print never came — at half. No one can void or decide a Window by hand.
+- **No upgrades.** The engine, the Trading Balance, Earn, the reserves, the private desk and the strategy registry are not proxies; their code can't change. Only the bridge's five mint adapters, and Uniswap's position descriptor in the v4 replay, sit behind proxies.
+- **Settling and withdrawing never pause.** Admins can stop new business, never claims, refunds, settlement or withdrawals.
+
+## Who can do what
+
+| Who | Can | Can't |
+| --- | --- | --- |
+| **You** | Everything on your account: trade, withdraw, revoke any key or grant. | — |
+| **One-tap key** · 24 h | Buy on the engine with up to $25 of new approvals a day; sell, cancel and redeem what your account holds there. | Transfer, approve anyone else, call another contract. |
+| **SESSION grant** · a key on your device | Buy from its budget inside its per-tap, daily, open-Window and price caps; sell what your Trading Balance holds. | Withdraw or send money. Sale proceeds stay in your Trading Balance. |
+| **STRATEGY grant** · the runner the strategy names | Buy inside the strategy's envelope and your budget. The contract also lets it sell what your Trading Balance holds; Mitoshi's house runner only buys. | Withdraw or send money. |
+| **EXIT grant** · Mitoshi's exit keeper | Sell what your Trading Balance holds, at or above the fair-value floor. | Buy, withdraw, or sell under the floor. |
+| **The private desk** | Spend your private balance up to the allowance you set; carry bets and payouts through its pool. | Withdraw your balance — only you can, to yourself. |
+| **The relay** | Pay your call's network fee. | Change your call or spend from your account. |
+| **Mitoshi's keepers** | Open Windows, post prints, settle and pay winners, quote Earn's vault inside its public limits, act through the grants you gave. | Anything else. |
+
+## What admins can do
+
+| Contract | Admin can | Admin can't |
+| --- | --- | --- |
+| **Engine** | List series; add rules for Windows not yet open; switch to reduce-only (sells only) or halted (no orders); name the keys that open Windows. | Change an open Window, decide or void one, move money. Prints, settlement, redemptions, cancels and withdrawals run in every mode. |
+| **Earn** | Pause new supply and quotes; set the vault's limits; name its one quoting key. | Withdraw suppliers' money. |
+| **Range · Parlay · Boost** | Pause new tickets and supply; set prices and limits for new tickets; set Range's volatilities; set Boost's knock-out line, which open boosts follow. | Take an escrowed payout, change a ticket's payout. |
+| **Private desk** | Pause new bets; set the stake band; name the desk key. | Withdraw anyone's balance. |
+| **Fair-value guard** | Set each series' volatility and spot source. Exit floors and the fair-value checks on Parlay and Boost follow. | Move money. |
+
+The Trading Balance and the strategy registry have no admin.
+
+## Who holds them on testnet
+
+One key per role, held by Mitoshi. Safes for mainnet are an [open owner decision](/help/availability).
+
+| Role | Key |
+| --- | --- |
+| Engine admin and treasury | <Address address="0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e" /> |
+| Opens Windows | <Address address="0xD6B237CcA5a3b0eAE9A66e4a5B4DFc8de8A3be46" /> |
+| Earn admin · quoting key | <Address address="0xE41f5FEb2bc3040B82bA22dc6F62b824037e1A8d" /> · <Address address="0x51d3F6367FDCaBE7f1eFbbc04d0D960bc8eede9a" /> |
+| Range, Parlay, Boost and private-desk admin | <Address address="0x5DFC4211902A8EE7932286861e2D8C66841441E8" /> |
+| Private desk | <Address address="0x9540cDCD69636229Be905225979a7e5BAA044cb9" /> |
+| Fair-value guard owner | <Address address="0xF368eE3b38bC3682A4f55Fd03778123269B69Fe5" /> |
+| Exit keeper | <Address address="0x6Ed3a4b6E42B2C45211074F8D7BA58dbB2FAad0C" /> |
+| Relay fee payer | <Address address="0x3D7791BAa66d34804f1769955fBf83AC576AC5f1" /> |
+
+The engine's treasury receives only money sent to the engine by mistake — what it holds above what it owes — never a stake or a payout. Every read is saved in `evidence/roles-2026-10-13.json`.
+
+Next: [if Mitoshi stops](/safety/if-mitoshi-stops) and [the worst case](/safety/worst-case).

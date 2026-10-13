@@ -1,0 +1,28 @@
+---
+title: Deployed addresses
+description: Every contract Mitoshi deployed on Tempo testnet and Base Sepolia, straight from the deployment fragments the app itself reads.
+sources:
+  - contracts/deployments/README.md
+  - contracts/deployments/42431/engine.json
+  - contracts/deployments/42431/vault2.json
+  - contracts/deployments/84532/stocks.json
+  - packages/clients/src/deployments.ts
+---
+
+These tables are generated from `contracts/deployments/<chainId>/<area>.json` — the same fragments `pnpm codegen` turns into the app's `@cwf/clients`. The docs build checks the copy against them, so an address here is the address the app calls. Each links to the explorer; a replaced address stays listed under its successor, because the indexer still reads it.
+
+Predeployed by Tempo and used as-is: **pathUSD** `0x20C0000000000000000000000000000000000000`, the TIP-20 factory, the fee manager, the stablecoin DEX, the access-key keychain, and the ERC-8004 registries (Identity <Address address="0x8004A818BFB912233c491871b3d84c89A494BD9e" />, Reputation <Address address="0x8004B663056A597Dffe9eCcC1965A193B7388713" />).
+
+## Tempo testnet (Moderato, chain 42431)
+
+<Deployments chain="42431" />
+
+### Stock pools
+
+<StockPools />
+
+## Base Sepolia (chain 84532) — the testnet bridge hop
+
+<Deployments chain="84532" areas={["stocks", "lz"]} />
+
+Nothing is deployed on Tempo mainnet or Robinhood Chain yet.

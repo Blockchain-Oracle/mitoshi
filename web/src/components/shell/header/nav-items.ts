@@ -4,11 +4,11 @@
 // No Stocks place: stocks trade in Markets' 24/7 lanes beside crypto and each ticker's hub is `/tickers/[symbol]`.
 import {
   Activity, ArrowLeftRight, BarChart3, Bell, BookOpen, Bot, CandlestickChart, CirclePause, ChartCandlestick, ChartLine, ChartNoAxesCombined,
-  CircleHelp, Clapperboard, Coins, Dices, Download, GalleryVerticalEnd, Gamepad2, Goal, Handshake, History, KeyRound,
+  CircleHelp, Clapperboard, Coins, Dices, Download, FileText, GalleryVerticalEnd, Gamepad2, Goal, Handshake, History, KeyRound,
   Layers3, MessageSquare, Mountain, Newspaper, Palette, Presentation, Rocket, ScanSearch, Settings, ShieldCheck, Sparkles, Trophy,
   TrendingDown, WalletCards, X as XLogo, type LucideIcon,
 } from "lucide-react";
-import { DOCS_EXTERNAL, DOCS_URL } from "../../../lib/docs-url";
+import { DOCS_EXTERNAL, DOCS_URL, IN_APP_DOCS } from "../../../lib/docs-url";
 
 export type NavItem = {
   id: string;
@@ -64,7 +64,8 @@ export const NAV_ITEMS = {
   howItWorks: item({ id: "how-it-works", name: "How it works", href: "/how-it-works", description: "The product from end to end.", icon: CircleHelp }),
   download: item({ id: "download", name: "Download", href: "/download", description: "Install Mitoshi as an app.", icon: Download, keywords: "install pwa app" }),
   reels: item({ id: "reels", name: "Reels", href: "/reels", description: "Scan market stories quickly.", icon: GalleryVerticalEnd }),
-  docs: item({ id: "docs", name: "Docs", href: DOCS_URL, external: DOCS_EXTERNAL, description: "Step-by-step guides.", icon: BookOpen }),
+  docs: item({ id: "docs", name: "Docs", href: DOCS_URL, external: DOCS_EXTERNAL, description: "Step-by-step guides.", icon: BookOpen, keywords: "guides documentation architecture contracts" }),
+  reference: item({ id: "reference", name: "Reference", href: IN_APP_DOCS, description: "The short docs, in the app.", icon: FileText, keywords: "docs fees contracts windows" }),
   pitch: item({ id: "pitch", name: "Pitch", href: "/pitch", description: "The Mitoshi thesis.", icon: Presentation }),
 
   activity: item({ id: "activity", name: "Activity", href: "/activity", description: "Your fills, verdicts and payouts.", icon: Activity, keywords: "notifications feed social inbox" }),
@@ -92,7 +93,7 @@ export const DOCK_OMITTED: readonly NavItem[] = RAIL_NAV.filter((p) => !DOCK_NAV
 /** Everything that is not a place, grouped (Owarine `MORE`). The first section is what most people open More for. */
 export const EVERYTHING_SECTIONS: readonly NavSection[] = [
   { id: "trade", name: "More ways to trade", items: [NAV_ITEMS.short, NAV_ITEMS.parlay, NAV_ITEMS.earn, NAV_ITEMS.themes, NAV_ITEMS.launch, NAV_ITEMS.bridge, NAV_ITEMS.reserves, NAV_ITEMS.surface, NAV_ITEMS.sensei, NAV_ITEMS.xTrade] },
-  { id: "learn", name: "Learn", items: [NAV_ITEMS.demo, NAV_ITEMS.news, NAV_ITEMS.howItWorks, NAV_ITEMS.download, NAV_ITEMS.reels, NAV_ITEMS.docs, NAV_ITEMS.pitch] },
+  { id: "learn", name: "Learn", items: [NAV_ITEMS.demo, NAV_ITEMS.news, NAV_ITEMS.howItWorks, NAV_ITEMS.download, NAV_ITEMS.reels, NAV_ITEMS.docs, NAV_ITEMS.reference, NAV_ITEMS.pitch] },
   { id: "games", name: "Games", items: [NAV_ITEMS.practice, NAV_ITEMS.duel, NAV_ITEMS.lucky, NAV_ITEMS.range, NAV_ITEMS.moonshot, NAV_ITEMS.lineRider, NAV_ITEMS.candleHop] },
   { id: "automate", name: "Automate", items: [NAV_ITEMS.agents] },
   { id: "records", name: "Records and proof", items: [NAV_ITEMS.activity, NAV_ITEMS.edge, NAV_ITEMS.stats, NAV_ITEMS.gamesRank, NAV_ITEMS.gamesHistory, NAV_ITEMS.status, NAV_ITEMS.halts] },

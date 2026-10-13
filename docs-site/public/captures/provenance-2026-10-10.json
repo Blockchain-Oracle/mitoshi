@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "origin": "https://testnet.mitoshi.xyz",
+  "capturedOn": "2026-10-10",
+  "source": "Mitoshi app commit ff14bda (feat(S20/web): /demo), CI states run 38034974579",
+  "note": "Copied byte for byte from the app's own /demo captures; nothing was re-shot or edited for the docs.",
+  "captures": [
+    {
+      "name": "position",
+      "file": "position-phone-2026-10-10.png",
+      "appPath": "web/public/demo/position.png",
+      "sha256": "f23bd4e39f243aec121d461422404bf02fc3647aaf93dd2f36640b4058b72db9"
+    }
+  ]
+}

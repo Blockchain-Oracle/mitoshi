@@ -1,0 +1,29 @@
+---
+title: Get the app
+description: Mitoshi installs from the browser as a web app today. The phone app is built for iOS and Android and isn't in a store yet.
+sources:
+  - web/src/features/install/copy.ts
+  - web/src/app/(app)/download/page.tsx
+  - docs/specs/mobile.md
+  - mobile/README.md
+  - mobile/app.identity.json
+  - web/src/lib/app-links.ts
+  - docs/plan/owner-actions.md
+---
+
+Open <AppLink href="/download">Download</AppLink> on your phone and choose **Install Mitoshi**.
+
+- **iPhone (Safari):** tap Share — the square with the arrow — then **Add to Home Screen**, then **Add**.
+- **Chrome and Edge:** use the install icon at the right of the address bar, or **Install** in the browser menu.
+
+The installed app is the same site: the same passkey, the same account, the same testnet dollars.
+
+## The phone app
+
+**Mitoshi Testnet** for iOS and Android is the testnet site in one native web view. It adds only what a browser tab can't: a splash held until the page paints, the status bar following the theme, Android Back through the page's history, other sites in the system browser, downloads through the share sheet, and an offline screen that retries by itself.
+
+Passkeys work inside it once `mitoshi.xyz` — the domain your passkey belongs to — serves the app's association files.
+
+<Callout title="Not in a store yet">
+Both builds exist. TestFlight and Google Play's internal track each wait on the owner creating the app's store record, and the association files on the passkey's domain wait on a deploy. Until then, install from the browser.
+</Callout>

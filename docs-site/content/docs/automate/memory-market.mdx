@@ -1,0 +1,31 @@
+---
+title: The Memory Market
+description: A strategy's creator seals its notes. Copiers read them free; anyone else buys one read for a few cents over MPP, paid to the creator on Tempo.
+sources:
+  - web/src/features/strategies/memory.server.ts
+  - web/src/features/strategies/MemorySection.tsx
+  - web/src/server/mpp.ts
+  - packages/core/src/strategies/memory.ts
+  - packages/db/src/mpp-store.ts
+  - docs/plan/acceptance/S9.md
+---
+
+A **memory** is a strategy's notes — what it has learned, in its creator's words — sealed with the creator's signature over the title, the price and the body. The catalogue on a strategy or agent page lists each memory's title, length, price and who can read it. Never its body.
+
+## Who can read
+
+| Reader | How |
+| --- | --- |
+| A live copier of that strategy | Signs a read request and gets the notes, free. The chain is asked, head-fresh, whether the reader holds a live subscription. |
+| Anyone else, on a paid memory | The read answers **402 Payment Required** with an MPP challenge. Paying it moves the price in pathUSD from the reader to the creator on Tempo, and the read answers **200** with the notes and a `Payment-Receipt`. |
+| Anyone, on a copiers-only memory | No price is offered; only copiers read it. |
+
+A spent payment credential is refused the second time. If the chain can't be read, nothing opens.
+
+## MPP
+
+The **Machine Payments Protocol** is Tempo's way for a service to charge per request: an HTTP 402 names the price and the recipient, the client pays on chain, and the retried request carries the proof. Mitoshi uses the same payer for the Memory Market's reads and for agent brains that buy model calls per request.
+
+## Seen live
+
+On 11 October the house creator sealed the three house strategies' memories: #1 and #2 at $0.10 a paid read, #3 copiers-only. A copier of #1 read it free. A stranger signing the same request got 402, then bought one read of #1 over MPP — $0.10 of pathUSD from the stranger to the creator on chain, `0x997135cb…1afb` in block 39,109,207 — and got the notes. The same credential presented again was refused.

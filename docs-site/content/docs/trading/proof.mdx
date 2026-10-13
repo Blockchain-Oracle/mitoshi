@@ -1,0 +1,47 @@
+---
+title: Check a Window yourself
+description: Every Window has a proof page that re-runs the on-chain check in your browser. Don't trust it — click it.
+sources:
+  - web/src/features/proof/copy.ts
+  - web/src/features/proof/reverify.ts
+  - web/src/features/proof/archive-verify.ts
+  - web/src/app/(app)/proof/[market]/page.tsx
+  - services/ops/src/actors/archive
+  - docs/plan/acceptance/S5.md
+---
+
+Open a proof from a position's details (**Proof of the prints**) or at `/proof/<marketId>`. It shows the Window's verdict and settlement transaction, and both prints with their signers and the transaction that recorded each.
+
+<GuideCapture name="proofDesk" />
+
+## Re-verify in this browser
+
+<Walkthrough name="proof-reverify" />
+
+<Steps>
+<Step>
+### Read the record
+
+Your browser reads the print's record transaction straight from Tempo's RPC.
+</Step>
+<Step>
+### Take the packages out
+
+It decodes the RedStone signed packages from that transaction's calldata.
+</Step>
+<Step>
+### Ask the verifier
+
+It calls `verifyPrint` on the same on-chain verifier the engine used, with `eth_call`, and compares the price it returns with what the engine recorded.
+</Step>
+</Steps>
+
+Nothing in that check comes from Mitoshi's servers. The page says whether it matches.
+
+## Check against the archive
+
+Ops' archive keeps RedStone's own packages for every boundary instant, apart from any transaction. **Check against the archive** runs the same verifier on them. For a Window that never got a print, it shows what the archive held and why the verifier refused it — too few signers at that instant, for example.
+
+## What it does not prove
+
+A proof shows that a recorded print is the signed price the verifier accepts. It does not say the house quoted fairly, or that a position was yours: those are on the [record](/explore/record) and in your own receipts.
