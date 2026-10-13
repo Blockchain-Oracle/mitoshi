@@ -2,7 +2,8 @@
 /**
  * The stamped verdict (Ported from Masayume 68f7a09:web/src/features/markets/verdict/VerdictCard.tsx): 正夢 in vermilion,
  * 逆夢 as a fact, 無効 with its reason — then the claim card and the cream receipt to audit it ("Don't trust it. Click
- * it."). Announced once. The share-card button is S5's (the receipt's footer keeps its place).
+ * it."). Announced once. R4-13a (D-227): a Share pill under the receipt (Owarine 90a91d71's ShareTradeButton on its
+ * VerdictCard) draws the verdict PNG — the WON / LOST / VOID stamp, the close print, who signed it and a QR to the proof.
  */
 import type { ClaimableRow, EventMarket, PinnedVerdictView, Resolution, Verdict } from "@cwf/core";
 import { OUTCOME_TO_SIDE } from "@cwf/core";
@@ -14,6 +15,8 @@ import { Money } from "@/components/data";
 import { Receipt, ReceiptRow } from "@/components/receipt";
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
 import { webEnv } from "@/lib/env";
+import { SHARE } from "@/features/share/copy";
+import { SharePill } from "@/features/share/SharePill";
 import { HERO, MARKETS, VERDICT_UI } from "../copy";
 import { usdText } from "../units";
 import { ClaimWinnings } from "./ClaimWinnings";
@@ -79,6 +82,22 @@ export function VerdictCard({ verdict, pinned, market, resolution, rows }: Verdi
         <ReceiptRow label={VERDICT_UI.settlementTx} href={settlementTx ? txUrl(settlementTx, net) : null} degradedLabel={VERDICT_UI.pendingTx}>{settlementTx ? shortHex(settlementTx, 10, 4) : "—"}</ReceiptRow>
         {pinned.txHash && pinned.phase === "paid" ? <ReceiptRow label={VERDICT_UI.payoutTx} href={txUrl(pinned.txHash, net)}>{shortHex(pinned.txHash, 10, 4)}</ReceiptRow> : null}
       </Receipt>
+      <div className="flex justify-end">
+        <SharePill
+          amounts={false}
+          input={() => {
+            const call = `${market.asset} ${sides} · ${formatCadence(market.intervalSec).toUpperCase()}`;
+            const closing = resolution?.closingRaw ?? null;
+            const url = `${window.location.origin}/proof/${market.marketId}`;
+            return {
+              image: { kind: "verdict", call, outcome: verdict.outcome, close: closing === null ? null : `${VERDICT_UI.closingPrint} ${usdText(closing)}`, signed: source ? SHARE.signedBy(HERO.sources[source] ?? HERO.sourceUnknown) : null, url },
+              fileName: `mitoshi-${market.asset.toLowerCase()}-${verdict.outcome}.png`,
+              text: SHARE.verdictPost(call, verdict.outcome),
+              url,
+            };
+          }}
+        />
+      </div>
     </article>
   );
 }

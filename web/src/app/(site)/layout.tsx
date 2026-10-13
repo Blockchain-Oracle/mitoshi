@@ -1,15 +1,9 @@
 // The site route group (D-050): the landing and the pitch (D-226: every other page renders in the app shell). It carries NO
-// wallet stack, no query client and no chain runtime — the header offers "Open the app" where the app group shows
-// the account. Budget: ≤ 120 KB first-load JS (plan §3.1).
-import Link from "next/link";
+// wallet stack, no query client and no chain runtime. R4-13a (D-227): the landing draws its own nav and footer
+// (Owarine 90a91d71's LandingPage has no site chrome over it), so the group adds nothing; `/pitch` keeps ShellChrome in
+// its own layout. Budget: ≤ 35 KB own first-load JS (scripts/perf/route-budgets.ts).
 import type { ReactNode } from "react";
-import { ShellChrome } from "@/components/shell/ShellChrome";
-import { SHELL } from "@/lib/copy";
 
 export default function SiteLayout({ children }: { children: ReactNode }) {
-  return (
-    <ShellChrome account={<Link href="/markets" className="btn btn-primary">{SHELL.openApp}</Link>}>
-      {children}
-    </ShellChrome>
-  );
+  return children;
 }

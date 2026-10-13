@@ -1,7 +1,7 @@
 "use client";
 // Ported from Owarine 90a91d71:web/src/features/markets/history/HistoryRow.tsx (R4-4, D-227) — one settled Window in the
 // open rows' two-line grammar: the outcome word, the call, its cadence and home (Trading Balance, Boost), what it paid
-// and whether that reached the account; then how long ago, the net, the receipt and the entry transaction. The loss is
+// and whether that reached the account; then how long ago, the net, the receipt, Share and the entry transaction. The loss is
 // printed in the same ink as everything else — a fact, not an alarm; the only P&L colour on the row is the net figure.
 import type { SettledRound } from "@cwf/core";
 import { OUTCOME_TO_SIDE, roundSettledAtMs } from "@cwf/core";
@@ -14,6 +14,7 @@ import { money } from "@/features/terminal/format";
 import { webEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import { HISTORY } from "../copy";
+import { HistoryShare } from "../portfolio/HistoryShare";
 import { SIDE_WORD } from "../side-styles";
 import { timeAgo } from "./time-ago";
 
@@ -65,6 +66,8 @@ export function HistoryRow({ round, nowMs, onReceipt }: { round: SettledRound; n
       <button type="button" onClick={() => onReceipt(round)} className="history-receipt-button type-label-micro">
         {HISTORY.receipt} ↗
       </button>
+      {/* R4-13a (D-227): the settled Window shares as its verdict (a cashed-out round as its P&L), QR to its proof. */}
+      <HistoryShare round={round} />
       {round.source === "wallet" ? (
         <a href={txUrl(round.entryTxHash, webEnv.markets.network)} target="_blank" rel="noreferrer" title={HISTORY.entryTx} aria-label={HISTORY.entryTx} className="history-proof-link numbers">
           ↗

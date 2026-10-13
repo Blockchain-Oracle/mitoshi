@@ -29,11 +29,13 @@ import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
 import { usd } from "../parlay/format";
 import { BandCard } from "./BandCard";
+import { SharePill } from "../share/SharePill";
 import { publishBand } from "./band-store";
 import { capacityLabel, refusalLabel } from "./blockers";
 import { RANGE } from "./copy";
 import { usdBand, usdOnGrid, usdToPrint } from "./format";
 import { TicketStrip, type SolveMode } from "./TicketStrip";
+import { rangeShare } from "./range-share";
 import { useRangeDraft } from "./useRangeDraft";
 import { useRangeQuote } from "./useRangeQuote";
 import { useRangeSpot } from "./useRangeSpot";
@@ -100,8 +102,9 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
   const place = () => {
     if (!quote || !band || !model?.feed || blocker) return;
     if (signedOut) return session.connectFor(RANGE.cta.signInFor(usd(quote.stakeBase), bandText));
-    void writes.open({ band, feed: model.feed, maxPayoutBase: quote.maxPayoutBase, maxStakeBase: mulBpsCeil(quote.stakeBase, 10_000 + RANGE_STAKE_HEADROOM_BPS), bandText });
+    void writes.open({ band, feed: model.feed, maxPayoutBase: quote.maxPayoutBase, maxStakeBase: mulBpsCeil(quote.stakeBase, 10_000 + RANGE_STAKE_HEADROOM_BPS), bandText, expirySec: market.expirySec });
   };
+  const placed = writes.outcome?.status === "confirmed" ? writes.outcome : null;
   const pct = shown ? (Number((shown.probRaw * 10_000n) / 1_000_000n) / 100).toFixed(0) : null;
 
   return (
@@ -130,11 +133,12 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
           <p className="ts-micro">{TX.payoutSetAside}</p>
         </SheetFooter>
       </TicketStrip>
-      {writes.outcome?.status === "confirmed" ? (
+      {placed ? (
         <div role="status" className="rg-receipt">
-          <p className="type-body-strong">{RANGE.outcome.placed(writes.outcome.roundId?.toString() ?? "", bandText, usd(writes.outcome.stakeBase), quote ? usd(quote.maxPayoutBase) : "")}</p>
-          <a href={txUrl(writes.outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption underline">{RANGE.outcome.viewReceipt}</a>
+          <p className="type-body-strong">{RANGE.outcome.placed(placed.roundId?.toString() ?? "", placed.bandText, usd(placed.stakeBase), usd(placed.payoutBase))}</p>
+          <a href={txUrl(placed.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption underline">{RANGE.outcome.viewReceipt}</a>
           <button type="button" className="min-h-touch type-body-strong underline" onClick={writes.reset}>{RANGE.outcome.another}</button>
+          <SharePill input={() => rangeShare(placed, market, "range", `/trade/${market.asset}`)} />
         </div>
       ) : null}
       {writes.outcome?.status === "requote" ? <p role="alert" className="rg-note rg-note--warn">{TX.requote(usd(writes.outcome.stakeBase))}</p> : null}

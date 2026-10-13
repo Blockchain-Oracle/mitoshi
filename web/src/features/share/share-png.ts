@@ -1,7 +1,8 @@
 "use client";
 // Ported from Owarine ecb7565b:web/src/features/terminal/share-png.ts (Tradash's 1600×1000 share image), re-branded
 // for Mitoshi (S5 L-22, S23g's share modal): Owarine's keychain charm on the sky becomes Masayume's cream receipt,
-// tilted on Mitoshi's dark ground, with the 見通し seal and the vermilion point of the mark.
+// tilted on Mitoshi's dark ground, with the 見通し seal and the vermilion point of the mark. R4-13a (D-227): the ground,
+// the faces, the QR and the mark are exported for the call and verdict cards (`share-cards.ts`), which add their kinds.
 import qrcode from "qrcode-generator";
 import { tokens } from "@cwf/tokens";
 
@@ -18,29 +19,29 @@ export interface ShareCard {
   url: string;
 }
 
-const W = 1600;
-const H = 1000;
+export const W = 1600;
+export const H = 1000;
 const p = tokens.palette.dark;
 const s = tokens.shared;
 /** The ground is the dark palette; the receipt is cream, so its profit and loss read in the light palette's inks. */
-const C = { ground: p.bg, ink: s["cream-ink"], card: s.cream, edge: s["cream-hairline"], white: p.white, soft: p["gray-400"], accent: p.vermilion, up: tokens.palette.light.profit, down: tokens.palette.light.loss } as const;
-const font = (weight: number, size: number, family: string) => `${weight} ${size}px ${family}`;
+export const C = { ground: p.bg, ink: s["cream-ink"], card: s.cream, edge: s["cream-hairline"], white: p.white, soft: p["gray-400"], accent: p.vermilion, up: tokens.palette.light.profit, down: tokens.palette.light.loss } as const;
+export const font = (weight: number, size: number, family: string) => `${weight} ${size}px ${family}`;
 
 /** The page's own faces (`lib/fonts.ts` variables, set on <body>), with system fallbacks. */
-function faces() {
+export function faces() {
   const cs = getComputedStyle(document.body);
   const v = (n: string, fallback: string) => cs.getPropertyValue(n).trim() || fallback;
   return { display: v("--font-sora", "system-ui"), body: v("--font-inter", "system-ui"), jp: v("--font-noto-serif-jp", "serif") };
 }
 
-function fit(ctx: CanvasRenderingContext2D, text: string, f: (px: number) => string, maxW: number, start: number): number {
+export function fit(ctx: CanvasRenderingContext2D, text: string, f: (px: number) => string, maxW: number, start: number): number {
   let px = start;
   ctx.font = f(px);
   while (px > 24 && ctx.measureText(text).width > maxW) ctx.font = f((px -= 4));
   return px;
 }
 
-function qr(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number): void {
+export function qr(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, size: number): void {
   const q = qrcode(0, "M");
   q.addData(text);
   q.make();
@@ -53,7 +54,7 @@ function qr(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, s
 }
 
 /** The Mitoshi mark (`MitoshiMark.tsx`'s 266×322 drawing) at `scale`, its top-left at (x, y). */
-function mark(ctx: CanvasRenderingContext2D, x: number, y: number, scale: number): void {
+export function mark(ctx: CanvasRenderingContext2D, x: number, y: number, scale: number): void {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(scale, scale);

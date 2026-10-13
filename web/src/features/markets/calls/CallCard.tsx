@@ -3,21 +3,28 @@
  * The Call (Ported from Masayume 68f7a09:web/src/features/share/CallPlacedCard.tsx, on screen): the instant a call
  * lands the ticket becomes this card — the live-position sibling of the settlement receipt, the clock alive over a
  * draining bar because the call is still open. No result is implied; the return is conditional ("win if it lands").
- * The PNG share of it is S5's (share cards); the card itself is the S4 hot loop (ticket → Call → stamp → receipt).
+ * The card itself is the S4 hot loop (ticket → Call → stamp → receipt). R4-13a (D-227): its Share pill (Owarine 90a91d71's
+ * ShareCallButton on CallPlacedCard) draws "The Call" PNG — stake → win if it lands, the Window's close in UTC, a QR
+ * to the market — once the call has a hash (`features/share`).
  */
 import type { Side } from "@cwf/core";
+import { formatCadence } from "@cwf/core/copy";
 import { formatBaseUnits, formatClock, formatUtc, remainingSec, secToMs } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import type { ReactNode } from "react";
 import { useNowMs } from "@/lib/clock";
 import { BRAND } from "@/lib/copy";
 import { webEnv } from "@/lib/env";
+import { callShareInput } from "@/features/share/call-share";
+import { SharePill } from "@/features/share/SharePill";
 import { CALL } from "../copy";
 import { usd0 } from "../units";
 
 export interface CallCardData {
   asset: string;
   side: Side;
+  /** The Window's length, for the share card's "BTC UP · 5M"; omitted where the caller doesn't know it. */
+  intervalSec?: number;
   lineRaw: bigint | null;
   stakeBase: bigint;
   contractsRaw: bigint;
@@ -93,10 +100,30 @@ export function CallCard({ card, actions }: { card: CallCardData; actions?: Reac
               </div>
             )}
           </div>
-          {card.txHash ? <a href={txUrl(card.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="call-verify">{CALL.verify}</a> : null}
+          {card.txHash ? (
+            <div className="call-foot">
+              <a href={txUrl(card.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="call-verify">{CALL.verify}</a>
+              {card.pending ? null : <SharePill className="call-share" input={() => shareOf(card, band, money)} />}
+            </div>
+          ) : null}
         </div>
       </div>
       {actions}
     </div>
   );
+}
+
+/** "The Call" share: what the card says, as an open call with no result. */
+function shareOf(card: CallCardData, band: string, money: (b: bigint) => string) {
+  const cadence = card.intervalSec ? formatCadence(card.intervalSec).toUpperCase() : null;
+  return callShareInput({
+    call: `${card.asset} ${card.side.toUpperCase()}${cadence ? ` · ${cadence}` : ""}`,
+    band,
+    stake: money(card.stakeBase),
+    toWin: money(card.contractsRaw),
+    expirySec: card.expirySec,
+    intervalSec: card.intervalSec,
+    path: `/trade/${card.asset}`,
+    file: `call-${card.asset.toLowerCase()}-${(card.txHash ?? "").replace(/^0x/i, "").slice(0, 6)}`,
+  });
 }

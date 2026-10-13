@@ -25,7 +25,9 @@ import { usd } from "./format";
 import { fetchSpots, SPOT_REUSE_SEC, SpotsUnavailableError, type SignedSpot } from "./useParlayQuote";
 
 export type OpenOutcome =
-  | { status: "confirmed"; txHash: Hex; parlayId: bigint | null; stakeBase: bigint }
+  /** The payout it was booked on (R4-13a, D-227): the slip stays live under its receipt, so the receipt and its Share
+   *  card read what was placed, never the quote the slip has moved on to. */
+  | { status: "confirmed"; txHash: Hex; parlayId: bigint | null; stakeBase: bigint; payoutBase: bigint }
   | { status: "requote"; stakeBase: bigint }
   | { status: "failed"; diagnosis: Diagnosis; txHash: Hex | null };
 
@@ -89,7 +91,7 @@ export function useParlayWrites(wallet: Address | null) {
           dispatch({ type: "receipt", txHash: result.txHash, status: "success" });
           const booked = await readOpenedTicket(result.txHash).catch(() => null);
           const stakeBase = booked?.stakeBase ?? fresh.value.stakeBase;
-          setOutcome({ status: "confirmed", txHash: result.txHash, parlayId: booked?.parlayId ?? null, stakeBase });
+          setOutcome({ status: "confirmed", txHash: result.txHash, parlayId: booked?.parlayId ?? null, stakeBase, payoutBase: req.maxPayoutBase });
           const line = PARLAY.outcome.placed(booked ? String(booked.parlayId) : "", req.legs.length, usd(stakeBase), usd(req.maxPayoutBase));
           // The success receipt (R4-4, D-227; critic gap 21): the toast names the bet, its Receipt opens the stub.
           notifyReceipt({ title: line, figure: usd(stakeBase), figureLabel: WRITE_RECEIPT.staked, txHash: result.txHash, atMs: Date.now(), signer: accountSigner(account), sponsored: true });

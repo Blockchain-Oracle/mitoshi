@@ -1,8 +1,8 @@
 "use client";
 // The share modal (S5 L-22, S23g RV-83 "Share PnL"; Owarine ecb7565b `ShareSheet` as a centred modal, RV-14): PnL ·
 // ROI · Both, the card itself as the preview (the PNG that Download saves, drawn by `share-png.ts`), Download and Share
-// on X with the result's own words. Disabled while amounts are hidden (RV-10). The card draws in the browser; nothing
-// leaves it until the reader shares.
+// on X with the result's own words. While amounts are hidden (RV-10) it says so with a Show right there (R4-13a, D-227:
+// the top line's eye is not on a phone). The card draws in the browser; nothing leaves it until the reader shares.
 import { formatCadence } from "@cwf/core/copy";
 import { useEffect, useState } from "react";
 import { Modal } from "@/components/ui/modal";
@@ -13,6 +13,7 @@ import { livePnlText, money, moneyTone } from "@/features/terminal/format";
 import { SHARE } from "./copy";
 import { renderSharePng, saveSharePng } from "./share-png";
 import { SheetFooter } from "@/components/ui/overlay-footer";
+import { MaskedShare } from "./SharePill";
 
 /** What a card is about: an open position (Mark, valued by what Close pays) or a closed trade (Exit). */
 export interface ShareSubject {
@@ -78,7 +79,7 @@ export function ShareModal({ subject, open, onOpenChange }: { subject: ShareSubj
   return (
     <Modal open={open} onOpenChange={onOpenChange} title={s.closed ? SHARE.title.closed : SHARE.title.open}>
       {masked ? (
-        <p className="type-body text-ink-secondary">{SHARE.masked}</p>
+        <MaskedShare />
       ) : (
         <div className="flex flex-col items-center gap-4">
           <SegmentedControl label={SHARE.modeLabel} options={SHARE.modes} value={mode} onValueChange={(m) => (tapFeedback(), setMode(m))} />

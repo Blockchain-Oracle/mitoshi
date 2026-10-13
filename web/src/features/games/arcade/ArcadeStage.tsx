@@ -163,7 +163,7 @@ export function ArcadeStage({ game }: { game: ArcadeGame }) {
             )}
 
             {phase === "title" && <TitleOverlay game={game} best={best} onPlay={start} />}
-            {phase === "over" && end && <OverOverlay end={end} post={postState} onAgain={start} />}
+            {phase === "over" && end && <OverOverlay game={game} end={end} post={postState} onAgain={start} />}
           </div>
 
           <div className="ar-readout">

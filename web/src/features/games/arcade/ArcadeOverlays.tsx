@@ -1,12 +1,17 @@
 "use client";
 
 import type { ArcadeGame } from "@cwf/core/games/arcade";
+import { SHARE } from "@/features/share/copy";
+import { SharePill } from "@/features/share/SharePill";
+import type { ShareInput } from "@/features/share/useShareCard";
+import { gameEntry } from "../catalog";
 import { ARCADE } from "./copy";
 import type { RunEnd } from "./run";
 
 /**
  * Pips's two plates over the field, in the field's own ink: the title — the name, the pitch, the best,
- * PLAY — and the game over — the banner, the score, where it landed, PLAY AGAIN. The board itself
+ * PLAY — and the game over — the banner, the score, where it landed, PLAY AGAIN and Share (R4-13a, D-227: Ported
+ * from Senryo:features/games/arcade/StageParts.tsx's OverPlate — the run as a share card, QR to the game). The board itself
  * sits beside the screen rather than on it: on a phone the screen is 219px tall and a board of six
  * rows does not fit over it, and a board a player has to scroll inside a game screen is not a board.
  */
@@ -47,7 +52,21 @@ function bannerOf(post: PostState): { banner: string; best: boolean; sub: string
   }
 }
 
-export function OverOverlay({ end, post, onAgain }: { end: RunEnd; post: PostState; onAgain: () => void }) {
+/** The run as it stands at the tap: the score, a new best, where it ranked, its seed and length. */
+function shareOf(game: ArcadeGame, end: RunEnd, post: PostState): ShareInput {
+  const title = ARCADE.games[game].title;
+  const score = ARCADE.fmt(end.score);
+  const url = `${window.location.origin}${gameEntry(game).nav.href}`;
+  const meta = `${ARCADE.over.seed(end.seed)} · ${ARCADE.over.length((end.durationMs / 1_000).toFixed(1))}`;
+  return {
+    image: { kind: "score", game: title, score, best: post.kind === "posted" && post.isBest, rank: post.kind === "posted" ? ARCADE.over.ranked(post.rank) : null, meta, url },
+    fileName: `mitoshi-${game}-${Math.round(end.score)}.png`,
+    text: SHARE.scorePost(score, title),
+    url,
+  };
+}
+
+export function OverOverlay({ game, end, post, onAgain }: { game: ArcadeGame; end: RunEnd; post: PostState; onAgain: () => void }) {
   const { banner, best, sub, tone } = bannerOf(post);
   return (
     <div className="ar-overlay" role="group" aria-live="polite">
@@ -68,6 +87,7 @@ export function OverOverlay({ end, post, onAgain }: { end: RunEnd; post: PostSta
         <button type="button" className="du-cta" onClick={onAgain} autoFocus>
           {ARCADE.over.again}
         </button>
+        <SharePill amounts={false} input={() => shareOf(game, end, post)} />
       </div>
     </div>
   );

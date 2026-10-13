@@ -1,7 +1,7 @@
-// Per-segment loading boundary (D-050): partial prefetch fetches the shell down to here, and a slow navigation is
-// never silent (ux-audit §8: zero loading.tsx before).
-import { LoadingState } from "@/components/states/LoadingState";
+// The route's loading boundary (R4-13a, D-227; plan §3.2 per-segment loading): the page's own wait, so a navigation
+// shows one shape that the screen replaces in place, never the group's generic page first.
+import { ProofLoading } from "@/features/proof/ProofLoading";
 
 export default function Loading() {
-  return <LoadingState shape="page" />;
+  return <ProofLoading />;
 }

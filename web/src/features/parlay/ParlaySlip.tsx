@@ -19,6 +19,8 @@ import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { webEnv } from "@/lib/env";
 import { RANGE } from "../range/copy";
 import { TicketStrip } from "../range/TicketStrip";
+import { callShareInput } from "../share/call-share";
+import { SharePill } from "../share/SharePill";
 import { PARLAY } from "./copy";
 import type { LegWindow } from "./data";
 import { formatProbPct, usd } from "./format";
@@ -39,7 +41,7 @@ export function ParlayCta({ t }: { t: ParlayTicket }) {
 }
 
 function Slip({ t, windows }: { t: ParlayTicket; windows: readonly LegWindow[] }) {
-  const { slip, q, shown, quote, refusal, writes } = t;
+  const { slip, q, shown, quote, refusal, writes, placed: placedSlip } = t;
   const figures = slip.legs.map((_, i) => ({ priceRaw: shown?.legPricesRaw[i] ?? null, fairRaw: q.fair?.fairRaw[i] ?? null }));
   const outcome = writes.outcome;
   const sub = shown ? `${PARLAY.slip.ifAll(slip.legs.length)} · ${formatProbPct(shown.combinedProbRaw, ONE)}${shown.correlated ? ` · ${PARLAY.slip.rows.correlated}` : ""}` : slip.legs.length < 2 ? PARLAY.slip.needOneMore : PARLAY.cta.pricing;
@@ -54,9 +56,10 @@ function Slip({ t, windows }: { t: ParlayTicket; windows: readonly LegWindow[] }
       </TicketStrip>
       {outcome?.status === "confirmed" ? (
         <div role="status" className="ps-receipt">
-          <p className="type-body-strong text-ink">{PARLAY.outcome.placed(outcome.parlayId?.toString() ?? "", slip.legs.length, usd(outcome.stakeBase), quote ? usd(quote.maxPayoutBase) : "")}</p>
+          <p className="type-body-strong text-ink">{PARLAY.outcome.placed(outcome.parlayId?.toString() ?? "", placedSlip?.legs ?? slip.legs.length, usd(outcome.stakeBase), usd(outcome.payoutBase))}</p>
           <a href={txUrl(outcome.txHash, webEnv.markets.network)} target="_blank" rel="noreferrer" className="min-h-touch type-caption text-cream-ink underline">{PARLAY.outcome.viewReceipt}</a>
           <button type="button" className="min-h-touch type-body-strong text-ink underline" onClick={() => { writes.reset(); slip.clear(); }}>{PARLAY.outcome.another}</button>
+          {placedSlip ? <SharePill input={() => callShareInput({ call: `PARLAY · ${placedSlip.legs} LEGS`, band: placedSlip.band, stake: usd(outcome.stakeBase), toWin: usd(outcome.payoutBase), expirySec: placedSlip.expirySec, path: "/parlay", file: `parlay-${outcome.parlayId?.toString() ?? "slip"}` })} /> : null}
         </div>
       ) : null}
       {outcome?.status === "requote" ? <p role="alert" className="ps-note ps-note--warn">{TX.requote(usd(outcome.stakeBase))}</p> : null}

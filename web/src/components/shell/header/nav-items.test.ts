@@ -26,8 +26,9 @@ function pageRoutes(dir = APP_DIR): string[] {
   return out.sort();
 }
 
-/** Pages that live outside the nav on purpose: the landing, legal/contact (footer), the app handoff, and dev fixtures. */
-const OFF_NAV = new Set(["/", "/privacy", "/terms", "/contact", "/native-auth"]);
+/** Pages that live outside the nav on purpose: the landing, legal/contact (footer), the app handoff, dev fixtures, and
+ *  `/short` — Owarine's address kept as a redirect to the terminal's Short, which More's "Short" links directly (R4-13a). */
+const OFF_NAV = new Set(["/", "/privacy", "/terms", "/contact", "/native-auth", "/short"]);
 
 describe("navigation registry", () => {
   it("keeps Owarine's six places (D-226: no Stocks place) and phone dock: Trade · Markets · [seal] · Portfolio · More", () => {

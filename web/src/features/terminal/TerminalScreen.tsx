@@ -29,6 +29,7 @@ import { formatPrice, priceDecimals } from "./chart/engine";
 import { TERMINAL } from "./copy";
 import { clockText, money } from "./format";
 import { gap0400NextOpen } from "./pick-window";
+import { useLinkedMode } from "./useLinkedMode";
 import { replaceTradeParams } from "./useTerminalWindow";
 import { useMarketSession, type MarketSession } from "@/features/markets/session";
 import { useTerminalState } from "./useTerminalState";
@@ -61,11 +62,12 @@ import { setTradeSettings, useTradeSettingsState } from "./settings";
 import { Tutorial } from "./ui/Tutorial";
 import { AccountDrawer, AlertsDrawer, DemoHistoryDrawer, ExitsDrawer, MarketsDrawer, PositionDetails, RoomDrawer, SenseiDrawer, SettingsDrawer, useDrawersMounted } from "./lazy-drawers";
 import { usePendingFills } from "./fresh-fills";
-import { ModeChips, ModePanel, type TerminalMode } from "./ui/ModePanel";
+import { ModeChips, ModePanel } from "./ui/ModePanel";
 import { useDrawnBand } from "@/features/range/band-store";
 import { TICKET_RAIL_MIN_WIDTH } from "@/features/markets/data/useSelection";
 import dynamic from "next/dynamic";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
+import { TradeReceiptSheet } from "./ui/TradeReceiptSheet";
 import { History, LineChart, Settings } from "lucide-react";
 import "@/styles/terminal-side.css";
 
@@ -142,11 +144,9 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
   const totalRoiBps = roiBpsOf(totals.pnlBase, totals.costBase);
   const [depth, setDepth] = useState(false);
   // Up/Down is Tradash's one tap; the other modes host the ticket's own bodies (inline on desktop, a drawer on phones).
-  const [mode, setMode] = useState<TerminalMode>("updown");
-  const chooseMode = (m: TerminalMode) => {
-    setMode(m);
-    if (m !== "updown" && !window.matchMedia(`(min-width: ${TICKET_RAIL_MIN_WIDTH}px)`).matches) drawer.show(DRAWERS.mode);
-  };
+  // `?mode=` / `?pick=` open a mode on a side (More's "Short": Boost on DOWN) until the reader changes it.
+  const linked = useLinkedMode(() => void (window.matchMedia(`(min-width: ${TICKET_RAIL_MIN_WIDTH}px)`).matches || drawer.show(DRAWERS.mode)));
+  const { mode, pickedSide, choose: chooseMode } = linked;
   useAppUpdate();
   useWalletToasts();
   // First visit: the five-step tour, once the browser's settings have loaded with it unseen.
@@ -300,7 +300,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           <HaltNotice symbol={symbol} basis={s.win.lane?.basis ?? null} />
           {market ? <ModeChips mode={mode} onMode={chooseMode} /> : null}
           {mode !== "updown" && market ? (
-            <div className="tm-desk"><ModePanel mode={mode} market={market} side={null} /></div>
+            <div className="tm-desk"><ModePanel mode={mode} market={market} side={pickedSide} /></div>
           ) : active.lead ? (
             <TradeButtons
               mode="open"
@@ -324,9 +324,9 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
       </div>
       <Tutorial open={tourOpen} onDone={endTour} instant={instantTour} />
       {mode !== "updown" && market ? (
-        <SlideOver open={drawer.open === DRAWERS.mode} onOpenChange={(o) => { if (!o) { drawer.close(); setMode("updown"); } }}>
+        <SlideOver open={drawer.open === DRAWERS.mode} onOpenChange={(o) => { if (!o) { drawer.close(); linked.close(); } }}>
           <SlideOverContent title={TERMINAL.modes.names[mode]} fields>
-            <ModePanel mode={mode} market={market} side={null} />
+            <ModePanel mode={mode} market={market} side={pickedSide} />
           </SlideOverContent>
         </SlideOver>
       ) : null}
@@ -380,6 +380,7 @@ export function TerminalScreen({ symbol: initial, onTourSettled, instantTour = f
           <PositionsList positions={s.positions} bets={bets} pending={pendingFills} activeMarketId={market?.marketId ?? null} busyId={closer.busy} onClose={onClose} onOpen={onOpenPosition} onTrailHit={null} onValue={onValue} onBetValue={book.onBetValue} />
         </SlideOverContent>
       </SlideOver>
+      <TradeReceiptSheet />
     </MotionScope>
   );
 }

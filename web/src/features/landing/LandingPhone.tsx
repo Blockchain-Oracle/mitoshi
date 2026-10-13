@@ -1,10 +1,11 @@
 "use client";
 /**
- * The landing's phone (S20 revamp note: "a phone running the terminal engine, lazily below the fold within the (site)
- * budget"): the real terminal at `/trade/BTC`, in an iframe so it lays out at a phone's width with its own phone
- * layout. Mounted only once the phone is on screen (an IntersectionObserver, not `loading="lazy"`, which Chrome starts
- * well before view — and a same-origin frame shares this page's main thread), so the landing's own load carries none of
- * it. Until then the frame shows the mark. In a frame the terminal skips its first-visit tour (`TerminalScreen`).
+ * The landing's phone (S20; R4-13a, D-227: in the hero's first screen, as Owarine 90a91d71's HeroPhone): the real
+ * terminal at `/trade/BTC`, in an iframe so it lays out at a phone's width with its own phone layout. Mounted only once
+ * the phone is on screen (an IntersectionObserver, not `loading="lazy"`, which Chrome starts well before view — and a
+ * same-origin frame shares this page's main thread), so the landing's own load carries none of it; on a phone it sits
+ * under the pills and mounts as it scrolls in. Until then the frame shows the mark. In a frame the terminal skips its
+ * first-visit tour (`TerminalScreen`).
  */
 import { useEffect, useRef, useState } from "react";
 import MitoshiMark from "@/components/shell/MitoshiMark";

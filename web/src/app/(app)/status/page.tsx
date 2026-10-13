@@ -2,17 +2,15 @@
 // the verdict is the first thing on a phone.
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { LoadingState } from "@/components/states";
-import { STATUS } from "@/features/status/copy";
+import { StatusReading } from "@/features/status/StatusLoading";
 import { StatusScreen } from "@/features/status/StatusScreen";
-import "@/styles/status.css";
 
 export const metadata: Metadata = { title: "Status" };
 
 export default function Page() {
   return (
     <div className="container status-page">
-      <Suspense fallback={<LoadingState shape="hero" label={STATUS.reading} />}>
+      <Suspense fallback={<StatusReading />}>
         <StatusScreen />
       </Suspense>
     </div>

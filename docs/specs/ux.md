@@ -49,6 +49,7 @@ the 21st ids they already carry are kept for the register.
 | Terminal chart | Owarine `features/terminal/chart/*` (canvas) | Charts (lightweight-charts) on `/trade` | D-199; `--chart-*` tokens |
 | Sounds, music, haptics, reactions | Owarine `lib/sound/{trade,music}.ts`, `lib/haptics.ts`, `features/terminal/feedback/reactions.ts` | — | synthesised; no files |
 | Markets picker, account, history, replay, share, leaderboard, tutorial, install, update | Owarine `features/terminal/ui/sheets/*` (as drawers), `replay.ts`, `share-png.ts`, `Tutorial.tsx`, `useAppUpdate.ts` | Leaderboard (13063/13057 stay for `/leaderboard`) | QR from the existing `qrcode-generator` |
+| Landing (`/`) | Owarine 90a91d71 `web/src/features/landing/*` (LandingNav, SkyCollage hero with the phone, tape, loop, market cards, proof, final; R4-13a, D-227) | Landing (23414 slot-headline and the 21st blocks retired) | server components; counts read from the index; Fluent Emoji 3D art (MIT) |
 
 ### E.2 Revamp recipe
 D35, step by step (Radix-built picks convert with the Radix→Base mapping: `asChild`→`render`,

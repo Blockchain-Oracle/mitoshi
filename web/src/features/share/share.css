@@ -1,0 +1,10 @@
+/* The Share pill and the masked line (R4-13a, D-227; features/share/SharePill.tsx). The pill is the kit's (kit.css);
+ * here only where it sits: the Call card's foot, beside the explorer link. */
+.share-masked { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font: 400 15px/1.4 var(--font-body); color: var(--color-ink-secondary); }
+.share-masked-show {
+  display: inline-flex; min-height: 44px; align-items: center; padding-inline: 4px; font: 600 15px/1 var(--font-body);
+  color: var(--color-accent); text-decoration: underline; text-underline-offset: 4px;
+}
+.call-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-top: 16px; }
+.call-foot .call-verify { margin-top: 0; }
+.call-foot .share-masked { font-size: 13px; }
