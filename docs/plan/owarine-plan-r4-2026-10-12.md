@@ -222,8 +222,9 @@ R4-11 (Account · launch · themes · surface · claim) merged at `027de1a` (the
 branch's earlier copy; stash dropped). Fixed: /launch and /themes crashed with no QueryClient (now behind DataGate) and
 failed the build's prerender; launch's lp-head/lp-disc/lp-steps collided with the landing's; /launch* and /themes* out
 of the Soon set. /launch reads two real launches, /themes three themes. /launch*, /themes*, /settings/* load their screens as
-islands. Open: migrations (ops applies them on start) launch/0001 and themes/0001 and the ops env (THEME_KEYS_SECRET, theme-agent, launch-keeper, reference-writer
-in OPS_ACTORS); /claim blocked on S11; the theme agent's first rebalance blocked on the stock sync (S14c).
+islands. Done 2026-10-13 04:42Z: testnet ops env (THEME_KEYS_SECRET; theme-agent, launch-keeper, reference-writer in
+OPS_ACTORS; launch-keeper on the `keeper` key) — ops applied launch/0001 and themes/0001 on start, /health lists the three
+live and ok. Open: /claim blocked on S11; the theme agent's first rebalance blocked on the stock sync (S14c).
 Batch checks: web tsc, core/markets/db/ops/scripts typecheck, invariants clean; changed tests 58/58; build clean;
 perf:budgets failed on 20 routes, fixed after the first push (`kit` barrel → direct imports with kit.css; R4-11's
 screens and the profile's takes and … menu as islands): 74 routes within budget (/u/[address] 229.1 KB, arcade 246.1 KB). Quick look at 375 × 667 and 1440 × 900: /tickers/BTC, /, /settings/account,
