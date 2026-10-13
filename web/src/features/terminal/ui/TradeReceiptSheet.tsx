@@ -58,7 +58,7 @@ export function TradeReceiptSheet() {
   if (!r) return null;
   return (
     <SlideOver open onOpenChange={(o) => { if (!o) close(); }}>
-      <SlideOverContent title={RECEIPT.title}>
+      <SlideOverContent title={RECEIPT.action}>
         <div className="flex flex-col gap-3">
           <TxReceipt
             title={RECEIPT.title}

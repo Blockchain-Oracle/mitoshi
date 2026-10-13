@@ -2,8 +2,8 @@
 // hero with the live terminal on a phone in the first screen, the tape of what is open now, the three steps, what
 // trades (each kind's Windows open), every close signed (the last settled Windows → their proofs), and the line again.
 // Every section is a server component; the figures are the index's, read per request inside Suspense, so the hero (the
-// LCP) never waits on them. Only the phone (an iframe of /trade/BTC, mounted on screen), the tape's slider and the
-// theme toggle are client islands.
+// LCP) never waits on them. Only the phone (an iframe of /trade/BTC, mounted on screen) and the theme toggle are client
+// islands; the tape slides on CSS alone.
 import { Suspense } from "react";
 import { SHELL } from "@/lib/copy";
 import { LandingFinal, LandingProof } from "@/features/landing/LandingEnd";
