@@ -17,7 +17,7 @@ export function useDuelPresence() {
     queryFn: async () => {
       const res = await fetch("/api/games/duel/presence", { cache: "no-store" });
       if (!res.ok) throw new Error(String(res.status));
-      return (await res.json()) as { configured: boolean; waiting: Record<string, number> };
+      return (await res.json()) as { configured: boolean; waiting: Record<string, number>; players?: { tier: string; wallet: string; queuedAt: string }[] };
     },
     refetchInterval: 10_000,
     retry: 1,

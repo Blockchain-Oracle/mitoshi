@@ -113,3 +113,30 @@
 .gm-season-cta { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-400); white-space: nowrap; }
 .gm-season:hover .gm-season-cta { color: var(--white); }
 @media (max-width: 360px) { .gm-season { grid-template-columns: auto minmax(0, 1fr); } .gm-season-cta { display: none; } .gm-season-trophy { width: 40px; height: 40px; } }
+
+/* Duel before a game (R6 games §4.6): each pot's waiting count, then the floor — who waits at the selected pot and the
+   last decided duels — under the entry; two columns from 1024 px. */
+.du-chip { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; }
+.du-chip-count { font: 500 var(--text-data-sm, 12px) / 1 var(--font-data); color: var(--gray-400); letter-spacing: 0; text-transform: none; }
+.du-note { font-size: var(--text-data-sm, 12px); }
+.du-floor { display: flex; flex-direction: column; gap: 20px; margin-top: 20px; }
+.du-floor-title { margin: 0 0 8px; font: 700 13px/1.2 var(--font-body); letter-spacing: 0.04em; color: var(--color-ink-secondary); text-transform: uppercase; }
+.du-floor-cluster { display: flex; align-items: center; gap: 10px; }
+.du-avatars { display: inline-flex; }
+.du-avatar { display: inline-grid; place-items: center; width: 28px; height: 28px; margin-left: -8px; border-radius: var(--radius-full); background: var(--color-stage); box-shadow: 0 0 0 2px var(--color-stage); }
+.du-avatar:first-child { margin-left: 0; }
+.du-avatar-more { font: 600 var(--text-data-sm, 12px) / 1 var(--font-data); color: var(--color-ink); background: var(--color-surface-2); }
+.du-floor-count { margin: 0; font: 500 var(--text-data-sm, 12px) / 1.3 var(--font-data); color: var(--color-ink-secondary); }
+.du-feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.du-feed-row { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 10px; border-radius: 12px; background: var(--color-surface-1); color: var(--color-ink); }
+.du-feed-row:hover { background: var(--color-surface-2); }
+.du-feed-pair { display: inline-flex; flex: none; }
+.du-feed-pair > *:last-child { margin-left: -8px; }
+.du-feed-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.du-feed-title { font: 600 13px/1.2 var(--font-data); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.du-feed-sub, .du-feed-time { font: 500 var(--text-data-sm, 12px) / 1.2 var(--font-data); color: var(--color-ink-secondary); }
+.du-feed-time { flex: none; }
+@media (min-width: 1024px) {
+  .du-stage:has(.du-floor) { display: grid; grid-template-columns: minmax(0, 560px) 360px; justify-content: center; align-items: start; column-gap: 32px; }
+  .du-stage:has(.du-floor) .du-floor { margin-top: 0; }
+}

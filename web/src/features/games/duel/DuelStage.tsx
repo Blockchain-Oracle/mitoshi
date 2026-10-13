@@ -25,6 +25,10 @@ import { DeckRow, DuelEntry, DuelQueue, DuelResult, dollars, Proof, Versus, type
 import type { DuelMatchWire, DuelPairedWire } from "./duel-wire";
 import { useDuelMatch, useDuelQueue, useDuelWrite } from "./useDuel";
 import "./duel.css";
+import { diagnosis } from "@cwf/core";
+import { ErrorState } from "@/components/states";
+import { useDuelPresence } from "./MatchTile";
+import { DuelFloor } from "./DuelFloor";
 
 const PRE_PICK = new Set(["pending", "waiting", "activeUnrevealed"]);
 /** How often a waiting player asks to be paired again when no next deck was projected. */
@@ -169,6 +173,7 @@ export function DuelStage() {
   const { address, connectFor } = useWalletSession();
   const { feedback } = useGames();
   const { queue, find, leave, error } = useDuelQueue(address);
+  const presence = useDuelPresence();
   const paired = queue?.status === "paired" ? queue : null;
   const match = useDuelMatch(paired?.matchId ?? null);
   const { write, busy, failed } = useDuelWrite(paired?.matchId ?? null);
@@ -226,7 +231,10 @@ export function DuelStage() {
         queue?.status === "waiting" ? (
           <DuelQueue queue={queue} me={address ?? ""} nextDealSec={dealAtMs !== null && nowMs > 0 ? Math.max(0, Math.round((dealAtMs - nowMs) / 1_000)) : null} onLeave={() => void leave()} />
         ) : (
-          <DuelEntry tier={tier} onTier={setTier} onFind={() => void onFind()} busy={finding} error={error} />
+          <>
+            <DuelEntry tier={tier} onTier={setTier} onFind={() => void onFind()} busy={finding} error={error} waiting={presence.data?.waiting ?? null} />
+            <DuelFloor tier={tier} onFind={() => document.querySelector<HTMLElement>(".du-entry [data-primary-action]")?.focus()} />
+          </>
         )
       ) : !address ? null : PRE_PICK.has(m?.status ?? "pending") ? (
         <Lobby paired={paired} match={m} me={address} write={write} busy={busy} failed={failed} onRequeue={() => void find(paired.tier)} />
@@ -235,7 +243,7 @@ export function DuelStage() {
       ) : m ? (
         <DuelResult match={m} me={address} cranks={cranks} busy={busy} onAgain={() => void find(tier)} />
       ) : null}
-      {match.isError ? <p className="du-fail">{DUEL.offline}</p> : null}
+      {match.isError ? <ErrorState diagnosis={diagnosis("indexer-down", "duel match unreadable")} retry={() => void match.refetch()} /> : null}
     </div>
   );
 }

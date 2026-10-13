@@ -24,7 +24,7 @@ const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
 /** Display only: base units (6 dp) to a number for the Odometer; the money stays bigint everywhere else. */
 const toNumber = (base: string) => Number(BigInt(base)) / 1e6;
 
-export function DuelEntry({ tier, onTier, onFind, busy, error }: { tier: StakeTierId; onTier: (t: StakeTierId) => void; onFind: () => void; busy: boolean; error: string | null }) {
+export function DuelEntry({ tier, onTier, onFind, busy, error, waiting = null }: { tier: StakeTierId; onTier: (t: StakeTierId) => void; onFind: () => void; busy: boolean; error: string | null; /** Who waits at each pot now (R6 games §4.6): a count line under each chip. */ waiting?: Record<string, number> | null }) {
   return (
     <section className="du-entry" aria-label={DUEL.title}>
       <div className="du-entry-art" aria-hidden>
@@ -34,6 +34,7 @@ export function DuelEntry({ tier, onTier, onFind, busy, error }: { tier: StakeTi
         {STAKE_TIERS.map((t) => (
           <button key={t.id} type="button" role="radio" aria-checked={tier === t.id} className="du-chip" data-on={tier === t.id || undefined} onClick={() => onTier(t.id)}>
             {DUEL.entry.tierWord(t.id, t.potUnits)}
+            {waiting && waiting[t.id] ? <span className="du-chip-count">{DUEL.floor.potCount(waiting[t.id]!)}</span> : null}
           </button>
         ))}
       </div>

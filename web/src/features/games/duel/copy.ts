@@ -64,4 +64,19 @@ export const DUEL = {
   failed: (why: string) => `Not sent · ${why}`,
   sending: "Sending…",
   offline: "The duel server did not answer.",
+  /** Before a game (R6 games §4.6): who waits at the pot, and the last decided duels. */
+  floor: {
+    label: "Duel floor",
+    waitingNow: "Waiting now",
+    waitingAt: (n: number, pot: string) => `${n} waiting at ${pot}`,
+    nobody: (pot: string) => `Nobody waiting at ${pot} · be first`,
+    lastDuels: "Last duels",
+    vs: (a: string, b: string) => `${a} vs ${b}`,
+    wonBy: (pot: string, who: string) => `${pot} pot · won by ${who}`,
+    refunded: (pot: string) => `${pot} pot · refunded`,
+    emptyWhy: "No duel decided yet",
+    emptyDetail: "The first pot is still open.",
+    find: "Find a duel",
+    potCount: (n: number) => `${n} waiting`,
+  },
 } as const;
