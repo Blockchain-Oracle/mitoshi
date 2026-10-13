@@ -19,6 +19,7 @@ import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
 import { LAUNCH } from "./copy";
 import { coinText, parseAmount, usdText } from "./format";
 import { LogoDisc } from "./LogoDisc";
+import { useNameFlag } from "./useNameFlag";
 import "@/styles/launch.css";
 
 const S = LAUNCH.stable;
@@ -62,8 +63,9 @@ export function StablecoinWizard() {
     bidTick: Number(bidTick), askTick: Number(askTick), feeLiquidity: parseAmount(fee) ?? 0n,
   };
   const errors = validateStablecoinLaunch(input);
-  const identityBlocker = !input.name ? LAUNCH.meme.needName : !/^[A-Z][A-Z0-9]{1,10}$/.test(sym) ? "Code: 2–11 letters or digits" : !logo ? LAUNCH.meme.needLogo : null;
-  const supplyBlocker = input.supplyCap < 0n ? "Cap: a number" : errors.find((e) => !e.startsWith("name") && !e.startsWith("symbol")) ?? null;
+  const flag = useNameFlag(`${name} ${sym}`);
+  const identityBlocker = !input.name ? LAUNCH.meme.needName : !/^[A-Z][A-Z0-9]{1,10}$/.test(sym) ? S.codeRule : flag === null ? "…" : flag ? LAUNCH.meme.flagged : !logo ? LAUNCH.meme.needLogo : null;
+  const supplyBlocker = input.supplyCap < 0n ? S.capRule : errors.find((e) => !e.startsWith("name") && !e.startsWith("symbol")) ?? null;
   const predicted = session.address ? predictTokenAddress(session.address, salt) : null;
   const escrow = input.bidAmount >= DEX_MIN_ORDER ? bidEscrow(input.bidAmount, input.bidTick) : null;
 

@@ -28,11 +28,12 @@ export function TokenYou({ m }: { m: MemeLaunch }) {
     const outcome = await tx.run(intent);
     if (outcome?.status === "confirmed") await invalidateLaunch(queryClient);
   };
-  const isCreator = m.creator.toLowerCase() === address.toLowerCase();
+  // `claimLeftover` pays only the template's leftover receiver (NotLeftoverReceiver otherwise), not the creator.
+  const isLeftoverReceiver = m.config.leftoverReceiver.toLowerCase() === address.toLowerCase();
   const rows: { label: string; detail: string; intent: TxIntent }[] = [];
   if (c && c.launchpadFees > 0n) rows.push({ label: K.claimFees, detail: usdText(c.launchpadFees), intent: { kind: "launch-claim-fees" } });
   if (c?.lockerFees && (c.lockerFees.quote > 0n || c.lockerFees.coin > 0n)) rows.push({ label: K.lockerFees, detail: `${usdText(c.lockerFees.quote)} + ${coinText(c.lockerFees.coin)}`, intent: { kind: "launch-locker-claim-fees", coin: m.token } });
-  if (isCreator && m.graduation && m.graduation.leftover > 0n) rows.push({ label: K.claimLeftover, detail: coinText(m.graduation.leftover), intent: { kind: "launch-claim-leftover", token: m.token } });
+  if (isLeftoverReceiver && m.graduation && m.graduation.leftover > 0n) rows.push({ label: K.claimLeftover, detail: coinText(m.graduation.leftover), intent: { kind: "launch-claim-leftover", token: m.token } });
   return (
     <div className="lp-you">
       {position === null ? <p className="lp-note">{K.reading}</p> : !p || p.coin === 0n ? <p className="lp-note">{K.youNone}</p> : (

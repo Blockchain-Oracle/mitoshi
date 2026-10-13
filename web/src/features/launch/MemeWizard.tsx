@@ -9,7 +9,7 @@ import { feeTimeline, memeAddresses, predictMemecoinAddress, randomSalt, withSli
 import { invalidateLaunch, useMemeTemplates } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { pillButtonVariants } from "@/components/kit";
 import { Sparkline } from "@/components/kit/desk-kit";
 import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
@@ -21,25 +21,12 @@ import { TEMPO_CHAIN_ID } from "@/providers/wallet/chain-id";
 import { LAUNCH } from "./copy";
 import { bpsText, coinText, parseAmount, priceText, usdText } from "./format";
 import { LogoDisc } from "./LogoDisc";
+import { useNameFlag } from "./useNameFlag";
 import "@/styles/launch.css";
 
 const M = LAUNCH.meme;
 const SLIPPAGE_BPS = 100;
 const idleOr = (state: TxState, blocker: string | null): TxState => (blocker ? { kind: "blocked", reason: blocker } : state);
-
-/** The word filter's answer for a name (debounced); null while it is asked. */
-function useNameFlag(text: string): boolean | null {
-  const [flag, setFlag] = useState<boolean | null>(false);
-  useEffect(() => {
-    if (!text.trim()) return void setFlag(false);
-    setFlag(null);
-    const t = setTimeout(() => {
-      void fetch(`/api/launch/name?q=${encodeURIComponent(text)}`).then((r) => r.json() as Promise<{ flagged: boolean }>).then((j) => setFlag(j.flagged), () => setFlag(false));
-    }, 300);
-    return () => clearTimeout(t);
-  }, [text]);
-  return flag;
-}
 
 function TemplateCard({ t, on, onPick }: { t: MemeTemplate; on: boolean; onPick: () => void }) {
   const curve = feeTimeline(t.fees, 32);
@@ -77,7 +64,7 @@ export function MemeWizard() {
   const sym = symbol.trim().toUpperCase();
 
   const guard = checkMemecoinCurrency(sym);
-  const identityBlocker = !name.trim() ? M.needName : !sym ? M.needSymbol : !guard.ok ? guard.reason : flag === null ? "…" : flag ? "Pick another name" : !logo ? M.needLogo : null;
+  const identityBlocker = !name.trim() ? M.needName : !sym ? M.needSymbol : !guard.ok ? guard.reason : flag === null ? "…" : flag ? M.flagged : !logo ? M.needLogo : null;
   const buyBase = buyText.trim() ? parseAmount(buyText) : 0n;
   const buy = useMemo(() => {
     if (!template || buyBase === null || buyBase <= 0n) return null;

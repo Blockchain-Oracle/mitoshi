@@ -14,7 +14,8 @@ const S = K.stable;
 export function StablecoinView({ token }: { token: Address }) {
   const s = useStablecoinLaunch(token);
   if (s === null) return <section className="lp-page"><p role="status" className="lp-note">{K.reading}</p></section>;
-  if (!s.ok || !s.value) return <section className="lp-page"><p className="lp-note">{K.missing}</p></section>;
+  if (!s.ok) return <section className="lp-page"><p role="alert" className="lp-note">{K.failed}</p></section>;
+  if (!s.value) return <section className="lp-page"><p className="lp-note">{K.missing}</p></section>;
   const v = s.value;
   return (
     <section className="lp-page lp-token">

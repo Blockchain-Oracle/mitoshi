@@ -49,6 +49,7 @@ function Holders({ trades, sold }: { trades: MemeTrade[]; sold: bigint }) {
   const net = new Map<string, bigint>();
   for (const t of trades) net.set(t.trader, (net.get(t.trader) ?? 0n) + (t.isBuy ? t.coin : -t.coin));
   const rows = [...net.entries()].filter(([, v]) => v > 0n).sort((a, b) => (b[1] > a[1] ? 1 : -1)).slice(0, 20);
+  if (rows.length === 0) return <p className="lp-note">{K.tradesEmpty}</p>;
   return (
     <div className="lp-holders">
       {rows.map(([who, coin]) => {
@@ -101,7 +102,7 @@ function MemeView({ m }: { m: MemeLaunch }) {
         </span>
         <button type="button" className="lp-icon" aria-label={K.report} title={K.report} onClick={() => setReporting(true)}><Flag aria-hidden className="size-4" /></button>
       </header>
-      <div className="lp-chart">{values.length >= 2 ? <Sparkline values={values} width={640} height={180} className="lp-chart-line" /> : <p className="lp-note">{trades === null ? K.reading : K.tradesEmpty}</p>}</div>
+      <div className="lp-chart">{values.length >= 2 ? <Sparkline values={values} width={640} height={180} className="lp-chart-line" stretch /> : <p className="lp-note">{trades === null ? K.reading : K.tradesEmpty}</p>}</div>
       {m.stage === "trading" ? <ProgressBar value={m.progressBps} max={10_000} label={stageLine} valueText={`${usdText(m.quoteReserve)} / ${usdText(m.config.migrationQuoteThreshold)}`} /> : <p className="lp-stage" data-stage={m.stage}>{stageLine}</p>}
       <dl className="lp-facts">
         <div><dt>{K.marketCap}</dt><dd className="numbers">{usdText(capBase(m.config.totalSupply, m.priceE18))}</dd></div>
@@ -127,6 +128,8 @@ function MemeView({ m }: { m: MemeLaunch }) {
 export function TokenScreen({ token }: { token: Address }) {
   const meme = useMemeLaunch(token);
   if (meme === null) return <section className="lp-page"><p role="status" className="lp-note">{K.reading}</p></section>;
-  if (meme.ok && meme.value) return <MemeView m={meme.value} />;
+  // A failed read is not "no memecoin here": say so (the read polls again) instead of trying the stablecoin view.
+  if (!meme.ok) return <section className="lp-page"><p role="alert" className="lp-note">{K.failed}</p></section>;
+  if (meme.value) return <MemeView m={meme.value} />;
   return <StablecoinView token={token} />;
 }

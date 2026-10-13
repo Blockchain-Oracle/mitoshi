@@ -18,6 +18,8 @@ import { buildStablecoinBatch } from "./stablecoin";
 
 const isLaunch = (intent: TxIntent): intent is LaunchIntent => intent.kind.startsWith("launch-");
 const usd = (base: bigint) => `$${formatBaseUnits(base, USD_DECIMALS, { minDp: 2, maxDp: 2 })}`;
+/** A launched coin's amount in whole coins (every launch token is a 6-decimal TIP-20, like pathUSD). */
+const coins = (base: bigint) => formatBaseUnits(base, USD_DECIMALS, { minDp: 0, maxDp: 6 });
 
 /** The journal's one line, for the person who reads it back after a timeout. */
 export function summarizeLaunch(intent: LaunchIntent): string {
@@ -29,7 +31,7 @@ export function summarizeLaunch(intent: LaunchIntent): string {
     case "launch-meme-buy":
       return `buy ${usd(intent.quoteIn)} of ${intent.token.slice(0, 10)} on its curve`;
     case "launch-meme-sell":
-      return `sell ${intent.coinIn} of ${intent.token.slice(0, 10)} on its curve`;
+      return `sell ${coins(intent.coinIn)} of ${intent.token.slice(0, 10)} on its curve`;
     case "launch-claim-fees":
       return "claim the launchpad fees owed to this account";
     case "launch-claim-leftover":
@@ -39,7 +41,7 @@ export function summarizeLaunch(intent: LaunchIntent): string {
     case "launch-locker-claim-fees":
       return `claim the locker's pool fees on ${intent.coin.slice(0, 10)}`;
     case "launch-pool-swap":
-      return `${intent.buyCoin ? "buy" : "sell"} ${intent.token.slice(0, 10)} in its pool (${intent.amountIn} in)`;
+      return `${intent.buyCoin ? `buy ${intent.token.slice(0, 10)} with ${usd(intent.amountIn)}` : `sell ${coins(intent.amountIn)} of ${intent.token.slice(0, 10)}`} in its pool`;
   }
 }
 
