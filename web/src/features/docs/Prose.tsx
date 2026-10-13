@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { ExternalLink } from "@/components/shell/ExternalLink";
 
 /** On a phone the Contents pill sits on the title's row (R4-10), so the title leaves it room. */
-export const H1 = ({ children }: { children: ReactNode }) => <h1 className="type-display text-ink max-lg:pr-32">{children}</h1>;
+export const H1 = ({ children }: { children: ReactNode }) => <h1 className="type-display text-ink max-sm:pr-14 sm:max-lg:pr-36">{children}</h1>;
 export const Lead = ({ children }: { children: ReactNode }) => <p className="type-body text-ink-secondary">{children}</p>;
 export const H2 = ({ children, id }: { children: ReactNode; id?: string }) => <h2 id={id} className="mt-4 type-title text-ink">{children}</h2>;
 export const P = ({ children }: { children: ReactNode }) => <p className="type-body text-ink">{children}</p>;

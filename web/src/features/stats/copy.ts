@@ -43,7 +43,7 @@ export const STATS = {
     product: "via a product",
   },
   foot: (unattributed: number, at: string) =>
-    `Test dollars; our own test sign-ups count. House keys never count${unattributed ? ` · ${unattributed.toLocaleString("en-US")} calls not yet tied to a wallet` : ""}. From Mitoshi's index, ${at} UTC.`,
+    `Test dollars; our own sign-ups count, house keys never${unattributed ? ` · ${unattributed.toLocaleString("en-US")} calls unattributed` : ""}. Index read ${at} UTC.`,
   how: "How it's counted →",
   unreachable: "Index unreachable. No numbers until it answers.",
   reading: "Reading the index…",

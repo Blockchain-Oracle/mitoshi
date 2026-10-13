@@ -20,15 +20,20 @@ import "@/styles/news.css";
 import "@/styles/news-wire.css";
 import "./stocks.css";
 
-export interface StockHubProps {
-  symbol: TickerSymbol;
+export interface HubHeadlines {
   /** The ticker's headlines from the server's read; null when the wire couldn't be read. */
   articles: Article[] | null;
   /** No Finnhub key on this deployment: the section says so instead of showing nothing. */
-  headlinesOff: boolean;
-  /** The ticker's newest call sides from the index; null when the index couldn't be read. */
-  calls: TractionCall[] | null;
+  off: boolean;
   readAtMs: number;
+}
+
+export interface StockHubProps {
+  symbol: TickerSymbol;
+  /** Read on the server at request time and streamed: each section waits for its own read, the head and Trade it for none. */
+  headlines: Promise<HubHeadlines>;
+  /** The ticker's newest call sides from the index; null when the index couldn't be read. */
+  calls: Promise<TractionCall[] | null>;
 }
 
 const load = () => import("./StockHubScreen");

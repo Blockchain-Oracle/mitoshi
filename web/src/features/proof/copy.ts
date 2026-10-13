@@ -17,7 +17,7 @@ export const PROOF = {
     down: "DOWN",
     void: "VOID",
     open: "Open",
-    detail: { up: "close above open", down: "close below open", void: "stakes returned", open: "not settled yet" },
+    detail: { up: "close at or above open", down: "close below open", void: "stakes returned", open: "not settled yet" },
   },
   receipt: { title: "Window receipt", figure: "Close print", open: "Open print", close: "Close print", signers: "Signers", outcome: "Outcome", settle: "Settlement tx" },
   signerCount: (n: number) => `${n} signers`,

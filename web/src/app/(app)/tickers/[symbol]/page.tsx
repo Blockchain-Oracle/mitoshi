@@ -1,8 +1,9 @@
 // /tickers/<SYMBOL> (P5, D-224; Owarine's route since D-226) — Ported from Owarine 90a91d71:web/src/app/tickers/[symbol]/page.tsx
 // (R4-10, D-227): every listed ticker, coins included, has a hub; one spelling, upper case. The proxy settles both
 // before render (`tickerHubRoute`: another spelling redirects, an unlisted symbol is a 404 with status 404); the checks
-// here only back it up. The head and Trade it paint from the server at once; the headlines and the ticker's
-// newest calls are read here at request time; the price, the session and the Windows stream in on the client.
+// here only back it up. The head and Trade it paint from the server at once; the headlines and the ticker's newest
+// calls are read here at request time and handed on as promises, so a slow feed holds only its own section; the price,
+// the session and the Windows stream in on the client.
 import { isTickerSymbol, TICKERS } from "@cwf/core";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
@@ -28,11 +29,10 @@ export default async function TickerPage({ params }: Props) {
   if (!isTickerSymbol(upper)) notFound();
   if (symbol !== upper) redirect(tickerHref(upper));
   await connection();
-  const [headlines, calls] = await Promise.all([hubHeadlines(upper), hubCalls(upper)]);
   return (
     <div className="container stk-page stk-hub">
       <StockHubHead symbol={upper} />
-      <StockHubPage symbol={upper} articles={headlines.articles} headlinesOff={headlines.off} calls={calls} readAtMs={Date.now()} />
+      <StockHubPage symbol={upper} headlines={hubHeadlines(upper)} calls={hubCalls(upper)} />
     </div>
   );
 }

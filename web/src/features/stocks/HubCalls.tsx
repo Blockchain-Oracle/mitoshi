@@ -2,11 +2,14 @@
 // The ticker hub's 02 Calls — Ported from Owarine 90a91d71:web/src/features/activity/ActivityList.tsx (`showWho`) on
 // Mitoshi's reads (R4-10, D-227): the ticker's newest fills from the index (read on the server, each side the wallet it
 // counts for, as `/stats`) merged with its `$SYM` takes (`/api/social/takes?symbol=`, live on the stream), newest first,
-// in the wire's row grammar: the wallet's marble in the mark slot, the side as the tone word.
+// in the wire's row grammar: the wallet's marble in the mark slot, the side as the tone word. Until both reads answer it
+// is a placeholder; if either can't be read it says so — "No calls yet" only when both said none.
 import { formatBaseUnits, txUrl, USD_DECIMALS, type TickerSymbol } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import type { TractionCall } from "@cwf/db/idx";
 import Link from "next/link";
+import { use } from "react";
+import { LoadingState } from "@/components/states";
 import { AccountAvatar } from "@/components/shell/header/AccountAvatar";
 import { timeAgo } from "@/features/news/copy";
 import { NewsRow } from "@/features/news/NewsRow";
@@ -51,7 +54,8 @@ function fillRow(c: TractionCall, symbol: string): Row {
   };
 }
 
-export function HubCalls({ symbol, calls }: { symbol: TickerSymbol; calls: TractionCall[] | null }) {
+export function HubCalls({ symbol, calls: read }: { symbol: TickerSymbol; calls: Promise<TractionCall[] | null> }) {
+  const calls = use(read);
   const { takes, state } = useTakes({ symbol });
   const nowMs = useClockValue((ms) => Math.floor(ms / 60_000) * 60_000);
   const rows: Row[] = [
@@ -74,9 +78,8 @@ export function HubCalls({ symbol, calls }: { symbol: TickerSymbol; calls: Tract
     .slice(0, LIMIT);
 
   if (rows.length === 0) {
-    const failed = calls === null && state === "error";
-    const waiting = state === "loading" && calls === null;
-    return <p className="stk-quiet" role="status" aria-busy={waiting}>{failed ? C.unreadable : C.empty}</p>;
+    if (state === "loading") return <LoadingState shape="row" />;
+    return <p className="stk-quiet" role="status">{calls === null || state === "error" ? C.unreadable : C.empty}</p>;
   }
   return (
     <ol className="news-wire">

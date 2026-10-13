@@ -14,7 +14,7 @@ import { deploymentOf } from "@cwf/markets";
 import { useLanes, usePriceHistory } from "@cwf/markets/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { Suspense, use, useMemo } from "react";
 import { Odometer, SectionHeader } from "@/components/kit";
 import { Hash } from "@/components/data";
 import { LoadingState } from "@/components/states";
@@ -154,8 +154,9 @@ function Windows({ symbol }: { symbol: TickerSymbol }) {
   );
 }
 
-function Headlines({ symbol, articles, headlinesOff, readAtMs }: Pick<StockHubProps, "symbol" | "articles" | "headlinesOff" | "readAtMs">) {
-  if (articles === null) return <p className="stk-quiet" role="status">{headlinesOff ? STOCKS.headlines.off : STOCKS.headlines.quiet}</p>;
+function Headlines({ symbol, headlines }: Pick<StockHubProps, "symbol" | "headlines">) {
+  const { articles, off, readAtMs } = use(headlines);
+  if (articles === null) return <p className="stk-quiet" role="status">{off ? STOCKS.headlines.off : STOCKS.headlines.quiet}</p>;
   if (articles.length === 0) return <p className="stk-quiet">{STOCKS.headlines.empty}</p>;
   return (
     <ol className="news-wire">
@@ -183,7 +184,7 @@ function Headlines({ symbol, articles, headlinesOff, readAtMs }: Pick<StockHubPr
   );
 }
 
-export function HubBody({ symbol, articles, headlinesOff, calls, readAtMs }: StockHubProps) {
+export function HubBody({ symbol, headlines, calls }: StockHubProps) {
   // The Room lives in the URL (`?d=room`, D-190; R4-2, D-227): Back closes it instead of leaving the hub.
   const room = useOpenDrawerName() === "room";
   const crypto = TICKERS[symbol].kind === "crypto";
@@ -196,12 +197,16 @@ export function HubBody({ symbol, articles, headlinesOff, calls, readAtMs }: Sto
 
       <section className="stk-section" aria-label={STOCKS.calls.title}>
         <SectionHeader index={STOCKS.calls.number} title={STOCKS.calls.title} desc={STOCKS.calls.desc} />
-        <HubCalls symbol={symbol} calls={calls} />
+        <Suspense fallback={<LoadingState shape="row" />}>
+          <HubCalls symbol={symbol} calls={calls} />
+        </Suspense>
       </section>
 
       <section className="stk-section" aria-label={STOCKS.headlines.title}>
         <SectionHeader index={STOCKS.headlines.number} title={STOCKS.headlines.title} eyebrow={crypto ? STOCKS.headlines.creditCrypto : STOCKS.headlines.credit} />
-        <Headlines symbol={symbol} articles={articles} headlinesOff={headlinesOff} readAtMs={readAtMs} />
+        <Suspense fallback={<LoadingState shape="row" />}>
+          <Headlines symbol={symbol} headlines={headlines} />
+        </Suspense>
       </section>
 
       <RoomDrawer open={room} onOpenChange={(o) => (o ? openDrawer("room") : closeDrawer())} symbol={symbol} window={null} />
