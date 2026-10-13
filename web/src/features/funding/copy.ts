@@ -51,6 +51,7 @@ export const FUNDING = {
   welcome: {
     eyebrow: "You're funded",
     title: "Test dollars are in your account",
+    titleWith: (held: string) => `${held} in your account`,
     cta: "Let's go",
     close: "Close",
   },
