@@ -1,0 +1,36 @@
+---
+title: Glossary
+description: Plain words for the terms in the app and these guides.
+sources:
+  - web/src/lib/copy.ts
+  - docs/specs/engine.md
+---
+
+| Word | Meaning |
+| --- | --- |
+| **Window** | One asset over a fixed stretch of time, with its own order book. UP or DOWN on how it closes. |
+| **Lane** | A Window length for an asset: 5m, 15m, 1h, 24/7 or the weekend Gap. |
+| **Series** | Every Window of one asset in one lane. Mitoshi lists 66. |
+| **Line** | The Window's opening print, on the chart. UP and DOWN are measured against it. |
+| **Print** | A RedStone signed price the engine's verifier admitted at a Window's open or close. |
+| **Signed** | RedStone's latest signed price, marked on the chart beside the live line. |
+| **Display feed** | The live line on the chart (Coinbase, Alpaca). For watching; it settles nothing. |
+| **Contract** | One unit of UP or DOWN. A winning contract pays $1.00; a void pays $0.50. |
+| **CLOSE** | Sell your position back to the book now. Its P&L on screen is what CLOSE pays. |
+| **Void** | A Window with no reliable print in time: both sides returned at half. |
+| **Settler** | The ops actor that settles Windows and pays winners. Anyone may do the same. |
+| **pathUSD** | Tempo's dollar stablecoin. On testnet, from the faucet, with no value. |
+| **Passkey** | Your account's key, kept by your device or password manager. No seed phrase. |
+| **One-tap key** | An access key with a daily limit and a 24-hour expiry, so taps need no prompt. |
+| **Trading Balance** | A vault you own on Tempo that holds money and positions, so capped keys and keepers can act for you. |
+| **Grant** | A permission inside the Trading Balance: SESSION, STRATEGY or EXIT. |
+| **Keeper** | An ops actor that acts on chain within a grant or a public function: exits, boosts, settlement. |
+| **Relay** | Mitoshi's fee payer for calls its policies allow. |
+| **House** | Mitoshi's own maker, taker and reserves. Never counted as demand. |
+| **Maker vault** | The pool Earn suppliers fund to quote the venue's books. |
+| **Fair value** | A Window side's price from a signed spot, the opening print, the time left and a volatility. |
+| **Mirror** | A Tempo TIP-20 that represents a Robinhood Stock Token locked on Robinhood Chain (bTSLA…). |
+| **TIP-20** | Tempo's native token standard. |
+| **ERC-8004** | On-chain agent identity and reputation registries, predeployed on Tempo. |
+| **MPP** | The Machine Payments Protocol: pay per request over HTTP 402, settled on Tempo. |
+| **Moderato** | Tempo's testnet, chain 42431. |

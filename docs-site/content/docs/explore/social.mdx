@@ -1,0 +1,38 @@
+---
+title: Rooms, Sensei and the feed
+description: Market rooms you earn a seat in with a real call, takes, alerts, a trading assistant that reads the Window with you, and your data on your terms.
+sources:
+  - web/src/features/social
+  - web/src/features/sensei/copy.ts
+  - web/src/features/alerts
+  - web/src/features/reels
+  - web/src/features/news
+  - web/src/server/social.ts
+  - services/ops/src/actors/moderation
+  - docs/plan/acceptance/S13.md
+---
+
+## Rooms and takes
+
+Every ticker has a **room**, open from the terminal. Anyone can read it. To post, you need a call on that ticker — a direct fill or a Trading Balance execution on the engine; the room refuses everyone else ("Make a call on TSLA to post here."). **Takes** are short posts tagged by their cashtags; they show in each tagged ticker's feed and can carry a reaction.
+
+You can name your profile, follow people, block someone (their posts leave your rooms and takes) and report a post. Reports go to a moderation queue that ops watches; a hidden post leaves every read. Your own posts can't be reported by you — edit or delete them instead.
+
+## Alerts and notifications
+
+**Price alerts** fire above or below a price, in NYSE hours or any hour. The notification centre collects fills, verdicts, payouts and alerts; <AppLink href="/settings/notifications">Notifications</AppLink> chooses what reaches you.
+
+## Sensei
+
+Sensei reads the Window on your screen with you and gives a straight call — UP, DOWN, or sit it out. It reads and recommends; **you place every call**. Before your first question it names who receives what, and asks your consent. Answers stream word by word. Not financial advice.
+
+Sensei runs on the testnet web app with the owner's model key since 12 October. With no model configured, it says so and everything else works without it.
+
+## Reels and News
+
+- <AppLink href="/reels">Reels</AppLink>: one live Window per card — the question, the price against its line, a sparkline — to swipe through and open.
+- <AppLink href="/news">News</AppLink>: stock headlines from Finnhub and coin news from Cointelegraph and Decrypt.
+
+## Your data
+
+From Account & keys you can **export** your off-chain data (profile, takes, follows) and **delete** it with a fresh signature, with an Undo. Deleting removes every off-chain row of your account and touches no one else's. What is on chain stays on chain.

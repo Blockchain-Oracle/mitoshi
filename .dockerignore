@@ -11,3 +11,6 @@ data
 # The Expo app (D-227, MOBILE) never enters an image: the web's and ops' filtered installs (--filter "@cwf/web..." /
 # "@cwf/ops...") pass --frozen-lockfile without its manifest, as they did before it had one.
 mobile
+# The docs site builds from its own directory (Coolify base directory /docs-site, its own Dockerfile and .dockerignore);
+# web and ops never read it (as Owarine 90a91d71 and Agari exclude theirs, D-227).
+docs-site
