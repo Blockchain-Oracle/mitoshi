@@ -38,8 +38,9 @@ How the engine is built:
 | **EventVaultV2** | The [Trading Balance](/trading/trading-balance): owners' accounts and grants (SESSION, EXECUTOR, STRATEGY, EXIT). |
 | **FairValueGuard** | The fair price of a Window's side at a signed RedStone spot, from the opening print, the time left and a per-series volatility. Refuses by name when an input is missing or stale. |
 | **MarketMakerVault** | The maker vault [Earn](/trading/earn) supplies. |
-| **RangeReserve** · **ParlayReserve** · **LeverageReserve** | The house reserves behind Range and Moonshot, Parlay, and Boost. |
+| **RangeReserve** · **ParlayReserve** · **LeverageReserve** | The house reserves behind Range and Moonshot, Parlay, and Boost. RangeReserve was redeployed on 13 October to price every Series on its own or the guard's volatility. |
 | **PrivateDesk** | Link-private bets from a separate balance. |
+| **GameArena** | [Duels](/games/duel-and-lucky): each player's pot, a committed deck, every pick as a real order it holds on the engine, and the award. Ported from Masayume's arena. |
 | **StrategyRegistry** | Strategies, their envelopes, fees, runners and ERC-8004 ids. Never touches money. |
 
 ## Pillar two

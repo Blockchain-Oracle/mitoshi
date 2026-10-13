@@ -4,13 +4,14 @@ description: Plain words for the terms in the app and these guides.
 sources:
   - web/src/lib/copy.ts
   - docs/specs/engine.md
+  - packages/core/src/market/venue-spec.json
 ---
 
 | Word | Meaning |
 | --- | --- |
 | **Window** | One asset over a fixed stretch of time, with its own order book. UP or DOWN on how it closes. |
 | **Lane** | A Window length for an asset: 5m, 15m, 1h, 24/7 or the weekend Gap. |
-| **Series** | Every Window of one asset in one lane. Mitoshi lists 66. |
+| **Series** | Every Window of one asset in one lane. Mitoshi lists 72. |
 | **Line** | The Window's opening print, on the chart. UP and DOWN are measured against it. |
 | **Print** | A RedStone signed price the engine's verifier admitted at a Window's open or close. |
 | **Signed** | RedStone's latest signed price, marked on the chart beside the live line. |
@@ -23,12 +24,15 @@ sources:
 | **Passkey** | Your account's key, kept by your device or password manager. No seed phrase. |
 | **One-tap key** | An access key with a daily limit and a 24-hour expiry, so taps need no prompt. |
 | **Trading Balance** | A vault you own on Tempo that holds money and positions, so capped keys and keepers can act for you. |
-| **Grant** | A permission inside the Trading Balance: SESSION, STRATEGY or EXIT. |
-| **Keeper** | An ops actor that acts on chain within a grant or a public function: exits, boosts, settlement. |
+| **Grant** | A permission inside the Trading Balance: SESSION, EXECUTOR (X), STRATEGY or EXIT. |
+| **Keeper** | An ops actor that acts on chain within a grant or a public function: exits, boosts, settlement, duels, graduations. |
 | **Relay** | Mitoshi's fee payer for calls its policies allow. |
 | **House** | Mitoshi's own maker, taker and reserves. Never counted as demand. |
 | **Maker vault** | The pool Earn suppliers fund to quote the venue's books. |
 | **Fair value** | A Window side's price from a signed spot, the opening print, the time left and a volatility. |
+| **Duel** | Two players, one sealed deck of live Windows, real orders; the better P&L takes both pots. |
+| **Theme** | A basket of stock tokens with target weights an agent keeps your own account near. |
+| **X balance** | Money in your Trading Balance that calls you post on X may spend, and nothing else. |
 | **Mirror** | A Tempo TIP-20 that represents a Robinhood Stock Token locked on Robinhood Chain (bTSLA…). |
 | **TIP-20** | Tempo's native token standard. |
 | **ERC-8004** | On-chain agent identity and reputation registries, predeployed on Tempo. |

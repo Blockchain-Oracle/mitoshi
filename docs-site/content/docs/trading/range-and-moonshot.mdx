@@ -1,36 +1,43 @@
 ---
 title: Range and Moonshot
-description: Call a band the close lands in, or a level it finishes past. The house reserve takes the other side and sets your payout aside up front.
+description: Call a band the close lands in, or a level it finishes past — on any live Window, coin or stock. The house reserve sets your payout aside up front.
 sources:
   - web/src/app/(app)/docs/games/page.tsx
   - contracts/src/products/range
   - contracts/deployments/42431/range.json
   - web/src/features/range
+  - web/src/features/range/WindowPicker.tsx
+  - web/src/features/range/copy.ts
+  - web/src/features/games/moonshot/copy.ts
+  - packages/core/src/range/moonshot.ts
   - web/src/features/earn/reserves.ts
   - web/src/features/demo/proofs.ts
   - docs/plan/acceptance/S10.md
+  - docs/plan/acceptance/R4-5.md
 ---
 
-Both are tickets against **RangeReserve**, a house reserve. Each is priced from where the Window's book puts the market now and how much the asset usually moves in the time left, and each settles on the same signed closing print as UP and DOWN.
+Both are tickets against **RangeReserve**, a house reserve. Each is priced from where the Window's book puts the market now and how much the asset moves in the time left, and settles on the same signed closing print as UP and DOWN.
+
+## Pick a Window
+
+Open <AppLink href="/games/range">Range</AppLink> or <AppLink href="/games/moonshot">Moonshot</AppLink>, or the **Range** mode under the terminal's chart. The cadence tabs read **5m · 15m · 1h · Gap**, shortest first, showing only those with a priced Window live. Under them, every live Window of that cadence — BTC, ETH, SOL and the stocks, 24/7 lanes marked — with its time left. A Gap more than two days out is a greyed chip saying when it opens to bands. The page reopens on the lane you last picked.
 
 ## Range
 
-Call a band the close lands **inside** — or outside. A narrower band is less likely to catch the close, so it pays a bigger multiple. The reserve centres the band on the book and prices it against the Window's own opening print. The full payout is locked when you buy, so it can never come up short.
+Call a band the close lands **inside** — or outside. Start from **Tight**, **Balanced** or **Wide**, nudge the band, then set the stake or the payout. A narrower band pays a bigger multiple. **Hold to place** sends it; the full payout is locked when the round opens, so it can never come up short.
 
 <GuideCapture name="rangePhone" />
 
 ## Moonshot
 
-Pick a side and a multiple, and the reserve solves the level the print has to finish past: long wins at or above it, short at or below it. Further out pays more. The payout is locked up front.
+Aim **Long** or **Short** and pick a reach: ×2, ×3, ×5, ×10 or ×25. The reserve solves the level the print must finish past — long wins at or above it, short at or below. **Fire** places it, the payout locked up front.
 
-## Where you can play them
+## How it is priced
 
-Open <AppLink href="/games/range">Range</AppLink> or <AppLink href="/games/moonshot">Moonshot</AppLink>, or the **Range** mode under the terminal's chart. On testnet the reserve has a volatility for **BTC, ETH and SOL**, so those Windows are the ones it prices. Each call asks your passkey; one-tap keys don't cover the reserve.
-
-When the book is too thin to centre a band, the ticket says so before any prompt and takes nothing.
+The band's centre is the Window's book: at least 5 contracts resting a side for 20 seconds. The volatility is the reserve's own for BTC, ETH and SOL, and the fair-value guard's for every other Series, on that Series' clock. A book too thin, a spread too wide, a Window about to lock or a signed price too far from the book — the ticket names it before any prompt and takes nothing. Each call asks your passkey; one-tap keys don't cover the reserve.
 
 ## Seen live
 
-A Range band on BTC 5m priced off the maker vault's depth, <Tx hash="0xed2c6c9e1658648b7eb3da6fc4efac1d2a737b530c7973c91b43e0499a2bfecc" />, and a Moonshot long ×2 the same way, <Tx hash="0xb5475fccb8bbf9d6ae232ad948e142fe4903fc7c4444b0ce9782e5310944d2c8" />.
+On 13 October, on the redeployed reserve: a TSLA 24/7 one-hour band, an NVDA 24/7 15-minute band and a BTC 15-minute band each closed inside and were claimed — TSLA's <Tx hash="0x6a52a3349d0de63db269afbd7b6ae9fce6243bd83b5fef863c9b9a528d9ddeca" />. Earlier, on BTC 5m, a band <Tx hash="0xed2c6c9e1658648b7eb3da6fc4efac1d2a737b530c7973c91b43e0499a2bfecc" /> and a Moonshot long ×2 <Tx hash="0xb5475fccb8bbf9d6ae232ad948e142fe4903fc7c4444b0ce9782e5310944d2c8" />.
 
-Who funds the payouts, and what suppliers can lose, is on [Earn](/trading/earn).
+The reserve moved on 13 October; rounds on the retired one still show, read-only, in your rounds. Who funds the payouts, and what suppliers can lose, is on [Earn](/trading/earn).

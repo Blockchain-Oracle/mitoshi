@@ -13,23 +13,27 @@ Every guide lists the files it was checked against (Copy Markdown includes them)
 | Topic | Code | Evidence |
 | --- | --- | --- |
 | Windows, books, prints, settlement | `contracts/src/engine/`, `docs/specs/engine.md`, `packages/core/src/market/venue-spec.json` | `docs/plan/acceptance/S2.md`, `S3.md` |
-| The terminal | `web/src/features/terminal/` | `acceptance/S23.md` |
+| The terminal and Markets | `web/src/features/terminal/`, `web/src/features/markets/` | `acceptance/S23.md` |
+| Portfolio and P&L | `packages/core/src/projection/`, `web/src/features/markets/portfolio/` | `acceptance/R4-1.md` |
 | Sign-up, one-tap, fees | `web/src/providers/wallet/`, `packages/markets/src/keys/`, `packages/markets/src/relay/` | `acceptance/S1.md`, `S4.md` |
 | Trading Balance and exits | `contracts/src/products/vault/`, `services/ops/src/actors/exit-keeper/` | `acceptance/S7.md`, `S24.md` |
 | Earn | `contracts/src/products/maker/`, `web/src/features/earn/` | `acceptance/S8.md` |
-| Range, Moonshot, Parlay, Boost, Private | `contracts/src/products/{range,parlay,leverage,private}/`, `contracts/src/fair/` | `acceptance/S10.md` |
+| Range, Moonshot, Parlay, Boost, Private | `contracts/src/products/{range,parlay,leverage,private}/`, `contracts/src/fair/` | `acceptance/S10.md`, `R4-5.md` |
+| Games: the hall, the arcade, Lucky, Duel | `web/src/features/games/`, `packages/core/src/games/`, `contracts/src/products/arena/`, `services/ops/src/actors/duel-settler/` | `contracts/test/fork/Moderato.GameArena.fork.t.sol` |
+| Trade from X | `packages/core/src/x/`, `web/src/features/x/`, `services/ops/src/actors/x-relay/` | `acceptance/S11.md` |
 | Strategies, agents, the Memory Market | `contracts/src/products/strategy/`, `web/src/features/{strategies,agents}/`, `services/ops/src/actors/strategy-runner/` | `acceptance/S9.md` |
 | Proof, stats, leaderboard | `web/src/features/proof/`, `web/src/server/demand.ts` | `acceptance/S5.md` |
 | Sessions, halts, the Gap | `services/ops/src/actors/halt-watch/`, `services/ops/src/calendar/` | `acceptance/S6.md` |
 | Social, Sensei, your data | `web/src/features/{social,sensei}/`, `web/src/server/social.ts` | `acceptance/S13.md` |
-| Bridge | `contracts/src/{robinhood,transit,stocks}/` | `acceptance/S14.md` |
+| Bridge and reserves | `contracts/src/{robinhood,transit,stocks}/`, `web/src/features/{bridge,reserves}/` | `acceptance/S14.md`, `R4-12.md` |
 | v4, the guard, the pools | `contracts/src/stocks/hooks/`, `scripts/v4/` | `acceptance/S15.md` |
-| Themes | `contracts/src/themes/` | `acceptance/S16.md` |
-| Launchpads | `contracts/src/launch/` | `acceptance/S17.md` |
+| Themes | `contracts/src/themes/`, `web/src/features/themes/`, `services/ops/src/actors/theme-agent/` | `acceptance/S16.md`, `R4-11.md` |
+| Launchpads | `contracts/src/launch/`, `web/src/features/launch/` | `acceptance/S17.md`, `R4-11.md` |
+| The phone app | `mobile/` | `docs/plan/owner-actions.md` |
 | Addresses | `contracts/deployments/` | the fragments themselves |
 
 Decisions are numbered `D-…` in `docs/plan/decisions.md`; the build's resume pointer is `docs/plan/STATUS.md`.
 
 ## Where the code came from
 
-Mitoshi ports code its author wrote before this hackathon, and says so file by file: **Masayume** (contracts, packages and the web app, moved from their old chain to Tempo), **Agari** (the events-engine semantics, rewritten in Solidity; the ops runtime; the wallet modal), **Owarine** (the trading terminal and the round-4 product surfaces) and **Baku** (the app shell). Ported files carry `Ported from <app> <commit>:<path>`. Third-party material, including 21st.dev components, is listed in `THIRD_PARTY_NOTICES.md`.
+Mitoshi ports code its author wrote before this hackathon, and says so file by file: **Masayume** (contracts, packages and the web app, moved from their old chain to Tempo), **Agari** (the events-engine semantics, rewritten in Solidity; the ops runtime; the wallet modal), **Owarine** (the trading terminal and the round-4 product surfaces), **Senryo** (the games hall and the arcade) and **Baku** (the app shell). Ported files carry `Ported from <app> <commit>:<path>`. Third-party material, including 21st.dev components, is listed in `THIRD_PARTY_NOTICES.md`.

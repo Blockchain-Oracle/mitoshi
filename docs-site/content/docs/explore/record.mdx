@@ -8,13 +8,17 @@ sources:
   - web/src/features/leaderboard
   - web/src/features/league
   - web/src/features/share
+  - web/src/features/share/share-cards.ts
+  - web/src/features/stats/copy.ts
+  - web/src/features/profile/copy.ts
+  - web/src/features/profile/ProfileBar.tsx
   - docs/plan/acceptance/S5.md
   - docs/plan/acceptance/S13.md
 ---
 
 ## Stats: proof of demand
 
-<AppLink href="/stats">Stats</AppLink> counts the wallets that made a call, straight from the engine's fills: calls, what changed hands, what was paid out, the growth by day, the venue's own counts and the latest calls with their receipts.
+<AppLink href="/stats">Stats</AppLink> counts the wallets that made a call, straight from the engine's fills: the headline count and who was active in 24 hours, calls by UTC day, then wallets, calls, what changed hands and what was paid out; the latest calls with their receipts; and the venue's own counts — Windows opened, settled and voided, prints, house fills.
 
 - The house's keys — its maker, its taker, the maker vault — are never counted; their fills are shown apart.
 - A tap from a Trading Balance counts for the wallet it was made for.
@@ -25,7 +29,7 @@ A recount replayed the engine and all three Trading Balances through block 39,01
 
 ## Leaderboard and profiles
 
-The <AppLink href="/leaderboard">leaderboard</AppLink> ranks wallets by what settled — P&L or return on stake; daily, weekly, monthly or all time — with each wallet's rounds, win rate and best run. A **round** is one wallet in one Window: what came back (sold before the close, plus the payout on what was held) less what went in. Each row opens the wallet's public profile at `/u/<address>`: its figures, tier and badges, and latest settled Windows with their proofs. The same board is in the terminal's account drawer.
+The <AppLink href="/leaderboard">leaderboard</AppLink> ranks wallets by what settled — P&L or return on stake; daily, weekly, monthly or all time — with each wallet's rounds, win rate and best run. A **round** is one wallet in one Window: what came back (sold before the close, plus the payout on what was held) less what went in. Each row opens the wallet's public profile at `/u/<address>`: P&L, rank, tier, followers, return, wins, rounds and best run; **Follow** and **Copy this trader**; then its record, open calls, settled Windows with their proofs, and takes. A house key reads "never ranked". The same board is in the terminal's account drawer.
 
 <GuideCapture name="leaderboardDesk" />
 
@@ -35,7 +39,14 @@ Each week from Monday 00:00 UTC, wallets earn points for calls, wins, their best
 
 ## Share cards
 
-A position's details have **Share**: a card with the call, its P&L, its return or both, the price, and the terminal's link with a QR code, drawn in your browser. **Download** saves it or opens your phone's share sheet; **Share on X** opens a post. Every terminal and proof page has its own link preview.
+**Share** draws a card in your browser, with a link and its QR code:
+
+- **A position** — from its details: the call, its P&L, its return or both.
+- **A call** — an open Range, Moonshot, Parlay or Up/Down: the stake, what it wins if it lands, and when the Window closes.
+- **A verdict** — from History: WON, LOST or VOID, the close print and who signed it; the QR opens the proof.
+- **An arcade run** — from the game-over card: the score, a new best, its rank and seed.
+
+**Download** saves it or opens your phone's share sheet; **Share on X** opens a post with the real figures. Terminal, proof, ticker, profile and agent pages each have their own link preview.
 
 <Callout>
 Tiers and badge thresholds are inherited from the app Mitoshi's interface descends from. No tier pays a bonus or changes a fee.

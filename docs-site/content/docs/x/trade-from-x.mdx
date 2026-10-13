@@ -1,0 +1,56 @@
+---
+title: Trade from X
+description: Sign in with X, link your account, fund an X balance, then post a call at @Mitoshi_app — it trades on the Window you named, from that balance only.
+sources:
+  - web/src/features/x/copy.ts
+  - web/src/features/x/TradeFromXScreen.tsx
+  - web/src/features/x/FundStep.tsx
+  - web/src/features/x/XInstructionBuilder.tsx
+  - web/src/features/x/XReceiptsList.tsx
+  - web/src/features/x/useXGrant.ts
+  - packages/core/src/x/parse.ts
+  - packages/core/src/x/window.ts
+  - packages/core/src/x/grant-policy.ts
+  - packages/core/src/x/refusal.ts
+  - services/ops/src/actors/x-relay/execute.ts
+  - services/ops/src/actors/x-relay/reply-format.ts
+  - docs/plan/acceptance/S11.md
+---
+
+<AppLink href="/trade-from-x">Trade from X</AppLink> takes three steps: [sign in with X and link your account](/x/sign-in), fund X trading, post.
+
+## Fund X trading
+
+Pick $5, $10 or $25 and **Enable X trading**. One transaction from your account moves it into your Trading Balance as the **X balance**: an EXECUTOR grant to Mitoshi's X relay.
+
+- It opens positions you own, on up to 8 Windows at once, for 30 days, from the X balance only.
+- It can't withdraw or send money anywhere. **Cash out** returns what is left to your Trading Balance at any time; **Renew** restarts an expired one.
+
+## Post a call
+
+```
+@Mitoshi_app BTC up 5m $5
+@Mitoshi_app $TSLA down 15m $10
+@Mitoshi_app nvidia long 1h $25
+```
+
+One asset, one side, one Window and one stake, in any order:
+
+| Part | Accepted |
+| --- | --- |
+| Asset | BTC, ETH, SOL or a listed stock — a ticker, a cashtag (`$TSLA`) or a name (bitcoin, tesla, nvidia) |
+| Side | up, down — or long, short, yes, no, over, under, higher, lower |
+| Window | 5m, 15m or 1h |
+| Stake | `$5`, `5`, `5 usd` |
+
+A second side, asset, Window or stake is refused, not guessed; so is anything like `3x`. **Make your call** on the page builds the exact text, checks a Window is open for it, and copies it or opens X. Nothing is placed from the page.
+
+## What the relay does
+
+It places the call on the Window of that asset and length that is trading when you posted — a coin's 24/7 lane, a stock's 24/7 lane, else its NYSE lane (AMD, PLTR); never the Gap. A call read more than one Window late is refused ("Too late"), never placed on a later Window. Each mention is handled once.
+
+The bot replies to calls — filled or refused, with the reason and a fix — with a receipt card; a mention that isn't a call gets no reply. Every call you made shows under **Receipts**, a fill linked to its transaction.
+
+<Callout title="On testnet today" type="warn">
+The chain path is proven: on 13 October a mention was read and placed once through an EXECUTOR grant — BTC UP $5 on a 5-minute Window, <Tx hash="0xf0d1a96aee563d31effba0ff9aabcde045ee6e9198c3eccb43eca77b5521624a" />. The web and the relay went live on 13 October; the relay reads mentions through the bot's own X session, and X's API answers 402 until the app buys credits. At 08:30 UTC it had handled no mention posted on X itself, and no person had finished the X sign-in on the deployed site.
+</Callout>

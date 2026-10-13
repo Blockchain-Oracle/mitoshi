@@ -7,6 +7,8 @@ sources:
   - web/src/features/alerts
   - web/src/features/reels
   - web/src/features/news
+  - web/src/features/notifications/copy.ts
+  - web/src/features/stocks/StockHubScreen.tsx
   - web/src/server/social.ts
   - services/ops/src/actors/moderation
   - docs/plan/acceptance/S13.md
@@ -14,13 +16,13 @@ sources:
 
 ## Rooms and takes
 
-Every ticker has a **room**, open from the terminal. Anyone can read it. To post, you need a call on that ticker — a direct fill or a Trading Balance execution on the engine; the room refuses everyone else ("Make a call on TSLA to post here."). **Takes** are short posts tagged by their cashtags; they show in each tagged ticker's feed and can carry a reaction.
+Every ticker has a **room**, open from the terminal or Markets. Anyone can read it. To post, you need a call on that ticker — a direct fill or a Trading Balance execution on the engine; the room refuses everyone else ("Make a call on TSLA to post here."). **Takes** are short posts tagged by their cashtags; they show in each tagged ticker's feed and can carry a reaction.
 
 You can name your profile, follow people, block someone (their posts leave your rooms and takes) and report a post. Reports go to a moderation queue that ops watches; a hidden post leaves every read. Your own posts can't be reported by you — edit or delete them instead.
 
 ## Alerts and notifications
 
-**Price alerts** fire above or below a price, in NYSE hours or any hour. The notification centre collects fills, verdicts, payouts and alerts; <AppLink href="/settings/notifications">Notifications</AppLink> chooses what reaches you.
+**Price alerts** fire above or below a price, in NYSE hours or any hour. <AppLink href="/activity">Activity</AppLink> is your inbox for the week — fills, wins, losses, voids, followers and takes — with browser notifications one switch away. <AppLink href="/settings/notifications">Notifications</AppLink> chooses what reaches you: money moved, price alerts, social, games.
 
 ## Sensei
 
@@ -28,10 +30,11 @@ Sensei reads the Window on your screen with you and gives a straight call — UP
 
 Sensei runs on the testnet web app with the owner's model key since 12 October. With no model configured, it says so and everything else works without it.
 
-## Reels and News
+## Hubs, Reels and News
 
+- **Ticker hubs** at `/tickers/<symbol>` — <AppLink href="/tickers/BTC">BTC's</AppLink>, for one: the spot and six hours of it, whether a 24/7 Window trades now, the next report for a stock, its Windows, its calls and takes, and its headlines.
 - <AppLink href="/reels">Reels</AppLink>: one live Window per card — the question, the price against its line, a sparkline — to swipe through and open.
-- <AppLink href="/news">News</AppLink>: stock headlines from Finnhub and coin news from Cointelegraph and Decrypt.
+- <AppLink href="/news">News</AppLink>: stock headlines from Finnhub and coin news from Cointelegraph and Decrypt, narrowed by ticker, each with **Trade it**.
 
 ## Your data
 

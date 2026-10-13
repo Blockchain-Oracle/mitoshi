@@ -1,0 +1,55 @@
+---
+title: Lucky and Duel
+description: Reels that deal you one live call you choose to place, and a two-player duel over a sealed deck of real Windows on the deployed arena.
+sources:
+  - packages/core/src/games/lucky.ts
+  - packages/core/src/games/deck.ts
+  - packages/core/src/games/types.ts
+  - web/src/features/games/lucky/copy.ts
+  - web/src/features/games/lucky/LuckyStage.tsx
+  - web/src/features/games/lucky/LuckyDeal.tsx
+  - web/src/features/games/lucky/lucky.server.ts
+  - web/src/features/games/duel/copy.ts
+  - web/src/features/games/duel/duel.server.ts
+  - web/src/features/games/duel/DuelStage.tsx
+  - contracts/src/products/arena/GameArena.sol
+  - contracts/src/products/arena/ArenaMatches.sol
+  - contracts/deployments/42431/arena.json
+  - services/ops/src/actors/duel-settler
+  - packages/markets/src/relay/policies/arena.ts
+  - docs/plan/owner-actions.md
+---
+
+## Lucky
+
+At <AppLink href="/games/lucky">Lucky</AppLink>, pick a chip — $1, $5, $10 or $25 — and **Spin**. Three reels land on an asset (BTC, ETH or SOL), a side and a reach (×2, ×3, ×5, ×10 or ×25). The card then shows the live 15-minute or one-hour Window it found and its real quote; **Pull to place** sends that one call, like a tap in the terminal.
+
+A spin spends nothing. The server commits to its seed before your browser adds its own, and hashes the set of Windows it could deal; **Proof** recomputes the draw in your browser. That proves the draw wasn't changed after the reels moved — not that the candidate set was fair. A call settles like any other, and your streak counts the draws the chain settled. If no Window can fill the stake, the card says **No deal**.
+
+## Duel
+
+At <AppLink href="/games/duel">Duel</AppLink>, choose a pot — **Free**, $1, $5 or $10 — and **Find a duel**. Both players get the same sealed deck of 2–5 live 15-minute or one-hour Windows; its hash is fixed on chain before either of you sees a card.
+
+<Steps>
+<Step>
+### Open and join
+
+One player opens the duel with their pot; the other joins with theirs within 30 seconds. Free has no pot.
+</Step>
+<Step>
+### Pick
+
+Once both pots are in, your browsers get the deck and **Open the deck** proves it against the hash. Each card is then a real order on the book, up to $1 a card, placed through **GameArena**. You have 90 seconds for every card.
+</Step>
+<Step>
+### Settle
+
+Each card settles on its Window's signed close. The better P&L across the deck takes both pots; a tie splits them. A player who misses picks forfeits the pot; if both do, or nobody joins, or the deck is never opened, each pot goes home.
+</Step>
+</Steps>
+
+Ops' **duel-settler** cranks the close, each card's settlement and the award; the duel page offers every one of those calls to either player too, and the relay pays for them. Your winnings and payouts wait as credit — **Claim** pays them to you, never to whoever calls it. The duel's ladder is on <AppLink href="/games/rank">Rank</AppLink>.
+
+<Callout title="On testnet today">
+GameArena is deployed on Moderato (13 October) with these four pots. A whole duel ran on a Moderato fork against the deployed arena and the live engine. On 13 October the duel ladder and Lucky's board on testnet were still empty. A season prize pool waits on the owner; the duel works without one.
+</Callout>

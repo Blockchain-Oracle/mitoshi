@@ -1,0 +1,37 @@
+---
+title: Markets
+description: Every live Window, coin and stock, on one page — the featured Window with its ticket, the lanes, your calls and the same Windows as plain questions.
+sources:
+  - web/src/features/markets/MarketsScreen.tsx
+  - web/src/features/markets/copy/markets.ts
+  - web/src/features/markets/copy/ticket.ts
+  - web/src/features/markets/ticket/Ticket.tsx
+  - web/src/features/markets/ticket/ComposeBlocks.tsx
+  - web/src/features/markets/word-board/WordMarketBoard.tsx
+  - web/src/features/markets/calls/YourCalls.tsx
+---
+
+<AppLink href="/markets">Markets</AppLink> puts the Window you are betting on at the top, with its ticket beside it on a desk and in a drawer on a phone. [The terminal](/trading/terminal) is the same market, one tap away.
+
+<GuideCapture name="marketsDesk" caption="The featured Window, its chart and the ticket on the rail." />
+
+## The featured Window
+
+The question ("BTC holds above $…"), the Window's chart with OPEN and CLOSES marked, how far the price is from the line, and which oracle settles it. **Price** and **Depth** switch the chart to the book. **Bet UP** and **Bet DOWN** set the ticket's side; **The Room** opens the market's chat, where only bettors post.
+
+## The ticket
+
+- **Up/Down** or **Range**, then the side and the amount, with quick amounts.
+- **1× · 2× · 3×** — a higher multiple is a [Boost](/trading/parlay-boost-private) the reserve fronts.
+- **Public** or **Private** — a private bet goes through the private desk, always 1×.
+- **Buy UP for $…** sends one transaction: one passkey confirmation, or no prompt with one-tap on. The relay pays the fee.
+
+If the book moves first, the ticket asks again at the new price; nothing is taken.
+
+## Live Windows
+
+Lanes by ticker and market length. Each card shows the Window's odds and clock, or why it has none: **NO QUOTES YET**, **WAITING FOR THE STARTING PRICE**, **CLOSING · NEXT ROUND SOON**, or **PAUSED** with its reason. A stock Window listed before the open says **Schedule a call**: your order rests at your price until the bell, and you can cancel it until then.
+
+## Your calls and Just ask
+
+Your open calls sit above the lanes as chips — the countdown, then **Won**, **Lost** or **Void**. **Just ask** lists the same Windows as Yes/No questions, grouped by how soon they close; each answer's price is the top of its real book.

@@ -1,0 +1,31 @@
+---
+title: Claim from X
+description: Calls from X only ever trade for an account you linked. /claim shows which one, and gets you into it.
+sources:
+  - web/src/features/x/ClaimScreen.tsx
+  - web/src/features/x/copy.ts
+  - web/src/features/x/GoScreen.tsx
+  - packages/core/src/x/share-link.ts
+  - web/src/components/shell/header/nav-items.ts
+---
+
+A mention only ever trades under a grant your account made, so nothing waits in limbo: what your X calls won sits in that account's Trading Balance and X balance.
+
+<Steps>
+<Step>
+### Prove it's you
+
+Open <AppLink href="/claim">X recovery</AppLink> and **Sign in with X**. The card then reads "Your X routes to 0x…" with what waits there.
+</Step>
+<Step>
+### Open your account
+
+**Sign in as** that account — its passkey or wallet. It's all in [Portfolio](/trading/portfolio). Only you can cash out.
+</Step>
+</Steps>
+
+If nothing routes to your X account yet, the page says so and points to [Trade from X](/x/trade-from-x).
+
+## Share-to-sign links
+
+A link like `/go/t/BTC/5m?side=up&stake=5` opens the terminal on that Window with the side and stake set. Nothing is placed until the person who opens it signs with their own passkey.

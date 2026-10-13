@@ -15,22 +15,30 @@ sources:
   - contracts/src/products/leverage/LeverageReserve.sol
   - contracts/src/products/private/PrivateDesk.sol
   - contracts/src/products/strategy/StrategyRegistry.sol
+  - contracts/src/themes/ThemeRouter.sol
+  - contracts/src/products/arena/ArenaGateway.sol
+  - contracts/src/products/arena/ArenaMatches.sol
+  - contracts/src/products/arena/GameArena.sol
   - contracts/src/fair/FairValueGuard.sol
   - packages/markets/src/keys/wallet-key.ts
   - packages/markets/src/ops/strategy-runner.ts
+  - packages/core/src/x/grant-policy.ts
+  - services/ops/src/actors/x-relay/execute.ts
   - contracts/deployments/42431/engine.json
   - contracts/deployments/42431/stocks.json
+  - contracts/deployments/42431/range.json
+  - contracts/deployments/42431/arena.json
   - docs/plan/acceptance/S0.md
   - docs/plan/acceptance/S10.md
 ---
 
-Every power here is enforced by a contract on Tempo testnet, not by Mitoshi's servers. Read on 13 October 2026, block 39,348,596.
+Every power here is enforced by a contract on Tempo testnet, not by Mitoshi's servers. Read on 13 October 2026 at block 39,348,596; the redeployed RangeReserve and the duel arena at block 39,384,844.
 
 ## Always true
 
-- **Money leaves only to its owner.** No withdrawal or payout in the engine, the Trading Balance, Earn, Range, Parlay, Boost or the private desk takes a destination: each pays the account the money belongs to.
+- **Money leaves only to its owner.** No withdrawal or payout in the engine, the Trading Balance, Earn, Range, Parlay, Boost, the private desk or the duel arena takes a destination: each pays the account the money belongs to.
 - **Signed prints decide.** A print needs three of RedStone's five production signers, a set fixed at deployment. A Window's rules freeze when it opens. Anyone can post a print, settle, or void a Window whose print never came — at half. No one can void or decide a Window by hand.
-- **No upgrades.** The engine, the Trading Balance, Earn, the reserves, the private desk and the strategy registry are not proxies; their code can't change. Only the bridge's five mint adapters, and Uniswap's position descriptor in the v4 replay, sit behind proxies.
+- **No upgrades.** The engine, the Trading Balance, Earn, the reserves, the private desk, the duel arena and the strategy registry are not proxies; their code can't change. Only the bridge's five mint adapters, and Uniswap's position descriptor in the v4 replay, sit behind proxies.
 - **Settling and withdrawing never pause.** Admins can stop new business, never claims, refunds, settlement or withdrawals.
 
 ## Who can do what
@@ -41,10 +49,12 @@ Every power here is enforced by a contract on Tempo testnet, not by Mitoshi's se
 | **One-tap key** · 24 h | Buy on the engine with up to $25 of new approvals a day; sell, cancel and redeem what your account holds there. | Transfer, approve anyone else, call another contract. |
 | **SESSION grant** · a key on your device | Buy from its budget inside its per-tap, daily, open-Window and price caps; sell what your Trading Balance holds. | Withdraw or send money. Sale proceeds stay in your Trading Balance. |
 | **STRATEGY grant** · the runner the strategy names | Buy inside the strategy's envelope and your budget. The contract also lets it sell what your Trading Balance holds; Mitoshi's house runner only buys. | Withdraw or send money. |
+| **EXECUTOR grant** · Mitoshi's X relay | Buy on the Window your post on X names, from the X balance you funded, on up to 8 open Windows. The contract also lets it sell what your Trading Balance holds; the relay only buys. | Withdraw or send money, or spend past the X balance. |
 | **EXIT grant** · Mitoshi's exit keeper | Sell what your Trading Balance holds, at or above the fair-value floor. | Buy, withdraw, or sell under the floor. |
+| **Theme agent key** · per followed theme | Rebalance your holdings through the theme router, inside each token's daily limit. | Transfer, or approve anyone but the router. |
 | **The private desk** | Spend your private balance up to the allowance you set; carry bets and payouts through its pool. | Withdraw your balance — only you can, to yourself. |
 | **The relay** | Pay your call's network fee. | Change your call or spend from your account. |
-| **Mitoshi's keepers** | Open Windows, post prints, settle and pay winners, quote Earn's vault inside its public limits, act through the grants you gave. | Anything else. |
+| **Mitoshi's keepers** | Open Windows, post prints, settle and pay winners, quote Earn's vault inside its public limits, settle duels, act through the grants and keys you gave. | Anything else. |
 
 ## What admins can do
 
@@ -52,9 +62,10 @@ Every power here is enforced by a contract on Tempo testnet, not by Mitoshi's se
 | --- | --- | --- |
 | **Engine** | List series; add rules for Windows not yet open; switch to reduce-only (sells only) or halted (no orders); name the keys that open Windows. | Change an open Window, decide or void one, move money. Prints, settlement, redemptions, cancels and withdrawals run in every mode. |
 | **Earn** | Pause new supply and quotes; set the vault's limits; name its one quoting key. | Withdraw suppliers' money. |
-| **Range · Parlay · Boost** | Pause new tickets and supply; set prices and limits for new tickets; set Range's volatilities; set Boost's knock-out line, which open boosts follow. | Take an escrowed payout, change a ticket's payout. |
+| **Range · Parlay · Boost** | Pause new tickets and supply; set prices and limits for new tickets; set Range's volatilities and asset tickers; set Boost's knock-out line, which open boosts follow. | Take an escrowed payout, change a ticket's payout. |
 | **Private desk** | Pause new bets; set the stake band; name the desk key. | Withdraw anyone's balance. |
-| **Fair-value guard** | Set each series' volatility and spot source. Exit floors and the fair-value checks on Parlay and Boost follow. | Move money. |
+| **Duel arena** | Pause new duels, joins and picks; set each pot tier and its per-card cap for new duels; set the join, reveal and pick windows and the deck size. | Move a pot or a credit, decide a duel, or stop a reveal, settlement, refund or claim. A duel keeps the pot and cap it opened with. |
+| **Fair-value guard** | Set each series' volatility and spot source. Exit floors, the fair-value checks on Parlay and Boost, and Range's price where the reserve has no volatility of its own follow. | Move money. |
 
 The Trading Balance and the strategy registry have no admin.
 
@@ -69,7 +80,7 @@ One key per role, held by Mitoshi. Safes for mainnet are an [open owner decision
 | Earn admin · quoting key | <Address address="0xE41f5FEb2bc3040B82bA22dc6F62b824037e1A8d" /> · <Address address="0x51d3F6367FDCaBE7f1eFbbc04d0D960bc8eede9a" /> |
 | Range, Parlay, Boost and private-desk admin | <Address address="0x5DFC4211902A8EE7932286861e2D8C66841441E8" /> |
 | Private desk | <Address address="0x9540cDCD69636229Be905225979a7e5BAA044cb9" /> |
-| Fair-value guard owner | <Address address="0xF368eE3b38bC3682A4f55Fd03778123269B69Fe5" /> |
+| Fair-value guard owner and duel-arena admin | <Address address="0xF368eE3b38bC3682A4f55Fd03778123269B69Fe5" /> |
 | Exit keeper | <Address address="0x6Ed3a4b6E42B2C45211074F8D7BA58dbB2FAad0C" /> |
 | Relay fee payer | <Address address="0x3D7791BAa66d34804f1769955fBf83AC576AC5f1" /> |
 

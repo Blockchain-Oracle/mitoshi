@@ -1,9 +1,15 @@
 ---
 title: Copy a strategy
-description: Follow it or fade it with a budget you choose — one transaction to start, one to stop — or build and publish your own.
+description: Follow it or fade it with a budget you choose — one transaction to start, one to stop — or build and publish your own in four steps.
 sources:
   - web/src/features/strategies/copy.ts
   - web/src/features/strategies/studio-copy.ts
+  - web/src/features/strategies/copy-plan.ts
+  - web/src/features/strategies/CopyForm.tsx
+  - web/src/features/strategies/CreatorStudio.tsx
+  - web/src/features/strategies/ManageCopy.tsx
+  - web/src/features/profile/ProfileBar.tsx
+  - web/src/app/api/strategies/preview/route.ts
   - packages/core/src/strategies/model.ts
   - packages/core/src/strategies/types.ts
   - contracts/src/products/strategy
@@ -11,15 +17,17 @@ sources:
   - docs/plan/acceptance/S9.md
 ---
 
+<AppLink href="/strategies">Automate</AppLink> has three views: **Create**, **Copy a strategy** and **Your strategies**. Each card shows its net over settled trades, its ERC-8004 id and sealed memory if it has them, its fee and its copiers.
+
 <GuideCapture name="strategiesDesk" />
 
 ## Copy
 
 <Steps>
 <Step>
-### Pick a strategy
+### Open a card
 
-Open a card on <AppLink href="/strategies">Automate</AppLink>. The drawer shows its market, its envelope, its fee, its record and its recent copy trades.
+The drawer has four tabs: **Copy**, **Your copy**, **Decisions** and **Memory**. Its head names the limits: "$5 / trade · $50 / day · 3 open · ≤ 90¢".
 </Step>
 <Step>
 ### Follow or fade
@@ -27,30 +35,30 @@ Open a card on <AppLink href="/strategies">Automate</AppLink>. The drawer shows 
 **Follow** takes the side the strategy calls. **Fade** takes the opposite side of every call — you win when it loses.
 </Step>
 <Step>
-### Set your limits
+### Set your budget
 
-**Budget** is what you set aside from your account for it; **Most per trade** can't be more than the budget or the strategy's own cap.
+**Budget** is what goes into your Trading Balance for the runner; **Per trade** can't be more than the budget or the strategy's own cap. Already copying on the same runner? **Use my budget** shares it; **New budget** starts one, and the drawer names the copies it keeps and any it stops — the vault holds one strategy grant per owner.
 </Step>
 <Step>
 ### Sign once
 
-**Copy this strategy** (or **Fade this strategy**) is one transaction your passkey (or wallet) signs: approve the deposit, put the budget in your Trading Balance with a STRATEGY grant to the runner, and subscribe. A fee, if the creator set one, is paid to the creator once, when the subscription starts.
+**Copy · $…** (or **Fade · $…**) is one transaction your passkey or wallet signs: the deposit and a STRATEGY grant to the runner for 30 days (unless you share a budget), and the subscription. A fee, if the creator set one, goes to the creator once, at the start.
 </Step>
 </Steps>
 
 From then on the runner places for you on the strategy's trigger, through your grant, from your budget. Every copy fill is yours, in your Trading Balance; settled Windows pay into it.
 
-## Stop
+## Manage and stop
 
-Stopping is one transaction — revoke the grant and unsubscribe — and the relay pays for it. Unspent budget stays in your Trading Balance to withdraw. On 11 October a copy started in one self-paid transaction and stopped in one the deployed relay paid for; across five settled Windows the copier's P&L on the desk equalled the vault index's, cent for cent ([evidence](/help/evidence)).
+**Your copy** shows your result, the fee paid, and what is left today. **Switch to fade** (or follow) is free; **Renew its budget** sets a fresh one through the same form. **Hold to stop** revokes the grant and unsubscribes in one transaction the relay pays for; unspent budget stays in your Trading Balance. On 11 October a copy started in one self-paid transaction and stopped in one the deployed relay paid for; across five settled Windows the copier's P&L equalled the vault index's, cent for cent ([evidence](/help/evidence)).
 
 ## Build one
 
-**Build a strategy** walks four steps:
+**Create** walks four steps:
 
-1. **Its instinct** — momentum (with the move from the opening print), reversion (against it), an agent with a brief, or a mirror of a wallet's public calls.
-2. **Tune it** — one series or any Window, a trigger in basis points, the agent's brief and gate.
-3. **Hard limits** — most per trade, most per day, Windows at once, the dearest price, and the fee to copy. They are written into the strategy on chain for good; every copier's grant must fit inside them.
-4. **Name it and publish** — optionally with an ERC-8004 identity, run by the house runner or by your own key.
+1. **Identity & approach** — a name, a portrait, and an approach: momentum (rides the move from the open), reversion (bets it snaps back), an agent (a model reads, a gate decides) or a mirror of one wallet's calls.
+2. **Behavior & limits** — the market or any Window, the minimum move, the agent's brief and gate; per trade, per day, and a risk mode: Guarded, Balanced, Active or your own. The limits are written on chain for good; every copier's grant must fit inside them.
+3. **Test read** — runs the rule on a live Window now and shows what it would call. You may continue untested.
+4. **Publish** — run by Mitoshi or by your own runner's key, with a fee to copy, and optionally an ERC-8004 identity (sponsored) created first.
 
-A mirror copy lands after the trader's trade, at whatever the book holds then — never at their price, and sometimes not at all. Publishing metadata needs your passkey itself; a one-tap key is refused.
+A mirror copy lands after the trader's trade, at whatever the book holds then — never at their price, and sometimes not at all. **Copy this trader** on a profile opens Create with a mirror of that wallet. Publishing needs your passkey itself; a one-tap key is refused.

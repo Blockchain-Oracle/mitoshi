@@ -17,10 +17,15 @@ sources:
   - docs/plan/acceptance/S23.md
   - docs/plan/acceptance/S24.md
   - docs/plan/acceptance/R4-1.md
+  - docs/plan/acceptance/R4-5.md
+  - docs/plan/acceptance/R4-11.md
+  - docs/plan/acceptance/R4-12.md
+  - docs/plan/acceptance/S11.md
+  - contracts/deployments/42431/arena.json
   - web/src/features/demo/proofs.ts
 ---
 
-Each stage of the build records its live runs in `docs/plan/acceptance/S<n>.md`: what was run, against which deployment, and every transaction after `cast receipt` read it back with status 1. A receipt is a completed action, not a current position or a payout today. The runs used fresh test accounts, so there is no single demo wallet.
+Each stage of the build records its live runs in `docs/plan/acceptance/` (`S<n>.md`, `R4-<n>.md`): what was run, against which deployment, and every transaction after `cast receipt` read it back with status 1. A receipt is a completed action, not a current position or a payout today. The runs used fresh test accounts, so there is no single demo wallet.
 
 ## The core loop
 
@@ -62,6 +67,9 @@ Tap to position, median over the terminal's acceptance run: **0.64 s** (the row 
 | 2026-09-30 | A 2× boost from the browser, one prompt | <Tx hash="0x70c7fa19e6f9fa699a8be964a025dbf439470041ed4d6e0e1999951eaee2463f" /> |
 | 2026-10-10 | A Range band on BTC 5m priced off the maker vault's depth | <Tx hash="0xed2c6c9e1658648b7eb3da6fc4efac1d2a737b530c7973c91b43e0499a2bfecc" /> |
 | 2026-10-10 | A Moonshot long ×2 | <Tx hash="0xb5475fccb8bbf9d6ae232ad948e142fe4903fc7c4444b0ce9782e5310944d2c8" /> |
+| 2026-10-13 | RangeReserve redeployed to price every Series | <Tx hash="0x5c48288b88daa7e27b2c81c335593f37e842c0399aa0d7f95a2ec239082d07b1" /> |
+| 2026-10-13 | BTC's 15-minute Series registered — with BTC 1h and ETH and SOL 15m and 1h | <Tx hash="0xef8d4c4dcf978976e7bfda142cd4b2772835f1e75950bc07e69be4216d65c94d" /> |
+| 2026-10-13 | Range rounds on TSLA 24/7 1h, NVDA 24/7 15m and BTC 15m, each closed inside and claimed — NVDA's claim | <Tx hash="0x67b2f1774dddfa05f39f53d6363948d6b473bcd039c4be9a8aa5239c43362657" /> |
 
 ## Automate
 
@@ -75,6 +83,7 @@ Tap to position, median over the terminal's acceptance run: **0.64 s** (the row 
 
 | When (UTC) | What ran | Where |
 | --- | --- | --- |
+| 2026-10-13 | GameArena deployed on Moderato; a whole duel played on a Moderato fork against it and the live engine | <Tx hash="0x328bd2d7ba1f965ec265f89f4a0626caa3e7d93f6d7ebbb9a0b07b7e8e76ee82" /> |
 | 2026-10-10 | Stats equal to a full recount of the engine and the three vaults through block 39,012,040 | `acceptance/S5.md` |
 | 2026-10-10 / 11 | Rooms gated on a real position, moderation, data export and deletion, a backup passkey signing in alone | `acceptance/S13.md` |
 | 2026-10-12 | The arcade board: a real run ranked, a forged score and an unsigned post refused | `owarine-plan-r3-2026-10-12.md` |
@@ -88,10 +97,25 @@ Tap to position, median over the terminal's acceptance run: **0.64 s** (the row 
 | 2026-09-29 | ThemeRegistry deployed | <Tx hash="0x1f3dd368c33c92aa45119791ade4571352f8456de179de0b657ed2040fe8e269" /> |
 | 2026-09-29 | A stablecoin created with its pair and fee pool in one transaction… | <Tx hash="0x585389046673c6cb87311d51f476b49e01844c66d5c6cb22a7dbfca3df7ece44" /> |
 | 2026-09-29 | …and a transaction's fee paid in the new coin | <Tx hash="0x4b60220a77126dfd6152e94e4ac90c059f7327e037f3560345c7d2e1ceaea715" /> |
+| 2026-10-13 | A memecoin launched with the app's encoder, with a creator buy… | <Tx hash="0x2bce82e8af0dfbe05b12870c8ac3c64487efe604181df9da8f56cb1a5cd6a010" /> |
+| 2026-10-13 | …then bought on its curve and sold | <Tx hash="0x04b71725980298b4c461273470858e909ed6007229ef7ab0bc2f878dba2435ef" /> |
+| 2026-10-13 | Theme #1 published with the app's encoder… | <Tx hash="0x376ffaed236a9b221d215820b79c8cb6aadf6bb09de17a7c160dbc798e5ac3ac" /> |
+| 2026-10-13 | …and followed: the agent's key and the follow in one transaction | <Tx hash="0xae7de771573dc1dedfd7c9f1088adab1ea030a090b20d60b5a55041de67680a4" /> |
+| 2026-10-13 | The theme agent registered as ERC-8004 agent #82 | <Tx hash="0xedc667045396306f8de29d2545723b9fb24ab6f75ed84cd0d579c0d565f27039" /> |
+
+## X
+
+| When (UTC) | What ran | Receipt |
+| --- | --- | --- |
+| 2026-10-13 | X trading funded: $10 into a Trading Balance with an EXECUTOR grant to the X relay | <Tx hash="0xb4e139f025e5f24d1a7c6ccfb439a82b9e69711ee5fd8fb362246cf369d08828" /> |
+| 2026-10-13 | A mention placed once through that grant: BTC UP $5 on a 5-minute Window. A passkey-shaped account's link signature verified, another X account's did not | <Tx hash="0xf0d1a96aee563d31effba0ff9aabcde045ee6e9198c3eccb43eca77b5521624a" /> |
 
 ## Snapshots kept with these docs
 
 - `docs-site/evidence/ops-health-2026-10-12.json` — every ops actor's state and the indexer's counts, read from `/health`.
 - `docs-site/evidence/mirror-supplies-2026-10-12.json` — the five mirrors' total supply, read from Moderato.
+- `docs-site/evidence/ops-health-2026-10-13.json` — ops' 30 actors and the indexer's counts, read on 13 October after the X relay joined.
+- `docs-site/evidence/roles-2026-10-13.json` — every admin and role on chain, the duel arena and the redeployed RangeReserve included.
+- `docs-site/evidence/api-probe-2026-10-13.json` — every public route answering.
 
 What has not run live is on [availability](/help/availability).

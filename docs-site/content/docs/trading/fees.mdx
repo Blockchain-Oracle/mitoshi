@@ -6,6 +6,11 @@ sources:
   - docs/specs/engine.md
   - packages/markets/src/relay/policies
   - contracts/deployments/42431/leverage.json
+  - contracts/src/launch/CurveLaunchpad.sol
+  - contracts/src/themes/ThemeRouter.sol
+  - packages/markets/src/relay/policies/arena.ts
+  - packages/markets/src/relay/policies/launch.ts
+  - packages/markets/src/relay/policies/themes.ts
 ---
 
 | Fee | Who pays | How much |
@@ -18,5 +23,8 @@ sources:
 | Withdraw to another address | You | The network fee of one pathUSD transfer. |
 | Range, Moonshot, Parlay | — | Priced into the stake the ticket shows before you confirm; nothing on top. |
 | Boost | You, to the reserve | A premium the reserve keeps for fronting the position (8 % of what it fronts, at deployment), shown before you confirm. |
+| A duel's pot and picks | You | The network fee; the relay pays for settling, refunds and claims. |
+| A memecoin's curve | You, split between its creator, the template's partner and the protocol | The curve's trading fee, shown as **Fee now**: high at launch, falling to its floor. The relay pays the network fee. |
+| A theme's rebalance | You | The theme's creator fee on what each rebalance trades, to the creator, and the rebalance's network fee, which the agent's key pays from your account inside its limit. |
 
 Tempo charges network fees in a stablecoin, so there is no gas token to hold. Which calls the relay sponsors is listed per contract in [the relay](/architecture/relay-and-keys).

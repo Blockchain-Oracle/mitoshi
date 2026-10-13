@@ -3,6 +3,7 @@ title: Windows and lanes
 description: A Window is one asset over a fixed stretch of time. Which assets, which lanes, when they trade, and what pauses them.
 sources:
   - packages/core/src/market/venue-spec.json
+  - docs/plan/acceptance/R4-5.md
   - web/src/app/(app)/docs/windows/page.tsx
   - contracts/src/engine/libs/ResolveLib.sol
   - services/ops/src/actors/window-roller
@@ -16,12 +17,12 @@ A Window asks one question: will this asset close at or above where it opened? *
 
 | Assets | Lanes | When |
 | --- | --- | --- |
-| BTC, ETH, SOL | 5 minutes | Around the clock; a new Window every five minutes |
+| BTC, ETH, SOL | 5, 15 and 60 minutes | Around the clock; each lane opens its next Window as one closes |
 | AAPL, AMD, AMZN, GOOGL, META, MSFT, NVDA, PLTR, TSLA | 5, 15 and 60 minutes | In NYSE hours |
 | AAPL, AMZN, GOOGL, META, MSFT, NVDA, TSLA | 24/7 · 5, 15 and 60 minutes | In and out of NYSE hours, settled on RedStone's 24/7 feed for that stock — not the NYSE print |
 | The nine stocks | Gap | Friday's close to the next 09:30 ET open; calls lock Sunday 20:00 ET |
 
-That is 66 series in all. AMD and PLTR have no RedStone 24/7 feed, so their 24/7 lanes are listed as paused. RedStone's 24/7 stock feeds also pause daily around 04:00 ET, so no 24/7 Window spans that gap; the terminal says when the next one opens.
+That is 72 series in all; BTC, ETH and SOL gained their 15- and 60-minute lanes on 13 October. AMD and PLTR have no RedStone 24/7 feed, so their 24/7 lanes are listed as paused. RedStone's 24/7 stock feeds also pause daily around 04:00 ET, so no 24/7 Window spans that gap; the terminal says when the next one opens.
 
 ## A Window's life
 
@@ -50,9 +51,9 @@ The closing print lands and the Window settles: close ≥ open pays UP, close < 
 
 ## Hours, halts and pauses
 
-The terminal names the NYSE session beside the Window chip — pre-market, open, after hours, closed, weekend or holiday — and the next open or close in your time with New York's beside it. Outside the session a stock's regular lane has no Window and says so; its 24/7 lane and the weekend Gap trade on.
+The terminal names the NYSE session with the Window chip — pre-market, open, after hours, closed, weekend or holiday — and the next open or close in your time with New York's beside it. Outside the session a stock's regular lane has no Window and says so; its 24/7 lane and the weekend Gap trade on.
 
 - **A halt** stops new calls on a Window: "Trading halted" when the exchange stops the stock, "Signed price stale" when the signed price goes stale or short of signers. UP and DOWN say why. An open call settles on its signed close, or the Window voids at half. Every halt of the last 30 days is on <AppLink href="/status/halts">the halts board</AppLink>.
 - **A corporate action** (a split, a multiplier change) pauses the Windows it would cut through.
-- **Earnings.** An upcoming report is named beside the session, and the Window that sits on it warns that prices can gap — a warning, never a block.
+- **Earnings.** An upcoming report is named beside the session (in Sensei's head on a phone), and the Window that sits on it warns that prices can gap — a warning, never a block.
 - **Listed but paused.** NFLX is bridged to Tempo testnet but no signed price source carries it, and no attested source for pre-IPO companies exists on Tempo yet. Both are listed as paused rather than hidden.

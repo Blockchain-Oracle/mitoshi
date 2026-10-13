@@ -1,0 +1,40 @@
+---
+title: The phone app
+description: Mitoshi Testnet for iOS and Android — the testnet site in a native shell. Built, and waiting on its store records.
+sources:
+  - mobile/README.md
+  - mobile/app.identity.json
+  - mobile/src/shell/Shell.tsx
+  - mobile/src/shell/links.ts
+  - mobile/src/shell/Offline.tsx
+  - mobile/src/shell/config.ts
+  - mobile/modules/webview-webauthn
+  - web/src/app/.well-known/apple-app-site-association/route.ts
+  - web/src/app/.well-known/assetlinks.json/route.ts
+  - web/src/lib/app-links.ts
+  - docs/plan/owner-actions.md
+---
+
+**Mitoshi Testnet** (`xyz.mitoshi.app.testnet`) is an Expo app that opens <AppLink href="/">the testnet site</AppLink> in one native web view. Same passkey, same account, same test dollars.
+
+## What the shell adds
+
+- A splash held until the page paints, and a status bar that follows the theme.
+- Android Back walks the page's history.
+- Other sites open in the system browser; downloads go to the share sheet.
+- An offline screen that retries by itself.
+
+## Passkeys
+
+Your passkey belongs to `mitoshi.xyz`. A native app may use it only when that domain names the app, and since 13 October it does: `https://mitoshi.xyz/.well-known/apple-app-site-association` (iOS) and `/.well-known/assetlinks.json` (Android) answer with the app's team and signing key. On Android the shell turns on the web view's WebAuthn.
+
+## Where to get it
+
+| | State |
+| --- | --- |
+| iOS · TestFlight | Built on EAS. Waits on the owner creating the App Store Connect record |
+| Android · Play internal testing | Built on EAS. Waits on the owner creating the Play Console app and its first upload; the Play signing key then joins `assetlinks.json` |
+
+<Callout title="Not in a store yet">
+Until then, [install from the browser](/start/install). No passkey sign-in inside the app has been checked on a real phone yet.
+</Callout>

@@ -10,6 +10,9 @@ sources:
   - web/src/features/boost/copy.ts
   - web/src/features/private/copy.ts
   - web/src/features/parlay/data.ts
+  - web/src/features/parlay/copy.ts
+  - web/src/features/boost/copy.ts
+  - web/src/components/shell/header/nav-items.ts
   - web/src/features/boost/useBoostTicket.ts
   - docs/plan/acceptance/S10.md
   - docs/plan/acceptance/S24.md
@@ -18,7 +21,7 @@ sources:
 
 ## Parlay
 
-Two or three legs on one ticket at <AppLink href="/parlay">Parlay</AppLink>, or from the terminal's **Parlay** mode, where UP and DOWN add the Window to the slip. The chances multiply down, so the payout multiplies up — and it is all or nothing: one miss and the stake is lost.
+Two or three legs on one ticket at <AppLink href="/parlay">Parlay</AppLink>, or from the terminal's **Parlay** mode, where UP and DOWN add the Window to the slip. The page lists every live Window by cadence, with each asset's close streak; the slip rides above the dock until you open it and **Hold to place**. The chances multiply down, so the payout multiplies up — and it is all or nothing: one miss and the stake is lost.
 
 - **ParlayReserve** prices each leg off the Window's book — refusing a leg priced more than 5¢ under the fair-value guard's model — with a floor for legs that settle at the same instant.
 - The winning payout is locked before the ticket is accepted. A book too thin for it is refused by name, before any prompt.
@@ -33,15 +36,16 @@ A leveraged UP or DOWN from the terminal's **Boost** mode or chips. **LeverageRe
 
 - **Your loss is capped at your stake.** A boost has a knock-out line and can be knocked out before the Window closes; Mitoshi's leverage keeper settles and knocks out positions, and both actions pay the owner.
 - It refuses to open a boost that would start under its knock-out line, one priced above the market model, or one a void would leave the reserve short on.
-- Boost opens on any Window the guard prices, stocks included. Each boost asks your passkey, and it closes from its own row.
+- Boost opens on any Window the guard prices, stocks included. **Hold to boost** asks your passkey; it closes from its own row.
+- **Short** in More opens the terminal on Boost with DOWN picked.
 
 ## Private
 
-The terminal's **Private** mode bets from a private balance on **PrivateDesk**. Kept separate from your wallet, so it is harder to link back to you — **not anonymous**.
+The terminal's **Private** mode, or **Private** on a Markets ticket, bets from a private balance on **PrivateDesk**. Kept separate from your wallet, so it is harder to link back to you — **not anonymous**.
 
 - You deposit to the desk and set an allowance it may spend. One passkey prompt signs the bet's text; it moves nothing by itself.
 - The desk then makes three transactions that never name you and the Window together: charge your allowance into a pool, fund a throwaway slot, buy in that slot. Payouts come home the same way, and only you can withdraw.
-- Always 1×, a stake of $1 to $25. The claim is kept with your account; cash it out from Portfolio.
+- Always 1×, a stake of $1 to $25. The claim is kept with your account; cash it out from Portfolio's **Private** pocket.
 - What it is not: anonymity. A charge and a slot's funding land seconds apart for the same figure, and the desk process sees both halves.
 
 ## Seen live

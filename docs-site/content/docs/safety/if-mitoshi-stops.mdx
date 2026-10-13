@@ -10,6 +10,9 @@ sources:
   - contracts/src/products/parlay/ParlayReserve.sol
   - contracts/src/products/leverage/LeverageReserve.sol
   - contracts/src/products/private/PrivateDesk.sol
+  - contracts/src/products/arena/ArenaMatches.sol
+  - contracts/src/products/arena/GameArena.sol
+  - contracts/src/themes/ThemeRouter.sol
   - packages/markets/src/server/auth-handler.ts
   - web/src/server/env.ts
   - docs/plan/env-matrix.md
@@ -20,7 +23,7 @@ Mitoshi's servers open Windows, post prints, quote and pay winners. If they stop
 ## What keeps working
 
 - **Settlement.** Anyone can post a Window's signed RedStone print and settle it. If no print arrives before the Window's deadline, anyone can void it: both sides get **$0.50** a contract.
-- **Payouts.** Anyone can pay a winner — the engine's `redeemFor`, Range's and Parlay's `claim`, Boost's `settle` — and the money goes only to the owner.
+- **Payouts.** Anyone can pay a winner — the engine's `redeemFor`, Range's and Parlay's `claim`, Boost's `settle`, the duel arena's `claimCredit` — and the money goes only to the owner.
 - **Your Trading Balance.** Anyone can credit a settled Window into it (`crankSettle`); only you can withdraw.
 
 ## Getting each kind of money out
@@ -37,6 +40,8 @@ Contract addresses are on [deployments](/architecture/deployments); the explorer
 | Parlay | `resolveLeg(parlayId, legIdx)` per leg, then `claim(parlayId)` | Anyone |
 | Boost | `settle(positionId)` after the Window; `close(positionId, minProceeds)` before it | Anyone; `close` you |
 | Private desk | `withdraw(amount)` — your unspent balance | You |
+| A duel | `lockPicks(matchId)` after the pick window, `settleCard(matchId, card)` per card, `finalize(matchId)`, then `claimCredit(you)`; `refundUnjoined` or `refundUnrevealed` if it never started | Anyone |
+| A followed theme | Nothing to get out: the holdings sit in your own account. `unfollow(themeId)` stops the agent | You |
 
 Your ids are also listed on chain: `roundsOf`, `parlaysOf` and `positionsOf` page through an owner's tickets.
 

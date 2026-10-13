@@ -2,10 +2,11 @@
 
 Step-by-step guides to [Mitoshi](https://testnet.mitoshi.xyz) 見通し — prediction markets and stocks on Tempo: making a
 call, Windows and lanes, signed prints and settlement, the terminal, the Trading Balance and exits, Earn, Range ·
-Moonshot · Parlay · Boost, strategies and agents, games, stocks on Tempo, who can move your money, and the architecture
-behind each path, with the deployed addresses on Moderato and dated evidence.
+Moonshot · Parlay · Boost, strategies and agents, games, trading from X, stocks, themes and launches on Tempo, the phone
+app, who can move your money, and the architecture behind each path, with the deployed addresses on Moderato and dated
+evidence.
 
-**Checked against:** app revision `595e40d` (`site.revision` in `lib/site.ts`) on 13 October 2026. The site lives in the
+**Checked against:** app revision `11d85e0` (`site.revision` in `lib/site.ts`) on 13 October 2026. The site lives in the
 app's repository at `docs-site/` and is built for `https://docs.testnet.mitoshi.xyz`. Ported from Owarine
 90a91d71:docs-site (Fumadocs on Next 16) in Mitoshi's brand (D-227).
 
@@ -19,6 +20,8 @@ app's repository at `docs-site/` and is built for `https://docs.testnet.mitoshi.
 | Exits with the app closed | [Exits](content/docs/trading/exits.mdx) |
 | Who can move your money, and if Mitoshi stops | [Safety](content/docs/safety/who-can-do-what.mdx) |
 | Copy a strategy or an agent | [Automate](content/docs/automate/overview.mdx) |
+| Games: the hall, the arcade, Lucky and Duel | [Games](content/docs/games/overview.mdx) |
+| Trade from X | [X](content/docs/x/trade-from-x.mdx) |
 | Stocks on Tempo | [Overview](content/docs/stocks/overview.mdx) |
 | How it fits together | [Architecture](content/docs/architecture/overview.mdx) |
 | Every deployed address | [Deployments](content/docs/architecture/deployments.mdx) |
@@ -73,8 +76,8 @@ screen; after it is recorded, the check lists the commits that touched them — 
 
 ## Evidence
 
-`evidence/` holds dated snapshots the guides cite: ops' `/health` and the mirrors' total supply, both read on 12 October
-2026, and the media probe of the same day. It is excluded from the image.
+`evidence/` holds dated snapshots the guides cite: ops' `/health` (12 and 13 October 2026), the mirrors' total supply,
+every admin and role read on chain, the public routes' answers, and the media probes. It is excluded from the image.
 
 ## Deploy
 

@@ -20,10 +20,4 @@ The installed app is the same site: the same passkey, the same account, the same
 
 ## The phone app
 
-**Mitoshi Testnet** for iOS and Android is the testnet site in one native web view. It adds only what a browser tab can't: a splash held until the page paints, the status bar following the theme, Android Back through the page's history, other sites in the system browser, downloads through the share sheet, and an offline screen that retries by itself.
-
-Passkeys work inside it once `mitoshi.xyz` — the domain your passkey belongs to — serves the app's association files.
-
-<Callout title="Not in a store yet">
-Both builds exist. TestFlight and Google Play's internal track each wait on the owner creating the app's store record, and the association files on the passkey's domain wait on a deploy. Until then, install from the browser.
-</Callout>
+**Mitoshi Testnet** for iOS and Android is built and waits on its store records. `mitoshi.xyz` names it in its association files, so your passkey can sign inside it. See [the phone app](/start/mobile-app).

@@ -10,6 +10,7 @@ sources:
   - infra/coolify.md
   - docs/plan/working-rules.md
   - contracts/foundry.toml
+  - mobile/README.md
 ---
 
 The repository is private. If you have access, this is the layout and the loop.
@@ -21,6 +22,7 @@ contracts/     Foundry (Tempo + evm profiles); deployments/<chainId>/<area>.json
 packages/      @cwf/core (pure rules) · markets (all chain I/O) · clients (generated) · db · brain · tokens
 services/ops   every keeper on runActor, one HTTP server
 web/           the Next.js 16 app
+mobile/        the Expo shell (iOS and Android) around the testnet site
 docs-site/     these docs — their own pnpm root and Dockerfile
 scripts/       codegen, invariants, keys, deploy, live drives, e2e
 infra/         env examples (names only), secrets' names, Coolify notes
@@ -53,7 +55,7 @@ pnpm db:migrate         # Postgres migrations
 
 ## Deploy
 
-Web and ops deploy from `integration/t1` to the owner's Coolify server, at `testnet.mitoshi.xyz` and `ops.testnet.mitoshi.xyz`. These docs build from `docs-site/` (its Dockerfile serves port 3000) for `docs.testnet.mitoshi.xyz`.
+Web and ops deploy from `integration/t1` to the owner's Coolify server, at `testnet.mitoshi.xyz` and `ops.testnet.mitoshi.xyz`. These docs build from `docs-site/` (its Dockerfile serves port 3000) for `docs.testnet.mitoshi.xyz`. The phone app builds on EAS from `mobile/` ([the phone app](/start/mobile-app)).
 
 ## These docs
 

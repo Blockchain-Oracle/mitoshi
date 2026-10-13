@@ -7,6 +7,8 @@ sources:
   - contracts/src/products/strategy/StrategyRegistry.sol
   - contracts/src/products/private/PrivateDesk.sol
   - contracts/src/products/leverage/LeverageReserve.sol
+  - contracts/src/products/arena/ArenaGateway.sol
+  - contracts/src/themes/ThemeRouter.sol
   - contracts/src/engine/verifiers/RedStonePrintVerifier.sol
   - packages/markets/src/keys/wallet-key.ts
   - packages/markets/src/sessions/session-key.ts
@@ -14,6 +16,7 @@ sources:
   - web/src/features/strategies/studio-draft.ts
   - web/src/features/session/caps.ts
   - web/src/features/terminal/server-exits.ts
+  - packages/core/src/x/grant-policy.ts
   - web/src/features/strategies/CopyDrawer.tsx
   - docs/plan/decisions.md
 ---
@@ -27,9 +30,11 @@ Most of it comes down to one fact: **a key that may sell may sell cheaply.** A s
 | **Your one-tap key** | Buy with up to $25 of new approvals; sell what your account holds on the engine at any price. | Its 24 hours, or until you revoke it. The key can't be copied out of your browser: misusing it takes your unlocked browser or code running on Mitoshi's site. |
 | **A SESSION grant** | Spend its budget inside its caps; sell what your Trading Balance holds at any price. | The budget you set aside and the grant's expiry. Same browser-bound key. |
 | **A strategy's runner** | The same, inside the strategy's envelope and your copy budget. A runner is whoever its creator named; Mitoshi's house runner only buys. | Your copy budget, what your Trading Balance holds, and the grant's expiry. |
+| **Mitoshi's X relay** · and anyone who takes your X account | Spend your X balance on calls, up to 8 open Windows; the contract would also let the relay sell what your Trading Balance holds at any price. | The X balance you funded, the grant's 30 days, and **Cash out**. |
 | **Mitoshi's exit keeper** | Sell what your Trading Balance holds down to its floor: fair value less the wider of 15 % or 10¢ a contract, the terms the app grants. | The contract's ceiling of 20 % or 15¢, and the grant's 30 days. |
+| **A theme's agent key** | Trade your holdings through the theme router, inside the follow's per-trade, daily and slippage caps; the output always comes back to you. | Each token's daily limit on the key, the caps you set, and Unfollow. |
 | **The private desk key** | Spend your private balance up to your allowance, and credit any depositor from its pool. | Your allowance; the pool holds only what was just charged or just won. |
-| **An admin key** | Pause new business; set prices and limits for new tickets and rules for Windows not yet open; raise Boost's knock-out line, which open boosts follow; skew the fair-value guard behind exit floors and the Parlay and Boost checks. | It can't move money, change an open Window, decide a result or stop withdrawals. |
+| **An admin key** | Pause new business; set prices and limits for new tickets and rules for Windows not yet open; raise Boost's knock-out line, which open boosts follow; skew the fair-value guard behind exit floors, the Parlay and Boost checks and Range's price; change the duel arena's windows. | It can't move money, change an open Window, decide a result or stop withdrawals. |
 | **The relay's fee payer** | Spend its own balance, or stop sponsoring — then each call costs you its fee. | Its balance. |
 | **Mitoshi's site, if compromised** | While you have it open: use your armed keys inside their bounds, and ask your passkey to sign. A passkey prompt doesn't show what it signs. | The trust any web wallet asks of its site. |
 | **RedStone's signers** | Three of the five together could sign a false price and decide Windows. | The oracle you trust for every result. |
@@ -44,6 +49,6 @@ Most of it comes down to one fact: **a key that may sell may sell cheaply.** A s
 
 - Every key is one key on testnet. Safes for mainnet are an open owner decision.
 - No external audit is recorded. The contracts are tested with Foundry — unit, fuzz and invariant suites — and fork-tested against Moderato.
-- Delegated sales have no price floor except EXIT's.
+- Delegated sales on the engine have no price floor except EXIT's.
 
 It's testnet: the money has no value. See [who can move what](/safety/who-can-do-what) and [if Mitoshi stops](/safety/if-mitoshi-stops).

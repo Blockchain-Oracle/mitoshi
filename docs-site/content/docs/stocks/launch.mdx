@@ -1,0 +1,53 @@
+---
+title: Launch a coin
+description: Launch a memecoin on a bonding curve or a USD stablecoin with its pair — three steps, then one confirmation — and trade it on its own page.
+sources:
+  - web/src/features/launch/copy.ts
+  - web/src/features/launch/LaunchScreen.tsx
+  - web/src/features/launch/MemeWizard.tsx
+  - web/src/features/launch/StablecoinWizard.tsx
+  - web/src/features/launch/TokenScreen.tsx
+  - web/src/features/launch/TradeSheet.tsx
+  - web/src/app/api/launch/logo/route.ts
+  - packages/markets/src/relay/policies/launch.ts
+  - services/ops/src/actors/launch-keeper
+  - docs/plan/acceptance/R4-11.md
+---
+
+<AppLink href="/launch">Launch</AppLink> lists every launch the registry records, newest first — **All**, **Memecoins**, **Stablecoins**, **Graduated** — each with how far it is from graduating. Two pills start one.
+
+<GuideCapture name="launchDesk" />
+
+## A memecoin
+
+<Steps>
+<Step>
+### Name
+
+A name, a ticker and a logo: a square PNG, JPEG or WebP up to 256 KB, stored by its hash. A ticker that is a currency code or a listed stock, or a name the word filter flags, is refused.
+</Step>
+<Step>
+### Curve
+
+Pick one of the launchpad's published curves: its price range, where it graduates, and its launch fee — high at first, falling to its floor over seconds, so snipers pay for being first.
+</Step>
+<Step>
+### Review
+
+The coin's address before it exists, and an optional buy at launch within the curve's cap. **Launch $…** is one confirmation; the relay pays the fee.
+</Step>
+</Steps>
+
+## A stablecoin
+
+Name and code (USD, locked), then the supply, an optional cap, and the pair of orders it rests on Tempo's stablecoin DEX with what the bid escrows, and the liquidity that lets it pay network fees. Review shows how a wallet will display it; type the code to confirm. You sign one batch and pay its network fee.
+
+## The coin's page
+
+`/launch/<token>`: the price from the curve's own trades, its 24-hour move, market cap, what it has raised and the fee now, the progress to graduation, then **Trades**, **Holders**, **You** and **Safety**. **Buy** and **Sell** stay above the dock, at 1 % slippage; after graduation they swap in the Uniswap pool. **Claim fees**, **Claim leftover** and **Claim pool fees** show only when something is owed.
+
+When a curve completes, ops' **launch-keeper** graduates it into its pool — "Graduating · the keeper is on it". How the curve, the graduation and the locker work: [launchpads](/stocks/launchpads).
+
+<Callout title="Seen live">
+On 13 October the app's own encoder launched "R4-11 Launch Check" with a creator buy, then bought and sold on its curve while the launch fee fell from 35.3 % to 1 %; the app's reads equalled the receipts ([evidence](/help/evidence)).
+</Callout>

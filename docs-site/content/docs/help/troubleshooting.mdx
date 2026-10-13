@@ -6,6 +6,11 @@ sources:
   - web/src/features/vault/copy.ts
   - web/src/features/earn/copy.ts
   - web/src/features/sensei/copy.ts
+  - web/src/features/funding/copy.ts
+  - web/src/features/range/copy.ts
+  - web/src/features/games/lucky/copy.ts
+  - web/src/features/games/duel/copy.ts
+  - web/src/features/x/copy.ts
   - web/src/app/api/faucet/route.ts
   - packages/core/src/fair/guard-spec.json
 ---
@@ -17,14 +22,18 @@ sources:
 | "Trading halted" / "Signed price stale" | The exchange stopped the stock, or the signed price went stale or short of signers. | Wait; the banner says since when. Open calls settle or void. |
 | "Price moved" | The book moved between your tap and the fill. | Tap again to take the new price. |
 | "Top up to place this" | Your balance is short. | Add money (once a day on testnet) or a smaller size. |
-| "This wallet already got test funds today." | The faucet's daily cooldown. | Add money says when you can claim again. |
+| "Already funded today." | The faucet's daily cooldown. | Add money says when you can claim again. |
 | "Turn on one-tap first" | A trail needs one-tap to sell without a prompt. | Turn on one-tap, or set a TP / SL from the Trading Balance. |
 | "Keeper waiting: …" | No bid meets your exit's floor yet. | It retries until the Window locks; it never sells lower. |
 | "This Window has no fair-value model yet" (Boost), "… can't be priced into a parlay yet" | The fair-value guard has no volatility or signed spot for that series. | Pick another Window. |
 | "The book is too thin…" | Not enough resting depth to price the ticket. | Try a smaller size or another Window; nothing was taken. |
 | "Your account's receive policy blocks this payment" | A Tempo receive policy refused the transfer, so nothing moved. | Allow the vault or reserve in your policy and try again. |
-| "Maker off · no new quotes" | The maker vault has no maker set. | Earn still settles and withdraws; quotes resume when it is set. |
-| "Sensei isn't switched on here yet" | No model is configured on this server. | Everything else works without it. |
+| "Maker off" | The maker vault has no maker set. | Earn still settles and withdraws; quotes resume when it is set. |
+| "Sensei is off on this server." | No model is configured on this server. | Everything else works without it. |
+| "Book too thin · try another" (Range) | The Window's book can't centre a band yet. | Pick another Window, or wait for its quotes to rest. |
+| "No deal · …" (Lucky) | No live Window of the drawn asset can fill your stake now. | Spin again or pick a smaller chip; nothing was spent. |
+| "No deck · …" (Duel) | No set of live 15-minute or one-hour Windows can be dealt yet. | The queue says when the next deck can deal; you keep your place. |
+| "Paused: X wants API credits" (Trade from X) | The relay can't read mentions through X right now. | Your X balance stays put. A call read more than one Window late is refused, never placed late; post again once it resumes. |
 | A Window shows **VOID** | No reliable print in time. | Both sides get half; see [settlement](/trading/settlement). |
 
 Still stuck? <AppLink href="/status">Status</AppLink> shows every service live, and <AppLink href="/contact">Contact</AppLink> reaches the team.
