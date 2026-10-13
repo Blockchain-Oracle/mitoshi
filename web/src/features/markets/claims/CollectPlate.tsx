@@ -14,7 +14,8 @@ import { formatCadence } from "@cwf/core/copy";
 import { shortHex } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import { useState } from "react";
-import { Masked, PillButton } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { PillButton } from "@/components/kit/PillButton";
 import { Receipt, ReceiptRow } from "@/components/receipt";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { BOOST } from "@/features/boost/copy";
@@ -24,6 +25,7 @@ import { webEnv } from "@/lib/env";
 import { usePrivacy } from "@/lib/privacy";
 import { CLAIM } from "../copy";
 import { collectableRows, useCollect } from "./useCollect";
+import "@/components/kit/kit.css";
 
 const usd = (base: bigint, decimals: number) => <Masked>{money(base, false, decimals)}</Masked>;
 

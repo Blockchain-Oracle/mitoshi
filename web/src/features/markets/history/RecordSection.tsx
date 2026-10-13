@@ -5,7 +5,7 @@
 // on Trader Edge, the one place it is drawn.
 import { computeTraderEdge, type Address, type Reading, type WalletHistory } from "@cwf/core";
 import { useMemo } from "react";
-import { SectionHeader } from "@/components/kit";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { ReadingBoundary } from "@/components/states";
 import { useReserveShares } from "@/features/earn/shares";
 import { recordOf } from "@/features/edge/record";
@@ -13,6 +13,7 @@ import { HISTORY } from "../copy";
 import { BadgeGrid } from "./BadgeGrid";
 import { HistorySummary } from "./HistorySummary";
 import { ReputationPanel } from "./ReputationPanel";
+import "@/components/kit/kit.css";
 
 export function RecordSection({ history, openCount, address, index, retry }: { history: Reading<WalletHistory> | null; openCount: number | null; address: Address; index: string; retry: () => void }) {
   const value = history?.ok ? history.value : null;

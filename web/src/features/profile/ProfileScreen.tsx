@@ -6,7 +6,7 @@
 import { addressUrl, type Address } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import { connection } from "next/server";
-import { SectionHeader } from "@/components/kit";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { AccountAvatar } from "@/components/shell/header/AccountAvatar";
 import { BadgeGrid } from "@/features/markets/history/BadgeGrid";
 import { ReputationPanel } from "@/features/markets/history/ReputationPanel";
@@ -24,6 +24,7 @@ import { ProfileOpen, ProfileTakes } from "./ProfileLive";
 import "@/styles/news.css";
 import "@/styles/news-wire.css";
 import "./profile.css";
+import "@/components/kit/kit.css";
 
 const when = (sec: number) => new Date(sec * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
 const roi = (bps: number | null) => (bps === null ? P.dash : `${bps > 0 ? "+" : bps < 0 ? "−" : ""}${Math.abs(bps / 100).toFixed(1)}%`);

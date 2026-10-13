@@ -4,12 +4,13 @@
 // needs attention in full, then every check by the system it watches as dropdowns (a system with a problem starts
 // open), two stacks on wide screens. The footer's ring counts down to the next read, every 30 s.
 import { Activity, ArrowLeftRight, Boxes, CalendarClock, HandCoins, LineChart, Wallet, type LucideIcon } from "lucide-react";
-import { CountdownRing } from "@/components/kit";
+import { CountdownRing } from "@/components/kit/CountdownRing";
 import { cn } from "@/lib/utils";
 import { BoardBanner, BoardStack, CheckLine, RANK, SystemItem, TONE, type BoardTone } from "./BoardParts";
 import { STATUS } from "./copy";
 import type { StatusGroup, StatusReport, StatusRow } from "./probes";
 import { STATUS_POLL_MS, useStatus } from "./useStatus";
+import "@/components/kit/kit.css";
 
 const GLYPH: Record<StatusGroup, LucideIcon> = { Chain: Boxes, Prices: LineChart, Windows: Activity, Payouts: HandCoins, Markets: CalendarClock, Fees: Wallet, Bridge: ArrowLeftRight };
 /** Checks that open a board of their own: the halts board, and the settled prints' proofs. */

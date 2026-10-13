@@ -10,7 +10,8 @@ import { useEffect, useState } from "react";
 import type { Address } from "@cwf/core";
 import { useVaultSnapshot } from "@cwf/markets/react";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
-import { HoldToConfirm, Masked } from "@/components/kit";
+import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
+import { Masked } from "@/components/kit/Masked";
 import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { GRANT_KIND_INDEX } from "@cwf/core";
 import { AccountAvatar } from "@/components/shell/header/AccountAvatar";
@@ -24,6 +25,7 @@ import { useWalletShell, type TempoAccountKind } from "@/providers/wallet/wallet
 import { ACCOUNT_PAGE } from "./copy";
 import { liveGrantsOf } from "./GrantsSection";
 import { keysQueryKey, useActiveKeys } from "./useKeys";
+import "@/components/kit/kit.css";
 
 const P = ACCOUNT_PAGE;
 const MAX_PER_TX = 8;

@@ -2,7 +2,7 @@
 // chain; `?follow=1` opens the follow sheet (the catalogue's Follow pill). An id that isn't a theme number says so.
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { ThemeScreen } from "@/features/themes/ThemeScreen";
+import { ThemeIsland } from "@/features/themes/islands";
 import { DataGate } from "@/providers/data/DataGate";
 import Loading from "./loading";
 
@@ -19,7 +19,7 @@ async function Theme({ params, searchParams }: { params: Params; searchParams: S
   if (!/^\d{1,18}$/.test(slug)) return <p className="th-note">No theme with this number.</p>;
   return (
     <DataGate fallback={<Loading />}>
-      <ThemeScreen themeId={BigInt(slug)} openFollow={follow === "1"} />
+      <ThemeIsland themeId={BigInt(slug)} openFollow={follow === "1"} />
     </DataGate>
   );
 }

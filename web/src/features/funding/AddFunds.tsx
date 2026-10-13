@@ -15,7 +15,9 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Check, Copy, Loader2, QrCode } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Masked, PillButton, SlideOver, SlideOverContent } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { PillButton } from "@/components/kit/PillButton";
+import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
 import { dollars } from "@/providers/wallet/format";
@@ -26,6 +28,7 @@ import { FundedReceipt } from "./FundedReceipt";
 import { ReceiveQr } from "./ReceiveQr";
 import { useFaucetClaim } from "./useFaucetClaim";
 import "@/styles/vault.css";
+import "@/components/kit/kit.css";
 
 export function laterText(ms: number): string {
   return new Date(ms).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });

@@ -7,7 +7,7 @@
 import type { MarketId } from "@cwf/core";
 import type { RangeReserveState } from "@cwf/core/range";
 import { useState } from "react";
-import { formatLeft } from "@/components/kit";
+import { formatLeft } from "@/components/kit/CountdownRing";
 import { ErrorState, LoadingState } from "@/components/states";
 import { useNowMs } from "@/lib/clock";
 import { usePersistedState } from "@/lib/persisted";
@@ -19,6 +19,7 @@ import { GameHead } from "./GameHead";
 import { RangeRounds, useRoundsSummary, type RoundKind } from "./RangeRounds";
 import type { useRangeWrites } from "./useRangeWrites";
 import { cadenceKeyOf } from "./WindowPicker";
+import "@/components/kit/kit.css";
 
 const KEY_CODEC = { parse: (raw: string) => raw, serialize: (v: string) => v };
 const laneOf = (w: BandWindow) => `${w.market.asset}|${w.market.lane}|${w.market.intervalSec}`;

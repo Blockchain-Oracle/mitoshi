@@ -6,12 +6,14 @@
 import { useLaunches } from "@cwf/markets/react";
 import Link from "next/link";
 import { useState } from "react";
-import { pillButtonVariants, TextTabs } from "@/components/kit";
+import { pillButtonVariants } from "@/components/kit/PillButton";
+import { TextTabs } from "@/components/kit/TextTabs";
 import { EmptyState } from "@/components/kit/desk-kit";
 import { Rocket } from "lucide-react";
 import { LAUNCH } from "./copy";
 import { LaunchRow } from "./LaunchRow";
 import "@/styles/launch.css";
+import "@/components/kit/kit.css";
 
 type Tab = "all" | "meme" | "stable" | "graduated";
 

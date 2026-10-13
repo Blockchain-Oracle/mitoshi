@@ -4,12 +4,13 @@
 // cash-out unless they are yours), once the data layer exists; and its takes, live on the stream.
 import type { Address } from "@cwf/core";
 import dynamic from "next/dynamic";
-import { SectionHeader } from "@/components/kit";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { LoadingState } from "@/components/states";
 import { TakeCard } from "@/features/social/TakesPanel";
 import { useTakes } from "@/features/social/useTakes";
 import { useDataReady } from "@/providers/data/context";
 import { PROFILE as P } from "./copy";
+import "@/components/kit/kit.css";
 
 const OpenCalls = dynamic(() => import("./ProfileOpenCalls").then((m) => m.ProfileOpenCalls), { ssr: false, loading: () => <LoadingState shape="row" /> });
 

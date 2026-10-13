@@ -11,7 +11,7 @@ import { useMarket } from "@cwf/markets/react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowDownRight, ArrowUpRight, Check, ChevronDown, Layers, Target, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Odometer } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { usdBand } from "@/features/range/format";
 import { rangeBetId } from "./useTerminalBets";
@@ -23,6 +23,7 @@ import { clockText, money, moneyDecimals, USD_DECIMALS } from "../format";
 import { useCommittedSpot } from "../live";
 import type { Valued } from "../positions-totals";
 import { bandChanceE6, legChanceE6, markParlayBase, markRangeBase, printToE8 } from "./price";
+import "@/components/kit/kit.css";
 
 const B = TERMINAL.positions.bets;
 const cadence = (sec: number | null) => (sec === null ? "" : sec % 3600 === 0 ? `${sec / 3600}h` : `${Math.round(sec / 60)}m`);

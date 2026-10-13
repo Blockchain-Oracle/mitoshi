@@ -9,11 +9,12 @@
  */
 import { formatBaseUnits, realizedYield, type ReserveSheet, type SupplierPosition } from "@cwf/core";
 import type { SupplyLedger } from "@cwf/markets/maker";
-import { Odometer } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
 import { EARN } from "./copy";
 import { forView, formatSharePrice, money2 } from "./format";
+import "@/components/kit/kit.css";
 
 interface SupplyPositionProps {
   sheet: ReserveSheet;

@@ -10,7 +10,8 @@
  */
 import { withdrawSharesFor, type ReserveSheet, type SupplierPosition, type TxState } from "@cwf/core";
 import { useState } from "react";
-import { CapitalBar, PillButton } from "@/components/kit";
+import { CapitalBar } from "@/components/kit/CapitalBar";
+import { PillButton } from "@/components/kit/PillButton";
 import { TxCta, TxFailureCard, type SignerKind, type TxRunner } from "@/components/tx";
 import { SheetFooter } from "@/components/ui/overlay-footer";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -22,6 +23,7 @@ import { EARN } from "./copy";
 import { amountBase, money2, quickAmounts } from "./format";
 import type { ReserveWords } from "./reserves";
 import type { EarnWrites } from "./useEarnWrites";
+import "@/components/kit/kit.css";
 
 const idleOr = (tx: TxRunner, blocker: string | null): TxState => (blocker ? { kind: "blocked", reason: blocker } : tx.state.kind === "confirmed" ? { kind: "idle" } : tx.state);
 

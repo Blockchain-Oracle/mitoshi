@@ -14,7 +14,8 @@ import { USD_DECIMALS, type Address } from "@cwf/core";
 import { formatBaseUnits, parseDecimalToBaseUnits, shortHex } from "@cwf/core/units";
 import { useBalanceSheet, useVaultSnapshot } from "@cwf/markets/react";
 import { useState } from "react";
-import { Masked, PillButton } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { PillButton } from "@/components/kit/PillButton";
 import { EmptyState, LoadingState } from "@/components/states";
 import { accountSigner } from "@/features/receipts/write-receipt";
 import { AmountField, amountProblem } from "@/features/vault/AmountField";
@@ -26,6 +27,7 @@ import { PrivateClaims } from "./PrivateClaims";
 import { usePrivateActions, usePrivateBudget, usePrivateClaims, usePrivateStatus } from "./usePrivate";
 import "@/styles/private.css";
 import "@/styles/vault.css";
+import "@/components/kit/kit.css";
 
 const D = PRIVATE.desk;
 const usd = (base: bigint) => `$${formatBaseUnits(base, USD_DECIMALS, { minDp: 2, maxDp: 2 })}`;

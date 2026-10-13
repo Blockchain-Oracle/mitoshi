@@ -6,11 +6,12 @@
 // Follow (accent) and Details. Every figure is the chain's.
 import Link from "next/link";
 import type { ThemeView } from "@cwf/markets/themes";
-import { pillButtonVariants } from "@/components/kit";
+import { pillButtonVariants } from "@/components/kit/PillButton";
 import { LogoStack, PartitionBar, Sparkline } from "@/components/kit/desk-kit";
 import { THEMES } from "./copy";
 import { everyText, pct, sessionsText, sliceColor, usd18, weightedPrice } from "./format";
 import { useThemeWeek } from "./useThemeWeek";
+import "@/components/kit/kit.css";
 
 const C = THEMES.card;
 

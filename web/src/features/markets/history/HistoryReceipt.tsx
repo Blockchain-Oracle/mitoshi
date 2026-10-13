@@ -10,13 +10,15 @@ import { shortHex } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import { useMarket, useResolution } from "@cwf/markets/react";
 import Link from "next/link";
-import { Masked, SlideOver, SlideOverContent } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { Receipt, ReceiptRow } from "@/components/receipt";
 import { money } from "@/features/terminal/format";
 import { webEnv } from "@/lib/env";
 import { HERO, HISTORY, MARKETS, VERDICT_UI } from "../copy";
 import { usdText } from "../units";
 import { PnlFigure, VerdictLegs, VerdictStamp } from "../verdict/VerdictStamp";
+import "@/components/kit/kit.css";
 
 function ReceiptBody({ round }: { round: SettledRound }) {
   const market = useMarket(round.marketId);

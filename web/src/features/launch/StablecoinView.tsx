@@ -3,10 +3,11 @@
 // events) and its FeeAMM pool — what lets it pay network fees — straight from the chain. No launch at the address says so.
 import type { Address } from "@cwf/core";
 import { useStablecoinLaunch } from "@cwf/markets/react";
-import { GroupedList } from "@/components/kit";
+import { GroupedList } from "@/components/kit/GroupedList";
 import { LAUNCH } from "./copy";
 import { coinText, usdText } from "./format";
 import { LogoDisc } from "./LogoDisc";
+import "@/components/kit/kit.css";
 
 const K = LAUNCH.token;
 const S = K.stable;

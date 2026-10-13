@@ -10,7 +10,7 @@
  * closed one is what it paid back against its stake.
  */
 import type { Address } from "@cwf/core";
-import { PositionCard } from "@/components/kit";
+import { PositionCard } from "@/components/kit/PositionCard";
 import { statusText } from "@/features/terminal/position-return";
 import { centsOf } from "@/features/terminal/format";
 import type { PositionValue } from "@/features/terminal/usePositionValue";
@@ -24,6 +24,7 @@ import { ReadingBoundary } from "@/components/states";
 import { usd } from "../parlay/format";
 import { BOOST } from "./copy";
 import { boostKeys, useBoostWrites } from "./useBoostWrites";
+import "@/components/kit/kit.css";
 
 const B = BOOST.bets;
 

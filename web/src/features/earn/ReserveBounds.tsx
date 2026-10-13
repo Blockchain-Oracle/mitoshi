@@ -8,13 +8,14 @@
  */
 import type { ReserveSheet } from "@cwf/core";
 import type { CSSProperties } from "react";
-import { CapitalBar } from "@/components/kit";
+import { CapitalBar } from "@/components/kit/CapitalBar";
 import SectionHead from "@/components/shell/SectionHead";
 import { InfoPopover } from "@/components/ui/info-popover";
 import type { BoundRow } from "./bounds";
 import { EARN } from "./copy";
 import { bpsPct, money2 } from "./format";
 import type { ReserveWords } from "./reserves";
+import "@/components/kit/kit.css";
 
 interface ReserveBoundsProps {
   sheet: ReserveSheet;

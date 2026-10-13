@@ -9,7 +9,8 @@
 import { bookStructure, formatCadence } from "@cwf/core";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { pillButtonVariants, SectionHeader } from "@/components/kit";
+import { pillButtonVariants } from "@/components/kit/PillButton";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { ReadingBoundary } from "@/components/states";
 import { useMarketSession } from "@/features/markets/session";
 import { terminalHref } from "@/features/terminal/route";
@@ -21,6 +22,7 @@ import { SurfaceChips } from "./SurfaceChips";
 import { TermStructure } from "./TermStructure";
 import { useFocalFigures, useSurfaceSelection } from "./useSurface";
 import "@/styles/surface.css";
+import "@/components/kit/kit.css";
 
 const HeroDepth = dynamic(() => import("../markets/hero/HeroDepth"), { ssr: false, loading: () => <div className="sf-box sf-box--chart" /> });
 

@@ -14,13 +14,16 @@ import { SCOPE_CHUNK, splitFollowTokens, type ThemeView } from "@cwf/markets/the
 import { invalidateThemes, useThemeFollow, useThemeHoldings, useThemeUnscoped } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { HoldToConfirm, PillButton, SlideOver, SlideOverContent } from "@/components/kit";
+import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
+import { PillButton } from "@/components/kit/PillButton";
+import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { notify } from "@/lib/toast";
 import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { useSocialSession } from "@/features/social/session";
 import { useWalletSession } from "@/lib/wallet-session";
 import { THEMES } from "./copy";
 import { sessionsText } from "./format";
+import "@/components/kit/kit.css";
 
 const F = THEMES.follow;
 const KEY_POLL_MS = 3_000;

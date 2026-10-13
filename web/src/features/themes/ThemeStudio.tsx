@@ -11,7 +11,7 @@ import { invalidateThemes, useEligibleMirrors } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
-import { pillButtonVariants } from "@/components/kit";
+import { pillButtonVariants } from "@/components/kit/PillButton";
 import { Donut, PartitionBar, RadioCards, Slider } from "@/components/kit/desk-kit";
 import { signerOfKind as signerOf, TxCta, TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { StudioWizard } from "@/components/ui/wizard-steps";
@@ -19,6 +19,7 @@ import { useWalletSession } from "@/lib/wallet-session";
 import { THEMES } from "./copy";
 import { pct, sliceColor, usd18 } from "./format";
 import "@/styles/themes.css";
+import "@/components/kit/kit.css";
 
 const S = THEMES.studio;
 // ThemeRegistry's MAX_TOKENS; past five a follow is split into one signature per five more stocks (D-100).

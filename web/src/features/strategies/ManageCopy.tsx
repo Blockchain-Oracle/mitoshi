@@ -5,7 +5,7 @@
 // copy renews through the same form as a new one, and can be stopped from here (its footer is the renewal).
 import type { SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
-import { Masked } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
 import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { TxFailureCard } from "@/components/tx";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
@@ -17,6 +17,7 @@ import { strategyIdentity } from "./identity";
 import { usdSigned } from "./format";
 import type { MinePayload, StrategyWire } from "./protocol";
 import type { CopyWrites } from "./useCopyWrites";
+import "@/components/kit/kit.css";
 
 type Sub = MinePayload["subscriptions"][number];
 const M = COPY.manage;

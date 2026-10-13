@@ -6,12 +6,13 @@ import { TEMPO_RPC_HTTP, txUrl, type Network } from "@cwf/core";
 import { formatCadence } from "@cwf/core/copy";
 import Link from "next/link";
 import { connection } from "next/server";
-import { SectionHeader } from "@/components/kit";
+import { SectionHeader } from "@/components/shell/SectionHeader";
 import { Receipt, ReceiptRow } from "@/components/receipt";
 import { webEnv } from "@/lib/env";
 import { PROOF } from "./copy";
 import { readProof, type ProofPrint, type ProofWindow } from "./data";
 import { ProofVerify, ReverifyAll, ReverifyResults, type ProofCheck } from "./ProofVerify";
+import "@/components/kit/kit.css";
 
 const utc = (sec: number) => new Date(sec * 1000).toISOString().replace("T", " ").slice(0, 16);
 const usd = (e8: string) => `$${(Number(e8) / 1e8).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`;

@@ -13,12 +13,13 @@ import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, type ReactNode } from "react";
-import { PillButton } from "@/components/kit";
+import { PillButton } from "@/components/kit/PillButton";
 import { LoadingState } from "@/components/states/LoadingState";
 import { useWalletSession } from "@/lib/wallet-session";
 import { EDGE } from "./copy";
 import { EdgeReport } from "./EdgeReport";
 import "@/styles/edge-phone.css";
+import "@/components/kit/kit.css";
 
 const START = "/trade/BTC";
 

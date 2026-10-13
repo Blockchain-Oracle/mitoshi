@@ -7,13 +7,15 @@
 import Link from "next/link";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { GroupedList, GroupedToggle, PillButton } from "@/components/kit";
+import { GroupedList, GroupedToggle } from "@/components/kit/GroupedList";
+import { PillButton } from "@/components/kit/PillButton";
 import { notificationState, requestNotificationPermission, type NotificationState } from "@/features/alerts/notifications";
 import { ALERTS } from "@/features/alerts/copy";
 import { loadAlerts, removeAlert, subscribeAlerts, type PriceAlert } from "@/features/alerts/store";
 import { NOTICE_SETTINGS as S } from "./copy";
 import { setNoticeTopics, useNoticeTopics, type NoticeTopics } from "./topics";
 import "@/styles/account.css";
+import "@/components/kit/kit.css";
 
 const usd = (cents: number) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 

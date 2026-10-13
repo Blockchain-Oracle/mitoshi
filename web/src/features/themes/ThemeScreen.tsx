@@ -13,7 +13,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { shortHex } from "@cwf/core/units";
 import { ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
-import { PillButton, TextTabs, TextTabPanel } from "@/components/kit";
+import { PillButton } from "@/components/kit/PillButton";
+import { TextTabs, TextTabPanel } from "@/components/kit/TextTabs";
 import { Donut, LogoStack, PartitionBar, Sparkline, StatusDot, Timeline, TimelineNode } from "@/components/kit/desk-kit";
 import { webEnv } from "@/lib/env";
 import { signerOfKind as signerOf, TxCta, useTxLifecycle } from "@/components/tx";
@@ -24,6 +25,7 @@ import { ThemeYou } from "./ThemeYou";
 import { useThemeWeek } from "./useThemeWeek";
 import { everyText, pct, sessionsText, sliceColor, usd18, usd6, weightedPrice } from "./format";
 import "@/styles/themes.css";
+import "@/components/kit/kit.css";
 
 const T = THEMES.theme;
 type Tab = "overview" | "holdings" | "activity" | "rules";

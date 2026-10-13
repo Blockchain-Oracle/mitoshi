@@ -12,12 +12,13 @@ import { useState } from "react";
 import { createWebAuthnCredential } from "viem/account-abstraction";
 import { getAddress, keccak256, type Hex } from "viem";
 import { useTxLifecycle } from "@/components/tx";
-import { PillButton } from "@/components/kit";
+import { PillButton } from "@/components/kit/PillButton";
 import { StepProgress } from "@/components/kit/desk-kit";
 import { cn } from "@/lib/utils";
 import { diagnosisCopy } from "@/lib/copy";
 import { notify } from "@/lib/toast";
 import { BACKUP } from "./backup-copy";
+import "@/components/kit/kit.css";
 
 interface BackupAnswer {
   account: string;

@@ -3,9 +3,12 @@
 // grab bar; the footer rides the phone keyboard), Back closing it (`?d=`), and a modal that is a sheet on a phone with a
 // body action moved into its footer. Desktop keeps the right drawer and the centred modal (D-222). Fixture inputs only.
 import { useState } from "react";
-import { Modal, PillButton, SheetFooter, SlideOver, SlideOverContent } from "@/components/kit";
+import { Modal } from "@/components/ui/modal";
+import { PillButton } from "@/components/kit/PillButton";
+import { SheetFooter, SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { closeDrawer, openDrawer } from "@/lib/drawer-param";
 import { Fixture } from "./KitFixtures";
+import "@/components/kit/kit.css";
 
 export function OverlayFixtures() {
   const [step, setStep] = useState<1 | 2>(1);

@@ -11,7 +11,7 @@ import { isOk } from "@cwf/core";
 import { useOpeningPrice } from "@cwf/markets/react";
 import { useState } from "react";
 import { Countdown } from "@/components/data";
-import { ScrollRail } from "@/components/kit";
+import { ScrollRail } from "@/components/kit/ScrollRail";
 import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { useNowMs } from "@/lib/clock";
 import { cn } from "@/lib/utils";
@@ -23,6 +23,7 @@ import { AssetDisc } from "../hero/AssetDisc";
 import { usdLine } from "../units";
 import { PinnedCall } from "./PinnedCall";
 import { usePinned } from "./usePinned";
+import "@/components/kit/kit.css";
 
 const keyOf = (call: PlacedCall) => `${call.marketId}:${call.side}`;
 

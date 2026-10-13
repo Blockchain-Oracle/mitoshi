@@ -2,9 +2,10 @@
 // Sound & Vibration (S22.6, D-189) as the account page's DEVICE rows (R4-11, D-227; Owarine 90a91d71 AccountSheet's
 // FEEDBACK group: toggle rows with labels only, Trade reactions alone with a line under it). The four device settings
 // the shell and the terminal read through `lib/feedback.ts`; turning sounds on plays the tap so the change is heard.
-import { GroupedToggle } from "@/components/kit";
+import { GroupedToggle } from "@/components/kit/GroupedList";
 import { setFeedback, tapFeedback, useFeedback, type FeedbackSettings } from "@/lib/feedback";
 import { ACCOUNT_PAGE } from "./copy";
+import "@/components/kit/kit.css";
 
 const F = ACCOUNT_PAGE.feedback;
 

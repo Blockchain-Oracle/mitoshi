@@ -8,7 +8,9 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Bell, Download, KeyRound, Link2, ShieldCheck, Trash2, Wallet } from "lucide-react";
 import { useBalanceSheet } from "@cwf/markets/react";
 import type { Address, RegionPosture } from "@cwf/core";
-import { GroupedItem, GroupedList, PillButton, SlideOver, SlideOverContent } from "@/components/kit";
+import { GroupedItem, GroupedList } from "@/components/kit/GroupedList";
+import { PillButton } from "@/components/kit/PillButton";
+import { SlideOver, SlideOverContent } from "@/components/ui/drawer";
 import { webEnv } from "@/lib/env";
 import { readRegionPosture } from "@/lib/region-mark";
 import { useWalletSession } from "@/lib/wallet-session";
@@ -27,6 +29,7 @@ import { KeysSection } from "./KeysSection";
 import { useKeyCounts } from "./useKeys";
 import { useBackupCount, useBackupNeeded } from "./useBackupNeeded";
 import "@/styles/account.css";
+import "@/components/kit/kit.css";
 
 const P = ACCOUNT_PAGE;
 type Drill = "backup" | "keys" | "grants" | "linked" | "delete";

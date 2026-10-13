@@ -7,13 +7,15 @@ import { roundsToCsv, type TraderEdge, type WalletHistory } from "@cwf/core";
 import { Download } from "lucide-react";
 import { useCallback } from "react";
 import { EquitySparkline } from "@/components/data/EquitySparkline";
-import { Masked, PillButton } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
+import { PillButton } from "@/components/kit/PillButton";
 import { money } from "@/features/terminal/format";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
 import { notify } from "@/lib/toast";
 import { cn } from "@/lib/utils";
 import { HISTORY } from "../copy";
+import "@/components/kit/kit.css";
 
 function useCsvDownload(history: WalletHistory, address: string) {
   return useCallback(() => {

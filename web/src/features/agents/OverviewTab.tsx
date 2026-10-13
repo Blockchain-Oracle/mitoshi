@@ -2,7 +2,7 @@
 // Ported from Owarine 90a91d71:web/src/features/desk/cockpit/{OverviewTab,LimitGauges}.tsx (R4-6, D-227) — the latest
 // decision as its card (it opens the Decisions tab), the strategy's on-chain limits as figures, and — when this wallet
 // copies it — its own copy's gauges off the live vault grant: spent today against the daily cap, open against the most.
-import { Masked } from "@/components/kit";
+import { Masked } from "@/components/kit/Masked";
 import { RadialGauge } from "@/components/kit/desk-kit";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
@@ -12,6 +12,7 @@ import type { StrategyDetailPayload } from "../strategies/protocol";
 import type { CopyWrites } from "../strategies/useCopyWrites";
 import { AGENTS } from "./copy";
 import { DecisionCard } from "./DecisionTimeline";
+import "@/components/kit/kit.css";
 
 const C = AGENTS.cockpit;
 const share = (part: bigint, whole: bigint) => (whole <= 0n ? 0 : Number((part * 10_000n) / whole) / 100);

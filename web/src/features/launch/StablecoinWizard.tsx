@@ -10,7 +10,7 @@ import { invalidateLaunch, readReceipt } from "@cwf/markets/react";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
-import { pillButtonVariants } from "@/components/kit";
+import { pillButtonVariants } from "@/components/kit/PillButton";
 import { signerOfKind as signerOf, TxCta, TxFailureCard, TypedConfirm, useTxLifecycle } from "@/components/tx";
 import { ImageDropzone, type UploadedLogo } from "@/components/ui/image-dropzone";
 import { StudioWizard } from "@/components/ui/wizard-steps";
@@ -21,6 +21,7 @@ import { coinText, parseAmount, usdText } from "./format";
 import { LogoDisc } from "./LogoDisc";
 import { useNameFlag } from "./useNameFlag";
 import "@/styles/launch.css";
+import "@/components/kit/kit.css";
 
 const S = LAUNCH.stable;
 const idleOr = (state: TxState, blocker: string | null): TxState => (blocker ? { kind: "blocked", reason: blocker } : state);

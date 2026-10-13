@@ -8,7 +8,7 @@
 import { useOpeningPrice } from "@cwf/markets/react";
 import { ArrowDown, ArrowDownRight, ArrowUp, ArrowUpRight, CandlestickChart, ChevronDown, LoaderCircle, Lock } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Odometer } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { SHELL } from "@/lib/copy";
 import { usePrivacy } from "@/lib/privacy";
@@ -24,6 +24,7 @@ import { ParlayRow, RangeRow } from "../parlay/BetRows";
 import { rangeBetId, type useTerminalBets } from "../parlay/useTerminalBets";
 import type { Valued } from "../positions-totals";
 import { useRowTrail } from "../useTrail";
+import "@/components/kit/kit.css";
 
 const noTrail = () => undefined;
 const dollars = (base: bigint, decimals: number) => Number(base) / 10 ** decimals;

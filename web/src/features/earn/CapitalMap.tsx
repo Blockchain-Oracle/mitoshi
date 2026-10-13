@@ -13,13 +13,16 @@ import { TICKERS, isTickerSymbol, type MarketId } from "@cwf/core";
 import type { MakerVaultState } from "@cwf/core/maker";
 import type { MakerWindowRow } from "@cwf/markets/maker";
 import { useState } from "react";
-import { CapitalBar, PillButton, TextTabs, type CapitalSegment } from "@/components/kit";
+import { CapitalBar, type CapitalSegment } from "@/components/kit/CapitalBar";
+import { PillButton } from "@/components/kit/PillButton";
+import { TextTabs } from "@/components/kit/TextTabs";
 import SectionHead from "@/components/shell/SectionHead";
 import { EARN } from "./copy";
 import { bpsOf, bpsPct, money2 } from "./format";
 import { RESERVES } from "./reserves";
 import type { EarnWrites } from "./useEarnWrites";
 import { WindowRow } from "./WindowRow";
+import "@/components/kit/kit.css";
 
 const MAX_ASSETS = 4;
 

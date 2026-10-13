@@ -9,11 +9,13 @@
  */
 import { USD_DECIMALS } from "@cwf/core";
 import type { ReactNode } from "react";
-import { Odometer, TextTabs } from "@/components/kit";
+import { Odometer } from "@/components/kit/Odometer";
+import { TextTabs } from "@/components/kit/TextTabs";
 import { cn } from "@/lib/utils";
 import { RANGE } from "./copy";
 // Its styles travel with it: the terminal's Parlay mode shows it without the Range island's sheet.
 import "@/styles/range.css";
+import "@/components/kit/kit.css";
 
 const CHIPS = ["1", "5", "20", "50"] as const;
 const UNIT = 10 ** USD_DECIMALS;
