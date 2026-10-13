@@ -6,6 +6,9 @@ sources:
   - web/src/lib/copy.ts
   - web/src/components/shell/TopLine.tsx
   - web/src/lib/capabilities.ts
+  - web/src/components/shell/ModePlate.tsx
+  - web/src/components/shell/header/MoneyPill.tsx
+  - web/src/components/ui/command-palette.tsx
 ---
 
 ## The six places
@@ -21,6 +24,8 @@ sources:
 
 On a desk they sit in the rail on the left. On a phone the dock holds Trade, Markets, the 見通し seal, Portfolio and **More**.
 
+The rail's stamp says which world you are in: **練 DEMO** signed out (paper dollars on live prices), **試 TESTNET** signed in. Your money sits at its foot and in the top line, with an eye that hides every balance and P&L on this device and a **+** for Add money.
+
 <GuideCapture name="marketsDesk" caption="The rail on the left holds the six places." />
 
 <GuideCapture name="marketsPhone" caption="On a phone the dock holds Trade, Markets, the seal, Portfolio and More." />
@@ -29,20 +34,20 @@ On a desk they sit in the rail on the left. On a phone the dock holds Trade, Mar
 
 **More** lists everything that is not a place, grouped:
 
-- **More ways to trade:** Parlay, Earn, Themes, Launch, Bridge, Reserves, Market Surface, Sensei, X-trade.
+- **More ways to trade:** Short (the terminal on Boost, DOWN picked), Parlay, Earn, Themes, Launch, Bridge, Backing, Market Surface, Sensei, X-trade.
 - **Learn:** Demo, News, How it works, Download, Reels, Docs (these guides), Reference (the app's own short pages), Pitch.
 - **Games:** Practice, Duel, Lucky, Range, Moonshot, Line Rider, Candle Hop.
 - **Automate:** Agents.
-- **Records and proof:** Activity, Trader Edge, Stats, Game ranks, Games history, Status, Trading halts.
+- **Records and proof:** Activity, Trader Edge, Stats, Game ranks, Games history, Status, Trading halts, Print proofs.
 - **Account:** Account & keys, Notifications, X recovery.
 
-A few of these are registered but not built yet; each says so and names what it waits on rather than show invented numbers. [Availability](/help/availability) lists them.
+More's search pill opens the same search as ⌘ K.
 
 ## Search and shortcuts
 
 | Keys | Does |
 | --- | --- |
 | 1 – 6 | Jump to a place |
-| ⌘ K or / | Search markets and pages |
+| ⌘ K or / | Search: the six places, then every asset with a live Window, then stocks and every page as you type |
 | ? | The shortcut list |
 | Esc | Close the open drawer or dialog |

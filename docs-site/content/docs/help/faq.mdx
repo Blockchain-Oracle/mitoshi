@@ -5,6 +5,8 @@ sources:
   - web/src/features/how-it-works/content.ts
   - contracts/src/engine/libs/ResolveLib.sol
   - packages/markets/src/keys/wallet-key.ts
+  - packages/core/src/x/parse.ts
+  - mobile/README.md
 ---
 
 ### Is this real money?
@@ -37,7 +39,15 @@ No. The settler pays winners a few minutes after the close; until then your equi
 
 ### Why can't I trade stock tokens yet?
 
-The contracts are deployed on Moderato, but the Robinhood Chain side waits on testnet ETH and the screens are being built. You can already call nine stocks as Windows. [More](/stocks/overview).
+The contracts and the screens are live on Moderato, but the Robinhood Chain side waits on testnet ETH, so nothing can be bridged in yet. You can already call nine stocks as Windows. [More](/stocks/overview).
+
+### Can I trade from X?
+
+Link your X account, fund an X balance, then post `@Mitoshi_app BTC up 5m $5`. It trades only that balance. [More](/x/trade-from-x).
+
+### Is there a phone app?
+
+It's built for iOS and Android and waits on its store records. Until then, install the web app from your browser. [More](/start/mobile-app).
 
 ### Is Sensei advice?
 

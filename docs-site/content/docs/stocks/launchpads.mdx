@@ -1,6 +1,6 @@
 ---
-title: Launchpads
-description: Launch a stablecoin with its pair in one transaction, or a memecoin on a bonding curve that graduates into a Uniswap v4 pool.
+title: How the launchpads work
+description: A stablecoin with its pair in one transaction, or a memecoin on a bonding curve that graduates into a Uniswap v4 pool — the contracts behind Launch.
 sources:
   - contracts/src/launch/LaunchRegistry.sol
   - contracts/src/launch/CurveLaunchpad.sol
@@ -8,9 +8,10 @@ sources:
   - contracts/deployments/42431/launch.json
   - services/ops/src/actors/launch-keeper
   - docs/plan/acceptance/S17.md
+  - docs/plan/acceptance/R4-11.md
 ---
 
-Tempo makes tokens a native primitive: a predeployed **TIP-20 factory** issues them, and fees can be paid in any USD stablecoin. Mitoshi's two launchpads build on that.
+Tempo makes tokens a native primitive: a predeployed **TIP-20 factory** issues them, and fees can be paid in any USD stablecoin. Mitoshi's two launchpads build on that; [Launch a coin](/stocks/launch) walks the screens.
 
 ## Stablecoin
 
@@ -24,8 +25,6 @@ On 29 September a root key created "Mitoshi Root Test Dollar" in one transaction
 
 Until graduation a compound transfer policy keeps the coin out of the PoolManager, so nobody can seed the migration pool early. A pool squatted at the wrong price is corrected at graduation, or graduation moves to a backup fee tier with the reason. Payouts go to the caller only, each after a receive-policy check.
 
-<GuideCapture name="launchDesk" />
-
 ## On testnet today
 
-Both are deployed on Moderato and their live drives passed: a stablecoin with its pair and fee pool in one transaction, and a memecoin template, launch, creator buy, squatted tier and graduation. The ops **launch-keeper** that would graduate complete launches plans and simulates only — it has no sender wired yet. <AppLink href="/launch">Launch</AppLink> and its pages are registered and not built.
+Both are deployed on Moderato and their live drives passed: a stablecoin with its pair and fee pool in one transaction, and a memecoin template, launch, creator buy, squatted tier and graduation. On 13 October a launch, a buy and a sell ran through the app's own encoder. Ops' **launch-keeper** watches every memecoin and graduates one once its curve completes; on 13 October it held two, neither complete. <AppLink href="/launch">Launch</AppLink> and its pages are live.

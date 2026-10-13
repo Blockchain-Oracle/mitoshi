@@ -1,0 +1,33 @@
+---
+title: Sign in with X
+description: Prove which X account is yours, then link it to your Mitoshi account with one signature — so a call you post trades for that account and no other.
+sources:
+  - web/src/features/x/copy.ts
+  - web/src/features/x/sign-in.server.ts
+  - web/src/features/x/oauth.server.ts
+  - web/src/features/x/gate.server.ts
+  - web/src/features/x/useXLink.ts
+  - web/src/features/x/XAccountSheet.tsx
+  - web/src/features/x/NativeAuthScreen.tsx
+  - packages/core/src/x/link.ts
+  - web/src/app/api/x/start/route.ts
+  - web/src/app/api/x/callback/route.ts
+  - web/src/app/api/x/bind/route.ts
+  - docs/plan/acceptance/S11.md
+---
+
+## Sign in with X
+
+On <AppLink href="/trade-from-x">Trade from X</AppLink>, **Sign in with X** sends you to X to approve `tweet.read` and `users.read` — nothing that posts. Mitoshi reads your profile once and drops X's token. The sign-in is single-use and bound to the browser that started it.
+
+In the phone app, the X sign-in opens in the system browser and one tap brings you back to the app.
+
+## Link your account
+
+**Link @you** asks your passkey or wallet to sign a short text naming the network, your X account and your Mitoshi account, ending "Mentions of the Mitoshi bot may trade from my X trading balance only." From then on a call that X account posts trades for that Mitoshi account only.
+
+- One X account routes to one Mitoshi account. If it already routes elsewhere, the page offers to sign in as that account instead.
+- **Unlink X** is another signature. Your money stays where it is.
+- <AppLink href="/settings/account">Account & keys</AppLink> shows the linked X account under Security.
+
+On 13 October a passkey-shaped account's signature over that text verified, and the same signature for another X account did not ([evidence](/help/evidence)).

@@ -5,6 +5,7 @@ sources:
   - packages/markets/src/keys/wallet-key.ts
   - web/src/features/tap-trading/copy.ts
   - web/src/features/session/copy.ts
+  - web/src/features/terminal/copy.ts
   - contracts/src/products/vault/IEventVault.sol
   - packages/markets/src/relay/policies/engine.ts
   - docs/plan/acceptance/S23.md
@@ -14,7 +15,7 @@ There are two ways to tap with no prompt. Both are capped on chain, both are lis
 
 ## The one-tap key (passkey accounts)
 
-**Turn on one-tap** asks your passkey once to publish a Tempo access key. The key is made in this browser and never leaves it. It may only:
+**Turn on one-tap** — from the toast after your first prompted trade, or Trade settings — asks your passkey once to publish a Tempo access key. The key is made in this browser and never leaves it. It may only:
 
 - place, cancel and redeem orders on the market engine, and
 - approve pathUSD to the engine — up to **$25 of new approvals a day** —

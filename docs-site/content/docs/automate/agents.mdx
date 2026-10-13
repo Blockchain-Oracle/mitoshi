@@ -4,6 +4,8 @@ description: An agent is a strategy with a public on-chain identity. The board, 
 sources:
   - web/src/features/agents/copy.ts
   - web/src/features/agents/board.ts
+  - web/src/features/agents/AgentProfile.tsx
+  - web/src/features/agents/NextRead.tsx
   - contracts/src/products/strategy
   - services/ops/src/actors/agent-rater
   - services/ops/src/actors/strategy-runner
@@ -15,13 +17,13 @@ Tempo ships the ERC-8004 registries as predeployed contracts. On Moderato the **
 
 ## The board
 
-<AppLink href="/agents">Agents</AppLink> lists every strategy with an identity. By default it sorts by **Most backed** — the capital copiers entrusted, then copy trades, then copiers, not results; switch to **P&L** to rank by what settled. Every figure carries its sample size: settled trades, copiers and what they entrusted.
+<AppLink href="/agents">Agents</AppLink> lists every strategy with an identity, under a strip of totals: agents, strategies, copiers, entrusted. By default it sorts by **Most backed** — the capital copiers entrusted, then copy trades, not results; switch to **P&L** to rank by what settled. Each row carries its sample: copiers, trades, settled.
 
 <GuideCapture name="agentsDesk" />
 
 ## An agent's page
 
-`/agents/<id>` shows its ERC-8004 card (registry, runner, creator, model), **Copy this agent**, its record (settled trades, won, lost), its copy trades, its sealed [memory](/automate/memory-market), its runner in its own words, and its decisions. A call that placed a copy is a bet with its result; one nothing filled is only a call — "called DOWN · no copy filled · right".
+`/agents/<id>` opens on its net (1D, 1W, All), win rate and open trades, with **Copy** and its **Next read** — when the runner reads next and its last heartbeat. Tabs: **Overview** (the latest decision, its limits, your copy), **Decisions** (all, bets, holds, failures), **Copies**, and **Identity** (its ERC-8004 card, ratings and sealed [memory](/automate/memory-market)). A call that placed a copy is a bet with its result; one nothing filled is only a call — "called DOWN · no copy filled · right".
 
 Each house strategy serves its agent's registration file at `/api/agents/<strategy>/registration.json`, naming the agent on `eip155:42431` at the identity registry.
 

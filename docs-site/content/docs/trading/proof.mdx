@@ -4,19 +4,23 @@ description: Every Window has a proof page that re-runs the on-chain check in yo
 sources:
   - web/src/features/proof/copy.ts
   - web/src/features/proof/reverify.ts
+  - web/src/features/proof/ProofVerify.tsx
+  - web/src/features/proof/ProofFeed.tsx
   - web/src/features/proof/archive-verify.ts
   - web/src/app/(app)/proof/[market]/page.tsx
   - services/ops/src/actors/archive
   - docs/plan/acceptance/S5.md
 ---
 
-Open a proof from a position's details (**Proof of the prints**) or at `/proof/<marketId>`. It shows the Window's verdict and settlement transaction, and both prints with their signers and the transaction that recorded each.
+Open a proof from a position's details, from <AppLink href="/proof">Print proofs</AppLink> — every settled Window, newest first — or at `/proof/<marketId>`. It shows the Window's verdict, a timeline (opened, open print, close print, settled) and both prints with their signers and the transaction that recorded each.
 
 <GuideCapture name="proofDesk" />
 
 ## Re-verify in this browser
 
 <Walkthrough name="proof-reverify" />
+
+**Re-verify**, in the page head, runs every check at once:
 
 <Steps>
 <Step>
@@ -36,11 +40,9 @@ It calls `verifyPrint` on the same on-chain verifier the engine used, with `eth_
 </Step>
 </Steps>
 
-Nothing in that check comes from Mitoshi's servers. The page says whether it matches.
+The same press also runs the verifier on ops' archive — RedStone's own packages for every boundary instant, kept apart from any transaction. For a Window that never got a print, it shows what the archive held and why the verifier refused it — too few signers at that instant, for example.
 
-## Check against the archive
-
-Ops' archive keeps RedStone's own packages for every boundary instant, apart from any transaction. **Check against the archive** runs the same verifier on them. For a Window that never got a print, it shows what the archive held and why the verifier refused it — too few signers at that instant, for example.
+Each check is a row under **Check it yourself**: matches, differs, or can't check. Nothing in the record check comes from Mitoshi's servers.
 
 ## What it does not prove
 

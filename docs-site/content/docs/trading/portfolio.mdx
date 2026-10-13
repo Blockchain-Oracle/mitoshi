@@ -7,6 +7,10 @@ sources:
   - packages/core/src/vault/open-cost.ts
   - web/src/features/markets/copy/portfolio.ts
   - web/src/features/markets/portfolio
+  - web/src/features/markets/portfolio/MoneyHero.tsx
+  - web/src/features/markets/portfolio/Pockets.tsx
+  - web/src/features/earn/EarnPocket.tsx
+  - web/src/features/funding/copy.ts
   - web/src/features/edge
   - web/src/features/terminal/positions-totals.ts
   - web/src/features/terminal/position-return.ts
@@ -26,15 +30,19 @@ A position's P&L is **what CLOSE pays now** less the **open cost** of what you h
 - **Close all** sells only the rows a book can take; locked, settling, settled and no-bid rows wait.
 - **TP / SL** judge the whole holding at that same walk, in the tab and in the exit keeper, so a thin book isn't read as a drawdown.
 
-On 12 October the rule was checked against the chain on Moderato, to the base unit: a wallet that bought, Reduced and re-entered; a Trading Balance that tapped twice, closed part and re-entered; and a thin book, where a wallet holding and a 2× Boost could sell only part, the Boost closed part then the rest, and the wallet closed what filled. On 13 October two hedged wallets went through the lock, the answer and the payout, and equity held the payout throughout ([evidence](/help/evidence)). It ships with the next web release.
+On 12 October the rule was checked against the chain on Moderato, to the base unit: a wallet that bought, Reduced and re-entered; a Trading Balance that tapped twice, closed part and re-entered; and a thin book, where a wallet holding and a 2× Boost could sell only part, the Boost closed part then the rest, and the wallet closed what filled. On 13 October two hedged wallets went through the lock, the answer and the payout, and equity held the payout throughout ([evidence](/help/evidence)). Live on testnet since round 4's web release.
 
 ## Portfolio
 
-<AppLink href="/portfolio">Portfolio</AppLink> reads your money and your bets from the chain.
+<AppLink href="/portfolio">Portfolio</AppLink> reads your money and your bets from the chain. Signed out, it shows DEMO's paper balance and a way in.
 
-- **Your money:** what you can bet with now — your account and your Trading Balance — with what is yours but not spendable here listed apart: cash behind resting orders, and engine credit on settled Windows that **Collect** pays out. **Add money** claims test dollars; **Withdraw** sends pathUSD out.
-- **Your bets — Open:** one row per held side, wallet and Trading Balance together, Boosts on their own cards; staked, worth now, P&L. **Cash out** sells; a locked Window pays at settlement.
-- **Your bets — History:** one account history — the wallet's rounds, the Trading Balance's and Boost's — as WIN, LOSS, VOID or CLOSED, with net P&L = what came back − what went in, and a realised P&L curve over 7 days, 30 days or all time.
+- **Your balance:** one figure — dollars in your account and Trading Balance, open positions at what Close pays, and what waits to be collected — with what you can bet now, **Add money** and **Trade**. **Collect** shows when something waits. Cash behind resting orders is named under it, never added.
+- **Pockets:** the Trading Balance, Private and Earn, each with its amount. **Manage** opens its sheet to add or withdraw; Earn opens [Earn](/trading/earn).
+- **Your bets — Open:** one row per held side, wallet and Trading Balance together, Boosts on their own cards; staked, worth now, P&L. **Close** sells; a locked Window pays at settlement.
+- **Your bets — History:** one account history — the wallet's rounds, the Trading Balance's and Boost's — as Won, Lost, Void or Closed early, each with its **Receipt** and **Share**.
+- **Your record:** net over everything settled, win rate, current run, and its curve.
+
+After any write — a close, a collect, a deposit — a toast names the move and its **Receipt** opens what the chain recorded. The eye beside your balance hides your own figures everywhere, on this device.
 
 ## Trader Edge
 

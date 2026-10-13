@@ -7,6 +7,9 @@ sources:
   - packages/core/src/faucet/index.ts
   - web/src/app/api/faucet/route.ts
   - web/src/server/backup-passkey.ts
+  - web/src/features/account/copy.ts
+  - web/src/features/account/AccountSummary.tsx
+  - web/src/features/funding/copy.ts
   - docs/plan/acceptance/S13.md
 ---
 
@@ -27,13 +30,15 @@ From <AppLink href="/settings/account">Account & keys</AppLink>, **Add a backup 
 ## Money
 
 - Everything is **pathUSD**, Tempo's dollar stablecoin: stakes, payouts and the network fee.
-- **Test dollars.** Signing up funds the new account from Moderato's faucet. After that, **Add money** claims again once a day per account and says when you can.
+- **Test dollars.** Signing up funds the new account from Moderato's faucet. After that, **Add money** — the **+** beside your balance — claims again once a day per account and says when you can. It also shows your address, with Copy and a QR code to receive pathUSD.
 - Your **wallet** is your account itself. Your **Trading Balance** is a vault you own on Tempo that holds money and positions for you, so a capped key can tap from it and a keeper can run your exits ([Trading Balance](/trading/trading-balance)). Only you can withdraw from it.
 - **Withdraw** sends pathUSD to any Tempo address: one transfer your passkey signs and pays the small fee for — never a one-tap key.
 
 ## See and stop every key
 
-<AppLink href="/settings/account">Account & keys</AppLink> reads your account's whole history from Tempo and lists every **trading key** (with what it may still approve today and when it was last used) and every **Trading Balance grant** — tap-trading, strategy agent, exits with the app closed — with its caps. **Revoke** or **Stop** ends one on chain; revoking is free. None of them can withdraw.
+<AppLink href="/settings/account">Account & keys</AppLink> reads your account's whole history from Tempo. Its first strip counts your keys, the grants that can spend and what is left today, with **Hold to stop all**. **Security** lists your backup passkey, every **trading key** (what it may still approve today, when it was last used), every **Trading Balance grant** — tap-trading, reply trading from X, strategy agent, exits with the app closed — with its caps, your linked Robinhood Chain wallet and your [X account](/x/sign-in). **Revoke** or **Stop** ends one on chain; revoking is free. None of them can withdraw.
+
+**Device**, **Data** and **Region** hold sound and notifications, your data's export and deletion, and the region check.
 
 <Callout title="No value" type="warn">
 Testnet pathUSD has no value. Never send real funds to a testnet address.

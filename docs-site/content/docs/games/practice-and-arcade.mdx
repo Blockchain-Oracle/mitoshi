@@ -1,28 +1,37 @@
 ---
-title: Practice and the arcade
-description: Learn the swipe on live prices with nothing staked, and play two arcade runs whose scores the server replays before it records them.
+title: Beat the coin and the arcade
+description: Call live prices against a coin flip with nothing staked, and play two arcade runs on the venue's real signed prints — scores the server replays before it records them.
 sources:
   - packages/core/src/games/practice.ts
   - web/src/features/games/practice/PracticeStage.tsx
+  - web/src/features/games/practice/copy.ts
   - packages/core/src/games/arcade/index.ts
   - packages/core/src/games/arcade/replay.ts
+  - web/src/features/games/arcade/copy.ts
+  - web/src/features/games/arcade/tape.server.ts
+  - web/src/features/games/arcade/score.server.ts
+  - web/src/features/games/arcade/StageParts.tsx
   - packages/db/src/arcade-store.ts
   - web/src/app/api/games
 ---
 
-## Practice
+## Beat the coin
 
-Five live Windows come as cards. Swipe up if you think the price goes above its line, down if below; a bot that is a coin flip plays the same hand.
+<AppLink href="/games/practice">Practice</AppLink> deals up to five live Windows as cards: "will BTC be higher in 30 s?" Swipe ↑ for higher, ↓ for lower. A coin flip picks the same cards. Thirty seconds after your last swipe every card is scored on the live price, and the round says who won — then **Call it for real** or **Play a real duel**.
 
-Practice cannot wait for a Window to settle, so it asks a narrower question and says so: every card records the live public price when you swipe it, and all five are scored together on the same feed after a **30-second watch**. Every price is a real reading; nothing is simulated. It is not a settlement, a payout, a position or a real opponent, and nothing is staked.
+It is not a Window's settlement, a position or a real opponent, and nothing is staked. Every price is a real reading.
 
 ## The arcade
 
-**Line Rider** and **Candle Hop** are seeded, fixed-step runs drawn from a seed you can see.
+**Line Rider** and **Candle Hop** ride a tape of the venue's own signed prints: the opening and closing prints of the last twelve hours on BTC or ETH, as the run's seed picks.
 
-- **Line Rider:** a line scrolls in from the right; drag, scroll or hold the arrow keys to keep the dot on it. Hugging the line builds a combo and refills your grip; drifting off drains it.
-- **Candle Hop:** candles scroll in; tap or press Space to hop through each gap.
+- **Line Rider:** sled the chart — rises climb, drops fall, gaps open. Hold to press, let go to hop, lean ← → to flip.
+- **Candle Hop:** fly the candles, each pair a print, up or down. Tap or Space to lift; a body, a wick or the floor ends it.
 
-No stake and nothing on the ledger. Your inputs are recorded as a trace, and the server **replays the run** from the seed before it records the score: a forged score is refused, and an unsigned post is refused. The board shows the top ten and your rank.
+A run is full screen: 3-2-1-GO, the score and your best, pause, and a game-over card with its rank, **Share**, the seed and the length. A calmer ramp is offered and marked on the board.
+
+## Scores the server checks
+
+The server issues each run's seed with its tape. Your inputs go back as a trace, and the server **replays the run** on that seed and tape before it records the score: a forged score, an unsigned post, or a seed already used or expired is refused. No stake, nothing on chain. The board shows the top ten on this engine build and your rank; signed out, your best stays on this device.
 
 On 12 October a live check posted a real run that ranked first, and saw the forged and unsigned posts refused ([evidence](/help/evidence)).

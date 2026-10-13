@@ -1,28 +1,29 @@
 ---
-title: Themes
+title: How themes work
 description: A basket of stock tokens an agent rebalances inside your own account — it never takes custody, and its key can do nothing else.
 sources:
   - contracts/src/themes/ThemeRouter.sol
   - contracts/src/themes/ThemeRegistry.sol
+  - contracts/src/themes/ThemeTypes.sol
   - contracts/deployments/42431/themes.json
   - packages/markets/src/relay/policies/themes.ts
+  - services/ops/src/actors/theme-agent
   - docs/plan/acceptance/S16.md
+  - docs/plan/acceptance/R4-11.md
 ---
 
-A **theme** is a basket of mirrors with weights and rules, published by a creator on **ThemeRegistry**. Following it lets the theme's agent keep your account in the basket — trading inside your own account, never holding your money.
+A **theme** is a basket of mirrors with target weights, bands and rules, published by a creator on **ThemeRegistry** with a spec whose hash is on chain. Following it lets the theme's agent keep your account in the basket — trading inside your own account, never holding your money. [Follow a theme](/stocks/follow-a-theme) walks the screens.
 
 ## Follow
 
-You consent once with your passkey and caps: one transaction authorizes the agent's **access key** on your Tempo account and records the follow on **ThemeRouter**. The relay's themes policy allows exactly that pair and never the key's authorization alone; the relay engine does not honour that batch yet, so a sponsored follow is refused today (an open integration item).
+One transaction from your account authorizes the agent's **access key** and records the follow, with your caps, on **ThemeRouter**. The relay sponsors exactly that pair, never the key's authorization alone. A theme past five stocks adds the rest of the key's scopes in chunks of five, which the relay sponsors only after reading your follow.
 
 The key may only call the router's `rebalance` and approve tokens to the router. Each token it can approve has its own daily limit, and an approval to anyone else is refused on chain (`CallNotAllowed`).
 
 ## Rebalance
 
-A rebalance swaps through the [guarded pools](/stocks/pools-and-guard), pulls only the exact approvals the key raised, and sends every output to you — the router has no recipient argument. The only tokens it ever holds are creator fees owed.
-
-<GuideCapture name="themesDesk" />
+Ops' **theme-agent** holds each follower's key, sealed. When a stock drifts out of its band inside the theme's hours, it rebalances through the [guarded pools](/stocks/pools-and-guard), within your per-trade, daily and slippage caps — signed by that key as your account, its network fee inside the key's pathUSD limit. The router pulls only the exact approvals the key raised and sends every output to you — it has no recipient argument. The only tokens it ever holds are creator fees owed.
 
 ## On testnet today
 
-ThemeRegistry and ThemeRouter are deployed on Moderato and configured: the guard set, the five mirrors' pools registered, the oracle set. On a Moderato fork against the deployed contracts (with stand-ins for the guard and oracle), a follow cost 934,163 gas and the agent's key-signed rebalance bought TSLA, PLTR and NFLX through the pools. <AppLink href="/themes">Themes</AppLink> is registered and not built.
+ThemeRegistry and ThemeRouter are deployed on Moderato and configured: the guard set, the five mirrors' pools registered, the oracle set. On 13 October three themes were published with the app's encoder and followed, and the theme agent was registered as ERC-8004 agent #82 and named on all three; its registration file is served at `/api/themes/agent/registration.json`. Its first rebalance was planned and stopped: the guard reads every member as halted until the stock sync's first delivery, which waits on testnet ETH on Robinhood Chain ([evidence](/help/evidence)).

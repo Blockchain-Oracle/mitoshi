@@ -6,6 +6,8 @@ sources:
   - web/src/features/terminal/copy.ts
   - web/src/features/terminal/demo.ts
   - web/src/features/terminal/TerminalScreen.tsx
+  - web/src/features/terminal/ui/ChartMore.tsx
+  - web/src/features/terminal/ui/TradeReceiptSheet.tsx
   - services/ops/src/display
 ---
 
@@ -16,10 +18,10 @@ Open <AppLink href="/trade/BTC">/trade/BTC</AppLink>, or any asset as `/trade/<s
 | Part | What it shows |
 | --- | --- |
 | Asset chip | The asset and its live price. Tap it to switch markets: favourites, crypto, stocks, search. |
-| Window chip | The lane (5m, 15m, 1h, 24/7, Gap) and its clock: "trades 2:32", "pricing…" while the opening print lands, "no Window" between rounds. |
+| Window chip | The lane (5m, 15m, 1h, 24/7, Gap) and its clock: "trades 2:32", "pricing…" while the opening print lands, "no Window" between rounds. On a phone it carries the NYSE session too. |
 | The line | The live price from a display feed, so you can watch where it's going. **Line** marks the Window's opening print; **Signed** marks RedStone's latest signed price. |
 | The card on the chart | Your size, what UP and DOWN pay per dollar right now, the fees (free) and the trailing distance. |
-| UP / DOWN | One tap each. The multiple under the word is 1 ÷ the price you would pay. When there is no Window, they are off and say why. |
+| UP / DOWN | One tap each. The multiple under the word is 1 ÷ the price you would pay. When there is no Window, they are off and say why. A toast names each fill; its **Receipt** shows what the engine booked and the key that signed. |
 | Positions | One row per held side: its value — what CLOSE pays now — its P&L and CLOSE. "≈" marks a value repriced on the line between book reads; a row with no P&L says why ("Locked · settles", "No bids", "Updating"), a thin book reads "N% sellable", and an answered Window "Settled · paying" or "Settled · lost". |
 
 The display feed is Coinbase trades for crypto and Alpaca's exchange trades for stocks, with RedStone's signed value beside it. It never settles anything ([prints](/architecture/prices)).
@@ -30,7 +32,7 @@ The display feed is Coinbase trades for crypto and Alpaca's exchange trades for 
 
 ## Modes
 
-Under the chart: **Up / Down** (the default), **Range**, **Boost**, **Private** and **Parlay** ([Range and Moonshot](/trading/range-and-moonshot), [Parlay, Boost and Private](/trading/parlay-boost-private)). The chart controls switch between the line and candles, show the book's depth, open the market's room, price alerts and Sensei, and turn music on.
+Under the chart: **Up/Down** (the default), **Range**, **Boost**, **Private** and **Parlay** ([Range and Moonshot](/trading/range-and-moonshot), [Parlay, Boost and Private](/trading/parlay-boost-private)). On a phone, Boost sits in Trade settings. The chart controls are the interval, line or candles, music, and **⋯** for Depth, Room, Sensei and Alerts.
 
 ## A position's details
 
@@ -43,7 +45,7 @@ Tap a position for its Window, where it is held (wallet or Trading Balance), the
 - **History & stats:** every closed round with lifetime P&L, win rate, trades, win streak, best streak and volume, and a replay of each.
 - **Activity:** deposits, faucet claims and withdrawals, each linked to its receipt.
 - **P&L:** today, 7 days, 30 days or all time, with its curve.
-- **Trade settings:** your tap size (5 % of what you can spend until you set it), Boost, the trailing distance, and the close tolerance — how far below the shown value a one-tap CLOSE may land without asking.
+- **Trade settings:** your tap size (5 % of what you can spend until you set it), Boost, the trailing distance, the close tolerance — how far below the shown value a one-tap CLOSE may land without asking — and **One-tap**.
 
 ## Signed out: DEMO
 

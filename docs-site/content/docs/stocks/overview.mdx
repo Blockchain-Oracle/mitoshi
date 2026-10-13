@@ -1,6 +1,6 @@
 ---
 title: Stocks on Tempo
-description: Call nine US stocks today. Hold and trade real Robinhood Stock Tokens on Tempo next — the contracts are deployed, the screens are being built.
+description: Call nine US stocks today. Hold real Robinhood Stock Tokens on Tempo next — the contracts and screens are live; the Robinhood side waits on test ETH.
 sources:
   - packages/core/src/market/venue-spec.json
   - contracts/deployments/42431/stocks.json
@@ -10,15 +10,16 @@ sources:
   - docs/specs/pillar2.md
   - web/src/lib/capabilities.ts
   - docs/plan/acceptance/R4-12.md
+  - docs/plan/acceptance/R4-11.md
 ---
 
-Mitoshi brings stocks to Tempo in two ways. One is live; the other is deployed and proven on testnet, with its screens next.
+Mitoshi brings stocks to Tempo in two ways. One is live; the other is deployed on testnet with its screens live, and waits on the Robinhood side.
 
 ## 1. Call a stock — live
 
 AAPL, AMD, AMZN, GOOGL, META, MSFT, NVDA, PLTR and TSLA trade as [Windows](/trading/windows): 5, 15 and 60 minutes in NYSE hours, the same lanes around the clock on RedStone's 24/7 feeds for seven of them, and the weekend Gap. No token changes hands — you call the price, and the Window settles on RedStone's signed print. Each ticker has a hub of its own — <AppLink href="/tickers/TSLA">TSLA's</AppLink>, for one.
 
-## 2. Hold the real share token — next
+## 2. Hold the real share token — the Robinhood side next
 
 Robinhood issues **Stock Tokens** on Robinhood Chain. Mitoshi's pillar two brings them to Tempo:
 
@@ -31,11 +32,10 @@ Robinhood issues **Stock Tokens** on Robinhood Chain. Mitoshi's pillar two bring
 | LayerZero hop through Base Sepolia (transit, composer, forwarder) | Deployed; Moderato → Base Sepolia delivered in 20 s, Base Sepolia → Moderato in 23 s |
 | Lockboxes and the sync sender on Robinhood Chain testnet | Waiting on testnet ETH (owner action) |
 | Uniswap v4 on Moderato, the price guard and the reference | Deployed; four pools initialized with house liquidity |
-| Themes | Deployed and configured |
-| `/bridge` and `/reserves` | Built; ship with the next web release. Until the lockboxes are deployed they read "Robinhood side not live" and **Partial** |
-| `/themes` screens | Registered, not built — it says what it waits on |
+| Themes | Deployed and configured; three themes published, followed on testnet |
+| `/bridge`, `/reserves` and `/themes` | Live. Until the lockboxes are deployed the bridge reads "Robinhood side not live", the reserves **Partial**, and the guarded pools — and so every theme rebalance — wait on the first stock sync |
 
-Read on: [the bridge](/stocks/bridge), [pools and the guard](/stocks/pools-and-guard), [reserves](/stocks/reserves), [themes](/stocks/themes). The same pillar adds [launchpads](/stocks/launchpads) for stablecoins and memecoins.
+Read on: [the bridge](/stocks/bridge), [pools and the guard](/stocks/pools-and-guard), [reserves](/stocks/reserves), [follow a theme](/stocks/follow-a-theme). The same pillar adds [Launch](/stocks/launch) for stablecoins and memecoins.
 
 <Callout title="Eligibility">
 Robinhood Stock Tokens have their own eligibility and transfer rules. Mainnet stock tokens, their budget and the Safes that would hold admin keys are open owner decisions; nothing here is a mainnet offer.

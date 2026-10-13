@@ -1,5 +1,5 @@
 {
-  "readAtUtc": "2026-10-13T01:50:00Z",
+  "readAtUtc": "2026-10-13T08:00:52Z",
   "method": "curl GET, signed out, from the docs worktree. Wallet routes read the engine admin's public address 0x900a0F5260b91Fd65D0C2b03D92Cf8013a1F073e; Window routes read TSLA's hour Window 0xfcd8afb9402bf3f2ce32ce1dc3c726d9ab5c8c5961bf2b1c95bbcbced0a5c13d. Session routes (POST and authenticated GET) were not called: they write or need a sign-in.",
   "web": {
     "base": "https://testnet.mitoshi.xyz",
@@ -43,15 +43,33 @@
       "/api/social/profile?address=": 200,
       "/api/prices/redstone-payload?feed=BTC": 200,
       "/api/prices/datastreams-report?symbol=TSLA": 503,
-      "/api/games/arcade/board?game=candle-hop": 200,
       "/api/sensei": 200,
       "/api/private/status": 200,
       "/api/vitals?days=1": 200,
-      "/api/strategies/1/memory": 402
+      "/api/bridge?address=": 200,
+      "/api/reserves": 200,
+      "/.well-known/apple-app-site-association": 200,
+      "/.well-known/assetlinks.json": 200,
+      "/api/games/arcade/board?game=candle-hop": 200,
+      "/api/games/arcade/recent": 200,
+      "/api/games/arcade/runs?address=": 200,
+      "/api/games/arcade/tape": 200,
+      "/api/games/achievements?wallet=": 200,
+      "/api/games/lucky/board": 200,
+      "/api/games/lucky/history?address=": 200,
+      "/api/games/duel/board": 200,
+      "/api/games/duel/history?address=": 200,
+      "/api/games/duel/presence": 200,
+      "/api/games/season": 200,
+      "/api/launch/name?q=": 200,
+      "/api/themes/agent/registration.json": 200,
+      "/api/strategies/1/memory": 402,
+      "/api/x/status?account=": 200
     },
     "notes": {
       "/api/prices/datastreams-report": "503 as the guide says: no Chainlink Data Streams subscription on testnet.",
-      "/api/strategies/1/memory": "402 with `www-authenticate: Payment ... realm=\"testnet.mitoshi.xyz\", method=\"tempo\"` — the MPP challenge."
+      "/api/strategies/1/memory": "402 with an MPP challenge (`www-authenticate: Payment \u2026, method=\"tempo\"`).",
+      "/api/x/status": "Read at 08:31Z, after the S11 web and ops deploys: the relay running, live, reading through the bot's session."
     }
   },
   "ops": {
@@ -66,11 +84,11 @@
       "/prices/candles?symbol=BTC": 200,
       "/prices/day?symbol=BTC": 200,
       "/exits/keeper": 200,
-      "/index/recount?through=37000000": 200,
-      "/halts/log": 200
+      "/halts/log": 200,
+      "/index/recount?through=37000000": 200
     },
     "notes": {
-      "/index/recount": "Counts the whole index through a block: 10.4 s through block 37,000,000; through the latest block it ran past 60 s and the probe stopped waiting."
+      "/index/recount": "Counts the whole index through a block: 8.9 s through block 37,000,000."
     }
   }
 }

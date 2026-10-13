@@ -48,7 +48,7 @@ Sending back burns the mirror on Tempo and the lockbox releases the token on Rob
 
 <AppLink href="/bridge">Bridge</AppLink> is one card: From and To, a flip, the stock, the amount and one button that always names the next step — link a Robinhood wallet, switch chain, approve, then **Bridge**. The route line shows the LayerZero fee, today's room under the rate limit, and the time a transfer takes: the median of transfers actually delivered, none until one has been.
 
-After you sign, the card follows the transfer leg by leg — sent, through Base, delivered — with each leg's LayerZero id. A credit Tempo can't mint shows as held, with **Claim**; a send that bounces is returned to you. The transfer is recorded the moment your wallet returns its hash, so a closed tab finds it again, and ops' **bridge-watch** keeps following it. **stock-sync** pushes multipliers and pauses across; it idles until the sync sender is deployed on Robinhood Chain.
+After you sign, the card follows the transfer leg by leg — sent, through Base, delivered — with each leg's LayerZero id. A credit Tempo can't mint shows as held, with **Claim**; a send that bounces is returned to you. The transfer is recorded the moment your wallet returns its hash, so a closed tab finds it again, and ops' **bridge-watch** keeps following it. **stock-sync** pushes multipliers and pauses across. Both run in ops since 13 October; stock-sync idles until the sync sender is deployed on Robinhood Chain.
 
 ## Splits and pauses travel too
 
@@ -65,6 +65,7 @@ After you sign, the card follows the transfer leg by leg — sent, through Base,
 | Moderato → Base Sepolia | A LayerZero message delivered in 20 s |
 | Base Sepolia → Moderato | Delivered in 23 s on 12 October: verified 14 s after the send, executed on Moderato in <Tx hash="0x80fd27759c31f895e46a2cb50baccef7c0e91f29bfeae6ee0f8d97ba05dc4670" /> |
 | Robinhood Chain testnet | Lockboxes and the sync sender not deployed: the deployer has no testnet ETH yet (owner action) |
-| `/bridge` | Built; ships with the next web release. Until the lockboxes are deployed it reads "Robinhood side not live" |
+| `/bridge` | Live. Until the lockboxes are deployed it reads "Robinhood side not live" — Moderato and Base are live |
+| Ops | bridge-watch: 0 open transfers; stock-sync: idle, no sender to read (`evidence/ops-health-2026-10-13.json`) |
 
 Addresses are in [deployments](/architecture/deployments). A direct Robinhood ↔ Tempo pathway request to LayerZero is drafted for the owner to send.

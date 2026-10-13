@@ -1,30 +1,46 @@
 ---
 title: Games
-description: Seven modes on the same live Windows. Each says up front whose money is at risk — and which ones are not connected yet.
+description: The hall — seven games on the live markets, each saying whose money is at risk, with real records behind every number.
 sources:
   - packages/core/src/games/types.ts
+  - packages/core/src/games/achievements.ts
   - web/src/features/games/catalog.ts
   - web/src/features/games/copy.ts
+  - web/src/features/games/GamesHub.tsx
+  - web/src/features/games/hall/FeaturedCabinet.tsx
+  - web/src/features/games/hall/CabinetRail.tsx
+  - web/src/features/games/hall/NowPlaying.tsx
+  - web/src/features/games/hall/StreakStrip.tsx
+  - web/src/features/games/hall/AchievementsShelf.tsx
+  - web/src/features/games/GamesRail.tsx
+  - web/src/features/games/arcade/AttractCanvas.tsx
   - web/src/lib/capabilities.ts
 ---
 
-<AppLink href="/games">Games</AppLink> is a hall of modes built on the live markets. Every card carries the same honest label the write paths enforce: a mode whose economic kind is "none" can never send a transaction.
+<AppLink href="/games">Games</AppLink> is a hall. Every number on it is a real record; a read that fails hides, never shows a made-up figure.
 
 <GuideCapture name="gamesPhone" />
 
-| Mode | Group | Whose money | State |
-| --- | --- | --- | --- |
-| <AppLink href="/games/range">Range</AppLink> | Prediction | A band priced by the house | Live |
-| <AppLink href="/games/moonshot">Moonshot</AppLink> | Prediction | A reach priced by the house | Live |
-| <AppLink href="/games/practice">Practice</AppLink> | Duel | No stake | Live |
-| <AppLink href="/games/line-rider">Line Rider</AppLink> | Arcade | Arcade score, not on chain | Live |
-| <AppLink href="/games/candle-hop">Candle Hop</AppLink> | Arcade | Arcade score, not on chain | Live |
-| <AppLink href="/games/duel">Duel</AppLink> | Duel | Market picks plus a side-pot | Not connected — waits on the arena contracts |
-| <AppLink href="/games/lucky">Lucky</AppLink> | Prediction | One real order on the book | Not connected — waits on the draw server |
+## The hall
 
-A mode that is not connected says so on its card and its page, and names what it waits on. Its rules are kept in the shared game core; nothing about it is simulated.
+- **Now playing** — a strip of the venue's fills from the last ten minutes and the arcade's newest replayed runs, a new best flagged.
+- **Next live Window** — the featured cabinet: the Window [Beat the coin](/games/practice-and-arcade) would deal next, its countdown, its price and the crowd's lean, and **Play**.
+- **Cabinets** — every game with its scene (the two arcade cabinets play themselves on real prices), a sticker for whose money is at risk, one live fact and **Play**.
+- **Streaks** — your best trading streak and win rate, your arcade bests and your Lucky streak. Signed out, one line to sign in.
+- **Achievements** — badges from duels, arcade runs and Lucky draws; a locked one names its goal.
 
-- [Range and Moonshot](/trading/range-and-moonshot) are house tickets on a real Window and settle on its signed print.
-- [Practice and the arcade](/games/practice-and-arcade) move no money at all.
+| Game | Sticker | What you do |
+| --- | --- | --- |
+| <AppLink href="/games/practice">Practice</AppLink> · Beat the coin | Free | Call up to five live prices against a coin flip |
+| <AppLink href="/games/line-rider">Line Rider</AppLink> · <AppLink href="/games/candle-hop">Candle Hop</AppLink> | Free | Arcade runs on the real prints |
+| <AppLink href="/games/lucky">Lucky</AppLink> | Your stake | Reels deal a live call; you place it |
+| <AppLink href="/games/duel">Duel</AppLink> | Your stake | Two players, one sealed deck, real calls, a side-pot |
+| <AppLink href="/games/range">Range</AppLink> · <AppLink href="/games/moonshot">Moonshot</AppLink> | House pays | [House tickets](/trading/range-and-moonshot) on a band or a level |
 
-A full-screen stage with a 3-2-1 count-in and a game-over card, and Lucky and Duel, are being built now; see [availability](/help/availability).
+All seven are built. A game plays full screen on a thin rail — back to the hall, settings, sound — with **How to play** behind ⓘ. Settings (sound, music, haptics, motion, accent) stay on this device.
+
+## Ranks and history
+
+<AppLink href="/games/rank">Rank</AppLink> holds the boards: Duel's ladder, Line Rider, Candle Hop, streaks and Lucky. <AppLink href="/games/history">History</AppLink> lists your runs, draws and duels.
+
+Read on: [Beat the coin and the arcade](/games/practice-and-arcade), [Lucky and Duel](/games/duel-and-lucky).
