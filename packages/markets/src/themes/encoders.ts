@@ -24,7 +24,10 @@ export function themesVenueOf(chainId: number): { registry: Address; router: Add
   return { registry: d.ThemeRegistry.address, router: d.ThemeRouter.address, deployBlock: BigInt(d.ThemeRegistry.deployBlock ?? 0) };
 }
 
-const capsArg = (c: ThemeCaps) => ({ expiry: BigInt(c.expirySec), allocationUsd: c.allocationUsd, maxTradeUsd: c.maxTradeUsd, maxDailyUsd: c.maxDailyUsd, maxSlippageBps: c.maxSlippageBps, maxFeeBps: c.maxFeeBps, minIntervalSec: c.minIntervalSec });
+const capsArg = (c: ThemeCaps) => {
+  const expiry = BigInt(c.expirySec); // the contract's field name
+  return { expiry, allocationUsd: c.allocationUsd, maxTradeUsd: c.maxTradeUsd, maxDailyUsd: c.maxDailyUsd, maxSlippageBps: c.maxSlippageBps, maxFeeBps: c.maxFeeBps, minIntervalSec: c.minIntervalSec };
+};
 
 /** `ThemeRegistry.publish`'s params from a spec (bands in the spec's token order; the cash band under pathUSD). */
 export function publishParams(intent: Extract<ThemeIntent, { kind: "theme-publish" }>) {
