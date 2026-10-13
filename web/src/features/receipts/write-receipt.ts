@@ -19,6 +19,8 @@ export interface WriteReceipt {
   /** The stub's figure (already formatted) and what it is. */
   figure: string;
   figureLabel: string;
+  /** False when the figure isn't money (a strategy's name): privacy mode then leaves it as it is. */
+  figureIsMoney?: boolean;
   txHash: Hex;
   atMs: number;
   signer: "passkey" | "one-tap" | "trading-balance" | "wallet";
@@ -43,8 +45,8 @@ export function openReceipt(receipt: WriteReceipt): void {
  * The title as it may be shown: with privacy mode on (the balance eye), the figure it names is the dots — the toast and
  * the sheet never print the amount the stub masks.
  */
-export function receiptTitle(receipt: Pick<WriteReceipt, "title" | "figure">, hidden: boolean): string {
-  return hidden && receipt.figure ? receipt.title.split(receipt.figure).join(SHELL.masked) : receipt.title;
+export function receiptTitle(receipt: Pick<WriteReceipt, "title" | "figure" | "figureIsMoney">, hidden: boolean): string {
+  return hidden && receipt.figure && receipt.figureIsMoney !== false ? receipt.title.split(receipt.figure).join(SHELL.masked) : receipt.title;
 }
 
 /** The toast with its Receipt action, once the write is confirmed. */

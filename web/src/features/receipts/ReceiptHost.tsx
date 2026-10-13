@@ -22,7 +22,7 @@ export function ReceiptHost() {
         <div className="flex flex-col gap-4">
           <TxReceipt
             title={title}
-            figure={<Masked>{receipt.figure}</Masked>}
+            figure={receipt.figureIsMoney === false ? receipt.figure : <Masked>{receipt.figure}</Masked>}
             figureLabel={receipt.figureLabel}
             atMs={receipt.atMs}
             txHash={receipt.txHash}

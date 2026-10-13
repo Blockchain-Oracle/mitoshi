@@ -8,6 +8,7 @@ import type { SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
 import { Masked } from "@/components/kit";
 import { TxCta } from "@/components/tx";
+import { notifyReceipt } from "@/features/receipts/write-receipt";
 import { cn } from "@/lib/utils";
 import { useWalletShell } from "@/providers/wallet/wallet-shell-context";
 import { useFirstFunding } from "@/features/funding/first-fund-state";
@@ -135,7 +136,11 @@ export function CopyCta({ card, form, writes, onDone }: { card: StrategyWire; fo
   const send = async () => {
     if (!plan.intent) return;
     const outcome = await writes.run(plan.intent);
-    if (outcome?.status === "confirmed") onDone();
+    if (outcome?.status !== "confirmed") return;
+    // The success receipt (R4-4, D-227; critic gap 21), as the manage tab's switch and stop: what started, for which
+    // strategy, who signed it. Copying is self-paid (capital intake, D-219).
+    notifyReceipt({ title: COPY.done.copied, figure: strategyIdentity(card).name, figureIsMoney: false, figureLabel: COPY.manage.receiptLabel, txHash: outcome.txHash, atMs: Date.now(), signer: writes.signer === "passkey" ? "passkey" : "wallet", sponsored: false });
+    onDone();
   };
   return <TxCta state={writes.tx.state} action={form.cta} signer={writes.signer} sponsored={false} onConfirm={() => void send()} />;
 }

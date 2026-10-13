@@ -13,6 +13,7 @@ import { StatusDot } from "@/components/kit/desk-kit";
 import { cn } from "@/lib/utils";
 import { COPY } from "./copy";
 import { stopIntent } from "./copy-plan";
+import { strategyIdentity } from "./identity";
 import { usdSigned } from "./format";
 import type { MinePayload, StrategyWire } from "./protocol";
 import type { CopyWrites } from "./useCopyWrites";
@@ -40,7 +41,7 @@ export function ManageCopy({ card, sub, writes, renew, onStopped }: { card: Stra
     if (outcome?.status === "confirmed") {
       setSaid(ok);
       // The success receipt (R4-4, D-227; critic gap 21): what changed, for which strategy, and who signed it.
-      notifyReceipt({ title: ok, figure: card.name, figureLabel: COPY.manage.receiptLabel, txHash: outcome.txHash, atMs: Date.now(), signer: writes.signer === "passkey" ? "passkey" : "wallet", sponsored: true });
+      notifyReceipt({ title: ok, figure: strategyIdentity(card).name, figureIsMoney: false, figureLabel: COPY.manage.receiptLabel, txHash: outcome.txHash, atMs: Date.now(), signer: writes.signer === "passkey" ? "passkey" : "wallet", sponsored: true });
     }
   };
   return (
