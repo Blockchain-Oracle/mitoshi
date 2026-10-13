@@ -22,9 +22,19 @@ describe("the reel's Windows", () => {
 });
 
 describe("the weave", () => {
+  const label = (i: ReturnType<typeof weaveReel>[number]) => (i.kind === "market" ? i.market.asset : i.kind === "take" ? `take ${i.take.id}` : "agent");
   it("starts on a Window and alternates, then the longer list's tail", () => {
     const t = (id: string) => ({ id }) as Take;
-    const kinds = weaveReel([m("BTC", NOW + 300), m("ETH", NOW + 400)], [t("1"), t("2"), t("3")]).map((i) => (i.kind === "market" ? i.market.asset : `take ${i.take.id}`));
+    const kinds = weaveReel([m("BTC", NOW + 300), m("ETH", NOW + 400)], [t("1"), t("2"), t("3")]).map(label);
     expect(kinds).toEqual(["BTC", "take 1", "ETH", "take 2", "take 3"]);
+  });
+
+  it("weaves the copied agent's decision in once at the fifth card, or at the end of a shorter reel (R4-11)", () => {
+    const t = (id: string) => ({ id }) as Take;
+    const agent = { strategyId: "7", name: "A", decision: { decidedAtMs: 1 } } as never;
+    const long = weaveReel([m("BTC", NOW + 300), m("ETH", NOW + 400), m("SOL", NOW + 500)], [t("1"), t("2"), t("3")], agent).map(label);
+    expect(long).toEqual(["BTC", "take 1", "ETH", "take 2", "agent", "SOL", "take 3"]);
+    expect(weaveReel([m("BTC", NOW + 300)], [], agent).map(label)).toEqual(["BTC", "agent"]);
+    expect(weaveReel([], [], agent)).toEqual([]);
   });
 });
