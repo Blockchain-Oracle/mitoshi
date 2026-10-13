@@ -174,3 +174,4 @@
 .agents-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 @media (min-width: 768px) { .agents-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 400px) { .agents-stat { padding: 14px; } .agents-stat-value { font-size: 24px; } }
+@media (max-width: 640px) { .strat-empty { padding: 32px 16px; } }

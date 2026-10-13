@@ -44,7 +44,7 @@ export function NextRead({ s }: { s: StrategyWire }) {
           <span className="cp-ring-text">{next ? clock(left) : "—"}</span>
         </CountdownRing>
         <div className="cp-check-text">
-          <p className="cp-check-lead">{!next ? N.none : next.open ? N.now(clock(left)) : N.in(clock(left))}</p>
+          <p className="cp-check-lead">{!next ? (s.spec?.preset === "agent" ? N.none : N.noBeat) : next.open ? N.now(clock(left)) : N.in(clock(left))}</p>
           <p className="type-caption text-ink-secondary">{s.health.lastTickMs !== null ? N.beat(ago(s.health.lastTickMs, nowMs)) : N.noBeat}</p>
         </div>
       </div>
