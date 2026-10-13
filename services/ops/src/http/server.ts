@@ -2,12 +2,12 @@
  * The one HTTP server on 8080 (plan C.5.1, D-032): `/health`, `/session`, `/prices/{latest,history}`, the display feed's
  * `/prices/{recent,candles,day}` (S23a, D-196: the chart's line, never a settling value) and the D-049
  * stream `/v1/stream` (served as `stream.<domain>`), GET only. Price and stream routes answer exact-origin CORS without
- * credentials. Ported in shape from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:services/ops/src/http/server.ts.
+ * credentials. A request to a retired name (`ops.testnet.`, `stream.testnet.`; D-228) is redirected to the current one. Ported in shape from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:services/ops/src/http/server.ts.
  */
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { Sql } from "@cwf/db";
 import { indexReader } from "@cwf/db/idx";
-import { isTickerSymbol, NETWORKS, X_RELAY_STOPPED, type XRelayStatus } from "@cwf/core";
+import { isTickerSymbol, movedHost, NETWORKS, X_RELAY_STOPPED, type XRelayStatus } from "@cwf/core";
 import type { SessionService } from "../calendar/session-service";
 import type { DisplayRuntime } from "../display/runtime";
 import type { SpotFeed } from "../prices/spot";
@@ -45,7 +45,14 @@ export function startHttp(input: HttpInputs): Promise<{ close(): Promise<void> }
       res.end(jsonText(body));
     };
     const fail = (error: unknown) => json(503, { error: errorText(error) });
+    // A preflight is answered where it lands: browsers never follow a redirect on one.
     if (req.method === "OPTIONS") return void res.writeHead(204, cors).end();
+    // The retired names (D-228): ops.testnet. and stream.testnet. send each request to the same path on ops. and stream.
+    const moved = movedHost(req.headers.host ?? "");
+    if (moved) {
+      const status = req.method === "GET" || req.method === "HEAD" ? 301 : 308;
+      return void res.writeHead(status, { ...cors, location: `https://${moved}${url.pathname}${url.search}`, "cache-control": "public, max-age=3600" }).end();
+    }
     if (req.method !== "GET") return json(405, { error: "GET only" });
     switch (url.pathname) {
       // Liveness for the container check (Coolify): the process serves. `/health` stays the strict readiness view — a

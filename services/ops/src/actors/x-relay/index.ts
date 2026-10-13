@@ -30,7 +30,8 @@ const BLOCKED_PASS_MS = 60_000;
 /** The card's renderer (sharp, the fonts) loads on the first reply, so ops starts without it; a failure means text. */
 const renderCard = async (p: ReplyPresentation): Promise<Uint8Array> => (await import("./reply-card")).renderReplyCardPng(p);
 
-const siteOf = (network: string) => (process.env.APP_ORIGIN?.trim() || (network === "mainnet" ? "https://mitoshi.xyz" : "https://testnet.mitoshi.xyz")).replace(/\/+$/, "");
+/** The app's one origin on both networks (D-228); APP_ORIGIN names another. */
+const siteOf = () => (process.env.APP_ORIGIN?.trim() || "https://mitoshi.xyz").replace(/\/+$/, "");
 
 export function startXRelay(deps: Pick<VenueDeps, "env" | "log" | "sql" | "bus">): { stop: () => void } {
   const env = readRelayEnv(deps.env.network, process.env, deps.env.keysDir);
@@ -40,7 +41,7 @@ export function startXRelay(deps: Pick<VenueDeps, "env" | "log" | "sql" | "bus">
   const dryRun = deps.env.dryRun || !env.live || !executor;
   const store = deps.sql ? createPgXStore(deps.sql) : null;
   const delivery = deps.sql ? createPgXDelivery(deps.sql) : null;
-  const site = siteOf(deps.env.network);
+  const site = siteOf();
   let reader: Reader | null = null;
   let handled = 0;
   let uploads = false;

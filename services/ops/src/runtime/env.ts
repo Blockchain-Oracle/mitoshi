@@ -29,8 +29,10 @@ export interface OpsEnv {
 
 const DEFAULT_HTTP_PORT = 8080;
 
-/** The web origins per network (D-060): the testnet app and localhost dev on testnet; the apex on mainnet. */
-const defaultOrigins = (network: Network) => (network === "mainnet" ? "https://mitoshi.xyz,https://www.mitoshi.xyz" : "https://testnet.mitoshi.xyz,http://localhost:3000");
+/** The web origins per network (D-060, D-228): the app at the apex; on testnet also the retired testnet host (a tab
+ *  opened there before the move keeps its prices and stream) and localhost dev; www on mainnet. */
+const defaultOrigins = (network: Network) =>
+  network === "mainnet" ? "https://mitoshi.xyz,https://www.mitoshi.xyz" : "https://mitoshi.xyz,https://testnet.mitoshi.xyz,http://localhost:3000";
 
 export function readOpsEnv(env: NodeJS.ProcessEnv = process.env): OpsEnv {
   const port = Number(env.OPS_HTTP_PORT ?? env.PORT);

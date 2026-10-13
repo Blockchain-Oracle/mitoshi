@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { deliverReplies, isCall, replyText, type ReplyContext } from "./reply";
 import { XRefusedError } from "./transport";
 
-const SITE = "https://testnet.mitoshi.xyz";
+const SITE = "https://mitoshi.xyz";
 const r = (over: Partial<XReceipt>): XReceipt => ({
   mentionId: "1", authorId: "2", handle: "caller", wallet: "0xabc", grantId: "21", marketId: null, side: "up", stakeBase: "5000000",
   status: "filled", reason: null, txHash: `0x${"ab".repeat(32)}`, instruction: "@Mitoshi_app BTC up 5m $5", atMs: 1, asset: "BTC", intervalSec: 300, expirySec: 1_791_700_200, ...over,

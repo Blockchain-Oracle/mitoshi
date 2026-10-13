@@ -23,10 +23,10 @@ describe("stream topics (D-049)", () => {
   });
 
   it("answer CORS for exact allowed origins only, never with credentials", () => {
-    const allowed = ["https://testnet.mitoshi.xyz"];
-    expect(corsHeaders("https://testnet.mitoshi.xyz", allowed)["access-control-allow-origin"]).toBe("https://testnet.mitoshi.xyz");
+    const allowed = ["https://mitoshi.xyz"];
+    expect(corsHeaders("https://mitoshi.xyz", allowed)["access-control-allow-origin"]).toBe("https://mitoshi.xyz");
     expect(corsHeaders("https://evil.example", allowed)["access-control-allow-origin"]).toBeUndefined();
-    expect(Object.keys(corsHeaders("https://testnet.mitoshi.xyz", allowed))).not.toContain("access-control-allow-credentials");
+    expect(Object.keys(corsHeaders("https://mitoshi.xyz", allowed))).not.toContain("access-control-allow-credentials");
   });
 });
 
@@ -43,9 +43,9 @@ describe("bus resume (Last-Event-ID)", () => {
     expect(bus.since(a.id, () => true)).toBeNull();
   });
 
-  it("allow the web origins by default: the testnet app and localhost dev on testnet, the apex on mainnet", () => {
+  it("allow the web origins by default: the app at the apex on both networks, the retired host and localhost dev on testnet", () => {
     const testnet = readOpsEnv({ NETWORK: "testnet" }).corsOrigins;
-    expect(testnet).toEqual(["https://testnet.mitoshi.xyz", "http://localhost:3000"]);
+    expect(testnet).toEqual(["https://mitoshi.xyz", "https://testnet.mitoshi.xyz", "http://localhost:3000"]);
     for (const origin of testnet) expect(corsHeaders(origin, testnet)["access-control-allow-origin"]).toBe(origin);
     expect(readOpsEnv({ NETWORK: "mainnet" }).corsOrigins).toEqual(["https://mitoshi.xyz", "https://www.mitoshi.xyz"]);
     expect(readOpsEnv({ NETWORK: "testnet", OPS_CORS_ORIGINS: "https://a.example, https://b.example" }).corsOrigins).toEqual(["https://a.example", "https://b.example"]);

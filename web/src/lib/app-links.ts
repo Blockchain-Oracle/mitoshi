@@ -5,8 +5,9 @@
 // Passkeys in the app: iOS's WKWebView offers them for an rpId listed in the app's `webcredentials:` associated domain
 // and in that host's AASA; Android's WebView (WebAuthn FOR_APP) asks Credential Manager, which checks the rpId host's
 // assetlinks.json for `get_login_creds`, and then signs clientDataJSON with the origin `android:apk-key-hash:<base64url
-// SHA-256 of the signing certificate>` instead of the page's https origin. Both files must be served from the rpId host
-// (mitoshi.xyz, D-060) as well as the app host (testnet.mitoshi.xyz, for App Links), with no redirect.
+// SHA-256 of the signing certificate>` instead of the page's https origin. Both files are served with no redirect from
+// the app's host, which is also the rpId (mitoshi.xyz, D-060, D-228), and from the old testnet.mitoshi.xyz, so links to
+// it keep opening the app.
 
 export const APPLE_TEAM_ID = "86C6ZFJ6V6";
 /** The app's link scheme (mobile/app.identity.json `scheme`): `mitoshi://native-auth?code=` hands an X sign-in back. */

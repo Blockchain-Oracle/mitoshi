@@ -23,7 +23,7 @@ export function startAgentRater(deps: Pick<VenueDeps, "env" | "log" | "sql">): {
   const live = process.env.AGENT_RATER_LIVE === "1";
   const dryRun = deps.env.dryRun || !key || !live;
   const everyMs = (Number(process.env.AGENT_RATER_EVERY_SEC) >= 60 ? Number(process.env.AGENT_RATER_EVERY_SEC) : DAY_SEC) * 1000;
-  const origin = (process.env.WEB_ORIGIN ?? deps.env.corsOrigins[0] ?? "https://testnet.mitoshi.xyz").replace(/\/$/, "");
+  const origin = (process.env.WEB_ORIGIN ?? deps.env.corsOrigins[0] ?? "https://mitoshi.xyz").replace(/\/$/, "");
   const rater = (client.address ?? "0x0000000000000000000000000000000000000000") as Address;
   const store = deps.sql ? createPgStrategyStore(deps.sql) : null;
 

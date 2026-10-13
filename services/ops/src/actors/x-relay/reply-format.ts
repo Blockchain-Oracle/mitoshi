@@ -18,7 +18,7 @@ export interface ReplyPresentation {
   /** "Tempo Moderato testnet". */
   network: string;
   url: string;
-  /** "testnet.mitoshi.xyz". */
+  /** "mitoshi.xyz". */
   site: string;
   /** "@caller"; null when X gave no usable handle. */
   sender: string | null;

@@ -2,31 +2,24 @@
 // (C.3.6). Next 16's `proxy` (Node runtime, D-055). A restricted country — from a CDN's country header in front of
 // Coolify (`cf-ipcountry`), Vercel's, or `CWF_REGION_OVERRIDE` locally — forwards `x-cwf-region-<pillar>: restricted`
 // to the route handlers and leaves a readable `cwf.region` cookie so funded CTAs paint their held state on the first
-// frame. Nothing here redirects or blocks a page: reading is open everywhere.
+// frame. The region never redirects or blocks a page: reading is open everywhere.
 import { NextResponse, type NextRequest } from "next/server";
 import { COUNTRY_HEADERS, encodePosture, GEOFENCE_PILLARS, postureOf, REGION_COOKIE, REGION_HEADER } from "@cwf/core";
 import { TRADE_COOKIE, tradeRedirect } from "./features/terminal/route";
+import { canonicalRedirect } from "./lib/canonical-host";
 import { tickerHubRoute } from "./lib/ticker-href";
 
 const COOKIE_MAX_AGE_SEC = 60 * 60 * 24;
 
-/** The app's own host (APP_ORIGIN), read once; null locally without one. */
-const APP_HOST = (() => {
-  try {
-    return process.env.APP_ORIGIN ? new URL(process.env.APP_ORIGIN).host : null;
-  } catch {
-    return null;
-  }
-})();
-
 export function proxy(request: NextRequest): NextResponse {
-  // The passkey rpId's host (mitoshi.xyz while the app lives on testnet.mitoshi.xyz; D-227, MOBILE) serves only the
-  // phone app's association files — answered here with no redirect, as Apple and Google require — and sends every other
-  // path to the app, so the site and its passkey ceremonies run on one origin.
-  const host = request.headers.get("host");
-  if (APP_HOST && host && host !== APP_HOST && host === process.env.PASSKEY_RP_ID && !request.nextUrl.pathname.startsWith("/.well-known/")) {
-    return NextResponse.redirect(new URL(`${request.nextUrl.pathname}${request.nextUrl.search}`, process.env.APP_ORIGIN), 307);
-  }
+  // One address (D-228): the app lives at APP_ORIGIN (https://mitoshi.xyz); the old testnet host and www answer a
+  // permanent redirect there with the path and query kept, and /.well-known/* answers on every host (the phone app's
+  // association files: Apple and Google follow no redirect).
+  const moved = canonicalRedirect(
+    { host: request.headers.get("host"), pathname: request.nextUrl.pathname, search: request.nextUrl.search, method: request.method },
+    { appOrigin: process.env.APP_ORIGIN, rpId: process.env.PASSKEY_RP_ID },
+  );
+  if (moved) return NextResponse.redirect(moved.location, moved.status);
   // /dev fixtures are internal: 404 in production unless explicitly enabled (the layout also calls notFound()).
   if (request.nextUrl.pathname.startsWith("/dev") && process.env.NODE_ENV === "production" && process.env.DEV_FIXTURES !== "1") {
     return new NextResponse(null, { status: 404 });
