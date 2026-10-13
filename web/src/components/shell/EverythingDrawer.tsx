@@ -23,6 +23,9 @@ import { openSearch } from "@/lib/search-event";
 import { DOCK_OMITTED, EVERYTHING_SECTIONS, isActiveNavItem, NAV_ITEMS, type NavItem } from "./header/nav-items";
 import ThemeToggle from "./ThemeToggle";
 
+/** The pinned foot's labels (R6 shell S17); More loads on demand, so they stay out of the shared copy. */
+const FOOT = { soundOn: "Sound on", soundOff: "Sound off", about: "About Mitoshi" } as const;
+
 export interface EverythingDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -61,10 +64,10 @@ function MoreTools() {
   return (
     <div className="more-tools">
       <ThemeToggle />
-      <button type="button" className="more-tool" aria-pressed={sound} aria-label={sound ? SHELL.soundOn : SHELL.soundOff} title={sound ? SHELL.soundOn : SHELL.soundOff} onClick={() => setFeedback({ sound: !sound })}>
+      <button type="button" className="more-tool" aria-pressed={sound} aria-label={sound ? FOOT.soundOn : FOOT.soundOff} title={sound ? FOOT.soundOn : FOOT.soundOff} onClick={() => setFeedback({ sound: !sound })}>
         {sound ? <Volume2 aria-hidden /> : <VolumeX aria-hidden />}
       </button>
-      <InfoPopover label={SHELL.about} className="more-tool">{FOOTER.disclosure}</InfoPopover>
+      <InfoPopover label={FOOT.about} className="more-tool">{FOOTER.disclosure}</InfoPopover>
     </div>
   );
 }

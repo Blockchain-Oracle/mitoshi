@@ -1,58 +1,17 @@
 "use client";
-// One connection notice for the whole page (R6 shell S04/T05/T04; 21st 36542 syeddhasnainn/tool-error's anatomy — a
-// status glyph, one line, a countdown and Retry — as a 32 px row with no card; 1641 ibelick/text-shimmer on
-// "reconnecting"; Omio's one slim banner under the header, Coinbase's band over a list that keeps rendering). It is
-// the top line's second row, so it is sticky with it on a phone: offline at once ("Offline — prices paused 15:31"),
-// a failed read after 1.5 s with the next retry's countdown, gone on the first live read. The text is not a live
-// region; the transitions are announced once each.
-import { formatClock } from "@cwf/core/units";
-import { WifiOff } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { useClockValue } from "@/lib/clock";
-import { SHELL } from "@/lib/copy";
-import { retryNow, useConnection } from "@/lib/connection";
-import { stripView } from "@/lib/connection-core";
-import { cn } from "@/lib/utils";
-import "@/styles/connection.css";
+// The connection strip's gate (R6 shell S04/T04): the page's connection store is in every route's first load (every
+// read reports into it), but the strip's view — its glyph, words, shimmer and styles — loads only once there is
+// something to say (offline, or a failing read), so a healthy page carries none of it. The view (`ConnectionStripView`)
+// waits out the 1.5 s blip threshold itself and stays mounted, so it can announce "Prices live again."
+import dynamic from "next/dynamic";
+import { useState } from "react";
+import { useConnection } from "@/lib/connection";
 
-const C = SHELL.connection;
-const hhmm = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+const View = dynamic(() => import("./ConnectionStripView"), { ssr: false });
 
 export function ConnectionStrip() {
   const connection = useConnection();
-  useClockValue((ms) => Math.floor(ms / 1000)); // a tick a second: the countdown and the 1.5 s threshold
-  const now = Date.now();
-  const view = stripView(connection, now);
-  const [said, setSaid] = useState<string | null>(null);
-  const last = useRef(view.state);
-  useEffect(() => {
-    const prev = last.current;
-    if (view.state === prev) return;
-    last.current = view.state;
-    if (view.state === "offline") setSaid(C.announce.offline);
-    else if (view.state === "reconnecting" && prev === "hidden") setSaid(C.announce.reconnecting);
-    else if (view.state === "hidden") setSaid(C.announce.live);
-  }, [view.state]);
-
-  const open = view.state !== "hidden";
-  const text = view.state === "offline" ? C.offline(hhmm(view.sinceMs)) : view.state === "retrying" ? C.retrying : C.reconnecting;
-  return (
-    <div className="cs" data-open={open ? "" : undefined} data-state={view.state}>
-      <div className="cs-inner">
-        {open ? (
-          <div className="cs-row" role="status">
-            {view.state === "offline" ? <WifiOff aria-hidden className="cs-glyph" /> : <span aria-hidden className="cs-dot" />}
-            <span id="cs-text" className={cn("cs-text", view.state !== "offline" && "cs-shimmer")}>{text}</span>
-            {view.state === "reconnecting" ? (
-              <span className="cs-count" title={`Attempt ${view.attempt + 1}`}>{formatClock(Math.max(0, Math.ceil((view.nextRetryAtMs - now) / 1000)))}</span>
-            ) : null}
-            {view.state !== "retrying" ? (
-              <button type="button" className="cs-retry" aria-describedby="cs-text" onClick={retryNow}>{C.retry}</button>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-      <p className="sr-only" aria-live="polite">{said}</p>
-    </div>
-  );
+  const [wanted, setWanted] = useState(false);
+  if (!wanted && (!connection.online || connection.failing)) setWanted(true);
+  return wanted ? <View /> : null;
 }

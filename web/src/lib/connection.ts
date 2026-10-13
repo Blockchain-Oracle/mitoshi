@@ -5,7 +5,7 @@
 // active reads that failed or went stale (the query client registers how), on its backoff or on "Retry"; coming back
 // online retries at once.
 import { useSyncExternalStore } from "react";
-import { SHELL } from "./copy";
+import { CONNECTION } from "./connection-copy";
 import { INITIAL, isConnectionKind, onFailure, onOnline, onRetry, onSuccess, type ConnectionState } from "./connection-core";
 
 let state: ConnectionState = INITIAL;
@@ -92,5 +92,5 @@ export function useConnection(): ConnectionState {
 
 /** Offline blocks a send (UP/DOWN, Place, Supply): the words the button says, or null. Failing alone does not. */
 export function useOfflineBlocker(): string | null {
-  return useConnection().online ? null : SHELL.connection.blocked;
+  return useConnection().online ? null : CONNECTION.blocked;
 }

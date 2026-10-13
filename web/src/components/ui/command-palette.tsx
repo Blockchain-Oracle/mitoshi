@@ -22,6 +22,10 @@ import { openExternal } from "@/lib/open-external";
 import { paletteGroups, withPick, type PaletteRow } from "./palette-rows";
 import "@/styles/command.css";
 
+/** The groups and the hint bar's words (R6 shell S24), here rather than in the shared copy: the palette loads on demand. */
+const GROUPS = { recent: "Recent", places: "Go to", live: "Live now", assets: "Assets", pages: "Pages" } as const;
+const HINTS = { trade: "Trade", hub: "Hub", open: "Open", close: "Close" } as const;
+
 const RECENT_KEY = "cwf.palette.recent.v1";
 const readRecent = (): string[] => {
   try {
@@ -83,7 +87,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
   useEffect(() => void (open && setRecent(readRecent())), [open]);
   const [highlighted, setHighlighted] = useState<string | null>(null);
   const groups = useMemo(
-    () => paletteGroups({ query, places: PLACES, assets, pages: PAGES, recent, headings: SHELL.commandGroups }),
+    () => paletteGroups({ query, places: PLACES, assets, pages: PAGES, recent, headings: GROUPS }),
     [query, assets, recent],
   );
   const rowById = useMemo(() => new Map(groups.flatMap((g) => g.rows.map((r) => [r.id, r] as const))), [groups]);
@@ -138,7 +142,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
                         {row.soon ? <span className="nav-soon">{SHELL.soon}</span> : null}
                         {row.shortcut ? <span className="command-shortcut" data-kind={row.shortcutKind}>{row.shortcut}</span> : null}
                         {row.hub && row.id === current?.id ? (
-                          <button type="button" className="command-hub" onClick={(e) => (e.stopPropagation(), go(row, "hub"))}>{SHELL.commandHints.hub}</button>
+                          <button type="button" className="command-hub" onClick={(e) => (e.stopPropagation(), go(row, "hub"))}>{HINTS.hub}</button>
                         ) : null}
                       </Autocomplete.Item>
                     ))}
@@ -149,13 +153,13 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
             <div className="command-hints" aria-hidden>
               {current?.hub ? (
                 <>
-                  <span><Key k="↵" /> {SHELL.commandHints.trade}</span>
-                  <span><Key k="⌘↵" /> {SHELL.commandHints.hub}</span>
+                  <span><Key k="↵" /> {HINTS.trade}</span>
+                  <span><Key k="⌘↵" /> {HINTS.hub}</span>
                 </>
               ) : (
-                <span><Key k="↵" /> {SHELL.commandHints.open}</span>
+                <span><Key k="↵" /> {HINTS.open}</span>
               )}
-              <span><Key k="esc" /> {SHELL.commandHints.close}</span>
+              <span><Key k="esc" /> {HINTS.close}</span>
             </div>
           </Autocomplete.Root>
         </Dialog.Popup>
