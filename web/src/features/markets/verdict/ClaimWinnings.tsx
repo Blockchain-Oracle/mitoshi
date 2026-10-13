@@ -18,6 +18,8 @@ import { ArrowRight, Check, Loader2, Trophy } from "lucide-react";
 import { Hash } from "@/components/data";
 import { TxFailureCard } from "@/components/tx";
 import { useNowMs } from "@/lib/clock";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
 import { VERDICT_UI } from "../copy";
@@ -50,7 +52,9 @@ export function ClaimWinnings({ verdict, pinned, market, resolution, rows }: Cla
   const { address } = useWalletSession();
   const nowMs = useNowMs();
   const { tx, collect, reset } = useCollect(address);
-  const money = (b: bigint) => `$${formatBaseUnits(b, verdict.decimals, { minDp: 2, maxDp: 2 })}`;
+  // Privacy mode (R4-4, critic gap 15): your own payout and stake hide with every other money figure.
+  const hidden = usePrivacy();
+  const money = (b: bigint) => (hidden ? SHELL.masked : `$${formatBaseUnits(b, verdict.decimals, { minDp: 2, maxDp: 2 })}`);
   const stake = verdict.costBasisBase ?? 0n;
   const profit = verdict.pnlBase > 0n ? verdict.pnlBase : 0n;
   const roi = stake > 0n ? Number((profit * 100n) / stake) : 0;

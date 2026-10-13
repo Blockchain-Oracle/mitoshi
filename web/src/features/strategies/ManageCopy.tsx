@@ -4,6 +4,7 @@
 // one sponsored transaction (`stopIntent`: the grant is revoked only when no other copy shares it).
 import { formatBaseUnits, USD_DECIMALS, type SubscriptionMode } from "@cwf/core";
 import { useState } from "react";
+import { Masked } from "@/components/kit";
 import { TxFailureCard } from "@/components/tx";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { cn } from "@/lib/utils";
@@ -42,10 +43,10 @@ export function ManageCopy({ card, strategies, sub, writes }: { card: StrategyWi
           <span className="type-body text-ink-secondary">{COPY.manage.noFills}</span>
         ) : (
           <span className={cn("type-body-strong tabular-nums", net > 0n ? "text-profit" : net < 0n ? "text-loss" : "text-ink")}>
-            {COPY.manage.pnlLine(net, settled.length, fills.length - settled.length)}
+            <Masked>{COPY.manage.pnlLine(net, settled.length, fills.length - settled.length)}</Masked>
           </span>
         )}
-        {BigInt(sub.feesPaidBase) > 0n && <span className="type-caption text-ink-secondary">Fee paid ${formatBaseUnits(BigInt(sub.feesPaidBase), USD_DECIMALS, { minDp: 2, maxDp: 2 })}</span>}
+        {BigInt(sub.feesPaidBase) > 0n && <span className="type-caption text-ink-secondary"><Masked>Fee paid ${formatBaseUnits(BigInt(sub.feesPaidBase), USD_DECIMALS, { minDp: 2, maxDp: 2 })}</Masked></span>}
       </div>
       {!live && card.active && (
         <div className="flex flex-col gap-2">

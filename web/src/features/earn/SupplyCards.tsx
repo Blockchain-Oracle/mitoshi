@@ -9,6 +9,9 @@ import { canConfirm, formatBaseUnits, parseDecimalToBaseUnits, realizedYield, su
 import type { SupplyLedger } from "@cwf/markets/maker";
 import { useState } from "react";
 import { ctaLabel, TX, TxCta, TxFailureCard, type SignerKind, type TxRunner } from "@/components/tx";
+import { Masked } from "@/components/kit";
+import { SHELL } from "@/lib/copy";
+import { usePrivacy } from "@/lib/privacy";
 import { cn } from "@/lib/utils";
 import { EARN } from "./copy";
 import { formatSharePrice, money2, quickAmounts } from "./format";
@@ -109,7 +112,9 @@ export function PositionCard({ signedIn, signer, sheet, words, shares, worthBase
   const onPaperZero = earned ? (parseDecimalToBaseUnits(onPaperText.slice(1), decimals) ?? 0n) === 0n : true;
   const onPaper = !earned ? null : onPaperZero ? { tone: "ea-earned-v", text: position.unrealizedFlat } : earned.unrealizedBase < 0n ? { tone: "ea-earned-v ea-earned-v--down", text: position.unrealizedDown(onPaperText) } : { tone: "ea-earned-v ea-earned-v--up", text: position.unrealized(onPaperText) };
   const state = idleOr(tx, null);
-  const action = held.committedBase === 0n ? position.withdrawAll : position.withdrawIdle(money2(held.idleBase, decimals));
+  // Privacy mode (R4-4, critic gap 15): the withdrawable amount in the button hides with every other figure.
+  const hidden = usePrivacy();
+  const action = held.committedBase === 0n ? position.withdrawAll : position.withdrawIdle(hidden ? SHELL.masked : money2(held.idleBase, decimals));
   const nothing = held.shares <= 0n && (earned === null || earned.realizedBase <= 0n);
   return (
     <div className="earn-card ea-card">
@@ -120,8 +125,8 @@ export function PositionCard({ signedIn, signer, sheet, words, shares, worthBase
         <p className="ea-empty">{ledger === null && shares <= 0n ? position.ledgerReading : position.empty}</p>
       ) : (
         <>
-          <div className="ea-position-value numbers">{money2(held.worthBase, decimals)}</div>
-          <div className="ea-position-sub numbers">{position.shares(formatBaseUnits(held.shares, decimals, { minDp: 2, maxDp: 2 }), formatSharePrice(sheet.sharePriceRaw, decimals))}</div>
+          <div className="ea-position-value numbers"><Masked>{money2(held.worthBase, decimals)}</Masked></div>
+          <div className="ea-position-sub numbers"><Masked>{position.shares(formatBaseUnits(held.shares, decimals, { minDp: 2, maxDp: 2 }), formatSharePrice(sheet.sharePriceRaw, decimals))}</Masked></div>
           <button type="button" onClick={() => onWithdraw(held.idleShares)} disabled={!canConfirm(state) || held.idleShares === 0n} aria-busy={state.kind === "signing" || state.kind === "submitted"} className="earn-ghost ea-withdraw">
             {note ?? ctaLabel(state, action, signer)}
           </button>
@@ -133,17 +138,17 @@ export function PositionCard({ signedIn, signer, sheet, words, shares, worthBase
             <div>
               <dt className="ea-k">{position.realizedLabel}</dt>
               <dd className={earned && earned.realizedBase > 0n ? "ea-earned-v ea-earned-v--up numbers" : "ea-earned-v"}>
-                {earned === null ? position.ledgerReading : earned.realizedBase > 0n ? position.realized(money2(earned.realizedBase, decimals)) : position.realizedNone}
+                {earned === null ? position.ledgerReading : earned.realizedBase > 0n ? <Masked>{position.realized(money2(earned.realizedBase, decimals))}</Masked> : position.realizedNone}
               </dd>
             </div>
             {held.shares > 0n && onPaper ? (
               <div>
                 <dt className="ea-k">{position.unrealizedLabel}</dt>
-                <dd className={cn(onPaper.tone, !onPaperZero && "numbers")}>{onPaper.text}</dd>
+                <dd className={cn(onPaper.tone, !onPaperZero && "numbers")}><Masked>{onPaper.text}</Masked></dd>
               </div>
             ) : null}
           </dl>
-          {held.committedBase > 0n ? <p className="ea-note">{words.committedNote(money2(held.committedBase, decimals))}</p> : null}
+          {held.committedBase > 0n ? <p className="ea-note">{words.committedNote(hidden ? SHELL.masked : money2(held.committedBase, decimals))}</p> : null}
           {unsettledExpired ? <p className="ea-note">{position.unsettledNote}</p> : null}
         </>
       )}

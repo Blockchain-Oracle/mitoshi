@@ -9,6 +9,7 @@ import { shortHex } from "@cwf/core/units";
 import { useVaultSnapshot } from "@cwf/markets/react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { Masked } from "@/components/kit";
 import { MotionScope } from "@/components/motion-scope";
 import { TxFailureCard, useTxLifecycle } from "@/components/tx";
 import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
@@ -55,8 +56,8 @@ function LiveGrant({ grant, thisDevice, nowSec, onStop, stopping, busy }: { gran
       ) : (
         <dl className="grid grid-cols-1 gap-1 type-caption text-ink-secondary sm:grid-cols-2">
           <div><dt className="inline">{G.scope}: </dt><dd className="inline text-ink">{G.scopeValue(usd(grant.caps.maxStakePerTradeBase), usd(grant.caps.maxDailySpendBase), grant.caps.maxOpenPositions)}</dd></div>
-          <div><dt className="inline">{G.left}: </dt><dd className="numbers inline text-ink">{G.leftValue(usd(leftNowBase(grant, nowSec)), usd(grant.budgetBase))}</dd></div>
-          <div><dt className="inline">{G.spentToday}: </dt><dd className="numbers inline text-ink">{usd(spentTodayBase(grant, nowSec))}</dd></div>
+          <div><dt className="inline">{G.left}: </dt><dd className="numbers inline text-ink"><Masked>{G.leftValue(usd(leftNowBase(grant, nowSec)), usd(grant.budgetBase))}</Masked></dd></div>
+          <div><dt className="inline">{G.spentToday}: </dt><dd className="numbers inline text-ink"><Masked>{usd(spentTodayBase(grant, nowSec))}</Masked></dd></div>
           <div><dt className="inline">{G.expires}: </dt><dd className="inline text-ink">{whenText(BigInt(grant.expiresAtSec))}</dd></div>
         </dl>
       )}
