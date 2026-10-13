@@ -7,7 +7,7 @@
 // duel.css, on Mitoshi's tokens; the moments are the spec's (queue breath, 700 ms versus entrance, results 600 ms apart).
 import { STAKE_TIERS, type StakeTierId } from "@cwf/core/games";
 import { formatBaseUnits } from "@cwf/core/units";
-import { Info } from "lucide-react";
+import { Info, Lock } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { Odometer } from "@/components/kit/Odometer";
 import { ConfettiBurst } from "@/components/ui/confetti-burst";
@@ -98,7 +98,18 @@ export function Versus({ me, opponent }: { me: string; opponent: string }) {
   );
 }
 
-export function DeckRow({ match }: { match: DuelMatchWire }) {
+/** The deck: face down (its size only) until both pots are in, then its cards. */
+export function DeckRow({ match, size }: { match: DuelMatchWire; size: number }) {
+  if (match.deck.length === 0)
+    return (
+      <ol className="du-deck" aria-label={DUEL.lobby.sealed(size)}>
+        {Array.from({ length: size }, (_, i) => (
+          <li key={i} className="du-deck-card du-deck-card--sealed" aria-hidden>
+            <Lock className="du-deck-lock" />
+          </li>
+        ))}
+      </ol>
+    );
   return (
     <ol className="du-deck" aria-label={DUEL.lobby.cards(match.deck.length)}>
       {match.deck.map((c) => (

@@ -83,7 +83,7 @@ function Lobby({ paired, match, me, write, busy, failed, onRequeue }: { paired: 
   return (
     <section className="du-lobby" aria-label={DUEL.title}>
       <Versus me={me} opponent={opponent} />
-      {match ? <DeckRow match={match} /> : null}
+      {match ? <DeckRow match={match} size={paired.deckSize} /> : null}
       {action ? (
         <button type="button" className="du-cta" disabled={busy !== null} onClick={action.run} data-primary-action>
           {busy === action.key ? DUEL.sending : action.label}

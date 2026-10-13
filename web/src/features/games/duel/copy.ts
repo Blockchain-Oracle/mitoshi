@@ -28,6 +28,7 @@ export const DUEL = {
     reveal: "Open the deck",
     revealing: "Opening the deck…",
     cards: (n: number) => `${n} cards`,
+    sealed: (n: number) => `${n} cards · sealed`,
     another: "Not opened · find another duel",
   },
   pick: {

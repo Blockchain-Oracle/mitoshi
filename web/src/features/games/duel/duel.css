@@ -53,6 +53,8 @@
 .du-deck { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .du-deck-card { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 9999px; border: 1px solid var(--color-hairline); background: var(--color-surface-1); font-family: var(--font-data); font-size: 12px; color: var(--white); }
 .du-deck-disc { width: 18px; height: 18px; }
+.du-deck-card--sealed { color: var(--gray-400); }
+.du-deck-lock { width: 14px; height: 14px; }
 
 /* ── The result: both P&Ls, then each card, 600 ms apart ── */
 .du-totals { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }

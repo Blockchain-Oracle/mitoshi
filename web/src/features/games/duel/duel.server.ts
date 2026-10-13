@@ -261,7 +261,9 @@ export async function readMatch(input: { matchId: Bytes32; wallet: Address | nul
       potBase: row.potPerPlayer,
       perCardCapBase: view ? view.match.perCardCapBase.toString() : toBaseUnits(STAKE_TIERS[tierIndex(row.tier)]!.perCardCapUnits, DECIMALS).toString(),
       status,
-      deck,
+      // Sealed until both pots are in (Masayume: the deck is fixed and hashed before either side sees a card), so
+      // nobody joins, or walks away, on the cards.
+      deck: potsIn ? deck : [],
       createdAtSec: params ? params.createdAtSec : Math.floor(Date.parse(row.createdAt) / 1_000),
       joinDeadlineSec: params && params.createdAtSec && windows ? params.createdAtSec + windows.joinWindowSec : null,
       revealDeadlineSec: params && params.joinedAtSec && windows ? params.joinedAtSec + windows.revealWindowSec : null,
