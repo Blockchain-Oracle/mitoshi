@@ -24,5 +24,6 @@ function gate(): TestflightGate {
 export async function liveStoreRelease(env: Record<string, string | undefined> = process.env): Promise<StoreRelease> {
   const release = readStoreRelease(env);
   if (!release.testflight) return release;
-  return (await gate().state(release.testflight)) === "open" ? release : { ...release, testflight: null };
+  const state = await gate().state(release.testflight);
+  return state === "open" ? release : { ...release, testflight: null, inReview: state === "closed" };
 }

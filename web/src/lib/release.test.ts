@@ -2,7 +2,7 @@
 // opens only for its listed testers, so it is refused), a malformed value reads as unset (the card says "Coming to …"),
 // and Apple's join page is read as open only when it is the join page for that code without the closed line.
 import { describe, expect, it } from "vitest";
-import { orderCards, parsePlay, parseTestflight, platformOf, readStoreRelease, storeOpen, testflightState, type StoreRelease } from "./release";
+import { orderCards, parseApk, parsePlay, parseTestflight, platformOf, readStoreRelease, storeOpen, testflightState, type StoreRelease } from "./release";
 
 const TF = "https://testflight.apple.com/join/AbC123xy";
 const OPEN = "https://play.google.com/apps/testing/xyz.mitoshi.app.testnet";
@@ -100,5 +100,21 @@ describe("orderCards", () => {
   });
   it("leads with the app itself inside its own web view", () => {
     expect(orderCards("android", true, none)).toEqual(["android", "web", "ios"]);
+  });
+});
+
+describe("the Android APK", () => {
+  const APK = "https://expo.dev/artifacts/eas/abc-123_XY.apk";
+  it("takes only an EAS build's APK artifact", () => {
+    expect(parseApk(APK)).toBe(APK);
+    expect(parseApk("https://evil.example/artifacts/eas/abc.apk")).toBeNull();
+    expect(parseApk("https://expo.dev/artifacts/eas/abc.aab")).toBeNull();
+    expect(parseApk("http://expo.dev/artifacts/eas/abc.apk")).toBeNull();
+  });
+  it("opens Android when set, and Android leads on an Android phone", () => {
+    const release = readStoreRelease({ ANDROID_APK_LINK: APK });
+    expect(release.apk).toBe(APK);
+    expect(storeOpen(release, "android")).toBe(true);
+    expect(orderCards("android", false, release)).toEqual(["android", "web", "ios"]);
   });
 });

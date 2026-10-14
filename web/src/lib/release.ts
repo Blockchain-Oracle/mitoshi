@@ -7,6 +7,8 @@
 //   TESTFLIGHT_PUBLIC_LINK   https://testflight.apple.com/join/<code> — offered only while Apple's join page takes
 //                            testers (`server/store-release.ts`): before Apple's beta review passes it says it doesn't
 //   PLAY_OPEN_TEST_LINK      https://play.google.com/apps/testing/<package>, or the app's store page — anyone can join
+//   ANDROID_APK_LINK         https://expo.dev/artifacts/eas/<id>.apk — the same app as an APK anyone can install
+//                            (round 7, the owner: Android had nothing to install while Play's open test waits)
 //
 // Play's internal test is not offered: its link opens only for the accounts on its testers list, and everyone else lands
 // on "not available" — a dead end. Android says "Coming to Google Play" until the open test exists. None is a secret and
@@ -17,6 +19,10 @@
 export interface StoreRelease {
   testflight: string | null;
   play: string | null;
+  /** The Android app as an installable APK (an EAS build), for Android before Play's open test exists. */
+  apk?: string | null;
+  /** A TestFlight link is set but Apple's beta review hasn't opened it yet (the card says so instead of "coming"). */
+  inReview?: boolean;
 }
 
 export type Platform = "ios" | "android" | "desktop";
@@ -77,8 +83,18 @@ export function testflightState(link: string, status: number, html: string): Tes
   return code && html.includes(`itms-beta://testflight.apple.com/join/${code}`) ? "open" : "unknown";
 }
 
+const EAS_APK = /^\/artifacts\/eas\/[\w-]+\.apk$/;
+
+/** Only an EAS build's own APK artifact: the app's release is never sideloaded from anywhere else. */
+export function parseApk(raw: string | undefined): string | null {
+  const url = httpsUrl(raw);
+  return url && url.hostname === "expo.dev" && EAS_APK.test(url.pathname) ? url.toString() : null;
+}
+
 export function readStoreRelease(env: Env): StoreRelease {
-  return { testflight: parseTestflight(env.TESTFLIGHT_PUBLIC_LINK), play: parsePlay(env.PLAY_OPEN_TEST_LINK) };
+  const release: StoreRelease = { testflight: parseTestflight(env.TESTFLIGHT_PUBLIC_LINK), play: parsePlay(env.PLAY_OPEN_TEST_LINK) };
+  const apk = parseApk(env.ANDROID_APK_LINK);
+  return apk ? { ...release, apk } : release;
 }
 
 /** The phone app's web view names itself in the user agent (mobile/src/shell/config.ts `USER_AGENT_MARK`). */
@@ -94,9 +110,9 @@ export function platformOf(userAgent: string | null | undefined): { platform: Pl
   return { platform, inApp: SHELL_MARK.test(ua) };
 }
 
-/** A store anyone can open today: TestFlight's public link while Apple takes testers, or Google Play's open test. */
+/** A store anyone can open today: TestFlight's public link while Apple takes testers; Google Play's open test or the APK. */
 export function storeOpen(release: StoreRelease, store: "ios" | "android"): boolean {
-  return (store === "ios" ? release.testflight : release.play) !== null;
+  return store === "ios" ? release.testflight !== null : release.play !== null || Boolean(release.apk);
 }
 
 /**

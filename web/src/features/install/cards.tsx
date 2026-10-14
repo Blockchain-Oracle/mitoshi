@@ -25,7 +25,10 @@ function iosCard(release: StoreRelease, here: boolean, primary: boolean): Platfo
   const c = DOWNLOAD.ios;
   const base = { id: "ios" as const, name: c.name, glyph: <AppleGlyph /> };
   if (here) return { ...base, chip: DOWNLOAD.here.chip, tone: "here", line: DOWNLOAD.here.line, action: null, qr: null };
-  if (!release.testflight) return { ...base, chip: c.pending.chip, tone: "soon", line: c.pending.line, action: null, qr: null };
+  if (!release.testflight) {
+    const wait = release.inReview ? c.review : c.pending;
+    return { ...base, chip: wait.chip, tone: "soon", line: wait.line, action: null, qr: null };
+  }
   return {
     ...base,
     chip: c.ready.chip,
@@ -40,6 +43,16 @@ function androidCard(release: StoreRelease, here: boolean, primary: boolean): Pl
   const c = DOWNLOAD.android;
   const base = { id: "android" as const, name: c.name, glyph: <AndroidGlyph /> };
   if (here) return { ...base, chip: DOWNLOAD.here.chip, tone: "here", line: DOWNLOAD.here.line, action: null, qr: null };
+  if (!release.play && release.apk) {
+    return {
+      ...base,
+      chip: c.apk.chip,
+      tone: "live",
+      line: c.apk.line,
+      action: <StoreButton href={release.apk} glyph={<AndroidGlyph />} kicker={c.apk.kicker} store={c.apk.store} variant={primary ? "accent" : "ink"} />,
+      qr: { value: release.apk, caption: c.apk.scan },
+    };
+  }
   if (!release.play) return { ...base, chip: c.pending.chip, tone: "soon", line: c.pending.line, action: null, qr: null };
   return {
     ...base,
@@ -97,7 +110,7 @@ export interface CardShape {
  * is read only at request time (`server/store-release.ts`). Today that is exactly the desk the cards land as.
  */
 export function waitShapes(release: StoreRelease): CardShape[] {
-  const known: StoreRelease = { testflight: null, play: release.play };
+  const known: StoreRelease = { testflight: null, play: release.play, apk: release.apk ?? null };
   return platformCards({ platform: "desktop", inApp: false, release: known, origin: "", hint: "other" }).map(({ id, name, chip, line, action, qr }) => ({
     id,
     name,

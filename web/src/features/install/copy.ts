@@ -56,11 +56,14 @@ export const DOWNLOAD = {
     name: "iPhone",
     ready: { chip: "TestFlight beta", line: "Install TestFlight, then join the beta.", kicker: "Join the beta on", store: "TestFlight", scan: "Scan with your iPhone" },
     pending: { chip: "Coming to TestFlight", line: "Add the web app to your Home Screen today." },
+    /** The public link exists; Apple's beta review hasn't opened it yet. */
+    review: { chip: "In Apple's beta review", line: "Opens here once Apple approves it. The web app installs today." },
   },
   android: {
     name: "Android",
     ready: { chip: "Open test", line: "Join the test, then install from Play.", kicker: "Join the Android test on", store: "Google Play", scan: "Scan with your Android phone" },
     pending: { chip: "Coming to Google Play", line: "Install the web app today." },
+    apk: { chip: "Android app", line: "Download the app and open it to install.", kicker: "Download the", store: "Android app (APK)", scan: "Scan with your Android phone" },
   },
   web: { name: "Web app", chip: "Live", line: "Installs from your browser. No store.", scan: "Scan to open it on your phone" },
   here: { chip: "Installed", line: "You're using it now." },
