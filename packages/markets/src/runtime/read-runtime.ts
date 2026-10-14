@@ -13,18 +13,32 @@
 import type { PublicClient, Transport } from "viem";
 import type { TempoReadChain } from "../read-chain";
 import { parseMarketsEnv, type MarketsEnv } from "../env";
+import type { RpcBudget, RpcTier } from "../rpc-budget";
+
+/** A server process's pace for this runtime's HTTP reads (ops' board cache, D-134); browsers never set one. */
+export interface ReadBudget {
+  budget: RpcBudget;
+  tier: RpcTier;
+}
 
 let env: MarketsEnv = parseMarketsEnv();
 export type ReadClient = PublicClient<Transport, TempoReadChain>;
 let client: Promise<ReadClient> | null = null;
 let logClient: Promise<ReadClient> | null = null;
 let version = 0;
+let readBudget: ReadBudget | null = null;
 const listeners = new Set<() => void>();
 
 /** Sets the runtime's config; the next `getPublicClient()` builds against it. Idempotent for equal configs. */
 export function configureMarkets(next: MarketsEnv): void {
   if (JSON.stringify(next) === JSON.stringify(env) && client) return;
   env = next;
+  closeRuntime();
+}
+
+/** Paces every HTTP read this runtime sends through `budget` (a server process); the next client built uses it. */
+export function setReadBudget(next: ReadBudget | null): void {
+  readBudget = next;
   closeRuntime();
 }
 
@@ -36,7 +50,8 @@ export function marketsEnv(): MarketsEnv {
 export function getPublicClient(): Promise<ReadClient> {
   if (!client) {
     const forEnv = env;
-    client = import("./read-client").then((m) => m.createReadClient(forEnv));
+    const forBudget = readBudget;
+    client = import("./read-client").then((m) => m.createReadClient(forEnv, forBudget));
     version += 1;
     for (const listener of listeners) listener();
   }
@@ -47,7 +62,8 @@ export function getPublicClient(): Promise<ReadClient> {
 export function getLogClient(): Promise<ReadClient> {
   if (!logClient) {
     const forEnv = env;
-    logClient = import("./read-client").then((m) => m.createLogClient(forEnv));
+    const forBudget = readBudget;
+    logClient = import("./read-client").then((m) => m.createLogClient(forEnv, forBudget));
   }
   return logClient;
 }

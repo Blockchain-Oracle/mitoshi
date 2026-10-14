@@ -6,6 +6,8 @@
  * browser's cross-origin read, which is served in place. Ported in shape from Agari 03b30abbbfe7ddc3cac4927c7c573e52f74d2d49:services/ops/src/http/server.ts.
  */
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { gzipSync } from "node:zlib";
+import { boardBody, MAX_IDS, windowsBody } from "../actors/board-cache";
 import type { Sql } from "@cwf/db";
 import { indexReader } from "@cwf/db/idx";
 import { isTickerSymbol, movedHost, NETWORKS, X_RELAY_STOPPED, type XRelayStatus } from "@cwf/core";
@@ -126,6 +128,19 @@ export function startHttp(input: HttpInputs): Promise<{ close(): Promise<void> }
         const status = (beat?.detail as { status?: XRelayStatus } | undefined)?.status;
         return json(200, status ? { ...status, updatedAtMs: beat?.lastOkMs ?? beat?.lastPassMs ?? null, lastWhy: beat?.lastWhy ?? null } : X_RELAY_STOPPED, "no-store");
       }
+      // R6 S04: the shared board (the board-cache actor's memory; never a chain read per request).
+      case "/v1/board":
+      case "/v1/windows": {
+        let body: { text: string; etag: string } | null;
+        if (url.pathname === "/v1/board") body = boardBody();
+        else {
+          const ids = (url.searchParams.get("ids") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+          if (ids.length === 0 || ids.length > MAX_IDS || !ids.every((id) => /^0x[0-9a-fA-F]{64}$/.test(id))) return json(400, { error: `ids=<0x… 32-byte Window ids>, at most ${MAX_IDS}` });
+          body = windowsBody(ids);
+        }
+        if (!body) return json(503, { error: "no board in this process yet" });
+        return sendBoard(req, res, cors, body);
+      }
       case "/v1/stream":
         return void serveStream(req, res, { bus: input.bus, snapshot: input.snapshot, secret: input.env.streamTicketSecret, cors }).catch((e) => input.log(`stream: ${errorText(e)}`));
       default:
@@ -140,4 +155,21 @@ export function startHttp(input: HttpInputs): Promise<{ close(): Promise<void> }
       resolve({ close: () => new Promise((done) => server.close(() => done())) });
     });
   });
+}
+
+/** A board body with its ETag (304 on a match) and gzip when the client takes it — `/v1/board` is ~100 KB of JSON. */
+const zipped = new Map<string, Buffer>();
+function sendBoard(req: IncomingMessage, res: ServerResponse, cors: Record<string, string>, body: { text: string; etag: string }): void {
+  const head = { ...cors, "content-type": "application/json", "cache-control": "public, max-age=1, stale-while-revalidate=10", etag: body.etag, vary: "Origin, Accept-Encoding" };
+  if (req.headers["if-none-match"] === body.etag) return void res.writeHead(304, head).end();
+  if (body.text.length > 1_024 && /\bgzip\b/.test(String(req.headers["accept-encoding"] ?? ""))) {
+    let gz = zipped.get(body.etag);
+    if (!gz) {
+      gz = gzipSync(body.text);
+      zipped.clear();
+      zipped.set(body.etag, gz);
+    }
+    return void res.writeHead(200, { ...head, "content-encoding": "gzip" }).end(gz);
+  }
+  res.writeHead(200, head).end(body.text);
 }

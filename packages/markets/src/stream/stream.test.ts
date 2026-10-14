@@ -28,6 +28,18 @@ describe("stream → query cache", () => {
     expect(opsFor("Executed", { topic: "activity", data: { owner: W } })).toEqual([]);
   });
 
+  it("with ops' board serving this tab, raw engine events leave the Window's reads to ops' own frames (R6 S04)", () => {
+    const board = { board: true };
+    expect(opsFor("Fill", { topic: `market:${M}`, data: { market: M } }, board)).toEqual([]);
+    const resolved = opsFor("WindowResolved", { topic: "verdicts", data: { market: M } }, board).map((o) => o.key);
+    expect(resolved).not.toContainEqual(["cwf", "lanes"]);
+    expect(resolved).toContainEqual(["cwf", "verdict"]);
+    expect(opsFor("window", { topic: `market:${M}`, data: { market: M.toUpperCase().replace("0X", "0x") } }).map((o) => o.key)).toEqual([["cwf", "onchain", M], ["cwf", "depth", M], ["cwf", "market", M]]);
+    expect(opsFor("board", { topic: "markets", data: { live: 57 } }).map((o) => o.key)).toEqual([["cwf", "lanes"]]);
+    // A wallet's own events still refresh its money reads.
+    expect(opsFor("Redeemed", { topic: `user:${W}`, data: { market: M } }, board).length).toBeGreaterThan(0);
+  });
+
   it("coalesces a frame: the last set per key wins, each invalidation once", () => {
     const set = (v: number): CacheOp => ({ kind: "set", key: ["cwf", "price", "BTC"], value: v });
     const inv: CacheOp = { kind: "invalidate", key: ["cwf", "onchain", M] };

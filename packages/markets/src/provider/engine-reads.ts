@@ -15,6 +15,8 @@ import { EngineNotDeployedError, engineVenue, latestWindowIds, readBook, readBoo
 import { marketIdOf } from "../ops/venue";
 import { depthFromBook, exitFromBook, quoteFromBook } from "../engine/quote";
 import { indexLiveIds, indexSettledIds, IndexUnavailableError } from "./index-api";
+import { boardEntries, boardLiveWindows } from "./board-reads";
+import { BOARD_DEPTH, bookTop } from "../board/wire";
 import { DEFAULT_LOOKBACK_BLOCKS, LOG_WINDOW } from "./chain-logs";
 
 export const EXIT_LOCKED = "No exit liquidity: this Window has locked, it pays at settlement";
@@ -105,6 +107,28 @@ function flushShared(nowMsFn: () => number): void {
     .finally(() => want.forEach((id) => inflight.delete(id)));
 }
 
+/**
+ * Display reads (R6 S04): ops' shared board first, the chain (`readWindowsShared`) for whatever it doesn't hold fresh.
+ * Never for a quote or a gate — those read `windowFacts`, head-fresh.
+ */
+async function displayFacts(ids: readonly MarketId[]): Promise<Map<MarketId, WindowFacts>> {
+  const board = await boardEntries(ids);
+  const missing = ids.filter((id) => !board.has(id));
+  const chain = missing.length > 0 ? await readWindowsShared(missing) : new Map<MarketId, WindowFacts>();
+  const out = new Map<MarketId, WindowFacts>();
+  for (const id of ids) {
+    const facts = board.get(id)?.facts ?? chain.get(id);
+    if (facts) out.set(id, facts);
+  }
+  return out;
+}
+
+async function displayWindow(marketId: MarketId): Promise<WindowFacts> {
+  const facts = (await displayFacts([marketId])).get(marketId);
+  if (!facts) throw new ReadingError(diagnosis("market-not-trading", `unknown Window ${marketId}`, { errorName: "UnknownMarket" }));
+  return facts;
+}
+
 export async function windowFacts(marketId: MarketId): Promise<WindowFacts> {
   const facts = (await readWindowsShared([marketId])).get(marketId);
   if (!facts) throw new ReadingError(diagnosis("market-not-trading", `unknown Window ${marketId}`, { errorName: "UnknownMarket" }));
@@ -114,13 +138,15 @@ export async function windowFacts(marketId: MarketId): Promise<WindowFacts> {
 export const listLiveLanes = (): Promise<Reading<LaneSet>> =>
   engineReading("lanes", async () => {
     const now = nowSec();
+    const board = await boardLiveWindows();
+    if (board) return groupIntoLanes(board.map((e) => e.facts.market).filter((m) => m.state === "open" && m.lockAtSec > now));
     const ids = await discover(() => indexLiveIds(now), 2);
     const windows = [...(await readWindowsShared(ids)).values()].map((w) => w.market);
     return groupIntoLanes(windows.filter((m) => m.state === "open" && m.lockAtSec > now));
   });
 
 export const getMarket = (marketId: MarketId): Promise<Reading<EventMarket | null>> =>
-  engineReading(`market:${marketId}`, async () => (await readWindowsShared([marketId])).get(marketId)?.market ?? null);
+  engineReading(`market:${marketId}`, async () => (await displayFacts([marketId])).get(marketId)?.market ?? null);
 
 export const listSettled = (limit = 50): Promise<Reading<EventMarket[]>> =>
   engineReading(`settled:${limit}`, async () => {
@@ -129,12 +155,19 @@ export const listSettled = (limit = 50): Promise<Reading<EventMarket[]>> =>
     return windows.sort((a, b) => b.expirySec - a.expirySec).slice(0, limit);
   });
 
-/** Head-fresh snapshot: the only read that may gate a write (canon #1). */
+/**
+ * The Window's snapshot for display: ops' board (≤ 1 s behind an event), else the chain. A write is never gated on this:
+ * the order lane reads the Window itself at submit (canon #1).
+ */
 export const getOnchain = (marketId: MarketId): Promise<Reading<OnchainSnapshot>> =>
-  engineReading(`onchain:${marketId}`, async () => (await windowFacts(marketId)).snapshot);
+  engineReading(`onchain:${marketId}`, async () => (await displayWindow(marketId)).snapshot);
 
 export const getBookDepth = (target: BookTarget, depth = 10): Promise<Reading<BookDepth>> =>
   engineReading(`depth:${target.marketId}:${depth}`, async () => {
+    if (depth <= BOARD_DEPTH) {
+      const entry = (await boardEntries([target.marketId])).get(target.marketId);
+      if (entry) return depthFromBook(bookTop(entry.book, depth), entry.facts.series);
+    }
     const w = await windowFacts(target.marketId);
     // A display read: batched with the other cards' books and decoded in slices (D-184).
     return depthFromBook(await readBookBatched(target.marketId, TAKER_MIN_REST_SEC, depth), w.series);
@@ -164,13 +197,13 @@ export const freshExitQuote = (target: BookTarget, side: Side, contractsRaw: big
   });
 
 export const getOpeningPrice = (marketId: MarketId): Promise<Reading<bigint | null>> =>
-  engineReading(`open:${marketId}`, async () => (await windowFacts(marketId)).snapshot.prints.open?.priceE8 ?? null);
+  engineReading(`open:${marketId}`, async () => (await displayWindow(marketId)).snapshot.prints.open?.priceE8 ?? null);
 
 /** The Series' next Window after `market`, once the roller has listed it; null before. */
 export const nextWindow = (market: EventMarket): Promise<Reading<EventMarket | null>> =>
   engineReading(`next:${market.marketId}`, async () => {
     const id = toMarketId(marketIdOf(market.seriesId, market.index + 1n));
-    return (await readWindows([id])).get(id)?.market ?? null;
+    return (await displayFacts([id])).get(id)?.market ?? null;
   });
 
 const RESOLVED = getAbiItem({ abi: eventsEngineAbi, name: "WindowResolved" });
@@ -178,7 +211,7 @@ const RESOLVED = getAbiItem({ abi: eventsEngineAbi, name: "WindowResolved" });
 /** Both prints, the source, and the settlement transaction (the engine's `WindowResolved` log for this Window). */
 export const getResolution = (marketId: MarketId): Promise<Reading<Resolution>> =>
   engineReading(`resolution:${marketId}`, async () => {
-    const w = await windowFacts(marketId);
+    const w = await displayWindow(marketId);
     let settlementTxHash: Hex | null = null;
     if (w.snapshot.state !== "open") {
       const [client, venue] = await Promise.all([getLogClient(), engineVenue()]);

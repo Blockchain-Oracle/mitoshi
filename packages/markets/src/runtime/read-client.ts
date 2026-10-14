@@ -7,7 +7,7 @@ import { createPublicClient, fallback, TimeoutError, webSocket, type Transport }
 import { MULTICALL_CHUNK_BYTES, tempoHttp } from "../rpc-http";
 import type { MarketsEnv } from "../env";
 import { tempoReadChain } from "../read-chain";
-import type { ReadClient } from "./read-runtime";
+import type { ReadBudget, ReadClient } from "./read-runtime";
 
 /** How long a socket request may take, the socket's opening included, before the fallback moves to HTTP. */
 export const SOCKET_GIVE_UP_MS = 8_000;
@@ -36,24 +36,26 @@ export function bounded(transport: Transport, ms: number): Transport {
 
 const socketTo = (url: string) => bounded(webSocket(url, { keepAlive: { interval: 25_000 }, reconnect: { attempts: 5, delay: 2_000 } }), SOCKET_GIVE_UP_MS);
 
-function transportFor(e: MarketsEnv): Transport {
-  const https = e.rpcHttpUrls.map((url) => tempoHttp(url, { retryCount: 2, timeout: 10_000 }));
+const paced = (b: ReadBudget | null) => (b ? { budget: b.budget, tier: b.tier } : {});
+
+function transportFor(e: MarketsEnv, budget: ReadBudget | null): Transport {
+  const https = e.rpcHttpUrls.map((url) => tempoHttp(url, { retryCount: 2, timeout: 10_000, ...paced(budget) }));
   // A socket is only opened where one exists (browsers, Node ≥ 22); SSR renders stay on HTTP.
   const sockets = typeof WebSocket === "undefined" ? [] : e.rpcWsUrls.map(socketTo);
   const all = [...sockets, ...https];
   return all.length === 1 ? all[0]! : fallback(all, { rank: false, retryCount: 1 });
 }
 
-export function createReadClient(env: MarketsEnv): ReadClient {
-  return createPublicClient({ chain: tempoReadChain(env.network), transport: transportFor(env), batch: { multicall: { wait: 8, batchSize: MULTICALL_CHUNK_BYTES } } }) as ReadClient;
+export function createReadClient(env: MarketsEnv, budget: ReadBudget | null = null): ReadClient {
+  return createPublicClient({ chain: tempoReadChain(env.network), transport: transportFor(env, budget), batch: { multicall: { wait: 8, batchSize: MULTICALL_CHUNK_BYTES } } }) as ReadClient;
 }
 
 /**
  * Logs never ride a JSON-RPC batch: Moderato's gateway answers a batch of `eth_getLogs` with 502 (or an HTML body
  * viem can't read), measured 2026-09-29 (S4). One request per log window, on the socket when there is one.
  */
-export function createLogClient(env: MarketsEnv): ReadClient {
-  const https = env.rpcHttpUrls.map((url) => tempoHttp(url, { retryCount: 2, timeout: 20_000 }));
+export function createLogClient(env: MarketsEnv, budget: ReadBudget | null = null): ReadClient {
+  const https = env.rpcHttpUrls.map((url) => tempoHttp(url, { retryCount: 2, timeout: 20_000, ...paced(budget) }));
   const sockets = typeof WebSocket === "undefined" ? [] : env.rpcWsUrls.map(socketTo);
   const all = [...sockets, ...https];
   return createPublicClient({ chain: tempoReadChain(env.network), transport: all.length === 1 ? all[0]! : fallback(all, { rank: false, retryCount: 1 }) }) as ReadClient;

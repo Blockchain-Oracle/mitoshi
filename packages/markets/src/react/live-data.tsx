@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import type { Address, ClaimableRow, MarketId, PinnedVerdictView, Reading } from "@cwf/core";
 import { streamState, subscribeTopic, subscribeUserGrant, userStreamGranted, type StreamEvent } from "../runtime/stream-hub";
 import { coalesce, opsFor, type CacheOp } from "../stream/dispatch";
+import { boardLive } from "../provider/board-reads";
 import { useMarkets } from "./contexts";
 import { keys } from "./keys";
 import { useReadingQuery } from "./useReadingQuery";
@@ -23,7 +24,8 @@ export function useLiveMarketData({ marketIds = [], wallet = null }: { marketIds
   const topicKey = [...new Set(["markets", "verdicts", ...marketIds.map((m) => `market:${m.toLowerCase()}`), ...(wallet ? [`user:${wallet.toLowerCase()}`] : [])])].sort().join(",");
   useEffect(() => {
     const apply = (events: StreamEvent[]) => {
-      const ops = coalesce(events.flatMap((e) => opsFor(e.event, { topic: e.topic, data: (e.data ?? {}) as Record<string, unknown> })));
+      const board = boardLive();
+      const ops = coalesce(events.flatMap((e) => opsFor(e.event, { topic: e.topic, data: (e.data ?? {}) as Record<string, unknown> }, { board })));
       for (const op of ops) {
         if (op.kind === "set") queryClient.setQueryData(op.key, op.value);
         else void queryClient.invalidateQueries({ queryKey: op.key });

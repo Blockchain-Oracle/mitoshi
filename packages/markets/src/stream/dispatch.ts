@@ -1,11 +1,14 @@
 /**
  * What each engine event on the D-049 stream does to the query cache (pure): it marks exactly the reads it changes as
- * stale — the lens stays the only source that gates a write (canon #1). Prices are S1's (`usePriceStream` writes the
+ * stale — the lens stays the only source that gates a write (canon #1). R6 S04: while ops' shared board answers this
+ * tab (`boardLive`), a Window's own reads refresh on ops' `window` frame (sent once ops has read the Window again) and the
+ * lanes on its `board` frame, not on the raw engine event — which made every open tab read the chain at the same moment. Prices are S1's (`usePriceStream` writes the
  * stream-owned `keys.price`); the connection is S1's shared hub (`runtime/stream-hub.ts`). Topics and events are ops'
  * (`services/ops/src/actors/indexer/window.ts` `topicsOf`).
  */
 import type { QueryKey } from "@tanstack/react-query";
 import { keys } from "../react/keys";
+import { WINDOW_EVENTS } from "../board/wire";
 
 export type CacheOp = { kind: "set"; key: QueryKey; value: unknown } | { kind: "invalidate"; key: QueryKey };
 
@@ -15,7 +18,7 @@ export interface StreamFrame {
 }
 
 /** Engine events whose Window's book, snapshot or list changes. */
-const MARKET_EVENTS = new Set(["Fill", "OrderExecuted", "OrderRemoved", "OrderReduced", "CompleteSet", "PrintRecorded", "WindowResolved", "WindowOpened", "Redeemed", "CreditWithdrawn"]);
+const MARKET_EVENTS = WINDOW_EVENTS;
 /** EventVault events (S7), published on the owner's `user:` topic: the Trading Balance and what it holds changed. */
 const VAULT_EVENTS = new Set(["Deposited", "Credited", "Withdrawn", "PrivateMoved", "PrivateCredited", "PrivateWithdrawn", "GrantCreated", "GrantFunded", "GrantRevoked", "Executed", "Settled"]);
 
@@ -29,9 +32,13 @@ export function parseFrame(data: string): StreamFrame | null {
   }
 }
 
-/** The cache operations one stream message implies. */
-export function opsFor(event: string, frame: StreamFrame): CacheOp[] {
+/** The cache operations one stream message implies; `board`: ops' shared board serves this tab's display reads. */
+export function opsFor(event: string, frame: StreamFrame, opts: { board?: boolean } = {}): CacheOp[] {
   const d = frame.data;
+  const windowReads = (market: string): CacheOp[] => [keys.onchain(market), keys.depth(market), keys.market(market)].map((key) => ({ kind: "invalidate" as const, key }));
+  // Ops has read the Window again (board-cache): its display reads refresh from the board.
+  if (event === "window" && frame.topic.startsWith("market:") && typeof d.market === "string") return windowReads(d.market.toLowerCase());
+  if (event === "board" && frame.topic === "markets") return [{ kind: "invalidate", key: keys.lanes() }];
   if (VAULT_EVENTS.has(event) && frame.topic.startsWith("user:")) {
     const wallet = frame.topic.slice(5);
     return [keys.vault(wallet), keys.balanceSheet(wallet), keys.history(wallet)].map((key) => ({ kind: "invalidate" as const, key }));
@@ -45,10 +52,8 @@ export function opsFor(event: string, frame: StreamFrame): CacheOp[] {
     if (market) ops.push({ kind: "invalidate", key: keys.verdict(wallet, market) });
     return ops;
   }
-  if (market) {
-    ops.push({ kind: "invalidate", key: keys.onchain(market) }, { kind: "invalidate", key: keys.depth(market) }, { kind: "invalidate", key: keys.market(market) });
-  }
-  if (event === "WindowOpened" || event === "WindowResolved") ops.push({ kind: "invalidate", key: keys.lanes() });
+  if (market && !opts.board) ops.push(...windowReads(market));
+  if ((event === "WindowOpened" || event === "WindowResolved") && !opts.board) ops.push({ kind: "invalidate", key: keys.lanes() });
   if (event === "WindowResolved" && market) {
     // Every wallet's verdict and claimables on this Window move from "settling" to a stamp.
     ops.push({ kind: "invalidate", key: ["cwf", "verdict"] }, { kind: "invalidate", key: ["cwf", "claimables"] });

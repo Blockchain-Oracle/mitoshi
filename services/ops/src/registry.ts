@@ -6,6 +6,7 @@
  */
 import { archivePass, ARCHIVE_EVERY_MS } from "./actors/archive";
 import { chainHeadPass, CHAIN_HEAD_EVERY_MS } from "./actors/chain-head";
+import { startBoardCache } from "./actors/board-cache";
 import { startIndexer } from "./actors/indexer";
 import { startWindowRoller } from "./actors/window-roller";
 import { startPriceRelay } from "./actors/price-relay";
@@ -39,6 +40,9 @@ export interface ActorEntry {
 
 export const ACTORS: Record<string, ActorEntry> = {
   "chain-head": { start: (d) => runActor({ name: "chain-head", log: d.log, dryRun: d.env.dryRun, everyMs: CHAIN_HEAD_EVERY_MS, pass: chainHeadPass(d.env) }) },
+  // R6 S04: the shared board browsers read Windows and books from (`/v1/board`, `/v1/windows`); reads only, own RPC
+  // budget (`BOARD_RPC_URL`, else the public RPC). Needs DATABASE_URL.
+  "board-cache": { start: (d) => startBoardCache(d) },
   // Signs nothing, so it runs regardless of DRY_RUN; it needs DATABASE_URL.
   archive: {
     start: (d) => {
@@ -126,4 +130,4 @@ export const ACTORS: Record<string, ActorEntry> = {
   },
 };
 
-export const DEFAULT_ACTORS = ["chain-head", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "duel-settler", "exit-keeper", "earn-quoter", "moderation", "reserve-pricer"] as const;
+export const DEFAULT_ACTORS = ["chain-head", "board-cache", "archive", "spot", "indexer", "roller", "price-relay", "settler", "seed-maker", "halt-watch", "earnings", "calendar", "funds-watch", "indexer-recount", "leverage-keeper", "duel-settler", "exit-keeper", "earn-quoter", "moderation", "reserve-pricer"] as const;

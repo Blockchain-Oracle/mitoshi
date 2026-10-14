@@ -26,11 +26,15 @@ function text(field: string, raw: unknown, url = false): string {
   return raw;
 }
 
+/** A browser page (not SSR, not ops): no DOM lib in every consumer's types, so it asks `globalThis`. */
+const inBrowser = () => typeof (globalThis as { document?: unknown }).document !== "undefined";
+
 export interface MarketsEnv {
   network: Network;
   /** Tempo JSON-RPC over HTTP (batched), first is preferred. */
   rpcHttpUrls: string[];
-  /** Tempo JSON-RPC over WebSocket (logs, newHeads); empty disables the socket. */
+  /** Tempo JSON-RPC over WebSocket (logs, newHeads); empty disables the socket. A browser opens none unless asked
+   *  (R6 S04: displays read ops' shared board; a socket per tab was its own load on the public RPC). */
   rpcWsUrls: string[];
   /** Our fee relay (`/api/relay`), relative in the browser. */
   relayUrl: string;
@@ -53,7 +57,7 @@ export function parseMarketsEnv(raw: MarketsEnvInput = {}): MarketsEnv {
   return {
     network,
     rpcHttpUrls: d.rpcHttpUrls === undefined ? [TEMPO_RPC_HTTP[network]] : urlList("rpcHttpUrls", d.rpcHttpUrls),
-    rpcWsUrls: d.rpcWsUrls === undefined ? [TEMPO_RPC_WS[network]] : urlList("rpcWsUrls", d.rpcWsUrls),
+    rpcWsUrls: d.rpcWsUrls === undefined ? (inBrowser() ? [] : [TEMPO_RPC_WS[network]]) : d.rpcWsUrls === "none" ? [] : urlList("rpcWsUrls", d.rpcWsUrls),
     relayUrl: d.relayUrl === undefined ? "/api/relay" : text("relayUrl", d.relayUrl),
     authUrl: d.authUrl === undefined ? "/api/auth" : text("authUrl", d.authUrl),
     opsUrl: d.opsUrl === undefined ? null : text("opsUrl", d.opsUrl, true),
