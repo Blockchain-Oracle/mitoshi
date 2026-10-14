@@ -73,10 +73,9 @@ else {
 const recordFiles = [
   ...files(resolve(source, 'docs/plan/acceptance')).filter(p => p.endsWith('.md')),
   resolve(source, 'web/src/features/demo/proofs.ts'),
-  resolve(source, 'docs/plan/STATUS.md'),
 ].filter(existsSync);
 const fragmentFiles = files(resolve(source, 'contracts/deployments')).filter(p => p.endsWith('.json'));
-const record = [...recordFiles, ...fragmentFiles, resolve(source, 'packages/core/src/market/venue-spec.json'), resolve(source, 'context/tempo/00-network-facts.md')]
+const record = [...recordFiles, ...fragmentFiles, resolve(source, 'packages/core/src/market/venue-spec.json'), resolve(source, 'packages/clients/src/pinned.ts')]
   .filter(existsSync).map(p => readFileSync(p, 'utf8')).join('\n').toLowerCase();
 const PATH_USD = '0x20c0000000000000000000000000000000000000';
 

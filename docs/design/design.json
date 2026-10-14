@@ -55,13 +55,13 @@
   },
   "rules": [
     "Tokens only; no raw hex/px in components",
-    "Centred modals and floating right-edge drawers; no bottom sheets (D-190)",
+    "Centred modals and floating right-edge drawers on desktop; bottom sheets on phones (D-190, D-227)",
     "Base UI primitives only; lucide icons; motion/react m.* with reduced motion",
     "Every figure in JetBrains Mono",
     "Phone first: 390 px, no overflow at 320, 44 px targets, 16 px inputs",
     "CTA names its blocker; failures say whether money moved",
     "Shell = rail, top line, bordered stage, phone dock (D-189); sizes from layout tokens",
-    "Sounds synthesised in code; no audio files; tap cue + haptic on shell controls (D-189)"
+    "Trade and shell sounds synthesised in code; game sounds may use licensed files; tap cue + haptic on shell controls (D-189, D-226)"
   ],
   "decisions": [
     "D-189",

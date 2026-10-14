@@ -1,17 +1,18 @@
-// Ported from Masayume 68f7a09:web/src/features/demo/DemoVideo.tsx — the official demo embedded once it is published
-// (`DEMO.video`). R4-13a (D-227): until then, Owarine 90a91d71's DemoFilm pending state in one line, over a dated capture
-// of the live terminal (`public/demo/terminal.png`) — on tokens, so it reads in both themes (it was dark text on a black
-// card in light mode).
+// The recorded product walkthrough plays here until an official YouTube product demo is published.
+// Keep the source switch in copy.ts so the page can put that YouTube player first when it exists.
 import { DEMO } from "./copy";
 
 export function DemoVideo() {
   const video = DEMO.video;
-  if (!video) {
+  if (video.kind === "local") {
     return (
-      <figure className="demo-film">
-        {/* eslint-disable-next-line @next/next/no-img-element -- a dated capture shown as the film's poster */}
-        <img src="/demo/terminal.png" alt={DEMO.poster} width={1440} height={900} className="demo-film-poster" loading="lazy" decoding="async" />
-        <figcaption className="demo-film-pending" role="note">{DEMO.videoPending}</figcaption>
+      <figure className="demo-film demo-film--portrait">
+        <video className="demo-film-frame" controls playsInline preload="metadata" poster={video.poster} aria-label={video.title}>
+          <source src={video.src} type="video/mp4" />
+          <track kind="captions" src={video.captions} srcLang="en" label="English" default />
+          Your browser cannot play this video. <a href={video.src}>Download the recording</a>.
+        </video>
+        <figcaption className="demo-film-caption"><strong>{video.title}</strong><span>{video.description}</span></figcaption>
       </figure>
     );
   }

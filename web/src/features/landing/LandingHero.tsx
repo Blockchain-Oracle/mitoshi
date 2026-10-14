@@ -29,6 +29,7 @@ export function LandingNav() {
           <Link href="/markets" prefetch={false} className="lp-nav-link">{nav.markets}</Link>
           <Link href="/games" prefetch={false} className="lp-nav-link">{nav.games}</Link>
           <a href="#how" className="lp-nav-link">{nav.how}</a>
+          <Link href="/demo" prefetch={false} className="lp-nav-link">{nav.demo}</Link>
           <a href={DOCS_URL} className="lp-nav-link">{nav.docs}</a>
         </div>
         <div className="lp-nav-end">
@@ -41,6 +42,7 @@ export function LandingNav() {
               <Link href="/markets" prefetch={false} className="lp-menu-link">{nav.markets}</Link>
               <Link href="/games" prefetch={false} className="lp-menu-link">{nav.games}</Link>
               <a href="#how" className="lp-menu-link">{nav.how}</a>
+              <Link href="/demo" prefetch={false} className="lp-menu-link">{nav.demo}</Link>
               <Link href="/download" prefetch={false} className="lp-menu-link">{nav.app}</Link>
               <a href={DOCS_URL} className="lp-menu-link">{nav.docs}</a>
             </div>

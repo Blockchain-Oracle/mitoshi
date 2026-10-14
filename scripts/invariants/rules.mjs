@@ -129,10 +129,17 @@ function devRoutesGated(rule, ctx) {
   return /notFound\(\)/.test(readFileSync(layout, "utf8")) ? [] : [finding(rule, "dev layout does not call notFound()", "web/src/app/dev/layout.tsx")];
 }
 
-/** No agent/tool instruction files anywhere in the tracked tree (owner rule). */
+/** No local agent instructions or working plans in the tracked tree (owner rule). */
 function noAgentFiles(rule, ctx) {
   const tracked = execSync("git ls-files", { cwd: ctx.root }).toString().split("\n");
-  return tracked.filter((p) => /(^|\/)(CLAUDE|AGENTS)\.md$/i.test(p) && !p.startsWith("reference/")).map((p) => finding(rule, "agent instruction file is tracked", p));
+  return tracked.filter((p) => /(^|\/)(AGENT|AGENTS|CLAUDE|CLOUD|WOODS|WORKS|GEMINI|COPILOT)\.md$/i.test(p) && !p.startsWith("reference/"))
+    .map((p) => finding(rule, "agent instruction file is tracked", p));
+}
+
+function noWorkingNotes(rule, ctx) {
+  const tracked = execSync("git ls-files", { cwd: ctx.root }).toString().split("\n");
+  return tracked.filter((p) => p.startsWith("context/") || p.startsWith("reference/tempo-docs-md/") || p === "reference/tempo-llms.txt" || /^docs\/(?:plan\/[^/]+|specs\/[^/]+|design\/[^/]+|submission\/[^/]+)\.md$/i.test(p) || p === "docs/libraries.md")
+    .map((p) => finding(rule, "internal working note is tracked", p));
 }
 
 export const rules = [
@@ -179,7 +186,8 @@ export const rules = [
   { id: "generated-abi", description: "ABIs reach the app only through the generated module", check: generatedAbi },
   { id: "relay-policy-coverage", description: "every deployed area has a relay policy; vault intake never sponsored", check: relayPolicyCoverage },
   { id: "dev-routes-gated", description: "/dev routes 404 in production", check: devRoutesGated },
-  { id: "no-agent-files", description: "no CLAUDE.md/AGENTS.md in the repository", check: noAgentFiles },
+  { id: "no-agent-files", description: "no local agent instruction files in the repository", check: noAgentFiles },
+  { id: "no-working-notes", description: "no internal planning Markdown in the repository", check: noWorkingNotes },
   {
     id: "design-literals",
     description: "no raw hex colours or px literals in component code — use the token system",

@@ -59,7 +59,8 @@ export const NAV_ITEMS = {
   strategies: item({ id: "strategies", name: "Strategies", href: "/strategies", description: "Copy a strategy, or build one.", icon: Bot, beta: true }),
   agents: item({ id: "agents", name: "Agents", href: "/agents", description: "Copy automated market agents.", icon: Bot }),
 
-  demo: item({ id: "demo", name: "Demo", href: "/demo", description: "The film, and what to check on chain.", icon: Clapperboard }),
+  demo: item({ id: "demo", name: "Demo", href: "/demo", description: "The recorded walkthrough and testnet proof.", icon: Clapperboard }),
+  video: item({ id: "video", name: "Video", href: "/video", description: "A short film about calling the close.", icon: Clapperboard }),
   news: item({ id: "news", name: "News", href: "/news", description: "The stories moving markets.", icon: Newspaper }),
   howItWorks: item({ id: "how-it-works", name: "How it works", tile: "Basics", href: "/how-it-works", description: "The product from end to end.", icon: CircleHelp }),
   // The place to get the app (D-230, the owner's point 8): iPhone, Android and the web app on one page.
@@ -100,7 +101,7 @@ export const DOCK_OMITTED: readonly NavItem[] = RAIL_NAV.filter((p) => !DOCK_NAV
 export const EVERYTHING_SECTIONS: readonly NavSection[] = [
   { id: "trade", name: "Trade", items: [NAV_ITEMS.short, NAV_ITEMS.parlay, NAV_ITEMS.earn, NAV_ITEMS.themes, NAV_ITEMS.launch, NAV_ITEMS.surface, NAV_ITEMS.sensei, NAV_ITEMS.xTrade] },
   { id: "games", name: "Games", items: [NAV_ITEMS.practice, NAV_ITEMS.duel, NAV_ITEMS.lucky, NAV_ITEMS.range, NAV_ITEMS.moonshot, NAV_ITEMS.lineRider, NAV_ITEMS.candleHop] },
-  { id: "learn", name: "Learn", items: [NAV_ITEMS.download, NAV_ITEMS.docs, NAV_ITEMS.howItWorks, NAV_ITEMS.demo, NAV_ITEMS.news, NAV_ITEMS.reels, NAV_ITEMS.pitch] },
+  { id: "learn", name: "Learn", items: [NAV_ITEMS.download, NAV_ITEMS.docs, NAV_ITEMS.howItWorks, NAV_ITEMS.demo, NAV_ITEMS.video, NAV_ITEMS.news, NAV_ITEMS.reels, NAV_ITEMS.pitch] },
   { id: "records", name: "Records", items: [NAV_ITEMS.activity, NAV_ITEMS.edge, NAV_ITEMS.stats, NAV_ITEMS.gamesRank, NAV_ITEMS.gamesHistory, NAV_ITEMS.status, NAV_ITEMS.halts, NAV_ITEMS.proofs] },
   { id: "account", name: "Account", items: [NAV_ITEMS.agents, NAV_ITEMS.account, NAV_ITEMS.notifications, NAV_ITEMS.device, NAV_ITEMS.xRecovery] },
 ];
@@ -112,7 +113,7 @@ export const NAVIGABLE_ROUTE_PATHS = [
   "/games/history", "/games/line-rider", "/games/lucky", "/games/moonshot", "/games/practice", "/games/range", "/games/rank",
   "/how-it-works", "/launch", "/leaderboard", "/markets", "/news", "/parlay", "/pitch", "/portfolio", "/portfolio/edge", "/proof",
   "/reels", "/settings/account", "/settings/device", "/settings/notifications", "/stats", "/status", "/status/halts", "/strategies",
-  "/surface", "/themes", "/trade", "/trade-from-x",
+  "/surface", "/themes", "/trade", "/trade-from-x", "/video",
 ] as const;
 
 export function isActiveNavItem(pathname: string | null, item: NavItem): boolean {

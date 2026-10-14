@@ -1,20 +1,29 @@
 /**
  * `/demo` (R4-13a, D-227; Ported from Owarine 90a91d71:web/src/features/demo/copy.ts, its 8 Oct rebuild, at its word
- * count): the film, the way in, four claims a judge can check — one line and one link each — and live figures from the
- * index. The film is named as recording until it exists (an honest state, never a dead embed). Every link opens real
+ * count): the walkthrough, the way in, four claims a judge can check — one line and one link each — and live figures from the
+ * index. The dated paper-trading recording is separate from the testnet receipts. Every link opens real
  * evidence: the terminal, the print verifier on the explorer, the latest settled Window's proof, the recount.
  */
+type DemoVideoSource =
+  | { kind: "youtube"; title: string; watchUrl: string; embedUrl: string }
+  | { kind: "local"; title: string; src: string; poster: string; captions: string; description: string };
+
 export const DEMO = {
   title: "Demo",
-  description: "Mitoshi in one film: a passkey, one tap, a Window that settles on RedStone's signed print, and a recount anyone can check, on Tempo.",
-  /** Set when the official demo is published (a YouTube id); until then the page says it is recording. */
-  video: null as null | { title: string; watchUrl: string; embedUrl: string; length: string },
-  videoPending: "Recording now. The live product is below.",
+  description: "Watch a recorded Mitoshi paper call, then inspect signed prints, settlement proofs and Tempo receipts.",
+  /** Replace this source with the official YouTube URL and embed when the owner publishes it. */
+  video: {
+    kind: "local",
+    title: "A first call in Mitoshi · 20 seconds",
+    src: "/demo/first-call.mp4",
+    poster: "/demo/first-call.jpg",
+    captions: "/demo/first-call.vtt",
+    description: "Recorded 13 October 2026 in a signed-out browser. This is a paper call on live prices; it does not send an onchain transaction.",
+  } as DemoVideoSource,
   watchOn: "Watch on YouTube",
-  poster: "Mitoshi's terminal on Tempo: the BTC line, the Window's clock, UP and DOWN",
   sticker: "LIVE ON TEMPO",
   heading: "Watch it work",
-  lede: "Call the close in one tap. Every result is signed and checkable.",
+  lede: "See a paper call from tap to close. Then check the testnet proof and receipts below.",
   actions: { open: "Open the app", docs: "Docs" },
   claimsTitle: "What to check",
   claims: {

@@ -4,6 +4,32 @@
 .21st/
 skills-lock.json
 
+# Local instructions for coding agents, at any depth
+**/[Aa][Gg][Ee][Nn][Tt].md
+**/[Aa][Gg][Ee][Nn][Tt][Ss].md
+**/[Cc][Ll][Aa][Uu][Dd][Ee].md
+**/[Cc][Ll][Oo][Uu][Dd].md
+**/[Ww][Oo][Oo][Dd][Ss].md
+**/[Ww][Oo][Rr][Kk][Ss].md
+**/[Gg][Ee][Mm][Ii][Nn][Ii].md
+**/[Cc][Oo][Pp][Ii][Ll][Oo][Tt].md
+
+# Working notes and plans; public guides live in docs-site/content/docs.
+/context/
+/reference/tempo-docs-md/
+/reference/tempo-llms.txt
+/docs/plan/*.md
+/docs/specs/*.md
+/docs/design/*.md
+/docs/submission/*.md
+/docs/libraries.md
+/docs/marketing/**/profile.md
+/videos/**/BRIEF.md
+/videos/**/STORYBOARD.md
+/videos/**/frame.md
+/videos/**/VIMEO.md
+/videos/**/snapshots/descriptions.md
+
 # Dependencies and builds
 node_modules/
 .pnpm-store/

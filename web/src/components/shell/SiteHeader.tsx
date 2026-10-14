@@ -20,6 +20,7 @@ export function SiteHeader({ account }: { account?: ReactNode }) {
         </Link>
       </div>
       <div className="header-right">
+        <Link className="nav-link" href="/demo">Demo</Link>
         <ExternalLink className="nav-link site-docs" href={DOCS_URL}>{FOOTER.links.docs}</ExternalLink>
         <ThemeToggle />
         {account}

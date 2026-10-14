@@ -1,6 +1,6 @@
 // Ported from Owarine 90a91d71:web/src/features/demo/DemoPage.tsx (R4-13a, D-227: its 8 Oct rebuild) — the sticker,
-// "Watch it work", one lede, the way in and the docs; the film (or its honest pending state in one line, over a dated
-// capture of the live product); four claims a judge can check, one line and one link each; live figures from the index;
+// "Watch it work", one lede, the way in and the docs; a dated product walkthrough; four claims a judge can check,
+// one line and one link each; live figures from the index;
 // the receipts. It renders inside the app shell with no bar of its own (one chrome, one inset: the stage pads). On
 // Mitoshi's tokens (`styles/demo.css`), so both themes read. Every link opens real evidence (`proofs.ts`, the index).
 import { ArrowRight, BadgeCheck, Fingerprint, ReceiptText, Stamp, type LucideIcon } from "lucide-react";

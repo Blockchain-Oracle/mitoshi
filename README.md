@@ -1,94 +1,97 @@
-# Crypto World's Fair — Tempo track
+<p align="center">
+  <a href="https://mitoshi.xyz">
+    <img src=".github/assets/banner.png" width="960" alt="Mitoshi: See where it's going. Call the close. The Mitoshi BTC trading screen on Tempo testnet." />
+  </a>
+</p>
 
-Prediction markets and stocks on Tempo, plus a mobile app, for Colosseum's Crypto World's Fair hackathon
-(Sep 14 – **Oct 12, 2026**).
+<h1 align="center">Mitoshi · 見通し</h1>
+<p align="center">See where it's going. Call the close.<br/>Short price predictions on crypto and US stocks, built on Tempo.</p>
 
-**App:** [mitoshi.xyz](https://mitoshi.xyz).
-**Docs:** [docs.mitoshi.xyz](https://docs.mitoshi.xyz) — the guides, the architecture, every deployed
-address on Moderato and dated evidence (source: `docs-site/`).
-**Building:** start with `docs/plan/working-rules.md`, then `docs/plan/STATUS.md` (the build's resume pointer).
-**Research and context:** `context/STATUS.md`.
+<p align="center">
+  <a href="https://mitoshi.xyz"><b>Open the app</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://mitoshi.xyz/demo"><b>Product demo</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://mitoshi.xyz/video"><b>Watch the film</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://mitoshi.xyz/download"><b>Get the app</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://mitoshi.xyz/proof"><b>Settlement proof</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://docs.mitoshi.xyz"><b>Guides</b></a>
+</p>
 
-## Pre-existing code (disclosure)
+**Mitoshi is a prediction market on Tempo testnet.** Choose a fixed-time **Window**, call whether a crypto or stock price will close UP or DOWN, and follow the signed opening and closing prints through to its result. You can explore with paper dollars in the browser or create a passkey account for testnet trades. Testnet pathUSD has no cash value. Mitoshi is not deployed on Tempo mainnet.
 
-This entry ports code the owner wrote before the hackathon, and says so file by file:
+Built for Colosseum's **Crypto World's Fair · Tempo track**. *Mitoshi* (見通し) means seeing what lies ahead.
 
-- **Masayume** (`sommina-events` @ `68f7a09`) — contracts, packages and web app, moved from Somnia/DreamDEX to Tempo.
-  Ported files carry `Ported from Masayume 68f7a09:<path>`.
-- **Agari** (`agari-wt/w1`) — the events-engine semantics (rewritten in Solidity), the ops runtime, the wallet modal
-  replica and venue features. Ported files carry `Agari <sha>:<path>`.
-- **Owarine** (`owarine` @ `ecb7565b`, the owner's MIT repo) — the Tradash-behaviour trading terminal that `/trade`
-  ports. Ported files carry `Ported from Owarine ecb7565b:<path>`.
-- **Baku** (`roy-chain` @ `ede3ed38`, the owner's MIT repo) — the app shell (rail, top line, stage, dock). Ported files
-  carry `Ported from Baku (roy-chain) ede3ed38:<path>`.
-- Yosuku-derived design (through Masayume), Tradash as a behaviour reference only (nothing of theirs copied),
-  21st.dev components and other third-party material: `THIRD_PARTY_NOTICES.md`.
+## Watch it work
 
-New for this hackathon: the Tempo engine and product contracts, stock Windows (nine US stocks in NYSE hours, seven of
-them 24/7, settled on RedStone's signed prints), themes, the launchpads, the Tempo
-wallet/relay/passkey layer, the ops keepers, the terminal and the UX rebuild. The native mobile app is planned
-(SM1–SM5) and not built yet. The plan (`docs/plan/00-plan.md`) and the git history show what was built when.
+<p align="center">
+  <a href="https://mitoshi.xyz/demo">
+    <img src="web/public/demo/cover.png" width="960" alt="Play the Mitoshi product walkthrough: a BTC Window, a paper UP call, and a close in the app." />
+  </a>
+</p>
 
-## Layout
+[**Open the product demo**](https://mitoshi.xyz/demo) to watch a 20-second recording of the signed-out paper trading flow, then inspect linked claims and Tempo receipts. The recording shows an actual browser session captured on 13 October 2026; a paper call does not send an onchain transaction. The banner and cover are editorial artwork based on dated app captures. The separate [30-second Mitoshi film](https://mitoshi.xyz/video) introduces the idea; it is a motion graphic, not transaction evidence. An official YouTube product demo has not been published yet.
 
-```
-docs/plan/     approved plan, stage files, decisions, parity, acceptance evidence
-docs/specs/    engine, pillar 2, off-chain, mobile, UX specs
-docs/design/   design system, 21st component register, flow targets
-contracts/     Foundry (Tempo + evm profiles), deployments/<chainId>/<area>.json
-packages/      @cwf/core · markets · brain · db · clients
-services/ops   actors on runActor, one HTTP server, Fly
-web/           Next.js 16 app
-docs-site/     the guides (Fumadocs on Next 16, its own pnpm root; docs.mitoshi.xyz)
-scripts/       codegen, invariants, keys, deploy, drive, archive, e2e
-infra/         secrets (names only), env examples, Vercel and Fly notes
-```
+## Make a call
 
-## Research context
+1. Open [the BTC terminal](https://mitoshi.xyz/trade/BTC). Signed out, you can use paper dollars on live prices without a wallet.
+2. Read the Window's opening line, close time, quote and possible payout before choosing **UP** or **DOWN**. UP wins when the signed close is at or above the signed open; DOWN wins below it.
+3. Follow a position in [Portfolio](https://mitoshi.xyz/portfolio). You can close at an available book quote or wait for the Window's result, then inspect the [proof](https://mitoshi.xyz/proof).
 
-```
-context/
-  STATUS.md                   resume pointer — read first
-  00-hackathon-brief.md       rules, dates, prizes, the two rubrics, checklist
-  01-track-economics.md       prize vs. competition — which track to pick
-  02-sponsors-and-offers.md   sponsors, RPC free tiers, per-track provisioning
-  03-idea-space.md            primitives → openings, and the 5-question filter
-  04-decisions-and-rules.md   decisions, reference pins, repo editing rules
-  05-product-vision.md        the product, in the owner's words
-  tempo/                      00 facts · 01 MPP · 02 gap analysis · 03 GitHub · 04 docs index ·
-                              05 agent ledger · 06 bonding curve · 07 stocks/plans/earn ·
-                              08 stocks background · 09 stock tokens · 10 networks · 11 stocks architecture
-  tracks/
-    tempo.md  hyperliquid.md  zcash.md  robinhood-chain.md  solana.md
-    _links/                   GENERATED — 213 curated links, verbatim + caveats
-reference/
-  tempo-docs-md/              227 Tempo doc pages as markdown
-  tempo-llms.txt
-data/
-  colosseum-resources.json    corpus snapshot (ColosseumOrg/hackathon-resources)
-  hackathon-rules.txt         official rules, text-extracted
-  Crypto World's Fair Hackathon Rules.pdf
-  gen-links.py                corpus → link appendices
-  refresh.sh                  re-fetch + regenerate
+For a testnet trade, create an account with a passkey and use the provided test dollars. [Make your first call](https://docs.mitoshi.xyz/start/quickstart) explains the complete flow and the distinction between paper and testnet activity.
+
+| Explore | What you can do | Start here |
+| --- | --- | --- |
+| **Trade** | Call short crypto and stock Windows; inspect the quote, position and result. | [Markets](https://mitoshi.xyz/markets) · [Trading guide](https://docs.mitoshi.xyz/trading/windows) |
+| **Play** | Try Practice and other games built around the same price movements. | [Games](https://mitoshi.xyz/games) · [Game guides](https://docs.mitoshi.xyz/games/overview) |
+| **Automate** | Explore strategies and agents with explicit spending limits. | [Agents](https://mitoshi.xyz/agents) · [Automation guides](https://docs.mitoshi.xyz/automate/overview) |
+| **Verify** | Read signed prints, settlement details and transaction links. | [Proof](https://mitoshi.xyz/proof) · [Evidence guide](https://docs.mitoshi.xyz/help/evidence) |
+
+## Get the app
+
+[Get the app](https://mitoshi.xyz/download) shows the current iPhone, Android and web options. The web app is usable in a browser and can be installed from supported browsers. The native iOS and Android builds have separate store-testing gates; check the download page for their current availability rather than assuming a store listing is open.
+
+## How it works
+
+The Tempo contracts hold test collateral, keep each Window's order book, record admissible signed price prints, and settle or void according to the registered rules. The web app, mobile shell, and operations service use shared market rules; the [architecture guide](https://docs.mitoshi.xyz/architecture/overview) maps what each part can control. [Who can do what](https://docs.mitoshi.xyz/safety/who-can-do-what) explains the signing and operator boundaries.
+
+**Verification has a date and a scope.** The [evidence guide](https://docs.mitoshi.xyz/help/evidence) links recorded testnet transactions and calls out limits. [Availability](https://docs.mitoshi.xyz/help/availability) separates usable paths from work awaiting store, provider, or owner setup. [Live status](https://mitoshi.xyz/status) shows service health when you visit.
+
+## Run it locally
+
+Use Node.js 24+ and pnpm 11.24.0.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-## Refreshing
+`pnpm dev` starts the web app. Public browsing and paper trading are the easiest first paths; funded testnet actions and always-on services need the configuration described in the [local setup guide](https://docs.mitoshi.xyz/builders/local-setup). Environment examples in [`infra/env`](infra/env) list required names without values.
 
-Colosseum edits the corpus during the hackathon — non-Solana tracks currently have no
-sponsors, and Raydium is listed `comingSoon`. Re-pull every few days:
-
-```bash
-./data/refresh.sh
-git diff data/ context/tracks/_links/   # see exactly what Colosseum changed
+```sh
+pnpm typecheck
+pnpm invariants
+pnpm test
+pnpm contracts:build
+pnpm contracts:test
 ```
+
+The guide site is its own pnpm project in [`docs-site`](docs-site). Run `pnpm install` and `pnpm dev` there to work on the public documentation.
+
+## Find the source
+
+| Area | Directory |
+| --- | --- |
+| Tempo contracts and deployment fragments | [`contracts`](contracts) |
+| Shared rules, market access, generated clients and persistence | [`packages`](packages) |
+| Keepers and other long-running actors | [`services/ops`](services/ops) |
+| Web app, `/demo` and `/video` | [`web`](web) |
+| Native mobile shell | [`mobile`](mobile) |
+| Public guides and architecture | [`docs-site`](docs-site) |
 
 ## Provenance
 
-- Prizes, dates, eligibility, judging §8 — official rules PDF (`data/`)
-- Judging rubric, submission requirements, process — colosseum.com/hackathon#faqs
-- Track prize pools, judges, sponsors, workshops — colosseum.com/worldsfair
-- All 213 resource links — `ColosseumOrg.github.io/hackathon-resources/current.json`
-- Chain descriptions — each project's own documentation
-
-Captured 2026-09-17. Track analysis in `01-track-economics.md` separates measured
-facts from my estimates; the competition-density figures are inference, not data.
+This entry adapts the owner's earlier **Masayume**, **Agari**, **Owarine** and **Baku** code. Ported files identify their original project and revision in source comments. The Tempo engine, product contracts, stock Windows, wallet and relay layer, operations keepers, and current Mitoshi product work were built for this project. See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for third-party materials and attribution.
