@@ -13,7 +13,7 @@ import { formatCadence } from "@cwf/core/copy";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { webEnv } from "@/lib/env";
 import { landingBoard } from "./board";
-import { lineGeometry } from "./hero/sparkline";
+import { lineGeometry, smooth } from "./sparkline";
 import { printUsd } from "./print-usd";
 import { WORDS } from "./words";
 
@@ -69,6 +69,8 @@ interface Spark {
 const SPARK_W = 120;
 const SPARK_H = 36;
 const SPAN_MS = 30 * 60_000;
+/** The feed interleaves its sources a few dollars apart; a bucket's mean keeps a 36 px line from drawing that as spikes. */
+const SPARK_BUCKETS = 40;
 
 /** One asset's last half hour from ops, as a sparkline path, its last price and its move; null when ops has none. */
 async function spark(symbol: string): Promise<Spark | null> {
@@ -81,7 +83,7 @@ async function spark(symbol: string): Promise<Spark | null> {
   const points = (((await res.json()) as { points?: [number, string][] }).points ?? []).filter(([, p]) => /^\d+$/.test(p));
   if (points.length < 2) return null;
   const last = points.at(-1)!;
-  const line = points.map(([t, p]) => ({ t, p: Number(BigInt(p)) / 1e8 }));
+  const line = smooth(points.map(([t, p]) => ({ t, p: Number(BigInt(p)) / 1e8 })), last[0] - SPAN_MS, SPAN_MS, SPARK_BUCKETS);
   const geo = lineGeometry(line, SPARK_W, SPARK_H, null, SPAN_MS, last[0]);
   const first = line[0]!.p;
   return { symbol, d: geo.d, priceE8: last[1], movePct: first > 0 ? ((line.at(-1)!.p - first) / first) * 100 : 0 };

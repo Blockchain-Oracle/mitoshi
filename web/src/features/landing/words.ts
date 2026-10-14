@@ -13,7 +13,8 @@ export const WORDS = {
     line: "Up or down on crypto and stocks, in minutes. On your phone or in your browser.",
     start: "Start trading",
     app: "Get the app",
-    stage: "Mitoshi on three phones: the live terminal, Markets and Games",
+    stage: "Mitoshi on three phones: the terminal, Markets and Games",
+    tradeAlt: "Mitoshi's terminal on an iPhone: BTC candles, the signed price, and UP and DOWN with what each pays",
     /** The markets the tape and the bento name. */
     assets: ["BTC", "ETH", "SOL", "TSLA", "NVDA"],
     assetsLabel: "Some of the markets",

@@ -12,7 +12,6 @@ import { CRYPTO_SPARKS, LandingBento, LandingHow, LandingTape, SparkList, STOCK_
 import "@/components/kit/kit.css";
 import "@/styles/landing.css";
 import "@/styles/landing-phone.css";
-import "@/styles/landing-hero.css";
 import "@/styles/landing-sections.css";
 import "@/styles/store-badges.css";
 

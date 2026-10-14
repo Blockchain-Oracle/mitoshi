@@ -10,7 +10,9 @@ import type { Diagnosis, EventMarket, MarketId, Side } from "@cwf/core";
 import { isOk } from "@cwf/core";
 import { diagnosisCopy } from "@cwf/core/copy";
 import type { ReactNode } from "react";
-import { EmptyState, LoadingState } from "@/components/states";
+import { EmptyState } from "@/components/states";
+import { LoadingFrame } from "@/components/states/LoadingFrame";
+import { marketsHero as marketsHeroShape, marketsRail as marketsRailShape } from "@/components/states/shapes/markets";
 import { MARKETS, TICKET } from "../copy";
 import type { LaneTabKey } from "../data/lane-view";
 import type { LanesState } from "../data/useLanesState";
@@ -31,9 +33,9 @@ export interface MarketsHeroProps {
   ticket: ReactNode;
 }
 
-function HeroPlaceholder({ lanes, resolving }: { lanes: LanesState; resolving: boolean }) {
-  if (lanes.reading === null || resolving) return <LoadingState shape="chart" label={MARKETS.loadingWindows} />;
-  if (!isOk(lanes.reading)) return <ReadFailure diagnosis={lanes.reading.error} retry={lanes.retry} shape="chart" />;
+/** Broken or genuinely empty, in the hero's box. (Loading is the card's own outline — see `MarketsHero`.) */
+function HeroPlaceholder({ lanes }: { lanes: LanesState }) {
+  if (lanes.reading !== null && !isOk(lanes.reading)) return <ReadFailure diagnosis={lanes.reading.error} retry={lanes.retry} shape="chart" />;
   return <EmptyState why={MARKETS.noLiveWindows.why} />;
 }
 
@@ -46,7 +48,7 @@ export function RailPlaceholder({ waiting, allHours, failure = null }: { waiting
   return (
     <RailFrame>
       {waiting ? (
-        <LoadingState shape="ticket" />
+        <LoadingFrame shape="markets-rail" layout="contents" label={MARKETS.loadingWindows}>{marketsRailShape()}</LoadingFrame>
       ) : (
         <>
           <span className="tk-amount-label">{TICKET.title}</span>
@@ -65,9 +67,13 @@ export function MarketsHero({ market, openingRaw, lanes, resolving, onSelect, on
         <div className="hero-grid hero-grid-mini">
           {market ? (
             <HeroChart market={market} openingRaw={openingRaw} lanes={lanes.laneSet?.lanes ?? []} activeKey={lanes.activeKey} onPickLane={onPickLane} onSelect={onSelect} onOpenRoom={onOpenRoom} onOpenAlerts={onOpenAlerts} />
+          ) : lanes.reading === null || resolving ? (
+            // The route's own outline (MarketsPage `Placeholder`), box for box, so the boot skeleton hands over to this
+            // one without a change — it was a flat chart bone in `.mh-hero-empty`, a visible swap for ~3 s on a cold load.
+            <LoadingFrame shape="markets-hero" layout="contents" label={MARKETS.loadingWindows}>{marketsHeroShape()}</LoadingFrame>
           ) : (
             <div className="hero-chart mh-hero-empty">
-              <HeroPlaceholder lanes={lanes} resolving={resolving} />
+              <HeroPlaceholder lanes={lanes} />
             </div>
           )}
           {ticket}

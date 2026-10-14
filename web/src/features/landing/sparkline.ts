@@ -1,5 +1,5 @@
-// The hero line's geometry (R6 landing L01), pure so it's tested: points → an SVG path in a box, the y-scale padded
-// around the line and the Window's opening print (so the dashed line always sits inside), the last point for the dot.
+// The bento's sparklines (LandingSections), pure so they're tested: points → an SVG path in a box, the y-scale padded
+// around the line (and an opening print, when one is given, so it always sits inside), the last point for a dot.
 // Numbers only draw: the prices on screen come from the E8 text through `printUsd`.
 
 export interface LinePoint {
@@ -51,16 +51,6 @@ export function lineGeometry(points: readonly LinePoint[], width: number, height
     max,
     labels: [max - pad, mid, min + pad].map((v) => [v, y(v)]),
   };
-}
-
-/** Thins a dense ring to at most `max` points (keeps the newest), for the first paint's path. */
-export function thin<T>(points: readonly T[], max: number): T[] {
-  if (points.length <= max) return [...points];
-  const step = points.length / max;
-  const out: T[] = [];
-  for (let i = 0; i < max - 1; i += 1) out.push(points[Math.floor(i * step)]!);
-  out.push(points.at(-1)!);
-  return out;
 }
 
 /**

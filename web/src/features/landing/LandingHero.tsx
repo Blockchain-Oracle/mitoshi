@@ -2,15 +2,15 @@
 // to the top, nothing floating, don't say it twice"). From 21st.dev 11494 easemize/cinematic-landing-hero — its
 // materials (the masked grid and film grain on a deep ground, the silver-matte headline, the huge brand wordmark behind
 // the device, the tactile buttons) — composed as a split hero so the phones sit in the first screen: the copy and two
-// actions on the left, three phones fanned on the right (the live terminal in front, real captures of Markets and Games
-// behind). Dropped: GSAP and its 7,000 px pinned scroll (the site's 35 KB budget; no scroll-jacking), the floating
-// badges, framer-motion, the blue card and its hex inks. Server component; the front phone's screen is live.
+// actions on the left, three phones fanned on the right — real captures of the app (the terminal's candles in front,
+// Markets and Games behind), as /download shows them (the owner preferred those to a drawn live screen). Dropped: GSAP
+// and its 7,000 px pinned scroll (the site's 35 KB budget; no scroll-jacking), the floating badges, framer-motion, the
+// blue card and its hex inks. Server component.
 import { ArrowRight, Menu, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { Seal } from "@/components/kit/Seal";
 import { BRAND } from "@/lib/copy";
 import { DOCS_URL } from "@/lib/docs-url";
-import { HeroPhone } from "./hero/HeroPhone";
 import { PhoneFrame, PhoneShot } from "./hero/PhoneFrame";
 import { WORDS } from "./words";
 
@@ -90,7 +90,7 @@ export function LandingHero() {
             <PhoneFrame><PhoneShot name="games" alt="" eager /></PhoneFrame>
           </div>
           <div className="lp-stage-main">
-            <HeroPhone />
+            <PhoneFrame><PhoneShot name="trade" alt={hero.tradeAlt} eager /></PhoneFrame>
           </div>
         </div>
       </div>
