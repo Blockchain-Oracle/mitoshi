@@ -1,5 +1,23 @@
 # STATUS — the resume pointer (read after working-rules.md)
 
+**2026-10-14, round 7 continued: the landing rebuilt around the phone; games, download and blockers finished.**
+- **Landing (`/`):** one dark world from 21st.dev 11494 cinematic-landing-hero's materials — a split hero (copy and
+  "Start trading" / "Get the app"; three phones fanned: the front one live — BTC's Window and its book's pays read from
+  the chain, ten minutes of line from ops, SSE ticks — Markets and Games as real iOS Simulator captures in
+  `web/public/app/screens`), 見通し in neon behind them and in the footer, "Live on" + Tempo's wordmark. Then the tape
+  (last signed print per asset, `latestPrints`), a bento with ops sparklines, How it works over app crops, the proof
+  (rolling digits, five assets' signed closes), the final call with the store buttons and QR, a site footer. Phone menu
+  (`<details>`), robots/sitemap/canonical, per-route X cards. `/` is 31.8 KB own JS. Not done from the landing spec:
+  L12 film re-render and the in-place film dialog, L14 OG redesign, L18 bare 404 (the root 404 is in every route's
+  bundle — landing CSS there would land everywhere).
+- **Stores:** TestFlight public link is set; Apple's page says "isn't accepting new testers" until the external beta
+  review of builds 7/8 passes (submitted 2026-10-13, still WAITING_FOR_REVIEW) — the site flips to the live link by
+  itself. Android ships as an EAS APK (`ANDROID_APK_LINK` on the web app; build `ea22602d`). Play is internal-only.
+- **Games spec:** finished (Lucky floor, rank/history states, every Range/Moonshot/Parlay blocker as its fix, named
+  waits); `.ts-blocked` deleted. Audio sleeps between sounds (the Dynamic Island speaker bug).
+- **Next:** shell S04 board cache, the markets spec, the seven route-budget overages, the terminal's Signed/Line tags
+  overlapping its axis labels, Markets' 14 s "Reading the price…" on a cold app launch, landing L12/L14/L18.
+
 **2026-10-13, round 7 (D-232): the phone app feels native.** App mode on the web (opens on Markets or the new
 `/welcome`; Senryo's dock with the Trade seal; no web chrome inside the app), native shell 1.1.0 (sound through a
 playback audio session, Taptic haptics, in-app browser, Face ID lock, OTA) on TestFlight (build 8) and Play internal,
