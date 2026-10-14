@@ -77,7 +77,7 @@ export function LandingHero() {
         </div>
 
         <div className="lp-stage" aria-label={hero.stage}>
-          <span className="lp-wordmark" aria-hidden lang="ja">{BRAND.kanji}</span>
+          <span className="lp-wordmark lp-neon" aria-hidden lang="ja" data-text={BRAND.kanji}>{BRAND.kanji}</span>
           <div className="lp-stage-side lp-stage-side--l" aria-hidden>
             <PhoneFrame><PhoneShot name="markets" alt="" eager /></PhoneFrame>
           </div>

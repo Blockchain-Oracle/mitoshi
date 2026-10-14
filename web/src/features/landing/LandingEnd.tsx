@@ -170,7 +170,7 @@ export function SiteFooter() {
         <p>{FOOTER.disclosure}</p>
         <p>{c.marks}</p>
       </div>
-      <div className="lp-footer-mark" aria-hidden lang="ja">{BRAND.kanji}</div>
+      <div className="lp-footer-mark lp-neon" aria-hidden lang="ja" data-text={BRAND.kanji}>{BRAND.kanji}</div>
     </footer>
   );
 }
