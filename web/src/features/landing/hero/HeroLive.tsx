@@ -1,14 +1,15 @@
 "use client";
 // The hero phone, live (R6 landing L01) — the lazy chunk `HeroLiveIsland` loads once the page is idle. One SSE
-// connection to the stream's public `ticks` topic (`@cwf/markets/stream`, no ticket, no wallet, no chain socket) seeded
-// with the server's ten minutes (`mergeRecent`); the screen commits at most five times a second (the terminal's 200 ms
+// connection to the stream's public `ticks` topic (`@cwf/markets/stream`, no ticket, no wallet, no chain socket); the
+// line is its own — the server's ten minutes with each new tick appended — and the screen commits at most five times a second (the terminal's 200 ms
 // leading edge), the countdown ticks each second, and the Window is re-read at its cutoff (the next one rolls in) and
 // every 30 s while the page is visible. Imports stay framework-free: no `@cwf/markets` root, viem, wagmi or providers.
-import { configureLiveTicks, liveRing, liveTick, mergeRecent, subscribeLiveTick, tickStale } from "@cwf/markets/live-ticks";
+import { configureLiveTicks, liveTick, subscribeLiveTick, tickStale } from "@cwf/markets/live-ticks";
 import { configureStream } from "@cwf/markets/stream";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { webEnv } from "@/lib/env";
-import { heroModel, type HeroWire } from "./hero-model";
+import { heroModel, LINE_SPAN_MS, type HeroWire } from "./hero-model";
+import type { LinePoint } from "./sparkline";
 import { HeroScreen } from "./HeroScreen";
 
 const COMMIT_MS = 200;
@@ -32,9 +33,12 @@ export default function HeroLive({ wire, discs }: { wire: HeroWire; discs: Recor
   const [, setFrame] = useState(0);
   const redraw = () => setFrame((f) => f + 1);
 
-  // Every read's ten minutes go behind what the stream already holds (a late first read, a rolled Window).
+  // The line is the island's own: each read's ten minutes, then every tick the stream brings appended after them.
+  const line = useRef<LinePoint[]>([]);
   useEffect(() => {
-    mergeRecent(data.symbol, data.points);
+    const read = data.points.map(([t, p]) => ({ t, p: Number(BigInt(p)) / 1e8 }));
+    const lastRead = read.at(-1)?.t ?? 0;
+    line.current = [...read, ...line.current.filter((pt) => pt.t > lastRead)];
     redraw();
   }, [data.symbol, data.readAtMs]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -43,6 +47,12 @@ export default function HeroLive({ wire, discs }: { wire: HeroWire; discs: Recor
     let last = 0;
     let timer: ReturnType<typeof setTimeout> | null = null;
     const commit = () => {
+      const tick = liveTick(data.symbol);
+      const tail = line.current.at(-1);
+      if (tick && (!tail || tick.atMs > tail.t)) {
+        const now = Date.now();
+        line.current = [...line.current.filter((pt) => pt.t >= now - LINE_SPAN_MS), { t: tick.atMs, p: Number(tick.priceE8) / 1e8 }];
+      }
       const wait = COMMIT_MS - (Date.now() - last);
       if (wait <= 0) {
         last = Date.now();
@@ -90,8 +100,7 @@ export default function HeroLive({ wire, discs }: { wire: HeroWire; discs: Recor
   }, [marketId, cutoffMs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const nowMs = Date.now();
-  const ring = liveRing(data.symbol);
-  const points = ring.t.map((t, i) => ({ t, p: ring.p[i]! }));
+  const points = line.current;
   const tick = liveTick(data.symbol);
   const priceE8 = tick ? tick.priceE8.toString() : (data.points.at(-1)?.[1] ?? null);
   // Stale only once a tick has been seen and then aged, after the stream's grace (until then the server's price stands).
