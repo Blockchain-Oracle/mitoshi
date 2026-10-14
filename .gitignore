@@ -71,11 +71,7 @@ contracts/deployments/**/*.pending.json
 # Local Redis snapshots (redis-server started from the repo root)
 dump.rdb
 
-# Video build output and preview caches (the final cut lives in web/public/video); the demo script stays local.
-/videos/**/.thumbnails/
-/videos/**/renders/
+# Local only: the video projects, marketing images and the demo script.
+/videos/
+/docs/marketing/
 /docs/demo/
-/videos/**/.waveform-cache/
-/videos/**/.hyperframes/preview/
-/videos/**/.hyperframes/history-id
-/videos/**/snapshots/
