@@ -45,7 +45,7 @@ function Receipt({ r, nowSec }: { r: SettledReceipt; nowSec: number }) {
   const p = WORDS.proof;
   return (
     <li>
-      <Link href={`/proof/${r.market}`} className="lp-receipt">
+      <Link href={`/proof/${r.market}`} prefetch={false} className="lp-receipt">
         <AssetDisc asset={r.symbol} className="lp-receipt-disc" />
         <span className="lp-receipt-main">
           <b>{r.symbol} {r.basis === STOCK24 ? "24/7 " : ""}{formatCadence(r.cadenceSec)}</b>
@@ -88,7 +88,7 @@ async function ProofBody() {
       <div className="lp-receipts">
         <span className="lp-eyebrow lp-eyebrow--quiet">{p.settled}</span>
         {receipts === null ? (
-          <p className="lp-quiet"><Link href="/markets">{p.unread}</Link></p>
+          <p className="lp-quiet"><Link href="/markets" prefetch={false}>{p.unread}</Link></p>
         ) : receipts.length === 0 ? (
           <p className="lp-quiet">{p.none}</p>
         ) : (
@@ -162,7 +162,7 @@ export function SiteFooter() {
         {c.columns.map((col) => (
           <nav key={col.title} className="lp-footer-col" aria-label={col.title}>
             <span className="lp-footer-head">{col.title}</span>
-            {col.links.map((l) => (l.href.startsWith("http") ? <ExternalLink key={l.label} href={l.href} className="lp-footer-link">{l.label}</ExternalLink> : <Link key={l.label} href={l.href} className="lp-footer-link">{l.label}</Link>))}
+            {col.links.map((l) => (l.href.startsWith("http") ? <ExternalLink key={l.label} href={l.href} className="lp-footer-link">{l.label}</ExternalLink> : <Link key={l.label} href={l.href} prefetch={false} className="lp-footer-link">{l.label}</Link>))}
           </nav>
         ))}
       </div>

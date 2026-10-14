@@ -26,22 +26,22 @@ export function LandingNav() {
           <span className="lp-brand-name">{BRAND.name}</span>
         </Link>
         <div className="lp-nav-links">
-          <Link href="/markets" className="lp-nav-link">{nav.markets}</Link>
-          <Link href="/games" className="lp-nav-link">{nav.games}</Link>
+          <Link href="/markets" prefetch={false} className="lp-nav-link">{nav.markets}</Link>
+          <Link href="/games" prefetch={false} className="lp-nav-link">{nav.games}</Link>
           <a href="#how" className="lp-nav-link">{nav.how}</a>
           <a href={DOCS_URL} className="lp-nav-link">{nav.docs}</a>
         </div>
         <div className="lp-nav-end">
-          <Link href="/download" className="lp-nav-app">{nav.app}</Link>
+          <Link href="/download" prefetch={false} className="lp-nav-app">{nav.app}</Link>
           <Link href={START} className="lp-btn lp-btn--accent lp-btn--sm">{nav.start}</Link>
           {/* Phones: every link one tap away, in a glass panel — `<details>`, so the menu ships no script. */}
           <details className="lp-menu">
             <summary className="lp-menu-button" aria-label={nav.menu}><Menu aria-hidden /></summary>
             <div className="lp-menu-panel">
-              <Link href="/markets" className="lp-menu-link">{nav.markets}</Link>
-              <Link href="/games" className="lp-menu-link">{nav.games}</Link>
+              <Link href="/markets" prefetch={false} className="lp-menu-link">{nav.markets}</Link>
+              <Link href="/games" prefetch={false} className="lp-menu-link">{nav.games}</Link>
               <a href="#how" className="lp-menu-link">{nav.how}</a>
-              <Link href="/download" className="lp-menu-link">{nav.app}</Link>
+              <Link href="/download" prefetch={false} className="lp-menu-link">{nav.app}</Link>
               <a href={DOCS_URL} className="lp-menu-link">{nav.docs}</a>
             </div>
           </details>
@@ -70,7 +70,7 @@ export function LandingHero() {
             <Link href={START} className="lp-btn lp-btn--accent lp-btn--lg" data-primary-action>
               {hero.start} <ArrowRight aria-hidden />
             </Link>
-            <Link href="/download" className="lp-btn lp-btn--glass lp-btn--lg">
+            <Link href="/download" prefetch={false} className="lp-btn lp-btn--glass lp-btn--lg">
               <Smartphone aria-hidden /> {hero.app}
             </Link>
           </div>

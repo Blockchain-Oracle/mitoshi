@@ -29,7 +29,7 @@ export async function LandingTape() {
   const { tape } = WORDS;
   const items = (copy: boolean) =>
     rows.map((r) => (
-      <Link key={r.symbol} href={`/trade/${r.symbol}`} className="lp-tape-item" tabIndex={copy ? -1 : undefined}>
+      <Link key={r.symbol} href={`/trade/${r.symbol}`} prefetch={false} className="lp-tape-item" tabIndex={copy ? -1 : undefined}>
         <AssetDisc asset={r.symbol} className="lp-tape-disc" />
         <span className="lp-tape-symbol">{r.symbol}</span>
         {r.print ? (
@@ -111,7 +111,7 @@ async function SparkList({ symbols }: { symbols: readonly string[] }) {
 
 function Tile({ href, className, eyebrow, title, line, icon, children }: { href: string; className: string; eyebrow?: string; title: string; line: string; icon?: ReactNode; children?: ReactNode }) {
   return (
-    <Link href={href} className={`lp-tile ${className}`}>
+    <Link href={href} prefetch={false} className={`lp-tile ${className}`}>
       <span className="lp-tile-arrow" aria-hidden><ArrowUpRight /></span>
       {icon ? <span className="lp-tile-icon" aria-hidden>{icon}</span> : null}
       {eyebrow ? <span className="lp-eyebrow">{eyebrow}</span> : null}
