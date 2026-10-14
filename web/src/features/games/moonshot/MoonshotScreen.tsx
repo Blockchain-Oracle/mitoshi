@@ -27,7 +27,7 @@ function Page({ reserve }: { reserve: RangeReserveState }) {
     <>
       <WindowPicker windows={windows} pickedId={current?.market.marketId ?? null} onPick={setPicked} gapInSec={gapInSec} aside={<HouseHead kind="moonshot" reserve={reserve} writes={writes} />} />
       {empty}
-      {current ? <MoonshotTicket key={current.market.marketId} market={current.market} model={current.model} reserve={reserve} /> : null}
+      {current ? <MoonshotTicket key={current.market.marketId} market={current.market} model={current.model} reserve={reserve} alts={{ windows, pick: setPicked }} /> : null}
       <section className="game-below" aria-label={MOONSHOT.roundsTitle}>
         <h2 className="game-below-title">{MOONSHOT.roundsTitle}</h2>
         <RangeRounds kind="moonshot" wallet={session.address} nowMs={nowMs} staleAfterSec={reserve.params.staleAfterSec} writes={writes} onSignIn={session.connect} />

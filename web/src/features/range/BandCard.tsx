@@ -9,13 +9,14 @@
 import type { RangeSide } from "@cwf/core/range";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 import { BandSlider, type BandBar } from "@/components/ui/band-slider";
+import { WaitingText } from "@/components/states/WaitingText";
 import { cn } from "@/lib/utils";
 import { RANGE } from "./copy";
 import { usdBand, usdOnGrid } from "./format";
 import { RANGE_PRESETS, bandHalfUsd } from "./presets";
 import type { RangeDraft } from "./useRangeDraft";
 
-export function BandCard({ asset, intervalSec, draft, bars, side, onSide, openingPrint }: { asset: string; intervalSec: number; draft: RangeDraft; bars: readonly BandBar[]; side: RangeSide; onSide?: (side: RangeSide) => void; openingPrint: bigint | null }) {
+export function BandCard({ asset, intervalSec, draft, bars, side, onSide, openingPrint, spotLate = false }: { asset: string; intervalSec: number; draft: RangeDraft; bars: readonly BandBar[]; side: RangeSide; onSide?: (side: RangeSide) => void; openingPrint: bigint | null; spotLate?: boolean }) {
   const { band } = RANGE;
   const usd = (n: number) => usdOnGrid(n, draft.decimals);
   const ready = draft.axis !== null && draft.lowUsd !== null && draft.highUsd !== null;
@@ -69,7 +70,9 @@ export function BandCard({ asset, intervalSec, draft, bars, side, onSide, openin
             </div>
           </>
         ) : (
-          <p role="status" className="bc-wait">{band.waiting}</p>
+          // The price's wait, named (R6 games §4.3.4): shimmering words, then "Price feed is late" at 10 s — the CTA
+          // under it carries Retry and, when one is fresh, another Window.
+          spotLate ? <p role="status" className="bc-wait">{band.late}</p> : <WaitingText as="p" timeoutMs={null} className="bc-wait">{band.waiting}</WaitingText>
         )}
       </div>
 

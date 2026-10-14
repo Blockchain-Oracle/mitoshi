@@ -12,7 +12,7 @@
  */
 import { REQUOTE_MS } from "@cwf/core/constants";
 import type { Diagnosis, ParlayLegInput, ParlayMode, ParlayParams, ParlayQuote } from "@cwf/core";
-import { checkParlayCapacity, previewLegFair, quoteParlayOnchain } from "@cwf/markets/parlay";
+import { checkParlayCapacity, previewLegFair, quoteParlayOnchain, readParlayExpiryLocked } from "@cwf/markets/parlay";
 import { useReadingQuery } from "@cwf/markets/react";
 import { useQuery, useQueryClient, type QueryKey } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
@@ -73,6 +73,10 @@ export interface ParlayQuoteState {
   fair: FairCheck | null;
   /** The reserve's cap refusal for this ticket (`InsufficientLiquidity`, `OverExposure`, `OverExpiryCap`), or null. */
   capacity: Diagnosis | null;
+  /** The busiest leg instant's existing lock, for the stake that fits; null until read. */
+  lockedByExpiryBase: bigint | null;
+  /** The last quote these legs had, kept through a refusal (the fit's payout per $1). */
+  last: ParlayQuote | null;
   spots: Map<string, SignedSpot> | null;
   spotsDown: boolean;
   retry: () => void;
@@ -110,7 +114,10 @@ export function useParlayQuote({ legs, mode, params, enabled }: { legs: readonly
   // The reserve's own caps for this ticket (liquidity, exposure, per instant) — `previewOpen` prices, it doesn't check them.
   const capacity = useQuery({
     queryKey: [...parlayKeys.all, "capacity", quote ? `${quote.maxPayoutBase - quote.stakeBase}|${quote.legPricesRaw.join(",")}|${signature}` : ""],
-    queryFn: async () => ({ refusal: await checkParlayCapacity(quote!.maxPayoutBase - quote!.stakeBase, expiriesOf(legs)) }),
+    queryFn: async () => {
+      const [refusal, lockedByExpiryBase] = await Promise.all([checkParlayCapacity(quote!.maxPayoutBase - quote!.stakeBase, expiriesOf(legs)), readParlayExpiryLocked(expiriesOf(legs))]);
+      return { refusal, lockedByExpiryBase };
+    },
     enabled: quote !== null,
     staleTime: REQUOTE_MS,
     placeholderData: (prev, prevQuery) => (prevQuery && String(prevQuery.queryKey.at(-1)).endsWith(`|${signature}`) ? prev : undefined),
@@ -129,6 +136,8 @@ export function useParlayQuote({ legs, mode, params, enabled }: { legs: readonly
     error,
     fair: fairQuery.data ?? null,
     capacity: capacity.data?.refusal ?? null,
+    lockedByExpiryBase: capacity.data?.lockedByExpiryBase ?? null,
+    last,
     spots,
     // R4-5 review: a failed refresh keeps the last payloads (TanStack keeps `data` with `isError`); only none, or none the
     // guard would still take (120 s), is "down" — one failed 15 s refresh no longer swaps the hold for the blocker.

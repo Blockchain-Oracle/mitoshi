@@ -18,7 +18,9 @@ import { cn } from "@/lib/utils";
 import { AssetDisc } from "../markets/hero/AssetDisc";
 import { PARLAY } from "./copy";
 import type { LegWindow } from "./data";
-import { ParlayCta, ParlaySlip, ParlaySlipOf } from "./ParlaySlip";
+import { WaitingText } from "@/components/states/WaitingText";
+import { RANGE } from "../range/copy";
+import { focusFirstUp, ParlayCta, ParlaySlip, ParlaySlipOf } from "./ParlaySlip";
 import { useSlip } from "./slip-state";
 import { useParlayTicket, type ParlayTicket } from "./useParlayTicket";
 import "@/components/kit/kit.css";
@@ -26,6 +28,8 @@ import "@/components/kit/kit.css";
 const RAIL_QUERY = "(min-width: 64rem)";
 const UNIT = 10 ** USD_DECIMALS;
 const CHIPS = ["1", "5", "20", "50"] as const;
+/** The sheet's close (the iOS drawer curve's 240 ms out) before focus moves to the list behind it. */
+const ADD_LEG_DELAY_MS = 300;
 
 function useHasRail(): boolean | null {
   const [hasRail, setHasRail] = useState<boolean | null>(null);
@@ -73,7 +77,7 @@ function SlipBar({ t, windows, onOpen }: { t: ParlayTicket; windows: readonly Le
           <span className="sb-one">{PARLAY.slip.addOneMore}</span>
         ) : (
           <span className="sb-pays">
-            <span className="sb-mult numbers">{shown ? <>{PARLAY.slip.paysShort} ×<Odometer value={shown.multiplierMilli / 1000} kind="plain" decimals={2} /></> : PARLAY.cta.pricing}</span>
+            <span className="sb-mult numbers">{shown ? <>{PARLAY.slip.paysShort} ×<Odometer value={shown.multiplierMilli / 1000} kind="plain" decimals={2} /></> : <WaitingText size="inherit" timeoutMs={null}>{RANGE.block.pricing}</WaitingText>}</span>
             {shown ? (
               <span className="sb-win">
                 {PARLAY.slip.toWin} <Odometer value={Number(shown.maxPayoutBase) / UNIT} kind="usd" />
@@ -108,7 +112,8 @@ function PhoneSlip({ reserve, windows }: { reserve: ParlayReserveState; windows:
       <SlipBar t={t} windows={windows} onOpen={() => setOpen(true)} />
       <SlideOver open={open} onOpenChange={setOpen} urlKey="slip">
         <SlideOverContent title={PARLAY.slip.title} description={PARLAY.slip.legs(t.slip.legs.length)} fields>
-          <ParlaySlipOf t={t} windows={windows} />
+          {/* "Add a second leg" closes the sheet first, then focuses the list behind it once the sheet has gone. */}
+          <ParlaySlipOf t={t} windows={windows} onAddLeg={() => { setOpen(false); window.setTimeout(focusFirstUp, ADD_LEG_DELAY_MS); }} />
         </SlideOverContent>
       </SlideOver>
     </>

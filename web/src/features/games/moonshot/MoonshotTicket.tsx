@@ -11,15 +11,19 @@
  * mapping, the last quote stays on screen through a requote, and signed out the hold opens sign-in for the order.
  * R4-5 review (D-227): the book's drift from the live price is tested as Range's is (the open's 2σ bound), and the cap
  * is set in base units (a rounded float could land a cent over it).
+ * R6 games §4.3.4–§4.3.5 (T17, T06): Range's `rangeBlocker` names every block as its fix (a long shot is "Try ×5", the
+ * rung's cap "Use $50 payout"), the price and quote waits are named then honest when late, and "Try X →" moves along
+ * the page's Windows.
  */
 import { USD_DECIMALS, type EventMarket } from "@cwf/core";
-import { moonshotPayoutCapBase, RANGE_STAKE_HEADROOM_BPS, type RangeReserveState } from "@cwf/core/range";
+import { MOONSHOT_RUNGS, moonshotPayoutCapBase, RANGE_STAKE_HEADROOM_BPS, type MoonshotRung, type RangeReserveState } from "@cwf/core/range";
 import { REQUOTE_MS } from "@cwf/core/constants";
 import { formatBaseUnits, mulBpsCeil, oneUnit, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import { quoteMoonshotOnchain, readRangeCapacity, type MoonshotQuote, type RangeModel } from "@cwf/markets/range";
-import { useBalanceSheet, useReadingQuery } from "@cwf/markets/react";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { keys, useBalanceSheet, useReadingQuery } from "@cwf/markets/react";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { WaitingText } from "@/components/states/WaitingText";
 import { useState } from "react";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
@@ -27,11 +31,14 @@ import { HoldToConfirm } from "@/components/ui/hold-to-confirm";
 import { useNowMs } from "@/lib/clock";
 import { webEnv } from "@/lib/env";
 import { useWalletSession } from "@/lib/wallet-session";
-import { FUNDING } from "@/features/funding/copy";
 import { useFirstFunding } from "@/features/funding/first-fund-state";
 import { useDebounced } from "../../markets/ticket/useDebounced";
 import { usd } from "../../parlay/format";
-import { capacityLabel, refusalLabel } from "../../range/blockers";
+import { fitAmountBase, rangeBlocker } from "../../range/blockers";
+import { RangeCta } from "../../range/RangeCta";
+import type { TicketAlts } from "../../range/RangeTicketBody";
+import { useFreshness } from "../../range/useFreshness";
+import { useLate } from "../../range/useLate";
 import { RANGE } from "../../range/copy";
 import { rangeKeys } from "../../range/data";
 import { usdBand } from "../../range/format";
@@ -45,6 +52,8 @@ import { SharePill } from "../../share/SharePill";
 import { MOONSHOT } from "./copy";
 
 const ONE = oneUnit(USD_DECIMALS);
+const QUOTE_LATE_MS = 15_000;
+const FUNDING_LATE_MS = 30_000;
 const pctOf = (from: bigint, to: bigint) => (from > 0n ? (Number(to - from) * 100) / Number(from) : 0);
 const signedPct = (v: number) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
 
@@ -76,13 +85,15 @@ function DistanceGauge({ opening, strike, spot }: { opening: bigint; strike: big
   );
 }
 
-export function MoonshotTicket({ market, model, reserve }: { market: EventMarket; model: RangeModel | null; reserve: RangeReserveState }) {
+export function MoonshotTicket({ market, model, reserve, alts }: { market: EventMarket; model: RangeModel | null; reserve: RangeReserveState; alts?: TicketAlts }) {
   const nowMs = useNowMs();
   const session = useWalletSession();
+  const queryClient = useQueryClient();
   const sheet = useBalanceSheet(session.address);
   const writes = useRangeWrites(session.address);
   // The live price (stream, else the signed median) — the gauge's dot and the drift test the open makes (R4-5 review).
-  const spotE8 = useRangeSpot(market, model?.feed ?? null, nowMs);
+  const spot = useRangeSpot(market, model?.feed ?? null, nowMs);
+  const spotE8 = spot.spotE8;
   const spotCents = spotE8 === null ? null : spotE8 / 1_000_000n;
   const driftE4 = useRangeDrift(market.marketId, market.asset, spotE8, model !== null && !reserve.paused);
   const [call, setCall] = useRememberedCall();
@@ -108,7 +119,7 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
     queryKey: [...rangeKeys.all, "capacity", "moonshot", q ? q.houseLockedBase.toString() : "", market.expirySec],
     queryFn: async () => {
       const r = await readRangeCapacity(q!.houseLockedBase, market.expirySec);
-      return r.ok ? r.value.refusal : null;
+      return r.ok ? r.value : null;
     },
     enabled: q !== null,
     staleTime: REQUOTE_MS,
@@ -121,21 +132,48 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
   const strike = shown ? (call.direction === "long" ? shown.band.lowPrint : shown.band.highPrint) : null;
   const opening = shown?.openingPrint ?? (market.openingPriceRaw !== null ? market.openingPriceRaw / 1_000_000n : null);
 
-  const blocker = ((): string | null => {
-    if (reserve.paused) return RANGE.cta.paused;
-    if (!model) return RANGE.windows.noModel(market.asset);
-    if (amountBase === 0n) return RANGE.cta.enterAmount;
-    if (overCap) return MOONSHOT.ticket.overCapShort;
+  const fundingWaits = !signedOut && funding && q !== null && (spendable === null || spendable < q.quote.stakeBase);
+  const fundingClock = useLate(fundingWaits, FUNDING_LATE_MS, nowMs);
+  const quoteClock = useLate(q === null && error === null, QUOTE_LATE_MS, nowMs, signature);
+  const isFresh = useFreshness(alts?.windows.map((w) => w.market) ?? [], nowMs);
+  const priced = q ?? last;
+  const fit = priced ? fitAmountBase({ stakeBase: priced.quote.stakeBase, maxPayoutBase: priced.quote.maxPayoutBase, reserve, lockedByExpiryBase: capacity.data?.lockedByExpiryBase ?? null, mode, decimals: USD_DECIMALS }) : null;
+  const rungAt = (MOONSHOT_RUNGS as readonly number[]).indexOf(call.multiple);
+  const blocker = rangeBlocker({
+    game: "moonshot",
+    market,
+    paused: reserve.paused,
+    hasModel: model !== null,
+    spot: spot.late ? "late" : spotE8 === null ? "waiting" : "ready",
+    amountZero: amountBase === 0n,
+    overRungCap: overCap ? { multiple: call.multiple, capText: usd(capBase), capAmountText: formatBaseUnits(capBase, USD_DECIMALS, { group: false, minDp: 0 }) } : null,
     // The open tests the book's centre against a signed spot (2σ, D-119): a stale book is named here, not after the passkey.
-    if (driftE4 !== null && driftE4 > BigInt(reserve.params.maxDriftE4)) return RANGE.cta.stale;
-    if (error) return refusalLabel(error);
-    if (!q) return MOONSHOT.ticket.pricing;
-    const cap = capacityLabel(capacity.data ?? null);
-    if (cap) return cap;
-    if (!signedOut && funding && (spendable === null || spendable < q.quote.stakeBase)) return FUNDING.firstFund.funding;
-    if (!signedOut && spendable !== null && spendable < q.quote.stakeBase) return RANGE.cta.topUp;
-    return null;
-  })();
+    drifted: driftE4 !== null && driftE4 > BigInt(reserve.params.maxDriftE4),
+    refusal: error,
+    quote: q ? "ready" : quoteClock.late ? "late" : "waiting",
+    capacity: capacity.data?.refusal ?? null,
+    band: null,
+    rung: { lower: MOONSHOT_RUNGS[rungAt - 1] ?? null, higher: MOONSHOT_RUNGS[rungAt + 1] ?? null },
+    fitText: fit !== null ? usd(fit) : null,
+    funding: !fundingWaits ? "ready" : fundingClock.late ? "late" : "waiting",
+    overBalance: !signedOut && q && spendable !== null && spendable < q.quote.stakeBase ? { freeText: usd(spendable), stakeText: usd(q.quote.stakeBase) } : null,
+    alts: alts ? alts.windows.map((w) => ({ market: w.market, priced: w.model !== null })) : null,
+    isFresh,
+  });
+  const handlers = {
+    setAmount: setAmountText,
+    retrySpot: spot.retry,
+    retryQuote: () => {
+      quoteClock.restart();
+      void queryClient.invalidateQueries({ queryKey: rangeKeys.quote(debounced) });
+    },
+    retryFunds: () => {
+      fundingClock.restart();
+      void queryClient.invalidateQueries({ queryKey: keys.balanceSheet(session.address) });
+    },
+    pickWindow: alts?.pick,
+    setRung: (multiple: number) => setCall({ ...call, multiple: multiple as MoonshotRung }),
+  };
   const busy = writes.tx.kind === "signing" || writes.tx.kind === "submitted" || writes.tx.kind === "unknown";
   const target = strike !== null ? MOONSHOT.ticket.target(call.direction, usdBand(strike)) : "";
   const fire = () => {
@@ -152,7 +190,7 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
       </div>
       <TicketStrip
         multiplierMilli={shown?.quote.multiplierMilli ?? null}
-        sub={strike !== null && opening !== null ? `${target} · ${signedPct(pctOf(opening, strike))}` : MOONSHOT.ticket.pricing}
+        sub={strike !== null && opening !== null ? `${target} · ${signedPct(pctOf(opening, strike))}` : spotE8 === null || error ? RANGE.ticket.noFigure : <WaitingText size="inherit" timeoutMs={null}>{RANGE.block.pricing}</WaitingText>}
         toWinBase={shown?.quote.maxPayoutBase ?? null}
         mode={mode}
         onMode={setMode}
@@ -160,19 +198,14 @@ export function MoonshotTicket({ market, model, reserve }: { market: EventMarket
         onAmount={setAmountText}
         stale={q === null && shown !== null}
         cap={
-          mode === "fixPayout" ? (
-            <>
-              {MOONSHOT.ticket.overCap(call.multiple, usd(capBase))}
-              {" · "}
-              <button type="button" onClick={() => setAmountText(formatBaseUnits(capBase, USD_DECIMALS, { group: false, minDp: 0 }))}>{MOONSHOT.ticket.useCap}</button>
-            </>
-          ) : null
+          // The rung's cap, stated; over it, the CTA is "Use $X payout" (R6 games §4.3.5).
+          mode === "fixPayout" ? MOONSHOT.ticket.overCap(call.multiple, usd(capBase)) : null
         }
       >
         {busy || writes.fetchingSpot ? (
           <TxCta state={writes.tx} action={writes.fetchingSpot ? RANGE.cta.fetchingSpot : MOONSHOT.ticket.placing} signer="passkey" sponsored onConfirm={() => undefined} />
         ) : blocker || !q ? (
-          <button type="button" disabled aria-disabled className="ts-blocked">{blocker ?? MOONSHOT.ticket.pricing}</button>
+          blocker ? <RangeCta blocker={blocker} handlers={handlers} /> : null
         ) : (
           <HoldToConfirm className="ts-hold w-full" confirmLabel={signedOut ? RANGE.cta.signingIn : MOONSHOT.ticket.placing} onConfirm={fire}>
             {MOONSHOT.ticket.place2(usd(q.quote.stakeBase), usd(q.quote.maxPayoutBase))}

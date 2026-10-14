@@ -2147,11 +2147,14 @@ its network where chains appear and uses real logos — or it is removed.
 6. **Ship order: env, web, ops, docs.** Only ops runs migrations, at boot. The old web reads `bridge_messages`,
    `reserve_snapshots` and `idx_bridge_events` until it is replaced; the new web reads none of them and needs nothing
    new from ops. Ops throws `unknown actor` for an `OPS_ACTORS` name it lacks.
-   1. **Env.** On `mitoshi-ops-testnet`, set the production `OPS_ACTORS` to the 24 names left once `bridge-watch`,
-      `reserve-watch` and `stock-sync` are removed (27 at the 2026-10-13 boot): `chain-head,archive,spot,indexer,roller,
+   1. **Env.** On `mitoshi-ops-testnet`, set the production `OPS_ACTORS` to the names the build's registry knows
+      (`services/ops/src/registry.ts`): `bridge-watch`, `reserve-watch` and `stock-sync` go with the bridge, and
+      `theme-agent` and `reference-writer` with the guarded stock pools (item 5; `9e36e76f` dropped them from the
+      registry, so either name stops the boot). Round 7 added `reserve-pricer`. The set, 23 names, one line, no spaces —
+      live since 2026-10-14 (read that day; ops `76af4889` booted on it): `chain-head,archive,spot,indexer,roller,
       price-relay,settler,seed-maker,halt-watch,earnings,calendar,funds-watch,house-taker,leverage-keeper,exit-keeper,
-      earn-quoter,strategy-runner,agent-rater,theme-agent,launch-keeper,reference-writer,indexer-recount,duel-settler,
-      x-relay` (one line, no spaces). Nothing else changes: `OPS_DRY_ACTORS` is empty, the preview `OPS_ACTORS` is
+      earn-quoter,strategy-runner,agent-rater,launch-keeper,indexer-recount,duel-settler,x-relay,reserve-pricer`.
+      Before any ops deploy, every name must be a registry key. Nothing else changes: `OPS_DRY_ACTORS` is empty, the preview `OPS_ACTORS` is
       `chain-head`, and `RH_RPC_HTTP_URL`, `BASE_SEPOLIA_RPC_HTTP_URL` and `STOCK_SYNC_PRIVATE_KEY` are absent on web
       and ops, preview included; docs has no env (all read 2026-10-13). Don't restart ops: the running process keeps the
       env it booted with, and Coolify 4.4.6 turns a restart of a Dockerfile app into a deploy of `integration/t1`'s head
@@ -2159,7 +2162,8 @@ its network where chains appear and uses real logos — or it is removed.
    2. **Web.** `/bridge` and `/reserves` answer 308 (item 1); More and ⌘K list neither.
    3. **Ops.** It checks `OPS_ACTORS` before any migration, so a stale name stops the boot with the database untouched
       and Coolify's `/livez` check keeps the old container. Then it applies `bridge/0002` and `index/0008`, and the indexer drops its five
-      adapter followers. `/health` lists 27 actors.
+      adapter followers. `/health` lists each running loop (26 at the 2026-10-14 boot: the spot feed, the display
+      feeds and the always-on moderation queue alongside the named actors).
    4. **Docs.**
 
    Ops before web drops the tables under the old web for the length of its build: `/bridge`, `/reserves` and their

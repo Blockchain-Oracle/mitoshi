@@ -11,6 +11,7 @@ export {
   quoteParlayOnchain,
   readFairModels,
   readOpenedTicket,
+  readParlayExpiryLocked,
   readParlayOwed,
   getParlaySharesOf,
   readParlayReserve,

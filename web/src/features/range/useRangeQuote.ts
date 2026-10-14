@@ -34,6 +34,10 @@ export interface RangeQuoteState {
   /** |σ × 1e4| between the book's centre and the live spot; the open refuses past `params.maxDriftE4`. */
   driftE4: bigint | null;
   capacity: Diagnosis | null;
+  /** What this expiry already locks (the caps' read), for the stake that fits; null until read. */
+  lockedByExpiryBase: bigint | null;
+  /** The last quote this band had, kept through a refusal (the fit's payout per $1). */
+  last: RangeQuote | null;
   retry: () => void;
 }
 
@@ -87,7 +91,7 @@ export function useRangeQuote({ band, expirySec, mode, params, spotE8, enabled }
     queryKey: [...rangeKeys.all, "capacity", quote ? `${quote.maxPayoutBase - quote.stakeBase}` : "", expirySec ?? 0],
     queryFn: async () => {
       const r = await readRangeCapacity(quote!.maxPayoutBase - quote!.stakeBase, expirySec!);
-      return r.ok ? r.value.refusal : null;
+      return r.ok ? r.value : null;
     },
     enabled: quote !== null && expirySec !== null,
     staleTime: REQUOTE_MS,
@@ -104,7 +108,9 @@ export function useRangeQuote({ band, expirySec, mode, params, spotE8, enabled }
     error,
     basis: basisQ.data ?? null,
     driftE4,
-    capacity: capQ.data ?? null,
+    capacity: capQ.data?.refusal ?? null,
+    lockedByExpiryBase: capQ.data?.lockedByExpiryBase ?? null,
+    last,
     retry,
   };
 }

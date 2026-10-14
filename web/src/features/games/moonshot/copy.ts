@@ -56,7 +56,7 @@ export const MOONSHOT = {
     retry: "Retry",
     placing: "Firing…",
     placed: "Moonshot placed!",
-    pricing: "Solving…",
+    pricing: "Pricing",
     unavailable: "Quote unavailable",
     insufficient: (symbol: string) => `Insufficient ${symbol}`,
     /** The reserve's caps would refuse this round; the line above the button says which. */
@@ -72,9 +72,7 @@ export const MOONSHOT = {
     capContract: (cap: string, symbol: string) => `Payout up to ${cap} ${symbol}, the reserve's cap.`,
     /** A payout typed over the rung's cap is not sent to the chain; one tap sets it to the cap. */
     overCap: (multiple: number, cap: string) => `×${multiple} pays at most ${cap}`,
-    overCapShort: "Over this rung's cap",
     signInFor: (target: string, stake: string) => `to fire ${target} · ${stake}`,
-    useCap: "Set to the cap",
     /** "Set stake" hit the cap: the contract charges the cap's stake, not the stake typed. */
     cappedStake: (stake: string, cap: string, symbol: string) => `The cap is reached: ${stake} ${symbol} buys the full ${cap}, and the rest of your stake stays in your wallet.`,
     locks: (amount: string, symbol: string) => `This round locks ${amount} ${symbol} of the house's money.`,

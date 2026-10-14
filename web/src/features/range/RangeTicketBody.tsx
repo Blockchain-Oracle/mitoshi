@@ -10,16 +10,19 @@
  * hold (only a new blocker replaces it). Signed out, the CTA still reads the order; the hold opens sign-in for it.
  * In a phone sheet the hold sits in the pinned footer (`SheetFooter`, R4-2); on a page or the rail, in place.
  * R4-3 (D-227): the footnote and the requote are the shared short lines (`TX.payoutSetAside`, `TX.requote`).
+ * R6 games §4.3.4–§4.3.5 (T17, T06): every blocker is `rangeBlocker`'s fix drawn by `RangeCta` — the wait for the price,
+ * the quote and the first dollars named, then honest when late; "Try X →" moves along the page's Window list (`alts`).
  */
-import { FUNDING } from "@/features/funding/copy";
 import { useFirstFunding } from "@/features/funding/first-fund-state";
-import { USD_DECIMALS, type EventMarket } from "@cwf/core";
+import { USD_DECIMALS, type EventMarket, type MarketId } from "@cwf/core";
 import { bandProbE6, RANGE_STAKE_HEADROOM_BPS, type RangeReserveState, type RangeSide } from "@cwf/core/range";
 import { mulBpsCeil, parseDecimalToBaseUnits } from "@cwf/core/units";
 import { txUrl } from "@cwf/core/urls";
 import type { RangeModel } from "@cwf/markets/range";
-import { useBalanceSheet } from "@cwf/markets/react";
+import { keys, useBalanceSheet } from "@cwf/markets/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { WaitingText } from "@/components/states/WaitingText";
 import { TxCta, TxFailureCard } from "@/components/tx";
 import { TX } from "@/components/tx/copy";
 import { SheetFooter } from "@/components/ui/overlay-footer";
@@ -31,7 +34,11 @@ import { usd } from "../parlay/format";
 import { BandCard } from "./BandCard";
 import { SharePill } from "../share/SharePill";
 import { publishBand } from "./band-store";
-import { capacityLabel, refusalLabel } from "./blockers";
+import { fitAmountBase, rangeBlocker } from "./blockers";
+import type { BandWindow } from "./data";
+import { RangeCta } from "./RangeCta";
+import { useFreshness } from "./useFreshness";
+import { useLate } from "./useLate";
 import { RANGE } from "./copy";
 import { usdBand, usdOnGrid, usdToPrint } from "./format";
 import { TicketStrip, type SolveMode } from "./TicketStrip";
@@ -43,12 +50,23 @@ import { useRangeWrites } from "./useRangeWrites";
 
 const BUCKETS = 24;
 
-export function RangeTicketBody({ market, model, reserve, allowOutside = false, drawOnChart = false }: { market: EventMarket; model: RangeModel | null; reserve: RangeReserveState; allowOutside?: boolean; drawOnChart?: boolean }) {
+const QUOTE_LATE_MS = 15_000;
+const FUNDING_LATE_MS = 30_000;
+
+/** The page's Window list and its pick, for "Try X →" (absent in the markets ticket's Range mode). */
+export interface TicketAlts {
+  windows: readonly BandWindow[];
+  pick: (id: MarketId) => void;
+}
+
+export function RangeTicketBody({ market, model, reserve, allowOutside = false, drawOnChart = false, alts }: { market: EventMarket; model: RangeModel | null; reserve: RangeReserveState; allowOutside?: boolean; drawOnChart?: boolean; alts?: TicketAlts }) {
   const nowMs = useNowMs();
   const session = useWalletSession();
+  const queryClient = useQueryClient();
   const sheet = useBalanceSheet(session.address);
   // The live price from the stream, else the signed RedStone median the open's own proof comes from (`useRangeSpot`).
-  const spotE8 = useRangeSpot(market, model?.feed ?? null, nowMs);
+  const spot = useRangeSpot(market, model?.feed ?? null, nowMs);
+  const spotE8 = spot.spotE8;
   const draft = useRangeDraft(spotE8 === null ? null : spotE8 / 1_000_000n, market.intervalSec);
   const [side, setSide] = useState<RangeSide>("inside");
   const [mode, setMode] = useState<SolveMode>("fixStake");
@@ -82,21 +100,47 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
   const signedOut = !session.isConnected;
   // A brand-new account signed in for this order: its first test dollars are landing (R4-4, critic gap 10).
   const funding = useFirstFunding();
+  const fundingWaits = !signedOut && funding && quote !== null && (spendable === null || spendable < quote.stakeBase);
+  const fundingClock = useLate(fundingWaits, FUNDING_LATE_MS, nowMs);
+  const quoteClock = useLate(quote === null && q.error === null, QUOTE_LATE_MS, nowMs, `${band?.lowPrint}:${band?.highPrint}:${side}:${mode}:${amountBase}`);
+  const isFresh = useFreshness(alts?.windows.map((w) => w.market) ?? [], nowMs);
+  const priced = quote ?? q.last;
+  const fit = priced ? fitAmountBase({ stakeBase: priced.stakeBase, maxPayoutBase: priced.maxPayoutBase, reserve, lockedByExpiryBase: q.lockedByExpiryBase, mode, decimals: USD_DECIMALS }) : null;
   // Only a verdict replaces the hold; a requote in flight keeps it (the last quote's figures stay on screen).
-  const blocker = ((): string | null => {
-    if (!signedOut && funding && (spendable === null || amountBase > spendable)) return FUNDING.firstFund.funding;
-    if (reserve.paused) return RANGE.cta.paused;
-    if (!model) return RANGE.windows.noModel(market.asset);
-    if (spotE8 === null || band === null) return RANGE.cta.waiting;
-    if (amountBase === 0n) return RANGE.cta.enterAmount;
-    if (q.driftE4 !== null && q.driftE4 > BigInt(reserve.params.maxDriftE4)) return RANGE.cta.stale;
-    if (q.error) return refusalLabel(q.error);
-    if (!quote) return RANGE.cta.pricing;
-    const cap = capacityLabel(q.capacity);
-    if (cap) return cap;
-    if (!signedOut && spendable !== null && spendable < quote.stakeBase) return RANGE.cta.topUp;
-    return null;
-  })();
+  const blocker = rangeBlocker({
+    game: "range",
+    market,
+    paused: reserve.paused,
+    hasModel: model !== null,
+    spot: spot.late ? "late" : spotE8 === null || band === null ? "waiting" : "ready",
+    amountZero: amountBase === 0n,
+    overRungCap: null,
+    drifted: q.driftE4 !== null && q.driftE4 > BigInt(reserve.params.maxDriftE4),
+    refusal: q.error,
+    quote: quote ? "ready" : quoteClock.late ? "late" : "waiting",
+    capacity: q.capacity,
+    band: { side, preset: draft.preset },
+    rung: null,
+    fitText: fit !== null ? usd(fit) : null,
+    funding: !fundingWaits ? "ready" : fundingClock.late ? "late" : "waiting",
+    overBalance: !signedOut && quote && spendable !== null && spendable < quote.stakeBase ? { freeText: usd(spendable), stakeText: usd(quote.stakeBase) } : null,
+    alts: alts ? alts.windows.map((w) => ({ market: w.market, priced: w.model !== null })) : null,
+    isFresh,
+  });
+  const handlers = {
+    setAmount: setAmountText,
+    retrySpot: spot.retry,
+    retryQuote: () => {
+      quoteClock.restart();
+      q.retry();
+    },
+    retryFunds: () => {
+      fundingClock.restart();
+      void queryClient.invalidateQueries({ queryKey: keys.balanceSheet(session.address) });
+    },
+    pickWindow: alts?.pick,
+    setPreset: draft.setPreset,
+  };
   const busy = writes.tx.kind === "signing" || writes.tx.kind === "submitted" || writes.tx.kind === "unknown";
   const bandText = band ? `${usdBand(band.lowPrint)}–${usdBand(band.highPrint)}` : "";
   const place = () => {
@@ -109,10 +153,10 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
 
   return (
     <div className="rg flex flex-col gap-3">
-      <BandCard asset={market.asset} intervalSec={market.intervalSec} draft={draft} bars={bars} side={side} onSide={allowOutside ? setSide : undefined} openingPrint={q.basis?.openingPrint ?? (market.openingPriceRaw !== null ? market.openingPriceRaw / 1_000_000n : null)} />
+      <BandCard asset={market.asset} intervalSec={market.intervalSec} draft={draft} bars={bars} side={side} onSide={allowOutside ? setSide : undefined} openingPrint={q.basis?.openingPrint ?? (market.openingPriceRaw !== null ? market.openingPriceRaw / 1_000_000n : null)} spotLate={spot.late} />
       <TicketStrip
         multiplierMilli={shown?.multiplierMilli ?? null}
-        sub={pct !== null ? RANGE.ticket.chanceLine(pct, side) : RANGE.ticket.pricingLine}
+        sub={pct !== null ? RANGE.ticket.chanceLine(pct, side) : spotE8 === null || q.error ? RANGE.ticket.noFigure : <WaitingText size="inherit" timeoutMs={null}>{RANGE.block.pricing}</WaitingText>}
         toWinBase={shown?.maxPayoutBase ?? null}
         mode={mode}
         onMode={setMode}
@@ -124,7 +168,7 @@ export function RangeTicketBody({ market, model, reserve, allowOutside = false, 
           {busy || writes.fetchingSpot ? (
             <TxCta state={writes.tx} action={writes.fetchingSpot ? RANGE.cta.fetchingSpot : RANGE.cta.placing} signer="passkey" sponsored onConfirm={() => undefined} />
           ) : blocker || !quote ? (
-            <button type="button" disabled aria-disabled className="ts-blocked">{blocker ?? RANGE.cta.pricing}</button>
+            blocker ? <RangeCta blocker={blocker} handlers={handlers} /> : null
           ) : (
             <HoldToConfirm className="ts-hold w-full" confirmLabel={signedOut ? RANGE.cta.signingIn : RANGE.cta.placing} onConfirm={place}>
               {RANGE.cta.place(usd(quote.stakeBase), usd(quote.maxPayoutBase))}

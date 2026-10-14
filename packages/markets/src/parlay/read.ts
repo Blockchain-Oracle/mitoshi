@@ -343,6 +343,23 @@ export async function checkParlayCapacity(houseLockedBase: bigint, expiriesSec: 
   }
 }
 
+/**
+ * The most any of these instants already locks (`lockedByExpiry`), for the stake that still fits under the per-instant
+ * sub-cap (R6 games §4.4: "Use $X"); null without a reserve or when the read fails.
+ */
+export async function readParlayExpiryLocked(expiriesSec: readonly number[]): Promise<bigint | null> {
+  const { client, v } = await venue();
+  if (!v || expiriesSec.length === 0) return null;
+  try {
+    const locked = await Promise.all(
+      [...new Set(expiriesSec)].map((e) => client.readContract({ address: v.parlayReserve, abi: PARLAY_READ_ABI, functionName: "lockedByExpiry", args: [BigInt(e)] }) as Promise<bigint>),
+    );
+    return locked.reduce((a, b) => (b > a ? b : a), 0n);
+  } catch {
+    return null;
+  }
+}
+
 /** A supplier's shares and what they are worth of the reserve's total value right now (the Earn page); zeros without a reserve. */
 export async function getParlaySharesOf(wallet: Address): Promise<Reading<{ shares: bigint; worthBase: bigint }>> {
   return withReading(`parlayShares:${wallet}`, async () => {
