@@ -3,6 +3,7 @@ import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
 import { createSseParser } from "./sse";
 import { createStreamClient, type StreamEvent } from "./stream";
+import { configureStream, resetStreamMemory, subscribeTopic } from "./stream-hub";
 
 /** A real SSE server with the ops wire format: records each request, lets a test push frames or drop connections. */
 function sseServer(refuse: (url: URL) => boolean = () => false) {
@@ -156,5 +157,42 @@ describe("stream client (one connection, real HTTP)", () => {
     expect(srv.requests.at(-1)!.searchParams.get("ticket")).toBeNull();
     expect(client.state()).toBe("open");
     expect(grants).toEqual([true, false, false]);
+  });
+});
+
+describe("stream hub (late subscribers)", () => {
+  it("hands a listener that joins an open price topic each symbol's latest event at once, and never replays other topics", async () => {
+    const srv = sseServer();
+    const url = await srv.listen();
+    cleanup.push(srv.close, async () => {
+      configureStream({ url: null });
+      resetStreamMemory();
+    });
+    configureStream({ url });
+    const first: StreamEvent[] = [];
+    const offFirst = subscribeTopic("prices", (e) => first.push(...e));
+    const fills: StreamEvent[] = [];
+    const offFills = subscribeTopic("market:0xabc", (e) => fills.push(...e));
+    await until(() => srv.open.size > 0);
+    srv.send("prices", "price", { symbol: "BTC", priceE8: "8000000000000", publishTimeSec: 1, source: "redstone", signers: 5 });
+    srv.send("prices", "price", { symbol: "BTC", priceE8: "8100000000000", publishTimeSec: 2, source: "redstone", signers: 5 });
+    srv.send("market:0xabc", "fill", { maker: "0x1" });
+    await until(() => first.length === 2 && fills.length === 1);
+
+    // The price cache mounting after the ticker: the connection already carries `prices`, so no new snapshot comes.
+    const late: StreamEvent[] = [];
+    const offLate = subscribeTopic("prices", (e) => late.push(...e));
+    await until(() => late.length > 0, 500);
+    expect(late).toHaveLength(1);
+    expect((late[0]!.data as { priceE8: string }).priceE8).toBe("8100000000000");
+
+    const lateFills: StreamEvent[] = [];
+    const offLateFills = subscribeTopic("market:0xabc", (e) => lateFills.push(...e));
+    await wait(50);
+    expect(lateFills).toHaveLength(0);
+    offFirst();
+    offFills();
+    offLate();
+    offLateFills();
   });
 });

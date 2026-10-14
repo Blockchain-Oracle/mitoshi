@@ -4,7 +4,7 @@
 // the chain port, the boot clock) and the wallet runtime are islands that arrive right after first paint into eager
 // contexts (§3.1, D-071); recovery, Add money, toasts and the price cache are lazy islands beside the page.
 import dynamic from "next/dynamic";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { ToastHost } from "@/components/ui/ToastHost";
 import { FundsHost } from "@/features/funding/FundsHost";
 import { TradingBalanceProvider } from "@/features/session/TradingBalanceProvider";
@@ -13,8 +13,10 @@ import { DataLayer } from "./data/DataLayer";
 import { useDataReady } from "./data/context";
 import { WalletShellProvider } from "./wallet/WalletShellProvider";
 
-// Live prices into the query cache (the stream shares the ticker's one connection); after the data layer.
-const PriceCache = dynamic(() => import("@/features/prices/PriceCache"), { ssr: false });
+// Live prices into the query cache (the stream shares the ticker's one connection); after the data layer — its chunk
+// fetched alongside the data layer's, so it mounts the moment the data is ready (the Markets hero's first price).
+const loadPriceCache = () => import("@/features/prices/PriceCache");
+const PriceCache = dynamic(loadPriceCache, { ssr: false });
 // "Your Window settled", app-wide (D-048): watches only the calls this device placed; nothing when signed out.
 const SettledToasts = dynamic(() => import("@/features/markets/calls/SettledToasts"), { ssr: false });
 // A write's Receipt action opens this sheet (R4-4, D-227): lazy, nothing renders until a receipt is opened.
@@ -25,6 +27,7 @@ function WhenDataReady({ children }: { children: ReactNode }) {
 }
 
 export function AppProviders({ children }: { children: ReactNode }) {
+  useEffect(() => void loadPriceCache(), []);
   return (
     <DataLayer>
       <WalletShellProvider>

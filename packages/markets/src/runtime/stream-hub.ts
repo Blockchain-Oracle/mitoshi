@@ -19,6 +19,35 @@ let userGrant: boolean | null = null;
 const grantListeners = new Set<(granted: boolean | null) => void>();
 let everOpen = false;
 
+/**
+ * The price topics' latest event per symbol, for a subscriber that joins a topic the connection already carries: the
+ * server sends a topic's snapshot only when the connection opens with it, so a late joiner (the price cache mounting
+ * after the ticker) heard nothing until the next signed print — up to 20 s of "Reading the price…" on a cold app
+ * (2026-10-14). Only these topics: a fill or a notification must never be replayed to a new listener.
+ */
+const LATEST_TOPICS: ReadonlySet<string> = new Set(["prices", "ticks"]);
+const latestByTopic = new Map<string, Map<string, StreamEvent>>();
+
+function keyOf(e: StreamEvent): string | null {
+  const symbol = (e.data as { symbol?: unknown } | null)?.symbol;
+  return typeof symbol === "string" ? `${e.event}:${symbol}` : null;
+}
+
+function remember(topic: string, events: readonly StreamEvent[]): void {
+  if (!LATEST_TOPICS.has(topic)) return;
+  let held = latestByTopic.get(topic);
+  if (!held) latestByTopic.set(topic, (held = new Map()));
+  for (const e of events) {
+    const key = keyOf(e);
+    if (key) held.set(key, e);
+  }
+}
+
+/** Test seam: forget the remembered price events. */
+export function resetStreamMemory(): void {
+  latestByTopic.clear();
+}
+
 export function configureStream(next: { url: string | null; ticket?: () => Promise<string | null> }): void {
   if (next.url === config.url) return void (config = next);
   client?.close();
@@ -71,7 +100,10 @@ function hub(): StreamClient | null {
     onBatch: (events) => {
       const byTopic = new Map<string, StreamEvent[]>();
       for (const e of events) byTopic.set(e.topic, [...(byTopic.get(e.topic) ?? []), e]);
-      for (const [topic, list] of byTopic) for (const l of listeners.get(topic) ?? []) l(list);
+      for (const [topic, list] of byTopic) {
+        remember(topic, list);
+        for (const l of listeners.get(topic) ?? []) l(list);
+      }
     },
     onState: (s) => {
       if (s === "open") everOpen = true;
@@ -94,6 +126,14 @@ export function subscribeTopic(topic: string, listener: Listener): () => void {
   if (!set) listeners.set(topic, (set = new Set()));
   set.add(listener);
   const release = c.subscribe(topic);
+  // A topic already flowing: hand this listener what the connection has heard so far (each symbol's latest), next tick.
+  const held = latestByTopic.get(topic);
+  if (held && held.size > 0) {
+    const replay = [...held.values()];
+    queueMicrotask(() => {
+      if (set!.has(listener)) listener(replay);
+    });
+  }
   return () => {
     set!.delete(listener);
     if (set!.size === 0) listeners.delete(topic);

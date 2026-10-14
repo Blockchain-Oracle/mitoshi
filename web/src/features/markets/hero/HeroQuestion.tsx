@@ -6,6 +6,7 @@
 // left, then how long it has waited), never a bare "Waiting for the opening print."; the reason is under UP/DOWN.
 import { neededMove } from "@cwf/core";
 import { streamEverOpened } from "@cwf/markets/stream";
+import { useEffect, useState } from "react";
 import { useClockValue } from "@/lib/clock";
 import { cn } from "@/lib/utils";
 import { HERO, HERO_HEAD } from "../copy";
@@ -20,10 +21,19 @@ function PendingDistance({ startSec }: { startSec: number }) {
   return text ? <span className="mh-distance-pending">{text}</span> : null;
 }
 
-/** A cold start reads the price for a few seconds (the stream's first connect): it says so, not "No live price." (R7). */
+/** How long the hero waits for its first price before saying there is none. */
+const PRICE_GRACE_MS = 8_000;
+
+/**
+ * A cold start reads the price for a moment (the stream's first connect, or its snapshot reaching the price cache): it
+ * says so, and "No live price." only once the stream has been open and this hero has waited 8 s. Any open stream used
+ * to count — the ticker's — so it flashed before the price cache had heard a single price (R7).
+ */
 function NoPrice() {
-  const opened = useClockValue(() => streamEverOpened());
-  return <span className="mh-distance-pending">{opened ? HERO.noLivePrice : HERO.readingPrice}</span>;
+  const [mountedAt, setMountedAt] = useState(0);
+  useEffect(() => setMountedAt(Date.now()), []);
+  const late = useClockValue((ms) => mountedAt > 0 && ms - mountedAt > PRICE_GRACE_MS && streamEverOpened());
+  return <span className="mh-distance-pending">{late ? HERO.noLivePrice : HERO.readingPrice}</span>;
 }
 
 export function HeroQuestion({ asset, startSec, openingRaw, currentRaw }: { asset: string; startSec: number; openingRaw: bigint | null; currentRaw: bigint | null }) {
