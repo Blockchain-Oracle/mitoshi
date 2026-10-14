@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(webEnv.appOrigin),
   title: { default: `${BRAND.name} — ${BRAND.tagline}`, template: `%s · ${BRAND.name}` },
   description: BRAND.description,
+  // R6 landing L19: each page's own URL, without its query (resolved per pathname).
+  alternates: { canonical: "./" },
+  // L13: X takes each route's own Open Graph image (Next fills `twitter.images` from it); only the card size is set here.
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {

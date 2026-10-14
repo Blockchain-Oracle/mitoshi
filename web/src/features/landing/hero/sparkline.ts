@@ -65,7 +65,8 @@ export function thin<T>(points: readonly T[], max: number): T[] {
 
 /**
  * One point per time bucket, the bucket's mean: the feed interleaves its sources a few dollars apart, which a raw line
- * draws as spikes on a tight scale. The newest point is kept as it is, so the line ends on the live price.
+ * draws as spikes on a tight scale — the newest bucket too (its time is the newest tick's), so the line never ends on
+ * one source's outlier.
  */
 export function smooth(points: readonly LinePoint[], fromMs: number, spanMs: number, buckets: number): LinePoint[] {
   const size = spanMs / buckets;
@@ -79,8 +80,5 @@ export function smooth(points: readonly LinePoint[], fromMs: number, spanMs: num
     b.n += 1;
     sums.set(k, b);
   }
-  const out = [...sums.entries()].sort((a, b) => a[0] - b[0]).map(([, b]) => ({ t: b.t, p: b.sum / b.n }));
-  const last = points.at(-1);
-  if (last && out.length > 0) out[out.length - 1] = last;
-  return out;
+  return [...sums.entries()].sort((a, b) => a[0] - b[0]).map(([, b]) => ({ t: b.t, p: b.sum / b.n }));
 }

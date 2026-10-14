@@ -5,7 +5,7 @@
  * here.
  */
 export const WORDS = {
-  nav: { label: "Mitoshi", markets: "Markets", games: "Games", how: "How it works", app: "Get the app", docs: "Docs", start: "Start trading", home: "Mitoshi home" },
+  nav: { label: "Mitoshi", markets: "Markets", games: "Games", how: "How it works", app: "Get the app", docs: "Docs", start: "Start trading", home: "Mitoshi home", menu: "Menu" },
   hero: {
     kicker: "Live on Tempo",
     title: ["See where it's going.", "Call"],

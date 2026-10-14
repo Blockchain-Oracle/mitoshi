@@ -5,7 +5,7 @@
 // actions on the left, three phones fanned on the right (the live terminal in front, real captures of Markets and Games
 // behind). Dropped: GSAP and its 7,000 px pinned scroll (the site's 35 KB budget; no scroll-jacking), the floating
 // badges, framer-motion, the blue card and its hex inks. Server component; the front phone's screen is live.
-import { ArrowRight, Smartphone } from "lucide-react";
+import { ArrowRight, Menu, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { Seal } from "@/components/kit/Seal";
 import { BRAND } from "@/lib/copy";
@@ -34,6 +34,17 @@ export function LandingNav() {
         <div className="lp-nav-end">
           <Link href="/download" className="lp-nav-app">{nav.app}</Link>
           <Link href={START} className="lp-btn lp-btn--accent lp-btn--sm">{nav.start}</Link>
+          {/* Phones: every link one tap away, in a glass panel — `<details>`, so the menu ships no script. */}
+          <details className="lp-menu">
+            <summary className="lp-menu-button" aria-label={nav.menu}><Menu aria-hidden /></summary>
+            <div className="lp-menu-panel">
+              <Link href="/markets" className="lp-menu-link">{nav.markets}</Link>
+              <Link href="/games" className="lp-menu-link">{nav.games}</Link>
+              <a href="#how" className="lp-menu-link">{nav.how}</a>
+              <Link href="/download" className="lp-menu-link">{nav.app}</Link>
+              <a href={DOCS_URL} className="lp-menu-link">{nav.docs}</a>
+            </div>
+          </details>
         </div>
       </nav>
     </header>

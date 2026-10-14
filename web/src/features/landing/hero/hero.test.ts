@@ -78,10 +78,10 @@ describe("lineGeometry", () => {
 });
 
 describe("smooth", () => {
-  it("averages each bucket and ends on the newest point", () => {
+  it("averages each bucket, the newest too, at its newest tick's time", () => {
     const pts = [{ t: 0, p: 100 }, { t: 1, p: 104 }, { t: 10, p: 200 }, { t: 11, p: 210 }];
     const out = smooth(pts, 0, 20, 2);
     expect(out[0]).toEqual({ t: 1, p: 102 });
-    expect(out.at(-1)).toEqual({ t: 11, p: 210 });
+    expect(out.at(-1)).toEqual({ t: 11, p: 205 });
   });
 });
