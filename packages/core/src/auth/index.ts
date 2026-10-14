@@ -2,3 +2,4 @@
 export * from "./signed-message";
 export * from "./social-session";
 export * from "./account-deletion";
+export * from "./account-closure";

@@ -77,7 +77,7 @@ export function POST(req: Request): Promise<Response> {
     if (!day.ok) return Response.json({ error: "slow_down", message: `Wait ${day.retryAfterSec} s before posting another take.` }, { status: 429, headers: { ...noStore, "retry-after": String(day.retryAfterSec) } });
     const backed = await hasCalled(sql, { address: author, market });
     const saved = await posts().postTake({
-      marketId: market, author, side: b.side, caption, asset: w.symbol, intervalSec: w.cadence_sec, expirySec: Number(w.expiry_sec), lineRaw: w.open_e8, backed, tags: parseCashtags(caption, w.symbol), via: session.kind,
+      marketId: market, author, side: b.side, caption, asset: w.symbol, intervalSec: w.cadence_sec, expirySec: Number(w.expiry_sec), lineRaw: w.open_e8, backed, tags: parseCashtags(caption, w.symbol), via: session.kind === "reviewer" ? "social" : session.kind,
     });
     const [view] = await views([saved], author);
     await announce("takes", "take", view);

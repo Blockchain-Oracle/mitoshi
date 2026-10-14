@@ -9,6 +9,7 @@ const PAGES: readonly [path: string, freq: "hourly" | "monthly"][] = [
   ["/download", "monthly"],
   ["/how-it-works", "monthly"],
   ["/privacy", "monthly"],
+  ["/delete-account", "monthly"],
   ["/terms", "monthly"],
 ];
 

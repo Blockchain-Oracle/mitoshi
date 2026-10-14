@@ -7,6 +7,7 @@ import { useConnect, useConnectors, type Connector } from "wagmi";
 import { PASSKEY_CONNECTOR_ID, TEMPO_WALLET_CONNECTOR_ID } from "./connector-kind";
 import { badgeOf, realInjected, recentConnectorId, type WalletBadge } from "./wallet-list";
 import { TEMPO_CHAIN } from "./wagmi-config";
+import { REVIEWER_CONNECTOR_ID } from "./reviewer-connector";
 
 export type ConnectOutcome = { ok: true } | { ok: false; aborted: boolean; error: unknown };
 
@@ -15,11 +16,13 @@ export interface WalletChoices {
   tempoWallet: Connector | null;
   injected: readonly Connector[];
   walletConnect: Connector | null;
+  reviewer: Connector | null;
   /** "Last used" (wagmi's recent connector) over "Detected" (announced by this browser), else none (S16). */
   badge(connector: Connector): WalletBadge;
   createPasskey(name: string): Promise<ConnectOutcome>;
   signInPasskey(): Promise<ConnectOutcome>;
   connect(connector: Connector): Promise<ConnectOutcome>;
+  connectReviewer(code: string): Promise<ConnectOutcome>;
 }
 
 /**
@@ -42,6 +45,7 @@ export function useWalletChoices(): WalletChoices {
   const passkey = connectors.find((c) => c.id === PASSKEY_CONNECTOR_ID) ?? null;
   const tempoWallet = connectors.find((c) => c.id === TEMPO_WALLET_CONNECTOR_ID) ?? null;
   const walletConnect = connectors.find((c) => c.type === "walletConnect") ?? null;
+  const reviewer = connectors.find((c) => c.id === REVIEWER_CONNECTOR_ID) ?? null;
   // EIP-6963 announces each installed wallet; our own providers' announcements and the SDK's blank one are not wallets
   // (S16, wallet-list.ts); the generic `injected` shows only when none announced.
   const injected = useMemo(() => realInjected(connectors, typeof window !== "undefined" && "ethereum" in window), [connectors]);
@@ -75,5 +79,16 @@ export function useWalletChoices(): WalletChoices {
   );
   const signInPasskey = useCallback(() => (passkey ? connect(passkey) : Promise.resolve(outcome(new Error("passkey connector missing")))), [connect, passkey]);
 
-  return { passkey, tempoWallet, injected, walletConnect, badge, createPasskey, signInPasskey, connect };
+  const connectReviewer = useCallback(async (code: string): Promise<ConnectOutcome> => {
+    if (!reviewer) return outcome(new Error("Review access is unavailable."));
+    try {
+      const res = await fetch("/api/reviewer/session", { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ code: code.trim() }) });
+      if (!res.ok) throw new Error(res.status === 401 ? "That review code is invalid." : "Review access is unavailable. Try again.");
+      const result = await connect(reviewer);
+      if (!result.ok) await fetch("/api/reviewer/session", { method: "DELETE", credentials: "same-origin" });
+      return result;
+    } catch (error) { return outcome(error); }
+  }, [connect, reviewer]);
+
+  return { passkey, tempoWallet, injected, walletConnect, reviewer, badge, createPasskey, signInPasskey, connect, connectReviewer };
 }

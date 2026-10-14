@@ -23,6 +23,9 @@ export interface ServerEnv {
   /** mppx's HMAC key binding each payment challenge to its contents (the Memory Market's paid read; ≥ 32 bytes). */
   mppSecretKey: string | null;
   regionOverride: string | null;
+  /** Mitoshi-only shared testnet account for Play review; never sent to a client. */
+  reviewerKey: `0x${string}` | null;
+  reviewerCode: string | null;
 }
 
 let cached: ServerEnv | null = null;
@@ -33,6 +36,8 @@ export function serverEnv(): ServerEnv {
   const appOrigin = process.env.APP_ORIGIN || "http://localhost:3000";
   const key = process.env.RELAY_FEE_PAYER_PRIVATE_KEY;
   const desk = process.env.DESK_PRIVATE_KEY;
+  const reviewer = process.env.MITOSHI_REVIEWER_PRIVATE_KEY;
+  const reviewerCode = process.env.MITOSHI_REVIEWER_ACCESS_CODE;
   cached = {
     network,
     appOrigin,
@@ -48,6 +53,8 @@ export function serverEnv(): ServerEnv {
     streamTicketSecret: process.env.STREAM_TICKET_SECRET || null,
     mppSecretKey: process.env.MPP_SECRET_KEY && process.env.MPP_SECRET_KEY.length >= 32 ? process.env.MPP_SECRET_KEY : null,
     regionOverride: process.env.CWF_REGION_OVERRIDE || null,
+    reviewerKey: reviewer && /^0x[0-9a-fA-F]{64}$/.test(reviewer) ? (reviewer as `0x${string}`) : null,
+    reviewerCode: reviewerCode && reviewerCode.length >= 24 ? reviewerCode : null,
   };
   return cached;
 }

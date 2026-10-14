@@ -10,8 +10,11 @@ import { passkeyAddress } from "@cwf/markets/server";
 import { authHandler } from "./auth";
 import { serverEnv } from "./env";
 import { backupAccount } from "./backup-passkey";
+import { reviewerSession } from "./reviewer";
+import { passkeyKv } from "./kv";
+import { SOCIAL_SESSION_DAYS } from "@cwf/core";
 
-export type CallerSession = { kind: "passkey"; address: Address; credentialId: string } | { kind: "social"; address: Address };
+export type CallerSession = { kind: "passkey"; address: Address; credentialId: string } | { kind: "social" | "reviewer"; address: Address };
 
 export const SOCIAL_COOKIE = "cwf_social";
 
@@ -40,12 +43,22 @@ function cookie(req: Request, name: string): string | null {
 export async function callerSession(req: Request): Promise<CallerSession | null> {
   const passkey = await authHandler().getSession(req).catch(() => undefined);
   // A backup passkey (an admin key of another account, D-053) is that account's session.
-  if (passkey) return { kind: "passkey", address: (await backupAccount(passkey.publicKey)) ?? passkeyAddress(passkey.publicKey), credentialId: passkey.credentialId };
+  if (passkey) {
+    // An account closure removes credential registrations. Old session cookies must stop working immediately.
+    const credential = await passkeyKv().get<{ publicKey?: string }>(`credential:${passkey.credentialId}`).catch(() => undefined);
+    if (credential?.publicKey?.toLowerCase() === passkey.publicKey.toLowerCase()) return { kind: "passkey", address: (await backupAccount(passkey.publicKey)) ?? passkeyAddress(passkey.publicKey), credentialId: passkey.credentialId };
+  }
+  const reviewer = await reviewerSession(req);
+  if (reviewer) return { kind: "reviewer", address: reviewer };
   const secret = serverEnv().socialSecret;
   const token = cookie(req, SOCIAL_COOKIE);
   if (secret && token) {
     const address = verifySocial(token, secret, Math.floor(Date.now() / 1000));
-    if (address) return { kind: "social", address };
+    if (address) {
+      const deletedAt = await passkeyKv().get<number>(`account-closed:${address.toLowerCase()}`).catch(() => undefined);
+      const issuedAt = Number(token.split(".")[1]) - SOCIAL_SESSION_DAYS * 86_400;
+      if (deletedAt === undefined || issuedAt > deletedAt) return { kind: "social", address };
+    }
   }
   return null;
 }

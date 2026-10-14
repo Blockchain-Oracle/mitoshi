@@ -9,7 +9,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createPgContact, createPgSocialModeration, createPgSocialPeople, createPgSocialPosts, createSql, runMigrations, type Sql, exportSocialData } from "./index";
+import { createPgContact, createPgSocialModeration, createPgSocialPeople, createPgSocialPosts, createSql, runMigrations, type Sql, exportSocialData, deleteAccountOwnedData } from "./index";
 import { hasCalled } from "./idx";
 
 const BIN = "/opt/homebrew/opt/postgresql@16/bin";
@@ -49,6 +49,21 @@ describe.skipIf(!hasPg)("social stores (profiles, follows, blocks, rooms, takes,
     expect(await people.setProfile(B, { displayName: "no", bio: null })).toEqual({ ok: false, reason: "bad_name" });
     expect(await people.byName("KAITO_77")).toBe(A);
     expect((await people.profiles([A.toUpperCase().replace("0X", "0x"), B])).get(A)?.displayName).toBe("Kaito_77");
+  });
+
+  it("removes an account's app-owned records without deleting another account's link", async () => {
+    const D = "0x00000000000000000000000000000000000000dd";
+    const E = "0x00000000000000000000000000000000000000ee";
+    await sql`insert into x_links (author_id, wallet, signature, issued_at_ms) values ('x-d', ${D}, '0x01', 1), ('x-e', ${E}, '0x02', 1)`;
+    await sql`insert into passkey_backups (credential_id, key_id, public_key, account) values ('backup-d', ${D}, '0x04', ${D})`;
+    await sql`insert into game_settings (wallet) values (${D})`;
+    await sql`insert into strategy_playbooks (strategy_id, creator, body) values ('strategy-d', ${D}, 'private strategy')`;
+    await deleteAccountOwnedData(sql, D);
+    expect((await sql`select * from x_links where wallet = ${D}`).length).toBe(0);
+    expect((await sql`select * from passkey_backups where account = ${D}`).length).toBe(0);
+    expect((await sql`select * from game_settings where wallet = ${D}`).length).toBe(0);
+    expect((await sql`select * from strategy_playbooks where creator = ${D}`).length).toBe(0);
+    expect((await sql`select * from x_links where wallet = ${E}`).length).toBe(1);
   });
 
   it("follows one way, never oneself", async () => {

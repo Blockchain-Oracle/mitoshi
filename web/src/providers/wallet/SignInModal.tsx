@@ -26,6 +26,7 @@ import { useWalletShell } from "./wallet-shell-context";
 
 type Step =
   | { kind: "choose"; hint?: string }
+  | { kind: "review" }
   | { kind: "learn" }
   | { kind: "waiting"; label: string }
   | { kind: "failed"; headline: string; body: string; action: string; next: () => void };
@@ -42,6 +43,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
   const shell = useWalletShell();
   const choices = useWalletChoices();
   const [step, setStep] = useState<Step>({ kind: "choose" });
+  const [reviewCode, setReviewCode] = useState("");
   const phone = usePhoneLayout();
 
   // `created`: a brand-new passkey account; the shell funds it once the modal is gone.
@@ -50,6 +52,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     const result = await attempt();
     if (result.ok) {
       setStep({ kind: "choose" });
+      setReviewCode("");
       onOpenChange(false);
       // Signed in to place an order (`pickerIntent`): the funding says so in a toast, never a modal over the order (R4-4).
       if (created) window.dispatchEvent(new CustomEvent(ACCOUNT_CREATED_EVENT, { detail: { forOrder: shell.pickerIntent !== null } }));
@@ -59,6 +62,11 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
     // line points at creating an account.
     if (result.aborted) {
       setStep({ kind: "choose", ...(label === SIGN_IN.waiting.passkey && !created ? { hint: SIGN_IN.noneChosen } : {}) });
+      return;
+    }
+    if (label === "Opening review account…") {
+      const message = result.error instanceof Error ? result.error.message : "Review access failed.";
+      setStep({ kind: "failed", headline: "Review access failed", body: message, action: "Try again", next: () => setStep({ kind: "review" }) });
       return;
     }
     const retry = () => void run(label, attempt, created);
@@ -108,6 +116,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
           busy={step.kind === "waiting" ? step.label : null}
           run={(label, attempt, created) => void run(label, attempt, created)}
           onLearn={() => setStep({ kind: "learn" })}
+          onReview={() => setStep({ kind: "review" })}
         />
       ) : (
         <div className="wm-options">
@@ -146,6 +155,7 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
                 <button type="button" className="wm-link wm-touch wm-grow wm-shrink wm-t14b wm-accent" onClick={() => setStep({ kind: "learn" })}>
                   {T.learnMore}
                 </button>
+                {choices.reviewer ? <button type="button" className="wm-link wm-touch wm-t14m" onClick={() => setStep({ kind: "review" })}>Review access</button> : null}
               </div>
             </div>
           ) : (
@@ -153,13 +163,21 @@ export default function SignInModal({ open, onOpenChange }: SignInModalProps) {
               <div className="wm-step-head">
                 <div className="wm-step-head-side">{busy ? null : <BackButton onClick={() => setStep({ kind: "choose" })} />}</div>
                 <div className="wm-step-title">
-                  <Dialog.Title className="wm-t18">{step.kind === "learn" ? T.intro.title : SIGN_IN.title}</Dialog.Title>
+                  <Dialog.Title className="wm-t18">{step.kind === "learn" ? T.intro.title : step.kind === "review" ? "Review access" : SIGN_IN.title}</Dialog.Title>
                 </div>
                 {busy ? <div className="wm-step-head-side" /> : <CloseButton />}
               </div>
               <div className="wm-step-body">
                 <div className="wm-step-inner">
-                  {step.kind === "learn" ? (
+                  {step.kind === "review" ? (
+                    <form className="flex flex-col gap-4 px-1 pt-4" onSubmit={(event) => { event.preventDefault(); void run("Opening review account…", () => choices.connectReviewer(reviewCode)); }}>
+                      <p className="type-body text-ink-secondary">For Google Play reviewers. This shared account uses capped test dollars on Tempo testnet.</p>
+                      <label className="flex flex-col gap-1 type-body-strong text-ink">Review code
+                        <input value={reviewCode} onChange={(event) => setReviewCode(event.target.value)} type="text" autoComplete="off" spellCheck={false} maxLength={256} className="min-h-touch rounded-md border border-hairline bg-surface-1 px-3 text-base text-ink" />
+                      </label>
+                      <button type="submit" disabled={!reviewCode.trim()} className="min-h-touch rounded-md bg-accent-fill px-4 type-body-strong text-on-accent disabled:opacity-50">Open review account</button>
+                    </form>
+                  ) : step.kind === "learn" ? (
                     <div className="wm-intro">
                       <div className="wm-intro-top" />
                       <div className="wm-intro-features">

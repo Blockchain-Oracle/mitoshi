@@ -54,7 +54,7 @@ export function POST(req: Request, ctx: { params: Promise<{ room: string }> }): 
     }
     const allowed = postAllowed(author, Date.now());
     if (!allowed.ok) return Response.json({ error: "slow_down", message: `Wait ${allowed.retryAfterSec} s before posting again.` }, { status: 429, headers: { ...noStore, "retry-after": String(allowed.retryAfterSec) } });
-    const saved = await posts().postComment({ room: room.id, author, body: text, via: session.kind });
+    const saved = await posts().postComment({ room: room.id, author, body: text, via: session.kind === "reviewer" ? "social" : session.kind });
     const view = messageView(saved, await people().profiles([author]), new Map());
     await announce("rooms", "message", view);
     return Response.json({ message: view }, { status: 201, headers: noStore });

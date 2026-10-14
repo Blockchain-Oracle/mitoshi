@@ -22,9 +22,10 @@ export interface SignInPhoneProps {
   busy: string | null;
   run: (label: string, attempt: () => Promise<ConnectOutcome>, created?: boolean) => void;
   onLearn: () => void;
+  onReview: () => void;
 }
 
-export function SignInPhone({ choices, intent, hint = null, busy, run, onLearn }: SignInPhoneProps) {
+export function SignInPhone({ choices, intent, hint = null, busy, run, onLearn, onReview }: SignInPhoneProps) {
   const wallets = [choices.tempoWallet, ...choices.injected, choices.walletConnect].filter((c): c is Connector => c !== null);
   const passkeyBusy = busy === SIGN_IN.waiting.passkey;
   return (
@@ -93,6 +94,7 @@ export function SignInPhone({ choices, intent, hint = null, busy, run, onLearn }
         <button type="button" className="wm-link wm-touch wm-t14b wm-accent" onClick={onLearn} disabled={busy !== null}>
           {T.learnMore}
         </button>
+        {choices.reviewer ? <button type="button" className="wm-link wm-touch wm-t14m" onClick={onReview} disabled={busy !== null}>Review access</button> : null}
       </div>
     </div>
   );

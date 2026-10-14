@@ -14,6 +14,7 @@ import { webEnv } from "@/lib/env";
 import { accessKeyPolicy } from "./access-key";
 import { PASSKEY_RDNS, TEMPO_WALLET_CONNECTOR_ID } from "./connector-kind";
 import { lazyConnector } from "./lazy-connector";
+import { reviewerConnector } from "./reviewer-connector";
 
 const env = webEnv.markets;
 export const TEMPO_CHAIN = tempoChain(env.network);
@@ -46,6 +47,7 @@ export function getWagmiConfig(): Config {
         // policy returns undefined and no key is created.
         accessKey: { authorize: accessKeyPolicy },
       }),
+      ...(env.network === "testnet" ? [reviewerConnector()] : []),
       // Built on first use: its wallet.tempo.xyz iframe (and ~1 MB of third-party script) mounts at setup (D-152). Its
       // accounts store gets its own IndexedDB key: the passkey's provider keeps `tempo.store` (accounts' default), and a
       // Tempo Wallet store that starts empty must never persist over it (F-S23-10).

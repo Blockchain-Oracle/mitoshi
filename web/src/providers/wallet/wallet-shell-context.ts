@@ -14,7 +14,7 @@ export type ArmOutcome = { ok: true; key: WalletKeyState } | { ok: false; aborte
 /** `restoring`: a remembered connection is silently reconnecting after hydration (≤ 3 s). `ready`: everything else. */
 export type WalletShellStatus = "restoring" | "ready";
 
-export type TempoAccountKind = "passkey" | "tempo-wallet" | "injected" | "walletconnect";
+export type TempoAccountKind = "passkey" | "tempo-wallet" | "injected" | "walletconnect" | "reviewer";
 
 export interface TempoAccount {
   address: Address;

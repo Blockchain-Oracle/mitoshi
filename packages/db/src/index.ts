@@ -29,6 +29,7 @@ export { createPgExitTriggersStore, type ExitTriggerRow, type ExitTriggerStatus,
 export { createPgSocialPeople, BIO_MAX, DISPLAY_NAME, type Profile, type SetProfileResult, type SocialPeopleStore } from "./social-people";
 export { createPgSocialPosts, type NewTake, type ReactionSummary, type ReactionTarget, type RoomComment, type SocialPostsStore, type TakeRow, type Via } from "./social-posts";
 export { createPgPasskeyBackups, type PasskeyBackup, type PasskeyBackupStore } from "./passkey-backups";
+export { deleteAccountOwnedData } from "./account-removal";
 export { CONTACT_TOPICS, createPgContact, type ContactMessage, type ContactStore, type ContactTopic } from "./contact";
 export { createPgLaunchLogos, type LaunchLogo, type LaunchLogoStore, type LogoType } from "./launch-logos";
 export { exportSocialData, type SocialExport } from "./social-export";

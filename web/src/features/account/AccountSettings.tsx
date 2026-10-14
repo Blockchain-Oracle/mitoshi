@@ -35,7 +35,7 @@ import "@/styles/account.css";
 import "@/components/kit/kit.css";
 
 const P = ACCOUNT_PAGE;
-type Drill = "backup" | "keys" | "grants" | "x" | "delete";
+type Drill = "backup" | "keys" | "grants" | "x" | "delete" | "deleteAccount";
 
 export function AccountSettings() {
   const session = useWalletSession();
@@ -83,11 +83,12 @@ function SignedIn({ address, kind }: { address: Address; kind: TempoAccountKind 
   const nudge = useBackupNeeded(kind === "passkey", hasMoney);
   const x = useXLink();
   const close = (open: boolean) => (open ? undefined : setDrill(null));
-  const titles: Record<Drill, string> = { backup: BACKUP.title, keys: P.keys.title, grants: P.grants.title, x: P.x, delete: DATA.delete.title };
+  const titles: Record<Drill, string> = { backup: BACKUP.title, keys: P.keys.title, grants: P.grants.title, x: P.x, delete: DATA.delete.title, deleteAccount: DATA.account.title };
 
   return (
     <>
       <AccountHero address={address} kind={kind} />
+      {kind === "reviewer" ? <p className="type-caption text-ink-secondary">Shared Play review account · Tempo testnet only · test dollars have no cash value.</p> : null}
       {ready ? <AccountSummary account={address} /> : null}
       <GroupedList title={P.groups.security}>
         <GroupedItem icon={ShieldCheck} label={BACKUP.title} detail={kind !== "passkey" ? "—" : backups === null ? "…" : backups === 0 ? BACKUP.noneShort : String(backups)} dot={nudge} onClick={() => setDrill("backup")} />
@@ -99,15 +100,17 @@ function SignedIn({ address, kind }: { address: Address; kind: TempoAccountKind 
         <AiSharingRow />
         <GroupedItem icon={Download} label={DATA.export.title} detail={exportData.working ? DATA.export.working : DATA.export.body} onClick={() => void exportData.run()} />
         <GroupedItem icon={Trash2} label={DATA.delete.title} tone="danger" onClick={() => setDrill("delete")} />
+        {kind !== "reviewer" ? <GroupedItem icon={Trash2} label={DATA.account.title} tone="danger" onClick={() => setDrill("deleteAccount")} /> : null}
       </GroupedList>
 
       <SlideOver open={drill !== null} onOpenChange={close}>
-        <SlideOverContent title={drill ? titles[drill] : ""} size={drill === "keys" || drill === "grants" ? "lg" : "md"} fields={drill === "delete"}>
+        <SlideOverContent title={drill ? titles[drill] : ""} size={drill === "keys" || drill === "grants" ? "lg" : "md"} fields={drill === "delete" || drill === "deleteAccount"}>
           {drill === "backup" ? <BackupPasskeySection hasMoney={hasMoney} /> : null}
           {drill === "keys" && ready ? <KeysSection account={address} network={network} /> : null}
           {drill === "grants" && ready ? <GrantsSection account={address} network={network} /> : null}
           {drill === "x" ? <XAccountSheet /> : null}
           {drill === "delete" ? <DeleteSheetBody address={address} /> : null}
+          {drill === "deleteAccount" ? <DeleteSheetBody address={address} mode="account" /> : null}
         </SlideOverContent>
       </SlideOver>
     </>

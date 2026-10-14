@@ -4,6 +4,7 @@
 // ledger, the per-request region read (server/region.ts), the social layer (`social/0001-0004`), Sensei's consent-first
 // sharing (`/api/sensei`), device-only alerts, `/contact`, and the download and deletion in `/settings/account`.
 import { Bot, Database, Download, Globe2, KeyRound, Mail, MessagesSquare, Smartphone, Users } from "lucide-react";
+import Link from "next/link";
 import type { LegalSection } from "./LegalAccordion";
 
 export const PRIVACY_SECTIONS: readonly LegalSection[] = [
@@ -52,6 +53,7 @@ export const PRIVACY_SECTIONS: readonly LegalSection[] = [
       <>Settings → Account downloads everything kept off chain about your account as one file, and deletes it: profile, takes, messages, reactions, follows, your blocks and reports, game seats and signed-in contact messages.</>,
       <>Deleting asks for a fresh signature, waits five seconds so you can undo, and ends your sessions. Blocks others placed on you stay theirs.</>,
       <>Your passkey&apos;s public key (and any backup&apos;s) stays: your Tempo account still exists, and that key signs you in to it.</>,
+      <>To remove your Mitoshi account and registered passkeys as well, use <Link href="/delete-account">Delete Mitoshi account</Link>. Tempo history remains public.</>,
     ],
   },
   {

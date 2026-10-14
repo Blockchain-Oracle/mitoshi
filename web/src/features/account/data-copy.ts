@@ -35,4 +35,10 @@ export const DATA = {
     refused: "Deletion cancelled: the request wasn't signed.",
     failed: "Your data couldn't be deleted. Nothing changed. Try again.",
   },
+  account: {
+    title: "Delete Mitoshi account",
+    body: "Deletes this Mitoshi profile, registered passkeys and app-owned off-chain data. The wallet and Tempo history stay on chain.",
+    done: "Mitoshi account deleted and signed out. Tempo history remains public.",
+    failed: "Account deletion could not finish. Some data may already be removed. Retry or contact support.",
+  },
 } as const;

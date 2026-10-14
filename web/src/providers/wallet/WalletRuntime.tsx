@@ -75,7 +75,7 @@ function Runtime({ publish, publishSession, publishTap, takePending }: WalletRun
   // the retired bridge lands here too). Hiding it would leave Sign in throwing wagmi's ConnectorAlreadyConnectedError.
   const tempo = useMemo<TempoAccount | null>(() => {
     const c =
-      live.find((conn) => kindOf(conn.connector) === "passkey" || kindOf(conn.connector) === "tempo-wallet") ??
+      live.find((conn) => kindOf(conn.connector) === "passkey" || kindOf(conn.connector) === "tempo-wallet" || kindOf(conn.connector) === "reviewer") ??
       live.find((conn) => conn.chainId === TEMPO_CHAIN.id) ??
       live[0];
     if (!c?.accounts[0]) return null;
