@@ -88,7 +88,8 @@ module.exports = () => ({
   plugins: [
     // Round 7 (native where the finger touches; as Senryo's app configures them): the audio session that lets the
     // page's sounds play (no microphone), the Face ID lock and its Keychain flag.
-    ["expo-audio", { microphonePermission: false }],
+    // Web Audio cues play only while the app is in front; no recording or background playback.
+    ["expo-audio", { microphonePermission: false, recordAudioAndroid: false, enableBackgroundPlayback: false }],
     ["expo-local-authentication", { faceIDPermission: FACE_ID_PERMISSION }],
     ["expo-secure-store", { faceIDPermission: FACE_ID_PERMISSION }],
     [
