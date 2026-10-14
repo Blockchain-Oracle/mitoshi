@@ -60,7 +60,12 @@ export function LandingHero() {
       <LandingNav />
       <div className="lp-hero-grid">
         <div className="lp-hero-copy">
-          <span className="lp-chip"><span className="lp-live-dot" aria-hidden />{hero.kicker}</span>
+          {/* Live on Tempo — Tempo's own wordmark (tempo.xyz, white on dark as its brand kit supplies it). */}
+          <span className="lp-chip">
+            <span className="lp-live-dot" aria-hidden />
+            {hero.kicker}
+            <img src="/brands/tempo-on-dark.svg" alt="Tempo" className="lp-chip-tempo" width={208} height={46} />
+          </span>
           <h1 id="lp-h1" className="lp-h1">
             <span className="lp-h1-a">{hero.title[0]}</span>
             <span className="lp-h1-b">{hero.title[1]} <em>{hero.accent}</em></span>

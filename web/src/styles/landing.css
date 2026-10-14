@@ -99,11 +99,16 @@
 .lp-hero-copy { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 22px; }
 @media (max-width: 1023px) { .lp-hero-copy { align-items: center; text-align: center; } }
 .lp-chip {
-  display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--radius-full);
-  background: color-mix(in srgb, var(--color-cream) 6%, transparent); box-shadow: inset 0 0 0 1px var(--lp-line);
-  font: 600 13px/1 var(--font-body); color: var(--lp-ink-2);
+  display: inline-flex; align-items: center; gap: 12px; padding: 12px 20px 12px 16px; border-radius: var(--radius-full);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-cream) 10%, transparent), color-mix(in srgb, var(--color-cream) 3%, transparent));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-cream) 16%, transparent), 0 10px 30px -12px color-mix(in srgb, var(--plate-black) 90%, transparent);
+  font: 600 16px/1 var(--font-body); color: var(--lp-ink);
 }
-.lp-live-dot { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--color-up); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-up) 22%, transparent); }
+.lp-chip-tempo { display: block; width: auto; height: 17px; }
+@media (min-width: 1024px) { .lp-chip { font-size: 17px; } .lp-chip-tempo { height: 19px; } }
+.lp-live-dot { width: 10px; height: 10px; border-radius: var(--radius-full); background: var(--color-up); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-up) 22%, transparent), 0 0 12px var(--color-up); }
+@media (prefers-reduced-motion: no-preference) { .lp-live-dot { animation: lp-live 2s ease-in-out infinite; } }
+@keyframes lp-live { 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--color-up) 10%, transparent), 0 0 18px var(--color-up); } }
 .lp-h1 { display: flex; flex-direction: column; font: 800 clamp(2.6rem, 8vw, 4.6rem)/0.98 var(--font-heading); letter-spacing: -0.035em; text-wrap: balance; }
 @media (min-width: 1024px) { .lp-h1 { font-size: clamp(3.2rem, 4.9vw, 5rem); } }
 .lp-h1-b { white-space: nowrap; }
