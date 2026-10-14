@@ -1,6 +1,6 @@
 // R4-0 (D-227): an off-screen level's tag pins clear of what floats over the canvas (the terminal's header on a phone).
 import { describe, expect, it } from "vitest";
-import { clearRow, drawLevel } from "./chart-draw";
+import { labelAlphaBeside, clearRow, drawLevel } from "./chart-draw";
 import { NO_PINS, PAD_Y, TAG_H, type ChartLevel, type ChartTheme } from "./chart-style";
 import type { YWindow } from "./engine";
 
@@ -128,5 +128,20 @@ describe("pinned tags, the pill and each other", () => {
     expect(l!.y).toBe(134 - 2 - TAG_H);
     // The Signed value meets the Line, then the pill: below both.
     expect(s!.y).toBe(160 + 2);
+  });
+});
+
+describe("labelAlphaBeside", () => {
+  const row = { top: 100, bottom: 115 };
+  it("hides an axis label a tag covers", () => {
+    expect(labelAlphaBeside(107, [row])).toBe(0);
+    expect(labelAlphaBeside(118, [row])).toBe(0);
+  });
+  it("brings it back 7 px clear of the tag", () => {
+    expect(labelAlphaBeside(115 + 6 + 7, [row])).toBe(1);
+    expect(labelAlphaBeside(100 - 6 - 7, [row])).toBe(1);
+  });
+  it("is full with no tags", () => {
+    expect(labelAlphaBeside(50, [])).toBe(1);
   });
 });

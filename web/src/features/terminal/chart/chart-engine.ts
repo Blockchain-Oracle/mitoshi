@@ -172,18 +172,20 @@ export class ChartEngine {
     const pillW = pillTextW + 18;
     const plotW = Math.min(w - PILL_RIGHT - pillW - PILL_GAP, w - MIN_PLOT_LEFTOVER);
     const pillH = withPnl ? PILL_H_POSITION : PILL_H;
-    const info = this.candles ? this.drawCandles(plotW, tone, pillH) : this.drawLine(plotW, tone, pillH);
+    const info = this.candles ? this.drawCandles(plotW, tone) : this.drawLine(plotW, tone);
     // Where drawPill puts the pill, so a pinned level tag can step past it.
     const pillTop = Math.min(h - pillH - 2, Math.max(2, info.headY - pillH / 2));
     const taken: TagRow[] = [];
     if (overlay) for (const level of overlay.levels) drawLevel(ctx, theme, level, info.win, plotW, w, tone, this.pins, { top: pillTop, bottom: pillTop + pillH }, taken);
+    // The axis after the tags: its labels make room for them instead of sitting half under them.
+    drawAxis(ctx, theme, info.win, info.step, w, info.headY, pillH, taken);
     if (this.candles) this.candles.drawCrosshair(ctx, theme, info.win, info.step, plotW, w);
     drawPill(ctx, theme, w, h, info.headY, pillW, tone, this.priceOdo, withPnl ? this.pnlOdo : null);
     this.lastGeom = { plotW, win: info.win };
     return { price: this.eased, velocitySteps: this.step > 0 ? (this.eased - before) / this.step : 0, scrollX: info.scrollX, headX: info.headX, headY: info.headY };
   }
 
-  private drawLine(plotW: number, tone: string, pillH: number): { win: YWindow; step: number; headX: number; headY: number; scrollX: number } {
+  private drawLine(plotW: number, tone: string): { win: YWindow; step: number; headX: number; headY: number; scrollX: number } {
     const { ctx, theme, height: h } = this;
     const win: YWindow = { center: this.eased, half: (SPAN_STEPS * this.step) / 2, top: PAD_Y, bottom: h - PAD_Y };
     const n = this.ring.length;
@@ -230,7 +232,6 @@ export class ChartEngine {
     ctx.fillRect(0, 0, fadeW, h);
     ctx.restore();
     drawWatermark(ctx, theme, plotW, h);
-    drawAxis(ctx, theme, win, this.step, this.width, headY, pillH);
     ctx.fillStyle = tone;
     ctx.beginPath();
     ctx.arc(plotW, headY, 3.5, 0, Math.PI * 2);
@@ -238,7 +239,7 @@ export class ChartEngine {
     return { win, step: this.step, headX: plotW, headY, scrollX: plotW / (SAMPLE_CAPACITY - 1) };
   }
 
-  private drawCandles(plotW: number, tone: string, pillH: number): { win: YWindow; step: number; headX: number; headY: number; scrollX: number } {
+  private drawCandles(plotW: number, tone: string): { win: YWindow; step: number; headX: number; headY: number; scrollX: number } {
     const { ctx, theme, height: h } = this;
     const view = this.candles!;
     view.series.update(this.latest!, this.eased, Date.now());
@@ -255,7 +256,6 @@ export class ChartEngine {
     const slideBefore = view.series.slide;
     view.draw(ctx, theme, win, plotW);
     drawWatermark(ctx, theme, plotW, h);
-    drawAxis(ctx, theme, win, step, this.width, liveY, pillH);
     ctx.save();
     ctx.strokeStyle = tone;
     ctx.globalAlpha = 0.45;

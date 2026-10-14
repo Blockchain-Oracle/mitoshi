@@ -34,8 +34,28 @@ export function drawGrid(ctx: CanvasRenderingContext2D, theme: ChartTheme, win: 
   ctx.globalAlpha = 1;
 }
 
-/** Tick marks on both edges (major 6 px, minor 3 px) and major labels at the right, fading near the edges and the pill. */
-export function drawAxis(ctx: CanvasRenderingContext2D, theme: ChartTheme, win: YWindow, step: number, w: number, headY: number, pillH: number): void {
+/** Half an axis label's height (the axis font is 11 px), for the room it needs clear of a tag. */
+const LABEL_HALF = 6;
+
+/**
+ * How visible an axis label at `y` is beside the level tags drawn this frame (`rows`): gone where a tag covers it, back
+ * to full 7 px clear of the nearest one. The tags and the labels share the right edge, and a tag over "$83,450.00"
+ * left "$83,4" sticking out of it (the owner's terminal capture, 2026-10-14).
+ */
+export function labelAlphaBeside(y: number, rows: readonly TagRow[]): number {
+  let alpha = 1;
+  for (const r of rows) {
+    const gap = Math.max(r.top - (y + LABEL_HALF), y - LABEL_HALF - r.bottom);
+    alpha = Math.min(alpha, edgeAlpha(gap * 2));
+  }
+  return alpha;
+}
+
+/**
+ * Tick marks on both edges (major 6 px, minor 3 px) and major labels at the right, fading near the edges, the pill and
+ * the level tags (`avoid`: drawn first, so the labels make room for them rather than sitting under them).
+ */
+export function drawAxis(ctx: CanvasRenderingContext2D, theme: ChartTheme, win: YWindow, step: number, w: number, headY: number, pillH: number, avoid: readonly TagRow[] = []): void {
   const decimals = labelDecimals(win.center, step);
   ctx.lineWidth = 1;
   ctx.strokeStyle = theme.helper;
@@ -55,7 +75,7 @@ export function drawAxis(ctx: CanvasRenderingContext2D, theme: ChartTheme, win: 
     ctx.lineTo(w - 3 - len, y);
     ctx.stroke();
     if (!t.major) continue;
-    ctx.globalAlpha = edge * edgeAlpha(Math.abs(y - headY) - (pillH / 2 + 4));
+    ctx.globalAlpha = edge * edgeAlpha(Math.abs(y - headY) - (pillH / 2 + 4)) * labelAlphaBeside(y, avoid);
     if (ctx.globalAlpha <= 0) continue;
     ctx.fillStyle = theme.helper;
     ctx.fillText(`$${formatPrice(t.value, decimals)}`, w - LABEL_RIGHT, y);
