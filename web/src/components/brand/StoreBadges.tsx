@@ -1,10 +1,10 @@
 // The app's store badges (round 7, the owner: the phone app front and centre — "the iOS logo, TestFlight, and they can
 // download it"): From 21st.dev 8280 efferd/app-store-button (the mark beside a two-line label), drawn as 21st.dev
 // 11494 cinematic-landing-hero's tactile pills: Apple's light, Android's dark. A store anyone can open today is a link
-// (TestFlight's public link while Apple takes testers, Google Play's open test, or the Android APK — `lib/release.ts`);
+// (TestFlight's public link while Apple takes testers, Google Play's open test — `lib/release.ts`);
 // one that isn't open yet keeps its badge, logo and name, with its honest status on it ("In Apple's
 // review") and no link, so a reader never lands on a dead end. A server component: the release is read by the caller.
-import { AndroidGlyph, AppleGlyph, PlayGlyph } from "@/components/icons/StoreGlyphs";
+import { AppleGlyph, PlayGlyph } from "@/components/icons/StoreGlyphs";
 import { ExternalLink } from "@/components/shell/ExternalLink";
 import { DOWNLOAD } from "@/features/install/copy";
 import type { StoreRelease } from "@/lib/release";
@@ -38,8 +38,7 @@ export function IosBadge({ release }: { release: StoreRelease }) {
 
 export function AndroidBadge({ release }: { release: StoreRelease }) {
   if (release.play) return <Badge store="android" href={release.play} glyph={<PlayGlyph />} kicker={B.play.kicker} name={B.play.name} />;
-  if (release.apk) return <Badge store="android" href={release.apk} glyph={<AndroidGlyph />} kicker={B.apk.kicker} name={B.apk.name} />;
-  return <Badge store="android" href={null} glyph={<AndroidGlyph />} kicker={B.android.kicker} name={B.android.name} status={B.android.coming} />;
+  return <Badge store="android" href={null} glyph={<PlayGlyph />} kicker={B.play.kicker} name={B.play.name} status={B.play.testing} />;
 }
 
 /** Both phones' badges, iPhone first. */

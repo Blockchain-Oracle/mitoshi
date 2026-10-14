@@ -63,8 +63,7 @@ export const DOWNLOAD = {
   android: {
     name: "Android",
     ready: { chip: "Open test", line: "Join the test, then install from Play.", kicker: "Join the Android test on", store: "Google Play", scan: "Scan with your Android phone" },
-    pending: { chip: "Coming to Google Play", line: "Install the web app today." },
-    apk: { chip: "Android app", line: "Download the app and open it to install.", kicker: "Download the", store: "Android app (APK)", scan: "Scan with your Android phone" },
+    pending: { chip: "In testing on Google Play", line: "Install the web app today." },
   },
   web: { name: "Web app", chip: "Live", line: "Installs from your browser. No store.", scan: "Scan to open it on your phone" },
   here: { chip: "Installed", line: "You're using it now." },
@@ -72,9 +71,7 @@ export const DOWNLOAD = {
   /** The store badges (landing, footer, /download): the store's own words; a store not open yet says so on the badge. */
   badges: {
     ios: { kicker: "Join the beta on", name: "TestFlight", review: "In Apple's review", coming: "Coming soon" },
-    apk: { kicker: "Download for", name: "Android" },
-    play: { kicker: "Get it on", name: "Google Play" },
-    android: { kicker: "Android", name: "Google Play", coming: "Coming soon" },
+    play: { kicker: "Get it on", name: "Google Play", testing: "In testing" },
     label: "Get Mitoshi on your phone",
     waitLabel: (store: string, status: string) => `${store}: ${status}`,
   },

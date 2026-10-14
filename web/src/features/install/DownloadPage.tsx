@@ -1,6 +1,6 @@
 // `/download` — the place to get the app (D-230, the owner's point 8; round 7: the phones and the stores up front). The
 // head is a band in the landing's grammar: the title, the stores' own buttons (`StoreBadges`, the live release —
-// TestFlight while Apple takes testers, the Android APK or Play) and a QR for a desktop reader, beside three real
+// TestFlight while Apple takes testers, Play's open test) and a QR for a desktop reader, beside three real
 // captures of the app on 21st.dev 20020's phone frame. Then one card per way in (From 21st.dev 18105
 // shadcnspace/download-01, see PlatformCard), what this device can act on first. The band's buttons and the cards read
 // the request inside Suspense. Styles: `styles/download.css`, the phone and badge sheets.

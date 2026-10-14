@@ -1,5 +1,5 @@
 // The live store buttons for the landing's final section (round 7): the release read per request (`liveStoreRelease`:
-// TestFlight while Apple takes testers, Play's open test or the Android APK) inside Suspense, its outline while it reads.
+// TestFlight while Apple takes testers, Play's open test) inside Suspense, its outline while it reads.
 import { connection } from "next/server";
 import { StoreBadges } from "@/components/brand/StoreBadges";
 import { liveStoreRelease } from "@/server/store-release";
