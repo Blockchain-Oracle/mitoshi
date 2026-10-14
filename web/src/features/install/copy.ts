@@ -51,7 +51,8 @@ export const DOWNLOAD = {
   title: "Get the app",
   description: "Mitoshi on iPhone, Android or the web.",
   heading: { lead: "Mitoshi, ", em: "on your phone." },
-  line: "iPhone, Android or the web.",
+  line: "iPhone, Android or the web. One passkey for all three.",
+  heroScan: "Scan with your phone",
   ios: {
     name: "iPhone",
     ready: { chip: "TestFlight beta", line: "Install TestFlight, then join the beta.", kicker: "Join the beta on", store: "TestFlight", scan: "Scan with your iPhone" },
@@ -68,4 +69,13 @@ export const DOWNLOAD = {
   web: { name: "Web app", chip: "Live", line: "Installs from your browser. No store.", scan: "Scan to open it on your phone" },
   here: { chip: "Installed", line: "You're using it now." },
   qrLabel: (what: string) => `QR code: ${what}`,
+  /** The store badges (landing, footer, /download): the store's own words; a store not open yet says so on the badge. */
+  badges: {
+    ios: { kicker: "Join the beta on", name: "TestFlight", review: "In Apple's review", coming: "Coming soon" },
+    apk: { kicker: "Download for", name: "Android" },
+    play: { kicker: "Get it on", name: "Google Play" },
+    android: { kicker: "Android", name: "Google Play", coming: "Coming soon" },
+    label: "Get Mitoshi on your phone",
+    waitLabel: (store: string, status: string) => `${store}: ${status}`,
+  },
 } as const;

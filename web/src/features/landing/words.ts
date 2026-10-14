@@ -5,54 +5,86 @@
  * here.
  */
 export const WORDS = {
-  nav: { markets: "Markets", how: "How it works", app: "Get the app", docs: "Docs", start: "Start trading", home: "Mitoshi home" },
+  nav: { label: "Mitoshi", markets: "Markets", games: "Games", how: "How it works", app: "Get the app", docs: "Docs", start: "Start trading", home: "Mitoshi home" },
   hero: {
-    kicker: "On Tempo",
-    title: ["See where", "it's going.", "Call the close."],
-    line: "Up or down in minutes. Close in one tap.",
+    kicker: "Live on Tempo",
+    title: ["See where it's going.", "Call"],
+    accent: "the close.",
+    line: "Up or down on crypto and stocks, in minutes. On your phone or in your browser.",
+    start: "Start trading",
+    app: "Get the app",
+    stage: "Mitoshi on three phones: the live terminal, Markets and Games",
+    /** The markets the tape and the bento name. */
     assets: ["BTC", "ETH", "SOL", "TSLA", "NVDA"],
     assetsLabel: "Some of the markets",
-    start: "Start trading",
-    paper: "Try it on paper",
-    /** D-230: the way to /download, under the two pills — iPhone, Android or the web app. */
-    app: "Get the app",
-    appPlatforms: "iPhone · Android · Web",
-    stickers: { passkey: "Passkey · no seed", oracle: "RedStone signs the close" },
-    frameTitle: "Mitoshi's terminal, live",
   },
-  tape: { label: "Live now", open: (n: number) => `${n} open`, print: "last signed" },
-  loop: {
-    kicker: "How it works",
-    title: "Tap. Watch. Bank it.",
-    steps: [
-      { n: "01", title: "Sign up", body: "Face ID or a fingerprint. No seed phrase.", art: "key" },
-      { n: "02", title: "Arm one tap", body: "One more tap, then no prompts.", art: "bell" },
-      { n: "03", title: "Call it", body: "Close any time, or let it settle.", art: "moneyBag" },
-    ],
+
+
+  /** The hero phone's screen (R6 landing L01). */
+  phone: {
+    live: "live",
+    closesIn: (t: string) => `calls close ${t}`,
+    closesAt: (t: string) => `calls close ${t} UTC`,
+    rolling: "next Window…",
+    next: "next Window",
+    nextLine: "Calls open on the next Window",
+    level: "Level with the open",
+    ahead: (side: string, delta: string) => `${side} ahead · ${delta}`,
+    opened: (p: string) => `opened ${p}`,
+    pays: (x: string) => `pays ${x}`,
+    reconnecting: "reconnecting",
+    label: (side: string, where: string, pays: string | null) => `${side} on ${where}${pays ? `, pays ${pays}` : ""}. Opens the terminal`,
+    screen: "Mitoshi on a phone, live",
   },
-  markets: {
-    kicker: "Everything on one screen",
+  tape: { label: "Live now", signed: (t: string) => `signed ${t}` },
+  /** The features bento (21st.dev 18898): one idea a tile, a real fragment where there is one. */
+  bento: {
+    kicker: "One app",
     title: "Crypto and stocks. Same two buttons.",
-    open: (n: number) => `${n} Window${n === 1 ? "" : "s"} open`,
-    reading: "Index unavailable",
-    cards: {
-      crypto: { title: "Crypto", body: "BTC, ETH, SOL. 24/7.", href: "/trade/BTC" },
-      stocks: { title: "Stocks", body: "Regular hours and 24/7.", href: "/markets" },
-      parlay: { title: "Parlay", body: "Two or three Windows. The odds multiply.", href: "/parlay" },
-      games: { title: "Games", body: "Range, Moonshot, Duel. Same prices.", href: "/games" },
-    },
+    crypto: { eyebrow: "24/7", title: "Crypto, round the clock", line: "BTC, ETH and SOL. Windows every 5, 15 and 60 minutes." },
+    stocks: { eyebrow: "Nights included", title: "Stocks, past the bell", line: "Seven names trade 24/7. The rest, in session." },
+    games: { title: "Games", line: "Range, Moonshot, Duel. Same prices." },
+    parlay: { title: "Parlay", line: "Two or three Windows. The odds multiply." },
+    agents: { title: "Agents", line: "They call for you, inside your limits." },
+    passkey: { title: "Passkey", line: "Face ID. No seed phrase." },
+    private: { title: "Private", line: "Kept apart from your wallet." },
+  },
+  how: {
+    kicker: "How it works",
+    title: "Pick. Call. Settle.",
+    steps: [
+      { n: "01", title: "Pick a Window", line: "Each opens on a signed price and closes on the clock.", shot: "markets", crop: "top", alt: "A Window in the app: BTC holds above its opening price?, with its countdown" },
+      { n: "02", title: "Call UP or DOWN", line: "Paper needs nothing. Test dollars start with your passkey.", shot: "trade", crop: "bottom", alt: "The terminal's UP and DOWN, each with what it pays" },
+      { n: "03", title: "Settles on the print", line: "RedStone signs the close. The verdict links its proof.", shot: "markets", crop: "chart", alt: "The line against the dashed opening print" },
+    ],
   },
   proof: {
     kicker: "Settled in public",
     title: "Every close is signed.",
     body: "RedStone signs each closing print. Anyone can check it.",
     settled: "Just settled",
-    none: "No settled Window indexed yet.",
-    reading: "Index unavailable",
-    outcome: { up: "UP won", down: "DOWN won", void: "Voided" },
-    proof: "Proof",
-    closed: (when: string) => `closed ${when} UTC`,
-    figures: { opened: "Windows opened", resolved: "Settled on a print", open: "Open now" },
+    signers: (n: number) => `${n} signers`,
+    ago: (t: string) => `${t} ago`,
+    outcome: { up: "UP won", down: "DOWN won", void: "Stakes returned" },
+    figures: { opened: "Windows opened", resolved: "Settled on a signed print", today: "Settled today" },
+    none: "The first close lands at the next Window.",
+    unread: "Proofs are on every Window's page.",
   },
-  final: { title: ["One line.", "One tap."], start: "Start trading", demo: "Watch it work" },
+  final: {
+    title: ["Your first call.", "One tap away."],
+    line: "On your phone or right here in the browser.",
+    start: "Start trading",
+    scan: "Scan for the app",
+    qr: "QR code to Mitoshi's download page",
+  },
+  footer: {
+    tagline: "See where it's going.",
+    built: "Built on Tempo · prices signed by RedStone",
+    marks: "Tempo and RedStone marks belong to their owners.",
+    columns: [
+      { title: "Product", links: [{ label: "Markets", href: "/markets" }, { label: "Games", href: "/games" }, { label: "Agents", href: "/agents" }, { label: "Get the app", href: "/download" }] },
+      { title: "Learn", links: [{ label: "How it works", href: "/how-it-works" }, { label: "Docs", href: "https://docs.mitoshi.xyz" }, { label: "Demo", href: "/demo" }, { label: "Status", href: "/status" }] },
+      { title: "Legal", links: [{ label: "Privacy", href: "/privacy" }, { label: "Terms", href: "/terms" }, { label: "Contact", href: "/contact" }] },
+    ],
+  },
 } as const;

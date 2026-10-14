@@ -1,40 +1,50 @@
-// Ported from Owarine 90a91d71:web/src/features/landing/{LandingLoop,LandingMarkets}.tsx (R4-13a, D-227) — under the
-// hero: the tape of what is open now, the three steps, and what trades with each kind's Windows open. Owarine reads a
-// client board; here every figure is the index's, read on the server (`board.ts`), so the site group ships no markets
-// runtime. The tape is Owarine's InfiniteSlider as CSS alone — two copies sliding by one, paused under the pointer,
-// still (and scrollable by hand) under reduced motion — so it adds no JS to the site budget. On Mitoshi's tokens.
-import { ArrowUpRight } from "lucide-react";
-import { connection } from "next/server";
+// Under the hero, rebuilt (round 7): the tape of every asset's last signed price, the features bento and How it works.
+// The bento is From 21st.dev 18898 uilayout.contact/feature-bento — its auto-rows grid, the 2×2 lead tile beside
+// smaller ones, a corner arrow per tile — with real fragments only: the crypto and stock tiles draw each asset's last
+// half hour from ops (`/prices/recent`, server SVG, no JS) with its price and its move. The steps are From 21st.dev 26891
+// ln-dev7/how-it-works-09 — three columns joined by a line, mono numbers — each over a crop of a real capture of the
+// app. The tape is CSS alone (two copies sliding, paused under the pointer, still under reduced motion).
+import { ArrowUpRight, Bot, Fingerprint, Gamepad2, Layers, ShieldCheck } from "lucide-react";
+import { cacheLife } from "next/cache";
 import Link from "next/link";
+import { connection } from "next/server";
 import type { CSSProperties, ReactNode } from "react";
-import { FluentArt } from "@/components/kit/SkyCollage";
-import { AssetDisc } from "@/features/markets/hero/AssetDisc";
-import type { FluentName } from "@/lib/art/fluent";
 import { formatCadence } from "@cwf/core/copy";
-import { landingBoard, type BoardAsset } from "./board";
+import { AssetDisc } from "@/features/markets/hero/AssetDisc";
+import { webEnv } from "@/lib/env";
+import { landingBoard } from "./board";
+import { lineGeometry } from "./hero/sparkline";
 import { printUsd } from "./print-usd";
 import { WORDS } from "./words";
 
-/** A band of every asset with Windows open, its last signed opening print and its shortest Window, sliding past. */
+// ── The tape ──────────────────────────────────────────────────────────────────────────────────────────────────────
+
+const signedAt = (sec: number) => new Date(sec * 1000).toISOString().slice(11, 16);
+
 export async function LandingTape() {
   await connection();
   const board = await landingBoard();
   const rows = board?.assets ?? [];
-  if (rows.length === 0) return <div className="lp-tape" aria-hidden />;
+  if (rows.length === 0) return <TapeWait />;
+  const { tape } = WORDS;
   const items = (copy: boolean) =>
     rows.map((r) => (
       <Link key={r.symbol} href={`/trade/${r.symbol}`} className="lp-tape-item" tabIndex={copy ? -1 : undefined}>
-        <AssetDisc asset={r.symbol} className="lp-disc lp-disc--sm" />
+        <AssetDisc asset={r.symbol} className="lp-tape-disc" />
         <span className="lp-tape-symbol">{r.symbol}</span>
-        {r.printE8 ? <span className="lp-tape-print" title={WORDS.tape.print}>{printUsd(r.printE8)}</span> : null}
+        {r.print ? (
+          <>
+            <span className="lp-tape-print">{printUsd(r.print.priceE8)}</span>
+            <span className="lp-tape-when">{tape.signed(signedAt(r.print.atSec))}</span>
+          </>
+        ) : null}
         <span className="lp-tape-chip">{formatCadence(r.cadenceSec)}</span>
-        <span className="lp-tape-open">{WORDS.tape.open(r.open)}</span>
       </Link>
     ));
   return (
-    <section aria-label={WORDS.tape.label} className="lp-tape">
+    <section aria-label={tape.label} className="lp-tape">
       <div className="lp-tape-viewport">
-        <div className="lp-tape-track" style={{ "--lp-tape-dur": `${Math.max(30, rows.length * 4)}s` } as CSSProperties}>
+        <div className="lp-tape-track" style={{ "--lp-tape-dur": `${Math.max(36, rows.length * 4)}s` } as CSSProperties}>
           <div className="lp-tape-copy">{items(false)}</div>
           <div className="lp-tape-copy" aria-hidden inert>{items(true)}</div>
         </div>
@@ -43,102 +53,128 @@ export async function LandingTape() {
   );
 }
 
-function Head({ kicker, title }: { kicker: string; title: string }) {
+export function TapeWait() {
+  return <div className="lp-tape" aria-hidden><div className="lp-tape-viewport" /></div>;
+}
+
+// ── The bento ─────────────────────────────────────────────────────────────────────────────────────────────────────
+
+interface Spark {
+  symbol: string;
+  d: string;
+  priceE8: string;
+  movePct: number;
+}
+
+const SPARK_W = 120;
+const SPARK_H = 36;
+const SPAN_MS = 30 * 60_000;
+
+/** One asset's last half hour from ops, as a sparkline path, its last price and its move; null when ops has none. */
+async function spark(symbol: string): Promise<Spark | null> {
+  "use cache";
+  cacheLife({ stale: 30, revalidate: 60, expire: 600 });
+  const base = webEnv.markets.opsUrl?.replace(/\/+$/, "");
+  if (!base) return null;
+  const res = await fetch(`${base}/prices/recent?symbol=${encodeURIComponent(symbol)}`, { signal: AbortSignal.timeout(2_000) }).catch(() => null);
+  if (!res?.ok) return null;
+  const points = (((await res.json()) as { points?: [number, string][] }).points ?? []).filter(([, p]) => /^\d+$/.test(p));
+  if (points.length < 2) return null;
+  const last = points.at(-1)!;
+  const line = points.map(([t, p]) => ({ t, p: Number(BigInt(p)) / 1e8 }));
+  const geo = lineGeometry(line, SPARK_W, SPARK_H, null, SPAN_MS, last[0]);
+  const first = line[0]!.p;
+  return { symbol, d: geo.d, priceE8: last[1], movePct: first > 0 ? ((line.at(-1)!.p - first) / first) * 100 : 0 };
+}
+
+function SparkRow({ s }: { s: Spark }) {
+  const up = s.movePct >= 0;
   return (
-    <div className="lp-head">
-      <span className="lp-eyebrow">{kicker}</span>
-      <h2 className="lp-h2">{title}</h2>
-    </div>
+    <li className="lp-spark-row">
+      <AssetDisc asset={s.symbol} className="lp-spark-disc" />
+      <span className="lp-spark-sym">{s.symbol}</span>
+      <svg className="lp-spark" viewBox={`0 0 ${SPARK_W} ${SPARK_H}`} preserveAspectRatio="none" aria-hidden data-up={up || undefined}>
+        <path d={s.d} vectorEffect="non-scaling-stroke" />
+      </svg>
+      <span className="lp-spark-price">{printUsd(s.priceE8)}</span>
+      <span className="lp-spark-move" data-up={up || undefined}>{`${up ? "+" : "−"}${Math.abs(s.movePct).toFixed(2)}%`}</span>
+    </li>
   );
 }
 
-/** "Tap. Watch. Bank it." — the three steps from a passkey to a position. */
-export function LandingLoop() {
-  const { loop } = WORDS;
-  return (
-    <section className="lp-section">
-      <Head kicker={loop.kicker} title={loop.title} />
-      <ol className="lp-steps">
-        {loop.steps.map((s) => (
-          <li key={s.n} className="lp-step">
-            <FluentArt name={s.art} size={84} className="lp-step-art" />
-            <span className="lp-step-n">{s.n}</span>
-            <h3 className="lp-h3">{s.title}</h3>
-            <p className="lp-muted">{s.body}</p>
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
+async function SparkList({ symbols }: { symbols: readonly string[] }) {
+  await connection();
+  const rows = (await Promise.all(symbols.map((s) => spark(s).catch(() => null)))).filter((s): s is Spark => s !== null);
+  if (rows.length === 0) return null;
+  return <ul className="lp-spark-list">{rows.map((s) => <SparkRow key={s.symbol} s={s} />)}</ul>;
 }
 
-function Card({ href, title, body, art, tone = "card", wide, children }: { href: string; title: string; body: string; art: FluentName; tone?: "card" | "accent" | "surface" | "cream"; wide?: boolean; children?: ReactNode }) {
+function Tile({ href, className, eyebrow, title, line, icon, children }: { href: string; className: string; eyebrow?: string; title: string; line: string; icon?: ReactNode; children?: ReactNode }) {
   return (
-    <Link href={href} className="lp-card" data-tone={tone} data-wide={wide ? "" : undefined}>
-      <FluentArt name={art} size={104} className="lp-card-art" />
-      <span className="flex items-start justify-between gap-3">
-        <h3 className="lp-h3">{title}</h3>
-        <ArrowUpRight aria-hidden className="lp-card-arrow" />
-      </span>
-      <p className="lp-card-body">{body}</p>
-      <div className="lp-card-foot">{children}</div>
+    <Link href={href} className={`lp-tile ${className}`}>
+      <span className="lp-tile-arrow" aria-hidden><ArrowUpRight /></span>
+      {icon ? <span className="lp-tile-icon" aria-hidden>{icon}</span> : null}
+      {eyebrow ? <span className="lp-eyebrow">{eyebrow}</span> : null}
+      <span className="lp-tile-title">{title}</span>
+      <span className="lp-tile-line">{line}</span>
+      {children}
     </Link>
   );
 }
 
-function Names({ rows }: { rows: readonly BoardAsset[] }) {
-  if (rows.length === 0) return null;
+export function LandingBento({ crypto, stocks }: { crypto: ReactNode; stocks: ReactNode }) {
+  const b = WORDS.bento;
   return (
-    <span className="flex flex-wrap gap-1.5">
-      {rows.slice(0, 3).map((r) => (
-        <span key={r.symbol} className="lp-name">
-          <AssetDisc asset={r.symbol} className="lp-disc lp-disc--xs" />
-          {r.symbol}
-          {r.printE8 ? <span className="lp-name-print">{printUsd(r.printE8)}</span> : null}
-        </span>
-      ))}
-    </span>
-  );
-}
-
-/** "Crypto and stocks. Same two buttons." — each card with the Windows its kind has open, read from the index. */
-export async function LandingMarkets() {
-  await connection();
-  const m = WORDS.markets;
-  const board = await landingBoard();
-  const of = (k: BoardAsset["kind"]) => board?.assets.filter((a) => a.kind === k) ?? [];
-  const count = (n: number | undefined) => <span className="lp-count">{n === undefined ? m.reading : m.open(n)}</span>;
-  return (
-    <section className="lp-section">
-      <Head kicker={m.kicker} title={m.title} />
-      <div className="lp-cards">
-        <Card href={m.cards.crypto.href} title={m.cards.crypto.title} body={m.cards.crypto.body} art="coin" tone="accent">
-          <Names rows={of("crypto")} />
-          {count(board?.open.crypto)}
-        </Card>
-        <Card href={m.cards.stocks.href} title={m.cards.stocks.title} body={m.cards.stocks.body} art="chartIncreasing" tone="surface">
-          <Names rows={of("stock")} />
-          {count(board?.open.stock)}
-        </Card>
-        <Card href={m.cards.parlay.href} title={m.cards.parlay.title} body={m.cards.parlay.body} art="admissionTickets" tone="cream">
-          {count(board?.open.all)}
-        </Card>
-        <Card href={m.cards.games.href} title={m.cards.games.title} body={m.cards.games.body} art="joystick">
-          {count(board?.open.all)}
-        </Card>
+    <section className="lp-section" aria-labelledby="lp-bento-title">
+      <div className="lp-wrap">
+        <header className="lp-head">
+          <span className="lp-eyebrow">{b.kicker}</span>
+          <h2 id="lp-bento-title" className="lp-h2">{b.title}</h2>
+        </header>
+        <div className="lp-bento">
+          <Tile href="/markets" className="lp-tile--crypto" eyebrow={b.crypto.eyebrow} title={b.crypto.title} line={b.crypto.line}>{crypto}</Tile>
+          <Tile href="/markets" className="lp-tile--stocks" eyebrow={b.stocks.eyebrow} title={b.stocks.title} line={b.stocks.line}>{stocks}</Tile>
+          <Tile href="/games" className="lp-tile--games" icon={<Gamepad2 />} title={b.games.title} line={b.games.line} />
+          <Tile href="/parlay" className="lp-tile--parlay" icon={<Layers />} title={b.parlay.title} line={b.parlay.line} />
+          <Tile href="/agents" className="lp-tile--agents" icon={<Bot />} title={b.agents.title} line={b.agents.line} />
+          <Tile href="/trade/BTC" className="lp-tile--passkey" icon={<Fingerprint />} title={b.passkey.title} line={b.passkey.line} />
+          <Tile href="/trade/BTC" className="lp-tile--private" icon={<ShieldCheck />} title={b.private.title} line={b.private.line} />
+        </div>
       </div>
     </section>
   );
 }
 
-/** The markets section's frame while the index is read: the head and four empty cards, so nothing shifts. */
-export function LandingMarketsWait() {
-  const m = WORDS.markets;
+export const CRYPTO_SPARKS = ["BTC", "ETH", "SOL"] as const;
+export const STOCK_SPARKS = ["TSLA", "NVDA", "AAPL"] as const;
+export { SparkList };
+
+// ── How it works ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+export function LandingHow() {
+  const h = WORDS.how;
   return (
-    <section className="lp-section" aria-busy="true">
-      <Head kicker={m.kicker} title={m.title} />
-      <div className="lp-cards">
-        {[0, 1, 2, 3].map((i) => <div key={i} className="lp-card skel" />)}
+    <section id="how" className="lp-section lp-how" aria-labelledby="lp-how-title">
+      <div className="lp-wrap">
+        <header className="lp-head">
+          <span className="lp-eyebrow">{h.kicker}</span>
+          <h2 id="lp-how-title" className="lp-h2">{h.title}</h2>
+        </header>
+        <ol className="lp-steps">
+          {h.steps.map((s) => (
+            <li key={s.n} className="lp-step">
+              <div className="lp-step-crop" data-crop={s.crop}>
+                <picture>
+                  <source srcSet={`/app/screens/${s.shot}.avif`} type="image/avif" />
+                  <img src={`/app/screens/${s.shot}.webp`} alt={s.alt} loading="lazy" decoding="async" width={780} height={1696} />
+                </picture>
+              </div>
+              <span className="lp-step-n">{s.n}</span>
+              <h3 className="lp-step-title">{s.title}</h3>
+              <p className="lp-step-line">{s.line}</p>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

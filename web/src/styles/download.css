@@ -7,12 +7,30 @@
 .get { display: flex; flex-direction: column; gap: 24px; padding-block: 8px 24px; }
 @media (min-width: 1024px) { .get { gap: 40px; padding-block: 16px 48px; } }
 
-/* The head: the seal, one headline with its accent half, one line. */
-.get-head { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
-.get-title { font: 800 clamp(2rem, 6vw, 3.75rem)/1 var(--font-heading); letter-spacing: -0.04em; color: var(--color-ink); }
+/* The band (round 7): the black plate in both themes — title, store buttons, QR — beside three real screens fanned. */
+.get-hero {
+  position: relative; display: grid; gap: 24px; overflow: hidden; padding: 28px 20px 0; border-radius: 28px;
+  background: radial-gradient(60% 70% at 78% 100%, color-mix(in srgb, var(--color-accent) 30%, transparent), transparent 70%), var(--plate-black);
+  color: var(--color-cream); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-cream) 10%, transparent);
+}
+@media (min-width: 1024px) { .get-hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; padding: 48px 48px 0; } }
+.get-hero-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding-bottom: 8px; }
+@media (min-width: 1024px) { .get-hero-copy { padding-bottom: 48px; } }
+.get-title { font: 800 clamp(2.2rem, 6vw, 4rem)/1 var(--font-heading); letter-spacing: -0.04em; color: var(--color-cream); }
 .get-title em { font-style: normal; color: var(--color-accent); }
-.get-line { max-width: 34rem; font: 400 17px/1.45 var(--font-body); color: var(--color-ink-secondary); }
-@media (min-width: 1024px) { .get-line { font-size: 18px; } }
+.get-line { max-width: 30rem; font: 500 17px/1.45 var(--font-body); color: color-mix(in srgb, var(--color-cream) 70%, transparent); }
+.get-badges { justify-content: flex-start; margin-top: 6px; }
+.get-hero-qr { display: none; margin: 4px 0 0; }
+@media (min-width: 1024px) {
+  .get-hero-qr { display: flex; align-items: center; gap: 12px; font: 600 13px/1.3 var(--font-body); color: color-mix(in srgb, var(--color-cream) 70%, transparent); }
+}
+.get-hero-qr-code { width: 6.5rem; height: 6.5rem; border-radius: 12px; }
+.get-phones { position: relative; display: flex; justify-content: center; height: clamp(18rem, 64vw, 30rem); }
+.get-phone { position: absolute; bottom: -18%; --phone-w: clamp(9.5rem, 26vw, 15rem); }
+.get-phone .phone { filter: drop-shadow(0 30px 40px color-mix(in srgb, var(--plate-black) 80%, transparent)); }
+.get-phone[data-side="c"] { z-index: 2; bottom: -10%; --phone-w: clamp(11rem, 30vw, 17rem); }
+.get-phone[data-side="l"] { right: 50%; translate: 18% 0; rotate: -9deg; }
+.get-phone[data-side="r"] { left: 50%; translate: -18% 0; rotate: 9deg; }
 
 /* The cards: one column on phones, two from 768 (the third spans both), three from 1024. When the web app leads (no
  * store test open yet, `data-lead="web"`), it takes the wide cell — full width at 768, the left cell two rows tall from

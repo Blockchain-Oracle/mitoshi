@@ -154,6 +154,19 @@ export function indexReader(sql: Sql) {
       return row ?? null;
     },
 
+    /**
+     * Each ticker's most recent recorded opening or closing print, in one query (the batched `latestPrint`): the landing's
+     * tape keeps an asset's last signed price while its soonest Window still waits on its print (R6 landing L02).
+     */
+    async latestPrints(symbols: readonly string[]): Promise<IdxRow[]> {
+      if (symbols.length === 0) return [];
+      return sql`
+        select distinct on (m.symbol) m.symbol, p.price_e8::text, p.source_ts_sec::text, p.signers, p.source
+        from idx_prints p join idx_markets m on m.market = p.market
+        where m.symbol = any(${symbols as string[]}::text[]) and p.which in (0, 1)
+        order by m.symbol, p.source_ts_sec desc`;
+    },
+
     /** Counts of what the index holds at or below `block` (the recount compares them with an independent chain walk). */
     async countsThrough(chainId: number, block: number): Promise<IdxRow> {
       const [row] = await sql`
@@ -212,8 +225,20 @@ export function indexReader(sql: Sql) {
         select (select count(*) from idx_markets where opened_tx is not null)::int as windows_opened,
           (select count(*) from idx_markets where state <> 'open')::int as windows_resolved,
           (select count(*) from idx_markets where state = 'open' and opened_tx is not null)::int as windows_open,
+          (select count(*) from idx_markets where state <> 'open' and resolved_ts_sec >= extract(epoch from date_trunc('day', now() at time zone 'utc'))::bigint)::int as settled_today,
           (select count(*) from idx_fills)::int as fills`;
       return row!;
+    },
+
+    /** The newest settled Window of each ticker, the `limit` newest of those, with their prints (five assets, not one batch). */
+    async recentSettledBySymbol(limit = 5): Promise<IdxRow[]> {
+      return sql`
+        select * from (
+          select distinct on (m.symbol) m.market, m.symbol, m.cadence_sec, m.basis, m.expiry_sec, m.state, m.winner, m.resolved_ts_sec,
+            (select json_object_agg(p.which, json_build_object('priceE8', p.price_e8::text, 'signers', p.signers)) from idx_prints p where p.market = m.market) as prints
+          from idx_markets m where m.opened_tx is not null and m.state <> 'open'
+          order by m.symbol, m.expiry_sec desc
+        ) newest order by expiry_sec desc limit ${clamp(limit, 20)}`;
     },
 
     async status(): Promise<IdxRow> {

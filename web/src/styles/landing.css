@@ -1,186 +1,145 @@
-/* The landing (R4-13a, D-227; Ported from Owarine 90a91d71:web/src/features/landing — its Tailwind on --ow-* tokens,
- * here on Mitoshi's): Sora display headlines, the dusk sky (kit.css `.kit-sky`), vermilion for THE action, cream and
- * surface cards with Fluent objects breaking their corners. Imported by the page, so only `/` carries it. Dark first;
- * every colour is a token, so light works too. */
+/* The landing, rebuilt (round 7; 21st.dev 11494 cinematic-landing-hero's materials and 27355 phone-scroll-hero's motion,
+ * revamped onto Mitoshi's tokens): one cinematic dark world in both themes — the black plate, cream ink, vermilion for
+ * THE action and the dusk glow — so the app's screens (cream or dark) read as devices in it. Imported by the page only. */
 
-.lp { min-height: 100dvh; background: var(--color-canvas); color: var(--color-ink); }
-.lp-wrap, .lp-nav, .lp-hero-grid, .lp-section { width: 100%; max-width: 80rem; margin-inline: auto; padding-inline: 16px; }
-@media (min-width: 640px) { .lp-wrap, .lp-nav, .lp-hero-grid, .lp-section { padding-inline: 32px; } }
-
-/* ── Nav: the seal and the name, three links, the theme, "Start trading" ─────────────────────────────────────── */
-.lp-nav { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 16px; padding-top: max(16px, env(safe-area-inset-top)); }
-.lp-brand { display: flex; align-items: center; gap: 10px; font: 800 20px/1 var(--font-heading); letter-spacing: -0.03em; color: var(--color-ink); }
-.lp-nav-links { display: flex; align-items: center; gap: 4px; }
-.lp-nav-link { display: inline-flex; min-height: 44px; align-items: center; padding-inline: 12px; border-radius: var(--radius-full); font: 600 14px/1 var(--font-body); color: var(--color-ink); }
-.lp-nav-link:hover { background: var(--color-surface-2); }
-/* The links step aside on a phone (Markets under 640, the rest under 768): this sheet is unlayered, so the display above
-   would beat Tailwind's layered max-sm:/max-md:hidden — the rules live here. */
-@media (max-width: 639px) { .lp-nav-link--sm { display: none; } }
-@media (max-width: 767px) { .lp-nav-link--md { display: none; } }
-/* Under 375 px the seal, the theme and "Start trading" fill the row: the name steps aside (the link keeps its label). */
-@media (max-width: 374px) { .lp-brand-name { display: none; } }
-
-/* ── Hero ─────────────────────────────────────────────────────────────────────────────────────────────────────── */
-.lp-hero { min-height: 100svh; }
-.lp-hero-grid { display: grid; align-items: center; gap: 48px; padding-top: 16px; padding-bottom: 72px; }
-@media (min-width: 1024px) { .lp-hero-grid { grid-template-columns: minmax(0, 1fr) auto; gap: 32px; padding-top: 32px; } }
-.lp-hero-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
-.lp-kicker {
-  display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 12px; border-radius: var(--radius-full);
-  background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); font: 700 13px/1 var(--font-body);
+.lp {
+  --lp-ground: var(--plate-black);
+  --lp-ink: var(--color-cream);
+  --lp-ink-2: color-mix(in srgb, var(--color-cream) 68%, transparent);
+  --lp-ink-3: color-mix(in srgb, var(--color-cream) 46%, transparent);
+  --lp-line: color-mix(in srgb, var(--color-cream) 12%, transparent);
+  --lp-card: color-mix(in srgb, var(--color-cream) 5%, var(--plate-black));
+  --lp-card-2: color-mix(in srgb, var(--color-cream) 9%, var(--plate-black));
+  --lp-glow: color-mix(in srgb, var(--color-accent) 34%, transparent);
+  --lp-max: 76rem;
+  min-height: 100dvh; overflow-x: clip; background: var(--lp-ground); color: var(--lp-ink);
 }
-.lp-live-dot { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--color-profit); }
-.lp-h1 { font: 800 clamp(2.25rem, 9.6vw, 7.5rem)/0.95 var(--font-heading); letter-spacing: -0.045em; color: var(--color-ink); text-wrap: balance; }
-@media (min-width: 1024px) { .lp-h1 { font-size: clamp(3rem, 5.8vw, 6.5rem); } }
-.lp-line { font: 700 clamp(1.125rem, 2vw, 1.375rem)/1.3 var(--font-body); color: var(--color-ink); }
-.lp-discs { display: flex; }
-.lp-discs li { margin-left: -8px; border-radius: var(--radius-full); box-shadow: 0 0 0 3px var(--color-canvas); }
-.lp-discs li:first-child { margin-left: 0; }
-/* Get the app (D-230): one quiet chip under the pills — the platforms' marks, the words, an arrow — to /download. */
-.lp-getapp {
-  display: inline-flex; min-height: 44px; align-items: center; gap: 12px; padding: 6px 16px 6px 6px; border-radius: var(--radius-full);
-  background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); color: var(--color-ink);
-  transition: box-shadow var(--duration-hover) var(--ease-out);
+.lp-wrap { width: 100%; max-width: var(--lp-max); margin-inline: auto; padding-inline: 16px; }
+@media (min-width: 640px) { .lp-wrap { padding-inline: 32px; } }
+.lp-accent { color: var(--color-accent); }
+
+/* ── Buttons: the cinematic hero's tactile pills ──────────────────────────────────────────────────────────────── */
+.lp-btn {
+  display: inline-flex; min-height: 52px; align-items: center; justify-content: center; gap: 8px; padding: 0 24px;
+  border-radius: var(--radius-full); font: 700 16px/1 var(--font-body); white-space: nowrap;
+  transition: transform 300ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 300ms cubic-bezier(0.25, 1, 0.5, 1), filter 300ms;
 }
-.lp-getapp:hover { box-shadow: inset 0 0 0 1px var(--color-accent); }
-.lp-getapp:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-.lp-getapp-marks { display: flex; }
-.lp-getapp-marks svg {
-  width: 36px; height: 36px; padding: 9px; border-radius: var(--radius-full); background: var(--color-ink); color: var(--color-stage);
-  box-shadow: 0 0 0 2px var(--color-surface-1);
+.lp-btn svg { width: 18px; height: 18px; }
+.lp-btn--sm { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.lp-btn--accent {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 88%, var(--color-cream)) 0%, var(--color-accent) 100%);
+  color: var(--color-on-accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 60%, var(--plate-black)), 0 10px 24px -8px var(--lp-glow), inset 0 1px 1px color-mix(in srgb, var(--color-cream) 40%, transparent);
 }
-.lp-getapp-marks svg + svg { margin-left: -8px; }
-.lp-getapp-text { display: flex; flex-direction: column; gap: 3px; }
-.lp-getapp-text b { font: 700 15px/1 var(--font-body); }
-.lp-getapp-text span { font: 500 12px/1 var(--font-body); color: var(--color-ink-secondary); }
-.lp-getapp-arrow { width: 16px; height: 16px; transition: translate 150ms var(--ease-out); }
-.lp-getapp:hover .lp-getapp-arrow { translate: 2px 0; }
-@media (prefers-reduced-motion: reduce) { .lp-getapp-arrow { transition: none; } .lp-getapp:hover .lp-getapp-arrow { translate: none; } }
+.lp-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+.lp-btn:active { transform: translateY(1px); }
+.lp-btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
 
-/* The asset discs: the registry's mark on its brand colour; an unknown asset's initial on a plain disc. */
-.lp-disc { display: inline-grid; flex: none; width: 36px; height: 36px; place-items: center; overflow: hidden; border-radius: var(--radius-full); background: var(--color-surface-3); color: var(--color-ink); font: 700 13px/1 var(--font-body); }
-.lp-disc.has-mark { background: transparent; }
-.lp-disc--sm { width: 28px; height: 28px; font-size: 11px; }
-.lp-disc--xs { width: 20px; height: 20px; font-size: 9px; }
-
-/* The phone: the live terminal in a frame (`LandingPhone`), at a phone's width so it lays out as one. */
-.lp-phone-col { position: relative; width: min(21.5rem, 86vw); margin-inline: auto; }
-.lp-phone-col .landing-phone { width: 100%; }
-.lp-sticker { position: absolute; z-index: 2; pointer-events: none; }
-.lp-sticker--a { top: 10%; left: -22%; }
-.lp-sticker--b { top: 72%; right: -26%; }
-@media (max-width: 639px) { .lp-sticker { display: none; } }
-/* From 1024 the phone sits at the column's end: room on its right for the second sticker, which overhangs it by 26%. */
-@media (min-width: 1024px) { .lp-phone-col { margin-right: 4.5rem; } }
-
-/* ── The tape: every asset with Windows open, sliding past on the black plate ─────────────────────────────────── */
-.lp-tape { min-height: 56px; background: var(--plate-black); color: var(--color-cream); box-shadow: inset 0 1px 0 var(--plate-black-edge), inset 0 -1px 0 var(--plate-black-edge); }
-.lp-tape-viewport { overflow: hidden; padding-block: 12px; mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent); }
-.lp-tape-track { display: flex; width: max-content; animation: lp-tape var(--lp-tape-dur, 40s) linear infinite; }
-.lp-tape-track:hover, .lp-tape-track:focus-within { animation-play-state: paused; }
-.lp-tape-copy { display: flex; flex-shrink: 0; }
-@keyframes lp-tape { to { translate: -50% 0; } }
-.lp-tape-item { display: flex; flex-shrink: 0; align-items: center; gap: 10px; padding-inline: 20px; min-height: 32px; color: var(--color-cream); }
-.lp-tape-item:hover { color: var(--color-accent); }
-.lp-tape-symbol { font: 700 14px/1 var(--font-body); }
-.lp-tape-print { font: 600 14px/1 var(--font-data); opacity: 0.8; }
-.lp-tape-chip { padding: 3px 8px; border-radius: var(--radius-full); background: color-mix(in srgb, var(--color-cream) 15%, transparent); font: 600 11px/1 var(--font-data); }
-.lp-tape-open { font: 500 12px/1 var(--font-body); opacity: 0.6; }
-
-/* ── Sections ─────────────────────────────────────────────────────────────────────────────────────────────────── */
-.lp-section { padding-block: 88px; }
-.lp-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
-.lp-eyebrow { font: 700 12px/1 var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); }
-.lp-eyebrow--quiet { color: var(--color-ink-secondary); letter-spacing: 0.12em; }
-.lp-h2 { max-width: 56rem; font: 800 clamp(2rem, 5vw, 3.75rem)/1 var(--font-heading); letter-spacing: -0.04em; text-wrap: balance; }
-.lp-h3 { font: 800 clamp(1.5rem, 2.4vw, 2rem)/1.05 var(--font-heading); letter-spacing: -0.03em; }
-.lp-muted { font: 400 15px/1.45 var(--font-body); color: var(--color-ink-secondary); }
-.lp-lead { max-width: 34rem; font: 400 18px/1.5 var(--font-body); color: var(--color-ink-secondary); }
-
-/* The loop: three cards, the step number in vermilion, an object breaking each corner. */
-.lp-steps { display: grid; gap: 16px; }
-@media (min-width: 1024px) { .lp-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.lp-step { position: relative; display: flex; flex-direction: column; gap: 10px; overflow: hidden; padding: 28px; border-radius: var(--radius-xl); background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
-.lp-step-art { position: absolute; top: -8px; right: -8px; rotate: 12deg; }
-.lp-step-n { font: 800 clamp(2.5rem, 5vw, 3.5rem)/1 var(--font-heading); letter-spacing: -0.04em; color: var(--color-accent); }
-
-/* The market cards: accent, surface, cream and plain, each with its count; Owarine's bento at 2 and 4 columns. */
-.lp-cards { display: grid; gap: 16px; }
-@media (min-width: 768px) { .lp-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.lp-card {
-  position: relative; display: flex; min-height: 15rem; flex-direction: column; gap: 12px; overflow: hidden; padding: 28px;
-  border-radius: var(--radius-xl); background: var(--color-surface-1); color: var(--color-ink); box-shadow: inset 0 0 0 1px var(--color-hairline);
-  transition: transform 200ms var(--ease-out);
+/* ── Nav: a floating glass bar ─────────────────────────────────────────────────────────────────────────────────── */
+.lp-nav-wrap { position: sticky; top: 0; z-index: var(--z-sticky); padding: max(12px, env(safe-area-inset-top)) 12px 0; }
+.lp-nav {
+  display: flex; max-width: var(--lp-max); margin-inline: auto; min-height: 60px; align-items: center; gap: 12px; padding: 8px 8px 8px 16px;
+  border-radius: var(--radius-full); background: color-mix(in srgb, var(--plate-black) 62%, transparent);
+  box-shadow: inset 0 0 0 1px var(--lp-line), 0 20px 40px -24px color-mix(in srgb, var(--plate-black) 90%, transparent);
+  backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3);
 }
-.lp-card:hover { transform: translateY(-4px); }
-.lp-card[data-tone="accent"] { background: var(--color-accent-fill); color: var(--color-on-accent); box-shadow: none; }
-.lp-card[data-tone="surface"] { background: var(--color-surface-2); }
-.lp-card[data-tone="cream"] { background: var(--color-cream); color: var(--color-cream-ink); box-shadow: none; }
-.lp-card.skel { min-height: 15rem; }
-.lp-card-art { position: absolute; right: -12px; bottom: -12px; rotate: -10deg; transition: scale 300ms var(--ease-out), rotate 300ms var(--ease-out); }
-.lp-card:hover .lp-card-art { scale: 1.1; rotate: 0deg; }
-.lp-card-arrow { width: 24px; height: 24px; flex: none; opacity: 0.6; }
-.lp-card-body { max-width: 24rem; font: 400 15px/1.45 var(--font-body); opacity: 0.85; }
-.lp-card-foot { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-right: 80px; }
-.lp-count { font: 700 13px/1 var(--font-body); }
-.lp-name { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: var(--radius-full); background: color-mix(in srgb, currentColor 10%, transparent); font: 700 12px/1 var(--font-body); }
-.lp-name-print { font: 600 12px/1 var(--font-data); opacity: 0.75; }
+.lp-brand { display: flex; align-items: center; gap: 10px; font: 800 20px/1 var(--font-heading); letter-spacing: -0.03em; color: var(--lp-ink); }
+.lp-nav-links { display: none; align-items: center; gap: 2px; margin-inline: auto; }
+@media (min-width: 900px) { .lp-nav-links { display: flex; } }
+.lp-nav-link { display: inline-flex; min-height: 44px; align-items: center; padding-inline: 14px; border-radius: var(--radius-full); font: 600 14px/1 var(--font-body); color: var(--lp-ink-2); transition: color 150ms, background 150ms; }
+.lp-nav-link:hover { color: var(--lp-ink); background: var(--lp-line); }
+.lp-nav-end { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+@media (min-width: 900px) { .lp-nav-end { margin-left: 0; } }
+.lp-nav-app { display: none; min-height: 40px; align-items: center; padding-inline: 14px; border-radius: var(--radius-full); font: 600 14px/1 var(--font-body); color: var(--lp-ink); box-shadow: inset 0 0 0 1px var(--lp-line); }
+.lp-nav-app:hover { box-shadow: inset 0 0 0 1px var(--lp-ink-3); }
+@media (min-width: 520px) { .lp-nav-app { display: inline-flex; } }
+@media (max-width: 359px) { .lp-brand-name { display: none; } }
 
-/* Proof: the copy and the index's counts beside the last settled Windows, each a cream receipt to its proof. */
-.lp-proof { display: grid; gap: 40px; }
-@media (min-width: 1024px) { .lp-proof { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); } }
-.lp-stats { display: grid; gap: 12px; }
-.lp-stat { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 16px; border-radius: var(--radius-lg); background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); }
-/* Three across from 640; on a phone one row each, the count beside its label, so a six-figure count never spills. */
-@media (min-width: 640px) {
-  .lp-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .lp-stat { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 4px; }
+/* ── Hero: copy on the left, three phones fanned on the right (stacked on a phone) ─────────────────────────────── */
+.lp-hero { position: relative; isolation: isolate; overflow: clip; }
+.lp-hero-ground {
+  position: absolute; inset: 0; z-index: -2;
+  background:
+    radial-gradient(42% 52% at 74% 58%, var(--lp-glow), transparent 70%),
+    radial-gradient(40% 30% at 20% 0%, color-mix(in srgb, var(--color-cream) 6%, transparent), transparent 70%),
+    var(--lp-ground);
 }
-.lp-stat .lp-muted { font-size: 12px; }
-.lp-stat-value { font: 700 clamp(1.25rem, 2vw, 1.75rem)/1 var(--font-data); }
-.lp-settled {
-  display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius-xl);
-  background: var(--color-cream); color: var(--color-cream-ink); transition: transform 200ms var(--ease-out);
+.lp-hero-ground::after {
+  content: ""; position: absolute; inset: 0; background-size: 64px 64px;
+  background-image: linear-gradient(to right, var(--lp-line) 1px, transparent 1px), linear-gradient(to bottom, var(--lp-line) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 80% 70% at 60% 45%, black 0%, transparent 75%); opacity: 0.5;
 }
-.lp-settled[data-tilt="l"] { rotate: -0.6deg; }
-.lp-settled[data-tilt="r"] { rotate: 0.6deg; }
-.lp-settled:hover { transform: translateY(-2px); }
-.lp-settled-name { display: block; font: 700 15px/1.2 var(--font-body); }
-.lp-settled-when { display: block; font: 500 12px/1.3 var(--font-data); opacity: 0.7; }
-.lp-settled-link { font: 700 12px/1 var(--font-body); text-decoration: underline; }
-.lp-outcome { flex: none; padding: 5px 10px; border-radius: var(--radius-full); font: 700 12px/1 var(--font-body); background: color-mix(in srgb, var(--color-cream-ink) 10%, transparent); }
-.lp-outcome[data-outcome="up"] { background: var(--color-up); color: var(--color-stage); }
-.lp-outcome[data-outcome="down"] { background: var(--color-down); color: var(--color-cream); }
+/* Film grain (the cinematic hero's feTurbulence), over everything, barely there. */
+.lp-grain {
+  position: absolute; inset: 0; z-index: 5; pointer-events: none; opacity: 0.06; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.lp-hero-grid {
+  display: grid; max-width: var(--lp-max); margin-inline: auto; gap: 8px; padding: 28px 16px 0; align-items: center;
+}
+@media (min-width: 640px) { .lp-hero-grid { padding-inline: 32px; } }
+@media (min-width: 1024px) {
+  .lp-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); min-height: calc(100svh - 84px); padding-top: 0; gap: 24px; }
+}
+.lp-hero-copy { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 22px; }
+@media (max-width: 1023px) { .lp-hero-copy { align-items: center; text-align: center; } }
+.lp-chip {
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--color-cream) 6%, transparent); box-shadow: inset 0 0 0 1px var(--lp-line);
+  font: 600 13px/1 var(--font-body); color: var(--lp-ink-2);
+}
+.lp-live-dot { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--color-up); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-up) 22%, transparent); }
+.lp-h1 { display: flex; flex-direction: column; font: 800 clamp(2.6rem, 8vw, 4.6rem)/0.98 var(--font-heading); letter-spacing: -0.035em; text-wrap: balance; }
+@media (min-width: 1024px) { .lp-h1 { font-size: clamp(3.2rem, 4.9vw, 5rem); } }
+.lp-h1-b { white-space: nowrap; }
+/* The silver-matte headline: cream fading to its own ghost, a soft lift under it. */
+.lp-h1-a, .lp-h1-b {
+  background: linear-gradient(180deg, var(--color-cream) 0%, color-mix(in srgb, var(--color-cream) 64%, transparent) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 12px 24px color-mix(in srgb, var(--plate-black) 70%, transparent));
+}
+.lp-h1-b em { font-style: normal; background: linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 72%, var(--color-cream)) 0%, var(--color-accent) 100%); -webkit-background-clip: text; background-clip: text; }
+.lp-line { max-width: 30rem; font: 500 clamp(1.05rem, 1.5vw, 1.2rem)/1.5 var(--font-body); color: var(--lp-ink-2); }
+.lp-hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+@media (max-width: 1023px) { .lp-hero-ctas { justify-content: center; } }
+.lp-btn--lg { min-height: 56px; padding: 0 28px; font-size: 17px; }
+.lp-btn--glass {
+  background: color-mix(in srgb, var(--color-cream) 8%, transparent); color: var(--lp-ink);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-cream) 18%, transparent), inset 0 1px 1px color-mix(in srgb, var(--color-cream) 14%, transparent);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+}
+.lp-btn--glass:hover { background: color-mix(in srgb, var(--color-cream) 13%, transparent); }
 
-/* Final: the sky again, the line again, one button. */
-.lp-final { padding-block: 112px; }
-.lp-final-col { display: flex; max-width: 60rem; flex-direction: column; align-items: center; gap: 32px; margin-inline: auto; padding-inline: 16px; text-align: center; }
-.lp-h1--final { font-size: clamp(3rem, 12vw, 9rem); }
-.lp-final-link { display: inline-flex; min-height: 44px; align-items: center; font: 600 14px/1 var(--font-body); color: var(--color-ink-secondary); }
-.lp-final-link:hover { color: var(--color-ink); text-decoration: underline; }
-
-@media (prefers-reduced-motion: reduce) {
-  .lp-tape-viewport { overflow-x: auto; }
-  .lp-tape-track { animation: none; }
-  .lp-tape-copy[aria-hidden] { display: none; }
-  .lp-card, .lp-card-art, .lp-settled { transition: none; }
-  .lp-card:hover, .lp-settled:hover { transform: none; }
-  .lp-card:hover .lp-card-art { scale: 1; rotate: -10deg; }
+/* The stage: the live phone in front, two real screens fanned behind it, the 見通し wordmark outlined behind all three. */
+.lp-stage { position: relative; display: flex; justify-content: center; align-items: center; height: clamp(36rem, 120vw, 46rem); }
+@media (min-width: 1024px) { .lp-stage { height: min(48rem, calc(100svh - 96px)); } }
+.lp-wordmark {
+  position: absolute; inset: 50% auto auto 50%; translate: -50% -52%; z-index: 0; pointer-events: none; white-space: nowrap;
+  font: 700 clamp(9rem, 26vw, 22rem)/1 var(--font-stamp); letter-spacing: -0.02em;
+  color: transparent; -webkit-text-stroke: 1.5px color-mix(in srgb, var(--color-cream) 14%, transparent);
 }
-
-/* ── The phone running the terminal (`LandingPhone`): a phone's proportions so the terminal lays out as one ────── */
-.landing-phone {
-  width: min(100%, 390px);
-  aspect-ratio: 9 / 19.5;
-  max-height: 844px;
-  margin-inline: auto;
-  padding: 10px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 48px;
-  background: var(--color-surface-2);
-  box-shadow: 0 30px 80px -30px rgb(0 0 0 / 0.45);
+.lp-stage-main { position: relative; z-index: 3; --phone-w: clamp(15.5rem, 21vw, 19rem); }
+.lp-stage-main .phone { filter: drop-shadow(0 50px 60px color-mix(in srgb, var(--plate-black) 85%, transparent)) drop-shadow(0 0 90px var(--lp-glow)); }
+.lp-stage-side { position: absolute; z-index: 2; top: 50%; --phone-w: clamp(12rem, 16vw, 15rem); }
+.lp-stage-side .phone { filter: drop-shadow(0 30px 40px color-mix(in srgb, var(--plate-black) 80%, transparent)); }
+.lp-stage-side--l { right: 50%; translate: 4% -46%; rotate: -11deg; }
+.lp-stage-side--r { left: 50%; translate: -4% -42%; rotate: 11deg; }
+.lp-stage-side--l .phone, .lp-stage-side--r .phone { transform-origin: 50% 100%; }
+@media (min-width: 1024px) {
+  .lp-stage-side--l { translate: -2% -46%; }
+  .lp-stage-side--r { translate: 2% -42%; }
 }
-.landing-phone-screen { position: relative; height: 100%; overflow: hidden; border-radius: 38px; background: var(--chart-ground); }
-.landing-phone-frame { display: block; width: 100%; height: 100%; border: 0; }
-.landing-phone-wait { display: grid; height: 100%; place-items: center; color: var(--color-ink-muted); }
-.landing-phone-wait svg { width: 64px; height: auto; }
+/* Arrival: the side phones open out from behind the front one, once. */
+@media (prefers-reduced-motion: no-preference) {
+  .lp-stage-side--l { animation: lp-fan-l 900ms cubic-bezier(0.22, 1, 0.36, 1) 200ms both; }
+  .lp-stage-side--r { animation: lp-fan-r 900ms cubic-bezier(0.22, 1, 0.36, 1) 280ms both; }
+  .lp-stage-main { animation: lp-rise 900ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+}
+@keyframes lp-fan-l { from { rotate: 0deg; translate: 50% -46%; opacity: 0; } }
+@keyframes lp-fan-r { from { rotate: 0deg; translate: -50% -42%; opacity: 0; } }
+@keyframes lp-rise { from { translate: 0 40px; opacity: 0; } }
+@media (max-width: 639px) {
+  .lp-stage { height: 33rem; margin-top: 8px; }
+  .lp-stage-main { --phone-w: 14.5rem; }
+  .lp-stage-side { --phone-w: 10.5rem; opacity: 0.85; }
+}

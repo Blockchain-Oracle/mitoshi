@@ -1,0 +1,22 @@
+/* The phone (R6 landing L01, round 7): 21st.dev 20020's frame on tokens (`PhoneFrame`), the screen an HTML layer over
+ * the SVG at the frame's own geometry (389.5 × 843.5 at 21.25, 19.25; rx 55.75); the titanium body a token mix. */
+
+/* ── The device ────────────────────────────────────────────────────────────────────────────────────────────────── */
+.phone { position: relative; width: var(--phone-w, 300px); aspect-ratio: 433 / 882; flex: none; }
+.phone-body, .phone-island { position: absolute; inset: 0; width: 100%; height: 100%; }
+.phone-island { z-index: 2; pointer-events: none; }
+.phone-metal { fill: color-mix(in srgb, var(--color-cream-ink) 62%, var(--color-cream)); }
+.phone-bezel { fill: color-mix(in srgb, var(--plate-black) 92%, var(--color-cream-ink)); }
+.phone-island-pill { fill: var(--plate-black); }
+.phone-island-lens { fill: color-mix(in srgb, var(--plate-black) 80%, var(--color-cream)); }
+.phone-screen {
+  position: absolute; z-index: 1; left: calc(21.25 / 433 * 100%); top: calc(19.25 / 882 * 100%);
+  width: calc(389.5 / 433 * 100%); height: calc(843.5 / 882 * 100%); overflow: hidden;
+  border-radius: 14.31% / 6.61%; background: var(--color-canvas);
+}
+.phone-shot, .phone-shot img { display: block; width: 100%; height: 100%; }
+.phone-shot img { object-fit: cover; object-position: top center; }
+
+/* The QR on cream paper, so any camera reads it. */
+.lp-qr-bg { fill: var(--color-cream); }
+.lp-qr-ink { fill: var(--color-cream-ink); }

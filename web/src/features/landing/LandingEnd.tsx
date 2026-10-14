@@ -1,104 +1,176 @@
-// Ported from Owarine 90a91d71:web/src/features/landing/LandingEnd.tsx (R4-13a, D-227) — "Every close is signed": the
-// index's counts and the last Windows to settle, each to its proof page (`/proof/<market>`); then the sky again, the
-// line again, one button, and the footer. Owarine's roadmap block is not ported (its phases are Canton's). Figures and
-// rows are the index's (`board.ts`, `figures.ts`), read on the server.
-import { ArrowRight } from "lucide-react";
-import { connection } from "next/server";
+// The end of the page, rebuilt (round 7). The proof: three counts from the index rolling in digit by digit (From 21st.dev
+// 20071 unlumen/animate-digits, rebuilt in CSS — no motion runtime) and the newest signed close of five different
+// assets as receipts, each to its proof. The final call (From 21st.dev 28155 shadcndesign/cta-section-1: a centred
+// headline and one action) carries the store buttons and the QR. The footer is From 21st.dev 29772
+// scrollxui/footer-with-minimal-outline: a brand block, link columns and the outlined 見通し watermark.
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { connection } from "next/server";
 import { Seal } from "@/components/kit/Seal";
-import { SkyCollage, type CollageObject } from "@/components/kit/SkyCollage";
-import Footer from "@/components/shell/Footer";
+import { ExternalLink } from "@/components/shell/ExternalLink";
+import { QrCode } from "@/components/ui/qr-code";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
 import { formatCadence } from "@cwf/core/copy";
-import { landingBoard } from "./board";
-import { landingFigures } from "./figures";
+import { BRAND, FOOTER } from "@/lib/copy";
+import { webEnv } from "@/lib/env";
+import { landingFigures, landingReceipts, type SettledReceipt } from "./figures";
 import { START } from "./LandingHero";
+import { printUsd } from "./print-usd";
 import { WORDS } from "./words";
+import type { ReactNode } from "react";
 
 const COUNT = new Intl.NumberFormat("en-US");
 const STOCK24 = 2;
 
-const utc = (sec: number) => new Date(sec * 1000).toISOString().slice(5, 16).replace("T", " ");
+/** A count whose digits roll in once in view (CSS, `landing-end.css`), read as one number by a screen reader. */
+function Digits({ value }: { value: number }) {
+  const text = COUNT.format(value);
+  return (
+    <span className="lp-digits" aria-label={text}>
+      {[...text].map((ch, i) => (
+        <span key={i} aria-hidden className={/\d/.test(ch) ? "lp-digit" : "lp-digit-sep"} style={{ animationDelay: `${i * 30}ms` }}>
+          {ch}
+        </span>
+      ))}
+    </span>
+  );
+}
 
-export async function LandingProof() {
+function ago(sec: number, nowSec: number): string {
+  const d = Math.max(0, nowSec - sec);
+  return d < 3600 ? `${Math.max(1, Math.round(d / 60))} min` : d < 86_400 ? `${Math.round(d / 3600)} h` : `${Math.round(d / 86_400)} d`;
+}
+
+function Receipt({ r, nowSec }: { r: SettledReceipt; nowSec: number }) {
+  const p = WORDS.proof;
+  return (
+    <li>
+      <Link href={`/proof/${r.market}`} className="lp-receipt">
+        <AssetDisc asset={r.symbol} className="lp-receipt-disc" />
+        <span className="lp-receipt-main">
+          <b>{r.symbol} {r.basis === STOCK24 ? "24/7 " : ""}{formatCadence(r.cadenceSec)}</b>
+          {r.openE8 && r.closeE8 ? <span className="lp-receipt-prices">{printUsd(r.openE8)} → {printUsd(r.closeE8)}</span> : null}
+          <span className="lp-receipt-sub">
+            {[r.signers ? p.signers(r.signers) : null, r.resolvedSec ? p.ago(ago(r.resolvedSec, nowSec)) : null].filter(Boolean).join(" · ")}
+          </span>
+        </span>
+        <span className="lp-outcome" data-outcome={r.outcome}>{p.outcome[r.outcome]}</span>
+        <ChevronRight aria-hidden className="lp-receipt-go" />
+      </Link>
+    </li>
+  );
+}
+
+async function ProofBody() {
   await connection();
   const p = WORDS.proof;
-  const [board, figures] = await Promise.all([landingBoard(), landingFigures()]);
-  const rows = board?.settled ?? [];
+  const [figures, receipts] = await Promise.all([landingFigures(), landingReceipts()]);
+  const nowSec = Math.floor(Date.now() / 1000);
   const stats = figures
     ? [
         { value: figures.windowsOpened, label: p.figures.opened },
         { value: figures.windowsResolved, label: p.figures.resolved },
-        { value: figures.windowsOpen, label: p.figures.open },
+        { value: figures.settledToday, label: p.figures.today },
       ]
     : [];
   return (
-    <section className="lp-section">
-      <div className="lp-proof">
-        <div className="flex flex-col gap-5">
-          <div className="lp-head">
-            <span className="lp-eyebrow">{p.kicker}</span>
-            <h2 className="lp-h2">{p.title}</h2>
-          </div>
-          <p className="lp-lead">{p.body}</p>
-          {stats.length > 0 ? (
-            <ul className="lp-stats">
-              {stats.map((s) => (
-                <li key={s.label} className="lp-stat">
-                  <span className="lp-stat-value">{COUNT.format(s.value)}</span>
-                  <span className="lp-muted">{s.label}</span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-        <div className="flex flex-col gap-3">
-          <span className="lp-eyebrow lp-eyebrow--quiet">{p.settled}</span>
-          {rows.length === 0 ? <p className="lp-muted">{board === null ? p.reading : p.none}</p> : null}
-          {rows.map((w, i) => (
-            <Link key={w.market} href={`/proof/${w.market}`} className="lp-settled" data-tilt={i % 2 === 0 ? "l" : "r"}>
-              <AssetDisc asset={w.symbol} className="lp-disc" />
-              <span className="min-w-0 flex-1">
-                <span className="lp-settled-name">{w.symbol} {w.basis === STOCK24 ? "24/7 " : ""}{formatCadence(w.cadenceSec)}</span>
-                <span className="lp-settled-when">{p.closed(utc(w.expirySec))}</span>
-              </span>
-              <span className="lp-outcome" data-outcome={w.outcome}>{p.outcome[w.outcome]}</span>
-              <span className="lp-settled-link max-sm:hidden">{p.proof}</span>
-            </Link>
+    <>
+      {stats.length > 0 ? (
+        <ul className="lp-stats">
+          {stats.map((s) => (
+            <li key={s.label} className="lp-stat">
+              <Digits value={s.value} />
+              <span>{s.label}</span>
+            </li>
           ))}
+        </ul>
+      ) : null}
+      <div className="lp-receipts">
+        <span className="lp-eyebrow lp-eyebrow--quiet">{p.settled}</span>
+        {receipts === null ? (
+          <p className="lp-quiet"><Link href="/markets">{p.unread}</Link></p>
+        ) : receipts.length === 0 ? (
+          <p className="lp-quiet">{p.none}</p>
+        ) : (
+          <ol className="lp-receipt-list">{receipts.map((r) => <Receipt key={r.market} r={r} nowSec={nowSec} />)}</ol>
+        )}
+      </div>
+    </>
+  );
+}
+
+export function LandingProof({ body }: { body: ReactNode }) {
+  const p = WORDS.proof;
+  return (
+    <section className="lp-section lp-proof" aria-labelledby="lp-proof-title">
+      <div className="lp-wrap lp-proof-grid">
+        <header className="lp-head">
+          <span className="lp-eyebrow">{p.kicker}</span>
+          <h2 id="lp-proof-title" className="lp-h2">{p.title}</h2>
+          <p className="lp-lead">{p.body}</p>
+        </header>
+        {body}
+      </div>
+    </section>
+  );
+}
+
+export { ProofBody };
+
+/** The last screen: the line again, the stores, the QR, one action. */
+export function LandingFinal({ stores }: { stores: ReactNode }) {
+  const f = WORDS.final;
+  return (
+    <section className="lp-final" aria-labelledby="lp-final-title">
+      <div className="lp-final-glow" aria-hidden />
+      <div className="lp-wrap lp-final-col">
+        <Seal size="lg" stamp />
+        <h2 id="lp-final-title" className="lp-final-title">
+          <span>{f.title[0]}</span> <em>{f.title[1]}</em>
+        </h2>
+        <p className="lp-line">{f.line}</p>
+        <div className="lp-final-row">
+          <div className="lp-final-actions">
+            {stores}
+            <Link href={START} className="lp-btn lp-btn--accent">{f.start}</Link>
+          </div>
+          <figure className="lp-final-qr">
+            <QrCode value={`${webEnv.appOrigin}/download`} label={f.qr} className="lp-final-qr-code" bgClassName="lp-qr-bg" inkClassName="lp-qr-ink" />
+            <figcaption>{f.scan}</figcaption>
+          </figure>
         </div>
       </div>
     </section>
   );
 }
 
-const FINAL_SKY: readonly CollageObject[] = [
-  { name: "trophy", x: 10, y: 30, size: 104, rotate: -12, float: 0 },
-  { name: "moneyWithWings", x: 88, y: 26, size: 104, rotate: 10, float: 1 },
-  { name: "key", x: 82, y: 78, size: 84, rotate: -20, float: 2 },
-  { name: "sparkles", x: 18, y: 80, size: 64, rotate: 8, float: 3 },
-];
-
-/** The last screen: the sky again, the line again, one button. Then the footer. */
-export function LandingFinal() {
-  const f = WORDS.final;
+/** The site's footer (the landing; 21st.dev 29772's columns and outlined watermark). */
+export function SiteFooter() {
+  const c = WORDS.footer;
   return (
-    <>
-      <SkyCollage objects={FINAL_SKY} className="lp-final">
-        <div className="lp-final-col">
-          <Seal size="lg" stamp />
-          <h2 className="lp-h1 lp-h1--final">
-            {f.title.map((l) => (
-              <span key={l} className="block">{l}</span>
-            ))}
-          </h2>
-          <Link href={START} className="kit-pill kit-pill--accent kit-pill--lg">
-            {f.start} <ArrowRight aria-hidden />
+    <footer className="lp-footer">
+      <div className="lp-wrap lp-footer-grid">
+        <div className="lp-footer-brand">
+          <Link href="/" className="lp-brand" aria-label={WORDS.nav.home}>
+            <Seal size="md" />
+            <span className="lp-brand-name">{BRAND.name}</span>
+            <span lang="ja" className="lp-footer-kanji">{BRAND.kanji}</span>
           </Link>
-          <Link href="/demo" className="lp-final-link">{f.demo}</Link>
+          <p className="lp-quiet">{c.tagline}</p>
+          <p className="lp-footer-built">{c.built}</p>
         </div>
-      </SkyCollage>
-      <Footer />
-    </>
+        {c.columns.map((col) => (
+          <nav key={col.title} className="lp-footer-col" aria-label={col.title}>
+            <span className="lp-footer-head">{col.title}</span>
+            {col.links.map((l) => (l.href.startsWith("http") ? <ExternalLink key={l.label} href={l.href} className="lp-footer-link">{l.label}</ExternalLink> : <Link key={l.label} href={l.href} className="lp-footer-link">{l.label}</Link>))}
+          </nav>
+        ))}
+      </div>
+      <div className="lp-wrap lp-footer-base">
+        <p>{FOOTER.disclosure}</p>
+        <p>{c.marks}</p>
+      </div>
+      <div className="lp-footer-mark" aria-hidden lang="ja">{BRAND.kanji}</div>
+    </footer>
   );
 }

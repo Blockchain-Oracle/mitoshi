@@ -1,0 +1,155 @@
+/* The landing below the hero (round 7): the tape, the features bento (21st.dev 18898), How it works (26891), the proof
+ * with its rolling digits (20071, CSS), the final call (28155) and the site footer (29772) — all in the landing's dark
+ * world (`landing.css` sets the --lp-* inks). */
+
+/* ── The tape ──────────────────────────────────────────────────────────────────────────────────────────────────── */
+.lp-tape { position: relative; z-index: 1; min-height: 64px; background: var(--lp-card); box-shadow: inset 0 1px 0 var(--lp-line), inset 0 -1px 0 var(--lp-line); }
+.lp-tape-viewport { overflow: hidden; padding-block: 14px; mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent); }
+.lp-tape-track { display: flex; width: max-content; animation: lp-tape var(--lp-tape-dur, 40s) linear infinite; }
+.lp-tape-track:hover, .lp-tape-track:focus-within { animation-play-state: paused; }
+.lp-tape-copy { display: flex; flex-shrink: 0; }
+@keyframes lp-tape { to { translate: -50% 0; } }
+.lp-tape-item { display: flex; flex-shrink: 0; align-items: center; gap: 10px; padding-inline: 22px; min-height: 36px; color: var(--lp-ink); border-right: 1px solid var(--lp-line); }
+.lp-tape-item:hover .lp-tape-symbol { color: var(--color-accent); }
+.lp-tape-disc { width: 24px; height: 24px; flex: none; }
+.lp-tape-symbol { font: 700 14px/1 var(--font-body); }
+.lp-tape-print { font: 600 14px/1 var(--font-data); font-variant-numeric: tabular-nums; }
+.lp-tape-when { font: 500 12px/1 var(--font-data); color: var(--lp-ink-3); }
+.lp-tape-chip { padding: 4px 8px; border-radius: var(--radius-full); background: var(--lp-line); font: 600 11px/1 var(--font-data); color: var(--lp-ink-2); }
+@media (prefers-reduced-motion: reduce) { .lp-tape-track { animation: none; } .lp-tape-viewport { overflow-x: auto; } }
+
+/* ── Sections ──────────────────────────────────────────────────────────────────────────────────────────────────── */
+.lp-section { position: relative; padding-block: clamp(72px, 10vw, 128px); }
+.lp-head { display: flex; flex-direction: column; gap: 14px; margin-bottom: 44px; }
+.lp-eyebrow { font: 700 12px/1 var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-accent); }
+.lp-eyebrow--quiet { color: var(--lp-ink-3); }
+.lp-h2 {
+  max-width: 48rem; font: 800 clamp(2.2rem, 5vw, 4rem)/1 var(--font-heading); letter-spacing: -0.035em; text-wrap: balance;
+  background: linear-gradient(180deg, var(--color-cream) 0%, color-mix(in srgb, var(--color-cream) 70%, transparent) 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.lp-lead { max-width: 32rem; font: 500 18px/1.5 var(--font-body); color: var(--lp-ink-2); }
+.lp-quiet { font: 500 15px/1.5 var(--font-body); color: var(--lp-ink-2); }
+.lp-quiet a { color: var(--lp-ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── The bento: 4 columns, the lead tile 2×2 ───────────────────────────────────────────────────────────────────── */
+.lp-bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(13rem, auto); gap: 14px; }
+@media (min-width: 1024px) { .lp-bento { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 16.5rem; gap: 16px; } }
+.lp-tile {
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; overflow: hidden; padding: 22px;
+  border-radius: 26px; background: var(--lp-card); color: var(--lp-ink);
+  box-shadow: inset 0 0 0 1px var(--lp-line), inset 0 1px 0 color-mix(in srgb, var(--color-cream) 8%, transparent);
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 300ms;
+}
+.lp-tile:hover { transform: translateY(-3px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-cream) 22%, transparent), 0 24px 48px -24px var(--lp-glow); }
+.lp-tile:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.lp-tile-arrow { position: absolute; top: 18px; right: 18px; display: grid; width: 34px; height: 34px; place-items: center; border-radius: var(--radius-full); background: var(--lp-line); color: var(--lp-ink-2); transition: background 200ms, color 200ms; }
+.lp-tile-arrow svg { width: 16px; height: 16px; }
+.lp-tile:hover .lp-tile-arrow { background: var(--color-accent); color: var(--color-on-accent); }
+.lp-tile-icon { display: grid; width: 48px; height: 48px; margin-bottom: auto; place-items: center; border-radius: 16px; background: color-mix(in srgb, var(--color-accent) 16%, var(--plate-black)); color: var(--color-accent); }
+.lp-tile-icon svg { width: 24px; height: 24px; }
+.lp-tile-title { font: 800 clamp(1.25rem, 2vw, 1.6rem)/1.05 var(--font-heading); letter-spacing: -0.02em; }
+.lp-tile-line { max-width: 22rem; font: 500 14px/1.45 var(--font-body); color: var(--lp-ink-2); }
+.lp-tile--crypto { grid-column: span 2; justify-content: flex-start; background: radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--color-accent) 26%, transparent), transparent 60%), var(--lp-card-2); }
+.lp-tile--stocks { grid-column: span 2; justify-content: flex-start; }
+.lp-tile--agents { grid-column: span 2; }
+@media (min-width: 1024px) {
+  .lp-tile--crypto { grid-row: span 2; }
+  .lp-tile--games, .lp-tile--parlay { grid-column: span 1; }
+  .lp-tile--agents { grid-column: span 2; }
+}
+.lp-spark-list { display: flex; flex-direction: column; gap: 4px; margin: 14px 0 0; padding: 0; list-style: none; }
+.lp-spark-row { display: grid; grid-template-columns: 28px 3.2rem minmax(0, 1fr) auto auto; align-items: center; gap: 12px; min-height: 48px; padding: 0 4px; border-top: 1px solid var(--lp-line); }
+.lp-spark-disc { width: 28px; height: 28px; }
+.lp-spark-sym { font: 700 14px/1 var(--font-body); }
+.lp-spark { width: 100%; height: 30px; overflow: visible; }
+.lp-spark path { fill: none; stroke: var(--color-down); stroke-width: 1.75; stroke-linejoin: round; }
+.lp-spark[data-up] path { stroke: var(--color-up); }
+.lp-spark-price { font: 600 14px/1 var(--font-data); font-variant-numeric: tabular-nums; text-align: right; }
+.lp-spark-move { min-width: 4.4rem; padding: 4px 8px; border-radius: var(--radius-full); background: color-mix(in srgb, var(--color-down) 16%, transparent); color: var(--color-down); font: 600 12px/1 var(--font-data); text-align: right; }
+.lp-spark-move[data-up] { background: color-mix(in srgb, var(--color-up) 16%, transparent); color: var(--color-up); }
+@media (max-width: 479px) { .lp-spark-row { grid-template-columns: 24px 3rem minmax(0, 1fr) auto; } .lp-spark-move { display: none; } }
+
+/* ── How it works: three steps on a line, each over a crop of the app ─────────────────────────────────────────── */
+.lp-steps { position: relative; display: grid; gap: 40px; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 900px) {
+  .lp-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+  .lp-steps::before { content: ""; position: absolute; top: 9.5rem; left: 8%; right: 8%; height: 1px; background: linear-gradient(90deg, transparent, var(--lp-ink-3), transparent); }
+}
+.lp-step { position: relative; display: flex; flex-direction: column; gap: 10px; }
+.lp-step-crop { position: relative; height: 19rem; overflow: hidden; border-radius: 26px; background: var(--lp-card); box-shadow: inset 0 0 0 1px var(--lp-line); }
+.lp-step-crop img { position: absolute; left: 50%; width: 82%; max-width: 20rem; translate: -50% 0; border-radius: 18px; box-shadow: 0 30px 60px -20px color-mix(in srgb, var(--plate-black) 90%, transparent); }
+.lp-step-crop[data-crop="top"] img { top: -9%; }
+.lp-step-crop[data-crop="bottom"] img { bottom: -2%; }
+.lp-step-crop[data-crop="chart"] img { top: -46%; }
+.lp-step-crop::after { content: ""; position: absolute; inset: auto 0 0; height: 30%; background: linear-gradient(to top, var(--lp-card), transparent); pointer-events: none; }
+.lp-step-crop[data-crop="bottom"]::after { inset: 0 0 auto; background: linear-gradient(to bottom, var(--lp-card), transparent); }
+.lp-step-n { margin-top: 10px; font: 600 13px/1 var(--font-data); color: var(--color-accent); }
+.lp-step-title { font: 800 24px/1.1 var(--font-heading); letter-spacing: -0.02em; }
+.lp-step-line { max-width: 22rem; font: 500 15px/1.5 var(--font-body); color: var(--lp-ink-2); }
+
+/* ── Proof: the counts roll in, the receipts link to their proofs ─────────────────────────────────────────────── */
+.lp-proof-grid { display: grid; gap: 32px; }
+@media (min-width: 1024px) { .lp-proof-grid { grid-template-columns: 0.9fr 1.1fr; align-items: start; column-gap: 56px; } .lp-proof-grid .lp-head { grid-row: span 2; margin: 0; } }
+.lp-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.lp-stat { display: flex; flex-direction: column; gap: 8px; padding: 18px; border-radius: 22px; background: var(--lp-card); box-shadow: inset 0 0 0 1px var(--lp-line); }
+.lp-stat > span:last-child { font: 500 13px/1.3 var(--font-body); color: var(--lp-ink-2); }
+.lp-digits { display: inline-flex; overflow: hidden; font: 600 clamp(1.4rem, 3.4vw, 2.6rem)/1 var(--font-data); font-variant-numeric: tabular-nums; }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .lp-digit { display: inline-block; animation: lp-digit 420ms cubic-bezier(0.22, 1, 0.36, 1) both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
+  }
+}
+@keyframes lp-digit { from { translate: 0 40%; filter: blur(6px); opacity: 0; } }
+.lp-receipts { display: flex; flex-direction: column; gap: 12px; }
+.lp-receipt-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.lp-receipt {
+  display: flex; align-items: center; gap: 14px; min-height: 68px; padding: 12px 16px; border-radius: 20px; background: var(--lp-card); color: var(--lp-ink);
+  box-shadow: inset 0 0 0 1px var(--lp-line); transition: box-shadow 200ms, transform 200ms;
+}
+.lp-receipt:hover { transform: translateX(3px); box-shadow: inset 0 0 0 1px var(--lp-ink-3); }
+.lp-receipt-disc { width: 36px; height: 36px; flex: none; }
+.lp-receipt-main { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 4px; }
+.lp-receipt-main b { font: 700 15px/1 var(--font-body); }
+.lp-receipt-prices { font: 600 13px/1 var(--font-data); font-variant-numeric: tabular-nums; }
+.lp-receipt-sub { font: 500 12px/1 var(--font-body); color: var(--lp-ink-3); }
+.lp-receipt-go { width: 18px; height: 18px; flex: none; color: var(--lp-ink-3); }
+.lp-outcome { flex: none; padding: 6px 10px; border-radius: var(--radius-full); font: 700 12px/1 var(--font-body); background: var(--receipt-up); color: var(--color-cream); }
+.lp-outcome[data-outcome="down"] { background: var(--receipt-down); }
+.lp-outcome[data-outcome="void"] { background: var(--lp-line); color: var(--lp-ink-2); }
+
+/* ── The final call: a centred line, the store buttons, the QR, one action ────────────────────────────────────── */
+.lp-final { position: relative; overflow: clip; padding-block: clamp(80px, 12vw, 150px); text-align: center; }
+.lp-final-glow { position: absolute; inset: 0; background: radial-gradient(50% 60% at 50% 100%, var(--lp-glow), transparent 70%); pointer-events: none; }
+.lp-final-col { position: relative; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+.lp-final-title { display: flex; flex-direction: column; font: 800 clamp(2.4rem, 6vw, 5rem)/0.98 var(--font-heading); letter-spacing: -0.035em; }
+.lp-final-title span { background: linear-gradient(180deg, var(--color-cream), color-mix(in srgb, var(--color-cream) 64%, transparent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.lp-final-title em { font-style: normal; color: var(--color-accent); }
+.lp-final-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 28px; margin-top: 10px; }
+.lp-final-actions { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.lp-final-qr { display: none; margin: 0; }
+@media (min-width: 1024px) {
+  .lp-final-qr { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px; border-radius: 24px; background: var(--lp-card); box-shadow: inset 0 0 0 1px var(--lp-line); }
+  .lp-final-qr figcaption { font: 600 12px/1 var(--font-body); color: var(--lp-ink-2); }
+}
+.lp-final-qr-code { width: 8rem; height: 8rem; border-radius: 12px; }
+
+/* ── The footer: brand, three columns, the outlined 見通し under it all ─────────────────────────────────────────── */
+.lp-footer { position: relative; overflow: clip; padding-top: 72px; border-top: 1px solid var(--lp-line); background: var(--lp-ground); color: var(--lp-ink); }
+.lp-footer-grid { display: grid; gap: 36px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 900px) { .lp-footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr; } }
+.lp-footer-brand { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 12px; }
+@media (min-width: 900px) { .lp-footer-brand { grid-column: auto; } }
+.lp-footer-kanji { font: 700 18px/1 var(--font-stamp); color: var(--lp-ink-3); }
+.lp-footer-built { font: 600 13px/1.4 var(--font-body); color: var(--lp-ink-2); }
+.lp-footer-col { display: flex; flex-direction: column; gap: 2px; }
+.lp-footer-head { margin-bottom: 8px; font: 700 12px/1 var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--lp-ink-3); }
+.lp-footer-link { display: inline-flex; min-height: 44px; align-items: center; font: 500 15px/1 var(--font-body); color: var(--lp-ink-2); }
+.lp-footer-link:hover { color: var(--lp-ink); }
+.lp-footer-base { display: flex; flex-direction: column; gap: 6px; margin-top: 48px; padding-block: 20px; border-top: 1px solid var(--lp-line); font: 500 12px/1.5 var(--font-body); color: var(--lp-ink-3); }
+.lp-footer-mark {
+  margin-top: -2rem; text-align: center; pointer-events: none; user-select: none; line-height: 0.8;
+  font: 700 clamp(6rem, 24vw, 18rem)/0.8 var(--font-stamp); color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--color-cream) 12%, transparent); translate: 0 18%;
+}
+@media (prefers-reduced-motion: reduce) { .lp-tile, .lp-receipt { transition: none; } }
