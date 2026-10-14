@@ -7,8 +7,14 @@
 @media (min-width: 1024px) { .legal-head { position: sticky; top: var(--stage-sticky-top, 1.5rem); align-self: start; } }
 .legal-h1 { font: 800 clamp(2.25rem, 5vw, 3.5rem)/1 var(--font-heading); letter-spacing: -0.04em; color: var(--color-ink); }
 .legal-lede { max-width: 24rem; font: 400 18px/1.45 var(--font-body); color: var(--color-ink-secondary); }
-.legal-facts { display: flex; flex-wrap: wrap; gap: 8px; }
-.legal-fact { display: inline-flex; height: 32px; align-items: center; padding-inline: 14px; border-radius: var(--radius-full); background: var(--color-surface-1); box-shadow: inset 0 0 0 1px var(--color-hairline); font: 700 14px/1 var(--font-body); color: var(--color-ink); }
+/* R6 landing L17: the facts are a plain list — a check and the words, nothing that looks pressable. */
+.legal-facts { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.legal-fact { display: flex; align-items: flex-start; gap: 10px; font: 500 14px/1.4 var(--font-body); color: var(--color-ink); }
+.legal-fact::before {
+  content: ""; flex: none; width: 16px; height: 16px; margin-top: 1px; background: var(--color-up);
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg>") center / contain no-repeat;
+}
+:root[data-theme="light"] .legal-fact::before { background: var(--receipt-up); }
 .legal-contact { display: inline-flex; width: fit-content; min-height: 44px; align-items: center; gap: 8px; font: 500 14px/1 var(--font-body); color: var(--color-ink-secondary); }
 .legal-contact svg { width: 16px; height: 16px; }
 .legal-contact span { font-weight: 700; color: var(--color-ink); }
@@ -21,8 +27,8 @@
 .legal-glyph { display: grid; width: 36px; height: 36px; flex: none; place-items: center; border-radius: var(--radius-full); background: var(--color-surface-2); color: var(--color-ink); }
 .legal-glyph svg { width: 18px; height: 18px; }
 .legal-titles { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 2px; }
-.legal-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 17px/1.25 var(--font-body); color: var(--color-ink); }
-.legal-gist { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 400 13px/1.35 var(--font-body); color: var(--color-ink-secondary); }
+.legal-title { text-wrap: pretty; font: 700 17px/1.25 var(--font-body); color: var(--color-ink); }
+.legal-gist { text-wrap: pretty; font: 400 13px/1.35 var(--font-body); color: var(--color-ink-secondary); }
 .legal-chevron { width: 18px; height: 18px; flex: none; color: var(--color-ink-secondary); transition: rotate 200ms var(--ease-out); }
 .legal-trigger[data-panel-open] .legal-chevron { rotate: 180deg; }
 .legal-panel { height: var(--accordion-panel-height); overflow: hidden; transition: height 200ms var(--ease-drawer); }
