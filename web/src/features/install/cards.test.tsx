@@ -1,6 +1,6 @@
 // /download's cards (D-230): a store no one can join yet says it is coming and has no button (the web app leads with the
 // action); an open link becomes the store button and its QR; the device's own card leads; inside the phone app its card
-// is "Installed" with nothing to press. The skeleton outlines what a desk gets, TestFlight as coming.
+// is "Installed" with nothing to press. A closed test shows its open-group step before the Play opt-in page.
 import { isValidElement, type ReactElement } from "react";
 import { describe, expect, it } from "vitest";
 import type { PlatformId, StoreRelease } from "@/lib/release";
@@ -11,6 +11,7 @@ import { StoreButton, type PlatformCardProps } from "./PlatformCard";
 
 const TF = "https://testflight.apple.com/join/AbC123xy";
 const OPEN = "https://play.google.com/apps/testing/xyz.mitoshi.app.testnet";
+const GROUP = "https://groups.google.com/g/mitoshi-testers";
 const NONE: StoreRelease = { testflight: null, play: null };
 const BOTH: StoreRelease = { testflight: TF, play: OPEN };
 const ORIGIN = "https://mitoshi.xyz";
@@ -62,6 +63,19 @@ describe("platformCards", () => {
     expect(cards.android.chip).toBe(DOWNLOAD.android.ready.chip);
     expect(element(cards.android.action)?.props.kicker).toBe(DOWNLOAD.android.ready.kicker);
     expect(cards.android.tone).toBe("live");
+  });
+
+  it("shows the group join step before Play for a closed test", () => {
+    const release: StoreRelease = { testflight: null, play: OPEN, playGroup: GROUP };
+    const card = byId(cardsFor({ platform: "android", inApp: false, release })).android;
+    const children = element(card.action)?.props.children;
+    expect(card.chip).toBe(DOWNLOAD.android.closed.chip);
+    expect(Array.isArray(children)).toBe(true);
+    if (!Array.isArray(children)) throw new Error("missing closed test steps");
+    expect(element(children[0])?.props.href).toBe(GROUP);
+    expect(element(children[1])?.type).toBe(StoreButton);
+    expect(element(children[1])?.props.href).toBe(OPEN);
+    expect(card.qr?.value).toBe(`${ORIGIN}/download#android`);
   });
 
   it("leads a phone with the web app (its accent action) while its own store is pending", () => {

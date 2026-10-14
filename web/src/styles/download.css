@@ -88,6 +88,8 @@
 .get-card-action { display: flex; min-width: 0; flex: 1 1 100%; flex-direction: column; align-items: stretch; gap: 12px; }
 /* On a phone the action is the card's full width (a long label never runs past the card); from 768 it is its own size. */
 .get-card-action .kit-pill, .get-card-action .get-store { width: 100%; }
+.get-test-group { color: var(--color-ink); font: 600 14px/1.35 var(--font-body); text-decoration: underline; text-underline-offset: 3px; }
+.get-test-group:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
 @media (min-width: 768px) {
   .get-card-action { flex: 1 1 12rem; align-items: flex-start; }
   .get-card-action .kit-pill, .get-card-action .get-store { width: auto; }

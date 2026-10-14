@@ -1,16 +1,17 @@
 // Ported from Owarine 90a91d71:web/src/lib/release.ts (C10f) — the one config point for what `/download` links to but
 // this repository can't publish by itself (D-230, the owner's point 8): the iPhone app's public TestFlight link and the
-// Android app's Google Play open-test link. Each is a runtime variable on the web app, read on the server per request,
+// Android app's Google Play test link. Each is a runtime variable on the web app, read on the server per request,
 // so a deployment turns a card from "Coming to …" into the real link by setting a value and restarting — no rebuild.
 // The names are the ones the store ship step writes to `~/.config/mitoshi/stores.env` (`docs/plan/env-matrix.md`):
 //
 //   TESTFLIGHT_PUBLIC_LINK   https://testflight.apple.com/join/<code> — offered only while Apple's join page takes
 //                            testers (`server/store-release.ts`): before Apple's beta review passes it says it doesn't
-//   PLAY_OPEN_TEST_LINK      https://play.google.com/apps/testing/<package>, or the app's store page — anyone can join
+//   PLAY_OPEN_TEST_LINK      https://play.google.com/apps/testing/<package>, or the app's store page
+//   PLAY_TEST_GROUP_LINK     https://groups.google.com/g/<group> for a closed test anyone can join
 //
 // Android ships through Google Play only (round 7, the owner: "Google Play, not an APK") — no sideloaded build.
 // Play's internal test is not offered: its link opens only for the accounts on its testers list, and everyone else lands
-// on "not available" — a dead end. Android says "Coming to Google Play" until the open test exists. None is a secret and
+// on "not available" — a dead end. A closed test is offered only with a public group join link. None is a secret and
 // none is NEXT_PUBLIC_*. A malformed value counts as unset, so a card keeps saying it is coming rather than linking
 // somewhere wrong. Pure (no server-only import) so the parsing is tested.
 
@@ -18,6 +19,8 @@
 export interface StoreRelease {
   testflight: string | null;
   play: string | null;
+  /** A public join-first path for Play closed testing. Absent for an open test. */
+  playGroup?: string;
   /** A TestFlight link is set but Apple's beta review hasn't opened it yet (the card says so instead of "coming"). */
   inReview?: boolean;
 }
@@ -50,7 +53,7 @@ export function parseTestflight(raw: string | undefined): string | null {
 const PACKAGE = /^[A-Za-z][\w]*(\.[A-Za-z][\w]*)+$/;
 
 /**
- * Only Google Play's open test: its opt-in page (`/apps/testing/<package>`) or the app's store page
+ * Only Google Play's test opt-in page (`/apps/testing/<package>`) or the app's store page
  * (`/store/apps/details?id=<package>`). The internal test's invitation (`/apps/internaltest/<id>`) is refused.
  */
 export function parsePlay(raw: string | undefined): string | null {
@@ -61,6 +64,13 @@ export function parsePlay(raw: string | undefined): string | null {
   const listed = path === "/store/apps/details" ? url.searchParams.get("id") : null;
   const pkg = optIn ?? listed;
   return pkg && PACKAGE.test(pkg) ? url.toString() : null;
+}
+
+/** A public Google Group can make a closed Play test joinable without manual invites. */
+export function parsePlayGroup(raw: string | undefined): string | null {
+  const url = httpsUrl(raw);
+  if (!url || url.hostname !== "groups.google.com" || url.search || url.hash) return null;
+  return /^\/g\/[A-Za-z0-9][A-Za-z0-9-]*\/?$/.test(url.pathname) ? url.toString() : null;
 }
 
 /** What Apple's join page says about a beta: it takes testers, it doesn't, or it couldn't be read. */
@@ -81,7 +91,9 @@ export function testflightState(link: string, status: number, html: string): Tes
 }
 
 export function readStoreRelease(env: Env): StoreRelease {
-  return { testflight: parseTestflight(env.TESTFLIGHT_PUBLIC_LINK), play: parsePlay(env.PLAY_OPEN_TEST_LINK) };
+  const play = parsePlay(env.PLAY_OPEN_TEST_LINK);
+  const playGroup = play ? parsePlayGroup(env.PLAY_TEST_GROUP_LINK) : null;
+  return { testflight: parseTestflight(env.TESTFLIGHT_PUBLIC_LINK), play, ...(playGroup ? { playGroup } : {}) };
 }
 
 /** The phone app's web view names itself in the user agent (mobile/src/shell/config.ts `USER_AGENT_MARK`). */
@@ -97,7 +109,7 @@ export function platformOf(userAgent: string | null | undefined): { platform: Pl
   return { platform, inApp: SHELL_MARK.test(ua) };
 }
 
-/** A store anyone can open today: TestFlight's public link while Apple takes testers; Google Play's open test. */
+/** A store anyone can open today: TestFlight's public link or a joinable Google Play test. */
 export function storeOpen(release: StoreRelease, store: "ios" | "android"): boolean {
   return store === "ios" ? release.testflight !== null : release.play !== null;
 }

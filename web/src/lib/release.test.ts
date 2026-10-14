@@ -2,11 +2,12 @@
 // opens only for its listed testers, so it is refused), a malformed value reads as unset (the card says "Coming to …"),
 // and Apple's join page is read as open only when it is the join page for that code without the closed line.
 import { describe, expect, it } from "vitest";
-import { orderCards, parsePlay, parseTestflight, platformOf, readStoreRelease, storeOpen, testflightState, type StoreRelease } from "./release";
+import { orderCards, parsePlay, parsePlayGroup, parseTestflight, platformOf, readStoreRelease, storeOpen, testflightState, type StoreRelease } from "./release";
 
 const TF = "https://testflight.apple.com/join/AbC123xy";
 const OPEN = "https://play.google.com/apps/testing/xyz.mitoshi.app.testnet";
 const INTERNAL = "https://play.google.com/apps/internaltest/4701234567890123456";
+const GROUP = "https://groups.google.com/g/mitoshi-testers";
 
 describe("parseTestflight", () => {
   it("takes Apple's public join link", () => {
@@ -29,6 +30,14 @@ describe("parsePlay", () => {
     expect(parsePlay("https://play.google.com.evil.example/apps/testing/xyz.mitoshi.app")).toBeNull();
     expect(parsePlay("https://play.google.com/apps/testing/notapackage")).toBeNull();
     expect(parsePlay("https://play.google.com/store/apps/details")).toBeNull();
+  });
+});
+
+describe("parsePlayGroup", () => {
+  it("accepts the public Google Group address and rejects lookalikes", () => {
+    expect(parsePlayGroup(GROUP)).toBe(GROUP);
+    expect(parsePlayGroup("https://groups.google.com.evil.example/g/mitoshi-testers")).toBeNull();
+    expect(parsePlayGroup("https://groups.google.com/a/example.com/g/private")).toBeNull();
   });
 });
 
@@ -61,6 +70,10 @@ describe("readStoreRelease", () => {
     expect(readStoreRelease({ TESTFLIGHT_PUBLIC_LINK: TF, PLAY_OPEN_TEST_LINK: OPEN })).toEqual({ testflight: TF, play: OPEN });
     expect(readStoreRelease({ PLAY_INTERNAL_TEST_LINK: INTERNAL })).toEqual({ testflight: null, play: null });
     expect(readStoreRelease({ PLAY_OPEN_TEST_LINK: INTERNAL }).play).toBeNull();
+  });
+  it("offers an open-group join step only with a Play test link", () => {
+    expect(readStoreRelease({ PLAY_OPEN_TEST_LINK: OPEN, PLAY_TEST_GROUP_LINK: GROUP })).toEqual({ testflight: null, play: OPEN, playGroup: GROUP });
+    expect(readStoreRelease({ PLAY_TEST_GROUP_LINK: GROUP })).toEqual({ testflight: null, play: null });
   });
 });
 

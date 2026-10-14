@@ -5,8 +5,8 @@ import "server-only";
  * passes, and leading an iPhone to "This beta isn't accepting any new testers" is a dead end. Apple's page is read off
  * the request path (`lib/testflight-gate.ts`): a visitor never waits on it after a process's first request, a failed
  * read is retried 30 s later, and an unverified link is never offered. Each change of answer, and each failed read, is
- * a `[download]` line in the web app's log. Google Play's test page needs a signed-in Google account, so the open-test
- * link is taken as set.
+ * a `[download]` line in the web app's log. Google Play's test page needs a signed-in Google account, so its link
+ * is taken as set after the release operator verifies the open test or public-group path.
  */
 import { readStoreRelease, type StoreRelease } from "@/lib/release";
 import { createTestflightGate, type TestflightGate } from "@/lib/testflight-gate";
