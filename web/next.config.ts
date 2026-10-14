@@ -18,9 +18,17 @@ const config: NextConfig = {
   // mppx's server (the Memory Market's paid read, S9.9b) runs from node_modules, unbundled: its MCP transport imports an
   // optional peer (`@modelcontextprotocol/sdk`) that this app doesn't install and never calls.
   serverExternalPackages: ["mppx"],
-  // Only Mitoshi frames Mitoshi (the landing's phone runs the terminal in a frame): no other site can frame the app and
-  // lay its own button over a trade (clickjacking). `frame-ancestors` is the standard successor to X-Frame-Options.
-  headers: async () => [{ source: "/:path*", headers: [{ key: "Content-Security-Policy", value: "frame-ancestors 'self'" }] }],
+  // Only Mitoshi frames Mitoshi: no other site can frame the app and lay its own button over a trade (clickjacking).
+  // `frame-ancestors` is the standard successor to X-Frame-Options. The public media (the app captures the landing's
+  // phones show, brand marks, art, sounds) keep a day and revalidate in the background for a week — their names aren't
+  // hashed, so never `immutable`; Next served them `max-age=0`, a round trip per image on every visit.
+  headers: async () => [
+    { source: "/:path*", headers: [{ key: "Content-Security-Policy", value: "frame-ancestors 'self'" }] },
+    ...["/app/:path*", "/brands/:path*", "/art/:path*", "/sounds/:path*"].map((source) => ({
+      source,
+      headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }],
+    })),
+  ],
   redirects: async () => [
     moved("/markets-live", "/markets"),
     moved("/bell", "/markets"),
