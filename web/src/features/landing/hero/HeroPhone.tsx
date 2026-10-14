@@ -1,7 +1,8 @@
 // The hero's phone (R6 landing L01): 21st.dev 20020's frame around the live screen. The server reads the Window, its
-// pays and the line (`hero.server.ts`) inside Suspense with a 900 ms budget — whatever arrives in time is drawn, the
-// rest the island fetches — and draws the first paint with real figures; `HeroLiveIsland` then makes it live. The
-// screen's discs are drawn here, once per candidate, so the island never ships the ticker registry.
+// pays and the line (`hero.server.ts`) inside Suspense with a 1.5 s budget (a cold chain read; the copy never waits on
+// it) — whatever arrives in time is drawn, the rest the island fetches — and draws the first paint with real figures;
+// `HeroLiveIsland` then makes it live. The discs are drawn here, once per candidate, so the island never ships the
+// ticker registry.
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { AssetDisc } from "@/features/markets/hero/AssetDisc";
@@ -12,7 +13,7 @@ import { HeroLiveIsland } from "./HeroLiveIsland";
 import { HeroScreen, HeroScreenWait } from "./HeroScreen";
 import { PhoneFrame } from "./PhoneFrame";
 
-const HERO_BUDGET_MS = 900;
+const HERO_BUDGET_MS = 1_500;
 
 async function inTime<T>(work: Promise<T>, fallback: T): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;

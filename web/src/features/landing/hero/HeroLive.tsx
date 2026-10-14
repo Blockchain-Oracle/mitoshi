@@ -71,17 +71,17 @@ export default function HeroLive({ wire, discs }: { wire: HeroWire; discs: Recor
   const cutoffMs = data.window ? data.window.cutoffSec * 1000 : null;
   useEffect(() => {
     let live = true;
-    const refetch = async () => {
-      if (document.visibilityState !== "visible") return;
+    const refetch = async (always = false) => {
+      if (!always && document.visibilityState !== "visible") return;
       const res = await fetch("/api/landing/hero").catch(() => null);
       if (live && res?.ok) setData((await res.json()) as HeroWire);
     };
-    const every = setInterval(refetch, REFRESH_MS);
+    const every = setInterval(() => void refetch(), REFRESH_MS);
     // The server's first paint ran out of time (a cold read): ask now rather than at the next refresh.
-    if (!wire.window || wire.points.length === 0) void refetch();
+    if (!wire.window || wire.points.length === 0) void refetch(true);
     // At the cutoff the next Window rolls in; the server's read can lag a few seconds, so ask again until it does.
     const untilCutoff = cutoffMs === null ? null : cutoffMs - Date.now() + 500;
-    const roll = untilCutoff === null ? null : setTimeout(refetch, untilCutoff > 0 ? untilCutoff : ROLL_RETRY_MS);
+    const roll = untilCutoff === null ? null : setTimeout(() => void refetch(true), untilCutoff > 0 ? untilCutoff : ROLL_RETRY_MS);
     return () => {
       live = false;
       clearInterval(every);
