@@ -7,7 +7,8 @@
 // The six cues — tap, open, close, win, loss, profit — are synthesised to the pitch contours and lengths measured from
 // the reference's clips (SOUND-analysis.txt): our own audio, their character, nothing of theirs shipped. The combo
 // ladder, surge, slump and adverse cues follow their synth code (same notes, envelopes, gains). Web Audio,
-// "interactive" latency, unlocked on the first gesture, resumed when the tab returns, rebuilt if the context gets
+// "interactive" latency, unlocked on the first gesture, asleep between cues (`sleepSoon`: iOS reads a running context
+// as live audio), resumed when the tab returns, rebuilt if the context gets
 // stuck. Every error is swallowed: a sound must never break a trade.
 
 export type TradeCue = "tap" | "open" | "close" | "win" | "loss" | "profit";
@@ -57,6 +58,32 @@ let installed = false;
 let lastRebuildMs = 0;
 let everRan = false;
 let muted = false;
+/** Suspended by `sleepSoon`, not by the system: a tap doesn't wake it, the next sound does. */
+let asleep = false;
+let sleepTimer: ReturnType<typeof setTimeout> | null = null;
+/** Things that need the context running between cues (the music bed). */
+let holds = 0;
+/**
+ * How long after the last cue ends the context sleeps. iOS shows a running context as live audio (the speaker in the
+ * Dynamic Island, round 7 capture), so a silent page must not keep one running.
+ */
+const SLEEP_AFTER_MS = 1_500;
+
+function sleepSoon(afterSec = 0): void {
+  if (sleepTimer) clearTimeout(sleepTimer);
+  sleepTimer = setTimeout(() => {
+    sleepTimer = null;
+    if (holds === 0 && ctx && ctx.state === "running") {
+      asleep = true;
+      void ctx.suspend().catch(() => undefined);
+    }
+  }, afterSec * 1000 + SLEEP_AFTER_MS);
+}
+
+function wake(): void {
+  asleep = false;
+  if (ctx && ctx.state !== "running" && ctx.state !== "closed") void ctx.resume().catch(() => undefined);
+}
 
 function build(): boolean {
   const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -104,9 +131,12 @@ function unlock(): void {
     if (build()) {
       blip(ctx!);
       void ctx!.resume().catch(() => undefined);
+      sleepSoon();
     }
     return;
   }
+  // Asleep between cues by design: a tap leaves it be, and the next cue wakes it (sticky activation lets it).
+  if (asleep && holds === 0) return;
   const c = ctx;
   if (c.state === "closed") {
     rebuild();
@@ -123,7 +153,21 @@ function unlock(): void {
 }
 
 function resume(): void {
+  if (asleep && holds === 0) return;
   if (ctx && ctx.state !== "running" && ctx.state !== "closed") void ctx.resume().catch(() => undefined);
+}
+
+/** Keep the context running while something plays between cues (the music bed); returns the release. */
+export function holdAudio(): () => void {
+  holds += 1;
+  wake();
+  let held = true;
+  return () => {
+    if (!held) return;
+    held = false;
+    holds = Math.max(0, holds - 1);
+    sleepSoon();
+  };
 }
 
 /** Mount once (the feedback loader does). Idempotent; returns a teardown for tests and hot reload. */
@@ -153,7 +197,8 @@ export function installTradeSounds(isMuted: boolean): () => void {
 
 function voices(list: readonly Voice[], scale = 1, rate = 1): void {
   if (muted || !ctx || !out) return;
-  resume();
+  wake();
+  sleepSoon(Math.max(0, ...list.map((v) => v.at + v.dur)));
   try {
     const t0 = ctx.currentTime;
     for (const v of list) {

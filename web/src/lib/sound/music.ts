@@ -2,7 +2,7 @@
 // in code (no audio files ship, DESIGN.md Feedback), on the trade engine's one AudioContext.
 "use client";
 
-import { audioOutput } from "./trade";
+import { audioOutput, holdAudio } from "./trade";
 
 /**
  * The trading screen's music, to Tradash's behaviour (TRADASH-FIDELITY.md §Feedback — music): three looped tracks at
@@ -59,6 +59,8 @@ let nextAt = 0;
 let noise: AudioBuffer | null = null;
 let wanted: { on: boolean; track: MusicTrack } = { on: false, track: "arcade" };
 let visibilityBound = false;
+/** The bed holds the shared context awake while it plays (`holdAudio`); released when it stops. */
+let release: (() => void) | null = null;
 
 function graph(): { ctx: AudioContext; out: AudioNode } | null {
   const o = audioOutput();
@@ -162,6 +164,7 @@ function play(track: MusicTrack): void {
   nextAt = now + 0.05;
   if (timer) clearInterval(timer);
   timer = setInterval(() => schedule(ctx, bus, TRACKS[track]), TICK_MS);
+  release ??= holdAudio();
 }
 
 function stop(): void {
@@ -173,6 +176,8 @@ function stop(): void {
     master.gain.setTargetAtTime(0, o.ctx.currentTime, 0.1);
   }
   current = null;
+  release?.();
+  release = null;
 }
 
 function apply(): void {

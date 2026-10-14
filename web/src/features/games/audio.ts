@@ -65,6 +65,32 @@ let bedGain: GainNode | null = null;
 let bgmWanted = false;
 let lastPress: Variation | null = null;
 let pressedAtMs = 0;
+/**
+ * Asleep between sounds (round 7 capture: a running context is live audio to iOS — the speaker stayed in the Dynamic
+ * Island after leaving Games). Any sound wakes it; it sleeps again 2.5 s after the last one unless the bed plays.
+ */
+const SLEEP_AFTER_MS = 2_500;
+let asleep = false;
+let sleepTimer: ReturnType<typeof setTimeout> | null = null;
+
+const bedOn = () => bgmWanted && unlocked && bgmVolume > 0 && !(typeof document !== "undefined" && document.hidden);
+
+function sleepSoon(): void {
+  if (sleepTimer) clearTimeout(sleepTimer);
+  sleepTimer = setTimeout(() => {
+    sleepTimer = null;
+    if (ctx && ctx.state === "running" && !bedOn()) {
+      asleep = true;
+      void ctx.suspend().catch(() => undefined);
+    }
+  }, SLEEP_AFTER_MS);
+}
+
+function wake(): void {
+  asleep = false;
+  if (ctx && ctx.state !== "running" && ctx.state !== "closed") void ctx.resume().catch(() => undefined);
+  sleepSoon();
+}
 
 const listeners = new Set<() => void>();
 function emit(): void {
@@ -103,12 +129,19 @@ export function installAudioUnlock(): () => void {
   for (const e of UNLOCK_EVENTS) window.addEventListener(e, unlock, { capture: true, passive: true });
   return () => {
     for (const e of UNLOCK_EVENTS) window.removeEventListener(e, unlock, { capture: true });
+    // Leaving the games: the bed stops and the context sleeps now, not on the next sound.
+    bed?.stop();
+    if (sleepTimer) clearTimeout(sleepTimer);
+    if (ctx && ctx.state === "running") {
+      asleep = true;
+      void ctx.suspend().catch(() => undefined);
+    }
   };
 }
 
 function unlock(): void {
   if (unlocked) {
-    if (ctx && ctx.state !== "running" && ctx.state !== "closed") void ctx.resume().catch(() => undefined);
+    if (!asleep && ctx && ctx.state !== "running" && ctx.state !== "closed") void ctx.resume().catch(() => undefined);
     return;
   }
   unlocked = true;
@@ -119,6 +152,7 @@ function unlock(): void {
       sfxGain.gain.value = SFX_VOLUME_BASE * sfxVolume;
       sfxGain.connect(ctx.destination);
       void ctx.resume().catch(() => undefined);
+      sleepSoon();
       for (const name of Object.keys(SFX_FILES) as SfxName[]) void loadBuffer(name);
     }
   } catch {
@@ -141,6 +175,7 @@ function source(name: SfxName): AudioBufferSourceNode | null {
   if (sfxVolume === 0 || !unlocked || !ctx || !sfxGain) return null;
   const buffer = buffers.get(name);
   if (!buffer) return null;
+  wake();
   const node = ctx.createBufferSource();
   node.buffer = buffer;
   return node;
@@ -153,6 +188,7 @@ function source(name: SfxName): AudioBufferSourceNode | null {
  */
 export function sfxBus(): { ctx: AudioContext; out: GainNode } | null {
   if (sfxVolume === 0 || !unlocked || !ctx || !sfxGain) return null;
+  wake();
   return { ctx, out: sfxGain };
 }
 
@@ -175,6 +211,7 @@ export function playSfx(name: SfxName): void {
  */
 export function synthContext(): { ctx: AudioContext; out: AudioNode } | null {
   if (sfxVolume === 0 || !unlocked || !ctx || !sfxGain) return null;
+  wake();
   return { ctx, out: sfxGain };
 }
 
@@ -255,9 +292,13 @@ function ensureBed(): ChipBed | null {
 
 /** One reconciler: play exactly when wanted, unlocked, audible and visible. */
 function syncBgm(): void {
-  const hidden = typeof document !== "undefined" && document.hidden;
-  if (bgmWanted && unlocked && bgmVolume > 0 && !hidden) ensureBed()?.start();
-  else bed?.stop();
+  if (bedOn()) {
+    wake();
+    ensureBed()?.start();
+  } else {
+    bed?.stop();
+    sleepSoon();
+  }
 }
 
 if (typeof document !== "undefined") document.addEventListener("visibilitychange", syncBgm);
